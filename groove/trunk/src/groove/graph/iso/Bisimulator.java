@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Bisimulator.java,v 1.2 2007-03-20 14:02:18 rensink Exp $
+ * $Id: Bisimulator.java,v 1.3 2007-03-20 23:02:57 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -28,7 +28,6 @@ import groove.util.IntSet;
 import groove.util.TreeIntSet;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +38,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elemens to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Bisimulator implements CertificateStrategy {
 	/**
@@ -100,6 +99,7 @@ public class Bisimulator implements CertificateStrategy {
          * @ensure <tt>result == getValue()</tt>
          * @see #getValue()
          */
+    	@Override
         public int hashCode() {
             return value;
         }
@@ -107,6 +107,7 @@ public class Bisimulator implements CertificateStrategy {
         /**
          * Tests if the other is a {@link Certificate} with the same value.
          */
+    	@Override
         public boolean equals(Object obj) {
             return obj instanceof Certificate && (value == ((Certificate) obj).value);
         }
@@ -146,7 +147,7 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.2 $
+     * @version $Revision: 1.3 $
      */
     static private class CertificateNode extends Certificate {
     	/** Initial node value to provide a better spread of hash codes. */
@@ -161,6 +162,7 @@ public class Bisimulator implements CertificateStrategy {
         	value = INIT_NODE_VALUE;
         }
 
+    	@Override
         public String toString() {
             return "c" + value;
         }
@@ -170,6 +172,7 @@ public class Bisimulator implements CertificateStrategy {
          * and has the same value as this one.
          * @see #getValue()
          */
+    	@Override
         public boolean equals(Object obj) {
             return obj instanceof CertificateNode && (value == ((Certificate) obj).value);
         }
@@ -178,6 +181,7 @@ public class Bisimulator implements CertificateStrategy {
          * The new value for this certificate node
          * is the sum of the values of the incident certificate edges.
          */
+    	@Override
         protected int computeNewValue() {
         	int result = nextValue ^ value;
         	nextValue = 0;
@@ -208,7 +212,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.2 $
+     * @version $Revision: 1.3 $
      */
     static private class CertificateEdge extends Certificate {
 //        /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
@@ -237,6 +241,7 @@ public class Bisimulator implements CertificateStrategy {
             target.addValue(value << 1);
         }
 
+    	@Override
         public String toString() {
             return "["+source+","+label+","+target+"]";
         }
@@ -246,6 +251,7 @@ public class Bisimulator implements CertificateStrategy {
          * and has the same value, as well as the same source and target values, as this one.
          * @see #getValue()
          */
+    	@Override
         public boolean equals(Object obj) {
             if (obj instanceof CertificateEdge) {
                 CertificateEdge other = (CertificateEdge) obj; 
@@ -264,6 +270,7 @@ public class Bisimulator implements CertificateStrategy {
         /**
          * Computes the value on the basis of the end nodes and the label index.
          */
+    	@Override
         protected int computeNewValue() {
             int targetShift = (labelIndex & 0xf) + 1;
             int sourceHashCode = source.value;
@@ -310,7 +317,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.2 $
+     * @version $Revision: 1.3 $
      */
     static private class CertificateFlag extends Certificate {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
@@ -323,6 +330,7 @@ public class Bisimulator implements CertificateStrategy {
             source.addValue(value);
         }
 
+    	@Override
         public String toString() {
             return "["+source+","+label+"]";
         }
@@ -332,6 +340,7 @@ public class Bisimulator implements CertificateStrategy {
          * and has the same value, as well as the same source and target values, as this one.
          * @see #getValue()
          */
+    	@Override
         public boolean equals(Object obj) {
             if (obj instanceof CertificateFlag) {
                 CertificateFlag other = (CertificateFlag) obj; 
@@ -344,6 +353,7 @@ public class Bisimulator implements CertificateStrategy {
         /**
          * Computes the value on the basis of the end nodes and the label index.
          */
+    	@Override
         protected int computeNewValue() {
             int sourceHashCode = source.hashCode();
             return (sourceHashCode << 8) + (sourceHashCode >> 24) + value;
@@ -412,38 +422,34 @@ public class Bisimulator implements CertificateStrategy {
      * If none is stored, computes, stores and returns the inverse of the certificate map.
      * @see #getCertificateMap()
      */
-    public Map<Object,Object> getPartitionMap() {
-        reporter.start(GET_PARTITION_MAP);
+    public PartitionMap getPartitionMap() {
         // check if the map has been computed before
-        if (partitionMap == null) {
-            // no; go ahead and compute it
-            Map<Object,Object> partitionMap = new HashMap<Object,Object>();
-            // invert the certificate map
-            reporter.stop();
-            Map<Element,Object> certMap = getCertificateMap();
-            reporter.restart(GET_PARTITION_MAP);
-            for (Map.Entry<Element,Object> certEntry: certMap.entrySet()) {
-                Element key = certEntry.getKey();
-                Object certificate = certEntry.getValue();
-                // retrieve the image of the certificate, if any
-                Object oldPartition = partitionMap.get(certificate);
-                if (oldPartition == null) {
-                    // no, the certificate did not yet exist; create an entry for it
-                    partitionMap.put(certificate, key);
-                } else if (oldPartition instanceof Collection) {
-                    ((Collection<Element>) oldPartition).add(key);
-                } else {
-                    Collection<Element> partitionSet = new ArrayList<Element>(); //new HashSet(); // TreeHashSet3.IDENTITY_EQUATOR);
-                    partitionSet.add((Element) oldPartition);
-                    partitionSet.add(key);
-                    partitionMap.put(certificate, partitionSet);
-                }
-            }
-            this.partitionMap = partitionMap;
+        if (this.partitionMap == null) {
+    		// no; go ahead and compute it
+            this.partitionMap = computePartitionMap();
         }
-        reporter.stop();
-        return partitionMap;
+        return this.partitionMap;
     }
+
+	/**
+	 * Computes the partition map, i.e., the mapping from certificates
+	 * to sets of graph elements having those certificates. 
+	 */
+	private PartitionMap computePartitionMap() {
+        reporter.start(GET_PARTITION_MAP);
+		PartitionMap result = new PartitionMap();
+		// invert the certificate map
+		reporter.stop();
+		Map<Element,Object> certMap = getCertificateMap();
+		reporter.restart(GET_PARTITION_MAP);
+		for (Map.Entry<Element,Object> certEntry: certMap.entrySet()) {
+		    Element key = certEntry.getKey();
+		    Object certificate = certEntry.getValue();
+		    result.add(certificate, key);
+		}
+        reporter.stop();
+		return result;
+	}
 
     /**
      * The graph certificate is computed as the sum of the node and edge certificates.
@@ -452,19 +458,7 @@ public class Bisimulator implements CertificateStrategy {
         reporter.start(GET_GRAPH_CERTIFICATE);
         // check if the certificate has been computed before
         if (graphCertificate == null) {
-//            // get it from the hash code of the certificate map
-//            long certificate = 0;
-//            Map certMap = getCertificateMap();
-//            // certificate = certMap.values().hashCode();
-//            Iterator certEntryIter = certMap.entrySet().iterator();
-//            while (certEntryIter.hasNext()) {
-//                Map.Entry certEntry = (Map.Entry) certEntryIter.next();
-//                certificate += certEntry.getValue().hashCode();
-//            }
             computeCertificates();
-//            graphCertificate = new Long(certificateValue);
-            // if the graph is fixed, the certificate won't change any more
-            // so we can store the result
         }
         reporter.stop();
         // return the computed certificate
@@ -544,6 +538,7 @@ public class Bisimulator implements CertificateStrategy {
         // CertificateNode must be overridden
         if (node instanceof ValueNode) {
             certNode = new CertificateNode(nodeCertList) {
+            	@Override
                 protected int computeNewValue() {
                     // only take the last 8 bits of the operation-hashcode
                     int operationHashCode = ((ValueNode) node).getOperation().hashCode() & 127;
@@ -676,7 +671,7 @@ public class Bisimulator implements CertificateStrategy {
     /** The pre-computed crtificate maps, if any. */
     private Map<Element,Object> certificateMap;
     /** The pre-computed partition map, if any. */
-    private Map<Object,Object> partitionMap;
+    private PartitionMap partitionMap;
     /**
      * The number of pre-computed node partitions.
      */

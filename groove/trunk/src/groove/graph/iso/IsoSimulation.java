@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IsoSimulation.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: IsoSimulation.java,v 1.2 2007-03-20 23:02:57 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -34,7 +34,7 @@ import java.util.Map;
  * into play in the construction and refinement of the simulation..
  * The graphs' partition maps are used to match elements.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class IsoSimulation extends InjectiveSimulation {
     public IsoSimulation(InjectiveMorphism morph) {
@@ -107,7 +107,7 @@ public class IsoSimulation extends InjectiveSimulation {
      * Mapping from certificates to codomain element partitions.
      * The images are either {@link Element}s or {@link Collection}s.
      */
-    private Map<Object,Object> codPartitionMap;
+    private PartitionMap codPartitionMap;
     
     static final Reporter reporter = DefaultIsoChecker.reporter;
     static final int ISO_CERT_COMPUTE = reporter.newMethod("Sim-nested certificate computation");

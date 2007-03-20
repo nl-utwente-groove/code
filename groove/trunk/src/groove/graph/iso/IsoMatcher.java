@@ -1,5 +1,5 @@
 /*
- * $Id: IsoMatcher.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: IsoMatcher.java,v 1.2 2007-03-20 23:02:57 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -7,7 +7,6 @@ import groove.graph.Element;
 import groove.graph.InjectiveMorphism;
 import groove.graph.match.DefaultMatcher;
 import groove.graph.match.SearchPlanFactory;
-import groove.util.Reporter;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,11 +19,13 @@ import java.util.Set;
  * into play in the construction and refinement of the simulation..
  * The graphs' partition maps are used to match elements.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class IsoMatcher extends DefaultMatcher {
+	/** The factory for creating search plans. */
 	private static final IsoSearchPlanFactory searchPlanFactory = new IsoSearchPlanFactory();
 	
+	/** Constructs a matcher based on a given injective morphism. */
     public IsoMatcher(InjectiveMorphism morph) {
         super(morph);
     }
@@ -44,17 +45,29 @@ public class IsoMatcher extends DefaultMatcher {
 		return getCodPartitionMap().get(getDomCertificateMap().get(key));
 	}
 	
-	protected Map<Object, Object> getCodPartitionMap() {
+	/** 
+	 * Returns the certificate partition map of the codomain.
+	 * Lazily creates the map first. 
+	 */
+	protected PartitionMap getCodPartitionMap() {
 		if (codPartitionMap == null) {
 			codPartitionMap = computeCodPartitionMap();
 		}
 		return codPartitionMap;
 	}
 	
-	protected Map<Object,Object> computeCodPartitionMap() {
+	/**
+	 * Computes the certificate partition map of the codomain,
+	 * by querying the codomain's certificate strategy.
+	 */
+	protected PartitionMap computeCodPartitionMap() {
 		return cod().getCertificateStrategy().getPartitionMap();
 	}
 
+	/** 
+	 * Returns the map from domain elements to certificates.
+	 * Lazily creates the map first. 
+	 */
 	protected Map<Element, Object> getDomCertificateMap() {
 		if (domCertificateMap == null) {
 			domCertificateMap = computeDomCertificateMap();
@@ -62,58 +75,23 @@ public class IsoMatcher extends DefaultMatcher {
 		return domCertificateMap;
 	}
 	
+	/**
+	 * Computes the certificate map of the domain,
+	 * by querying the codomain's certificate strategy.
+	 */
 	protected Map<Element,Object> computeDomCertificateMap() {
 		return dom().getCertificateStrategy().getCertificateMap();
 	}
 
+	/**
+	 * Returns the set of elements already used as images in the matching.
+	 */
     public Set<Element> getUsedImages() {
     	if (usedImages == null) {
     		usedImages = new HashSet<Element>();
     	}
     	return usedImages;
     }
-
-//    /**
-//     * This implementation adds a given image to the used images, while testing if the image was
-//     * already there. If it was already there, this means injectivity is violated
-//     * and hence an {@link IllegalStateException} is thrown.
-//     */
-//    protected void notifySingular(ImageSet<?> changed) {
-//        if (!getUsedImages().add(changed.getSingular())) {
-//            throw nonInjective;
-//        }
-//        super.notifySingular(changed);
-//    }
-//    
-//    @Override
-//	public boolean addNode(Node key, Node image) {
-//    	boolean result = !getUsedImages().contains(image) && super.addNode(key, image);
-//    	if (result) {
-//    		getUsedImages().add(image);
-//    	}
-//    	return result;
-//	}
-//    
-//    @Override
-//	public boolean addEdge(Edge key, Edge image) {
-//    	boolean result = !getUsedImages().contains(image) && super.addEdge(key, image);
-//    	if (result) {
-//    		getUsedImages().add(image);
-//    	}
-//    	return result;
-//	}
-////
-////	@Override
-////	public void removeNode(Node key) {
-////		getUsedImages().remove(getSingularMap().getNode(key));
-////		super.removeNode(key);
-////	}
-//
-//	@Override
-//	public void removeEdge(Edge key) {
-//		getUsedImages().remove(getSingularMap().getEdge(key));
-//		super.removeEdge(key);
-//	}
 
 	/** The set of images used as singular image. */
     private Set<Element> usedImages;
@@ -126,8 +104,5 @@ public class IsoMatcher extends DefaultMatcher {
      * Mapping from certificates to codomain element partitions.
      * The images are either {@link Element}s or {@link Collection}s.
      */
-    private Map<Object,Object> codPartitionMap;
-    
-    static final Reporter reporter = DefaultIsoChecker.reporter;
-    static final int ISO_CERT_COMPUTE = reporter.newMethod("Sim-nested certificate computation");
+    private PartitionMap codPartitionMap;
 }
