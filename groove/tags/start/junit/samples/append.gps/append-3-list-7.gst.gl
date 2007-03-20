@@ -1,0 +1,26 @@
+# Layout information for E:\Eclipse\groove\samples\append.gps\append-3-list-7.gst
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+n n143 195 66 51 34 
+e n143 n129 "caller" 319 360 226 89 103 166 11
+n n129 89 157 29 18 
+n n125 653 213 19 18 
+n n140 561 211 22 18 
+n n137 267 155 18 18 
+n n133 153 235 15 18 
+n n126 456 154 18 18 
+n n134 537 155 18 18 
+e n130 n127 "this" 352 364 77 77 193 166 11
+n n138 59 226 51 34 
+n n136 307 216 15 18 
+n n135 702 154 18 18 
+n n139 399 212 15 18 
+n n127 184 157 18 18 
+n n132 367 156 18 18 
+n n131 236 233 15 18 
+n n144 623 153 18 18 
+n n141 728 216 22 18 
+n n142 144 75 15 18 
+n n128 480 209 22 18 
+n n130 51 66 53 34 
