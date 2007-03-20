@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
+ * $Id: TypeDiscoverer.java,v 1.2 2007-03-20 18:22:05 rensink Exp $
  */
 package groove.util;
 
@@ -23,11 +23,11 @@ import groove.graph.DefaultLabel;
 import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
-import groove.graph.GeneralGraph;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeSetEdgeSetGraph;
 import groove.rel.RegExprGraph;
 import groove.rel.VarGraph;
 import groove.trans.DefaultNAC;
@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-20 18:22:05 $
  */
 public class TypeDiscoverer {
 	public static final String TYPE_EXTENSION = ".type";
@@ -228,7 +228,7 @@ public class TypeDiscoverer {
 //            exc.printStackTrace();
 //        }
         GraphResult deleted;
-		Graph typeStartGraph = new GeneralGraph(grammar.getStartGraph());
+		Graph typeStartGraph = new NodeSetEdgeSetGraph(grammar.getStartGraph());
 		GraphCalculator calculator = new DefaultGraphCalculator(
 				introduceSystem, typeStartGraph);
 		GraphResult introduced = calculator.getMax();

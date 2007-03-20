@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
+ * $Id: AspectGraph.java,v 1.2 2007-03-20 18:21:36 rensink Exp $
  */
 package groove.graph.aspects;
 
@@ -25,7 +25,6 @@ import java.util.Set;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
-import groove.graph.GeneralGraph;
 import groove.graph.Graph;
 import groove.graph.GraphFormatException;
 import groove.graph.GraphInfo;
@@ -33,6 +32,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.NodeSetEdgeSetGraph;
 import groove.util.Groove;
 
 /**
@@ -42,7 +42,7 @@ import groove.util.Groove;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectGraph extends GeneralGraph {
+public class AspectGraph extends NodeSetEdgeSetGraph {
 	/** The singleton aspect parser. */
 	private static AspectParser parser = AspectParser.getInstance();
 	
@@ -353,12 +353,13 @@ public class AspectGraph extends GeneralGraph {
 	 * @see #toPlainGraph()
 	 */
 	protected Graph createPlainGraph() {
-		return new GeneralGraph();
+		return new NodeSetEdgeSetGraph();
 	}
 
 	/**
 	 * Factory method for an <code>AspectNode</code>.
 	 */
+	@Override
 	public AspectNode createNode() {
 		return new AspectNode(getNodeCounter().getNumber());
 	}
