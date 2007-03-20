@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLModelChecker.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
+ * $Id: CTLModelChecker.java,v 1.2 2007-03-20 12:30:13 kastenberg Exp $
  */
 package groove.verify;
 
@@ -31,7 +31,6 @@ import groove.trans.Rule;
 import groove.util.CommandLineTool;
 import groove.util.ExprFormatException;
 import groove.util.Generator;
-import groove.util.Generator.ExploreOption;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -55,7 +54,7 @@ import java.util.Set;
  * Command-line tool directing the model checking process.
  *  
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-20 12:30:13 $
  */
 public class CTLModelChecker extends CommandLineTool {
 
