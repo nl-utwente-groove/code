@@ -34,7 +34,7 @@ import groove.util.Reporter;
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy},
  * and if that fails, attempts to create an {@link groove.graph.InjectiveMorphism}. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -220,11 +220,11 @@ public class DefaultIsoChecker implements IsoChecker {
 	 * Tests if the elements of a graph have all different certificates.
 	 * If this holds, then {@link #areCertEqual(Graph, Graph)} can be
 	 * called to check for isomorphism.
-	 * @param dom the graph to be tested
-	 * @return <code>true</code> if <code>dom</code> has distinct certificates
+	 * @param graph the graph to be tested
+	 * @return <code>true</code> if <code>graph</code> has distinct certificates
 	 */
-	private boolean hasDistinctCerts(Graph dom) {
-		return getNodePartitionCount(dom) == dom.nodeCount();
+	private boolean hasDistinctCerts(Graph graph) {
+		return graph.getCertificateStrategy().getPartitionMap().isOneToOne();
 	}
 
 	/**
@@ -247,7 +247,7 @@ public class DefaultIsoChecker implements IsoChecker {
 		// the certificates uniquely identify the dom elements;
 		// it suffices to test if this gives rise to a consistent one-to-one node map
 		Map<Element,Object> domCertificateMap = dom.getCertificateStrategy().getCertificateMap();
-		Map<Object,Object> codPartitionMap = cod.getCertificateStrategy().getPartitionMap();
+		PartitionMap codPartitionMap = cod.getCertificateStrategy().getPartitionMap();
 		reporter.restart(ISO_CHECK);
 		reporter.restart(ISO_CERT_CHECK);
 		result = true;
