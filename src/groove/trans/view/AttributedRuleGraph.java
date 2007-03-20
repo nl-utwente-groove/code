@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributedRuleGraph.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: AttributedRuleGraph.java,v 1.2 2007-03-20 23:04:46 rensink Exp $
  */
 package groove.trans.view;
 
@@ -23,7 +23,6 @@ import groove.graph.Graph;
 import groove.graph.GraphFormatException;
 import groove.graph.GraphShape;
 import groove.graph.Label;
-import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.AlgebraConstants;
@@ -40,7 +39,7 @@ import groove.trans.RuleFactory;
  * NACs for attributed graphs.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:57 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-20 23:04:46 $
  */
 public class AttributedRuleGraph extends RuleGraph {
     /**
@@ -66,14 +65,6 @@ public class AttributedRuleGraph extends RuleGraph {
     public AttributedRuleGraph(GraphShape graph, NameLabel name, int priority, RuleFactory ruleFactory) throws GraphFormatException {
 		super(graph, name, priority, ruleFactory);
 	}
-
-    /* (non-Javadoc)
-     * @see groove.trans.view.RuleGraph#createRule(groove.graph.Morphism, groove.trans.NameLabel, int)
-     */
-	@Override
-    protected Rule createRule(Morphism ruleMorphism, NameLabel name, int priority) {
-        return getRuleFactory().createRule(ruleMorphism, name, priority);
-    }
 
 	/* (non-Javadoc)
 	 * @see groove.trans.view.RuleGraph#addNode(groove.graph.Graph, groove.trans.view.RuleNode)
