@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectRuleView.java,v 1.1.1.1 2007-03-20 10:05:21 kastenberg Exp $
+ * $Id: AspectRuleView.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
  */
 
 package groove.trans.view;
@@ -76,7 +76,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class AspectRuleView implements RuleView {
 //    /** Label text for merges (merger edges and merge embargoes) */

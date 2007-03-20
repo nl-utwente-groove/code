@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeSetEdgeSetGraph.java,v 1.1.1.1 2007-03-20 10:05:36 kastenberg Exp $
+ * $Id: NodeSetEdgeSetGraph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * Graph implementation based on distinct sets of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class NodeSetEdgeSetGraph
     extends AbstractGraph

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AttributeScheduleFactory.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: AttributeScheduleFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
  */
 
 package groove.trans;
@@ -44,7 +44,7 @@ import java.util.Set;
  * that may not be matched in the source graph.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:19 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
  */
 public class AttributeScheduleFactory extends IndegreeScheduleFactory {
 	/** A label with the empty string as text. */

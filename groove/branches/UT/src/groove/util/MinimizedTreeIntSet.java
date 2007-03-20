@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MinimizedTreeIntSet.java,v 1.1.1.1 2007-03-20 10:05:18 kastenberg Exp $
+ * $Id: MinimizedTreeIntSet.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
  */
 package groove.util;
 
@@ -22,7 +22,7 @@ package groove.util;
  * The tree uses the bit representation of the <code>int</code>s as the basis for branching.
  * The representation tries to be clever by not branching on shared bits.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:18 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:59 $
  */
 final public class MinimizedTreeIntSet implements IntSet {
 	/**

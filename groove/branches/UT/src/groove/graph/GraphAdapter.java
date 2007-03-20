@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphAdapter.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: GraphAdapter.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
  * An abstract implementation of the <tt>GraphListener</tt> interface 
  * which does nothing at each method.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 abstract public class GraphAdapter implements GraphListener {
 	/** Provides an empty default implementation. */

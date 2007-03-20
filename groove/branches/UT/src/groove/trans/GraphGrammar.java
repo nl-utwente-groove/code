@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: GraphGrammar.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
  */
 package groove.trans;
 
@@ -31,7 +31,7 @@ import java.util.Properties;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:19 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:56 $
  */
 public class GraphGrammar extends RuleSystem {
     /**

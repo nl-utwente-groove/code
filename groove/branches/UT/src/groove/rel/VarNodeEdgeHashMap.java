@@ -1,5 +1,5 @@
 /*
- * $Id: VarNodeEdgeHashMap.java,v 1.1.1.1 2007-03-20 10:05:24 kastenberg Exp $
+ * $Id: VarNodeEdgeHashMap.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
  */
 package groove.rel;
 
@@ -16,7 +16,7 @@ import java.util.Map;
  * Implementation of the {@link VarNodeEdgeMap} interface where
  * the variable mapping part is given by a separater instance variable.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements VarNodeEdgeMap {
     /**

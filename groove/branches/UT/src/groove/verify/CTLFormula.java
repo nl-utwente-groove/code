@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: CTLFormula.java,v 1.1.1.1 2007-03-20 10:05:16 kastenberg Exp $
+ * $Id: CTLFormula.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
  */
 
 package groove.verify;
@@ -34,7 +34,7 @@ import groove.verify.CTLStarFormula.Until;
 /**
  * Specific class for parsing CTL formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:16 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
  */
 public class CTLFormula extends CTLStarFormula {
 

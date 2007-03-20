@@ -1,5 +1,5 @@
 /*
- * $Id: EdgeAnchorFactory.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: EdgeAnchorFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
  */
 package groove.trans;
 
@@ -17,7 +17,7 @@ import groove.rel.VarEdge;
  * This implementation does not try to save space by minimizing the size of the anchor,
  * but tries to save time by selecting the entire non-reader part of the LHS.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class EdgeAnchorFactory implements AnchorFactory {
 	/**

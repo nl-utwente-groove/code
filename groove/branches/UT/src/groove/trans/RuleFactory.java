@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleFactory.java,v 1.1.1.1 2007-03-20 10:05:20 kastenberg Exp $
+ * $Id: RuleFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
  */
 package groove.trans;
 
@@ -27,7 +27,7 @@ import groove.trans.view.RuleView;
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:20 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
  */
 public interface RuleFactory {
 	/**

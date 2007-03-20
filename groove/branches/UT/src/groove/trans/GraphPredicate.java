@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphPredicate.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: GraphPredicate.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
  */
 package groove.trans;
 
@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * Interface for predicates over graphs.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface GraphPredicate extends GraphTest {    
     /**

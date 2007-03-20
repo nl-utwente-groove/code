@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractNestedIterator.java,v 1.1.1.1 2007-03-20 10:05:17 kastenberg Exp $
+ * $Id: AbstractNestedIterator.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.NoSuchElementException;
  * The resulting iterator supports removal of elements if the inner
  * iterators do so.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 abstract public class AbstractNestedIterator<T> implements Iterator<T> {
     public void remove() {

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultEdge.java,v 1.1.1.1 2007-03-20 10:05:33 kastenberg Exp $
+ * $Id: DefaultEdge.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import java.util.Map;
  * Default implementation of an (immutable) graph edge, as a triple consisting of
  * source and target nodes and an arbitrary label.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:33 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:40 $
  */
 public class DefaultEdge extends AbstractBinaryEdge {
 	/**

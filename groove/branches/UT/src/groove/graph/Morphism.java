@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Morphism.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: Morphism.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import java.util.Iterator;
  * Interface of a partial graph morphism.
  * Extends <tt>NodeEdgeMap</tt> with a fixed source and target graph.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:35 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
  */
 public interface Morphism extends NodeEdgeMap, GraphListener {
     /**

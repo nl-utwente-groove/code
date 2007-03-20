@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BindingGxl.java,v 1.1.1.1 2007-03-20 10:05:25 kastenberg Exp $
+ * $Id: BindingGxl.java,v 1.1.1.2 2007-03-20 10:42:50 kastenberg Exp $
  */
 package groove.io;
 
@@ -44,7 +44,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class BindingGxl extends AbstractXml {
     /** Attribute name for node and edge ids */

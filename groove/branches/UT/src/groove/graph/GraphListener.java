@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphListener.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: GraphListener.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
 /**
  * Interface for classes that are to be notified of changes in a graph.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:35 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
  */
 public interface GraphListener extends GraphShapeListener {
     /**

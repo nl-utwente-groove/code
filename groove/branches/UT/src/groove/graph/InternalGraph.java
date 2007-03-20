@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: InternalGraph.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: InternalGraph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import java.util.Collection;
  * avoid some of the consistency checks. Only for package
  * internal uses.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface InternalGraph extends Graph {
     /**

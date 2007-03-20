@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultLabelFlag.java,v 1.1.1.1 2007-03-20 10:05:34 kastenberg Exp $
+ * $Id: DefaultLabelFlag.java,v 1.1.1.2 2007-03-20 10:42:41 kastenberg Exp $
  */
 package groove.graph;
 
@@ -22,7 +22,7 @@ package groove.graph;
  * with a {@link DefaultLabel}.
  * Instances are essentially pairs consisting of a node and a label.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  * @deprecated use {@link DefaultFlag} instead
  */
 @Deprecated

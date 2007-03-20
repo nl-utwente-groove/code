@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractTestOutcome.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: AbstractTestOutcome.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
  */
 package groove.trans;
 
@@ -32,7 +32,7 @@ import java.util.Set;
  * successful and should therefore be included in the {@link #getSuccessKeys()}.
  * A hook is provided in the form of the callback method {@link #isSuccessKey(GraphTestOutcome)}. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 abstract public class AbstractTestOutcome<Mine,Nested> extends HashMap<Mine,GraphTestOutcome<Nested,Mine>> implements GraphTestOutcome<Mine,Nested> {
     /**

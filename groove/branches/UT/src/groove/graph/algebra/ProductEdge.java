@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ProductEdge.java,v 1.1.1.1 2007-03-20 10:05:37 kastenberg Exp $
+ * $Id: ProductEdge.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
  */
 
 package groove.graph.algebra;
@@ -30,7 +30,7 @@ import groove.graph.Node;
  * and the target-node should be an instance of {@link groove.graph.algebra.ValueNode}.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class ProductEdge extends DefaultEdge {
 

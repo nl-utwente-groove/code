@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ModelChecker.java,v 1.1.1.1 2007-03-20 10:05:15 kastenberg Exp $
+ * $Id: ModelChecker.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
  */
 package groove;
 
@@ -20,7 +20,7 @@ package groove;
  * Wrapper class for the model checker.
  * @see groove.verify.CTLModelChecker
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:15 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
  */
 public class ModelChecker {
     /**

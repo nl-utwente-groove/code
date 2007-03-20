@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.1.1.1 2007-03-20 10:05:29 kastenberg Exp $
+ * $Id: Options.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
  */
 package groove.gui;
 
@@ -29,7 +29,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class Options {
     /** Edit menu name */

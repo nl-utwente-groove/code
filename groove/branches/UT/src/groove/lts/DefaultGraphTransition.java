@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.1.1.1 2007-03-20 10:05:24 kastenberg Exp $
+ * $Id: DefaultGraphTransition.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
  */
 package groove.lts;
 
@@ -35,7 +35,7 @@ import groove.trans.RuleEvent;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:24 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:51 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphOutTransition, GraphTransition {
     /** The total number of anchor images created. */

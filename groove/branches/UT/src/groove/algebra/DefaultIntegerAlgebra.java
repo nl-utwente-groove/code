@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIntegerAlgebra.java,v 1.1.1.1 2007-03-20 10:05:37 kastenberg Exp $
+ * $Id: DefaultIntegerAlgebra.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
  */
 
 package groove.algebra;
@@ -28,7 +28,7 @@ import java.util.List;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:37 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
  */
 public class DefaultIntegerAlgebra extends Algebra {
 

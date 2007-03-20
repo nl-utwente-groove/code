@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributedSPORuleFactory.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: AttributedSPORuleFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
  */
 package groove.trans;
 
@@ -33,7 +33,7 @@ import groove.trans.view.RuleGraph;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:19 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
  */
 public class AttributedSPORuleFactory extends DefaultRuleFactory {
 	/** The singleton instance of {@link AttributedSPORuleFactory}. */

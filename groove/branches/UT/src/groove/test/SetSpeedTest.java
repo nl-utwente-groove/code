@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * Class to test the various implementations of {@link groove.util.IntSet} regarding speed.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class SetSpeedTest {
 	static private final int SMALL_SAMPLE_SIZE = 100;

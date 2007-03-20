@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJModel.java,v 1.1.1.1 2007-03-20 10:05:33 kastenberg Exp $
+ * $Id: RuleJModel.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
  */
 package groove.gui.jgraph;
 
@@ -44,7 +44,7 @@ import org.jgraph.graph.GraphConstants;
  * to improve (automatic) layout.
  * <p>NOTE: the JModel-GraphJModel-RuleJModel structure is up for revision.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class RuleJModel extends GraphJModel {
     // attribute arrays

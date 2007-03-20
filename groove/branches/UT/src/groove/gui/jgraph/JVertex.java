@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertex.java,v 1.1.1.1 2007-03-20 10:05:32 kastenberg Exp $
+ * $Id: JVertex.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
  */
 package groove.gui.jgraph;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
  * JGraph vertex with a single port, and a fixed set of labels as a user object (through
  * {@link groove.gui.jgraph.JUserObject}).
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 abstract public class JVertex extends DefaultGraphCell implements JCell {
 	/** HTML tag to make text bold. */

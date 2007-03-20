@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraph.java,v 1.1.1.1 2007-03-20 10:05:34 kastenberg Exp $
+ * $Id: DefaultGraph.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
  */
 package groove.graph;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * Implementation of graph.Graph which only supports nodes and directed binary edges.
  * The implementation is optimized towards a constant performance of <tt>outEdgeSet()</tt>
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:34 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:40 $
  */
 public class DefaultGraph extends AbstractGraph {
     /**

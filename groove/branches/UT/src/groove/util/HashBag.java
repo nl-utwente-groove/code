@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HashBag.java,v 1.1.1.1 2007-03-20 10:05:18 kastenberg Exp $
+ * $Id: HashBag.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * A bag (= multiset) of elements, based on an underlying hash map.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<T> {
     /**

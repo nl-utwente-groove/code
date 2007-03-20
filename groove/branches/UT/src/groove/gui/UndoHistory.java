@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UndoHistory.java,v 1.1.1.1 2007-03-20 10:05:31 kastenberg Exp $
+ * $Id: UndoHistory.java,v 1.1.1.2 2007-03-20 10:42:45 kastenberg Exp $
  */
 package groove.gui;
 
@@ -32,7 +32,7 @@ import javax.swing.Action;
 
 /**
  * Manager of the undo history.
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:31 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:45 $
  * @author Arend Rensink
  */
 class UndoHistory implements SimulationListener {

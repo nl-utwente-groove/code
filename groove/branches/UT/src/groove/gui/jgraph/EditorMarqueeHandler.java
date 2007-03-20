@@ -1,5 +1,5 @@
 /*
- * $Id: EditorMarqueeHandler.java,v 1.1.1.1 2007-03-20 10:05:31 kastenberg Exp $
+ * $Id: EditorMarqueeHandler.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
  *
  * Derived from: @(#)GPGraph.java	1.0 1/1/02
  *
@@ -36,7 +36,7 @@ import org.jgraph.graph.VertexView;
  * different implementations of those actions. Lobotomized from jgrappad.
  * 
  * @author Gaudenz Alder; adapted by Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:31 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:46 $
  */
 public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
     static private final Color ADDING_EDGE_COLOR = Color.black;

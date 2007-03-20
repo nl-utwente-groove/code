@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GgxGrammar.java,v 1.1.1.1 2007-03-20 10:05:25 kastenberg Exp $
+ * $Id: GgxGrammar.java,v 1.1.1.2 2007-03-20 10:42:50 kastenberg Exp $
  */
 package groove.io;
 
@@ -49,7 +49,7 @@ import org.w3c.dom.Document;
  * GGX is the "proprietary" AGG format.
  * @deprecated experimental, not supported
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class GgxGrammar implements XmlGrammar {
     // DOM required definitions; current values are dummies

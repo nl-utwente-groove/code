@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanFactory.java,v 1.1.1.1 2007-03-20 10:05:36 kastenberg Exp $
+ * $Id: SearchPlanFactory.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
  */
 package groove.graph.match;
 
@@ -25,7 +25,7 @@ import groove.graph.Graph;
  * graph elements for a given graph, in the order in which they should be
  * matched to minimized backtracking.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface SearchPlanFactory {
     /** 

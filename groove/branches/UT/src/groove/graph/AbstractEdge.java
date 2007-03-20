@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractEdge.java,v 1.1.1.1 2007-03-20 10:05:33 kastenberg Exp $
+ * $Id: AbstractEdge.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
  */
 package groove.graph;
 
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public abstract class AbstractEdge implements Edge {
     /**

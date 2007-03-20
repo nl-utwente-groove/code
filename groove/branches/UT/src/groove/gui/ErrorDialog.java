@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ErrorDialog.java,v 1.1.1.1 2007-03-20 10:05:29 kastenberg Exp $
+ * $Id: ErrorDialog.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
  */
 package groove.gui;
 
@@ -38,7 +38,7 @@ import javax.swing.border.EmptyBorder;
 /**
  * Implements a dialog with the ability to show details about the error.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class ErrorDialog extends JDialog {
 	/** Dialog title. */

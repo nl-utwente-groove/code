@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: TypeDiscoverer.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
  */
 package groove.util;
 
@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:19 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
  */
 public class TypeDiscoverer {
 	public static final String TYPE_EXTENSION = ".type";

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: FilterIterator.java,v 1.1.1.1 2007-03-20 10:05:17 kastenberg Exp $
+ * $Id: FilterIterator.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
  */
 package groove.util;
 
@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
  * Iterator constructed by filtering elements from some existing iterator.
  * The <i>inner</i> iterator is passed in at construction.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public abstract class FilterIterator<T> implements Iterator<T> {
     /**
