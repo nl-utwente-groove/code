@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: GraphTest.java,v 1.2 2007-03-20 23:05:46 rensink Exp $
  */
 package groove.test.graph;
 
@@ -41,6 +41,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
+import groove.graph.iso.PartitionMap;
 import groove.io.ExtensionFilter;
 import groove.io.UntypedGxl;
 import groove.io.Xml;
@@ -50,7 +51,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -246,29 +247,21 @@ public class GraphTest extends TestCase {
 
     final public void testGetPartitionMap() {
         // iso-0
-        Map<?,?> partitionMap = isoGraph[0].getCertificateStrategy().getPartitionMap();
-        Collection<?> elements = getPartitionElements(partitionMap.values());
+        PartitionMap partitionMap = isoGraph[0].getCertificateStrategy().getPartitionMap();
         int elementCount = isoGraph[0].nodeCount() + isoGraph[0].edgeCount();
-        assertEquals(elementCount, elements.size());
-        assertEquals(elementCount, partitionMap.values().size());
+        assertEquals(elementCount, partitionMap.size());
         // iso-1
         partitionMap = isoGraph[1].getCertificateStrategy().getPartitionMap();
-        elements = getPartitionElements(partitionMap.values());
         elementCount = isoGraph[1].nodeCount() + isoGraph[1].edgeCount();
-        assertEquals(elementCount, elements.size());
-        assertEquals(elementCount - 2, partitionMap.values().size());
+        assertEquals(elementCount - 2, partitionMap.size());
         // iso-2
         partitionMap = isoGraph[2].getCertificateStrategy().getPartitionMap();
-        elements = getPartitionElements(partitionMap.values());
         elementCount = isoGraph[2].nodeCount() + isoGraph[2].edgeCount();
-        assertEquals(elementCount, elements.size());
-        assertEquals(elementCount, partitionMap.values().size());
+        assertEquals(elementCount, partitionMap.size());
         // iso-3
         partitionMap = isoGraph[3].getCertificateStrategy().getPartitionMap();
-        elements = getPartitionElements(partitionMap.values());
         elementCount = isoGraph[3].nodeCount() + isoGraph[3].edgeCount();
-        assertEquals(elementCount, elements.size());
-        assertTrue((elementCount - 5) >= partitionMap.values().size());
+        assertTrue((elementCount - 5) >= partitionMap.size());
     }
     
     private Collection<Object> getPartitionElements(Collection<?> values) {
