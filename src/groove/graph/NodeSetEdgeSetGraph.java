@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeSetEdgeSetGraph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: NodeSetEdgeSetGraph.java,v 1.2 2007-03-20 18:22:03 rensink Exp $
  */
 package groove.graph;
 
@@ -25,115 +25,11 @@ import java.util.Set;
 /**
  * Graph implementation based on distinct sets of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class NodeSetEdgeSetGraph
     extends AbstractGraph
     implements InternalGraph {
-    /**
-     * Extension of <tt>Set</tt> that invokes the notify methods of the graph
-     * when elements are added or deleted
-     */
-    protected class NotifySet<E extends Element> extends HashSet<E> {
-        /**
-         * An iterator over the underlying hash set that extends <tt>remove()</tt>
-         * by invoking the graph listeners.
-         */
-        class NotifySetIterator implements Iterator<E> {
-            public boolean hasNext() {
-                return setIterator.hasNext();
-            }
-            
-            public E next() {
-                latest = setIterator.next();
-                return latest;
-            }
-            
-            public void remove() {
-                setIterator.remove();
-                if (latest instanceof Node) {
-                	fireRemoveNode((Node) latest);
-                } else {
-                	fireRemoveEdge((Edge) latest);
-                }
-            }
-            
-            private final Iterator<E> setIterator = NotifySet.super.iterator();
-            E latest;
-        }
-        
-        public NotifySet() {
-        	// we need an explicit empty constructor
-        }
-        
-        /**
-         * Initializes the set <i>without</i> notification.
-         */
-        public NotifySet(Set<? extends E> init) {
-        	for (E elem: init) {
-                super.add(elem);
-            }
-        }
-        
-        /**
-         * Overwrites the method from <tt>Set</tt> to take care
-         * of proper notification.
-         */
-        public Iterator<E> iterator() {
-            return new NotifySetIterator();
-        }
-        
-        /**
-         * Overwrites the method from <tt>Set</tt> to ensure
-         * proper observer notification in all cases. 
-         * @require <tt>elem instanceof Element</tt>
-         */
-        public final boolean add(E elem) {
-            if (super.add(elem)) {
-            	if (elem instanceof Node) {
-            		fireAddNode((Node) elem);
-            	} else {
-            		fireAddEdge((Edge) elem);
-            	}
-                return true;
-            } else
-                return false;
-        }
-
-        public final boolean addAll(Collection<? extends E> elemSet) {
-            boolean added = false;
-            for (E elem: elemSet) {
-                added |= add(elem);
-            }
-            return added;
-        }
-        
-        /**
-         * Overwrites the method from <tt>Set</tt> to ensure
-         * proper observer notification in all cases. 
-         * @require <tt>elem instanceof Element</tt>
-         */
-        public final boolean remove(Object elem) {
-            if (super.remove(elem)) {
-            	if (elem instanceof Node) {
-            		fireRemoveNode((Node) elem);
-            	} else {
-            		fireRemoveEdge((Edge) elem);
-            	}
-                return true;
-            } else
-                return false;
-        }
-
-        public final boolean removeAll(Collection<?> elemSet) {
-            boolean removed = false;
-            for (Object elem: elemSet) {
-                removed |= remove(elem);
-            }
-            return removed;
-        }
-    }
-
     /**
      * Constructs a protytpe object of this class, to be used as a factory
      * for new (default) graphs.
@@ -245,61 +141,60 @@ public class NodeSetEdgeSetGraph
         }
     }
 
+    @Override
     public boolean removeNodeSet(Collection<Node> nodeSet) {
+    	boolean result;
         reporter.start(REMOVE_NODE);
-        try {
-            // first remove edges that depend on a node to be removed
-            Iterator<Edge> edgeIter = graphEdgeSet.iterator();
-            while (edgeIter.hasNext()) {
-                Edge other = edgeIter.next();
-                boolean otherRemoved = false;
-                Node[] parts = other.ends();
-                for (int i = 0; !otherRemoved && i < parts.length; i++) {
-                    if (nodeSet.contains(parts[i])) {
-                        edgeIter.remove();
-                        otherRemoved = true;
-                    }
-                }
-            }
-            // now remove the nodes
-            return removeNodeSetWithoutCheck(nodeSet);
-        } finally {
-            reporter.stop();
-        }
+		// first remove edges that depend on a node to be removed
+		Iterator<Edge> edgeIter = graphEdgeSet.iterator();
+		while (edgeIter.hasNext()) {
+			Edge other = edgeIter.next();
+			boolean otherRemoved = false;
+			Node[] parts = other.ends();
+			for (int i = 0; !otherRemoved && i < parts.length; i++) {
+				if (nodeSet.contains(parts[i])) {
+					edgeIter.remove();
+					otherRemoved = true;
+				}
+			}
+		}
+		// now remove the nodes
+		result = removeNodeSetWithoutCheck(nodeSet);
+		reporter.stop();
+		return result;
     }
 
     // -------------------- PackageGraph methods ---------------------
 
     public boolean addEdgeWithoutCheck(Edge edge) {
+    	boolean result;
         reporter.start(ADD_EDGE);
-        try {
-            return graphEdgeSet.add(edge);
-            //        if (added)
-            //            notifyGraphListenersOfAdd((Edge) edge);
-        } finally {
-            reporter.stop();
-        }
+        result = graphEdgeSet.add(edge);
+        reporter.stop();
+        return result;
     }
 
+    @Override
     public boolean addEdgeSetWithoutCheck(Collection<Edge> edgeSet) {
         return graphEdgeSet.addAll(edgeSet);
     }
 
     public boolean removeNodeWithoutCheck(Node node) {
+    	boolean result;
         reporter.start(REMOVE_NODE);
-        try {
-            return graphNodeSet.remove(node);
-        } finally {
-            reporter.stop();
-        }
+        result = graphNodeSet.remove(node);
+        reporter.stop();
+        return result;
     }
 
+    @Override
     public boolean removeNodeSetWithoutCheck(Collection<Node> nodeSet) {
         return graphNodeSet.removeAll(nodeSet);
     }
 
     // ------------- general methods (see AbstractGraph) ----------
 
+    @Override
     public Graph clone() {
         reporter.start(CLONE);
         Graph result = new NodeSetEdgeSetGraph(this);
@@ -323,32 +218,212 @@ public class NodeSetEdgeSetGraph
      * Factory method for an empty node set of this graph.
      */
     protected Set<Node> createNodeSet() {
-        return new NotifySet<Node>();
+        return new NodeNotifySet();
     }
 
     /**
      * Factory method for an empty edge set of this graph.
      */
     protected Set<Edge> createEdgeSet() {
-        return new NotifySet<Edge>();
+        return new EdgeNotifySet();
     }
 
     /**
      * Factory method for a node set of this graph with initial elements.
      */
     protected Set<Node> createNodeSet(Set<? extends Node> nodeSet) {
-        return new NotifySet<Node>(nodeSet);
+        return new NodeNotifySet(nodeSet);
     }
 
     /**
      * Factory method for an edge set of this graph with initial elements.
      */
     protected Set<Edge> createEdgeSet(Set<? extends Edge> edgeSet) {
-        return new NotifySet<Edge>(edgeSet);
+        return new EdgeNotifySet(edgeSet);
     }
 
     /** The set of edges of this graph. */
     protected final Set<Edge> graphEdgeSet;
     /** The set of nodes of this graph. */
     protected final Set<Node> graphNodeSet;
+    
+    /**
+     * Extension of <tt>Set</tt> that invokes the notify methods of the graph
+     * when elements are added or deleted
+     */
+    abstract private class NotifySet<E extends Element> extends HashSet<E> {
+        /**
+         * An iterator over the underlying hash set that extends <tt>remove()</tt>
+         * by invoking the graph listeners.
+         */
+        class NotifySetIterator implements Iterator<E> {
+            public boolean hasNext() {
+                return setIterator.hasNext();
+            }
+            
+            public E next() {
+                latest = setIterator.next();
+                return latest;
+            }
+            
+            public void remove() {
+                setIterator.remove();
+                if (latest instanceof Node) {
+                	fireRemoveNode((Node) latest);
+                } else {
+                	fireRemoveEdge((Edge) latest);
+                }
+            }
+            
+            private final Iterator<E> setIterator = NotifySet.super.iterator();
+            E latest;
+        }
+        
+        public NotifySet() {
+        	// we need an explicit empty constructor
+        }
+        
+        /**
+         * Initializes the set <i>without</i> notification.
+         */
+        public NotifySet(Set<? extends E> init) {
+        	for (E elem: init) {
+                super.add(elem);
+            }
+        }
+        
+        /**
+         * Overwrites the method from <tt>Set</tt> to take care
+         * of proper notification.
+         */
+        @Override
+        public Iterator<E> iterator() {
+            return new NotifySetIterator();
+        }
+        
+        /**
+         * Overwrites the method from <tt>Set</tt> to ensure
+         * proper observer notification in all cases. 
+         * @require <tt>elem instanceof Element</tt>
+         */
+        @Override
+        public final boolean add(E elem) {
+            if (super.add(elem)) {
+            	if (elem instanceof Node) {
+            		fireAddNode((Node) elem);
+            	} else {
+            		fireAddEdge((Edge) elem);
+            	}
+                return true;
+            } else
+                return false;
+        }
+
+        @Override
+        public final boolean addAll(Collection<? extends E> elemSet) {
+            boolean added = false;
+            for (E elem: elemSet) {
+                added |= add(elem);
+            }
+            return added;
+        }
+        
+        /**
+         * Overwrites the method from <tt>Set</tt> to ensure
+         * proper observer notification in all cases. 
+         */
+        @Override
+        public final boolean remove(Object elem) {
+            if (super.remove(elem)) {
+            	if (elem instanceof Node) {
+            		fireRemoveNode((Node) elem);
+            	} else {
+            		fireRemoveEdge((Edge) elem);
+            	}
+                return true;
+            } else
+                return false;
+        }
+
+        @Override
+        public final boolean removeAll(Collection<?> elemSet) {
+            boolean removed = false;
+            for (Object elem: elemSet) {
+                removed |= remove(elem);
+            }
+            return removed;
+        }
+        
+        /** Callback method, invoked when an element has been added to the set. */
+        abstract protected void fireAdd(E elem);
+        /** Callback method, invoked when an element has been removed from the set. */
+        abstract protected void fireRemove(E elem);
+    }
+    
+    /**
+     * Class that delegates {@link #fireAdd(Element)} to {@link NodeSetEdgeSetGraph#fireAddNode(Node)}
+     * and {@link #fireRemove(Element)} to {@link NodeSetEdgeSetGraph#fireRemoveNode(Node)}
+     */
+    private class NodeNotifySet extends NotifySet<Node> {
+		/**
+		 * Constructs an empty set.
+		 */
+		public NodeNotifySet() {
+			super();
+		}
+
+		/**
+		 * Constructs a set initialised with a given set of elements, without
+		 * firing the notification.
+		 */
+		public NodeNotifySet(Set<? extends Node> init) {
+			super(init);
+		}
+
+		/** Delegates to {@link NodeSetEdgeSetGraph#fireAddNode(Node)} .*/
+		@Override
+		final protected void fireAdd(Node elem) {
+			fireAddNode(elem);
+		}
+
+		/** Delegates to {@link NodeSetEdgeSetGraph#fireRemoveNode(Node)} .*/
+		@Override
+		final protected void fireRemove(Node elem) {
+			fireRemoveNode(elem);
+		}
+    	
+    }
+    
+    /**
+     * Class that delegates {@link #fireAdd(Element)} to {@link NodeSetEdgeSetGraph#fireAddNode(Node)}
+     * and {@link #fireRemove(Element)} to {@link NodeSetEdgeSetGraph#fireRemoveNode(Node)}
+     */
+    private class EdgeNotifySet extends NotifySet<Edge> {
+		/**
+		 * Constructs an empty set.
+		 */
+		public EdgeNotifySet() {
+			super();
+		}
+
+		/**
+		 * Constructs a set initialised with a given set of elements, without
+		 * firing the notification.
+		 */
+		public EdgeNotifySet(Set<? extends Edge> init) {
+			super(init);
+		}
+
+		/** Delegates to {@link NodeSetEdgeSetGraph#fireAddEdge(Edge)} .*/
+		@Override
+		final protected void fireAdd(Edge elem) {
+			fireAddEdge(elem);
+		}
+
+		/** Delegates to {@link NodeSetEdgeSetGraph#fireRemoveEdge(Edge)} .*/
+		@Override
+		final protected void fireRemove(Edge elem) {
+			fireRemoveEdge(elem);
+		}
+    }
 }

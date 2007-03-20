@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleGraph.java,v 1.2 2007-03-20 14:02:14 rensink Exp $
+ * $Id: RuleGraph.java,v 1.3 2007-03-20 18:22:08 rensink Exp $
  */
 
 package groove.trans.view;
@@ -31,6 +31,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.NodeSetEdgeSetGraph;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
@@ -65,9 +66,9 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-public class RuleGraph extends groove.graph.GeneralGraph implements RuleView {
+public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
     /** Number of node/edge roles */
     static public final int NR_OF_ROLES = 4;
     /** Code for embargo nodes and edges. */

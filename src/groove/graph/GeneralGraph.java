@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GeneralGraph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: GeneralGraph.java,v 1.2 2007-03-20 18:22:03 rensink Exp $
  */
 package groove.graph;
 
@@ -28,8 +28,10 @@ import java.util.Set;
  * This graph changes the storage structure of DefaultGraph,
  * in an attempt to improve performance.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
+ * @deprecated Use {@link NodeSetEdgeSetGraph} instead
  */
+@Deprecated
 public class GeneralGraph extends AbstractGraph {
     private class ElementSet<E extends Element> extends SetView<E> {
         ElementSet(Class<E> type) {
@@ -37,6 +39,7 @@ public class GeneralGraph extends AbstractGraph {
             this.type = type;
         }
 
+        @Override
         public int size() {
             if (!isFixed())
                 return super.size();
@@ -45,6 +48,7 @@ public class GeneralGraph extends AbstractGraph {
             return size;
         }
 
+        @Override
         public boolean approves(Object obj) {
             return type.isInstance(obj);
         }
@@ -76,6 +80,7 @@ public class GeneralGraph extends AbstractGraph {
         }
     }
 
+    @Override
     public boolean containsElement(Element elem) {
         reporter.start(CONTAINS_ELEMENT);
         boolean result = elementSet.contains(elem);
@@ -85,6 +90,7 @@ public class GeneralGraph extends AbstractGraph {
 
     // ------------------------ OBJECT OVERRIDES -----------------------
 
+    @Override
     public Graph clone() {
         reporter.start(CLONE);
         Graph result = new GeneralGraph(this);
@@ -186,6 +192,7 @@ public class GeneralGraph extends AbstractGraph {
         return Collections.unmodifiableSet(new ElementSet<Node>(Node.class));
     }
     
+    @Override
     public Collection<? extends Element> elementSet() {
         return Collections.unmodifiableSet(elementSet);
     }
