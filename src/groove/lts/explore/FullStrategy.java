@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: FullStrategy.java,v 1.1.1.1 2007-03-20 10:05:25 kastenberg Exp $
+ * $Id: FullStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
  */
 package groove.lts.explore;
 
@@ -29,7 +29,7 @@ import java.util.Collection;
 /**
  * Recursively explores all open states of the LTS, in a breadth first manner.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class FullStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */

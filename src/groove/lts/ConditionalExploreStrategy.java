@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ConditionalExploreStrategy.java,v 1.1.1.1 2007-03-20 10:05:24 kastenberg Exp $
+ * $Id: ConditionalExploreStrategy.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
  */
 package groove.lts;
 
@@ -22,7 +22,7 @@ import groove.trans.GraphTest;
  * Extends the exploration strategy with the notion of condition
  * that controls when to stop exploration.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface ConditionalExploreStrategy extends ExploreStrategy {
     /**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AlgebraConstants.java,v 1.1.1.1 2007-03-20 10:05:37 kastenberg Exp $
+ * $Id: AlgebraConstants.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
  */
 package groove.graph.algebra;
 
@@ -33,7 +33,7 @@ import java.util.Iterator;
 /**
  * Class containing all the constant values used for dealing with attributed graphs.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:37 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:43 $
  */
 public class AlgebraConstants {
 

@@ -15,7 +15,7 @@
  * This class was automatically generated with 
  * <a href="http://www.castor.org">Castor 0.9.5.2</a>, using an XML
  * Schema.
- * $Id: GraphType.java,v 1.1.1.1 2007-03-20 10:05:27 kastenberg Exp $
+ * $Id: GraphType.java,v 1.1.1.2 2007-03-20 10:42:48 kastenberg Exp $
  */
 
 package groove.gxl;
@@ -40,7 +40,7 @@ import org.xml.sax.ContentHandler;
 /**
  * Class GraphType.
  * 
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:27 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:48 $
  */
 public class GraphType extends groove.gxl.TypedElementType 
 implements java.io.Serializable

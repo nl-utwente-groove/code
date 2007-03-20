@@ -1,4 +1,4 @@
-/* $Id: InjectionSearchItem.java,v 1.1.1.1 2007-03-20 10:05:21 kastenberg Exp $ */
+/* $Id: InjectionSearchItem.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $ */
 package groove.trans.match;
 
 import groove.graph.Node;

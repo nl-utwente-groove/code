@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphCalculator.java,v 1.1.1.1 2007-03-20 10:05:37 kastenberg Exp $
+ * $Id: GraphCalculator.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
  */
 package groove.calc;
 
@@ -30,7 +30,7 @@ import java.util.Collection;
  * A graph calculator is loaded with a grammar, i.e., a rule system and a basis graph.
  * Essentially it gives an easier interface to the underlying GTS.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface GraphCalculator {
     /**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.1.1.1 2007-03-20 10:05:26 kastenberg Exp $
+ * $Id: Imager.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
  */
 package groove.io;
 
@@ -68,7 +68,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class Imager extends CommandLineTool {
     /** Name of the imager application. */

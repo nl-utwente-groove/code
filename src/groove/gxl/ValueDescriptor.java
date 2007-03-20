@@ -15,7 +15,7 @@
  * This class was automatically generated with 
  * <a href="http://www.castor.org">Castor 0.9.5.2</a>, using an XML
  * Schema.
- * $Id: ValueDescriptor.java,v 1.1.1.1 2007-03-20 10:05:29 kastenberg Exp $
+ * $Id: ValueDescriptor.java,v 1.1.1.2 2007-03-20 10:42:50 kastenberg Exp $
  */
 
 package groove.gxl;
@@ -32,7 +32,7 @@ import org.exolab.castor.xml.validators.*;
 /**
  * Class ValueDescriptor.
  * 
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:29 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:50 $
  */
 public class ValueDescriptor extends org.exolab.castor.xml.util.XMLClassDescriptorImpl {
 

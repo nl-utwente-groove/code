@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JUserObject.java,v 1.1.1.1 2007-03-20 10:05:32 kastenberg Exp $
+ * $Id: JUserObject.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
  */
 package groove.gui.jgraph;
 
@@ -29,7 +29,7 @@ import java.util.TreeSet;
  * be loaded from a {@link String}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class JUserObject<T> extends TreeSet<T> {
     /** The default label separator. */

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.1.1.1 2007-03-20 10:05:29 kastenberg Exp $
+ * $Id: LabelList.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
  */
 package groove.gui;
 
@@ -46,7 +46,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /** Pseudo-label maintained in this list for cells with an empty label set. */

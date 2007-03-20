@@ -21,7 +21,7 @@ import groove.graph.Graph;
 /**
  * Interface for strategies that check isomorphism between graphs.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface IsoChecker {
 	/**

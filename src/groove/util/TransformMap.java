@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TransformMap.java,v 1.1.1.1 2007-03-20 10:05:18 kastenberg Exp $
+ * $Id: TransformMap.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
  */
 package groove.util;
 
@@ -25,7 +25,7 @@ import java.util.Set;
  * abstract method {@link #toOuter(Object)}.
  * @see groove.util.TransformIterator
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Map<T,V> {
     public TransformMap(Map<T,U> inner) {

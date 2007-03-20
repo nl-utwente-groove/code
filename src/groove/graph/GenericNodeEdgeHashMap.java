@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GenericNodeEdgeHashMap.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: GenericNodeEdgeHashMap.java,v 1.1.1.2 2007-03-20 10:42:41 kastenberg Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import java.util.Map;
  * Default implementation of a generic node-edge-map.
  * The implementation is based on two internally stored hash maps.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class GenericNodeEdgeHashMap<NS,NT,ES,ET> extends AbstractNodeEdgeMap<NS, NT, ES, ET> implements Cloneable {
 	/**

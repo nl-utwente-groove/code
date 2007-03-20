@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LiveStrategy.java,v 1.1.1.1 2007-03-20 10:05:25 kastenberg Exp $
+ * $Id: LiveStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
  */
 package groove.lts.explore;
 
@@ -26,7 +26,7 @@ import groove.lts.State;
 /**
  * Breadth-first exploration strategy that stops at the first final state (i.e., state without outgoing transitions.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class LiveStrategy extends BranchingStrategy {
 	/** Short name of this strategy. */

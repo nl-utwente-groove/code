@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Matching.java,v 1.1.1.1 2007-03-20 10:05:20 kastenberg Exp $
+ * $Id: Matching.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
  */
 package groove.trans;
 
@@ -31,7 +31,7 @@ import groove.rel.VarMorphism;
  * morphism (called a <i>total extension</i> here) while checking the
  * nested sub-conditions. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface Matching extends VarMorphism {
     /**

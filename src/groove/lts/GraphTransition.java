@@ -22,7 +22,7 @@ import groove.trans.Matching;
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface GraphTransition extends Transition, GraphOutTransition {
 	/** Overrides the method to specialise the result type. */

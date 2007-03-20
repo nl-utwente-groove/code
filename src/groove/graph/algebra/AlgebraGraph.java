@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AlgebraGraph.java,v 1.1.1.1 2007-03-20 10:05:37 kastenberg Exp $
+ * $Id: AlgebraGraph.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
  */
 
 package groove.graph.algebra;
@@ -32,7 +32,7 @@ import java.util.Map;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:37 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:43 $
  */
 public class AlgebraGraph extends DefaultGraph {
 	/** The first legal node number for algebra nodes. */

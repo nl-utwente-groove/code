@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: State.java,v 1.1.1.1 2007-03-20 10:05:25 kastenberg Exp $
+ * $Id: State.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
  */
 package groove.lts;
 
@@ -21,7 +21,7 @@ import groove.graph.Node;
 /**
  * Interface of a state of a labelled transition system.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:25 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:52 $
  */
 public interface State extends Node {
     // ----------------------- OBJECT OVERRIDES ---------------------

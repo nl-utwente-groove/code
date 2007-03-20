@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Element.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: Element.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ package groove.graph;
  * {@link Edge}s are essentially labelled hyper-edges
  * consisting of a number of <i>end points</i> (at least one), which are {@link Node}s.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface Element extends Comparable<Element>, java.io.Serializable {
     /**

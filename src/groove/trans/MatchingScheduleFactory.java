@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MatchingScheduleFactory.java,v 1.1.1.1 2007-03-20 10:05:20 kastenberg Exp $
+ * $Id: MatchingScheduleFactory.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
  */
 package groove.trans;
 
@@ -27,7 +27,7 @@ import groove.graph.Morphism;
  * graph elements for a given graph, in the order in which they should be
  * matched to minimized backtracking.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface MatchingScheduleFactory {
     /** 

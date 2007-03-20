@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RulePanel.java,v 1.1.1.1 2007-03-20 10:05:30 kastenberg Exp $
+ * $Id: RulePanel.java,v 1.1.1.2 2007-03-20 10:42:45 kastenberg Exp $
  */
 package groove.gui;
 
@@ -37,7 +37,7 @@ import javax.swing.JCheckBoxMenuItem;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */

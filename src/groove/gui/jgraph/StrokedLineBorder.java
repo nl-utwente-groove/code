@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StrokedLineBorder.java,v 1.1.1.1 2007-03-20 10:05:33 kastenberg Exp $
+ * $Id: StrokedLineBorder.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,7 +28,7 @@ import javax.swing.border.LineBorder;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class StrokedLineBorder extends LineBorder {
     static private final Stroke DEFAULT_STROKE = new BasicStroke();

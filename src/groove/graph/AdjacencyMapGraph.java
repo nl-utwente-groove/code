@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AdjacencyMapGraph.java,v 1.1.1.1 2007-03-20 10:05:33 kastenberg Exp $
+ * $Id: AdjacencyMapGraph.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
  */
 package groove.graph;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * other hand, <tt>edgeSet()</tt> and <tt>edgeIterator()</tt> pay a
  * heavy penalty. Also memory consumption may not be so good.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:33 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:40 $
  */
 public class AdjacencyMapGraph extends AbstractGraph {
     /**

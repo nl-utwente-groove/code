@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MergeMap.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: MergeMap.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -29,7 +29,7 @@ import java.util.Set;
  * from it is not consistent with that of {@link MergeMap#get(Object)} and the
  * like.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class MergeMap extends NodeEdgeHashMap {
     /** Internal representation of undefined. */

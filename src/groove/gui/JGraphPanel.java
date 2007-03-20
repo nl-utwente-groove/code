@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: JGraphPanel.java,v 1.1.1.1 2007-03-20 10:05:29 kastenberg Exp $
+ * $Id: JGraphPanel.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
  */
 package groove.gui;
 
@@ -37,7 +37,7 @@ import javax.swing.JSplitPane;
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**

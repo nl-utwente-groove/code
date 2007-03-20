@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CertificateStrategy.java,v 1.1.1.1 2007-03-20 10:05:36 kastenberg Exp $
+ * $Id: CertificateStrategy.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
  */
 package groove.graph.iso;
 
@@ -29,7 +29,7 @@ import groove.graph.Graph;
  * A certificate strategy is specialized to a graph upon which it works;
  * this is set at creation time.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface CertificateStrategy {
     /**

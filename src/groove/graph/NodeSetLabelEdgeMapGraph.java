@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeSetLabelEdgeMapGraph.java,v 1.1.1.1 2007-03-20 10:05:36 kastenberg Exp $
+ * $Id: NodeSetLabelEdgeMapGraph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -31,7 +31,7 @@ import java.util.Set;
  * Graph implementation based on a set of nodes and a map from labels to edges.
  * implementations
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class NodeSetLabelEdgeMapGraph extends AbstractGraph {
     /**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractNodeRelation.java,v 1.1.1.1 2007-03-20 10:05:23 kastenberg Exp $
+ * $Id: AbstractNodeRelation.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
  */
 package groove.rel;
 
@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public abstract class AbstractNodeRelation implements NodeRelation {
 //    protected class Related extends AbstractComposite implements Pair {

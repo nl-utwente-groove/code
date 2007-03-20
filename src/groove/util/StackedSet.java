@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StackedSet.java,v 1.1.1.1 2007-03-20 10:05:18 kastenberg Exp $
+ * $Id: StackedSet.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
  */
 package groove.util;
 
@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
  * The implementation is based on a lower set, and sets of added and removed
  * elements with respect to this lower set.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class StackedSet<T> extends AbstractSet<T> {
 	/**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.1.1.1 2007-03-20 10:05:37 kastenberg Exp $
+ * $Id: RuleAspect.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
  */
 package groove.graph.aspects;
 
@@ -26,7 +26,7 @@ import groove.util.Groove;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class RuleAspect extends AbstractAspect {
     /**

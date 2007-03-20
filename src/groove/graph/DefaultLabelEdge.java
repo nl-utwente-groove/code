@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultLabelEdge.java,v 1.1.1.1 2007-03-20 10:05:34 kastenberg Exp $
+ * $Id: DefaultLabelEdge.java,v 1.1.1.2 2007-03-20 10:42:41 kastenberg Exp $
  */
 package groove.graph;
 
@@ -21,7 +21,7 @@ package groove.graph;
  * Default implementation of an (immutable) graph edge, as a triple consisting of
  * <tt>Node</tt> source and target nodes and a <tt>DefaultLabel</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:34 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:41 $
  * @deprecated use {@link DefaultEdge} instead
  */
 @Deprecated()

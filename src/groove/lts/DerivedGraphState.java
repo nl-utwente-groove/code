@@ -42,7 +42,7 @@ import groove.util.TransformIterator;
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class DerivedGraphState extends DefaultGraphState implements GraphNextState {
     /**

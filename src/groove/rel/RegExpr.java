@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExpr.java,v 1.1.1.1 2007-03-20 10:05:23 kastenberg Exp $
+ * $Id: RegExpr.java,v 1.1.1.2 2007-03-20 10:42:53 kastenberg Exp $
  */
 package groove.rel;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 abstract public class RegExpr implements VarSetSupport {
     /** 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultNAC.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: DefaultNAC.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
  */
 package groove.trans;
 
@@ -21,7 +21,7 @@ import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
 
 /**
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:19 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
  */
 public class DefaultNAC extends DefaultGraphCondition implements NAC {
     /**

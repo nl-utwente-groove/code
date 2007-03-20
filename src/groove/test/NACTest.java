@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.1.1.1 2007-03-20 10:05:22 kastenberg Exp $
+ * $Id: NACTest.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
  */
 package groove.test;
 
@@ -54,7 +54,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {

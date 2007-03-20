@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTestOutcome.java,v 1.1.1.1 2007-03-20 10:05:20 kastenberg Exp $
+ * $Id: GraphTestOutcome.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
  */
 package groove.trans;
 
@@ -31,7 +31,7 @@ import groove.graph.Morphism;
  * The {@link GraphTestOutcome} also identifies a subset of the keys that stand for
  * <i>success</i> of the test.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface GraphTestOutcome<Mine,Nested> extends Map<Mine,GraphTestOutcome<Nested,Mine>> {
     /** 
