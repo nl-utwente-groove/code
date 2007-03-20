@@ -12,22 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeView.java,v 1.1.1.1 2007-03-20 10:05:32 kastenberg Exp $
+ * $Id: JEdgeView.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
  */
 package groove.gui.jgraph;
 
 import java.awt.Graphics;
 import java.awt.Point;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
-import org.jgraph.JGraph;
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.CellHandle;
 import org.jgraph.graph.CellMapper;
 import org.jgraph.graph.CellView;
@@ -44,7 +40,7 @@ import org.jgraph.graph.PortView;
  * An edge view that uses the <tt>toString</tt> of the underlying edge as a label. Moreover, new
  * views take care to bend to avoid overlap, and offer functionality to add and remove points.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class JEdgeView extends EdgeView {
 
@@ -58,7 +54,7 @@ public class JEdgeView extends EdgeView {
      */
     public JEdgeView(JEdge jEdge, JGraph jGraph) {
         super(jEdge);
-        this.jModel = (JModel) jGraph.getModel();
+        this.jModel = jGraph.getModel();
         // first we add points and change the linestyle of the edge
         // in the model attributes, if the new edge demands it
 //        AttributeMap jEdgeAttr = jEdge.getAttributes();
@@ -419,49 +415,17 @@ public class JEdgeView extends EdgeView {
         }
     }
 
+    /** The j-model underlying this edge view. */
     private final JModel jModel;
+
     /**
      * This class is overridden to get the same port emphasis.
      */
     static public class MyEdgeHandle extends EdgeHandle {
+    	/** Constructs an instance. */
         public MyEdgeHandle(EdgeView edge, GraphContext ctx) {
             super(edge, ctx);
         }
-//
-//        /**
-//         * Copies from the super impelementation, with a bug repair.
-//         */
-//        public void mouseReleased(MouseEvent e) {
-//            boolean clone = e.isControlDown() && graph.isCloneable();
-//            GraphModel model = graph.getModel();
-//            Object source = (edge.getSource() != null) ? edge.getSource().getCell() : null;
-//            Object target = (edge.getTarget() != null) ? edge.getTarget().getCell() : null;
-//            if (model.acceptsSource(edge.getCell(), source)
-//                    && model.acceptsTarget(edge.getCell(), target)) {
-//                ConnectionSet cs = createConnectionSet(edge, clone);
-//                Map<?,?> nested = GraphConstants.createAttributes(new CellView[] { edge }, null);
-//                if (clone) {
-//                    Map<?,?> cellMap = graph.cloneCells(graph.getDescendants(new Object[] { edge
-//                            .getCell() }));
-//                    nested = GraphConstants.replaceKeys(cellMap, nested);
-//                    cs = cs.clone(cellMap);
-//                    Object[] cells = cellMap.values().toArray();
-//                    graph.getGraphLayoutCache().insert(cells, nested, cs, null, null);
-//                } else {
-//                    graph.getGraphLayoutCache().edit(nested, cs, null, null);
-//                }
-//            } else {
-//                overlay(graph.getGraphics());
-//            }
-//            currentPoint = null;
-//            this.label = false;
-//            this.source = false;
-//            this.target = false;
-//            currentLabel = -1;
-//            currentIndex = -1;
-//            firstOverlayCall = true;
-//            e.consume();
-//        }
 
         /**
          * Sets the target port of the view to the source port if the target port is

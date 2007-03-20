@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultSimulation.java,v 1.1.1.1 2007-03-20 10:05:34 kastenberg Exp $
+ * $Id: DefaultSimulation.java,v 1.1.1.2 2007-03-20 10:42:41 kastenberg Exp $
  */
 
 package groove.graph;
@@ -41,7 +41,7 @@ import java.util.Set;
  * Refinement consists of repeatedly selecting an image for those domain
  * elements that have multiple images.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 /**
  * @author Harmen

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CommandLineTool.java,v 1.1.1.1 2007-03-20 10:05:17 kastenberg Exp $
+ * $Id: CommandLineTool.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
  */
 package groove.util;
 
@@ -39,7 +39,7 @@ import java.util.Map;
  * Each of these options can be enabled or disabled in subclasses by overwriting 
  * the respective <tt>supports...Option</tt> methods.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class CommandLineTool {
     /**

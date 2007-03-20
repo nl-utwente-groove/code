@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Deriver.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: Deriver.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
  */
 package groove.trans;
 
@@ -25,7 +25,7 @@ import java.util.Set;
  * Class that wraps the algorithm to explore rule applications
  * for a given graph.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:19 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
  */
 public interface Deriver {
     /**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: InvariantStrategy.java,v 1.1.1.1 2007-03-20 10:05:25 kastenberg Exp $
+ * $Id: InvariantStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
  */
 package groove.lts.explore;
 
@@ -31,7 +31,7 @@ import groove.trans.Rule;
  * (the invariant) is found to be violated somewhere; this halts the entire explorations.
  * Currently, the condition is expressed by the applicability of a rule.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class InvariantStrategy extends BranchingStrategy implements ConditionalExploreStrategy {
 	/** Name of this exploration strategy. */

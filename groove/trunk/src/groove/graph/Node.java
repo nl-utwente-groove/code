@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Node.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: Node.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
  * Interface of a graph node.
  * A node is a graph element that is not a composite.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:35 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
  */
 public interface Node extends Element {
     /** 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Graph.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: Graph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:35 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
     /**

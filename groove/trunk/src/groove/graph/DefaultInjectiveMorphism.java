@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultInjectiveMorphism.java,v 1.1.1.1 2007-03-20 10:05:34 kastenberg Exp $
+ * $Id: DefaultInjectiveMorphism.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Map;
  * Implementation of an injective morphism between <tt>Graph</tt>s,
  * as an extension of <tt>DefaultMorphism</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class DefaultInjectiveMorphism extends DefaultMorphism implements InjectiveMorphism {
     /**

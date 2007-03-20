@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IncidentScheduleFactory.java,v 1.1.1.1 2007-03-20 10:05:20 kastenberg Exp $
+ * $Id: IncidentScheduleFactory.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
  */
 package groove.trans;
 
@@ -33,7 +33,7 @@ import java.util.Set;
  * The connectivity of a given edge is defined as the number of edges incident with the 
  * end nodes of the edge.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class IncidentScheduleFactory extends AbstractScheduleFactory {
     /**

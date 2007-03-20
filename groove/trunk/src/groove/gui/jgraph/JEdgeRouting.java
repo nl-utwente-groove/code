@@ -1,4 +1,4 @@
-/* $Id: JEdgeRouting.java,v 1.1.1.1 2007-03-20 10:05:32 kastenberg Exp $ */
+/* $Id: JEdgeRouting.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $ */
 package groove.gui.jgraph;
 
 import java.awt.Point;

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RegExprLabel.java,v 1.1.1.1 2007-03-20 10:05:24 kastenberg Exp $
+ * $Id: RegExprLabel.java,v 1.1.1.2 2007-03-20 10:42:53 kastenberg Exp $
  */
 package groove.rel;
 
@@ -26,7 +26,7 @@ import groove.util.ExprFormatException;
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:24 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:53 $
  */
 public class RegExprLabel extends AbstractLabel {
     /**

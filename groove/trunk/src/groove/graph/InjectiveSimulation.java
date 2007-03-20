@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: InjectiveSimulation.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: InjectiveSimulation.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -24,7 +24,7 @@ import java.util.Set;
  * This means that injectivity and surjectivity constraints are brought
  * into play in the construction and stabilization of the simulation..
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class InjectiveSimulation extends DefaultSimulation {
     static private final IllegalStateException nonInjective = new IllegalStateException("Injectivity violation");

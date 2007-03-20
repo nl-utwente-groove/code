@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.1.1.1 2007-03-20 10:05:30 kastenberg Exp $
+ * $Id: RuleJTree.java,v 1.1.1.2 2007-03-20 10:42:45 kastenberg Exp $
  */
 package groove.gui;
 
@@ -60,7 +60,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {

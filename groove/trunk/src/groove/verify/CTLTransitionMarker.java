@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: CTLTransitionMarker.java,v 1.1.1.1 2007-03-20 10:05:16 kastenberg Exp $
+ * $Id: CTLTransitionMarker.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
  */
 package groove.verify;
 
@@ -33,7 +33,7 @@ import java.util.Iterator;
  * state). So, actually the LHS of the GTR is the property to check on.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:16 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
  */
 public class CTLTransitionMarker extends CTLMatchingMarker {
 

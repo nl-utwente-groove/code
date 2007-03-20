@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HintedIndegreeScheduleFactory.java,v 1.1.1.1 2007-03-20 10:05:20 kastenberg Exp $
+ * $Id: HintedIndegreeScheduleFactory.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import java.util.Set;
  * Class that uses a hint as to the sequence in which edge labels can
  * be matched best. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class HintedIndegreeScheduleFactory extends IndegreeScheduleFactory {
     /**

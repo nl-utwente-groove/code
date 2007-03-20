@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.1.1.1 2007-03-20 10:05:20 kastenberg Exp $
- * $Date: 2007-03-20 10:05:20 $
+ * $Id: Rule.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Date: 2007-03-20 10:42:56 $
  */
 package groove.trans;
 
@@ -31,7 +31,7 @@ import groove.rel.VarGraph;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeBoundedStrategy.java,v 1.1.1.1 2007-03-20 10:05:25 kastenberg Exp $
+ * $Id: NodeBoundedStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
  */
 package groove.lts.explore;
 
@@ -23,7 +23,7 @@ import groove.lts.State;
  * This class implements an exploration strategy in which the number of nodes
  * is guaranteed not to exceed a given bound. That makes the state space finite.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class NodeBoundedStrategy extends BranchingStrategy {
     /** Name of this strategy. */

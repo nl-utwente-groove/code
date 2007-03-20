@@ -27,7 +27,7 @@ import java.util.Set;
  * Delta target that collects the addition and removal information 
  * and can play it back later, in the role of delta applier.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class DefaultDeltaApplier implements DeltaApplier {
 	/**

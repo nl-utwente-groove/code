@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AbstractLabel.java,v 1.1.1.1 2007-03-20 10:05:33 kastenberg Exp $
+ * $Id: AbstractLabel.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
  * Provides a partial implementation of the Label interface,
  * consisting only of a label text.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:33 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:40 $
  */
 public abstract class AbstractLabel implements Cloneable, Label {
     public int compareTo(Label obj) {

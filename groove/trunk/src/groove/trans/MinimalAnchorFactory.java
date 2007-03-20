@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MinimalAnchorFactory.java,v 1.1.1.1 2007-03-20 10:05:20 kastenberg Exp $
+ * $Id: MinimalAnchorFactory.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
  */
 package groove.trans;
 
@@ -34,7 +34,7 @@ import groove.rel.VarEdge;
  * matching: only mergers, eraser nodes and edges (the later only if they are 
  * not incident to an eraser node) and the incident nodes of creator edges are stored.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class MinimalAnchorFactory implements AnchorFactory {
 	/**

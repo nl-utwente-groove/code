@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NodeEdgeMapGraph.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: NodeEdgeMapGraph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * Implementation of {@link groove.graph.Graph} based on node-to-edge-set maps for
  * all node ends. This facilitates node removal, but is expensive in terms of space.
  * Arbitrary edge arities are supported.
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:35 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
  */
 public class NodeEdgeMapGraph extends AbstractGraph {
 	/**

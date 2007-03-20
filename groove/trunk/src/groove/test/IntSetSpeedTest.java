@@ -25,7 +25,7 @@ import groove.util.TreeIntSet;
 /**
  * Class to test the various implementations of {@link groove.util.IntSet} regarding speed.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class IntSetSpeedTest {
 	static private final int SMALL_SAMPLE_SIZE = 500;

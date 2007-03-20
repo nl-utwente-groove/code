@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CTLExpr.java,v 1.1.1.1 2007-03-20 10:05:16 kastenberg Exp $
+ * $Id: CTLExpr.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
  */
 package groove.verify;
 
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 /**
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:16 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
  * 
  * Class description.
  */

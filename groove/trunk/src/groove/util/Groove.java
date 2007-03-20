@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.1.1.1 2007-03-20 10:05:18 kastenberg Exp $
+ * $Id: Groove.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
  */
 package groove.util;
 
@@ -40,7 +40,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.1.1.1 $ 
+ * @version $Revision: 1.1.1.2 $ 
  * @version Arend Rensink
  */
 public class Groove {

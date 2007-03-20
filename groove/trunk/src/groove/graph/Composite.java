@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Composite.java,v 1.1.1.1 2007-03-20 10:05:33 kastenberg Exp $
+ * $Id: Composite.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
  */
 package groove.graph;
 
 /**
  * Defines the inferface for a composed graph element.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 @Deprecated
 public interface Composite extends Element {

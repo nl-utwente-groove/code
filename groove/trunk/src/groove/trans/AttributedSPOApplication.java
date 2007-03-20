@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AttributedSPOApplication.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: AttributedSPOApplication.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
  */
 package groove.trans;
 
@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.AttributedSPORule} to a graph. 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:19 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
  */
 public class AttributedSPOApplication extends SPOApplication {
 

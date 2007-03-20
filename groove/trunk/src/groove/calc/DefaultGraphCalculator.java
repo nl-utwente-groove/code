@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.1.1.1 2007-03-20 10:05:37 kastenberg Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
  */
 package groove.calc;
 

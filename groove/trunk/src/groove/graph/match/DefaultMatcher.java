@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatcher.java,v 1.1.1.1 2007-03-20 10:05:36 kastenberg Exp $
+ * $Id: DefaultMatcher.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
  */
 package groove.graph.match;
 
@@ -34,7 +34,7 @@ import java.util.NoSuchElementException;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class DefaultMatcher implements Matcher {
 	/** 

@@ -1,5 +1,5 @@
 /*
- * $Id: IsoSearchPlanFactory.java,v 1.1.1.1 2007-03-20 10:05:36 kastenberg Exp $
+ * $Id: IsoSearchPlanFactory.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
  */
 package groove.graph.iso;
 
@@ -20,7 +20,7 @@ import groove.graph.match.SearchPlanFactory;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class IsoSearchPlanFactory implements SearchPlanFactory {
 	/** 

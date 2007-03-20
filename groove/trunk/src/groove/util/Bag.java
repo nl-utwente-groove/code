@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Bag.java,v 1.1.1.1 2007-03-20 10:05:17 kastenberg Exp $
+ * $Id: Bag.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
  */
 package groove.util;
 
@@ -22,7 +22,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface Bag<T> extends Collection<T> {
 	/** Encoding for the multiplicities of the bag elements. */

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaSet.java,v 1.1.1.1 2007-03-20 10:05:17 kastenberg Exp $
+ * $Id: DeltaSet.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
  * Implements a set whose operations work on an underlying (lower) set, but store 
  * the elements added to and removed from that lower set.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:17 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:58 $
  */
 public class DeltaSet<T> extends AbstractSet<T> {
     /**

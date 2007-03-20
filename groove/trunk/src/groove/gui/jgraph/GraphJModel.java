@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.1.1.1 2007-03-20 10:05:31 kastenberg Exp $
+ * $Id: GraphJModel.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
  */
 
 package groove.gui.jgraph;
@@ -52,7 +52,7 @@ import org.jgraph.graph.GraphConstants;
  * attributes should be updated through putAttributes.
  * <p>NOTE: the JModel-GraphJModel-RuleJModel structure is up for revision.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */

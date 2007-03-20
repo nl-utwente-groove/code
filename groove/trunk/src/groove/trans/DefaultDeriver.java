@@ -31,7 +31,7 @@ import java.util.Set;
  * Deriver that uses straightforward application of a set of rules,
  * while taking rule priorities into account.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class DefaultDeriver implements Deriver {
 	/**

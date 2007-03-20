@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HyperEdge.java,v 1.1.1.1 2007-03-20 10:05:35 kastenberg Exp $
+ * $Id: HyperEdge.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
@@ -21,7 +21,7 @@ package groove.graph;
  * General edge implementation.
  * Don't use it if efficiency is a concern!
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class HyperEdge extends AbstractEdge {
     /**

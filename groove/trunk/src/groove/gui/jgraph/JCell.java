@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JCell.java,v 1.1.1.1 2007-03-20 10:05:32 kastenberg Exp $
+ * $Id: JCell.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
  */
 package groove.gui.jgraph;
 
@@ -26,7 +26,7 @@ import org.jgraph.graph.GraphCell;
  * on a set of strings, displayed in multiline format but edited in
  * single-line format.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface JCell extends GraphCell, Serializable {
     /**

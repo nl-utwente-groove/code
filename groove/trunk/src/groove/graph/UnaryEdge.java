@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UnaryEdge.java,v 1.1.1.1 2007-03-20 10:05:36 kastenberg Exp $
+ * $Id: UnaryEdge.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
  */
 package groove.graph;
 
 /**
  * This interface just serves as a parallel to {@link BinaryEdge}.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface UnaryEdge extends Edge {	
 	/** End count of a unary edge. */

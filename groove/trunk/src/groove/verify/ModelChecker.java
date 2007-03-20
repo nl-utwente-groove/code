@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ModelChecker.java,v 1.1.1.1 2007-03-20 10:05:17 kastenberg Exp $
+ * $Id: ModelChecker.java,v 1.1.1.2 2007-03-20 10:43:01 kastenberg Exp $
  */
 package groove.verify;
 
@@ -58,7 +58,7 @@ import javax.swing.JTextField;
 /**
  * Graphical application to direct the model checking functionality.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:17 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:01 $
  */
 public class ModelChecker extends CommandLineTool {
     /** Name of the imager application. */

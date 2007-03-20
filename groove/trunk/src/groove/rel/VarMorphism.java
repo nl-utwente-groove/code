@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: VarMorphism.java,v 1.1.1.1 2007-03-20 10:05:24 kastenberg Exp $
+ * $Id: VarMorphism.java,v 1.1.1.2 2007-03-20 10:42:53 kastenberg Exp $
  */
 package groove.rel;
 
@@ -22,7 +22,7 @@ import groove.graph.Morphism;
  * Morphism type going from a {@link VarGraph} to an ordinary {@link groove.graph.Graph}.
  * Offers support for mapping the variables in the domain to labels of the codomain.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface VarMorphism extends Morphism, VarMap {
     // join of two interfaces

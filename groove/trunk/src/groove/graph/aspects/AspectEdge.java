@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectEdge.java,v 1.1.1.1 2007-03-20 10:05:37 kastenberg Exp $
+ * $Id: AspectEdge.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
  */
 package groove.graph.aspects;
 
@@ -28,7 +28,7 @@ import groove.graph.NodeEdgeMap;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class AspectEdge extends DefaultEdge implements AspectElement {
 	/**

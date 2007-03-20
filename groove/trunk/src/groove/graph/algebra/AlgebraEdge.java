@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AlgebraEdge.java,v 1.1.1.1 2007-03-20 10:05:37 kastenberg Exp $
+ * $Id: AlgebraEdge.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
  */
 
 package groove.graph.algebra;
@@ -26,7 +26,7 @@ import groove.graph.Node;
  * and {@link groove.graph.algebra.ValueNode}s.
  * 
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-03-20 10:05:37 $
+ * @version $Revision 1.0$ $Date: 2007-03-20 10:42:43 $
  */
 public class AlgebraEdge extends AbstractBinaryEdge {
 

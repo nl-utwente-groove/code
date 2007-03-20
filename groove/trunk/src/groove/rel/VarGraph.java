@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: VarGraph.java,v 1.1.1.1 2007-03-20 10:05:24 kastenberg Exp $
+ * $Id: VarGraph.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
  */
 package groove.rel;
 
@@ -24,7 +24,7 @@ import groove.graph.Graph;
  * Graph type with additional support for <i>variables</i>,
  * which are mapped to graph elements by the corresponding morphisms. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public interface VarGraph extends Graph, VarSetSupport {
     /**

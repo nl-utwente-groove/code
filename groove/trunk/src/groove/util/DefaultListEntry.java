@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultListEntry.java,v 1.1.1.1 2007-03-20 10:05:17 kastenberg Exp $
+ * $Id: DefaultListEntry.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
  */
 package groove.util;
 
@@ -24,7 +24,7 @@ import java.util.Iterator;
  * Use it by subclassing.
  * This saves out the array object itself (20 bytes).
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class DefaultListEntry implements ListEntry {
     /**

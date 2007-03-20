@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: BinaryEdgeTest.java,v 1.1.1.1 2007-03-20 10:05:22 kastenberg Exp $
+ * $Id: BinaryEdgeTest.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
  */
 package groove.test;
 
@@ -28,7 +28,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:22 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:54 $
  */
 public class BinaryEdgeTest extends TestCase {
     protected Node n1, n2;

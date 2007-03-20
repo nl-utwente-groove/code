@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultStateCache.java,v 1.1.1.1 2007-03-20 10:05:24 kastenberg Exp $
+ * $Id: DefaultStateCache.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
  */
 package groove.lts;
 
@@ -26,7 +26,7 @@ import groove.graph.DeltaGraphCache;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class DefaultStateCache extends DeltaGraphCache {
     /**

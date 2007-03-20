@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ListEntryIterator.java,v 1.1.1.1 2007-03-20 10:05:18 kastenberg Exp $
+ * $Id: ListEntryIterator.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
  */
 package groove.util;
 
@@ -21,7 +21,7 @@ import java.util.Iterator;
 /**
  * An iterator over a list of items implementing {@link ListEntry}.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 final public class ListEntryIterator implements Iterator<ListEntry> {
     /** Constructs an iterator over a list starting with a given {@link ListEntry}. */

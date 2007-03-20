@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.1.1.1 2007-03-20 10:05:32 kastenberg Exp $
+ * $Id: JGraph.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
  */
 package groove.gui.jgraph;
 
@@ -69,7 +69,7 @@ import org.jgraph.graph.PortView;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:32 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:46 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**

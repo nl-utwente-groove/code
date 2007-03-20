@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UnmodifiableCollectionView.java,v 1.1.1.1 2007-03-20 10:05:19 kastenberg Exp $
+ * $Id: UnmodifiableCollectionView.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
  */
 package groove.util;
 
@@ -24,7 +24,7 @@ import java.util.Iterator;
  * that satisfy a certain condition, to be provided through the abstract
  * method <tt>approve(Object)</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:19 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
  */
 public abstract class UnmodifiableCollectionView<T> extends CollectionView<T> {    
 //    /**

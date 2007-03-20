@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GpsGrammar.java,v 1.1.1.1 2007-03-20 10:05:26 kastenberg Exp $
+ * $Id: GpsGrammar.java,v 1.1.1.2 2007-03-20 10:42:50 kastenberg Exp $
  */
 
 package groove.io;
@@ -53,7 +53,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class GpsGrammar implements XmlGrammar {
     /**

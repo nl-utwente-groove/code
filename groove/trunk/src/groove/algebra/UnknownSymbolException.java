@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: UnknownSymbolException.java,v 1.1.1.1 2007-03-20 10:05:38 kastenberg Exp $
+ * $Id: UnknownSymbolException.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
  */
 package groove.algebra;
 
@@ -21,7 +21,7 @@ package groove.algebra;
  * value from an algebra not knowing this symbol as neither one of its
  * operations nor as one of its constants.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.1 $ $Date: 2007-03-20 10:05:38 $
+ * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
  */
 public class UnknownSymbolException extends Exception {
 

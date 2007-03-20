@@ -34,7 +34,7 @@ import groove.util.Reporter;
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy},
  * and if that fails, attempts to create an {@link groove.graph.InjectiveMorphism}. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.1 $
+ * @version $Revision: 1.1.1.2 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**

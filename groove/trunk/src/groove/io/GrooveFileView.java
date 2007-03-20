@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GrooveFileView.java,v 1.1.1.1 2007-03-20 10:05:26 kastenberg Exp $
+ * $Id: GrooveFileView.java,v 1.1.1.2 2007-03-20 10:42:50 kastenberg Exp $
  */
 package groove.io;
 
@@ -25,7 +25,7 @@ import javax.swing.Icon;
 /**
  * Implements a file view that displays the correct icons and descriptions for
  * graph files, rules files and grammar directories.
- * @version $Date: 2007-03-20 10:05:26 $ $Revision: 1.1.1.1 $
+ * @version $Date: 2007-03-20 10:42:50 $ $Revision: 1.1.1.2 $
  * @author Arend Rensink
  */
 public class GrooveFileView extends javax.swing.filechooser.FileView {
