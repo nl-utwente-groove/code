@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphShape.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: GraphShape.java,v 1.2 2007-03-20 19:14:52 rensink Exp $
  */
 package groove.graph;
 
@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * Model of a graph shape, consisting of nodes and labelled edges between them..
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-20 19:14:52 $
  */
 public interface GraphShape extends java.io.Serializable {
     // -------------------- Queries -----------------
@@ -158,7 +158,9 @@ public interface GraphShape extends java.io.Serializable {
      * which is <i>not</i> guaranteed to be up-to-date with, or even safe 
      * in the face of, concurrent modifications to the graph.
      * @ensure <tt>result != null</tt>
+     * @deprecated Use {@link #nodeSet()} and {@link #edgeSet()}
      */
+    @Deprecated
     Collection<? extends Element> elementSet();
     
     /**

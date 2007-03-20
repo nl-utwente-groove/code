@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MergeMap.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: MergeMap.java,v 1.2 2007-03-20 19:14:52 rensink Exp $
  */
 package groove.graph;
 
@@ -22,14 +22,11 @@ import java.util.Set;
 
 
 /**
- * Variation on a map that only stores non-identity mappings; hence
+ * Variation on a map that only stores non-identity mappings for nodes; hence
  * anything not explicitly set to a particular value defaults to identity.
  * This is actually not a map, in that the entries do not reflect the actual mapping.
- * Hence the result of {@link MergeMap#entrySet()} and anything derived
- * from it is not consistent with that of {@link MergeMap#get(Object)} and the
- * like.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class MergeMap extends NodeEdgeHashMap {
     /** Internal representation of undefined. */
@@ -47,6 +44,7 @@ public class MergeMap extends NodeEdgeHashMap {
      * Returns <tt>null</tt> if the underlying map contains the special undefined value
      * for the key, and <tt>key</tt> itself if the underlying map contains <tt>null</tt>.
      */
+    @Override
     public Node getNode(Node key) {
     	return internalToExternal(super.getNode(key), key);
     }
@@ -57,6 +55,7 @@ public class MergeMap extends NodeEdgeHashMap {
      * If the key and/or value are currently already in the map,
      * their current images undergo the same operation.
      */
+    @Override
     public Node putNode(Node key, Node value) {
         // the key-image pair should be put in the merge map,
         // but maybe one of them has been merged with a different node already
@@ -100,27 +99,11 @@ public class MergeMap extends NodeEdgeHashMap {
 			mergeTargets.remove(key);
 		}
     }
-//    
-//    /**
-//	 * Computes the first element in the chain of images that is not merged or
-//	 * deleted.
-//	 * 
-//	 * @param node
-//	 *            the node for which the fixpoint is computed
-//	 * @return either <code>null</code> or such that
-//	 *         <code>getNode(node) == node</code>
-//	 */
-//    private Node getFixpoint(Node node) {
-//    	Node image = getNode(node);
-//    	while (image != null && containsKey(image)) {
-//    		image = getNode(image);
-//    	}
-//    	return image;
-//    }
     
     /**
      * Removes the key and its pre-images from the map.
      */
+    @Override
     public Node removeNode(Node key) {
     	Node keyImage = getNode(key);
 		super.putNode(keyImage, UNDEFINED);
@@ -136,24 +119,6 @@ public class MergeMap extends NodeEdgeHashMap {
 		}
 		return keyImage;
     }
-//	
-// /**
-// * Indicates if the value of an entry, stands for <code>null</code>
-//     * according to the rules of the {@link MergeMap}. 
-//     * @see #internalToExternal(Object, Object)
-//     */
-//    public boolean isNullValue(Map.Entry<Node,Node> entry) {
-//        return entry.getValue() == UNDEFINED;
-//    }
-//
-//    /**
-//     * Retrieves a value from an entry, according to the rules of the
-//     * {@link MergeMap}. That is, the internal value is converted using
-//     * {@link #internalToExternal(Object, Object)} with the entry key as first parameter.
-//     */
-//    private Element getValue(Map.Entry<Element,Element> entry) {
-//        return internalToExternal(entry.getValue(), entry.getKey());
-//    }
     
     /**
      * Inserts a value into an entry, according to the rules of the
