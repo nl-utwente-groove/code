@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleGraph.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: RuleGraph.java,v 1.2 2007-03-20 14:02:14 rensink Exp $
  */
 
 package groove.trans.view;
@@ -65,7 +65,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class RuleGraph extends groove.graph.GeneralGraph implements RuleView {
     /** Number of node/edge roles */
@@ -815,8 +815,10 @@ public class RuleGraph extends groove.graph.GeneralGraph implements RuleView {
 	 * If the edge has a negated empty regular expression, it gives rise to a
 	 * merge embargo, if it has any other regular label it gives rise to an edge
 	 * embargo. If neither is the case, the method returns <code>null</code>.
-	 * 
-	 * @param edge
+	 * @param graph the context for the embargo, if one is constructed
+	 * @param edge the edge from which the embargo is constructed
+	 * @return the embargo, or <code>null</code> if <code>edge</code> does
+	 * not have a top-level {@link RegExpr.Neg} operator.
 	 */
     public NAC constructEmbargo(VarGraph graph, Edge edge) {
         Label edgeLabel = edge.label();

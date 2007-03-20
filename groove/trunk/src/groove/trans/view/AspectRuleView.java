@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectRuleView.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: AspectRuleView.java,v 1.2 2007-03-20 14:02:14 rensink Exp $
  */
 
 package groove.trans.view;
@@ -76,7 +76,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class AspectRuleView implements RuleView {
 //    /** Label text for merges (merger edges and merge embargoes) */
@@ -346,14 +346,14 @@ public class AspectRuleView implements RuleView {
                 NAC embargo = computeEmbargoFromNegation(lhs, lhsEdgeImage);
                 isEmbargo = embargo != null;
                 if (isEmbargo) {
-                	
+                	embargoes.add(embargo);
                 } else {
-            	left.addEdge(lhsEdgeImage);
-                lhs.addEdge(lhsEdgeImage);
-                toLeft.putEdge(edge, lhsEdgeImage);
+                	left.addEdge(lhsEdgeImage);
+                	lhs.addEdge(lhsEdgeImage);
+                	toLeft.putEdge(edge, lhsEdgeImage);
                 }
             }
-            if (RuleAspect.inRHS(edge)) {
+            if (!isEmbargo && RuleAspect.inRHS(edge)) {
                 if (RuleAspect.isCreator(edge) && RegExprLabel.isEmpty(edge.label())) {
                     List<Node> endImages = images(toRight.nodeMap(), edge.ends());
                     // it's a merger; it's bound to be binary
@@ -468,100 +468,16 @@ public class AspectRuleView implements RuleView {
 						nacMorphism.putNode(end, end);
 					}
 				}
-				nacTarget.addEdge(edge);
+				NAC subEmbargo = computeEmbargoFromNegation(nacTarget, edge);
+				if (subEmbargo == null) {
+					nacTarget.addEdge(edge);
+				} else {
+					result.setAndNot(subEmbargo);
+				}
 			}
 		}
         return result;
     }
-//
-//	/**
-//	 * Adds the nodes to the NAC.
-//	 * @param result the NAC-target
-//	 * @param nacNodeSet the set containing the NAC-elements
-//	 */
-//	protected void addNodesToNac(NAC result, Set<Node> nacNodeSet) {
-//		result.getTarget().addNodeSet(nacNodeSet);
-//	}
-//
-//	/**
-//	 * Adds the edges to the NAC.
-//	 * @param result the resulting graph transformation rule
-//	 * @param nacElemSet the set containing the NAC-elements
-//	 */
-//	protected void addEdgesToNac(NAC result, Set<Edge> nacElemSet) {
-//		Morphism nacMorphism = result.getPattern();
-//		VarGraph nacTarget = result.getTarget();
-//		for (Edge edge : nacElemSet) {
-//			// add the endpoints that were not in the nac element set; it means
-//			// they are lhs nodes, so add them to the nacMorphism as well
-//			for (int i = 0; i < edge.endCount(); i++) {
-//				Node end = edge.end(i);
-//				if (nacTarget.addNode(end)) {
-//					// the node identity in the lhs is the same
-//					nacMorphism.putNode(end, end);
-//				}
-//			}
-//			// now check if this edge itself represents a negative condition
-//			GraphCondition embargo = computeEmbargoFromNegation(nacTarget, edge);
-//			if (embargo == null) {
-//				nacTarget.addEdge(edge);
-//			} else {
-//				result.setAndNot(embargo);
-//			}
-//		}
-//	}
-//
-// /**
-// * Creates an edge or merge embargo if the nacElemSet contains only one
-// element.
-// * @param lhs the left-hand-side of the rule for which to create NACs
-// * @param nacElemSet the elements of the NAC to be created
-//	 * @return an edge or merge embargo if <code>nacElemSet</code> contains exactly one element, <code>null</code> otherwise
-//	 */
-//	protected NAC computeEmbargo(VarGraph lhs, Set<Element> nacElemSet) {
-//		NAC result = null;
-//		if (nacElemSet.size() == 1) {
-//            Element elem = nacElemSet.iterator().next();
-//            if (elem instanceof Edge) {
-//                // yes, we have an embargo: create and return it
-//                Edge embargoEdge = (Edge) elem;
-//                if (AspectRuleView.MERGE_LABEL.equals(embargoEdge.label())) {
-//                    // this is supposed to be a merge embargo
-//                    if (CREATE_EMBARGO_DEBUG)
-//                        Groove.message("Constructing merge embargo from " + nacElemSet);
-//                    result = createMergeEmbargo(lhs, embargoEdge.ends());
-//                } else {
-//                    // this is supposed to be an edge embargo
-//                    if (CREATE_EMBARGO_DEBUG)
-//                        Groove.message("Constructing edge embargo from " + nacElemSet);
-//                    result = createEdgeEmbargo(lhs, embargoEdge);
-//                }
-//            }
-//        }
-//		return result;
-//	}
-
-	/**
-	 * Callback method to create a merge embargo.
-	 * @param context the context-graph
-	 * @param embargoNodes the nodes involved in this merge-embargoe
-	 * @return the new {@link groove.trans.MergeEmbargo}
-	 * @see #toRule()
-	 */
-	protected MergeEmbargo createMergeEmbargo(VarGraph context, Node[] embargoNodes) {
-	    return new MergeEmbargo(context, embargoNodes, getRuleFactory());
-	}
-
-	/**
-	 * Callback method to create an edge embargo.
-	 * @param context the context-graph
-	 * @param embargoEdge the edge to be turned into an embargoe
-	 * @return the new {@link groove.trans.EdgeEmbargo}
-	 * @see #toRule()
-	 */
-	protected EdgeEmbargo createEdgeEmbargo(VarGraph context, Edge embargoEdge) {
-	    return new EdgeEmbargo(context, embargoEdge, getRuleFactory());
-	}
 
 	/**
      * Callback method to construct a merge or edge embargo from a given edge,
@@ -569,7 +485,10 @@ public class AspectRuleView implements RuleView {
      * regular expression is an {@link RegExpr.Empty}, the method yields a 
      * merge embargo, for any other it yields an edge embargo. If the label is
      * not a negation, the method returns <code>null</code>.
-     * @param edge
+	 * @param graph the context for the embargo, if one is constructed
+	 * @param edge the edge from which the embargo is constructed
+	 * @return the embargo, or <code>null</code> if <code>edge</code> does
+	 * not have a top-level {@link RegExpr.Neg} operator.
      */
     protected NAC computeEmbargoFromNegation(VarGraph graph, Edge edge) {
         RegExpr negOperand = RegExprLabel.getNegOperand(edge.label());
@@ -598,6 +517,28 @@ public class AspectRuleView implements RuleView {
 	 */
 	protected NAC createNAC(VarGraph context) {
 	    return new DefaultNAC(context, getRuleFactory());
+	}
+
+	/**
+	 * Callback method to create a merge embargo.
+	 * @param context the context-graph
+	 * @param embargoNodes the nodes involved in this merge-embargoe
+	 * @return the new {@link groove.trans.MergeEmbargo}
+	 * @see #toRule()
+	 */
+	protected MergeEmbargo createMergeEmbargo(VarGraph context, Node[] embargoNodes) {
+	    return new MergeEmbargo(context, embargoNodes, getRuleFactory());
+	}
+
+	/**
+	 * Callback method to create an edge embargo.
+	 * @param context the context-graph
+	 * @param embargoEdge the edge to be turned into an embargoe
+	 * @return the new {@link groove.trans.EdgeEmbargo}
+	 * @see #toRule()
+	 */
+	protected EdgeEmbargo createEdgeEmbargo(VarGraph context, Edge embargoEdge) {
+	    return new EdgeEmbargo(context, embargoEdge, getRuleFactory());
 	}
 
 	/**
@@ -717,49 +658,58 @@ public class AspectRuleView implements RuleView {
 				// NOTE: we're assuming the NAC is injective and connected,
 				// otherwise no rule graph can be given
 				testInjective(nacMorphism);
-				testConnected(nacMorphism.cod());
+				// also store the nac into a graph, to test for connectedness
+				AspectGraph nacGraph = createGraph();
 				// store the mapping from the NAC target nodes to the rule graph
 				Map<Node, AspectNode> nacNodeMap = new HashMap<Node, AspectNode>();
 				// first register the lhs nodes
 				for (Node key : nacMorphism.dom().nodeSet()) {
-					Node image = nacMorphism.getNode(key);
-					if (image != null) {
-						nacNodeMap.put(image, lhsNodeMap.get(key));
+					Node nacNode = nacMorphism.getNode(key);
+					if (nacNode != null) {
+						AspectNode nacNodeImage = lhsNodeMap.get(key);
+						nacNodeMap.put(nacNode, nacNodeImage);
+						nacGraph.addNode(nacNodeImage);
 					}
 				}
 				// add this nac's nodes
-				for (Node node : nacMorphism.cod().nodeSet()) {
-					if (!nacNodeMap.containsKey(node)) {
-						AspectNode nodeImage = createAspectNode(result, EMBARGO);
-						result.addNode(nodeImage);
-						nacNodeMap.put(node, nodeImage);
+				for (Node nacNode : nacMorphism.cod().nodeSet()) {
+					if (!nacNodeMap.containsKey(nacNode)) {
+						AspectNode nacNodeImage = createAspectNode(result, EMBARGO);
+						nacNodeMap.put(nacNode, nacNodeImage);
+						result.addNode(nacNodeImage);
+						nacGraph.addNode(nacNodeImage);
 					}
 				}
-				Set<Edge> newEdgeSet = new HashSet<Edge>(
+				Set<Edge> nacEdgeSet = new HashSet<Edge>(
 						nacMorphism.cod().edgeSet());
-				newEdgeSet.removeAll(nacMorphism.elementMap().edgeMap().values());
+				nacEdgeSet.removeAll(nacMorphism.elementMap().edgeMap().values());
 				// add this nac's edges
-				for (Edge edge : newEdgeSet) {
-					List<AspectNode> endImages = images(nacNodeMap, edge.ends());
-					AspectEdge edgeImage = createAspectEdge(endImages,
-							edge.label(),
+				for (Edge nacEdge : nacEdgeSet) {
+					List<AspectNode> endImages = images(nacNodeMap, nacEdge.ends());
+					AspectEdge nacEdgeImage = createAspectEdge(endImages,
+							nacEdge.label(),
 							EMBARGO);
-					result.addEdge(edgeImage);
+					result.addEdge(nacEdgeImage);
+					nacGraph.addEdge(nacEdgeImage);
 				}
 				for (GraphCondition subNac : nac.getNegConjunct().getConditions()) {
+					AspectEdge subNacEdge;
 					if (subNac instanceof MergeEmbargo) {
-						result.addEdge(createInjectionEdge((MergeEmbargo) subNac,
+						subNacEdge = createInjectionEdge((MergeEmbargo) subNac,
 								nacNodeMap,
-								EMBARGO));
+								EMBARGO);
 					} else if (subNac instanceof EdgeEmbargo) {
-						result.addEdge(createNegationEdge((EdgeEmbargo) subNac,
+						subNacEdge = createNegationEdge((EdgeEmbargo) subNac,
 								nacNodeMap,
-								EMBARGO));
+								EMBARGO);
 					} else {
 						throw new ViewFormatException(
 								"Level 2 NACs must be merge or edge embargoes");
 					}
+					result.addEdge(subNacEdge);
+					nacGraph.addEdge(subNacEdge);
 				}
+				testConnected(nacGraph);
 			}
 		}
 		result.setFixed();
