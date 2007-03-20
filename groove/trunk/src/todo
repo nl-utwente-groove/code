@@ -1,0 +1,32 @@
+Simulator funtionality:
+- analysis of iteration of rule matching,
+  especially failure to match
+
+- allow quotes & separators in editor
+- .gps extensie weghalen
+
+- improve history browsing
+- define or find format for LTS serialization
+- repair key accelerators
+- look at isomorphism proofs
+- implementing production simulator applet
+- implementing operations over production rules 
+  (after, before, with)
+- defining java abstraction 
+- generating production rules from java abstraction
+- compiling java to java abstraction
+- defining state abstractions and rule applications
+- implementing logic formulae
+- implementing model checking
+
+Bugs
+----
+
+- laden GPS (bij openstaand LTS-scherm?)
+  dan genereren LTS niet goed
+
+---
+Licence
+- the licence header shoul be added to all files. 
+  It could be done in automated manner, after choosing
+  the build tool to be used.
