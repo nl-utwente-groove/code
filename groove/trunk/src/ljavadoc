@@ -1,0 +1,16 @@
+#! /bin/sh
+
+. `dirname $0`/defaults
+mkdir -p ${GROOVE_DOC_DIR}
+${JAVA_HOME}/bin/javadoc \
+    -source 1.5 \
+    -sourcepath . \
+    -d ${GROOVE_DOC_DIR} \
+    -extdirs ${GROOVE_JAR_DIR} \
+    -classpath ${GROOVE_CLASS_DIR} \
+    -quiet -breakiterator -author -version \
+    -tag invariant:f:"Invariant:" \
+    -tag require:cm:"Requires:" \
+    -tag ensure:cm:"Ensures:" \
+    $*
+touch ${GROOVE_DOC_DIR}
