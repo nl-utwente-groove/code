@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: ExplorationTest.java,v 1.2 2007-03-20 14:49:19 kastenberg Exp $
  */
 
 package groove.test;
@@ -46,10 +46,10 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class ExplorationTest extends TestCase {
-    static public final String INPUT_DIR = "samples";
+    static public final String INPUT_DIR = "junit/samples";
     /**
      * Name of a text file to be found in the same package as this class. 
      */
