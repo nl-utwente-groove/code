@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ProductNode.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
+ * $Id: ProductNode.java,v 1.2 2007-03-20 23:00:47 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -29,7 +29,7 @@ import java.util.List;
  * perform algebraic operations.
  * 
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-03-20 10:42:43 $
+ * @version $Revision 1.0$ $Date: 2007-03-20 23:00:47 $
  */
 public class ProductNode extends DefaultNode {
 
@@ -43,6 +43,7 @@ public class ProductNode extends DefaultNode {
 
     /**
      * Adds an operand to <code>operands</code>.
+     * AREND: I don't understand, can't the operands be variables?
      * @param constant the {@link groove.algebra.Constant} to be added to the <code>operands</code>
      * @return <tt>true</tt> (as per the general contract of the Collection.add method).
      */
