@@ -58,7 +58,7 @@ public class GraphDatabaseIterator implements Iterator {
     }
 
     public MatchingPair next() {
-        int index = (graphindex % 25);
+        int index = (graphindex % 10);
         // keep track of the size
         if( index == 0 )
             sizeindex++;
