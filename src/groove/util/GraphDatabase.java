@@ -27,6 +27,8 @@ public class GraphDatabase {
 
     public GraphDatabase(String loc) {
         location = loc;
+        if( (!loc.endsWith("/")) || (!loc.endsWith("\\")) )
+            location += "/";
         listIndices();
     }
 

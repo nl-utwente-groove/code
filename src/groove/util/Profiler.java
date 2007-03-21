@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Profiler.java,v 1.1 2007-03-21 11:25:17 hovej Exp $
+ * $Id: Profiler.java,v 1.2 2007-03-21 11:52:42 hovej Exp $
  */
 package groove.util;
 
@@ -126,7 +126,7 @@ public class Profiler extends CommandLineTool {
         if( injective == gp.matchings ) {
             prettyprint++;
             System.out.print('.');
-            if( prettyprint == 80 ) {
+            if( prettyprint == 79 ) {
                 prettyprint = 0;
                 System.out.println();
             }
