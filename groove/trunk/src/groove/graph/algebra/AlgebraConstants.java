@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AlgebraConstants.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
+ * $Id: AlgebraConstants.java,v 1.2 2007-03-23 15:42:59 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -33,11 +33,10 @@ import java.util.Iterator;
 /**
  * Class containing all the constant values used for dealing with attributed graphs.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:43 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-23 15:42:59 $
  */
 public class AlgebraConstants {
-
-	/** Number of attribute types */
+	/** Number of attribute types AREND not used; may be removed? */
 	static public final int NR_OF_TYPES = 3;
 	/** Code for attributes of type integer. */
 	static public final int INTEGER = 0;
@@ -78,6 +77,7 @@ public class AlgebraConstants {
     static private AlgebraGraph algebraGraph;
 
     /**
+     * AREND Only called locally; make private?
      * @return the singleton {@link groove.graph.algebra.AlgebraGraph}-instance
      */
     static public AlgebraGraph getAlgebraGraph() {
@@ -88,6 +88,7 @@ public class AlgebraConstants {
 
     /**
      * Checks whether the given edge is a so called algebra-edge or not.
+     * AREND Never called; may be removed?
      * @param edge the edge to be checked
      * @return <tt>true</tt> if the given edge is an algebra-edge, <tt>false</tt> otherwise
      */
@@ -107,7 +108,7 @@ public class AlgebraConstants {
 
     /**
      * Checks whether the given label is a special product-label.
-     * 
+     * AREND never called; may be removed?
      * @param label the label to check
      * @return <tt>true</tt> if the label is a special product-label, <tt>false</tt> otherwise
      */
@@ -143,6 +144,7 @@ public class AlgebraConstants {
 
     /**
      * Returns the role of a given label text.
+     * AREND only called locally; make private?
      * @param text the label text from which we want to determine the role
      * @return the role as indicated by <tt>text</tt>
      * @ensure <tt>isValidRole(result) || result == NO_ROLE</tt>
@@ -158,6 +160,7 @@ public class AlgebraConstants {
     
     /**
      * Returns the text of a label as minus its role prefix.
+     * AREND only called locally; make private?
      * @param label the label whose text prefix is to be cut off
      * @return label text without its role prefix 
      */
@@ -172,6 +175,7 @@ public class AlgebraConstants {
     /**
      * Returns the type as indicated by an ordinary edge.
      * An edge indicates a type if it is a self-edge labelled only with the type prefix.
+     * AREND only called locally; make private?
      * @param edge the label whose type indication is to be investigated
      * @return the type as indicated by <tt>edge</tt>
      * @ensure <tt>isValidType(result) || result == NO_TYPE</tt>
@@ -190,6 +194,7 @@ public class AlgebraConstants {
     /**
      * Tests whether a given type is legal, i.e., one of
      * <tt>INTEGER</tt>, <tt>STRING</tt> or <tt>BOOLEAN</tt>.
+     * AREND never called; may be removed?
      * @param type the type to be tested
      * @return <tt>true</tt> iff <tt>type<tt> is one of
      * <tt>INTEGER</tt>, <tt>STRING</tt> or <tt>BOOLEAN</tt>
@@ -210,6 +215,7 @@ public class AlgebraConstants {
 
     /**
      * Determines the algebra type of a node in a graph.
+     * AREND never called; may be removed?
      * @param node the node for which to determine the algebra type
      * @param graph the graph in which this node occurs
      * @return the algebra type of this node, otherwise {@link groove.graph.algebra.AlgebraConstants#NO_TYPE}
@@ -304,7 +310,7 @@ public class AlgebraConstants {
      * represents a product node (i.e. an ordered tuple of data values). If so,
      * it returns a fresh instance of {@link groove.graph.algebra.ProductNode}.
      * If not, it returns <tt>null</tt>.
-     * 
+     * AREND only called locally; make private?
      * @param node the node for which to check whether it represents a product
      * @param graph the graph containing this node and, more importantly, its
      * adjacent edges
@@ -327,7 +333,7 @@ public class AlgebraConstants {
      * represents an algebraic data value. If so, it returns the only
      * {@link groove.graph.algebra.ValueNode} for this data value, otherwise
      * <tt>null</tt>.
-     * 
+     * AREND only called locally; make private?
      * @param node the node for which to check whether it represents an algebraic
      * data value
      * @param graph the graph containing this node and, more importantly, its
@@ -346,7 +352,7 @@ public class AlgebraConstants {
      * Given a node and the graph this node is in, it checks whether this node
      * represents a data variable. If so, it returns a fresh instance of
      * {@link groove.graph.algebra.ValueNode}. If not, it returns <tt>null</tt>.
-     * 
+     * AREND only called locally; make private?
      * @param node the node for which to check whether it represents a data variable
      * @param graph the graph containing this node and, more importantly, its
      * adjacent edges

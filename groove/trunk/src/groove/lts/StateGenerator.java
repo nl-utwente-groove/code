@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: StateGenerator.java,v 1.2 2007-03-23 15:42:58 rensink Exp $
  */
 package groove.lts;
 
@@ -124,6 +124,7 @@ public class StateGenerator {
             }
             // get the next states by adding transitions for the derivations
             return new TransformIterator<RuleApplication,GraphState>(derivationIter) {
+            	@Override
                 public boolean hasNext() {
                     if (hasNext) {
                         hasNext = super.hasNext();
@@ -134,6 +135,7 @@ public class StateGenerator {
                     return hasNext;
                 }
 
+            	@Override
                 protected GraphState toOuter(RuleApplication from) {
                     return addTransition(from);
                 }
@@ -144,11 +146,10 @@ public class StateGenerator {
     }
 
     /**
-     * Adds a transition to the GTS, from a given source state and with a
-     * given underlying derivation.
-     * The derivation's target graph is compared to the existing states for isomorphism;
-     * if an isomorphic one is found then that is taken as target state, and
-     * the derivation is adjusted accordingly. If no isomorphic state is found,
+     * Adds a transition to the GTS, constructed from a given rule application.
+     * The application's target graph is compared to the existing states for symmetry;
+     * if a symmetric one is found then that is taken as target state, and
+     * the derivation is adjusted accordingly. If no symmetric state is found,
      * then a fresh target state is added.
      * The actual target state is returned as the result of the method.
      * @param appl the derivation underlying the transition to be added
@@ -171,7 +172,6 @@ public class StateGenerator {
         return targetState;
     }
 
-    //IOVKA this method seems to be used only by addTransition(RuleApplication appl) in this class. Make it private ?
 	/**
 	 * Computes the target state of a rule application.
 	 * The target state is added to the underlying GTS, after checking for already
@@ -179,7 +179,7 @@ public class StateGenerator {
 	 * @param appl the rule application from which the target state is
 	 * to be extracted
 	 */
-	public GraphState computeTargetState(RuleApplication appl) {
+	private GraphState computeTargetState(RuleApplication appl) {
 		GraphState result = (GraphState) appl.getTarget();
         // see if isomorphic graph is already in the LTS
         // special case: source = target
@@ -200,7 +200,7 @@ public class StateGenerator {
      * around three sides of a confluent diamond instead of computing the
      * target directly.
      */
-    protected GraphState getConfluentTarget(RuleApplication appl) {
+    private GraphState getConfluentTarget(RuleApplication appl) {
         if (!NextStateDeriver.isUseDependencies() || !(appl instanceof AliasRuleApplication)) {
             return null;
         }

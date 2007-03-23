@@ -1,6 +1,11 @@
 package groove.util;
 
-import groove.graph.*;
+import groove.graph.DefaultLabel;
+import groove.graph.GraphFormatException;
+import groove.graph.Label;
+import groove.graph.Node;
+import groove.graph.NodeSetEdgeSetGraph;
+
 
 /**
  * @author iGniSz
@@ -14,8 +19,8 @@ public class MatchingTestCases {
      *
      * @return
      */
-    public static NodeEdgeSetGraph SimpleTestCase1A() {
-        NodeEdgeSetGraph nesg = new NodeEdgeSetGraph();
+    public static NodeSetEdgeSetGraph SimpleTestCase1A() {
+        NodeSetEdgeSetGraph nesg = new NodeSetEdgeSetGraph();
 
         Label label = null;
         try {
@@ -45,8 +50,8 @@ public class MatchingTestCases {
      *
      * @return
      */
-    public static NodeEdgeSetGraph SimpleTestCase1B() {
-        NodeEdgeSetGraph nesg = new NodeEdgeSetGraph();
+    public static NodeSetEdgeSetGraph SimpleTestCase1B() {
+        NodeSetEdgeSetGraph nesg = new NodeSetEdgeSetGraph();
 
         try {
             Label label = DefaultLabel.parseLabel("a");
@@ -72,8 +77,8 @@ public class MatchingTestCases {
      *
      * 0->1
      */
-    public static NodeEdgeSetGraph SimpleTestCase2A() {
-        NodeEdgeSetGraph nesg = new NodeEdgeSetGraph();
+    public static NodeSetEdgeSetGraph SimpleTestCase2A() {
+        NodeSetEdgeSetGraph nesg = new NodeSetEdgeSetGraph();
 
         Label label = null;
         try {
@@ -96,8 +101,8 @@ public class MatchingTestCases {
      * 0->1
      * 2
      */
-    public static NodeEdgeSetGraph SimpleTestCase3A() {
-        NodeEdgeSetGraph nesg = new NodeEdgeSetGraph();
+    public static NodeSetEdgeSetGraph SimpleTestCase3A() {
+        NodeSetEdgeSetGraph nesg = new NodeSetEdgeSetGraph();
 
         Label label = null;
         try {
@@ -122,8 +127,8 @@ public class MatchingTestCases {
      * 0->1
      * 1->2
      */
-    public static NodeEdgeSetGraph SimpleTestCase4A() {
-        NodeEdgeSetGraph nesg = new NodeEdgeSetGraph();
+    public static NodeSetEdgeSetGraph SimpleTestCase4A() {
+        NodeSetEdgeSetGraph nesg = new NodeSetEdgeSetGraph();
 
         Label label = null;
         try {
@@ -149,8 +154,8 @@ public class MatchingTestCases {
      * 2
      * 3
      */
-    public static NodeEdgeSetGraph SimpleTestCase5A() {
-        NodeEdgeSetGraph nesg = new NodeEdgeSetGraph();
+    public static NodeSetEdgeSetGraph SimpleTestCase5A() {
+        NodeSetEdgeSetGraph nesg = new NodeSetEdgeSetGraph();
 
         Label label = null;
         try {

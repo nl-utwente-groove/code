@@ -12,14 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
+ * $Id: DefaultGraphTransition.java,v 1.2 2007-03-23 15:42:58 rensink Exp $
  */
 package groove.lts;
 
 import groove.graph.AbstractBinaryEdge;
 import groove.graph.AbstractGraph;
 import groove.graph.BinaryEdge;
-import groove.graph.Element;
 import groove.graph.NodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.InjectiveMorphism;
@@ -35,7 +34,7 @@ import groove.trans.RuleEvent;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:51 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-23 15:42:58 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphOutTransition, GraphTransition {
     /** The total number of anchor images created. */
@@ -107,7 +106,7 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
     }
 
     public Matching matching() {
-    	return getEvent().getMatching(source());
+    	return getEvent().getMatching(source().getGraph());
     }
 
     /**
@@ -138,17 +137,17 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
      * Constructs an underlying morphism for the transition from the stored footprint.
      */
     protected Morphism computeMorphism() {
-        RuleApplication appl = getEvent().createApplication(source());
+        RuleApplication appl = getEvent().createApplication(source().getGraph());
         Graph derivedTarget = appl.getTarget();
-        Graph realTarget = target();
+        Graph realTarget = target().getGraph();
         if (derivedTarget.edgeSet().equals(realTarget.edgeSet())
                 && derivedTarget.nodeSet().equals(realTarget.nodeSet())) {
             return appl.getMorphism();
         } else {
-            InjectiveMorphism iso = derivedTarget.getIsomorphismTo(target());
+            InjectiveMorphism iso = derivedTarget.getIsomorphismTo(target().getGraph());
             assert iso != null : "Can't reconstruct derivation from graph transition " + this
                     + ": \n" + AbstractGraph.toString(derivedTarget) + " and \n"
-                    + AbstractGraph.toString(target()) + " \nnot isomorphic";
+                    + AbstractGraph.toString(target().getGraph()) + " \nnot isomorphic";
             return appl.getMorphism().then(iso);
         }
     }
@@ -158,6 +157,7 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
     /**
      * This implementation throws an {@link UnsupportedOperationException} always.
      */
+	@Override
     public Transition imageFor(NodeEdgeMap elementMap) {
         throw new UnsupportedOperationException("Transition images are currenty not supported");
     }
@@ -183,24 +183,10 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
     /**
      * This implementation delegates to <tt>{@link #equalsSource(GraphTransition)}</tt>.
     */
+	@Override
     public boolean equals(Object obj) {
         return obj instanceof GraphTransition && equalsSource((GraphTransition) obj) && equalsEvent((GraphTransition) obj);
     }
-
-//    /**
-//     * This implementation returns the name of the underlying rule,
-//     * possibly with event information included, depending on the
-//     * transition labelling policy.
-//     * @see #isRuleLabelled()
-//     */
-//    public Label computeLabel() {
-//        if (isRuleLabelled()) {
-//            return getRule().getName();
-//        } else {
-//            return getEvent().getLabel();
-//        }
-//    }
-//  }
     
     /** This implementation specialises the return type to a {@link DefaultGraphState}. */
     @Override
@@ -215,22 +201,15 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
     }
 
     /** Always throws an <tt>UnsupportedOperationException</tt>. */
+	@Override
     public BinaryEdge newEdge(Node source, Label label, Node target) {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * 
-     */
-    @Override
-	public int compareTo(Element obj) {
-		// TODO Auto-generated method stub
-		return super.compareTo(obj);
-	}
-
 	/**
      * This implementation combines the hash codes of the rule and the anchor images.
      */
+	@Override
     protected int computeHashCode() {
         return source.hashCode() + event.hashCode();
     }

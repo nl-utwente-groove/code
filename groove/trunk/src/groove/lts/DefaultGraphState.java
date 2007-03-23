@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphState.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
+ * $Id: DefaultGraphState.java,v 1.2 2007-03-23 15:42:58 rensink Exp $
  */
 package groove.lts;
 
@@ -40,7 +40,7 @@ import java.util.Iterator;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:51 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-23 15:42:58 $
  */
 public class DefaultGraphState extends DeltaGraph implements GraphState {
 	/**
@@ -130,6 +130,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
         // the iterator is created as a transformation of the iterator on the
         // stored OutGraphTransitions.
         return new TransformIterator<GraphOutTransition,GraphTransition>(getOutTransitionIter()) {
+        	@Override
             public GraphTransition toOuter(GraphOutTransition obj) {
                 return obj.createTransition(DefaultGraphState.this);
             }
@@ -141,10 +142,12 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      */
     public Collection<GraphTransition> getTransitionSet() {
         return new TransformCollection<GraphOutTransition,GraphTransition>(getOutTransitionSet()) {
+        	@Override
             public GraphTransition toOuter(GraphOutTransition obj) {
                 return obj.createTransition(DefaultGraphState.this);
             }
             
+        	@Override
             public boolean contains(Object obj) {
                 if (obj instanceof GraphTransition) {
                     return containsTransition((GraphTransition) obj);
@@ -173,6 +176,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      */
     public Iterator<GraphState> getNextStateIter() {
         return new TransformIterator<GraphOutTransition,GraphState>(getRawOutTransitionIter()) {
+        	@Override
             public GraphState toOuter(GraphOutTransition obj) {
                 return obj.target();
             }
@@ -303,6 +307,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      * @return a clone of this state
      * @ensure <tt>result != null</tt>
      */
+    	@Override
     public DefaultGraphState clone() {
         return new DefaultGraphState(this);
     }
@@ -341,6 +346,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
     // ------------------------------ Object overrides -----------------------------------
 
     /** Returns the number of this <tt>GraphState</tt>. */
+	@Override
     public int hashCode() {
         return nr;
     }
@@ -350,6 +356,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
     /**
      * Two <tt>GraphState</tt> s are equal if they have the same number.
      */
+	@Override
     public boolean equals(Object obj) {
         return (obj instanceof DefaultGraphState) && nr == ((DefaultGraphState) obj).nr;
     }
@@ -360,6 +367,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      * 
      * @see groove.graph.AbstractGraph#toString(groove.graph.GraphShape)
      */
+	@Override
     public String toString() {
         return "s" + nr;
     }
@@ -367,6 +375,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
 	/**
      * This implementation returns a {@link DefaultStateCache}.
      */
+	@Override
     protected GraphCache createCache() {
         return new DefaultStateCache(this);
     }
@@ -386,6 +395,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
 	/**
      * This implementation returns a {@link StateCacheReference}.
      */
+	@Override
     protected StateCacheReference<? extends DefaultStateCache> createCacheReference(GraphShapeCache referent) {
     	return new StateCacheReference<DefaultStateCache>((DefaultStateCache) referent);
 	}
@@ -395,6 +405,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      * the current (open or closed) state of the graph as a parameter, as
      * indicated by {@link #isClosed()}.
      */
+	@Override
     final protected Reference<? extends DefaultStateCache> createNullReference() {
     	return createNullReference(isClosed());
     }
@@ -496,6 +507,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      * Returns the position in the graph's delta from where to start looking for
      * outgoing transitions rather than true delta elements.
      */
+	@Override
     protected int getDeltaSize() {
     	Element[] delta = getDeltaArray();
     	int result = delta.length;

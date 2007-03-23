@@ -1,7 +1,6 @@
 package groove.util;
 
 import groove.graph.Graph;
-import groove.graph.NodeEdgeSetGraph;
 
 /**
  * Helper class to represent a pair of graphs and the number of injective matchings between them

@@ -1,7 +1,11 @@
 package groove.util;
 
-import groove.graph.*;
-import groove.trans.NameLabel;
+
+import groove.graph.DefaultLabel;
+import groove.graph.GraphFormatException;
+import groove.graph.Label;
+import groove.graph.Node;
+import groove.graph.NodeSetEdgeSetGraph;
 
 import java.io.*;
 import java.util.Vector;
@@ -56,8 +60,8 @@ public class GraphDatabase {
      * @param location
      * @return NodeEdgeSetGraph the graph represented by the file from the collection
      */
-    public static NodeEdgeSetGraph load(String location) {
-        NodeEdgeSetGraph nesg = new NodeEdgeSetGraph();
+    public static NodeSetEdgeSetGraph load(String location) {
+        NodeSetEdgeSetGraph nesg = new NodeSetEdgeSetGraph();
         int target, edges;
 
         try {
