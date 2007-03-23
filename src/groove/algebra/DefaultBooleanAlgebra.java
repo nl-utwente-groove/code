@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultBooleanAlgebra.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: DefaultBooleanAlgebra.java,v 1.2 2007-03-23 11:25:52 kastenberg Exp $
  */
 package groove.algebra;
 
@@ -24,7 +24,7 @@ import java.util.List;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-23 11:25:52 $
  */
 public class DefaultBooleanAlgebra extends Algebra {
 
@@ -101,16 +101,16 @@ public class DefaultBooleanAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	protected static class BooleanAndOperation extends DefaultOperation {
-
-		/**
-		 * The singleton instance.
-		 */
+		/** The singleton instance. */
 		private static BooleanAndOperation instance = null;
 
 		private BooleanAndOperation() {
 			super(AND, 2);
 		}
 
+		/**
+		 * @return the singleton instance
+		 */
 		public static Operation getInstance() {
 			if (instance == null)
 				instance = new BooleanAndOperation();
@@ -143,13 +143,16 @@ public class DefaultBooleanAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	protected static class BooleanOrOperation extends DefaultOperation {
-
+		/** The singleton instance. */
 		private static BooleanOrOperation instance = null;
 
 		private BooleanOrOperation() {
 			super(OR, 2);
 		}
 
+		/**
+		 * @return the singleton instance
+		 */
 		public static Operation getInstance() {
 			if (instance == null)
 				instance = new BooleanOrOperation();
@@ -179,13 +182,16 @@ public class DefaultBooleanAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	protected static class BooleanNotOperation extends DefaultOperation {
-
+		/** The singleton instance. */
 		private static BooleanNotOperation instance = null;
 
 		private BooleanNotOperation() {
 			super(NOT, 1);
 		}
 
+		/**
+		 * @return the singleton instance
+		 */
 		public static Operation getInstance() {
 			if (instance == null)
 				instance = new BooleanNotOperation();
@@ -213,13 +219,16 @@ public class DefaultBooleanAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	protected static class False extends DefaultConstant {
-
+		/** The singleton instance. */
 		private static Constant instance = null;
 
 		private False() {
 			set(null, FALSE, -1);
 		}
 
+		/**
+		 * @return the singleton instance
+		 */
 		public static Constant getInstance() {
 			if (instance == null)
 				instance = new False();
@@ -236,13 +245,16 @@ public class DefaultBooleanAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	protected static class True extends DefaultConstant {
-
+		/** The singleton instance. */
 		private static Constant instance = null;
 
 		private True() {
 			set(null, TRUE, -1);
 		}
 
+		/**
+		 * @return the singleton instance
+		 */
 		public static Constant getInstance() {
 			if (instance == null)
 				instance = new True();
