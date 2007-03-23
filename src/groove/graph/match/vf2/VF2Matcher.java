@@ -1,8 +1,10 @@
-package groove.graph.match.vf1;
+package groove.graph.match.vf2;
 
+import groove.graph.Graph;
+import groove.graph.Morphism;
+import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
 import groove.graph.match.Matcher;
-import groove.graph.match.vf2.*;
-import groove.graph.*;
 
 import java.util.*;
 

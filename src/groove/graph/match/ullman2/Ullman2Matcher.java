@@ -1,7 +1,13 @@
-package groove.graph.match.ullman;
+package groove.graph.match.ullman2;
 
+import groove.graph.DefaultNode;
+import groove.graph.Edge;
+import groove.graph.Graph;
+import groove.graph.Morphism;
+import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.graph.match.Matcher;
-import groove.graph.*;
+import groove.graph.match.ullman.BooleanMatrix;
 import groove.rel.VarNodeEdgeHashMap;
 
 import java.util.*;

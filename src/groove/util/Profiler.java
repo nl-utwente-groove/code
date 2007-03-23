@@ -12,16 +12,16 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Profiler.java,v 1.2 2007-03-21 11:52:42 hovej Exp $
+ * $Id: Profiler.java,v 1.3 2007-03-23 15:42:57 rensink Exp $
  */
 package groove.util;
 
 import groove.graph.match.Matcher;
 import groove.graph.match.DefaultMatcher;
 import groove.graph.match.vf1.VFMatcher;
-import groove.graph.match.vf1.VF2Matcher;
+import groove.graph.match.vf2.VF2Matcher;
 import groove.graph.match.ullman.UllmanMatcher;
-import groove.graph.match.ullman.Ullman2Matcher;
+import groove.graph.match.ullman2.Ullman2Matcher;
 import groove.graph.Morphism;
 import groove.graph.DefaultMorphism;
 import groove.graph.NodeEdgeMap;

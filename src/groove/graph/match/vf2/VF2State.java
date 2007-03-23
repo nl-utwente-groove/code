@@ -3,7 +3,6 @@ package groove.graph.match.vf2;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.Edge;
-import org.omg.CORBA.ContextList;
 
 import java.util.Collection;
 

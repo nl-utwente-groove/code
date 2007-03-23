@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
+ * $Id: GTS.java,v 1.2 2007-03-23 15:42:58 rensink Exp $
  */
 package groove.lts;
 
@@ -46,7 +46,7 @@ import java.util.Set;
  * The types of the states and transitions can be set by providing
  * prototype factories Default values are <tt>GraphState</tt>. and <tt>GraphTransition</tt>.
  * Extends graph.Graph with a start (i.e., initial) state.
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:51 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-23 15:42:58 $
  */
 public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	/**
@@ -139,7 +139,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
      * Creation is done using {@link #createStartState(Graph)}.
      */
     protected GraphState computeStartState(Graph startGraph) {
-        GraphState result = new DefaultGraphState(startGraph);
+        GraphState result = createStartState(startGraph);
         result.getGraph().setFixed();
         return result;
     }
@@ -177,6 +177,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
             }
             // get the next states by adding transitions for the derivations
             return new TransformIterator<RuleApplication,GraphState>(derivationIter) {
+            	@Override
                 public boolean hasNext() {
                     if (hasNext) {
                         hasNext = super.hasNext();
@@ -187,6 +188,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
                     return hasNext;
                 }
 
+            	@Override
                 protected GraphState toOuter(RuleApplication from) {
                     return addTransition(from);
                 }
@@ -244,6 +246,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
      */
     public Collection<GraphState> getOpenStates() {
         return new SetView<GraphState>(stateSet) {
+        	@Override
             public boolean approves(Object obj) {
                 return !((State) obj).isClosed();
             }
@@ -258,6 +261,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
      */
     public Iterator<GraphState> getOpenStateIter() {
         return new FilterIterator<GraphState>(nodeSet().iterator()) {
+        	@Override
             protected boolean approves(Object obj) {
                 return !((State) obj).isClosed();
             }
@@ -343,10 +347,12 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 //        strategy.setLTS(this);
     }
 
+	@Override
     public int nodeCount() {
         return stateSet.size();
     }
 
+	@Override
     public int edgeCount() {
         return transitionCount;
     }
@@ -355,121 +361,20 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	 * This implementation calls {@link GraphState#getTransitionSet()} on <tt>node</tt>.
 	 * @require <tt>node instanceof GraphState</tt>
 	 */
+	@Override
 	public Collection<GraphTransition> outEdgeSet(Node node) {
 		return ((GraphState) node).getTransitionSet();
 	}
 	
     // ----------------------- OBJECT OVERRIDES ------------------------
 
+	@Override
     public boolean equals(Object other) {
         return other instanceof GTS
             && startState.equals(((GTS) other).startState())
             && ruleSystem.equals(((GTS) other).ruleSystem())
             && super.equals(other);
     }
-//
-//    // --------------------------- COMMANDS ----------------------------
-//
-//    /**
-//     * A GTS cannot create new edges from the information here provided;
-//     * so this method always throws <tt>UnsupportedOperationException</tt>
-//     * @throws UnsupportedOperationException always
-//     */
-//    public BinaryEdge addEdge(Node source, Label label, Node target) {
-//        throw new UnsupportedOperationException();
-//    }
-//    
-//    /**
-//     * Adding transitions should be done through {@link #addTransition(RuleApplication)}.
-//     * This method throws an exception always.
-//     * @throws UnsupportedOperationException always
-//     * @see #addTransition(RuleApplication)
-//     */
-//    public boolean addEdge(Edge edge) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Adding transitions should be done through {@link #addTransition(RuleApplication)}.
-//     * This method throws an exception always.
-//     * @throws UnsupportedOperationException always
-//     * @see #addTransition(RuleApplication)
-//     */
-//    public boolean addEdgeWithoutCheck(Edge obj) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Casts the parameter to a {@link GraphState} and calls {@link #addState(GraphState)}.
-//     * @see #addState(GraphState)
-//     */
-//    public boolean addNode(Node node) {
-//        return addState((GraphState) node) == null;
-//    }
-//
-//    /**
-//     * Transitions can never be removed.
-//     * This method throws an exception always.
-//     * @throws UnsupportedOperationException always
-//     */
-//    public boolean removeEdge(Edge edge) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//
-//    /**
-//     * States can never be removed.
-//     * This method throws an exception always.
-//     * @throws UnsupportedOperationException always
-//     */
-//    public boolean removeNodeWithoutCheck(Node node) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * States can never be removed.
-//     * This method throws an exception always.
-//     * @throws UnsupportedOperationException always
-//     */
-//    public boolean removeNode(Node node) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//	/**
-//	 * Cloning a GTS is currently not supported.
-//     * @throws UnsupportedOperationException always
-//	 */
-//	public Graph clone() {
-//        throw new UnsupportedOperationException();
-//	}
-//	
-//	/* (non-Javadoc)
-//	 * @see groove.graph.Graph#newGraph()
-//	 */
-//	public Graph newGraph() {
-//		return new GTS(ruleSystem, startState.getGraph(), storeTransitions);
-//	}
-//
-//    /**
-//     * Throws an exception always.
-//     */
-//    public BinaryEdge createEdge(Node source, Label label, Node target) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Throws an exception always.
-//     */
-//    public Edge createEdge(Node[] ends, Label label) {
-//        throw new UnsupportedOperationException();
-//    }
-//
-//    /**
-//     * Throws an exception always.
-//     */
-//    public Node createNode() {
-//        throw new UnsupportedOperationException();
-//    }
 
     public Set<? extends GraphState> nodeSet() {
         return Collections.unmodifiableSet(stateSet);
@@ -483,6 +388,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
         }
     }
 
+	@Override
     protected GraphShapeCache createCache() {
         return new GraphShapeCache(this, false);
     }
@@ -568,11 +474,12 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
         return targetState;
     }
 
-    // IOVKA is the targetState supposed to be already in the GTS ? At least, this assumption seems to be made while using this method in the class StateGenerator
 	/**
-	 * @param sourceState
-	 * @param appl
-	 * @param targetState
+	 * Adds a transition to the GTS, under the assumption that the source
+	 * and target states are already present.
+	 * @param sourceState the source state of the transition to be added
+	 * @param appl the rule application giving rise to the transition
+	 * @param targetState the target state of the transition to be added
 	 */
 	public void addTransition(GraphState sourceState, RuleApplication appl, GraphState targetState) {
 		if (storeTransitions) {
@@ -634,6 +541,13 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
     }
 
     /**
+	 * Indicates if transitions are to be stored in the GTS.
+	 */
+	protected final boolean isStoreTransitions() {
+		return this.storeTransitions;
+	}
+
+	/**
      * Iterates over the graph listeners and notifies those which
      * are also LTS listeners of the fact that a state has been closed.
      */
@@ -704,6 +618,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
         /**
          * Calls {@link IsoChecker#areIsomorphic(Graph, Graph)}.
          */
+    	@Override
         protected boolean areEqual(Object key, Object otherKey) {
             Graph one = (Graph) key;
             Graph two = (Graph) otherKey;
@@ -718,6 +633,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
         /**
          * Returns the hash code of the isomorphism certificate.
          */
+    	@Override
         protected int getCode(Object key) {
             return ((Graph) key).getCertificate().hashCode();
         }
@@ -738,6 +654,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
          * transition is registered as outgoing transition with the source state.
          * @require <tt>o instanceof GraphTransition</tt> 
          */
+    	@Override
         public boolean contains(Object o) {
         	if (o instanceof GraphTransition) {
         		GraphTransition transition = (GraphTransition) o;
@@ -752,8 +669,10 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
          * Iterates over the state and for each state over
          * that state's outgoing transitions.
          */
+    	@Override
         public Iterator<GraphTransition> iterator() {
             Iterator<Iterator<GraphTransition>> stateOutTransitionIter = new TransformIterator<GraphState,Iterator<GraphTransition>>(nodeSet().iterator()) {
+            	@Override
                 public Iterator<GraphTransition> toOuter(GraphState state) {
                     return state.getTransitionIter();
                 }
@@ -761,6 +680,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
             return new NestedIterator<GraphTransition>(stateOutTransitionIter);
         }
 
+    	@Override
         public int size() {
             return transitionCount;
         }
@@ -768,10 +688,6 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
     /** Profiling aid for adding states. */
     static public final int ADD_STATE = reporter.newMethod("addState");
     /** Profiling aid for adding transitions. */
-//    static public final int ADD_TRANSITION = reporter.newMethod("addTransition");
-//    /** Profiling aid for adding transitions. */
-//    static public final int ADD_TRANSITION_START = reporter.newMethod("addTransition - start");
-//    /** Profiling aid for adding transitions. */
     static public final int ADD_TRANSITION_STOP = reporter.newMethod("addTransition  - stop");
     /** Profiling aid for closing states. */
     static private final int CLOSE = reporter.newMethod("close(State)");
