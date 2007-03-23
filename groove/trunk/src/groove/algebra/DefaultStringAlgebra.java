@@ -1,18 +1,19 @@
-/* GROOVE: GRaphs for Object Oriented VErification
+/*
+ * GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
  * you may not use this file except in compliance with the License. 
  * You may obtain a copy of the License at 
  * http://www.apache.org/licenses/LICENSE-2.0 
- * 
+ *
  * Unless required by applicable law or agreed to in writing, 
  * software distributed under the License is distributed on an 
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultStringAlgebra.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: DefaultStringAlgebra.java,v 1.2 2007-03-23 11:24:05 kastenberg Exp $
  */
 package groove.algebra;
 
@@ -26,7 +27,7 @@ import java.util.List;
  * on strings.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-23 11:24:05 $
  */
 public class DefaultStringAlgebra extends Algebra {
 
@@ -98,18 +99,27 @@ public class DefaultStringAlgebra extends Algebra {
 	}
 
 	protected static class StringConstant extends DefaultConstant {
+		/**
+		 * Constructor.
+		 * @param algebra the algebra it belongs to
+		 * @param symbol the symbol of this constant
+		 */
 		public StringConstant(Algebra algebra, String symbol) {
 			set(algebra, symbol, 0);
 		}
 	}
 
 	protected static class EmptyString extends DefaultConstant {
-	    public static Constant instance = null;
+	    /** Singleton instance. */
+	    private static Constant instance = null;
 
 	    private EmptyString() {
 	        set(algebra, EMPTY_STRING, 0);
 	    }
 
+	    /**
+	     * @return the singleton instance
+	     */
 	    public static Constant getInstance() {
 	        if (instance == null)
 	            instance = new EmptyString();
@@ -122,13 +132,16 @@ public class DefaultStringAlgebra extends Algebra {
 	}
 
 	protected static class ConcatOperation extends DefaultOperation {
-
+	    /** Singleton instance. */
 		private static ConcatOperation operation = null;
 
 		private ConcatOperation() {
 			super(CONCAT, 2);
 		}
 
+		/**
+		 * @return the singleton instance
+		 */
 		public static Operation getInstance() {
 			if (operation == null)
 				operation = new ConcatOperation();
@@ -153,13 +166,16 @@ public class DefaultStringAlgebra extends Algebra {
 	}
 
 	protected static class EqualsOperation extends DefaultOperation {
-		
+	    /** Singleton instance. */
 		private static EqualsOperation operation = null;
 
 		private EqualsOperation() {
 			super(EQUALS, 2);
 		}
 
+		/**
+		 * @return the singleton instance
+		 */
 		public static Operation getInstance() {
 			if (operation == null)
 				operation = new EqualsOperation();
