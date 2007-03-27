@@ -13,13 +13,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: Options.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
  */
 package groove.gui;
 
 import java.awt.event.KeyEvent;
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.swing.JCheckBoxMenuItem;
@@ -29,7 +29,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class Options {
     /** Edit menu name */
@@ -203,7 +203,9 @@ public class Options {
     /** Rule anchor option */
     static public final String RULE_ANCHOR_OPTION = "Include anchor in rule status";
     /** Show node ids option */
-    static public final String SHOW_NODE_IDS_OPTION = "Show node numbers";
+    static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
+    /** Show node ids option */
+    static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes in states and rules";
     
     /** Parse attributed graphs option */
     static public final String PARSE_ATTRIBUTED_GRAPHS = "Parse as attributed graph";
@@ -287,5 +289,5 @@ public class Options {
     /**
      * Map from option names to menu items.
      */
-    private Map<String,JCheckBoxMenuItem> itemMap = new HashMap<String,JCheckBoxMenuItem>();
+    private Map<String,JCheckBoxMenuItem> itemMap = new LinkedHashMap<String,JCheckBoxMenuItem>();
 }

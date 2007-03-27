@@ -12,13 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleNode.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: RuleNode.java,v 1.2 2007-03-27 14:18:35 rensink Exp $
  */
 package groove.trans.view;
 
 import groove.graph.DefaultNode;
 import groove.graph.GraphFormatException;
-
+import groove.graph.aspect.AspectNode;
 
 /**
  * Subclass of nodes that records the nodes' role as
@@ -26,7 +26,9 @@ import groove.graph.GraphFormatException;
  * Only <tt>RuleNode</tt>s are allowed in <tt>RuleGraph</tt>s;
  * any other type of node will result in a <tt>RuleGraphFormatException</tt>
  * when trying to convert the rule graph into a graph or rule.
+ * @deprecated replaced by {@link AspectNode}
  */
+@Deprecated
 public class RuleNode extends DefaultNode {
     /**
      * Constructs a new rule node with given role.

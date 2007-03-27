@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleGraph.java,v 1.3 2007-03-20 18:22:08 rensink Exp $
+ * $Id: RuleGraph.java,v 1.4 2007-03-27 14:18:35 rensink Exp $
  */
 
 package groove.trans.view;
@@ -66,8 +66,10 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
+ * @deprecated replaced by AspectRuleView
  */
+@Deprecated
 public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
     /** Number of node/edge roles */
     static public final int NR_OF_ROLES = 4;
@@ -997,6 +999,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * Callback method to create an ordinary graph morphism.
      * @see #toRule()
      */
+    @Override
     protected Morphism createMorphism(Graph dom, Graph cod) {
         return graphFactory.newMorphism(dom, cod);
     }

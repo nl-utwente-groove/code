@@ -31,7 +31,7 @@ import java.util.Set;
  * Deriver that uses straightforward application of a set of rules,
  * while taking rule priorities into account.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultDeriver implements Deriver {
 	/**
@@ -47,6 +47,7 @@ public class DefaultDeriver implements Deriver {
 	public Iterator<RuleApplication> getDerivationIter(final Graph graph) {
         reporter.start(GET_DERIVATIONS);
         Iterator<RuleApplication> result = new AbstractNestedIterator<RuleApplication>() {
+        	@Override
             protected boolean hasNextIterator() {
                 while (!atEnd && nextIter == null && ruleIter.hasNext()) {
                     final Rule nextRule = ruleIter.next();
@@ -54,6 +55,7 @@ public class DefaultDeriver implements Deriver {
                     int nextRulePriority = nextRule.getPriority();
                     if (currentPriority <= nextRulePriority) {
                         nextIter = new TransformIterator<Matching,RuleApplication>(nextRule.getMatchingIter(graph)) {
+                        	@Override
                             public RuleApplication toOuter(Matching from) {
                                 return nextRule.createApplication(from);
                             }
@@ -71,6 +73,7 @@ public class DefaultDeriver implements Deriver {
                 return !atEnd;
             }
 
+        	@Override
             protected Iterator<RuleApplication> nextIterator() {
             	if (hasNextIterator()) {
             		Iterator<RuleApplication> result = nextIter;

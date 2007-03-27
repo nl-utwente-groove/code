@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Graph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: Graph.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:32 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
     /**
@@ -206,7 +206,7 @@ public interface Graph extends GraphShape, DeltaTarget {
     /**
      * Generates a fresh node and adds it to this graph.
      * @return the new node
-     * @see GraphShape#addNode(Node)
+     * @see Graph#addNode(Node)
      */
     Node addNode();
 
@@ -220,7 +220,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @param target the target node of the new edge
      * @return a binary edge between <tt>source</tt> and <tt>target</tt>, 
      * labelled <tt>label</tt>
-     * @see GraphShape#addEdge(Edge) 
+     * @see Graph#addEdge(Edge) 
      */
     BinaryEdge addEdge(Node source, Label label, Node target);
     
@@ -233,7 +233,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @param label the label of the new edge
      * @return an edge between <code>ends</code> 
      * labelled <tt>label</tt>
-     * @see GraphShape#addEdge(Edge) 
+     * @see Graph#addEdge(Edge) 
      * @throws IllegalArgumentException if the graph implementation does not support edges
      * with the required arity <code>ends.length</code>.
      */

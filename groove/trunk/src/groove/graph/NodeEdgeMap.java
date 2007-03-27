@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeEdgeMap.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: NodeEdgeMap.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
@@ -37,28 +37,8 @@ public interface NodeEdgeMap extends GenericNodeEdgeMap<Node,Node,Edge,Edge> { /
 	 * @return <code>true</code> if <code>elem</code> occurs as a value
 	 */
 	boolean containsValue(Element elem);
-//	/** 
-//	 * Returns the image of a {@link Node} as a {@link Node}.
-//	 * Convenience method for <code>(Node) get((Node) key)</code>.
-//	 */ 
-//	Node getNode(Node key);
-//	/** 
-//	 * Returns the image of an {@link Edge} as an {@link Edge}.
-//	 * Convenience method for <code>(Edge) get((Edge) key)</code>.
-//	 */ 
-//	Edge getEdge(Edge key);
-//	/** 
-//	 * Inserts a <code>Node</code>-value for a <code>Node</code>-key.
-//	 * Convenience method for <code>(Node) put((Node) key, (Node) value)</code>.
-//	 * @return the old value for <code>key</code>, if any
-//	 */ 
-//	Node putNode(Node key, Node value);
-//	/** 
-//	 * Inserts an <code>Edge</code>-value for an <code>Edge</code>-key.
-//	 * Convenience method for <code>(Edge) put((Edge) key, (Edge) value)</code>.
-//	 * @return the old value for <code>key</code>, if any
-//	 */ 
-//	Edge putEdge(Edge key, Edge value);
+	/** Returns the image of a label under this map. */
+	Label getLabel(Label label);
 	/**
 	 * A public clone method returning a {@link NodeEdgeMap}.
 	 * @return a copy of this object

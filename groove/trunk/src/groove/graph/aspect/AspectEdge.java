@@ -105,19 +105,19 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 	 * This implementation returns an {@link AspectEdge}.
 	 */
 	@Override
-	public BinaryEdge newEdge(Node source, Node target) {
+	public BinaryEdge newEdge(Node source, Label label, Node target) {
 		if (source instanceof AspectNode && target instanceof AspectNode) {
 			// we certainly want an aspect edge
 			try {
 				return new AspectEdge((AspectNode) source, (AspectNode) target,
-						parseData);
+						AspectParser.getInstance().getParseData(label.text()));
 			} catch (GraphFormatException exc) {
 				// the edge aspects were incompatible with the node aspects
 				// so the edge has no image
 				return null;
 			}
 		} else {
-			return super.newEdge(source, target);
+			return super.newEdge(source, label, target);
 		}
 	}
 

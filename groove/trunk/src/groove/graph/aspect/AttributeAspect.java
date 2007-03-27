@@ -16,7 +16,9 @@
  */
 package groove.graph.aspect;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -29,12 +31,13 @@ import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
 import groove.algebra.Variable;
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.GraphFormatException;
 import groove.graph.Node;
-import groove.graph.algebra.AlgebraConstants;
 import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.ValueEdge;
 import groove.graph.algebra.ValueNode;
 import groove.util.Groove;
 
@@ -84,7 +87,24 @@ public class AttributeAspect extends AbstractAspect {
      * Map from aspect values to those algebras that they represent. 
      * TODO there should be a better way to look up this relation
      */
-    private static Map<AspectValue, Algebra> algebraMap;
+    private static final Map<AspectValue, Algebra> algebraMap = new HashMap<AspectValue, Algebra>();
+    /** 
+     * Map from algebras to aspect values that represent them. 
+     * TODO there should be a better way to look up this relation
+     */
+    private static final Map<Algebra, AspectValue> aspectValueMap = new HashMap<Algebra, AspectValue>();
+    
+    /** 
+     * Adds a pair of algebra and aspect value to the internal maps
+     * {@link #algebraMap} and {@link #aspectValueMap}.
+     */
+    private static void addAlgebra(Algebra algebra, AspectValue value) {
+    	Algebra oldAlgebra = algebraMap.put(value, algebra);
+    	AspectValue oldValue = aspectValueMap.put(algebra, value);
+    	if (oldAlgebra != null || oldValue != null) {
+    		throw new IllegalStateException(String.format("Duplicate algebra %s", algebra));
+    	}
+    }
     
 	static {
 		try {
@@ -106,10 +126,9 @@ public class AttributeAspect extends AbstractAspect {
 		    	value.setIncompatible(RuleAspect.EMBARGO);
 		    }
 		    // initialise the algebra map
-		    algebraMap = new HashMap<AspectValue, Algebra>();
-		    algebraMap.put(INTEGER, DefaultIntegerAlgebra.getInstance());
-		    algebraMap.put(BOOLEAN, DefaultBooleanAlgebra.getInstance());
-		    algebraMap.put(STRING, DefaultStringAlgebra.getInstance());
+		    addAlgebra(DefaultIntegerAlgebra.getInstance(), INTEGER);
+		    addAlgebra(DefaultBooleanAlgebra.getInstance(), BOOLEAN);
+		    addAlgebra(DefaultStringAlgebra.getInstance(), STRING);
 		} catch (GraphFormatException exc) {
 			throw new Error("Aspect '" + ATTRIBUTE_ASPECT_NAME
 					+ "' cannot be initialised due to name conflict", exc);
@@ -121,6 +140,14 @@ public class AttributeAspect extends AbstractAspect {
      */
     public static AttributeAspect getInstance() {
         return instance;
+    }
+    
+    /**
+     * Tests if a given aspect element carries an {@link AttributeAspect} value
+     * that corresponds to a type.
+     */
+    static public boolean isTypeElement(AspectElement elem) {
+    	return algebraMap.containsKey(elem);
     }
     
     /** 
@@ -162,19 +189,21 @@ public class AttributeAspect extends AbstractAspect {
 	 */
 	private static Node createValueNode(AspectNode node, AspectGraph graph) throws GraphFormatException {
 		Node result;
-		// check if there is a constant edge on this node
-		Set<AspectEdge> outEdges = graph.outEdgeSet(node);
+		// check if there is a single constant edge on this node
+		Collection<AspectEdge> outEdges = graph.outEdgeSet(node);
 		if (outEdges.isEmpty()) {
 			result = new ValueNode(new Variable());
+		} else if (outEdges.size() > 1) {
+			throw new GraphFormatException("Too many edges on constant node: %s", outEdges);
 		} else {
 			AspectEdge outEdge = outEdges.iterator().next();
 			AspectValue algebraValue = outEdge.getValue(getInstance());
 			if (algebraValue == null) {
-				throw new GraphFormatException("Label %s of value node should be a constant", outEdge.getLabelText());
+				throw new GraphFormatException("Label %s on value node should be a constant", outEdge.getLabelText());
 			}
 			Algebra algebra = algebraMap.get(algebraValue);
 			if (algebra == null) {
-				throw new GraphFormatException("Label %s of value node should be a constant", outEdge.getLabelText());
+				throw new GraphFormatException("Label %s on value node should be a constant", outEdge.getLabelText());
 			}
 			try {
 				Operation nodeValue = algebra.getOperation(outEdge.label().text());
@@ -191,16 +220,46 @@ public class AttributeAspect extends AbstractAspect {
 	
 	/**
 	 * Creates a product node corresponding to a node with {@link AttributeAspect} value {@link #PRODUCT}.
+	 * This only succeeds if the outgoing edges form a consecutive range of argument
+	 * numbers, without duplication.
 	 * @param node the node for which a {@link ProductNode} is to be created
 	 * @param graph the graph in which <code>node</code> occurs
 	 * @throws GraphFormatException if the outgoing edges of <code>node</code>
 	 * are incorrect
 	 */
 	private static ProductNode createProductNode(AspectNode node, AspectGraph graph) throws GraphFormatException {
-		ProductNode result;
-		int argumentCount = 0;
-		int maxArgumentNr = -1;
-		result = new ProductNode();
+		// check that the node makes sense
+		arity(node, graph);
+		return new ProductNode();
+	}
+	
+	/** 
+	 * Returns the number of outgoing argument edges.
+	 * Argument edges are aspect edges with {@link AttributeAspect}
+	 * value {@link #ARGUMENT}. Also checks that the argument edges actually
+	 * form a consecutive sequence ranging from 0 to the arity. 
+	 */
+	private static int arity(AspectNode node, AspectGraph graph) throws GraphFormatException {
+		Set<Integer> argNumbers = new HashSet<Integer>();
+		int maxArgNumber = -1;
+		int result = 0;
+		for (AspectEdge outEdge: graph.outEdgeSet(node)) {
+			if (outEdge.getValue(getInstance()) == ARGUMENT) {
+				try {
+					int argNumber = Integer.parseInt(outEdge.label().text());
+					if (!argNumbers.add(argNumber)) {
+						throw new GraphFormatException("Duplicate argument edge", argNumber);
+					}
+					maxArgNumber = Math.max(maxArgNumber, argNumber);
+					result++;
+				} catch (NumberFormatException exc) {
+					throw new GraphFormatException("Argument edge label %s is not a valid argument number", outEdge.label());
+				}
+			}
+		}
+		if (result != maxArgNumber+1) {
+			throw new GraphFormatException("Argument numbers %s do not form a consecutive range", argNumbers);
+		}
 		return result;
 	}
     
@@ -216,34 +275,79 @@ public class AttributeAspect extends AbstractAspect {
      * @return a {@link ProductEdge} or {@link AlgebraEdge} corresponding to <code>edge</code>, or <code>null</code>
      * @throws GraphFormatException if attribute-related errors are found in <code>graph</code> 
      */
-    public static Edge createAttributeEdge(AspectEdge edge, AspectGraph graph, Node source, Node target) throws GraphFormatException {
+    public static Edge createAttributeEdge(AspectEdge edge, AspectGraph graph, Node[] ends) throws GraphFormatException {
     	Edge result;
     	AspectValue attributeValue = edge.getValue(getInstance());
     	if (attributeValue == null) {
     		result = null;
     	} else if (attributeValue == ARGUMENT) {
-    		result = createArgumentEdge(edge, graph, source, target);
+    		result = createArgumentEdge(edge, ends);
     	} else {
-    		assert attributeValue == INTEGER || attributeValue == BOOLEAN || attributeValue == STRING;
-    		result = createOperationEdge(edge, graph, source, target);
+    		assert algebraMap.containsKey(attributeValue);
+    		result = createOperatorEdge(edge, graph, ends);
     	}
     	return result;
     }
 	
-	private static ProductEdge createOperationEdge(AspectEdge edge, AspectGraph graph, Node source, Node target) throws GraphFormatException {
+    /**
+     * Creates and returns a fresh {@link ProductEdge} derived from 
+     * a given aspect edge (which should have attribute value {@link #PRODUCT}).
+     * @param edge the edge for which the image is to be created
+     * @param graph
+     * @param ends the end nodes of the edge to be created
+     * @return a fresh {@link ProductEdge}
+     * @throws GraphFormatException if <code>edge</code> does not have a correct 
+     * set of outgoing attribute edges in <code>graph</code>
+     */
+	private static Edge createOperatorEdge(AspectEdge edge, AspectGraph graph, Node[] ends) throws GraphFormatException {
 		try {
 			Algebra algebra = algebraMap.get(edge.getValue(getInstance()));
-			Operation operation = algebra.getOperation(edge.label().text());
-			ProductEdge result = new ProductEdge((ProductNode) source, (ValueNode) target, operation);
-			return result;
+			Operation operator = algebra.getOperation(edge.label().text());
+			if (operator.arity() != arity(edge.source(), graph)) {
+				throw new GraphFormatException("Arity of source node does not match arity of operation %s", operator);
+			}
+			ProductNode source = (ProductNode) ends[Edge.SOURCE_INDEX];
+			ValueNode target = (ValueNode) ends[Edge.TARGET_INDEX];
+			return new ProductEdge(source, target, operator);
 		} catch (UnknownSymbolException exc) {
 			throw new GraphFormatException(exc.getMessage());
 		}
 	}
 	
-	private static AlgebraEdge createArgumentEdge(AspectEdge edge, AspectGraph graph, Node source, Node target) throws GraphFormatException {
-		AlgebraEdge result = new AlgebraEdge(source, edge.label(), target);
-		return result;
+	/**
+	 * Returns an {@link AlgebraEdge} derived from a given 
+	 * aspect edge (which should have attribute aspect value {@link #ARGUMENT}).
+	 * @param edge the edge of which the image is to be created
+	 * @param ends the end nodes of the edge to be created
+	 * @return a fresh {@link AlgebraEdge}
+	 */
+	private static AlgebraEdge createArgumentEdge(AspectEdge edge, Node[] ends) {
+		return new AlgebraEdge(ends[Edge.SOURCE_INDEX], edge.label(), ends[Edge.TARGET_INDEX]);
+	}
+	
+	/**
+	 * Returns the appropriate attribute aspect value associated with
+	 * an (ordinary) graph element, if any.
+	 * The value depends on the type of the element. 
+	 * @param elem the graph element for which an attribute aspect value is required
+	 * @return the attribute aspect value for <code>elem</code>, such that <code>result.getAspect() == getInstance()</code>,
+	 * or <code>null</code> if <code>elem</code> does not have any attribute information.
+	 */
+	public static AspectValue getAttributeValue(Element elem) {
+		if (elem instanceof ValueNode) {
+			return VALUE;
+		} else if (elem instanceof ProductNode) {
+			return PRODUCT;
+		} else if (elem instanceof AlgebraEdge) {
+			return ARGUMENT;
+		} else if (elem instanceof ValueEdge) {
+			return aspectValueMap.get(((ValueEdge) elem).getConstant().algebra());
+		} else if (elem instanceof ProductEdge) {
+			Operation operation = ((ProductEdge) elem).getOperation();
+			return aspectValueMap.get(operation.algebra());
+		} else {
+			return null;
+		}
 	}
     
     /** Private constructor to create the singleton instance. */

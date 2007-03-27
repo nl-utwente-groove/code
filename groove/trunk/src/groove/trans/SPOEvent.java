@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: SPOEvent.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
@@ -45,7 +45,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:56 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -202,6 +202,7 @@ public class SPOEvent implements RuleEvent {
      * The hash code is based on that of the rule and an initial fragment of the
      * anchor images.
      */
+	@Override
     public int hashCode() {
     	reporter.start(HASHCODE);
     	if (!hashCodeSet) {
@@ -239,6 +240,7 @@ public class SPOEvent implements RuleEvent {
      * Two rule applications are equal if they have the same rule and anchor images.
      * Note that the source is not tested; do not collect rule applications for different sources!
      */
+	@Override
     public boolean equals(Object obj) {
     	reporter.start(EQUALS);
     	boolean result;
@@ -275,6 +277,7 @@ public class SPOEvent implements RuleEvent {
         return Arrays.equals(getAnchorImage(), other.getAnchorImage());
     }
     
+	@Override
 	public String toString() {
 	    StringBuffer result = new StringBuffer(getRule().getName().name());
 	    result.append(getAnchorImageString());

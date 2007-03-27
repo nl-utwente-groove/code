@@ -39,6 +39,7 @@ public class NodeSet extends TreeHashSet3<Node> {
 		//            super(other, NODE_SET_RESOLUTION, HASHCODE_EQUATOR);
 	}
 
+	@Override
 	protected int getCode(Object key) {
 		return ((DefaultNode) key).getNumber();
 	}

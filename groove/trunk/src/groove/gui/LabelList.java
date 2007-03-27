@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: LabelList.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
  */
 package groove.gui;
 
@@ -46,7 +46,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /** Pseudo-label maintained in this list for cells with an empty label set. */
@@ -63,6 +63,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         setModel(listModel);
         // change the cell renderer so it adds a space in front of the labels
         setCellRenderer(new DefaultListCellRenderer() {
+        	@Override
             public void setText(String text) {
                 if (text.equals(NO_LABEL)) {
                     setForeground(specialForeground);
@@ -88,10 +89,12 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         // take care of the popup menu
         popupMenu = createPopupMenu();
         addMouseListener(new MouseAdapter() {
+        	@Override
             public void mousePressed(MouseEvent evt) {
                 maybeShowPopup(evt);
             }
 
+        	@Override
             public void mouseReleased(MouseEvent evt) {
                 maybeShowPopup(evt);
             }
@@ -105,6 +108,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         // add a mouse listener to the jgraph to clear the selction of this list
         // as soon as the mouse is pressed in the jgraph
         jgraph.addMouseListener(new MouseAdapter() {
+        	@Override
             public void mousePressed(MouseEvent evt) {
                 if (evt.getButton() == MouseEvent.BUTTON1 && !isSelectionEmpty()) {
                     clearSelection();
@@ -172,6 +176,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      * In addition to delegating the method to <tt>super</tt>, sets the background color to
      * <tt>null</tt> when disabled and back to the default when enabled.
      */
+	@Override
     public void setEnabled(boolean enabled) {
         if (enabled != isEnabled()) {
             if (!enabled) {
@@ -201,7 +206,11 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
                     JUserObject<?> previousUserObject = (JUserObject) cellChange
                             .get(GraphConstants.VALUE);
                     if (previousUserObject != null) {
-                        changed |= removeLabels(previousUserObject.getLabelSet());
+                    	Set<String> removed = new HashSet<String>();
+                    	for (Object label: previousUserObject) {
+                    		removed.add(cell.getLabel(label));
+                    	}
+                        changed |= removeLabels(removed);
                         changed |= addLabels(cell.getLabelSet());
                     }
                 }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTS.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: LTS.java,v 1.2 2007-03-27 14:18:38 rensink Exp $
  */
 package groove.lts;
 
@@ -25,7 +25,7 @@ import java.util.Set;
  * <tt>State</tt>s and the edges are <tt>Transition</tt>s.
  * The LTS is assumed to have a fixed associated rule production system.
  * Extends graph.Graph with a start (i.e., initial) initial state.
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:52 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:38 $
  */
 public interface LTS extends groove.graph.GraphShape {
     /** The text of the self-edge label that indicates a start state. */
@@ -113,7 +113,6 @@ public interface LTS extends groove.graph.GraphShape {
 
     // ------------------------- COMMANDS --------------------------
 
-    //IOVKA should be deprecated ?
     /**
      * Calculates the outgoing transitions of a given state and adds them to the LTS.
      * Returns the set of newly discovered states.
@@ -125,7 +124,9 @@ public interface LTS extends groove.graph.GraphShape {
      * @see LTSListener#closeUpdate(LTS,State)
      * @ensure <tt>isGenerated(state)</tt> and
      * for all <tt>result.contans(newState)</tt>: <tt>! isGenerated(newState)</tt>
+     * @deprecated use {@link StateGenerator} instead
      */
+    @Deprecated
     Collection<? extends State> freshNextStates(State state);
 
     /**

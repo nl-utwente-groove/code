@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExprMorphism.java,v 1.1.1.2 2007-03-20 10:42:53 kastenberg Exp $
+ * $Id: RegExprMorphism.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
  */
 package groove.rel;
 
@@ -28,10 +28,9 @@ import java.util.Map;
 
 /**
  * Implementation of the {@link groove.rel.VarMorphism} interface that
- * implements the required variable mapping through a straightforward 
- * instance variable.
+ * implements the required variable by putting it into the element map.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
     /**
@@ -55,6 +54,7 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
 		return (VarNodeEdgeMap) super.elementMap();
 	}
 
+    @Override
 	public Morphism clone() {
         return new RegExprMorphism(this);
     }
@@ -63,6 +63,7 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
      * This implementation returns a {@link RegExprMorphism}.
      * The first parameter is required to be a {@link VarGraph}.
      */
+    @Override
     public RegExprMorphism createMorphism(Graph dom, Graph cod) {
     	// TODO: should we use the rule-factory to create the morphism?
         return new RegExprMorphism((VarGraph) dom, cod);
@@ -73,27 +74,21 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
      * The simulation is required to be a {@link RegExprSimulation};
      * the variable map is taken from the simulation.
      */
+    @Override
     protected RegExprMorphism createMorphism(final NodeEdgeMap sim) {
         RegExprMorphism result = new RegExprMorphism((VarGraph) dom(), cod()) {
+            @Override
             protected VarNodeEdgeMap createElementMap() {
                 return (VarNodeEdgeMap) sim;
             }
         };
-//    }
-//    protected RegExprMorphism createMorphism(final Simulation sim) {
-//    	// TODO: should we use the rule-factory to create the morphism?
-//        RegExprMorphism result = new RegExprMorphism((VarGraph) sim.dom(), sim.cod()) {
-//            protected VarElementMap createElementMap() {
-//                return ((RegExprSimulation) sim).getSingularMap();
-//            }
-//        };
-//        result.setFixed();
         return result;
     }
 
     /**
      * This implementation returns a {@link RegExprMatcher}.
      */
+    @Override
     protected Simulation createSimulation() {
         return new RegExprMatcher(this);
     }
@@ -133,6 +128,7 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
     /**
      * This implementation returns a {@link VarNodeEdgeHashMap}.
      */
+    @Override
     protected VarNodeEdgeMap createElementMap() {
         return new VarNodeEdgeHashMap();
     }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: JGraphPanel.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: JGraphPanel.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
  */
 package groove.gui;
 
@@ -31,13 +31,14 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
+import javax.swing.event.ChangeListener;
 
 /**
  * A panel that combines a {@link groove.gui.jgraph.JGraph}and (optionally) a
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
@@ -54,7 +55,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * @ensure <tt>getJGraph() == jGraph</tt>
      */
     public JGraphPanel(JG jGraph) {
-        this(jGraph, false);
+        this(jGraph, false, null);
     }
 
     /**
@@ -64,44 +65,21 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      *            the jgraph on which this panel is a view
      * @param withStatusBar
      *            <tt>true</tt> if a status bar should be added to the panel
+     * @param options Options object used to create menu item listeners. 
+     * If <code>null</code>, no listeners are created.
      * @ensure <tt>getJGraph() == jGraph</tt>
      */
-    public JGraphPanel(JG jGraph, boolean withStatusBar) {
-        this(jGraph, withStatusBar, true);
-
-    }
-
-    /**
-     * Constructs a view upon a given jgraph, possibly with a status bar or with
-     * labelpanel.
-     * 
-     * @param jGraph
-     *            the jgraph on which this panel is a view
-     * @param withStatusBar
-     *            <tt>true</tt> if a status bar should be added to the panel
-     * @param withLabelPanel
-     *            <tt>true</tt> if the labelPAnel should be added to the panel
-     * @ensure <tt>getJGraph() == jGraph</tt>
-     */
-    public JGraphPanel(JG jGraph, boolean withStatusBar,
-            boolean withLabelPanel) {
+    public JGraphPanel(JG jGraph, boolean withStatusBar, Options options) {
+    	// right now we always want label panels; keep this option
+    	boolean withLabelPanel = true;
         this.jGraph = jGraph;
-        if (withLabelPanel) {
-            this.viewLabelListItem = this.createViewLabelListItem();
-        } else {
-            this.viewLabelListItem = null;
-        }
+        this.options = options;
+        this.statusBar = withStatusBar ? new JLabel(" ") : null;
+        this.viewLabelListItem = withLabelPanel ? this.createViewLabelListItem() : null;
         this.setLayout(new BorderLayout());
-        if (withLabelPanel) {
-            this.setPane(createSplitPane());
-        } else {
-            this.setPane(this.createSoloPane());
-        }
-        if (withStatusBar) {
-            this.statusBar = new JLabel(" ");
+        this.setPane(withLabelPanel ? createSplitPane() : this.createSoloPane());
+        if (statusBar != null) {
             add(statusBar, BorderLayout.SOUTH);
-        } else {
-            statusBar = null;
         }
     }
 
@@ -141,6 +119,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
      * Delegates the method to the content pane and to super.
      */
+    @Override
     public void setEnabled(boolean enabled) {
         jGraph.setEnabled(enabled);
         statusBar.setEnabled(enabled);
@@ -168,10 +147,12 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         labelPane.add(new JLabel(" " + Options.LABEL_PANE_TITLE + " "),
                 BorderLayout.NORTH);
         JScrollPane scrollPane = new JScrollPane(jGraph.getLabelList()) {
+        	@Override
             public Dimension getMinimumSize() {
                 return new Dimension(MINIMUM_LABEL_PANE_WIDTH, 0);
             }
 
+        	@Override
             public Dimension getPreferredSize() {
                 if (jGraph.getLabelList().getModel().getSize() == 0) {
                     return getMinimumSize();
@@ -222,12 +203,43 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         currentPane = editorPane;
         revalidate();
     }
+    
+    /**
+     * Adds a listener to the menu item associated with for an option with a given name.
+     * Throws an exception if no such option was in the options object passed
+     * in at construction time.
+     */
+    protected void addOptionListener(String option, ChangeListener listener) {
+    	JCheckBoxMenuItem optionItem = getOptionsItem(option);
+    	if (optionItem == null) {
+    		throw new IllegalArgumentException(String.format("Unknown option: %s", option));
+    	}
+    	optionItem.addChangeListener(listener);
+    }
 
     /**
+	 * Returns the options object passed in at construction time.
+	 */
+	protected final Options getOptions() {
+		return this.options;
+	}
+
+	/** 
+     * Retrieves the options item for a given option name,
+     * creating it first if necessary.
+     */
+    protected JCheckBoxMenuItem getOptionsItem(String option) {
+    	Options options = getOptions();
+    	return options == null ? null : options.getItem(option);
+    }
+
+	/**
      * The {@link JGraph}on which this panel provides a view.
      */
     protected final JG jGraph;
 
+    /** Options for this panel. */
+    private final Options options;
     /**
      * Panel for showing status messages
      */

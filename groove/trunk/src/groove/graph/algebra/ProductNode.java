@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ProductNode.java,v 1.2 2007-03-20 23:00:47 rensink Exp $
+ * $Id: ProductNode.java,v 1.3 2007-03-27 14:18:30 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -27,12 +27,12 @@ import java.util.List;
 /**
  * Instances of this class represent tuples of data values on which one can
  * perform algebraic operations.
- * 
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-03-20 23:00:47 $
+ * @version $Revision 1.0$ $Date: 2007-03-27 14:18:30 $
  */
 public class ProductNode extends DefaultNode {
-
+	// AREND I think the operands of a product node should be fixed at
+	// construction time, and they should be ValueNodes not Constants
     /**
      * Constructor.
      */
@@ -43,7 +43,6 @@ public class ProductNode extends DefaultNode {
 
     /**
      * Adds an operand to <code>operands</code>.
-     * AREND: I don't understand, can't the operands be variables?
      * @param constant the {@link groove.algebra.Constant} to be added to the <code>operands</code>
      * @return <tt>true</tt> (as per the general contract of the Collection.add method).
      */
@@ -71,6 +70,7 @@ public class ProductNode extends DefaultNode {
     /* (non-Javadoc)
      * @see java.lang.Object#equals(java.lang.Object)
      */
+    @Override
     public boolean equals(Object object) {
         // the given object may not be NULL and must be of this class
         if (object == null || !(object instanceof ProductNode))
@@ -106,6 +106,7 @@ public class ProductNode extends DefaultNode {
         return operands.size();
     }
     
+    @Override
     public String toString() {
     	List<Constant> operands = getOperands();
     	if (operands.isEmpty()) {

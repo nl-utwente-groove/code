@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: NodeSearchItem.java,v 1.2 2007-03-27 14:18:35 rensink Exp $
  */
 package groove.graph.match;
 
@@ -97,6 +97,11 @@ public class NodeSearchItem implements SearchItem {
 				imageIter = null;
 				selected = null;
 			}
+		}
+		
+		@Override
+		public String toString() {
+			return NodeSearchItem.this.toString()+" = "+selected;
 		}
 
 		/**

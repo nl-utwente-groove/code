@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultOperation.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: DefaultOperation.java,v 1.2 2007-03-27 14:18:39 rensink Exp $
  */
 package groove.algebra;
 
@@ -23,7 +23,7 @@ import java.util.List;
  * Class implementing the <tt>Operation</tt> interface.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:39 $
  */
 public class DefaultOperation implements Operation {
 
@@ -114,6 +114,7 @@ public class DefaultOperation implements Operation {
 	 * @param object the object to which the current object will be compared
 	 * @return <tt>true</tt> if both objects have the same symbol, <tt>false</tt> otherwise
 	 */
+	@Override
 	public boolean equals(Object object) {
 		if (object == null)
 			return false;
@@ -129,9 +130,8 @@ public class DefaultOperation implements Operation {
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#hashCode()
-	 */
+	/** Combines type, arity and the operator symbol. */
+	@Override
 	public int hashCode() {
 		int hash = 7;
 		hash = 31 * hash + type;
@@ -147,9 +147,8 @@ public class DefaultOperation implements Operation {
 		return new DefaultConstant();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
+	/** Returns the operator's symbol. */
+	@Override
 	public String toString() {
 		return symbol;
 	}

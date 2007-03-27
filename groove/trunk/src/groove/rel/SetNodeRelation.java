@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SetNodeRelation.java,v 1.1.1.2 2007-03-20 10:42:53 kastenberg Exp $
+ * $Id: SetNodeRelation.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
  */
 package groove.rel;
 
@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class SetNodeRelation extends AbstractNodeRelation {
     /**
@@ -71,6 +71,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
         return this;
     }
     
+    @Override
     protected boolean doOrThen() {
         boolean result = false;
         Set<Edge> oldRelatedSet = new HashSet<Edge>(relatedSet);
@@ -108,6 +109,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
     /**
      * Delegates the method to the underlying set of related objects.
      */
+    @Override
     public boolean equals(Object obj) {
         return (obj instanceof SetNodeRelation) && relatedSet.equals(((SetNodeRelation) obj).relatedSet);
     }
@@ -115,6 +117,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
     /**
      * Delegates the method to the underlying set of related objects.
      */
+    @Override
     public int hashCode() {
         return relatedSet.hashCode();
     }
@@ -122,6 +125,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
     /**
      * Delegates the method to the underlying set of related objects.
      */
+    @Override
     public String toString() {
         return relatedSet.toString();
     }
@@ -129,6 +133,7 @@ public class SetNodeRelation extends AbstractNodeRelation {
     /**
      * Returns a shared view upon the set of related object in this relation.
      */
+    @Override
     protected Set<Edge> getRelatedSet() {
         return relatedSet;
     }

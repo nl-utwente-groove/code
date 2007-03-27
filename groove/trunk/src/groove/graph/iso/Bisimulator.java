@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Bisimulator.java,v 1.3 2007-03-20 23:02:57 rensink Exp $
+ * $Id: Bisimulator.java,v 1.4 2007-03-27 14:18:33 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -38,7 +38,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elemens to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Bisimulator implements CertificateStrategy {
 	/**
@@ -147,7 +147,7 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.3 $
+     * @version $Revision: 1.4 $
      */
     static private class CertificateNode extends Certificate {
     	/** Initial node value to provide a better spread of hash codes. */
@@ -212,7 +212,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.3 $
+     * @version $Revision: 1.4 $
      */
     static private class CertificateEdge extends Certificate {
 //        /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
@@ -243,7 +243,7 @@ public class Bisimulator implements CertificateStrategy {
 
     	@Override
         public String toString() {
-            return "["+source+","+label+","+target+"]";
+            return "["+source+","+label+"("+labelIndex+"),"+target+"]";
         }
         
         /**
@@ -317,7 +317,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.3 $
+     * @version $Revision: 1.4 $
      */
     static private class CertificateFlag extends Certificate {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
@@ -332,7 +332,7 @@ public class Bisimulator implements CertificateStrategy {
 
     	@Override
         public String toString() {
-            return "["+source+","+label+"]";
+            return "["+source+","+label+"("+labelIndex+")]";
         }
 
         /**

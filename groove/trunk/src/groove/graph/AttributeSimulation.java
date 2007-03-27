@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AttributeSimulation.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: AttributeSimulation.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 
 package groove.graph;
@@ -46,7 +46,7 @@ import java.util.Set;
  * Simulation that also takes attributed graphs into account.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:40 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:32 $
  */
 public class AttributeSimulation extends MatchingSimulation {
 
@@ -67,10 +67,10 @@ public class AttributeSimulation extends MatchingSimulation {
      */
     protected Iterator<? extends Node> getNodeMatches(Node key) {
         // if the key is an operation-node
-        if (key instanceof ProductNode) {
+    	if (key instanceof ValueNode) {
+    		return getValueNodeMatches((ValueNode) key);
+    	} else if (key instanceof ProductNode) {
             return getProductNodeMatches((ProductNode) key);
-        } else if (key instanceof ValueNode) {
-            return getValueNodeMatches((ValueNode) key);
         } else {
             return super.getNodeMatches(key);
         }
@@ -167,11 +167,11 @@ public class AttributeSimulation extends MatchingSimulation {
 
         // get all edges with labelled "arg" suffixed with the right index and
         // iterate over all those edges which have the given key as its source node
-        Label searchLabel = DefaultLabel.createLabel(AlgebraConstants.ARGUMENT_PREFIX + argIndex);
-        Collection<? extends Edge> argEdgeCol = morph.dom().labelEdgeSet(BinaryEdge.END_COUNT, searchLabel);
+//        Label searchLabel = DefaultLabel.createLabel(AlgebraConstants.ARGUMENT_PREFIX + argIndex);
+        Collection<? extends Edge> argEdgeCol = morph.dom().outEdgeSet(key);
         for (Edge nextArgEdge: argEdgeCol) {
             // if this edge has the given key as its source node 
-            if (nextArgEdge.source().equals(key)) {
+            if (nextArgEdge.label().text().equals(""+argIndex)) {
                 ValueNode target = (ValueNode) nextArgEdge.end(Edge.TARGET_INDEX);
                 // iterate over the imageSet of the target-node
                 for (Node nextValueNode: getNode(target)) {
@@ -243,7 +243,8 @@ public class AttributeSimulation extends MatchingSimulation {
                 // the image-nodes of both the current candidate and the image of the
                 // target-node of the current edge
                 else {
-                    int argIndex = AlgebraConstants.isArgumentLabel(nextEdge.label());
+//                    int argIndex = AlgebraConstants.isArgumentLabel(nextEdge.label());
+                    int argIndex = Integer.parseInt(((AlgebraEdge) nextEdge).label().text());
                     Constant operation = nextImage.getOperand(argIndex);
                     ValueNode imageTarget = algebraGraph.getValueNode(operation);
                     imageEdge = new AlgebraEdge(nextImage, nextEdge.label(), imageTarget);

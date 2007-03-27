@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: Editor.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
  */
 package groove.gui;
 
@@ -22,7 +22,7 @@ import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.RuleJModel;
+import groove.gui.jgraph.AspectJModel;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
@@ -33,7 +33,7 @@ import groove.trans.AttributedSPORuleFactory;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.NameLabel;
 import groove.trans.RuleFactory;
-import groove.trans.view.RuleGraph;
+import groove.trans.view.AspectRuleView;
 import groove.util.Converter;
 import groove.util.Groove;
 
@@ -89,7 +89,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:44 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:34 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -147,6 +147,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         /** (non-Javadoc)
          * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
          */
+        @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
             updateModeButtons(this);
@@ -165,6 +166,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         /** (non-Javadoc)
          * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
          */
+        @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
             handlePreview();
@@ -198,6 +200,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             super(Options.SAVE_ACTION_NAME, Options.SAVE_KEY, new ImageIcon(Groove.getResource("save.gif")));
         }
     
+        @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
             handleSaveGraph();
@@ -213,6 +216,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             super(Options.OPEN_ACTION_NAME, Options.OPEN_KEY, new ImageIcon(Groove.getResource("open.gif")));
         }
     
+        @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
             handleOpenGraph();
@@ -228,6 +232,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             super(Options.NEW_ACTION_NAME, Options.NEW_KEY, new ImageIcon(Groove.getResource("new.gif")));
         }
     
+        @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
             if (showAbandonDialog()) {
@@ -251,7 +256,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             this.action = action;
         }
     
-        // Redirect the Actionevent
+        /** Redirects the Actionevent. */
+        @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
             evt = new ActionEvent(jgraph, evt.getID(), evt.getActionCommand(), evt.getModifiers());
@@ -270,7 +276,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.1.1.2 $
+     * @version $Revision: 1.2 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -416,7 +422,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     public void doSaveGraph(File toFile) throws IOException {
         currentFile = toFile;
         currentDir = toFile.getParentFile();
-        Graph saveGraph = getModel().toLayedOutGraph();
+        Graph saveGraph = getModel().toPlainGraph();
         layoutGxl.marshal(saveGraph, toFile);
         setModelName(currentFile.getName());
         setJGraphModified(false);
@@ -431,7 +437,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     public void doExportGraph(ExtensionFilter filter, File toFile) throws IOException {
         if (filter == fsmFilter) {
             PrintWriter writer = new PrintWriter(new FileWriter(toFile));
-            Converter.graphToFsm(getModel().toLayedOutGraph(), writer);
+            Converter.graphToFsm(getModel().toPlainGraph(), writer);
             writer.close();
         } else {
             String formatName = filter.getExtension().substring(1);
@@ -570,8 +576,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 //	    	DefaultRuleFactory ruleFactory = DefaultRuleFactory.getInstance();
 //	    	ruleFactory = DefaultRuleFactory.getInstance();
 	    	NameLabel ruleName = new NameLabel("temp");
-            RuleGraph ruleGraph = (RuleGraph) getRuleFactory().createRuleView(getModel().toLayedOutGraph(), ruleName, 0);
-            RuleJModel ruleModel = new RuleJModel(ruleGraph);
+            AspectRuleView ruleGraph = (AspectRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0);
+            AspectJModel ruleModel = new AspectJModel(ruleGraph);
             JGraph previewGraph = new JGraph(ruleModel);
             JOptionPane previewPane = new JOptionPane(new JScrollPane(previewGraph),
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
@@ -582,7 +588,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             Integer answer = (Integer) previewPane.getValue();
             if (answer != null && answer.intValue() == JOptionPane.OK_OPTION) {
                 setSelectInsertedCells(false);
-                getModel().replace(new GraphJModel(ruleModel.toLayedOutGraph()));
+                getModel().replace(new GraphJModel(ruleModel.toPlainGraph()));
                 setSelectInsertedCells(true);
                 return true;
             }
@@ -666,6 +672,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         // Undo
         ImageIcon undoIcon = new ImageIcon(Groove.getResource("undo.gif"));
         undoAction = new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY, undoIcon) {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 super.actionPerformed(evt);
                 undoLastEdit();
@@ -676,6 +683,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         // Redo
         ImageIcon redoIcon = new ImageIcon(Groove.getResource("redo.gif"));
         redoAction = new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY, redoIcon) {
+            @Override
             public void actionPerformed(ActionEvent evt) {
                 super.actionPerformed(evt);
                 redoLastEdit();
@@ -684,6 +692,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         redoAction.setEnabled(false);
         // Create a GraphUndoManager which also Updates the ToolBar
         undoManager = new GraphUndoManager() {
+            @Override
             public void undoableEditHappened(UndoableEditEvent e) {
                 super.undoableEditHappened(e);
                 updateHistoryButtons();
@@ -711,6 +720,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         // Remove
         ImageIcon deleteIcon = new ImageIcon(Groove.getResource("delete.gif"));
         deleteAction = new ToolbarAction(Options.DELETE_ACTION_NAME, Options.DELETE_KEY, deleteIcon) {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 if (!jgraph.isSelectionEmpty()) {
                     Object[] cells = jgraph.getSelectionCells();
@@ -729,6 +739,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         // Set Close Operation to Exit
         setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
+            @Override
             public void windowClosing(WindowEvent evt) {
                 handleQuit();
             }
@@ -1258,6 +1269,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * Extension filter for all known kinds of graph files.
      */
     private final ExtensionFilter graphFilter = new ExtensionFilter("Graph files", "") {
+        @Override
         public boolean accept(File file) {
             return isAcceptDirectories() && file.isDirectory()  
             		|| file.getName().endsWith(Groove.GXL_EXTENSION)
@@ -1265,15 +1277,18 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
                     || file.getName().endsWith(Groove.STATE_EXTENSION);
         }
 
+        @Override
         public String getDescription() {
             return "Graph files (*" + Groove.GXL_EXTENSION + ", *" + Groove.RULE_EXTENSION
                     + ", *" + Groove.STATE_EXTENSION + ")";
         }
         
+        @Override
         public boolean acceptExtension(File file) {
             return false;
         }
         
+        @Override
         public String stripExtension(String fileName) {
             File file = new File(fileName);
             if (gxlFilter.acceptExtension(file)) {

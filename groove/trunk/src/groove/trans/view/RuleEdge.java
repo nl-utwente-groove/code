@@ -12,10 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleEdge.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: RuleEdge.java,v 1.2 2007-03-27 14:18:35 rensink Exp $
  */
 package groove.trans.view;
-
 
 import groove.graph.AbstractEdge;
 import groove.graph.DefaultEdge;
@@ -24,6 +23,7 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.aspect.AspectEdge;
 import groove.rel.RegExprLabel;
 
 
@@ -34,7 +34,9 @@ import groove.rel.RegExprLabel;
  * any other type of edge will result in a {@link GraphFormatException}
  * when trying to convert the rule graph into a graph or rule.
  * This implementation supports both unary and binary edges.
+ * @deprecated replaced by {@link AspectEdge}
  */
+@Deprecated
 public class RuleEdge extends AbstractEdge implements Edge {
     /**
      * Constructs a rule flag for a given nodes, with given label and role.
@@ -131,6 +133,7 @@ public class RuleEdge extends AbstractEdge implements Edge {
         this((RuleNode) ends[SOURCE_INDEX], label, (RuleNode) ends[TARGET_INDEX], role);
     }
     
+    @Override
     public Node opposite() {
         if (target == null) {
             return source;  
@@ -161,6 +164,7 @@ public class RuleEdge extends AbstractEdge implements Edge {
         return RuleGraph.ROLE_PREFIX[role]+label();
     }
     
+    @Override
     protected int computeHashCode() {
         return super.computeHashCode() << role;
     }
@@ -168,6 +172,7 @@ public class RuleEdge extends AbstractEdge implements Edge {
     /**
      * String description contains role prefix in label.
      */
+    @Override
     public String toString() {
         if (target != null) {
             return source + " --" + textWithRole() + "--> " + target;
@@ -195,10 +200,12 @@ public class RuleEdge extends AbstractEdge implements Edge {
         }
     }
     
+    @Override
     public int endCount() {
         return target == null ? 1 : 2;
     }
     
+    @Override
     public Node end(int index) {
         switch (index) {
         case 0:

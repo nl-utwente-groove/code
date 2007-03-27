@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: SPORule.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
@@ -23,7 +23,6 @@ import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.rel.RegExprLabel;
-import groove.rel.VarEdge;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarGraph;
 import groove.util.ExprFormatException;
@@ -41,7 +40,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
 
@@ -175,6 +174,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 //        return getEvent(match.elementMap()).createApplication(match.cod());
     }
 
+    @Override
     public Matching createMatching(Graph graph) {
     	return getRuleFactory().createMatching(this, graph);
     }
@@ -225,6 +225,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	/**
      * @see Object#toString()
      */
+	@Override
     public String toString() {
         String res = "Rule " + getName();
         res +=
@@ -337,11 +338,12 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * {@link #createMatchingScheduleFactory(String)}.
 	 * Uses the <code>super</code> method otherwise.
 	 */
+    @Override
 	protected MatchingScheduleFactory computeMatchingScheduleFactory() {
 		MatchingScheduleFactory result = super.computeMatchingScheduleFactory();
 		GraphGrammar grammar = getGrammar();
 		if (grammar != null) {
-			String controlLabels = grammar.getProperty(GraphGrammar.CONTROL_LABELS);
+			String controlLabels = grammar.getProperties().getProperty(GraphGrammar.CONTROL_LABELS);
 			if (controlLabels != null) {
 				result = createMatchingScheduleFactory(controlLabels);
 			}
@@ -581,9 +583,9 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	}
 
 	/**
-	 * Array of LHS edges with variable labels.
+	 * Array of LHS edges that bind variables.
 	 */
-	final VarEdge[] getVarEdges() {
+	final Edge[] getVarEdges() {
 		if (varEdges == null) {
 			varEdges = computeVarEdges();
 		}
@@ -591,10 +593,10 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	}
 
 	/**
-	 * Computes the set of variable edges occurring in the rule.
+	 * Computes the set of variable-binding edges occurring in the lhs.
 	 */
-	protected VarEdge[] computeVarEdges() {
-		return lhs.varEdgeSet().toArray(new VarEdge[0]);
+	protected Edge[] computeVarEdges() {
+		return lhs.varEdgeSet().toArray(new Edge[0]);
 	}
 
 	/**
@@ -664,10 +666,10 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      */
     private Edge[] eraserNonAnchorEdges;
     /** 
-     * The {@link VarEdge}s in the left hand side.
+     * The lhs edges containing bound variables.
      * @invariant lhsOnlyNonAnchorEdges = lhsOnlyEdgeSet \setminus anchors
      */
-    private VarEdge[] varEdges;
+    private Edge[] varEdges;
     /** 
      * The rhs nodes that are not ruleMorph images
      * @invariant rhsOnlyNodeSet \subseteq rhs.nodeSet()

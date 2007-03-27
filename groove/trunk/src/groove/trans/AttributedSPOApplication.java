@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AttributedSPOApplication.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: AttributedSPOApplication.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
@@ -20,21 +20,18 @@ import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.NodeEdgeMap;
 import groove.graph.Graph;
-import groove.graph.InternalGraph;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.algebra.AttributeEdge;
 import groove.graph.algebra.ValueNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
  * Class representing the application of a {@link groove.trans.AttributedSPORule} to a graph. 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
  */
 public class AttributedSPOApplication extends SPOApplication {
 
@@ -53,10 +50,13 @@ public class AttributedSPOApplication extends SPOApplication {
      * This implementation constructs the target lazily.
      * If the rule is not modifying, the source is aliased.
      */
+	@Override
     public Graph getTarget() {
         if (target == null) {
 			if (rule.isModifying()) {
 				target = computeTarget();
+				// AREND why not put this in computeTarget or applyDelta?
+				// then getTarget would not need to be overridden
 				removeUnreferencedDataNodes();
 				target.setFixed();
 			} else {
@@ -67,8 +67,9 @@ public class AttributedSPOApplication extends SPOApplication {
     }
 
     /**
-	 * Callback factory method to compute a target for this applier.
+	 * Modifies the super method by not calling {@link Graph#setFixed()} on it.
 	 */
+    @Override
 	protected Graph computeTarget() {
 		Graph target = createTarget();
 		applyDelta(target);
@@ -76,8 +77,9 @@ public class AttributedSPOApplication extends SPOApplication {
 	}
 
 	/**
-     * Constructs the morphism between source and target graph from the application.
+     * Modifies the super method by ignoring value nodes.
      */
+	@Override
     protected Morphism computeMorphism() {
     	Morphism result = createMorphism();
     	NodeEdgeMap mergeMap = getMergeMap();
@@ -110,34 +112,30 @@ public class AttributedSPOApplication extends SPOApplication {
     }
 
 	/**
-	 * Adds an edge to a delta target, if the edge
-	 * is not <code>null</code> and not already in the source graph.
-	 * Cannot try to call {@link InternalGraph#addEdgeWithoutCheck(Edge)}
-	 * if the target is an {@link InternalGraph} since adding algebra-edges
-	 * requires the check whether the value-node is in the graph or not.
+	 * Modifies the super method by also adding 
+	 * the edge target if it is a {@link ValueNode}.
 	 */
+    @Override
 	protected void addEdge(DeltaTarget target, Edge edge) {
-		if (!(edge instanceof AttributeEdge)){
-			super.addEdge(target, edge);
-		} else {
-			// algebra-edges require special attention
-			// include the check whether the end-points are already
-			// in the target
-			target.addEdge(edge);
-		}
+    	super.addEdge(target, edge);
+    	if (edge != null && edge.opposite() instanceof ValueNode) { 
+    		// value nodes may fail to be in the target
+    		target.addNode(edge.opposite());
+    	}
 	}
 
 	/**
-	 * Performs the edge erasure necessary according to the rule.
+	 * In addition to calling the super method,
+	 * registers the target node for erasure in case it is a {@link ValueNode}.
 	 * @param target the target to which to apply the changes
 	 */
+	@Override
     protected void eraseEdges(DeltaTarget target) {
-        for (Object erasedEdge: getErasedEdges()) {
-        	if (erasedEdge instanceof AttributeEdge) {
-	            ValueNode targetNode = (ValueNode) ((AttributeEdge) erasedEdge).target();
-	            removalCandidates.add(targetNode);
+        for (Edge erasedEdge: getErasedEdges()) {
+        	if (erasedEdge.opposite() instanceof ValueNode) {
+	            removalCandidates.add((ValueNode) erasedEdge.opposite());
         	}
-            target.removeEdge((Edge) erasedEdge);
+            target.removeEdge(erasedEdge);
         }
 	}
 
@@ -147,19 +145,15 @@ public class AttributedSPOApplication extends SPOApplication {
      * to the candidate nodes.
      */
     private void removeUnreferencedDataNodes() {
-    	if (!removalCandidates.isEmpty()) {
-    		Iterator<ValueNode> candidatesIter = removalCandidates.iterator();
-    		while (candidatesIter.hasNext()) {
-    			ValueNode nextCandidate = candidatesIter.next();
-    			if (getTarget().edgeSet(nextCandidate).isEmpty())
-                    target.removeNode(nextCandidate);
-    		}
-    	}
+    	for (ValueNode nextCandidate : removalCandidates) {
+			if (getTarget().edgeSet(nextCandidate).isEmpty())
+				target.removeNode(nextCandidate);
+		}
     }
 
     /**
-     * A collection of nodes representing algebraic data values that may
-     * have become unreferenced after this rule application
-     */
+	 * A collection of nodes representing algebraic data values that may have
+	 * become unreferenced after this rule application
+	 */
     private Collection<ValueNode> removalCandidates;
 }

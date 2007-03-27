@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: JAttr.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -22,7 +22,9 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.border.Border;
 import javax.swing.border.CompoundBorder;
@@ -33,14 +35,15 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
 
-import groove.trans.view.RuleGraph;
+import groove.graph.aspect.AspectValue;
+import groove.graph.aspect.RuleAspect;
 import groove.util.Colors;
 import groove.util.Groove;
 
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class JAttr {
     /**
@@ -58,6 +61,14 @@ public class JAttr {
      */
     public static final Color DEFAULT_BACKGROUND = Colors.findColor(Groove.getGUIProperty("default.background"));
 
+    /**
+     * Background colour for value nodes.
+     */
+    public static final Color VALUE_BACKGROUND = Color.YELLOW;
+
+    /**
+     * Border insets for default nodes.
+     */
     public static final Insets DEFAULT_INSETS = new Insets(0, 3, 0, 3);
     /**
      * An empty border, to be used as the inner border of a compound border,
@@ -120,36 +131,36 @@ public class JAttr {
 
     /** Borders of active LTS nodes. */
     static public final Border LTS_ACTIVE_BORDER = createNodeBorder(new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH));
-    //
-    //    static public final int NR_OF_ROLES = RuleGraph.NR_OF_ROLES;
-    //    static public final int ERASER = RuleGraph.ERASER;
-    //    static public final int CREATOR = RuleGraph.CREATOR;
-    //    static public final int READER = RuleGraph.READER;
-    //    static public final int EMBARGO = RuleGraph.EMBARGO;
-
-    static private final String[] PREFIXES = new String[RuleGraph.NR_OF_ROLES];
+    static private final Map<AspectValue,String> PREFIXES = new HashMap<AspectValue,String>();
     static {
-        PREFIXES[RuleGraph.READER] = "default.";
-        PREFIXES[RuleGraph.EMBARGO] = "embargo.";
-        PREFIXES[RuleGraph.ERASER] = "eraser.";
-        PREFIXES[RuleGraph.CREATOR] = "creator.";
+        PREFIXES.put(RuleAspect.READER, "default.");
+        PREFIXES.put(RuleAspect.EMBARGO, "embargo.");
+        PREFIXES.put(RuleAspect.ERASER, "eraser.");
+        PREFIXES.put(RuleAspect.CREATOR, "creator.");
     }
 
-    // colors
-    static public final Color[] RULE_COLOR = new Color[RuleGraph.NR_OF_ROLES];
-    static public final int[] RULE_WIDTH = new int[RuleGraph.NR_OF_ROLES];
-    static public final float[][] RULE_DASH = new float[RuleGraph.NR_OF_ROLES][];
-    static public final Border[] RULE_BORDER = new Border[RuleGraph.NR_OF_ROLES];
-    static public final Border[] RULE_EMPH_BORDER = new Border[RuleGraph.NR_OF_ROLES];
-    //    static private final Insets[] INSETS = new Insets[RuleGraph.NR_OF_ROLES];
+    /** Store of colours for each role. */
+    static public final Map<AspectValue,Color> RULE_COLOR = new HashMap<AspectValue,Color>();
+    /** Store of line widths for each role. */
+    static public final Map<AspectValue,Integer> RULE_WIDTH = new HashMap<AspectValue,Integer>();
+    /** Store of dash patterns for each role. */
+    static public final Map<AspectValue,float[]> RULE_DASH = new HashMap<AspectValue,float[]>();
+    /** Store of borders for each role. */
+    static public final Map<AspectValue,Border> RULE_BORDER = new HashMap<AspectValue,Border>();
+    /** Store of emphasised line widths for each role. */
+    static public final Map<AspectValue,Integer> RULE_EMPH_WIDTH = new HashMap<AspectValue,Integer>();
+    /** Store of emphasised borders for each role. */
+    static public final Map<AspectValue,Border> RULE_EMPH_BORDER = new HashMap<AspectValue,Border>();
+    //    static private final Insets[] INSETS = new Insets[ROLE_COUNT];
     static {
-        for (int role = 0; role < RuleGraph.NR_OF_ROLES; role++) {
-            RULE_COLOR[role] = Colors.findColor(Groove.getGUIProperty(PREFIXES[role] + "color"));
-            RULE_WIDTH[role] = Integer.parseInt(Groove.getGUIProperty(PREFIXES[role] + "width"));
-            float[] dash = Groove.toFloatArray(Groove.getGUIProperty(PREFIXES[role] + "dash"));
-            RULE_DASH[role] = dash == null ? JAttr.NO_DASH : dash;
-            RULE_BORDER[role] = createNodeBorder(createRuleBorder(RULE_COLOR[role], RULE_WIDTH[role], RULE_DASH[role]));
-            RULE_EMPH_BORDER[role] = createNodeBorder(createRuleBorder(RULE_COLOR[role], RULE_WIDTH[role] + 2, RULE_DASH[role]));
+        for (AspectValue role: RuleAspect.getInstance().getValues()) {
+            RULE_COLOR.put(role,Colors.findColor(Groove.getGUIProperty(PREFIXES.get(role) + "color")));
+            RULE_WIDTH.put(role,Integer.parseInt(Groove.getGUIProperty(PREFIXES.get(role) + "width")));
+            float[] dash = Groove.toFloatArray(Groove.getGUIProperty(PREFIXES.get(role) + "dash"));
+            RULE_DASH.put(role,dash == null ? JAttr.NO_DASH : dash);
+            RULE_BORDER.put(role,createNodeBorder(createRuleBorder(RULE_COLOR.get(role), RULE_WIDTH.get(role), RULE_DASH.get(role))));
+            RULE_EMPH_WIDTH.put(role,RULE_WIDTH.get(role) + 2);
+            RULE_EMPH_BORDER.put(role,createNodeBorder(createRuleBorder(RULE_COLOR.get(role), RULE_EMPH_WIDTH.get(role), RULE_DASH.get(role))));
         }
     }
     
@@ -255,6 +266,7 @@ public class JAttr {
     /** Node border used for emphasized cells. */
     public static final Border EMPH_BORDER =
         createNodeBorder(new LineBorder(JAttr.EMPH_COLOR, JAttr.EMPH_WIDTH) {
+        	@Override
             public Insets getBorderInsets(Component c) {
                 return new Insets(1,1,1,1);
             }

@@ -1,5 +1,5 @@
 /*
- * $Id: DefaultConditionSearchPlanFactory.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: DefaultConditionSearchPlanFactory.java,v 1.2 2007-03-27 14:18:27 rensink Exp $
  */
 package groove.trans.match;
 
@@ -21,6 +21,8 @@ import groove.graph.Node;
 import groove.graph.match.EdgeSearchItem;
 import groove.graph.match.NodeSearchItem;
 import groove.graph.match.SearchItem;
+import groove.rel.RegExpr;
+import groove.rel.RegExprLabel;
 import groove.rel.match.RegExprSearchPlanFactory;
 import groove.trans.DefaultGraphCondition;
 import groove.trans.GraphCondition;
@@ -37,7 +39,7 @@ import groove.util.ExprParser;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory implements ConditionSearchPlanFactory {
 	/**
@@ -140,7 +142,7 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
     	}
     	List<SearchItem> result = planData.getPlan();
     	if (condition instanceof DefaultGraphCondition) {
-    		addEmbargoes((DefaultGraphCondition) condition, result, preMatchedNodes);
+    		addEmbargoes((DefaultGraphCondition) condition, result, preMatchedNodes, preMatchedEdges);
     	}
     	return result;
     }
@@ -149,16 +151,17 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	 * Adds edge and merge embargo search items to an already existing search plan.
 	 * @param condition the condition from which the embargoes are to be retrieved
 	 * @param result the already computed search plan
-	 * @param prematchedNodes TODO
+	 * @param prematchedNodes the nodes that are already matched (and hence not in <code>result</code>)
+	 * @param preMatchedEdges the edges that are already matched (and hence not in <code>result</code>)
 	 */
-	private void addEmbargoes(DefaultGraphCondition condition, List<SearchItem> result, Set<Node> preMatchedNodes) {
+	private void addEmbargoes(DefaultGraphCondition condition, List<SearchItem> result, Set<Node> preMatchedNodes, Set<Edge> preMatchedEdges) {
 		Map<Node, Collection<Edge>> embargoMap = condition.getNegationMap();
 		if (embargoMap != null) {
 			for (Map.Entry<Node, Collection<Edge>> embargoEntry : embargoMap.entrySet()) {
 				Node source = embargoEntry.getKey();
 				for (Edge embargoEdge : embargoEntry.getValue()) {
 					if (source.equals(embargoEdge.source())) {
-						addEdgeEmbargo(result, embargoEdge, preMatchedNodes);
+						addEdgeEmbargo(result, embargoEdge, preMatchedNodes, preMatchedEdges);
 					}
 				}
 			}
@@ -188,7 +191,7 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	protected List<Comparator<Edge>> createComparators(GraphGrammar grammar, Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
 		List<Comparator<Edge>> result = super.createComparators(nodeSet, edgeSet);
 		if (grammar != null) {
-			String controlLabels = grammar.getProperty(GraphGrammar.CONTROL_LABELS);
+			String controlLabels = grammar.getProperties().getProperty(GraphGrammar.CONTROL_LABELS);
 			if (controlLabels != null) {
 				try {
 					result.add(0, new ControlLabelComparator(Arrays.asList(ExprParser.splitExpr(controlLabels, " "))));
@@ -205,27 +208,52 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	 * search plan, namely directly after all end nodes have been matched.
 	 * @param result the pre-existing search plan
 	 * @param embargoEdge the embargo edge to be inserted
+	 * @param prematchedNodes the nodes that are already matched (and hence not in <code>result</code>)
+	 * @param preMatchedEdges the edges that are already matched (and hence not in <code>result</code>)
 	 */
-    protected void addEdgeEmbargo(List<SearchItem> result, Edge embargoEdge, Set<Node> preMatchedNodes) {
+    protected void addEdgeEmbargo(List<SearchItem> result, Edge embargoEdge, Set<Node> preMatchedNodes, Set<Edge> preMatchedEdges) {
     	Set<Node> endSet = new HashSet<Node>();
     	for (Node end: embargoEdge.ends()) {
         	if (!preMatchedNodes.contains(end)) {
         		endSet.add(end);
         	}
     	}
+    	// the set of variables possibly occurring in the edge
+    	Set<String> varSet = new HashSet<String>();
+    	RegExpr edgeExpr = getRegExpr(embargoEdge);
+    	if (edgeExpr != null) {
+    		varSet.addAll(edgeExpr.allVarSet());
+    		for (Edge preMatchedEdge: preMatchedEdges) {
+    			edgeExpr = getRegExpr(preMatchedEdge);
+    			if (edgeExpr != null) {
+    				varSet.removeAll(edgeExpr.boundVarSet());
+    			}
+    		}
+    	}
     	int index = 0;
-    	while (! endSet.isEmpty()) {
+    	while (! endSet.isEmpty() || ! varSet.isEmpty()) {
     		SearchItem next = result.get(index);
     		if (next instanceof NodeSearchItem) {
     			endSet.remove(((NodeSearchItem) next).getNode());
     		} else if (next instanceof EdgeSearchItem) {
-    			for (Node end: ((EdgeSearchItem) next).getEdge().ends()) {
-    				endSet.remove(end);
+    			Edge edge = ((EdgeSearchItem) next).getEdge();
+    			endSet.removeAll(Arrays.asList(edge.ends()));
+    			edgeExpr = getRegExpr(edge);
+    			if (edgeExpr != null) {
+    				varSet.removeAll(edgeExpr.boundVarSet());
     			}
     		}
     		index++;
     	}
     	result.add(index, createNegatedSearchItem(createEdgeSearchItem(embargoEdge, null)));
+    }
+    
+    /** 
+     * Returns the regular expression on a given edge label, if any,
+     * or <code>null</code> otherwise.
+     */
+    private RegExpr getRegExpr(Edge edge) {
+    	return RegExprLabel.getRegExpr(edge.label());
     }
     
    	/**

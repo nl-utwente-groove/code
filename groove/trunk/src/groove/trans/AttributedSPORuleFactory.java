@@ -12,16 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributedSPORuleFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: AttributedSPORuleFactory.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.AttributeSimulation;
 import groove.graph.Graph;
-import groove.graph.GraphFormatException;
 import groove.graph.Morphism;
-import groove.trans.view.AttributedRuleGraph;
-import groove.trans.view.RuleGraph;
 
 /**
  * Factory class for attributed SPO rules.
@@ -33,7 +30,7 @@ import groove.trans.view.RuleGraph;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
  */
 public class AttributedSPORuleFactory extends DefaultRuleFactory {
 	/** The singleton instance of {@link AttributedSPORuleFactory}. */
@@ -69,14 +66,14 @@ public class AttributedSPORuleFactory extends DefaultRuleFactory {
 	public RuleApplication createRuleApplication(RuleEvent event, Graph source) {
         return new AttributedSPOApplication((SPOEvent) event, source, this);
 	}
-
-	/**
-	 * This implementation returns an {@link AttributedRuleGraph}.
-	 */
-	@Override
-	public RuleGraph createRuleView(Graph graph, NameLabel name, int priority) throws GraphFormatException {
-		return new AttributedRuleGraph(graph, name, priority, this);
-	}
+//
+//	/**
+//	 * This implementation returns an {@link AttributedRuleGraph}.
+//	 */
+//	@Override
+//	public RuleGraph createRuleView(Graph graph, NameLabel name, int priority) throws GraphFormatException {
+//		return new AttributedRuleGraph(graph, name, priority, this);
+//	}
 
 	/**
 	 * This implementation returns an {@link AttributeSimulation}.

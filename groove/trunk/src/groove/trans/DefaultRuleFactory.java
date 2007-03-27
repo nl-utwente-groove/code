@@ -12,18 +12,19 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: DefaultRuleFactory.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
-
 
 import groove.graph.Graph;
 import groove.graph.GraphFormatException;
 import groove.graph.Morphism;
 import groove.graph.Simulation;
+import groove.graph.aspect.AspectGraph;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.match.MatchingMatcher;
-import groove.trans.view.RuleGraph;
+import groove.trans.view.AspectRuleView;
+//import groove.trans.view.RuleGraph;
 
 /**
  * A rule factory for SPO rules.
@@ -35,7 +36,7 @@ import groove.trans.view.RuleGraph;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultRuleFactory implements RuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */
@@ -65,6 +66,7 @@ public class DefaultRuleFactory implements RuleFactory {
 	 */
 	public Matching createMatching(GraphCondition rule, final VarNodeEdgeMap partialMap, Graph graph) {
 		DefaultMatching result = new DefaultMatching((SPORule) rule, graph, this) {
+			@Override
 			protected VarNodeEdgeMap createElementMap() {
 				return partialMap;
 			}
@@ -102,10 +104,10 @@ public class DefaultRuleFactory implements RuleFactory {
 	}
 
 	/**
-	 * This implementation returns a {@link RuleGraph}.
+	 * This implementation returns an {@link AspectRuleView}.
 	 */
-	public RuleGraph createRuleView(Graph graph, NameLabel name, int priority) throws GraphFormatException {
-		return new RuleGraph(graph, name, priority, this);
+	public AspectRuleView createRuleView(Graph graph, NameLabel name, int priority) throws GraphFormatException {
+		return new AspectRuleView(AspectGraph.getFactory().fromPlainGraph(graph), name, priority, this);
 	}
 
 	/**

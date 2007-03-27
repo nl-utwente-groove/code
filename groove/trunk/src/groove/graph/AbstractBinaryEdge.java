@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AbstractBinaryEdge.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: AbstractBinaryEdge.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
@@ -22,7 +22,7 @@ package groove.graph;
  * Abstract implementation of an (immutable) binary graph edge, as a tuple consisting of source and
  * target nodes.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:40 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:32 $
  */
 abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryEdge {
     static {
@@ -42,24 +42,12 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
     	super(source, label);
         this.target = target;
     }
-//
-//    /**
-//     * Constructor only used for creating edge prototypes. The resulting edge should not be used on
-//     * graphs.
-//     * @see GraphFactory
-//     */
-//    protected AbstractBinaryEdge() {
-//    	super(null, null);
-//        this.target = null;
-//    }
 
     // ----------------- Element methods ----------------------------
 
     public Edge imageFor(NodeEdgeMap elementMap) {
         // if this edge has an explicit image in the map, use that
         Edge image = elementMap.getEdge(this);
-//        if (image != null && !(elementMap instanceof MergeMap)
-//                || elementMap.containsKey(this)) {
         if (image != null) {
             return image;
         }
@@ -71,10 +59,11 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
         if (targetImage == null) {
             return null;
         }
-        if (source() == sourceImage && target() == targetImage) {
+        Label labelImage = elementMap.getLabel(label());
+        if (source() == sourceImage && target() == targetImage && label() == labelImage) {
             return this;
         } else {
-            return newEdge(sourceImage, targetImage);
+            return newEdge(sourceImage, labelImage, targetImage);
         }
     }
 
@@ -86,6 +75,7 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
 //    	return ends;
     }
 
+    @Override
     final public Node end(int i) {
         switch (i) {
         case SOURCE_INDEX:
@@ -97,6 +87,7 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
         }
     }
 
+    @Override
     final public int endIndex(Node node) {
         if (source.equals(node)) {
             return SOURCE_INDEX;
@@ -110,10 +101,12 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
     /**
      * This implementation tests if <tt>other</tt> equals <tt>source</tt> or <tt>target</tt>.
      */
+    @Override
     final public boolean hasEnd(Node other) {
         return source.equals(other) || target.equals(other);
     }
 
+    @Override
     final public int endCount() {
         return END_COUNT;
     }
@@ -144,6 +137,7 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
     /**
      * Improves the testing for end point equality.
      */
+    @Override
     protected boolean isEndEqual(Edge other) {
         return (source.equals(other.source())) && other.endCount() == END_COUNT && target.equals(other.end(TARGET_INDEX));
     }
@@ -152,6 +146,7 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
         return target;
     }
 
+    @Override
     public final Node opposite() {
         return target;
     }
@@ -160,6 +155,7 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
      * Returns a description consisting of the source node, an arrow with the label inscribed, and
      * the target node.
      */
+    @Override
     public String toString() {
         return "" + source() + "--" + getLabelText() + "-->" + target();
     }
@@ -172,6 +168,7 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
     /**
      * Slightly more efficient implementation returning the same value as the super method.
      */
+    @Override
     protected int computeHashCode() {
     	int labelCode = label().hashCode();
     	int sourceCode = source.hashCode();

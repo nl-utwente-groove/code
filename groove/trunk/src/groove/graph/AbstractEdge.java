@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractEdge.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: AbstractEdge.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractEdge implements Edge {
     /**
@@ -117,68 +117,19 @@ public abstract class AbstractEdge implements Edge {
             return end(Edge.TARGET_INDEX);
         }
     }
-    
-    // ------------------------------ Object overrides --------------------------
-//
-//    /**
-//     * Implements the ordering rules for {@link Element}s from the perspective
-//     * of a {@link Composite}.
-//     * @see Element#compareTo(Element)
-//     */
-//    public int compareTo(Element obj) {
-//        if (obj instanceof Node) {
-//            // for nodes, we just need to look at the source of this composite
-//            if (source().equals(obj)) {
-//                return +1;
-//            } else {
-//                return source().compareTo(obj);
-//            }
-//        } else if (obj instanceof Edge) {
-//            Edge other = (Edge) obj;
-//            // for edges, we also just compare source nodes
-//            if (source().equals(other.source())) {
-//                return -1;
-//            } else {
-//                return source().compareTo(other.source());
-//            }
-//        } else if (obj instanceof Composite) {
-//            Composite other = (Composite) obj;
-//            if (endCount() != other.endCount()) {
-//                return endCount() - other.endCount();
-//            }
-//            for (int i = 0; i < endCount(); i++) {
-//                if (!end(i).equals(other.end(i))) {
-//                    return end(i).compareTo(other.end(i));
-//                }
-//            }
-//            return 0;
-//        } else {
-//            throw new IllegalArgumentException("Graph element "+this+" incomparable with "+obj);
-//        }
-//    }
 
     /**
      * Since all composites are immutable, the method just returns <code>this</code>.
      */
+    @Override
     public AbstractEdge clone() {
         return this;
     }
-//
-//    /**
-//     * Returns <tt>true</tt> if <tt>obj</tt> is also a composite
-//     * with the same label and number of endpoints, and 
-//     * equal endpoints at each index.
-//     * The actual test is delegated to {@link #isTypeEqual(Object)} and {@link #isEndEqual(Composite)}.
-//     * @see #isTypeEqual(Object)
-//     * @see #isEndEqual(Composite)
-//     */
-//    public boolean equals(Object obj) {
-//        return isTypeEqual(obj) && isEndEqual((Composite) obj);
-//    }
     
     /**
      * Delegates to {@link #computeHashCode()}.
      */
+    @Override
     final public int hashCode() {
     	if (! hashCodeInit) {
     		hashCode = computeHashCode();
@@ -186,7 +137,8 @@ public abstract class AbstractEdge implements Edge {
     	}
         return hashCode;
     }
-/**
+
+    /**
 	 * Overwrites the method to add a hash code for the label.
 	 */
 	protected int computeHashCode() {
@@ -198,7 +150,7 @@ public abstract class AbstractEdge implements Edge {
 	    return result;
 	}
 
-/**
+	/**
      * Implements the ordering rules for {@link Element}s from the perspective
      * of an {@link Edge}.
      * @see Element#compareTo(Element)
@@ -240,6 +192,7 @@ public abstract class AbstractEdge implements Edge {
      * @see #isTypeEqual(Object)
      * @see #isEndEqual(Edge)
      */
+    @Override
     public boolean equals(Object obj) {
         return isTypeEqual(obj) && isEndEqual((Edge) obj) && label().equals(((Edge) obj).label());
     }

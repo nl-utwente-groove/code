@@ -1,4 +1,4 @@
-/* $Id: IsoEdgeSearchItem.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $ */
+/* $Id: IsoEdgeSearchItem.java,v 1.2 2007-03-27 14:18:33 rensink Exp $ */
 package groove.graph.iso;
 
 import groove.graph.Edge;
@@ -17,51 +17,16 @@ public class IsoEdgeSearchItem extends EdgeSearchItem<Edge> {
 		protected IsoEdgeRecord(IsoMatcher matcher) {
 			super(matcher);
 		}
-//
-//		@Override
-//		public void undo() {
-//			boolean isNew = matcher.getUsedImages().remove(getSelected());
-//			assert isNew : String.format("Image %s was already in used images %s", edge, getSelected());
-//			super.undo();
-//		}
 
 		/**
 		 * The search plan should have made sure that all 
 		 * end nodes have been matched.
 		 */
+		@Override
 		protected void initImages() {
 			Edge image = edge.imageFor(matcher.getSingularMap());
 			setSingular(image);
 		}
-//		/**
-//		 * The images are here determined by the certificates of the 
-//		 * domain and codomain.
-//		 */
-//		protected void initImages() {
-//			Object edgeMatch = matcher.getCertEquivalent(edge);
-//	        if (edgeMatch == null) {
-//	        	setSingular(null);
-//	        } else if (edgeMatch instanceof Element) {
-//	        	setSingular((Edge) edgeMatch);
-//	        } else {
-//	        	setMultiple((Collection<Edge>) edgeMatch);
-//	        }
-//		}
-//		
-//		/**
-//		 * The images are here determined by the certificates of the 
-//		 * domain and codomain.
-//		 */
-//		protected Collection<? extends Edge> computeImageSet() {
-//			Object edgeMatch = matcher.getCertEquivalent(edge);
-//	        if (edgeMatch == null) {
-//	            return Collections.<Edge>emptySet();
-//	        } else if (edgeMatch instanceof Element) {
-//	            return Collections.singleton((Edge) edgeMatch);
-//	        } else {
-//	            return ((Collection<Edge>) edgeMatch);
-//	        }
-//		}
 	}
 	
 	/**
@@ -72,6 +37,7 @@ public class IsoEdgeSearchItem extends EdgeSearchItem<Edge> {
 		super(edge, null);
 	}
 	
+	@Override
 	public Record get(Matcher matcher) {
 		return new IsoEdgeRecord((IsoMatcher) matcher);
 	}

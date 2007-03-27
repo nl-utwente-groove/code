@@ -12,32 +12,36 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RulePanel.java,v 1.1.1.2 2007-03-20 10:42:45 kastenberg Exp $
+ * $Id: RulePanel.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
  */
 package groove.gui;
+
+import static groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static groove.gui.Options.SHOW_ASPECTS_OPTION;
+import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 
 import groove.gui.jgraph.*;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
-import groove.trans.view.RuleGraph;
+import groove.trans.view.AspectRuleView;
 import groove.trans.view.RuleViewGrammar;
 import groove.util.Groove;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.Map;
 import java.util.TreeMap;
 
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 
 /**
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -47,19 +51,13 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
      * Constructs a new rule frame on the basis of a given graph.
      */
     public RulePanel(Simulator simulator) {
-        super(new RuleJGraph(simulator), true);
+        super(new RuleJGraph(simulator), true, simulator.getOptions());
         this.simulator = simulator;
-        anchorsOptionItem = createAnchorsOptionItem();
-        nodeIdsOptionItem = createNodeIdsOptionItem();
+        addOptionListener(SHOW_ANCHORS_OPTION, createAnchorsOptionListener());
+        addOptionListener(SHOW_ASPECTS_OPTION, createAspectsOptionListener());
+        addOptionListener(SHOW_NODE_IDS_OPTION, createNodeIdsOptionListener());
         simulator.addSimulationListener(this);
         jGraph.setToolTipEnabled(true);
-    }
-
-    /**
-     * Returns the simulator to which this component is permanently associated.
-     */
-    public Simulator getSimulator() {
-        return simulator;
     }
 
     /** 
@@ -69,14 +67,14 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
      */
     public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
         // reset the display
-        jGraph.setModel(RuleJModel.EMPTY_JMODEL);
+        jGraph.setModel(AspectJModel.EMPTY_JMODEL);
         setEnabled(false);
         // see if the new grammar provides rule graphs
         setStatus();
         // create a mapping from rule names to (fresh) rule models
         ruleJModelMap.clear();
         for (NameLabel ruleName: grammar.getRuleNames()) {
-            RuleJModel jModel = createRuleModel((RuleGraph) grammar.getRuleView(ruleName));
+            AspectJModel jModel = computeRuleModel((AspectRuleView) grammar.getRuleView(ruleName));
             ruleJModelMap.put(ruleName, jModel);
         }
     }
@@ -95,7 +93,7 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
         jGraph.setModel(ruleJModel);
         // display new rule
         setStatus();
-        setEnabled(ruleJModel != RuleJModel.EMPTY_JMODEL);
+        setEnabled(ruleJModel != AspectJModel.EMPTY_JMODEL);
     }
 
     /**
@@ -119,46 +117,63 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
     	// nothing happens here
     }
-    
-    /**
-     * Sets a listener to the rule anchor option, if that has not yet been done.
-     */
-    protected JCheckBoxMenuItem createAnchorsOptionItem() {
-		JCheckBoxMenuItem result = simulator.getOptions().getItem(Options.SHOW_ANCHORS_OPTION);
-		// listen to the option controlling the rule anchor display
-		result.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+
+	/**
+	 * Callback method to create a listener to the anchors option item.
+	 * If it returns <code>null</code>, the option item will be <code>null</code>.
+	 * @see #SHOW_ANCHORS_ITEM
+	 */
+	protected ChangeListener createAnchorsOptionListener() {
+		return new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
 				setStatus();
 				RulePanel.this.revalidate();
 			}
-		});
-		return result;
+		};
 	}
-    
-    /**
-     * Sets a listener to the node ids option.
-     */
-    protected JCheckBoxMenuItem createNodeIdsOptionItem() {
-		final JCheckBoxMenuItem result = simulator.getOptions().getItem(Options.SHOW_NODE_IDS_OPTION);
-		// listen to the option controlling the rule anchor display
-		result.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				boolean value = result.getState();
-				for (RuleJModel jModel: ruleJModelMap.values()) {
+
+	/**
+	 * Callback factory method to create an action listener for the
+	 * show-aspects option.
+	 * If it returns <code>null</code>, the option item will be <code>null</code>.
+	 * @see #SHOW_ASPECTS_OPTION
+	 */
+	protected ChangeListener createAspectsOptionListener() {
+		return new ChangeListener() {
+			public void stateChanged(ChangeEvent evt) {
+				boolean value = ((JCheckBoxMenuItem) evt.getSource()).getState();
+				for (AspectJModel jModel: ruleJModelMap.values()) {
+					jModel.setShowAspects(value);
+				}
+				getJGraph().refreshView();
+			}
+		};
+	}
+
+	/**
+	 * Callback factory for a listener to the node identity show option.
+	 * If it returns <code>null</code>, the option item will be <code>null</code>.
+	 * @see #SHOW_NODE_IDS_OPTION
+	 */
+	protected ChangeListener createNodeIdsOptionListener() {
+		return new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				boolean value = ((JCheckBoxMenuItem) e.getSource()).getState();
+				for (AspectJModel jModel: ruleJModelMap.values()) {
 					jModel.setShowNodeIdentities(value);
 				}
 				getJGraph().refreshView();
 			}
-		});
-		return result;
+		};
 	}
     
     /**
-     * Callback factory method for a new rule model.
+     * Callback factory method to construct a new rule model.
      */
-    protected RuleJModel createRuleModel(RuleGraph ruleGraph) {
-        RuleJModel result = ruleGraph == null ? RuleJModel.EMPTY_JMODEL : new RuleJModel(ruleGraph);
-        result.setShowNodeIdentities(nodeIdsOptionItem.getState());
+    protected AspectJModel computeRuleModel(AspectRuleView ruleGraph) {
+        AspectJModel result = ruleGraph == null ? AspectJModel.EMPTY_JMODEL : new AspectJModel(ruleGraph);
+        result.setShowNodeIdentities(getOptionsItem(SHOW_NODE_IDS_OPTION).getState());
+        result.setShowAspects(getOptionsItem(SHOW_ASPECTS_OPTION).getState());
         return result;
     }
     
@@ -168,9 +183,9 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
 	 */
     protected String getRuleDescription() {
     	String result;
-    	Rule rule = getJGraph().getModel().getRule();
+    	Rule rule = simulator.getCurrentRule();
 		result = "Rule " + rule.getName().name();
-		if (anchorsOptionItem.getState()) {
+		if (getOptionsItem(SHOW_ANCHORS_OPTION).getState()) {
 			result += "; anchor "
 					+ Groove.toString(rule.anchor(), "(", ")", ",");
 		}
@@ -188,13 +203,9 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
      * The production simulator to which this frame belongs.
      */
     private final Simulator simulator;
-    /** The menu item indicating that anchors are to be shown in the status bar. */
-    private final JCheckBoxMenuItem anchorsOptionItem;
-    /** The menu item indicating that node identities are to be shown in the rule graph. */
-    private final JCheckBoxMenuItem nodeIdsOptionItem;
     /**
      * Contains graph models for the production system's rules.
      * @invariant ruleJModels: RuleName --> RuleJModel
      */
-    private final Map<NameLabel,RuleJModel> ruleJModelMap = new TreeMap<NameLabel,RuleJModel>();
+    private final Map<NameLabel,AspectJModel> ruleJModelMap = new TreeMap<NameLabel,AspectJModel>();
 }

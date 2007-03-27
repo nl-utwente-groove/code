@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: JEdge.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -20,7 +20,9 @@ import groove.util.Converter;
 import groove.util.Groove;
 
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Set;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.GraphConstants;
@@ -32,7 +34,7 @@ import org.jgraph.graph.GraphConstants;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
@@ -68,17 +70,34 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     /**
      * This implementation delegates the method to the user object.
      */
+    @Override
     public String toString() {
         return getUserObject().toString();
     }
 
 	/**
-     * Returns the label set from the user object.
+     * Returns the collection of elements of the user object, converted to strings
+     * using {@link #getLabel(Object)}
      */
     public Collection<String> getLabelSet() {
-        return getUserObject().getLabelSet();
+        Set<String> result = new LinkedHashSet<String>();
+        for (Object obj: getUserObject()) {
+        	result.add(getLabel(obj));
+        }
+        return result;
     }
 
+    /** 
+     * Callback method to get the text that is to be printed in the 
+     * j-vertex for a given object in the label set.
+     * @param object an object from the user object (hence of the type
+     * of the user object's elements)
+     */
+    public String getLabel(Object object) {
+    	return object.toString();
+    }
+
+    @Override
     public JUserObject<?> getUserObject() {
     	if (! userObjectSet) {
     		userObjectSet = true;
@@ -86,26 +105,27 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     	}
     	return (JUserObject) super.getUserObject();
     }
-    
+
+    /** 
+     * Overrides the super method to test for the type of the parameter 
+     * (which should be {@link JUserObject}) and records that the object has been set. 
+     */
+	@Override
+	public void setUserObject(Object userObject) {
+		if (!(userObject instanceof JUserObject)) {
+			throw new IllegalArgumentException(String.format("Cannot set user object %s: incorrect type %s", userObject, userObject.getClass()));
+		}
+		super.setUserObject(userObject);
+		userObjectSet = true;
+	}
+
     /**
      * Callback factory method to create a user object.
      * Called lazily in {@link #getUserObject()}.
      */
-    abstract protected JUserObject<?> createUserObject();
-//
-//    public void setUserObject(Object value) {
-//        if (value == null) {
-//            getUserObject().clear();
-////        } else if (value instanceof JUserObject) {
-////        	super.setUserObject(value);
-//        } else if (value instanceof Collection) {
-//            if (value != getUserObject()) {
-//                getUserObject().load((Collection) value);
-//            }
-//        } else {
-//            getUserObject().load(value.toString());
-//        }
-//    }
+    protected JUserObject<?> createUserObject() {
+    	return new JUserObject(this, PRINT_SEPARATOR, false);
+    }
 
     /**
      * Adapts the method so the value attribute is never changed
@@ -182,6 +202,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     /**
      * Constructs a new edge, with cloned attributes and user object.
      */
+    @Override
     public JEdge clone() {
         JEdge result = (JEdge) super.clone();
         result.getAttributes().applyMap(getAttributes());

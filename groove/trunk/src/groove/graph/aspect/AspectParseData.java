@@ -17,16 +17,14 @@
 package groove.graph.aspect;
 
 import groove.graph.Label;
+import static groove.graph.aspect.Aspect.SEPARATOR;
 
 /**
  * Combination of aspect values and actual label text, as derived from a plain label.
  * @author Arend Rensink
  * @version $Revision $
  */
-class AspectParseData {
-	/** The aspect value separator. */
-	static private final String SEPARATOR = AspectParser.SEPARATOR;
-	
+class AspectParseData {	
 	/**
 	 * Construct a label from given aspect value list and label text.
 	 * @param values the list of aspect values to be used
@@ -87,8 +85,7 @@ class AspectParseData {
 	public String toString() {
 		StringBuffer result = new StringBuffer();
 		for (AspectValue value: aspectMap.values()) {
-			result.append(value.toString());
-			result.append(SEPARATOR);
+			result.append(AspectParser.toString(value));
 		}
 		// append the end marking, if any
 		if (isHasEnd()) {

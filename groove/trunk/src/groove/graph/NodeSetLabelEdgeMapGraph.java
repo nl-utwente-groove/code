@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeSetLabelEdgeMapGraph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: NodeSetLabelEdgeMapGraph.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
@@ -31,7 +31,7 @@ import java.util.Set;
  * Graph implementation based on a set of nodes and a map from labels to edges.
  * implementations
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class NodeSetLabelEdgeMapGraph extends AbstractGraph {
     /**
@@ -64,6 +64,7 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph {
         nodeSet.addAll(graph.nodeSet);
     }
 
+    @Override
     public boolean containsElement(Element elem) {
         reporter.start(CONTAINS_ELEMENT);
         try {
@@ -142,6 +143,7 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph {
         return removed;
     }
 
+    @Override
     public boolean removeNodeSet(Collection<Node> nodeSet) {
         reporter.start(REMOVE_NODE);
         boolean removed = false;
@@ -196,6 +198,7 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph {
 
     // ------------- general methods (see AbstractGraph) ----------
 
+    @Override
     public Graph clone() {
         reporter.start(CLONE);
         Graph result = new NodeSetLabelEdgeMapGraph(this);

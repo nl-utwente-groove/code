@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ValueNode.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
+ * $Id: ValueNode.java,v 1.2 2007-03-27 14:18:30 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -20,16 +20,16 @@ import groove.algebra.Algebra;
 import groove.algebra.Constant;
 import groove.algebra.UnknownSymbolException;
 import groove.algebra.Variable;
-import groove.graph.DefaultNode;
 
 /**
  * Implementation of graph elements that represent algebraic data values.
- * 
+ *
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:43 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:30 $
  */
-public class ValueNode extends DefaultNode {
-
+public class ValueNode extends ProductNode {
+// AREND made the superclass a ProductNode to unify the 
+// treatment of constants and other operators
 	/** the algebra to which this operation belongs */
 	private Algebra algebra;
 	/** the operation represented by this node */
@@ -40,7 +40,6 @@ public class ValueNode extends DefaultNode {
 	 * @param constant the constant to create a graph node for
 	 */
 	public ValueNode(Constant constant) {
-		super(AlgebraGraph.getNextNodeNr());
         try {
             this.algebra = constant.algebra();
     		this.constant = (Constant) algebra.getOperation(constant.symbol());
@@ -54,7 +53,6 @@ public class ValueNode extends DefaultNode {
      * @param variable the variable to create a graph node for
      */
     public ValueNode(Variable variable) {
-    	super(AlgebraGraph.getNextNodeNr());
         this.constant = variable;
     }
 
@@ -64,7 +62,6 @@ public class ValueNode extends DefaultNode {
 	 * @param symbol the symbol representing the value to look for
 	 */
 	public ValueNode(Algebra algebra, String symbol) {
-		super(AlgebraGraph.getNextNodeNr());
         try {
             this.algebra = algebra;
     		this.constant = (Constant) algebra.getOperation(symbol);
@@ -109,6 +106,7 @@ public class ValueNode extends DefaultNode {
 	 * This methods returns an indication of the variable if there is
 	 * no associated algebra, or a description of the value otherwise.
 	 */
+    @Override
 	public String toString() {
 		if (getAlgebra() == null) {
 			return "x"+(getNumber()-AlgebraGraph.START_NODE_NR);

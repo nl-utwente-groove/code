@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ProductEdge.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
+ * $Id: ProductEdge.java,v 1.2 2007-03-27 14:18:30 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -30,9 +30,13 @@ import groove.graph.Node;
  * and the target-node should be an instance of {@link groove.graph.algebra.ValueNode}.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
+// AREND I would call this OperatorEdge and unify it with ValueEdge
 public class ProductEdge extends DefaultEdge {
+    public ProductEdge(ValueNode target, Constant operation) {
+        this(target, target, operation);
+    }
 
     public ProductEdge(ProductNode source, ValueNode target, Operation operation) {
         super(source, operation.symbol(), target);
@@ -60,6 +64,7 @@ public class ProductEdge extends DefaultEdge {
         return result;
     }
 
+    @Override
     public boolean equals(Object object) {
         if (!(object instanceof ProductEdge)) {
             return false;

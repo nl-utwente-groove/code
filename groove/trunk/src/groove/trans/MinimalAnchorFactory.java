@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MinimalAnchorFactory.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: MinimalAnchorFactory.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
@@ -26,7 +26,6 @@ import java.util.Set;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.rel.VarEdge;
 
 /**
  * In this implementation, the anchors are the minimal set of nodes and edges 
@@ -34,7 +33,7 @@ import groove.rel.VarEdge;
  * matching: only mergers, eraser nodes and edges (the later only if they are 
  * not incident to an eraser node) and the incident nodes of creator edges are stored.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class MinimalAnchorFactory implements AnchorFactory {
 	/**
@@ -69,9 +68,7 @@ public class MinimalAnchorFactory implements AnchorFactory {
         }
         // set of endpoints that we will remove again
         Set<Node> removableEnds = new HashSet<Node>();
-        VarEdge[] varEdges = rule.getVarEdges();
-        for (int i = 0; i < varEdges.length; i++) {
-            Edge lhsVarEdge = varEdges[i];
+        for (Edge lhsVarEdge: rule.getVarEdges()) {
             anchors.add(lhsVarEdge);
             // if we have the edge in the anchors, its end nodes need not be there
             removableEnds.addAll(Arrays.asList(lhsVarEdge.ends()));

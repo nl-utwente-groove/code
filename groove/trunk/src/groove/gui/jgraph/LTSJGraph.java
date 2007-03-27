@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJGraph.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: LTSJGraph.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -95,6 +95,7 @@ public class LTSJGraph extends JGraph {
         /**
          * This method returns a singleton set consisting of the LTS start state.
          */
+        @Override
         protected Collection<?> getSuggestedRoots() {
             LTSJModel jModel = getModel();
             return Collections.singleton(jModel.getJCell(jModel.graph().startState()));
@@ -103,6 +104,7 @@ public class LTSJGraph extends JGraph {
         /**
          * This implementation returns a {@link MyForestLayouter}.
          */
+        @Override
         public Layouter newInstance(JGraph jGraph) {
             return new MyForestLayouter(name, jGraph);
         }
@@ -128,6 +130,7 @@ public class LTSJGraph extends JGraph {
      * to apply the current transition and to explore the LTS, and
      * subsequently invokes the super implementation. 
      */
+    @Override
     protected void initPopupMenu(JPopupMenu popupMenu) {
         addSeparatorUnlessFirst(popupMenu);
         // State exploration sub-menu
@@ -142,6 +145,7 @@ public class LTSJGraph extends JGraph {
         super.initPopupMenu(popupMenu);
     }
 
+    @Override
     public JPopupMenu activatePopupMenu(Point cell) {
         JPopupMenu result = super.activatePopupMenu(cell);
         if (getModel().getActiveTransition() == null)
@@ -155,6 +159,7 @@ public class LTSJGraph extends JGraph {
 
     protected MouseListener createMouseListener() {
         return new MouseAdapter() {
+            @Override
             public void mousePressed(MouseEvent evt) {
                 if (evt.getButton() == MouseEvent.BUTTON1) {
                     // scale from screen to model
@@ -182,6 +187,7 @@ public class LTSJGraph extends JGraph {
     /**
      * Overwrites the menu, so the forest layouter takes the LTS start state as its root.
      */
+    @Override
     protected SetLayoutMenu createSetLayoutMenu() {
         SetLayoutMenu result = new SetLayoutMenu(this, new SpringLayouter());
         result.addLayoutItem(new MyForestLayouter());

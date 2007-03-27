@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: RuleSystem.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
@@ -35,7 +35,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:56 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
  * @see NameLabel
  * @see SPORule
  */
@@ -112,6 +112,7 @@ public class RuleSystem {
         return priorityRuleMap.keySet().size() > 1;
     }
 
+    @Override
     public String toString() {
         String res = "";
         for (Rule production: getRules()) {

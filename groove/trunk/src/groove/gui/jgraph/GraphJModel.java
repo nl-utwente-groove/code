@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: GraphJModel.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -22,17 +22,16 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GenericNodeEdgeHashMap;
 import groove.graph.GenericNodeEdgeMap;
+import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
-import groove.graph.algebra.ValueEdge;
 import groove.graph.algebra.ValueNode;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.util.Groove;
 
 import java.awt.Rectangle;
 import java.util.Collection;
@@ -47,12 +46,10 @@ import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * Implements jgraph's GraphModel interface on top of a graph.Graph.
- * The resulting GraphModel should only be edited through the Graph interface;
- * attributes should be updated through putAttributes.
- * <p>NOTE: the JModel-GraphJModel-RuleJModel structure is up for revision.
+ * Implements jgraph's GraphModel interface on top of a groove graph.
+ * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */
@@ -96,19 +93,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @require graph != null, nodeAttr != null, edgeAttr != null;.
      */
     public GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr) {
-        this(graph, defaultNodeAttr, defaultEdgeAttr, false);
-    }
-
-    /** 
-     * Creates a new GraphJModel instance on top of a given Graph,
-     * and an indication whether self-edges should be displayed as node labels.
-     * Node attributes are given by NODE_ATTR and edge attributes by EDGE_ATTR.
-     * @param graph the underlying Graph
-     * @param showNodeIdentities indicates whether self edges should be
-     * @require graph != null;
-     */
-    public GraphJModel(GraphShape graph, boolean showNodeIdentities) {
-        this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, showNodeIdentities);
+        this(graph, defaultNodeAttr, defaultEdgeAttr, true);
     }
 
     /** 
@@ -166,8 +151,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Can alse deal with NodeSet and EdgeSet additions.
      */
     public synchronized void addUpdate(GraphShape graph, Node node) {
-        if (DEBUG_UPDATE)
-            Groove.message("Graph model update: adding " + node);
         initializeTransients();
 		// add a corresponding GraphCell to the GraphModel
 		addNode(node);
@@ -181,8 +164,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	 * additions.
 	 */
     public synchronized void addUpdate(GraphShape graph, Edge edge) {
-        if (DEBUG_UPDATE)
-			Groove.message("Graph model update: adding " + edge);
 		initializeTransients();
 		// note that (as per GraphListener contract)
 		// source and target Nodes (if any) have already been added
@@ -197,14 +178,9 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	 * the change in the GraphModel.
 	 */
     public synchronized void removeUpdate(GraphShape graph, Node node) {
-		if (DEBUG_UPDATE)
-			Groove.message("Graph model update: removing " + node);
 		// deletes the corresponding GraphCell from the GraphModel
 		// note that (as per GraphListener contract)
 		// all incident Edges have already been removed
-		// GraphCell[] removeCells = { (DefaultGraphCell) cellMap.get(obj) };
-		// remove(getDescendants(this, new Object[] { cellMap.get(obj)
-		// }).toArray());
 		remove(new Object[] { toJCellMap.removeNode(node) });
 	}
 
@@ -213,8 +189,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	 * the change in the GraphModel.
 	 */
     public synchronized void removeUpdate(GraphShape graph, Edge edge) {
-		if (DEBUG_UPDATE)
-			Groove.message("Graph model update: removing " + edge);
 		// the only remaining possibility is an Edge
 		JCell jEdge = getJCell(edge);
 		// self-edges are treated separately
@@ -313,13 +287,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     public GraphJVertex getJVertex(Node node) {
         return toJCellMap.getNode(node);
     }
-//
-//    /**
-//     * Constructs a layout map for the currently displayed graph from the underlying model.
-//     */
-//    public LayoutMap getLayoutMap() {
-//        return new LayoutMap(getRoots(this)).after(toJCellMap);
-//    }
 
     /**
      * Sets the layout of the elements in this graph model to the values provided by a given layout
@@ -330,15 +297,28 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         edit(attrMap, null, null, null);
         layoutableJCells.removeAll(attrMap.keySet());
     }
-
+    
     /**
+     * This method first sets the show-aspects property before calling
+     * the super method, and resets this afterwards.
+     * This makes sure that aspect information is included in the labels.
+     */
+	@Override
+	public Graph toPlainGraph() {
+		// set the show-aspects properties while remembering the old value
+		boolean oldShowAspects = isShowAspects();
+		setShowAspects(true);
+		Graph result = super.toPlainGraph();
+		// reset the old value of the show-aspects property
+		setShowAspects(oldShowAspects);
+		return result;
+	}
+
+	/**
      * Creates a j-cell corresponding to a given node in the graph.
      * Adds the j-cell to {@link #addedJCells}, and updates {@link #toJCellNodeMap}.
      */
     protected JCell addNode(Node node) {
-        if (ADD_NODE_DEBUG) {
-            Groove.message("Adding node: " + node);
-        }
         GraphJVertex jVertex = computeJVertex(node);
         toJCellMap.putNode(node, jVertex);
         // we add nodes in front of the list to get them in front of the display
@@ -353,9 +333,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Otherwise, it will be a new j-edge.
      */
     protected JCell addEdge(Edge edge) {
-        if (ADD_EDGE_DEBUG) {
-            Groove.message("Adding edge: " + edge);
-        }
         // for now we just support binary edges
         if (edge.endCount() != 2) {
             throw new IllegalArgumentException("Non-binary edge "+edge+" not supported");
@@ -363,13 +340,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         Node source = edge.end(Edge.SOURCE_INDEX);
         Node target = edge.end(Edge.TARGET_INDEX);
         // self-edges are treated differently
-        if (target == source && !isShowNodeIdentities()) {
-            if (ADD_EDGE_DEBUG) {
-                Groove.message("This is a self-edge");
-                // self-edge; to be represented through node label or special edge
-                //            if (!showNodeIdentities) {
-                Groove.message("Edge is added as node label");
-            }
+        if (target == source && isVertexLabelsAreLoops()) {
             GraphJVertex jVertex = getJVertex(source);
             // see if the edge is appropriate to the node
             if (isLayoutCompatible(jVertex, edge) && jVertex.addSelfEdge(edge)) {
@@ -438,15 +409,15 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
     protected void addNodeSet(Collection<? extends Node> nodeSet) {
     	for (Node node: nodeSet) {
-            Edge valueEdge = null;
-            boolean addValueEdge = false;
-            if (node instanceof ValueNode) {
-                valueEdge = new ValueEdge((ValueNode) node);
-                addValueEdge = true;
-            }
+//            Edge valueEdge = null;
+//            boolean addValueEdge = false;
+//            if (node instanceof ValueNode) {
+//                valueEdge = new ValueEdge((ValueNode) node);
+//                addValueEdge = true;
+//            }
             addNode(node);
-            if (addValueEdge)
-                addEdge(valueEdge);
+//            if (addValueEdge)
+//                addEdge(valueEdge);
         }
     }
 
@@ -520,7 +491,58 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	 * @ensure <tt>result.getNode().equals(node)</tt>
 	 */
 	protected GraphJVertex createJVertex(Node node) {
-	    return new GraphJVertex(this, node, true);
+	    return new GraphJVertex(this, node, isVertexLabelsAreLoops());
+	}
+
+	/**
+	 * Tries to create the attributes based on the set of edges contained in the j-edge.
+	 * Calls the super method only if this fails, i.e., if #createJEdge.
+	 * @see #createJEdgeAttr(Set)
+	 */
+	@Override
+	final protected AttributeMap createJEdgeAttr(JEdge jEdge) {
+		AttributeMap result = createJEdgeAttr(((GraphJEdge) jEdge).getEdgeSet());
+		if (result == null) {
+			result = super.createJEdgeAttr(jEdge);
+		}
+		return result;
+	}
+	
+	/** 
+	 * Creates the attributes based on the set of edges contained in a j-edge. 
+	 * Callback method from {@link #createJEdgeAttr(JEdge)}
+	 */
+	protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
+        AttributeMap result = (AttributeMap) defaultEdgeAttr.clone();
+        return result;
+	}
+
+	/**
+	 * Tries to create the attributes based on the node contained in the j-vertex.
+	 * Calls the super method only if this fails.
+	 * @see #createJVertexAttr(JVertex)
+	 */
+	@Override
+	final protected AttributeMap createJVertexAttr(JVertex jVertex) {
+		AttributeMap result = createJVertexAttr(((GraphJVertex) jVertex).getNode());
+		if (result == null) {
+			result = super.createJVertexAttr(jVertex);
+		}
+		return result;
+	}
+
+	/** 
+	 * Creates the attributes based on the node contained in a j-vertex. 
+	 * Callback method from {@link #createJVertexAttr(JVertex)}.
+	 */
+	protected AttributeMap createJVertexAttr(Node node) {
+        AttributeMap result;
+		if (node instanceof ValueNode) {
+			result = (AttributeMap) valueNodeAttr.clone();
+		} else {
+			result = (AttributeMap) defaultNodeAttr.clone();
+		}
+        return result;
 	}
 
 	/**
@@ -550,6 +572,34 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
     /**
+	 * Indicates whether aspect prefixes should be shown for nodes and edges.
+	 */
+	public final boolean isShowNodeIdentities() {
+		return this.showNodeIdentities;
+	}
+
+	/**
+	 * Changes the value of the show-aspects property.
+	 */
+	public final void setShowNodeIdentities(boolean showNodeIdentities) {
+		this.showNodeIdentities = showNodeIdentities;
+	}
+
+    /**
+	 * Indicates whether aspect prefixes should be shown for nodes and edges.
+	 */
+	public final boolean isShowAspects() {
+		return this.showAspects;
+	}
+
+	/**
+	 * Changes the value of the show-aspects property.
+	 */
+	public final void setShowAspects(boolean showAspects) {
+		this.showAspects = showAspects;
+	}
+
+	/**
      * The underlying Graph of this GraphModel.
      * @invariant graph != null
      */
@@ -564,22 +614,18 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Map from graph elements to JGraph cells.
      */
     protected final GenericNodeEdgeMap<Node,GraphJVertex,Edge,JCell> toJCellMap = new GenericNodeEdgeHashMap<Node,GraphJVertex,Edge,JCell>();
-//    /**
-//     * Map from graph nodes and edges to JGraph cells.
-//     * @invariant cellMap: graph.Node --> JNode graph.Edge --> JEdge \cup JNode
-//     */
-//    protected final Map<Node,GraphJVertex> toJCellNodeMap = new HashMap<Node,GraphJVertex>();
-//    /**
-//     * Map from graph nodes and edges to JGraph cells.
-//     * @invariant cellMap: graph.Node --> JNode graph.Edge --> JEdge \cup JNode
-//     */
-//    protected final Map<Edge,JCell> toJCellEdgeMap = new HashMap<Edge,JCell>();
 
     /**
      * Set of GraphModel cells. Used in the process of constructing a GraphJModel.
      * @invariant addedCells \subseteq org.jgraph.graph.DefaultGraphCell
      */
     protected final List<JCell> addedJCells = new LinkedList<JCell>();
+
+	/** Flag indicating that aspect prefixes should be included for nodes and edges. */
+    private boolean showAspects;
+
+	/** Flag indicating that node identities should be shown on the nodes. */
+    private boolean showNodeIdentities;
 
     /**
      * Set of GraphModel connections. Used in the process of constructing a GraphJModel.
@@ -594,7 +640,4 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Counter to provide the y-coordinate of fresh nodes with fresh values
      */
     private transient int nodeY;
-    private static final boolean ADD_EDGE_DEBUG = false;
-    private static final boolean ADD_NODE_DEBUG = false;
-    private static final boolean DEBUG_UPDATE = false;
 }

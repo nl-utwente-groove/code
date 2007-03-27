@@ -18,6 +18,7 @@ package groove.graph.aspect;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -28,6 +29,7 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFormatException;
 import groove.graph.GraphInfo;
+import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
@@ -51,7 +53,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 
 	/**
 	 * Returns a factory for {@link AspectGraph}s, i.e., an object to
-	 * invoke {@link #fromPlainGraph(Graph)} upon.
+	 * invoke {@link #fromPlainGraph(GraphShape)} upon.
 	 */
 	public static AspectGraph getFactory() {
 		return factory;
@@ -194,8 +196,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * Specialises the return type.
 	 */
 	@Override
-	public Set<AspectEdge> outEdgeSet(Node node) {
-		return (Set<AspectEdge>) super.outEdgeSet(node);
+	public Collection<AspectEdge> outEdgeSet(Node node) {
+		return (Collection<AspectEdge>) super.outEdgeSet(node);
 	}
 
 	/**
@@ -214,7 +216,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * @param graph the graph to take as input.
 	 * @throws GraphFormatException if <code>graph</code> is not formatted correctly. 
 	 */
-	public AspectGraph fromPlainGraph(Graph graph) throws GraphFormatException {
+	public AspectGraph fromPlainGraph(GraphShape graph) throws GraphFormatException {
 		// map from original graph elements to aspect graph elements
 		NodeEdgeMap elementMap = new NodeEdgeHashMap();
 		return fromPlainGraph(graph, elementMap);
@@ -231,7 +233,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * should be initially empty
 	 * @throws GraphFormatException if <code>graph</code> is not formatted correctly. 
 	 */
-	private AspectGraph fromPlainGraph(Graph graph, NodeEdgeMap elementMap) throws GraphFormatException {
+	private AspectGraph fromPlainGraph(GraphShape graph, NodeEdgeMap elementMap) throws GraphFormatException {
 		assert elementMap != null && elementMap.isEmpty();
 		AspectGraph result = new AspectGraph();
 		Set<Edge> edges = new HashSet<Edge>(graph.edgeSet());
@@ -306,7 +308,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 			Node nodeImage = result.addNode();
 			elementMap.putNode(node, nodeImage);
 			for (AspectValue value: node.getDeclaredValues()) {
-				result.addEdge(nodeImage, createLabel(parser.toText(value)), nodeImage);
+				result.addEdge(nodeImage, createLabel(parser.toString(value)), nodeImage);
 			}
 		}
 		for (AspectEdge edge: edgeSet()) {

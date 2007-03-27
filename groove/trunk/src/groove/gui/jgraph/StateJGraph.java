@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateJGraph.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: StateJGraph.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -50,6 +50,7 @@ public class StateJGraph extends JGraph {
     	return (GraphJModel) graphModel;
     }
 
+    @Override
     protected void initPopupMenu(JPopupMenu toMenu) {
         if (toMenu != null) {
             addSeparatorUnlessFirst(toMenu);

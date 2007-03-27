@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: DefaultGraphCondition.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import groove.util.Reporter;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -131,13 +131,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      */
     protected void addAndNot(GraphCondition condition) {
         if (condition instanceof EdgeEmbargo) {
-            Edge edge = ((EdgeEmbargo) condition).getEmbargoEdge();
-            // early detection of edge embargoes not implemented for variable edges
-            if (! (edge instanceof VarEdge)) {
-                addNegation(edge);
-            } else {
-                addComplexNegCondition(condition);
-            }
+        	addNegation(((EdgeEmbargo) condition).getEmbargoEdge());
         } else if (condition instanceof MergeEmbargo) {
             Set<Node> injection = new HashSet<Node>(Arrays.asList(((MergeEmbargo) condition).getNodes()));
             addInjection(injection);
@@ -159,7 +153,6 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
         if (negationMap == null) {
             negationMap = new HashMap<Node,Collection<Edge>>();
         }
-        assert !(negativeEdge instanceof VarEdge) : "Variables not allowed in negative edge "+negativeEdge;
         // first add the negative edge to the negation map
         int arity = negativeEdge.endCount();
         for (int i = 0; i < arity; i++) {

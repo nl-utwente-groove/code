@@ -1,5 +1,5 @@
 /*
- * $Id: EdgeAnchorFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: EdgeAnchorFactory.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
@@ -11,13 +11,12 @@ import java.util.Set;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.rel.VarEdge;
 
 /**
  * This implementation does not try to save space by minimizing the size of the anchor,
  * but tries to save time by selecting the entire non-reader part of the LHS.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class EdgeAnchorFactory implements AnchorFactory {
 	/**
@@ -44,7 +43,7 @@ public class EdgeAnchorFactory implements AnchorFactory {
         // remember which eraser nodes should be part of the anchor
         Set<Node> eraserNodes = new LinkedHashSet<Node>(Arrays.asList(rule.getEraserNodes()));
         // the variable and eraser edges are most dinstinguishing; add them first
-        for (VarEdge varEdge: rule.getVarEdges()) {
+        for (Edge varEdge: rule.getVarEdges()) {
         	anchors.add(varEdge);
         	eraserNodes.removeAll(Arrays.asList(varEdge.ends()));
         }

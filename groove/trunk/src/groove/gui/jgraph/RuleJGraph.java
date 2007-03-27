@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJGraph.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: RuleJGraph.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -34,16 +34,16 @@ import javax.swing.JPopupMenu;
  */
 public class RuleJGraph extends JGraph {
     public RuleJGraph(Simulator simulator) {
-    	super(RuleJModel.EMPTY_JMODEL);
+    	super(AspectJModel.EMPTY_JMODEL);
         this.simulator = simulator;
         setLayouter(new SpringLayouter());
         doGraphLayout();
     }
 
-    /** Specialises the return type to a {@link RuleJModel}. */
+    /** Specialises the return type to a {@link AspectJModel}. */
     @Override
-	public RuleJModel getModel() {
-    	return (RuleJModel) super.getModel();
+	public AspectJModel getModel() {
+    	return (AspectJModel) super.getModel();
 	}
 
 	protected void initPopupMenu(JPopupMenu toMenu) {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeView.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: JEdgeView.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -40,7 +40,7 @@ import org.jgraph.graph.PortView;
  * An edge view that uses the <tt>toString</tt> of the underlying edge as a label. Moreover, new
  * views take care to bend to avoid overlap, and offer functionality to add and remove points.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class JEdgeView extends EdgeView {
 
@@ -61,6 +61,7 @@ public class JEdgeView extends EdgeView {
 //        jEdgeAttr.applyMap(jModel.createJEdgeAttr(jEdge));
     }
 
+    @Override
     public String toString() {
         return cell.toString();
     }
@@ -68,6 +69,7 @@ public class JEdgeView extends EdgeView {
     /**
      * This implementation returns the (static) {@link MultiLinedEditor}.
      */
+    @Override
     public GraphCellEditor getEditor() {
         return editor;
     }
@@ -132,6 +134,7 @@ public class JEdgeView extends EdgeView {
     /**
      * Does some routing of self-edges and overlapping edges.
      */
+    @Override
     public void refresh(GraphModel model, CellMapper mapper, boolean createDependentViews) {
         super.refresh(model, mapper, createDependentViews);
         assert target != null : "Target port of "+this+" is null despite our best efforts";
@@ -246,29 +249,10 @@ public class JEdgeView extends EdgeView {
     /**
      * Overrides the method to return a {@link MyEdgeHandle}.
      */
+    @Override
     public CellHandle getHandle(GraphContext context) {
         return new MyEdgeHandle(this, context);
     }
-//
-//    /**
-//     * Returns the cached points for this edge.
-//     * Improves the super implementation by using {@link JPortView#getLocation(EdgeView, int)}
-//     * to determine the location of the target prt view, in case source and target coincide.
-//     */
-//    public Point2D getPoint(int index) {
-//    	Object obj = points.get(index);
-//    	if (obj instanceof PortView)
-//    		// Port Location Seen From This Edge
-//    		return ((JPortView) obj).getLocation(this, index);
-//    	else if (obj instanceof CellView) {
-//    		// Should not happen
-//    		Rectangle2D r = ((CellView) obj).getBounds();
-//    		return getAttributes().createPoint(r.getX(), r.getY());
-//    	} else if (obj instanceof Point2D)
-//    		// Regular Point
-//    		return (Point2D) obj;
-//    	return null;
-//    }
 
     /**
      * Convenience method to return the points of the view as an instantiate list.
@@ -310,15 +294,17 @@ public class JEdgeView extends EdgeView {
      */ 
     protected void routeParallelEdge(CellMapper mapper) {
         // look for parallel edges; if one exists, make this one bend
-        boolean parallelEdgeExists = false;
+        int parallelEdgeCount = 0;
         Iterator<?> edgeIter = ((DefaultPort) source.getCell()).edges();
-        while (!parallelEdgeExists && edgeIter.hasNext()) {
+        while (parallelEdgeCount <= 1 && edgeIter.hasNext()) {
             EdgeView otherView = (EdgeView) mapper.getMapping(edgeIter.next(), false);
-            parallelEdgeExists = otherView != this && otherView != null
+            if (otherView != null
                     && otherView.getPointCount() <= 2
-                    && (otherView.getSource() == target || otherView.getTarget() == target);
+                    && (otherView.getSource() == target || otherView.getTarget() == target)) {
+            	parallelEdgeCount++;
+            }
         }
-        if (parallelEdgeExists) {
+        if (parallelEdgeCount > 1) {
             List<Object> points = getViewPoints();
             points.add(1, createPointBetween(toPoint(points.get(0)), toPoint(points.get(1))));
             GraphConstants.setPoints(getCell().getAttributes(), points);
@@ -431,6 +417,7 @@ public class JEdgeView extends EdgeView {
          * Sets the target port of the view to the source port if the target port is
          * currently <tt>null</tt>, and then invokes the super method.
          */
+        @Override
         protected ConnectionSet createConnectionSet(EdgeView view, boolean verbose) {
             if (view.getTarget() == null) {
                 List<Object> points = view.getPoints();
@@ -444,6 +431,7 @@ public class JEdgeView extends EdgeView {
          * Delegates to {@link JVertexView#paintArmed(Graphics)} if the port's parent
          * view is a {@link JVertexView};  otherwise invokes the super method.
          */
+        @Override
         protected void paintPort(Graphics g, CellView p) {
             if (p.getParentView() instanceof JVertexView && graph instanceof EditorJGraph) {
                 ((JVertexView) p.getParentView()).paintArmed(g);

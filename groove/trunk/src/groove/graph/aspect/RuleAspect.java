@@ -49,7 +49,8 @@ public class RuleAspect extends AbstractAspect {
     public static final String EMBARGO_NAME = Groove.getXMLProperty("label.embargo.prefix");
     /** The embargo aspect value. */
     public static final AspectValue EMBARGO;
-
+    /** The total number of roles. */
+    public static final int VALUE_COUNT; 
     /**
 	 * The singleton instance of this class.
 	 */
@@ -68,6 +69,7 @@ public class RuleAspect extends AbstractAspect {
 			ERASER.setTargetToEdge(ERASER);
 			EMBARGO.setSourceToEdge(EMBARGO);
 			EMBARGO.setTargetToEdge(EMBARGO);
+			VALUE_COUNT = instance.getValues().size();
 		} catch (GraphFormatException exc) {
 			throw new Error("Aspect '" + RULE_ASPECT_NAME
 					+ "' cannot be initialised due to name conflict", exc);
@@ -177,11 +179,7 @@ public class RuleAspect extends AbstractAspect {
 	private void testLabel(RegExpr expr, AspectValue declaredValue,
 			AspectValue inferredValue) throws GraphFormatException {
 		// check if negation occurs anywhere except on top level
-		RegExpr innerExpr = expr.getNegOperand();
-		if (innerExpr == null) {
-			innerExpr = expr;
-		}
-		if (innerExpr.containsOperator(RegExpr.NEG_OPERATOR)) {
+		if (expr.containsOperator(RegExpr.NEG_OPERATOR)) {
 			throw new GraphFormatException("Negation may only occur on top level in %s", expr);
 		}
 		// check the expression is a regular eraser pattern

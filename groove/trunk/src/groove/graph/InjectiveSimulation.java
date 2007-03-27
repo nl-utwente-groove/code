@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: InjectiveSimulation.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: InjectiveSimulation.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
@@ -24,7 +24,7 @@ import java.util.Set;
  * This means that injectivity and surjectivity constraints are brought
  * into play in the construction and stabilization of the simulation..
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class InjectiveSimulation extends DefaultSimulation {
     static private final IllegalStateException nonInjective = new IllegalStateException("Injectivity violation");
@@ -36,6 +36,7 @@ public class InjectiveSimulation extends DefaultSimulation {
     /**
      * Clones the used images, in addition to calling the <tt>super</tt> method.
      */
+    @Override
     public InjectiveSimulation clone() {
         InjectiveSimulation result = (InjectiveSimulation) super.clone();
         if (usedImages != null) {
@@ -47,6 +48,7 @@ public class InjectiveSimulation extends DefaultSimulation {
     /**
      * Initializes the used images and then invokes the <tt>super</tt> method.
      */
+    @Override
     protected void initSimulation() {
         usedImages = new HashSet<Element>();
         super.initSimulation();
@@ -55,6 +57,7 @@ public class InjectiveSimulation extends DefaultSimulation {
     /**
      * Clears the backup images, in addition to invoking the <tt>super</tt> method. 
      */
+    @Override
     protected void backup() {
         backupUsedImages = new HashSet<Element>();
         super.backup();
@@ -63,6 +66,7 @@ public class InjectiveSimulation extends DefaultSimulation {
     /**
      * Also restores the used images, in addition to calling the <tt>super</tt> method.
      */
+    @Override
     protected void restore() {
         usedImages.removeAll(backupUsedImages);
         super.restore();
@@ -73,6 +77,7 @@ public class InjectiveSimulation extends DefaultSimulation {
      * already there. If it was already there, this means injectivity is violated
      * and hence an {@link IllegalStateException} is thrown.
      */
+    @Override
     protected void notifySingular(ImageSet<?> changed) {
         if (!usedImages.add(changed.getSingular())) {
             throw nonInjective;

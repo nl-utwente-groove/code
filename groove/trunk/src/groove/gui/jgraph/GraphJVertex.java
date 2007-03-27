@@ -12,14 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: GraphJVertex.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import groove.algebra.Constant;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.util.Converter;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -70,11 +74,12 @@ public class GraphJVertex extends JVertex {
      * required according to {@link #isShowNodeIdentity()}, followed by
      * the user object.
      */
+    @Override
     public String getHtmlText() {
     	String result = "";
     	// show the node identity if required
     	if (isShowNodeIdentity()) {
-    		result = italicTag.on(node.toString());
+    		result = italicTag.on(getNodeIdentity());
     	}
     	String labels = getUserObject().toString();
     	// add the labels if nonempty
@@ -86,6 +91,16 @@ public class GraphJVertex extends JVertex {
     		result += strongTag.on(labels, true);
     	}
     	return result;
+    }
+    
+    /** 
+     * Callback mathod to yield a string description of the underlying 
+     * node, used for the node inscription in case node identities 
+     * are to be shown.
+     * This implementation delegates to <code>getNode().toString()</code>.
+     */
+    protected String getNodeIdentity() {
+    	return node.toString();
     }
     
     /**
@@ -101,35 +116,61 @@ public class GraphJVertex extends JVertex {
      * This implementation forwards the query to the underlying graph node.
      * @see #getNode()
      */
+    @Override
     public String toString() {
-    	return node.toString();
+    	return getNode().toString();
 	}
 
-//
-//    /**
-//     * Returns a description of the underlying label set.
-//     * If isShowNodeIdentities(), returns a description of the
-//     * underlying graph node instead.
-//     */
-//    public String toString() {
-//        if (allowsSelfEdges) {
-//            return strongTag.on(super.toString());
-//        } else {
-//            return italicTag.on(node.toString());
-//        }
-//    }
+	/**
+	 * This implementation adds a constant identifier to the labels in
+	 * case the node is a non-variable ValueNode.
+	 */
+    @Override
+	public Collection<String> getLabelSet() {
+    	String valueLabel = null;
+    	if (getNode() instanceof ValueNode) {
+    		Constant value = ((ValueNode) getNode()).getConstant();
+    		if (value != null) {
+    			valueLabel = value.toString();
+    			if (jModel.isShowAspects()) {
+    				valueLabel = value.prefix()+valueLabel;
+    			}
+    		}
+    	}
+    	if (valueLabel == null) {
+    		return super.getLabelSet();
+    	} else {
+    		// add the value label in front of the existing labels
+    		Collection<String> result = new ArrayList<String>();
+    		result.add(valueLabel);
+    		result.addAll(super.getLabelSet());
+    		return result;
+    	}
+	}
+
+	/** 
+     * This implementation returns the label text of the object
+     * (which is known to be an edge).
+     */
+	@Override
+	public String getLabel(Object object) {
+		return ((Edge) object).label().text();
+	}
+	
 
     /**
      * This implementation does nothing: setting the user object directly is
      * not the right way to go about it.
      */
+    @Override
     public void setUserObject(Object value) {
     	// does nothing
     }
 
     /**
-     * 
+     * Specialises the return type of the super method.
      */
+    @Override
     public JUserObject<Edge> getUserObject() {
     	return (JUserObject<Edge>) super.getUserObject();
     }
@@ -137,7 +178,7 @@ public class GraphJVertex extends JVertex {
     /**
      * Returns an unmodifiable view on the underlying edge set.
      */
-    public Set<Edge> getSelfEdgeSet() {
+    public Set<? extends Edge> getSelfEdgeSet() {
         return Collections.unmodifiableSet(getUserObject());
     }
 
@@ -163,7 +204,7 @@ public class GraphJVertex extends JVertex {
     /** This implementation includes the node number of the underlying node. */
     @Override
 	protected String getNodeDescription() {
-		return "Node "+italicTag.on(getNode());
+		return "Node "+italicTag.on(getNodeIdentity());
 	}
 
 	/**
@@ -174,16 +215,7 @@ public class GraphJVertex extends JVertex {
     public void removeSelfEdge(Edge edge) {
         getUserObject().remove(edge);
     }
-    
 
-    protected JUserObject<Edge> createUserObject() {
-    	return new JUserObject<Edge>(JUserObject.NEWLINE) {
-            protected String getLabel(Edge obj) {
-            	return obj.label().text();
-            }
-        };
-    }
-    
     /** The model in which this vertex exists. */
     private final GraphJModel jModel;
     /** An indicator whether the node may be used to store self-edges */

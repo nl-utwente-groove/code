@@ -12,23 +12,24 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: VarGraph.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: VarGraph.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
  */
 package groove.rel;
 
 import java.util.Set;
 
+import groove.graph.Edge;
 import groove.graph.Graph;
 
 /**
  * Graph type with additional support for <i>variables</i>,
  * which are mapped to graph elements by the corresponding morphisms. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface VarGraph extends Graph, VarSetSupport {
     /**
      * Returns the set of {@link VarEdge}s occurring in this graph.
      */
-    Set<VarEdge> varEdgeSet();
+    Set<Edge> varEdgeSet();
 }

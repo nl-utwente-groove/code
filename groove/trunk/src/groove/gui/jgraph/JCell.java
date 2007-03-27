@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JCell.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: JCell.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -26,7 +26,7 @@ import org.jgraph.graph.GraphCell;
  * on a set of strings, displayed in multiline format but edited in
  * single-line format.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface JCell extends GraphCell, Serializable {
     /**
@@ -35,23 +35,18 @@ public interface JCell extends GraphCell, Serializable {
      */
     public abstract Collection<String> getLabelSet();
     
+    /** 
+     * Callback method to convert an element of the user object
+     * into a String.
+     */
+    public abstract String getLabel(Object object);
+    
     /**
      * Returns a {@link JUserObject}, which is a set of objects associated with this
      * cell.
      * @ensure <tt>result instanceof JUserObject</tt>
      */
     public abstract JUserObject<?> getUserObject();
-    
-    /**
-     * If <tt>value</tt> is <tt>null</tt>, this implementation empties the
-     * user object. Otherwise, if <tt>value</tt> is a {@link Collection}, this 
-     * implementation loads the user object of this cell from the label set of 
-     * <tt>value</tt>; otherwise it tries to load the user cell of this vertex 
-     * from the string description of <tt>value</tt> using {@link JUserObject#load(String)}.
-     * @see JUserObject#load(Collection)
-     * @see JUserObject#load(String)
-     */
-    public abstract void setUserObject(Object value);
     
     /**
      * Returns tool tip text for this j-cell.

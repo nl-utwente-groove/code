@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AbstractUnaryEdge.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: AbstractUnaryEdge.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
 /**
  * Abstract implementation of an (immutable) unary graph edge, consisting of one source node only.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:40 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:32 $
  */
 abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdge {
     static {
@@ -46,10 +46,11 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
         if (sourceImage == null) {
             return null;
         }
-        if (source() == sourceImage) {
+        Label labelImage = elementMap.getLabel(label());
+        if (source() == sourceImage && label() == labelImage) {
             return this;
         } else {
-            return newEdge(sourceImage);
+            return newEdge(sourceImage, labelImage);
         }
     }
 
@@ -57,6 +58,7 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
     	return new Node[] { source };
     }
 
+    @Override
     final public Node end(int i) {
         switch (i) {
         case SOURCE_INDEX:
@@ -66,6 +68,7 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
         }
     }
 
+    @Override
     final public int endIndex(Node node) {
         if (source.equals(node)) {
             return SOURCE_INDEX;
@@ -77,10 +80,12 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
     /**
      * This implementation tests if <tt>other</tt> equals <tt>source</tt>.
      */
+    @Override
     final public boolean hasEnd(Node other) {
         return source.equals(other);
     }
 
+    @Override
     final public int endCount() {
         return END_COUNT;
     }
@@ -109,10 +114,12 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
     /**
      * Improves the testing for end point equality.
      */
+    @Override
     protected boolean isEndEqual(Edge other) {
         return (source.equals(other.source())) && other.endCount() == END_COUNT;
     }
 
+    @Override
     public final Node opposite() {
         return source;
     }
@@ -121,6 +128,7 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
      * Returns a description consisting of the source node, an arrow with the label inscribed, and
      * the target node.
      */
+    @Override
     public String toString() {
         return "" + source() + " --" + label() + "-|";
     }
@@ -128,6 +136,7 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
     /**
      * Slightly more efficient implementation returning the same value as the super method.
      */
+    @Override
     protected int computeHashCode() {
         return label().hashCode() + (source.hashCode() << 1);
     }

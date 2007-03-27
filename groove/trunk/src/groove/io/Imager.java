@@ -12,18 +12,19 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
+ * $Id: Imager.java,v 1.2 2007-03-27 14:18:37 rensink Exp $
  */
 package groove.io;
 
 import groove.graph.GraphFormatException;
+import groove.graph.aspect.AspectGraph;
 import groove.gui.Options;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
-import groove.gui.jgraph.RuleJModel;
+import groove.gui.jgraph.AspectJModel;
 import groove.trans.NameLabel;
-import groove.trans.view.RuleGraph;
+import groove.trans.view.AspectRuleView;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
@@ -68,7 +69,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class Imager extends CommandLineTool {
     /** Name of the imager application. */
@@ -520,8 +521,8 @@ public class Imager extends CommandLineTool {
                     JModel model;
                     if (acceptingFilter == ruleFilter) {
                         String ruleName = ruleFilter.stripExtension(inFile.getName());
-                        RuleGraph rule = new RuleGraph(graph, new NameLabel(ruleName));
-                        model = new RuleJModel(rule);
+                        AspectRuleView rule = new AspectRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new NameLabel(ruleName));
+                        model = new AspectJModel(rule);
                     } else {
                         model = new GraphJModel(graph);
                     }
@@ -648,6 +649,7 @@ public class Imager extends CommandLineTool {
      * @param argsList the list of arguents
      * @require <tt>argsList instanceof List of String</tt>
      */
+    @Override
     protected void processArguments() {
         super.processArguments();
         List<String> argsList = getArgs();
@@ -664,6 +666,7 @@ public class Imager extends CommandLineTool {
         }
     }
 
+    @Override
     protected String getUsageMessage() {
         return "Usage: Imager [options] filename [outlocation]";
     }
@@ -671,6 +674,7 @@ public class Imager extends CommandLineTool {
     /**
      * This tool does not support logging.
      */
+    @Override
     protected boolean supportsLogOption() {
         return false;
     }
@@ -678,11 +682,13 @@ public class Imager extends CommandLineTool {
     /**
      * This tool does not support output file specification through an option.
      */
+    @Override
     protected boolean supportsOutputOption() {
         return false;
     }
 
     /** Overwrites the method to write to the system output or to the GUI. */
+    @Override
     protected void print(String text) {
         if (imagerFrame == null) {
             super.print(text);
@@ -692,6 +698,7 @@ public class Imager extends CommandLineTool {
     }
 
     /** Overwrites the method to write to the system output or to the GUI. */
+    @Override
     protected void println() {
         if (imagerFrame == null) {
             super.println();
@@ -701,6 +708,7 @@ public class Imager extends CommandLineTool {
     }
 
     /** Overwrites the method to write to the system output or to the GUI. */
+    @Override
     protected void println(String text) {
         if (imagerFrame == null) {
             super.println(text);

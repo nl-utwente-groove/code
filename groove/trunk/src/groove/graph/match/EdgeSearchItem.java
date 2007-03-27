@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: EdgeSearchItem.java,v 1.2 2007-03-27 14:18:35 rensink Exp $
  */
 package groove.graph.match;
 
@@ -93,7 +93,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 					}
 				}
 				Edge oldImage = elementMap.removeEdge(edge);
-				assert oldImage.equals(selected);
+				assert oldImage == null || oldImage.equals(selected);
 				selected = null;
 			} else {
 				throw new IllegalStateException();
@@ -131,7 +131,6 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 				int endIndex = 0;
 				for (endIndex = 0; result && endIndex < arity; endIndex++) {
 					Node imageEnd = image.end(endIndex);
-//					endSelected[endIndex] = false;
 					if (duplicates[endIndex] < endIndex) {
 						result = imageEnd == image.end(duplicates[endIndex]);
 					} else if (isPreMatched(endIndex)) {
@@ -139,12 +138,6 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 					} else {
 						Node endImage = elementMap.putNode(edge.end(endIndex), imageEnd);
 						assert endImage == null;
-//						result = endImage == null || endImage == imageEnd;
-//						if (result) {
-//							endSelected[endIndex] = endImage == null;
-//						} else {
-//							elementMap.putNode(edge.end(endIndex), endImage);
-//						}
 					}
 				}
 				if (! result) {
@@ -157,11 +150,23 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 				}
 			}
 			if (result) {
-				NodeEdgeMap elementMap = matcher.getSingularMap();
-				elementMap.putEdge(edge, image);
+				setSelectedImage(image);
 				selected = image;
 			}
 			return result;
+		}
+		
+		@Override
+		public String toString() {
+			return EdgeSearchItem.this.toString()+" = "+selected;
+		}
+
+		/** 
+		 * Actually sets the image in the matcher's map.
+		 * Callback method for subclasses that give matches that are not edes.
+		 */
+		protected void setSelectedImage(Edge image) {
+			matcher.getSingularMap().putEdge(edge, image);
 		}
 		
 		/**
@@ -230,60 +235,6 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 			this.singular = false;
 			this.potentialImageSet = imageSet;
 		}
-//
-//		/**
-//		 * Computes the set of potential images for {@link EdgeSearchItem#edge}.
-//		 * The images may still have to be checked for correctness.
-//		 */
-//		protected Collection<? extends Edge> computeImageSet() {
-//			Set<? extends Edge> result;
-//			Set<? extends Edge> labelEdgeSet = matcher.cod().labelEdgeSet(arity,
-//					edge.label());
-//			if (labelEdgeSet == null) {
-//				result = Collections.emptySet();
-//			} else {
-//				result = labelEdgeSet;
-//			}
-//			return result;
-//		}
-//		
-//		/**
-//		 * Tests if there is currently an image selected.
-//		 */
-//		protected boolean isSelected() {
-//			return this.selected != null;
-//		}
-//
-//		/** Returns the currently selected image, if any. */
-//		protected Edge getSelected() {
-//			return selected;
-//		}
-//
-//		/**
-//		 * Selects an image for the edge and nodes. 
-//		 */
-//		protected void setSelected(Edge image) {
-//			assert !isSelected();
-//			assert image != null;
-////			if (! preMatched) {
-//				NodeEdgeMap elementMap = matcher.getSingularMap();
-//				elementMap.putEdge(edge, image);
-////			}
-//			selected = image;
-//		}
-//
-//		/**
-//		 * Reets the currently selected image to <code>null</code>.
-//		 */
-//		protected void resetSelected() {
-//			assert isSelected();
-////			if (! preMatched) {
-//				NodeEdgeMap elementMap = matcher.getSingularMap();
-//				Edge oldImage = elementMap.removeEdge(edge);
-//				assert oldImage.equals(selected);
-////			}
-//			selected = null;
-//		}
 
 		/**
 		 * The matcher for which we have instantiated this record.

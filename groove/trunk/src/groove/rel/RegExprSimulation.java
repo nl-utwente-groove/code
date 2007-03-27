@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExprSimulation.java,v 1.1.1.2 2007-03-20 10:42:53 kastenberg Exp $
+ * $Id: RegExprSimulation.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
  */
 package groove.rel;
 
@@ -30,9 +30,9 @@ import java.util.Map;
 /**
  * Simulation from a {@link groove.rel.VarGraph} in a {@link groove.graph.Graph}. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
-public class RegExprSimulation extends DefaultSimulation implements VarMap {
+public class RegExprSimulation extends DefaultSimulation {
 	/**
 	 * Class that delegates the {@link VarMap}-functionality to 
 	 * its enclosing {@link RegExprSimulation}.

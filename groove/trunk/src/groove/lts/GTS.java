@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.2 2007-03-23 15:42:58 rensink Exp $
+ * $Id: GTS.java,v 1.3 2007-03-27 14:18:38 rensink Exp $
  */
 package groove.lts;
 
@@ -41,12 +41,11 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Models a labelled transition system, which is essentially a graph with
- * states as nodes and transitions as edges.
- * The types of the states and transitions can be set by providing
- * prototype factories Default values are <tt>GraphState</tt>. and <tt>GraphTransition</tt>.
- * Extends graph.Graph with a start (i.e., initial) state.
- * @version $Revision: 1.2 $ $Date: 2007-03-23 15:42:58 $
+ * Implements an LTS of which the states are {@link GraphState}s 
+ * and the transitions {@link GraphTransition}s.
+ * A GTS stores a fixed rule system.
+ * @author Arend Rensink
+ * @version $Revision: 1.3 $ $Date: 2007-03-27 14:18:38 $
  */
 public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	/**
@@ -368,20 +367,12 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	
     // ----------------------- OBJECT OVERRIDES ------------------------
 
-	@Override
-    public boolean equals(Object other) {
-        return other instanceof GTS
-            && startState.equals(((GTS) other).startState())
-            && ruleSystem.equals(((GTS) other).ruleSystem())
-            && super.equals(other);
-    }
-
     public Set<? extends GraphState> nodeSet() {
         return Collections.unmodifiableSet(stateSet);
     }
 
     public Set<? extends GraphTransition> edgeSet() {
-        if (storeTransitions) {
+        if (isStoreTransitions()) {
             return new TransitionSet();
         } else {
             return Collections.emptySet();
@@ -482,7 +473,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	 * @param targetState the target state of the transition to be added
 	 */
 	public void addTransition(GraphState sourceState, RuleApplication appl, GraphState targetState) {
-		if (storeTransitions) {
+		if (isStoreTransitions()) {
             reporter.start(ADD_TRANSITION_STOP);
             // add (possibly isomorphically modified) edge to LTS
             GraphOutTransition outTrans = sourceState.addOutTransition(appl, targetState);
@@ -501,6 +492,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
      * around three sides of a confluent diamond instead of computing the
      * target directly.
      */
+	@Deprecated
     protected GraphState getConfluentTarget(RuleApplication appl) {
         if (!NextStateDeriver.isUseDependencies() || !(appl instanceof AliasRuleApplication)) {
             return null;
@@ -542,6 +534,8 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 
     /**
 	 * Indicates if transitions are to be stored in the GTS.
+	 * This is a property set at construction time.
+	 * If they are not stored, the transition set will yield the empty set.
 	 */
 	protected final boolean isStoreTransitions() {
 		return this.storeTransitions;
@@ -575,7 +569,6 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
      */
     protected final GraphState startState;
     
-    // IOVKA Is it still used ? 
     /**
      * The rule system generating this LTS.
      * @invariant <tt>ruleSystem != null</tt>

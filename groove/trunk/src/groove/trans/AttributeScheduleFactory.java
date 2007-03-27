@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AttributeScheduleFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: AttributeScheduleFactory.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 
 package groove.trans;
@@ -26,9 +26,10 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.algebra.AlgebraConstants;
+import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.ValueNode;
 import groove.util.Bag;
 import groove.util.HashBag;
 
@@ -44,7 +45,7 @@ import java.util.Set;
  * that may not be matched in the source graph.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
  */
 public class AttributeScheduleFactory extends IndegreeScheduleFactory {
 	/** A label with the empty string as text. */
@@ -53,6 +54,7 @@ public class AttributeScheduleFactory extends IndegreeScheduleFactory {
     /* (non-Javadoc)
 	 * @see groove.trans.AbstractScheduleFactory#newSchedule(groove.graph.Graph, java.util.Set, java.util.Set)
 	 */
+	@Override
     public List<Element> newMatchingOrder(Graph subject, Set<Node> matchedNodes, Set<Edge> matchedEdges) {
     	// if the graph does not contain any attributes, the current
     	// result can be returned
@@ -74,23 +76,24 @@ public class AttributeScheduleFactory extends IndegreeScheduleFactory {
     	// the original graph
     	List<Node> operationNodeMatchingSchedule = translateToOriginal(dependenceMap, bottomUpNodeList);
 
-    	List<Element> algebraEdges = new ArrayList<Element>();
+    	List<Element> operatorEdges = new ArrayList<Element>();
     	Iterator<Element> resultIter = result.iterator();
     	while (resultIter.hasNext()) {
     		Element nextElement = resultIter.next();
     		if (nextElement instanceof Edge) {
-    			Node source = ((Edge) nextElement).end(Edge.SOURCE_INDEX);
-    			if (source instanceof ProductNode)
-    				algebraEdges.add(nextElement);
+    			Node source = ((Edge) nextElement).source();
+    			if (source instanceof ProductNode) {
+    				resultIter.remove();
+    				if (nextElement instanceof ProductEdge && ! (source instanceof ValueNode)) {
+    					operatorEdges.add(nextElement);
+    				}
+    			}
     		}
     	}
 
-    	// the algebra edges should be the last elements to be matched
-    	result.removeAll(algebraEdges);
-
     	// now we have all the elements for the matching-schedule
     	result.addAll(operationNodeMatchingSchedule);
-    	result.addAll(algebraEdges);
+    	result.addAll(operatorEdges);
 
     	return result;
     }
@@ -173,11 +176,11 @@ public class AttributeScheduleFactory extends IndegreeScheduleFactory {
 	    		dependenceMap.put(nextEdge.end(Edge.TARGET_INDEX), target);
 	    	}
 
-	    	if (nextEdge instanceof ProductEdge) {
+	    	if (nextEdge instanceof ProductEdge && !(nextEdge.opposite() instanceof ValueNode)) {
                 newEdge = DefaultEdge.createEdge(target, EMPTY_LABEL, source);
 	    	}
 
-	    	if (nextEdge.label().text().startsWith(AlgebraConstants.ARGUMENT_PREFIX)) {
+	    	if (nextEdge instanceof AlgebraEdge) {
                 newEdge = DefaultEdge.createEdge(source, EMPTY_LABEL, target);
             }
 	    	if (newEdge != null)

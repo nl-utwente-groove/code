@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatcher.java,v 1.2 2007-03-21 11:25:13 hovej Exp $
+ * $Id: DefaultMatcher.java,v 1.3 2007-03-27 14:18:35 rensink Exp $
  */
 package groove.graph.match;
 
@@ -34,7 +34,7 @@ import java.util.NoSuchElementException;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultMatcher implements Matcher {
 	/** 
@@ -192,6 +192,7 @@ public class DefaultMatcher implements Matcher {
     /**
      * We choose object identity as the notion of equality. 
      */
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }
@@ -200,6 +201,7 @@ public class DefaultMatcher implements Matcher {
      * Changed in correspondence with {@link #equals(Object)} to
      * {@link System#identityHashCode(java.lang.Object)}.
      */
+    @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }
