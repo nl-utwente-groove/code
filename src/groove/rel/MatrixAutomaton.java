@@ -33,8 +33,10 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
+
 /**
- * A default implementation of regular automata.
+ * An implementation of regular automata that also keeps track 
+ * of the valuation of the variables.
  */
 public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     /**
@@ -691,6 +693,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         this.start = startNode;
     }
 
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer(super.toString());
         result.append("\nStart node: "+getStartNode());
@@ -1276,6 +1279,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     }
 
     /** Returns a node with a number that is guaranteed to be fresh every time. */
+    @Override
     public Node createNode() {
         return new DefaultNode();
     }

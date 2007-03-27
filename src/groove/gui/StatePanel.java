@@ -12,9 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.1.1.2 2007-03-20 10:42:45 kastenberg Exp $
+ * $Id: StatePanel.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
  */
 package groove.gui;
+
+import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -37,8 +40,6 @@ import groove.trans.view.RuleViewGrammar;
 import groove.util.Groove;
 
 import java.awt.Rectangle;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -48,6 +49,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -56,7 +59,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -67,33 +70,27 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     /**
      * Constructs a new state panel.
      */
-    public StatePanel(Simulator simulator) {
-        super(new StateJGraph(simulator), true);
-        this.simulator = simulator;
+    public StatePanel(final Simulator simulator) {
+        super(new StateJGraph(simulator), true, simulator.getOptions());
         simulator.addSimulationListener(this);
+        addOptionListener(SHOW_NODE_IDS_OPTION, createNodeIdsOptionListener());
+        addOptionListener(SHOW_ASPECTS_OPTION, createAspectsOptionListener());
         getJGraph().setToolTipEnabled(true);
         // make sure that emphasis due to selections in the label list
         // cause any selected transition to be deselected first
         getJGraph().getLabelList().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (currentTransition != null) {
-                    StatePanel.this.simulator.setRule(currentTransition.getRule().getName());
+                    simulator.setRule(currentTransition.getRule().getName());
                 }
             }
         });
-        setShowNodeIdsOptionListener();
-    }
-
-    /**
-     * Returns the simulator permanently associated with this component.
-     */
-    public Simulator getSimulator() {
-        return simulator;
     }
 
     /**
      * Specialises the return type to {@link GraphJModel}.
      */
+    @Override
     public GraphJModel getJModel() {
         if (jGraph.isEnabled()) {
             return getJGraph().getModel();
@@ -213,20 +210,34 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         setStatus("" + newState);
     }
 
-    /**
-     * Sets a listener to the node ids option.
-     */
-    protected void setShowNodeIdsOptionListener() {
-		final JCheckBoxMenuItem nodeIdsOptionItem = simulator.getOptions().getItem(Options.SHOW_NODE_IDS_OPTION);
-		// listen to the option controlling the rule anchor display
-		nodeIdsOptionItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
+	/**
+	 * Callback method to create a listner for the {@link #SHOW_NODE_IDS_OPTION} option.
+	 */
+	protected ChangeListener createNodeIdsOptionListener() {
+		return new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				boolean newState = ((JCheckBoxMenuItem) e.getSource()).getState();
 				for (GraphJModel jModel: stateJModelMap.values()) {
-					jModel.setShowNodeIdentities(nodeIdsOptionItem.getState());
+					jModel.setShowNodeIdentities(newState);
 				}
 				getJGraph().refreshView();
 			}
-		});
+		};
+	}
+
+	/**
+	 * Callback method to create a listner for the {@link #SHOW_ANCHORS_OPTION} option.
+	 */
+	protected ChangeListener createAspectsOptionListener() {
+		return new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				boolean newState = ((JCheckBoxMenuItem) e.getSource()).getState();
+				for (GraphJModel jModel: stateJModelMap.values()) {
+					jModel.setShowAspects(newState);
+				}
+				getJGraph().refreshView();
+			}
+		};
 	}
     
     /**
@@ -245,28 +256,40 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      * stateJModelMap; if there is no image for the requested state then one is created.
      */
     protected GraphJModel getStateJModel(GraphState state) {
-        GraphJModel res = stateJModelMap.get(state);
-        if (res == null) {
-            res = new GraphJModel(state.getGraph());
-            // try to find layout information for the state
-            if (state instanceof GraphNextState) {
-            	GraphState oldState = ((GraphNextState) state).source();
-				Morphism morphism = ((GraphNextState) state).morphism();
-				while (!stateJModelMap.containsKey(oldState)
-						&& oldState instanceof GraphNextState) {
-                    morphism = ((GraphNextState) oldState).morphism().then(morphism);
-					oldState = ((GraphNextState) oldState).source();
-				}
-				GraphJModel oldJModel = stateJModelMap.get(oldState);
-				if (oldJModel != null) {
-					copyLayout(oldJModel, res, morphism);
-				}
-            }
-            res.setShowNodeIdentities(simulator.getOptions().getValue(Options.SHOW_NODE_IDS_OPTION));
-            stateJModelMap.put(state, res);
+        GraphJModel result = stateJModelMap.get(state);
+        if (result == null) {
+            result = computeStateJModel(state);
+            stateJModelMap.put(state, result);
         }
-        return res;
+        return result;
     }
+
+	/**
+	 * Computes a fresh GraphJModel for a given graph state.
+	 */
+	protected GraphJModel computeStateJModel(GraphState state) {
+		GraphJModel result;
+		result = new GraphJModel(state.getGraph());
+		result.setShowNodeIdentities(getOptions().getValue(SHOW_NODE_IDS_OPTION));
+		result.setShowAspects(getOptions().getValue(SHOW_ASPECTS_OPTION));
+		// try to find layout information for the state
+		if (state instanceof GraphNextState) {
+			GraphState oldState = ((GraphNextState) state).source();
+			Morphism morphism = ((GraphNextState) state).morphism();
+			// walk back along the derivation chain to find one for
+			// which we have a state model (and hence layout information)
+			while (!stateJModelMap.containsKey(oldState)
+					&& oldState instanceof GraphNextState) {
+		        morphism = ((GraphNextState) oldState).morphism().then(morphism);
+				oldState = ((GraphNextState) oldState).source();
+			}
+			GraphJModel oldJModel = stateJModelMap.get(oldState);
+			if (oldJModel != null) {
+				copyLayout(oldJModel, result, morphism);
+			}
+		}
+		return result;
+	}
 
     /**
 	 * Copies the layout information from the current j-model to a new one,
@@ -295,11 +318,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 	        newStateJModel.removeLayoutable(targetCell);
 	    }
 	}
-
-	/**
-     * The production simulator to which this frame belongs.
-     */
-    protected final Simulator simulator;
+	
     /**
      * Mapping from state graphs to the corresponding graph models.
      * @invariant stateJModelMap: State --> GraphJModel

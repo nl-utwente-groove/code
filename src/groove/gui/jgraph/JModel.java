@@ -12,12 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: JModel.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
@@ -37,7 +39,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.DefaultEdge;
+//import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultGraphModel;
 import org.jgraph.graph.DefaultPort;
@@ -56,7 +58,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -64,7 +66,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.1.1.2 $
+     * @version $Revision: 1.2 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -91,16 +93,16 @@ abstract public class JModel extends DefaultGraphModel {
      * Constructs a new JModel with given default node and edge attributes, possibly showing node identities.
      * @param defaultNodeAttr the default node attributes for this model
      * @param defaultEdgeAttr the default node attributes for this model
-     * @param showNodeIdentities indicates whether JNode descriptions should be graph node
-     *        identities. If false, JNode descriptions are (possibly empty) sets of self-edge
-     *        labels.
-     * @ensure !isLayedOut(), isShowNodeIdentities() == showNodeIdentities
+     * @param vertexLabelsAreLoops indicates whether j-cell inscriptions can stand for
+     * self-edges of the graph.
      */
-    public JModel(AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, boolean showNodeIdentities) {
+    public JModel(AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, boolean vertexLabelsAreLoops) {
         // give the graph model a linked list to speed up layer edits
         super();
-        this.showNodeIdentities = showNodeIdentities;
+        this.vertexLabelsAreLoops = vertexLabelsAreLoops;
         this.defaultNodeAttr = defaultNodeAttr;
+        this.valueNodeAttr = (AttributeMap) defaultNodeAttr.clone();
+        GraphConstants.setBackground(valueNodeAttr, JAttr.VALUE_BACKGROUND);
         this.defaultEdgeAttr = defaultEdgeAttr;
     }
 
@@ -116,23 +118,13 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Constructs a new JModel, possibly showing node identities.
-     * The default node and edge identities are set through 
-     * {@link JAttr#DEFAULT_NODE_ATTR} and {@link JAttr#DEFAULT_EDGE_ATTR}.
-     * @ensure !isLayedOut(), !isShowNodeIdentities()
-     */
-    public JModel(boolean showNodeIdentities) {
-        this(JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, showNodeIdentities);
-    }
-
-    /**
      * Constructs a new JModel, displaying self-edges through JNode labels.
      * The default node and edge identities are set through 
      * {@link JAttr#DEFAULT_NODE_ATTR} and {@link JAttr#DEFAULT_EDGE_ATTR}.
      * @ensure !isLayedOut(), !isShowNodeIdentities()
      */
     public JModel() {
-        this(false);
+        this(JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, true);
     }
 
     /**
@@ -153,16 +145,8 @@ abstract public class JModel extends DefaultGraphModel {
      * Indicates whether JNode descriptions should graph node identities. If false, JNode
      * descriptions are (possibly empty) sets of self-edge labels.
      */
-    public boolean isShowNodeIdentities() {
-        return showNodeIdentities;
-    }
-
-    /**
-     * Indicates whether JNode descriptions should graph node identities. If false, JNode
-     * descriptions are (possibly empty) sets of self-edge labels.
-     */
-    public void setShowNodeIdentities(boolean value) {
-        showNodeIdentities = value;
+    public boolean isVertexLabelsAreLoops() {
+        return vertexLabelsAreLoops;
     }
 
     /**
@@ -241,9 +225,13 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Converts this j-model to a layed out groove graph.
+     * Converts this j-model to a plain groove graph.
+     * Layout information is also transferred.
+     * A plain graph is one in which the nodes and edges are 
+     * {@link DefaultNode}s and {@link DefaultEdge}s, and all
+     * further information is in the labels.
      */
-    public groove.graph.Graph toLayedOutGraph() {
+    public groove.graph.Graph toPlainGraph() {
         groove.graph.Graph result = new DefaultGraph();
         LayoutMap<Node,Edge> layoutMap = new LayoutMap<Node,Edge>();
         Map<JVertex,Node> nodeMap = new HashMap<JVertex,Node>();
@@ -290,6 +278,7 @@ abstract public class JModel extends DefaultGraphModel {
     /**
      * Overrides the method so also incident edges of removed nodes are removed.
      */
+    @Override
     public void remove(Object[] roots) {
         List<Object> removables = new LinkedList<Object>();
         for (int i = 0; i < roots.length; i++) {
@@ -389,12 +378,12 @@ abstract public class JModel extends DefaultGraphModel {
                     hiddenJCells.remove(jCell);
                     changedJCells.add(jCell);
                     if (isEdge(jCell)) {
-                        JCell sourceJVertex = (JCell) ((DefaultPort) ((DefaultEdge) jCell).getSource())
+                        JCell sourceJVertex = (JCell) ((DefaultPort) ((org.jgraph.graph.DefaultEdge) jCell).getSource())
                                 .getParent();
                         if (hiddenJCells.remove(sourceJVertex)) {
                             changedJCells.add(sourceJVertex);
                         }
-                        JCell targetJVertex = (JCell) ((DefaultPort) ((DefaultEdge) jCell).getTarget())
+                        JCell targetJVertex = (JCell) ((DefaultPort) ((org.jgraph.graph.DefaultEdge) jCell).getTarget())
                                 .getParent();
                         if (hiddenJCells.remove(targetJVertex)) {
                             changedJCells.add(targetJVertex);
@@ -484,8 +473,9 @@ abstract public class JModel extends DefaultGraphModel {
     /**
      * Returns the map of attribute changes needed to emphasize a jedge.  
      * This implementation returns {@link JAttr#EMPH_EDGE_CHANGE}. 
+     * @param jEdge TODO
      */
-    protected AttributeMap getJEdgeEmphAttr() {
+    protected AttributeMap getJEdgeEmphAttr(JEdge jEdge) {
         return JAttr.EMPH_EDGE_CHANGE;
     }
 
@@ -499,7 +489,7 @@ abstract public class JModel extends DefaultGraphModel {
 
     /**
      * Collects the labels of a given j-vertex.
-     * Callback method from {@link #toLayedOutGraph()}.
+     * Callback method from {@link #toPlainGraph()}.
      * This implementation just returns the label set.
      */
     protected Collection<String> getLabels(JVertex jCell) {
@@ -508,7 +498,7 @@ abstract public class JModel extends DefaultGraphModel {
 
     /**
      * Collects the labels of a given j-edge.
-     * Callback method from {@link #toLayedOutGraph()}.
+     * Callback method from {@link #toPlainGraph()}.
      * This implementation just returns the label set.
      */
     protected Collection<String> getLabels(JEdge jEdge) {
@@ -544,7 +534,7 @@ abstract public class JModel extends DefaultGraphModel {
         if (jCell instanceof JEdge) {
             result = createJEdgeAttr((JEdge) jCell);
             if (isEmphasized(jCell)) {
-                result.applyMap(getJEdgeEmphAttr());
+                result.applyMap(getJEdgeEmphAttr((JEdge) jCell));
             }
         } else {
             result = createJVertexAttr((JVertex) jCell);
@@ -562,12 +552,17 @@ abstract public class JModel extends DefaultGraphModel {
      * Property that indicates if node descriptions are identities. (If false, node descriptions are
      * possible empty sets of self-edge labels.)
      */
-    private boolean showNodeIdentities;
+    private final boolean vertexLabelsAreLoops;
     /**
      * Standard node attributes used in this graph model.
      * Set in the constructor.
      */
     protected final AttributeMap defaultNodeAttr;
+    /**
+     * Value node attributes used in this graph model.
+     * Set in the constructor.
+     */
+    protected final AttributeMap valueNodeAttr;
     /**
      * Standard edge attributes used in this graph model.
      * Set in the constructor.

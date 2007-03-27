@@ -12,16 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JUserObject.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: JUserObject.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.util.ExprParser;
 import groove.util.Groove;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
+import java.util.List;
 import java.util.TreeSet;
 
 /**
@@ -29,19 +29,16 @@ import java.util.TreeSet;
  * be loaded from a {@link String}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class JUserObject<T> extends TreeSet<T> {
     /** The default label separator. */
     public static final String NEWLINE = "\n";
 
-    /** The HTML label separator. */
-    public static final String HTML_NEWLINE = "<br>";
-
     /** Space character. */
     public static final char SPACE = ' ';
 
-    /** Quote character for {@link #getPrintLabel(Object)}. */
+    /** Quote character for {@link #getPrintLabel(String)}. */
     public static final char QUOTE = '\'';
 
     /** Whitespace recognizer in a regular expression. */
@@ -49,7 +46,7 @@ public class JUserObject<T> extends TreeSet<T> {
 
     /**
      * Removes hard spaces (as in {@link #SPACE}) from the start and end of a given value, and
-     * returns the resulting strong.
+     * returns the resulting string.
      * @param value the value to be trimmed
      * @return the result of trimming
      * @see String#trim()
@@ -66,84 +63,52 @@ public class JUserObject<T> extends TreeSet<T> {
     }
 
     /**
-     * Constructs an object with a new line as print and edit label separator.
-     * @see #NEWLINE
-     * @ensure <tt>getPrintSeparator().equals(NEWLINE) && getEditSeparator().equals(NEWLINE)</tt>
-     */
-    public JUserObject() {
-        this(NEWLINE);
-    }
-
-    /**
-     * Constructs an object whose string description uses a given string as a print and edit
-     * separator.
-     * @param separator the intended label separator
-     * @see #getPrintSeparator()
-     * @ensure <tt>getPrintSeparator().equals(separator) && 
-     * getEditSeparator.equals(separator)</tt>
-     */
-    public JUserObject(String separator) {
-        this(separator, false);
-    }
-
-    /**
      * Constructs an object whose string description uses a given string as a separator between
      * labels (in {@link #toString()}.
      * The behaviour on loading from an empty set or string can also be set.
+     * @param jCell the cell for which this is the user object
      * @param printSeparator the intended label print separator
      * @param allowEmptyLabelSet set to <code>true</code> if the label set should not be empty.
-     * @see #getPrintSeparator()
      * @ensure <tt>getPrintSeparator().equals(printSeparator) && getEditSeparator().equals(editSeparator)</tt>
      */
-    public JUserObject(String printSeparator, boolean allowEmptyLabelSet) {
-        this.printSeparator = printSeparator;
+    public JUserObject(JCell jCell, String printSeparator, boolean allowEmptyLabelSet) {
+        this.jCell = jCell;
+    	this.printSeparator = printSeparator;
+    	this.trimmedPrintSeparator = trim(printSeparator);
         this.allowEmptyLabelSet = allowEmptyLabelSet;
     }
 
     /**
-     * Returns the print separator of this user object. The print separator is used to separate
-     * individual labels in the string description of the entire user object, as returned by
-     * {@link #toString()}. It is set at construction time.
-     * @return the print separator
-     * @see #toString()
-     */
-    public String getPrintSeparator() {
-        return printSeparator;
-    }
-
-    /**
      * Returns a collection of strings describing the objects contained in this user object.
+     * This method delegates to {@link JCell#getLabelSet()} of the underlying cell.
      * @return the string descriptions of the objects contained in this collection
      * @ensure all elements of <tt>result</tt> are instances of <tt>String</tt>.
      */
-    public Collection<String> getLabelSet() {
-        Set<String> result = new LinkedHashSet<String>();
-        for (T label: this) {
-        	result.add(getLabel(label));
-        }
-        return result;
+    final public Collection<String> getLabelSet() {
+    	return jCell.getLabelSet();
     }
 
     /**
      * This implementation returns the string description of the label set view on this user object,
      * as returned by {@link #getLabelSet()}. This consists of the individual labels, separated by
-     * {@link #getPrintSeparator()}
+     * this user object's print separator (set at construction time).
      * @see #getLabelSet()
-     * @see #getPrintSeparator()
      */
+    @Override
     public String toString() {
-    	String[] printLabels = new String[size()];
+    	List<String> printLabels = new ArrayList<String>();
     	int labelIndex = 0;
-    	for (T label: this) {
-    		printLabels[labelIndex] = getPrintLabel(label);
+    	for (String label: getLabelSet()) {
+    		printLabels.add(getPrintLabel(label));
     		labelIndex++;
     	}
-    	return Groove.toString(printLabels, "", "", getPrintSeparator());
+    	return Groove.toString(printLabels.toArray(), "", "", printSeparator);
     }
 
     /**
      * Returns a user object collection with the same separators and elements as this one.
      */
+    @Override
     public JUserObject<T> clone() {
         JUserObject<T> result = (JUserObject<T>) super.clone();
         result.addAll(this);
@@ -174,18 +139,6 @@ public class JUserObject<T> extends TreeSet<T> {
         this.allowEmptyLabelSet = allowEmptyLabelSet;
     }
 
-	/**
-	 * Returns the string description for a given object of the type contained in this user object
-	 * collection. It is
-	 * used un {@link #toString()} to create the string description of the entire user object
-	 * collection. This implementation returns <tt>object.toString()</tt>.
-	 * @param object the object for which the description is required
-	 * @return the corresponding description
-	 */
-	protected String getLabel(T object) {
-	    return object.toString();
-	}
-
     /**
      * Returns a string description that is based on <tt>getLabel(object)</tt> but
      * is quoted (with {@link #QUOTE}) if the print separator occurs in the label. 
@@ -193,20 +146,26 @@ public class JUserObject<T> extends TreeSet<T> {
      * @return the label, quoted if necessary
      * @see #getLabel(Object)
      */
-    protected String getPrintLabel(T object) {
-        String label = getLabel(object);
-        if (label.indexOf(trim(getPrintSeparator())) >= 0) {
+    protected String getPrintLabel(String label) {
+        if (label.indexOf(trimmedPrintSeparator) >= 0) {
             return ExprParser.toQuoted(label, QUOTE);
         } else {
             return label;
         }        
     }
 
+    /** The call of which this is the user object. */
+    private final JCell jCell;
     /**
      * The separator, used in the string description of the entire user object, between the
      * descriptions of the individual objects in the collection.
      */
     private final String printSeparator;
+    /**
+     * Version of {@link #printSeparator} used to detect whether
+     * quoting of labels is necessary for inambiguity.
+     */
+    private final String trimmedPrintSeparator;
 
     /**
      * Indicates if an empty label set is allows.

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: VarFlag.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: VarFlag.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
  */
 package groove.rel;
 
@@ -26,7 +26,7 @@ import groove.graph.UnaryEdge;
  * Specialization of a default edge with a variable as label
  * (in the form of a {@link groove.rel.RegExpr.Wildcard}).
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class VarFlag extends DefaultFlag {
     /**
@@ -43,6 +43,7 @@ public class VarFlag extends DefaultFlag {
      * If the <code>label</code> contains a named wildcard, creates a 
      * new {@link VarFlag} with that name; otherwise, delegates to <code>super</code>.
      */
+    @Override
     public UnaryEdge newEdge(Node source, Label label) {
         String var = RegExprLabel.getWildcardId(label);
         if (var == null) {
@@ -53,17 +54,11 @@ public class VarFlag extends DefaultFlag {
     }
 
     /**
-     * Creates a new {@link VarFlag} with the same name as this one.
-     */
-    public UnaryEdge newEdge(Node source) {
-        return new VarFlag(source, var);
-    }
-
-    /**
      * If <code>elementMap</code> contains an image for the variable in this
      * edge (which must then be a {@link Label}, creates a {@link DefaultFlag}
      * with that label; otherwise delegates to <code>super</code>.
      */
+    @Override
     public UnaryEdge imageFor(NodeEdgeMap elementMap) {
         if (elementMap instanceof VarNodeEdgeMap) {
             Label varImage = ((VarNodeEdgeMap) elementMap).getVar(var);

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.1.1.2 2007-03-20 10:42:45 kastenberg Exp $
+ * $Id: Simulator.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
  */
 package groove.gui;
 
@@ -29,7 +29,7 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
-import groove.gui.jgraph.RuleJModel;
+import groove.gui.jgraph.AspectJModel;
 import groove.io.ExtensionFilter;
 import groove.io.GpsGrammar;
 import groove.io.GrooveFileChooser;
@@ -48,7 +48,8 @@ import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
 import groove.trans.match.MatchingMatcher;
-import groove.trans.view.RuleGraph;
+//import groove.trans.view.RuleGraph;
+import groove.trans.view.AspectRuleView;
 import groove.trans.view.RuleViewGrammar;
 import groove.util.Converter;
 import groove.util.ExprFormatException;
@@ -108,7 +109,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class Simulator {
     /**
@@ -180,6 +181,7 @@ public class Simulator {
 		/**
 		 * Calls {@link #doAction()}, then disposes the cancel dialog.
 		 */
+		@Override
 		final public void run() {
 			doAction();
 			synchronized (cancelDialog) {
@@ -202,6 +204,7 @@ public class Simulator {
 		 */ 
 		abstract protected void doAction();
 		
+		@Override
 	    public void start() {
 	        super.start();
 	        // make dialog visible
@@ -275,6 +278,7 @@ public class Simulator {
 	        this.progressListener = createProgressListener();
 	    }
 
+		@Override
 		public void doAction() {
 			GTS gts = currentGrammar.gts();
 			displayProgress(gts);
@@ -302,10 +306,12 @@ public class Simulator {
 		 */
 		private GraphListener createProgressListener() {
 			return new GraphAdapter() {
+				@Override
 				public void addUpdate(GraphShape graph, Node node) {
 				    displayProgress(graph);
 				}
 				
+				@Override
 				public void addUpdate(GraphShape graph, groove.graph.Edge edge) {
 				    displayProgress(graph);
 				}
@@ -377,6 +383,7 @@ public class Simulator {
         /**
          * Extends superclass method with a change of action name.
          */
+		@Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
             putValue(Action.NAME, strategy.toString());
@@ -970,7 +977,7 @@ public class Simulator {
     public void handleEditState() {
         Editor editor = new Editor(true);
         String stateName = currentState.toString();
-        editor.setModel(stateName, statePanel.getJModel());
+        editor.setModel(stateName, new GraphJModel(statePanel.getJModel().toPlainGraph()));
         editorDialog = Editor.createEditorDialog(frame, true, editor);
         editor.getRulePreviewAction().setEnabled(false);
         editorDialog.setVisible(true);
@@ -994,13 +1001,13 @@ public class Simulator {
     public void handleEditRule() {
         Editor editor = new Editor(true);
         String ruleName = currentRule.getName().toString();
-        RuleJModel ruleJModel = getRulePanel().getJGraph().getModel();
-        editor.setModel(ruleName, new GraphJModel(ruleJModel.toLayedOutGraph()));
+        AspectJModel ruleJModel = getRulePanel().getJGraph().getModel();
+        editor.setModel(ruleName, new GraphJModel(ruleJModel.graph().toPlainGraph()));
         editorDialog = Editor.createEditorDialog(frame, true, editor);
         editorDialog.setVisible(true);
         // now the editor is done; see if we have do make any updates
         if (editor.isJGraphModified()) {
-            Graph editedGraph = editor.jgraph.getModel().toLayedOutGraph();
+            Graph editedGraph = editor.jgraph.getModel().toPlainGraph();
             if (confirmReplaceRule(ruleName)) {
                 replaceCurrentRule(editedGraph);
             }
@@ -1015,31 +1022,22 @@ public class Simulator {
         try {
             if (fsmFilter.accept(file)) {
                 PrintWriter writer = new PrintWriter(new FileWriter(file));
-                Converter.graphToFsm(jGraph.getModel().toLayedOutGraph(), writer);
+                Converter.graphToFsm(jGraph.getModel().toPlainGraph(), writer);
                 writer.close();
                 getStateFileChooser().setSelectedFile(new File(""));
             } else if (jpgFilter.accept(file)) {
-                // JGraph jGraph = new JGraph();
-                // jGraph.setModel(jModel);
-                // jGraph.setSize(jGraph.getPreferredSize());
                 ImageIO.write(jGraph.toImage(), jpgFilter.getExtension().substring(1), file);
                 getStateFileChooser().setSelectedFile(new File(""));
             } else if (pngFilter.accept(file)) {
-                // JGraph jGraph = new JGraph();
-                // jGraph.setModel(jModel);
-                // jGraph.setSize(jGraph.getPreferredSize());
                 ImageIO.write(jGraph.toImage(), pngFilter.getExtension().substring(1), file);
                 getStateFileChooser().setSelectedFile(new File(""));
             } else if (epsFilter.accept(file)) {
                 // Create a graphics contents on the buffered image
             	BufferedImage image = jGraph.toImage();
-
                 // Create an output stream
                 OutputStream out = new FileOutputStream(file);
-
                 // minX,minY,maxX,maxY
                 EpsGraphics g2d = new EpsGraphics("Title", out, 0, 0, image.getWidth(), image.getHeight(), ColorMode.COLOR_RGB);
-
                 g2d.drawImage(jGraph.toImage(), new AffineTransform(), null);
                 g2d.close();
             }
@@ -1168,7 +1166,7 @@ public class Simulator {
      */
     public void doSaveGraph(JModel jModel, File file) {
         try {
-            graphLoader.marshal(jModel.toLayedOutGraph(), file);
+            graphLoader.marshal(jModel.toPlainGraph(), file);
         } catch (IOException exc) {
             new ErrorDialog(frame, "Error while saving to " + file, exc);
         }
@@ -1185,7 +1183,7 @@ public class Simulator {
             NameLabel currentRuleName = currentRule.getName();
             int currentRulePriority = currentRule.getPriority();
             try {
-                RuleGraph newRuleGraph = (RuleGraph) ruleFactory.createRuleView(ruleAsGraph, currentRuleName, currentRulePriority);
+                AspectRuleView newRuleGraph = (AspectRuleView) ruleFactory.createRuleView(ruleAsGraph, currentRuleName, currentRulePriority);
                 ((GpsGrammar) currentGrammarLoader).marshalRule(newRuleGraph, currentGrammarFile);
                 currentGrammar.add(newRuleGraph);
                 NameLabel oldRuleName = currentRuleName;
@@ -1401,6 +1399,7 @@ public class Simulator {
         ruleJTree = new RuleJTree(this);
         // make sure the preferred width is not smaller than the minimum width
         ruleJTreePanel = new JScrollPane(ruleJTree) {
+    		@Override
             public Dimension getPreferredSize() {
                 Dimension superSize = super.getPreferredSize();
                 return new Dimension((int) Math.max(superSize.getWidth(), RULE_TREE_MINIMUM_WIDTH),
@@ -1524,6 +1523,7 @@ public class Simulator {
         // we fill it out each time it gets selected
         // so as to be sure it applies to the current jgraph
         menuBar.add(new JMenu(Options.DISPLAY_MENU_NAME) {
+    		@Override
             public void menuSelectionChanged(boolean selected) {
                 removeAll();
                 JGraph jgraph = getGraphPanel().getJGraph();
@@ -1714,8 +1714,9 @@ public class Simulator {
     	// lazily creates the options 
     	if (options == null) {
     		options = new Options();
-        	options.add(Options.SHOW_ANCHORS_OPTION);
         	options.add(Options.SHOW_NODE_IDS_OPTION);
+        	options.add(Options.SHOW_ANCHORS_OPTION);
+        	options.add(Options.SHOW_ASPECTS_OPTION);
     	}
     	return options;
     }

@@ -12,17 +12,19 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MatchingSimulation.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: MatchingSimulation.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
+import groove.rel.RegExpr;
+import groove.rel.RegExprLabel;
 import groove.rel.RegExprSimulation;
-import groove.rel.VarEdge;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,70 +34,9 @@ import java.util.Set;
  * The embargoes must be provided through (abstract) factory methods,
  * {@link #computeInjectionMap()} and {@link #computeEmbargoMap()}.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class MatchingSimulation extends RegExprSimulation {
-//    /**
-//     * Auxiliary class to provide an optimized key iterator.
-//     * A simulation can share a single object of this class with its refinement clones.
-//     * The iterator works by storing an index in the {@link #matchingSchedule}
-//     * of the enclosing {@link MatchingSimulation}.
-//     * @see #getMatchingSchedule()
-//     */
-//    public class KeyIterator implements Iterator<Element> {
-//        /**
-//         * Tests if the internal index is still smaller than the length of
-//         * the matching schedule.
-//         */
-//        public boolean hasNext() {
-//            return matchingIndex < getMatchingSchedule().size();
-//        }
-//
-//        /**
-//         * Returns the element from the matching schedule indicated by the
-//         * internal index.
-//         */
-//        public Element next() {
-//            Element result = getMatchingSchedule().get(matchingIndex);
-//            matchingIndex++;
-//            return result;
-//        }
-//        
-//        /**
-//         * Sets the internal index to 0.
-//         */
-//        public void reset() {
-//            setIndex(0);
-//        }
-//        
-//        /**
-//         * Sets the internal index to a given new value.
-//         */
-//        public void setIndex(int i) {
-//            matchingIndex = i;
-//        }
-//
-//        /**
-//         * Returns the current value of the internal index.
-//         */
-//        public int getIndex() {
-//            return matchingIndex;
-//        }
-//
-//        /**
-//         * The iterator does not support removal.
-//         * @throws UnsupportedOperationException always
-//         */
-//        public void remove() {
-//            throw new UnsupportedOperationException();
-//        }
-//        
-//        /**
-//         * The internal index.
-//         */
-//        private int matchingIndex;
-//    }
-
     public MatchingSimulation(Matching mapping, RuleFactory ruleFactory) {
         super(mapping);
     	this.ruleFactory = ruleFactory;
@@ -114,35 +55,6 @@ public class MatchingSimulation extends RegExprSimulation {
     public GraphCondition getCondition() {
         return ((Matching) morph).getCondition();
     }
-//
-//    public MatchingSimulation clone() {
-//        MatchingSimulation result = (MatchingSimulation) super.clone();
-//        result.keyIterator = null;
-//        KeyIterator resultKeyIterator = (KeyIterator) result.getKeySchedule();
-//        resultKeyIterator.setIndex(keyIterator.getIndex());
-//        return result;
-//    }
-//    
-//    protected void backup() {
-//        super.backup();
-//        backupKeyIteratorIndex = keyIterator.getIndex();
-//    }
-//
-//    protected void restore() {
-//        super.restore();
-//        keyIterator.setIndex(backupKeyIteratorIndex);
-//    }
-//
-//    /**
-//     * Initializes the injection and embargo maps from
-//     * {@link #createInjectionMap()} and {@link #createNegationMap()};
-//     * then invokes <tt>super</tt>.
-//     */
-//    protected void initSimulation() {
-//        injectionMap = computeInjectionMap();
-//        embargoMap = computeEmbargoMap();
-//        super.initSimulation();
-//    }
     
     /**
      * Invokes {@link #applyInjections(Node,Node)} and {@link #applyEmbargoes(Node)}
@@ -151,6 +63,7 @@ public class MatchingSimulation extends RegExprSimulation {
      * than {@link #notifySingular(groove.graph.Simulation.ImageSet)} because the latter may be invoked
      * <i>before</i> the images are put into the map.
      */
+    @Override
     protected void notifyNodeChange(ImageSet<Node> changed, Edge trigger) {
         if (changed.isSingular()) {
             applyInjections(changed.getKey(), changed.getSingular());
@@ -158,20 +71,6 @@ public class MatchingSimulation extends RegExprSimulation {
         }
         super.notifyNodeChange(changed, trigger);
     }
-//    
-//    /**
-//     * Invokes {@link #applyInjections(ImageSet)} and {@link #applyEmbargoes(ImageSet)}
-//     * if <tt>changed</tt> has become singular, and then the <tt>super</tt> method.
-//     * Note that we override {@link #notifyNodeChange(ImageSet, Object)} rather
-//     * than {@link #notifySingular(ImageSet)} because the latter may be invoked
-//     * <i>before</i> the images are put into the map.
-//     */
-//    protected void notifyEdgeChange(ImageSet changed, Object trigger) {
-//        if (changed.isSingular()) {
-//            applyEmbargoes(changed);
-//        }
-//        super.notifyEdgeChange(changed, trigger);
-//    }
 
     /**
      * Applies the stored injections on the basis of an image set that
@@ -230,7 +129,14 @@ public class MatchingSimulation extends RegExprSimulation {
         int arity = key.endCount();
         // flags if the ends of the embargo key are all present;
         // if not, we will not yet attempt to apply the embargo
-        boolean endsSingular = key instanceof VarEdge ? getVar(((VarEdge) key).var()) != null : true;
+        boolean endsSingular = true;
+        RegExpr keyExpr = RegExprLabel.getRegExpr(key.label());
+        if (keyExpr != null) {
+        	Iterator<String> varIter = keyExpr.allVarSet().iterator();
+        	while (endsSingular && varIter.hasNext()) {
+        		endsSingular = getValuation().containsKey(varIter.next());
+        	}
+        }
         for (int i = 0; endsSingular && i < arity; i++) {
             Node keyEnd = key.end(i);
             if (keyEnd != trigger) {
@@ -300,6 +206,7 @@ public class MatchingSimulation extends RegExprSimulation {
      * (assumed to be a {@link DefaultGraphCondition}).
      * @see #initSimulation()
      */
+    @Override
     protected List<Element> computeMatchingSchedule() {
         return ((DefaultGraphCondition) getCondition()).getMatchingSchedule();        
     }
@@ -317,19 +224,9 @@ public class MatchingSimulation extends RegExprSimulation {
      * The underlying rule factory for this simulation.
      */
     private RuleFactory ruleFactory;
-//    /**
-//     * The stored matching order
-//     */
-//    private List<Element> matchingSchedule;
-//    /**
-//     * The fixed key iterator of this {@link MatchingSimulation}.
-//     */
-//    private KeyIterator keyIterator;
-//    /**
-//     * Backup space for the value of the index in the {@link KeyIterator}.
-//     */
-//    private int backupKeyIteratorIndex;
-    
+
+    /** Handle for profiling {@link #applyEmbargoes(Node)} */
     static final int APPLY_EMBARGOES = reporter.newMethod("applyEmbargoes(ImageSet)");
+    /** Handle for profiling {@link #applyInjections(Node, Node)} */
     static final int APPLY_INJECTIONS = reporter.newMethod("applyInjections(ImageSet)");
 }

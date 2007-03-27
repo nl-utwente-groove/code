@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.2 2007-03-27 14:18:34 rensink Exp $ */
 package groove.rel.match;
 
 import java.util.Collection;
@@ -48,6 +48,15 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
 			}
 		}
 
+		/**
+		 * Since the image is not really an edge of the underlying graph, 
+		 * don't set it in the matcher.
+		 */
+		@Override
+		protected void setSelectedImage(Edge image) {
+			// does nothing
+		}
+
 		@Override
 		public void undo() {
 			super.undo();
@@ -64,17 +73,6 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
 			setMultiple(computeImageSet());
 		}
 
-		//
-//		/**
-//		 * Tests if a given edge can be accepted as image.
-//		 * @param image the edge image to be tested
-//		 * @return <code>true</code> if <code>image</code> is an acceptable image
-//		 * for {@link RegExprEdgeSearchItem#edge}
-//		 */
-//		protected boolean approves(Edge image) {
-//			return super.approves(image);
-//		}
-//		
 		protected Collection<? extends Edge> computeImageSet() {
 	    	NodeEdgeMap elementMap = matcher.getSingularMap();
 	    	Node imageSource = elementMap.getNode(edge.source());
@@ -98,6 +96,7 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
 		this.labelAutomaton = ((RegExprLabel) edge.label()).getAutomaton();
 	}
 	
+	@Override
 	public Record get(Matcher matcher) {
 		return new RegExprEdgeRecord((RegExprMatcher) matcher);
 	}

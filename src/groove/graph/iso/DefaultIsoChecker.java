@@ -34,7 +34,7 @@ import groove.util.Reporter;
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy},
  * and if that fails, attempts to create an {@link groove.graph.InjectiveMorphism}. 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -287,11 +287,14 @@ public class DefaultIsoChecker implements IsoChecker {
 	 */
 	private boolean testAndSet(Map<Node,Node> nodeMap, Node key, Node image) {
 		Node oldImage = nodeMap.put(key, image);
-		return oldImage == null || oldImage.equals(image);
+		boolean result = oldImage == null || oldImage.equals(image);
+		return result;
 	}
 
 	/**
-	 * This method wraps a node and edge set equality test on two graphs.
+	 * This method wraps a node and edge set equality test on two graphs,
+	 * under the assumption that the node and edge counts are already known
+	 * to coincide.
 	 */
 	private boolean areGraphEqual(Graph dom, Graph cod) {
 		reporter.start(EQUALS_TEST);
@@ -299,7 +302,7 @@ public class DefaultIsoChecker implements IsoChecker {
 		Set<?> domEdgeSet = dom.edgeSet();
 		Set<?> codEdgeSet = cod.edgeSet();
 		boolean result = domEdgeSet.equals(codEdgeSet);
-		assert result == (dom.edgeCount() == 0 && dom.nodeCount() == cod.nodeCount()) || dom.nodeEdgeMap().equals(cod.nodeEdgeMap()): "TreeStoreSet.equals wrongly gives "+result+" on\n"+dom.nodeSet()+"\n"+cod.nodeSet()+"\n"+dom.edgeSet()+"\n"+cod.edgeSet();
+//		assert result == (dom.edgeCount() == 0 && dom.nodeCount() == cod.nodeCount()) || dom.nodeEdgeMap().equals(cod.nodeEdgeMap()): "TreeStoreSet.equals wrongly gives "+result+" on\n"+dom.nodeSet()+"\n"+cod.nodeSet()+"\n"+dom.edgeSet()+"\n"+cod.edgeSet();
 		reporter.stop();
 		return result;
 	}

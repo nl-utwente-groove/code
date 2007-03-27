@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultMorphism.java,v 1.1.1.2 2007-03-20 10:42:41 kastenberg Exp $
+ * $Id: DefaultMorphism.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import java.util.Map;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultMorphism extends AbstractMorphism {
     /**
@@ -93,6 +93,7 @@ public class DefaultMorphism extends AbstractMorphism {
 
     // ------------------- commands --------------------------
 
+	@Override
     public Node putNode(Node key, Node value) {
     	Node result;
         testNotFixed();
@@ -107,6 +108,7 @@ public class DefaultMorphism extends AbstractMorphism {
         return result;
     }
 
+	@Override
     public Edge putEdge(Edge key, Edge value) {
     	Edge result;
         testNotFixed();
@@ -122,12 +124,14 @@ public class DefaultMorphism extends AbstractMorphism {
     }
 
     @Deprecated
+	@Override
     public Node removeNode(Node key) {
         testNotFixed();
         return super.removeNode(key);
     }
 
     @Deprecated
+	@Override
     public Edge removeEdge(Edge key) {
         testNotFixed();
         return super.removeEdge(key);
@@ -144,6 +148,7 @@ public class DefaultMorphism extends AbstractMorphism {
      */
     protected Morphism createMorphism(final Simulation sim) {
         Morphism result = new DefaultMorphism(sim.dom(), sim.cod()) {
+        	@Override
             protected NodeEdgeMap createElementMap() {
                 return sim.getSingularMap();
             }
@@ -157,6 +162,7 @@ public class DefaultMorphism extends AbstractMorphism {
      * sharing the domain and codomain but with a copy of the element map.
      * The resulting morphism is not fixed, even if this one is.
      */
+	@Override
     public Morphism clone() {
         return new DefaultMorphism(this);
     }
@@ -171,8 +177,10 @@ public class DefaultMorphism extends AbstractMorphism {
     /**
      * This implementation returns a {@link DefaultMorphism}.
      */
+	@Override
     protected Morphism createMorphism(final NodeEdgeMap sim) {
         Morphism result = new DefaultMorphism(dom(), cod()) {
+        	@Override
             protected NodeEdgeMap createElementMap() {
                 return sim;
             }
@@ -185,8 +193,8 @@ public class DefaultMorphism extends AbstractMorphism {
      * Factory method for simulations.
      * This implementation returns a <tt>{@link DefaultSimulation}</tt>.
      */
+	@Override
     protected Simulation createSimulation() {
-//    	return ruleFactory.createSimulation(this);
         return new DefaultSimulation(this);
     }
     

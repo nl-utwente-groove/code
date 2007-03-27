@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMorphism.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: AbstractMorphism.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edge,Edge> implements Morphism {
     /**
@@ -69,7 +69,15 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
         return nodeMap().containsValue(value) || edgeMap().containsValue(value);
     }
 
-    @Deprecated
+    /**
+     * This implementation defers to the element map.
+     * @see #elementMap()
+	 */
+	public Label getLabel(Label label) {
+		return elementMap().getLabel(label);
+	}
+
+	@Deprecated
     public Element getElement(Element key) {
     	if (key instanceof Node) {
     		return getNode((Node) key);
@@ -239,7 +247,8 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
         try {
             Simulation sim = createSimulation();
             return new TransformIterator<NodeEdgeMap,Morphism>(sim.getRefinementIter()) {
-                public Morphism toOuter(NodeEdgeMap obj) {
+            	@Override
+            	public Morphism toOuter(NodeEdgeMap obj) {
                     return createMorphism(obj);
                 }
             };
@@ -292,6 +301,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     /**
      * This implementation invokes <tt>#equals(Morphism)</tt> for the actual comparison.
      */
+	@Override
     public boolean equals(Object other) {
         return other instanceof Morphism && equals((Morphism) other);
     }
@@ -307,11 +317,13 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     /**
      * The hash code of a morphism is composed out of those for domain, codomain and element map.
      */
+	@Override
     public int hashCode() {
         int res = (dom().hashCode() << 6) + (cod().hashCode() << 3) + elementMap().hashCode();
         return res;
     }
 
+	@Override
     public String toString() {
         return "Source graph:  "
             + AbstractGraph.toString(dom)
@@ -422,14 +434,6 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     		return removeEdge((Edge) key);
     	}
     }
-//
-//    /**
-//     * This implementation calls <tt>{@link #removeImage(Element)}</tt> to do the
-//     * actual work.
-//     */
-//    public boolean removeNodeImage(Node image) {
-//        return removeImage(image);
-//    }
 
     /**
      * This implementation does not call <tt>{@link #remove(Element)}</tt> but works directly 
@@ -500,6 +504,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     /**
      * Abstract clone method with the correct visibility and return type.
      */
+	@Override
     abstract public Morphism clone();
 
     /**

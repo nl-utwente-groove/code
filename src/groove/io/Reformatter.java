@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Reformatter.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
+ * $Id: Reformatter.java,v 1.2 2007-03-27 14:18:37 rensink Exp $
  */
 package groove.io;
 
@@ -23,11 +23,11 @@ import groove.graph.Edge;
 import groove.graph.GenericNodeEdgeHashMap;
 import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
-import groove.graph.Label;
+import groove.graph.GraphFormatException;
 import groove.graph.Node;
+import groove.graph.aspect.AspectParser;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
-import groove.trans.view.RuleGraph;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,7 +62,7 @@ import org.jgraph.graph.AttributeMap;
  * Where both types of files are found, the first overrules the second.
  * The tool works both on individual files and, recursively, in directories.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class Reformatter {
     /**
@@ -120,6 +120,7 @@ public class Reformatter {
             super(VERBOSE_MODE);
         }
 
+        @Override
         public void handleGraph(File file) {
             File subDir = new File(file.getParentFile(), reformatSubdir);
             subDir.mkdir();
@@ -140,6 +141,7 @@ public class Reformatter {
             }
         }
 
+        @Override
         public void handleRule(File file) {
             File subDir = new File(file.getParentFile(), reformatSubdir);
             subDir.mkdir();
@@ -156,13 +158,12 @@ public class Reformatter {
             Graph graph = doImport(file, graphToLayoutMap);
             if (graph != null) {
                 normalizeMultiLabels(graph, graphToLayoutMap);
-                normalizeMergeLabels(graph);
+                normalizeAspectLabels(graph);
                 doExport(toFile, graph, graphToLayoutMap);
             }
         }
-        /* (non-Javadoc)
-         * @see groove.io.GraphFileHandler#handleDirectory(java.io.File)
-         */
+        
+        @Override
         public void handleDirectory(File dir) {
             if (!dir.getName().equals(reformatSubdir)) {
                 super.handleDirectory(dir);
@@ -249,26 +250,25 @@ public class Reformatter {
         graph.addEdgeSet(newEdgeSet);
     }
 
-    static public void normalizeMergeLabels(Graph graph) {
+    static public void normalizeAspectLabels(Graph graph) {
         Set<Edge> newEdgeSet = new HashSet<Edge>();
         Set<Edge> removedEdgeSet = new HashSet<Edge>();
-        for (Edge edge: graph.edgeSet()) {
-            Label label = edge.label();
-            int role = RuleGraph.labelRole(label);
-            String text = RuleGraph.labelText(label);
-            int nodeRole = RuleGraph.selfEdgeRole(edge);
-            if (role != RuleGraph.NO_ROLE && nodeRole == RuleGraph.NO_ROLE) {
-                if (text.length() == 0) {
-                    String newLabelText = RuleGraph.ROLE_PREFIX[role]+RuleGraph.MERGE_LABEL_TEXT;
-                    BinaryEdge newEdge = DefaultEdge.createEdge(edge.source(), newLabelText, edge.opposite());
-                    removedEdgeSet.add(edge);
-                    newEdgeSet.add(newEdge);
-                    if (isVerbose()) {
-                        System.out.println("Normalizing merge labels: replacing "+edge+" by "+newEdge);
-                    }
-                }
-            }
-        }
+        for (Edge edge : graph.edgeSet()) {
+			try {
+				String newLabelText = AspectParser.normalize(edge.label().text());
+				BinaryEdge newEdge = DefaultEdge.createEdge(edge.source(),
+						newLabelText,
+						edge.opposite());
+				removedEdgeSet.add(edge);
+				newEdgeSet.add(newEdge);
+				if (isVerbose()) {
+					System.out.println("Normalizing merge labels: replacing "
+							+ edge + " by " + newEdge);
+				}
+			} catch (GraphFormatException exc) {
+				throw new IllegalArgumentException(String.format("Graph contains label %s, which cannot be parsed", edge.label()));
+			}
+		}
         graph.removeEdgeSet(removedEdgeSet);
         graph.addEdgeSet(newEdgeSet);
     }

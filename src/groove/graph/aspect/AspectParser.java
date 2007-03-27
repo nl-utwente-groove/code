@@ -22,8 +22,10 @@ import groove.graph.Label;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.util.ExprFormatException;
-import groove.util.Groove;
 
+import static groove.graph.aspect.Aspect.SEPARATOR;
+
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -34,14 +36,6 @@ import java.util.Set;
  * @version $Revision$
  */
 public class AspectParser {
-	/** 
-	 * String used to separate the textual representation of aspect values
-	 * in a label. 
-	 * When the separator occurs twice in direct succession, this denotes the
-	 * end of the aspect prefix.
-	 */
-    public static final String SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
-
     /** The singleton lenient parser instance. */
     private static AspectParser lenientParser = new AspectParser(true);
     /** The singleton strict parser instance. */
@@ -66,8 +60,45 @@ public class AspectParser {
     public static AspectParser getInstance() {
         return getInstance(true);
     }
+    
+    /**
+     * Normalises a would-be label, by parsing it as if it were label text,
+     * and returning a string description of the parsed result.
+     * @param plainText the string to be normalised
+     * @return the parsed <code>plainText</code>, turned back into a string
+     * @throws GraphFormatException if <code>plainText</code> is not formatted
+     * correctly according to the rules of the parser.
+     * @see #getParseData(String)
+     */
+    public static String normalize(String plainText) throws GraphFormatException {
+    	return getInstance().getParseData(plainText).toString();
+    }
 
-    /** 
+    /**
+	 * Turns an aspect value into a string that can be read
+	 * by {@link #getParseData(String)}.
+	 */
+	static public String toString(AspectValue value) {
+		return value.getName()+SEPARATOR;
+	}
+
+	/**
+	 * Converts a collection of aspect values plus an actual
+	 * label text into a string that can be parsed back.
+	 */
+	static public String toString(Collection<AspectValue> values, String labelText) {
+		StringBuffer result = new StringBuffer();
+		for (AspectValue value: values) {
+			result.append(AspectParser.toString(value));
+		}
+		if (values.size() > 0 && (labelText.length() == 0 || labelText.contains(SEPARATOR))) {
+			result.append(SEPARATOR);
+		}
+		result.append(labelText);
+		return result.toString();
+	}
+
+	/** 
      * Creates a lenient parser. 
      * #see {@link #AspectParser(boolean)} 	
      */
@@ -217,14 +248,6 @@ public class AspectParser {
 			}
 		}
 	}
-
-    /**
-     * Turns an aspect value into a string that can be read
-     * by {@link #getParseData(String)}.
-     */
-    public String toText(AspectValue value) {
-    	return value.getName()+SEPARATOR;
-    }
 
     /**
      * The set of registered aspects.

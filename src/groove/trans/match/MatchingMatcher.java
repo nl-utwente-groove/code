@@ -1,5 +1,5 @@
 /*
- * $Id: MatchingMatcher.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: MatchingMatcher.java,v 1.2 2007-03-27 14:18:25 rensink Exp $
  */
 package groove.trans.match;
 
@@ -17,7 +17,7 @@ import java.util.Map;
 /**
  * Matcher that takes conditions into account.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class MatchingMatcher extends RegExprMatcher {
 	/** 
@@ -70,6 +70,7 @@ public class MatchingMatcher extends RegExprMatcher {
 	/**
 	 * Returns the factory used for creating search plans 
 	 */
+    @Override
 	protected ConditionSearchPlanFactory getSearchPlanFactory() {
 		return searchPlanFactory;
 	}

@@ -12,15 +12,17 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTSPanel.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: LTSPanel.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
  */
 package groove.gui;
+
+import static groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static groove.gui.jgraph.LTSJModel.EMPTY_JMODEL;
 
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.lts.GraphState;
@@ -34,7 +36,6 @@ import groove.trans.view.RuleViewGrammar;
 
 import java.util.Collections;
 
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -43,18 +44,13 @@ import javax.swing.event.ChangeListener;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:44 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:34 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
-    /**
-     * Empty model, used in case there is no LTS to display.
-     */
-    protected static final JModel EMPTY_JMODEL = new LTSJModel();
-
     /** Creates a LTS panel for a given simulator. */
     public LTSPanel(Simulator simulator) {
-        super(new LTSJGraph(simulator), true);
-        this.simulator = simulator;
+        super(new LTSJGraph(simulator), true, simulator.getOptions());
+        addOptionListener(SHOW_ANCHORS_OPTION, createAnchorsOptionListener());
         simulator.addSimulationListener(this);
         jGraph.setToolTipEnabled(true);
     }
@@ -62,6 +58,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     /**
      * Specialises the return type to a {@link LTSJModel}.
      */
+    @Override
     public LTSJModel getJModel() {
         if (getJGraph().isEnabled()) {
             return getJGraph().getModel();
@@ -82,17 +79,23 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
             lts.removeGraphListener(ltsListener);
         }
         lts = grammar.gts();
+        getJGraph().setModel(createJModel(lts));
         if (lts == null) {
-            getJGraph().setModel(EMPTY_JMODEL);
             setEnabled(false);
         } else {
             lts.addGraphListener(ltsListener);
-            getJGraph().setModel(new LTSJModel(lts, simulator.getOptions()));
             setStateUpdate((GraphState) lts.startState());
         }
-        setShowAnchorsOptionListener();
         updateStatus();
     }
+
+	/**
+	 * Callback method to create a fresh JModel for a given lts.
+	 * If the lts is <code>null</code>, returns {@link #EMPTY_JMODEL}.
+	 */
+	protected LTSJModel createJModel(LTS lts) {
+		return lts == null ? EMPTY_JMODEL : new LTSJModel(lts, getOptions());
+	}
 
     /**
      * Sets the LTS emphasis attributes for the LTS node curresponding to the
@@ -150,26 +153,18 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     public boolean isLTSLoaded() {
         return lts != null;
     }
-    /**
-     * Sets a listener to the anchor image option, if that has not yet been done.
-     */
-    protected void setShowAnchorsOptionListener() {
-    	if (! showAnchorsOptionListenerSet) {
-    		JCheckBoxMenuItem anchorImageOptionItem = simulator.getOptions().getItem(Options.SHOW_ANCHORS_OPTION);
-    		if (anchorImageOptionItem != null) {
-    	        // listen to the option controlling the rule anchor display
-    			anchorImageOptionItem.addChangeListener(new ChangeListener() {
-    				public void stateChanged(ChangeEvent e) {
-    					getJModel().reload();
-    					getJGraph().getLabelList().updateModel();
-//    					getLTSJModel().refresh(getLTSJModel().getJCellSet(lts.edgeSet()));
-//    					getJGraph().repaint();
-    				}
-    	        });
-    	        showAnchorsOptionListenerSet = true;
-    		}
-    	}
-    }
+
+	/**
+	 * Callback factory method for a listener to the node ids show option.
+	 */
+	protected ChangeListener createAnchorsOptionListener() {
+		return new ChangeListener() {
+			public void stateChanged(ChangeEvent e) {
+				getJModel().reload();
+				getJGraph().getLabelList().updateModel();
+			}
+		};
+	}
 
     /**
      * Writes a line to the status bar.
@@ -183,20 +178,13 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         }
         getStatusBar().setText(text);
     }
-
-    /**
-     * The production simulator to which this frame belongs.
-     */
-    private final Simulator simulator;
-
+    
     /**
      * The underlying lts of ltsJModel.
      * 
      * @invariant lts == ltsJModel.graph()
      */
     private LTS lts;
-    /** Flag to indicate that the anchor image option listener has been set. */
-    private boolean showAnchorsOptionListenerSet = false;
 
     /** The graph lisener permanently associated with this exploration strategy. */
     private final LTSListener ltsListener = new LTSAdapter() {
@@ -204,6 +192,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
          * May only be called with the current lts as first parameter. Updates the
          * frame title by showing the number of nodes and edges.
          */
+    	@Override
         public void addUpdate(GraphShape graph, Node node) {
             assert graph == lts : "I want to listen only to my lts";
             updateStatus();
@@ -213,6 +202,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
          * May only be called with the current lts as first parameter. Updates the
          * frame title by showing the number of nodes and edges.
          */
+    	@Override
         public void addUpdate(GraphShape graph, Edge edge) {
             assert graph == lts : "I want to listen only to my lts";
             updateStatus();
@@ -221,6 +211,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         /**
          * If a state is closed, its background should be reset.
          */
+    	@Override
         public void closeUpdate(LTS graph, State closed) {
             JCell jCell = getJModel().getJCell(closed);
             // during automatic generation, we do not always have vertices for all states

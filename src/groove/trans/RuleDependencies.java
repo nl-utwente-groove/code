@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleDependencies.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: RuleDependencies.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
@@ -23,8 +23,8 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.rel.Automaton;
+import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
-import groove.rel.VarEdge;
 import groove.util.Groove;
 
 import java.io.IOException;
@@ -40,7 +40,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:56 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */
@@ -317,7 +317,8 @@ public class RuleDependencies {
 		while (lhsEdgeIter.hasNext() && !consumed.contains(ALL_LABEL)) {
 			Edge lhsEdge = lhsEdgeIter.next();
 			if (!ruleMorphism.containsKey(lhsEdge)) {
-				consumed.add(lhsEdge instanceof VarEdge ? ALL_LABEL : lhsEdge.label());
+				// the only regular expressions allowed on erasers are wildcards
+				consumed.add(RegExprLabel.isWildcard(lhsEdge.label()) ? ALL_LABEL : lhsEdge.label());
 			}
 		}
 		// determine the set of edges produced
@@ -325,9 +326,7 @@ public class RuleDependencies {
 		while (rhsEdgeIter.hasNext() && !produced.contains(ALL_LABEL)) {
 			Edge rhsEdge = rhsEdgeIter.next();
 			if (!ruleMorphism.containsValue(rhsEdge)) {
-				if (!ruleMorphism.containsKey(rhsEdge)) {
-					produced.add(rhsEdge instanceof VarEdge ? ALL_LABEL : rhsEdge.label());
-				}
+				produced.add(RegExprLabel.isWildcard(rhsEdge.label()) ? ALL_LABEL : rhsEdge.label());
 			}
 		}
 		// determine if the rule contains a merger
@@ -337,7 +336,7 @@ public class RuleDependencies {
 		}
 		// determine if the rule introduces an isolated node
 		for (Node rhsNode: rhs.nodeSet()) {
-			if (!ruleMorphism.containsValue(rhsNode)) {
+			if (!ruleMorphism.containsValue(rhsNode) && rhs.edgeSet(rhsNode).isEmpty()) {
 				produced.add(ANY_NODE);
 			}
 		}
@@ -350,25 +349,27 @@ public class RuleDependencies {
     	for (Edge edge: target.edgeSet()) {
     		if (!pattern.containsValue(edge)) {
     			// yep, it's a fresh edge
-				if (edge instanceof VarEdge) {
-					positive.add(ALL_LABEL);
-				} else {
 					Label label = edge.label();
 					if (label instanceof RegExprLabel) {
-						// all the labels in the regular expression's automaton are positive
 						Automaton labelAut = ((RegExprLabel) label).getAutomaton();
-						for (Edge labelAutEdge: labelAut.edgeSet()) {
-							Label innerLabel = labelAutEdge.label();
-							positive.add(innerLabel instanceof RegExprLabel ? ALL_LABEL : innerLabel);
-						}
 						// if a regular expression accepts the empty word, merging is allowed
 						if (labelAut.isAcceptsEmptyWord()) {
 							positive.add(MERGE_LABEL);
 						}
+						if (RegExprLabel.isWildcard(label) || RegExprLabel.getRegExpr(label).containsOperator(RegExpr.wildcard())) {
+							// testing for a wildcard means all labels are positive
+							positive.add(ALL_LABEL);						
+						} else {
+							// all the labels in the regular expression's automaton are positive
+							for (Edge labelAutEdge: labelAut.edgeSet()) {
+								Label innerLabel = labelAutEdge.label();
+								assert !(innerLabel instanceof RegExprLabel) : String.format("Wildcard label %s should have been caught above", innerLabel);
+								positive.add(innerLabel);
+							}
+						}
 					} else {
 						positive.add(label);
 					}
-				}
 			}
 		}
     	// if the condition pattern is injective, it means merging is part of the condition

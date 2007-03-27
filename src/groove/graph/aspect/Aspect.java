@@ -18,6 +18,7 @@ package groove.graph.aspect;
 
 import groove.graph.GraphFormatException;
 import groove.graph.Label;
+import groove.util.Groove;
 
 import java.util.Set;
 
@@ -29,10 +30,18 @@ import java.util.Set;
  * @version $Revision$
  */
 public interface Aspect {
+	/** 
+	 * String used to separate the textual representation of aspect values
+	 * in a label. 
+	 * When the separator occurs twice in direct succession, this denotes the
+	 * end of the aspect prefix.
+	 */
+    public static final String SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
+
 	/** Array of all known aspects. */
-	
-	Aspect[] allAspects = { AttributeAspect.getInstance(), RuleAspect.getInstance() };
-    /**
+	public Aspect[] allAspects = { AttributeAspect.getInstance(), RuleAspect.getInstance() };
+
+	/**
      * Returns the set of all possible aspect values (for either nodes or edges), 
      * as a set of <code>AspectValue</code>s.
      * @see #getNodeValues()

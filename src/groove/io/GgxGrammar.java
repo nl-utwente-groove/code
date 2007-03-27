@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GgxGrammar.java,v 1.1.1.2 2007-03-20 10:42:50 kastenberg Exp $
+ * $Id: GgxGrammar.java,v 1.2 2007-03-27 14:18:37 rensink Exp $
  */
 package groove.io;
 
@@ -49,7 +49,7 @@ import org.w3c.dom.Document;
  * GGX is the "proprietary" AGG format.
  * @deprecated experimental, not supported
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class GgxGrammar implements XmlGrammar {
     // DOM required definitions; current values are dummies
@@ -143,6 +143,7 @@ public class GgxGrammar implements XmlGrammar {
 
     public ExtensionFilter getExtensionFilter() {
         return new ExtensionFilter("GGX files", ".ggx") {
+        	@Override
             public boolean accept(File file) {
                 if (!file.isDirectory()) {
                     return super.accept(file);
@@ -381,7 +382,7 @@ public class GgxGrammar implements XmlGrammar {
             if (keyId == null) {
                 throw new XmlException("Mapping key not specified");
             }
-            Element key = (Element) lhsElementMap.get(keyId);
+            Element key = lhsElementMap.get(keyId);
             if (key == null) {
                 throw new XmlException("Unknown mapping key " + keyId);
             }
@@ -390,7 +391,7 @@ public class GgxGrammar implements XmlGrammar {
             if (imageId == null) {
                 throw new XmlException("Mapping image not specified");
             }
-            Element image = (Element) rhsElementMap.get(imageId);
+            Element image = rhsElementMap.get(imageId);
             if (image == null) {
                 throw new XmlException("Unknown mapping image " + imageId);
             }
@@ -455,7 +456,7 @@ public class GgxGrammar implements XmlGrammar {
             String typeId = nodeElement.getAttribute(TYPE_ATTR_NAME);
             if (typeId == null)
                 throw new XmlException("Unspecified edge type in document");
-            String labelText = (String) typeMap.get(typeId);
+            String labelText = typeMap.get(typeId);
             Edge selfEdge = result.addEdge(node, DefaultLabel.createLabel(labelText), node);
             elementMap.put(node, selfEdge);
         }
@@ -485,7 +486,7 @@ public class GgxGrammar implements XmlGrammar {
             String typeId = edgeElement.getAttribute(TYPE_ATTR_NAME);
             if (typeId == null)
                 throw new XmlException("Unspecified edge type in document");
-            String labelText = (String) typeMap.get(typeId);
+            String labelText = typeMap.get(typeId);
             // decompose labelText and add new graph edges
             Edge edge = result.addEdge(sourceNode, DefaultLabel.createLabel(labelText), targetNode);
             // Fetch edge ID

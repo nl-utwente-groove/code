@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: JVertexView.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -50,7 +50,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class JVertexView extends VertexView {
 	/** HTML tag to make text bold. */
@@ -104,6 +104,7 @@ public class JVertexView extends VertexView {
 	/**
      * This implementation returns the (static) {@link TextAreaRenderer}.
      */
+	@Override
     public CellViewRenderer getRenderer() {
         return renderer;
     }
@@ -111,6 +112,7 @@ public class JVertexView extends VertexView {
     /**
      * This implementation returns the (static) {@link MultiLinedEditor}.
      */
+	@Override
     public GraphCellEditor getEditor() {
         return editor;
     }
@@ -119,6 +121,7 @@ public class JVertexView extends VertexView {
 	 * Overwrites the super method because we have a different renderer.
 	 * This implementation is in fact taken from {@link VertexRenderer#getPerimeterPoint(VertexView, Point2D, Point2D)}.
 	 */
+	@Override
 	public Point2D getPerimeterPoint(EdgeView edge, Point2D source, Point2D p) {
 		Rectangle2D bounds = getBounds();
 		double x = bounds.getX();
@@ -151,57 +154,10 @@ public class JVertexView extends VertexView {
 		return new Point2D.Double(xout, yout);
 	}
 
+	@Override
     public String toString() {
     	return String.format("Vertex view for %s", getCell());
     }
-
-//    /** 
-//     * Overridden for performance reasons.
-//     * Since view attributes are aliased from the model
-//     * attributes, nothing happens here.
-//     */ 
-//	protected void mergeAttributes() {
-//		// does nothing
-//	}
-//
-//    /** 
-//     * We should change, rather than set, the attributes.
-//     * @see #changeAttributes(Map)
-//     */ 
-//	@Deprecated
-//	public void setAttributes(AttributeMap attributes) {
-//		throw new UnsupportedOperationException();
-//	}
-//	
-//    /**
-//     * Overridden to return the cell attributes.
-//	 */
-//	@Override
-//	public AttributeMap getAttributes() {
-//		return getCell().getAttributes();
-//	}
-//
-//	/**
-//	 * Overridden to alias, rather than clone, the cell attrributes in the model.
-//	 */
-//	@Override
-//	protected AttributeMap getCellAttributes(GraphModel model) {
-//		return model.getAttributes(cell);	
-//	}
-//
-//	/** 
-//     * Overridden for performance reasons.
-//     * Since view attributes are aliased from the model
-//     * attributes, it is the latter that are changed.
-//     */ 
-//	public Map changeAttributes(Map change) {
-//		if (change != null) {
-//			Map undo = getAllAttributes().applyMap(change);
-//			update();
-//			return undo;
-//		}
-//		return null;
-//	}
 	
     /**
      * In addition to calling the super method, calls {@link JGraph#updateAutoSize(CellView)}
@@ -262,6 +218,7 @@ public class JVertexView extends VertexView {
          * In addition to called <code>super.paint()</code>, also draws
          * the selection border, if the vertex is selected.
          */
+        @Override
         public void paint(Graphics g) {
         	super.paint(g);
         	paintSelectionBorder(g);
@@ -301,21 +258,25 @@ public class JVertexView extends VertexView {
         }
         
         /** Overridden for performance reasons. Copied from {@link org.jgraph.graph.VertexRenderer}. */
+        @Override
         public void validate() {
             // empty
         }
 
         /** Overridden for performance reasons. Copied from {@link org.jgraph.graph.VertexRenderer}. */
+        @Override
         public void revalidate() {
             // empty
         }
 
         /** Overridden for performance reasons. Copied from {@link org.jgraph.graph.VertexRenderer}. */
+        @Override
         public void repaint(long tm, int x, int y, int width, int height) {
             // empty
         }
 
         /** Overridden for performance reasons. Copied from {@link org.jgraph.graph.VertexRenderer}. */
+        @Override
         public void repaint(Rectangle r) {
             // empty
         }
@@ -354,13 +315,17 @@ public class JVertexView extends VertexView {
          * In addition to called <code>super.paint()</code>, also draws
          * the selection border, if the vertex is selected.
          */
+        @Override
         public void paint(Graphics g) {
         	super.paint(g);
         	paintSelectionBorder(g);
         }
 
         public void setText(String text, boolean hidden) {
-            String displayText = fontTag.on(text);
+        	if (text.length() == 0) {
+        		text = fontTag.on("&nbsp;&nbsp;&nbsp;");
+        	}
+        	String displayText = fontTag.on(text);
             if (hidden) {
                 super.setText(hiddenTag.on(displayText));
             } else {
@@ -370,14 +335,17 @@ public class JVertexView extends VertexView {
         
         @Override
 		public Dimension getPreferredSize() {
-        	Dimension dimension = super.getPreferredSize();
-        	// the preferred size may be too high because line breaks are taken into account
-        	// so try again after the width has been set
-        	setSize(dimension);
-        	dimension = super.getPreferredSize();
-        	double width = Math.max(dimension.getWidth(), JAttr.DEFAULT_NODE_SIZE.getWidth());
-        	double height = Math.max(dimension.getHeight(), JAttr.DEFAULT_NODE_SIZE.getHeight());
-			return new Dimension((int) width, (int) height);
+				Dimension dimension = super.getPreferredSize();
+				// the preferred size may be too high because line breaks are
+				// taken into account
+				// so try again after the width has been set
+				setSize(dimension);
+				dimension = super.getPreferredSize();
+//				double width = Math.max(dimension.getWidth(),
+//						JAttr.DEFAULT_NODE_SIZE.getWidth());
+				double height = Math.max(dimension.getHeight(),
+						JAttr.DEFAULT_NODE_SIZE.getHeight());
+				return new Dimension((int) dimension.getWidth(), (int) height);
 		}
 
 		/**

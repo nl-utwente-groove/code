@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: LTSJModel.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -35,9 +35,10 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
 /**
- * 
+ * Graph model adding a concept of active state and transition,
+ * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class LTSJModel extends GraphJModel {
 	/** Dummy LTS model. */
@@ -83,28 +84,28 @@ public class LTSJModel extends GraphJModel {
 			return result.toString();
 		}
 
+		@Override
+		public String getLabel(Object object) {
+			assert object instanceof GraphTransition : "Edge set contains "
+					+ object;
+			if (options.getValue(Options.SHOW_ANCHORS_OPTION)) {
+				return ((GraphTransition) object).label().text();
+			} else {
+				return ((GraphTransition) object).getRule().getName().text();
+			}
+		}
+        
 		/** 
 		 * Returns a user object that lets its label display depend on 
 		 * the value of {@link Options#SHOW_ANCHORS_OPTION}.
 		 */
 		@Override
 		protected JUserObject<Edge> createUserObject() {
-			return new JUserObject<Edge>(PRINT_SEPARATOR, false) {
-				@Override
-				protected String getLabel(Edge object) {
-					assert object instanceof GraphTransition : "Edge set contains "
-							+ object;
-					if (options.getValue(Options.SHOW_ANCHORS_OPTION)) {
-						return object.label().text();
-					} else {
-						return ((GraphTransition) object).getRule().getName().text();
-					}
-				}
-                
+			return new JUserObject<Edge>(this, PRINT_SEPARATOR, false) {
 				/** Don't put quotes around the labels. */
                 @Override
-                protected String getPrintLabel(Edge object) {
-                    return getLabel(object);
+                protected String getPrintLabel(String label) {
+                    return label;
                 }
 			};
 		}
@@ -188,12 +189,13 @@ public class LTSJModel extends GraphJModel {
 
     /** Creates a new model from a given LTS and set of display options. */
     public LTSJModel(LTS lts, Options options) {
-        super(lts, LTS_NODE_ATTR, LTS_EDGE_ATTR, true);
+        super(lts, LTS_NODE_ATTR, LTS_EDGE_ATTR, false);
         this.options = options;
+        setShowNodeIdentities(true);
     }
     
     /** Constructs a dummy, empty model. */
-    public LTSJModel() {
+    private LTSJModel() {
     	this.options = null;
     }
     
@@ -301,9 +303,9 @@ public class LTSJModel extends GraphJModel {
 	 * @see #LTS_NODE_ACTIVE_CHANGE
 	 */
 	@Override
-	protected AttributeMap createJVertexAttr(JVertex cell) {
+	protected AttributeMap createJVertexAttr(Node node) {
         AttributeMap result;
-        State state = ((StateJVertex) cell).getNode();
+        State state = (State) node;
         if (state.equals(graph().startState())) {
             result = (AttributeMap) LTS_START_NODE_ATTR.clone();
         } else if (!state.isClosed()) {
@@ -324,9 +326,10 @@ public class LTSJModel extends GraphJModel {
 	 * @see #LTS_EDGE_ATTR
 	 * @see #LTS_EDGE_ACTIVE_CHANGE
 	 */
-    protected AttributeMap createJEdgeAttr(JEdge jEdge) {
+	@Override
+    protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
         AttributeMap result = (AttributeMap) LTS_EDGE_ATTR.clone();
-        if (activeTransition != null && ((GraphJEdge) jEdge).getEdgeSet().contains(activeTransition)) {
+        if (activeTransition != null && edgeSet.contains(activeTransition)) {
             result.applyMap(LTS_EDGE_ACTIVE_CHANGE);
         }
         return result;
@@ -337,6 +340,7 @@ public class LTSJModel extends GraphJModel {
      * according to {@link #isSpecialLabel(String)}; if so, the edge is not added to the jmodel
      * and its source jcell is returned instead.
      */
+	@Override
     protected JCell addEdge(Edge edge) {
         if (isSpecialEdge(edge)) {
             return toJCellMap.getNode(edge.source());
@@ -368,6 +372,7 @@ public class LTSJModel extends GraphJModel {
      * @see LTS#OPEN_LABEL_TEXT
      * @see LTS#FINAL_LABEL_TEXT
      */
+    @Override
     protected Collection<String> getLabels(JVertex jCell) {
         LTS lts = graph();
         State state = (GraphState) ((GraphJVertex) jCell).getNode();

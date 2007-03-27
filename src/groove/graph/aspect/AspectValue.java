@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import groove.graph.GraphFormatException;
+import static groove.graph.aspect.Aspect.SEPARATOR;
 
 /**
  * Class implementing values of a given aspect.
@@ -82,13 +83,23 @@ public class AspectValue {
     public Aspect getAspect() {
         return aspect;
     }
-    
+
     /**
      * Returns the name of the aspect value.
      * The name uniquely identifies not just the value itself, but also the aspect.
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Returns the prefix of the aspect value.
+     * The prefix consists of the name followed by the separator.
+     * @see #getName()
+     * @see #SEPARATOR
+     */
+    public String getPrefix() {
+        return name + SEPARATOR;
     }
 
     /** 

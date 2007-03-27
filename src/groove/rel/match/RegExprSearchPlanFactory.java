@@ -1,5 +1,5 @@
 /*
- * $Id: RegExprSearchPlanFactory.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: RegExprSearchPlanFactory.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
  */
 package groove.rel.match;
 
@@ -13,7 +13,6 @@ import groove.graph.Node;
 import groove.graph.match.DefaultSearchPlanFactory;
 import groove.graph.match.SearchItem;
 import groove.rel.RegExprLabel;
-import groove.rel.VarEdge;
 import groove.rel.match.RegExprEdgeSearchItem;
 import groove.rel.match.VarEdgeSearchItem;
 
@@ -22,7 +21,7 @@ import groove.rel.match.VarEdgeSearchItem;
  * their source nodes.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class RegExprSearchPlanFactory extends DefaultSearchPlanFactory {
 	/**
@@ -77,9 +76,10 @@ public class RegExprSearchPlanFactory extends DefaultSearchPlanFactory {
      * Creates a {@link VarEdgeSearchItem} or {@link RegExprEdgeSearchItem} as
      * dictated by the parameter, or calls the super method otherwise.
      */
+    @Override
     protected SearchItem createEdgeSearchItem(Edge edge, boolean[] matched) {
-    	if (edge instanceof VarEdge) {
-    		return new VarEdgeSearchItem((VarEdge) edge, matched);
+    	if (RegExprLabel.getWildcardId(edge.label()) != null) {
+    		return new VarEdgeSearchItem(edge, matched);
     	} else if (edge.label() instanceof RegExprLabel) {
     		return new RegExprEdgeSearchItem(edge, matched);
     	} else {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJUserObject.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: EditableJUserObject.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -30,38 +30,17 @@ import java.util.Collection;
  */
 public class EditableJUserObject extends JUserObject<String> {
     /**
-     * Constructs an object with a new line as print and edit label separator.
-     * @see #NEWLINE
-     * @ensure <tt>getPrintSeparator().equals(NEWLINE) && getEditSeparator().equals(NEWLINE)</tt>
-     */
-    public EditableJUserObject() {
-        this(NEWLINE);
-    }
-
-    /**
-     * Constructs an object whose string description uses a given string as a print and edit
-     * separator.
-     * @param separator the intended label separator
-     * @see #getPrintSeparator()
-     * @ensure <tt>getPrintSeparator().equals(separator) && 
-     * getEditSeparator.equals(separator)</tt>
-     */
-    public EditableJUserObject(String separator) {
-        this(separator, separator);
-    }
-
-    /**
      * Constructs an object whose string description uses a given string as a separator between
      * labels (in {@link #toString()}, and which uses another separator when editing the object and
      * loading the object from a string (in {@link #load(String)}.
+     * @param jCell the cell for which this is the user object
      * @param printSeparator the intended label print separator
      * @param editSeparator the intended label edit separator
-     * @see #getPrintSeparator()
      * @see #getEditSeparator()
      * @ensure <tt>getPrintSeparator().equals(printSeparator) && getEditSeparator().equals(editSeparator)</tt>
      */
-    public EditableJUserObject(String printSeparator, String editSeparator) {
-    	this(printSeparator, editSeparator, true);
+    public EditableJUserObject(EditableJCell jCell, String printSeparator, String editSeparator) {
+    	this(jCell, printSeparator, editSeparator, true);
     }
 
     /**
@@ -69,15 +48,15 @@ public class EditableJUserObject extends JUserObject<String> {
      * labels (in {@link #toString()}, and which uses another separator when editing the object and
      * loading the object from a string (in {@link #load(String)}.
      * The behaviour on loading from an empty set or string can also be set.
+     * @param jCell the cell for which this is the user object
      * @param printSeparator the intended label print separator
      * @param editSeparator the intended label edit separator
      * @param allowEmptyLabelSet set to <code>true</code> if the label set should not be empty.
-     * @see #getPrintSeparator()
      * @see #getEditSeparator()
      * @ensure <tt>getPrintSeparator().equals(printSeparator) && getEditSeparator().equals(editSeparator)</tt>
      */
-    public EditableJUserObject(String printSeparator, String editSeparator, boolean allowEmptyLabelSet) {
-        super(printSeparator, allowEmptyLabelSet);
+    public EditableJUserObject(EditableJCell jCell, String printSeparator, String editSeparator, boolean allowEmptyLabelSet) {
+        super(jCell, printSeparator, allowEmptyLabelSet);
         this.editSeparator = editSeparator;
     }
 
@@ -167,5 +146,4 @@ public class EditableJUserObject extends JUserObject<String> {
 	 * The separator, used in loading the string description of the entire user object, between the descriptions of the individual objects in the collection.
 	 */
 	private final String editSeparator;
-
 }

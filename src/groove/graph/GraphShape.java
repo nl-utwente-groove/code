@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphShape.java,v 1.2 2007-03-20 19:14:52 rensink Exp $
+ * $Id: GraphShape.java,v 1.3 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
@@ -24,19 +24,14 @@ import java.util.Set;
 /**
  * Model of a graph shape, consisting of nodes and labelled edges between them..
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-20 19:14:52 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-27 14:18:32 $
  */
 public interface GraphShape extends java.io.Serializable {
-    // -------------------- Queries -----------------
-	// IOVKA The return type is not Collection, as the javadoc comment pretends
     /**
      * Returns the set of nodes of this graph.
      * The return value is an unmodifiable view of the underlying node set,
      * which is <i>not</i> guaranteed to be up-to-date with, or even safe 
      * in the face of, concurrent modifications to the graph.
-     * Although the return type is a <tt>Collection</tt> to allow 
-     * efficient implementation, it is guaranteed 
-     * to contain distinct elements .
      * @ensure <tt>result != null</tt>
      */
     Set<? extends Node> nodeSet();
@@ -64,9 +59,6 @@ public interface GraphShape extends java.io.Serializable {
      * The return value is an unmodifiable view of the underlying edge set,
      * which is <i>not</i> guaranteed to remain up-to-date with, or even safe 
      * in the face of, concurrent modifications to the graph.
-     * Although the return type is a <tt>Collection</tt> to allow 
-     * efficient implementation, it is guaranteed 
-     * to contain distinct elements .
      * @ensure <tt>result != null</tt>
      */
     Set<? extends Edge> edgeSet();

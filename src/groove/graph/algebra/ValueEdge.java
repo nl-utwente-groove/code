@@ -12,14 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ValueEdge.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
+ * $Id: ValueEdge.java,v 1.2 2007-03-27 14:18:30 rensink Exp $
  */
 
 package groove.graph.algebra;
 
 import groove.algebra.Constant;
 import groove.graph.DefaultEdge;
-import groove.graph.Node;
 
 /**
  * This class is used when visualizing a node representing an algebraic data
@@ -35,22 +34,29 @@ public class ValueEdge extends DefaultEdge {
      * @param node the <code>ValueNode</code> from which to create a <code>ValueEdge</code>
      */
     public ValueEdge(ValueNode node) {
-        this(node, node.getConstant().prefix() + node.getConstant().symbol(), node);
+        super(node, node.getConstant().prefix() + node.getConstant().symbol(), node);
+//        super(node, node.getConstant().symbol(), node);
         this.constant = node.getConstant();
     }
+//
+//    /**
+//     * Creates a <code>ValueEdge</code> from a given source node, string, and target node.
+//     * @param source the source node
+//     * @param string the string for the label
+//     * @param target the target node
+//     */
+//    public ValueEdge(Node source, String string, Node target) {
+//        super(source, string, target);
+//    }
 
     /**
-     * Creates a <code>ValueEdge</code> from a given source node, string, and target node.
-     * @param source the source node
-     * @param string the string for the label
-     * @param target the target node
-     */
-    public ValueEdge(Node source, String string, Node target) {
-        super(source, string, target);
-    }
-    /* (non-Javadoc)
-     * @see java.lang.Object#toString()
-     */
+	 * Returns the constant.
+	 */
+	public final Constant getConstant() {
+		return this.constant;
+	}
+
+	@Override
     public String toString() {
         return constant.symbol();
     }

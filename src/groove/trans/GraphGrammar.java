@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: GraphGrammar.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
@@ -31,7 +31,7 @@ import java.util.Properties;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:56 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
  */
 public class GraphGrammar extends RuleSystem {
     /**
@@ -209,11 +209,6 @@ public class GraphGrammar extends RuleSystem {
      */
     public void setStartGraph(Graph startGraph) {
         Graph newStartGraph = getGraphFactory().newGraph(startGraph);
-        // specific data should be transfered by the factory just
-        // before returning the new graph
-//        if (startGraph.hasSpecificData(GraphInfo.LAYOUT)) {
-//        	newStartGraph.storeSpecificData(GraphInfo.LAYOUT, startGraph.getSpecificData(GraphInfo.LAYOUT));
-//        }
         this.startGraph = newStartGraph;
         this.startGraph.setFixed();
         invalidateGTS();
@@ -244,50 +239,36 @@ public class GraphGrammar extends RuleSystem {
         return properties;
     }
 
-    /**
-     * Returns the current property of this graph grammar at a given key.
-     */
-    public String getProperty(String key) {
-        return getProperties().getProperty(key);
-    }
-    
-    /**
-     * Sets a property of this graph grammar at a given key.
-     */
-    public void setProperty(String key, String value) {
-        getProperties().setProperty(key, value);
-//        if (key.equals(CONTROL_LABELS)) {
-//            setRuleScheduleFactory(value);
-//        }
-    }
-    
     // --------------------------- OBJECT OVERRIDES ------------------------
 
     /**
      * In adition to delegating the call to the superclass, also
-     * sets the matching schedulre factory of the rule and 
+     * sets the matching schedule factory of the rule and 
      * invalidates the GTS. 
      */
+    @Override
     public Rule add(Rule rule) {
-//        if (rule instanceof DefaultGraphCondition && getRuleScheduleFactory() != null) {
-//            ((DefaultGraphCondition) rule).setMatchingScheduleFactory(getRuleScheduleFactory());
-//        }
         Rule result = super.add(rule);
         rule.setGrammar(this);
         invalidateGTS();
         return result;
     }
 
+    /** Tests for equality of the rule system and the start graph. */
+    @Override
     public boolean equals(Object obj) {
         return (obj instanceof GraphGrammar)
             && getStartGraph().equals(((GraphGrammar) obj).getStartGraph())
             && super.equals(obj);
     }
 
+    /** Combines the hash codes of the rule system and the start graph. */
+    @Override
     public int hashCode() {
         return (getStartGraph().hashCode() << 8) ^ super.hashCode();
     }
 
+    @Override
     public String toString() {
         return "Rule system:\n    " + super.toString()
             + "\nStart graph:\n    "   + getStartGraph().toString();

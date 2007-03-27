@@ -11,7 +11,7 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
-/* $Id: WrapperLabel.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $ */
+/* $Id: WrapperLabel.java,v 1.2 2007-03-27 14:18:32 rensink Exp $ */
 package groove.graph;
 
 /**
@@ -60,6 +60,7 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
 	/**
 	 * Tests if the other is also a {@link WrapperLabel} with the same content.
 	 */
+    @Override
     public boolean equals(Object obj) {
     	if (obj instanceof WrapperLabel) {
     		return getContent().equals(((WrapperLabel<?>) obj).getContent());
@@ -71,6 +72,7 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
     /**
      * Returns the hash code of the wrapped object.
      */
+    @Override
     public int hashCode() {
         return getContent().hashCode();
     }
@@ -79,6 +81,7 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
      * Returns the text of this label.
      * @see #text()
      */
+    @Override
     public String toString() {
         return text();
     }

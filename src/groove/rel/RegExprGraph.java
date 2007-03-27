@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExprGraph.java,v 1.1.1.2 2007-03-20 10:42:53 kastenberg Exp $
+ * $Id: RegExprGraph.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
  */
 package groove.rel;
 
@@ -32,7 +32,7 @@ import groove.graph.UnaryEdge;
  * Default implementation of the {@link groove.rel.VarGraph} interface,
  * where the variables correspond to wildcard identifiers in the edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     /**
@@ -56,7 +56,7 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     public Set<String> allVarSet() {
         Set<String> result = vars;
         if (result == null) {
-            result = computeVars();
+            result = computeAllVars();
             if (isFixed()) {
                 vars = result;
             }
@@ -95,8 +95,8 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
      * Returns an unmodifiable view on the set of {@link VarEdge}s in this graph.
      * The set is created on demand, and stored if the graph is fixed.
      */
-    public Set<VarEdge> varEdgeSet() {
-        Set<VarEdge> result = varEdgeSet;
+    public Set<Edge> varEdgeSet() {
+        Set<Edge> result = varEdgeSet;
         if (result == null) {
             result = computeVarEdges();
             if (isFixed()) {
@@ -109,6 +109,7 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     /**
      * This implementation returns a new, empty {@link VarGraph}.
      */
+    @Override
     public RegExprGraph newGraph() {
         return new RegExprGraph();
     }
@@ -116,6 +117,7 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     /**
      * This implementation returns a new {@link VarGraph} that is a copy of this one.
      */
+    @Override
     public RegExprGraph clone() {
         return new RegExprGraph(this);
     }
@@ -124,6 +126,7 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
      * If the label wraps a variable, creates a {@link VarBinaryEdge};
      * otherwise delegates the method to <code>super</code>.
      */
+    @Override
     public BinaryEdge createEdge(Node source, Label label, Node target) {
         String labelVar = RegExprLabel.getWildcardId(label);
         if (labelVar == null) {
@@ -137,6 +140,7 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
      * If the label wraps a variable, creates a {@link VarFlag};
      * otherwise delegates the method to <code>super</code>.
      */
+    @Override
     public UnaryEdge createEdge(Node source, Label label) {
         String labelVar = RegExprLabel.getWildcardId(label);
         if (labelVar == null) {
@@ -150,7 +154,7 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
      * Constructs the set of all variables occurring in the context of
      * regular expression labels in this graph, by iterating over the edges.
      */
-    protected Set<String> computeVars() {
+    protected Set<String> computeAllVars() {
         Set<String> result = new HashSet<String>();
         for (Edge edge: edgeSet()) {
             if (edge.label() instanceof RegExprLabel) {
@@ -175,14 +179,15 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     }
     
     /**
-     * Constructs the set of all variable binders occurring in the context of
-     * regular expression labels in this graph, by iterating over the edges.
+     * Constructs the set of all edges whose labels are regular
+     * expressions that bind variables.
      */
-    protected Set<VarEdge> computeVarEdges() {
-        Set<VarEdge> result = new HashSet<VarEdge>();
+    protected Set<Edge> computeVarEdges() {
+        Set<Edge> result = new HashSet<Edge>();
         for (Edge edge: edgeSet()) {
-            if (edge instanceof VarEdge) {
-                result.add((VarEdge) edge);
+        	RegExpr edgeExpr = RegExprLabel.getRegExpr(edge.label());
+        	if (edgeExpr != null && !edgeExpr.boundVarSet().isEmpty()) {
+                result.add(edge);
             }
         }
         return result;
@@ -202,5 +207,5 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
      * The internally stored set of {@link VarEdge}s.
      * <code>null</code> as long as the graph is not fixed.
      */
-    private Set<VarEdge> varEdgeSet;
+    private Set<Edge> varEdgeSet;
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectRuleView.java,v 1.3 2007-03-20 23:04:46 rensink Exp $
+ * $Id: AspectRuleView.java,v 1.4 2007-03-27 14:18:35 rensink Exp $
  */
 
 package groove.trans.view;
@@ -27,22 +27,22 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphFormatException;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
+import groove.graph.algebra.ValueEdge;
 import groove.graph.aspect.AspectEdge;
 import groove.graph.aspect.AspectGraph;
 import groove.graph.aspect.AspectNode;
 import groove.graph.aspect.AspectValue;
+import groove.graph.aspect.AttributeAspect;
 import groove.graph.aspect.RuleAspect;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
 import groove.rel.RegExprGraph;
 import groove.rel.RegExprLabel;
+import groove.rel.VarBinaryEdge;
 import groove.rel.VarGraph;
 import groove.trans.DefaultNAC;
 import groove.trans.DefaultRuleFactory;
@@ -76,17 +76,13 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
-public class AspectRuleView implements RuleView {
-//    /** Label text for merges (merger edges and merge embargoes) */
-//    static public final String MERGE_LABEL_TEXT = Groove.getXMLProperty("label.merge");
-	/** Regular expression for merges and injections. */
-	static private final RegExpr mergeExpr = RegExpr.empty();
+public class AspectRuleView implements RuleView, AspectualView {
 	/** Label for merges (merger edges and merge embargoes) */
-    static public final Label MERGE_LABEL = new RegExprLabel(mergeExpr);
+    static public final Label MERGE_LABEL = new RegExprLabel(RegExpr.empty());
     /** Label for injection constraints */
-    static public final Label NEGATIVE_MERGE_LABEL = new RegExprLabel(mergeExpr.neg());
+    static public final Label NEGATIVE_MERGE_LABEL = new RegExprLabel(RegExpr.empty().neg());
 
     /** Isomorphism checker (used for testing purposes). */
     static private final IsoChecker isoChecker = new DefaultIsoChecker();
@@ -146,19 +142,19 @@ public class AspectRuleView implements RuleView {
         AspectRuleView newRuleGraph = new AspectRuleView(rule);
         System.out.println("OK");
         System.out.print("    Testing for isomorphism of original and reconstructed rule graph: ");
-        if (isoChecker.areIsomorphic(newRuleGraph.toGraph(),ruleGraph.toGraph()))
+        if (isoChecker.areIsomorphic(newRuleGraph.getView(),ruleGraph.getView())) {
             System.out.println("OK");
-        else {
+        } else {
             System.out.println("ERROR");
             System.out.println("Resulting rule:");
             System.out.println("--------------");
             System.out.println(rule);
             System.out.println("Original rule graph");
             System.out.println("-----------------");
-            System.out.println(ruleGraph.toGraph());
+            System.out.println(ruleGraph.getView());
             System.out.println("Reconstructed rule graph");
             System.out.println("------------------------");
-            System.out.println(newRuleGraph.toGraph());
+            System.out.println(newRuleGraph.getView());
         }
     }
     
@@ -173,7 +169,8 @@ public class AspectRuleView implements RuleView {
     	this.name = rule.getName();
         this.priority = rule.getPriority();
         this.rule = rule;
-        this.graph = computeGraph(rule);
+        this.graphToRuleMap = new HashMap<Node,Node>();
+        this.graph = computeGraph(rule, graphToRuleMap);
     }
 
     /**
@@ -206,7 +203,8 @@ public class AspectRuleView implements RuleView {
         this.priority = priority;
         this.ruleFactory = ruleFactory;
         this.graph = graph;
-        this.rule = computeRule(graph);
+        this.graphToRuleMap = new HashMap<Node,Node>();
+        this.rule = computeRule(graph, graphToRuleMap);
     }
     
     /**
@@ -288,11 +286,25 @@ public class AspectRuleView implements RuleView {
     	return rule;
     }
     
-    /**
+    /* (non-Javadoc)
+	 * @see groove.trans.view.AspectView#toGraph()
+	 */
+	public AspectGraph getView() {
+		return graph;
+	}
+	
+	/* (non-Javadoc)
+	 * @see groove.trans.view.AspectView#graphToRuleMap()
+	 */
+	public Map<Node,Node> getViewMap() {
+		return graphToRuleMap;
+	}
+
+	/**
      * Callback method to compute a rule from an aspect graph.
      * @param graph the aspect graph to compute the rule from
      */
-    protected Rule computeRule(AspectGraph graph) throws GraphFormatException {
+    protected Rule computeRule(AspectGraph graph, Map<Node, Node> graphToRuleMap) throws GraphFormatException {
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
@@ -300,12 +312,12 @@ public class AspectRuleView implements RuleView {
         VarGraph lhs = createRegExprGraph();
         // also create a graph for all left elements, i.e., LHS and NAC
         VarGraph left = createRegExprGraph();
-        // mapping from rule graph elements to left (lhs and nac) elements
-        NodeEdgeMap toLeft = new NodeEdgeHashMap();
+//        // mapping from rule graph elements to left (lhs and nac) elements
+//        NodeEdgeMap toLeft = new NodeEdgeHashMap();
         // create the new rhs
         VarGraph rhs = createRegExprGraph();
-        // mapping from rule graph elements to RHS elements
-        NodeEdgeMap toRight = new NodeEdgeHashMap();
+        // mapping from aspect nodes to RHS nodes
+        Map<Node,Node> toRight = new HashMap<Node,Node>();
         // we create a single graph containing all NAC nodes and edges
         // as a supergraph of the lhs graph
         // this will be partitioned later
@@ -316,68 +328,60 @@ public class AspectRuleView implements RuleView {
         Morphism ruleMorph = createMorphism(lhs, rhs);
         // first add nodes to lhs, rhs, morphism and NAC graph
         for (AspectNode node: graph.nodeSet()) {
+        	Node nodeImage = computeNodeImage(node, graph);
+            graphToRuleMap.put(node, nodeImage);
             if (RuleAspect.inLHS(node)) {
-            	Node lhsNodeImage = computeNodeImage(node);
-            	left.addNode(lhsNodeImage);
-                toLeft.putNode(node, lhsNodeImage);
-                lhs.addNode(lhsNodeImage);
+            	left.addNode(nodeImage);
+                lhs.addNode(nodeImage);
             }
             if (RuleAspect.inRHS(node)) {
-            	Node rhsNodeImage = computeNodeImage(node);
-            	rhs.addNode(rhsNodeImage);
-                toRight.putNode(node, rhsNodeImage);
+            	rhs.addNode(nodeImage);
+            	toRight.put(node, nodeImage);
                 if (RuleAspect.inLHS(node)) {
-                    ruleMorph.putNode(toLeft.getNode(node), rhsNodeImage);
+                    ruleMorph.putNode(nodeImage, nodeImage);
                 }
             } else if (RuleAspect.inNAC(node)) {
-            	Node nodeImage = computeNodeImage(node);
             	left.addNode(nodeImage);
-                toLeft.putNode(node, nodeImage);
                 nacNodeSet.add(nodeImage);
             }
         }
-        Set<GraphCondition> embargoes = new HashSet<GraphCondition>();
-        // now add edges to lhs, rhs and morphism
+        // add merger edges
         for (AspectEdge edge: graph.edgeSet()) {
+        	if (RuleAspect.isCreator(edge) && RegExprLabel.isEmpty(edge.label())) {
+                // it's a merger; it's bound to be binary
+                assert edge.endCount() == 2 : "Merger edge "+edge+" should be binary";
+                // existing edges will automatically be redirected
+                rhs.mergeNodes(toRight.get(edge.source()), toRight.get(edge.opposite()));
+                // make that sure edges to be added later also get the correct end nodes
+                toRight.put(edge.source(), toRight.get(edge.opposite()));
+            }
+        }
+        // now add edges to lhs, rhs and morphism
+        Set<GraphCondition> embargoes = new HashSet<GraphCondition>();
+        for (AspectEdge edge: graph.edgeSet()) {
+            Edge edgeImage = computeEdgeImage(edge, graph, graphToRuleMap);
         	boolean isEmbargo = false;
             if (RuleAspect.inLHS(edge)) {
-                Edge lhsEdgeImage = computeEdgeImage(edge, toLeft);
-            	assert lhsEdgeImage != null : String.format("End nodes of %s do not have image in %s", edge, toLeft);
-                NAC embargo = computeEmbargoFromNegation(lhs, lhsEdgeImage);
+                NAC embargo = computeEmbargoFromNegation(lhs, edgeImage);
                 isEmbargo = embargo != null;
                 if (isEmbargo) {
                 	embargoes.add(embargo);
                 } else {
-                	left.addEdge(lhsEdgeImage);
-                	lhs.addEdge(lhsEdgeImage);
-                	toLeft.putEdge(edge, lhsEdgeImage);
+                	left.addEdge(edgeImage);
+                	lhs.addEdge(edgeImage);
                 }
             }
-            if (!isEmbargo && RuleAspect.inRHS(edge)) {
-                if (RuleAspect.isCreator(edge) && RegExprLabel.isEmpty(edge.label())) {
-                    List<Node> endImages = images(toRight.nodeMap(), edge.ends());
-                    // it's a merger; it's bound to be binary
-                    assert endImages.size() == 2 : "Merger edge "+edge+" should be binary";
-                    Node mergeFrom = endImages.get(Edge.SOURCE_INDEX); 
-                    Node mergeTo = endImages.get(Edge.TARGET_INDEX); 
-                    // existing edges will automatically be redirected
-                    rhs.mergeNodes(mergeFrom, mergeTo);
-                    // make that sure edges to be added later also get the right end nodes
-                    toRight.putNode(edge.source(), mergeTo);
-                } else {
-                    Edge rhsEdgeImage = computeEdgeImage(edge, toRight);
-                    assert rhsEdgeImage != null : String.format("Image of edge %s under map %s should not be null", edge, toRight);
-                    rhs.addEdge(rhsEdgeImage);
-                    toRight.putEdge(edge, rhsEdgeImage);
-                    if (RuleAspect.inLHS(edge)) {
-                        ruleMorph.putEdge(toLeft.getEdge(edge), rhsEdgeImage);
-                    }
+            if (!isEmbargo && RuleAspect.inRHS(edge) && ! (RuleAspect.isCreator(edge) && RegExprLabel.isEmpty(edge.label()))) {
+            	// use the toRight map because we may have merged nodes
+            	Edge rhsEdgeImage = computeEdgeImage(edge, graph, toRight);
+            	rhs.addEdge(rhsEdgeImage);
+            	if (RuleAspect.inLHS(edge)) {
+            		ruleMorph.putEdge(edgeImage, rhsEdgeImage);
                 }
             }
             if (RuleAspect.inNAC(edge)) {
-            	Edge lhsEdgeImage = computeEdgeImage(edge, toLeft);
-            	left.addEdge(lhsEdgeImage);
-                nacEdgeSet.add(lhsEdgeImage);
+            	left.addEdge(edgeImage);
+                nacEdgeSet.add(edgeImage);
             }
         }
         // the resulting rule
@@ -402,30 +406,43 @@ public class AspectRuleView implements RuleView {
 	 * Creates an image for a given aspect node.
 	 * Node numbers are copied.
 	 * @param node the node to be copied
+     * @param context the graph in which the original node occurs;
+     * may be necessary to determine the type of the image.
 	 * @return the fresh node
+     * @throws GraphFormatException if <code>node</code> does not
+     * occur in a correct way in <code>context</code>
 	 */
-	protected Node computeNodeImage(AspectNode node) {
-	    return new DefaultNode(node.getNumber());
+	protected Node computeNodeImage(AspectNode node, AspectGraph context) throws GraphFormatException {
+		if (node.getValue(AttributeAspect.getInstance()) == null) {
+			return new DefaultNode(node.getNumber());
+		} else {
+			return AttributeAspect.createAttributeNode(node, context);
+		}
 	}
 
 	/**
      * Creates a an edge by copying a given edge under a given node mapping.
-     * Returns <code>null</code> if the node map fails to have an image for one of the edge ends.
+     * The mapping is assumed to have images for all end nodes.
      * @param edge the edge for which an image is to be created
-     * @param elementMap the mapping of the end nodes
+	 * @param context the graph in which the original edge occurs;
+	 * may be necessary to determine the type of the image.
+	 * @param elementMap the mapping of the end nodes
      * @return the newly added edge, if any
+	 * @throws GraphFormatException if <code>edge</code> does not
+     * occur in a correct way in <code>context</code>
      */
-    protected Edge computeEdgeImage(AspectEdge edge, NodeEdgeMap elementMap) {
+    protected Edge computeEdgeImage(AspectEdge edge, AspectGraph context, Map<Node, Node> elementMap) throws GraphFormatException {
     	Node[] ends = new Node[edge.endCount()];
     	for (int i = 0; i < ends.length; i++) {
-    		Node endImage = elementMap.getNode(edge.end(i));
-    		if (endImage == null) {
-    			return null;
-    		} else {
+    		Node endImage = elementMap.get(edge.end(i));
+    		assert endImage != null : String.format("Cannot compute image of %s: node %s does not have image in %s", edge, edge.end(i), elementMap);
     			ends[i] = endImage;
-    		}
     	}
-    	return createEdge(ends, edge.label());
+    	if (edge.getValue(AttributeAspect.getInstance()) == null) {
+    		return createEdge(ends, edge.label());
+    	} else {
+    		return AttributeAspect.createAttributeEdge(edge, context, ends);
+    	}
     }
 
     /**
@@ -569,21 +586,21 @@ public class AspectRuleView implements RuleView {
      */
     protected Edge createEdge(Node[] ends, Label label) {
     	assert ends.length == 2 : String.format("Cannot create edge with end nodes %s", Arrays.toString(ends));
-    	return DefaultEdge.createEdge(ends[DefaultEdge.SOURCE_INDEX], label, ends[DefaultEdge.TARGET_INDEX]);
-    }
-
-    /**
-     * Returns the aspect graph representation of this rule view.
-     */
-    public AspectGraph toGraph() {
-    	return graph;
+    	Node source = ends[Edge.SOURCE_INDEX];
+    	Node target = ends[Edge.TARGET_INDEX];
+    	String var = RegExprLabel.getWildcardId(label);
+    	if (var == null) {
+    		return DefaultEdge.createEdge(source, label, target);
+    	} else {
+    		return new VarBinaryEdge(source, var, target);
+    	}
     }
 
     /**
      * Computes an aspect graph representation of the rule
      * stored in this rule view.
      */
-    protected AspectGraph computeGraph(Rule rule) throws ViewFormatException {
+    protected AspectGraph computeGraph(Rule rule, Map<Node, Node> graphToRuleMap) throws ViewFormatException {
     	AspectGraph result = createGraph();
 		// start with lhs
 		Map<Node, AspectNode> lhsNodeMap = new HashMap<Node, AspectNode>();
@@ -591,16 +608,17 @@ public class AspectRuleView implements RuleView {
 		for (Node lhsNode : rule.lhs().nodeSet()) {
 			AspectValue nodeRole = rule.getMorphism().containsKey(lhsNode) ? READER
 					: ERASER;
-			AspectNode nodeImage = createAspectNode(result, nodeRole);
+			AspectNode nodeImage = computeAspectNode(result, nodeRole, lhsNode);
 			result.addNode(nodeImage);
 			lhsNodeMap.put(lhsNode, nodeImage);
+			graphToRuleMap.put(nodeImage, lhsNode);
 		}
 		// add lhs edges
 		for (Edge lhsEdge : rule.lhs().edgeSet()) {
 			AspectValue edgeRole = rule.getMorphism().containsKey(lhsEdge) ? READER
 					: ERASER;
-			AspectEdge edgeImage = createAspectEdge(images(lhsNodeMap,
-					lhsEdge.ends()), lhsEdge.label(), edgeRole);
+			AspectEdge edgeImage = computeAspectEdge(images(lhsNodeMap,
+					lhsEdge.ends()), lhsEdge.label(), edgeRole, lhsEdge);
 			result.addEdge(edgeImage);
 		}
 		// now add the rhs
@@ -616,7 +634,7 @@ public class AspectRuleView implements RuleView {
 					// yes, it's a merger
 					List<AspectNode> ends = Arrays.asList(new AspectNode[] {
 							lhsNodeMap.get(lhsNode), rhsNodeMap.get(rhsNode) });
-					result.addEdge(createAspectEdge(ends, MERGE_LABEL, CREATOR));
+					result.addEdge(computeAspectEdge(ends, MERGE_LABEL, CREATOR, null));
 				} else {
 					// no, it's a "fresh" reader node
 					rhsNodeMap.put(rhsNode, lhsNodeMap.get(lhsNode));
@@ -627,33 +645,27 @@ public class AspectRuleView implements RuleView {
 		// iterate over the rhs nodes
 		for (Node rhsNode : rule.rhs().nodeSet()) {
 			if (!rhsNodeMap.containsKey(rhsNode)) {
-				AspectNode nodeImage = createAspectNode(result, CREATOR);
+				AspectNode nodeImage = computeAspectNode(result, CREATOR, rhsNode);
 				result.addNode(nodeImage);
 				rhsNodeMap.put(rhsNode, nodeImage);
+				graphToRuleMap.put(nodeImage, rhsNode);
 			}
 		}
 		// add rhs edges
 		for (Edge rhsEdge : rule.rhs().edgeSet()) {
 			if (!rule.getMorphism().containsValue(rhsEdge)) {
 				List<AspectNode> endImages = images(rhsNodeMap, rhsEdge.ends());
-				result.addEdge(createAspectEdge(endImages,
+				result.addEdge(computeAspectEdge(endImages,
 						rhsEdge.label(),
-						CREATOR));
+						CREATOR, rhsEdge));
 			}
 		}
 		// now add the NACs
 		for (GraphCondition nac : rule.getNegConjunct().getConditions()) {
 			Morphism nacMorphism = nac.getPattern();
 			if (nac instanceof MergeEmbargo) {
-				result.addEdge(createAspectEdge(images(lhsNodeMap,
-						((MergeEmbargo) nac).getNodes()), MERGE_LABEL, EMBARGO));
-				// result.addEdge(createInjectionEdge((MergeEmbargo) nac,
-				// lhsNodeMap, READER));
-				// } else if (nac instanceof EdgeEmbargo) {
-				// result.addEdge(createAspectEdge(images(lhsNodeMap((EdgeEmbargo)
-				// nac, lhsNodeMap, READER));
-				// // result.addEdge(createAspectEdge(images(lhsNodeMap,
-				// ((MergeEmbargo) nac).getNodes()), MERGE_LABEL, EMBARGO));
+				result.addEdge(computeAspectEdge(images(lhsNodeMap,
+						((MergeEmbargo) nac).getNodes()), MERGE_LABEL, EMBARGO, null));
 			} else {
 				// NOTE: we're assuming the NAC is injective and connected,
 				// otherwise no rule graph can be given
@@ -674,8 +686,9 @@ public class AspectRuleView implements RuleView {
 				// add this nac's nodes
 				for (Node nacNode : nacMorphism.cod().nodeSet()) {
 					if (!nacNodeMap.containsKey(nacNode)) {
-						AspectNode nacNodeImage = createAspectNode(result, EMBARGO);
+						AspectNode nacNodeImage = computeAspectNode(result, EMBARGO, nacNode);
 						nacNodeMap.put(nacNode, nacNodeImage);
+						graphToRuleMap.put(nacNodeImage, nacNode);
 						result.addNode(nacNodeImage);
 						nacGraph.addNode(nacNodeImage);
 					}
@@ -686,28 +699,28 @@ public class AspectRuleView implements RuleView {
 				// add this nac's edges
 				for (Edge nacEdge : nacEdgeSet) {
 					List<AspectNode> endImages = images(nacNodeMap, nacEdge.ends());
-					AspectEdge nacEdgeImage = createAspectEdge(endImages,
+					AspectEdge nacEdgeImage = computeAspectEdge(endImages,
 							nacEdge.label(),
-							EMBARGO);
+							EMBARGO, nacEdge);
 					result.addEdge(nacEdgeImage);
 					nacGraph.addEdge(nacEdgeImage);
 				}
 				for (GraphCondition subNac : nac.getNegConjunct().getConditions()) {
-					AspectEdge subNacEdge;
+					AspectEdge subNacEdgeImage;
 					if (subNac instanceof MergeEmbargo) {
-						subNacEdge = createInjectionEdge((MergeEmbargo) subNac,
+						subNacEdgeImage = createInjectionEdge((MergeEmbargo) subNac,
 								nacNodeMap,
 								EMBARGO);
 					} else if (subNac instanceof EdgeEmbargo) {
-						subNacEdge = createNegationEdge((EdgeEmbargo) subNac,
+						subNacEdgeImage = createNegationEdge((EdgeEmbargo) subNac,
 								nacNodeMap,
 								EMBARGO);
 					} else {
 						throw new ViewFormatException(
 								"Level 2 NACs must be merge or edge embargoes");
 					}
-					result.addEdge(subNacEdge);
-					nacGraph.addEdge(subNacEdge);
+					result.addEdge(subNacEdgeImage);
+					nacGraph.addEdge(subNacEdgeImage);
 				}
 				testConnected(nacGraph);
 			}
@@ -715,49 +728,71 @@ public class AspectRuleView implements RuleView {
 		result.setFixed();
         return result;
     }
-
+    
     /** Callback factory method to create an empty aspect graph. */
     protected AspectGraph createGraph() {
     	return new AspectGraph();
     }
 
     /**
-	 * Factory method for rule nodes.
-	 * 
-	 * @param role
+	 * Factory method for aspect nodes.
+	 * @param graph the graph in which the node is to be inserted
+     * @param role
 	 *            the role of the node to be created
+     * @param original the node for which we want a copy; used to 
+     * determine the attribute aspect value of the resulting node
+	 * 
 	 * @return the fresh rule node
 	 */
-    protected AspectNode createAspectNode(AspectGraph graph, AspectValue role) {
+    protected AspectNode computeAspectNode(AspectGraph graph, AspectValue role, Node original) {
     	AspectNode result = graph.createNode();
 		if (role != null) {
 			try {
 				result.setDeclaredValue(role);
 			} catch (GraphFormatException exc) {
-				assert false : String.format("Fresh node %s cannot have two values for ",
-						result,
-						RuleAspect.class);
+				assert false : String.format("Fresh node %s cannot have two rule aspect values",
+						result);
+			}
+		}
+		AspectValue attributeValue = AttributeAspect.getAttributeValue(original);
+		if (attributeValue != null) {
+			try {
+				result.setDeclaredValue(attributeValue);
+			} catch (GraphFormatException exc) {
+				assert false : String.format("Fresh node %s cannot have two attribute aspect values",
+						result);
 			}
 		}
 		return result;
     }
     
     /**
-	 * Factory method for rule edges.
-	 * 
+	 * Factory method for aspect edges.
 	 * @param ends
 	 *            the end-point for the fresh rule-edge
-	 * @param label
+     * @param label
 	 *            the label of the fresh rule-edge
-	 * @param role
+     * @param role
 	 *            the role of the fresh rule-edge
+     * @param edge original edge for which the newly created aspect edge is an image. 
+     * Used to determine the attribute aspect value of the result; may be <code>null</code>
 	 * @return the fresh rule-edge
 	 */
-    protected AspectEdge createAspectEdge(List<AspectNode> ends, Label label, AspectValue role) {
+    protected AspectEdge computeAspectEdge(List<AspectNode> ends, Label label, AspectValue role, Edge edge) {
+    	AspectValue attributeValue = edge == null ? null : AttributeAspect.getAttributeValue(edge); 
     	try {
-    		return new AspectEdge(ends, label, role);
+    		if (attributeValue == null) {
+    			return new AspectEdge(ends, label, role);
+    		} else {
+    			// since the ValueEdge inserts a spurious prefix,
+    			// we have to remove it here FIXME
+    			if (edge instanceof ValueEdge) {
+    				label = DefaultLabel.createLabel(((ValueEdge) edge).getConstant().symbol());
+    			}
+        		return new AspectEdge(ends, label, role, attributeValue);
+    		}
     	} catch (GraphFormatException exc) {
-    		assert false : String.format("Fresh edge cannot have two values for ", RuleAspect.class);
+    		assert false : String.format("Fresh edge cannot have two values for the same aspect");
     		return null;
     	}
     }
@@ -768,7 +803,7 @@ public class AspectRuleView implements RuleView {
 	 * A role parameter controls whether it is a level 1 injection (READER) or level 2 (EMBARGO)
 	 */
 	private AspectEdge createInjectionEdge(MergeEmbargo embargo, Map<Node,AspectNode> nodeMap, AspectValue role) {
-	    return createAspectEdge(images(nodeMap, embargo.getNodes()), NEGATIVE_MERGE_LABEL, role);
+	    return computeAspectEdge(images(nodeMap, embargo.getNodes()), NEGATIVE_MERGE_LABEL, role, null);
 	}
 
 	/**
@@ -783,31 +818,16 @@ public class AspectRuleView implements RuleView {
 	    // to turn it into a regular expression
 	    RegExpr labelExpr = label instanceof RegExprLabel ? ((RegExprLabel) label).getRegExpr() : RegExpr.atom(label.text());
 	    List<AspectNode> endImages = images(nodeMap, embargoEdge.ends());
-	    return createAspectEdge(endImages, new RegExprLabel(labelExpr.neg()), role);
+	    return computeAspectEdge(endImages, new RegExprLabel(labelExpr.neg()), role, null);
 	}
 
 	/**
      * Callback method to create a graph that can serve as LHS or RHS of a rule.
      * @return a fresh instance of {@link groove.rel.RegExprGraph}
-     * @see #toGraph()
+     * @see #getView()
      */
     protected VarGraph createRegExprGraph() {
         return new RegExprGraph();
-    }
-
-    /**
-     * Checks whether the graph structure local to the given edge conforms the
-     * requirements (if any). By default, there are no stuctural requirements
-     * on the graph.
-     * @param edge the edge for which we check its context for structure requirements
-     * @param graph the graph providing that context
-     * @return <tt>true</tt> if the graph structure local to the given edge
-     * conforms the requirements (if any), <tt>false</tt> otherwise
-     * @throws GraphFormatException if the graph structure local to the given
-     * edge does not conform the requirements
-     */
-    protected boolean isGraphStructureCorrect(Edge edge, GraphShape graph) throws GraphFormatException {
-    	return true;
     }
 
     /**
@@ -862,6 +882,11 @@ public class AspectRuleView implements RuleView {
     private final AspectGraph graph;
     /** The rule derived from this graph, once it is computed. */
     private final Rule rule;
+    /** 
+     * Mapping from the elements of the aspect graph representation
+     * to the corresponding elements of the rule.
+     */
+    private final Map<Node,Node> graphToRuleMap;
     /** Rule factory set for this rule. */
     private RuleFactory ruleFactory;
 

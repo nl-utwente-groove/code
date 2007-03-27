@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: SPOApplication.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
  */
 package groove.trans;
 
@@ -37,7 +37,7 @@ import groove.util.Reporter;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:56 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -359,6 +359,7 @@ public class SPOApplication implements RuleApplication, Derivation {
     /**
      * The hash code is based on that of the event.
      */
+    @Override
     public int hashCode() {
     	return getEvent().hashCode();
     }
@@ -366,6 +367,7 @@ public class SPOApplication implements RuleApplication, Derivation {
     /**
      * Two rule applications are equal if they have the same source and event.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof RuleApplication) {
             RuleApplication other = (RuleApplication) obj;
@@ -391,6 +393,7 @@ public class SPOApplication implements RuleApplication, Derivation {
         return getEvent() == other.getEvent();
     }
     
+    @Override
 	public String toString() {
 	    StringBuffer result = new StringBuffer("Derivation for rule " + getRule().getName());
 	    result.append("\nMatching:\n  " + anchorMap);

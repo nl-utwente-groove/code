@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: GraphJEdge.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -78,9 +78,23 @@ public class GraphJEdge extends JEdge {
     }
 
     /**
+     * Callback method to yield a string description of the source node.
+     */
+    protected String getSourceIdentity() {
+        return source.toString();
+    }
+
+    /**
+     * Callback method to yield a string description of the target node.
+     */
+    protected String getTargetIdentity() {
+        return target.toString();
+    }
+
+    /**
      * Returns an unmodifiable view upon the set of underlying graph edges.
      */
-    public Set<Edge> getEdgeSet() {
+    public Set<? extends Edge> getEdgeSet() {
         return Collections.unmodifiableSet(getUserObject());
     }
 
@@ -91,25 +105,50 @@ public class GraphJEdge extends JEdge {
         return getUserObject().iterator().next();
     }
     
-    /** Specialises the return type of the method. */
+    /** 
+     * This implementation returns the label text of the object
+     * (which is known to be an edge).
+     */
+	@Override
+	public String getLabel(Object object) {
+		return ((Edge) object).label().text();
+	}
+
+	/** Specialises the return type of the method. */
     @Override
 	public JUserObject<Edge> getUserObject() {
 		return (JUserObject<Edge>) super.getUserObject();
 	}
-
-	protected JUserObject<Edge> createUserObject() {
-    	return new JUserObject<Edge>(PRINT_SEPARATOR, false) {
-            protected String getLabel(Edge obj) {
-            	return obj.label().text();
-            }
-        };
-    }
+//
+//    @Override
+//	protected JUserObject<Edge> createUserObject() {
+//    	return new JUserObject<Edge>(this, PRINT_SEPARATOR, false) {
+//    	    /**
+//    	     * Returns a collection of strings describing the objects contained in this user object.
+//    	     * @return the string descriptions of the objects contained in this collection
+//    	     * @ensure all elements of <tt>result</tt> are instances of <tt>String</tt>.
+//    	     */
+//    	    public Collection<String> getLabelSet() {
+//    	        Set<String> result = new LinkedHashSet<String>();
+//    	        for (T label: this) {
+//    	        	result.add(getLabel(label));
+//    	        }
+//    	        return result;
+//    	    }
+//
+//    	    @Override
+//            public String getLabel(Edge edge) {
+//            	return GraphJEdge.this.getLabel(edge);
+//            }
+//        };
+//    }
     
     /**
      * This implementation does nothing: setting the user object directly is
      * not the right way to go about it.
      * Instead use <code>{@link #addEdge}</code> and <code>{@link #removeEdge}</code>.
      */
+    @Override
     public void setUserObject(Object value) {
     	// does nothing
     }
@@ -139,8 +178,8 @@ public class GraphJEdge extends JEdge {
     @Override
 	protected String getEdgeDescription() {
     	StringBuffer result = new StringBuffer(super.getEdgeDescription());
-    	result.append(" from "+italicTag.on(getSourceNode()));
-    	result.append(" to "+italicTag.on(getTargetNode()));
+    	result.append(" from "+italicTag.on(getSourceIdentity()));
+    	result.append(" to "+italicTag.on(getTargetIdentity()));
     	return result.toString();
 	}
 

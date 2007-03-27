@@ -12,14 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Validator.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
+ * $Id: Validator.java,v 1.2 2007-03-27 14:18:37 rensink Exp $
  */
 package groove.io;
 
 import groove.graph.GraphFormatException;
 import groove.graph.GraphShape;
+import groove.graph.aspect.AspectGraph;
 import groove.trans.NameLabel;
-import groove.trans.view.RuleGraph;
+import groove.trans.view.AspectRuleView;
 import groove.util.Groove;
 
 import java.io.File;
@@ -30,7 +31,7 @@ import java.util.List;
 /**
  * Application to check graph and rule file formats.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class Validator {
     static public final String OPTION_PREFIX = "-";
@@ -121,11 +122,13 @@ public class Validator {
             super(verbosity);
         }
 
+        @Override
         public void handleGraph(File file) {
             super.handleGraph(file);
             validateGraph(file);
         }
 
+        @Override
         public void handleRule(File file) {
             super.handleRule(file);
             validateRule(file);
@@ -164,7 +167,7 @@ public class Validator {
             String name = verbosity == GraphFileHandler.VERBOSE_MODE ? file.getName() : file.toString();
             if (verbosity > GraphFileHandler.QUIET_MODE)
                 System.out.print("* Validating " + name + " as a production rule: ");
-            new RuleGraph(graph, new NameLabel(file.getName()));
+            new AspectRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new NameLabel(file.getName()));
             if (verbosity > GraphFileHandler.QUIET_MODE)
                 System.out.println("OK");
         } catch (GraphFormatException exc) {

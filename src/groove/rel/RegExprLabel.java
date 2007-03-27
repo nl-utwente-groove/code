@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RegExprLabel.java,v 1.1.1.2 2007-03-20 10:42:53 kastenberg Exp $
+ * $Id: RegExprLabel.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
  */
 package groove.rel;
 
@@ -26,7 +26,7 @@ import groove.util.ExprFormatException;
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:53 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:36 $
  */
 public class RegExprLabel extends AbstractLabel {
     /**
@@ -46,6 +46,14 @@ public class RegExprLabel extends AbstractLabel {
             throw new GraphFormatException(exc.getMessage());
         }
     }
+	
+	/**
+	 * Returns the regular expression on the label if it is a {@link RegExprLabel},
+	 * <code>null</code> otherwise.
+	 */
+	public static RegExpr getRegExpr(Label label) {
+		return label instanceof RegExprLabel ? ((RegExprLabel) label).getRegExpr() : null;
+	}
     
     /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Atom}. */
     public static boolean isAtom(Label label) {
@@ -58,13 +66,8 @@ public class RegExprLabel extends AbstractLabel {
      * Returns <code>null</code> in all other cases.
      */
     public static String getAtomText(Label label) {
-        if (label instanceof RegExprLabel) {
-            RegExpr expr = ((RegExprLabel) label).getRegExpr();
-            if (expr instanceof RegExpr.Atom) {
-                return ((RegExpr.Atom) expr).text();
-            }
-        }
-        return null;
+        RegExpr expr = getRegExpr(label);
+        return expr instanceof RegExpr.Atom ? ((RegExpr.Atom) expr).text() : null;
     }
     
     /** Tests if a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Empty}. */

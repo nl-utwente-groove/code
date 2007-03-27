@@ -377,6 +377,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
         this.start = startNode;
     }
 
+    @Override
     public String toString() {
         StringBuffer result = new StringBuffer(super.toString());
         result.append("\nStart node: "+getStartNode());

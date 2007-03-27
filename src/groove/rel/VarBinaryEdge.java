@@ -12,14 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: VarBinaryEdge.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: VarBinaryEdge.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
  */
 package groove.rel;
 
 import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
-import groove.graph.Edge;
-import groove.graph.NodeEdgeMap;
 import groove.graph.Label;
 import groove.graph.Node;
 
@@ -27,7 +25,7 @@ import groove.graph.Node;
  * Specialization of a default edge with a variable as label
  * (in the form of a {@link groove.rel.RegExpr.Wildcard}).
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class VarBinaryEdge extends DefaultEdge implements VarEdge {
     /**
@@ -46,6 +44,7 @@ public class VarBinaryEdge extends DefaultEdge implements VarEdge {
      * If the <code>label</code> contains a named wildcard, creates a 
      * new {@link VarBinaryEdge} with that name; otherwise, delegates to <code>super</code>.
      */
+    @Override
     public BinaryEdge newEdge(Node source, Label label, Node target) {
         String var = RegExprLabel.getWildcardId(label);
         if (var == null) {
@@ -53,37 +52,6 @@ public class VarBinaryEdge extends DefaultEdge implements VarEdge {
         } else {
             return new VarBinaryEdge(source, var, target);
         }
-    }
-
-    /**
-     * Creates a new {@link VarBinaryEdge} with the same name as this one.
-     */
-    public BinaryEdge newEdge(Node source, Node target) {
-        return new VarBinaryEdge(source, var, target);
-    }
-
-    /**
-     * If <code>elementMap</code> is a {@link VarNodeEdgeMap} that
-     * contains an image for the variable in this
-     * edge (which must then be a {@link Label}),
-     * this implementation invokes {@link #newEdge(Node, Label, Node)} with
-     * that image (and the images of source and target node);
-     * otherwise delegates to <code>super</code>.
-     */
-    public Edge imageFor(NodeEdgeMap elementMap) {
-        if (elementMap instanceof VarNodeEdgeMap) {
-            Label varImage = ((VarNodeEdgeMap) elementMap).getVar(var);
-            if (varImage != null) {
-                Node sourceImage = elementMap.getNode(source);
-                Node targetImage = elementMap.getNode(target);
-                if (sourceImage == null || targetImage == null) {
-                    return null;
-                } else {
-                    return newEdge(sourceImage, varImage, targetImage);
-                }
-            }
-        }
-        return super.imageFor(elementMap);
     }
 
     /**

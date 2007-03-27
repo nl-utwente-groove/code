@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: Groove.java,v 1.2 2007-03-27 14:18:37 rensink Exp $
  */
 package groove.util;
 
@@ -26,7 +26,8 @@ import groove.io.Xml;
 import groove.lts.DerivedGraphRuleFactory;
 import groove.trans.GraphGrammar;
 import groove.trans.RuleSystem;
-import groove.trans.view.RuleGraph;
+import groove.trans.view.AspectRuleView;
+//import groove.trans.view.RuleGraph;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -40,7 +41,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.1.1.2 $ 
+ * @version $Revision: 1.2 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -281,7 +282,7 @@ public class Groove {
      * @return the rule graph contained in <code>filename</code>
      * @throws IOException if <code>filename</code> does not exist or is wrongly formatted
      */
-    static public RuleGraph loadRuleGraph(String filename) throws IOException {
+    static public AspectRuleView loadRuleGraph(String filename) throws IOException {
         File file = new File(createRuleFilter().addExtension(filename));
         return gpsLoader.unmarshalRule(file);
     }

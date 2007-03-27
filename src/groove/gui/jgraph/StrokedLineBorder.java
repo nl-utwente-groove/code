@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StrokedLineBorder.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: StrokedLineBorder.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -26,17 +26,20 @@ import java.awt.Stroke;
 import javax.swing.border.LineBorder;
 
 /**
- * 
+ * Border that uses a given dash pattern (more precisely, {@link Stroke}).
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class StrokedLineBorder extends LineBorder {
+	/** The default stroke for the border. */
     static private final Stroke DEFAULT_STROKE = new BasicStroke();
 
+    /** Constructs a border with a given colour. */
     public StrokedLineBorder(Color c) {
         this(c, DEFAULT_STROKE);
     }
 
+    /** Constructs a border with a given colour and stroke. */
     public StrokedLineBorder(Color c, Stroke s) {
         super(c, (int) ((BasicStroke) s).getLineWidth());
         this.stroke = s;
@@ -50,6 +53,7 @@ public class StrokedLineBorder extends LineBorder {
     * @param width the width of the painted border
     * @param height the height of the painted border
     */
+    @Override
     public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
         Graphics2D g2 = (Graphics2D) g;
         g2.setStroke(stroke);
@@ -64,5 +68,6 @@ public class StrokedLineBorder extends LineBorder {
         g.setColor(oldColor);
     }
 
+    /** The stroke set for this border. */
     private final Stroke stroke;
 }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExpr.java,v 1.1.1.2 2007-03-20 10:42:53 kastenberg Exp $
+ * $Id: RegExpr.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
  */
 package groove.rel;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 abstract public class RegExpr implements VarSetSupport {
     /** 
@@ -184,10 +184,12 @@ abstract public class RegExpr implements VarSetSupport {
          * Returns (a clone of) the operands of this regular expression.
          * @return a clone of the operands of this regular expression
          */
+        @Override
         public List<RegExpr> getOperands() {
             return Collections.unmodifiableList(operandList);
         }
 
+        @Override
         public RegExpr parseOperator(String expr) throws ExprFormatException {
             String[] operands = ExprParser
                     .splitExpr(expr, getOperator(), ExprParser.INFIX_POSITION);
@@ -205,6 +207,7 @@ abstract public class RegExpr implements VarSetSupport {
          * Returns the operands, parenthesized if so required by the priority, separated by the
          * operator of this infix expression.
          */
+        @Override
         public String toString() {
             StringBuffer result = new StringBuffer();
             Iterator<RegExpr> operandIter = getOperands().iterator();
@@ -227,6 +230,7 @@ abstract public class RegExpr implements VarSetSupport {
          * and then on the operator itself with the resulting arguments.
          * @see #applyInfix(RegExprCalculator, List)
          */
+        @Override
         public <Result >Result apply(RegExprCalculator<Result> calculator) {
             List<Result> argsList = new ArrayList<Result>();
             for (RegExpr operand: getOperands()) {
@@ -280,10 +284,12 @@ abstract public class RegExpr implements VarSetSupport {
          * Returns a singular list consisting of the single operand of this
          * postfix expression.
          */
+        @Override
         public List<RegExpr> getOperands() {
             return operandList;
         }
 
+        @Override
         public String toString() {
             if (bindsWeaker(operand, this)) {
                 return "" + LEFT_PARENTHESIS_CHAR + getOperand() + RIGHT_PARENTHESIS_CHAR
@@ -299,6 +305,7 @@ abstract public class RegExpr implements VarSetSupport {
          * @throws ExprFormatException of the operator does occur in the list, but not as the last
          *         element
          */
+        @Override
         protected RegExpr parseOperator(String expr) throws ExprFormatException {
             String[] operands = ExprParser.splitExpr(expr,
                 getOperator(),
@@ -314,6 +321,7 @@ abstract public class RegExpr implements VarSetSupport {
          * and then on the operator itself with the resulting argument.
          * @see #applyPostfix(RegExprCalculator, Object)
          */
+        @Override
         public <Result> Result apply(RegExprCalculator<Result> calculator) {
             return applyPostfix(calculator, getOperand().apply(calculator));
         }
@@ -364,10 +372,12 @@ abstract public class RegExpr implements VarSetSupport {
          * Returns a singular list consisting of the single operand of this
          * postfix expression.
          */
+        @Override
         public List<RegExpr> getOperands() {
             return operandList;
         }
 
+        @Override
         public String toString() {
             if (bindsWeaker(operand, this)) {
                 return "" + getOperator() + LEFT_PARENTHESIS_CHAR + getOperand() + RIGHT_PARENTHESIS_CHAR;
@@ -382,6 +392,7 @@ abstract public class RegExpr implements VarSetSupport {
          * @throws ExprFormatException of the operator does occur in the list, but not as the first
          *         element
          */
+        @Override
         protected RegExpr parseOperator(String expr) throws ExprFormatException {
             String[] operands = ExprParser.splitExpr(expr,
                 getOperator(),
@@ -397,6 +408,7 @@ abstract public class RegExpr implements VarSetSupport {
          * and then on the operator itself with the resulting argument.
          * @see #applyPrefix(RegExprCalculator, Object)
          */
+        @Override
         public <Result> Result apply(RegExprCalculator<Result> calculator) {
             return applyPrefix(calculator, getOperand().apply(calculator));
         }
@@ -437,6 +449,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * This implementation returns an empty list.
          */
+        @Override
         public List<RegExpr> getOperands() {
             return Collections.emptyList();
         }
@@ -444,6 +457,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * This implementation returns the operator, as determined by {@link #getOperator()}.
          */
+        @Override
         public String toString() {
             return getOperator();
         }
@@ -454,6 +468,7 @@ abstract public class RegExpr implements VarSetSupport {
          * @throws ExprFormatException of the operator does occur in the list, but not as the last
          *         element
          */
+        @Override
         protected RegExpr parseOperator(String expr) throws ExprFormatException {
             if (expr.equals(getOperator())) {
                 return newInstance();
@@ -484,6 +499,7 @@ abstract public class RegExpr implements VarSetSupport {
             this(null);
         }
 
+        @Override
         protected Infix newInstance(List<RegExpr> operandList) {
             return new Seq(operandList);
         }
@@ -491,6 +507,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * Calls {@link RegExprCalculator#computeSeq(RegExpr.Seq, List)} on the visitor.
          */
+        @Override
         protected <Result> Result applyInfix(RegExprCalculator<Result> visitor, List<Result> argsList) {
             return visitor.computeSeq(this, argsList);
         }
@@ -511,6 +528,7 @@ abstract public class RegExpr implements VarSetSupport {
             this(null);
         }
 
+        @Override
         protected Infix newInstance(List<RegExpr> operandList) {
             return new Choice(operandList);
         }
@@ -518,6 +536,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * Calls {@link RegExprCalculator#computeChoice(RegExpr.Choice, List)} on the visitor.
          */
+        @Override
         protected <Result> Result applyInfix(RegExprCalculator<Result> visitor, List<Result> argsList) {
             return visitor.computeChoice(this, argsList);
         }
@@ -547,6 +566,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * Calls {@link RegExprCalculator#computeWildcard(RegExpr.Wildcard)} on the visitor.
          */
+        @Override
         public <Result> Result apply(RegExprCalculator<Result> calculator) {
             return calculator.computeWildcard(this);
         }
@@ -556,6 +576,7 @@ abstract public class RegExpr implements VarSetSupport {
          * returns <code>null</code>, otherwise it returns the concatenation of the
          * operator and the identifier.
          */
+        @Override
         public String toString() {
             if (getIdentifier() == null) {
                 return super.toString();
@@ -567,6 +588,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * This implementation delegates to {@link #toString()}.
          */
+        @Override
         public String getDescription() {
             return toString();
         }
@@ -583,6 +605,7 @@ abstract public class RegExpr implements VarSetSupport {
          * tries to parse <code>expr</code> as a prefix expression where
          * the operand is an identifier (according to {@link #isIdentifier(String)}).
          */
+        @Override
         protected RegExpr parseOperator(String expr) throws ExprFormatException {
             RegExpr result = super.parseOperator(expr);
             if (result == null) {
@@ -607,6 +630,7 @@ abstract public class RegExpr implements VarSetSupport {
         }
 
         /** This implementation retrns a {@link Wildcard}. */
+        @Override
         protected Constant newInstance() {
             return new Wildcard();
         }
@@ -625,6 +649,7 @@ abstract public class RegExpr implements VarSetSupport {
         }
 
         /** This implementation retrns a {@link Empty}. */
+        @Override
         protected Constant newInstance() {
             return new Empty();
         }
@@ -632,6 +657,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * Calls {@link RegExprCalculator#computeEmpty(RegExpr.Empty)} on the visitor.
          */
+        @Override
         public <Result> Result apply(RegExprCalculator<Result> calculator) {
             return calculator.computeEmpty(this);
         }
@@ -663,6 +689,7 @@ abstract public class RegExpr implements VarSetSupport {
          * Puts single quotes around the atom text if it could otherwise be parsed as something
          * else.
          */
+        @Override
         public String toString() {
             if (isAtom(text())) {
                 // the atom text can be understood as is
@@ -673,6 +700,7 @@ abstract public class RegExpr implements VarSetSupport {
             }
         }
 
+        @Override
         public String getDescription() {
             return text;
         }
@@ -690,6 +718,7 @@ abstract public class RegExpr implements VarSetSupport {
          * @throws ExprFormatException if <tt>tokenList</tt> is not a singleton or its element is
          *         not recognized as a nested expression or atom
          */
+        @Override
         public RegExpr parseOperator(String expr) throws ExprFormatException {
             if (ExprParser.matches(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR)) {
                 return parse(ExprParser.trim(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR));
@@ -705,6 +734,7 @@ abstract public class RegExpr implements VarSetSupport {
          * Required factory method from {@link Constant}.
          * @throws UnsupportedOperationException always
          */
+        @Override
         protected Constant newInstance() {
             throw new UnsupportedOperationException("Atom instances must have a parameter");
         }
@@ -720,6 +750,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * Calls {@link RegExprCalculator#computeAtom(RegExpr.Atom)} on the visitor.
          */
+        @Override
         public <Result> Result apply(RegExprCalculator<Result> calculator) {
             return calculator.computeAtom(this);
         }
@@ -744,6 +775,7 @@ abstract public class RegExpr implements VarSetSupport {
             this(null);
         }
 
+        @Override
         protected Postfix newInstance(RegExpr operand) {
             return new Star(operand);
         }
@@ -751,6 +783,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * Calls {@link RegExprCalculator#computeStar(RegExpr.Star, Object)} on the visitor.
          */
+        @Override
         protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computeStar(this, arg);
         }
@@ -772,6 +805,7 @@ abstract public class RegExpr implements VarSetSupport {
                 this(null);
             }
     
+            @Override
             protected Postfix newInstance(RegExpr operand) {
                 return new Plus(operand);
             }
@@ -779,6 +813,7 @@ abstract public class RegExpr implements VarSetSupport {
             /**
              * Calls {@link RegExprCalculator#computePlus(RegExpr.Plus, Object)} on the visitor.
              */
+            @Override
             protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor, Result arg) {
                 return visitor.computePlus(this, arg);
             }
@@ -800,6 +835,7 @@ abstract public class RegExpr implements VarSetSupport {
             this(null);
         }
 
+        @Override
         protected Prefix newInstance(RegExpr operand) {
             return new Inv(operand);
         }
@@ -807,6 +843,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * Calls {@link RegExprCalculator#computeInv(RegExpr.Inv, Object)} on the visitor.
          */
+        @Override
         protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computeInv(this, arg);
         }
@@ -828,6 +865,7 @@ abstract public class RegExpr implements VarSetSupport {
             this(null);
         }
 
+        @Override
         protected Prefix newInstance(RegExpr operand) {
             return new Neg(operand);
         }
@@ -835,6 +873,7 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * Calls {@link RegExprCalculator#computeNeg(RegExpr.Neg, Object)} on the visitor.
          */
+        @Override
         protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg) {
             return visitor.computeNeg(this, arg);
         }

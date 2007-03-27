@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultInjectiveMorphism.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: DefaultInjectiveMorphism.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Map;
  * Implementation of an injective morphism between <tt>Graph</tt>s,
  * as an extension of <tt>DefaultMorphism</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultInjectiveMorphism extends DefaultMorphism implements InjectiveMorphism {
     /**
@@ -114,6 +114,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     }
 
     @Deprecated
+    @Override
     public Collection<Element> getInverseElementSet(Collection<? extends Element> valueSet) {
         Collection<Element> result = new HashSet<Element>();
         for (Element value: valueSet) {
@@ -126,6 +127,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     }
 
     @Deprecated
+    @Override
     public Collection<Element> getInverseElementSet(Element value) {
         Collection<Element> result = new LinkedList<Element>();
         Element key = getInverseElement(value);
@@ -142,6 +144,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     /**
      * Method overridden for efficiency.
      */
+    @Override
     public boolean isInjective() {
         return true;
     }
@@ -149,12 +152,14 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     /**
      * Method overridden for the sake of efficiency.
      */
+    @Override
     public boolean containsValue(Element value) {
         return inverseElementMap().containsKey(value);
     }
 
     // ---------------------- OBJECT OVERRIDES ---------------------
 
+    @Override
     public Morphism clone() {
         return new DefaultInjectiveMorphism(this);
     }
@@ -165,6 +170,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
      * @ensure <tt>result instanceof DefaultInjectiveMorphism</tt>
      * @see #createInjectiveMorphism(Graph,Graph)
      */
+    @Override
     public Morphism createMorphism(Graph dom, Graph cod) {
         return createInjectiveMorphism(dom, cod);
     }
@@ -229,6 +235,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
         }
     }
 
+    @Override
     public boolean removeImage(Element image) {
     	if (image instanceof Node) {
             Node key = inverseElementMap().getNode((Node) image);
@@ -244,11 +251,13 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     }
 
     /** Merges are forbidden in domain and codomain of an injective morphism */
+    @Override
     public void replaceUpdate(GraphShape graph, Node fom, Node to) {
         throw new UnsupportedOperationException("Replacement not implemented in injective morphism");
     }
 
     /** Merges are forbidden in domain and codomain of an injective morphism */
+    @Override
     public void replaceUpdate(GraphShape graph, Edge from, Edge to) {
         throw new UnsupportedOperationException("Replacement not implemented in injective morphism");
     }
@@ -257,6 +266,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
      * Method overridden to also add the pair to the inverse map.
      */
     @Deprecated
+    @Override
     public Element put(Element key, Element image) {
         Element result = super.put(key, image);
         // if something changed, change it also in the inverse map
@@ -269,6 +279,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     /**
      * Method overridden to also add the pair to the inverse map.
      */
+    @Override
     public Node putNode(Node key, Node image) {
     	Node result = super.putNode(key, image);
         // if something changed, change it also in the inverse map
@@ -281,6 +292,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     /**
      * Method overridden to also add the pair to the inverse map.
      */
+    @Override
     public Edge putEdge(Edge key, Edge image) {
         Edge result = super.putEdge(key, image);
         // if something changed, change it also in the inverse map
@@ -294,6 +306,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
      * Overwrites the method to also remove key's image from the inverse map.
      */
     @Deprecated
+    @Override
     public Node removeNode(Node key) {
         Node result = super.removeNode(key);
         if (result != null) {
@@ -320,6 +333,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
      * Overwrites the method to also remove key's image from the inverse map.
      */
     @Deprecated
+    @Override
     public Edge removeEdge(Edge key) {
         Edge result = super.removeEdge(key);
         if (result != null) {
@@ -345,6 +359,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     /**
      * This implementation returns an <tt>{@link InjectiveSimulation}</tt>.
      */
+    @Override
     protected Simulation createSimulation() {
         return new InjectiveSimulation(this);
     }
@@ -359,8 +374,10 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     /**
      * This implementation returns an {@link InjectiveMorphism}.
      */
+    @Override
     protected Morphism createMorphism(final NodeEdgeMap sim) {
         Morphism result = new DefaultInjectiveMorphism(dom(), cod()) {
+            @Override
             protected NodeEdgeMap createElementMap() {
                 return sim;
             }

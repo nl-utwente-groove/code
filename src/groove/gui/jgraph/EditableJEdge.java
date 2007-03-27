@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJEdge.java,v 1.1.1.2 2007-03-20 10:42:45 kastenberg Exp $
+ * $Id: EditableJEdge.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -40,15 +40,14 @@ public class EditableJEdge extends JEdge implements EditableJCell {
      * If the value is a collection or a string, loads the
      * user object from it.
      */
+    @Override
     public void setUserObject(Object value) {
-        if (value == null) {
-            getUserObject().clear();
-        } else if (value instanceof Collection) {
-            if (value != getUserObject()) {
-                getUserObject().load((Collection) value);
-            }
-        } else {
-            getUserObject().load(value.toString());
+    	EditableJUserObject newObject = createUserObject();
+    	super.setUserObject(newObject);
+        if (value instanceof Collection) {
+        	newObject.load((Collection) value);
+        } else if (value != null) {
+        	newObject.load(value.toString());
         }
     }
     
@@ -62,7 +61,8 @@ public class EditableJEdge extends JEdge implements EditableJCell {
      * Callback factory method to create a user object.
      * Called lazily in {@link #getUserObject()}.
      */
+    @Override
     protected EditableJUserObject createUserObject() {
-    	return new EditableJUserObject(PRINT_SEPARATOR, EDIT_SEPARATOR, false);
+    	return new EditableJUserObject(this, PRINT_SEPARATOR, EDIT_SEPARATOR, false);
     }
 }

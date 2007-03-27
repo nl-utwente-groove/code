@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SupportedSetNodeRelation.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: SupportedSetNodeRelation.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
  */
 package groove.rel;
 
@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class SupportedSetNodeRelation extends AbstractNodeRelation implements SupportedNodeRelation {
     /**
@@ -84,6 +84,7 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements Su
         return this;
     }
 
+    @Override
     protected boolean doOrThen() {
         boolean result = false;
         Map<Edge,Collection<Element>> oldSupportEntrySet = new HashMap<Edge,Collection<Element>>(supportMap);
@@ -124,6 +125,7 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements Su
         return supportMap.get(createRelated(pre, post));
     }
     
+    @Override
     public Set<? extends Edge> getAllRelated() {
         return Collections.unmodifiableSet(supportMap.keySet());
     }
@@ -140,6 +142,7 @@ public class SupportedSetNodeRelation extends AbstractNodeRelation implements Su
         return new SupportedSetNodeRelation(getGraph());
     }
     
+    @Override
     protected Set<Edge> getRelatedSet() {
         return supportMap.keySet();
     }
