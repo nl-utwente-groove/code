@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SetView.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: SetView.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -26,7 +26,7 @@ import java.util.Set;
  * that satisfy a certain condition, to be provided through the abstract
  * method <tt>approve(Object)</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public abstract class SetView<T> extends AbstractSet<T> {
     /**
@@ -55,6 +55,7 @@ public abstract class SetView<T> extends AbstractSet<T> {
      * the number of returned values. This is therefore linear in the size of
      * the inner set!
      */
+    @Override
     public int size() {
         int result = 0;
         for (Object elem: set) {
@@ -65,6 +66,7 @@ public abstract class SetView<T> extends AbstractSet<T> {
     }
 
     /** Tests if the element is approved and contained in the underlying set. */
+    @Override
     public boolean contains(Object elem) {
         return approves(elem) && set.contains(elem);
     }
@@ -73,9 +75,11 @@ public abstract class SetView<T> extends AbstractSet<T> {
      * The iterator allows removal of elements returned by the previous <tt>next()</tt>,
      * but only if <tt>hasNext()</tt> has not been invoked in the meanwhile. 
      */
+    @Override
     public Iterator<T> iterator() {
         return new FilterIterator<T>(set.iterator()) {
             /** Delegates the approval to the surrounding {@link SetView}. */
+            @Override
             protected boolean approves(Object obj) {
                 return SetView.this.approves(obj);
             }
@@ -85,6 +89,7 @@ public abstract class SetView<T> extends AbstractSet<T> {
     /**
      * Adds the element only if it is approved by <tt>{@link #approves(Object)}</tt>.
      */
+    @Override
     public boolean add(T elem) {
         return approves(elem) && set.add(elem);
     }
@@ -93,6 +98,7 @@ public abstract class SetView<T> extends AbstractSet<T> {
      * Removes an element only if it satisfies the criteria of this set,
      * according to <tt>approves(Object)</tt>
      */
+    @Override
     public boolean remove(Object elem) {
         if (approves(elem)) {
             return set.remove(elem);

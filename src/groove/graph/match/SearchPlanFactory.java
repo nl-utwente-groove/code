@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanFactory.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: SearchPlanFactory.java,v 1.2 2007-03-28 15:12:35 rensink Exp $
  */
 package groove.graph.match;
 
@@ -25,20 +25,15 @@ import groove.graph.Graph;
  * graph elements for a given graph, in the order in which they should be
  * matched to minimized backtracking.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface SearchPlanFactory {
     /** 
-     * Factory method returning a list of search items for a graph, given as
-     * the codomain of a morphism. The matching order may be constructed under the 
-     * assumption that the morphism
-     * domain has been matched already, meaning that all elements in the codomain
-     * that serve as images of some domain element already have a unique image
-     * and don't have to occur in the result list at all.
-     * @param subject the morphism whose codomain is going to be matched
-     * @return a modifiable list containing at least all the elements in 
-     * <code>subject</code> that are <i>not</i> images of the morphism. The list
-     * is not aliased and can be modified at will by the client. 
+     * Factory method returning a list of search items for a graph. 
+     * @param graph the graph that is to be matched
+     * @return a modifiable list containing at the elements in 
+     * <code>subject</code> that are to be matched to have a complete
+     * matching. The list is not aliased and can be modified at will by the client. 
      */
 	public Iterable<SearchItem> createSearchPlan(Graph graph);
 }

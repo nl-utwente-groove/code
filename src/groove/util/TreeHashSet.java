@@ -28,7 +28,7 @@ import java.util.Set;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class TreeHashSet<T> extends AbstractSet<T> {
 	/**
@@ -267,6 +267,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 	 * Uses the <code>capacity</code> parameter to assign a new length
 	 * to the underlying arrays, if they are smaller than this capacity.
 	 */
+    @Override
 	public void clear() {
     	treeSize = 0;
     	size = 0;
@@ -275,10 +276,12 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     	freeKeyIndex = 0;
 	}
 
+    @Override
 	public int size() {
 		return size;
 	}
 
+    @Override
 	public Iterator<T> iterator() {
 		return new Iterator<T>() {
 			public boolean hasNext() {
@@ -340,6 +343,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		};
 	}
 
+    @Override
     public boolean add(T key) {
 		boolean result = put(key) == null;
 		return result;
@@ -416,6 +420,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         }
     }
     
+    @Override
 	public boolean remove(Object key) {
 		if (size == 0) {
 			return false;
@@ -473,6 +478,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		}
 	}
 	
+    @Override
 	public boolean contains(Object key) {
 		if (size == 0) {
 			return false;

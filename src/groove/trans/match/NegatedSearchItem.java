@@ -1,4 +1,4 @@
-/* $Id: NegatedSearchItem.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $ */
+/* $Id: NegatedSearchItem.java,v 1.2 2007-03-28 15:12:36 rensink Exp $ */
 package groove.trans.match;
 
 import groove.graph.match.Matcher;
@@ -28,6 +28,7 @@ public class NegatedSearchItem extends ConditionSearchItem {
 			return result;
 		}
 
+		@Override
 		public void reset() {
 			innerRecord.reset();
 			super.reset();

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: VarBinaryEdge.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
+ * $Id: VarBinaryEdge.java,v 1.3 2007-03-28 15:12:34 rensink Exp $
  */
 package groove.rel;
 
@@ -25,8 +25,9 @@ import groove.graph.Node;
  * Specialization of a default edge with a variable as label
  * (in the form of a {@link groove.rel.RegExpr.Wildcard}).
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
+@Deprecated
 public class VarBinaryEdge extends DefaultEdge implements VarEdge {
     /**
      * Creates an edge wrapping a given variable.

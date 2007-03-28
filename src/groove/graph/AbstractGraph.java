@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: AbstractGraph.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
  */
 
 package groove.graph;
@@ -36,7 +36,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractGraph extends AbstractGraphShape implements InternalGraph {
     /**
@@ -44,7 +44,7 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
      * @see #createMorphism(Graph,Graph)
      * @see #createInjectiveMorphism(Graph,Graph)
      */
-    static private GraphFactory graphFactory = GraphFactory.newInstance();
+    static private GraphFactory graphFactory = GraphFactory.getInstance();
     
     /**
      * The isomorphism checking strategy.
@@ -75,6 +75,7 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
             throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
         }
 
+        @Override
         public Graph clone() {
             return new EmptyGraph();
         }
@@ -398,6 +399,7 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
         return clone();
     }
     
+    @Override
     public abstract Graph clone();
 
     public Graph newGraph(Graph graph) throws GraphFormatException {
@@ -507,6 +509,7 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
      * {@link #createCacheReference(GraphCache)}.
      * @return a graph cache for this graph
      */
+    @Override
     public GraphCache getCache() {
         return (GraphCache) super.getCache();
     }
@@ -537,6 +540,7 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
      * This implementation returns a {@link GraphCache}.
      * @return the graph cache
      */
+    @Override
     protected GraphCache createCache() {
         return new GraphCache(this);
     }
@@ -546,6 +550,7 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
      * @param referent the graph cache for which to create a reference
      * @return This implementation returns a {@link CacheReference}.
      */
+    @Override
     protected CacheReference<? extends GraphCache> createCacheReference(GraphShapeCache referent) {
         return new CacheReference<GraphCache>((GraphCache) referent);
     }

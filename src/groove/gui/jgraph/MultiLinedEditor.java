@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MultiLinedEditor.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: MultiLinedEditor.java,v 1.2 2007-03-28 15:12:26 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -46,7 +46,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Multiline jcell editor, essentially taken from <code>org.jgraph.cellview.JGraphMultilineView</code>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class MultiLinedEditor extends DefaultGraphCellEditor {
     public class RealCellEditor extends AbstractCellEditor implements GraphCellEditor {
@@ -108,6 +108,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             return editorComponent.getText();
         }
 
+        @Override
         public boolean shouldSelectCell(EventObject event) {
             editorComponent.requestFocus();
             return super.shouldSelectCell(event);
@@ -117,6 +118,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
          * This implementation returns <tt>false</tt> if {@link ExprParser#isParsable(String)}
          * does so, and otherwise delegates to <tt>super.stopCellEditing()</tt>.
          */
+        @Override
         public boolean stopCellEditing() {
             if (userObject != null) {
                 Exception formatException = userObject.isLoadable((String) getCellEditorValue()); 
@@ -136,6 +138,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
     }
 
     private class ModifiedEditorContainer extends EditorContainer {
+        @Override
         public void doLayout() {
             super.doLayout();
             // substract 2 pixels that were added to the preferred size of the container for the
@@ -154,6 +157,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
      * Overriding this in order to set the size of an editor to that of an edited view,
      * 
      */
+    @Override
     public Component getGraphCellEditorComponent(JGraph graph, Object cell, boolean isSelected) {
 
         Component component = super.getGraphCellEditorComponent(graph, cell, isSelected);
@@ -176,6 +180,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         return component;
     }
 
+    @Override
     protected GraphCellEditor createGraphCellEditor() {
         return new MultiLinedEditor.RealCellEditor();
     }
@@ -184,6 +189,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
      * Overriting this so that I could modify an eiditor container. see
      * http://sourceforge.net/forum/forum.php?thread_id=781479&forum_id=140880
      */
+    @Override
     protected Container createContainer() {
         return new MultiLinedEditor.ModifiedEditorContainer();
     }

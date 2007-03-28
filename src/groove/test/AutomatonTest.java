@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AutomatonTest.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: AutomatonTest.java,v 1.2 2007-03-28 15:12:34 rensink Exp $
  */
 package groove.test;
 
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * Tests the available {@link Automaton} interface.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class AutomatonTest extends TestCase {
     static public final String GRAPH_TEST_DIR = "groove/test/graph";
@@ -61,7 +61,7 @@ public class AutomatonTest extends TestCase {
     /**
      * Graph loader used in this test case.
      */
-    Xml loader = new UntypedGxl(GraphFactory.newInstance());
+    Xml loader = new UntypedGxl(GraphFactory.getInstance());
     String testGraphName = "regexpr-test-graph";
     Graph testGraph;
     
@@ -80,7 +80,7 @@ public class AutomatonTest extends TestCase {
         wordAAA = Arrays.asList(new String[] {"A", "A", "A"});
         wordABC = Arrays.asList(new String[] {"A", "B", "C"});
         wordAAABCAAA = Arrays.asList(new String[] {"A", "A", "A", "B", "C", "A", "A", "A"});
-        testGraph = loader.unmarshal(new File(GRAPH_TEST_DIR+"/"+testGraphName+".gxl"));
+        testGraph = loader.unmarshalGraph(new File(GRAPH_TEST_DIR+"/"+testGraphName+".gxl"));
         nList = getNode("List");
         nC1 = getNode("n1");
         nC2 = getNode("n2");

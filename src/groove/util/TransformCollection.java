@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TransformCollection.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: TransformCollection.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Iterator;
  * @see groove.util.TransformIterator
  * @see groove.util.TransformMap
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 abstract public class TransformCollection<T,U> extends AbstractCollection<U> {
     /** Constructs a set transforming a given inner set. */
@@ -39,12 +39,14 @@ abstract public class TransformCollection<T,U> extends AbstractCollection<U> {
      * Creates a {@link TransformIterator} over the iterator obtained 
      * from the inner set.
      */
+    @Override
     public Iterator<U> iterator() {
         return new TransformIterator<T,U>(inner.iterator()) {
             /**
              * Delegates the method to the enclosing
              * {@link TransformSet#toOuter(Object)}.
              */
+            @Override
             protected U toOuter(T key) {
                 return TransformCollection.this.toOuter(key);
             }
@@ -56,6 +58,7 @@ abstract public class TransformCollection<T,U> extends AbstractCollection<U> {
      * Converts the parameter using {@link #toInner(Object)}
      * and delegates the mathod to the inner set.
      */
+    @Override
     public boolean add(U obj) {
         return inner.add(toInner(obj));
     }
@@ -64,6 +67,7 @@ abstract public class TransformCollection<T,U> extends AbstractCollection<U> {
      * Converts the parameter using {@link #toInner(Object)}
      * and delegates the mathod to the inner set.
      */
+    @Override
     public boolean contains(Object o) {
         return inner.contains(toInner(o));
     }
@@ -72,16 +76,19 @@ abstract public class TransformCollection<T,U> extends AbstractCollection<U> {
      * Converts the parameter using {@link #toInner(Object)}
      * and delegates the mathod to the inner set.
      */
+    @Override
     public boolean remove(Object o) {
         return inner.remove(toInner(o));
     }
 
     /** Delegates the mathod to the inner set. */
+    @Override
     public int size() {
         return inner.size();
     }
 
     /** Delegates the mathod to the inner set. */
+    @Override
     public void clear() {
         inner.clear();
     }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributedRuleGraph.java,v 1.3 2007-03-27 14:18:35 rensink Exp $
+ * $Id: AttributedRuleGraph.java,v 1.4 2007-03-28 15:12:30 rensink Exp $
  */
 package groove.trans.view;
 
@@ -39,8 +39,8 @@ import groove.trans.RuleFactory;
  * NACs for attributed graphs.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-03-27 14:18:35 $
- * @deprecated replaced by {@link AspectRuleView}
+ * @version $Revision: 1.4 $ $Date: 2007-03-28 15:12:30 $
+ * @deprecated replaced by {@link AspectualRuleView}
  */
 @Deprecated
 public class AttributedRuleGraph extends RuleGraph {

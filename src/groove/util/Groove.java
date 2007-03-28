@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.2 2007-03-27 14:18:37 rensink Exp $
+ * $Id: Groove.java,v 1.3 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -26,7 +26,7 @@ import groove.io.Xml;
 import groove.lts.DerivedGraphRuleFactory;
 import groove.trans.GraphGrammar;
 import groove.trans.RuleSystem;
-import groove.trans.view.AspectRuleView;
+import groove.trans.view.AspectualRuleView;
 //import groove.trans.view.RuleGraph;
 
 import java.awt.Rectangle;
@@ -41,7 +41,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.2 $ 
+ * @version $Revision: 1.3 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -257,7 +257,7 @@ public class Groove {
      */
     static public Graph loadGraph(File file) throws IOException {
         if (file.exists()) {
-            return graphLoader.unmarshal(file);
+            return graphLoader.unmarshalGraph(file);
         } else {
         	return null;
         }
@@ -272,7 +272,7 @@ public class Groove {
      */
     static public void saveGraph(Graph graph, String filename) throws IOException {
         File file = new File(createGxlFilter().addExtension(filename));
-        graphLoader.marshal(graph, file);
+        graphLoader.marshalGraph(graph, file);
     }
     
     /**
@@ -282,7 +282,7 @@ public class Groove {
      * @return the rule graph contained in <code>filename</code>
      * @throws IOException if <code>filename</code> does not exist or is wrongly formatted
      */
-    static public AspectRuleView loadRuleGraph(String filename) throws IOException {
+    static public AspectualRuleView loadRuleGraph(String filename) throws IOException {
         File file = new File(createRuleFilter().addExtension(filename));
         return gpsLoader.unmarshalRule(file);
     }
@@ -296,7 +296,7 @@ public class Groove {
      */
     static public RuleSystem loadRuleSystem(String dirname) throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
-        return gpsLoader.unmarshal(dir);
+        return gpsLoader.unmarshalGrammar(dir);
     }
     
     /**
@@ -308,7 +308,7 @@ public class Groove {
      */
     static public void saveRuleSystem(RuleSystem rules, String dirname) throws IOException {
         File file = new File(createRuleSystemFilter().addExtension(dirname));
-        gpsLoader.marshalRules(rules, file);
+        gpsLoader.marshalRuleSystem(rules, file);
     }
     
     /**
@@ -320,7 +320,7 @@ public class Groove {
      */
     static public GraphGrammar loadGrammar(String dirname) throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
-        return gpsLoader.unmarshal(dir);
+        return gpsLoader.unmarshalGrammar(dir);
     }
     
     /**
@@ -366,7 +366,7 @@ public class Groove {
      */
     static public GraphGrammar loadGrammar(String dirname, String startfilename) throws IOException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
-        return gpsLoader.unmarshal(dir, startfilename);
+        return gpsLoader.unmarshalGrammar(dir, startfilename);
     }
 
     /**
@@ -616,5 +616,5 @@ public class Groove {
     /**
      * The fixed grammar loader.
      */
-    static private final GpsGrammar gpsLoader = new GpsGrammar(graphLoader, DerivedGraphRuleFactory.getInstance());
+    static private final GpsGrammar gpsLoader = new GpsGrammar(DerivedGraphRuleFactory.getInstance());
 }

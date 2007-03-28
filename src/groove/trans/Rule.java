@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
- * $Date: 2007-03-20 10:42:56 $
+ * $Id: Rule.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
+ * $Date: 2007-03-28 15:12:27 $
  */
 package groove.trans;
 
@@ -31,7 +31,7 @@ import groove.rel.VarGraph;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -39,17 +39,6 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
 	 * explicit priority is given.
 	 */
 	static public final int DEFAULT_PRIORITY = 0;
-//
-//	/**
-//	 * Set the <code>ruleFactory</code>-field
-//	 * @param ruleFactory the ruleFactory to be set
-//	 */
-//	public void setRuleFactory(RuleFactory ruleFactory);
-//
-//	/**
-//	 * Returns the ruleFactory.
-//	 */
-//	public RuleFactory getRuleFactory();
 
 	/**
      * Sets the priority of this rule.

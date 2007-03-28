@@ -308,7 +308,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 			Node nodeImage = result.addNode();
 			elementMap.putNode(node, nodeImage);
 			for (AspectValue value: node.getDeclaredValues()) {
-				result.addEdge(nodeImage, createLabel(parser.toString(value)), nodeImage);
+				result.addEdge(nodeImage, createLabel(AspectParser.toString(value)), nodeImage);
 			}
 		}
 		for (AspectEdge edge: edgeSet()) {

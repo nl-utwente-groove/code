@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HashBag.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: HashBag.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * A bag (= multiset) of elements, based on an underlying hash map.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<T> {
     /**
@@ -54,6 +54,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
             return value;
         }
 
+        @Override
         public String toString() {
             return "" + value;
         }
@@ -61,6 +62,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         // ------------------------ object overrides --------------------
 
         /** Returns the current multiplicity value as a hash code. */
+        @Override
         public int hashCode() {
             return value;
         }
@@ -69,10 +71,12 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
          * Two <tt>Multiplicity</tt> objects are considered equal if they
          * contain the same values.
          */
+        @Override
         public boolean equals(Object obj) {
             return obj instanceof HashBag.MyMultiplicity && ((MyMultiplicity) obj).value == value;
         }
 
+        @Override
         public MyMultiplicity clone() {
             try {
                 return (MyMultiplicity) super.clone();
@@ -114,16 +118,12 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         private int value;
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Collection#contains(java.lang.Object)
-     */
+    @Override
     public boolean contains(Object key) {
         return bag.containsKey(key);
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Collection#iterator()
-     */
+    @Override
     public Iterator<T> iterator() {
         return new Iterator<T>() {
             public boolean hasNext() {
@@ -172,9 +172,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         };
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Collection#size()
-     */
+    @Override
     public int size() {
         assert size == computeSize() : "Stored size " + size + " differs from actual size " + computeSize();
         return size;
@@ -210,9 +208,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         return Collections.unmodifiableMap(bag);
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Collection#add(java.lang.Object)
-     */
+    @Override
     public boolean add(T elem) {
         MyMultiplicity mult = bag.get(elem);
         if (mult == null) {
@@ -223,18 +219,13 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Collection#clear()
-     */
+    @Override
     public void clear() {
         bag.clear();
         size = 0;
     }
 
-    /**
-     * Removes a single copy of an object.
-     * @see #removeWasLast(Object)
-     */
+    @Override
     public boolean remove(Object elem) {
         return removeGetCount(elem) >= 0;
     }
@@ -264,6 +255,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
     /**
      * Returns the sum of all elements' hash codes.
      */
+    @Override
     public int hashCode() {
         int result = 0;
         for (Map.Entry<T,MyMultiplicity> entry: bag.entrySet()) {
@@ -276,6 +268,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
      * Returns a shallow clone: elements are shared, multiplicities are
      * copied.
      */
+    @Override
     public Object clone() {
         HashBag<T> result = new HashBag<T>();
         for (Map.Entry<T,MyMultiplicity> entry: bag.entrySet()) {
@@ -287,6 +280,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
     /**
      * Tests whether the other is also a bag, with the same multiplicities.
      */
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof HashBag && ((HashBag) obj).bag.equals(bag);
     }
@@ -294,6 +288,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
     /**
      * Returns the underlying map as a string representation of this bag.
      */
+    @Override
     public String toString() {
         return bag.toString();
     }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.2 2007-03-20 23:05:46 rensink Exp $
+ * $Id: GraphTest.java,v 1.3 2007-03-28 15:12:36 rensink Exp $
  */
 package groove.test.graph;
 
@@ -51,7 +51,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -111,7 +111,7 @@ public class GraphTest extends TestCase {
      * according to which the graphs to be tested are built
      */
     public GraphTest(String arg0, Graph factoryGraph) {
-        this(arg0, GraphFactory.newInstance(factoryGraph));
+        this(arg0, GraphFactory.getInstance(factoryGraph));
     }
 
     /**
@@ -119,7 +119,7 @@ public class GraphTest extends TestCase {
      * @param arg0 JUnit parameter
      */
     public GraphTest(String arg0) {
-        this(arg0, GraphFactory.newInstance());
+        this(arg0, GraphFactory.getInstance());
     }
 
     /*
@@ -130,7 +130,7 @@ public class GraphTest extends TestCase {
         for (int i = 0; i < matchDom.length; i++) {
             matchDom[i] = loadGraph(testFile(MATCH_DOM_NAME + i));
         }
-        matchCod = xml.unmarshal(testFile(MATCH_COD_NAME));
+        matchCod = xml.unmarshalGraph(testFile(MATCH_COD_NAME));
         for (int i = 0; i < isoGraph.length; i++) {
             isoGraph[i] = loadGraph(testFile(ISO_GRAPH_NAME + i));
         }
@@ -155,7 +155,7 @@ public class GraphTest extends TestCase {
     }
     
     protected Graph loadGraph(File file) throws Exception {
-        return xml.unmarshal(file);
+        return xml.unmarshalGraph(file);
     }
     
     private File testFile(String fileName) {

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExprSimulation.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
+ * $Id: RegExprSimulation.java,v 1.3 2007-03-28 15:12:34 rensink Exp $
  */
 package groove.rel;
 
@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * Simulation from a {@link groove.rel.VarGraph} in a {@link groove.graph.Graph}. 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class RegExprSimulation extends DefaultSimulation {
 	/**
@@ -70,6 +70,7 @@ public class RegExprSimulation extends DefaultSimulation {
             RegExprSimulation.this.putAllVar(valuation);
         }
 
+        @Override
         public MyVarNodeEdgeMap clone() {
         	return new MyVarNodeEdgeMap();
         }
@@ -148,6 +149,7 @@ public class RegExprSimulation extends DefaultSimulation {
      * This implementation returns a {@link VarNodeEdgeMap} that also includes the 
      * valuation of the simulation.
      */
+    @Override
     public VarNodeEdgeMap getSingularMap() {
         return new MyVarNodeEdgeMap();
     }
@@ -156,6 +158,7 @@ public class RegExprSimulation extends DefaultSimulation {
      * In addition to invoking the <code>super</code> method, also
      * clones the wildcard identity map.
      */
+    @Override
     public RegExprSimulation clone() {
         RegExprSimulation result = (RegExprSimulation) super.clone();
         result.valuation = createValuation();
@@ -170,10 +173,12 @@ public class RegExprSimulation extends DefaultSimulation {
      * @return the set of edges (out of the values of <code>codLabelEdgeMap</code>)
      * that match <code>label</code>
      */
+    @Override
     protected Iterator<? extends Edge> getEdgeMatches(Edge key) {
         Edge edgeKey = key;
-        if (edgeKey instanceof VarEdge) {
-            return getVarEdgeMatches((VarEdge) edgeKey);
+        String var = RegExprLabel.getWildcardId(key.label());
+        if (var != null) {
+            return getVarEdgeMatches(edgeKey, var);
         } else if (edgeKey.label() instanceof RegExprLabel) {
             return getRegExprMatches(edgeKey);
         } else {
@@ -199,15 +204,16 @@ public class RegExprSimulation extends DefaultSimulation {
     /**
      * Returns the elements of the codomain matching a given variable edge
      */
-    protected Iterator<? extends Edge> getVarEdgeMatches(VarEdge edgeKey) {
+    protected Iterator<? extends Edge> getVarEdgeMatches(Edge edgeKey, String var) {
         final int arity = edgeKey.endCount();
-        Label varImage = getVar(edgeKey.var());
+        Label varImage = getVar(var);
         Iterator<? extends Edge> labelEdgeIter;
         if (varImage != null) {
             labelEdgeIter = cod().labelEdgeSet(arity, varImage).iterator();
         } else {
             labelEdgeIter = new FilterIterator<Edge>(cod().edgeSet().iterator()) {
                 /** Only allows the edges with the correct end count. */
+                @Override
                 protected boolean approves(Object obj) {
                     return ((Edge) obj).endCount() == arity;
                 }
@@ -221,12 +227,14 @@ public class RegExprSimulation extends DefaultSimulation {
      * registers any variable mappings that can be derived from it.
      * Then invokes the <code>super</code> method.
      */
+    @Override
     protected void notifyEdgeChange(ImageSet<Edge> changed, Node trigger) {
         if (changed.isSingular()) {
         	Edge image = changed.getSingular();
             Label imageLabel = image.label();
-            if (changed.getKey() instanceof VarEdge) {
-                putVar(((VarEdge) changed.getKey()).var(), imageLabel);
+            String var = RegExprLabel.getWildcardId(changed.getKey().label());
+            if (var != null) {
+                putVar(var, imageLabel);
             } else if (image instanceof ValuationEdge) {
                 putAllVar(((ValuationEdge) image).getValue());
             }
@@ -238,6 +246,7 @@ public class RegExprSimulation extends DefaultSimulation {
      * In addition to calling the <code>super</code> method, also backs up the variable map.
      * @see #getValuation()
      */
+    @Override
     protected void backup() {
         backupValuation = new HashMap<String,Label>();
         super.backup();
@@ -247,6 +256,7 @@ public class RegExprSimulation extends DefaultSimulation {
      * In addition to calling the <code>super</code> method, also restores
      * the variable map.
      */
+    @Override
     protected void restore() {
         getValuation().putAll(backupValuation);
         super.restore();

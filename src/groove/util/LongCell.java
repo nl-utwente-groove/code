@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LongCell.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: LongCell.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class LongCell {
     /**
@@ -69,10 +69,12 @@ public class LongCell {
 
     // --------------------------- Object overrides -----------------------
     
+    @Override
     public boolean equals(Object obj) {
         return (obj instanceof LongCell && ((LongCell) obj).value == value);
     }
 
+    @Override
     public int hashCode() {
         return (int) value;
     }

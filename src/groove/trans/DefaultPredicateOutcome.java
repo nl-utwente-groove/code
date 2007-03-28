@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultPredicateOutcome.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: DefaultPredicateOutcome.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
  */
 package groove.trans;
 
@@ -24,7 +24,7 @@ import java.util.Map;
  * Default implementation of a {@link GraphTestOutcome} for {@link GraphPredicate}s.
  * Specialises {@link AbstractTestOutcome}.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultPredicateOutcome extends AbstractTestOutcome<GraphCondition,Matching> implements GraphPredicateOutcome {
     /**
@@ -38,6 +38,7 @@ public class DefaultPredicateOutcome extends AbstractTestOutcome<GraphCondition,
     /**
      * A predicate is successful if one if its conditions is successful.
      */
+    @Override
     protected boolean isSuccessKey(GraphTestOutcome<Matching,GraphCondition> image) {
         return image.isSuccess();
     }

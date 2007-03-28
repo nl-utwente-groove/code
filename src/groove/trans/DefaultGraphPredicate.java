@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphPredicate.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: DefaultGraphPredicate.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import groove.util.TransformIterator;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultGraphPredicate extends HashSet<GraphCondition> implements GraphPredicate {
 	/** Empty graph, to be used in the standard construction of an initial morphism. */
@@ -192,7 +192,8 @@ public class DefaultGraphPredicate extends HashSet<GraphCondition> implements Gr
      */
     public Iterator<? extends Matching> getMatchingIter(final VarMorphism subject) {
         return new NestedIterator<Matching>(new TransformIterator<GraphCondition,Iterator<? extends Matching>>(iterator()) {
-            protected Iterator<? extends Matching> toOuter(GraphCondition from) {
+        	@Override
+        	protected Iterator<? extends Matching> toOuter(GraphCondition from) {
                 return from.getMatchingIter(subject);
             }
         });

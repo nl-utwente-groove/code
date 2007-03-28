@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CollectionView.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: CollectionView.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -25,7 +25,7 @@ import java.util.Iterator;
  * that satisfy a certain condition, to be provided through the abstract
  * method <tt>approve(Object)</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public abstract class CollectionView<T> extends AbstractCollection<T> {
     /**
@@ -35,6 +35,7 @@ public abstract class CollectionView<T> extends AbstractCollection<T> {
         this.coll = coll;
     }
 
+    @Override
     public int size() {
         int result = 0;
         for (Object elem: coll) {
@@ -44,6 +45,7 @@ public abstract class CollectionView<T> extends AbstractCollection<T> {
         return result;
     }
     
+    @Override
     public boolean contains(Object elem) {
         return approves(elem) && coll.contains(elem);
     }
@@ -51,6 +53,7 @@ public abstract class CollectionView<T> extends AbstractCollection<T> {
     /* (non-Javadoc)
      * @see java.util.Collection#iterator()
      */
+    @Override
     public Iterator<T> iterator() {
         return new Iterator<T>() {
             public boolean hasNext() {
@@ -93,6 +96,7 @@ public abstract class CollectionView<T> extends AbstractCollection<T> {
      * Adding elements to this type of collection is not possible.
      * @throws UnsupportedOperationException
      */
+    @Override
     public boolean add(Object elem) {
         throw new UnsupportedOperationException();
     }
@@ -101,6 +105,7 @@ public abstract class CollectionView<T> extends AbstractCollection<T> {
      * Removing elements from this type of collection is not possible.
      * @throws UnsupportedOperationException
      */
+    @Override
     public boolean remove(Object elem) {
         throw new UnsupportedOperationException();
     }

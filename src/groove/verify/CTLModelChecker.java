@@ -13,13 +13,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLModelChecker.java,v 1.2 2007-03-20 12:30:13 kastenberg Exp $
+ * $Id: CTLModelChecker.java,v 1.3 2007-03-28 15:12:36 rensink Exp $
  */
 package groove.verify;
 
-import groove.graph.GraphFactory;
 import groove.io.GpsGrammar;
-import groove.io.UntypedGxl;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -54,7 +52,7 @@ import java.util.Set;
  * Command-line tool directing the model checking process.
  *  
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-20 12:30:13 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-28 15:12:36 $
  */
 public class CTLModelChecker extends CommandLineTool {
 
@@ -141,6 +139,7 @@ public class CTLModelChecker extends CommandLineTool {
      * options and their parameters are subsequently removed from the argument list. If an option
      * cannot be parsed, the method prints an error message and terminates the program.
      */
+    @Override
     public void processArguments() {
         super.processArguments();
         List<String> argsList = getArgs();
@@ -245,9 +244,6 @@ public class CTLModelChecker extends CommandLineTool {
         return result;
     }
 
-	/**
-	 * 
-	 */
 	private void listPredicates() {
 		Set<String> potentialPredicates = getPotentialPredicates();
         System.out.println("Available atomic propositions:");
@@ -286,13 +282,13 @@ public class CTLModelChecker extends CommandLineTool {
     	// first create an empty set of predecessors for every state
     	Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
     	while (stateIter.hasNext()) {
-    		GraphState nextState = (GraphState) stateIter.next();
+    		GraphState nextState = stateIter.next();
     		predecessorMap.put(nextState, new ArrayList<GraphState>());
     	}
     	// now fill the predecessor-collection for every state
     	Iterator<? extends GraphTransition> transitionIter = gts.edgeSet().iterator();
     	while (transitionIter.hasNext()) {
-    		GraphTransition nextTransition= (GraphTransition) transitionIter.next();
+    		GraphTransition nextTransition= transitionIter.next();
     		if(nextTransition.getRule().isModifying()) {
     			GraphState sourceState = nextTransition.source();
     			GraphState targetState = nextTransition.target();
@@ -322,7 +318,7 @@ public class CTLModelChecker extends CommandLineTool {
     protected void loadGrammar() {
     	if (grammarLocation != null) {
 	        try {
-	            grammar = loader.unmarshal(new File(grammarLocation), startStateName);
+	            grammar = loader.unmarshalGrammar(new File(grammarLocation), startStateName);
 	        } catch (IOException exc) {
 	            printError("Can't load grammar: " + exc.getMessage());
 	        }
@@ -370,8 +366,7 @@ public class CTLModelChecker extends CommandLineTool {
      * @return the grammar loader
      */
     protected GpsGrammar createGrammarLoader() {
-        GraphFactory graphFactory = GraphFactory.newInstance();
-        return new GpsGrammar(new UntypedGxl(graphFactory));
+        return new GpsGrammar();
     }
 
     /**
@@ -412,6 +407,7 @@ public class CTLModelChecker extends CommandLineTool {
     /**
      * Returns a usage message for the command line tool.
      */
+    @Override
     protected String getUsageMessage() {
         return USAGE_MESSAGE;
     }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: NACTest.java,v 1.2 2007-03-28 15:12:34 rensink Exp $
  */
 package groove.test;
 
@@ -54,7 +54,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -73,6 +73,7 @@ public class NACTest extends TestCase {
     protected Edge[][] e = new Edge[2+NR_NACS+NR_GRAPHS][];
 
     /** The setup is as in the paper */
+    @Override
     protected void setUp() {
         VarGraph protREGraph = new RegExprGraph();
         int[] lhsSrc    = { 0 };

@@ -63,6 +63,7 @@ public class NextStateDeriver extends DefaultDeriver {
 		super(rules);
 	}
 
+	@Override
 	public Set<RuleApplication> getDerivations(Graph graph) {
 		if (graph instanceof GraphNextState && ((GraphNextState) graph).source().isClosed()) {
 	        reporter.start(GET_DERIVATIONS);
@@ -156,7 +157,9 @@ public class NextStateDeriver extends DefaultDeriver {
         if (dependencies == null) {
             initDependencies();
         }
-        return dependencies.getDisableds(disabler);
+        Set<Rule> result = dependencies.getDisableds(disabler);
+        assert result != null : String.format("Null rule dependencies for %s", disabler.getName());
+        return result;
     }
     
     /**

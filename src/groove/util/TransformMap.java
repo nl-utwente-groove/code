@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TransformMap.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: TransformMap.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -25,7 +25,7 @@ import java.util.Set;
  * abstract method {@link #toOuter(Object)}.
  * @see groove.util.TransformIterator
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Map<T,V> {
     public TransformMap(Map<T,U> inner) {
@@ -36,8 +36,10 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Ma
      * Creates a transform set on the entry set of the inner map,
      * where the transformation adapts the value accoding to {@link #toOuter(Object)}.
      */
+    @Override
     public Set<Entry<T,V>> entrySet() {
         return new TransformSet<Entry<T,U>,Entry<T,V>>(inner.entrySet()) {
+            @Override
             public Entry<T,V> toOuter(Entry<T,U> obj) {
                 final Entry<T,U> innerEntry = obj;
                 return new Entry<T,V>() {
@@ -57,7 +59,7 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Ma
 
                     /**
                      * Transforms the new value using {@link #toInner(Object)},
-                     * and the return value using {@link #toOuter(Object)}.
+                     * and the return value using {@link #toOuter(Entry)}.
                      */
                     public V setValue(V value) {
                         return TransformMap.this.toOuter(innerEntry.setValue(TransformMap.this.toInner(value)));
@@ -70,6 +72,7 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Ma
     /**
      * Transforms the value obtained from the inner map.
      */
+    @Override
     public V get(Object key) {
         return toOuter(inner.get(key));
     }
@@ -77,6 +80,7 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Ma
     /**
      * Transforms the return value obtained from the inner map.
      */
+    @Override
     public V remove(Object key) {
         return toOuter(inner.remove(key));
     }
@@ -85,16 +89,19 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Ma
      * Transforms the value using {@link #toInner(Object)}
      * and delegates the method to the inner map.
      */
+    @Override
     public V put(T key, V value) {
         return toOuter(inner.put(key, toInner(value)));
     }
 
     /** Delegates the mathod to the inner map. */
+    @Override
     public void clear() {
         inner.clear();
     }
 
     /** Delegates the mathod to the inner map. */
+    @Override
     public boolean containsKey(Object key) {
         return inner.containsKey(key);
     }
@@ -103,16 +110,19 @@ abstract public class TransformMap<T,U,V> extends AbstractMap<T,V> implements Ma
      * Transforms the value using {@link #toInner(Object)}
      * and delegated the method to the inner map.
      */
+    @Override
     public boolean containsValue(Object value) {
         return inner.containsValue(toInner(value));
     }
 
     /** Delegates the method to the inner map. */
+    @Override
     public Set<T> keySet() {
         return inner.keySet();
     }
 
     /** Delegates the method to the inner map. */
+    @Override
     public int size() {
         return inner.size();
     }

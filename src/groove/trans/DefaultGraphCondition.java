@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
  */
 package groove.trans;
 
@@ -35,14 +35,13 @@ import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.rel.VarEdge;
 import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
 import groove.util.Reporter;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -202,6 +201,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     }
 
     /** Fixes the sub-predicate and this morphism. */
+    @Override
     public void setFixed() {
         getNegConjunct().setFixed();
         super.setFixed();
@@ -393,6 +393,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * Since this is obviously too expensive to test here, we go the other way
      * and call two conditions equal only if they are the same object.
      */
+    @Override
     public boolean equals(Object obj) {
         return this == obj;
     }
@@ -401,6 +402,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * In line with that choice for {@link #equals(Object)}, we defer
      * to {@link System#identityHashCode(java.lang.Object)}.
      */
+    @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }

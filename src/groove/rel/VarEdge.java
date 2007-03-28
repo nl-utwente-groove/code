@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: VarEdge.java,v 1.1.1.2 2007-03-20 10:42:53 kastenberg Exp $
+ * $Id: VarEdge.java,v 1.2 2007-03-28 15:12:34 rensink Exp $
  */
 package groove.rel;
 
@@ -22,8 +22,9 @@ import groove.graph.Edge;
  * Extends the edge interface with a variable name.
  * The variable will typically be wrapped inside the label.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
+@Deprecated
 public interface VarEdge extends Edge {
     /**
      * Returns the variable name associated with this edge.

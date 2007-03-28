@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExprGraph.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
+ * $Id: RegExprGraph.java,v 1.3 2007-03-28 15:12:34 rensink Exp $
  */
 package groove.rel;
 
@@ -20,19 +20,15 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
-import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
-import groove.graph.UnaryEdge;
 
 /**
  * Default implementation of the {@link groove.rel.VarGraph} interface,
  * where the variables correspond to wildcard identifiers in the edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     /**
@@ -92,7 +88,8 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     }
 
     /**
-     * Returns an unmodifiable view on the set of {@link VarEdge}s in this graph.
+     * Returns an unmodifiable view on the set of variable-binding
+     * edges in this graph.
      * The set is created on demand, and stored if the graph is fixed.
      */
     public Set<Edge> varEdgeSet() {
@@ -121,34 +118,34 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     public RegExprGraph clone() {
         return new RegExprGraph(this);
     }
-
-    /**
-     * If the label wraps a variable, creates a {@link VarBinaryEdge};
-     * otherwise delegates the method to <code>super</code>.
-     */
-    @Override
-    public BinaryEdge createEdge(Node source, Label label, Node target) {
-        String labelVar = RegExprLabel.getWildcardId(label);
-        if (labelVar == null) {
-            return super.createEdge(source, label, target);
-        } else {
-            return new VarBinaryEdge(source, labelVar, target);
-        }
-    }
-
-    /**
-     * If the label wraps a variable, creates a {@link VarFlag};
-     * otherwise delegates the method to <code>super</code>.
-     */
-    @Override
-    public UnaryEdge createEdge(Node source, Label label) {
-        String labelVar = RegExprLabel.getWildcardId(label);
-        if (labelVar == null) {
-            return super.createEdge(source, label);
-        } else {
-            return new VarFlag(source, labelVar);
-        }
-    }
+//
+//    /**
+//     * If the label wraps a variable, creates a {@link VarBinaryEdge};
+//     * otherwise delegates the method to <code>super</code>.
+//     */
+//    @Override
+//    public BinaryEdge createEdge(Node source, Label label, Node target) {
+//        String labelVar = RegExprLabel.getWildcardId(label);
+//        if (labelVar == null) {
+//            return super.createEdge(source, label, target);
+//        } else {
+//            return new VarBinaryEdge(source, labelVar, target);
+//        }
+//    }
+//
+//    /**
+//     * If the label wraps a variable, creates a {@link VarFlag};
+//     * otherwise delegates the method to <code>super</code>.
+//     */
+//    @Override
+//    public UnaryEdge createEdge(Node source, Label label) {
+//        String labelVar = RegExprLabel.getWildcardId(label);
+//        if (labelVar == null) {
+//            return super.createEdge(source, label);
+//        } else {
+//            return new VarFlag(source, labelVar);
+//        }
+//    }
 
     /**
      * Constructs the set of all variables occurring in the context of
@@ -204,7 +201,7 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
      */
     private Set<String> boundVars;
     /**
-     * The internally stored set of {@link VarEdge}s.
+     * The internally stored set of variable-binding edges.
      * <code>null</code> as long as the graph is not fixed.
      */
     private Set<Edge> varEdgeSet;

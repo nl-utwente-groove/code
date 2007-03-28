@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StackedMap.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: StackedMap.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * The stacked map does not support <tt>null</tt> values, and
  * currently also does not support removal of elements.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class StackedMap<T,U> extends AbstractMap<T,U> {
     /**
@@ -60,6 +60,7 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
      * the lower map's entry set, where the entries are filtered out that 
      * are redefined in the delta map, with the delta map's entry set added.
      */
+    @Override
     public Set<Map.Entry<T,U>> entrySet() {
     	if (entrySet == null) {
     		entrySet = createEntrySet();
@@ -70,13 +71,12 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
     /**
      * Clearing a stacked map is currently not supported.
      */
+    @Override
     public void clear() {
         throw new UnsupportedOperationException();
     }
 
-    /**
-     * 
-     */
+    @Override
     public U get(Object key) {
         U result = delta.get(key);
         if (result == null) {
@@ -92,6 +92,7 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
      * Inserts the <tt>key</tt>-<tt>value</tt> pair into the delta map.
      * @throws IllegalArgumentException if <tt>value</tt> equals <tt>null</tt>
      */
+    @Override
     public U put(T key, U value) {
         if (value == null) {
             throw new IllegalArgumentException();
@@ -107,6 +108,7 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
     /**
      * Removal from a stacked map is currently not supported.
      */
+    @Override
     public U remove(Object key) {
         throw new UnsupportedOperationException();
     }
@@ -121,10 +123,12 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
     
     protected Set<Map.Entry<T,U>> createEntrySet() {
     	return new StackedSet<Map.Entry<T,U>>(new UnmodifiableSetView<Map.Entry<T,U>>(lower.entrySet()) {
+    	    @Override
             public boolean approves(Object obj) {
                 return !delta.containsKey(((Map.Entry) obj).getKey());
             }
         }) {
+    	    @Override
             protected Set<Map.Entry<T,U>> createAddedSet() {
                 return delta.entrySet();
             }

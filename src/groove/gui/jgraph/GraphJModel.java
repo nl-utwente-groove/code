@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: GraphJModel.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -49,7 +49,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */
@@ -350,14 +350,16 @@ public class GraphJModel extends JModel implements GraphShapeListener {
             }
         }
         // maybe a j-edge between this source and target is already in the graph
-        for (Edge edgeBetween: getEdgesBetween(edge.source(), target)) {
-            // see if this edge is appropriate
-            GraphJEdge jEdge = (GraphJEdge) getJCell(edgeBetween);
-            if (isLayoutCompatible(jEdge, edge) && jEdge.addEdge(edge)) {
-                // yes, the edge could be added here; we're done
-                toJCellMap.putEdge(edge, jEdge);
-                return jEdge;
-            }
+        for (Edge edgeBetween: graph().outEdgeSet(edge.source())) {
+        	if (edgeBetween.opposite().equals(target)) {
+				// see if this edge is appropriate
+				JCell jEdge = getJCell(edgeBetween);
+				if (jEdge instanceof GraphJEdge && isLayoutCompatible((GraphJEdge) jEdge, edge) && ((GraphJEdge) jEdge).addEdge(edge)) {
+					// yes, the edge could be added here; we're done
+					toJCellMap.putEdge(edge, jEdge);
+					return jEdge;
+				}
+			}
         }
         // none of the above: so create a new j-edge
         GraphJEdge jEdge = computeJEdge(edge);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultSimulation.java,v 1.1.1.2 2007-03-20 10:42:41 kastenberg Exp $
+ * $Id: DefaultSimulation.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
  */
 
 package groove.graph;
@@ -41,7 +41,7 @@ import java.util.Set;
  * Refinement consists of repeatedly selecting an image for those domain
  * elements that have multiple images.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 /**
  * @author Harmen
@@ -801,7 +801,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
     /**
      * Clones the underlying hash map. Does not clone the entry values, which will
      * therefore remain pointing to the caller of {@link #clone()} as their
-     * enclosing simulation! New entries are inserted in {@link #getFreshImageSet(Element)}
+     * enclosing simulation! New entries are inserted in {@link #getFreshImageSet(Node)}
      * as required, to avoid sharing and notification problems. 
      */
     public DefaultSimulation clone() {

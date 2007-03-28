@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultListEntry.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: DefaultListEntry.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -24,7 +24,7 @@ import java.util.Iterator;
  * Use it by subclassing.
  * This saves out the array object itself (20 bytes).
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultListEntry implements ListEntry {
     /**
@@ -81,6 +81,7 @@ public class DefaultListEntry implements ListEntry {
      * Returns <code>true</code> if <code>obj</code> is also a {@link ListEntry},
      * with equal element and successor.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof ListEntry) {
             Object otherNext = ((ListEntry) obj).getNext();
@@ -93,6 +94,7 @@ public class DefaultListEntry implements ListEntry {
     /**
      * Only tests if there is a next entry at all.
      */
+    @Override
     public int hashCode() {
         return (next == null ? 0: 1);
     }

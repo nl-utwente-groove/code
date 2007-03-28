@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GgxGrammar.java,v 1.2 2007-03-27 14:18:37 rensink Exp $
+ * $Id: GgxGrammar.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.io;
 
@@ -49,7 +49,7 @@ import org.w3c.dom.Document;
  * GGX is the "proprietary" AGG format.
  * @deprecated experimental, not supported
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class GgxGrammar implements XmlGrammar {
     // DOM required definitions; current values are dummies
@@ -108,7 +108,7 @@ public class GgxGrammar implements XmlGrammar {
     static public final String START_GRAPH_NAME = "Graph";
 
     /**   */
-    static private GraphFactory defaultGraphFactory = GraphFactory.newInstance();
+    static private GraphFactory defaultGraphFactory = GraphFactory.getInstance();
     /**
      * Returns a default graph factory for the xonstruction of graphs
      * during unmarshalling.
@@ -154,18 +154,18 @@ public class GgxGrammar implements XmlGrammar {
         };
     }
     
-    public void marshal(GraphGrammar gg, File file) throws XmlException {
+    public void marshalGrammar(GraphGrammar gg, File file) throws XmlException {
         throw new XmlException("");
     }
 
-    public GraphGrammar unmarshal(File file) throws XmlException {
-        return unmarshal(file, null);
+    public GraphGrammar unmarshalGrammar(File file) throws XmlException {
+        return unmarshalGrammar(file, null);
     }
 
     /**
      * This implementation does not regard the second parameter.
      */
-    public GraphGrammar unmarshal(File file, String startStateName) throws XmlException {
+    public GraphGrammar unmarshalGrammar(File file, String startStateName) throws XmlException {
         try {
             Source source = new StreamSource(file);
             Transformer transformer = TransformerFactory.newInstance().newTransformer();

@@ -1,5 +1,5 @@
 /*
- * $Id: EditorMarqueeHandler.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: EditorMarqueeHandler.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
  *
  * Derived from: @(#)GPGraph.java	1.0 1/1/02
  *
@@ -36,7 +36,7 @@ import org.jgraph.graph.VertexView;
  * different implementations of those actions. Lobotomized from jgrappad.
  * 
  * @author Gaudenz Alder; adapted by Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:46 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:27 $
  */
 public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
     static private final Color ADDING_EDGE_COLOR = Color.black;
@@ -52,6 +52,7 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      * Indicates if this handler should be preferred over other handlers. This question is deferred
      * to <tt>isMyMarqueeEvent()</tt> and <tt>super</tt>.
      */
+    @Override
     public boolean isForceMarqueeEvent(MouseEvent evt) {
         return isMyMarqueeEvent(evt) || super.isForceMarqueeEvent(evt);
     }
@@ -67,6 +68,7 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      * 
      * @param evt the event that happened
      */
+    @Override
     public void mousePressed(MouseEvent evt) {
         assert evt.getSource() == jGraph() : "Marquee handler can only deal with " + jGraph()
                 + ", not with " + evt.getSource();
@@ -93,6 +95,7 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      * 
      * @param evt the event that happened
      */
+    @Override
     public void mouseDragged(MouseEvent evt) {
         assert evt.getSource() == jGraph() : "Marquee handler can only deal with " + jGraph()
                 + ", not with " + evt.getSource();
@@ -114,6 +117,7 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      * 
      * @param evt the event that happened
      */
+    @Override
     public void mouseReleased(MouseEvent evt) {
         assert evt.getSource() == jGraph() : "Marquee handler can only deal with " + jGraph()
                 + ", not with " + evt.getSource();
@@ -138,6 +142,7 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      * 
      * @param evt the event that happened
      */
+    @Override
     public void mouseMoved(MouseEvent evt) {
         assert evt.getSource() == jGraph() : "Marquee handler can only deal with " + jGraph()
                 + ", not with " + evt.getSource();

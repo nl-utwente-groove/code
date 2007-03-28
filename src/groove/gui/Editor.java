@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: Editor.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.gui;
 
@@ -26,14 +26,13 @@ import groove.gui.jgraph.AspectJModel;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
-import groove.io.UntypedGxl;
 import groove.io.Xml;
 import groove.io.XmlException;
 import groove.trans.AttributedSPORuleFactory;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.NameLabel;
 import groove.trans.RuleFactory;
-import groove.trans.view.AspectRuleView;
+import groove.trans.view.AspectualRuleView;
 import groove.util.Converter;
 import groove.util.Groove;
 
@@ -89,7 +88,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:34 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-28 15:12:32 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -276,7 +275,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.2 $
+     * @version $Revision: 1.3 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -399,7 +398,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         // first create a graph from the gxl file
         Graph graph = null;
         try {
-            graph = layoutGxl.unmarshal(fromFile);
+            graph = layoutGxl.unmarshalGraph(fromFile);
         } catch (XmlException e) {
             throw new IOException("Can't load graph from " + fromFile.getName() + ": format error");
         } catch (FileNotFoundException e) {
@@ -423,7 +422,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         currentFile = toFile;
         currentDir = toFile.getParentFile();
         Graph saveGraph = getModel().toPlainGraph();
-        layoutGxl.marshal(saveGraph, toFile);
+        layoutGxl.marshalGraph(saveGraph, toFile);
         setModelName(currentFile.getName());
         setJGraphModified(false);
     }
@@ -576,7 +575,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 //	    	DefaultRuleFactory ruleFactory = DefaultRuleFactory.getInstance();
 //	    	ruleFactory = DefaultRuleFactory.getInstance();
 	    	NameLabel ruleName = new NameLabel("temp");
-            AspectRuleView ruleGraph = (AspectRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0);
+            AspectualRuleView ruleGraph = (AspectualRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0);
             AspectJModel ruleModel = new AspectJModel(ruleGraph);
             JGraph previewGraph = new JGraph(ruleModel);
             JOptionPane previewPane = new JOptionPane(new JScrollPane(previewGraph),
@@ -1121,7 +1120,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             return true;
     }
 
-    /**
+	/**
      * Sets the {@link #ruleFactory} with the given object.
      * @param ruleFactory the new rule factory
      */
@@ -1166,66 +1165,60 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     private Options options;
 
     /** The jgraph instance used in this editor. */
-    protected final EditorJGraph jgraph;
+    private final EditorJGraph jgraph;
 
     /**
      * Rule factory used for previewing the graph as a rule.
      */
-    protected RuleFactory ruleFactory;
+    private RuleFactory ruleFactory;
 
     /**
      * Indicates if the editor is an auxiliary component.
      */
-    protected final boolean auxiliary;
+    private final boolean auxiliary;
     
     /** The tool bar of this editor. */
-    protected JToolBar editorToolBar;
+    private JToolBar editorToolBar;
     
     /** The jgraph panel used in this editor. */
-    protected final JGraphPanel<EditorJGraph> jGraphPanel;
+    private final JGraphPanel<EditorJGraph> jGraphPanel;
     
     /** Status bar of the editor. */
-    protected final JLabel statusBar = new JLabel();
+    private final JLabel statusBar = new JLabel();
 
     /** Checkbox to indicate that saving rules should be preceded by a preview. */
     private JCheckBox confirmPreviewCheckBox;
 
     /** Indicates whether jgraph has been modified since the last save. */
-    protected boolean jgraphModified;
+    private boolean jgraphModified;
 
     /** The undo manager of the editor. */
-    protected transient GraphUndoManager undoManager;
+    private transient GraphUndoManager undoManager;
 
     /** Currently edited file. */
-    protected File currentFile;
+    private File currentFile;
 
     /** Current directory of file choosers. */
-    protected File currentDir = new File(Groove.WORKING_DIR);
-
-    /**
-     * The GXL converter used for marshalling and unmarshalling graphs.
-     */
-    protected final Xml gxl = new UntypedGxl();
-
+    private File currentDir = new File(Groove.WORKING_DIR);
     /**
      * The GXL converter used for marshalling and unmarshalling layouted graphs.
      */
-    protected final Xml layoutGxl = new LayedOutXml();
+    private final Xml layoutGxl = new LayedOutXml();
 
     /**
      * File chooser for graph opening.
      */
-    protected JFileChooser graphOpenChooser;
+    private JFileChooser graphOpenChooser;
 
     /**
      * File chooser for graph saving.
      */
-    protected JFileChooser graphSaveChooser;
+    private JFileChooser graphSaveChooser;
 
     /**
      * File chooser for export actions.
      */
-    protected JFileChooser exportChooser;
+    private JFileChooser exportChooser;
 
     /**
      * Extension filter used for exporting the graph in fsm format.

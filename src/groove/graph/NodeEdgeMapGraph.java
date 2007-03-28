@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NodeEdgeMapGraph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: NodeEdgeMapGraph.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
  */
 package groove.graph;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * Implementation of {@link groove.graph.Graph} based on node-to-edge-set maps for
  * all node ends. This facilitates node removal, but is expensive in terms of space.
  * Arbitrary edge arities are supported.
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:29 $
  */
 public class NodeEdgeMapGraph extends AbstractGraph {
 	/**
@@ -69,6 +69,7 @@ public class NodeEdgeMapGraph extends AbstractGraph {
         }
     }
 
+    @Override
     public boolean containsElement(Element elem) {
         reporter.start(CONTAINS_ELEMENT);
         try {
@@ -91,6 +92,7 @@ public class NodeEdgeMapGraph extends AbstractGraph {
         return result;
     }
     
+    @Override
     public int edgeCount() {
     	return edgeCount;
     }
@@ -101,40 +103,10 @@ public class NodeEdgeMapGraph extends AbstractGraph {
         reporter.stop();
         return result;
     }
-//
-//    public Iterator<Edge> edgeIterator() {
-//        Iterator<Edge> res = new Iterator<Edge>() {
-//            public boolean hasNext() {
-//                forwardEdgeSetIter();
-//                return forwardEdgeSetIter();
-//            }
-//
-//            public Edge next() {
-//                forwardEdgeSetIter();
-//                return edgeIter.next();
-//            }
-//
-//            public void remove() {
-//                throw new UnsupportedOperationException();
-//            }
-//
-//            private boolean forwardEdgeSetIter() {
-//                while (edgeIter == null || !edgeIter.hasNext())
-//                    if (edgeSetIter.hasNext())
-//                        edgeIter = edgeSetIter.next().iterator();
-//                    else
-//                        return false;
-//                return true;
-//            }
-//
-//            private Iterator<Set<Edge>> edgeSetIter = sourceEdgeMap.values().iterator();
-//            private Iterator<Edge> edgeIter;
-//        };
-//        return res;
-//    }
 
     // ------------------------ OBJECT OVERRIDES -----------------------
 
+    @Override
     public NodeEdgeMapGraph clone() {
         reporter.start(CLONE);
         NodeEdgeMapGraph result = new NodeEdgeMapGraph(this);

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Validator.java,v 1.2 2007-03-27 14:18:37 rensink Exp $
+ * $Id: Validator.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.io;
 
@@ -20,7 +20,7 @@ import groove.graph.GraphFormatException;
 import groove.graph.GraphShape;
 import groove.graph.aspect.AspectGraph;
 import groove.trans.NameLabel;
-import groove.trans.view.AspectRuleView;
+import groove.trans.view.AspectualRuleView;
 import groove.util.Groove;
 
 import java.io.File;
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Application to check graph and rule file formats.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Validator {
     static public final String OPTION_PREFIX = "-";
@@ -142,7 +142,7 @@ public class Validator {
             String name = verbosity == GraphFileHandler.VERBOSE_MODE ? file.getName() : file.toString();
             if (verbosity > GraphFileHandler.QUIET_MODE)
                 System.out.print("* Validating " + name + " as a graph: ");
-            GraphShape result = gxl.unmarshal(file);
+            GraphShape result = gxl.unmarshalGraph(file);
             if (verbosity > GraphFileHandler.QUIET_MODE)
                 System.out.println("OK");
             return result;
@@ -167,7 +167,7 @@ public class Validator {
             String name = verbosity == GraphFileHandler.VERBOSE_MODE ? file.getName() : file.toString();
             if (verbosity > GraphFileHandler.QUIET_MODE)
                 System.out.print("* Validating " + name + " as a production rule: ");
-            new AspectRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new NameLabel(file.getName()));
+            new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new NameLabel(file.getName()));
             if (verbosity > GraphFileHandler.QUIET_MODE)
                 System.out.println("OK");
         } catch (GraphFormatException exc) {

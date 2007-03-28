@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributedSPORule.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: AttributedSPORule.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
  */
 package groove.trans;
 
@@ -28,7 +28,7 @@ import groove.graph.algebra.ValueNode;
  * nodes.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:27 $
  */
 public class AttributedSPORule extends SPORule {
 
@@ -75,6 +75,7 @@ public class AttributedSPORule extends SPORule {
      * @return <tt>true</tt> if the graph contains the element or if the element
      * is a node representing an algebra constant, <tt>false</tt> otherwise
      */
+    @Override
     protected boolean containsElement(Graph graph, Element element) {
     	// value nodes and product nodes are implicitely part of the graph
     	if (element instanceof ValueNode || element instanceof ProductNode)

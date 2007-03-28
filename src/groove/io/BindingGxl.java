@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BindingGxl.java,v 1.1.1.2 2007-03-20 10:42:50 kastenberg Exp $
+ * $Id: BindingGxl.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.io;
 
@@ -20,10 +20,10 @@ import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
+import groove.util.Pair;
 
 import java.io.File;
 import java.io.FileReader;
@@ -44,18 +44,19 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
+ * @deprecated use {@link UntypedGxl}
  */
+@Deprecated
 public class BindingGxl extends AbstractXml {
     /** Attribute name for node and edge ids */
     static public final String LABEL_ATTR_NAME = "label";
 
     static private final IsoChecker isoChecker = new DefaultIsoChecker();
-    static private GraphFactory defaultGraphFactory = GraphFactory.newInstance();
+    static private GraphFactory defaultGraphFactory = GraphFactory.getInstance();
     /**
      * Returns a default graph factory for the construction of graphs
      * during unmarshalling.
-     * @see #unmarshal
      */
     static public GraphFactory getDefaultGraphFactory() {
         return defaultGraphFactory;
@@ -73,17 +74,17 @@ public class BindingGxl extends AbstractXml {
                 System.out.println("OK");
                 // Unmarshal graph
                 System.out.print("    Unmarshalling graph: ");
-                Graph graph = gxl.unmarshal(file);
+                Graph graph = gxl.unmarshalGraph(file);
                 System.out.println("OK");
                 System.out.print("    Creating output file: ");
                 file = new java.io.File(args[i] + ".tmp");
                 System.out.println("OK");
                 System.out.print("    Re-marshalling graph: ");
-                gxl.marshal(graph, file);
+                gxl.marshalGraph(graph, file);
                 System.out.println("OK");
                 // unmarshal again and test for isomorphism
                 System.out.print("    Testing for isomorphism of original and re-marshalled graph: ");
-                Graph newGraph = gxl.unmarshal(file);
+                Graph newGraph = gxl.unmarshalGraph(file);
 
                 if (isoChecker.areIsomorphic(newGraph,graph))
                     System.out.println("OK");
@@ -105,7 +106,6 @@ public class BindingGxl extends AbstractXml {
      * for the graphs constructed by unmarshalling.
      * @throws XmlRuntimeException if setting up the document builder 
      * fails for some internal reason
-     * @see #unmarshal
      */
     public BindingGxl(GraphFactory graphFactory) throws XmlRuntimeException {
         this.graphFactory = graphFactory;
@@ -121,10 +121,7 @@ public class BindingGxl extends AbstractXml {
         this(getDefaultGraphFactory());
     }
 
-    /* (non-Javadoc)
-     * @see groove.io.Xml#marshal(groove.graph.Graph)
-     */
-    public void marshal(GraphShape graph, File file) {
+    public void marshalGraph(Graph graph, File file) {
         groove.gxl.Graph gxlGraph = new groove.gxl.Graph();
         gxlGraph.setEdgeids(false);
         gxlGraph.setId("graph");
@@ -180,10 +177,8 @@ public class BindingGxl extends AbstractXml {
         }
     }
 
-    /* (non-Javadoc)
-     * @see groove.io.Xml#unmarshal(org.w3c.dom.Node, groove.graph.Graph)
-     */
-    public Graph unmarshal(File file, Map<String, Node> elementMap) throws XmlException, IOException {
+    @Override
+    public Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws XmlException, IOException {
         Graph graph = graphFactory.newGraph();
         // get a gxl object from the reader
         groove.gxl.Gxl gxl;
@@ -273,11 +268,7 @@ public class BindingGxl extends AbstractXml {
             }
         }
         graph.setFixed();
-        if (elementMap != null) {
-            elementMap.clear();
-            elementMap.putAll(nodeIds);
-        }
-        return graph;
+        return new Pair<Graph,Map<String,Node>>(graph, nodeIds);
     }
 
     /**
@@ -285,6 +276,7 @@ public class BindingGxl extends AbstractXml {
      * Returns the graph factory set by the constructor.
      * @see #BindingGxl(GraphFactory)
      */
+    @Override
     protected GraphFactory getGraphFactory() {
         return graphFactory;
     }

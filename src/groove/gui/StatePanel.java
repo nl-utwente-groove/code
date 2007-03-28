@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: StatePanel.java,v 1.3 2007-03-28 15:12:31 rensink Exp $
  */
 package groove.gui;
 
@@ -59,7 +59,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -235,7 +235,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 				for (GraphJModel jModel: stateJModelMap.values()) {
 					jModel.setShowAspects(newState);
 				}
-				getJGraph().refreshView();
+				getJGraph().getModel().refresh();
+//				getJGraph().refreshView();
 			}
 		};
 	}

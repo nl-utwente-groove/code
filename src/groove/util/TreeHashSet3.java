@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TreeHashSet3.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: TreeHashSet3.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:59 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:28 $
  */
 public class TreeHashSet3<T> extends AbstractSet<T> {
 	/**
@@ -233,6 +233,7 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
 	 * Uses the <code>capacity</code> parameter to assign a new length
 	 * to the underlying arrays, if they are smaller than this capacity.
 	 */
+    @Override
 	public void clear() {
     	treeSize = 0;
     	size = 0;
@@ -241,10 +242,12 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
     	freeKeyIndex = 0;
 	}
 
+    @Override
 	public int size() {
 		return size;
 	}
 
+    @Override
 	public Iterator<T> iterator() {
 		return new Iterator<T>() {
 			public boolean hasNext() {
@@ -306,6 +309,7 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
 		};
 	}
 
+    @Override
     public boolean add(T key) {
 		boolean result = put(key) == null;
 		return result;
@@ -380,6 +384,7 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
         }
     }
     
+    @Override
 	public boolean remove(Object key) {
 		if (size == 0) {
 			return false;
@@ -444,6 +449,7 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
 	 * This implementation always iterates over the argument and calls {@link #remove(Object)}
 	 * for each object.
 	 */
+    @Override
 	public boolean removeAll(Collection<?> set) {
 		boolean result = false;
 		for (Object elem: set) {
@@ -452,6 +458,7 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
 		return result;
 	}
 
+    @Override
 	public boolean contains(Object key) {
 		if (size == 0) {
 			return false;

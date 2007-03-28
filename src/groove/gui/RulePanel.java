@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RulePanel.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: RulePanel.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.gui;
 
@@ -25,7 +25,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
-import groove.trans.view.AspectRuleView;
+import groove.trans.view.AspectualRuleView;
 import groove.trans.view.RuleViewGrammar;
 import groove.util.Groove;
 
@@ -41,7 +41,7 @@ import javax.swing.event.ChangeListener;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -74,7 +74,7 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
         // create a mapping from rule names to (fresh) rule models
         ruleJModelMap.clear();
         for (NameLabel ruleName: grammar.getRuleNames()) {
-            AspectJModel jModel = computeRuleModel((AspectRuleView) grammar.getRuleView(ruleName));
+            AspectJModel jModel = computeRuleModel((AspectualRuleView) grammar.getRuleView(ruleName));
             ruleJModelMap.put(ruleName, jModel);
         }
     }
@@ -145,7 +145,8 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
 				for (AspectJModel jModel: ruleJModelMap.values()) {
 					jModel.setShowAspects(value);
 				}
-				getJGraph().refreshView();
+				getJGraph().getModel().refresh();
+//				getJGraph().refreshView();
 			}
 		};
 	}
@@ -170,7 +171,7 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
     /**
      * Callback factory method to construct a new rule model.
      */
-    protected AspectJModel computeRuleModel(AspectRuleView ruleGraph) {
+    protected AspectJModel computeRuleModel(AspectualRuleView ruleGraph) {
         AspectJModel result = ruleGraph == null ? AspectJModel.EMPTY_JMODEL : new AspectJModel(ruleGraph);
         result.setShowNodeIdentities(getOptionsItem(SHOW_NODE_IDS_OPTION).getState());
         result.setShowAspects(getOptionsItem(SHOW_ASPECTS_OPTION).getState());

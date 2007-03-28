@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: ExtensionFilter.java,v 1.1.1.2 2007-03-20 10:42:50 kastenberg Exp $
+ * $Id: ExtensionFilter.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.io;
 
@@ -24,7 +24,7 @@ import javax.swing.JOptionPane;
 /**
  * Implements a file filter based on filename extension.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:50 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:32 $
  */
 public class ExtensionFilter extends javax.swing.filechooser.FileFilter 
                              implements java.io.FileFilter {
@@ -130,6 +130,7 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
      * @see #acceptExtension(java.io.File)
      * @see #acceptDirectories
      */
+    @Override
     public boolean accept(java.io.File file) {
         return acceptExtension(file) || (acceptDirectories && file.isDirectory());
     }
@@ -144,6 +145,7 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
     /**
      * Returns this filter's description.
      */
+    @Override
     public String getDescription() {
         return description;
     }

@@ -11,11 +11,11 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
-/* $Id: WrapperLabel.java,v 1.2 2007-03-27 14:18:32 rensink Exp $ */
+/* $Id: WrapperLabel.java,v 1.3 2007-03-28 15:12:29 rensink Exp $ */
 package groove.graph;
 
 /**
- * Label class that wraps an object of a given (generic) type.
+ * Label class that wraps an immutable object of a given (generic) type.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -23,6 +23,7 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
 	/** Constructs a label wrapping a given object. */
 	public WrapperLabel(Type content) {
 		this.content = content;
+		this.text = convertToText(content);
 	}
 	
 	@Deprecated
@@ -34,7 +35,7 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
 	 * Returns a string representation of the wrapped object.
 	 */
 	public String text() {
-		return convertToText(getContent());
+		return text;
 	}
 	
 	/**
@@ -94,4 +95,6 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
 	}
 
 	private final Type content;
+	/** Label text derived from the content, using {@link #convertToText(Comparable)} */
+	private final String text;
 }
