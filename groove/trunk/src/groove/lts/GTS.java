@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.3 2007-03-27 14:18:38 rensink Exp $
+ * $Id: GTS.java,v 1.4 2007-03-28 15:12:33 rensink Exp $
  */
 package groove.lts;
 
@@ -45,7 +45,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-03-27 14:18:38 $
+ * @version $Revision: 1.4 $ $Date: 2007-03-28 15:12:33 $
  */
 public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	/**
@@ -65,20 +65,9 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
     private final static int INITIAL_STATE_SET_SIZE = 10000;
     
     /**
-     * The number of confluent diamonds found.
-     */
-    private static int confluentDiamondCount;
-    /**
      * The number of transitions generated but not added (due to overlapping existing transitions)
      */
     private static int spuriousTransitionCount;
-
-    /**
-     * Returns the number of confluent diamonds found during generation.
-     */
-    public static int getConfluentDiamondCount() {
-        return confluentDiamondCount;
-    }
     
     /**
      * Returns the number of confluent diamonds found during generation.
@@ -507,9 +496,6 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
         }
         GraphTransition prevTransition = (DerivedGraphState) appl.getSource();
         GraphState result = priorTarget.getNextState(prevTransition.getEvent());
-        if (result != null) {
-            confluentDiamondCount++;
-        }
         return result;
     }
 
@@ -524,6 +510,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
     public GraphState addState(GraphState newState) {
         reporter.start(ADD_STATE);
         // see if isomorphic graph is already in the LTS
+        ((DefaultGraphState) newState).setStateNumber(nodeCount());
         GraphState result = (GraphState) stateSet.put(newState);
         if (result == null) {
             fireAddNode(newState);

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTS.java,v 1.2 2007-03-27 14:18:38 rensink Exp $
+ * $Id: LTS.java,v 1.3 2007-03-28 15:12:33 rensink Exp $
  */
 package groove.lts;
 
@@ -25,7 +25,7 @@ import java.util.Set;
  * <tt>State</tt>s and the edges are <tt>Transition</tt>s.
  * The LTS is assumed to have a fixed associated rule production system.
  * Extends graph.Graph with a start (i.e., initial) initial state.
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:38 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-28 15:12:33 $
  */
 public interface LTS extends groove.graph.GraphShape {
     /** The text of the self-edge label that indicates a start state. */
@@ -52,6 +52,7 @@ public interface LTS extends groove.graph.GraphShape {
      * <tt>outEdges.contains(trans)</tt> such that <tt>target.equals(trans.target())</tt>
      * @see #nextStateIter(State)
      */
+    @Deprecated
     public Collection<? extends State> nextStates(State state);
 
     /**
@@ -70,6 +71,7 @@ public interface LTS extends groove.graph.GraphShape {
      * <tt>outEdges.contains(trans)</tt> such that <tt>result.next().equals(trans.target())</tt>
      * @see #nextStates(State)
      */
+    @Deprecated
     public Iterator<? extends State> nextStateIter(State state);
     
     /**

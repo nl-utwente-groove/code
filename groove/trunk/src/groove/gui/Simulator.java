@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: Simulator.java,v 1.3 2007-03-28 15:12:31 rensink Exp $
  */
 package groove.gui;
 
@@ -33,6 +33,7 @@ import groove.gui.jgraph.AspectJModel;
 import groove.io.ExtensionFilter;
 import groove.io.GpsGrammar;
 import groove.io.GrooveFileChooser;
+import groove.io.LayedOutGpsGrammar;
 import groove.io.LayedOutXml;
 import groove.io.XmlException;
 import groove.io.XmlGrammar;
@@ -49,7 +50,7 @@ import groove.trans.Rule;
 import groove.trans.RuleFactory;
 import groove.trans.match.MatchingMatcher;
 //import groove.trans.view.RuleGraph;
-import groove.trans.view.AspectRuleView;
+import groove.trans.view.AspectualRuleView;
 import groove.trans.view.RuleViewGrammar;
 import groove.util.Converter;
 import groove.util.ExprFormatException;
@@ -109,7 +110,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Simulator {
     /**
@@ -533,7 +534,7 @@ public class Simulator {
                     javax.swing.filechooser.FileFilter filterUsed = getGrammarFileChooser()
                             .getFileFilter();
                     XmlGrammar saver = grammarLoaderMap.get(filterUsed);
-                    saver.marshal(currentGrammar, selectedFile);
+                    saver.marshalGrammar(currentGrammar, selectedFile);
                     currentGrammarFile = selectedFile;
                 } catch (IOException exc) {
                     showErrorDialog("Error while exporting to " + selectedFile, exc);
@@ -984,7 +985,7 @@ public class Simulator {
         // now the editor is done; see if we have do make any updates
         if (editor.isJGraphModified()) {
 			File saveFile = handleSaveGraph(true,
-					editor.jgraph.getModel(),
+					editor.getModel(),
 					stateName);
 			if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
 				doLoadStartState(saveFile);
@@ -1002,12 +1003,12 @@ public class Simulator {
         Editor editor = new Editor(true);
         String ruleName = currentRule.getName().toString();
         AspectJModel ruleJModel = getRulePanel().getJGraph().getModel();
-        editor.setModel(ruleName, new GraphJModel(ruleJModel.graph().toPlainGraph()));
+        editor.setModel(ruleName, new GraphJModel(ruleJModel.toPlainGraph()));
         editorDialog = Editor.createEditorDialog(frame, true, editor);
         editorDialog.setVisible(true);
         // now the editor is done; see if we have do make any updates
         if (editor.isJGraphModified()) {
-            Graph editedGraph = editor.jgraph.getModel().toPlainGraph();
+            Graph editedGraph = editor.getModel().toPlainGraph();
             if (confirmReplaceRule(ruleName)) {
                 replaceCurrentRule(editedGraph);
             }
@@ -1059,7 +1060,7 @@ public class Simulator {
      */
     public void doLoadGrammar(XmlGrammar grammarLoader, File grammarFile, String startStateName) {
         try {
-            setGrammar((RuleViewGrammar) grammarLoader.unmarshal(grammarFile, startStateName));
+            setGrammar((RuleViewGrammar) grammarLoader.unmarshalGrammar(grammarFile, startStateName));
             // now we know loading succeeded, we can set the current names & files
             currentGrammarFile = grammarFile;
             currentGrammarLoader = grammarLoader;
@@ -1083,7 +1084,7 @@ public class Simulator {
     public void doLoadStartState(File file) {
         currentStartStateName = file.getName();
         try {
-            Graph startGraph = graphLoader.unmarshal(file);
+            Graph startGraph = graphLoader.unmarshalGraph(file);
             startGraph.setFixed();
             currentGrammar.setStartGraph(startGraph);
             setGrammar(currentGrammar);
@@ -1154,7 +1155,7 @@ public class Simulator {
         if (currentGrammarFile != null) {
             try {
                 setGrammar((RuleViewGrammar) currentGrammarLoader
-                        .unmarshal(currentGrammarFile, currentStartStateName));
+                        .unmarshalGrammar(currentGrammarFile, currentStartStateName));
             } catch (IOException exc) {
                 showErrorDialog("Error while loading grammar from " + currentGrammarFile, exc);
             }
@@ -1166,7 +1167,7 @@ public class Simulator {
      */
     public void doSaveGraph(JModel jModel, File file) {
         try {
-            graphLoader.marshal(jModel.toPlainGraph(), file);
+            graphLoader.marshalGraph(jModel.toPlainGraph(), file);
         } catch (IOException exc) {
             new ErrorDialog(frame, "Error while saving to " + file, exc);
         }
@@ -1183,7 +1184,7 @@ public class Simulator {
             NameLabel currentRuleName = currentRule.getName();
             int currentRulePriority = currentRule.getPriority();
             try {
-                AspectRuleView newRuleGraph = (AspectRuleView) ruleFactory.createRuleView(ruleAsGraph, currentRuleName, currentRulePriority);
+                AspectualRuleView newRuleGraph = (AspectualRuleView) ruleFactory.createRuleView(ruleAsGraph, currentRuleName, currentRulePriority);
                 ((GpsGrammar) currentGrammarLoader).marshalRule(newRuleGraph, currentGrammarFile);
                 currentGrammar.add(newRuleGraph);
                 NameLabel oldRuleName = currentRuleName;
@@ -1561,7 +1562,7 @@ public class Simulator {
      */
     protected void initGrammarLoaders() {
         grammarLoaderMap.clear();
-        gpsLoader = new GpsGrammar(graphLoader, DerivedGraphRuleFactory.getInstance());
+        gpsLoader = new LayedOutGpsGrammar(DerivedGraphRuleFactory.getInstance());
 //        gpsLoader = new GpsGrammar(graphLoader, DefaultRuleFactory.getInstance());
         grammarLoaderMap.put(gpsLoader.getExtensionFilter(), gpsLoader);
 //        ggxLoader = new GgxGrammar();

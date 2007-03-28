@@ -12,15 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJUserObject.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: EditableJUserObject.java,v 1.3 2007-03-28 15:12:26 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.util.ExprFormatException;
 import groove.util.ExprParser;
 import groove.util.Groove;
+import groove.util.Pair;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * J-user object that is a collection of strings, and can be reloaded 
@@ -124,7 +126,8 @@ public class EditableJUserObject extends JUserObject<String> {
 	                    .split(WHITESPACE + trim(getEditSeparator()) + WHITESPACE, 0);
 	            for (int i = 0; i < labels.length; i++) {
 	                try {
-	                    add(ExprParser.toString(ExprParser.parseExpr(labels[i])));
+	                	Pair<String,List<String>> parseResult = ExprParser.parseExpr(labels[i]); 
+	                    add(ExprParser.toString(parseResult.first(), parseResult.second()));
 	                } catch (ExprFormatException e) {
 	                    assert false : "Error in label expression "+value+": "+e;
 	                }

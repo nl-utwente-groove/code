@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaSet.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: DeltaSet.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
  * Implements a set whose operations work on an underlying (lower) set, but store 
  * the elements added to and removed from that lower set.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:58 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:28 $
  */
 public class DeltaSet<T> extends AbstractSet<T> {
     /**
@@ -65,6 +65,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
     /**
      * Computed as the size of this set, minus the removed elements, plus the added elements.
      */
+    @Override
     public int size() {
         return lower.size();
     }
@@ -72,6 +73,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
     /**
      * Creates an iterator of the lower set.
      */
+    @Override
     public Iterator<T> iterator() {
         // the following is eqivalent to a nested iterator consisting of an
         // iterator over the added set followed by a filtered iterator over 
@@ -121,6 +123,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
      * Either removes the element from the removed set, or, if it is not
      * already in the lower set, adds it to the added set.
      */
+    @Override
     public boolean add(T o) {
     	boolean result = lower.add(o);
     	if (result && !removed.remove(o)) {
@@ -134,6 +137,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
      * This implementation clears the added set, and copies the lower set
      * into the removed set.
      */
+    @Override
     public void clear() {
         removed.addAll(lower);
         removed.removeAll(added);
@@ -145,6 +149,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
      * Returns <tt>true</tt> if the element is in the added set,
      * or in the lower but not the removed set.
      */
+    @Override
     public boolean contains(Object o) {
         return lower.contains(o);
     }
@@ -153,6 +158,7 @@ public class DeltaSet<T> extends AbstractSet<T> {
      * Either removes the element from the added set, or, if it is 
      * present in the lower set, adds it to the removed set.
      */
+    @Override
     public boolean remove(Object o) {
 		boolean result = lower.remove(o);
 		if (result && !added.remove(o)) {

@@ -12,13 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JCellViewFactory.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: JCellViewFactory.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import org.jgraph.graph.DefaultCellViewFactory;
 import org.jgraph.graph.EdgeView;
-import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexView;
 
 /**
@@ -26,7 +25,7 @@ import org.jgraph.graph.VertexView;
  * -objects. For this purpose, the graph on which the views are to be displayed is stored in the
  * factory.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class JCellViewFactory extends DefaultCellViewFactory {
     /**
@@ -41,6 +40,7 @@ public class JCellViewFactory extends DefaultCellViewFactory {
      * This implementation creates {@link JVertexView} if the cell to be viewed is a {@link JVertex}.
      * Otherwise, the method delegates to the super class.
      */
+    @Override
     protected VertexView createVertexView(Object cell) {
         if (cell instanceof JVertex) {
             return new JVertexView((JVertex) cell, jGraph);
@@ -53,6 +53,7 @@ public class JCellViewFactory extends DefaultCellViewFactory {
      * This implementation creates {@link JEdgeView} if the cell to be viewed is a {@link JEdge}.
      * Otherwise, the method delegates to the super class.
      */
+    @Override
     protected EdgeView createEdgeView(Object edge) {
         if (edge instanceof JEdge) {
             return new JEdgeView((JEdge) edge, jGraph);

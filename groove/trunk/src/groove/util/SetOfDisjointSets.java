@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SetOfDisjointSets.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: SetOfDisjointSets.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -29,7 +29,7 @@ import java.util.Set;
  * set equality. (It is implemented by iterating over the underlying collections,
  * which is expensive!)
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements Set<T> {
     /**
@@ -48,6 +48,7 @@ public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements 
      * and tests whether each element found thus is in <tt>other</tt>
      * (which is required also to be a <tt>set</tt>).
      */
+    @Override
     public boolean equals(Object other) {
         if (! (other instanceof Set)) {
             return false;

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UnmodifiableCollectionView.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
+ * $Id: UnmodifiableCollectionView.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -24,23 +24,9 @@ import java.util.Iterator;
  * that satisfy a certain condition, to be provided through the abstract
  * method <tt>approve(Object)</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:28 $
  */
 public abstract class UnmodifiableCollectionView<T> extends CollectionView<T> {    
-//    /**
-//     * Constucts a view upon a set, newly created for this purpose.
-//     * Since the set itself is not available, this is only useful for
-//     * creating a set whose elements are guaranteed to satisfy a 
-//     * certain condition (to be provided by the abstract method
-//     * <tt>approves(Object)</tt>). 
-//     * This constructor is provided primarily to satisfy the requirements 
-//     * on <tt>Set</tt> implementations.
-//     * @see #approves(Object)
-//     */
-//    public UnmodifiableCollectionView() {
-//        super();
-//    }
-
     /**
      * Constucts a shared collection view on a given underlying collection.
      */
@@ -51,12 +37,15 @@ public abstract class UnmodifiableCollectionView<T> extends CollectionView<T> {
     /**
      * Returns an iterator that does not allow removal of values.
      */
+    @Override
     public Iterator<T> iterator() {
         return new FilterIterator<T>(coll.iterator()) {
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
             
+            @Override
             protected boolean approves(Object obj) {
                 return UnmodifiableCollectionView.this.approves(obj);
             }
@@ -66,6 +55,7 @@ public abstract class UnmodifiableCollectionView<T> extends CollectionView<T> {
     /**
      * @throws UnsupportedOperationException always
      */
+    @Override
     public boolean add(Object elem) {
         throw new UnsupportedOperationException();
     }
@@ -73,6 +63,7 @@ public abstract class UnmodifiableCollectionView<T> extends CollectionView<T> {
     /**
      * @throws UnsupportedOperationException always
      */
+    @Override
     public boolean remove(Object elem) {
         throw new UnsupportedOperationException();
     }

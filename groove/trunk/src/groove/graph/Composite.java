@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Composite.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: Composite.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Defines the inferface for a composed graph element.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 @Deprecated
 public interface Composite extends Element {
@@ -81,7 +81,7 @@ public interface Composite extends Element {
      * (i.e., with index <tt>SOURCE_INDEX</tt>).
      * @return the source node of this edge 
      * @see #ends()
-     * @see {@link Edge#SOURCE_INDEX}
+     * @see Edge#SOURCE_INDEX
      * @ensure <tt>result == ends(SOURCE_INDEX)</tt>
      */
     public Node source();

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExprParser.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: ExprParser.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -30,7 +30,7 @@ import java.util.Stack;
  * A class that helps parse an expression.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class ExprParser {
     /** The single quote character, to control parsing. */
@@ -85,7 +85,7 @@ public class ExprParser {
      * @return the result of the parsing; <tt>result[0] instanceof String</tt>
      * and <tt>result[1] instanceof List</tt>. See above for further explanation.
      */
-    static public Object[] parseExpr(String expr) throws ExprFormatException {
+    static public Pair<String, List<String>> parseExpr(String expr) throws ExprFormatException {
         return prototype.parse(expr);
     }
 
@@ -106,25 +106,20 @@ public class ExprParser {
     
     /**
      * Turns back the result of a {@link #parseExpr(String)}-action to a string.
-     * @param parsedString the result of string parsing; for the format see {@link #parseExpr(String)}.
+     * @param main the result of string parsing; for the format see {@link #parseExpr(String)}.
      * @return the string from which <tt>parsedString</tt> was originally created; or 
      * <tt>null</tt> if <tt>parsedString</tt> is improperly formatted
      */
-    static public String toString(Object[] parsedString) {
-        if (parsedString.length != 2 || !(parsedString[0] instanceof String) || !(parsedString[1] instanceof List)) {
-            return null;
-        }
+    static public String toString(String main, List<String> args) {
         StringBuffer result = new StringBuffer();
-        String topLevelString = (String) parsedString[0];
-        List<String> replacements = (List) parsedString[1];
         int placeHolderCount = 0;
-        for (int c = 0; c < topLevelString.length(); c++) {
-            char nextChar = topLevelString.charAt(c);
+        for (int c = 0; c < main.length(); c++) {
+            char nextChar = main.charAt(c);
             if (nextChar == PLACEHOLDER) {
-                if (placeHolderCount > replacements.size()) {
+                if (placeHolderCount > args.size()) {
                     return null;
                 } else {
-                    result.append(replacements.get(placeHolderCount));
+                    result.append(args.get(placeHolderCount));
                     placeHolderCount++;
                 }
             } else {
@@ -322,8 +317,8 @@ public class ExprParser {
     static private void testParse(String expr) {
         try {
             System.out.println("Parsing: " + expr);
-            Object[] result = parseExpr(expr);
-            System.out.println("Result: " + result[0] + " with replacements " + result[1]);
+            Pair<String,?> result = parseExpr(expr);
+            System.out.println("Result: " + result.first() + " with replacements " + result.second());
         } catch (ExprFormatException exc) {
             System.out.println("Error: " + exc.getMessage());
         }
@@ -411,10 +406,10 @@ public class ExprParser {
      * Parses a given string, based on the quoting and bracketing settings
      * of this parser instance.
      * @param expr the string to be parsed
-     * @return the result of the parsing; see <tt>parseExpr(String)</tt>.
+     * @return the result of the parsing; see {@link #parseExpr(String)}.
      * @see #parseExpr
      */
-    public Object[] parse(String expr) throws ExprFormatException {
+    public Pair<String, List<String>> parse(String expr) throws ExprFormatException {
         StreamTokenizer tokenizer = new StreamTokenizer(new StringReader(expr));
         tokenizer.resetSyntax();
         for (Character quoteChar: quoteChars) {
@@ -490,7 +485,7 @@ public class ExprParser {
             // since we're reading from a string buffer, we should never be here
             throw new IllegalStateException();
         }
-        return new Object[] { strippedExpr.toString(), Collections.unmodifiableList(replacements)};
+        return new Pair<String,List<String>>(strippedExpr.toString(), Collections.unmodifiableList(replacements));
     }
     
     /**
@@ -526,9 +521,9 @@ public class ExprParser {
      * @see String#split(String,int)
      */
     public String[] split(String expr, String split) throws ExprFormatException {
-        Object[] parseResult = parse(expr);
-        String parseExpr = (String) parseResult[0];
-        List<String> replacements = (List) parseResult[1];
+        Pair<String,List<String>> parseResult = parse(expr);
+        String parseExpr = parseResult.first();
+        List<String> replacements = parseResult.second();
         // split the parsed expression
         List<String> strippedOperands = new ArrayList<String>();
         int previousIndex = 0;
@@ -594,9 +589,9 @@ public class ExprParser {
                 }
                 return result;
             case PREFIX_POSITION :
-                Object[] parsedExpr = parse(expr);
-                String parsedBasis = (String) parsedExpr[0];
-                List<String> replacements = (List) parsedExpr[1];
+                Pair<String,List<String>> parsedExpr = parse(expr);
+                String parsedBasis = parsedExpr.first();
+                List<String> replacements = parsedExpr.second();
                 int operIndex = parsedBasis.indexOf(oper);
                 if (operIndex < 0) {
                     return null;
@@ -611,8 +606,8 @@ public class ExprParser {
                 }
             case POSTFIX_POSITION :
                 parsedExpr = parse(expr);
-                parsedBasis = (String) parsedExpr[0];
-                replacements = (List) parsedExpr[1];
+                parsedBasis = parsedExpr.first();
+                replacements = parsedExpr.second();
                 operIndex = parsedBasis.lastIndexOf(oper);
                 if (operIndex < 0) {
                     return null;

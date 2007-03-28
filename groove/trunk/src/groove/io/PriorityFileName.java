@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: PriorityFileName.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
+ * $Id: PriorityFileName.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.io;
 
@@ -21,7 +21,7 @@ import groove.trans.Rule;
 /**
  * Encoding of a rule name plus priority as a string
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 class PriorityFileName {
     /** Default priority value, copied from {@link Rule#DEFAULT_PRIORITY}. */
@@ -88,6 +88,7 @@ class PriorityFileName {
     /**
      * Returns the string from which this object was created.
      */
+    @Override
     public String toString() {
         if (explicitPriority) {
             return ""+priority+SEPARATOR+ruleName;

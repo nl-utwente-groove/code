@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ShowHideMenu.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: ShowHideMenu.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.gui;
 
@@ -54,7 +54,7 @@ import org.jgraph.graph.DefaultPort;
 /**
  * Menu to control the visibility of nodes and edges in a jgraph.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ShowHideMenu extends JMenu {
     /**
@@ -361,6 +361,7 @@ public class ShowHideMenu extends JMenu {
          * All cells are involved in this action.
          * @return <tt>true</tt> always
          */
+        @Override
         protected boolean isInvolved(JCell cell) {
             return true;
         }
@@ -384,6 +385,7 @@ public class ShowHideMenu extends JMenu {
          * All cells are involved in this action.
          * @return <tt>true</tt> always
          */
+        @Override
         protected boolean isInvolved(JCell cell) {
             return !isHidden(cell);
         }
@@ -407,6 +409,7 @@ public class ShowHideMenu extends JMenu {
             this.selected = selected;
         }
 
+        @Override
         protected boolean isInvolved(JCell cell) {
             return jgraph.isCellSelected(cell) == selected;
         }
@@ -430,6 +433,7 @@ public class ShowHideMenu extends JMenu {
             super(jgraph, showMode, CONTEXT_ACTION_NAME);
         }
 
+        @Override
         protected boolean isInvolved(JCell cell) {
             Object[] selectedCellArray = jgraph.getSelectionCells();
             if (getShowMode() != HIDE_MODE && jgraph.isEdge(cell)) {
@@ -482,6 +486,7 @@ public class ShowHideMenu extends JMenu {
          * Returns <tt>true</tt> if the property that <tt>cell</tt> contains the label of this
          * action equals the inclusion condition of this action.
          */
+        @Override
         protected boolean isInvolved(JCell cell) {
             // return getLabel(cell) != null && getLabel(cell).equals(label) == include;
             return cell.getLabelSet().contains(label);
@@ -506,6 +511,7 @@ public class ShowHideMenu extends JMenu {
                 super(graph);
             }
 
+            @Override
             public Relation newInstance() {
                 return new Relation(getGraph());
             }
@@ -514,6 +520,7 @@ public class ShowHideMenu extends JMenu {
              * This implementation uses a mapping from the label text to the edges
              * to make sure the user view of the label is correctly interpreted.
              */
+            @Override
             protected Collection<? extends Edge> getRelatedSet(String label) {
                 if (textEdgeMap == null) {
                     // since the labels may not be default labels
@@ -554,6 +561,7 @@ public class ShowHideMenu extends JMenu {
             private Map<String,Set<Edge>> textEdgeMap;
             /** Graph listener to keep the {@link #textEdgeMap} up-to-date. */
             private GraphListener listener = new GraphAdapter() {
+                @Override
                 public void addUpdate(GraphShape graph, Edge edge) {
                 	getTextEdgeSet(edge.label().text()).add(edge);
                 }
@@ -570,6 +578,7 @@ public class ShowHideMenu extends JMenu {
             super(jgraph, showMode, REGEXPR_ACTION_NAME);
         }
 
+        @Override
         public void actionPerformed(ActionEvent evt) {
             GraphShape graph = ((GraphJModel) jgraph.getModel()).graph();
             String exprText = JOptionPane.showInputDialog("Regular Expression: ");
@@ -595,6 +604,7 @@ public class ShowHideMenu extends JMenu {
             }
         }
 
+        @Override
         protected boolean isInvolved(JCell cell) {
             Set<? extends Edge> edgesInCell;
             if (cell instanceof GraphJEdge) {
@@ -620,7 +630,7 @@ public class ShowHideMenu extends JMenu {
      * Show/hide action based on the currently emphasized cells. The action adds the selection to
      * the shown or hidden cells
      * @author Arend Rensink
-     * @version $Revision: 1.2 $
+     * @version $Revision: 1.3 $
      */
     static protected class EmphasizedAction extends ShowHideAction {
     	/** 
@@ -636,6 +646,7 @@ public class ShowHideMenu extends JMenu {
         /**
          * This implementation returns the emphasis status of the cell in the model.
          */
+        @Override
         protected boolean isInvolved(JCell jCell) {
             return jgraph.getModel().isEmphasized(jCell);
         }
@@ -669,6 +680,7 @@ public class ShowHideMenu extends JMenu {
          * This action builds the menu on-the-fly. It iterates ove the roots of the jgraph, adding a
          * <tt>LabelAction</tt> for every label of every jcell thus found.
          */
+        @Override
         public void menuSelectionChanged(boolean isIncluded) {
             if (isIncluded) {
                 // now (re-)fill the menu

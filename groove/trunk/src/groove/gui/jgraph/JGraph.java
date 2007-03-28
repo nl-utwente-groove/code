@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.1.1.2 2007-03-20 10:42:46 kastenberg Exp $
+ * $Id: JGraph.java,v 1.2 2007-03-28 15:12:26 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -30,6 +30,7 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
@@ -65,11 +66,12 @@ import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.GraphModel;
 import org.jgraph.graph.GraphSelectionModel;
 import org.jgraph.graph.PortView;
+import org.jgraph.plaf.basic.BasicGraphUI;
 
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:46 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:26 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
@@ -235,6 +237,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             super(action);
         }
         
+        @Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
             setVisible(enabled);
@@ -255,6 +258,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
          * Overrides the method so {@link JModel.RefreshEdit}s are not
          * passed on.
          */
+        @Override
         public void graphChanged(GraphModelChange change) {
             if (!(change instanceof JModel.RefreshEdit)) {
                 super.graphChanged(change);
@@ -279,6 +283,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             this.jGraph = jGraph;
         }
         
+        @Override
         public boolean isForceMarqueeEvent(MouseEvent evt) {
             return jGraph.isPopupMenuEvent(evt) || super.isForceMarqueeEvent(evt);
         }
@@ -290,6 +295,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
          * Pass on the event to <tt>super</tt> if it is not for us.
          * @param evt the event that happened
          */
+        @Override
         public void mousePressed(MouseEvent evt) {
             if (!evt.isConsumed() && jGraph.isPopupMenuEvent(evt)) {
                 Point atPoint = evt.getPoint();
@@ -323,6 +329,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             super(JGraph.this);
         }
         
+        @Override
         public void addSelectionCells(Object[] cells) {
             List<Object> visibleCells = new LinkedList<Object>();
             for (int i = 0; i < cells.length; i++) {
@@ -333,6 +340,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             super.addSelectionCells(visibleCells.toArray());
         }
 
+        @Override
         public void setSelectionCells(Object[] cells) {
             List<Object> visibleCells = new LinkedList<Object>();
             for (int i = 0; i < cells.length; i++) {
@@ -368,7 +376,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * Constructs a JGraph with an initially empty model and initially disabled. The initial model
      * is a <tt>JModel</tt> showing node identities.
-     * @see JModel#JModel(boolean)
      */
     public JGraph() {
         this(null);
@@ -380,6 +387,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * bypassed in favour of its user object. This implementation simply invokes <tt>toString()</tt>
      * upon <tt>value</tt>.
      */
+    @Override
     public String convertValueToString(Object value) {
         return value.toString();
     }
@@ -387,6 +395,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * Returns a tool tip text for the front graph cell onder the mouse.
      */
+    @Override
     public String getToolTipText(MouseEvent evt) {
         JCell jCell = (JCell) getFirstCellForLocation(evt.getX(), evt.getY());
         return getModel().getToolTipText(jCell);
@@ -436,6 +445,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * otherwise, passes on the query to super.
      * @see JModel#isHidden(JCell)
      */
+    @Override
     public boolean isCellEditable(Object cell) {
         return !(cell instanceof JCell && getModel().isHidden((JCell) cell)) && super.isCellEditable(cell);
     }
@@ -443,6 +453,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * Overwrites the method from JGraph for efficiency.
      */
+    @Override
     public Object[] getDescendants(Object[] cells) {
         List<Object> res = new LinkedList<Object>();
         for (int i = 0; i < cells.length; i++) {
@@ -521,6 +532,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Overrides the super method for greater efficiency.
      * Only returns visible cells.
      */
+    @Override
     public Object getFirstCellForLocation(double x, double y) {
         return getFirstCellForLocation(x, y, false);
     }
@@ -528,6 +540,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * This method rturns the port of the topmost vertex.
      */
+    @Override
     public PortView getPortViewAt(double x, double y) {
         JVertex vertex = (JVertex) getFirstCellForLocation(x,y, true);
         if (vertex != null) {
@@ -547,6 +560,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * </ul>
      * @require <tt>model instanceof JModel</tt>
      */
+    @Override
     public void setModel(GraphModel model) {
         JModel jModel = (JModel) model;
         if (initialized) {
@@ -584,6 +598,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * sets the background color to
      * <tt>null</tt> when disabled and back to the default when enabled.
      */
+    @Override
     public void setEnabled(boolean enabled) {
         if (enabled != isEnabled()) {
             if (!enabled) {
@@ -604,7 +619,59 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     	getGraphLayoutCache().setModel(getModel());
     }
 
-    /**
+	/**
+	 * Sets a graph UI that speeds up preferred size checking
+	 * by caching previous values.
+	 */
+	@Override
+	public void updateUI() {
+		setUI(createGraphUI());
+		invalidate();
+	}
+
+	/**
+	 * Creates a graph UI that speeds up preferred size checking
+	 * by cachking previous values.
+	 */
+	protected BasicGraphUI createGraphUI() {
+		return new org.jgraph.plaf.basic.BasicGraphUI() {
+			@Override
+			public Dimension2D getPreferredSize(org.jgraph.JGraph graph, CellView view) {
+				Dimension2D result = null;
+				if (view instanceof JVertexView) {
+					String text = convertDigits(((JVertexView) view).getCell().getHtmlText());
+					result = sizeMap.get(text);
+					if (result == null) {
+						result = super.getPreferredSize(graph, view);
+						sizeMap.put(text, result);
+					}
+				} else {
+					result = super.getPreferredSize(graph, view);
+				}
+				return result;
+			}
+			
+			/** 
+			 * Converts all digits in a string in the range 2-9 to 0.
+			 * The idea is that this will not affect the size of the string,
+			 * but will unify many keys in the size map.
+			 */
+			private String convertDigits(String original) {
+				char[] array = original.toCharArray();
+				for (int i = 0; i < array.length; i++) {
+					char c = array[i];
+					if ('2' <= c && c <= '9') {
+						array[i] = '0';
+					}
+				}
+				return String.valueOf(array);
+			}
+			
+			private Map<String,Dimension2D> sizeMap = new HashMap<String,Dimension2D>();
+		};
+	}
+
+	/**
      * Creates and returns an image of the jgraph, or <tt>null</tt> if the jgraph is empty.
      * @return an image object of the jgraph; <tt>null</tt> if this jgraph is empty.
      */

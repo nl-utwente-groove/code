@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StackedSet.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: StackedSet.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
  * The implementation is based on a lower set, and sets of added and removed
  * elements with respect to this lower set.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class StackedSet<T> extends AbstractSet<T> {
 	/**
@@ -73,6 +73,7 @@ public class StackedSet<T> extends AbstractSet<T> {
     /**
      * Computed as the size of this set, minus the removed elements, plus the added elements.
      */
+    @Override
     public int size() {
         return lower.size() + added.size() - removed.size();
     }
@@ -81,6 +82,7 @@ public class StackedSet<T> extends AbstractSet<T> {
      * Creates a sequence iterator of the added elements and the
      * lower set elements, the latter filtered through the removed elements.
      */
+    @Override
     public Iterator<T> iterator() {
         // the following is eqivalent to a nested iterator consisting of an
         // iterator over the added set followed by a filtered iterator over 
@@ -163,6 +165,7 @@ public class StackedSet<T> extends AbstractSet<T> {
      * Either removes the element from the removed set, or, if it is not
      * already in the lower set, adds it to the added set.
      */
+    @Override
     public boolean add(T o) {
         if (removed.remove(o)) {
             return true;
@@ -175,6 +178,7 @@ public class StackedSet<T> extends AbstractSet<T> {
      * This implementation clears the added set, and copies the lower set
      * into the removed set.
      */
+    @Override
     public void clear() {
         added.clear();
         removed.addAll(lower);
@@ -184,6 +188,7 @@ public class StackedSet<T> extends AbstractSet<T> {
      * Returns <tt>true</tt> if the element is in the added set,
      * or in the lower but not the removed set.
      */
+    @Override
     public boolean contains(Object o) {
         return added.contains(o) || (lower.contains(o) && !removed.contains(o));
     }
@@ -192,6 +197,7 @@ public class StackedSet<T> extends AbstractSet<T> {
      * Either removes the element from the added set, or, if it is 
      * present in the lower set, adds it to the removed set.
      */
+    @Override
     public boolean remove(Object o) {
         if (added.remove(o)) {
             return true;

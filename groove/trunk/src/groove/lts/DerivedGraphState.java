@@ -42,7 +42,7 @@ import groove.util.TransformIterator;
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DerivedGraphState extends DefaultGraphState implements GraphNextState {
     /**
@@ -354,16 +354,10 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	/**
 	 * Has to be included to have a correct return type.
 	 */
+	@Override
 	public DerivedGraphState imageFor(NodeEdgeMap elementMap) {
 		throw new UnsupportedOperationException();
 	}
-//
-//    /**
-//     * This implementation retrieves the anchor image from the underlying rule event.
-//     */
-//    public Element[] getAnchorImage() {
-//    	return getEvent().getAnchorImage();
-//    }
 
     /**
      * This implementation retrieves the coanchor image from the delta array.
@@ -395,6 +389,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	/**
 	 * This implementation asks the rule for the footprint size.
 	 */
+    @Override
     protected int getDeltaSize() {
     	if (isFrozen()) {
     		return super.getDeltaSize();
@@ -456,22 +451,15 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      * That is, two objects are considered equal if they have the same basis,
      * rule and anchor images.
      */
+    @Override
     public boolean equals(Object obj) {
         return obj instanceof GraphOutTransition && equalsEvent((GraphOutTransition) obj) && equalsSource((GraphOutTransition) obj);
     }
-//
-//    /**
-//     * This method is only there because we needed to make {@link groove.lts.GraphOutTransition}
-//     * a sub-interface of {@link Element}.
-//     * The method throws an {@link UnsupportedOperationException} always.
-//     */
-//    public int compareTo(Element obj) {
-//		throw new UnsupportedOperationException();
-//	}
 
     /**
      * This implementation combines the identities of source and event.
      */
+    @Override
     public int hashCode() {
         return System.identityHashCode(source()) + System.identityHashCode(getEvent());
     }
@@ -492,6 +480,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
     /**
      * This implementation returns a {@link DerivedStateCache}.
      */
+    @Override
 	protected GraphCache createCache() {
 	    return new DerivedStateCache(this);
     }
@@ -499,6 +488,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
     /**
      * This implementation returns a {@link CountingCacheReference}.
      */
+    @Override
     protected StateCacheReference<? extends DerivedStateCache> createCacheReference(GraphShapeCache referent) {
         return new CountingCacheReference((DerivedStateCache) referent);
     }
@@ -507,6 +497,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      * This implementation returns a {@link CountingNullReference}.
      * @see #getNullReference(int,boolean)
      */
+    @Override
     protected Reference<DerivedStateCache> createNullReference(boolean closed) {
         return getNullReference(getCacheIncarnationCount(), closed);
     }
@@ -516,8 +507,10 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      * their raw format to the proper representation as a {@link groove.lts.GraphOutTransition}
      * from the current state.
      */
+    @Override
     public Iterator<GraphOutTransition> getOutTransitionIter() {
 		return new TransformIterator<GraphOutTransition,GraphOutTransition>(getRawOutTransitionIter()) {
+		    @Override
 			protected GraphOutTransition toOuter(GraphOutTransition inner) {
 				if (inner instanceof DerivedGraphState) {
 					return ((DerivedGraphState) inner).createOutTransitionTo(DerivedGraphState.this);
@@ -545,6 +538,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 * is identical to the event stored in this state.
 	 * Otherwise it invokes <code>super</code>.
 	 */
+    @Override
 	protected GraphOutTransition createOutTransitionTo(RuleApplication appl) {
 	    if (appl.getSource() == source() && appl.getEvent() == getEvent()) {
 	        return this;
@@ -567,6 +561,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      * may actually be an alias to some other transition that forms the outer
      * end of a confluent diamond with this one.
      */
+    @Override
 	protected RuleEvent getEvent(GraphOutTransition trans) {
 		if (trans instanceof DerivedGraphState && ((DerivedGraphState)trans).source() != this) {
 			return ((DerivedGraphState) trans).getSourceEvent();
@@ -579,6 +574,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      * This implementation does nothing: reversing the basis
      * is not an option for derived states.
      */
+    @Override
     protected synchronized void invertBasis(DeltaGraph newBasis, Element[] reverseDelta) {
         // does nothing
     }
@@ -587,6 +583,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      * This implementation returns <code>true</code> if the size of the delta
      * exceeds the size of the rule's footprint.
      */
+    @Override
     protected boolean isFrozen() {
     	if (isFixed()) {
     		Element[] delta = getDeltaArray();
@@ -596,6 +593,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
     	}
     }
 
+    @Override
     protected void invertBasis() {
     	// don't invert the basis
     }
@@ -604,6 +602,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 * This implementation just returns the current delta array,
 	 * which was initialized at construction time to contain the coanchor image.
 	 */
+    @Override
 	protected Element[] computeFixedDeltaArray() {
 		return getDeltaArray();
 	}
@@ -612,6 +611,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 * The frozen delta consists of the coanchor images followed by a blank element and then the 
 	 * nodes and edges of the graph. 
 	 */
+    @Override
 	protected Element[] computeFrozenDeltaArray() {
 		assert !isFrozen();
 	    int frozenDeltaSize = size();
@@ -637,6 +637,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 * added in the delta, and <code>action.removed(elem)</code> for each removed element.
 	 * @param target the action object to be called back
 	 */
+    @Override
 	public void applyDelta(DeltaTarget target) {
 		assert isFixed() : "Unfixed delta graph should not be asked to process delta";
 	    if (isFrozen()) {

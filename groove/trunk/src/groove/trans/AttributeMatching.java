@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributeMatching.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: AttributeMatching.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
  */
 
 package groove.trans;
@@ -50,10 +50,11 @@ public class AttributeMatching extends DefaultMatching {
     /* (non-Javadoc)
      * @see groove.graph.DefaultMorphism#createMorphism(groove.graph.Simulation)
      */
+    @Override
     protected AttributeMatching createMorphism(final Simulation sim) {
-    	// TODO: should we use the rule-factory to create the matching?
         final AttributeSimulation attrSim = (AttributeSimulation) sim;
         AttributeMatching result = new AttributeMatching((DefaultGraphCondition) attrSim.getCondition(), attrSim.cod(), getRuleFactory()) {
+            @Override
             protected VarNodeEdgeMap createElementMap() {
                 return attrSim.getSingularMap();
             }

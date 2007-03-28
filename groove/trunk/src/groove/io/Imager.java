@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.2 2007-03-27 14:18:37 rensink Exp $
+ * $Id: Imager.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.io;
 
@@ -24,7 +24,7 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.AspectJModel;
 import groove.trans.NameLabel;
-import groove.trans.view.AspectRuleView;
+import groove.trans.view.AspectualRuleView;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
@@ -69,7 +69,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Imager extends CommandLineTool {
     /** Name of the imager application. */
@@ -517,11 +517,11 @@ public class Imager extends CommandLineTool {
                 try {
                     String outFileName = acceptingFilter.stripExtension(outFile.getPath());
                     outFile = new File(new ExtensionFilter("."+imageFormat).addExtension(outFileName));
-                    groove.graph.Graph graph = graphLoader.unmarshal(inFile);
+                    groove.graph.Graph graph = graphLoader.unmarshalGraph(inFile);
                     JModel model;
                     if (acceptingFilter == ruleFilter) {
                         String ruleName = ruleFilter.stripExtension(inFile.getName());
-                        AspectRuleView rule = new AspectRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new NameLabel(ruleName));
+                        AspectualRuleView rule = new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new NameLabel(ruleName));
                         model = new AspectJModel(rule);
                     } else {
                         model = new GraphJModel(graph);

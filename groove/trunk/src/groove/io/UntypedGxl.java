@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UntypedGxl.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
+ * $Id: UntypedGxl.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.io;
 
@@ -27,6 +27,7 @@ import groove.graph.GraphFormatException;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
+import groove.util.Pair;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -50,7 +51,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class UntypedGxl extends AbstractXml {
     /**
@@ -76,6 +77,7 @@ public class UntypedGxl extends AbstractXml {
             return attributes.toString();
         }
 
+        @Override
         public String toString() {
             return attributes.toString();
         }
@@ -113,7 +115,7 @@ public class UntypedGxl extends AbstractXml {
     static public final String LABEL_ATTR_NAME = "label";
 
     static private final IsoChecker isoChecker = new DefaultIsoChecker();
-    static private GraphFactory defaultGraphFactory = GraphFactory.newInstance();
+    static private GraphFactory defaultGraphFactory = GraphFactory.getInstance();
 
     /**
      * Returns a default graph factory for the construction of graphs
@@ -135,17 +137,17 @@ public class UntypedGxl extends AbstractXml {
                 System.out.println("OK");
                 // Unmarshal graph
                 System.out.print("    Unmarshalling graph: ");
-                Graph graph = gxl.unmarshal(file);
+                Graph graph = gxl.unmarshalGraph(file);
                 System.out.println("OK");
                 System.out.print("    Creating output file: ");
                 file = new java.io.File(args[i] + ".tmp");
                 System.out.println("OK");
                 System.out.print("    Re-marshalling graph: ");
-                gxl.marshal(graph, file);
+                gxl.marshalGraph(graph, file);
                 System.out.println("OK");
                 // unmarshal again and test for isomorphism
                 System.out.print("    Testing for isomorphism of original and re-marshalled graph: ");
-                Graph newGraph = gxl.unmarshal(file);
+                Graph newGraph = gxl.unmarshalGraph(file);
 
                 if (isoChecker.areIsomorphic(newGraph,graph))
                     System.out.println("OK");
@@ -167,7 +169,6 @@ public class UntypedGxl extends AbstractXml {
      * for the graphs constructed by unmarshalling.
      * @throws XmlRuntimeException if setting up the document builder 
      * fails for some internal reason
-     * @see #unmarshal
      */
     public UntypedGxl(GraphFactory graphFactory) throws XmlRuntimeException {
         this.graphFactory = graphFactory;
@@ -184,12 +185,38 @@ public class UntypedGxl extends AbstractXml {
     }
 
     /**
+	 * This implementation works by converting the graph to an attributed graph
+	 * using {@link #attrToGxlGraph}, and marshalling the result
+	 * using {@link #marshalGxlGraph}.
+	 */
+	public void marshalGraph(Graph graph, File file) throws XmlException, IOException {
+	    Graph attrGraph = normToAttrGraph(graph);
+	    groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
+	    // now marshal the attribute graph
+	    marshalGxlGraph(gxlGraph, file);
+	}
+
+	/**
+	 * This implementation works by unmarshalling to an attributed graph using
+	 * {@link #unmarshalGxlGraph} and {@link #gxlToAttrGraph}, and converting
+	 * the result to an ordinary graph using <tt>{@link #attrToNormGraph}</tt>.
+	 */
+	@Override
+	public Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file)
+			throws XmlException, FileNotFoundException {
+		groove.gxl.Graph gxlGraph = unmarshalGxlGraph(file);
+		Pair<Graph,Map<String,Node>> attrGraph = gxlToAttrGraph(gxlGraph);
+		Graph result = attrToNormGraph(attrGraph.first());
+		return new Pair<Graph,Map<String,Node>>(result, attrGraph.second());
+	}
+
+	/**
      * Converts an attributed graph to an untyped GXL graph.
      * The attributes are encoded in <tt>AttributeLabel</tt>s.
      * @param graph a graph with only <tt>AttributeLabel</tt>s
      * @return the resulting GXL graph
      */
-    public groove.gxl.Graph attrToGxlGraph(Graph graph) {
+    private groove.gxl.Graph attrToGxlGraph(Graph graph) {
         groove.gxl.Graph gxlGraph = new groove.gxl.Graph();
         gxlGraph.setEdgeids(false);
         gxlGraph.setId("graph");
@@ -242,10 +269,9 @@ public class UntypedGxl extends AbstractXml {
      * Edge attributes are encoded in <tt>AttributeLabel</tt>s.
      * The method returns a map from GXL node ids to <tt>Node</tt>s.
      * @param gxlGraph the source of the unmarhalling
-     * @param elementMap a mapping from node ids in the GXL to <tt>Node</tt>s of the resulting graph
      * @return graph the resulting attribute graph; i.e., it will receive only <tt>AttributeLabel</tt>s
      */
-    public Graph gxlToAttrGraph(groove.gxl.Graph gxlGraph, Map<String, Node> elementMap) {
+    private Pair<Graph, Map<String, Node>> gxlToAttrGraph(groove.gxl.Graph gxlGraph) {
         Graph graph = getGraphFactory().newGraph();
         // Hashmap for the ID lookup (ID to Vertex)
         Map<String,Node> nodeIds = new HashMap<String,Node>();
@@ -289,11 +315,7 @@ public class UntypedGxl extends AbstractXml {
                 graph.addEdge(createEdge(sourceNode, attributes, targetNode));
             }
         }
-        if (elementMap != null) {
-            elementMap.clear();
-            elementMap.putAll(nodeIds);
-        }
-        return graph;
+        return new Pair<Graph,Map<String,Node>>(graph, nodeIds);
     }
 
     /**
@@ -302,7 +324,7 @@ public class UntypedGxl extends AbstractXml {
      * @param graph the original graph
      * @return the new, equivalent attribute graph.
      */
-    public Graph normToAttrGraph(GraphShape graph) {
+    private Graph normToAttrGraph(GraphShape graph) {
         Graph attrGraph = graphFactory.newGraph();
         // just copy the nodes
         attrGraph.addNodeSet(graph.nodeSet());
@@ -322,7 +344,7 @@ public class UntypedGxl extends AbstractXml {
      * @param attrGraph the original attributed graph
      * @return the new, equivalent graph.
      */
-    public Graph attrToNormGraph(Graph attrGraph) {
+    private Graph attrToNormGraph(Graph attrGraph) {
         Graph graph = getGraphFactory().newGraph();
         // Simply copy the nodes
         graph.addNodeSet(attrGraph.nodeSet());
@@ -339,7 +361,7 @@ public class UntypedGxl extends AbstractXml {
      * @param gxlGraph the GXL graph
      * @param file the destination for the marshalling operation
      */
-    public void marshalGxlGraph(groove.gxl.Graph  gxlGraph, File file) {
+    private void marshalGxlGraph(groove.gxl.Graph  gxlGraph, File file) {
         groove.gxl.Gxl gxl = new groove.gxl.Gxl();
         gxl.addGraph(gxlGraph);
         try {
@@ -365,7 +387,7 @@ public class UntypedGxl extends AbstractXml {
      * @param file the source of the unmarhalling
      * @return the resulting GXL graph
      */
-    public groove.gxl.Graph unmarshalGxlGraph(File file) throws XmlException, FileNotFoundException {
+    private groove.gxl.Graph unmarshalGxlGraph(File file) throws XmlException, FileNotFoundException {
         // get a gxl object from the reader
         groove.gxl.Gxl gxl;
         try {
@@ -375,14 +397,8 @@ public class UntypedGxl extends AbstractXml {
             Reader reader = new FileReader(file);
             unmarshaller.unmarshal(reader);
         } catch (MarshalException e) {
-            if (UNMARSHAL_DEBUG) {
-                e.printStackTrace();
-            }
             throw new XmlException(e.getMessage());
         } catch (ValidationException e) {
-            if (UNMARSHAL_DEBUG) {
-                e.printStackTrace();
-            }
             throw new XmlException(e.getMessage());
         }
 
@@ -394,34 +410,9 @@ public class UntypedGxl extends AbstractXml {
     }
 
     /**
-     * This implementation works by converting the graph to an attributed graph
-     * using {@link #attrToGxlGraph}, and marshalling the result
-     * using {@link #marshalGxlGraph}.
-     */
-    public void marshal(GraphShape graph, File file) throws XmlException, IOException {
-        Graph attrGraph = normToAttrGraph(graph);
-        groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
-        // now marshal the attribute graph
-        marshalGxlGraph(gxlGraph, file);
-    }
-
-    /**
-         * This implementation works by unmarshalling to an attributed graph using
-         * {@link #unmarshalGxlGraph} and {@link #gxlToAttrGraph}, and converting the result to an ordinary graph
-         * using <tt>{@link #attrToNormGraph}</tt>.
-         */
-        public Graph unmarshal(File file, Map<String, Node> elementMap) throws XmlException, FileNotFoundException {
-            groove.gxl.Graph gxlGraph = unmarshalGxlGraph(file);
-            Graph attrGraph = gxlToAttrGraph(gxlGraph, elementMap);
-            Graph result = attrToNormGraph(attrGraph);
-    //        result.setFixed();
-            return result;
-        }
-
-    /**
-     * Callback factory method to create an attribute edge with given
-     * ends and attribute map.
-     */
+	 * Callback factory method to create an attribute edge with given ends and
+	 * attribute map.
+	 */
     protected AttributeEdge createEdge(Node[] ends, Map<String, String> attributes) {
         return new AttributeEdge(ends, new AttributeLabel(attributes));
     }
@@ -438,6 +429,4 @@ public class UntypedGxl extends AbstractXml {
             return new AttributeEdge(new Node[] { sourceNode, targetNode }, new AttributeLabel(attributes));            
         }
     }
-
-    static private final boolean UNMARSHAL_DEBUG = false;
 }

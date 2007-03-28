@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Reformatter.java,v 1.2 2007-03-27 14:18:37 rensink Exp $
+ * $Id: Reformatter.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.io;
 
@@ -62,7 +62,7 @@ import org.jgraph.graph.AttributeMap;
  * Where both types of files are found, the first overrules the second.
  * The tool works both on individual files and, recursively, in directories.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Reformatter {
     /**
@@ -207,7 +207,7 @@ public class Reformatter {
             System.out.print("Reading " + file + " in " + name + " GXL mode ... ");
         }
         try {
-            Graph graph = xml.unmarshal(file);
+            Graph graph = xml.unmarshalGraph(file);
             if (isVerbose()) {
                 System.out.println("Succeeded");
             }
@@ -511,6 +511,6 @@ public class Reformatter {
      */
     static private int verbosity;
 //    static private Xml sloppyGxl = new SloppyGxl();
-    static private Xml untypedGxl = new UntypedGxl();
-    static private LayedOutXml layoutXml = new LayedOutXml(untypedGxl);
+    static private UntypedGxl untypedGxl = new UntypedGxl();
+    static private LayedOutXml layoutXml = new LayedOutXml();
 }

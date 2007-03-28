@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributedGraph.java,v 1.1.1.2 2007-03-20 10:42:43 kastenberg Exp $
+ * $Id: AttributedGraph.java,v 1.2 2007-03-28 15:12:35 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -35,7 +35,7 @@ import groove.graph.NodeEdgeMap;
  * knowing this.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:43 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:35 $
  */
 public class AttributedGraph extends DefaultGraph {
 
@@ -55,6 +55,7 @@ public class AttributedGraph extends DefaultGraph {
 	/* (non-Javadoc)
 	 * @see groove.graph.AbstractGraph#newGraph(groove.graph.Graph)
 	 */
+	@Override
 	public Graph newGraph(Graph graph) throws GraphFormatException {
 		Graph result = factory.newGraph();
 

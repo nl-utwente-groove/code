@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: XmlGrammar.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
+ * $Id: XmlGrammar.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.io;
 
@@ -26,9 +26,9 @@ import java.io.IOException;
  * Interface for the conversion of graph grammars to and from 
  * (sets of) XML documents.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
-public interface XmlGrammar {
+public interface XmlGrammar<GG extends GraphGrammar> {
     /**
      * The default name of the start state of a grammar.
      */
@@ -49,15 +49,15 @@ public interface XmlGrammar {
      * @throws XmlException if an error occurs in the conversion
      * @throws IOException if an error occurs during file output
 	 */
-	public void marshal(GraphGrammar gg, File file) throws IOException;
+	public void marshalGrammar(GG gg, File file) throws IOException;
 	
     /**
      * Converts an XML formatted file or set of files into a graph grammar, 
      * and returns the graph grammar.
      * Convenience method for <code>unmarshal(file, null)</code>.
-     * @see #unmarshal(File, String)
+     * @see #unmarshalGrammar(File, String)
      */
-    public GraphGrammar unmarshal(File file) throws XmlException, IOException;
+    public GG unmarshalGrammar(File file) throws XmlException, IOException;
 
     /**
      * Converts an XML formatted file or set of files into a graph grammar, 
@@ -75,7 +75,7 @@ public interface XmlGrammar {
      * @throws XmlException if an error occurs in the conversion
      * @throws IOException if an error occurs during file input
      */
-    public GraphGrammar unmarshal(File file, String startStateName) throws XmlException, IOException;
+    public GG unmarshalGrammar(File file, String startStateName) throws XmlException, IOException;
 
     /**
      * Returns the {@link groove.trans.RuleFactory} needed for instantiating classes for performing transformations.

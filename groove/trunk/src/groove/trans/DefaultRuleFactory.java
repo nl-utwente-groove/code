@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: DefaultRuleFactory.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
  */
 package groove.trans;
 
@@ -23,7 +23,7 @@ import groove.graph.Simulation;
 import groove.graph.aspect.AspectGraph;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.match.MatchingMatcher;
-import groove.trans.view.AspectRuleView;
+import groove.trans.view.AspectualRuleView;
 //import groove.trans.view.RuleGraph;
 
 /**
@@ -36,7 +36,7 @@ import groove.trans.view.AspectRuleView;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultRuleFactory implements RuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */
@@ -104,10 +104,10 @@ public class DefaultRuleFactory implements RuleFactory {
 	}
 
 	/**
-	 * This implementation returns an {@link AspectRuleView}.
+	 * This implementation returns an {@link AspectualRuleView}.
 	 */
-	public AspectRuleView createRuleView(Graph graph, NameLabel name, int priority) throws GraphFormatException {
-		return new AspectRuleView(AspectGraph.getFactory().fromPlainGraph(graph), name, priority, this);
+	public AspectualRuleView createRuleView(Graph graph, NameLabel name, int priority) throws GraphFormatException {
+		return new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), name, priority, this);
 	}
 
 	/**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CollectionOfCollections.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: CollectionOfCollections.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Iterator;
  * which is expensive!
  * Equality is deferred to <tt>Object</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class CollectionOfCollections<T> extends AbstractCollection<T> {
     /**
@@ -38,9 +38,7 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
         this.collections = collections;
     }
 
-    /* (non-Javadoc)
-     * @see java.util.Collection#iterator()
-     */
+    @Override
     public Iterator<T> iterator() {
         Iterator<T> res = new Iterator<T>() {
             public boolean hasNext() {
@@ -71,6 +69,7 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
         return res;
    }
 
+    @Override
     public int size() {
         int size = 0;
         for (Collection<?> collection: collections) {
@@ -83,6 +82,7 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
      * Adding elements to this type of collection is not possible.
      * @throws UnsupportedOperationException
      */
+    @Override
     public boolean add(T elem) {
         throw new UnsupportedOperationException();
     }
@@ -91,6 +91,7 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
      * Removing elements from this type of collection is not possible.
      * @throws UnsupportedOperationException
      */
+    @Override
     public boolean remove(Object elem) {
         throw new UnsupportedOperationException();
     }

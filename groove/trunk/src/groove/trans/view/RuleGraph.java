@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleGraph.java,v 1.4 2007-03-27 14:18:35 rensink Exp $
+ * $Id: RuleGraph.java,v 1.5 2007-03-28 15:12:30 rensink Exp $
  */
 
 package groove.trans.view;
@@ -66,7 +66,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @deprecated replaced by AspectRuleView
  */
 @Deprecated
@@ -113,7 +113,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
     /** Isomorphism checker (used for testing purposes). */
     static private final IsoChecker isoChecker = new DefaultIsoChecker();
     /** Graph factory used for building a graph view of this rule graph.*/
-    static protected GraphFactory graphFactory = GraphFactory.newInstance();
+    static protected GraphFactory graphFactory = GraphFactory.getInstance();
 
     /**
      * Tests whether a given role is legal, i.e., one of
@@ -235,7 +235,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
                 System.out.println("OK");
                 // Unmarshal graph
                 System.out.print("    Unmarshalling graph: ");
-                Graph graph = gxl.unmarshal(file);
+                Graph graph = gxl.unmarshalGraph(file);
                 System.out.println("OK");
                 // construct rule graph
                 System.out.print("    Constructing rule graph from graph: ");

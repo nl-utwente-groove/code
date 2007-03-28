@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectRuleView.java,v 1.4 2007-03-27 14:18:35 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.1 2007-03-28 15:12:30 rensink Exp $
  */
 
 package groove.trans.view;
@@ -35,6 +35,7 @@ import groove.graph.aspect.AspectEdge;
 import groove.graph.aspect.AspectGraph;
 import groove.graph.aspect.AspectNode;
 import groove.graph.aspect.AspectValue;
+import groove.graph.aspect.AspectualView;
 import groove.graph.aspect.AttributeAspect;
 import groove.graph.aspect.RuleAspect;
 import groove.graph.iso.DefaultIsoChecker;
@@ -42,7 +43,7 @@ import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
 import groove.rel.RegExprGraph;
 import groove.rel.RegExprLabel;
-import groove.rel.VarBinaryEdge;
+//import groove.rel.VarBinaryEdge;
 import groove.rel.VarGraph;
 import groove.trans.DefaultNAC;
 import groove.trans.DefaultRuleFactory;
@@ -76,9 +77,9 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.1 $
  */
-public class AspectRuleView implements RuleView, AspectualView {
+public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
     static public final Label MERGE_LABEL = new RegExprLabel(RegExpr.empty());
     /** Label for injection constraints */
@@ -87,14 +88,14 @@ public class AspectRuleView implements RuleView, AspectualView {
     /** Isomorphism checker (used for testing purposes). */
     static private final IsoChecker isoChecker = new DefaultIsoChecker();
     /** Graph factory used for building a graph view of this rule graph.*/
-    static protected GraphFactory graphFactory = GraphFactory.newInstance();
+    static protected GraphFactory graphFactory = GraphFactory.getInstance();
 
     /**
      * This main is provided for testing purposes only.
      * @param args names of XML files to be used as test input
      */
     static public void main(String[] args) {
-        System.out.printf("Test of %s%n", AspectRuleView.class);
+        System.out.printf("Test of %s%n", AspectualRuleView.class);
         System.out.println("=================");
         for (int i = 0; i < args.length; i++) {
         	try {
@@ -132,14 +133,14 @@ public class AspectRuleView implements RuleView, AspectualView {
 	private static void testTranslation(String name, AspectGraph graph) throws ViewFormatException, GraphFormatException {
         NameLabel ruleName = new NameLabel(name);
         // construct rule graph
-        AspectRuleView ruleGraph = new AspectRuleView(graph, ruleName);
+        AspectualRuleView ruleGraph = new AspectualRuleView(graph, ruleName);
         // convert rule graph into rule
         System.out.print("    Constructing rule from rule graph: ");
         Rule rule = ruleGraph.toRule();
         System.out.println("OK");
         // convert rule back into rule graph and test for isomorphism
         System.out.print("    Reconstructing rule graph from rule: ");
-        AspectRuleView newRuleGraph = new AspectRuleView(rule);
+        AspectualRuleView newRuleGraph = new AspectualRuleView(rule);
         System.out.println("OK");
         System.out.print("    Testing for isomorphism of original and reconstructed rule graph: ");
         if (isoChecker.areIsomorphic(newRuleGraph.getView(),ruleGraph.getView())) {
@@ -162,14 +163,14 @@ public class AspectRuleView implements RuleView, AspectualView {
      * Constructs a new rule graph on the basis of a given production rule.
      * @param rule the production rule for which a rule graph is to be constructed
      * @require <tt>rule != null</tt>
-     * @throws ViewFormatException if <code>rule</code> cannot be displayed as a {@link AspectRuleView},
+     * @throws ViewFormatException if <code>rule</code> cannot be displayed as a {@link AspectualRuleView},
      * for instance because its NACs are nested too deep or not connected
      */
-    public AspectRuleView(Rule rule) throws ViewFormatException {
+    public AspectualRuleView(Rule rule) throws ViewFormatException {
     	this.name = rule.getName();
         this.priority = rule.getPriority();
         this.rule = rule;
-        this.graphToRuleMap = new HashMap<Node,Node>();
+        this.graphToRuleMap = new HashMap<AspectNode,Node>();
         this.graph = computeGraph(rule, graphToRuleMap);
     }
 
@@ -184,7 +185,7 @@ public class AspectRuleView implements RuleView, AspectualView {
      * @throws GraphFormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public AspectRuleView(AspectGraph graph, NameLabel name) throws GraphFormatException {
+    public AspectualRuleView(AspectGraph graph, NameLabel name) throws GraphFormatException {
         this(graph, name, Rule.DEFAULT_PRIORITY, null);
     }
 
@@ -198,12 +199,12 @@ public class AspectRuleView implements RuleView, AspectualView {
      * @throws GraphFormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public AspectRuleView(AspectGraph graph, NameLabel name, int priority, RuleFactory ruleFactory) throws GraphFormatException {
+    public AspectualRuleView(AspectGraph graph, NameLabel name, int priority, RuleFactory ruleFactory) throws GraphFormatException {
         this.name = name;
         this.priority = priority;
         this.ruleFactory = ruleFactory;
         this.graph = graph;
-        this.graphToRuleMap = new HashMap<Node,Node>();
+        this.graphToRuleMap = new HashMap<AspectNode,Node>();
         this.rule = computeRule(graph, graphToRuleMap);
     }
     
@@ -273,30 +274,30 @@ public class AspectRuleView implements RuleView, AspectualView {
 	    return priority;
 	}
 
-	/** Invokes {@link #AspectRuleView(Rule)} to construct a rule graph. */
+	/** Invokes {@link #AspectualRuleView(Rule)} to construct a rule graph. */
 	public RuleView newInstance(Rule rule) throws ViewFormatException {
-	    return new AspectRuleView(rule);
+	    return new AspectualRuleView(rule);
 	}
 
 	/**
      * Creates and returns the production rule corresponding to this rule graph.
-     * @ensure <tt>result != null</tt>
+     */
+    public Rule getModel() {
+    	return rule;
+    }
+
+	/**
+     * Creates and returns the production rule corresponding to this rule graph.
      */
     public Rule toRule() {
     	return rule;
     }
     
-    /* (non-Javadoc)
-	 * @see groove.trans.view.AspectView#toGraph()
-	 */
 	public AspectGraph getView() {
 		return graph;
 	}
 	
-	/* (non-Javadoc)
-	 * @see groove.trans.view.AspectView#graphToRuleMap()
-	 */
-	public Map<Node,Node> getViewMap() {
+	public Map<AspectNode, Node> getMap() {
 		return graphToRuleMap;
 	}
 
@@ -304,7 +305,7 @@ public class AspectRuleView implements RuleView, AspectualView {
      * Callback method to compute a rule from an aspect graph.
      * @param graph the aspect graph to compute the rule from
      */
-    protected Rule computeRule(AspectGraph graph, Map<Node, Node> graphToRuleMap) throws GraphFormatException {
+    protected Rule computeRule(AspectGraph graph, Map<AspectNode, Node> graphToRuleMap) throws GraphFormatException {
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
@@ -317,7 +318,7 @@ public class AspectRuleView implements RuleView, AspectualView {
         // create the new rhs
         VarGraph rhs = createRegExprGraph();
         // mapping from aspect nodes to RHS nodes
-        Map<Node,Node> toRight = new HashMap<Node,Node>();
+        Map<AspectNode,Node> toRight = new HashMap<AspectNode,Node>();
         // we create a single graph containing all NAC nodes and edges
         // as a supergraph of the lhs graph
         // this will be partitioned later
@@ -431,7 +432,7 @@ public class AspectRuleView implements RuleView, AspectualView {
 	 * @throws GraphFormatException if <code>edge</code> does not
      * occur in a correct way in <code>context</code>
      */
-    protected Edge computeEdgeImage(AspectEdge edge, AspectGraph context, Map<Node, Node> elementMap) throws GraphFormatException {
+    protected Edge computeEdgeImage(AspectEdge edge, AspectGraph context, Map<AspectNode, Node> elementMap) throws GraphFormatException {
     	Node[] ends = new Node[edge.endCount()];
     	for (int i = 0; i < ends.length; i++) {
     		Node endImage = elementMap.get(edge.end(i));
@@ -588,19 +589,19 @@ public class AspectRuleView implements RuleView, AspectualView {
     	assert ends.length == 2 : String.format("Cannot create edge with end nodes %s", Arrays.toString(ends));
     	Node source = ends[Edge.SOURCE_INDEX];
     	Node target = ends[Edge.TARGET_INDEX];
-    	String var = RegExprLabel.getWildcardId(label);
-    	if (var == null) {
+//    	String var = RegExprLabel.getWildcardId(label);
+//    	if (var == null) {
     		return DefaultEdge.createEdge(source, label, target);
-    	} else {
-    		return new VarBinaryEdge(source, var, target);
-    	}
+//    	} else {
+//    		return new VarBinaryEdge(source, var, target);
+//    	}
     }
 
     /**
      * Computes an aspect graph representation of the rule
      * stored in this rule view.
      */
-    protected AspectGraph computeGraph(Rule rule, Map<Node, Node> graphToRuleMap) throws ViewFormatException {
+    protected AspectGraph computeGraph(Rule rule, Map<AspectNode, Node> graphToRuleMap) throws ViewFormatException {
     	AspectGraph result = createGraph();
 		// start with lhs
 		Map<Node, AspectNode> lhsNodeMap = new HashMap<Node, AspectNode>();
@@ -886,7 +887,7 @@ public class AspectRuleView implements RuleView, AspectualView {
      * Mapping from the elements of the aspect graph representation
      * to the corresponding elements of the rule.
      */
-    private final Map<Node,Node> graphToRuleMap;
+    private final Map<AspectNode,Node> graphToRuleMap;
     /** Rule factory set for this rule. */
     private RuleFactory ruleFactory;
 

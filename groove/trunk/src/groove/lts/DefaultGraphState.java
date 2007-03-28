@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphState.java,v 1.2 2007-03-23 15:42:58 rensink Exp $
+ * $Id: DefaultGraphState.java,v 1.3 2007-03-28 15:12:33 rensink Exp $
  */
 package groove.lts;
 
@@ -40,7 +40,7 @@ import java.util.Iterator;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-23 15:42:58 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-28 15:12:33 $
  */
 public class DefaultGraphState extends DeltaGraph implements GraphState {
 	/**
@@ -51,16 +51,6 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
 	 * Default constant null reference for closed states.
 	 */
 	static private final SoftReference<DefaultStateCache> CLOSED_NULL_REFERENCE = new SoftReference<DefaultStateCache>(null);
-//    /**
-//     * Constructs a protytpe object of this class, to be used as a factory for new (graph) states
-//     * and (graph state) nodes.
-//     * 
-//     * @return a prototype <tt>Node</tt> instance, only intended to be used for its
-//     *         <tt>newNode()</tt> or <tt>newState(Graph)</tt> methods.
-//     */
-//    static public State getPrototype() {
-//        return new DefaultGraphState();
-//    }
     
     /**
      * Interface for objects that can be closed in some sense.
@@ -105,7 +95,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      */
     @Deprecated
     public DefaultGraphState() {
-        nr = stateCount++;
+        stateCount++;
     }
 
     /**
@@ -116,7 +106,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      */
     public DefaultGraphState(Graph graph) {
         super(graph);
-        nr = stateCount++;
+        stateCount++;
     }
     
     public Graph getGraph() {
@@ -302,13 +292,12 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
     }
 
     /**
-     * Returns a clone of this state.
-     * 
-     * @return a clone of this state
-     * @ensure <tt>result != null</tt>
+     * This implementation returns a {@link DefaultGraphState}
+     * @see #DefaultGraphState(Graph)
      */
-    	@Override
+    @Override
     public DefaultGraphState clone() {
+//    	throw new UnsupportedOperationException(String.format("Cloning of %s not supported", this.getClass()));
         return new DefaultGraphState(this);
     }
 
@@ -320,7 +309,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      */
     public int compareTo(Element obj) {
         if (obj instanceof DefaultGraphState) {
-            return nr - ((DefaultGraphState) obj).nr;
+            return getStateNumber() - ((DefaultGraphState) obj).getStateNumber();
         } else if (obj instanceof DefaultGraphTransition) {
             return getStateNumber() - ((DefaultGraphTransition) obj).source().getStateNumber();
         } else {
@@ -338,29 +327,6 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
         return new DefaultGraphState();
     }
 
-    //
-    // public GraphState newGraphState(Graph graph) {
-    // return new GraphState(graph);
-    // }
-
-    // ------------------------------ Object overrides -----------------------------------
-
-    /** Returns the number of this <tt>GraphState</tt>. */
-	@Override
-    public int hashCode() {
-        return nr;
-    }
-
-    // ----------------------- commands -----------------------------
-
-    /**
-     * Two <tt>GraphState</tt> s are equal if they have the same number.
-     */
-	@Override
-    public boolean equals(Object obj) {
-        return (obj instanceof DefaultGraphState) && nr == ((DefaultGraphState) obj).nr;
-    }
-
     /**
      * Returns a name for this state, rather than a full description. To get the full description,
      * use <tt>DefaultGraph.toString(Graph)</tt>.
@@ -369,7 +335,11 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      */
 	@Override
     public String toString() {
-        return "s" + nr;
+		if (hasStateNumber()) {
+			return "s" + getStateNumber();
+		} else {
+			return "s??";
+		}
     }
 
 	/**
@@ -469,12 +439,38 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
     	return new DefaultGraphOutTransition(event, this);
     }
 
+    /** Indicates whether the state has already been assigned a number. */
+    protected boolean hasStateNumber() {
+    	return this.nr >= 0;
+    }
+    
     /**
      * Returns the number of this state.
-     * The number is guaranteed to be unique for each state in a given transition system.
+     * The number is meant to be unique for each state in a given transition system.
+     * @throws IllegalStateException if {@link #hasStateNumber()} returns <code>false</code>
+     * at the time of calling
      */
     protected int getStateNumber() {
+    	if (!hasStateNumber()) {
+        	throw new IllegalStateException("State number not set"); 
+        }
         return nr;
+    }
+
+    /**
+     * Sets the state number.
+     * This method should be called only once, with a non-negative number.
+     * @throws IllegalStateException if {@link #hasStateNumber()} returns <code>true</code>
+     * @throws IllegalArgumentException if <code>nr</code> is illegal (i.e., negative)
+     */
+    protected void setStateNumber(int nr) {
+        if (hasStateNumber()) {
+        	throw new IllegalStateException(String.format("State number already set to %s", this.nr)); 
+        }
+        if (nr < 0) {
+        	throw new IllegalArgumentException(String.format("Illegal state number %s", nr));
+        }
+    	this.nr = nr;
     }
 
     /**
@@ -563,7 +559,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      * 
      * @invariant nr < nrNodes
      */
-    private final int nr;
+    private int nr = -1;
 
     /**
      * The number of DefaultStates constructed.

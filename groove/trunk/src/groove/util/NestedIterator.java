@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NestedIterator.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: NestedIterator.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
@@ -25,7 +25,7 @@ import java.util.List;
  * iterators are accessed one by one, whenever the previous is 
  * exhausted.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class NestedIterator<T> extends AbstractNestedIterator<T> {
     /**
@@ -59,11 +59,13 @@ public class NestedIterator<T> extends AbstractNestedIterator<T> {
     }
 
     /** This implementation returns the next element of the outer iterator. */
+    @Override
     protected Iterator<? extends T> nextIterator() {
         return outerIterator.next();
     }
 
     /** This implementation queries the outer iterator. */
+    @Override
     protected boolean hasNextIterator() {
         return outerIterator.hasNext();
     }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractComposite.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: AbstractComposite.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
  */
 package groove.graph;
 
@@ -21,7 +21,7 @@ package groove.graph;
  * by using <tt>ends()</tt> to implement the other 
  * endpoint-related methods. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 @Deprecated
 public abstract class AbstractComposite implements Composite {
@@ -154,6 +154,7 @@ public abstract class AbstractComposite implements Composite {
     /**
      * Since all composites are immutable, the method just returns <code>this</code>.
      */
+    @Override
     public Object clone() {
         return this;
     }
@@ -166,6 +167,7 @@ public abstract class AbstractComposite implements Composite {
      * @see #isTypeEqual(Object)
      * @see #isEndEqual(Composite)
      */
+    @Override
     public boolean equals(Object obj) {
         return isTypeEqual(obj) && isEndEqual((Composite) obj);
     }
@@ -173,6 +175,7 @@ public abstract class AbstractComposite implements Composite {
     /**
      * Delegates to {@link #computeHashCode()}.
      */
+    @Override
     public int hashCode() {
         return computeHashCode();
     }

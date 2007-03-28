@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultConditionOutcome.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: DefaultConditionOutcome.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
  */
 package groove.trans;
 
@@ -24,7 +24,7 @@ import groove.rel.VarMorphism;
  * Default implementation of a {@link GraphTestOutcome} for {@link GraphCondition}s.
  * Specialises {@link AbstractTestOutcome}.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultConditionOutcome extends AbstractTestOutcome<Matching,GraphCondition> implements GraphConditionOutcome {
     /**
@@ -39,6 +39,7 @@ public class DefaultConditionOutcome extends AbstractTestOutcome<Matching,GraphC
      * A graph condition is successful if the negated predicate is <i>not</i>
      * successful.
      */
+    @Override
     protected boolean isSuccessKey(GraphTestOutcome<GraphCondition,Matching> image) {
         return ! image.isSuccess();
     }

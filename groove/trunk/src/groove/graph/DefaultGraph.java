@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraph.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: DefaultGraph.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
  */
 package groove.graph;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,10 +25,10 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Implementation of graph.Graph which only supports nodes and directed binary edges.
- * The implementation is optimized towards a constant performance of <tt>outEdgeSet()</tt>
+ * Implementation of Graph based on a set of nodes and a 
+ * mapping from nodes to sets of outgoing edges.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:40 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:29 $
  */
 public class DefaultGraph extends AbstractGraph {
     /**
@@ -61,6 +62,7 @@ public class DefaultGraph extends AbstractGraph {
         }
     }
 
+    @Override
     public boolean containsElement(Element elem) {
         reporter.start(CONTAINS_ELEMENT);
         try {
@@ -85,8 +87,13 @@ public class DefaultGraph extends AbstractGraph {
         reporter.stop();
         return Collections.unmodifiableSet(result);
     }
+    
+	@Override
+	public Collection<? extends Edge> outEdgeSet(Node node) {
+		return Collections.unmodifiableSet(edgeMap.get(node));
+	}
 
-    public Set<? extends Node> nodeSet() {
+	public Set<? extends Node> nodeSet() {
         reporter.start(NODE_SET);
         Set<Node> result = unmodifiableNodeSet;
         reporter.stop();
@@ -94,6 +101,7 @@ public class DefaultGraph extends AbstractGraph {
     }
 
     @Deprecated
+    @Override
     public Iterator<? extends Edge> edgeIterator() {
         Iterator<? extends Edge> res = new Iterator<Edge>() {
             public boolean hasNext() {
@@ -127,6 +135,7 @@ public class DefaultGraph extends AbstractGraph {
 
     // ------------------------ OBJECT OVERRIDES -----------------------
 
+    @Override
     public Graph clone() {
         reporter.start(CLONE);
         Graph result = new DefaultGraph(this);

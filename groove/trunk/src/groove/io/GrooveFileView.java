@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GrooveFileView.java,v 1.1.1.2 2007-03-20 10:42:50 kastenberg Exp $
+ * $Id: GrooveFileView.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.io;
 
@@ -25,7 +25,7 @@ import javax.swing.Icon;
 /**
  * Implements a file view that displays the correct icons and descriptions for
  * graph files, rules files and grammar directories.
- * @version $Date: 2007-03-20 10:42:50 $ $Revision: 1.1.1.2 $
+ * @version $Date: 2007-03-28 15:12:32 $ $Revision: 1.2 $
  * @author Arend Rensink
  */
 public class GrooveFileView extends javax.swing.filechooser.FileView {
@@ -113,6 +113,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @param f the file to be tested
      * @require <tt>f != null</tt>
      */
+    @Override
     public Icon getIcon(File f) {
         if (isGraphFile(f))
             return Groove.GRAPH_FILE_ICON;
@@ -129,6 +130,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @param f the file to be described
      * @require <tt>f != null</tt>
      */
+    @Override
     public String getDescription(File f) {
         String name = f.getName();
         if (isRuleFile(f))
@@ -150,6 +152,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @param f the file to be described
      * @require <tt>f != null</tt>
      */
+    @Override
     public String getTypeDescription(File f) {
         return getDescription(f);
     }
@@ -161,6 +164,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * @param f the file of which the traversability is to be determined
      * @see #isGpsTraversable() 
      */
+    @Override
     public Boolean isTraversable(File f) {
         Boolean superTraversable = super.isTraversable(f);
         if (gpsTraversable) {

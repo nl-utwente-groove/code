@@ -1,8 +1,7 @@
-/* $Id: AspectualView.java,v 1.1 2007-03-27 14:18:35 rensink Exp $ */
-package groove.trans.view;
+/* $Id: AspectualView.java,v 1.1 2007-03-28 15:12:31 rensink Exp $ */
+package groove.graph.aspect;
 
 import groove.graph.Node;
-import groove.graph.aspect.AspectGraph;
 
 import java.util.Map;
 
@@ -14,15 +13,18 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface AspectualView {
+public interface AspectualView<Model> {
 	/**
 	 * Returns the aspect graph representation of this view.
 	 */
 	AspectGraph getView();
+	
+	/** Returns the underlying model. */
+	Model getModel();
 
 	/**
 	 * Returns a mapping from the nodes in the aspect graph view to the
 	 * corresponding nodes in the model that is being viewed.
 	 */
-	Map<Node, Node> getViewMap();
+	Map<AspectNode, Node> getMap();
 }

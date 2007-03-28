@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IntCell.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: IntCell.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
  */
 package groove.util;
 
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class IntCell implements Cloneable {
     /**
@@ -85,14 +85,17 @@ public class IntCell implements Cloneable {
 
     // --------------------------- Object overrides -----------------------
     
+    @Override
     public boolean equals(Object obj) {
         return (obj instanceof IntCell && ((IntCell) obj).value == value);
     }
 
+    @Override
     public int hashCode() {
         return value;
     }
     
+    @Override
     public Object clone() {
         try {
             return super.clone();
@@ -101,6 +104,7 @@ public class IntCell implements Cloneable {
         }
     }
 
+    @Override
     public String toString() {
         return ""+value;
     }

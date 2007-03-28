@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeEdgeSetGraph.java,v 1.2 2007-03-20 19:14:52 rensink Exp $
+ * $Id: NodeEdgeSetGraph.java,v 1.3 2007-03-28 15:12:29 rensink Exp $
  */
 package groove.graph;
 
@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Graph implementation based on a single set of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @deprecated Use {@link NodeSetEdgeSetGraph} instead
  */
 @Deprecated
@@ -37,6 +37,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
             this.type = type;
         }
 
+        @Override
         public int size() {
             if (!isFixed())
                 return super.size();
@@ -45,6 +46,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
             return size;
         }
 
+        @Override
         public boolean approves(Object obj) {
             return type.isInstance(obj);
         }
@@ -62,6 +64,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
          * Overwrites the method from <tt>Set</tt> to ensure
          * proper notification in case of removal from the iterator.
          */
+        @Override
         public Iterator<Element> iterator() {
             return new Iterator<Element>() {
                 public boolean hasNext() {
@@ -90,6 +93,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
          * proper observer notification in all cases. 
          * @require <tt>elem instanceof Element</tt>
          */
+        @Override
         public final boolean add(Element elem) {
             if (super.add(elem)) {
             	if (elem instanceof Node) {
@@ -107,6 +111,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
          * proper observer notification in all cases. 
          * @require <tt>elem instanceof Element</tt>
          */
+        @Override
         public final boolean remove(Object elem) {
             if (super.remove(elem)) {
             	if (elem instanceof Node) {
@@ -147,6 +152,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
         elementSet.addAll(graph.elementSet);
     }
 
+    @Override
     public boolean containsElement(Element elem) {
         reporter.start(CONTAINS_ELEMENT);
         boolean result = elementSet.contains(elem);
@@ -154,6 +160,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
         return result;
     }
 
+    @Override
     public boolean containsElementSet(Collection<? extends Element> elementSet) {
         reporter.start(CONTAINS_ELEMENT);
         boolean result = this.elementSet.containsAll(elementSet);
@@ -187,6 +194,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
         return isNew;
     }
 
+    @Override
     public boolean addNodeSet(Collection<? extends Node> nodeSet) {
         reporter.start(ADD_NODE);
         assert !isFixed() : "Trying to add " + nodeSet + " to unmodifiable graph";
@@ -220,6 +228,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
         return removed;
     }
 
+    @Override
     public boolean removeNodeSet(Collection<Node> nodeSet) {
         reporter.start(REMOVE_NODE);
         Iterator<Element> edgeIter = elementSet.iterator();
@@ -241,6 +250,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
         return removed;
     }
 
+    @Override
     public boolean removeEdgeSet(Collection<Edge> edgeSet) {
         reporter.start(REMOVE_EDGE);
         boolean removed = elementSet.removeAll(edgeSet);
@@ -254,6 +264,7 @@ public class NodeEdgeSetGraph extends AbstractGraph {
         return elementSet.add(edge);
     }
 
+    @Override
     public boolean addEdgeSetWithoutCheck(Collection<Edge> edgeSet) {
         return elementSet.addAll(edgeSet);
     }
@@ -262,12 +273,12 @@ public class NodeEdgeSetGraph extends AbstractGraph {
         return elementSet.remove(node);
     }
 
+    @Override
     public boolean removeNodeSetWithoutCheck(Collection<Node> nodeSet) {
         return elementSet.removeAll(nodeSet);
     }
 
-    // ------------- general methods (see AbstractGraph) ----------
-
+    @Override
     public Graph clone() {
         reporter.start(CLONE);
         Graph result = new NodeEdgeSetGraph(this);

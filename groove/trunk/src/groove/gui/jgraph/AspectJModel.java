@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.1 2007-03-27 14:18:29 rensink Exp $
+ * $Id: AspectJModel.java,v 1.2 2007-03-28 15:12:26 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -20,14 +20,13 @@ import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.aspect.AspectEdge;
 import groove.graph.aspect.AspectElement;
-import groove.graph.aspect.AspectGraph;
 import groove.graph.aspect.AspectNode;
 import groove.graph.aspect.AspectParser;
 import groove.graph.aspect.AspectValue;
+import groove.graph.aspect.AspectualView;
 import groove.graph.aspect.AttributeAspect;
 import groove.graph.aspect.RuleAspect;
 import groove.rel.RegExprLabel;
-import groove.trans.view.AspectualView;
 import groove.util.Groove;
 
 import static groove.gui.jgraph.JAttr.*;
@@ -47,14 +46,16 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class AspectJModel extends GraphJModel {
-    // attribute arrays
-    static public final Map<AspectValue,AttributeMap> RULE_NODE_ATTR = new HashMap<AspectValue,AttributeMap>();
-    static public final Map<AspectValue,AttributeMap> RULE_EDGE_ATTR = new HashMap<AspectValue,AttributeMap>();
-    
+    /** Empty instance of the {@link AspectJModel}. */
     static public final AspectJModel EMPTY_JMODEL = new AspectJModel();
+
+    /** Collection of attributes for rule nodes. */
+    static private final Map<AspectValue,AttributeMap> RULE_NODE_ATTR = new HashMap<AspectValue,AttributeMap>();
+    /** Collection of attributes for rule edges. */
+    static private final Map<AspectValue,AttributeMap> RULE_EDGE_ATTR = new HashMap<AspectValue,AttributeMap>();
 
     static {
         for (AspectValue role: RuleAspect.getInstance().getValues()) {
@@ -87,7 +88,9 @@ public class AspectJModel extends GraphJModel {
         }
     }
 
+    /** Role names (for the tool tips). */
     static private final Map<AspectValue,String> ROLE_NAMES = new HashMap<AspectValue,String>(); 
+    /** Role descriptions (for the tool tips). */
 	static private final Map<AspectValue,String> ROLE_DESCRIPTIONS = new HashMap<AspectValue,String>(); 
     
     static {
@@ -110,8 +113,8 @@ public class AspectJModel extends GraphJModel {
     /**
      * Specialized j-vertex for rule graphs, with its own tool tip text.
      */
-    public class RuleJVertex extends GraphJVertex {
-        public RuleJVertex(AspectJModel jModel, AspectNode node) {
+    public class AspectJVertex extends GraphJVertex {
+        public AspectJVertex(AspectJModel jModel, AspectNode node) {
             super(jModel, node);
             this.role = role(node);
         }
@@ -209,7 +212,7 @@ public class AspectJModel extends GraphJModel {
 		 */
 		@Override
 		protected String getNodeIdentity() {
-			return view.getViewMap().get(getNode()).toString();
+			return view.getMap().get(getNode()).toString();
 		}
 
 		/** The role of the underlying rule node. */
@@ -219,8 +222,8 @@ public class AspectJModel extends GraphJModel {
     /**
      * Specialized j-edge for rule graphs, with its own tool tip text.
      */
-    public class RuleJEdge extends GraphJEdge {
-        public RuleJEdge(AspectEdge edge) {
+    public class AspectJEdge extends GraphJEdge {
+        public AspectJEdge(AspectEdge edge) {
             super(edge);
             this.role = role(edge);
         }
@@ -282,7 +285,7 @@ public class AspectJModel extends GraphJModel {
 		 */
 		@Override
 		protected String getSourceIdentity() {
-			return view.getViewMap().get(getSourceNode()).toString();
+			return view.getMap().get(getSourceNode()).toString();
 		}
 
 		/**
@@ -291,7 +294,7 @@ public class AspectJModel extends GraphJModel {
 		 */
 		@Override
 		protected String getTargetIdentity() {
-			return view.getViewMap().get(getTargetNode()).toString();
+			return view.getMap().get(getTargetNode()).toString();
 		}
 
 		private final AspectValue role;
@@ -314,12 +317,6 @@ public class AspectJModel extends GraphJModel {
     protected AspectJModel() {
     	view = null;
     }
-
-    /** Specialises the return type to return the aspect view on the rule. */
-	@Override
-	public AspectGraph graph() {
-		return (AspectGraph) super.graph();
-	}
 
 	@Override
     protected AttributeMap createJVertexAttr(Node node) {
@@ -346,20 +343,11 @@ public class AspectJModel extends GraphJModel {
         return result;
     }
     
-    /**
-     * Overwrites the method so as to return a rule edge.
-     * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
-     */
-    @Override
-    protected GraphJEdge createJEdge(Edge edge) {
-        return new RuleJEdge((AspectEdge) edge);
-    }
-
     /** Adds the correct line width emphasis. */
 	@Override
 	protected AttributeMap getJEdgeEmphAttr(JEdge jCell) {
 		AttributeMap result = super.getJEdgeEmphAttr(jCell);
-        AspectEdge ruleEdge = (AspectEdge) ((RuleJEdge) jCell).getEdge();
+        AspectEdge ruleEdge = (AspectEdge) ((AspectJEdge) jCell).getEdge();
 		GraphConstants.setLineWidth(result, JAttr.RULE_EMPH_WIDTH.get(role(ruleEdge)));
 		return result;
 	}
@@ -368,7 +356,7 @@ public class AspectJModel extends GraphJModel {
 	@Override
 	protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
 		AttributeMap result = super.getJVertexEmphAttr(jCell);
-        AspectNode ruleNode = ((RuleJVertex) jCell).getNode();
+        AspectNode ruleNode = ((AspectJVertex) jCell).getNode();
 		GraphConstants.setBorder(result, JAttr.RULE_EMPH_BORDER.get(role(ruleNode)));
 		return result;
 	}
@@ -379,39 +367,46 @@ public class AspectJModel extends GraphJModel {
      */
     @Override
     protected GraphJVertex createJVertex(Node node) {
-        return new RuleJVertex(this, (AspectNode) node);
+        return new AspectJVertex(this, (AspectNode) node);
     }
-
-    /**
-     * Makes sure aspect information is included in the labels.
+/**
+	 * Overwrites the method so as to return a rule edge.
+	 * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
 	 */
 	@Override
-	protected Collection<String> getLabels(JEdge jEdge) {
-		// briefly set the show-aspects property to true
-		boolean oldShowAspects = isShowAspects();
-		setShowAspects(true);
-		Collection<String> result = super.getLabels(jEdge);
-		// reset the show-aspects property
-		setShowAspects(oldShowAspects);
-		return result;
+	protected GraphJEdge createJEdge(Edge edge) {
+	    return new AspectJEdge((AspectEdge) edge);
 	}
-
+	//
+//    /**
+//     * Makes sure aspect information is included in the labels.
+//	 */
+//	@Override
+//	protected Collection<String> getLabels(JEdge jEdge) {
+//		// briefly set the show-aspects property to true
+//		boolean oldShowAspects = isShowAspects();
+//		setShowAspects(true);
+//		Collection<String> result = super.getLabels(jEdge);
+//		// reset the show-aspects property
+//		setShowAspects(oldShowAspects);
+//		return result;
+//	}
+//
+//    /**
+//     * Makes sure aspect information is included in the labels.
+//	 */
+//	@Override
+//	protected Collection<String> getLabels(JVertex jCell) {
+//		// briefly set the show-aspects property to true
+//		boolean oldShowAspects = isShowAspects();
+//		setShowAspects(true);
+//		Collection<String> result = super.getLabels(jCell);
+//		// reset the show-aspects property
+//		setShowAspects(oldShowAspects);
+//		return result;
+//	}
     /**
-     * Makes sure aspect information is included in the labels.
-	 */
-	@Override
-	protected Collection<String> getLabels(JVertex jCell) {
-		// briefly set the show-aspects property to true
-		boolean oldShowAspects = isShowAspects();
-		setShowAspects(true);
-		Collection<String> result = super.getLabels(jCell);
-		// reset the show-aspects property
-		setShowAspects(oldShowAspects);
-		return result;
-	}
-    /**
-     * The underlying production rule of this graph model.
-     * @invariant rule != null
+     * The underlying view of this graph model.
      */
     private final AspectualView view;
 }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphFactory.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: GraphFactory.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
  */
 package groove.graph;
 
@@ -21,7 +21,7 @@ package groove.graph;
  * Objects implementing this factory can create instances of
  * <tt>Graph</tt>, <tt>Morphism</tt> and <tt>InjectiveMorphism</tt>.   
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public abstract class GraphFactory {
     static public final Morphism defaultPrototypeMorphism =
@@ -40,8 +40,8 @@ public abstract class GraphFactory {
      * @see #defaultPrototypeInjectiveMorphism
      * @see #newGraph()
      */
-    static public GraphFactory newInstance() {
-        return newInstance(
+    static public GraphFactory getInstance() {
+        return getInstance(
             defaultPrototypeGraph,
             defaultPrototypeMorphism,
             defaultPrototypeInjectiveMorphism);
@@ -54,16 +54,18 @@ public abstract class GraphFactory {
      * @param prototypeMorphism the source of new morphisms in this factory
      * @param prototypeInjectiveMorphism the source of new injective morphisms in this factory
      */
-    static public GraphFactory newInstance(
+    static public GraphFactory getInstance(
         final Graph prototypeGraph,
         final Morphism prototypeMorphism,
         final InjectiveMorphism prototypeInjectiveMorphism) {
         assert prototypeMorphism != null;
         return new GraphFactory() {
+        	@Override
             public Graph newGraph() {
                 return prototypeGraph.newGraph();
             }
 
+        	@Override
             public Graph newGraph(Graph graph) {
                 Graph result = null;
                 try {
@@ -75,6 +77,7 @@ public abstract class GraphFactory {
                 return result;
             }
 
+        	@Override
             public InjectiveMorphism newInjectiveMorphism(
                 Graph dom,
                 Graph cod) {
@@ -83,6 +86,7 @@ public abstract class GraphFactory {
                     cod);
             }
 
+        	@Override
             public Morphism newMorphism(Graph dom, Graph cod) {
                 return prototypeMorphism.createMorphism(dom, cod);
             }
@@ -95,8 +99,8 @@ public abstract class GraphFactory {
      * <tt>defaultInjectivePrototypeMorphism</tt> for morphisms.
      * @param prototypeGraph the source of new graphs in this factory
      */
-    static public GraphFactory newInstance(Graph prototypeGraph) {
-        return newInstance(prototypeGraph, defaultPrototypeMorphism, defaultPrototypeInjectiveMorphism);
+    static public GraphFactory getInstance(Graph prototypeGraph) {
+        return getInstance(prototypeGraph, defaultPrototypeMorphism, defaultPrototypeInjectiveMorphism);
     }
 
     /**

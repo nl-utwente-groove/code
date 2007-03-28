@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: JEdge.java,v 1.3 2007-03-28 15:12:26 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -21,11 +21,9 @@ import groove.util.Groove;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.jgraph.graph.DefaultEdge;
-import org.jgraph.graph.GraphConstants;
 
 /**
  * JGraph edge with a set of string labels as its user object,
@@ -34,7 +32,7 @@ import org.jgraph.graph.GraphConstants;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
@@ -125,28 +123,6 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      */
     protected JUserObject<?> createUserObject() {
     	return new JUserObject(this, PRINT_SEPARATOR, false);
-    }
-
-    /**
-     * Adapts the method so the value attribute is never changed
-     * (but is always set to the immutable user object)
-     */
-    @Deprecated
-    public Map changeAttributes(Map change) {
-        Map result;
-        // check if the change specifies a change in user object
-        if (change.get(GraphConstants.VALUE) != null) {
-            // clone the current user object (before change)
-            Object userObjectClone = getUserObject().clone();
-            result = super.changeAttributes(change);
-            // make sure the current value attribute is identical to the user object
-            GraphConstants.setValue(getAttributes(), getUserObject());
-            result.put(GraphConstants.VALUE, userObjectClone);
-        } else {
-            result = super.changeAttributes(change);
-            result.remove(GraphConstants.VALUE);
-        }
-        return result;
     }
 
     /**

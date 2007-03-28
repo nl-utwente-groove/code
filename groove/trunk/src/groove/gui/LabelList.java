@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: LabelList.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
  */
 package groove.gui;
 
@@ -22,15 +22,14 @@ import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
-import groove.gui.jgraph.JUserObject;
-import groove.util.Bag;
-import groove.util.TreeBag;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -46,7 +45,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /** Pseudo-label maintained in this list for cells with an empty label set. */
@@ -129,7 +128,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      * Returns an unmodifiable view on the label set maintained by this label list.
      */
     public Collection<String> getLabels() {
-        return Collections.unmodifiableSet(labels.elementSet());
+        return Collections.unmodifiableSet(labels.keySet());
     }
 
     /**
@@ -143,7 +142,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         jmodel.addGraphModelListener(this);
         for (int i = 0; i < jmodel.getRootCount(); i++) {
             JCell cell = (JCell) jmodel.getRootAt(i);
-            addLabels(cell.getLabelSet());
+            addToLabels(cell);
         }
         updateList();
         setEnabled(true);
@@ -195,70 +194,92 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     public void graphChanged(GraphModelEvent e) {
         boolean changed = false;
         GraphModelEvent.GraphModelChange change = e.getChange();
-        // the changed attributes may mean labels are added or removed
-        // apparently we need getAttributes rather than getPreviousAttributes
-        Map<?,Map<?,?>> previousAttributes = change.getAttributes();
-        if (previousAttributes != null) {
-        	for (Map.Entry<?,Map<?,?>> previousAttrEntry: previousAttributes.entrySet()) {
-                if (previousAttrEntry.getKey() instanceof JCell) {
-                    JCell cell = (JCell) previousAttrEntry.getKey();
-                    Map<?,?> cellChange = previousAttrEntry.getValue();
-                    JUserObject<?> previousUserObject = (JUserObject) cellChange
-                            .get(GraphConstants.VALUE);
-                    if (previousUserObject != null) {
-                    	Set<String> removed = new HashSet<String>();
-                    	for (Object label: previousUserObject) {
-                    		removed.add(cell.getLabel(label));
-                    	}
-                        changed |= removeLabels(removed);
-                        changed |= addLabels(cell.getLabelSet());
-                    }
-                }
-            }
-        }
-        // added cells mean added labels
-        Object[] addedArray = change.getInserted();
-        if (addedArray != null) {
-            for (int i = 0; i < addedArray.length; i++) {
-                // the cell may be a port, so we have to check for JCell-hood
-                if (addedArray[i] instanceof JCell) {
-                    JCell cell = (JCell) addedArray[i];
-                    changed |= addLabels(cell.getLabelSet());
-                }
-            }
-        }
-        // removed cells mean removed labels
-        Object[] removedArray = change.getRemoved();
-        if (removedArray != null) {
-            for (int i = 0; i < removedArray.length; i++) {
-                // the cell may be a port, so we have to check for JCell-hood
-                if (removedArray[i] instanceof JCell) {
-                    JCell cell = (JCell) removedArray[i];
-                    changed |= removeLabels(cell.getLabelSet());
-                }
-            }
-        }
+		if (change instanceof JModel.RefreshEdit) {
+			changed = processRefresh((JModel.RefreshEdit) change, changed);
+		} else {
+	        changed = processRegularEdit(change, changed);
+		}
         if (changed) {
             updateList();
         }
     }
 
+	/**
+	 * Records the changes imposed by a graph change that is
+	 * not a {@link JModel.RefreshEdit}.
+	 */
+	private boolean processRegularEdit(GraphModelEvent.GraphModelChange change, boolean changed) {
+		Map changeMap = change.getAttributes();
+		if (changeMap != null) {
+			for (Object changeEntry : changeMap.entrySet()) {
+				Object obj = ((Map.Entry) changeEntry).getKey();
+				Map attributes = (Map) ((Map.Entry) changeEntry).getValue();
+				if (obj instanceof JCell && attributes.containsKey(GraphConstants.VALUE)) {
+					JCell cell = (JCell) obj;
+					changed |= removeFromLabels(cell);
+					changed |= addToLabels(cell);
+				}
+			}
+		}
+		// added cells mean added labels
+		Object[] addedArray = change.getInserted();
+		if (addedArray != null) {
+			for (int i = 0; i < addedArray.length; i++) {
+				// the cell may be a port, so we have to check for
+				// JCell-hood
+				if (addedArray[i] instanceof JCell) {
+					JCell cell = (JCell) addedArray[i];
+					changed |= addToLabels(cell);
+				}
+			}
+		}
+		// removed cells mean removed labels
+		Object[] removedArray = change.getRemoved();
+		if (removedArray != null) {
+			for (int i = 0; i < removedArray.length; i++) {
+				// the cell may be a port, so we have to check for
+				// JCell-hood
+				if (removedArray[i] instanceof JCell) {
+					JCell cell = (JCell) removedArray[i];
+					changed |= removeFromLabels(cell);
+				}
+			}
+		}
+		return changed;
+	}
+
+	/**
+	 * Processes the changes of a {@link JModel.RefreshEdit}.
+	 */
+	private boolean processRefresh(JModel.RefreshEdit change, boolean changed) {
+		if (!valueChangeUnderway) {
+			for (JCell cell : change.getRefreshedJCells()) {
+				changed |= removeFromLabels(cell);
+				changed |= addToLabels(cell);
+			}
+		}
+		return changed;
+	}
+
     /**
-     * Emphasizes/deemphasizes cells in the associated jmodel, based on the list selection.
-     */
+	 * Emphasizes/deemphasizes cells in the associated jmodel, based on the list
+	 * selection.
+	 */
     public void valueChanged(ListSelectionEvent e) {
+    	valueChangeUnderway = true;
 		Set<JCell> emphSet = new HashSet<JCell>();
 		int i = getMinSelectionIndex();
 		if (i >= 0) {
 			while (i <= getMaxSelectionIndex()) {
 				String label = (String) listModel.getElementAt(i);
 				if (isSelectedIndex(i)) {
-					emphSet.addAll(getJCellsForLabel(label));
+					emphSet.addAll(labels.get(label));
 				}
 				i++;
 			}
 		}
 		jmodel.setEmphasized(emphSet);
+    	valueChangeUnderway = false;
 	}
 
     /**
@@ -286,29 +307,58 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     }
 
     /**
-     * Adds a set of labels to the label set maintained in this list. If <tt>labelSet</tt> is
-     * empty, adds {@link #NO_LABEL}instead. Returns <tt>true</tt> if the label element set was
-     * changed as a result of this operation.
+     * Adds a cell to the label map.
+     * This means that for all labels of the cell, the cell is inserted
+     * in that label's image.
+     * The return value indicates if any labels were added
      */
-    protected boolean addLabels(Collection<String> labelSet) {
-        if (labelSet.isEmpty()) {
-            return labels.add(NO_LABEL);
-        } else {
-            return labels.addAll(labelSet);
-        }
+    protected boolean addToLabels(JCell cell) {
+    	boolean result = false;
+    	Collection<String> labelSet = cell.getLabelSet();
+    	if (labelSet.isEmpty()) {
+    		result |= addToLabels(cell, NO_LABEL);
+    	} else {
+    		for (String label: labelSet) {
+    			result |= addToLabels(cell, label);
+    		}
+    	}
+    	return result;
+    }
+    
+    /**
+     * Adds a cell-label pair to the label map.
+     * If the label does not yet exist in the map, insetrs it.
+     * The return value indicates if the label had to be created.
+     */
+    private boolean addToLabels(JCell cell, String label) {
+    	boolean result = false;
+    	Set<JCell> currentCells = labels.get(label);
+    	if (currentCells == null) {
+    		currentCells = new HashSet<JCell>();
+    		labels.put(label, currentCells);
+    		result = true;
+    	}
+    	currentCells.add(cell);
+    	return result;
     }
 
     /**
-     * Removes a set of labels from the label set maintained in this list. If <tt>labelSet</tt> is
-     * empty, removes {@link #NO_LABEL}instead. Returns <tt>true</tt> if the label element set
-     * was changed as a result of this operation.
+     * Removes a cell from the values of the label map, and removes a label
+     * if there are no cells left for it. The return value indicates if there
+     * were any labels removed.
      */
-    protected boolean removeLabels(Collection<String> labelSet) {
-        if (labelSet.isEmpty()) {
-            return labels.remove(NO_LABEL);
-        } else {
-            return labels.minus(labelSet);
-        }
+    protected boolean removeFromLabels(JCell cell) {
+    	boolean result = false;
+    	Iterator<Map.Entry<String,Set<JCell>>> labelIter = labels.entrySet().iterator();
+    	while (labelIter.hasNext()) {
+    		Map.Entry<String,Set<JCell>> labelEntry = labelIter.next();
+    		Set<JCell> cellSet = labelEntry.getValue();
+    		if (cellSet.remove(cell) && cellSet.isEmpty()) {
+    			labelIter.remove();
+    			result = true;
+    		}
+    	}
+    	return result;
     }
 
     /**
@@ -335,10 +385,15 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     /**
      * The bag of labels in this jmodel.
      */
-    protected final Bag<String> labels = new TreeBag<String>();
+    protected final Map<String,Set<JCell>> labels = new TreeMap<String,Set<JCell>>();
 
     /**
      * The background color of this component when it is enabled.
      */
     private Color enabledBackground;
+    
+    /**
+     * Flag to indicate that {@link #valueChanged(ListSelectionEvent)} is being executed.
+     */
+    private boolean valueChangeUnderway; 
 }

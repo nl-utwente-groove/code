@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJGraph.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: RuleJGraph.java,v 1.3 2007-03-28 15:12:26 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,9 +28,7 @@ import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
 /**
- * Implementation of MyJGraph that provides the proper popup menu.
- * To construct an instance, setupPopupMenu() should be called
- * after all global final variables have been set.
+ * Extension of {@link JGraph} that provides the proper popup menu.
  */
 public class RuleJGraph extends JGraph {
     public RuleJGraph(Simulator simulator) {
@@ -46,9 +44,11 @@ public class RuleJGraph extends JGraph {
     	return (AspectJModel) super.getModel();
 	}
 
+    @Override
 	protected void initPopupMenu(JPopupMenu toMenu) {
         // add actions to set the rule display to each production rule
         JMenu setMenu = new JMenu("Set rule to") {
+            @Override
             public void menuSelectionChanged(boolean selected) {
                 if (selected) {
                     removeAll();

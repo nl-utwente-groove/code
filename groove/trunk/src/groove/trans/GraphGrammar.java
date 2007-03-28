@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
  */
 package groove.trans;
 
@@ -31,7 +31,7 @@ import java.util.Properties;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-28 15:12:27 $
  */
 public class GraphGrammar extends RuleSystem {
     /**
@@ -59,7 +59,7 @@ public class GraphGrammar extends RuleSystem {
      * Unless the factory is explicitly set through {@link #setGraphFactory(GraphFactory)},
      * this one will be used to create start graphs.
      */
-    static public final GraphFactory DEFAULT_GRAPH_FACTORY = GraphFactory.newInstance();
+    static public final GraphFactory DEFAULT_GRAPH_FACTORY = GraphFactory.getInstance();
     
     /**
      * Constructs a graph grammar on the basis of a given rule system,

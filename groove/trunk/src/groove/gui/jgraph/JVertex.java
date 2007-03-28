@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertex.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: JVertex.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -21,18 +21,16 @@ import groove.util.Groove;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.Map;
 import java.util.Set;
 
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultPort;
-import org.jgraph.graph.GraphConstants;
 
 /**
  * JGraph vertex with a single port, and a fixed set of labels as a user object (through
  * {@link groove.gui.jgraph.JUserObject}).
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 abstract public class JVertex extends DefaultGraphCell implements JCell {
 	/** HTML tag to make text bold. */
@@ -127,29 +125,6 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
      */
     protected JUserObject<?> createUserObject() {
     	return new JUserObject(this, JUserObject.NEWLINE, true);
-    }
-
-    /**
-     * Adapts the method so that, if <tt>change</tt> specifies a change of user object (in its
-     * {@link GraphConstants#VALUE}-attribute), then <tt>result</tt> receives a clone of the
-     * previous user object.
-     */
-    @Deprecated
-    public Map changeAttributes(Map change) {
-        Map result;
-        // check if the change specifies a change in user object
-        if (change.get(GraphConstants.VALUE) != null) {
-            // clone the current user object (before change)
-            Object userObjectClone = getUserObject().clone();
-            result = super.changeAttributes(change);
-            // make sure the current value attribute is identical to the user object
-            GraphConstants.setValue(getAttributes(), getUserObject());
-            result.put(GraphConstants.VALUE, userObjectClone);
-        } else {
-            result = super.changeAttributes(change);
-            result.remove(GraphConstants.VALUE);
-        }
-        return result;
     }
 
     /**

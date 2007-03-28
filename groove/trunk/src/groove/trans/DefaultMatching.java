@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultMatching.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: DefaultMatching.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
  */
 package groove.trans;
 
@@ -26,9 +26,10 @@ import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.NodeEdgeMap;
 import groove.graph.Simulation;
+import groove.rel.RegExprLabel;
 import groove.rel.RegExprMorphism;
 import groove.rel.RegExprSimulation;
-import groove.rel.VarEdge;
+import groove.rel.ValuationEdge;
 import groove.rel.VarMorphism;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.FilterIterator;
@@ -39,7 +40,7 @@ import groove.util.FilterIterator;
  * Expecially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
@@ -56,11 +57,15 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
 
     /**
      * In addition to invoking the <code>super</code> method,
-     * registers the valuation if <code>key</code> is a {@link groove.rel.VarEdge}.
+     * registers the valuation if <code>key</code> binds variables.
      */
+    @Override
     public Edge putEdge(Edge key, Edge value) {
-        if (key instanceof VarEdge) {
-            putVar(((VarEdge) key).var(), value.label());
+    	String var = RegExprLabel.getWildcardId(key.label());
+    	if (var != null) {
+            putVar(var, value.label());
+        } else if (value instanceof ValuationEdge) {
+        	putAllVar(((ValuationEdge) value).getValue());
         }
         return super.putEdge(key, value);
     }
@@ -79,6 +84,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
      * Convenience method for <code>getTotalExtension() != null</code>.
      */
+    @Override
     public boolean hasTotalExtensions() {
         if (hasComplexNegConjunct()) {
             return getTotalExtension() != null;
@@ -95,6 +101,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * Iterates over the total extensions until one is found that does not
      * match the negated conjunct.
      */
+    @Override
     public Morphism getTotalExtension() {
         if (hasComplexNegConjunct()) {
             Iterator<? extends Matching> matchIter = (Iterator<? extends Matching>) super.getTotalExtensionsIter();
@@ -118,6 +125,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * Removes from the result of the <code>super</code> call those morphisms that
      * match the negated conjunct.
      */
+    @Override
     public Collection<? extends Matching> getTotalExtensions() {
         Collection<? extends Matching> result = (Collection<? extends Matching>) super.getTotalExtensions();
         if (hasComplexNegConjunct()) {
@@ -139,6 +147,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * Filters from the result of the <code>super</code> call those morphisms that
      * do not match the negated conjunct.
      */
+    @Override
     public Iterator<? extends Matching> getTotalExtensionsIter() {
         Iterator<? extends Matching> result = (Iterator<? extends Matching>) super.getTotalExtensionsIter();
         if (hasComplexNegConjunct()) {
@@ -167,6 +176,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * This implementation defers the creation to the rule factory.
      * @see RuleFactory#createSimulation(Matching)
      */
+    @Override
     protected Simulation createSimulation() {
     	return getRuleFactory().createSimulation(this);
     }
@@ -176,6 +186,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * It is assumed that the simulation <code>sim</code> is a {@link MatchingSimulation}.
      * @see RuleFactory#createMatching(MatchingSimulation)
      */
+    @Override
     protected DefaultMatching createMorphism(final Simulation sim) {
     	return (DefaultMatching) getRuleFactory().createMatching(sim);
     }
@@ -185,6 +196,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * The simulation is required to be a {@link RegExprSimulation};
      * the variable map is taken from the simulation.
      */
+    @Override
     protected DefaultMatching createMorphism(final NodeEdgeMap sim) {
     	return (DefaultMatching) getRuleFactory().createMatching(getCondition(), (VarNodeEdgeMap) sim, cod());
     }
