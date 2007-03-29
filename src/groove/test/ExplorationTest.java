@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.3 2007-03-28 15:12:34 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.4 2007-03-29 09:59:49 rensink Exp $
  */
 
 package groove.test;
 
-import groove.io.GpsGrammar;
+import groove.io.AspectualGpsGrammar;
+import groove.io.LayedOutGpsGrammar;
 import groove.io.XmlGrammar;
 import groove.lts.ConditionalExploreStrategy;
 import groove.lts.DerivedGraphRuleFactory;
@@ -44,7 +45,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ExplorationTest extends TestCase {
     static public final String INPUT_DIR = "junit/samples";
@@ -293,7 +294,7 @@ public class ExplorationTest extends TestCase {
      * @return the explored GTS
      */
     protected GTS testExploration(String grammarName, int nodeCount, int edgeCount) {
-        return testExploration(grammarName, XmlGrammar.DEFAULT_START_STATE_NAME, nodeCount, edgeCount);
+        return testExploration(grammarName, XmlGrammar.DEFAULT_START_GRAPH_NAME, nodeCount, edgeCount);
     }
     
     /**
@@ -335,5 +336,5 @@ public class ExplorationTest extends TestCase {
     /**
      * Grammar loader used in this test case.
      */
-    protected GpsGrammar loader = new GpsGrammar(DerivedGraphRuleFactory.getInstance());
+    protected XmlGrammar loader = new AspectualGpsGrammar(DerivedGraphRuleFactory.getInstance());
 }

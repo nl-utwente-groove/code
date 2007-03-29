@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.3 2007-03-28 15:12:31 rensink Exp $
+ * $Id: Simulator.java,v 1.4 2007-03-29 09:59:50 rensink Exp $
  */
 package groove.gui;
 
@@ -30,8 +30,8 @@ import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.gui.jgraph.AspectJModel;
+import groove.io.AspectualGpsGrammar;
 import groove.io.ExtensionFilter;
-import groove.io.GpsGrammar;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutGpsGrammar;
 import groove.io.LayedOutXml;
@@ -110,7 +110,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Simulator {
     /**
@@ -533,7 +533,7 @@ public class Simulator {
                 try {
                     javax.swing.filechooser.FileFilter filterUsed = getGrammarFileChooser()
                             .getFileFilter();
-                    XmlGrammar saver = grammarLoaderMap.get(filterUsed);
+                    XmlGrammar<RuleViewGrammar> saver = grammarLoaderMap.get(filterUsed);
                     saver.marshalGrammar(currentGrammar, selectedFile);
                     currentGrammarFile = selectedFile;
                 } catch (IOException exc) {
@@ -721,7 +721,7 @@ public class Simulator {
         if (grammarLocation != null) {
             final File location = new File(Groove.createRuleSystemFilter().addExtension(grammarLocation));
             XmlGrammar grammarLoader = null;
-            for (Map.Entry<ExtensionFilter,XmlGrammar> loaderEntry: grammarLoaderMap.entrySet()) {
+            for (Map.Entry<ExtensionFilter,XmlGrammar<RuleViewGrammar>> loaderEntry: grammarLoaderMap.entrySet()) {
                 ExtensionFilter filter = loaderEntry.getKey();
                 if (filter.accept(location)) {
                     grammarLoader = loaderEntry.getValue();
@@ -1056,7 +1056,7 @@ public class Simulator {
      * @param grammarFile the grammar file to be used
      * @param startStateName the name of the start state; if <tt>null</tt>, the default
      *        start state name is used
-     * @see XmlGrammar#DEFAULT_START_STATE_NAME
+     * @see XmlGrammar#DEFAULT_START_GRAPH_NAME
      */
     public void doLoadGrammar(XmlGrammar grammarLoader, File grammarFile, String startStateName) {
         try {
@@ -1178,14 +1178,14 @@ public class Simulator {
      * @param ruleAsGraph the new rule, given in editor input format
      */
     public void replaceCurrentRule(Graph ruleAsGraph) {
-        if (currentGrammarLoader instanceof GpsGrammar) {
+        if (currentGrammarLoader instanceof AspectualGpsGrammar) {
         	RuleFactory ruleFactory = currentGrammarLoader.getRuleFactory();
             Rule currentRule = getCurrentRule();
             NameLabel currentRuleName = currentRule.getName();
             int currentRulePriority = currentRule.getPriority();
             try {
                 AspectualRuleView newRuleGraph = (AspectualRuleView) ruleFactory.createRuleView(ruleAsGraph, currentRuleName, currentRulePriority);
-                ((GpsGrammar) currentGrammarLoader).marshalRule(newRuleGraph, currentGrammarFile);
+                ((AspectualGpsGrammar) currentGrammarLoader).marshalRule(newRuleGraph, currentGrammarFile);
                 currentGrammar.add(newRuleGraph);
                 NameLabel oldRuleName = currentRuleName;
                 setGrammar(currentGrammar);
@@ -1774,7 +1774,7 @@ public class Simulator {
     /**
      * The loader used for unmarshalling gps-formatted graph grammars.
      */
-    protected GpsGrammar gpsLoader;
+    protected LayedOutGpsGrammar gpsLoader;
 
     /**
      * The loader used for unmarshalling ggx grammars.
@@ -1785,7 +1785,7 @@ public class Simulator {
      * A mapping from extension filters (recognizing the file formats from the names) to the
      * corresponding grammar loaders.
      */
-    protected final Map<ExtensionFilter,XmlGrammar> grammarLoaderMap = new LinkedHashMap<ExtensionFilter,XmlGrammar>();
+    protected final Map<ExtensionFilter,XmlGrammar<RuleViewGrammar>> grammarLoaderMap = new LinkedHashMap<ExtensionFilter,XmlGrammar<RuleViewGrammar>>();
 
     /**
      * The graph loader used for saving graphs (states and LTS).

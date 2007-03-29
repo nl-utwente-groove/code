@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.4 2007-03-29 09:59:46 rensink Exp $
  */
 package groove.trans;
 
@@ -31,7 +31,7 @@ import java.util.Properties;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-03-28 15:12:27 $
+ * @version $Revision: 1.4 $ $Date: 2007-03-29 09:59:46 $
  */
 public class GraphGrammar extends RuleSystem {
     /**
@@ -53,13 +53,13 @@ public class GraphGrammar extends RuleSystem {
      * Value of {@link #ATTRIBUTES_YES} that means attributes are used.
      */
     static public final String ATTRIBUTES_YES = "1";
-    
-    /**
-     * The default graph factory used for graph grammars.
-     * Unless the factory is explicitly set through {@link #setGraphFactory(GraphFactory)},
-     * this one will be used to create start graphs.
-     */
-    static public final GraphFactory DEFAULT_GRAPH_FACTORY = GraphFactory.getInstance();
+//    
+//    /**
+//     * The default graph factory used for graph grammars.
+//     * Unless the factory is explicitly set through {@link #setGraphFactory(GraphFactory)},
+//     * this one will be used to create start graphs.
+//     */
+//    static public final GraphFactory DEFAULT_GRAPH_FACTORY = GraphFactory.getInstance();
     
     /**
      * Constructs a graph grammar on the basis of a given rule system,
@@ -195,7 +195,7 @@ public class GraphGrammar extends RuleSystem {
      */
     public Graph getStartGraph() {
     	if (startGraph == null) {
-    		startGraph = getGraphFactory().newGraph();
+    		startGraph = GraphFactory.getInstance().newGraph();
     	}
         return startGraph;
     }
@@ -208,8 +208,7 @@ public class GraphGrammar extends RuleSystem {
      * @ensure <tt>getStartGraph().equals(startGraph)</tt>
      */
     public void setStartGraph(Graph startGraph) {
-        Graph newStartGraph = getGraphFactory().newGraph(startGraph);
-        this.startGraph = newStartGraph;
+        this.startGraph = startGraph;
         this.startGraph.setFixed();
         invalidateGTS();
     }
@@ -284,50 +283,50 @@ public class GraphGrammar extends RuleSystem {
         	((SPORule) rule).clearEvents();
         }
     }
-
-    /**
-     * Returns the graph factory.
-     * @return the graph factory
-     */
-    public GraphFactory getGraphFactory() {
-    	if (factory == null) {
-    		factory = createGraphFactory();
-    	}
-    	return factory;
-    }
-    
-    /**
-     * Sets the graph factory.
-     * @param factory the new graph factory
-     */
-    public void setGraphFactory(GraphFactory factory) {
-        this.factory = factory;
-    }
-
-    /**
-     * Returns the rule factory.
-     * @return the rule factory
-     */
-    public RuleFactory getRuleFactory() {
-    	return ruleFactory;
-    }
-
-    /**
-     * Sets the rule factory.
-     * @param ruleFactory the new rule factory
-     */
-    public void setRuleFactory(RuleFactory ruleFactory) {
-    	this.ruleFactory = ruleFactory;
-    }
-
-    /**
-     * Returns the default graph factory.
-     * @return the default graph factory
-     */
-    protected GraphFactory createGraphFactory() {
-    	return DEFAULT_GRAPH_FACTORY;
-    }
-    
+//
+//    /**
+//     * Returns the graph factory.
+//     * @return the graph factory
+//     */
+//    public GraphFactory getGraphFactory() {
+//    	if (factory == null) {
+//    		factory = createGraphFactory();
+//    	}
+//    	return factory;
+//    }
+//    
+//    /**
+//     * Sets the graph factory.
+//     * @param factory the new graph factory
+//     */
+//    public void setGraphFactory(GraphFactory factory) {
+//        this.factory = factory;
+//    }
+//
+//    /**
+//     * Returns the rule factory.
+//     * @return the rule factory
+//     */
+//    public RuleFactory getRuleFactory() {
+//    	return ruleFactory;
+//    }
+//
+//    /**
+//     * Sets the rule factory.
+//     * @param ruleFactory the new rule factory
+//     */
+//    public void setRuleFactory(RuleFactory ruleFactory) {
+//    	this.ruleFactory = ruleFactory;
+//    }
+//
+//    /**
+//     * Returns the default graph factory.
+//     * @return the default graph factory
+//     */
+//    protected GraphFactory createGraphFactory() {
+//    	return DEFAULT_GRAPH_FACTORY;
+//    }
+//    
     /**
      * Returns a dispenser for new node numbers.
      */
@@ -418,15 +417,15 @@ public class GraphGrammar extends RuleSystem {
      * <tt>null</tt> if the grammar is anonymous.
      */
     protected String name;
-    /**
-     * The graph factory used to create the initial state.
-     */
-    private GraphFactory factory;
-
-    /**
-     * The rule factory used to create rule related things.
-     */
-    private RuleFactory ruleFactory;
+//    /**
+//     * The graph factory used to create the initial state.
+//     */
+//    private GraphFactory factory;
+//
+//    /**
+//     * The rule factory used to create rule related things.
+//     */
+//    private RuleFactory ruleFactory;
 //
 //    /**
 //     * Mactching schedule factory for the rules added to this grammar.

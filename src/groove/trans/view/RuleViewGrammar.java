@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleViewGrammar.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: RuleViewGrammar.java,v 1.2 2007-03-29 09:59:51 rensink Exp $
  */
 package groove.trans.view;
 
@@ -33,26 +33,6 @@ public class RuleViewGrammar extends GraphGrammar {
     public RuleViewGrammar(String name) {
         super(name);
     }
-//    
-//    /**
-//     * In addition to delegating to <code>super</code>, creates and adds a view
-//     * for the rule.
-//     * @see #createRuleView(Rule)
-//     */
-//    public Rule add(Rule rule) {
-//        Rule result = super.add(rule);
-//        ruleViewMap.put(rule.getName(), createRuleView(rule));
-//        return result;
-//    }
-//    
-//    /**
-//     * Adds a rule based on a given rule view.
-//     * The priority is constructed as in {@link #add(Rule)}.
-//     * Convenience method for <code>add(ruleView, null)</code>.
-//     */
-//    public Rule add(RuleView ruleView) {
-//        return add(ruleView, null);
-//    }
 
     /**
      * Adds a rule based on a given rule view and priority.
@@ -77,21 +57,6 @@ public class RuleViewGrammar extends GraphGrammar {
     public RuleView getRuleView(NameLabel name) {
         return ruleViewMap.get(name);
     }
-//    
-//    /**
-//     * Creates a fresh rule view for a givn rule, using {@link #getRuleViewFactory()}.
-//     * Callback method from {@link #add(Rule)}. 
-//     * May return <code>null</code> if <code>rule</code> cannot be viewed in the
-//     * chosen {@link RuleView} format (see {@link #getRuleViewFactory()}).
-//     */
-//    protected RuleView createRuleView(Rule rule) {
-//    	return null;
-////        try {
-////            return getRuleFactory().createRuleView(rule.graph, name, priority);
-////        } catch (ViewFormatException exc) {
-////            return null;
-////        }
-//    }
     
     /** Mapping from rule names to views on the corresponding rules. */
     private final Map<NameLabel,RuleView> ruleViewMap = new HashMap<NameLabel,RuleView>();

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributedGraph.java,v 1.2 2007-03-28 15:12:35 rensink Exp $
+ * $Id: AttributedGraph.java,v 1.3 2007-03-29 09:59:52 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -35,21 +35,15 @@ import groove.graph.NodeEdgeMap;
  * knowing this.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:35 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-29 09:59:52 $
  */
 public class AttributedGraph extends DefaultGraph {
-
-	/**
-	 * The graph factory for creating new graphs.
-	 */
-	private GraphFactory factory;
-
 	/**
 	 * Creates an attributed graph with the given graph factory.
 	 * @param factory the factory for creating actual graphs.
 	 */
-	public AttributedGraph(GraphFactory factory) {
-		this.factory = factory;
+	public AttributedGraph() {
+		// empty
 	}
 
 	/* (non-Javadoc)
@@ -57,7 +51,7 @@ public class AttributedGraph extends DefaultGraph {
 	 */
 	@Override
 	public Graph newGraph(Graph graph) throws GraphFormatException {
-		Graph result = factory.newGraph();
+		Graph result = new AttributedGraph();
 
 		NodeEdgeMap graphToAttributedGraphMap = new NodeEdgeHashMap();
 
