@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
+ * $Id: DefaultRuleFactory.java,v 1.4 2007-03-29 09:59:46 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import groove.trans.view.AspectualRuleView;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultRuleFactory implements RuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */
@@ -62,10 +62,11 @@ public class DefaultRuleFactory implements RuleFactory {
 	}
 
 	/**
-	 * This implementation returns a {@link DefaultMatching}.
+	 * This implementation returns a {@link DefaultMatching} with
+	 * the matching's element map pointing to the given map.
 	 */
 	public Matching createMatching(GraphCondition rule, final VarNodeEdgeMap partialMap, Graph graph) {
-		DefaultMatching result = new DefaultMatching((SPORule) rule, graph, this) {
+		DefaultMatching result = new DefaultMatching((DefaultGraphCondition) rule, graph, this) {
 			@Override
 			protected VarNodeEdgeMap createElementMap() {
 				return partialMap;

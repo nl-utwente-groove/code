@@ -178,7 +178,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	}
 	
 	/**
-	 * Private constructor that returns an empty graph.
+	 * Constructor that returns an empty graph.
 	 */
 	public AspectGraph() {
 		// empty constructor
@@ -378,7 +378,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * Factory method for an <code>AspectEdge</code>.
 	 * @throws GraphFormatException if the aspect label is inconsistent with the end node aspect values
 	 */
-	protected AspectEdge createAspectEdge(AspectNode source, AspectNode target, AspectParseData aspectLabel) throws GraphFormatException {
+	AspectEdge createAspectEdge(AspectNode source, AspectNode target, AspectParseData aspectLabel) throws GraphFormatException {
 		return new AspectEdge(source, target, aspectLabel);
 	}
 	

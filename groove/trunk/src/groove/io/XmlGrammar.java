@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: XmlGrammar.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
+ * $Id: XmlGrammar.java,v 1.3 2007-03-29 09:59:51 rensink Exp $
  */
 package groove.io;
 
@@ -26,13 +26,13 @@ import java.io.IOException;
  * Interface for the conversion of graph grammars to and from 
  * (sets of) XML documents.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface XmlGrammar<GG extends GraphGrammar> {
     /**
      * The default name of the start state of a grammar.
      */
-    static public final String DEFAULT_START_STATE_NAME = "start";
+    static public final String DEFAULT_START_GRAPH_NAME = "start";
 
     /**
      * Returns the extension filter associated with this grammar loader.
@@ -65,12 +65,12 @@ public interface XmlGrammar<GG extends GraphGrammar> {
      * The start state is given explicitly by a string, which either 
      * stands for the name of the start state within the grammar, or for
      * the name of a separate file containing the start state. If <code>null</code>,
-     * {@link #DEFAULT_START_STATE_NAME} is tried; if that does not exist,
+     * {@link #DEFAULT_START_GRAPH_NAME} is tried; if that does not exist,
      * the start state is not initialized.
      * @param file the file to be read from (if the XML format allows storing the grammar
      * in a single file) or directory (if the grammar is stored as a set of files)
      * @param startStateName the file where the start state is to be found; if <tt>null</tt>,
-     * the default name {@link #DEFAULT_START_STATE_NAME} is tried.
+     * the default name {@link #DEFAULT_START_GRAPH_NAME} is tried.
      * @return the unmarshalled graph grammar
      * @throws XmlException if an error occurs in the conversion
      * @throws IOException if an error occurs during file input

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.3 2007-03-28 15:12:31 rensink Exp $
+ * $Id: StatePanel.java,v 1.4 2007-03-29 09:59:50 rensink Exp $
  */
 package groove.gui;
 
@@ -59,7 +59,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -146,9 +146,10 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      */
     public synchronized void setRuleUpdate(NameLabel rule) {
         if (currentTransition != null) {
-            getJModel().clearEmphasized();
             setStatus("" + currentTransition.source());
+            // first clear the transition, as the next line will cause reentrance of the method
             currentTransition = null;
+            getJModel().clearEmphasized();
         }
     }
 

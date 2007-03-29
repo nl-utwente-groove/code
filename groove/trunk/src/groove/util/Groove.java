@@ -12,20 +12,20 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.3 2007-03-28 15:12:28 rensink Exp $
+ * $Id: Groove.java,v 1.4 2007-03-29 09:59:51 rensink Exp $
  */
 package groove.util;
 
 import groove.calc.DefaultGraphCalculator;
 import groove.calc.GraphCalculator;
 import groove.graph.Graph;
+import groove.io.AspectualGpsGrammar;
 import groove.io.ExtensionFilter;
-import groove.io.GpsGrammar;
 import groove.io.UntypedGxl;
 import groove.io.Xml;
+import groove.io.XmlGrammar;
 import groove.lts.DerivedGraphRuleFactory;
 import groove.trans.GraphGrammar;
-import groove.trans.RuleSystem;
 import groove.trans.view.AspectualRuleView;
 //import groove.trans.view.RuleGraph;
 
@@ -41,7 +41,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.3 $ 
+ * @version $Revision: 1.4 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -287,30 +287,30 @@ public class Groove {
         return gpsLoader.unmarshalRule(file);
     }
     
-    /**
-     * Attempts to load in a rule system from a given <tt>.gps</tt> directory and return it.
-     * Adds the <tt>.gps</tt> extension if the directory name has no extension.
-     * @param dirname the name of the directory to load the rule system from
-     * @return the rule system contained in <code>dirname</code>
-     * @throws IOException if <code>dirname</code> does not exist or is wrongly formatted
-     */
-    static public RuleSystem loadRuleSystem(String dirname) throws IOException {
-        File dir = new File(createRuleSystemFilter().addExtension(dirname));
-        return gpsLoader.unmarshalGrammar(dir);
-    }
-    
-    /**
-     * Attempts to save a rule system to a directory with a given name.
-     * Adds the <tt>.gps</tt> extension if the directory name has no extension.
-     * @param rules the rule rystem to be saved
-     * @param dirname the intended directory name
-     * @throws IOException if saving ran into problems
-     */
-    static public void saveRuleSystem(RuleSystem rules, String dirname) throws IOException {
-        File file = new File(createRuleSystemFilter().addExtension(dirname));
-        gpsLoader.marshalRuleSystem(rules, file);
-    }
-    
+//    /**
+//     * Attempts to load in a rule system from a given <tt>.gps</tt> directory and return it.
+//     * Adds the <tt>.gps</tt> extension if the directory name has no extension.
+//     * @param dirname the name of the directory to load the rule system from
+//     * @return the rule system contained in <code>dirname</code>
+//     * @throws IOException if <code>dirname</code> does not exist or is wrongly formatted
+//     */
+//    static public RuleSystem loadRuleSystem(String dirname) throws IOException {
+//        File dir = new File(createRuleSystemFilter().addExtension(dirname));
+//        return gpsLoader.unmarshalGrammar(dir);
+//    }
+//    
+//    /**
+//     * Attempts to save a rule system to a directory with a given name.
+//     * Adds the <tt>.gps</tt> extension if the directory name has no extension.
+//     * @param rules the rule rystem to be saved
+//     * @param dirname the intended directory name
+//     * @throws IOException if saving ran into problems
+//     */
+//    static public void saveRuleSystem(RuleSystem rules, String dirname) throws IOException {
+//        File file = new File(createRuleSystemFilter().addExtension(dirname));
+//        gpsLoader.marshalRuleSystem(rules, file);
+//    }
+//    
     /**
      * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory and return it.
      * Adds the <tt>.gps</tt> extension if the directory name has no extension.
@@ -612,9 +612,9 @@ public class Groove {
     /**
      * The fixed graph loader.
      */
-    static private final Xml graphLoader = new UntypedGxl();
+    static private final Xml<Graph> graphLoader = new UntypedGxl();
     /**
      * The fixed grammar loader.
      */
-    static private final GpsGrammar gpsLoader = new GpsGrammar(DerivedGraphRuleFactory.getInstance());
+    static private final AspectualGpsGrammar gpsLoader = new AspectualGpsGrammar(DerivedGraphRuleFactory.getInstance());
 }
