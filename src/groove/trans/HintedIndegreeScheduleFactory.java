@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HintedIndegreeScheduleFactory.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: HintedIndegreeScheduleFactory.java,v 1.2 2007-03-30 15:50:26 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import java.util.Set;
  * Class that uses a hint as to the sequence in which edge labels can
  * be matched best. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class HintedIndegreeScheduleFactory extends IndegreeScheduleFactory {
     /**
@@ -92,6 +92,7 @@ public class HintedIndegreeScheduleFactory extends IndegreeScheduleFactory {
      * higher priority label than <code>second</code>, and only delegates to
      * <code>super</code> if the priorities are the same.
      */
+    @Override
     protected int compareTo(Bag<Node> indegrees, Set<Node> remainingNodes, Edge first, Edge second) {
         // first compare edge priorities (lower = better)
         int result = getEdgePriority(second) - getEdgePriority(first);

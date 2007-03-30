@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Graph.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
+ * $Id: Graph.java,v 1.3 2007-03-30 15:50:23 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:32 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:23 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
     /**
@@ -60,6 +60,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @ensure <tt>result == !getMatchesTo(to).isEmpty()</tt>
      * @deprecated not used in practice; scrapped to reduced interface
      */
+    @Deprecated
     boolean hasMatchesTo(Graph to);
 
     /**
@@ -78,6 +79,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @require <tt>other != null</tt>
      * @deprecated not used in practice; scrapped to reduce interface
      */
+    @Deprecated
     boolean hasInjectiveMatchesTo(Graph other);
 
     /**
@@ -100,6 +102,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @deprecated misleading because not a fast check for isomorphism;
      * use {@link IsoChecker} instead.
      */
+    @Deprecated
     boolean hasIsomorphismTo(Graph other);
     
     /**
@@ -141,6 +144,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @see #clone()
      * @deprecated as of Java 5, use {@link #clone()} instead
      */
+    @Deprecated
     Graph cloneGraph();
 
     /**
@@ -151,6 +155,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * <tt>result.isInjective()</tt> && <tt>result.isSurjective()</tt>
      * @deprecated not used in practice; removed to clean up interface
      */
+    @Deprecated
     Morphism cloneTo();
 
     /**
@@ -159,6 +164,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * <tt>result.isSurjective()</tt>
      * @deprecated not used in practice; removed to clean up interface
      */
+    @Deprecated
     InjectiveMorphism injectiveCloneTo();
 
     /**
@@ -169,6 +175,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * <tt>result.isInjective()</tt> && <tt>result.isSurjective()</tt>
      * @deprecated not used in practice; removed to clean up interface
      */
+    @Deprecated
     Morphism cloneFrom();
 
     /**
@@ -177,16 +184,8 @@ public interface Graph extends GraphShape, DeltaTarget {
      * <tt>result.isSurjective()</tt>
      * @deprecated not used in practice; removed to clean up interface
      */
+    @Deprecated
     InjectiveMorphism injectiveCloneFrom();
-//
-//    /** 
-//     * Tests whether this Graph equals another.
-//     * @param other the Object to be compared with this one
-//     * @return <tt>true</tt> only if <tt>other.nodeSet().equals(nodeSet())
-//     *              && other.edgeSet().equals(edgeSet())</tt>
-//     * @see #equals(Object)
-//     */
-//    boolean equals(Graph other);
 
     /**
      * Factory method: returns a fresh, empty graph.

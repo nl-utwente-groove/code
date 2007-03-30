@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphPredicate.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
+ * $Id: DefaultGraphPredicate.java,v 1.3 2007-03-30 15:50:26 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import groove.util.TransformIterator;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultGraphPredicate extends HashSet<GraphCondition> implements GraphPredicate {
 	/** Empty graph, to be used in the standard construction of an initial morphism. */
@@ -107,7 +107,17 @@ public class DefaultGraphPredicate extends HashSet<GraphCondition> implements Gr
         return context;
     }
 
-    /**
+    /** Returns <code>true</code> if any of the graph conditions does. */
+    public boolean isAttributed() {
+    	boolean result = false;
+    	Iterator<GraphCondition> conditionIter = this.iterator();
+    	while (! result && conditionIter.hasNext()) {
+    		result = conditionIter.next().isAttributed();
+    	}
+		return result;
+	}
+
+	/**
      * If {@link #isClosed()} holds, delegates to {@link #hasMatching(VarMorphism)} 
      * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
      * Otherwise, throws an exception as per contract.

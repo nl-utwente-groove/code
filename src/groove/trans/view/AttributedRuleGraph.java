@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributedRuleGraph.java,v 1.4 2007-03-28 15:12:30 rensink Exp $
+ * $Id: AttributedRuleGraph.java,v 1.5 2007-03-30 15:50:37 rensink Exp $
  */
 package groove.trans.view;
 
@@ -39,7 +39,7 @@ import groove.trans.RuleFactory;
  * NACs for attributed graphs.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-03-28 15:12:30 $
+ * @version $Revision: 1.5 $ $Date: 2007-03-30 15:50:37 $
  * @deprecated replaced by {@link AspectualRuleView}
  */
 @Deprecated
@@ -48,10 +48,10 @@ public class AttributedRuleGraph extends RuleGraph {
      * Constructs a new attributed rule graph on the basis of a given production rule.
      * @param rule the production rule for which a rule graph is to be constructed
      * @require <tt>rule != null</tt>
-     * @throws ViewFormatException if <code>rule</code> cannot be displayed as a {@link RuleGraph},
+     * @throws RuleFormatException if <code>rule</code> cannot be displayed as a {@link RuleGraph},
      * for instance because its NACs are nested too deep or not connected
      */
-    public AttributedRuleGraph(Rule rule) throws ViewFormatException {
+    public AttributedRuleGraph(Rule rule) throws RuleFormatException {
         super(rule);
     }
 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Variable.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: Variable.java,v 1.2 2007-03-30 15:50:31 rensink Exp $
  */
 package groove.algebra;
 
@@ -23,16 +23,15 @@ import groove.graph.algebra.AlgebraConstants;
  * for attributed graphs.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:31 $
  */
 public class Variable extends DefaultConstant {
-
     public Variable() {
         symbol = "";
-        arity = 0;
         type = AlgebraConstants.NO_TYPE;
     }
 
+    @Override
     public String toString() {
         return "empty";
     }

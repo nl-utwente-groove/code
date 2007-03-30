@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ZoomMenu.java,v 1.1.1.2 2007-03-20 10:42:45 kastenberg Exp $
+ * $Id: ZoomMenu.java,v 1.2 2007-03-30 15:50:35 rensink Exp $
  */
 package groove.gui;
 
@@ -32,7 +32,7 @@ import javax.swing.JViewport;
 /**
  * Menu for zoomin in/out on a jgraph.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class ZoomMenu extends JMenu {
 	/** The menu name. */
@@ -62,6 +62,7 @@ public class ZoomMenu extends JMenu {
     /**
      * Passes the invocation on to <tt>super</tt> and then calls {@link #reset()}.
      */
+    @Override
     public void menuSelectionChanged(boolean isIncluded) {
         super.menuSelectionChanged(isIncluded);
         if (isIncluded) {

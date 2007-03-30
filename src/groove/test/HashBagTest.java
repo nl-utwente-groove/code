@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HashBagTest.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: HashBagTest.java,v 1.2 2007-03-30 15:50:39 rensink Exp $
  */
 package groove.test;
 
@@ -25,7 +25,7 @@ import junit.framework.TestCase;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class HashBagTest extends TestCase {
 
@@ -37,6 +37,7 @@ public class HashBagTest extends TestCase {
         super(arg0);
     }
 
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         bag122 = new HashBag<Integer>();

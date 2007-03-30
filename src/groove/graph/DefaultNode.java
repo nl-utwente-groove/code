@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultNode.java,v 1.1.1.2 2007-03-20 10:42:41 kastenberg Exp $
+ * $Id: DefaultNode.java,v 1.2 2007-03-30 15:50:24 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:41 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:24 $
  */
 public class DefaultNode implements Node {
     /**
@@ -140,6 +140,7 @@ public class DefaultNode implements Node {
     /**
      * Returns an alias to this node itself (which is immutable).
      */
+    @Override
     public Object clone() {
         return this;
     }
@@ -148,6 +149,7 @@ public class DefaultNode implements Node {
      * Returns the precomputed hashcode.
      * @see #computeHashCode()
      */
+    @Override
     public int hashCode() {
     	return hashCode;
     }
@@ -160,6 +162,7 @@ public class DefaultNode implements Node {
      * @return <tt>true</tt> if <tt>obj</tt> is a <tt>DefaultNode</tt> and
      * <tt>this</tt> and <tt>obj</tt> have the same node numbers
      */
+    @Override
     public boolean equals(Object obj) {
         return this == obj;
     }
@@ -175,6 +178,7 @@ public class DefaultNode implements Node {
     /**
      * Returns a string consisting of the letter <tt>'n'</tt> and the node number.
      */
+    @Override
     public String toString() {
         return "n" + nodeNr;
     }

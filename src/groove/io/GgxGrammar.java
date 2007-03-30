@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GgxGrammar.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
+ * $Id: GgxGrammar.java,v 1.4 2007-03-30 15:50:43 rensink Exp $
  */
 package groove.io;
 
@@ -30,6 +30,7 @@ import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
 import groove.trans.StructuredRuleName;
+import groove.trans.view.RuleFormatException;
 
 import java.io.File;
 import java.util.HashMap;
@@ -49,8 +50,9 @@ import org.w3c.dom.Document;
  * GGX is the "proprietary" AGG format.
  * @deprecated experimental, not supported
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
+@Deprecated
 public class GgxGrammar implements XmlGrammar {
     // DOM required definitions; current values are dummies
 	/** */
@@ -229,15 +231,19 @@ public class GgxGrammar implements XmlGrammar {
         }
         gg.setStartGraph(startGraph);
 
-        // Get the rules
-        org.w3c.dom.NodeList rules = gts.getElementsByTagName(RULE_TAG);
-        for (int i = 0; i < rules.getLength(); i++) {
-            org.w3c.dom.Element ruleElement = (org.w3c.dom.Element) rules.item(i);
-            Rule rule = getRule(ruleElement, typeMap);
-            gg.add(rule);
-        }
-        // done
-        return gg;
+        try {
+			// Get the rules
+			org.w3c.dom.NodeList rules = gts.getElementsByTagName(RULE_TAG);
+			for (int i = 0; i < rules.getLength(); i++) {
+			    org.w3c.dom.Element ruleElement = (org.w3c.dom.Element) rules.item(i);
+			    Rule rule = getRule(ruleElement, typeMap);
+			    gg.add(rule);
+			}
+			// done
+			return gg;
+		} catch (RuleFormatException exc) {
+			throw new XmlException(String.format("Format error in rules: %s", exc.getMessage()));
+		}
     }
 
     /**

@@ -12,13 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: OperationNodeTest.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: OperationNodeTest.java,v 1.2 2007-03-30 15:50:47 rensink Exp $
  */
 
 package groove.test.graph;
 
 import groove.algebra.Algebra;
+import groove.algebra.Constant;
 import groove.algebra.DefaultBooleanAlgebra;
+import groove.algebra.UnknownSymbolException;
 import groove.graph.algebra.AlgebraConstants;
 import groove.graph.algebra.AlgebraGraph;
 import groove.graph.algebra.ValueNode;
@@ -38,17 +40,22 @@ public class OperationNodeTest extends TestCase {
     AlgebraGraph algebraGraph;
     Algebra iAlgebra, sAlgebra, bAlgebra;
 
+    @Override
     public void setUp() {
         algebraGraph = AlgebraGraph.getInstance();
         iAlgebra = algebraGraph.getAlgebra(AlgebraConstants.INTEGER);
         sAlgebra = algebraGraph.getAlgebra(AlgebraConstants.STRING);
         bAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-        intNode = new ValueNode(iAlgebra, "1");
-        checkIntNode = new ValueNode(iAlgebra, "2");
-        boolNode = new ValueNode(bAlgebra, DefaultBooleanAlgebra.TRUE);
-        checkBoolNode = new ValueNode(bAlgebra, DefaultBooleanAlgebra.FALSE);
-        stringNode = new ValueNode(sAlgebra, "Hello");
-        checkStringNode = new ValueNode(sAlgebra, "Hello World!");
+        try {
+			intNode = algebraGraph.getValueNode((Constant) iAlgebra.getOperation("1"));
+			checkIntNode = algebraGraph.getValueNode((Constant) iAlgebra.getOperation("2"));
+			boolNode = algebraGraph.getValueNode((Constant) bAlgebra.getOperation(DefaultBooleanAlgebra.TRUE));
+			checkBoolNode = algebraGraph.getValueNode((Constant) bAlgebra.getOperation(DefaultBooleanAlgebra.FALSE));
+			stringNode = algebraGraph.getValueNode((Constant) sAlgebra.getOperation("Hello"));
+			checkStringNode = algebraGraph.getValueNode((Constant) sAlgebra.getOperation("Hello World!"));
+		} catch (UnknownSymbolException exc) {
+			exc.printStackTrace();
+		}
     }
 
     final public void testEquals() {

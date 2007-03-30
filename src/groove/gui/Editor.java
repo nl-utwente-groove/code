@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
+ * $Id: Editor.java,v 1.4 2007-03-30 15:50:35 rensink Exp $
  */
 package groove.gui;
 
+import static groove.gui.Options.PARSE_ATTRIBUTES_OPTION;
 import groove.graph.Graph;
 import groove.graph.GraphFormatException;
 import groove.gui.jgraph.EditorJGraph;
@@ -88,7 +89,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.3 $ $Date: 2007-03-28 15:12:32 $
+ * @version $Revision: 1.4 $ $Date: 2007-03-30 15:50:35 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -275,7 +276,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.3 $
+     * @version $Revision: 1.4 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -405,7 +406,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             // we create a new model
         }
         // load the model in the event dispatch thread, to avoid concurrency issues
-        final GraphJModel model = graph == null ? null : new GraphJModel(graph);
+        final GraphJModel model = graph == null ? null : new GraphJModel(graph, getOptions());
         SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
 		        setModel(fromFile.getName(), model);
@@ -516,7 +517,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * Invokes a file chooser dialog, and calls {@link #doSaveGraph(File)} 
      * if a file is selected. 
      */
-    protected void handleSaveGraph() {
+    protected File handleSaveGraph() {
         // set filter to the one that accepts the current file (if any)
         javax.swing.filechooser.FileFilter[] fileFilters = getGraphSaveChooser().getChoosableFileFilters();
         boolean filterFound = false;
@@ -542,8 +543,10 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
                 }
             } catch (Exception exc) {
                 showErrorDialog("Error while saving graph to " + currentFile, exc);
+                toFile = null;
             }
         }
+        return toFile;
     }
 
     /**
@@ -576,7 +579,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 //	    	ruleFactory = DefaultRuleFactory.getInstance();
 	    	NameLabel ruleName = new NameLabel("temp");
             AspectualRuleView ruleGraph = (AspectualRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0);
-            AspectJModel ruleModel = new AspectJModel(ruleGraph);
+            AspectJModel ruleModel = new AspectJModel(ruleGraph, getOptions());
             JGraph previewGraph = new JGraph(ruleModel);
             JOptionPane previewPane = new JOptionPane(new JScrollPane(previewGraph),
                     JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
@@ -587,7 +590,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             Integer answer = (Integer) previewPane.getValue();
             if (answer != null && answer.intValue() == JOptionPane.OK_OPTION) {
                 setSelectInsertedCells(false);
-                getModel().replace(new GraphJModel(ruleModel.toPlainGraph()));
+                getModel().replace(new GraphJModel(ruleModel.toPlainGraph(), getOptions()));
                 setSelectInsertedCells(true);
                 return true;
             }
@@ -630,7 +633,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             }
         });
 
-		final JCheckBoxMenuItem attributedGraphsItem = getOptions().getItem(Options.PARSE_ATTRIBUTED_GRAPHS);
+		final JCheckBoxMenuItem attributedGraphsItem = getOptions().getItem(Options.PARSE_ATTRIBUTES_OPTION);
 		// listen to the option controlling the parsing of attributed graphs
 		attributedGraphsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -942,9 +945,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         // options menu
         JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
         menuBar.add(optionsMenu);
-        for (JCheckBoxMenuItem optionItem: getOptions().getItemSet()) {
-        	optionsMenu.add(optionItem);
-        }
+        optionsMenu.add(options.getItem(PARSE_ATTRIBUTES_OPTION));
 
         return menuBar;
     }
@@ -1154,7 +1155,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     	// lazily creates the options 
     	if (options == null) {
     		options = new Options();
-        	options.add(Options.PARSE_ATTRIBUTED_GRAPHS);
+        	options.add(Options.PARSE_ATTRIBUTES_OPTION);
     	}
     	return options;
     }
@@ -1203,7 +1204,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /**
      * The GXL converter used for marshalling and unmarshalling layouted graphs.
      */
-    private final Xml layoutGxl = new LayedOutXml();
+    private final Xml<Graph> layoutGxl = new LayedOutXml();
 
     /**
      * File chooser for graph opening.

@@ -12,23 +12,35 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ViewFormatException.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: RuleFormatException.java,v 1.1 2007-03-30 15:50:37 rensink Exp $
  */
 package groove.trans.view;
 
 /**
- * Exception class for rule view format errors.
+ * Thrown when a rule or rule view cannot be created due to
+ * some format error. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.1 $
  */
-public class ViewFormatException extends Exception {
+public class RuleFormatException extends Exception {
 	/** Constructs an exception with a given message. */
-    public ViewFormatException(String message) {
+    public RuleFormatException(String message) {
         super(message);
+    }
+    
+    /**
+     * Constructs a grammar format exception with a given formatted message.
+     * Calls {@link String#format(String, Object[])} with the message and
+     * parameters, and invokes {@link #RuleFormatException(String)} with
+     * the resulting message.
+     * @see #RuleFormatException(String)
+     */
+    public RuleFormatException(String message, Object... parameters) {
+        super(String.format(message, parameters));
     }
 
 	/** Constructs an exception from a pre-existing exception. */
-    public ViewFormatException(Exception cause) {
+    public RuleFormatException(Exception cause) {
         super(cause);
     }
 }

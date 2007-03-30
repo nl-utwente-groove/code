@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForestLayouter.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: ForestLayouter.java,v 1.2 2007-03-30 15:50:28 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -41,7 +41,7 @@ import org.jgraph.graph.EdgeView;
  * Layout action for JGraphs that creates a top-to-bottom
  * forest layout.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class ForestLayouter extends AbstractLayouter {
     static public final String ACTION_NAME = "Forest layout";
@@ -178,6 +178,7 @@ public class ForestLayouter extends AbstractLayouter {
         Collection<?> suggestedRoots = getSuggestedRoots();
         if (suggestedRoots != null) {
             Iterator<Layoutable> suggestedRootIter = new TransformIterator<Object,Layoutable>(suggestedRoots.iterator()) {
+                @Override
                 public Layoutable toOuter(Object in) {
                 	Layoutable result = toLayoutableMap.get(in);
                     if (result == null) {

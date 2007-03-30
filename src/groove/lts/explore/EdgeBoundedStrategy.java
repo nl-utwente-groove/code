@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: EdgeBoundedStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: EdgeBoundedStrategy.java,v 1.2 2007-03-30 15:50:42 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -30,7 +30,7 @@ import groove.lts.State;
  * This class implements an exploration strategy in which the number of nodes
  * is guaranteed not to exceed a given bound. That makes the state space finite.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class EdgeBoundedStrategy extends BranchingStrategy {
     /** Name of this strategy. */
@@ -54,10 +54,12 @@ public class EdgeBoundedStrategy extends BranchingStrategy {
         this.boundsMap.putAll(boundsMap);
     }
 
+    @Override
     public String getShortDescription() {
         return STRATEGY_DESCRIPTION;
     }
 
+    @Override
     public String getName() {
         return STRATEGY_NAME;
     }
@@ -96,6 +98,7 @@ public class EdgeBoundedStrategy extends BranchingStrategy {
         }
     }
 
+    @Override
     public String toString() {
         String result = getName();
         if (boundsMap != null) {
@@ -110,6 +113,7 @@ public class EdgeBoundedStrategy extends BranchingStrategy {
     /**
      * The state is explorable if its node count does not exceed <tt>{@link #getBound}</tt>.
      */
+    @Override
     protected boolean isExplorable(State state) {
         boolean result = true;
         Map<Label,? extends Set<? extends Edge>> labelEdgeMap = ((GraphState) state).getGraph().labelEdgeMap(2);

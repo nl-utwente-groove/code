@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphInfo.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: GraphInfo.java,v 1.2 2007-03-30 15:50:24 rensink Exp $
  */
 package groove.graph;
 
@@ -25,7 +25,7 @@ import groove.gui.layout.LayoutMap;
  * A class that provides the keys needed for storing and retrieving data
  * needed for specific features.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:24 $
  */
 public class GraphInfo {
 	/**
@@ -130,7 +130,12 @@ public class GraphInfo {
         data.putAll(other.getData());
     }
     
-    /** Returns the internally stored data. */
+    @Override
+	public String toString() {
+		return "Graph information: "+data;
+	}
+
+	/** Returns the internally stored data. */
     protected final Map<String,Object> getData() {
         return data;
     }

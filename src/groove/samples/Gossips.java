@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: Gossips.java,v 1.2 2007-03-30 15:50:43 rensink Exp $
  */
 package groove.samples;
 
@@ -39,6 +39,7 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleFactory;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
+import groove.trans.view.RuleFormatException;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
 
@@ -123,6 +124,8 @@ public class Gossips {
             GraphResult result2 = calc2.getFirst(READY_CONDITION_NAME);
             report(result2);
 //            Groove.saveGraph(calc2.getGTS(), ATOMIC_GOSSIP_GPS_NAME+"+"+startGraphName);
+        } catch (RuleFormatException exc) {
+            exc.printStackTrace();
         } catch (IOException exc) {
             exc.printStackTrace();
         }
@@ -135,14 +138,17 @@ public class Gossips {
             setPriority(1);
         }
 
+        @Override
         public boolean isModifying() {
             return true;
         }
         
+        @Override
         public boolean hasCreators() {
             return true;
         }
         
+        @Override
         protected Element[] computeAnchor() {
             List<Element> result = new ArrayList<Element>();
             for (Edge lhsEdge: lhs().labelEdgeSet(2,GIRL_EDGE_LABEL)) {
@@ -151,6 +157,7 @@ public class Gossips {
             return result.toArray(new Element[0]);
         }
 
+        @Override
         public RuleEvent createEvent(VarNodeEdgeMap anchorMap) {
         	return getRuleFactory().createRuleEvent(this, anchorMap);
 //            return new GossipEvent(this, anchorMap);
@@ -162,6 +169,7 @@ public class Gossips {
             super(gossipRule, anchorMap, ruleFactory);
         }
 
+        @Override
         public RuleApplication createApplication(Graph source) {
         	return getRuleFactory().createRuleApplication(this, source);
 //            return new GossipApplication(this, source);
@@ -173,6 +181,7 @@ public class Gossips {
             super(event, source, ruleFactory);
         }
 
+        @Override
         protected void createEdges(DeltaTarget target) {
             boolean added = false;
             Iterator<Node> girlIter = getAnchorMap().nodeMap().values().iterator();

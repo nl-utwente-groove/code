@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StackedMapTest.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: StackedMapTest.java,v 1.2 2007-03-30 15:50:40 rensink Exp $
  */
 package groove.test;
 
@@ -34,6 +34,7 @@ public class StackedMapTest extends TestCase {
     static final Integer DRIE_ = new Integer(-3);
     static final Integer VIER = new Integer(4);
     
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         lower = new HashMap<String,Integer>();

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SpringLayouter.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: SpringLayouter.java,v 1.2 2007-03-30 15:50:28 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -37,7 +37,7 @@ import org.jgraph.graph.PortView;
  * Action to set up the standard touchgraph layout algorithm on a given MyJGraph. Adapted from
  * <tt>jgraph.com.pad.Touch</tt>
  * @author Gaudenz Alder and Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class SpringLayouter extends AbstractLayouter {
     public static final String ACTION_NAME = "Spring layout";
@@ -169,6 +169,7 @@ public class SpringLayouter extends AbstractLayouter {
                 reset();
             }
             relaxer = new Thread() {
+                @Override
                 public void run() {
                     // Thread me = Thread.currentThread();
                     damper = 1.0;
@@ -259,6 +260,7 @@ public class SpringLayouter extends AbstractLayouter {
         setName(actionName);
     }
 
+    @Override
     protected void prepare() {
         super.prepare();
         if (DEBUG)

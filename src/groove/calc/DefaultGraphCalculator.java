@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.2 2007-03-30 15:50:48 rensink Exp $
  */
 package groove.calc;
 
@@ -79,7 +79,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
      */
     protected DefaultGraphCalculator(GraphGrammar grammar, boolean prototype) {
         this.grammar = grammar;
-        this.gts = grammar.gts();
+        this.gts = new GTS(grammar);
         this.generator = new StateGenerator(gts);
         this.prototype = prototype;
     }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IndegreeScheduleFactory.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: IndegreeScheduleFactory.java,v 1.2 2007-03-30 15:50:26 rensink Exp $
  */
 package groove.trans;
 
@@ -40,13 +40,14 @@ import groove.util.HashBag;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class IndegreeScheduleFactory extends AbstractScheduleFactory {
     /**
      * Constructs the result according to the principle set forth in
      * the class comment.
      */
+    @Override
     protected List<Element> newMatchingOrder(Graph subject, Set<Node> matchedNodes, Set<Edge> matchedEdges) {
         List<Element> result = new ArrayList<Element>();
         final Set<Node> remainingNodes = new HashSet<Node>(subject.nodeSet());

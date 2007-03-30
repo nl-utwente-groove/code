@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BoundedStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: BoundedStrategy.java,v 1.2 2007-03-30 15:50:42 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -34,7 +34,7 @@ import groove.trans.Rule;
  * (the bounding condition) is violated; from such states no further exploration takes place.
  * Currently, the bounding condition is expressed by a graph transformation rule.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class BoundedStrategy extends BranchingStrategy implements ConditionalExploreStrategy {
 	/** Name of this exploration strategy. */
@@ -72,6 +72,7 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
     /**
      * Initializes the set of open states, then calls the super method.
      */
+    @Override
     public void setLTS(LTS lts) {
         if (getLTS() != null) {
             getLTS().removeGraphListener(graphListener);
@@ -86,14 +87,17 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
         super.setLTS(lts);
     }
 
+    @Override
     public String getShortDescription() {
         return DESCRIPTION;
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
 
+    @Override
     public String toString() {
         String result = getName();
         result += " by " + (negated ? "!" : "") + (rule == null ? "..." : rule.getName().toString());
@@ -120,6 +124,7 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
      * This strategy explores all currently open states, and disregards
      * {@link #getAtState()}.
      */
+    @Override
     public Collection<? extends State> explore() throws InterruptedException {
         // clones the open states to avoid concurrent modifications while exploring
         Collection<? extends State> openStateSet = this.openStateSet;
@@ -132,6 +137,7 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
      * Overwrites the method so that only states to which the bounding rule is
      * applicable are explorable.
      */
+    @Override
     protected boolean isExplorable(State state) {
         return rule.hasMatching(((GraphState) state).getGraph()) != negated;
     }
@@ -152,6 +158,7 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
     /** The graph lisener permanently associated with this exploration strategy. */
     private final GraphShapeListener graphListener = new GraphAdapter() {
         /** This method adds the element to the open states, if it is a state. */
+        @Override
         public void addUpdate(GraphShape graph, Node node) {
         	openStateSet.add((GraphState) node);
         }

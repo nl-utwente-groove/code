@@ -12,12 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Xml.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
+ * $Id: Xml.java,v 1.3 2007-03-30 15:50:43 rensink Exp $
  */
 package groove.io;
 
 import groove.graph.Graph;
-import groove.graph.GraphShape;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +26,7 @@ import java.io.IOException;
  * To be implemented for particular XML formats.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface Xml<G extends Graph> {
 	/**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LayoutMap.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: LayoutMap.java,v 1.2 2007-03-30 15:50:28 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -39,7 +39,7 @@ import org.jgraph.graph.VertexView;
  * The class is generic to enable use for different type os nodes and edges:
  * either GROOVE ones, or JGraph ones.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class LayoutMap<N,E> extends GenericNodeEdgeHashMap<N, JVertexLayout, E, JEdgeLayout>{
     /**
@@ -216,6 +216,7 @@ public class LayoutMap<N,E> extends GenericNodeEdgeHashMap<N, JVertexLayout, E, 
      * Only really stores the information if it is not default
      * (according to the layout information itself, i.e., <code>{@link JCellLayout#isDefault}</code>.
      */
+    @Override
     public JVertexLayout putNode(N key, JVertexLayout layout) {
         if (!layout.isDefault()) {
             return super.putNode(key, layout);
@@ -229,6 +230,7 @@ public class LayoutMap<N,E> extends GenericNodeEdgeHashMap<N, JVertexLayout, E, 
      * Only really stores the information if it is not default
      * (according to the layout information itself, i.e., <code>{@link JCellLayout#isDefault}</code>.
      */
+    @Override
     public JEdgeLayout putEdge(E key, JEdgeLayout layout) {
         if (!layout.isDefault()) {
             return super.putEdge(key, layout);

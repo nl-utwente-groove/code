@@ -1,5 +1,5 @@
 /*
- * $Id: DefaultConditionSearchPlanFactory.java,v 1.2 2007-03-27 14:18:27 rensink Exp $
+ * $Id: DefaultConditionSearchPlanFactory.java,v 1.3 2007-03-30 15:50:44 rensink Exp $
  */
 package groove.trans.match;
 
@@ -28,8 +28,6 @@ import groove.trans.DefaultGraphCondition;
 import groove.trans.GraphCondition;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
-import groove.util.ExprFormatException;
-import groove.util.ExprParser;
 
 /**
  * Strategy that yields the edges in order of ascending indegree of
@@ -39,7 +37,7 @@ import groove.util.ExprParser;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory implements ConditionSearchPlanFactory {
 	/**
@@ -191,14 +189,8 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	protected List<Comparator<Edge>> createComparators(GraphGrammar grammar, Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
 		List<Comparator<Edge>> result = super.createComparators(nodeSet, edgeSet);
 		if (grammar != null) {
-			String controlLabels = grammar.getProperties().getProperty(GraphGrammar.CONTROL_LABELS);
-			if (controlLabels != null) {
-				try {
-					result.add(0, new ControlLabelComparator(Arrays.asList(ExprParser.splitExpr(controlLabels, " "))));
-				} catch (ExprFormatException exc) {
-					throw new IllegalStateException(String.format("Format error in control labels %s: should be space-separated list", controlLabels));
-				}
-			}
+			List<String> controlLabels = grammar.getControlLabels();
+			result.add(0, new ControlLabelComparator(controlLabels));
 		}
 		return result;
 	}

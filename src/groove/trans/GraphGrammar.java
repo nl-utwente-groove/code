@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.4 2007-03-29 09:59:46 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.5 2007-03-30 15:50:26 rensink Exp $
  */
 package groove.trans;
 
@@ -21,9 +21,8 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Node;
 import groove.lts.GTS;
+import groove.trans.view.RuleFormatException;
 import groove.util.DefaultDispenser;
-
-import java.util.Properties;
 
 /**
  * Default model of a graph grammar, consisting of a production rule system
@@ -31,28 +30,9 @@ import java.util.Properties;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-03-29 09:59:46 $
+ * @version $Revision: 1.5 $ $Date: 2007-03-30 15:50:26 $
  */
-public class GraphGrammar extends RuleSystem {
-    /**
-     * Property name of the list of control labels of a graph grammar.
-     * The control labels will be first in the matching order.
-     */
-    static public final String CONTROL_LABELS = "controlLabels";
-    /**
-     * Property name of the list of common labels of a graph grammar.
-     * These will be used to determine the order in which the NACs are checked.
-     */
-    static public final String COMMON_LABELS = "commonLabels";
-    /** 
-     * Property that determines if the graph grammar uses attributes.
-     * @see #ATTRIBUTES_YES
-     */
-    static public final String ATTRIBUTE_SUPPORT = "attributeSupport";
-    /**
-     * Value of {@link #ATTRIBUTES_YES} that means attributes are used.
-     */
-    static public final String ATTRIBUTES_YES = "1";
+public class GraphGrammar extends RuleSystem implements DerivationRecord {
 //    
 //    /**
 //     * The default graph factory used for graph grammars.
@@ -80,6 +60,7 @@ public class GraphGrammar extends RuleSystem {
         }
         this.startGraph = startGraph;
         this.name = name;
+        setNodeCounter();
     }
     
     /**
@@ -137,38 +118,46 @@ public class GraphGrammar extends RuleSystem {
      * empty start graph.
      */
     public GraphGrammar() {
-        // explicit empty constructor
+        // empty
     }
-    
-    /**
-     * Returns the GTS of this graph grammar as explored so far.
-     * May return <tt>null</tt> if no start state has yet been provided.
-     * @ensure startGraph().equals(result.startNode());
-     *         result.nodeSet() \subseteq GraphNode;
-     *         result.edgeSet() \subseteq DerivationEdge
-     */
-    public GTS gts() {
-        if (gts == null) {
-//            setRuleDependencies();
-            gts = computeGTS();
-            // compute the max node number and set the node dispenser to one higher
-            int maxNodeNr = 0;
-            for (Node node: getStartGraph().nodeSet()) {
-                maxNodeNr = Math.max(maxNodeNr, DefaultNode.getNodeNr(node));
-            }
-            getNodeCounter().setCount(maxNodeNr+1);
-        }
-        return gts;
-    }
-    
-    /**
-     * Constructs a new GTS on the basis of this rule system and the
-     * currently stored start graph.
-     */
-    protected GTS computeGTS() {
-    	return new GTS(this, getStartGraph());
-    }
-    
+
+//    /**
+//     * Returns the GTS of this graph grammar as explored so far.
+//     * May return <tt>null</tt> if no start state has yet been provided.
+//     * @ensure startGraph().equals(result.startNode());
+//     *         result.nodeSet() \subseteq GraphNode;
+//     *         result.edgeSet() \subseteq DerivationEdge
+//     */
+//    public GTS gts() {
+//        if (gts == null) {
+////            setRuleDependencies();
+//            gts = computeGTS();
+//            // compute the max node number and set the node dispenser to one higher
+//            setNodeCounter();
+//        }
+//        return gts;
+//    }
+
+	/**
+	 * Initialises the node counter with a node number that is sure
+	 * to be fresh.
+	 */
+	private void setNodeCounter() {
+		int maxNodeNr = 0;
+		for (Node node: getStartGraph().nodeSet()) {
+		    maxNodeNr = Math.max(maxNodeNr, DefaultNode.getNodeNr(node));
+		}
+		getNodeCounter().setCount(maxNodeNr+1);
+	}
+//    
+//    /**
+//     * Constructs a new GTS on the basis of this rule system and the
+//     * currently stored start graph.
+//     */
+//    protected GTS computeGTS() {
+//    	return new GTS(this);
+//    }
+//    
     /**
      * Returns the name of this grammar.
      * May be <tt>null</tt> if the grammar is anonymous.
@@ -210,34 +199,9 @@ public class GraphGrammar extends RuleSystem {
     public void setStartGraph(Graph startGraph) {
         this.startGraph = startGraph;
         this.startGraph.setFixed();
-        invalidateGTS();
+        setNodeCounter();
     }
     
-    /**
-     * Sets the properties of this graph grammar by copying a given property mapping.
-     * Clears the current properties first.
-     * @param properties the new properties mapping
-     */
-    public void setProperties(Properties properties) {
-        Properties currentProperties = getProperties();
-        currentProperties.clear();
-        currentProperties.putAll(properties);
-//        if (properties.containsKey(CONTROL_LABELS)) {
-//            setRuleScheduleFactory((String) properties.get(CONTROL_LABELS));
-//        }
-    }
-    
-    /**
-     * Returns the properties object for this graph grammar.
-     * The object is created lazily.
-     */
-    public Properties getProperties() {
-        if (properties == null) {
-            properties = createProperties();
-        }
-        return properties;
-    }
-
     // --------------------------- OBJECT OVERRIDES ------------------------
 
     /**
@@ -246,10 +210,10 @@ public class GraphGrammar extends RuleSystem {
      * invalidates the GTS. 
      */
     @Override
-    public Rule add(Rule rule) {
+    public Rule add(Rule rule) throws RuleFormatException {
         Rule result = super.add(rule);
         rule.setGrammar(this);
-        invalidateGTS();
+//        invalidateGTS();
         return result;
     }
 
@@ -272,17 +236,17 @@ public class GraphGrammar extends RuleSystem {
         return "Rule system:\n    " + super.toString()
             + "\nStart graph:\n    "   + getStartGraph().toString();
     }
-
-    /**
-     * Invalidates the current GTS.
-     * This is done due to a change in the rule system or the start graph.
-     */
-    protected void invalidateGTS() {
-        gts = null;
-        for (Rule rule: getRules()) {
-        	((SPORule) rule).clearEvents();
-        }
-    }
+//
+//    /**
+//     * Invalidates the current GTS.
+//     * This is done due to a change in the rule system or the start graph.
+//     */
+//    protected void invalidateGTS() {
+//        gts = null;
+//        for (Rule rule: getRules()) {
+//        	((SPORule) rule).clearEvents();
+//        }
+//    }
 //
 //    /**
 //     * Returns the graph factory.
@@ -396,14 +360,6 @@ public class GraphGrammar extends RuleSystem {
 //    }
 
     /**
-     * Callback factory method to create an initially empty {@link Properties} object 
-     * for this graph grammar.
-     */
-    protected Properties createProperties() {
-        return new Properties();
-    }
-    
-    /**
      * The start Graph of this graph grammar.
      * @invariant <tt>startGraph != null</tt>
      */
@@ -417,25 +373,7 @@ public class GraphGrammar extends RuleSystem {
      * <tt>null</tt> if the grammar is anonymous.
      */
     protected String name;
-//    /**
-//     * The graph factory used to create the initial state.
-//     */
-//    private GraphFactory factory;
-//
-//    /**
-//     * The rule factory used to create rule related things.
-//     */
-//    private RuleFactory ruleFactory;
-//
-//    /**
-//     * Mactching schedule factory for the rules added to this grammar.
-//     * Set from the properties; possibly <code>null</code>.
-//     */
-//    private MatchingScheduleFactory ruleScheduleFactory;
-    /**
-     * The properties bundle of this grammar.
-     */
-    private Properties properties;
     /** Counter used for determining fresh node numbers. */
     private DefaultDispenser nodeCounter;
+    
 }

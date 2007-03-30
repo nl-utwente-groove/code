@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Morphism.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: Morphism.java,v 1.2 2007-03-30 15:50:24 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import java.util.Iterator;
  * Interface of a partial graph morphism.
  * Extends <tt>NodeEdgeMap</tt> with a fixed source and target graph.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:24 $
  */
 public interface Morphism extends NodeEdgeMap, GraphListener {
     /**
@@ -220,6 +220,7 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
      * @ensure <tt>result.getClass() == key.getClass()</tt>
      * @deprecated use {@link #getNode(Node)} or {@link #getEdge(Edge)} instead
      */
+    @Deprecated
     Element getElement(Element key);
 
     /**
@@ -248,6 +249,7 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
      * @ensure <tt>result.dom() == dom && result.cod() == cod</tt>
      * @deprecated use {@link #createMorphism(Graph, Graph)} instead
      */
+    @Deprecated
     Morphism newInstance(Graph dom, Graph cod);
 
     /**

@@ -12,12 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.4 2007-03-29 09:59:50 rensink Exp $
+ * $Id: StatePanel.java,v 1.5 2007-03-30 15:50:35 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
+import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -36,7 +37,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.trans.NameLabel;
-import groove.trans.view.RuleViewGrammar;
 import groove.util.Groove;
 
 import java.awt.Rectangle;
@@ -48,9 +48,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -59,11 +56,11 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
-    protected static final String FRAME_NAME = "Current state";
+    public static final String FRAME_NAME = "Current state";
 
     // --------------------- INSTANCE DEFINITIONS ----------------------
 
@@ -72,16 +69,18 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      */
     public StatePanel(final Simulator simulator) {
         super(new StateJGraph(simulator), true, simulator.getOptions());
+        this.simulator = simulator;
         simulator.addSimulationListener(this);
-        addOptionListener(SHOW_NODE_IDS_OPTION, createNodeIdsOptionListener());
-        addOptionListener(SHOW_ASPECTS_OPTION, createAspectsOptionListener());
+        addRefreshListener(SHOW_NODE_IDS_OPTION);
+        addRefreshListener(SHOW_ASPECTS_OPTION);
+        addRefreshListener(SHOW_ANCHORS_OPTION);
         getJGraph().setToolTipEnabled(true);
         // make sure that emphasis due to selections in the label list
         // cause any selected transition to be deselected first
         getJGraph().getLabelList().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                if (currentTransition != null) {
-                    simulator.setRule(currentTransition.getRule().getName());
+                if (selectedTransition != null) {
+                    simulator.setRule(selectedTransition.getRule().getName());
                 }
             }
         });
@@ -92,36 +91,30 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      */
     @Override
     public GraphJModel getJModel() {
-        if (jGraph.isEnabled()) {
-            return getJGraph().getModel();
-        } else {
-            return null;
-        }
+        return (GraphJModel) super.getJModel();
     }
 
     /**
      * Sets the underlying model of this state frame to the initial graph of the new grammar.
      */
-    public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
+    public synchronized void setGrammarUpdate(GTS gts) {
         stateJModelMap.clear();
-        currentTransition = null;
-        GTS gts = grammar.gts();
+        selectedTransition = null;
         if (gts == null) {
             jGraph.setModel(GraphJModel.EMPTY_JMODEL);
             setEnabled(false);
-            setStatus("No state selected");
         } else {
-            GraphState startState = grammar.gts().startState();
+            GraphState startState = gts.startState();
             GraphJModel stateJModel = getStateJModel(startState);
             // since the GTS states have lost their layout information, we try to
             // retrieve it from the grammar start graph
-            LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(grammar.getStartGraph());
+            LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(gts.ruleSystem().getStartGraph());
             if (layoutMap != null) {
                 stateJModel.applyLayout(layoutMap);
             }
             jGraph.setModel(stateJModel);
-            setStatus("" + startState);
         }
+        refreshStatus();
     }
 
     /**
@@ -132,23 +125,24 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      */
     public synchronized void setStateUpdate(GraphState state) {
         // stop layouting of current model, if any
-        if (getJModel() != null && currentTransition != null) {
+        if (getJModel() != null && selectedTransition != null) {
         	getJModel().clearEmphasized();
-            currentTransition = null;
+            selectedTransition = null;
         }
         // set the graph model to the new state
         jGraph.setModel(getStateJModel(state));
-        setStatus("" + state);
+        refreshStatus();
     }
 
     /**
      * Resets the emphasis in the state model and the current derivation.
      */
     public synchronized void setRuleUpdate(NameLabel rule) {
-        if (currentTransition != null) {
-            setStatus("" + currentTransition.source());
-            // first clear the transition, as the next line will cause reentrance of the method
-            currentTransition = null;
+        if (selectedTransition != null) {
+            refreshStatus();
+            // first clear the selected transition, 
+            // as the line after that will cause reentrance of the method
+            selectedTransition = null;
             getJModel().clearEmphasized();
         }
     }
@@ -160,8 +154,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     public synchronized void setTransitionUpdate(GraphTransition trans) {
         jGraph.getLabelList().clearSelection();
         Set<Element> emphElems = new HashSet<Element>();
-        if (currentTransition != trans) {
-            currentTransition = trans;
+        if (selectedTransition != trans) {
+            selectedTransition = trans;
             Graph sourceGraph = trans.source().getGraph();
             // check if we're in the right state to display the derivation
             if (!getJModel().graph().equals(sourceGraph)) {
@@ -169,8 +163,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
                 jGraph.setModel(getStateJModel(trans.source()));
             }
             // now emphasize at will
-            Morphism match = currentTransition.matching();
-            assert match != null: "Transition "+currentTransition+" should have valid matching";
+            Morphism match = selectedTransition.matching();
+            assert match != null: "Transition "+selectedTransition+" should have valid matching";
             assert match.nodeMap() != null : "Matching "+match+" has no node map";
             for (Node matchedNode: match.nodeMap().values()) {
                 emphElems.add(matchedNode);
@@ -187,14 +181,14 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
             	if (scope != null)
             		jGraph.scrollRectToVisible(scope);
             }
-            setStatus("" + trans.source() + " (with match of " + currentTransition.getRule().getName() + ")");
+            refreshStatus();
         }
         GraphJModel currentModel = getJModel();
         currentModel.setEmphasized(currentModel.getJCellSet(emphElems));
     }
 
     /**
-     * Sets the state to the current derivation's cod. Copies and freezes the bounds from the
+     * Sets the state to the transition target. Copies and freezes the bounds from the
      * current state and starts layout to find positions for newly created nodes.
      */
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
@@ -205,51 +199,36 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         // get a graph model for the target state
         GraphState newState = transition.target();
         GraphJModel newStateJModel = getStateJModel(newState);
-        currentTransition = null;
+        selectedTransition = null;
         // set the graph model to the new state
         jGraph.setModel(newStateJModel);
-        setStatus("" + newState);
+        refreshStatus();
     }
-
-	/**
-	 * Callback method to create a listner for the {@link #SHOW_NODE_IDS_OPTION} option.
-	 */
-	protected ChangeListener createNodeIdsOptionListener() {
-		return new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				boolean newState = ((JCheckBoxMenuItem) e.getSource()).getState();
-				for (GraphJModel jModel: stateJModelMap.values()) {
-					jModel.setShowNodeIdentities(newState);
-				}
-				getJGraph().refreshView();
-			}
-		};
-	}
-
-	/**
-	 * Callback method to create a listner for the {@link #SHOW_ANCHORS_OPTION} option.
-	 */
-	protected ChangeListener createAspectsOptionListener() {
-		return new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				boolean newState = ((JCheckBoxMenuItem) e.getSource()).getState();
-				for (GraphJModel jModel: stateJModelMap.values()) {
-					jModel.setShowAspects(newState);
-				}
-				getJGraph().getModel().refresh();
-//				getJGraph().refreshView();
-			}
-		};
-	}
     
     /**
-     * Sets the text ion the status bar
+     * Text to indicate which state is chosen and which match is emphasised.
      */
-    protected void setStatus(String text) {
-        if (text.length() == 0) {
-            statusBar.setText(FRAME_NAME);
+    @Override
+    protected String getStatusText() {
+    	String text;
+    	if (simulator.getCurrentGTS() == null) {
+    		text = "No state selected";
+    	} else if (simulator.getCurrentTransition() != null) {
+    		GraphTransition trans = simulator.getCurrentTransition();
+    		if (getOptions().getValue(SHOW_ANCHORS_OPTION)) {
+        		text = String.format("%s (with match %s)", trans.source(), trans.getEvent());    			
+    		} else {
+    			text = String.format("%s (with match of %s)", trans.source(), trans.getRule().getName());
+    		}
+    	} else if (simulator.getCurrentState() != null) {
+    		text = ""+simulator.getCurrentState();
+    	} else {
+    		text = "";
+    	}
+        if (text == null) {
+            return FRAME_NAME;
         } else {
-            statusBar.setText(FRAME_NAME + ": " + text);
+        	return FRAME_NAME + ": " + text;
         }
     }
 
@@ -271,13 +250,13 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 	 */
 	protected GraphJModel computeStateJModel(GraphState state) {
 		GraphJModel result;
-		result = new GraphJModel(state.getGraph());
-		result.setShowNodeIdentities(getOptions().getValue(SHOW_NODE_IDS_OPTION));
-		result.setShowAspects(getOptions().getValue(SHOW_ASPECTS_OPTION));
+		result = new GraphJModel(state.getGraph(), getOptions());
 		// try to find layout information for the state
+		GraphState oldState;
+		Morphism morphism;
 		if (state instanceof GraphNextState) {
-			GraphState oldState = ((GraphNextState) state).source();
-			Morphism morphism = ((GraphNextState) state).morphism();
+			oldState = ((GraphNextState) state).source();
+			morphism = ((GraphNextState) state).morphism();
 			// walk back along the derivation chain to find one for
 			// which we have a state model (and hence layout information)
 			while (!stateJModelMap.containsKey(oldState)
@@ -285,10 +264,16 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 		        morphism = ((GraphNextState) oldState).morphism().then(morphism);
 				oldState = ((GraphNextState) oldState).source();
 			}
+		} else if (selectedTransition != null && selectedTransition.target() == state) {
+			oldState = selectedTransition.source();
+			morphism = selectedTransition.morphism();
+		} else {
+			oldState = null;
+			morphism = null;
+		}
+		if (oldState != null && stateJModelMap.containsKey(oldState)) {
 			GraphJModel oldJModel = stateJModelMap.get(oldState);
-			if (oldJModel != null) {
-				copyLayout(oldJModel, result, morphism);
-			}
+			copyLayout(oldJModel, result, morphism);
 		}
 		return result;
 	}
@@ -325,10 +310,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      * Mapping from state graphs to the corresponding graph models.
      * @invariant stateJModelMap: State --> GraphJModel
      */
-    protected final Map<State,GraphJModel> stateJModelMap = new HashMap<State,GraphJModel>();
+    private final Map<State,GraphJModel> stateJModelMap = new HashMap<State,GraphJModel>();
     /**
      * The currently activated transition.
      * @invariant currentTransition.source() == stateJModel.graph()
      */
-    protected GraphTransition currentTransition;
+    private GraphTransition selectedTransition;
+    /** The simulator to which this panel belongs. */
+    private final Simulator simulator;
 }

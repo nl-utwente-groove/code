@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GenerateProgressMonitor.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: GenerateProgressMonitor.java,v 1.2 2007-03-30 15:50:37 rensink Exp $
  */
 package groove.util;
 
@@ -29,7 +29,7 @@ import groove.lts.explore.BranchingStrategy;
  * The monitor should be added as a {@link groove.graph.GraphListener} to the GTS
  * in question.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class GenerateProgressMonitor extends GraphAdapter {
     /**
@@ -48,6 +48,7 @@ public class GenerateProgressMonitor extends GraphAdapter {
         this.strategy = strategy;
     }
 
+    @Override
     public void addUpdate(GraphShape graph, Node node) {
         if (graph.nodeCount() % UNIT == 0) {
             System.out.print("s");
@@ -56,6 +57,7 @@ public class GenerateProgressMonitor extends GraphAdapter {
         endLine((GTS) graph);
     }
 
+    @Override
     public void addUpdate(GraphShape graph, Edge edge) {
         if (graph.edgeCount() % UNIT == 0) {
             System.out.print("t");

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaGraphTest.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: DeltaGraphTest.java,v 1.2 2007-03-30 15:50:47 rensink Exp $
  */
 package groove.test.graph;
 
@@ -24,14 +24,15 @@ import java.io.File;
 /**
  * Test class to test <tt>DeltaGraph</tt>
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DeltaGraphTest extends GraphTest {
     public DeltaGraphTest(String name) {
         super(name);
     }
     
-   protected Graph loadGraph(File file) throws Exception {
+    @Override
+    protected Graph loadGraph(File file) throws Exception {
        Graph basis = super.loadGraph(file);
        basis.setFixed();
         return new DeltaGraph(basis);

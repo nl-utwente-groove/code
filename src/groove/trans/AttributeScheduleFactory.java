@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AttributeScheduleFactory.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: AttributeScheduleFactory.java,v 1.3 2007-03-30 15:50:26 rensink Exp $
  */
 
 package groove.trans;
 
+import groove.algebra.Variable;
 import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
@@ -45,7 +46,7 @@ import java.util.Set;
  * that may not be matched in the source graph.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:26 $
  */
 public class AttributeScheduleFactory extends IndegreeScheduleFactory {
 	/** A label with the empty string as text. */
@@ -87,6 +88,10 @@ public class AttributeScheduleFactory extends IndegreeScheduleFactory {
     				if (nextElement instanceof ProductEdge && ! (source instanceof ValueNode)) {
     					operatorEdges.add(nextElement);
     				}
+    			}
+    		} else if (nextElement instanceof ValueNode) {
+    			if (((ValueNode) nextElement).getConstant() instanceof Variable) {
+    				resultIter.remove();
     			}
     		}
     	}
@@ -176,7 +181,7 @@ public class AttributeScheduleFactory extends IndegreeScheduleFactory {
 	    		dependenceMap.put(nextEdge.end(Edge.TARGET_INDEX), target);
 	    	}
 
-	    	if (nextEdge instanceof ProductEdge && !(nextEdge.opposite() instanceof ValueNode)) {
+	    	if (nextEdge instanceof ProductEdge && ((ValueNode) nextEdge.opposite()).getConstant() instanceof Variable) {
                 newEdge = DefaultEdge.createEdge(target, EMPTY_LABEL, source);
 	    	}
 

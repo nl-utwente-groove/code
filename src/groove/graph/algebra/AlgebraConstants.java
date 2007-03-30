@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AlgebraConstants.java,v 1.2 2007-03-23 15:42:59 rensink Exp $
+ * $Id: AlgebraConstants.java,v 1.3 2007-03-30 15:50:45 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -26,6 +26,9 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.aspect.AspectGraph;
+import groove.graph.aspect.AspectNode;
+import groove.graph.aspect.AttributeAspect;
 import groove.util.Groove;
 
 import java.util.Iterator;
@@ -33,7 +36,7 @@ import java.util.Iterator;
 /**
  * Class containing all the constant values used for dealing with attributed graphs.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-23 15:42:59 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:45 $
  */
 public class AlgebraConstants {
 	/** Number of attribute types AREND not used; may be removed? */
@@ -285,7 +288,9 @@ public class AlgebraConstants {
      * its adjacent edge
      * @return an instance of the correct node-type, or <tt>null</tt> if the
      * node has nothing to do with algebra-stuff
+     * @deprecated No longer used; functionality taken over by {@link AttributeAspect#createAttributeNode(AspectNode, AspectGraph)}
      */
+    @Deprecated
     public static Node getAlgebraNode(Graph graph, Node node) {
     	Node result = null;
     	// first check whether this node is an product node
@@ -322,7 +327,7 @@ public class AlgebraConstants {
     	while (selfEdgeIter.hasNext()) {
     		Edge nextEdge = selfEdgeIter.next();
     		if (isProductLabel(nextEdge.label())) {
-    			return new ProductNode();
+    			return new ProductNode(0);
     		}
     	}
     	return null;
@@ -352,13 +357,14 @@ public class AlgebraConstants {
      * Given a node and the graph this node is in, it checks whether this node
      * represents a data variable. If so, it returns a fresh instance of
      * {@link groove.graph.algebra.ValueNode}. If not, it returns <tt>null</tt>.
-     * AREND only called locally; make private?
      * @param node the node for which to check whether it represents a data variable
      * @param graph the graph containing this node and, more importantly, its
      * adjacent edges
      * @return a fresh instance of {@link groove.graph.algebra.ValueNode} if this
      * node represents a data variable, <tt>null</tt> otherwise
+     * @deprecated No longer used; functionality taken over by {@link AttributeAspect#createAttributeNode(AspectNode, AspectGraph)}
      */
+    @Deprecated
     public static Node getVariableNode(Graph graph, Node node) {
 		Iterator<? extends Edge> selfEdgeIter = graph.edgeSet(node).iterator();
 		while (selfEdgeIter.hasNext()) {

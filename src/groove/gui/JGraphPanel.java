@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: JGraphPanel.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: JGraphPanel.java,v 1.3 2007-03-30 15:50:32 rensink Exp $
  */
 package groove.gui;
 
@@ -31,14 +31,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
-import javax.swing.event.ChangeListener;
 
 /**
  * A panel that combines a {@link groove.gui.jgraph.JGraph}and (optionally) a
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
@@ -209,14 +208,68 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * Throws an exception if no such option was in the options object passed
      * in at construction time.
      */
-    protected void addOptionListener(String option, ChangeListener listener) {
+    protected void addOptionListener(String option, ItemListener listener) {
     	JCheckBoxMenuItem optionItem = getOptionsItem(option);
     	if (optionItem == null) {
     		throw new IllegalArgumentException(String.format("Unknown option: %s", option));
     	}
-    	optionItem.addChangeListener(listener);
+    	optionItem.addItemListener(listener);
     }
 
+    /**
+     * Adds a refresh listener to the menu item associated with for an option with a given name.
+     * @see #getRefreshListener()
+     */
+    protected void addRefreshListener(String option) {
+    	addOptionListener(option, getRefreshListener());
+    }
+    
+    /**
+     * Returns the refresh listener for this panel.
+     * Lazily creates the listener.
+     */
+    protected final ItemListener getRefreshListener() {
+    	if (refreshListener == null) {
+    		refreshListener =  new ItemListener() {
+    			public void itemStateChanged(ItemEvent e) {
+    				if (isEnabled()) {
+    					refresh();
+    				}
+    			}
+    		};
+    	}
+    	return refreshListener;
+    }
+    
+    /** 
+     * Refreshes everything on the panel, for instance in reaction to a 
+     * change in one of the visualisation options.
+     * This implementation calls {@link JModel#refresh()} and {@link #refreshStatus()}.
+     */
+    protected void refresh() {
+    	getJModel().refresh();
+    	refreshStatus();
+    }
+    
+    /** 
+     * If the panel has a staus bar, refreshes it 
+     * with the text obtained from {@link #getStatusText()}.
+     */
+    protected void refreshStatus() {
+    	if (getStatusBar() != null) {
+    		getStatusBar().setText(getStatusText());
+    	}
+    }
+    
+    /**
+     * Callback method from {@link #refreshStatus()} to obtain the current status text, which is 
+     * to be printed on the status bar (if any).
+     * This implementation returns the empty string.
+     */
+    protected String getStatusText() {
+    	return "";
+    }
+    
     /**
 	 * Returns the options object passed in at construction time.
 	 */
@@ -240,10 +293,12 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
 
     /** Options for this panel. */
     private final Options options;
+    /** Change listener that calls {@link #refresh()} when activated. */
+    private ItemListener refreshListener;
     /**
      * Panel for showing status messages
      */
-    protected final JLabel statusBar;
+    private final JLabel statusBar;
 
     /** The menu item to switch the label list on and off. */
     private final JMenuItem viewLabelListItem;

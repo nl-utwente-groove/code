@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphShape.java,v 1.3 2007-03-27 14:18:32 rensink Exp $
+ * $Id: GraphShape.java,v 1.4 2007-03-30 15:50:24 rensink Exp $
  */
 package groove.graph;
 
@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * Model of a graph shape, consisting of nodes and labelled edges between them..
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-03-27 14:18:32 $
+ * @version $Revision: 1.4 $ $Date: 2007-03-30 15:50:24 $
  */
 public interface GraphShape extends java.io.Serializable {
     /**
@@ -44,6 +44,7 @@ public interface GraphShape extends java.io.Serializable {
      * @return an iterator over the nodes in this graph
      * @deprecated use <code>nodeSet().iterator()</code> or foreach instead
      */
+    @Deprecated
     Iterator<? extends Node> nodeIterator();
 
     /**
@@ -72,6 +73,7 @@ public interface GraphShape extends java.io.Serializable {
      * @return an iterator over the edges in this graph
      * @deprecated use <code>edgeSet().iterator()</code> or foreach instead
      */
+    @Deprecated
     Iterator<? extends Edge> edgeIterator();
 
     /**
@@ -162,6 +164,7 @@ public interface GraphShape extends java.io.Serializable {
      * @ensure <tt>result != null</tt>
      * @deprecated use <code>elementSet().iterator()</code> or foreach instead
      */
+    @Deprecated
     Iterator<? extends Element> iterator();
     
     /**

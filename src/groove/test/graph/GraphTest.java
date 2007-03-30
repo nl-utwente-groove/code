@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.3 2007-03-28 15:12:36 rensink Exp $
+ * $Id: GraphTest.java,v 1.4 2007-03-30 15:50:47 rensink Exp $
  */
 package groove.test.graph;
 
@@ -51,7 +51,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -125,6 +125,7 @@ public class GraphTest extends TestCase {
     /*
      * @see TestCase#setUp()
      */
+    @Override
     protected void setUp() throws Exception {
         super.setUp();
         for (int i = 0; i < matchDom.length; i++) {

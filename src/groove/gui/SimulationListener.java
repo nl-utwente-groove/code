@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SimulationListener.java,v 1.1.1.2 2007-03-20 10:42:45 kastenberg Exp $
+ * $Id: SimulationListener.java,v 1.2 2007-03-30 15:50:35 rensink Exp $
  */
 package groove.gui;
 
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
-import groove.trans.view.RuleViewGrammar;
 
 /**
  * Observer (= viewer) interface for production rule simulation.
@@ -28,10 +28,10 @@ import groove.trans.view.RuleViewGrammar;
 public interface SimulationListener {
     /**
      * Reports the update of the graph grammar being simulated.
-     * @param grammar the new graph grammar
+     * @param gts the new graph grammar
      * @require gammar.lts() instanceof GTS
      */
-    void setGrammarUpdate(RuleViewGrammar grammar);
+    void setGrammarUpdate(GTS gts);
 
     /**
      * Reports the update of the currently selected state.

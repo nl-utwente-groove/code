@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphOutTransition.java,v 1.1.1.2 2007-03-20 10:42:51 kastenberg Exp $
+ * $Id: DefaultGraphOutTransition.java,v 1.2 2007-03-30 15:50:41 rensink Exp $
  */
 package groove.lts;
 
@@ -25,7 +25,7 @@ import groove.trans.RuleEvent;
 /**
  * Abstract class to store the outgoing transitions locally at each state.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultGraphOutTransition implements GraphOutTransition {
     /**
@@ -62,26 +62,11 @@ public class DefaultGraphOutTransition implements GraphOutTransition {
     protected boolean equalsEvent(GraphOutTransition other) {
         return getEvent() == other.getEvent();
     }
-//
-//    /**
-//     * This implementation compares objects on the basis of the
-//     * anchor images, under the assumption that the rules are equal.
-//     */
-//    protected boolean equalsAnchorImages(GraphOutTransition other) {
-//        int anchorCount = getRule().anchorSize();
-//        Element[] footprint = getAnchorImage();
-//        Element[] otherFootprint = other.getAnchorImage();
-//        for (int i = 0; i < anchorCount; i++) {
-//            if (!footprint[i].equals(otherFootprint[i])) {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
 
     /**
      * This implementation compares events for identity.
     */
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -107,34 +92,14 @@ public class DefaultGraphOutTransition implements GraphOutTransition {
 	public Element imageFor(NodeEdgeMap elementMap) {
 		throw new UnsupportedOperationException();
 	}
-//
-//	/**
-//	 * Computes a hash code on the basis of the anchor images.
-//	 */
-//	protected int anchorImageHash() {
-//		int result = 0;
-//		int anchorCount = (getRule().anchorSize() + 1) / 2;
-//		Element[] footprint = getAnchorImage();
-//		for (int i = 0; i < anchorCount; i++) {
-//			result += footprint[i].hashCode() << i;
-//		}
-////		result += rule.anchorCount() == 0 ? 0 : footprint()[0].hashCode();
-//		return result;
-//	}
-
+	
     /**
 	 * This implementation returns the identity of the event.
 	 */
+    @Override
     public int hashCode() {
         return System.identityHashCode(getEvent());
     }
-//
-//    /**
-//     * This implementation always returns <code>true</code>.
-//     */
-//	public boolean isPrime() {
-//		return true;
-//	}
 	
     /**
      * The target state of this transition.

@@ -29,12 +29,12 @@ import groove.algebra.DefaultIntegerAlgebra;
 import groove.algebra.DefaultStringAlgebra;
 import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
-import groove.algebra.Variable;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphFormatException;
 import groove.graph.Node;
 import groove.graph.algebra.AlgebraEdge;
+import groove.graph.algebra.AlgebraGraph;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueEdge;
@@ -192,7 +192,7 @@ public class AttributeAspect extends AbstractAspect {
 		// check if there is a single constant edge on this node
 		Collection<AspectEdge> outEdges = graph.outEdgeSet(node);
 		if (outEdges.isEmpty()) {
-			result = new ValueNode(new Variable());
+			result = new ValueNode();
 		} else if (outEdges.size() > 1) {
 			throw new GraphFormatException("Too many edges on constant node: %s", outEdges);
 		} else {
@@ -210,7 +210,7 @@ public class AttributeAspect extends AbstractAspect {
 				if (! (nodeValue instanceof Constant)) {
 					throw new GraphFormatException("Operation %s on value node should be a constant", outEdge.label());
 				}
-				result = new ValueNode((Constant) nodeValue);
+				result = AlgebraGraph.getInstance().getValueNode(((Constant) nodeValue));
 			} catch (UnknownSymbolException exc) {
 				throw new GraphFormatException(exc.getMessage());
 			}
@@ -228,9 +228,7 @@ public class AttributeAspect extends AbstractAspect {
 	 * are incorrect
 	 */
 	private static ProductNode createProductNode(AspectNode node, AspectGraph graph) throws GraphFormatException {
-		// check that the node makes sense
-		arity(node, graph);
-		return new ProductNode();
+		return new ProductNode(arity(node, graph));
 	}
 	
 	/** 
@@ -247,8 +245,8 @@ public class AttributeAspect extends AbstractAspect {
 			if (outEdge.getValue(getInstance()) == ARGUMENT) {
 				try {
 					int argNumber = Integer.parseInt(outEdge.label().text());
-					if (!argNumbers.add(argNumber)) {
-						throw new GraphFormatException("Duplicate argument edge", argNumber);
+					if (! argNumbers.add(argNumber)) {
+						throw new GraphFormatException("Duplicate argument edge %d", argNumber);
 					}
 					maxArgNumber = Math.max(maxArgNumber, argNumber);
 					result++;
@@ -281,7 +279,9 @@ public class AttributeAspect extends AbstractAspect {
     	if (attributeValue == null) {
     		result = null;
     	} else if (attributeValue == ARGUMENT) {
-    		result = createArgumentEdge(edge, ends);
+    		AlgebraEdge argEdge = createArgumentEdge(edge, ends);
+    		argEdge.source().setArgument(argEdge.getNumber(), argEdge.target());
+    		result = argEdge;
     	} else {
     		assert algebraMap.containsKey(attributeValue);
     		result = createOperatorEdge(edge, graph, ends);
@@ -303,10 +303,10 @@ public class AttributeAspect extends AbstractAspect {
 		try {
 			Algebra algebra = algebraMap.get(edge.getValue(getInstance()));
 			Operation operator = algebra.getOperation(edge.label().text());
-			if (operator.arity() != arity(edge.source(), graph)) {
+			ProductNode source = (ProductNode) ends[Edge.SOURCE_INDEX];
+			if (operator.arity() != source.arity()) {
 				throw new GraphFormatException("Arity of source node does not match arity of operation %s", operator);
 			}
-			ProductNode source = (ProductNode) ends[Edge.SOURCE_INDEX];
 			ValueNode target = (ValueNode) ends[Edge.TARGET_INDEX];
 			return new ProductEdge(source, target, operator);
 		} catch (UnknownSymbolException exc) {

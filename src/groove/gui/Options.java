@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: Options.java,v 1.3 2007-03-30 15:50:35 rensink Exp $
  */
 package groove.gui;
 
@@ -29,7 +29,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Options {
     /** Edit menu name */
@@ -204,11 +204,14 @@ public class Options {
     static public final String RULE_ANCHOR_OPTION = "Include anchor in rule status";
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
-    /** Show node ids option */
+    /** Show state ids option */
+    static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
+    /** Vertices are labels options */
+    static public final String VERTEX_LABEL_OPTION = "Allow node labels";
+    /** Show aspects in graphs and rules option */
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes in states and rules";
-    
     /** Parse attributed graphs option */
-    static public final String PARSE_ATTRIBUTED_GRAPHS = "Parse as attributed graph";
+    static public final String PARSE_ATTRIBUTES_OPTION = "Parse as attributed graph";
 
     /**
      * Convenience method to convert line style codes to names.
@@ -247,13 +250,24 @@ public class Options {
         default : throw new IllegalArgumentException(""+lineStyle+" is not a recognized line style");
         }
     }
+
+    /** Creates an initialised options object. */ 
+    public Options() {
+		add(SHOW_NODE_IDS_OPTION);
+		add(SHOW_ANCHORS_OPTION);
+		add(SHOW_ASPECTS_OPTION);
+		add(VERTEX_LABEL_OPTION);
+		add(SHOW_STATE_IDS_OPTION);
+		add(PARSE_ATTRIBUTES_OPTION);
+	}
+
     /**
      * Adds an option name to the options, and returns the 
      * associated (fresh) menu item.
      * @param name the name of the checkbox menu item to add
      * @return the added {@link javax.swing.JCheckBoxMenuItem}
      */
-    public JCheckBoxMenuItem add(String name) {
+    public final JCheckBoxMenuItem add(String name) {
     	JCheckBoxMenuItem result = new JCheckBoxMenuItem(name); 
     	itemMap.put(name, result);
     	return result;

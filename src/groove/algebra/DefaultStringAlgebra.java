@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultStringAlgebra.java,v 1.2 2007-03-23 11:24:05 kastenberg Exp $
+ * $Id: DefaultStringAlgebra.java,v 1.3 2007-03-30 15:50:31 rensink Exp $
  */
 package groove.algebra;
 
@@ -27,7 +27,7 @@ import java.util.List;
  * on strings.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-23 11:24:05 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:31 $
  */
 public class DefaultStringAlgebra extends Algebra {
 
@@ -56,9 +56,7 @@ public class DefaultStringAlgebra extends Algebra {
 	    return stringAlgebra;
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.algebra.Algebra#prefix()
-	 */
+	@Override
 	public String prefix() {
 		return PREFIX + SEPARATOR;
 	}
@@ -84,9 +82,7 @@ public class DefaultStringAlgebra extends Algebra {
 		this.addOperation(operEquals);
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.util.Algebra#getOperation(java.lang.String)
-	 */
+	@Override
 	public Operation getOperation(String symbol) throws UnknownSymbolException {
 		Operation operation;
 		if (getOperationSymbols().contains(symbol)) {
@@ -126,6 +122,7 @@ public class DefaultStringAlgebra extends Algebra {
 	        return instance;
 	    }
 
+		@Override
 	    public Constant apply(List<Constant> operands) {
 	        return getInstance();
 	    }
@@ -148,6 +145,7 @@ public class DefaultStringAlgebra extends Algebra {
 			return operation;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -182,6 +180,7 @@ public class DefaultStringAlgebra extends Algebra {
 			return operation;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GpsGrammar.java,v 1.4 2007-03-29 09:59:51 rensink Exp $
+ * $Id: GpsGrammar.java,v 1.5 2007-03-30 15:50:43 rensink Exp $
  */
 
 package groove.io;
@@ -32,7 +32,7 @@ import groove.trans.StructuredRuleName;
 import groove.trans.view.AspectualRuleView;
 import groove.trans.view.RuleView;
 import groove.trans.view.RuleViewGrammar;
-import groove.trans.view.ViewFormatException;
+import groove.trans.view.RuleFormatException;
 import groove.util.Groove;
 
 import java.io.File;
@@ -49,7 +49,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @deprecated use {@link AspectualGpsGrammar} or {@link LayedOutGpsGrammar} instead
  */
 @Deprecated
@@ -136,12 +136,16 @@ public class GpsGrammar implements XmlGrammar {
         // as well as the required factories of the resulting grammar
         setFactories(result);
 
-        // load the rules from location
-        Map<StructuredRuleName,AspectualRuleView> ruleGraphMap = new HashMap<StructuredRuleName,AspectualRuleView>();
-        loadRules(location, null, ruleGraphMap);
-        for (AspectualRuleView ruleGraph: ruleGraphMap.values()) {
-            result.add(ruleGraph);
-        }
+        try {
+			// load the rules from location
+			Map<StructuredRuleName,AspectualRuleView> ruleGraphMap = new HashMap<StructuredRuleName,AspectualRuleView>();
+			loadRules(location, null, ruleGraphMap);
+			for (AspectualRuleView ruleGraph: ruleGraphMap.values()) {
+			    result.add(ruleGraph);
+			}
+		} catch (RuleFormatException exc) {
+			throw new IOException(String.format("Format error in rules: %s", exc.getMessage()));
+		}
 
         // determine the start graph file
         File startGraphFile;
@@ -173,9 +177,6 @@ public class GpsGrammar implements XmlGrammar {
 						+ startGraphFile + " not found");
 			}
         }
-//        else {
-//        	throw new IOException(LOAD_ERROR + ": start graph " + getStateExtensionFilter().addExtension(DEFAULT_START_STATE_NAME) + " not available");
-//        }
         return result;
     }
 
@@ -205,11 +206,7 @@ public class GpsGrammar implements XmlGrammar {
         // save propeties
         File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(gg.getName()));
         Properties grammarProperties = gg.getProperties();
-        if (grammarProperties.isEmpty()) {
-            propertiesFile.delete();
-        } else {
-            grammarProperties.store(new FileOutputStream(propertiesFile), "Graph grammar properties for "+gg.getName());
-        }
+        grammarProperties.store(new FileOutputStream(propertiesFile), "Graph grammar properties for "+gg.getName());
     }
 
     /**
@@ -243,7 +240,7 @@ public class GpsGrammar implements XmlGrammar {
                 }
                 marshalRule(ruleGraph, location);
             }
-        } catch (ViewFormatException exc) {
+        } catch (RuleFormatException exc) {
             throw new IOException("Error in creating rule graph: "+exc.getMessage());
         }
     }
@@ -283,11 +280,11 @@ public class GpsGrammar implements XmlGrammar {
      * The graph loader is used to read in all rule and state graphs.
      * Set during construction.
      */
-    public Xml getGraphMarshaller() {
+    public Xml<Graph> getGraphMarshaller() {
         return graphLoader;
     }
 
-    protected Xml createGraphMarshaller(GraphFactory graphFactory) {
+    protected Xml<Graph> createGraphMarshaller(GraphFactory graphFactory) {
     	return new UntypedGxl(graphFactory);
     }
     
@@ -425,11 +422,11 @@ public class GpsGrammar implements XmlGrammar {
      * Callback method to create a rule graph from a rule.
      * @param rule the rule from which to create a {@link groove.trans.view.RuleGraph}
      * @return the {@link groove.trans.view.RuleGraph} created from the given rule
-     * @throws ViewFormatException when the given rule does not conform the
+     * @throws RuleFormatException when the given rule does not conform the
      * requirements for making a {@link groove.trans.view.RuleGraph} from it
      * @see #marshalGrammar(GraphGrammar, File)
      */
-    protected AspectualRuleView createRuleGraph(Rule rule) throws ViewFormatException {
+    protected AspectualRuleView createRuleGraph(Rule rule) throws RuleFormatException {
         return new AspectualRuleView(rule);
     }
 
@@ -443,7 +440,7 @@ public class GpsGrammar implements XmlGrammar {
     /**
      * The xml reader used to unmarshal graphs.
      */
-    private final Xml graphLoader;
+    private final Xml<Graph> graphLoader;
 
     /**
      * The production rule factory used to unmarshal graphs.

@@ -40,6 +40,7 @@ public class AlgebraTest extends TestCase {
 	Constant bFalseConst, bTrueConst, iOneConst;
 	Operation aOperInst, bOperInst, cOperInst;
 	
+    @Override
 	public void setUp() {
 	    algebraGraph = AlgebraGraph.getInstance();
 		bAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);

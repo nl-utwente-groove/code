@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Analyzer.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: Analyzer.java,v 1.2 2007-03-30 15:50:37 rensink Exp $
  */
 package groove.util;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * Class to analyze the efectiveness and efficientcy of bisimilarity checking.
  * Works upon a stream file of graphs.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class Analyzer extends CommandLineTool {
     static public final String USAGE_MESSAGE = "Usage: Analyzer <graph stream files>";
@@ -101,6 +101,7 @@ public class Analyzer extends CommandLineTool {
      * After processing the options, this implementation requires a list of file and directory names.
      * If the list is empty, or one of the files does not exist, an error is printed and the program exits.
      */
+    @Override
     protected void processArguments() {
         super.processArguments();
         if (getArgs().size() == 0) {
@@ -115,11 +116,13 @@ public class Analyzer extends CommandLineTool {
     }
 
     /** The tool generates no output; this implementation always returns <tt>false</tt>. */
+    @Override
     protected boolean supportsOutputOption() {
         return false;
     }
 
     /** The tool has not verbority level; this implementation always returns <tt>false</tt>. */
+    @Override
     protected boolean supportsVerbosityOption() {
         return false;
     }
@@ -147,6 +150,7 @@ public class Analyzer extends CommandLineTool {
         endLog();
     }
     
+    @Override
     protected String getLogFileName() {
         return ID_PREFIX + graphStreamName.substring(graphStreamName.indexOf(ID_SEPARATOR));
     }
@@ -206,9 +210,12 @@ public class Analyzer extends CommandLineTool {
             this.graph = graph;
         }
 
+        @Override
         public int hashCode() {
             return graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
         }
+
+        @Override
         public boolean equals(Object obj) {
             return graph.nodeSet().equals(((GraphObject) obj).graph.nodeSet())
                 && graph.edgeSet().equals(((GraphObject) obj).graph.edgeSet());

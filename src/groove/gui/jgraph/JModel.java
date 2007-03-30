@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.3 2007-03-28 15:12:26 rensink Exp $
+ * $Id: JModel.java,v 1.4 2007-03-30 15:50:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -23,6 +23,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
+import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 
@@ -58,7 +59,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -66,7 +67,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.3 $
+     * @version $Revision: 1.4 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -93,28 +94,13 @@ abstract public class JModel extends DefaultGraphModel {
      * Constructs a new JModel with given default node and edge attributes, possibly showing node identities.
      * @param defaultNodeAttr the default node attributes for this model
      * @param defaultEdgeAttr the default node attributes for this model
-     * @param vertexLabelsAreLoops indicates whether j-cell inscriptions can stand for
-     * self-edges of the graph.
      */
-    public JModel(AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, boolean vertexLabelsAreLoops) {
-        // give the graph model a linked list to speed up layer edits
-        super();
-        this.vertexLabelsAreLoops = vertexLabelsAreLoops;
+    public JModel(AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, Options options) {
         this.defaultNodeAttr = defaultNodeAttr;
         this.valueNodeAttr = (AttributeMap) defaultNodeAttr.clone();
         GraphConstants.setBackground(valueNodeAttr, JAttr.VALUE_BACKGROUND);
         this.defaultEdgeAttr = defaultEdgeAttr;
-    }
-
-    /**
-     * Constructs a new JModel with given default node and edge attributes,
-     * displaying self-edges through JNode labels.
-     * @param defaultNodeAttr the default node attributes for this model
-     * @param defaultEdgeAttr the default node attributes for this model
-     * @ensure !isLayedOut(), !isShowNodeIdentities()
-     */
-    public JModel(AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr) {
-        this(defaultNodeAttr, defaultEdgeAttr, false);
+        this.options = options;
     }
 
     /**
@@ -124,7 +110,7 @@ abstract public class JModel extends DefaultGraphModel {
      * @ensure !isLayedOut(), !isShowNodeIdentities()
      */
     public JModel() {
-        this(JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, true);
+        this(JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, null);
     }
 
     /**
@@ -139,14 +125,6 @@ abstract public class JModel extends DefaultGraphModel {
         } else {
             return null;
         }
-    }
-
-    /**
-     * Indicates whether JNode descriptions should graph node identities. If false, JNode
-     * descriptions are (possibly empty) sets of self-edge labels.
-     */
-    public boolean isVertexLabelsAreLoops() {
-        return vertexLabelsAreLoops;
     }
 
     /**
@@ -215,13 +193,18 @@ abstract public class JModel extends DefaultGraphModel {
     /**
      * Sets all jcells to unmovable, except those that have been added since the last layout action.
      * This is done in preparation for layouting.
+     * @return <code>true</code> if there is anything left to layout
      */
-    public void freeze() {
+    public boolean freeze() {
+        boolean result = false;
         Iterator<DefaultGraphCell> rootsIter = roots.iterator();
         while (rootsIter.hasNext()) {
             DefaultGraphCell root = rootsIter.next();
-            GraphConstants.setMoveable(root.getAttributes(), layoutableJCells.contains(root));
+            boolean layoutable = layoutableJCells.contains(root);
+            GraphConstants.setMoveable(root.getAttributes(), layoutable);
+            result |= layoutable;
         }
+        return result;
     }
 
     /**
@@ -462,6 +445,15 @@ abstract public class JModel extends DefaultGraphModel {
             return ((JUserObject) userObject).clone();
         }
 	}
+	
+	/** 
+	 * Retrieves the value for a given option from the options object,
+	 * or <code>null</code> if the options are not set (i.e., <code>null</code>).
+	 * @param option the name of the option
+	 */
+	protected boolean getOptionValue(String option) {
+		return options != null && options.getValue(option);
+	}
 
 	/**
      * Returns the map of attribute changes needed to emphasize a jvertex.  
@@ -551,11 +543,6 @@ abstract public class JModel extends DefaultGraphModel {
     }
     
     /**
-     * Property that indicates if node descriptions are identities. (If false, node descriptions are
-     * possible empty sets of self-edge labels.)
-     */
-    private final boolean vertexLabelsAreLoops;
-    /**
      * Standard node attributes used in this graph model.
      * Set in the constructor.
      */
@@ -584,4 +571,6 @@ abstract public class JModel extends DefaultGraphModel {
      * <tt>{@link #setLayedOut(boolean)}</tt> was called.
      */
     protected final Set<JCell> layoutableJCells = new HashSet<JCell>();
+	/** Set of options values to control the display. May be <code>null</code>. */
+	private final Options options;
 }

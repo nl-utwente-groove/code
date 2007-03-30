@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IsoSimulation.java,v 1.2 2007-03-20 23:02:57 rensink Exp $
+ * $Id: IsoSimulation.java,v 1.3 2007-03-30 15:50:46 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -34,13 +34,14 @@ import java.util.Map;
  * into play in the construction and refinement of the simulation..
  * The graphs' partition maps are used to match elements.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class IsoSimulation extends InjectiveSimulation {
     public IsoSimulation(InjectiveMorphism morph) {
         super(morph);
     }
     
+    @Override
     protected void initSimulation() {
         // first do a trivial test on node and edge set sizes, to preclude mistakes later
         if (morph.dom().nodeCount() != morph.cod().nodeCount() || morph.dom().edgeCount() != morph.cod().edgeCount()) {
@@ -57,6 +58,7 @@ public class IsoSimulation extends InjectiveSimulation {
      * This implementation just inserts the elements with the same certificate,
      * without any further restrictions.
      */
+    @Override
     protected void initNodeImageSet(Node key) {
         putNode(key, getNodeMatches(key));
     }
@@ -65,6 +67,7 @@ public class IsoSimulation extends InjectiveSimulation {
      * This implementation just inserts the elements with the same certificate,
      * without any further restrictions.
      */
+    @Override
     protected void initEdgeImageSet(Edge key) {
         putEdge(key, getEdgeMatches(key));
     }
@@ -73,6 +76,7 @@ public class IsoSimulation extends InjectiveSimulation {
      * This implementation uses the edge certificates. It is not called in the course of the current
      * implementation, since everything is initialised directly in {@link #initNodeImageSet(Node)}.
      */
+    @Override
     protected Iterator<? extends Node> getNodeMatches(Node key) {
         Object match = codPartitionMap.get(domCertificateMap.get(key));
         if (match == null) {
@@ -88,6 +92,7 @@ public class IsoSimulation extends InjectiveSimulation {
      * This implementation uses the edge certificates. It is not called in the course of the current
      * implementation, since everything is initialised directly in {@link #initEdgeImageSet(Edge)}.
      */
+    @Override
     protected Iterator<? extends Edge> getEdgeMatches(Edge key) {
         Object match = codPartitionMap.get(domCertificateMap.get(key));
         if (match == null) {
