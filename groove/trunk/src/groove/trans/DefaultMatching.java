@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultMatching.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.3 2007-03-30 15:50:25 rensink Exp $
  */
 package groove.trans;
 
@@ -40,7 +40,7 @@ import groove.util.FilterIterator;
  * Expecially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
@@ -152,6 +152,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
         Iterator<? extends Matching> result = (Iterator<? extends Matching>) super.getTotalExtensionsIter();
         if (hasComplexNegConjunct()) {
             return new FilterIterator<Matching>(result) {
+                @Override
                 protected boolean approves(Object obj) {
                     return !matchesComplexNegConjunct((Matching) obj);
                 }

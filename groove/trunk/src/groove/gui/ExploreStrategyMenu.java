@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExploreStrategyMenu.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: ExploreStrategyMenu.java,v 1.2 2007-03-30 15:50:35 rensink Exp $
  */
 package groove.gui;
 
@@ -23,6 +23,7 @@ import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.ConditionalExploreStrategy;
 import groove.lts.ExploreStrategy;
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
@@ -35,8 +36,6 @@ import groove.lts.explore.LinearStrategy;
 import groove.lts.explore.FullStrategy;
 import groove.lts.explore.BarbedStrategy;
 import groove.trans.NameLabel;
-import groove.trans.GraphGrammar;
-import groove.trans.view.RuleViewGrammar;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -44,7 +43,7 @@ import javax.swing.JMenu;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     /**
@@ -88,22 +87,21 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     }
 
     // ----------------------------- simulation listener methods -----------------------
-    public void setGrammarUpdate(RuleViewGrammar grammar) {
+    public void setGrammarUpdate(GTS gts) {
         if (isLTSLoaded()) {
-        	grammar.gts().removeGraphListener(ltsListener);
+        	gts.removeGraphListener(ltsListener);
         }
-        currentGrammar = grammar;
-        LTS currentLTS = grammar.gts();
+        currentGTS = gts;
         // the initial state is open
         openStateCount = 1;
-        if (currentLTS != null) {
-            currentLTS.addGraphListener(ltsListener);
+        if (currentGTS != null) {
+        	currentGTS.addGraphListener(ltsListener);
             // the lts's of the strategies in this menu are changed
             // moreover, the conditions in condition strategies are reset
             // furthermore, the enabling is (re)set
             for (Map.Entry<ExploreStrategy,Action> entry: strategyActionMap.entrySet()) {
                 ExploreStrategy strategy = entry.getKey();
-                strategy.setLTS(currentLTS);
+                strategy.setLTS(currentGTS);
                 Action generateAction = entry.getValue();
                 if (strategy instanceof ConditionalExploreStrategy) {
                     ((ConditionalExploreStrategy) strategy).setCondition(null);
@@ -114,7 +112,7 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
                 }
             }
         }
-        setStateUpdate(!isLTSLoaded() ? null : (GraphState) currentLTS.startState());
+        setStateUpdate(!isLTSLoaded() ? null : (GraphState) currentGTS.startState());
     }
 
     public void setStateUpdate(GraphState state) {
@@ -132,7 +130,7 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
             ExploreStrategy strategy = entry.getKey();
             if (strategy instanceof ConditionalExploreStrategy) {
                 Action generateAction = entry.getValue();
-                ((ConditionalExploreStrategy) strategy).setCondition(currentGrammar.getRule(name));
+                ((ConditionalExploreStrategy) strategy).setCondition(currentGTS.ruleSystem().getRule(name));
                 generateAction.putValue(Action.NAME, strategy.toString());
                 generateAction.setEnabled(true);
             }
@@ -154,7 +152,7 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
      * has no start state.
      */
     protected boolean isLTSLoaded() {
-        return currentGrammar != null && currentGrammar.gts() != null;
+        return currentGTS != null;
     }
 
     /**
@@ -176,20 +174,22 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     /** Mapping from exploratin strategies to {@link Action}s resulting in that strategy. */
     private final Map<ExploreStrategy,Action> strategyActionMap = new HashMap<ExploreStrategy,Action>();
     /** The currently loaded graph grammar. */
-    private GraphGrammar currentGrammar;
+    private GTS currentGTS;
 //    /** The transition system of the currently loaded grammar; may be <code>null</code>. */
 //    private LTS currentLTS;
     /** The number of open states of the currently loaded LTS (if any). */
     private int openStateCount;
     /** The (permanent) LTS listener associated with this menu. */
     private final LTSListener ltsListener = new LTSAdapter() {
+        @Override
         public void closeUpdate(LTS graph, State explored) {
-            assert graph == currentGrammar.gts();
+            assert graph == currentGTS;
             openStateCount--;
             setEnabled(!disableOnFinish || !isLTSExplored());
         }
 
         /** If the added element is a state, increases the open state count. */
+        @Override
         public void addUpdate(GraphShape graph, Node node) {
         	openStateCount++;
         }

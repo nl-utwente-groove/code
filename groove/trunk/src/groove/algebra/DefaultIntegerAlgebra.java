@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIntegerAlgebra.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: DefaultIntegerAlgebra.java,v 1.2 2007-03-30 15:50:31 rensink Exp $
  */
 
 package groove.algebra;
@@ -28,7 +28,7 @@ import java.util.List;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:31 $
  */
 public class DefaultIntegerAlgebra extends Algebra {
 
@@ -90,9 +90,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 	    return instance;
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.algebra.Algebra#prefix()
-	 */
+	@Override
 	public String prefix() {
 		return PREFIX + SEPARATOR;
 	}
@@ -143,9 +141,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 		this.addOperation(operEquals);
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.util.Algebra#getOperation(java.lang.String)
-	 */
+	@Override
 	public Operation getOperation(String symbol) throws UnknownSymbolException {
 		Operation operation;
 		if (getOperationSymbols().contains(symbol))
@@ -204,6 +200,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -249,6 +246,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -295,6 +293,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -341,6 +340,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -387,6 +387,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -433,6 +434,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -484,6 +486,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -535,6 +538,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -586,6 +590,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -637,6 +642,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);

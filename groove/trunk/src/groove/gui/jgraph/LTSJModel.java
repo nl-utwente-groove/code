@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: LTSJModel.java,v 1.3 2007-03-30 15:50:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -38,7 +38,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class LTSJModel extends GraphJModel {
 	/** Dummy LTS model. */
@@ -68,7 +68,7 @@ public class LTSJModel extends GraphJModel {
 	    	for (Object part: getUserObject()) {
 	    		GraphTransition trans = (GraphTransition) part;
 	    		String description;
-	    		if (options.getValue(Options.SHOW_ANCHORS_OPTION)) {
+	    		if (isShowAnchors()) {
 	    			description = trans.getEvent().toString();
 	    		} else {
 	    			description = trans.getRule().getName().toString();
@@ -88,7 +88,7 @@ public class LTSJModel extends GraphJModel {
 		public String getLabel(Object object) {
 			assert object instanceof GraphTransition : "Edge set contains "
 					+ object;
-			if (options.getValue(Options.SHOW_ANCHORS_OPTION)) {
+			if (isShowAnchors()) {
 				return ((GraphTransition) object).label().text();
 			} else {
 				return ((GraphTransition) object).getRule().getName().text();
@@ -116,7 +116,7 @@ public class LTSJModel extends GraphJModel {
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
-    protected static class StateJVertex extends GraphJVertex {
+    protected class StateJVertex extends GraphJVertex {
     	/** 
     	 * Creates a new instance for a given node (required to be a {@link GraphState})
     	 * in an LTS model.
@@ -137,6 +137,18 @@ public class LTSJModel extends GraphJModel {
 		protected String getNodeDescription() {
 			return "State "+getNode();
 		}
+
+		@Override
+		public String getLabel(Object object) {
+			assert object instanceof GraphTransition : "Edge set contains "
+					+ object;
+			if (isShowAnchors()) {
+				return ((GraphTransition) object).label().text();
+			} else {
+				return ((GraphTransition) object).getRule().getName().text();
+			}
+		}
+
 	}
 
     /** Constant defining an italic font, for displaying state identities. */
@@ -189,14 +201,13 @@ public class LTSJModel extends GraphJModel {
 
     /** Creates a new model from a given LTS and set of display options. */
     public LTSJModel(LTS lts, Options options) {
-        super(lts, LTS_NODE_ATTR, LTS_EDGE_ATTR, false);
-        this.options = options;
-        setShowNodeIdentities(true);
+        super(lts, LTS_NODE_ATTR, LTS_EDGE_ATTR, options);
+        options.getItem(Options.SHOW_STATE_IDS_OPTION).setState(true);
     }
     
     /** Constructs a dummy, empty model. */
     private LTSJModel() {
-    	this.options = null;
+    	// empty
     }
     
     /** Specialises the return type. */
@@ -206,17 +217,6 @@ public class LTSJModel extends GraphJModel {
 	}
 
 	/**
-     * Indicates whether a label, when occurring on a self-edge in the LTS,
-     * indicates a special role of its source/target node rather than modelling
-     * a transition. In that case the edge will probably not be displayed explicitly
-     * but rather through special attributes of its source node.
-     * @see #addEdge(Edge)
-     */
-    public boolean isSpecialLabel(String label) {
-        return specialLabels != null && specialLabels.contains(label);
-    }
-
-    /**
      * Returns the active transition of the LTS, if any.
      * The active transition is the one currently selected in the simulator.
      * Returns <tt>null</tt> if no transition is selected.
@@ -277,7 +277,12 @@ public class LTSJModel extends GraphJModel {
         return result;
     }
 
-    /**
+	@Override
+	public boolean isShowNodeIdentities() {
+		return getOptionValue(Options.SHOW_STATE_IDS_OPTION);
+	}
+
+	/**
      * This implementation returns a {@link TransitionJEdge}.
      */
     @Override
@@ -366,6 +371,17 @@ public class LTSJModel extends GraphJModel {
     }
     
     /**
+	 * Indicates whether a label, when occurring on a self-edge in the LTS,
+	 * indicates a special role of its source/target node rather than modelling
+	 * a transition. In that case the edge will probably not be displayed explicitly
+	 * but rather through special attributes of its source node.
+	 * @see #addEdge(Edge)
+	 */
+	protected boolean isSpecialLabel(String label) {
+	    return specialLabels != null && specialLabels.contains(label);
+	}
+
+	/**
      * This implementation adds a label to the set if
      * the j-vertex is the start state, an open state or a final state.
      * @see LTS#START_LABEL_TEXT
@@ -413,7 +429,4 @@ public class LTSJModel extends GraphJModel {
         specialLabels.add(LTS.OPEN_LABEL_TEXT);
         specialLabels.add(LTS.FINAL_LABEL_TEXT);
     }
-    
-    /** Set of options values to control the display. */
-    private final Options options;
 }

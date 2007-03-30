@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IncidentScheduleFactory.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: IncidentScheduleFactory.java,v 1.2 2007-03-30 15:50:25 rensink Exp $
  */
 package groove.trans;
 
@@ -33,13 +33,14 @@ import java.util.Set;
  * The connectivity of a given edge is defined as the number of edges incident with the 
  * end nodes of the edge.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class IncidentScheduleFactory extends AbstractScheduleFactory {
     /**
      * Constructs the result as described in the class comment,
      * given an initial set of already-matched nodes and edges.
      */
+    @Override
     protected List<Element> newMatchingOrder(Graph subject, Set<Node> matchedNodes, Set<Edge> matchedEdges) {
         List<Element> result = new ArrayList<Element>();
         Set<Edge> remainingEdges = new HashSet<Edge>(subject.edgeSet());

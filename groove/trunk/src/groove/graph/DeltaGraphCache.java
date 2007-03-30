@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaGraphCache.java,v 1.1.1.2 2007-03-20 10:42:41 kastenberg Exp $
+ * $Id: DeltaGraphCache.java,v 1.2 2007-03-30 15:50:23 rensink Exp $
  */
 package groove.graph;
 
@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DeltaGraphCache extends GraphCache {
     /**
@@ -216,6 +216,7 @@ public class DeltaGraphCache extends GraphCache {
      * constructs the result by cloning that one and performing the delta upon it.
      * Otherwise, delegates to super.
      */
+    @Override
     protected Map<Label, Set<Edge>>[] computeLabelEdgeMaps() {
     	// the cache basis
     	Graph basis = getCacheBasis();
@@ -265,6 +266,7 @@ public class DeltaGraphCache extends GraphCache {
 	 * result by cloning that one and performing the delta upon it. Otherwise,
 	 * delegates to super.
 	 */
+    @Override
     protected Map<Node, Set<Edge>> computeNodeEdgeMap() {
     	// the cache basis
     	Graph basis = getCacheBasis();
@@ -447,30 +449,10 @@ public class DeltaGraphCache extends GraphCache {
     /**
 	 * Convenience method for <code>(DeltaGraph) getGraph()</code>.
 	 */
+    @Override
     public DeltaGraph getGraph() {
         return (DeltaGraph) graph;
     }
-//    
-//    /**
-//     * Returns the delta application as stored in the graph.
-//     * This is only meaningful if the graph is fixed; then it corresponds to the
-//     * difference between the basis (as given by {@link #getBasis()}) and the
-//     * underlying graph (as given by {@link #getGraph()}).
-//     */
-//    protected DeltaApplier getGraphDelta() {
-//    	if (isCacheDeltaSet() && isCacheDeltaIsGraphDelta()) {
-//			return getCacheDelta();
-//		} else {
-//			return getGraph();
-//		}
-//    }
-//    
-//    protected boolean isCacheDeltaIsGraphDelta() {
-//    	if (! isCacheDeltaSet()) {
-//    		initCacheDelta();
-//    	}
-//    	return cacheDeltaIsGraphDelta;
-//    }
 
     /**
 	 * Indicates if the graph is fixed. This implementation defers the question

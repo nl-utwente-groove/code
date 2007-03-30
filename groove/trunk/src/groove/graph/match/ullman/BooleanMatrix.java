@@ -39,6 +39,7 @@ public class BooleanMatrix {
     /**
      * @return String the string rep. of the matrix
      */
+    @Override
     public String toString() {
         int rows = rows(matrix);
         int cols = cols(matrix);

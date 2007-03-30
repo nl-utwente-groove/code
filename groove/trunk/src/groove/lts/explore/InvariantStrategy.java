@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: InvariantStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: InvariantStrategy.java,v 1.2 2007-03-30 15:50:42 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -31,7 +31,7 @@ import groove.trans.Rule;
  * (the invariant) is found to be violated somewhere; this halts the entire explorations.
  * Currently, the condition is expressed by the applicability of a rule.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class InvariantStrategy extends BranchingStrategy implements ConditionalExploreStrategy {
 	/** Name of this exploration strategy. */
@@ -57,10 +57,12 @@ public class InvariantStrategy extends BranchingStrategy implements ConditionalE
         this.rule = rule;
     }
 
+    @Override
     public String getShortDescription() {
         return DESCRIPTION;
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
@@ -81,6 +83,7 @@ public class InvariantStrategy extends BranchingStrategy implements ConditionalE
         this.rule = rule;
     }
 
+    @Override
     public String toString() {
         String result = getName() + " ";
         if (negated) {
@@ -97,6 +100,7 @@ public class InvariantStrategy extends BranchingStrategy implements ConditionalE
      * This implementation stops exploring altogether as soon as the condition is violated
      * (as indicated by <tt>isExplorable</tt>).
      */
+    @Override
     protected Collection<State> computeNextStates(Collection<? extends State> atStates) throws InterruptedException {
         Collection<State> result = new LinkedList<State>();
         boolean halt = false;
@@ -120,6 +124,7 @@ public class InvariantStrategy extends BranchingStrategy implements ConditionalE
      * Overwrites the method so that no state is explorable as soon as any violation
      * of the invariant condition is discovered.
      */
+    @Override
     protected boolean isExplorable(State state) {
         valid = valid && rule.hasMatching(((GraphState) state).getGraph()) != isNegated();
         return valid;

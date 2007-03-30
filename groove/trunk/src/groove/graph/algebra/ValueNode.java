@@ -12,22 +12,35 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ValueNode.java,v 1.2 2007-03-27 14:18:30 rensink Exp $
+ * $Id: ValueNode.java,v 1.3 2007-03-30 15:50:45 rensink Exp $
  */
 package groove.graph.algebra;
 
+import java.util.Iterator;
+
 import groove.algebra.Algebra;
 import groove.algebra.Constant;
-import groove.algebra.UnknownSymbolException;
 import groove.algebra.Variable;
+import groove.graph.Graph;
+import groove.graph.Node;
 
 /**
  * Implementation of graph elements that represent algebraic data values.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:30 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:45 $
  */
 public class ValueNode extends ProductNode {
+	/** Tests if a given graph contains value nodes. */
+	static public boolean isAttributed(Graph graph) {
+		boolean result = false;
+		Iterator<? extends Node> nodeIter = graph.nodeSet().iterator();
+		while (!result && nodeIter.hasNext()) {
+			result = (nodeIter.next() instanceof ValueNode);
+		}
+		return result;
+	}
+	
 // AREND made the superclass a ProductNode to unify the 
 // treatment of constants and other operators
 	/** the algebra to which this operation belongs */
@@ -36,39 +49,46 @@ public class ValueNode extends ProductNode {
 	private Constant constant;
 
 	/**
-	 * Creates a graph node for a given {@link groove.algebra.Constant}.
+	 * Constructs a node for a given {@link groove.algebra.Constant}.
+	 * Preferred construction through {@link AlgebraGraph#getValueNode(Constant)}.
 	 * @param constant the constant to create a graph node for
 	 */
-	public ValueNode(Constant constant) {
-        try {
-            this.algebra = constant.algebra();
-    		this.constant = (Constant) algebra.getOperation(constant.symbol());
-        } catch (UnknownSymbolException use) {
-            use.printStackTrace();
-        }
+	ValueNode(Constant constant) {
+		super(0);
+		this.algebra = constant.algebra();
+		this.constant = constant;
 	}
-
-    /**
-     * Creates a graph node {@link groove.graph.algebra.ValueNode} for a given {@link groove.algebra.Variable}.
-     * @param variable the variable to create a graph node for
-     */
-    public ValueNode(Variable variable) {
-        this.constant = variable;
-    }
-
-    /**
-     * Creates a graph node from a given {@link groove.algebra.Algebra} and string representing the value.
-	 * @param algebra the algebra in which to look for the value
-	 * @param symbol the symbol representing the value to look for
+	
+	/** 
+	 * Constructs a value node for a fresh variable.
 	 */
-	public ValueNode(Algebra algebra, String symbol) {
-        try {
-            this.algebra = algebra;
-    		this.constant = (Constant) algebra.getOperation(symbol);
-        } catch (UnknownSymbolException use) {
-            use.printStackTrace();
-        }
+	public ValueNode() {
+		this(new Variable());
 	}
+//
+//    /**
+//     * Creates a graph node {@link groove.graph.algebra.ValueNode} for a given {@link groove.algebra.Variable}.
+//     * @param variable the variable to create a graph node for
+//     */
+//    public ValueNode(Variable variable) {
+//		super(0);
+//        this.constant = variable;
+//    }
+//
+//    /**
+//     * Creates a graph node from a given {@link groove.algebra.Algebra} and string representing the value.
+//	 * @param algebra the algebra in which to look for the value
+//	 * @param symbol the symbol representing the value to look for
+//	 */
+//	public ValueNode(Algebra algebra, String symbol) throws UnknownSymbolException {
+//		this((Constant) algebra.getOperation(symbol));
+//        try {
+//            this.algebra = algebra;
+//    		this.constant = (Constant) algebra.getOperation(symbol);
+//        } catch (UnknownSymbolException use) {
+//            use.printStackTrace();
+//        }
+//	}
 
 	/**
 	 * Method returning the algebra to which the attribute node belongs.

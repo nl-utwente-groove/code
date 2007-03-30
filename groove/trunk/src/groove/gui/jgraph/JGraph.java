@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.2 2007-03-28 15:12:26 rensink Exp $
+ * $Id: JGraph.java,v 1.3 2007-03-30 15:50:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -71,7 +71,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:26 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:22 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
@@ -580,10 +580,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             popupMenu.removeAll();
             initPopupMenu(popupMenu);
             if (layouter != null && !jModel.isLayedOut()) {
-                jModel.freeze();
-                layouter.start(false);
+                if (jModel.freeze()) {
+                	layouter.start(false);
+                }
             }
-//            jModel.unfreeze();
         }
     }
     
@@ -724,7 +724,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             layouter.stop();
         }
         layouter = prototypeLayouter.newInstance(this);
-//        layouter.start(true);
     }
     
     /**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayoutAction.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: LayoutAction.java,v 1.2 2007-03-30 15:50:35 rensink Exp $
  */
 package groove.gui;
 
@@ -26,7 +26,7 @@ import javax.swing.AbstractAction;
  * Wraps a <tt>Layouter</tt> into an action.
  * Invoking the action comes down to starting the layout.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class LayoutAction extends AbstractAction {
 	/** Constructs a layout action for a given layouter. */
@@ -49,6 +49,7 @@ public class LayoutAction extends AbstractAction {
     /**
      * Overwrites the method so as to query the underlying layouter for the text.
      */
+    @Override
     public Object getValue(String key) {
         if (key.equals(NAME)) {
             return layouter.getText();

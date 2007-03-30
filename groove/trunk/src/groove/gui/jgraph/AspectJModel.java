@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.2 2007-03-28 15:12:26 rensink Exp $
+ * $Id: AspectJModel.java,v 1.3 2007-03-30 15:50:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -26,6 +26,7 @@ import groove.graph.aspect.AspectValue;
 import groove.graph.aspect.AspectualView;
 import groove.graph.aspect.AttributeAspect;
 import groove.graph.aspect.RuleAspect;
+import groove.gui.Options;
 import groove.rel.RegExprLabel;
 import groove.util.Groove;
 
@@ -46,7 +47,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AspectJModel extends GraphJModel {
     /** Empty instance of the {@link AspectJModel}. */
@@ -185,7 +186,7 @@ public class AspectJModel extends GraphJModel {
 		public String getLabel(Object object) {
 			assert object instanceof AspectEdge;
 			String result = super.getLabel(object);
-			if (isShowAspects()) {
+			if (isShowLocalAspects()) {
 				result = AspectParser.toString(((AspectEdge) object).getDeclaredValues(), result);
 			}
 			return result;
@@ -197,7 +198,7 @@ public class AspectJModel extends GraphJModel {
 		@Override
 		public Collection<String> getLabelSet() {
 			Collection<String> result = new ArrayList<String>();
-			if (isShowAspects()) {
+			if (isShowLocalAspects()) {
 				for (AspectValue value: getNode().getDeclaredValues()) {
 					result.add(AspectParser.toString(value));
 				}
@@ -273,7 +274,7 @@ public class AspectJModel extends GraphJModel {
 		public String getLabel(Object object) {
 			assert object instanceof AspectEdge;
 			String result = super.getLabel(object);
-			if (isShowAspects()) {
+			if (isShowLocalAspects()) {
 				result = AspectParser.toString(((AspectEdge) object).getDeclaredValues(), result);
 			}
 			return result;
@@ -303,14 +304,18 @@ public class AspectJModel extends GraphJModel {
     // --------------------- INSTANCE DEFINITIONS ------------------------
 
     /** 
-     * Creates a new GraphJModel instance on top of a given SPORule.
-     * @require rule != null;
-     *          rule.nacSet() \subseteq Embargo
-     * @ensure rule().equals(rule)
+     * Creates a new aspect model instance on top of a given aspectual view.
+     */
+    public AspectJModel(AspectualView view, Options options) {
+        super(view.getView(), options);
+        this.view = view;
+    }
+
+    /** 
+     * Creates a new aspect model instance on top of a given aspectual view.
      */
     public AspectJModel(AspectualView view) {
-        super(view.getView());
-        this.view = view;
+    	this(view, new Options());
     }
     
     /** Constructor for a dummy model. */

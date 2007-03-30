@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLStarFormula.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
+ * $Id: CTLStarFormula.java,v 1.2 2007-03-30 15:50:41 rensink Exp $
  */
 
 package groove.verify;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Class parsing CTL* formulae.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:41 $
  */
 public class CTLStarFormula {
     /** 
@@ -164,16 +164,12 @@ public class CTLStarFormula {
             this.operandList = Collections.singletonList(operand);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#getOperands()
-         */
+        @Override
         public List<TemporalFormula> getOperands() {
             return Collections.unmodifiableList(operandList);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#parseOperator(java.lang.String)
-         */
+        @Override
         protected TemporalFormula parseOperator(String expr) throws ExprFormatException {
             String[] operands = ExprParser.splitExpr(expr, getOperator(), ExprParser.PREFIX_POSITION);
             if (operands == null) {
@@ -191,6 +187,7 @@ public class CTLStarFormula {
          */
         abstract protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException;
 
+        @Override
         public String toString() {
         	return getOperator() + "(" + operand.toString() + ")";
         }
@@ -222,16 +219,12 @@ public class CTLStarFormula {
             this.operandList.addAll(operands);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#getOperands()
-         */
+        @Override
         public List<TemporalFormula> getOperands() {
             return Collections.unmodifiableList(operandList);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#parseOperator(java.lang.String)
-         */
+        @Override
         protected TemporalFormula parseOperator(String expr) throws ExprFormatException {
             String[] operands = ExprParser.splitExpr(expr, getOperator(), ExprParser.INFIX_POSITION);
             if (operands.length < 2) {
@@ -254,9 +247,7 @@ public class CTLStarFormula {
          */
         abstract protected TemporalFormula newInstance(List<TemporalFormula> operands) throws ExprFormatException;
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
+        @Override
         public String toString() {
         	String operandsString = operandList.get(0).toString();
         	for (int i = 1; i < operandList.size(); i++) {
@@ -294,6 +285,7 @@ public class CTLStarFormula {
             this(null);
         }
 
+        @Override
         protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
         	return FACTORY.createNeg(operand);
         }
@@ -307,9 +299,7 @@ public class CTLStarFormula {
             return new Neg(operand);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark()
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markNeg(marking, this, gts);
         }
@@ -337,9 +327,7 @@ public class CTLStarFormula {
             this(new ArrayList<TemporalFormula>());
         }
 
-    	/* (non-Javadoc)
-    	 * @see groove.verify.CTLStarFormula.Infix#newInstance(java.util.List)
-    	 */
+        @Override
     	protected TemporalFormula newInstance(List<TemporalFormula> operands) throws ExprFormatException {
     		return FACTORY.createAnd(operands);
     	}
@@ -352,9 +340,7 @@ public class CTLStarFormula {
         	return new And(operands);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark(groove.verify.Marking, groove.lts.GTS)
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markAnd(marking, this, gts);
         }
@@ -382,9 +368,7 @@ public class CTLStarFormula {
             this(new ArrayList<TemporalFormula>());
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr.Infix#newInstance(java.util.List)
-         */
+        @Override
         protected TemporalFormula newInstance(List<TemporalFormula> operands) throws ExprFormatException {
         	return FACTORY.createOr(operands);
         }
@@ -398,9 +382,7 @@ public class CTLStarFormula {
         	return new Or(operands);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark(groove.verify.Marking, groove.lts.GTS)
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markOr(marking, this, gts);
         }
@@ -428,9 +410,7 @@ public class CTLStarFormula {
             this(null);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr.Prefix#newInstance(groove.verify.CTLExpr)
-         */
+        @Override
         protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
             return FACTORY.createNext(operand);
         }
@@ -444,9 +424,7 @@ public class CTLStarFormula {
             return new Next(operand);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark(groove.verify.Marking, groove.lts.GTS)
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markNext(marking, this, gts);
         }
@@ -474,9 +452,7 @@ public class CTLStarFormula {
             this(new ArrayList<TemporalFormula>());
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr.Infix#newInstance(java.util.List)
-         */
+        @Override
         protected TemporalFormula newInstance(List<TemporalFormula> operands) throws ExprFormatException {
         	TemporalFormula result = FACTORY.createUntil(operands);
             return result;
@@ -492,9 +468,7 @@ public class CTLStarFormula {
         	return result;
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark(groove.verify.Marking, groove.lts.GTS)
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markUntil(marking, this, gts);
         }
@@ -522,9 +496,7 @@ public class CTLStarFormula {
             this(null);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr.Prefix#newInstance(groove.verify.CTLExpr)
-         */
+        @Override
         protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
             return FACTORY.createGlobally(operand);
         }
@@ -538,9 +510,7 @@ public class CTLStarFormula {
         	return new Globally(operand);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark(groove.verify.Marking, groove.lts.GTS)
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markGlobally(marking, this, gts);
         }
@@ -568,9 +538,7 @@ public class CTLStarFormula {
             this(null);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr.Prefix#newInstance(groove.verify.CTLExpr)
-         */
+        @Override
         protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
             return FACTORY.createFinally(operand);
         }
@@ -584,9 +552,7 @@ public class CTLStarFormula {
         	return new Finally(operand);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark(groove.verify.Marking, groove.lts.GTS)
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markFinally(marking, this, gts);
         }
@@ -615,9 +581,7 @@ public class CTLStarFormula {
             this(null);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr.Prefix#newInstance(groove.verify.CTLExpr)
-         */
+        @Override
         protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
         	return FACTORY.createExists(operand);
         }
@@ -631,9 +595,7 @@ public class CTLStarFormula {
         	return new Exists(operand);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark(groove.verify.Marking, groove.lts.GTS)
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markExists(marking, this, gts);
         }
@@ -662,9 +624,7 @@ public class CTLStarFormula {
             this(null);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr.Prefix#newInstance(groove.verify.CTLExpr)
-         */
+        @Override
         protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
         	return getFactory().createAll(operand);
         }
@@ -678,9 +638,7 @@ public class CTLStarFormula {
         	return new All(operand);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark(groove.verify.Marking, groove.lts.GTS)
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markAll(marking, this, gts);
         }
@@ -715,9 +673,7 @@ public class CTLStarFormula {
             return predicateName;
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#parseOperator(java.lang.String)
-         */
+        @Override
         protected TemporalFormula parseOperator(String expr) throws ExprFormatException {
             if (ExprParser.matches(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR)) {
                 return getFactory().parse(ExprParser.trim(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR));
@@ -753,16 +709,12 @@ public class CTLStarFormula {
         	return new Atom(name);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#getOperands()
-         */
+        @Override
         public List<TemporalFormula> getOperands() {
-            return Collections.EMPTY_LIST;
+            return Collections.emptyList();
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#toString()
-         */
+        @Override
         public String toString() {
         	return predicateName();
         }
@@ -775,9 +727,7 @@ public class CTLStarFormula {
             return graphCondition;
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark()
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markAtom(marking, this, gts);
         }
@@ -805,9 +755,7 @@ public class CTLStarFormula {
             super(TRUE);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark(groove.verify.Marking, groove.lts.GTS)
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markTrue(marking, this, gts);
         }
@@ -826,9 +774,7 @@ public class CTLStarFormula {
             super(FALSE);
         }
 
-        /* (non-Javadoc)
-         * @see groove.verify.CTLExpr#mark(groove.verify.Marking, groove.lts.GTS)
-         */
+        @Override
         public void mark(CTLFormulaMarker marker, Marking marking, GTS gts) {
         	marker.markFalse(marking, this, gts);
         }
@@ -891,7 +837,7 @@ public class CTLStarFormula {
             GraphTransition nextTransition = transitionIter.next();
             Node target = nextTransition.target();
             if (target instanceof State && ((State) target).equals(state)) {
-                State predecessorState = (State) nextTransition.source();
+                State predecessorState = nextTransition.source();
                 result.add(predecessorState);
             }
         }

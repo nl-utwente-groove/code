@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCache.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: GraphCache.java,v 1.2 2007-03-30 15:50:24 rensink Exp $
  */
 package groove.graph;
 
@@ -24,7 +24,7 @@ import groove.util.DefaultDispenser;
  * graph, for faster access.
  * Typically, the graph will have a graph cache as a <tt>{@link java.lang.ref.Reference}</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class GraphCache extends GraphShapeCache {
     /**
@@ -57,6 +57,7 @@ public class GraphCache extends GraphShapeCache {
     /**
      * Keeps the cached sets in sync with changes in the graph.
      */
+    @Override
     public void addUpdate(GraphShape graph, Node node) {
     	super.addUpdate(graph, node);
 		DefaultDispenser nodeCounter = getNodeCounter();
@@ -95,6 +96,7 @@ public class GraphCache extends GraphShapeCache {
     /**
      * Returns the graph for which the cache is maintained.
      */
+    @Override
     public AbstractGraph getGraph() {
         return (AbstractGraph) graph;
     }

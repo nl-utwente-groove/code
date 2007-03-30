@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Algebra.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: Algebra.java,v 1.2 2007-03-30 15:50:31 rensink Exp $
  */
 package groove.algebra;
 
@@ -25,7 +25,7 @@ import java.util.Set;
  * Generic class defining the structure of all implemented algebras.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:31 $
  */
 public abstract class Algebra {
 
@@ -134,6 +134,7 @@ public abstract class Algebra {
 	 * Checks whether two algebras are equal.
 	 * Equality is decided on the basis of the algebra name.
 	 */
+	@Override
 	public boolean equals(Object object) {
 		// the given object must be an instance of class Algebra
 		if (object instanceof Algebra) {
@@ -149,13 +150,12 @@ public abstract class Algebra {
 	/**
 	 * The hash code is based on the algebra name.
 	 */
+	@Override
 	public int hashCode() {
 		return getName().hashCode();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.lang.Object#toString()
-	 */
+	@Override
 	public String toString() {
 	    return name + " with the following operations:\n" + operations.values().toString();
 	}

@@ -295,6 +295,25 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 		return toPlainGraph(elementMap);
 	}
 
+	/** Returns the set of aspects of which this graph contains at least one value. */
+	public Set<Aspect> getAspects() {
+		Set<Aspect> result = new HashSet<Aspect>();
+		for (AspectNode node: nodeSet()) {
+			result.addAll(node.getAspectMap().keySet());
+		}
+		for (AspectEdge edge: edgeSet()) {
+			result.addAll(edge.getAspectMap().keySet());
+		}
+		return result;
+	}
+	
+	/** Convenience method to test if a given aspect is used in this graps. 
+	 * @see #getAspects()
+	 */
+	public boolean hasAspect(Aspect aspect) {
+		return getAspects().contains(aspect);
+	}
+	
 	/** 
 	 * Creates a graph where the aspect values are represented 
 	 * as label prefixes for the edges, and as special edges for the nodes.	 

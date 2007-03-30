@@ -1,4 +1,4 @@
-/* $Id: IsoNodeSearchItem.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $ */
+/* $Id: IsoNodeSearchItem.java,v 1.2 2007-03-30 15:50:46 rensink Exp $ */
 package groove.graph.iso;
 
 import java.util.Collection;
@@ -43,6 +43,7 @@ public class IsoNodeSearchItem extends NodeSearchItem {
 		 * The images are here determined by the certificates of the 
 		 * domain and codomain.
 		 */
+		@Override
 		protected Collection<? extends Node> computeImageSet() {
 			Object nodeMatch = matcher.getCertEquivalent(node);
 	        if (nodeMatch == null) {
@@ -69,6 +70,7 @@ public class IsoNodeSearchItem extends NodeSearchItem {
 	 * @param matcher the matcher for which the record is to be created;
 	 * should be an {@link IsoMatcher}
 	 */
+	@Override
 	public NodeRecord<IsoMatcher> get(Matcher matcher) {
 		return new IsoNodeRecord((IsoMatcher) matcher);
 	}

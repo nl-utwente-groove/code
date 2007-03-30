@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleGraph.java,v 1.5 2007-03-28 15:12:30 rensink Exp $
+ * $Id: RuleGraph.java,v 1.6 2007-03-30 15:50:37 rensink Exp $
  */
 
 package groove.trans.view;
@@ -66,7 +66,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @deprecated replaced by AspectRuleView
  */
 @Deprecated
@@ -290,10 +290,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * Constructs a new rule graph on the basis of a given production rule.
      * @param rule the production rule for which a rule graph is to be constructed
      * @require <tt>rule != null</tt>
-     * @throws ViewFormatException if <code>rule</code> cannot be displayed as a {@link RuleGraph},
+     * @throws RuleFormatException if <code>rule</code> cannot be displayed as a {@link RuleGraph},
      * for instance because its NACs are nested too deep or not connected
      */
-    public RuleGraph(Rule rule) throws ViewFormatException {
+    public RuleGraph(Rule rule) throws RuleFormatException {
         name = rule.getName();
         priority = rule.getPriority();
         ruleFactory = null;
@@ -390,7 +390,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
                 }
             }
         } catch (GraphFormatException exc) {
-            throw new ViewFormatException(exc);
+            throw new RuleFormatException(exc);
         }
         setFixed();
     }
@@ -897,7 +897,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
     }
     
     /** Invokes {@link #RuleGraph(Rule)} to construct a rule graph. */
-    public RuleView newInstance(Rule rule) throws ViewFormatException {
+    public RuleView newInstance(Rule rule) throws RuleFormatException {
         return new RuleGraph(rule);
     }
 //

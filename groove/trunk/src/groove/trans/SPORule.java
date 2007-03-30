@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: SPORule.java,v 1.3 2007-03-30 15:50:25 rensink Exp $
  */
 package groove.trans;
 
@@ -28,10 +28,12 @@ import groove.rel.VarGraph;
 import groove.util.ExprFormatException;
 import groove.util.Groove;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -40,10 +42,9 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
-
     /** Returns the current anchor factory for all rules. */
     public static AnchorFactory getAnchorFactory() {
         return anchorFactory;
@@ -120,8 +121,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
         this.morphism = morph;
         this.lhs = (VarGraph) morphism.dom();
         this.rhs = (VarGraph) morphism.cod();
-
-        this.modifying = computeModifying();
+//        this.modifying = computeModifying();
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Rule " + name + ": " + this);
             System.out.println("LHS nodes to be removed:\n" + Arrays.toString(getEraserNodes()));
@@ -199,7 +199,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 		result.setFixed();
 	    return result;
 	}
-
+	
 	public Element[] anchor() {
         if (anchor == null) {
             anchor = computeAnchor();
@@ -303,6 +303,25 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 */
 	final public boolean hasMergers() {
 		return ! getMergeMap().isEmpty();
+	}
+	
+	/** Returns an array of nodes isolated in the left hand side. */
+	final public Node[] getIsolatedNodes() {
+		if (isolatedNodes == null) {
+			isolatedNodes = computeIsolatedNodes();
+		}
+		return isolatedNodes;
+	}
+
+	/** Computes the array of nodes isolated in the left hand side. */
+	protected Node[] computeIsolatedNodes() {
+		List<Node> result = new ArrayList<Node>();
+		for (Node node: lhs.nodeSet()) {
+			if (lhs.edgeSet(node).isEmpty()) {
+				result.add(node);
+			}
+		}
+		return result.toArray(new Node[0]);
 	}
 
 	public boolean isModifying() {
@@ -670,6 +689,10 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * @invariant lhsOnlyNonAnchorEdges = lhsOnlyEdgeSet \setminus anchors
      */
     private Edge[] varEdges;
+    /**
+     * The LHS nodes that do not have any incident edges in the LHS.
+     */
+    private Node[] isolatedNodes;
     /** 
      * The rhs nodes that are not ruleMorph images
      * @invariant rhsOnlyNodeSet \subseteq rhs.nodeSet()

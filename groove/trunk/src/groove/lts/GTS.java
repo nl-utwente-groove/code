@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.4 2007-03-28 15:12:33 rensink Exp $
+ * $Id: GTS.java,v 1.5 2007-03-30 15:50:41 rensink Exp $
  */
 package groove.lts;
 
@@ -45,7 +45,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-03-28 15:12:33 $
+ * @version $Revision: 1.5 $ $Date: 2007-03-30 15:50:41 $
  */
 public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	/**
@@ -90,32 +90,19 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
      * <tt>getExploreStarategy() instanceof FullStrategy</tt>
      */
     public GTS(GraphGrammar grammar) {
-        this(grammar, grammar.getStartGraph());
+        this(grammar, true);
     }
 
     /**
-     * Constructs a GTS with an explicit start state.
-     * @param startGraph the Graph making up the start state.
+     * Constructs a GTS with an option to avoid storing transitions.
      * @require startGraph != null
      * @ensure startState().equals(startGraph)</tt> and
      * <tt>nodeSet().contains(startState())</tt> 
      */
-    public GTS(RuleSystem ruleSystem, Graph startGraph) {
-        this(ruleSystem, startGraph, true);
-    }
-
-    /**
-     * Constructs a GTS with a given start state.
-     * @param startGraph the Graph making up the start state.
-     * @require startGraph != null
-     * @ensure startState().equals(startGraph)</tt> and
-     * <tt>nodeSet().contains(startState())</tt> 
-     */
-    public GTS(RuleSystem ruleSystem, Graph startGraph, boolean storeTransitions) {
-        this.ruleSystem = ruleSystem;
+    private GTS(GraphGrammar grammar, boolean storeTransitions) {
+        this.ruleSystem = grammar;
         this.storeTransitions = storeTransitions;
-        startGraph.setFixed();
-        this.startState = computeStartState(startGraph);
+        this.startState = computeStartState(grammar.getStartGraph());
         addState(startState);
 //        this.strategy = new FullStrategy();
 //        this.strategy.setLTS(this);
@@ -190,7 +177,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
     /**
      * Returns the rule system underlying this GTS.
      */
-    public RuleSystem ruleSystem() {
+    public GraphGrammar ruleSystem() {
         return ruleSystem;
     }
 
@@ -560,7 +547,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
      * The rule system generating this LTS.
      * @invariant <tt>ruleSystem != null</tt>
      */
-    protected final RuleSystem ruleSystem;
+    protected final GraphGrammar ruleSystem;
     /** The set of states of the GTS. */
     protected final TreeHashSet<GraphState> stateSet = new TreeHashStateSet();
     

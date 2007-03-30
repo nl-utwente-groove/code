@@ -51,6 +51,7 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
         return prior != null;
     }
     
+    @Override
     protected Element[] computeCoanchorImage() {
         if (prior instanceof DerivedGraphState) {
         	return ((DerivedGraphState) prior).getCoanchorImage();
@@ -59,6 +60,7 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
         }
     }
 
+    @Override
     protected Graph computeTarget() {
 		Graph target = createTarget();
 		target.setFixed();
@@ -69,6 +71,7 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
      * This implementation defers to the rule factory.
      * @see RuleFactory#createTarget(groove.trans.RuleApplication)
      */
+    @Override
     protected Graph createTarget() {
     	return getRuleFactory().createTarget(this);
     }

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: CTLTransitionMarker.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
+ * $Id: CTLTransitionMarker.java,v 1.2 2007-03-30 15:50:41 rensink Exp $
  */
 package groove.verify;
 
@@ -33,19 +33,17 @@ import java.util.Iterator;
  * state). So, actually the LHS of the GTR is the property to check on.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:41 $
  */
 public class CTLTransitionMarker extends CTLMatchingMarker {
-
+    @Override
     public void mark(Marking marking, TemporalFormula expr, GTS gts) {
         reporter.start(MARK_T);
         super.mark(marking, expr, gts);
         reporter.stop();
     }
 
-    /* (non-Javadoc)
-     * @see groove.verify.CTLFormulaMarker#markAtom(groove.verify.Marking, groove.verify.TemporalFormula, groove.lts.GTS)
-     */
+    @Override
     public void markAtom(Marking marking, TemporalFormula property, GTS gts) {
         reporter.start(MARK_ATOM_T);
         boolean specialAtom = markSpecialAtom(marking, property, gts);

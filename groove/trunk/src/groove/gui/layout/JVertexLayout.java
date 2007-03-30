@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexLayout.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: JVertexLayout.java,v 1.2 2007-03-30 15:50:28 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -92,6 +92,7 @@ public class JVertexLayout implements JCellLayout {
      * This layout equals another object if that is also a {@link JVertexLayout},
      * with equal bounds.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof JVertexLayout) {
             JVertexLayout other = (JVertexLayout) obj;
@@ -104,6 +105,7 @@ public class JVertexLayout implements JCellLayout {
     /**
      * Returns the hash code of the bounds.
      */
+    @Override
     public int hashCode() {
         return getBounds().hashCode();
     }

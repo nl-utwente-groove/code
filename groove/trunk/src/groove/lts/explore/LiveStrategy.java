@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LiveStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: LiveStrategy.java,v 1.2 2007-03-30 15:50:42 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -26,7 +26,7 @@ import groove.lts.State;
 /**
  * Breadth-first exploration strategy that stops at the first final state (i.e., state without outgoing transitions.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class LiveStrategy extends BranchingStrategy {
 	/** Short name of this strategy. */
@@ -34,11 +34,12 @@ public class LiveStrategy extends BranchingStrategy {
 	/** Short description of this strategy. */
     static public final String DESCRIPTION = "Stops exploring if a final state is encountered";
 
-
+    @Override
     public String getShortDescription() {
         return DESCRIPTION;
     }
 
+    @Override
     public String getName() {
         return NAME;
     }
@@ -47,6 +48,7 @@ public class LiveStrategy extends BranchingStrategy {
      * This implementation stops exploring altogether as soon as the condition is violated
      * (as indicated by <tt>isExplorable</tt>).
      */
+    @Override
     protected Collection<State> computeNextStates(Collection<? extends State> atStates) throws InterruptedException {
         Collection<State> result = new LinkedList<State>();
         boolean halt = false;
@@ -70,6 +72,7 @@ public class LiveStrategy extends BranchingStrategy {
      * Overwrites the method so states are explorable as long as no final states
      * exis in the lts.
      */
+    @Override
     protected boolean isExplorable(State state) {
         return ! getLTS().getFinalStates().isEmpty();
     }

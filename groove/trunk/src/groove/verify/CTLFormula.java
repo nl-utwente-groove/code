@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: CTLFormula.java,v 1.2 2007-03-20 12:30:14 kastenberg Exp $
+ * $Id: CTLFormula.java,v 1.3 2007-03-30 15:50:41 rensink Exp $
  */
 
 package groove.verify;
@@ -26,13 +26,11 @@ import java.util.List;
 /**
  * Specific class for parsing CTL formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-20 12:30:14 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:41 $
  */
 public class CTLFormula extends CTLStarFormula {
 
-	/* (non-Javadoc)
-	 * @see groove.verify.CTLStarFormula#createAll(groove.verify.TemporalFormula)
-	 */
+    @Override
 	protected TemporalFormula createAll(TemporalFormula operand) throws ExprFormatException {
 		// the path quantifier all must be followed by a temporal operator
 		if (operand instanceof Next) {
@@ -51,9 +49,7 @@ public class CTLFormula extends CTLStarFormula {
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.verify.CTLStarFormula#createExists(groove.verify.TemporalFormula)
-	 */
+    @Override
 	protected TemporalFormula createExists(TemporalFormula operand) throws ExprFormatException {
 		// the path quantifier all must be followed by a temporal operator
 		if (operand instanceof Next) {

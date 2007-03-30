@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: InjectiveMorphism.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: InjectiveMorphism.java,v 1.2 2007-03-30 15:50:23 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Interface of a partial injective graph morphism.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:23 $
  */
 public interface InjectiveMorphism extends Morphism {
     /**
@@ -65,6 +65,7 @@ public interface InjectiveMorphism extends Morphism {
      *         <tt>result.cod()==cod</tt>, <tt>result.size()==0</tt>
      * @deprecated use {@link #createMorphism(Graph,Graph)} instead
      */
+    @Deprecated
     public InjectiveMorphism createInjectiveMorphism(Graph dom, Graph cod);
 }
 

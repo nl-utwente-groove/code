@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Profiler.java,v 1.3 2007-03-23 15:42:57 rensink Exp $
+ * $Id: Profiler.java,v 1.4 2007-03-30 15:50:37 rensink Exp $
  */
 package groove.util;
 
@@ -165,6 +165,7 @@ public class Profiler extends CommandLineTool {
      * options and their parameters are subsequently removed from the argument list. If an option
      * cannot be parsed, the method prints an error message and terminates the program.
      */
+    @Override
     public void processArguments() {
         List<String> argsList = getArgs();
         if( argsList.size() < 2 ) {
@@ -185,6 +186,7 @@ public class Profiler extends CommandLineTool {
     /**
      * This implementation returns <tt>{@link #USAGE_MESSAGE}</tt>.
      */
+    @Override
     protected String getUsageMessage() {
         return USAGE_MESSAGE;
     }

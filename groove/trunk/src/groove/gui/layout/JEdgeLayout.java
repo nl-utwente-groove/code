@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeLayout.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: JEdgeLayout.java,v 1.2 2007-03-30 15:50:28 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -185,6 +185,7 @@ public class JEdgeLayout implements JCellLayout {
      * This layout equals another object if that is also a {@link JEdgeLayout},
      * with equal points, label position and line stype.
      */
+    @Override
     public boolean equals(Object obj) {
         if (obj instanceof JEdgeLayout) {
             JEdgeLayout other = (JEdgeLayout) obj;
@@ -197,6 +198,7 @@ public class JEdgeLayout implements JCellLayout {
     /**
      * The hash code is the sum of the hash codes of points, label position and line style.
      */
+    @Override
     public int hashCode() {
         return getPoints().hashCode() + getLabelPosition().hashCode() + getLineStyle();
     }

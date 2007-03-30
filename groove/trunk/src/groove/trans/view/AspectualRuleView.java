@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.1 2007-03-28 15:12:30 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.2 2007-03-30 15:50:38 rensink Exp $
  */
 
 package groove.trans.view;
@@ -77,7 +77,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -111,7 +111,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 * and back, using {@link #testTranslation(String,AspectGraph)}. 
 	 * Recursively descends into directories.
 	 */
-	private static void testFile(File file) throws GraphFormatException, ViewFormatException {
+	private static void testFile(File file) throws GraphFormatException, RuleFormatException {
         AspectGraph factory = AspectGraph.getFactory();
 		if (file.isDirectory()) {
 			for (File nestedFile: file.listFiles()) {
@@ -130,7 +130,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	}
 	
 	/** Tests the translation from an aspect graph to a rule and back. */
-	private static void testTranslation(String name, AspectGraph graph) throws ViewFormatException, GraphFormatException {
+	private static void testTranslation(String name, AspectGraph graph) throws RuleFormatException, GraphFormatException {
         NameLabel ruleName = new NameLabel(name);
         // construct rule graph
         AspectualRuleView ruleGraph = new AspectualRuleView(graph, ruleName);
@@ -163,15 +163,15 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * Constructs a new rule graph on the basis of a given production rule.
      * @param rule the production rule for which a rule graph is to be constructed
      * @require <tt>rule != null</tt>
-     * @throws ViewFormatException if <code>rule</code> cannot be displayed as a {@link AspectualRuleView},
+     * @throws RuleFormatException if <code>rule</code> cannot be displayed as a {@link AspectualRuleView},
      * for instance because its NACs are nested too deep or not connected
      */
-    public AspectualRuleView(Rule rule) throws ViewFormatException {
+    public AspectualRuleView(Rule rule) throws RuleFormatException {
     	this.name = rule.getName();
         this.priority = rule.getPriority();
         this.rule = rule;
         this.graphToRuleMap = new HashMap<AspectNode,Node>();
-        this.graph = computeGraph(rule, graphToRuleMap);
+        this.graph = computeAspectGraph(rule, graphToRuleMap);
     }
 
     /**
@@ -275,7 +275,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	}
 
 	/** Invokes {@link #AspectualRuleView(Rule)} to construct a rule graph. */
-	public RuleView newInstance(Rule rule) throws ViewFormatException {
+	public RuleView newInstance(Rule rule) throws RuleFormatException {
 	    return new AspectualRuleView(rule);
 	}
 
@@ -310,13 +310,11 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
             System.out.println("");
         }
         // create the new lhs
-        VarGraph lhs = createRegExprGraph();
+        VarGraph lhs = createVarGraph();
         // also create a graph for all left elements, i.e., LHS and NAC
-        VarGraph left = createRegExprGraph();
-//        // mapping from rule graph elements to left (lhs and nac) elements
-//        NodeEdgeMap toLeft = new NodeEdgeHashMap();
+        VarGraph left = createVarGraph();
         // create the new rhs
-        VarGraph rhs = createRegExprGraph();
+        VarGraph rhs = createVarGraph();
         // mapping from aspect nodes to RHS nodes
         Map<AspectNode,Node> toRight = new HashMap<AspectNode,Node>();
         // we create a single graph containing all NAC nodes and edges
@@ -470,7 +468,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 			}
 		} else {
 			// if we're here it means we couldn't make an embargo
-			result = new DefaultNAC(lhs, getRuleFactory());
+			result = createNAC(lhs);
 			VarGraph nacTarget = result.getTarget();
 			Morphism nacMorphism = result.getPattern();
 			// add all nodes to nacTarget
@@ -528,16 +526,6 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     }
     
     /**
-	 * Callback method to create a general NAC on a given {@link VarGraph}.
-	 * @param context the context-graph
-	 * @return the new {@link groove.trans.NAC}
-	 * @see #toRule()
-	 */
-	protected NAC createNAC(VarGraph context) {
-	    return new DefaultNAC(context, getRuleFactory());
-	}
-
-	/**
 	 * Callback method to create a merge embargo.
 	 * @param context the context-graph
 	 * @param embargoNodes the nodes involved in this merge-embargoe
@@ -557,6 +545,16 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 */
 	protected EdgeEmbargo createEdgeEmbargo(VarGraph context, Edge embargoEdge) {
 	    return new EdgeEmbargo(context, embargoEdge, getRuleFactory());
+	}
+
+	/**
+	 * Callback method to create a general NAC on a given {@link VarGraph}.
+	 * @param context the context-graph
+	 * @return the new {@link groove.trans.NAC}
+	 * @see #toRule()
+	 */
+	protected NAC createNAC(VarGraph context) {
+	    return new DefaultNAC(context, getRuleFactory());
 	}
 
 	/**
@@ -589,20 +587,24 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     	assert ends.length == 2 : String.format("Cannot create edge with end nodes %s", Arrays.toString(ends));
     	Node source = ends[Edge.SOURCE_INDEX];
     	Node target = ends[Edge.TARGET_INDEX];
-//    	String var = RegExprLabel.getWildcardId(label);
-//    	if (var == null) {
-    		return DefaultEdge.createEdge(source, label, target);
-//    	} else {
-//    		return new VarBinaryEdge(source, var, target);
-//    	}
+    	return DefaultEdge.createEdge(source, label, target);
     }
 
     /**
+	 * Callback method to create a graph that can serve as LHS or RHS of a rule.
+	 * @return a fresh instance of {@link groove.rel.RegExprGraph}
+	 * @see #getView()
+	 */
+	protected VarGraph createVarGraph() {
+	    return new RegExprGraph();
+	}
+
+	/**
      * Computes an aspect graph representation of the rule
      * stored in this rule view.
      */
-    protected AspectGraph computeGraph(Rule rule, Map<AspectNode, Node> graphToRuleMap) throws ViewFormatException {
-    	AspectGraph result = createGraph();
+    protected AspectGraph computeAspectGraph(Rule rule, Map<AspectNode, Node> graphToRuleMap) throws RuleFormatException {
+    	AspectGraph result = createAspectGraph();
 		// start with lhs
 		Map<Node, AspectNode> lhsNodeMap = new HashMap<Node, AspectNode>();
 		// add lhs nodes
@@ -672,7 +674,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 				// otherwise no rule graph can be given
 				testInjective(nacMorphism);
 				// also store the nac into a graph, to test for connectedness
-				AspectGraph nacGraph = createGraph();
+				AspectGraph nacGraph = createAspectGraph();
 				// store the mapping from the NAC target nodes to the rule graph
 				Map<Node, AspectNode> nacNodeMap = new HashMap<Node, AspectNode>();
 				// first register the lhs nodes
@@ -717,7 +719,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 								nacNodeMap,
 								EMBARGO);
 					} else {
-						throw new ViewFormatException(
+						throw new RuleFormatException(
 								"Level 2 NACs must be merge or edge embargoes");
 					}
 					result.addEdge(subNacEdgeImage);
@@ -731,7 +733,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     }
     
     /** Callback factory method to create an empty aspect graph. */
-    protected AspectGraph createGraph() {
+    protected AspectGraph createAspectGraph() {
     	return new AspectGraph();
     }
 
@@ -823,15 +825,6 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	}
 
 	/**
-     * Callback method to create a graph that can serve as LHS or RHS of a rule.
-     * @return a fresh instance of {@link groove.rel.RegExprGraph}
-     * @see #getView()
-     */
-    protected VarGraph createRegExprGraph() {
-        return new RegExprGraph();
-    }
-
-    /**
      * Tests if a given morphism is injective; throws a {@link IllegalArgumentException} if it is not.
      * @param morphism the morphisms to be check for injectivity
      * @throws IllegalArgumentException if <code>morphism</code> is not injective

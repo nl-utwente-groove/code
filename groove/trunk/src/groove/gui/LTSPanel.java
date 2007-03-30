@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTSPanel.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: LTSPanel.java,v 1.3 2007-03-30 15:50:35 rensink Exp $
  */
 package groove.gui;
 
@@ -25,6 +25,7 @@ import groove.graph.Node;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
@@ -32,25 +33,21 @@ import groove.lts.LTSAdapter;
 import groove.lts.LTSListener;
 import groove.lts.State;
 import groove.trans.NameLabel;
-import groove.trans.view.RuleViewGrammar;
 
 import java.util.Collections;
-
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 /**
  * Window that displays and controls the current lts graph. Auxiliary class for
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:34 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:35 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
     public LTSPanel(Simulator simulator) {
         super(new LTSJGraph(simulator), true, simulator.getOptions());
-        addOptionListener(SHOW_ANCHORS_OPTION, createAnchorsOptionListener());
+        addRefreshListener(SHOW_ANCHORS_OPTION);
         simulator.addSimulationListener(this);
         jGraph.setToolTipEnabled(true);
     }
@@ -70,15 +67,15 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     /**
      * Sets the underlying grammar.
      * 
-     * @param grammar
+     * @param gts
      *                 the new grammar
      */
-    public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
+    public synchronized void setGrammarUpdate(GTS gts) {
         if (isLTSLoaded()) {
             lts.setFixed();
             lts.removeGraphListener(ltsListener);
         }
-        lts = grammar.gts();
+        lts = gts;
         getJGraph().setModel(createJModel(lts));
         if (lts == null) {
             setEnabled(false);
@@ -86,7 +83,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
             lts.addGraphListener(ltsListener);
             setStateUpdate((GraphState) lts.startState());
         }
-        updateStatus();
+        refreshStatus();
     }
 
 	/**
@@ -153,30 +150,31 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     public boolean isLTSLoaded() {
         return lts != null;
     }
-
-	/**
-	 * Callback factory method for a listener to the node ids show option.
-	 */
-	protected ChangeListener createAnchorsOptionListener() {
-		return new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				getJModel().reload();
-				getJGraph().getLabelList().updateModel();
-			}
-		};
-	}
+//
+//	/**
+//	 * Callback factory method for a listener to the anchors show option.
+//	 */
+//	protected ChangeListener createAnchorsOptionListener() {
+//		return new ChangeListener() {
+//			public void stateChanged(ChangeEvent e) {
+//				getJModel().refresh();
+////				getJGraph().getLabelList().updateModel();
+//			}
+//		};
+//	}
 
     /**
      * Writes a line to the status bar.
      */
-    protected void updateStatus() {
+    @Override
+    protected String getStatusText() {
         String text;
         if (!isLTSLoaded()) {
             text = "No start state loaded";
         } else {
             text = "" + lts.nodeCount() + " nodes, " + lts.edgeCount() + " edges";
         }
-        getStatusBar().setText(text);
+        return text;
     }
     
     /**
@@ -195,7 +193,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     	@Override
         public void addUpdate(GraphShape graph, Node node) {
             assert graph == lts : "I want to listen only to my lts";
-            updateStatus();
+            refreshStatus();
         }
 
         /**
@@ -205,7 +203,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     	@Override
         public void addUpdate(GraphShape graph, Edge edge) {
             assert graph == lts : "I want to listen only to my lts";
-            updateStatus();
+            refreshStatus();
         }
 
         /**
@@ -218,6 +216,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
             if (jCell != null) {
             	getJModel().refresh(Collections.singleton(jCell));
             }
+            refreshStatus();
         }
     };
 }

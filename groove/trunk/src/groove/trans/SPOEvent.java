@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: SPOEvent.java,v 1.3 2007-03-30 15:50:25 rensink Exp $
  */
 package groove.trans;
 
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.NodeEdgeMap;
@@ -45,7 +44,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:25 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -63,18 +62,6 @@ public class SPOEvent implements RuleEvent {
 	 * @see #getAnchorImageString()
 	 */
 	static public final String ANCHOR_END = ")";
-    /**
-     * Returns the number of nodes that were created during rule application.
-     */
-    static public int getFreshNodeCount() {
-        return freshNodeCount;
-    }
-
-    /**
-     * The total number of nodes (over all rules) created by {@link #createNode()}.
-     */
-    private static int freshNodeCount;
-
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
      * @param rule the production rule involved
@@ -622,58 +609,11 @@ public class SPOEvent implements RuleEvent {
 //        return key;
 //    }
 
-    /**
-	 * Returns a node that is fresh with respect to a given graph. 
-	 * The previously created fresh nodes are tried first (see {@link #getFreshNodes(int)}; 
-	 * only if all of those are already in the graph, a new fresh node is created using
-	 * {@link #createNode()}.
-	 * @param creatorIndex
-	 *            index in the rhsOnlyNodes array indicating the node of the
-	 *            rule for which a new image is to be created
-	 * @param graph
-	 *            the graph to which a node should be added
-	 */
-	public Node getFreshNode(int creatorIndex, Graph graph) {
-		Node result = null;
-		Iterator<Node> freshNodeIter = getFreshNodes(creatorIndex).iterator();
-		while (result == null && freshNodeIter.hasNext()) {
-			Node freshNode = freshNodeIter.next();
-			if (!graph.containsElement(freshNode)) {
-				result = freshNode;
-			}
-		}
-		if (result == null) {
-			result = createNode();
-			getFreshNodes(creatorIndex).add(result);
-		}
-		return result;
-	}
-
 	/**
 	 * Returns the list of all previously created fresh nodes.
 	 */
     protected List<Node> getFreshNodes(int creatorIndex) {
         return freshNodeList[creatorIndex];
-    }
-
-    /**
-     * Callback factory method for a newly constructed node.
-     * This implementation returns a {@link DefaultNode}, with
-     * a node number determined by the grammar's node counter.
-     */
-    protected Node createNode() {
-    	Node result;
-    	// the following is a stopgap: to ensure node uniqueness we ask the grammar,
-    	// but this may be null, in which case we rely on the DefaultNode's capacity
-    	// to generate unique node nrs
-    	GraphGrammar grammar = getRule().getGrammar();
-    	if (grammar == null) {
-    		result = new DefaultNode();
-    	} else {
-    		result = new DefaultNode(grammar.getNodeCounter());
-    	}
-        freshNodeCount++;
-        return result;
     }
 
     /**

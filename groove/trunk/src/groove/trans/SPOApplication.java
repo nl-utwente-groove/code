@@ -12,15 +12,17 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: SPOApplication.java,v 1.3 2007-03-30 15:50:25 rensink Exp $
  */
 package groove.trans;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultMorphism;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.NodeEdgeMap;
@@ -37,9 +39,22 @@ import groove.util.Reporter;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:25 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
+    /**
+     * Returns the number of nodes that were created during rule application.
+     */
+    static public int getFreshNodeCount() {
+        return freshNodeCount;
+    }
+
+    /**
+     * The total number of nodes (over all rules) created by {@link #createNode()}.
+     */
+    private static int freshNodeCount;
+
+
     /**
      * Constructs a new derivation on the basis of a given production rule, host graph and anchor map.
      * @param event the production rule instance involved
@@ -189,7 +204,7 @@ public class SPOApplication implements RuleApplication, Derivation {
             if (hintValid) {
                 result.putNode(coanchor[i], hint);
             } else {
-                result.putNode(coanchor[i], event.getFreshNode(i, source));
+                result.putNode(coanchor[i], getFreshNode(i, source));
             }
 		}
 		return result;
@@ -419,7 +434,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 	/**
 	 * Returns the rule event underlying this applications.
 	 */
-    public RuleEvent getEvent() {
+    public SPOEvent getEvent() {
 		return event;
 	}
 
@@ -466,6 +481,58 @@ public class SPOApplication implements RuleApplication, Derivation {
 			target.addEdge(edge);
 		}
 	}
+
+    /**
+	 * Returns a node that is fresh with respect to a given graph. 
+	 * The previously created fresh nodes are tried first (see {@link SPOEvent#getFreshNodes(int)}; 
+	 * only if all of those are already in the graph, a new fresh node is created using
+	 * {@link #createNode()}.
+	 * @param creatorIndex
+	 *            index in the rhsOnlyNodes array indicating the node of the
+	 *            rule for which a new image is to be created
+	 * @param graph
+	 *            the graph to which a node should be added
+	 */
+	public Node getFreshNode(int creatorIndex, Graph graph) {
+		Node result = null;
+		Iterator<Node> freshNodeIter = getEvent().getFreshNodes(creatorIndex).iterator();
+		while (result == null && freshNodeIter.hasNext()) {
+			Node freshNode = freshNodeIter.next();
+			if (!graph.containsElement(freshNode)) {
+				result = freshNode;
+			}
+		}
+		if (result == null) {
+			result = createNode();
+			getEvent().getFreshNodes(creatorIndex).add(result);
+		}
+		return result;
+	}
+
+    /**
+     * Callback factory method for a newly constructed node.
+     * This implementation returns a {@link DefaultNode}, with
+     * a node number determined by the grammar's node counter.
+     */
+    protected Node createNode() {
+    	Node result;
+    	// the following is a stopgap: to ensure node uniqueness we ask the grammar,
+    	// but this may be null, in which case we rely on the DefaultNode's capacity
+    	// to generate unique node nrs
+    	DerivationRecord record = getRecord();
+    	if (record == null) {
+    		result = new DefaultNode();
+    	} else {
+    		result = new DefaultNode(record.getNodeCounter());
+    	}
+        freshNodeCount++;
+        return result;
+    }
+    
+    /** Returns the derivation record associated with this rule application. */
+    protected DerivationRecord getRecord() {
+    	return getRule().getGrammar();
+    }
 
 	/**
 	 * Removes a node from a delta target. Optimizes by trying to call

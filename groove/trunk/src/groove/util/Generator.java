@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.4 2007-03-29 09:59:51 rensink Exp $
+ * $Id: Generator.java,v 1.5 2007-03-30 15:50:37 rensink Exp $
  */
 package groove.util;
 
@@ -49,7 +49,7 @@ import groove.trans.GraphTest;
 import groove.trans.NameLabel;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
-import groove.trans.SPOEvent;
+import groove.trans.SPOApplication;
 import groove.trans.SPORule;
 
 import java.io.BufferedReader;
@@ -71,7 +71,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -175,7 +175,7 @@ public class Generator extends CommandLineTool {
      */
     public GTS getGTS() {
         if (gts == null) {
-            gts = getGrammar().gts();
+            gts = new GTS(getGrammar());
         }
     	return gts;
     }
@@ -430,7 +430,7 @@ public class Generator extends CommandLineTool {
     private void reportGraphElementStatistics() {
         println("\tDefault nodes:\t" + groove.graph.DefaultNode.getNodeCount());
         println("\tDefault labels:\t" + groove.graph.DefaultLabel.getLabelCount());
-        println("\tFresh nodes:\t" + SPOEvent.getFreshNodeCount());
+        println("\tFresh nodes:\t" + SPOApplication.getFreshNodeCount());
         println("\tFresh edges:\t" + groove.graph.DefaultEdge.getEdgeCount());
         println("\tAverage:\tNodes:\t" + groove.graph.DeltaGraph.getNodeAvg());
         println("\t\tEdges:\t" + groove.graph.DeltaGraph.getEdgeAvg());

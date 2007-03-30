@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultBooleanAlgebra.java,v 1.2 2007-03-23 11:25:52 kastenberg Exp $
+ * $Id: DefaultBooleanAlgebra.java,v 1.3 2007-03-30 15:50:31 rensink Exp $
  */
 package groove.algebra;
 
@@ -24,7 +24,7 @@ import java.util.List;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-23 11:25:52 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:31 $
  */
 public class DefaultBooleanAlgebra extends Algebra {
 
@@ -59,9 +59,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 	    return booleanAlgebra;
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.algebra.Algebra#prefix()
-	 */
+	@Override
 	public String prefix() {
 		return PREFIX + SEPARATOR;
 	}
@@ -117,9 +115,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 			return instance;
 		}
 
-		/* (non-Javadoc)
-		 * @see groove.algebra.DefaultOperation#apply(java.util.List)
-		 */
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -159,6 +155,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -198,6 +195,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
@@ -235,6 +233,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			return getInstance();
 		}
@@ -261,6 +260,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 			return instance;
 		}
 
+		@Override
 		public Constant apply(List<Constant> operands) {
 			return getInstance();
 		}

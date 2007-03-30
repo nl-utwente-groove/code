@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.4 2007-03-30 15:50:25 rensink Exp $
  */
 package groove.trans;
 
@@ -35,13 +35,14 @@ import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
 import groove.util.Reporter;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -247,6 +248,14 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     }
 
     /**
+     * Returns <code>true</code> if the target graph of the condition
+     * contains {@link ValueNode}s, or the negative conjunct is attributed.
+     */
+    public boolean isAttributed() {
+		return ValueNode.isAttributed(getTarget()) && getNegConjunct().isAttributed();
+	}
+
+	/**
      * Returns <code>true</code> if {@link #hasMatching(Graph)} returns a non-<code>null</code>
      * result.
      */

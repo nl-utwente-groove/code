@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AttributeSimulation.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
+ * $Id: AttributeSimulation.java,v 1.3 2007-03-30 15:50:24 rensink Exp $
  */
 
 package groove.graph;
@@ -20,7 +20,6 @@ package groove.graph;
 import groove.algebra.Constant;
 import groove.algebra.Operation;
 import groove.algebra.Variable;
-import groove.graph.algebra.AlgebraConstants;
 import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.AlgebraGraph;
 import groove.graph.algebra.AttributeEdge;
@@ -37,7 +36,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -46,7 +44,7 @@ import java.util.Set;
  * Simulation that also takes attributed graphs into account.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:32 $
+ * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:24 $
  */
 public class AttributeSimulation extends MatchingSimulation {
 
@@ -65,6 +63,7 @@ public class AttributeSimulation extends MatchingSimulation {
      * {@link #getProductNodeMatches(ProductNode)} and {@link #getValueNodeMatches(ValueNode)},
      *  respectively.
      */
+    @Override
     protected Iterator<? extends Node> getNodeMatches(Node key) {
         // if the key is an operation-node
     	if (key instanceof ValueNode) {
@@ -123,17 +122,17 @@ public class AttributeSimulation extends MatchingSimulation {
         Collection<? extends Node> oldImages = getNode(key);
         if (oldImages == null) {
             // create the set of all possibles images of the product-node
-            ProductEdge productEdge = null;
-            Iterator<? extends Edge> outEdgeIter = morph.dom().outEdgeSet(key).iterator();
-            while (productEdge == null && outEdgeIter.hasNext()) {
-                Edge nextEdge = outEdgeIter.next();
-                if (nextEdge instanceof ProductEdge) {
-                    productEdge = (ProductEdge) nextEdge;
-                }
-            }
-            int arity = productEdge.getOperation().arity();
+//            ProductEdge productEdge = null;
+//            Iterator<? extends Edge> outEdgeIter = morph.dom().outEdgeSet(key).iterator();
+//            while (productEdge == null && outEdgeIter.hasNext()) {
+//                Edge nextEdge = outEdgeIter.next();
+//                if (nextEdge instanceof ProductEdge) {
+//                    productEdge = (ProductEdge) nextEdge;
+//                }
+//            }
+//            int arity = productEdge.getOperation().arity();
             Set<ProductNode> imageSet = new HashSet<ProductNode>();
-            createProductNodeImageSet(key, arity, 0, new ArrayList<Constant>(), imageSet);
+            createProductNodeImageSet(key, key.arity(), 0, new ArrayList<ValueNode>(), imageSet);
             // the following is erroneous: putting the images in the simulation
             // is not the responsibility of this method
             // putImageSet(key, imageSet);
@@ -160,59 +159,45 @@ public class AttributeSimulation extends MatchingSimulation {
      * @param args the list of arguments with index < argIndex - 1
      * @param imageSet the set which will eventually contain all candidate images
      */
-    protected void createProductNodeImageSet(ProductNode key, int arity, int argIndex, List<Constant> args, Set<ProductNode> imageSet) {
-        // get all edges with labelled "arg" suffixed with the right index
-        List<Constant> argList = new LinkedList<Constant>();
-        argList.addAll(args);
-
+    protected void createProductNodeImageSet(ProductNode key, int arity, int argIndex, List<ValueNode> args, Set<ProductNode> imageSet) {
         // get all edges with labelled "arg" suffixed with the right index and
         // iterate over all those edges which have the given key as its source node
-//        Label searchLabel = DefaultLabel.createLabel(AlgebraConstants.ARGUMENT_PREFIX + argIndex);
-        Collection<? extends Edge> argEdgeCol = morph.dom().outEdgeSet(key);
-        for (Edge nextArgEdge: argEdgeCol) {
-            // if this edge has the given key as its source node 
-            if (nextArgEdge.label().text().equals(""+argIndex)) {
-                ValueNode target = (ValueNode) nextArgEdge.end(Edge.TARGET_INDEX);
-                // iterate over the imageSet of the target-node
-                for (Node nextValueNode: getNode(target)) {
-                    Constant nextArg = ((ValueNode) nextValueNode).getConstant();
-                    // if not last argument, call this method recursively but
-                    // with the argument-index increased by 1
-                    if (argIndex < arity - 1) {
-                        argList.add(nextArg);
-                        createProductNodeImageSet(key, arity, (argIndex + 1), argList, imageSet);
-                        argList.remove(argList.size() - 1);
-                    }
-                    // if last argument, add that last argument and create an
-                    // ProductNode with the list of arguments as its components
-                    else {
-                        ProductNode image = new ProductNode();
-                        for (int i = 0; i < argList.size(); i++) {
-                            Constant argument = argList.get(i);
-                            image.addOperand(argument);
-                        }
-                        image.addOperand(nextArg);
-                        imageSet.add(image);
-                    }
-                }
-            }
-        }
+    	ValueNode target = key.getArgument(argIndex);
+		for (Node nextValueNode : getNode(target)) {
+			ValueNode nextArg = (ValueNode) nextValueNode;
+			// if not last argument, call this method recursively but
+			// with the argument-index increased by 1
+			args.add(nextArg);
+			if (argIndex < arity - 1) {
+				createProductNodeImageSet(key,
+						arity,
+						(argIndex + 1),
+						args,
+						imageSet);
+			} else {
+			// if last argument, add that last argument and create an
+			// ProductNode with the list of arguments as its components
+				imageSet.add(new ProductNode(args));
+			}
+			args.remove(args.size() - 1);
+		}
     }
 
     /**
-     * This method performs the creation of image-edges for each of the adjacent
-     * edges of the original key-node. That is, for each candidate ProductNode image
-     * it creates the edges that then should be matched in order to make the
-     * simulation complete.
-     *  
-     * @param key the original key for which we were looking for matching nodes
-     * @param imageSet the set containing candidate images for the key
-     */
+	 * This method performs the creation of image-edges for each of the adjacent
+	 * edges of the original key-node. That is, for each candidate ProductNode
+	 * image it creates the edges that then should be matched in order to make
+	 * the simulation complete.
+	 * 
+	 * @param key
+	 *            the original key for which we were looking for matching nodes
+	 * @param imageSet
+	 *            the set containing candidate images for the key
+	 */
     protected void createProductNodeInstances(ProductNode key, Set<ProductNode> imageSet) {
         AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
         Map<Node,Set<Node>> nodeMap = new HashMap<Node,Set<Node>>();
         Map<Edge,Set<Edge>> edgeMap = new HashMap<Edge,Set<Edge>>();
-//        Map<Element, Set<Element>> keyToImageMap = new HashMap<Element, Set<Element>>();
         // iterate over the candidate images
         for (ProductNode nextImage: imageSet) {
         	// iterate over the adjacent edges of the original key-node
@@ -243,8 +228,7 @@ public class AttributeSimulation extends MatchingSimulation {
                 // the image-nodes of both the current candidate and the image of the
                 // target-node of the current edge
                 else {
-//                    int argIndex = AlgebraConstants.isArgumentLabel(nextEdge.label());
-                    int argIndex = Integer.parseInt(((AlgebraEdge) nextEdge).label().text());
+                    int argIndex = ((AlgebraEdge) nextEdge).getNumber();
                     Constant operation = nextImage.getOperand(argIndex);
                     ValueNode imageTarget = algebraGraph.getValueNode(operation);
                     imageEdge = new AlgebraEdge(nextImage, nextEdge.label(), imageTarget);
@@ -268,7 +252,7 @@ public class AttributeSimulation extends MatchingSimulation {
         		// we need to be carefull
         		// in the case the current imageset and the new image are
         		// different, we only need to restrict to current imageset
-        		Set newImageSet = elementEntry.getValue();
+        		Set<Node> newImageSet = elementEntry.getValue();
         		if (!(currentImageSet.containsAll(newImageSet) && currentImageSet.size() == newImageSet.size())) {
         			restrictNodeImages(nodeKey, newImageSet.iterator(), null);
         		}
@@ -306,35 +290,26 @@ public class AttributeSimulation extends MatchingSimulation {
     }
 
     /**
-     * Get the matching nodes for OperationNode for which the representing
-     * operation in specified explicitely.
-     * 
+     * Get the matching nodes for a value node
      * @param key the node for which to find matching nodes.
      * @return iterator over the set of matching nodes.
      */
     protected Iterator<? extends Node> getValueNodeMatches(ValueNode key) {
         Collection<? extends Node> oldImages = getNode(key);
         if (oldImages == null) {
-            // for a variable-OperationNode (i.e. the operation it represents is undefined) we may asume
-            // that it is already matched through matching the attribute-edge which connects it to the
-            // graph part
-            Node nodeImage = null;
-            Constant constant = key.getConstant();
-            // when we have to do with a specified operation or constant
-            if (!(constant instanceof Variable)) {
-                // in case of an operation with arity 0 (i.e. a constant), there can only be one unique
-                // node representing this constant, namely the current node
-                nodeImage = key;
-            }
-            return Collections.singleton(nodeImage).iterator();
-        }
-        else
+        	Node image;
+            assert !(key.getConstant() instanceof Variable) : "Variable node not allowed in matching schedule";
+//            	image = null;
+//            } else {
+//            	image = key;
+//            }
+            return Collections.singleton(key).iterator();
+        } else {
             return oldImages.iterator();
+        }
     }
 
-    /* (non-Javadoc)
-     * @see groove.graph.DefaultSimulation#putImageSet(groove.graph.Element, java.util.Iterator)
-     */
+    @Override
     protected ImageSet<Edge> putEdge(Edge key, Iterator<? extends Edge> imageIter) {
         // CODE: when looking for matches of attributed graphs, in some cases we
         // have to replace an already existing imageset by a larger one. For example,

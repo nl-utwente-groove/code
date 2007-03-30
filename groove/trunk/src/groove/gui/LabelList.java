@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
+ * $Id: LabelList.java,v 1.4 2007-03-30 15:50:35 rensink Exp $
  */
 package groove.gui;
 
@@ -45,7 +45,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /** Pseudo-label maintained in this list for cells with an empty label set. */
@@ -215,9 +215,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 				Object obj = ((Map.Entry) changeEntry).getKey();
 				Map attributes = (Map) ((Map.Entry) changeEntry).getValue();
 				if (obj instanceof JCell && attributes.containsKey(GraphConstants.VALUE)) {
-					JCell cell = (JCell) obj;
-					changed |= removeFromLabels(cell);
-					changed |= addToLabels(cell);
+					changed |= modifyLabels((JCell) obj);
 				}
 			}
 		}
@@ -252,12 +250,11 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 	 * Processes the changes of a {@link JModel.RefreshEdit}.
 	 */
 	private boolean processRefresh(JModel.RefreshEdit change, boolean changed) {
-		if (!valueChangeUnderway) {
+//		if (!valueChangeUnderway) {
 			for (JCell cell : change.getRefreshedJCells()) {
-				changed |= removeFromLabels(cell);
-				changed |= addToLabels(cell);
+				changed |= modifyLabels(cell);
 			}
-		}
+//		}
 		return changed;
 	}
 
@@ -266,20 +263,22 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 	 * selection.
 	 */
     public void valueChanged(ListSelectionEvent e) {
-    	valueChangeUnderway = true;
-		Set<JCell> emphSet = new HashSet<JCell>();
-		int i = getMinSelectionIndex();
-		if (i >= 0) {
-			while (i <= getMaxSelectionIndex()) {
-				String label = (String) listModel.getElementAt(i);
-				if (isSelectedIndex(i)) {
-					emphSet.addAll(labels.get(label));
+//    	if (!valueChangeUnderway) {
+//			valueChangeUnderway = true;
+			Set<JCell> emphSet = new HashSet<JCell>();
+			int i = getMinSelectionIndex();
+			if (i >= 0) {
+				while (i <= getMaxSelectionIndex()) {
+					String label = (String) listModel.getElementAt(i);
+					if (isSelectedIndex(i)) {
+						emphSet.addAll(labels.get(label));
+					}
+					i++;
 				}
-				i++;
 			}
-		}
-		jmodel.setEmphasized(emphSet);
-    	valueChangeUnderway = false;
+			jmodel.setEmphasized(emphSet);
+//			valueChangeUnderway = false;
+//		}
 	}
 
     /**
@@ -362,6 +361,44 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     }
 
     /**
+     * Modifies the presence of the cell in the label map. 
+     * The return value indicates if there
+     * were any labels added or removed.
+     */
+    protected boolean modifyLabels(JCell cell) {
+    	boolean result = false;
+    	// create the set of all labels for which cell should appear in the label map
+    	Set<String> newLabelSet = new HashSet<String>(cell.getLabelSet());
+    	if (newLabelSet.isEmpty()) {
+    		newLabelSet.add(NO_LABEL);
+    	}
+    	// go over the existing label map
+    	Iterator<Map.Entry<String,Set<JCell>>> labelIter = labels.entrySet().iterator();
+    	while (labelIter.hasNext()) {
+    		Map.Entry<String,Set<JCell>> labelEntry = labelIter.next();
+    		String label = labelEntry.getKey();
+    		Set<JCell> cellSet = labelEntry.getValue();
+    		if (newLabelSet.remove(label)) {
+    			// the cell should be in the set
+    			cellSet.add(cell);
+    		} else if (cellSet.remove(cell) && cellSet.isEmpty()) {
+    			// the cell was in the set but shouldn't have been,
+    			// and the set is now empty
+    			labelIter.remove();
+    			result = true;
+    		}
+    	}
+    	// any new labels left over were not in the label map; add them
+    	for (String label: newLabelSet) {
+    		Set<JCell> newCells = new HashSet<JCell>();
+    		newCells.add(cell);
+    		labels.put(label, newCells);
+    		result = true;
+    	}
+    	return result;
+    }
+
+    /**
      * The list model used for the JList.
      * @require <tt>listModel == listComponent.getModel()</tt>
      */
@@ -391,9 +428,4 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      * The background color of this component when it is enabled.
      */
     private Color enabledBackground;
-    
-    /**
-     * Flag to indicate that {@link #valueChanged(ListSelectionEvent)} is being executed.
-     */
-    private boolean valueChangeUnderway; 
 }

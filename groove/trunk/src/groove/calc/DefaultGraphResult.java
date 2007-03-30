@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphResult.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: DefaultGraphResult.java,v 1.2 2007-03-30 15:50:48 rensink Exp $
  */
 package groove.calc;
 
@@ -136,13 +136,8 @@ public class DefaultGraphResult implements GraphResult {
         return createCalculator(rules, getGraph());
     }
     
+    @Override
     public String toString() {
-//        StringBuffer result = new StringBuffer();
-//        Iterator traceIter = getTrace().iterator();
-//        while (traceIter.hasNext()) {
-//            GraphState state = (GraphState) traceIter.next();
-//            result
-//        }
         return getTrace().toString();
     }
 

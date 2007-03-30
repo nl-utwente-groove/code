@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: FullStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: FullStrategy.java,v 1.2 2007-03-30 15:50:42 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -29,7 +29,7 @@ import java.util.Collection;
 /**
  * Recursively explores all open states of the LTS, in a breadth first manner.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class FullStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
@@ -55,6 +55,7 @@ public class FullStrategy extends AbstractStrategy {
     /**
      * Initializes the set of open states, then calls the super method.
      */
+    @Override
     public void setLTS(LTS lts) {
         if (getLTS() != null) {
             getLTS().removeGraphListener(graphListener);
@@ -92,6 +93,7 @@ public class FullStrategy extends AbstractStrategy {
         return STRATEGY_DESCRIPTION;
     }
     
+    @Override
     public String toString() {
         return getName();
     }
@@ -132,6 +134,7 @@ public class FullStrategy extends AbstractStrategy {
     /** The graph lisener permanently associated with this exploration strategy. */
     private final GraphShapeListener graphListener = new GraphAdapter() {
         /** This method adds the element to the open states. */
+        @Override
         public void addUpdate(GraphShape graph, Node node) {
         	openStateSet.add((GraphState) node);
         }

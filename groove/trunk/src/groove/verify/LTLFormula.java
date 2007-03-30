@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: LTLFormula.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
+ * $Id: LTLFormula.java,v 1.2 2007-03-30 15:50:41 rensink Exp $
  */
 
 package groove.verify;
@@ -23,20 +23,15 @@ import groove.util.ExprFormatException;
 /**
  * Specific class for parsing LTL formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
+ * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:41 $
  */
 public class LTLFormula extends CTLStarFormula {
-
-	/* (non-Javadoc)
-	 * @see groove.verify.CTLStarFormula#createAll(groove.verify.TemporalFormula)
-	 */
+    @Override
 	protected TemporalFormula createAll(TemporalFormula operand) throws ExprFormatException {
 		throw new ExprFormatException("The path quantifier 'All' is not defined for LTL formulae");
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.verify.CTLStarFormula#createExists(groove.verify.TemporalFormula)
-	 */
+    @Override
 	protected TemporalFormula createExists(TemporalFormula operand) throws ExprFormatException {
 		throw new ExprFormatException("The path quantifier 'Exists' is not defined for LTL formulae");
 	}

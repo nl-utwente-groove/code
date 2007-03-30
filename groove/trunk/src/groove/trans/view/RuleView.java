@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleView.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: RuleView.java,v 1.2 2007-03-30 15:50:38 rensink Exp $
  */
 package groove.trans.view;
 
@@ -28,7 +28,7 @@ import groove.trans.Rule;
  * so in fact this class acts as a bridge between an input tool for rules and the
  * {@link Rule} representation.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface RuleView {
     /**
@@ -51,10 +51,10 @@ public interface RuleView {
     
     /**
      * Factory method for a rule view of a given rule.
-     * @throws ViewFormatException if <code>rule</code> cannot be visualised
+     * @throws RuleFormatException if <code>rule</code> cannot be visualised
      * in the current rule view format
      */
-    public RuleView newInstance(Rule rule) throws ViewFormatException;
+    public RuleView newInstance(Rule rule) throws RuleFormatException;
 //
 //    /**
 //     * Factory method for a rule view of a given graph.

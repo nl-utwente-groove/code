@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultSimulation.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
+ * $Id: DefaultSimulation.java,v 1.3 2007-03-30 15:50:24 rensink Exp $
  */
 
 package groove.graph;
@@ -41,7 +41,7 @@ import java.util.Set;
  * Refinement consists of repeatedly selecting an image for those domain
  * elements that have multiple images.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 /**
  * @author Harmen
@@ -218,6 +218,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
          * check the label of <tt>obj</tt> (not that this has to be an {@link Edge} for this
          * purpose); subsequently checks the image ends using {@link #approvesEnds(Edge)}.
          */
+        @Override
         protected boolean approves(Object obj) {
             return (label == null || approvesLabel((Edge) obj)) && approvesEnds((Edge) obj);
         }
@@ -382,6 +383,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
          * element was the last in the image set.
          * The method is implemented by invoking <tt>newIterator()</tt>.
          */
+        @Override
         public Iterator<E> iterator() {
             return new ImageSetIterator();
         }
@@ -417,6 +419,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
          * Always throws an exception, since empty image sets are inconsistent.
          * @throws UnsupportedOperationException always
          */
+        @Override
         public void clear() {
             throw new UnsupportedOperationException();
         }
@@ -426,6 +429,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
          * set is not supported.
          * @throws UnsupportedOperationException always
          */
+        @Override
         public boolean add(E image) {
             throw new UnsupportedOperationException();
         }
@@ -434,6 +438,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
          * Removes an image from this set.
          * @throws IllegalStateException if the set becomes empty thereby
          */
+        @Override
         public boolean remove(Object image) {
             if (isSingular()) {
                 if (singleImage.equals(image)) {
@@ -477,6 +482,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
          * Removes all elements from a given collection.
          * @throws IllegalStateException if set becomes empty thereby
          */
+        @Override
         public boolean removeAll(Collection<?> imageSet) {
             if (isSingular()) {
                 if (imageSet.contains(singleImage)) {
@@ -501,6 +507,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
          * Reduces the image set to a given collection.
          * @throws IllegalStateException if set becomes empty thereby
          */
+        @Override
         public boolean retainAll(Collection<?> imageSet) {
             if (isSingular()) {
                 if (!imageSet.contains(singleImage)) {
@@ -541,11 +548,13 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
         }
         
         /** Equality is delegated to the key returned by {@link #getKey()}. */
+        @Override
         public boolean equals(Object o) {
             return (o instanceof DefaultImageSet) && key.equals(((DefaultImageSet) o).key);
         }
 
         /** The hash code is taken from the key returned by {@link #getKey()}. */
+        @Override
         public int hashCode() {
             return key.hashCode();
         }
@@ -607,6 +616,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
     		super(map);
     	}
     	
+        @Override
     	protected E toOuter(ImageSet<E> obj) {
     		return obj.getSingular();
     	}
@@ -643,6 +653,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
 			return System.identityHashCode(this);
 		}
 
+        @Override
 		public MyNodeEdgeMap clone() {
 			return new MyNodeEdgeMap();
 		}
@@ -804,6 +815,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
      * enclosing simulation! New entries are inserted in {@link #getFreshImageSet(Node)}
      * as required, to avoid sharing and notification problems. 
      */
+    @Override
     public DefaultSimulation clone() {
         reporter.start(CLONE);
         try {
@@ -821,6 +833,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
      * Otherwise, any simulation of the same domain graph would be equal!
      * We choose object identity as the notion of equality. 
      */
+    @Override
     public boolean equals(Object o) {
         return this == o;
     }
@@ -829,6 +842,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
      * Changed in correspondence with {@link #equals(Object)} to
      * {@link System#identityHashCode(java.lang.Object)}.
      */
+    @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }
@@ -1407,6 +1421,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
                 if (endKey != trigger && !isDuplicate(change, i)) {
                     final int endIndex = i;
                     Iterator<Node> endImageSet = new TransformIterator<Edge,Node>(changed) {
+                        @Override
                         protected Node toOuter(Edge key) {
                             return key.end(endIndex);
                         }

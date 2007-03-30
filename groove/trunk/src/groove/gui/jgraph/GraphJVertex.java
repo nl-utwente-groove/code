@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.3 2007-03-30 15:50:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -40,13 +40,15 @@ public class GraphJVertex extends JVertex {
     /**
      * Constructs a jnode on top of a graph node.
      * @param jModel the model in which this vertex exists
-     * @param node the underlying graph node for this model node.
+     * @param node the underlying graph node for this model node
+     * @param vertexLabelled flag to indicate if the vertex can be labelled.
+     * If not, then labels can be used to represent self-edges
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    protected GraphJVertex(GraphJModel jModel, Node node, boolean allowsSelfEdges) {
+    protected GraphJVertex(GraphJModel jModel, Node node, boolean vertexLabelled) {
         this.jModel = jModel;
         this.node = node;
-        this.allowsSelfEdges = allowsSelfEdges;
+        this.vertexLabelled = vertexLabelled;
     }
 
     /**
@@ -57,7 +59,7 @@ public class GraphJVertex extends JVertex {
      * @ensure getUserObject() == node, labels().isEmpty()
      */
     protected GraphJVertex(GraphJModel jModel, Node node) {
-        this(jModel, node, true);
+        this(jModel, node, false);
     }
 
     /**
@@ -132,7 +134,7 @@ public class GraphJVertex extends JVertex {
     		Constant value = ((ValueNode) getNode()).getConstant();
     		if (value != null) {
     			valueLabel = value.toString();
-    			if (jModel.isShowAspects()) {
+    			if (jModel.isShowLocalAspects()) {
     				valueLabel = value.prefix()+valueLabel;
     			}
     		}
@@ -193,7 +195,7 @@ public class GraphJVertex extends JVertex {
      * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */
     public boolean addSelfEdge(Edge edge) {
-        if (allowsSelfEdges) {
+        if (!vertexLabelled) {
             getUserObject().add(edge);
             return true;
         } else {
@@ -218,8 +220,8 @@ public class GraphJVertex extends JVertex {
 
     /** The model in which this vertex exists. */
     private final GraphJModel jModel;
-    /** An indicator whether the node may be used to store self-edges */
-    private final boolean allowsSelfEdges;
+    /** An indicator whether the vertex can be labelled (otherwise labels are self-edges). */
+    private final boolean vertexLabelled;
     /** The graph node modelled by this jgraph node. */
     private final Node node;
 }

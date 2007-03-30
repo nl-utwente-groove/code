@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
+ * $Id: GraphJModel.java,v 1.4 2007-03-30 15:50:22 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -28,6 +28,7 @@ import groove.graph.GraphShape;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
+import groove.gui.Options;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
@@ -49,7 +50,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */
@@ -63,13 +64,13 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @param graph the underlying Graph
      * @param defaultNodeAttr the attributes for displaying nodes
      * @param defaultEdgeAttr the attributes for displaying edges
-     * @param showNodeIdentities indicates whether nodes should be labelled
-     * with their identities. If false, node labels are used to display self edges.
+     * @param options specifies options for the visual display
+     * If false, node labels are used to display self edges.
      * @require graph != null, nodeAttr != null, edgeAttr != null;
      */
-    public GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, boolean showNodeIdentities) {
+    public GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, Options options) {
         // the model is to store attributes
-        super(defaultNodeAttr, defaultEdgeAttr, showNodeIdentities);
+        super(defaultNodeAttr, defaultEdgeAttr, options);
         // set the transient variables (cells, attributes and connections)
         // add nodes from Graph to GraphModel
         this.graph = graph;
@@ -81,20 +82,20 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         doInsert();
         graph.addGraphListener(this);
     }
-
-    /** 
-     * Creates a new GraphJModel instance on top of a given Graph, with given
-     * node and edge attributes.
-     * Self-edges will be displayed as node labels.
-     * The node and adge attribute maps are cloned.
-     * @param graph the underlying Graph
-     * @param defaultNodeAttr the attributes for displaying nodes
-     * @param defaultEdgeAttr the attributes for displaying edges
-     * @require graph != null, nodeAttr != null, edgeAttr != null;.
-     */
-    public GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr) {
-        this(graph, defaultNodeAttr, defaultEdgeAttr, true);
-    }
+//
+//    /** 
+//     * Creates a new GraphJModel instance on top of a given Graph, with given
+//     * node and edge attributes.
+//     * Self-edges will be displayed as node labels.
+//     * The node and adge attribute maps are cloned.
+//     * @param graph the underlying Graph
+//     * @param defaultNodeAttr the attributes for displaying nodes
+//     * @param defaultEdgeAttr the attributes for displaying edges
+//     * @require graph != null, nodeAttr != null, edgeAttr != null;.
+//     */
+//    public GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr) {
+//        this(graph, defaultNodeAttr, defaultEdgeAttr, null);
+//    }
 
     /** 
      * Creates a new GraphJModel instance on top of a given Graph.
@@ -103,15 +104,24 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @param graph the underlying Graph
      * @require graph != null;
      */
+    public GraphJModel(GraphShape graph, Options options) {
+        this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
+    }
+
+    /** 
+     * Creates a new GraphJModel instance on top of a given Graph.
+     * @param graph the underlying Graph
+     * @require graph != null;
+     */
     public GraphJModel(GraphShape graph) {
-        this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR);
+        this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, new Options());
     }
 
     /**
      * Constructor for a dummy (empty) model. 
      */
     protected GraphJModel() {
-    	this(AbstractGraph.EMPTY_GRAPH);
+    	this(AbstractGraph.EMPTY_GRAPH, null);
     }
     
     /**
@@ -305,12 +315,10 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
 	@Override
 	public Graph toPlainGraph() {
-		// set the show-aspects properties while remembering the old value
-		boolean oldShowAspects = isShowAspects();
-		setShowAspects(true);
+		// set the show-aspect value locally, to make sure of correct dispay
+		setShowLocalAspects(true);
 		Graph result = super.toPlainGraph();
-		// reset the old value of the show-aspects property
-		setShowAspects(oldShowAspects);
+		setShowLocalAspects(false);
 		return result;
 	}
 
@@ -340,7 +348,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         Node source = edge.end(Edge.SOURCE_INDEX);
         Node target = edge.end(Edge.TARGET_INDEX);
         // self-edges are treated differently
-        if (target == source && isVertexLabelsAreLoops()) {
+        if (target == source && !isVertexLabelled()) {
             GraphJVertex jVertex = getJVertex(source);
             // see if the edge is appropriate to the node
             if (isLayoutCompatible(jVertex, edge) && jVertex.addSelfEdge(edge)) {
@@ -493,7 +501,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	 * @ensure <tt>result.getNode().equals(node)</tt>
 	 */
 	protected GraphJVertex createJVertex(Node node) {
-	    return new GraphJVertex(this, node, isVertexLabelsAreLoops());
+	    return new GraphJVertex(this, node, isVertexLabelled());
 	}
 
 	/**
@@ -576,29 +584,44 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     /**
 	 * Indicates whether aspect prefixes should be shown for nodes and edges.
 	 */
-	public final boolean isShowNodeIdentities() {
-		return this.showNodeIdentities;
+	public boolean isShowNodeIdentities() {
+		return getOptionValue(Options.SHOW_NODE_IDS_OPTION);
 	}
-
-	/**
-	 * Changes the value of the show-aspects property.
-	 */
-	public final void setShowNodeIdentities(boolean showNodeIdentities) {
-		this.showNodeIdentities = showNodeIdentities;
-	}
+//
+//	/**
+//	 * Changes the value of the show-aspects property.
+//	 */
+//	public final void setShowNodeIdentities(boolean showNodeIdentities) {
+//		this.showNodeIdentities = showNodeIdentities;
+//	}
 
     /**
 	 * Indicates whether aspect prefixes should be shown for nodes and edges.
 	 */
-	public final boolean isShowAspects() {
-		return this.showAspects;
+	public final boolean isShowLocalAspects() {
+		return getOptionValue(Options.SHOW_ASPECTS_OPTION) || showLocalAspects;
 	}
 
 	/**
 	 * Changes the value of the show-aspects property.
 	 */
-	public final void setShowAspects(boolean showAspects) {
-		this.showAspects = showAspects;
+	private final void setShowLocalAspects(boolean showAspects) {
+		this.showLocalAspects = showAspects;
+	}
+
+	/**
+	 * Indicates whether vertices can have their own labels. If false, j-vertex
+	 * inscriptions are (possibly empty) sets of self-edge labels.
+	 */
+	public boolean isVertexLabelled() {
+	    return getOptionValue(Options.VERTEX_LABEL_OPTION);
+	}
+	
+	/** 
+	 * Indicates whether anchors should be shown in the rule and lts views. 
+	 */
+	public boolean isShowAnchors() {
+		return getOptionValue(Options.SHOW_ANCHORS_OPTION);
 	}
 
 	/**
@@ -624,10 +647,10 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     protected final List<JCell> addedJCells = new LinkedList<JCell>();
 
 	/** Flag indicating that aspect prefixes should be included for nodes and edges. */
-    private boolean showAspects;
-
-	/** Flag indicating that node identities should be shown on the nodes. */
-    private boolean showNodeIdentities;
+    private boolean showLocalAspects;
+//
+//	/** Flag indicating that node identities should be shown on the nodes. */
+//    private boolean showNodeIdentities;
 
     /**
      * Set of GraphModel connections. Used in the process of constructing a GraphJModel.

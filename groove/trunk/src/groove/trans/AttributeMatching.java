@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributeMatching.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
+ * $Id: AttributeMatching.java,v 1.3 2007-03-30 15:50:26 rensink Exp $
  */
 
 package groove.trans;
@@ -30,6 +30,7 @@ import groove.rel.VarNodeEdgeMap;
  * Class description.
  * @deprecated No longer needed now construction is done using factories
  */
+@Deprecated
 public class AttributeMatching extends DefaultMatching {
 
     /**

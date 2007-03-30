@@ -12,10 +12,12 @@ public class VF1Pair<A,B> {
         this.right = right;
     }
 
+    @Override
     public String toString() {
         return "("+left+", "+right+")";
     }
 
+    @Override
     public int hashCode() {
         return left.hashCode() + right.hashCode();
     }

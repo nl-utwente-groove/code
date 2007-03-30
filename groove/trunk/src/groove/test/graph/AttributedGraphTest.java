@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributedGraphTest.java,v 1.2 2007-03-28 15:12:35 rensink Exp $
+ * $Id: AttributedGraphTest.java,v 1.3 2007-03-30 15:50:47 rensink Exp $
  */
 package groove.test.graph;
 
@@ -29,8 +29,10 @@ import junit.framework.TestCase;
 /**
  * Test class to test <tt>DefaultGraph</tt>
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
+ * @deprecated the class {@link AttributedGraph} is deprecated
  */
+@Deprecated
 public class AttributedGraphTest extends TestCase {
 
     static public final String ATTR_GRAPH_NAME = "attr-";
@@ -43,6 +45,7 @@ public class AttributedGraphTest extends TestCase {
         this.xml = new UntypedGxl();
     }
 
+    @Override
 	public void setUp() throws Exception {
 //		GraphFactory factory = DefaultAttributedGraph.graphFactory;
 //		attrG1 = (AttributedGraph) factory.newGraph(loadGraph(testFile(ATTR_GRAPH_NAME + 1)));
