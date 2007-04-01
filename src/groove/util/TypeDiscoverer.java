@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.3 2007-03-30 15:50:37 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.4 2007-04-01 12:50:02 rensink Exp $
  */
 package groove.util;
 
@@ -37,7 +37,6 @@ import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleSystem;
 import groove.trans.SPORule;
-import groove.trans.view.RuleFormatException;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -48,7 +47,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:37 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-01 12:50:02 $
  */
 public class TypeDiscoverer {
 	public static final String TYPE_EXTENSION = ".type";
@@ -84,7 +83,7 @@ public class TypeDiscoverer {
             Graph type = discoverer.inferType(grammar);
             String resultFilename = getTypeFilename(args);
             Groove.saveGraph(type, resultFilename);
-        } catch (RuleFormatException exc) {
+        } catch (FormatException exc) {
             System.err.println("Error in rule format: "+exc.getMessage());
             return;
         } catch (IOException exc) {
@@ -138,7 +137,7 @@ public class TypeDiscoverer {
     /**
      * Creates and returns a type graph for a given graph grammar.
      */
-    public Graph inferType(GraphGrammar grammar) throws RuleFormatException {
+    public Graph inferType(GraphGrammar grammar) throws FormatException {
         RuleSystem introduceSystem = new RuleSystem();
         RuleSystem deleteSystem = new RuleSystem();
         RuleSystem mergeSystem = new RuleSystem();

@@ -12,38 +12,37 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RegExprLabel.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
+ * $Id: RegExprLabel.java,v 1.3 2007-04-01 12:50:34 rensink Exp $
  */
 package groove.rel;
 
 import java.util.List;
 
 import groove.graph.AbstractLabel;
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
-import groove.util.ExprFormatException;
+import groove.util.FormatException;
 
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:36 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-01 12:50:34 $
  */
 public class RegExprLabel extends AbstractLabel {
     /**
      * Attempts to construct a label by interpreting a given string as a regular expression.
      * @param text the string to be parsed
-     * @exception GraphFormatException if <tt>text</tt> is not a correctly formatted
+     * @exception FormatException if <tt>text</tt> is not a correctly formatted
      * regular expression text
      * @see RegExpr#parse(String)
      * @require <tt>text != null</tt>
      * @deprecated parsing string to get labels is not reliable
      */
 	@Deprecated
-    public static RegExprLabel parseLabel(String text) throws GraphFormatException {
+    public static RegExprLabel parseLabel(String text) throws FormatException {
         try {
             return new RegExprLabel(RegExpr.parse(text));
-        } catch (ExprFormatException exc) {
-            throw new GraphFormatException(exc.getMessage());
+        } catch (FormatException exc) {
+            throw new FormatException(exc.getMessage());
         }
     }
 	
@@ -237,7 +236,7 @@ public class RegExprLabel extends AbstractLabel {
      * Factory method: returns a label corresponding to a given string.
      */
     @Deprecated
-    public Label parse(String text) throws GraphFormatException {
+    public Label parse(String text) throws FormatException {
         return parseLabel(text);
     }
 

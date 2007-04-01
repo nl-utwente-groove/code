@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.4 2007-03-30 15:50:22 rensink Exp $
+ * $Id: JModel.java,v 1.5 2007-04-01 12:49:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -59,7 +59,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -67,7 +67,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.4 $
+     * @version $Revision: 1.5 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -97,8 +97,6 @@ abstract public class JModel extends DefaultGraphModel {
      */
     public JModel(AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, Options options) {
         this.defaultNodeAttr = defaultNodeAttr;
-        this.valueNodeAttr = (AttributeMap) defaultNodeAttr.clone();
-        GraphConstants.setBackground(valueNodeAttr, JAttr.VALUE_BACKGROUND);
         this.defaultEdgeAttr = defaultEdgeAttr;
         this.options = options;
     }
@@ -467,7 +465,6 @@ abstract public class JModel extends DefaultGraphModel {
     /**
      * Returns the map of attribute changes needed to emphasize a jedge.  
      * This implementation returns {@link JAttr#EMPH_EDGE_CHANGE}. 
-     * @param jEdge TODO
      */
     protected AttributeMap getJEdgeEmphAttr(JEdge jEdge) {
         return JAttr.EMPH_EDGE_CHANGE;
@@ -547,11 +544,6 @@ abstract public class JModel extends DefaultGraphModel {
      * Set in the constructor.
      */
     protected final AttributeMap defaultNodeAttr;
-    /**
-     * Value node attributes used in this graph model.
-     * Set in the constructor.
-     */
-    protected final AttributeMap valueNodeAttr;
     /**
      * Standard edge attributes used in this graph model.
      * Set in the constructor.

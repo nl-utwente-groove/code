@@ -12,12 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: XmlGrammar.java,v 1.3 2007-03-29 09:59:51 rensink Exp $
+ * $Id: XmlGrammar.java,v 1.4 2007-04-01 12:50:14 rensink Exp $
  */
 package groove.io;
 
 import groove.trans.GraphGrammar;
 import groove.trans.RuleFactory;
+import groove.util.FormatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,7 +27,7 @@ import java.io.IOException;
  * Interface for the conversion of graph grammars to and from 
  * (sets of) XML documents.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface XmlGrammar<GG extends GraphGrammar> {
     /**
@@ -46,10 +47,11 @@ public interface XmlGrammar<GG extends GraphGrammar> {
 	 * @param gg the graph grammar to be marshalled
 	 * @param file the output file (if the XML format allows storing the grammar
      * in a single file) or directory (if the grammar is stored as a set of files)
-     * @throws XmlException if an error occurs in the conversion
-     * @throws IOException if an error occurs during file output
+	 * @throws IOException if an error occurs during file output
+	 * @throws FormatException TODO
+	 * @throws FormatException if an error occurs in the conversion
 	 */
-	public void marshalGrammar(GG gg, File file) throws IOException;
+	public void marshalGrammar(GG gg, File file) throws IOException, FormatException;
 	
     /**
      * Converts an XML formatted file or set of files into a graph grammar, 
@@ -57,7 +59,7 @@ public interface XmlGrammar<GG extends GraphGrammar> {
      * Convenience method for <code>unmarshal(file, null)</code>.
      * @see #unmarshalGrammar(File, String)
      */
-    public GG unmarshalGrammar(File file) throws XmlException, IOException;
+    public GG unmarshalGrammar(File file) throws FormatException, IOException;
 
     /**
      * Converts an XML formatted file or set of files into a graph grammar, 
@@ -72,10 +74,10 @@ public interface XmlGrammar<GG extends GraphGrammar> {
      * @param startStateName the file where the start state is to be found; if <tt>null</tt>,
      * the default name {@link #DEFAULT_START_GRAPH_NAME} is tried.
      * @return the unmarshalled graph grammar
-     * @throws XmlException if an error occurs in the conversion
+     * @throws FormatException if an error occurs in the conversion
      * @throws IOException if an error occurs during file input
      */
-    public GG unmarshalGrammar(File file, String startStateName) throws XmlException, IOException;
+    public GG unmarshalGrammar(File file, String startStateName) throws FormatException, IOException;
 
     /**
      * Returns the {@link groove.trans.RuleFactory} needed for instantiating classes for performing transformations.

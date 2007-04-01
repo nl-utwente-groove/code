@@ -12,27 +12,25 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AttributedSPOApplication.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: AttributedSPOApplication.java,v 1.3 2007-04-01 12:49:54 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.DeltaTarget;
 import groove.graph.Edge;
-import groove.graph.NodeEdgeMap;
 import groove.graph.Graph;
-import groove.graph.Morphism;
-import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Set;
 
 /**
  * Class representing the application of a {@link groove.trans.AttributedSPORule} to a graph. 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-01 12:49:54 $
+ * @deprecated all functionality now in {@link SPOApplication}
  */
+@Deprecated
 public class AttributedSPOApplication extends SPOApplication {
 
 	/**
@@ -75,54 +73,54 @@ public class AttributedSPOApplication extends SPOApplication {
 		applyDelta(target);
 		return target;
 	}
-
-	/**
-     * Modifies the super method by ignoring value nodes.
-     */
-	@Override
-    protected Morphism computeMorphism() {
-    	Morphism result = createMorphism();
-    	NodeEdgeMap mergeMap = getMergeMap();
-    	for (Node node: source.nodeSet()) {
-			Node nodeImage = mergeMap.getNode(node);
-			if (nodeImage != null) {
-				// data-nodes should always be mapped to themselves, also when they are currently
-				// not explicitely in the graph, but since we remove them for practical reasons
-				// (checking for isomorphism would be more involved) we also do not put the deleted
-				// data-nodes to the morphism
-				if (!(getTarget().containsElement(node)) && node instanceof ValueNode) {
-//					result.put(node, nodeImage);
-				} else {
-	                assert getTarget().containsElement(nodeImage) : "Node "+nodeImage+" not in node set "+getTarget().nodeSet()+" of "+getTarget();
-					result.putNode(node, nodeImage);
-				}
-			}
-		}
-    	Set<Edge> erasedEdges = getErasedEdges();
-    	for (Edge edge: source.edgeSet()) {
-			if (!erasedEdges.contains(edge)) {
-				Edge edgeImage = edge.imageFor(mergeMap);
-				if (edgeImage != null) {
-                    assert getTarget().containsElement(edgeImage) : "Edge "+edgeImage+" not in edge set "+getTarget().edgeSet()+" of "+getTarget();
-					result.putEdge(edge, edgeImage);
-				}
-			}
-		}
-		return result;
-    }
-
-	/**
-	 * Modifies the super method by also adding 
-	 * the edge target if it is a {@link ValueNode}.
-	 */
-    @Override
-	protected void addEdge(DeltaTarget target, Edge edge) {
-    	super.addEdge(target, edge);
-    	if (edge != null && edge.opposite() instanceof ValueNode) { 
-    		// value nodes may fail to be in the target
-    		target.addNode(edge.opposite());
-    	}
-	}
+//
+//	/**
+//     * Modifies the super method by ignoring value nodes.
+//     */
+//	@Override
+//    protected Morphism computeMorphism() {
+//    	Morphism result = createMorphism();
+//    	NodeEdgeMap mergeMap = getMergeMap();
+//    	for (Node node: source.nodeSet()) {
+//			Node nodeImage = mergeMap.getNode(node);
+//			if (nodeImage != null) {
+//				// data-nodes should always be mapped to themselves, also when they are currently
+//				// not explicitely in the graph, but since we remove them for practical reasons
+//				// (checking for isomorphism would be more involved) we also do not put the deleted
+//				// data-nodes to the morphism
+//				if (!(getTarget().containsElement(node)) && node instanceof ValueNode) {
+////					result.put(node, nodeImage);
+//				} else {
+//	                assert getTarget().containsElement(nodeImage) : "Node "+nodeImage+" not in node set "+getTarget().nodeSet()+" of "+getTarget();
+//					result.putNode(node, nodeImage);
+//				}
+//			}
+//		}
+//    	Set<Edge> erasedEdges = getErasedEdges();
+//    	for (Edge edge: source.edgeSet()) {
+//			if (!erasedEdges.contains(edge)) {
+//				Edge edgeImage = edge.imageFor(mergeMap);
+//				if (edgeImage != null) {
+//                    assert getTarget().containsElement(edgeImage) : "Edge "+edgeImage+" not in edge set "+getTarget().edgeSet()+" of "+getTarget();
+//					result.putEdge(edge, edgeImage);
+//				}
+//			}
+//		}
+//		return result;
+//    }
+//
+//	/**
+//	 * Modifies the super method by also adding 
+//	 * the edge target if it is a {@link ValueNode}.
+//	 */
+//    @Override
+//	protected void addEdge(DeltaTarget target, Edge edge) {
+//    	super.addEdge(target, edge);
+//    	if (edge != null && edge.opposite() instanceof ValueNode) { 
+//    		// value nodes may fail to be in the target
+//    		target.addNode(edge.opposite());
+//    	}
+//	}
 
 	/**
 	 * In addition to calling the super method,

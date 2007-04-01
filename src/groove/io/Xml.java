@@ -12,11 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Xml.java,v 1.3 2007-03-30 15:50:43 rensink Exp $
+ * $Id: Xml.java,v 1.4 2007-04-01 12:50:24 rensink Exp $
  */
 package groove.io;
 
 import groove.graph.Graph;
+import groove.util.FormatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,17 +27,17 @@ import java.io.IOException;
  * To be implemented for particular XML formats.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface Xml<G extends Graph> {
 	/**
 	 * Writes a graph to a file, in XML format.
 	 * @param graph the graph to be marshalled
 	 * @param file the output file
-     * @throws XmlException if an error occurred during the conversion
+     * @throws FormatException if an error occurred during the conversion
      * @throws IOException if an error occurred during file output
 	 */
-	public void marshalGraph(G graph, File file) throws XmlException, IOException;
+	public void marshalGraph(G graph, File file) throws FormatException, IOException;
 //	
 //	/**
 //	 * Reads a graph from an XML formatted file and returns it.
@@ -56,8 +57,8 @@ public interface Xml<G extends Graph> {
      * Convenience method for <code>unmarshal(file, null)</code>.
      * @param file the file to be read from
      * @return the unmarshalled graph
-     * @throws XmlException if an error occurred during the conversion
+     * @throws FormatException if an error occurred during the conversion
      * @throws IOException if an error occurred during file input
      */
-    public G unmarshalGraph(File file) throws XmlException, IOException ;
+    public G unmarshalGraph(File file) throws FormatException, IOException ;
 }

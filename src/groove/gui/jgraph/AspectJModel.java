@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.3 2007-03-30 15:50:22 rensink Exp $
+ * $Id: AspectJModel.java,v 1.4 2007-04-01 12:49:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -47,7 +47,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class AspectJModel extends GraphJModel {
     /** Empty instance of the {@link AspectJModel}. */
@@ -186,7 +186,7 @@ public class AspectJModel extends GraphJModel {
 		public String getLabel(Object object) {
 			assert object instanceof AspectEdge;
 			String result = super.getLabel(object);
-			if (isShowLocalAspects()) {
+			if (isShowAspects()) {
 				result = AspectParser.toString(((AspectEdge) object).getDeclaredValues(), result);
 			}
 			return result;
@@ -198,7 +198,7 @@ public class AspectJModel extends GraphJModel {
 		@Override
 		public Collection<String> getLabelSet() {
 			Collection<String> result = new ArrayList<String>();
-			if (isShowLocalAspects()) {
+			if (isShowAspects()) {
 				for (AspectValue value: getNode().getDeclaredValues()) {
 					result.add(AspectParser.toString(value));
 				}
@@ -274,7 +274,7 @@ public class AspectJModel extends GraphJModel {
 		public String getLabel(Object object) {
 			assert object instanceof AspectEdge;
 			String result = super.getLabel(object);
-			if (isShowLocalAspects()) {
+			if (isShowAspects()) {
 				result = AspectParser.toString(((AspectEdge) object).getDeclaredValues(), result);
 			}
 			return result;
@@ -329,7 +329,7 @@ public class AspectJModel extends GraphJModel {
         AspectValue role = role(aspectNode);
         AttributeMap result = (AttributeMap) RULE_NODE_ATTR.get(role).clone();
         if (aspectNode.getValue(AttributeAspect.getInstance()) != null) {
-        	result.applyMap(valueNodeAttr);
+        	result.applyMap(getJVertexValueAttr());
         }
         return result;
     }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IsoSimulation.java,v 1.3 2007-03-30 15:50:46 rensink Exp $
+ * $Id: IsoSimulation.java,v 1.4 2007-04-01 12:49:59 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -34,8 +34,10 @@ import java.util.Map;
  * into play in the construction and refinement of the simulation..
  * The graphs' partition maps are used to match elements.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
+ * @deprecated replaced by {@link IsoMatcher}
  */
+@Deprecated
 public class IsoSimulation extends InjectiveSimulation {
     public IsoSimulation(InjectiveMorphism morph) {
         super(morph);

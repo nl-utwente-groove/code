@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.5 2007-03-30 15:50:26 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.6 2007-04-01 12:49:55 rensink Exp $
  */
 package groove.trans;
 
@@ -21,8 +21,8 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Node;
 import groove.lts.GTS;
-import groove.trans.view.RuleFormatException;
 import groove.util.DefaultDispenser;
+import groove.util.FormatException;
 
 /**
  * Default model of a graph grammar, consisting of a production rule system
@@ -30,7 +30,7 @@ import groove.util.DefaultDispenser;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-03-30 15:50:26 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-01 12:49:55 $
  */
 public class GraphGrammar extends RuleSystem implements DerivationRecord {
 //    
@@ -210,7 +210,7 @@ public class GraphGrammar extends RuleSystem implements DerivationRecord {
      * invalidates the GTS. 
      */
     @Override
-    public Rule add(Rule rule) throws RuleFormatException {
+    public Rule add(Rule rule) throws FormatException {
         Rule result = super.add(rule);
         rule.setGrammar(this);
 //        invalidateGTS();

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.3 2007-04-01 12:49:56 rensink Exp $
  */
 
 package groove.graph;
@@ -20,7 +20,9 @@ package groove.graph;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
+import groove.graph.iso.IsoMatcher;
 import groove.util.Dispenser;
+import groove.util.FormatException;
 import groove.util.Pair;
 
 import java.util.Collection;
@@ -36,7 +38,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class AbstractGraph extends AbstractGraphShape implements InternalGraph {
     /**
@@ -148,6 +150,7 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
         return res;
     }
 
+    @Deprecated
     public Collection<? extends Morphism> getInjectiveMatchesTo(Graph to) {
         Collection<? extends Morphism> result;
         reporter.start(GET_INJECTIVE_MATCHES_TO);
@@ -161,11 +164,9 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
      * compares the graph certificates at increasing precision to ensure that it is actually worth
      * trying to compute an isomorphism.
      */
-    public InjectiveMorphism getIsomorphismTo(Graph to) {
+    public Morphism getIsomorphismTo(Graph to) {
         reporter.start(GET_ISOMORPHISM_TO);
-        InjectiveMorphism result = createInjectiveMorphism(this, to);
-        if (!result.extendToIsomorphism())
-            result = null;
+        Morphism result = new IsoMatcher(createMorphism(this, to)).getMorphism();
         reporter.stop();
         return result;
     }
@@ -402,7 +403,7 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
     @Override
     public abstract Graph clone();
 
-    public Graph newGraph(Graph graph) throws GraphFormatException {
+    public Graph newGraph(Graph graph) throws FormatException {
         Graph result = newGraph();
         result.addNodeSet(graph.nodeSet());
         result.addEdgeSet(graph.edgeSet());
@@ -530,9 +531,11 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
      * @param dom  the domain of the injective morphism to be created
      * @param cod the codomain of the injective morphism to be created
      * @return the created injective morphism
+     * @deprecated the {@link InjectiveMorphism} class will co away
      */
+    @Deprecated
     protected InjectiveMorphism createInjectiveMorphism(Graph dom, Graph cod) {
-        return graphFactory.newInjectiveMorphism(dom, cod);
+        return new DefaultInjectiveMorphism(dom, cod);
     }
 
     /**

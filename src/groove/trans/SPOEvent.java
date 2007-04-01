@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.3 2007-03-30 15:50:25 rensink Exp $
+ * $Id: SPOEvent.java,v 1.4 2007-04-01 12:49:54 rensink Exp $
  */
 package groove.trans;
 
@@ -33,6 +33,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSet;
 import groove.graph.WrapperLabel;
+import groove.graph.algebra.ValueNode;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
@@ -44,7 +45,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:25 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:54 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -358,12 +359,12 @@ public class SPOEvent implements RuleEvent {
 	    boolean correct = true;
 	    Iterator<Edge> edgeImageIter = anchorMap.edgeMap().values().iterator();
 	    while (correct && edgeImageIter.hasNext()) {
-	    	correct = getRule().containsElement(host, edgeImageIter.next());
+	    	correct = virtuallyContains(host, edgeImageIter.next());
 	    }
 		if (correct) {
 			Iterator<Node> nodeImageIter = anchorMap.nodeMap().values().iterator();
 			while (correct && nodeImageIter.hasNext()) {
-		    	correct = getRule().containsElement(host, nodeImageIter.next());
+		    	correct = virtuallyContains(host, nodeImageIter.next());
 			}
 		}
 		result = correct ? getRuleFactory().createMatching(getRule(), anchorMap, host) : null;
@@ -371,6 +372,15 @@ public class SPOEvent implements RuleEvent {
 		return result;
 	}
     
+	/** 
+	 * Tests if a graph contains a given element, 
+	 * either explicitly (through {@link GraphShape#containsElement(Element)}) 
+	 * or implicitly (because it is a {@link ValueNode}). 
+	 */
+	protected boolean virtuallyContains(Graph graph, Element element) {
+		return element instanceof ValueNode || graph.containsElement(element);
+	}
+	
     /**
      * Returns the set of source elements that form the anchor image.
      */

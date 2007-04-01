@@ -12,12 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.3 2007-03-30 15:50:25 rensink Exp $
+ * $Id: RuleSystem.java,v 1.4 2007-04-01 12:49:54 rensink Exp $
  */
 package groove.trans;
 
-import groove.trans.view.RuleFormatException;
 import groove.util.CollectionOfCollections;
+import groove.util.FormatException;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,7 +38,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:25 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:54 $
  * @see NameLabel
  * @see SPORule
  */
@@ -149,11 +149,11 @@ public class RuleSystem {
      * Removes the existing rule with the same name, if any, and returns it.
      * @param rule the production rule to be added
      * @require <tt>rule != null</tt>
-     * @throws RuleFormatException if the new rule does not comply with the grammar properties
+     * @throws FormatException if the new rule does not comply with the grammar properties
      */
-    public Rule add(Rule rule) throws RuleFormatException {
+    public Rule add(Rule rule) throws FormatException {
     	if (! isConsistent(rule)) {
-    		throw new RuleFormatException(getInconsistency(rule));
+    		throw new FormatException(getInconsistency(rule));
     	}
         NameLabel ruleName = rule.getName();
         Integer priority = new Integer(rule.getPriority());

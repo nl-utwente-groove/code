@@ -12,13 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.5 2007-03-30 15:50:40 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.6 2007-04-01 12:50:31 rensink Exp $
  */
 
 package groove.test;
 
 import groove.io.AspectualGpsGrammar;
-import groove.io.LayedOutGpsGrammar;
 import groove.io.XmlGrammar;
 import groove.lts.ConditionalExploreStrategy;
 import groove.lts.DerivedGraphRuleFactory;
@@ -28,6 +27,7 @@ import groove.lts.explore.FullStrategy;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.StructuredRuleName;
+import groove.util.FormatException;
 import groove.util.Generator;
 
 import java.io.BufferedReader;
@@ -45,7 +45,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ExplorationTest extends TestCase {
     static public final String INPUT_DIR = "junit/samples";
@@ -252,6 +252,8 @@ public class ExplorationTest extends TestCase {
             }
             return lts;
         } catch (IOException exc) {
+            throw new RuntimeException(exc);
+        } catch (FormatException exc) {
             throw new RuntimeException(exc);
         }
     }

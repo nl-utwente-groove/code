@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleViewGrammar.java,v 1.3 2007-03-30 15:50:37 rensink Exp $
+ * $Id: RuleViewGrammar.java,v 1.4 2007-04-01 12:50:08 rensink Exp $
  */
 package groove.trans.view;
 
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
+import groove.util.FormatException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class RuleViewGrammar extends GraphGrammar {
      * and adds the <code>ruleGraph</code> to the map.
      * @return the added rule, obtained from <code>ruleGraph.toRule()</code>
      */
-    public Rule add(RuleView ruleView) throws RuleFormatException {
+    public Rule add(RuleView ruleView) throws FormatException {
         Rule result = super.add(ruleView.toRule());
         ruleViewMap.put(ruleView.getName(), ruleView);
         return result;

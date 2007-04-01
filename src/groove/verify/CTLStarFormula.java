@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLStarFormula.java,v 1.2 2007-03-30 15:50:41 rensink Exp $
+ * $Id: CTLStarFormula.java,v 1.3 2007-04-01 12:50:25 rensink Exp $
  */
 
 package groove.verify;
@@ -23,7 +23,7 @@ import groove.lts.GTS;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.trans.GraphCondition;
-import groove.util.ExprFormatException;
+import groove.util.FormatException;
 import groove.util.ExprParser;
 
 import java.util.ArrayList;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Class parsing CTL* formulae.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:41 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-01 12:50:25 $
  */
 public class CTLStarFormula {
     /** 
@@ -170,7 +170,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula parseOperator(String expr) throws ExprFormatException {
+        protected TemporalFormula parseOperator(String expr) throws FormatException {
             String[] operands = ExprParser.splitExpr(expr, getOperator(), ExprParser.PREFIX_POSITION);
             if (operands == null) {
                 return null;
@@ -185,7 +185,7 @@ public class CTLStarFormula {
          * be applied
          * @return a new instance of a specific CTL-expression
          */
-        abstract protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException;
+        abstract protected TemporalFormula newInstance(TemporalFormula operand) throws FormatException;
 
         @Override
         public String toString() {
@@ -225,7 +225,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula parseOperator(String expr) throws ExprFormatException {
+        protected TemporalFormula parseOperator(String expr) throws FormatException {
             String[] operands = ExprParser.splitExpr(expr, getOperator(), ExprParser.INFIX_POSITION);
             if (operands.length < 2) {
                 return null;
@@ -242,10 +242,10 @@ public class CTLStarFormula {
          * 
          * @param operands the list of operands of this operation.
          * @return the resulting CTL-expression.
-         * @throws ExprFormatException if the expression does not conform
+         * @throws FormatException if the expression does not conform
          * structural requirements
          */
-        abstract protected TemporalFormula newInstance(List<TemporalFormula> operands) throws ExprFormatException;
+        abstract protected TemporalFormula newInstance(List<TemporalFormula> operands) throws FormatException;
 
         @Override
         public String toString() {
@@ -286,7 +286,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
+        protected TemporalFormula newInstance(TemporalFormula operand) throws FormatException {
         	return FACTORY.createNeg(operand);
         }
 
@@ -328,7 +328,7 @@ public class CTLStarFormula {
         }
 
         @Override
-    	protected TemporalFormula newInstance(List<TemporalFormula> operands) throws ExprFormatException {
+    	protected TemporalFormula newInstance(List<TemporalFormula> operands) throws FormatException {
     		return FACTORY.createAnd(operands);
     	}
 
@@ -369,7 +369,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula newInstance(List<TemporalFormula> operands) throws ExprFormatException {
+        protected TemporalFormula newInstance(List<TemporalFormula> operands) throws FormatException {
         	return FACTORY.createOr(operands);
         }
 
@@ -411,7 +411,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
+        protected TemporalFormula newInstance(TemporalFormula operand) throws FormatException {
             return FACTORY.createNext(operand);
         }
 
@@ -453,7 +453,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula newInstance(List<TemporalFormula> operands) throws ExprFormatException {
+        protected TemporalFormula newInstance(List<TemporalFormula> operands) throws FormatException {
         	TemporalFormula result = FACTORY.createUntil(operands);
             return result;
         }
@@ -497,7 +497,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
+        protected TemporalFormula newInstance(TemporalFormula operand) throws FormatException {
             return FACTORY.createGlobally(operand);
         }
 
@@ -539,7 +539,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
+        protected TemporalFormula newInstance(TemporalFormula operand) throws FormatException {
             return FACTORY.createFinally(operand);
         }
 
@@ -582,7 +582,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
+        protected TemporalFormula newInstance(TemporalFormula operand) throws FormatException {
         	return FACTORY.createExists(operand);
         }
 
@@ -625,7 +625,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula newInstance(TemporalFormula operand) throws ExprFormatException {
+        protected TemporalFormula newInstance(TemporalFormula operand) throws FormatException {
         	return getFactory().createAll(operand);
         }
 
@@ -674,7 +674,7 @@ public class CTLStarFormula {
         }
 
         @Override
-        protected TemporalFormula parseOperator(String expr) throws ExprFormatException {
+        protected TemporalFormula parseOperator(String expr) throws FormatException {
             if (ExprParser.matches(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR)) {
                 return getFactory().parse(ExprParser.trim(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR));
             } else {
@@ -693,10 +693,10 @@ public class CTLStarFormula {
          * Create a new instance of an atomic proposition.
          * @param proposition the string representation of the atomic proposition
          * @return the resulting CTL-expression
-         * @throws ExprFormatException if the expression does not conform
+         * @throws FormatException if the expression does not conform
          * structural requirements
          */
-        protected TemporalFormula newInstance(String proposition) throws ExprFormatException {
+        protected TemporalFormula newInstance(String proposition) throws FormatException {
             return FACTORY.createAtom(proposition);
         }
 
@@ -796,20 +796,20 @@ public class CTLStarFormula {
             new Atom()};
 
     /**
-     * Parses the string given to this method. It throws a {@link ExprFormatException}
+     * Parses the string given to this method. It throws a {@link FormatException}
      * if the string does not represent a valid CTL-expression.
      * 
      * @param expr the string to be parsed
      * @return the {@link CTLStarFormula} corresponding to the given expression
-     * @throws ExprFormatException if the string does not represent a valid CTL-expression
+     * @throws FormatException if the string does not represent a valid CTL-expression
      */
-    static public TemporalFormula parseFormula(String expr) throws ExprFormatException {
+    static public TemporalFormula parseFormula(String expr) throws FormatException {
     	CTLStarFormula parser = CTLStarFormula.getInstance();
     	TemporalFormula.setFactory(parser);
     	return parser.parse(expr);
     }
 
-    protected TemporalFormula parse(String expr) throws ExprFormatException {
+    protected TemporalFormula parse(String expr) throws FormatException {
         // try to parse the expression using each of the available operators in turn
         for (int op = 0; op < prototypes.length; op++) {
             TemporalFormula result = prototypes[op].parseOperator(expr);
@@ -850,10 +850,10 @@ public class CTLStarFormula {
      * Creates a fresh atomic proposition.
      * @param name the name of the atomic proposition
      * @return the freshly created atomic proposition
-     * @throws ExprFormatException if the expression does not conform
+     * @throws FormatException if the expression does not conform
      * structural requirements
      */
-    protected TemporalFormula createAtom(String name) throws ExprFormatException {
+    protected TemporalFormula createAtom(String name) throws FormatException {
     	return Atom.createInstance(name);
     }
 
@@ -861,10 +861,10 @@ public class CTLStarFormula {
      * Creates a fresh instance of the logic neg-operator.
      * @param operand the operands of the neg-operator
      * @return the freshly created neg-instance
-     * @throws ExprFormatException if the expression does not conform
+     * @throws FormatException if the expression does not conform
      * structural requirements
      */
-    protected TemporalFormula createNeg(TemporalFormula operand) throws ExprFormatException {
+    protected TemporalFormula createNeg(TemporalFormula operand) throws FormatException {
     	return Neg.createInstance(operand);
     }
 
@@ -872,10 +872,10 @@ public class CTLStarFormula {
      * Creates a fresh instance of the logic and-operator.
      * @param operands the operands of the and-operator
      * @return the freshly created and-instance
-     * @throws ExprFormatException if the expression does not conform
+     * @throws FormatException if the expression does not conform
      * structural requirements
      */
-    protected TemporalFormula createAnd(List<TemporalFormula> operands) throws ExprFormatException {
+    protected TemporalFormula createAnd(List<TemporalFormula> operands) throws FormatException {
     	return  And.createInstance(operands);
     }
 
@@ -883,10 +883,10 @@ public class CTLStarFormula {
      * Creates a fresh instance of the logic or-operator.
      * @param operands the operands of the or-operator
      * @return the freshly created or-instance
-     * @throws ExprFormatException if the expression does not conform
+     * @throws FormatException if the expression does not conform
      * structural requirements
      */
-    protected TemporalFormula createOr(List<TemporalFormula> operands) throws ExprFormatException {
+    protected TemporalFormula createOr(List<TemporalFormula> operands) throws FormatException {
     	return Or.createInstance(operands);
     }
 
@@ -894,10 +894,10 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal next-operator.
      * @param operand the operands of the next-operator
      * @return the freshly created next-instance
-     * @throws ExprFormatException if the expression does not conform
+     * @throws FormatException if the expression does not conform
      * structural requirements
      */
-    protected TemporalFormula createNext(TemporalFormula operand) throws ExprFormatException {
+    protected TemporalFormula createNext(TemporalFormula operand) throws FormatException {
     	return  Next.createInstance(operand);
     }
 
@@ -905,10 +905,10 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal until-operator.
      * @param operands the operands of the until-operator
      * @return the freshly created until-instance
-     * @throws ExprFormatException if the expression does not conform
+     * @throws FormatException if the expression does not conform
      * structural requirements
      */
-    protected TemporalFormula createUntil(List<TemporalFormula> operands) throws ExprFormatException {
+    protected TemporalFormula createUntil(List<TemporalFormula> operands) throws FormatException {
     	return Until.createInstance(operands);
     }
 
@@ -916,10 +916,10 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal globally-operator.
      * @param operand the operands of the globally-operator
      * @return the freshly created globally-instance
-     * @throws ExprFormatException if the expression does not conform
+     * @throws FormatException if the expression does not conform
      * structural requirements
      */
-    protected TemporalFormula createGlobally(TemporalFormula operand) throws ExprFormatException {
+    protected TemporalFormula createGlobally(TemporalFormula operand) throws FormatException {
     	return Globally.createInstance(operand);
     }
 
@@ -927,10 +927,10 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal finally-operator.
      * @param operand the operands of the finally-operator
      * @return the freshly created finally-instance
-     * @throws ExprFormatException if the expression does not conform
+     * @throws FormatException if the expression does not conform
      * structural requirements
      */
-    protected TemporalFormula createFinally(TemporalFormula operand) throws ExprFormatException {
+    protected TemporalFormula createFinally(TemporalFormula operand) throws FormatException {
     	return Finally.createInstance(operand);
     }
 
@@ -938,10 +938,10 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal exists-operator.
      * @param operand the operands of the exists-operator
      * @return the freshly created exists-instance
-     * @throws ExprFormatException if the expression does not conform
+     * @throws FormatException if the expression does not conform
      * structural requirements
      */
-    protected TemporalFormula createExists(TemporalFormula operand) throws ExprFormatException {
+    protected TemporalFormula createExists(TemporalFormula operand) throws FormatException {
     	return Exists.createInstance(operand);
     }
 
@@ -949,10 +949,10 @@ public class CTLStarFormula {
      * Creates a fresh instance of the temporal all-operator.
      * @param operand the operands of the all-operator
      * @return the freshly created all-instance
-     * @throws ExprFormatException if the expression does not conform
+     * @throws FormatException if the expression does not conform
      * structural requirements
      */
-    protected TemporalFormula createAll(TemporalFormula operand) throws ExprFormatException {
+    protected TemporalFormula createAll(TemporalFormula operand) throws FormatException {
     	return All.createInstance(operand);
     }
 

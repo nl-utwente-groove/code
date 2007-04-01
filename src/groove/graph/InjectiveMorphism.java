@@ -12,15 +12,17 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: InjectiveMorphism.java,v 1.2 2007-03-30 15:50:23 rensink Exp $
+ * $Id: InjectiveMorphism.java,v 1.3 2007-04-01 12:49:56 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Interface of a partial injective graph morphism.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:23 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-01 12:49:56 $
+ * @deprecated the {@link InjectiveMorphism} hierarchy is being abandoned.
  */
+@Deprecated
 public interface InjectiveMorphism extends Morphism {
     /**
      * Returns the inverse InjectiveMorphism of this one.

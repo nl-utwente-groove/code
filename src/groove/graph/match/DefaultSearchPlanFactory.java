@@ -12,16 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultSearchPlanFactory.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: DefaultSearchPlanFactory.java,v 1.2 2007-04-01 12:50:11 rensink Exp $
  */
 package groove.graph.match;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
@@ -29,6 +31,10 @@ import java.util.Set;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.graph.algebra.AlgebraEdge;
+import groove.graph.algebra.ProductEdge;
+import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.ValueNode;
 import groove.util.Bag;
 import groove.util.HashBag;
 
@@ -40,7 +46,7 @@ import groove.util.HashBag;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	/**
@@ -197,9 +203,51 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
 			// copy the node and edge sets to avoid sharing problems
 			Set<Node> remainingNodes = new HashSet<Node>(nodeSet);
 			Set<Edge> remainingEdges = new HashSet<Edge>(edgeSet);
+			// first do all non-variable value nodes, 
+			// and remove all value and product nodes
+			Iterator<Node> nodeIter = remainingNodes.iterator();
+			while (nodeIter.hasNext()) {
+				Node node = nodeIter.next();
+				if (node instanceof ValueNode) {
+					if (((ValueNode) node).hasValue()) {
+						result.add(createNodeSearchItem(node));
+						nodeIter.remove();
+					}
+				} else if (node instanceof ProductNode) {
+					nodeIter.remove();					
+				}
+			}
+			// collect the non-constant operator edges, and remove all
+			// operator and argument edges
+			Map<ProductEdge,Set<Node>> productEdgeMap = new HashMap<ProductEdge,Set<Node>>();
+			Iterator<Edge> edgeIter = remainingEdges.iterator();
+			while (edgeIter.hasNext()) {
+				Edge edge = edgeIter.next();
+				if (edge instanceof ProductEdge) {
+					ProductEdge productEdge = (ProductEdge) edge;
+					if (productEdge.getOperation().arity() > 0) {
+						productEdgeMap.put(productEdge, new HashSet<Node>(productEdge.source().getArguments()));
+					}
+					edgeIter.remove();
+				} else if (edge instanceof AlgebraEdge) {
+					edgeIter.remove();
+				}
+			}
 	        // pick the best remaining edge each time and add it to the
 	        // result, adjusting the remaining edges, nodes and indegrees
 	        while (! remainingEdges.isEmpty()) {
+	        	// see if there is a product edge whose arguments are all matched
+	        	Iterator<Map.Entry<ProductEdge,Set<Node>>> productEdgeIter = productEdgeMap.entrySet().iterator();
+	        	while (productEdgeIter.hasNext()) {
+	        		Map.Entry<ProductEdge,Set<Node>> productEdgeEntry = productEdgeIter.next();
+	        		Set<Node> arguments = new HashSet<Node>(productEdgeEntry.getValue());
+	        		if (!arguments.removeAll(remainingNodes)) {
+	        			boolean targetMatched = !remainingNodes.remove(productEdgeEntry.getKey().target());
+	        			boolean[] matched = new boolean[] { true, targetMatched };
+	        			result.add(createEdgeSearchItem(productEdgeEntry.getKey(), matched));
+	        			productEdgeIter.remove();
+	        		}
+	        	}
 	            Edge bestEdge = Collections.max(remainingEdges, this);
 	            int arity = bestEdge.endCount();
 	            boolean allMatched = true;
@@ -210,12 +258,6 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	            }
 	            if (allMatched) {
 	            	matched = null;
-//	            } else {
-//	            	for (int i = 0; i < arity; i++) {
-//						if (!matched[i]) {
-//							remainingNodes.remove(bestEdge.end(i));
-//						}
-//					}
 	            }
 	            result.add(createEdgeSearchItem(bestEdge, matched));
 	            remainingEdges.remove(bestEdge);
@@ -224,8 +266,10 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	        }
 	        // remaining nodes are loose nodes: add them
 	        for (Node node: remainingNodes) {
+	        	assert ! (node instanceof ValueNode) : String.format("Remaining value node %s", node);
 	        	result.add(createNodeSearchItem(node));
 	        }
+	        assert productEdgeMap.isEmpty() : String.format("Remaining operator edges %s", productEdgeMap.keySet());
 	        return result;
 		}
 		
@@ -313,13 +357,21 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	 * Callback factory method for creating an edge search item.
 	 */
 	protected SearchItem createEdgeSearchItem(Edge edge, boolean[] matched) {
-		return new EdgeSearchItem<Edge>(edge, matched);
+		if (edge instanceof ProductEdge) {
+			return new ProductEdgeSearchItem((ProductEdge) edge, matched);
+		} else {
+			return new EdgeSearchItem<Edge>(edge, matched);
+		}
 	}
 
 	/**
      * Callback factory method for creating a node search item.
      */
     protected SearchItem createNodeSearchItem(Node node) {
-    	return new NodeSearchItem(node);
+    	if (node instanceof ValueNode) {
+    		return new ValueNodeSearchItem((ValueNode) node);
+    	} else {
+    		return new NodeSearchItem(node);
+    	}
     }
 }

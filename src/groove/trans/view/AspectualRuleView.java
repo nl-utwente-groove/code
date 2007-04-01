@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.2 2007-03-30 15:50:38 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.3 2007-04-01 12:50:08 rensink Exp $
  */
 
 package groove.trans.view;
@@ -26,11 +26,9 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.algebra.ValueEdge;
 import groove.graph.aspect.AspectEdge;
 import groove.graph.aspect.AspectGraph;
 import groove.graph.aspect.AspectNode;
@@ -54,6 +52,7 @@ import groove.trans.NAC;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
+import groove.util.FormatException;
 import groove.util.Groove;
 import groove.util.Pair;
 
@@ -77,7 +76,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -111,7 +110,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 * and back, using {@link #testTranslation(String,AspectGraph)}. 
 	 * Recursively descends into directories.
 	 */
-	private static void testFile(File file) throws GraphFormatException, RuleFormatException {
+	private static void testFile(File file) throws FormatException, FormatException {
         AspectGraph factory = AspectGraph.getFactory();
 		if (file.isDirectory()) {
 			for (File nestedFile: file.listFiles()) {
@@ -130,7 +129,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	}
 	
 	/** Tests the translation from an aspect graph to a rule and back. */
-	private static void testTranslation(String name, AspectGraph graph) throws RuleFormatException, GraphFormatException {
+	private static void testTranslation(String name, AspectGraph graph) throws FormatException, FormatException {
         NameLabel ruleName = new NameLabel(name);
         // construct rule graph
         AspectualRuleView ruleGraph = new AspectualRuleView(graph, ruleName);
@@ -163,10 +162,10 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * Constructs a new rule graph on the basis of a given production rule.
      * @param rule the production rule for which a rule graph is to be constructed
      * @require <tt>rule != null</tt>
-     * @throws RuleFormatException if <code>rule</code> cannot be displayed as a {@link AspectualRuleView},
+     * @throws FormatException if <code>rule</code> cannot be displayed as a {@link AspectualRuleView},
      * for instance because its NACs are nested too deep or not connected
      */
-    public AspectualRuleView(Rule rule) throws RuleFormatException {
+    public AspectualRuleView(Rule rule) throws FormatException {
     	this.name = rule.getName();
         this.priority = rule.getPriority();
         this.rule = rule;
@@ -182,10 +181,10 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * @param graph the graph to be converted
      * @param name the name of the rule
      * @require <tt>graph != null</tt>
-     * @throws GraphFormatException if <tt>graph</tt> does not have
+     * @throws FormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public AspectualRuleView(AspectGraph graph, NameLabel name) throws GraphFormatException {
+    public AspectualRuleView(AspectGraph graph, NameLabel name) throws FormatException {
         this(graph, name, Rule.DEFAULT_PRIORITY, null);
     }
 
@@ -196,10 +195,10 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * @param name the name of the rule
      * @param priority the priority ot the rule
      * @require <tt>graph != null</tt>
-     * @throws GraphFormatException if <tt>graph</tt> does not have
+     * @throws FormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public AspectualRuleView(AspectGraph graph, NameLabel name, int priority, RuleFactory ruleFactory) throws GraphFormatException {
+    public AspectualRuleView(AspectGraph graph, NameLabel name, int priority, RuleFactory ruleFactory) throws FormatException {
         this.name = name;
         this.priority = priority;
         this.ruleFactory = ruleFactory;
@@ -212,20 +211,20 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * Checks if the variables bound by the left hand side of an aspect graph
      * cover all variables used in the right hand side and the NACs.
      * @param graph the graph to be checked
-     * @throws GraphFormatException if there is a free variable in the rhs or NAC
+     * @throws FormatException if there is a free variable in the rhs or NAC
      */
-    protected void testVariableBinding(AspectGraph graph) throws GraphFormatException {
+    protected void testVariableBinding(AspectGraph graph) throws FormatException {
         Set<String> boundVars = getVars(graph, READER, true);
         boundVars.addAll(getVars(graph, ERASER, true));
         Set<String> rhsOnlyVars = getVars(graph, CREATOR, false);
         if (!boundVars.containsAll(rhsOnlyVars)) {
             rhsOnlyVars.removeAll(boundVars);
-            throw new GraphFormatException("Right hand side variables %s not bound on left hand side", rhsOnlyVars);
+            throw new FormatException("Right hand side variables %s not bound on left hand side", rhsOnlyVars);
         }
         Set<String> embargoVars = getVars(graph, EMBARGO, false);
         if (!boundVars.containsAll(embargoVars)) {
         	embargoVars.removeAll(boundVars);
-            throw new GraphFormatException("NAC variables %s not bound on left hand side", embargoVars);
+            throw new FormatException("NAC variables %s not bound on left hand side", embargoVars);
         }
     }
     
@@ -275,7 +274,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	}
 
 	/** Invokes {@link #AspectualRuleView(Rule)} to construct a rule graph. */
-	public RuleView newInstance(Rule rule) throws RuleFormatException {
+	public RuleView newInstance(Rule rule) throws FormatException {
 	    return new AspectualRuleView(rule);
 	}
 
@@ -305,7 +304,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * Callback method to compute a rule from an aspect graph.
      * @param graph the aspect graph to compute the rule from
      */
-    protected Rule computeRule(AspectGraph graph, Map<AspectNode, Node> graphToRuleMap) throws GraphFormatException {
+    protected Rule computeRule(AspectGraph graph, Map<AspectNode, Node> graphToRuleMap) throws FormatException {
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
@@ -408,10 +407,10 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * @param context the graph in which the original node occurs;
      * may be necessary to determine the type of the image.
 	 * @return the fresh node
-     * @throws GraphFormatException if <code>node</code> does not
+     * @throws FormatException if <code>node</code> does not
      * occur in a correct way in <code>context</code>
 	 */
-	protected Node computeNodeImage(AspectNode node, AspectGraph context) throws GraphFormatException {
+	protected Node computeNodeImage(AspectNode node, AspectGraph context) throws FormatException {
 		if (node.getValue(AttributeAspect.getInstance()) == null) {
 			return new DefaultNode(node.getNumber());
 		} else {
@@ -427,10 +426,10 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 * may be necessary to determine the type of the image.
 	 * @param elementMap the mapping of the end nodes
      * @return the newly added edge, if any
-	 * @throws GraphFormatException if <code>edge</code> does not
+	 * @throws FormatException if <code>edge</code> does not
      * occur in a correct way in <code>context</code>
      */
-    protected Edge computeEdgeImage(AspectEdge edge, AspectGraph context, Map<AspectNode, Node> elementMap) throws GraphFormatException {
+    protected Edge computeEdgeImage(AspectEdge edge, AspectGraph context, Map<AspectNode, Node> elementMap) throws FormatException {
     	Node[] ends = new Node[edge.endCount()];
     	for (int i = 0; i < ends.length; i++) {
     		Node endImage = elementMap.get(edge.end(i));
@@ -603,7 +602,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * Computes an aspect graph representation of the rule
      * stored in this rule view.
      */
-    protected AspectGraph computeAspectGraph(Rule rule, Map<AspectNode, Node> graphToRuleMap) throws RuleFormatException {
+    protected AspectGraph computeAspectGraph(Rule rule, Map<AspectNode, Node> graphToRuleMap) throws FormatException {
     	AspectGraph result = createAspectGraph();
 		// start with lhs
 		Map<Node, AspectNode> lhsNodeMap = new HashMap<Node, AspectNode>();
@@ -719,7 +718,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 								nacNodeMap,
 								EMBARGO);
 					} else {
-						throw new RuleFormatException(
+						throw new FormatException(
 								"Level 2 NACs must be merge or edge embargoes");
 					}
 					result.addEdge(subNacEdgeImage);
@@ -752,7 +751,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 		if (role != null) {
 			try {
 				result.setDeclaredValue(role);
-			} catch (GraphFormatException exc) {
+			} catch (FormatException exc) {
 				assert false : String.format("Fresh node %s cannot have two rule aspect values",
 						result);
 			}
@@ -761,7 +760,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 		if (attributeValue != null) {
 			try {
 				result.setDeclaredValue(attributeValue);
-			} catch (GraphFormatException exc) {
+			} catch (FormatException exc) {
 				assert false : String.format("Fresh node %s cannot have two attribute aspect values",
 						result);
 			}
@@ -787,14 +786,9 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     		if (attributeValue == null) {
     			return new AspectEdge(ends, label, role);
     		} else {
-    			// since the ValueEdge inserts a spurious prefix,
-    			// we have to remove it here FIXME
-    			if (edge instanceof ValueEdge) {
-    				label = DefaultLabel.createLabel(((ValueEdge) edge).getConstant().symbol());
-    			}
         		return new AspectEdge(ends, label, role, attributeValue);
     		}
-    	} catch (GraphFormatException exc) {
+    	} catch (FormatException exc) {
     		assert false : String.format("Fresh edge cannot have two values for the same aspect");
     		return null;
     	}

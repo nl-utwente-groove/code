@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleGraph.java,v 1.6 2007-03-30 15:50:37 rensink Exp $
+ * $Id: RuleGraph.java,v 1.7 2007-04-01 12:50:08 rensink Exp $
  */
 
 package groove.trans.view;
@@ -23,7 +23,6 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.GraphFormatException;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Label;
@@ -47,7 +46,7 @@ import groove.trans.NAC;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
-import groove.util.ExprFormatException;
+import groove.util.FormatException;
 import groove.util.Groove;
 import groove.util.Pair;
 
@@ -66,7 +65,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @deprecated replaced by AspectRuleView
  */
 @Deprecated
@@ -290,10 +289,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * Constructs a new rule graph on the basis of a given production rule.
      * @param rule the production rule for which a rule graph is to be constructed
      * @require <tt>rule != null</tt>
-     * @throws RuleFormatException if <code>rule</code> cannot be displayed as a {@link RuleGraph},
+     * @throws FormatException if <code>rule</code> cannot be displayed as a {@link RuleGraph},
      * for instance because its NACs are nested too deep or not connected
      */
-    public RuleGraph(Rule rule) throws RuleFormatException {
+    public RuleGraph(Rule rule) throws FormatException {
         name = rule.getName();
         priority = rule.getPriority();
         ruleFactory = null;
@@ -389,8 +388,8 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
                     }
                 }
             }
-        } catch (GraphFormatException exc) {
-            throw new RuleFormatException(exc);
+        } catch (FormatException exc) {
+            throw new FormatException(exc);
         }
         setFixed();
     }
@@ -399,9 +398,9 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * Creates and adds an injection edge based on a given merge embargo to this rule graph.
      * The embargo is interpreted under a certain node mapping.
      * A role parameter controls whether it is a level 1 injection (READER) or level 2 (EMBARGO)
-     * @throws GraphFormatException if the role parameter is invalid
+     * @throws FormatException if the role parameter is invalid
      */
-    private void addInjectionEdge(MergeEmbargo embargo, Map<Node,? extends Node> nodeMap, int role) throws GraphFormatException {
+    private void addInjectionEdge(MergeEmbargo embargo, Map<Node,? extends Node> nodeMap, int role) throws FormatException {
         addRuleEdge(images(nodeMap, embargo.getNodes()), NEGATIVE_MERGE_LABEL, role);
     }
 
@@ -409,9 +408,9 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * Creates and adds a negation edge based on a given edge embargo to this rule graph.
      * The embargo is interpreted under a certain node mapping.
      * A role parameter controls whether it is a level 1 negation (READER) or level 2 (EMBARGO)
-     * @throws GraphFormatException if the role parameter is invalid
+     * @throws FormatException if the role parameter is invalid
      */
-    private void addNegationEdge(EdgeEmbargo embargo, Map<Node,? extends Node> nodeMap, int role) throws GraphFormatException {
+    private void addNegationEdge(EdgeEmbargo embargo, Map<Node,? extends Node> nodeMap, int role) throws FormatException {
         Edge embargoEdge = embargo.getEmbargoEdge();
         Label label = embargoEdge.label();
         // we have to add a negation to the label, which may mean we first have
@@ -428,10 +427,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @param graph the graph to be converted
      * @param name the name of the rule
      * @require <tt>graph != null</tt>
-     * @throws GraphFormatException if <tt>graph</tt> does not have
+     * @throws FormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public RuleGraph(GraphShape graph, NameLabel name) throws GraphFormatException {
+    public RuleGraph(GraphShape graph, NameLabel name) throws FormatException {
         this(graph, name, Rule.DEFAULT_PRIORITY, null);
     }
 
@@ -442,10 +441,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @param name the name of the rule
      * @param priority the priority ot the rule
      * @require <tt>graph != null</tt>
-     * @throws GraphFormatException if <tt>graph</tt> does not have
+     * @throws FormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public RuleGraph(GraphShape graph, NameLabel name, int priority, RuleFactory ruleFactory) throws GraphFormatException {
+    public RuleGraph(GraphShape graph, NameLabel name, int priority, RuleFactory ruleFactory) throws FormatException {
         this.name = name;
         this.priority = priority;
         this.ruleFactory = ruleFactory;
@@ -485,7 +484,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
                     if (emptyLabelIsMerge) {
                         labelText = MERGE_LABEL_TEXT;
                     } else {
-                        throw new GraphFormatException("Empty label in rule graph");
+                        throw new FormatException("Empty label in rule graph");
                     }
                 }
                 Label label = createLabel(labelText);
@@ -499,19 +498,19 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
                     }
                 }
             } else if (selfEdgeRole(edge) != ((RuleNode) graphToRuleGraphMap.getNode(edge.source())).role())
-                throw new GraphFormatException("Node role in rule graph not uniquely identified");
+                throw new FormatException("Node role in rule graph not uniquely identified");
         }
         Set<String> boundVars = getVars(READER, true);
         boundVars.addAll(getVars(ERASER, true));
         Set<String> rhsOnlyVars = getVars(CREATOR, false);
         if (!boundVars.containsAll(rhsOnlyVars)) {
             rhsOnlyVars.removeAll(boundVars);
-            throw new GraphFormatException("Right hand side variables "+rhsOnlyVars+" not bound on left hand side");
+            throw new FormatException("Right hand side variables "+rhsOnlyVars+" not bound on left hand side");
         }
         Set<String> embargoVars = getVars(EMBARGO, false);
         if (!boundVars.containsAll(embargoVars)) {
         	embargoVars.removeAll(boundVars);
-            throw new GraphFormatException("NAC variables "+embargoVars+" not bound on left hand side");
+            throw new FormatException("NAC variables "+embargoVars+" not bound on left hand side");
         }
         GraphInfo.transfer(graph, this, graphToRuleGraphMap);
         setFixed();
@@ -897,7 +896,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
     }
     
     /** Invokes {@link #RuleGraph(Rule)} to construct a rule graph. */
-    public RuleView newInstance(Rule rule) throws RuleFormatException {
+    public RuleView newInstance(Rule rule) throws FormatException {
         return new RuleGraph(rule);
     }
 //
@@ -913,7 +912,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * and a regular expression label if the string can be parsed as a regular expression.
      * Any other case, including an empty label, raises an exception.
      */
-    protected Label createLabel(String text) throws GraphFormatException {
+    protected Label createLabel(String text) throws FormatException {
         if (text.equals(MERGE_LABEL_TEXT)) {
             return MERGE_LABEL;
         } else {
@@ -925,8 +924,8 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
 				} else {
 					return new RegExprLabel(textAsRegExpr);
 				}
-			} catch (ExprFormatException exc) {
-                throw new GraphFormatException(exc);
+			} catch (FormatException exc) {
+                throw new FormatException(exc);
             }
         }
     }
@@ -935,10 +934,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
 	 * Factory method for rule nodes.
      * @param role the role of the node to be created
      * @return the fresh rule node
-     * @throws GraphFormatException (outdated?)
+     * @throws FormatException (outdated?)
      * //HARMEN: is this exception still thrown?
 	 */
-    protected RuleNode createRuleNode(int role) throws GraphFormatException {
+    protected RuleNode createRuleNode(int role) throws FormatException {
         return new RuleNode(role);
     }
     
@@ -948,10 +947,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @param label the label of the fresh rule-edge
      * @param role the role of the fresh rule-edge
      * @return the fresh rule-edge
-     * @throws GraphFormatException (outdated?)
+     * @throws FormatException (outdated?)
      * //HARMEN: is this exception still thrown?
      */
-    protected RuleEdge createRuleEdge(Node[] ends, Label label, int role) throws GraphFormatException {
+    protected RuleEdge createRuleEdge(Node[] ends, Label label, int role) throws FormatException {
         return new RuleEdge(ends, label, role);
     }
     
@@ -1063,9 +1062,9 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @param label the intended edge label
      * @param role the intended edge role within the rule graph
      * @return the newly created and added edge
-     * @throws GraphFormatException if the edge cannot be created
+     * @throws FormatException if the edge cannot be created
      */
-    protected RuleEdge addRuleEdge(Node[] ends, Label label, int role) throws GraphFormatException {
+    protected RuleEdge addRuleEdge(Node[] ends, Label label, int role) throws FormatException {
         RuleEdge result = createRuleEdge(ends, label, role);
         addEdge(result);
         return result;
@@ -1091,9 +1090,9 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * Creates, adds and returns a rule node with a given role.
      * @param role the role of the new node
      * @return the newly created and added node
-     * @throws GraphFormatException is the node cannot be created.
+     * @throws FormatException is the node cannot be created.
      */
-    protected RuleNode addRuleNode(int role) throws GraphFormatException {
+    protected RuleNode addRuleNode(int role) throws FormatException {
         RuleNode result = createRuleNode(role);
         addNode(result);
         return result;
@@ -1102,29 +1101,29 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
     /**
      * Callback method that tests if a given label is supported by the current
      * rule graph format.
-     * Throws a {@link GraphFormatException} with a specific error message if
+     * Throws a {@link FormatException} with a specific error message if
      * the label is not supported.
      * @param label the label to be tested
      * @return <code>true</code> if the label is not supported. Always throws an exception
      * in preference to returning <code>false</code>.
-     * @throws GraphFormatException if <code>label</code> is not a supported label
+     * @throws FormatException if <code>label</code> is not a supported label
      */
-    protected boolean isLabelSupported(Label label, int role) throws GraphFormatException {
+    protected boolean isLabelSupported(Label label, int role) throws FormatException {
         if (label instanceof DefaultLabel || RegExprLabel.getWildcardId(label) != null) {
             return true;
         } else if (label instanceof RegExprLabel) {
             if (role == CREATOR) {
-                throw new GraphFormatException("Regular expression label "+label+" not allowed on creator edges");                
+                throw new FormatException("Regular expression label "+label+" not allowed on creator edges");                
             } else if (role == ERASER) {
-                throw new GraphFormatException("Regular expression label "+label+" not allowed on eraser edges");                
+                throw new FormatException("Regular expression label "+label+" not allowed on eraser edges");                
             }
             RegExpr expr = ((RegExprLabel) label).getRegExpr();
             if (expr.containsOperator(RegExpr.NEG_OPERATOR)) {
-                throw new GraphFormatException("Negation only allowed on top level for "+label);
+                throw new FormatException("Negation only allowed on top level for "+label);
             }
             return true;
         } else {
-            throw new GraphFormatException("Label of "+label.getClass()+" not supported for "+label);
+            throw new FormatException("Label of "+label.getClass()+" not supported for "+label);
         }
     }
 
@@ -1136,10 +1135,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @param graph the graph providing that context
      * @return <tt>true</tt> if the graph structure local to the given edge
      * conforms the requirements (if any), <tt>false</tt> otherwise
-     * @throws GraphFormatException if the graph structure local to the given
+     * @throws FormatException if the graph structure local to the given
      * edge does not conform the requirements
      */
-    protected boolean isGraphStructureCorrect(Edge edge, GraphShape graph) throws GraphFormatException {
+    protected boolean isGraphStructureCorrect(Edge edge, GraphShape graph) throws FormatException {
     	return true;
     }
 

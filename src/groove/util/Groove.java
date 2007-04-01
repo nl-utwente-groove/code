@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.4 2007-03-29 09:59:51 rensink Exp $
+ * $Id: Groove.java,v 1.5 2007-04-01 12:50:01 rensink Exp $
  */
 package groove.util;
 
@@ -23,7 +23,6 @@ import groove.io.AspectualGpsGrammar;
 import groove.io.ExtensionFilter;
 import groove.io.UntypedGxl;
 import groove.io.Xml;
-import groove.io.XmlGrammar;
 import groove.lts.DerivedGraphRuleFactory;
 import groove.trans.GraphGrammar;
 import groove.trans.view.AspectualRuleView;
@@ -41,7 +40,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.4 $ 
+ * @version $Revision: 1.5 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -239,7 +238,7 @@ public class Groove {
      * no file with this name can be found
      * @throws IOException if <code>filename</code> does not exist or is wrongly formatted
      */
-    static public Graph loadGraph(String filename) throws IOException {
+    static public Graph loadGraph(String filename) throws IOException, FormatException {
         // attempt to find the intended file
         File file = new File(createGxlFilter().addExtension(filename));
         if (!file.exists()) {
@@ -255,7 +254,7 @@ public class Groove {
      * the file does not exist
      * @throws IOException if <code>file</code> cannot be parsed as a graph
      */
-    static public Graph loadGraph(File file) throws IOException {
+    static public Graph loadGraph(File file) throws IOException, FormatException {
         if (file.exists()) {
             return graphLoader.unmarshalGraph(file);
         } else {
@@ -270,7 +269,7 @@ public class Groove {
      * @param filename the intended filename
      * @throws IOException if saving ran into problems
      */
-    static public void saveGraph(Graph graph, String filename) throws IOException {
+    static public void saveGraph(Graph graph, String filename) throws IOException, FormatException {
         File file = new File(createGxlFilter().addExtension(filename));
         graphLoader.marshalGraph(graph, file);
     }

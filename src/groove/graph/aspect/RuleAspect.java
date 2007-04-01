@@ -16,10 +16,10 @@
  */
 package groove.graph.aspect;
 
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
+import groove.util.FormatException;
 import groove.util.Groove;
 
 /**
@@ -70,7 +70,7 @@ public class RuleAspect extends AbstractAspect {
 			EMBARGO.setSourceToEdge(EMBARGO);
 			EMBARGO.setTargetToEdge(EMBARGO);
 			VALUE_COUNT = instance.getValues().size();
-		} catch (GraphFormatException exc) {
+		} catch (FormatException exc) {
 			throw new Error("Aspect '" + RULE_ASPECT_NAME
 					+ "' cannot be initialised due to name conflict", exc);
 		}
@@ -147,7 +147,7 @@ public class RuleAspect extends AbstractAspect {
 	 * demanding than {@link #ERASER}.
 	 */
 	@Override
-	protected AspectValue getMaxValue(AspectValue value1, AspectValue value2) throws GraphFormatException {
+	protected AspectValue getMaxValue(AspectValue value1, AspectValue value2) throws FormatException {
 		if (value1 == ERASER && value2 == EMBARGO) {
 			return EMBARGO;
 		} else if (value1 == EMBARGO && value2 == ERASER) {
@@ -164,7 +164,7 @@ public class RuleAspect extends AbstractAspect {
 	 * a regular expression other than a wildcard, merger or variable.
 	 */
 	@Override
-	public void testLabel(Label label, AspectValue declaredValue, AspectValue inferredValue) throws GraphFormatException {
+	public void testLabel(Label label, AspectValue declaredValue, AspectValue inferredValue) throws FormatException {
 		// if the label is not a regular expression, it is in any case fine
 		if (label instanceof RegExprLabel) {
 			testLabel(((RegExprLabel) label).getRegExpr(), declaredValue, inferredValue);
@@ -177,21 +177,21 @@ public class RuleAspect extends AbstractAspect {
 	 * @see #testLabel(Label, AspectValue, AspectValue)
 	 */
 	private void testLabel(RegExpr expr, AspectValue declaredValue,
-			AspectValue inferredValue) throws GraphFormatException {
+			AspectValue inferredValue) throws FormatException {
 		// check if negation occurs anywhere except on top level
 		if (expr.containsOperator(RegExpr.NEG_OPERATOR)) {
-			throw new GraphFormatException("Negation may only occur on top level in %s", expr);
+			throw new FormatException("Negation may only occur on top level in %s", expr);
 		}
 		// check the expression is a regular eraser pattern
 		if (declaredValue == ERASER) {
 			if (! expr.isWildcard()) {
-				throw new GraphFormatException("Regular expression %s not allowed on an eraser edge", expr);
+				throw new FormatException("Regular expression %s not allowed on an eraser edge", expr);
 			}
 		}
 		// check the expression is a regular creator pattern
 		if (inferredValue == CREATOR) {
 			if (! (expr.isWildcard() || expr.isEmpty())) {
-				throw new GraphFormatException("Regular expression %s not allowed on a creator edge", expr);
+				throw new FormatException("Regular expression %s not allowed on a creator edge", expr);
 			}
 		}
 	}

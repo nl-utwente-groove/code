@@ -17,11 +17,10 @@
 package groove.graph.aspect;
 
 import groove.graph.DefaultLabel;
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
-import groove.util.ExprFormatException;
+import groove.util.FormatException;
 
 import static groove.graph.aspect.Aspect.SEPARATOR;
 
@@ -66,11 +65,11 @@ public class AspectParser {
      * and returning a string description of the parsed result.
      * @param plainText the string to be normalised
      * @return the parsed <code>plainText</code>, turned back into a string
-     * @throws GraphFormatException if <code>plainText</code> is not formatted
+     * @throws FormatException if <code>plainText</code> is not formatted
      * correctly according to the rules of the parser.
      * @see #getParseData(String)
      */
-    public static String normalize(String plainText) throws GraphFormatException {
+    public static String normalize(String plainText) throws FormatException {
     	return getInstance().getParseData(plainText).toString();
     }
 
@@ -141,10 +140,10 @@ public class AspectParser {
      * @return an object containing information about the aspect value,
      * the possible end marker, and the possible actual label text present
      * in <code>plainText</code>
-     * @throws GraphFormatException if <code>prefixedText</code> contains an
+     * @throws FormatException if <code>prefixedText</code> contains an
      * apparent aspect value that is not recognised by {@link AspectValue#getValue(String)}.
      */
-    public AspectParseData getParseData(String plainText) throws GraphFormatException {
+    public AspectParseData getParseData(String plainText) throws FormatException {
     	AspectMap parsedValues = new AspectMap();
 		boolean stopParsing = false;
 		boolean endFound = false;
@@ -158,8 +157,8 @@ public class AspectParser {
 			if (! endFound) {
 	            try {
 					stopParsing = addParsedValue(parsedValues, valueText);
-				} catch (GraphFormatException exc) {
-					throw new GraphFormatException("%s in label '%s'", exc.getMessage(), plainText);
+				} catch (FormatException exc) {
+					throw new FormatException("%s in label '%s'", exc.getMessage(), plainText);
 				}
 			}
 			nextIndex = plainText.indexOf(SEPARATOR, prevIndex);
@@ -184,27 +183,27 @@ public class AspectParser {
 	 * Adds a parsed aspect value to an already exiosting aspect map,
 	 * while testing for duplicates.
 	 * If {@link #isLenient()} is set, a duplicate results in a
-	 * return value <code>true</code>, otherwise it results in a {@link GraphFormatException}.
+	 * return value <code>true</code>, otherwise it results in a {@link FormatException}.
 	 * @param parsedValues the already existing map
 	 * @param valueText string description of a new {@link AspectValue}
 	 * @return <code>true</code> if <code>valueText</code> is a duplicate value 
 	 * for an existing aspect, and {@link #isLenient()} is set.
-	 * @throws GraphFormatException if <code>valueText</code> is not a 
+	 * @throws FormatException if <code>valueText</code> is not a 
 	 * valid {@link AspectValue}, or duplicates another and the parser is
 	 * not lenient.
 	 */
-	private boolean addParsedValue(AspectMap parsedValues, String valueText) throws GraphFormatException {
+	private boolean addParsedValue(AspectMap parsedValues, String valueText) throws FormatException {
 		boolean stopParsing = false;
 		AspectValue value = AspectValue.getValue(valueText);
 		if (value == null) {
-			throw new GraphFormatException(String.format("Unknown aspect value '%s'", valueText));
+			throw new FormatException(String.format("Unknown aspect value '%s'", valueText));
 		} else {
 			AspectValue oldValue = parsedValues.put(value.getAspect(), value);
 			if (oldValue != null) {
 				if (isLenient()) {
 					stopParsing = true;
 				} else {
-					throw new GraphFormatException(
+					throw new FormatException(
 							String.format("Aspect %s has values '%s' and '%s'",
 									value.getAspect(),
 									oldValue,
@@ -227,7 +226,7 @@ public class AspectParser {
      * otherwise a {@link RegExprLabel} is returned.
      * Also makes a {@link DefaultLabel} if the text cannot be parsed as a regular expression.
      */
-    protected Label createLabel(String text) throws GraphFormatException {
+    protected Label createLabel(String text) throws FormatException {
     	if (text == null || text.length() == 0) {
     		return null;
     	} else try {
@@ -238,13 +237,13 @@ public class AspectParser {
 			} else {
 				return new RegExprLabel(textAsRegExpr);
 			}
-		} catch (ExprFormatException exc) {
+		} catch (FormatException exc) {
 			if (isLenient()) {
 				// if the text cannot be parsed as a regular expression, 
 				// just turns it into a default label
 				return DefaultLabel.createLabel(text);
 			} else {
-				throw new GraphFormatException(exc);
+				throw new FormatException(exc);
 			}
 		}
 	}

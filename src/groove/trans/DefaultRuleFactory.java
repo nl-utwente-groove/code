@@ -12,12 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.4 2007-03-29 09:59:46 rensink Exp $
+ * $Id: DefaultRuleFactory.java,v 1.5 2007-04-01 12:49:55 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
-import groove.graph.GraphFormatException;
 import groove.graph.Morphism;
 import groove.graph.Simulation;
 import groove.graph.aspect.AspectGraph;
@@ -25,6 +24,7 @@ import groove.rel.VarNodeEdgeMap;
 import groove.trans.match.MatchingMatcher;
 import groove.trans.view.AspectualRuleView;
 //import groove.trans.view.RuleGraph;
+import groove.util.FormatException;
 
 /**
  * A rule factory for SPO rules.
@@ -36,7 +36,7 @@ import groove.trans.view.AspectualRuleView;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class DefaultRuleFactory implements RuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */
@@ -107,7 +107,7 @@ public class DefaultRuleFactory implements RuleFactory {
 	/**
 	 * This implementation returns an {@link AspectualRuleView}.
 	 */
-	public AspectualRuleView createRuleView(Graph graph, NameLabel name, int priority) throws GraphFormatException {
+	public AspectualRuleView createRuleView(Graph graph, NameLabel name, int priority) throws FormatException {
 		return new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), name, priority, this);
 	}
 

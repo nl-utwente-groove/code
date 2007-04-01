@@ -12,13 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleNode.java,v 1.2 2007-03-27 14:18:35 rensink Exp $
+ * $Id: RuleNode.java,v 1.3 2007-04-01 12:50:08 rensink Exp $
  */
 package groove.trans.view;
 
 import groove.graph.DefaultNode;
-import groove.graph.GraphFormatException;
 import groove.graph.aspect.AspectNode;
+import groove.util.FormatException;
 
 /**
  * Subclass of nodes that records the nodes' role as
@@ -33,11 +33,11 @@ public class RuleNode extends DefaultNode {
     /**
      * Constructs a new rule node with given role.
      * @param role the role within the rule of the node to be constructed
-     * @throws GraphFormatException
+     * @throws FormatException
      * @require <tt>isValidRole(role)</tt>
      * @see RuleGraph#isValidRole(int)
      */
-    public RuleNode(int role) throws GraphFormatException {
+    public RuleNode(int role) throws FormatException {
         this.role = role == RuleGraph.NO_ROLE ? RuleGraph.DEFAULT_ROLE : role;
         // this.graph = graph;
         //HARMEN: is the exception still thrown?
@@ -47,11 +47,11 @@ public class RuleNode extends DefaultNode {
      * Constructs a new rule node with given role, and given node number.
      * @param nr the node number of the new node
      * @param role the role within the rule of the node to be constructed
-     * @throws GraphFormatException
+     * @throws FormatException
      * @require <tt>isValidRole(role)</tt>
      * @see RuleGraph#isValidRole(int)
      */
-    public RuleNode(int nr, int role) throws GraphFormatException {
+    public RuleNode(int nr, int role) throws FormatException {
     	super(nr);
         this.role = role == RuleGraph.NO_ROLE ? RuleGraph.DEFAULT_ROLE : role;
         // this.graph = graph;

@@ -12,12 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Graph.java,v 1.3 2007-03-30 15:50:23 rensink Exp $
+ * $Id: Graph.java,v 1.4 2007-04-01 12:49:56 rensink Exp $
  */
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.IsoChecker;
+import groove.graph.iso.IsoMatcher;
+import groove.util.FormatException;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,7 +32,7 @@ import java.util.Set;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:23 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:56 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
     /**
@@ -69,7 +71,9 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @return the set of all total InjectiveMorphisms from this Graph to to
      * @require <tt>to != null</tt>
      * @ensure result = { (m: this --> to) \in InjectiveMorphism | m is total }
+     * @deprecated Implementation now very inefficient
      */
+    @Deprecated
     Collection<? extends Morphism> getInjectiveMatchesTo(Graph to);
 
     /**
@@ -87,11 +91,8 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @param to the graph to which this one is to be isomorphically matched
      * @return a total and surjective <tt>InjectiveMorphism</tt> from this graph to <tt>to</tt>;
      *          <tt>null</tt> if none exists
-     * @require <tt>to != null</tt>
-     * @ensure if <tt>result != null</tt> then <tt>result: this --> to</tt> and
-     *         <tt>result.isSurjective() && result.isTotal()</tt> 
      */
-    InjectiveMorphism getIsomorphismTo(Graph to);
+    Morphism getIsomorphismTo(Graph to);
 
     /**
      * Tests whether this Graph is isomorphic to another.
@@ -193,12 +194,12 @@ public interface Graph extends GraphShape, DeltaTarget {
     Graph newGraph();
 
     /**
-     * Factory method: return a fresh graph from the given graph. Throws a {@link GraphFormatException} if there is a compatibility problem.
+     * Factory method: return a fresh graph from the given graph. Throws a {@link FormatException} if there is a compatibility problem.
      * @param graph the current graph
      * @return the new graph
-     * @throws GraphFormatException
+     * @throws FormatException
      */
-    Graph newGraph(Graph graph) throws GraphFormatException;
+    Graph newGraph(Graph graph) throws FormatException;
 
     // ------------------------- Commands: Factory methods ---------------------------
     

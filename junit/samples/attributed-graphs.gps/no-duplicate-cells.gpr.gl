@@ -1,7 +1,11 @@
-# Layout information for C:\local\groove\samples\attributed-graphs.gps\duplicate-cells.gpr
+# Layout information for C:\local\eclipse\workspace\groove\junit\samples\attributed-graphs.gps\no-duplicate-cells.gpr
 # Each line contains layout information about a node or edge
+# Version info: v <version number>; 1 = pre-jgraph 5.9, 2 = jgraph 5.9
+#     v 1: label position = (x-permillage, y-permillage)
+#     v 2: label position = (vector permillage, perpendicular distance)
 # Node Format: n <node id> <bounds>
 # Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
-n n0 228 63 18 18 
-n n1 108 63 18 18 
-n n2 164 162 18 18 
+v 2
+n n2 164 162 31 32 
+n n0 108 63 29 32 
+n n1 228 63 29 32 

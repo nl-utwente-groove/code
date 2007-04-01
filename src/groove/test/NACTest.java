@@ -12,13 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.2 2007-03-28 15:12:34 rensink Exp $
+ * $Id: NACTest.java,v 1.3 2007-04-01 12:50:31 rensink Exp $
  */
 package groove.test;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultInjectiveMorphism;
+import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -54,7 +54,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -86,7 +86,7 @@ public class NACTest extends TestCase {
         int[] rhsTgt    = { 1 };
         VarGraph rhs = (VarGraph) setUpGraph(protREGraph, 1, 2, rhsSrc, rhsLab, rhsTgt);
 
-        DefaultInjectiveMorphism ruleMorphism = new DefaultInjectiveMorphism(lhs,rhs);
+        DefaultMorphism ruleMorphism = new DefaultMorphism(lhs,rhs);
         ruleMorphism.dom().addNode(n[0][0]);
         ruleMorphism.cod().addNode(n[1][0]);
         ruleMorphism.putNode(n[0][0], n[1][0]);

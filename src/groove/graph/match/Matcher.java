@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Matcher.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: Matcher.java,v 1.2 2007-04-01 12:50:11 rensink Exp $
  */
 package groove.graph.match;
 
 import groove.graph.Simulation;
+import groove.util.Reporter;
 
 /**
  * Sub-interface to decouple the old {@link Simulation} hierarchy
@@ -32,4 +33,7 @@ public interface Matcher extends Simulation {
 	/** @deprecated no longer used in finding matchings. */
 	@Deprecated
 	public boolean isRefined();
+	
+	/** Reporter instance to profile this interface. */
+	public static Reporter reporter = new Reporter(Matcher.class);
 }

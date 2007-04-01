@@ -12,21 +12,23 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Label.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: Label.java,v 1.2 2007-04-01 12:49:57 rensink Exp $
  */
 package groove.graph;
+
+import groove.util.FormatException;
 
 /**
  * Interface for edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
+ * @version $Revision: 1.2 $ $Date: 2007-04-01 12:49:57 $
  */
 public interface Label extends Comparable<Label>, java.io.Serializable {
     /**
      * Returns a label corresponding to a given string.
      */
 	@Deprecated
-    Label parse(String text) throws GraphFormatException;
+    Label parse(String text) throws FormatException;
 
     /**
      * Returns the text that this Label carries.

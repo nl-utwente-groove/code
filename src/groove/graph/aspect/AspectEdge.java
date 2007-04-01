@@ -21,10 +21,10 @@ import java.util.List;
 
 import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
+import groove.util.FormatException;
 
 /**
  * @author Arend Rensink
@@ -37,9 +37,9 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 	 * @param ends the end nodes of the new edge
 	 * @param label the label of the new edge
 	 * @param values the aspect values for the new edge
-	 * @throws GraphFormatException
+	 * @throws FormatException
 	 */
-	public AspectEdge(List<AspectNode> ends, Label label, AspectValue... values) throws GraphFormatException {
+	public AspectEdge(List<AspectNode> ends, Label label, AspectValue... values) throws FormatException {
 		super(ends.get(SOURCE_INDEX), label, ends.get(TARGET_INDEX));
 		this.parseData = createParseData(label, computeDeclaredAspectMap(values));
 		this.aspectMap = computeInferredAspectMap(parseData);
@@ -51,10 +51,10 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
      * @param source the source node for this edge
      * @param target the target node for this edge
      * @param parseData the aspect values for this edge.
-     * @throws GraphFormatException if the aspect values of <code>parseData</code>
+     * @throws FormatException if the aspect values of <code>parseData</code>
      * are inconsistent with those of the source or target nodes
      */
-    AspectEdge(AspectNode source, AspectNode target, AspectParseData parseData) throws GraphFormatException {
+    AspectEdge(AspectNode source, AspectNode target, AspectParseData parseData) throws FormatException {
         super(source, parseData.getLabel(), target);
     	this.parseData = parseData;
     	this.aspectMap = computeInferredAspectMap(parseData);
@@ -111,7 +111,7 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 			try {
 				return new AspectEdge((AspectNode) source, (AspectNode) target,
 						AspectParser.getInstance().getParseData(label.text()));
-			} catch (GraphFormatException exc) {
+			} catch (FormatException exc) {
 				// the edge aspects were incompatible with the node aspects
 				// so the edge has no image
 				return null;
@@ -172,11 +172,11 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 
 	/**
 	 * Tests if the parsed edge label is allowed by all inferred aspects. 
-	 * @throws GraphFormatException if there is an aspect whose value
+	 * @throws FormatException if there is an aspect whose value
 	 * for this edge is incompatible with the edge label
 	 * @see Aspect#testLabel(Label, AspectValue, AspectValue)
 	 */
-	protected void testLabel() throws GraphFormatException {
+	protected void testLabel() throws FormatException {
 		for (AspectValue declaredAspectValue: getDeclaredValues()) {
 			Aspect aspect = declaredAspectValue.getAspect();
 			AspectValue inferredValue = getAspectMap().get(aspect);
@@ -189,7 +189,7 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
      * values with the aspect values inferred from the source and target nodes.
      * @param parseData explicitly declared aspect data
      */
-    final protected AspectMap computeInferredAspectMap(AspectParseData parseData) throws GraphFormatException {
+    final protected AspectMap computeInferredAspectMap(AspectParseData parseData) throws FormatException {
     	AspectMap result = new AspectMap();
     	AspectMap edgeMap = parseData.getAspectMap();
     	AspectMap sourceMap = source().getAspectMap();
@@ -211,9 +211,9 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
      * @param targetMap map of aspect values for the target node
      * @return the maximum aspect value for <code>aspect</code>, 
      * according to {@link Aspect#getMax(AspectValue[])}.
-     * @throws GraphFormatException if the explicitly declared aspect value is overruled
+     * @throws FormatException if the explicitly declared aspect value is overruled
      */
-    private AspectValue getInferredValue(Aspect aspect, AspectMap edgeMap, AspectMap sourceMap, AspectMap targetMap) throws GraphFormatException {
+    private AspectValue getInferredValue(Aspect aspect, AspectMap edgeMap, AspectMap sourceMap, AspectMap targetMap) throws FormatException {
 		AspectValue result;
 		AspectValue edgeValue = edgeMap.get(aspect);
 		AspectValue sourceValue = sourceMap.get(aspect);
@@ -222,7 +222,7 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 		AspectValue targetInference = targetValue == null ? null : targetValue.targetToEdge();
 		result = aspect.getMax(sourceInference, targetInference, edgeValue);
 		if (edgeValue != null && edgeValue != result) {
-			throw new GraphFormatException("Inferred %s value '%s' differs from declared value '%s'", aspect, result, edgeValue);
+			throw new FormatException("Inferred %s value '%s' differs from declared value '%s'", aspect, result, edgeValue);
 		}
 		return result;
     }
@@ -232,10 +232,10 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
      * values inferred from the source and target nodes.
      * @param values the explicit aspect values for the edge
      * @return an aspect map combining the explicit and the inferred aspect values
-     * @throws GraphFormatException if <code>values</code> contains duplicate
+     * @throws FormatException if <code>values</code> contains duplicate
      * values for an aspect, or the values are inconsistent with the inferred values
      */
-    final protected AspectMap computeDeclaredAspectMap(AspectValue[] values) throws GraphFormatException {
+    final protected AspectMap computeDeclaredAspectMap(AspectValue[] values) throws FormatException {
     	AspectMap result = new AspectMap();
     	for (AspectValue value: values) {
         	result.add(value);

@@ -25,7 +25,6 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.InjectiveMorphism;
 import groove.graph.Node;
 import groove.util.Reporter;
 
@@ -34,7 +33,7 @@ import groove.util.Reporter;
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy},
  * and if that fails, attempts to create an {@link groove.graph.InjectiveMorphism}. 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -62,7 +61,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * that is reported instead by {@link #getCertifyingTime()}.
      */
     static public long getIsoCheckTime() {
-    	return reporter.getTotalTime(ISO_CHECK) - reporter.getTotalTime(IsoSimulation.ISO_CERT_COMPUTE);
+    	return reporter.getTotalTime(ISO_CHECK);
     }
 
     /**
@@ -83,7 +82,7 @@ public class DefaultIsoChecker implements IsoChecker {
      * Returns the time spent establishing isomorphism by explicit simulation.
      */
     static public long getSimCheckTime() {
-        return reporter.getTotalTime(ISO_SIM_CHECK) - reporter.getTotalTime(IsoSimulation.ISO_CERT_COMPUTE);
+        return reporter.getTotalTime(ISO_SIM_CHECK);
     }
     
     /**
@@ -200,7 +199,7 @@ public class DefaultIsoChecker implements IsoChecker {
         } else {
         	reporter.start(ISO_SIM_CHECK);
         	if (getNodePartitionCount(dom) == getNodePartitionCount(cod)) {
-        		result = createInjectiveMorphism(dom, cod).hasIsomorphismExtension();
+        		result = new IsoMatcher(graphFactory.newMorphism(dom, cod)).hasRefinement();
         	} else {
         		result = false;
         	}
@@ -307,15 +306,6 @@ public class DefaultIsoChecker implements IsoChecker {
 		return result;
 	}
 	
-    /**
-     * Factory method for an injective morphism.
-     * This implementation invokes {@link GraphFactory#newInjectiveMorphism(Graph, Graph)} on
-     * the current graph factory.
-     */
-    protected InjectiveMorphism createInjectiveMorphism(Graph dom, Graph cod) {
-        return graphFactory.newInjectiveMorphism(dom, cod);
-    }
-
     /** Reporter instance for profiling IsoChecker methods. */
     static public final Reporter reporter = Reporter.register(IsoChecker.class);
     /** Handle for profiling {@link #areIsomorphic(Graph, Graph)}. */

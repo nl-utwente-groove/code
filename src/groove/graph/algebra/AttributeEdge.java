@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AttributeEdge.java,v 1.2 2007-03-30 15:50:45 rensink Exp $
+ * $Id: AttributeEdge.java,v 1.3 2007-04-01 12:49:50 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -27,8 +27,10 @@ import groove.graph.Node;
  * data values.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:45 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-01 12:49:50 $
+ * @deprecated not used anymore
  */
+@Deprecated
 public class AttributeEdge extends AbstractBinaryEdge {
 
     /**

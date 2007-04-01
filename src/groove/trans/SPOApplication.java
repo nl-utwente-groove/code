@@ -12,12 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.3 2007-03-30 15:50:25 rensink Exp $
+ * $Id: SPOApplication.java,v 1.4 2007-04-01 12:49:54 rensink Exp $
  */
 package groove.trans;
 
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import groove.graph.AbstractGraph;
@@ -33,13 +36,14 @@ import groove.graph.MergeMap;
 import groove.graph.InternalGraph;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
 
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:25 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:54 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -159,8 +163,7 @@ public class SPOApplication implements RuleApplication, Derivation {
     	NodeEdgeMap mergeMap = getMergeMap();
     	for (Node node: source.nodeSet()) {
 			Node nodeImage = mergeMap.getNode(node);
-			if (nodeImage != null) {
-                assert getTarget().containsElement(nodeImage) : "Node "+nodeImage+" not in node set "+getTarget().nodeSet()+" of "+getTarget();
+			if (nodeImage != null && getTarget().containsElement(nodeImage)) {
 				result.putNode(node, nodeImage);
 			}
 		}
@@ -288,8 +291,22 @@ public class SPOApplication implements RuleApplication, Derivation {
                 }
                 if (removed) {
                 	target.removeEdge(edgeMatch);
+                	registerErasure(edgeMatch);
                 }
             }
+        }
+        removeIsolatedValueNodes(target);
+	}
+
+	/**
+	 * Removes those value nodes whose incoming edges have all been erased.
+	 */
+	protected void removeIsolatedValueNodes(DeltaTarget target) {
+		// for efficiency we don't use the getter but test for null
+        if (isolatedValueNodes != null) {
+        	for (ValueNode node : isolatedValueNodes) {
+				target.removeNode(node);
+			}
         }
 	}
 
@@ -298,10 +315,26 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 * @param target the target to which to apply the changes
 	 */
     protected void eraseEdges(DeltaTarget target) {
-        for (Object erasedEdge: getErasedEdges()) {
-            target.removeEdge((Edge) erasedEdge);
+        for (Edge erasedEdge: getErasedEdges()) {
+            target.removeEdge(erasedEdge);
+        	registerErasure(erasedEdge);
         }
 	}
+    
+    /**
+     * Callback method to notify that an edge has been erased.
+     * Used to ensure that isolated value nodes are removed from the graph.
+     */
+    protected void registerErasure(Edge edge) {
+    	Node target = edge.opposite();
+    	if (target instanceof ValueNode) {
+    		Set<Edge> edges = getValueNodeEdges((ValueNode) target);
+    		edges.remove(edge);
+    		if (edges.isEmpty()) {
+    			getIsolatedValueNodes().add((ValueNode) target);
+    		}
+    	}
+    }
 
 	/**
 	 * Performs the node (and edge) merging.
@@ -324,12 +357,17 @@ public class SPOApplication implements RuleApplication, Derivation {
                     Edge image = sourceEdge.imageFor(mergeMap);
                     if (image != sourceEdge) {
 						target.removeEdge(sourceEdge);
+						// if the edge is in the source and not erased, it is also already
+						// in the target, so we do not have to add it
 		                if (image != null && (erasedEdges.contains(image) || !source.containsElement(image))) {
 		                	addEdge(target, image);
+		                } else {
+		                	registerErasure(sourceEdge);
 		                }
 					}
 				}
 			}
+            removeIsolatedValueNodes(target);
         }
     }
 
@@ -480,6 +518,11 @@ public class SPOApplication implements RuleApplication, Derivation {
 			// so we can't do efficient edge addition
 			target.addEdge(edge);
 		}
+		Node targetNode = edge.opposite();
+		if (targetNode instanceof ValueNode && !source.containsElement(targetNode) && !getAddedValueNodes().contains(targetNode)) {
+			target.addNode(targetNode);
+			getAddedValueNodes().add((ValueNode) targetNode);
+		}
 	}
 
     /**
@@ -566,6 +609,44 @@ public class SPOApplication implements RuleApplication, Derivation {
 	    }
 	}
 
+	/** 
+	 * Lazily creates and returns the set of remaining incident edges of a given
+	 * value node.
+	 */
+	private Set<Edge> getValueNodeEdges(ValueNode node) {
+		if (valueNodeEdgesMap == null) {
+			valueNodeEdgesMap = new HashMap<ValueNode,Set<Edge>>();
+		}
+		Set<Edge> result = valueNodeEdgesMap.get(node);
+		if (result == null) {
+			result = new HashSet<Edge>(source.edgeSet(node));
+			valueNodeEdgesMap.put(node, result);
+		}
+		return result;
+	}
+
+	/**
+	 * Returns the currently detected set of value nodes that 
+	 * have become isolated due to edge erasure.
+	 */
+	private Set<ValueNode> getIsolatedValueNodes() {
+		if (isolatedValueNodes == null) {
+			isolatedValueNodes = new HashSet<ValueNode>();
+		}
+		return isolatedValueNodes;
+	}
+
+	/**
+	 * Returns the currently detected set of value nodes that 
+	 * have become isolated due to edge erasure.
+	 */
+	private Set<ValueNode> getAddedValueNodes() {
+		if (addedValueNodes == null) {
+			addedValueNodes = new HashSet<ValueNode>();
+		}
+		return addedValueNodes;
+	}
+	
     /**
      * Matching from the rule's lhs to the source graph.
      */
@@ -605,7 +686,15 @@ public class SPOApplication implements RuleApplication, Derivation {
      * This is part of the information needed to (re)construct the derivation target.
      */
     protected Element[] coanchorImage;
-
+    /**
+	 * A mapping from target value nodes of erased edges to their
+	 * remaining incident edges, used to judge spurious value nodes.
+	 */
+    private Map<ValueNode,Set<Edge>> valueNodeEdgesMap;
+    /** The set of value nodes that have become isolated due to edge erasure. */
+    private Set<ValueNode> isolatedValueNodes;
+    /** The set of value nodes that have been added due to edge creation. */
+    private Set<ValueNode> addedValueNodes;
     /**
      * The factory to be used to instantiate classes specific for this rule application type.
      */

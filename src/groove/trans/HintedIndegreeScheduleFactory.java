@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HintedIndegreeScheduleFactory.java,v 1.2 2007-03-30 15:50:26 rensink Exp $
+ * $Id: HintedIndegreeScheduleFactory.java,v 1.3 2007-04-01 12:49:55 rensink Exp $
  */
 package groove.trans;
 
@@ -20,12 +20,10 @@ import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.match.SearchPlanFactory;
 import groove.util.Bag;
-import groove.util.ExprFormatException;
-import groove.util.ExprParser;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,8 +34,10 @@ import java.util.Set;
  * Class that uses a hint as to the sequence in which edge labels can
  * be matched best. 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
+ * @deprecated Overtaken by the {@link SearchPlanFactory} hierarchy
  */
+@Deprecated
 public class HintedIndegreeScheduleFactory extends IndegreeScheduleFactory {
     /**
      * Converts a list of strings into a list of {@link DefaultLabel}s.
@@ -52,20 +52,11 @@ public class HintedIndegreeScheduleFactory extends IndegreeScheduleFactory {
 
     /**
      * Initializes the factory with a hint.
-     * The hint is list of {@link groove.graph.DefaultLabel}s.
+     * The hint is list of string, to be converted to {@link groove.graph.DefaultLabel}s.
      * These should be attempted in the order of their occurrence in the list.
      */
-    public HintedIndegreeScheduleFactory(List<Label> hintList) {
-        initHint(hintList);
-    }
-
-    /**
-     * Initializes the factory with a string.
-     * The hint is list of strings that will be treated as {@link groove.graph.DefaultLabel}s.
-     * These should be attempted in the order of their occurrence in the list.
-     */
-    public HintedIndegreeScheduleFactory(String hintText) throws ExprFormatException {
-        this(toLabelList(Arrays.asList(ExprParser.splitExpr(hintText, " "))));
+    public HintedIndegreeScheduleFactory(List<String> hintList) {
+        initHint(toLabelList(hintList));
     }
 
     /**

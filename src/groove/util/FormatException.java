@@ -12,47 +12,48 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphFormatException.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: FormatException.java,v 1.1 2007-04-01 12:50:01 rensink Exp $
  */
-package groove.graph;
+package groove.util;
 
 /**
- * Excxeption class signalling an error in handling a <tt>GraphShape</tt> object.
+ * General exception class signalling a format error found during a
+ * conversion between one model to another.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:42 $
+ * @version $Revision: 1.1 $ $Date: 2007-04-01 12:50:01 $
  */
-public class GraphFormatException extends Exception {
+public class FormatException extends Exception {
     /**
-     * Constructs a graph format exception with an empty message.
+     * Constructs a format exception with an empty message.
      */
-    public GraphFormatException() { 
+    public FormatException() { 
     	// explicit empty constructor
     }
 
     /**
-     * Constructs a graph format exception with a given message.
+     * Constructs a format exception with a given message.
      * @see java.lang.Exception#Exception(String)
      */
-    public GraphFormatException(String message) {
+    public FormatException(String message) {
         super(message);
     }
 
     /**
-     * Constructs a graph format exception with a given formatted message.
+     * Constructs a format exception with a given formatted message.
      * Calls {@link String#format(String, Object[])} with the message and
-     * parameters, and invokes {@link #GraphFormatException(String)} with
+     * parameters, and invokes {@link #FormatException(String)} with
      * the resulting message.
-     * @see #GraphFormatException(String)
+     * @see #FormatException(String)
      */
-    public GraphFormatException(String message, Object... parameters) {
+    public FormatException(String message, Object... parameters) {
         super(String.format(message, parameters));
     }
 
     /**
-     * Constructs a graph format exception from another exception.
+     * Constructs a format exception from another exception.
      * @see java.lang.Exception#Exception(java.lang.Throwable)
      */
-    public GraphFormatException(Exception exc) {
+    public FormatException(Exception exc) {
         super(exc);
     }
 }

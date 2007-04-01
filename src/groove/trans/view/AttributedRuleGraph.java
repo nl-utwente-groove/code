@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributedRuleGraph.java,v 1.5 2007-03-30 15:50:37 rensink Exp $
+ * $Id: AttributedRuleGraph.java,v 1.6 2007-04-01 12:50:05 rensink Exp $
  */
 package groove.trans.view;
 
@@ -20,7 +20,6 @@ import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphFormatException;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -33,13 +32,14 @@ import groove.graph.algebra.ValueNode;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
+import groove.util.FormatException;
 
 /**
  * Specialization of {@link groove.trans.view.RuleGraph} for creating rules with
  * NACs for attributed graphs.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-03-30 15:50:37 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-01 12:50:05 $
  * @deprecated replaced by {@link AspectualRuleView}
  */
 @Deprecated
@@ -48,10 +48,10 @@ public class AttributedRuleGraph extends RuleGraph {
      * Constructs a new attributed rule graph on the basis of a given production rule.
      * @param rule the production rule for which a rule graph is to be constructed
      * @require <tt>rule != null</tt>
-     * @throws RuleFormatException if <code>rule</code> cannot be displayed as a {@link RuleGraph},
+     * @throws FormatException if <code>rule</code> cannot be displayed as a {@link RuleGraph},
      * for instance because its NACs are nested too deep or not connected
      */
-    public AttributedRuleGraph(Rule rule) throws RuleFormatException {
+    public AttributedRuleGraph(Rule rule) throws FormatException {
         super(rule);
     }
 
@@ -61,10 +61,10 @@ public class AttributedRuleGraph extends RuleGraph {
      * @param name the name for this rule
      * @param priority the priority of this rule
      * @param ruleFactory the rule factory for this rule-graph
-     * @throws GraphFormatException when the given graph does not fulfill the
+     * @throws FormatException when the given graph does not fulfill the
      * requirements for making an attributed rule from it
      */
-    public AttributedRuleGraph(GraphShape graph, NameLabel name, int priority, RuleFactory ruleFactory) throws GraphFormatException {
+    public AttributedRuleGraph(GraphShape graph, NameLabel name, int priority, RuleFactory ruleFactory) throws FormatException {
 		super(graph, name, priority, ruleFactory);
 	}
 
@@ -129,7 +129,7 @@ public class AttributedRuleGraph extends RuleGraph {
 	 * @see groove.trans.view.RuleGraph#isGraphStructureCorrect(groove.graph.Edge, groove.graph.GraphShape)
 	 */
 	@Override
-	protected boolean isGraphStructureCorrect(Edge edge, GraphShape graph) throws GraphFormatException {
+	protected boolean isGraphStructureCorrect(Edge edge, GraphShape graph) throws FormatException {
 		boolean structureCorrect = true;
 		String message = "";
 		// depending on the types of the source and target nodes we need
@@ -199,7 +199,7 @@ public class AttributedRuleGraph extends RuleGraph {
 		}
 
 		if (!structureCorrect) {
-			throw new GraphFormatException(message);
+			throw new FormatException(message);
 		} else {
 			return super.isGraphStructureCorrect(edge, graph);
 		}

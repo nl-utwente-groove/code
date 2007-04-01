@@ -12,11 +12,10 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
+ * $Id: Imager.java,v 1.4 2007-04-01 12:50:23 rensink Exp $
  */
 package groove.io;
 
-import groove.graph.GraphFormatException;
 import groove.graph.aspect.AspectGraph;
 import groove.gui.Options;
 import groove.gui.jgraph.GraphJModel;
@@ -27,6 +26,7 @@ import groove.trans.NameLabel;
 import groove.trans.view.AspectualRuleView;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
+import groove.util.FormatException;
 import groove.util.Groove;
 
 import java.awt.Dimension;
@@ -69,7 +69,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Imager extends CommandLineTool {
     /** Name of the imager application. */
@@ -551,11 +551,8 @@ public class Imager extends CommandLineTool {
                         }
                     }
                     Thread.yield();
-                } catch (GraphFormatException e1) {
+                } catch (FormatException e1) {
                     println("Problem in rule format of " + inFile);
-                    return;
-                } catch (XmlException e) {
-                    println("Problem in XML format of " + inFile);
                     return;
                 } catch (FileNotFoundException fnfe){
                     println("File " + outFile + "does not exist.");

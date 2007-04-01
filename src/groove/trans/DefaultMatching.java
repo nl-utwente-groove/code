@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultMatching.java,v 1.3 2007-03-30 15:50:25 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.4 2007-04-01 12:49:54 rensink Exp $
  */
 package groove.trans;
 
@@ -28,7 +28,6 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.Simulation;
 import groove.rel.RegExprLabel;
 import groove.rel.RegExprMorphism;
-import groove.rel.RegExprSimulation;
 import groove.rel.ValuationEdge;
 import groove.rel.VarMorphism;
 import groove.rel.VarNodeEdgeMap;
@@ -40,7 +39,7 @@ import groove.util.FilterIterator;
  * Expecially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**

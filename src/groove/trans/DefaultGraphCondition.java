@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.4 2007-03-30 15:50:25 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.5 2007-04-01 12:49:54 rensink Exp $
  */
 package groove.trans;
 
@@ -29,20 +29,22 @@ import java.util.Set;
 
 import groove.graph.DefaultMorphism;
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
+import groove.graph.match.SearchItem;
 import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
+import groove.trans.match.ConditionSearchPlanFactory;
+import groove.trans.match.DefaultConditionSearchPlanFactory;
+import groove.util.FormatException;
 import groove.util.Reporter;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -252,7 +254,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * contains {@link ValueNode}s, or the negative conjunct is attributed.
      */
     public boolean isAttributed() {
-		return ValueNode.isAttributed(getTarget()) && getNegConjunct().isAttributed();
+		return ValueNode.hasValueNodes(getTarget()) && getNegConjunct().isAttributed();
 	}
 
 	/**
@@ -446,7 +448,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
                 }
             }
             return result;
-        } catch (GraphFormatException exc) {
+        } catch (FormatException exc) {
             return null;
         }
     }
@@ -490,28 +492,28 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 
     /**
      * Callback method to create a matching order.
-     * Typically invoked once, at the first invocation of {@link #getMatchingSchedule()}.
+     * Typically invoked once, at the first invocation of {@link #getSearchPlan()}.
      * This implementation retrieves its value from the matching order factory.
-     * @see #getMatchingSchedule()
-     * @see #getMatchingScheduleFactory()
+     * @see #getSearchPlan()
+     * @see #getSearchPlanFactory()
      * For a (non-closed) graph condition, it is more efficient to start the matching at the edges
      * connected to the context.
      */
-    protected List<Element> computeMatchingSchedule() {
+    protected List<SearchItem> computeSearchPlan() {
         setFixed();
-        return getMatchingScheduleFactory().newMatchingOrder(this);
+        return getSearchPlanFactory().createSearchPlan(this);
     }
 
     /**
      * Returns the precomputed matching order for the elements of the target pattern. First creates
-     * the order using {@link #computeMatchingSchedule()} if that has not been done.
-     * @see #computeMatchingSchedule()
+     * the order using {@link #computeSearchPlan()} if that has not been done.
+     * @see #computeSearchPlan()
      */
-    public List<Element> getMatchingSchedule() {
-        if (matchingSchedule == null) {
-            matchingSchedule = computeMatchingSchedule();
+    public List<SearchItem> getSearchPlan() {
+        if (searchPlan == null) {
+            searchPlan = computeSearchPlan();
         }
-        return matchingSchedule;
+        return searchPlan;
     }
     
     /**
@@ -573,42 +575,42 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * Sets the matching schedule factory.
      * Affects only the matching schedules created <i>after</i> this
      * method invocation, either in this condition or in conditions cloned from it.
-     * @see #computeMatchingSchedule()
+     * @see #computeSearchPlan()
      */
-    public void setMatchingScheduleFactory(MatchingScheduleFactory matchingScheduleFactory) {
-        this.matchingScheduleFactory = matchingScheduleFactory;
+    public void setSearchPlanFactory(ConditionSearchPlanFactory searchPlanFactory) {
+        this.searchPlanFactory = searchPlanFactory;
     }
     
     /**
      * Returns the current matching schedule factory.
-     * The factory should have been set previously by a call to {@link #setMatchingScheduleFactory(MatchingScheduleFactory)}.
+     * The factory should have been set previously by a call to {@link #setSearchPlanFactory(MatchingScheduleFactory)}.
      * If no matching schedule factory yet exists, one is created using
-     * {@link #computeMatchingScheduleFactory()}.
-     * @see #setMatchingScheduleFactory(MatchingScheduleFactory)
-     * @see #computeMatchingScheduleFactory()
-     * @see #computeMatchingSchedule()
+     * {@link #computeSearchPlanFactory()}.
+     * @see #setSearchPlanFactory(MatchingScheduleFactory)
+     * @see #computeSearchPlanFactory()
+     * @see #computeSearchPlan()
      */
-    protected MatchingScheduleFactory getMatchingScheduleFactory() {
-    	if (matchingScheduleFactory == null) {
-    		matchingScheduleFactory = computeMatchingScheduleFactory();
+    protected ConditionSearchPlanFactory getSearchPlanFactory() {
+    	if (searchPlanFactory == null) {
+    		searchPlanFactory = computeSearchPlanFactory();
     	}
-        return matchingScheduleFactory;
+        return searchPlanFactory;
     }
     
     /**
      * Callback initialisation method for the matching schedule factory.
-     * This implementation merely invokes {@link #createMatchingScheduleFactory()}.
+     * This implementation merely invokes {@link #createSearchPlanFactory()}.
      */
-    protected MatchingScheduleFactory computeMatchingScheduleFactory() {
-    	return createMatchingScheduleFactory();
+    protected ConditionSearchPlanFactory computeSearchPlanFactory() {
+    	return createSearchPlanFactory();
     }
     
     /**
      * Callback factory method to create a matching schedule factory.
      * This implementation returns a {@linkplain IndegreeScheduleFactory}.
      */
-    protected MatchingScheduleFactory createMatchingScheduleFactory() {
-    	return new IndegreeScheduleFactory();
+    protected ConditionSearchPlanFactory createSearchPlanFactory() {
+    	return new DefaultConditionSearchPlanFactory();
     }
     
     /**
@@ -637,14 +639,14 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     private Map<Node,Collection<Edge>> negationMap;
     /**
      * The fixed matching order for this graph condition.
-     * Initially <code>null</code>; set by {@link #getMatchingSchedule()} upon its
+     * Initially <code>null</code>; set by {@link #getSearchPlan()} upon its
      * first invocation.
      */
-    private List<Element> matchingSchedule;
+    private List<SearchItem> searchPlan;
     /**
      * The strategy for constructing the matching order.
      */
-    private MatchingScheduleFactory matchingScheduleFactory;
+    private ConditionSearchPlanFactory searchPlanFactory;
 
     /**
      * Factory instance for creating the correct simulation.

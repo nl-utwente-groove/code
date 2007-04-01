@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MatchingScheduleFactory.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: MatchingScheduleFactory.java,v 1.2 2007-04-01 12:49:54 rensink Exp $
  */
 package groove.trans;
 
@@ -21,14 +21,17 @@ import java.util.List;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
+import groove.graph.match.SearchPlanFactory;
 
 /**
  * Interface that offers the functionality of creating a list of
  * graph elements for a given graph, in the order in which they should be
  * matched to minimized backtracking.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
+ * @deprecated taken over by the {@link SearchPlanFactory} hierarchy
  */
+@Deprecated
 public interface MatchingScheduleFactory {
     /** 
      * Factory method returning a list of elements of a given graph.

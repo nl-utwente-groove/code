@@ -12,12 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExpr.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
+ * $Id: RegExpr.java,v 1.3 2007-04-01 12:50:34 rensink Exp $
  */
 package groove.rel;
 
-import groove.util.ExprFormatException;
 import groove.util.ExprParser;
+import groove.util.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 abstract public class RegExpr implements VarSetSupport {
     /** 
@@ -190,7 +190,7 @@ abstract public class RegExpr implements VarSetSupport {
         }
 
         @Override
-        public RegExpr parseOperator(String expr) throws ExprFormatException {
+        public RegExpr parseOperator(String expr) throws FormatException {
             String[] operands = ExprParser
                     .splitExpr(expr, getOperator(), ExprParser.INFIX_POSITION);
             if (operands.length < 2) {
@@ -302,11 +302,11 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * @return <tt>null</tt> if the postfix operator (given by <tt>operator()</tt>) does
          *         not occur in <tt>tokenList</tt>
-         * @throws ExprFormatException of the operator does occur in the list, but not as the last
+         * @throws FormatException of the operator does occur in the list, but not as the last
          *         element
          */
         @Override
-        protected RegExpr parseOperator(String expr) throws ExprFormatException {
+        protected RegExpr parseOperator(String expr) throws FormatException {
             String[] operands = ExprParser.splitExpr(expr,
                 getOperator(),
                 ExprParser.POSTFIX_POSITION);
@@ -389,11 +389,11 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * @return <tt>null</tt> if the prefix operator (given by <tt>operator()</tt>) does
          *         not occur in <tt>tokenList</tt>
-         * @throws ExprFormatException of the operator does occur in the list, but not as the first
+         * @throws FormatException of the operator does occur in the list, but not as the first
          *         element
          */
         @Override
-        protected RegExpr parseOperator(String expr) throws ExprFormatException {
+        protected RegExpr parseOperator(String expr) throws FormatException {
             String[] operands = ExprParser.splitExpr(expr,
                 getOperator(),
                 ExprParser.PREFIX_POSITION);
@@ -465,11 +465,11 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * @return <tt>null</tt> if the postfix operator (given by <tt>operator()</tt>) does
          *         not occur in <tt>tokenList</tt>
-         * @throws ExprFormatException of the operator does occur in the list, but not as the last
+         * @throws FormatException of the operator does occur in the list, but not as the last
          *         element
          */
         @Override
-        protected RegExpr parseOperator(String expr) throws ExprFormatException {
+        protected RegExpr parseOperator(String expr) throws FormatException {
             if (expr.equals(getOperator())) {
                 return newInstance();
             } else {
@@ -606,7 +606,7 @@ abstract public class RegExpr implements VarSetSupport {
          * the operand is an identifier (according to {@link #isIdentifier(String)}).
          */
         @Override
-        protected RegExpr parseOperator(String expr) throws ExprFormatException {
+        protected RegExpr parseOperator(String expr) throws FormatException {
             RegExpr result = super.parseOperator(expr);
             if (result == null) {
                 String[] operands = ExprParser.splitExpr(expr,
@@ -617,7 +617,7 @@ abstract public class RegExpr implements VarSetSupport {
                 } else if (isIdentifier(operands[0])) {
                     return newInstance(operands[0]);
                 } else {
-                    throw new ExprFormatException("Wildcard operand "+operands[0]+" is not a valied identifier");
+                    throw new FormatException("Wildcard operand "+operands[0]+" is not a valied identifier");
                 }
             } else {
                 return result;
@@ -715,11 +715,11 @@ abstract public class RegExpr implements VarSetSupport {
         /**
          * This implementation never returns <tt>null</tt>, since it is assumed to be at the end
          * of the chain of prototyes tried out during parsing.
-         * @throws ExprFormatException if <tt>tokenList</tt> is not a singleton or its element is
+         * @throws FormatException if <tt>tokenList</tt> is not a singleton or its element is
          *         not recognized as a nested expression or atom
          */
         @Override
-        public RegExpr parseOperator(String expr) throws ExprFormatException {
+        public RegExpr parseOperator(String expr) throws FormatException {
             if (ExprParser.matches(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR)) {
                 return parse(ExprParser.trim(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR));
             } else if (ExprParser.matches(expr, SINGLE_QUOTE_CHAR, SINGLE_QUOTE_CHAR)) {
@@ -743,7 +743,7 @@ abstract public class RegExpr implements VarSetSupport {
          * Factory method: creates a new atomic regular expression, from a given text. Does not test
          * for proper atom format.
          */
-        protected Atom newInstance(String text) throws ExprFormatException {
+        protected Atom newInstance(String text) throws FormatException {
             return new Atom(text);
         }
         
@@ -885,9 +885,9 @@ abstract public class RegExpr implements VarSetSupport {
      * @param expr the string to be parsed 
      * @return a regular expression which, when turned back into a string,
      * equals <code>expr</code>
-     * @throws ExprFormatException if <code>expr</code> cannot be parsed
+     * @throws FormatException if <code>expr</code> cannot be parsed
      */
-    static public RegExpr parse(String expr) throws ExprFormatException {
+    static public RegExpr parse(String expr) throws FormatException {
         // try to parse the expression using each of the available operators in turn
         for (int op = 0; op < prototypes.length; op++) {
             RegExpr result = prototypes[op].parseOperator(expr);
@@ -931,7 +931,7 @@ abstract public class RegExpr implements VarSetSupport {
             System.out.println("Input: " + text);
             System.out.println("Output: " + parse(text));
             System.out.println("Description: " + parse(text).getDescription());
-        } catch (ExprFormatException e) {
+        } catch (FormatException e) {
             System.out.println("Error:  " + e.getMessage());
         }
     }
@@ -1383,10 +1383,10 @@ abstract public class RegExpr implements VarSetSupport {
      * @param expr the expression to be parsed
      * @return a valid regular expression, or <tt>null</tt> if <tt>expr</tt> does not appear to
      *         be a regular expression of the kind implemented by this class
-     * @throws ExprFormatException if <tt>expr</tt> appears to be an expression (of the kind
+     * @throws FormatException if <tt>expr</tt> appears to be an expression (of the kind
      *         implemented by the class) but is malformed
      */
-    abstract protected RegExpr parseOperator(String expr) throws ExprFormatException;
+    abstract protected RegExpr parseOperator(String expr) throws FormatException;
 
     /**
      * Tests whether a given text may be regarded as an atom, according to the rules of regular
@@ -1394,13 +1394,13 @@ abstract public class RegExpr implements VarSetSupport {
      * exception if the text contains any of the operator strings in {@link #operators}
      * as a sub-string. which is the case if the text does not contain any special characters
      * @param text the text to be tested
-     * @throws ExprFormatException if the text contains a special character
+     * @throws FormatException if the text contains a special character
      * @see #isAtom(String)
      */
-    protected void assertAtom(String text) throws ExprFormatException {
+    protected void assertAtom(String text) throws FormatException {
         for (int c = 0; c < operators.size(); c++) {
             if (text.indexOf(operators.get(c)) >= 0) {
-                throw new ExprFormatException("Operator " + operators.get(c) + " in unquoted atom "
+                throw new FormatException("Operator " + operators.get(c) + " in unquoted atom "
                         + text);
             }
         }
@@ -1419,7 +1419,7 @@ abstract public class RegExpr implements VarSetSupport {
         try {
             assertAtom(text);
             return true;
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             return false;
         }
     }
