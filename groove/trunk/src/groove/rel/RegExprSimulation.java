@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExprSimulation.java,v 1.3 2007-03-28 15:12:34 rensink Exp $
+ * $Id: RegExprSimulation.java,v 1.4 2007-04-01 12:50:34 rensink Exp $
  */
 package groove.rel;
 
@@ -20,6 +20,7 @@ import groove.graph.DefaultSimulation;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.rel.match.RegExprMatcher;
 import groove.util.FilterIterator;
 
 import java.util.HashMap;
@@ -30,13 +31,16 @@ import java.util.Map;
 /**
  * Simulation from a {@link groove.rel.VarGraph} in a {@link groove.graph.Graph}. 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
+ * @deprecated use {@link RegExprMatcher} instead
  */
+@Deprecated
 public class RegExprSimulation extends DefaultSimulation {
 	/**
 	 * Class that delegates the {@link VarMap}-functionality to 
 	 * its enclosing {@link RegExprSimulation}.
 	 */
+	@Deprecated
     protected class MyVarNodeEdgeMap extends MyNodeEdgeMap implements VarNodeEdgeMap {
         /**
          * Returns the valuation from the enclosing {@link RegExprSimulation}.

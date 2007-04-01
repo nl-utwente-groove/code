@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
+ * $Id: JAttr.java,v 1.4 2007-04-01 12:49:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -42,7 +42,7 @@ import groove.util.Groove;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class JAttr {
     /**
@@ -63,7 +63,7 @@ public class JAttr {
     /**
      * Background colour for value nodes.
      */
-    public static final Color VALUE_BACKGROUND = Color.YELLOW;
+    public static final Color VALUE_BACKGROUND = Colors.findColor(Groove.getGUIProperty("attribute.background"));
 
     /**
      * Border insets for default nodes.

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GgxGrammar.java,v 1.4 2007-03-30 15:50:43 rensink Exp $
+ * $Id: GgxGrammar.java,v 1.5 2007-04-01 12:50:23 rensink Exp $
  */
 package groove.io;
 
@@ -30,7 +30,7 @@ import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
 import groove.trans.StructuredRuleName;
-import groove.trans.view.RuleFormatException;
+import groove.util.FormatException;
 
 import java.io.File;
 import java.util.HashMap;
@@ -50,7 +50,7 @@ import org.w3c.dom.Document;
  * GGX is the "proprietary" AGG format.
  * @deprecated experimental, not supported
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 @Deprecated
 public class GgxGrammar implements XmlGrammar {
@@ -156,18 +156,18 @@ public class GgxGrammar implements XmlGrammar {
         };
     }
     
-    public void marshalGrammar(GraphGrammar gg, File file) throws XmlException {
-        throw new XmlException("");
+    public void marshalGrammar(GraphGrammar gg, File file) throws FormatException {
+        throw new FormatException("");
     }
 
-    public GraphGrammar unmarshalGrammar(File file) throws XmlException {
+    public GraphGrammar unmarshalGrammar(File file) throws FormatException {
         return unmarshalGrammar(file, null);
     }
 
     /**
      * This implementation does not regard the second parameter.
      */
-    public GraphGrammar unmarshalGrammar(File file, String startStateName) throws XmlException {
+    public GraphGrammar unmarshalGrammar(File file, String startStateName) throws FormatException {
         try {
             Source source = new StreamSource(file);
             Transformer transformer = TransformerFactory.newInstance().newTransformer();
@@ -175,7 +175,7 @@ public class GgxGrammar implements XmlGrammar {
             transformer.transform(source, domResult);
             return unmarshal((org.w3c.dom.Document) domResult.getNode());
         } catch (TransformerException exc) {
-            throw new XmlException(exc.getMessage());
+            throw new FormatException(exc.getMessage());
         }
     }
     
@@ -183,22 +183,22 @@ public class GgxGrammar implements XmlGrammar {
     /**
      * @param doc
      * @return The constructed graph grammar
-     * @throws XmlException 
+     * @throws FormatException 
      */
-    protected GraphGrammar unmarshal(Document doc) throws XmlException {
+    protected GraphGrammar unmarshal(Document doc) throws FormatException {
         GraphGrammar gg = new GraphGrammar();
         org.w3c.dom.Element gxl = doc.getDocumentElement();
 
         org.w3c.dom.NodeList gtss = gxl.getElementsByTagName(GTS_TAG);
         if (gtss.getLength() != 1)
-            throw new XmlException("Only one graph transformation system allowed in document");
+            throw new FormatException("Only one graph transformation system allowed in document");
         // Get the first and only graph element
         org.w3c.dom.Element gts = (org.w3c.dom.Element) gtss.item(0);
 
         // Get the types
         org.w3c.dom.NodeList typesLists = gts.getElementsByTagName(TYPES_TAG);
         if (typesLists.getLength() != 1)
-            throw new XmlException("Only one types list allowed in a graph transformation system");
+            throw new FormatException("Only one types list allowed in a graph transformation system");
         // Get the first and only types list
         org.w3c.dom.Element typesList = (org.w3c.dom.Element) typesLists.item(0);
         org.w3c.dom.NodeList types = typesList.getElementsByTagName(TYPE_TAG);
@@ -208,10 +208,10 @@ public class GgxGrammar implements XmlGrammar {
             org.w3c.dom.Element nodeElement = (org.w3c.dom.Element) types.item(i);
             String typeId = nodeElement.getAttribute(ID_ATTR_NAME);
             if (typeId == null)
-                throw new XmlException("Type id not specified");
+                throw new FormatException("Type id not specified");
             String typeName = nodeElement.getAttribute(NAME_ATTR_NAME);
             if (typeName == null)
-                throw new XmlException("Type name not specified");
+                throw new FormatException("Type name not specified");
             typeMap.put(typeId, typeName);
         }
 
@@ -227,7 +227,7 @@ public class GgxGrammar implements XmlGrammar {
             }
         }
         if (startGraph == null) {
-            throw new XmlException("No start graph in the rule");
+            throw new FormatException("No start graph in the rule");
         }
         gg.setStartGraph(startGraph);
 
@@ -241,8 +241,8 @@ public class GgxGrammar implements XmlGrammar {
 			}
 			// done
 			return gg;
-		} catch (RuleFormatException exc) {
-			throw new XmlException(String.format("Format error in rules: %s", exc.getMessage()));
+		} catch (FormatException exc) {
+			throw new FormatException(String.format("Format error in rules: %s", exc.getMessage()));
 		}
     }
 
@@ -251,9 +251,9 @@ public class GgxGrammar implements XmlGrammar {
      * @param ruleElement
      * @param typeMap
      * @return The rule extracted from <code>ruleElement</code>
-     * @throws XmlException
+     * @throws FormatException
      */
-    protected Rule getRule(org.w3c.dom.Element ruleElement, Map<String,String> typeMap) throws XmlException {
+    protected Rule getRule(org.w3c.dom.Element ruleElement, Map<String,String> typeMap) throws FormatException {
         // Get the lhs and rhs graphs
         org.w3c.dom.NodeList graphList = ruleElement.getElementsByTagName(GRAPH_TAG);
         Graph lhs = null;
@@ -274,26 +274,26 @@ public class GgxGrammar implements XmlGrammar {
             }
         }
         if (lhs == null) {
-            throw new XmlException("No " + LHS_GRAPH_NAME + " in the rule");
+            throw new FormatException("No " + LHS_GRAPH_NAME + " in the rule");
         } else if (rhs == null) {
-            throw new XmlException("No " + RHS_GRAPH_NAME + " in the rule");
+            throw new FormatException("No " + RHS_GRAPH_NAME + " in the rule");
         }
 
         org.w3c.dom.NodeList morphismList = ruleElement.getElementsByTagName(MORPHISM_TAG);
         if (morphismList.getLength() == 0)
-            throw new XmlException("There must be a morphism in the rule");
+            throw new FormatException("There must be a morphism in the rule");
         // Get the first 
         org.w3c.dom.Element morphismElement = (org.w3c.dom.Element) morphismList.item(0);
 
         NameLabel ruleName = new StructuredRuleName(morphismElement.getAttribute(NAME_ATTR_NAME));
-        InjectiveMorphism ruleMorphism = getInjectiveMorphism(morphismElement, lhs, lhsElementMap, rhs, rhsElementMap);
+        Morphism ruleMorphism = getMorphism(morphismElement, lhs, lhsElementMap, rhs, rhsElementMap);
 
         Rule result = createRule(ruleMorphism, ruleName);
 
         // get NACs
         org.w3c.dom.NodeList applConditionList = ruleElement.getElementsByTagName(APPL_CONDITION_TAG);
         if (applConditionList.getLength() != 1)
-            throw new XmlException("Wrong number of application condition tags");
+            throw new FormatException("Wrong number of application condition tags");
         org.w3c.dom.Element applConditionElement = (org.w3c.dom.Element) applConditionList.item(0);
         org.w3c.dom.NodeList nacList = applConditionElement.getElementsByTagName(NAC_TAG);
         // process each NAC
@@ -302,14 +302,14 @@ public class GgxGrammar implements XmlGrammar {
             // construct the target graph
             org.w3c.dom.NodeList nacGraphList = nacElement.getElementsByTagName(GRAPH_TAG);
             if (nacGraphList.getLength() != 1)
-                throw new XmlException("NAC should contain exactly 1 target graph");
+                throw new FormatException("NAC should contain exactly 1 target graph");
             org.w3c.dom.Element nacGraphElement = (org.w3c.dom.Element) nacGraphList.item(0);
             Map<Object,Element> nacElementMap = new HashMap<Object,Element>();
             Graph nacTarget = getGraph(nacGraphElement, typeMap, nacElementMap);
             // construct the NAC morphism
             org.w3c.dom.NodeList nacMorphismList = nacElement.getElementsByTagName(MORPHISM_TAG);
             if (nacMorphismList.getLength() != 1)
-                throw new XmlException("NAC should contain exactly 1 morphism");
+                throw new FormatException("NAC should contain exactly 1 morphism");
             org.w3c.dom.Element nacMorphismElement = (org.w3c.dom.Element) nacMorphismList.item(0);
             Morphism nacMorphism = getMorphism(nacMorphismElement, lhs, lhsElementMap, nacTarget, nacElementMap);
             // Construct and add the NAC
@@ -325,8 +325,8 @@ public class GgxGrammar implements XmlGrammar {
      * @param lhsElementMap
      * @param rhs
      * @param rhsElementMap
-     * @return The costructed morphism
-     * @throws XmlException
+     * @return The constructed injective morphism
+     * @throws FormatException
      */
     protected Morphism getMorphism(
         org.w3c.dom.Element graphElement,
@@ -334,30 +334,9 @@ public class GgxGrammar implements XmlGrammar {
         Map<Object,Element> lhsElementMap,
         Graph rhs,
         Map<Object,Element> rhsElementMap)
-        throws XmlException {
+        throws FormatException {
         Morphism prototype = getGraphFactory().newMorphism(lhs, rhs);
         return getMorphism(graphElement, lhs, lhsElementMap, rhs, rhsElementMap, prototype);
-    }
-
-    
-    /**
-     * @param graphElement
-     * @param lhs
-     * @param lhsElementMap
-     * @param rhs
-     * @param rhsElementMap
-     * @return The constructed injective morphism
-     * @throws XmlException
-     */
-    protected InjectiveMorphism getInjectiveMorphism(
-        org.w3c.dom.Element graphElement,
-        Graph lhs,
-        Map<Object,Element> lhsElementMap,
-        Graph rhs,
-        Map<Object,Element> rhsElementMap)
-        throws XmlException {
-        Morphism prototype = getGraphFactory().newInjectiveMorphism(lhs, rhs);
-        return (InjectiveMorphism) getMorphism(graphElement, lhs, lhsElementMap, rhs, rhsElementMap, prototype);
     }
 
     /**
@@ -368,7 +347,7 @@ public class GgxGrammar implements XmlGrammar {
      * @param rhsElementMap
      * @param prototypeMorphism
      * @return The constructed morphism.
-     * @throws XmlException
+     * @throws FormatException
      */
     protected Morphism getMorphism(
         org.w3c.dom.Element morphismElement,
@@ -377,7 +356,7 @@ public class GgxGrammar implements XmlGrammar {
         Graph rhs,
         Map<Object,Element> rhsElementMap,
         Morphism prototypeMorphism)
-        throws XmlException {
+        throws FormatException {
         Morphism result = prototypeMorphism.createMorphism(lhs, rhs);
         // Get the node tags
         org.w3c.dom.NodeList mappingList = morphismElement.getElementsByTagName(MAPPING_TAG);
@@ -386,20 +365,20 @@ public class GgxGrammar implements XmlGrammar {
             // Fetch mapping key
             String keyId = mappingElement.getAttribute(KEY_ATTR_NAME);
             if (keyId == null) {
-                throw new XmlException("Mapping key not specified");
+                throw new FormatException("Mapping key not specified");
             }
             Element key = lhsElementMap.get(keyId);
             if (key == null) {
-                throw new XmlException("Unknown mapping key " + keyId);
+                throw new FormatException("Unknown mapping key " + keyId);
             }
             // Fetch mapping image
             String imageId = mappingElement.getAttribute(IMAGE_ATTR_NAME);
             if (imageId == null) {
-                throw new XmlException("Mapping image not specified");
+                throw new FormatException("Mapping image not specified");
             }
             Element image = rhsElementMap.get(imageId);
             if (image == null) {
-                throw new XmlException("Unknown mapping image " + imageId);
+                throw new FormatException("Unknown mapping image " + imageId);
             }
             if (key instanceof Node) {
                 assert image instanceof Node;
@@ -417,9 +396,9 @@ public class GgxGrammar implements XmlGrammar {
      * @param graphElement
      * @param typeMap 
      * @return A graph constructed from <code>graphElement</code>
-     * @throws XmlException
+     * @throws FormatException
      */
-    protected Graph getGraph(org.w3c.dom.Element graphElement, Map<String,String> typeMap) throws XmlException {
+    protected Graph getGraph(org.w3c.dom.Element graphElement, Map<String,String> typeMap) throws FormatException {
         Map<Object,Element> dummyElementMap = new HashMap<Object,Element>();
         return getGraph(graphElement, typeMap, dummyElementMap);
     }
@@ -431,9 +410,9 @@ public class GgxGrammar implements XmlGrammar {
      * @param typeMap 
      * @param elementMap Map associating Nodes with node ids, edges with edge ids, and self-edges with nodes
      * @return A graph constructed from <code>graphElement</code>
-     * @throws XmlException 
+     * @throws FormatException 
      */
-    protected Graph getGraph(org.w3c.dom.Element graphElement, Map<String,String> typeMap, Map<Object,Element> elementMap) throws XmlException {
+    protected Graph getGraph(org.w3c.dom.Element graphElement, Map<String,String> typeMap, Map<Object,Element> elementMap) throws FormatException {
         Graph result = getGraphFactory().newGraph();
         // Get the node tags
         org.w3c.dom.NodeList nodeList = graphElement.getElementsByTagName(NODE_TAG);
@@ -445,7 +424,7 @@ public class GgxGrammar implements XmlGrammar {
             // Fetch Node ID
             String nodeId = nodeElement.getAttribute(ID_ATTR_NAME);
             if (nodeId == null)
-                throw new XmlException("Node id not specified");
+                throw new FormatException("Node id not specified");
             // Add node to nodemap and graph
             Node node = (Node) elementMap.get(nodeId);
             if (node == null) {
@@ -454,14 +433,14 @@ public class GgxGrammar implements XmlGrammar {
                 // Add ID, groove.graph.Node pair to Map
                 elementMap.put(nodeId, node);
             } else {
-                throw new XmlException("Node id " + nodeId + " occurs more than once");
+                throw new FormatException("Node id " + nodeId + " occurs more than once");
             }
             if (UNMARSHAL_DEBUG)
                 System.out.println("Added " + node);
             // Fetch Label
             String typeId = nodeElement.getAttribute(TYPE_ATTR_NAME);
             if (typeId == null)
-                throw new XmlException("Unspecified edge type in document");
+                throw new FormatException("Unspecified edge type in document");
             String labelText = typeMap.get(typeId);
             Edge selfEdge = result.addEdge(node, DefaultLabel.createLabel(labelText), node);
             elementMap.put(node, selfEdge);
@@ -477,28 +456,28 @@ public class GgxGrammar implements XmlGrammar {
             // Fetch Source node
             String sourceId = edgeElement.getAttribute(SOURCE_ATTR_NAME);
             if (sourceId == null)
-                throw new XmlException("Unspecified edge source in document");
+                throw new FormatException("Unspecified edge source in document");
             Node sourceNode = (Node) elementMap.get(sourceId);
             if (sourceNode == null)
-                throw new XmlException("Unknown edge source " + sourceId + " in document");
+                throw new FormatException("Unknown edge source " + sourceId + " in document");
             // Fetch target node
             String targetId = edgeElement.getAttribute(TARGET_ATTR_NAME);
             if (targetId == null)
-                throw new XmlException("Unspecified edge target in document");
+                throw new FormatException("Unspecified edge target in document");
             Node targetNode = (Node) elementMap.get(targetId);
             if (targetNode == null)
-                throw new XmlException("Unknown edge target " + targetId + "in document");
+                throw new FormatException("Unknown edge target " + targetId + "in document");
             // Fetch Label
             String typeId = edgeElement.getAttribute(TYPE_ATTR_NAME);
             if (typeId == null)
-                throw new XmlException("Unspecified edge type in document");
+                throw new FormatException("Unspecified edge type in document");
             String labelText = typeMap.get(typeId);
             // decompose labelText and add new graph edges
             Edge edge = result.addEdge(sourceNode, DefaultLabel.createLabel(labelText), targetNode);
             // Fetch edge ID
             String edgeId = edgeElement.getAttribute(ID_ATTR_NAME);
             if (edgeId == null)
-                throw new XmlException("Edge id not specified");
+                throw new FormatException("Edge id not specified");
             // Add edge to element map
             elementMap.put(edgeId, edge);
             if (UNMARSHAL_DEBUG)

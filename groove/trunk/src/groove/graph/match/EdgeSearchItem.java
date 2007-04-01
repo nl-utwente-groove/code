@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.2 2007-03-27 14:18:35 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.3 2007-04-01 12:50:11 rensink Exp $
  */
 package groove.graph.match;
 
@@ -450,7 +450,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	/**
 	 * Returns the edge for which this item tests.
 	 */
-	public Edge getEdge() {
+	public E getEdge() {
 		return edge;
 	}
 	
@@ -460,32 +460,6 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	protected boolean isPreMatched(int i) {
 		return isAllEndsPreMatched() || preMatched[i];
 	}
-	
-	//		
-	//		/**
-	//		 * The label for which any potential edge image must be
-	//		 * tested; <code>null</code> if no test is necessary.
-	//		 */
-	//		protected Label getApproveLabel() {
-	//			return edge.label();
-	//			if (! approveInitialised) {
-	//				initApprove();
-	//			}
-	//			return approveLabel;
-	//		}
-	//
-	//		/**
-	//		 * The node ends for which any potential edge image must be
-	//		 * tested; <code>null</code> if no test is necessary.
-	//		 * The resulting array contains <code>null</code> where a given
-	//		 * node needs no test
-	//		 */
-	//		protected Object[] getApproveEnds() {
-	//			if (! approveInitialised) {
-	//				initApprove();
-	//			}
-	//			return approveEnds;
-	//		}
 	
 	/**
 	 * Indicates if all edge ends have been pre-matched.

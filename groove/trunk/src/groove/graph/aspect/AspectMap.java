@@ -16,7 +16,7 @@
  */
 package groove.graph.aspect;
 
-import groove.graph.GraphFormatException;
+import groove.util.FormatException;
 
 import java.util.LinkedHashMap;
 
@@ -32,21 +32,21 @@ class AspectMap extends LinkedHashMap<Aspect, AspectValue> {
 	 * existing values and there is not yet a value for the aspect involved.
 	 * Throws and exception otherwise.
 	 * @param value the value to be added
-	 * @throws GraphFormatException if there is already an entry for
+	 * @throws FormatException if there is already an entry for
 	 * <code>value.getAspect()</code>, or if there is already a value in
 	 * the map that is incompatible with <code>value</code>
 	 * @see #put(Aspect, AspectValue)
 	 */
-	public void add(AspectValue value) throws GraphFormatException {
+	public void add(AspectValue value) throws FormatException {
     	for (AspectValue oldValue: values()) {
     		if (! oldValue.isCompatible(value)) {
-    			throw new GraphFormatException("Node aspect values %s and %s are incompatible", oldValue, value);
+    			throw new FormatException("Node aspect values %s and %s are incompatible", oldValue, value);
     		}
     	}
 		AspectValue oldValue = put(value.getAspect(), value);
 		if (oldValue != null) {
 			put(value.getAspect(), oldValue);
-			throw new GraphFormatException("Aspect %s has duplicate values %s and %s", value.getAspect(), oldValue, value);
+			throw new FormatException("Aspect %s has duplicate values %s and %s", value.getAspect(), oldValue, value);
 		}
 	}
 }

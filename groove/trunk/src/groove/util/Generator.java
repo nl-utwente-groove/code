@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.5 2007-03-30 15:50:37 rensink Exp $
+ * $Id: Generator.java,v 1.6 2007-04-01 12:50:02 rensink Exp $
  */
 package groove.util;
 
@@ -71,7 +71,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -192,6 +192,8 @@ public class Generator extends CommandLineTool {
                 grammar = loader.unmarshalGrammar(new File(grammarLocation), startStateName);
             } catch (IOException exc) {
                 printError("Can't load grammar: " + exc.getMessage());
+            } catch (FormatException exc) {
+                printError("Grammar format error: " + exc.getMessage());
             }
         }
         return grammar;
@@ -519,7 +521,7 @@ public class Generator extends CommandLineTool {
      * The finalization phase of state space generation. Called from <tt>{@link #start}</tt>.
      * 
      */
-    protected void exit(Collection<? extends State> result) throws IOException {
+    protected void exit(Collection<? extends State> result) throws IOException, FormatException {
         if (getOutputFileName() != null) {
             Groove.saveGraph(new LTSGraph(getGTS()), getOutputFileName());
         }

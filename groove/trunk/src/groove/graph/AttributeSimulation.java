@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AttributeSimulation.java,v 1.3 2007-03-30 15:50:24 rensink Exp $
+ * $Id: AttributeSimulation.java,v 1.4 2007-04-01 12:49:57 rensink Exp $
  */
 
 package groove.graph;
@@ -26,6 +26,7 @@ import groove.graph.algebra.AttributeEdge;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.graph.match.DefaultMatcher;
 import groove.trans.Matching;
 import groove.trans.MatchingSimulation;
 import groove.trans.RuleFactory;
@@ -44,8 +45,10 @@ import java.util.Set;
  * Simulation that also takes attributed graphs into account.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:24 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:57 $
+ * @deprecated use {@link DefaultMatcher} instead
  */
+@Deprecated
 public class AttributeSimulation extends MatchingSimulation {
 
     /**
@@ -162,7 +165,7 @@ public class AttributeSimulation extends MatchingSimulation {
     protected void createProductNodeImageSet(ProductNode key, int arity, int argIndex, List<ValueNode> args, Set<ProductNode> imageSet) {
         // get all edges with labelled "arg" suffixed with the right index and
         // iterate over all those edges which have the given key as its source node
-    	ValueNode target = key.getArgument(argIndex);
+    	ValueNode target = key.getArguments().get(argIndex);
 		for (Node nextValueNode : getNode(target)) {
 			ValueNode nextArg = (ValueNode) nextValueNode;
 			// if not last argument, call this method recursively but

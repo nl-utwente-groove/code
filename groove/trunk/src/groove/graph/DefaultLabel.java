@@ -12,9 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultLabel.java,v 1.2 2007-03-30 15:50:24 rensink Exp $
+ * $Id: DefaultLabel.java,v 1.3 2007-04-01 12:49:57 rensink Exp $
  */
 package groove.graph;
+
+import groove.util.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -26,7 +28,7 @@ import java.util.Map;
  * Provides a standard implementation of the Label interface.
  * An instance contains just an index into a global list.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ 
+ * @version $Revision: 1.3 $ 
  */
 public final class DefaultLabel extends AbstractLabel {
     /**
@@ -34,18 +36,18 @@ public final class DefaultLabel extends AbstractLabel {
      * @param text the string to be parsed
      * @require <tt>text != null</tt>
      * @ensure <tt>result.text().equals(text)</tt>
-     * @throws GraphFormatException if the quotes in <tt>text</tt> are not
+     * @throws FormatException if the quotes in <tt>text</tt> are not
      * balanced properly, or an empty label ensues
      */
-    public static Label parseLabel(String text) throws GraphFormatException {
+    public static Label parseLabel(String text) throws FormatException {
         Label res;
         if (text.indexOf('\"') == 0) {
             if (text.indexOf('\"', 1) == text.length() - 1)
                 res = getLabel(newLabelIndex(text));
             else
-                throw new GraphFormatException("Improper quotes in label text: " + text);
+                throw new FormatException("Improper quotes in label text: " + text);
         } else if (text.length() == 0) {
-            throw new GraphFormatException("Empty label text");
+            throw new FormatException("Empty label text");
         } else {
             res = createLabel(text);
         }
@@ -221,7 +223,7 @@ public final class DefaultLabel extends AbstractLabel {
     }
 
     @Deprecated
-    public Label parse(String text) throws GraphFormatException {
+    public Label parse(String text) throws FormatException {
         return parseLabel(text);
     }
 

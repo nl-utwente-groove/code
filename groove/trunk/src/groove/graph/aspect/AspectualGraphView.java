@@ -1,17 +1,17 @@
-/* $Id: AspectualGraphView.java,v 1.2 2007-03-29 09:59:49 rensink Exp $ */
+/* $Id: AspectualGraphView.java,v 1.3 2007-04-01 12:49:49 rensink Exp $ */
 package groove.graph.aspect;
 
 import groove.algebra.Constant;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.GraphFormatException;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ValueNode;
+import groove.util.FormatException;
 import groove.util.Pair;
 
 import java.util.ArrayList;
@@ -27,7 +27,7 @@ import java.util.Map;
  */
 public class AspectualGraphView implements AspectualView<Graph> {
 	/** Constructs an instance from a given aspect graph view. */
-	public AspectualGraphView(AspectGraph view) throws GraphFormatException {
+	public AspectualGraphView(AspectGraph view) throws FormatException {
 		this.view = view;
 		Pair<Graph,Map<AspectNode,Node>> modelPlusMap = computeModel(view);
 		this.model = modelPlusMap.first();
@@ -59,7 +59,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 	 * together with a mapping from the aspect graph's node to the
 	 * (fresh) graph nodes. 
 	 */
-	protected Pair<Graph,Map<AspectNode,Node>> computeModel(AspectGraph view) throws GraphFormatException {
+	protected Pair<Graph,Map<AspectNode,Node>> computeModel(AspectGraph view) throws FormatException {
 		Graph model = getGraphFactory().newGraph();
 		// we need to record the view-to-model element map for layout transfer
 		NodeEdgeMap elementMap = new NodeEdgeHashMap();
@@ -75,7 +75,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 			} else if (isAllowedNode(nodeImage)){
 				model.addNode(nodeImage);
 			} else {
-				throw new GraphFormatException("Graph should contain no attribute elements except constants");
+				throw new FormatException("Graph should contain no attribute elements except constants");
 			}
 			viewToModelMap.put(viewNode, nodeImage);
 			modelToViewMap.put(nodeImage, viewNode);
@@ -92,7 +92,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 			if (edgeImage == null) {
 				edgeImage = model.addEdge(endImages, viewEdge.label());
 			} else if (! isAllowedEdge(edgeImage)) {
-				throw new GraphFormatException("Attribute edges %s not allowed in graph", edgeImage);
+				throw new FormatException("Attribute edges %s not allowed in graph", edgeImage);
 			}
 			elementMap.putEdge(viewEdge, edgeImage);
 		}
@@ -157,7 +157,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 				// update the model-to-view element map
 				elementMap.edgeMap().put(edge, edgeImage);
 			}
-		} catch (GraphFormatException exc) {
+		} catch (FormatException exc) {
 			throw new IllegalStateException("Exception should not occur: "+exc);
 		}
 		// transfer graph information such as layout from model to view

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AutomatonTest.java,v 1.3 2007-03-30 15:50:40 rensink Exp $
+ * $Id: AutomatonTest.java,v 1.4 2007-04-01 12:50:31 rensink Exp $
  */
 package groove.test;
 
@@ -31,7 +31,7 @@ import groove.rel.NodeRelation;
 import groove.rel.RegExpr;
 import groove.rel.SetNodeRelation;
 import groove.rel.VarAutomaton;
-import groove.util.ExprFormatException;
+import groove.util.FormatException;
 import groove.util.ExprParser;
 
 import java.io.File;
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * Tests the available {@link Automaton} interface.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class AutomatonTest extends TestCase {
     static public final String GRAPH_TEST_DIR = "groove/test/graph";
@@ -118,7 +118,7 @@ public class AutomatonTest extends TestCase {
             assertTrue(aut.accepts(wordEmpty));
             assertFalse(aut.accepts(wordA));
             aut = createAutomaton("D+");
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }
     }
@@ -132,7 +132,7 @@ public class AutomatonTest extends TestCase {
             assertFalse(aut.accepts(wordAA));
             assertFalse(aut.accepts(wordAB));
             assertFalse(aut.accepts(wordBA));
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }
     }
@@ -146,7 +146,7 @@ public class AutomatonTest extends TestCase {
             assertFalse(aut.accepts(wordAA));
             assertFalse(aut.accepts(wordAB));
             assertFalse(aut.accepts(wordBA));
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }
     }
@@ -252,7 +252,7 @@ public class AutomatonTest extends TestCase {
             assertFalse(aut.accepts(createWord("B B B B")));
             assertTrue(aut.accepts(createWord("A B B B B")));
             assertFalse(aut.accepts(createWord("C B B B B")));
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }
     }
@@ -313,7 +313,7 @@ public class AutomatonTest extends TestCase {
             assertTrue(aut.accepts(wordBB));
             assertFalse(aut.accepts(wordBA));
             assertTrue(aut.accepts(createWord("B B B")));            
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }
     }
@@ -366,7 +366,7 @@ public class AutomatonTest extends TestCase {
             assertTrue(aut.accepts(createWord("A A A B B A")));
             assertFalse(aut.accepts(createWord("A B A B B A")));
             assertFalse(aut.accepts(createWord("A A C B B")));
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }
     }
@@ -382,7 +382,7 @@ public class AutomatonTest extends TestCase {
             assertTrue(aut.accepts(wordEmpty));
             aut = createAutomaton("(A|B.B)*");            
             assertTrue(aut.accepts(wordEmpty));
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }
     }
@@ -435,7 +435,7 @@ public class AutomatonTest extends TestCase {
 //            assertTrue(aut.accepts(createWord("A A A C B A")));
 //            assertFalse(aut.accepts(createWord("A B A C B A")));
 //            assertFalse(aut.accepts(createWord("A A C B B")));
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }
     }
@@ -463,7 +463,7 @@ public class AutomatonTest extends TestCase {
             result.addRelated(nC2, nC3);
             result.addRelated(nC2, nC4);
             assertEquals(result, aut.getMatches(testGraph, Collections.singleton(nC2), null));
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }        
     }
@@ -488,7 +488,7 @@ public class AutomatonTest extends TestCase {
             result.addRelated(nI2, nI2);
             result.addRelated(nI3, nI2);
             result.addRelated(nC2, nI2);
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }        
     }
@@ -504,7 +504,7 @@ public class AutomatonTest extends TestCase {
             assertEquals(result, aut.getMatches(testGraph, null, Collections.singleton(nI3)));            
             result = new SetNodeRelation(testGraph);
             assertEquals(result, aut.getMatches(testGraph, null, Collections.singleton(nI2)));            
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }        
     }
@@ -535,7 +535,7 @@ public class AutomatonTest extends TestCase {
             addRelated(result, nList, new String[] { "x", "first", "y", "in" }, nC1);
             addRelated(result, nList, new String[] { "x", "last", "y", "in" }, nC4);
             assertEquals(result, aut.getMatches(testGraph, null, null, Collections.singletonMap("y",(Label) DefaultLabel.createLabel("in"))));            
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }        
     }
@@ -558,7 +558,7 @@ public class AutomatonTest extends TestCase {
             result.addRelated(nC3, nC4);
             result.addRelated(nC4, nC3);
             assertEquals(result, aut.getMatches(testGraph, null, nC34));
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }        
     }
@@ -566,14 +566,14 @@ public class AutomatonTest extends TestCase {
     /**
      * Constructs an automaton from a regular expression.
      */
-    protected Automaton createAutomaton(String regExpr) throws ExprFormatException {
+    protected Automaton createAutomaton(String regExpr) throws FormatException {
         return calculator.compute(RegExpr.parse(regExpr));
     }
 
     /**
      * Construcs a word (as a list of strings) from a space-separated string.
      */
-    protected List<String> createWord(String text) throws ExprFormatException {
+    protected List<String> createWord(String text) throws FormatException {
         return Arrays.asList(ExprParser.splitExpr(text, " "));
     }
     

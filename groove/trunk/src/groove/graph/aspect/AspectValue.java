@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import groove.graph.GraphFormatException;
+import groove.util.FormatException;
 import static groove.graph.aspect.Aspect.SEPARATOR;
 
 /**
@@ -38,18 +38,18 @@ public class AspectValue {
     
     /** 
      * Registers a new aspect value. For this to be successful, the value name must 
-     * be fresh; otherwise, themathod throws a {@link GraphFormatException}.
+     * be fresh; otherwise, themathod throws a {@link FormatException}.
      * If successful, afterwards <code>getValue(value.getName())</code> will yield <code>value</code>. 
      * @param value the new aspect value
-     * @throws GraphFormatException if <code>value.getName()</code> is an already existing
+     * @throws FormatException if <code>value.getName()</code> is an already existing
      * aspect value name, as attested by {@link #getValue(String)}.
      * @see #getValue(String)
      */
-    private static void registerValue(AspectValue value) throws GraphFormatException {
+    private static void registerValue(AspectValue value) throws FormatException {
         String name = value.getName();
         AspectValue previous = getValue(name);
         if (previous != null) {
-            throw new GraphFormatException("Aspect value name "+name+" already used for "+previous.getAspect());
+            throw new FormatException("Aspect value name "+name+" already used for "+previous.getAspect());
         }
         valueMap.put(value.getName(), value);
     }
@@ -68,9 +68,9 @@ public class AspectValue {
      * Throws an exception if an aspect value with the same name exists already.
      * @param aspect the aspect for which this is a value
      * @param name the name of the aspect value.
-     * @throws groove.graph.GraphFormatException if the value name is already used
+     * @throws groove.util.FormatException if the value name is already used
      */
-    public AspectValue(Aspect aspect, String name) throws GraphFormatException {
+    public AspectValue(Aspect aspect, String name) throws FormatException {
         this.aspect = aspect;
         this.name = name;
         this.incompatibles = new HashSet<AspectValue>();

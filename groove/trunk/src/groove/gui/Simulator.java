@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.5 2007-03-30 15:50:35 rensink Exp $
+ * $Id: Simulator.java,v 1.6 2007-04-01 12:50:28 rensink Exp $
  */
 package groove.gui;
 
@@ -21,7 +21,6 @@ import static groove.gui.Options.*;
 
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
-import groove.graph.GraphFormatException;
 import groove.graph.GraphListener;
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -41,7 +40,6 @@ import groove.io.GrooveFileChooser;
 import groove.io.LayedOutGpsGrammar;
 import groove.io.LayedOutXml;
 import groove.io.Xml;
-import groove.io.XmlException;
 import groove.io.XmlGrammar;
 import groove.lts.DerivedGraphRuleFactory;
 import groove.lts.ExploreStrategy;
@@ -57,10 +55,9 @@ import groove.trans.RuleFactory;
 import groove.trans.match.MatchingMatcher;
 //import groove.trans.view.RuleGraph;
 import groove.trans.view.AspectualRuleView;
-import groove.trans.view.RuleFormatException;
 import groove.trans.view.RuleViewGrammar;
 import groove.util.Converter;
-import groove.util.ExprFormatException;
+import groove.util.FormatException;
 import groove.util.Groove;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
@@ -116,7 +113,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class Simulator {
     /**
@@ -160,10 +157,6 @@ public class Simulator {
 	        else
 	            throw new IOException("Usage: Simulator [<production-system> [<start-state>]]");
 	        simulator.start();
-	    } catch (XmlException exc) {
-	        exc.printStackTrace();
-	        System.out.println(exc.getMessage());
-	        // System.exit(0);
 	    } catch (IOException exc) {
 	        exc.printStackTrace();
 	        System.out.println(exc.getMessage());
@@ -542,6 +535,8 @@ public class Simulator {
                     currentGrammarFile = selectedFile;
                 } catch (IOException exc) {
                     showErrorDialog("Error while exporting to " + selectedFile, exc);
+                } catch (FormatException exc) {
+                    showErrorDialog("Graph format error", exc);
                 }
             }
         }
@@ -1087,6 +1082,8 @@ public class Simulator {
             getGrammarFileChooser().setSelectedFile(currentGrammarFile);
         } catch (IOException exc) {
             showErrorDialog("Error while loading grammar from " + grammarFile, exc);
+        } catch (FormatException exc) {
+            showErrorDialog("Graph format error", exc);
         }
     }
 
@@ -1104,7 +1101,7 @@ public class Simulator {
         } catch (IOException exc) {
             showErrorDialog("Could not load start graph from " + file.getName(),
                 exc);
-        } catch (GraphFormatException exc) {
+        } catch (FormatException exc) {
         	showErrorDialog("Graph format error in "+file.getName(), exc);
         }
     }
@@ -1172,6 +1169,8 @@ public class Simulator {
                 setGrammar(new GTS(newGrammar)); 
             } catch (IOException exc) {
                 showErrorDialog("Error while loading grammar from " + currentGrammarFile, exc);
+            } catch (FormatException exc) {
+                showErrorDialog("Graph format error in " + currentGrammarFile, exc);
             }
         }
     }
@@ -1185,7 +1184,7 @@ public class Simulator {
             graphLoader.marshalGraph(saveGraph, file);
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
-        } catch (GraphFormatException exc) {
+        } catch (FormatException exc) {
         	showErrorDialog("Graph is incorrectly formatted", exc);
         }
     }
@@ -1209,9 +1208,7 @@ public class Simulator {
                 setRule(oldRuleName);
             } catch (IOException exc) {
                 showErrorDialog("Error while saving edited rule", exc);
-            } catch (GraphFormatException exc) {
-                showErrorDialog("Internal error", exc);
-            } catch (RuleFormatException exc) {
+            } catch (FormatException exc) {
                 showErrorDialog("Error in rule format", exc);
             }
         }
@@ -1340,7 +1337,7 @@ public class Simulator {
     		} else {
     			showErrorDialog("Invalid atomic proposition", new Exception("'" + invalidAtom + "' is not a valid atomic proposition."));
     		}
-    	} catch (ExprFormatException efe) {
+    	} catch (FormatException efe) {
     		showErrorDialog("Format error in temporal formula", efe);
     	}
     }
@@ -1572,6 +1569,7 @@ public class Simulator {
         optionsMenu.add(options.getItem(SHOW_NODE_IDS_OPTION));
         optionsMenu.add(options.getItem(SHOW_ANCHORS_OPTION));
     	optionsMenu.add(options.getItem(SHOW_ASPECTS_OPTION));
+    	optionsMenu.add(options.getItem(SHOW_STATE_IDS_OPTION));
         return menuBar;
     }
 

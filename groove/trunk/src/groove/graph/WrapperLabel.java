@@ -11,8 +11,10 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
-/* $Id: WrapperLabel.java,v 1.3 2007-03-28 15:12:29 rensink Exp $ */
+/* $Id: WrapperLabel.java,v 1.4 2007-04-01 12:49:56 rensink Exp $ */
 package groove.graph;
+
+import groove.util.FormatException;
 
 /**
  * Label class that wraps an immutable object of a given (generic) type.
@@ -27,7 +29,7 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
 	}
 	
 	@Deprecated
-	public Label parse(String text) throws GraphFormatException {
+	public Label parse(String text) throws FormatException {
 		throw new UnsupportedOperationException();
 	}
 

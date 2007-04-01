@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractScheduleFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: AbstractScheduleFactory.java,v 1.2 2007-04-01 12:49:54 rensink Exp $
  */
 
 package groove.trans;
@@ -22,6 +22,7 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.match.SearchPlanFactory;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -35,8 +36,10 @@ import java.util.TreeSet;
  * Abstract class that delegates both factory methods to a single method
  * that takes a graph and the sets of already-matched nodes and edges as parameters.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
+ * @deprecated taken over by the {@link SearchPlanFactory} hierarchy
  */
+@Deprecated
 abstract public class AbstractScheduleFactory implements MatchingScheduleFactory {
     /**
      * Constructs the result as described in the class comment.

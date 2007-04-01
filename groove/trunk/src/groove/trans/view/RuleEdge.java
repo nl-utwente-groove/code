@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleEdge.java,v 1.2 2007-03-27 14:18:35 rensink Exp $
+ * $Id: RuleEdge.java,v 1.3 2007-04-01 12:50:08 rensink Exp $
  */
 package groove.trans.view;
 
@@ -20,18 +20,18 @@ import groove.graph.AbstractEdge;
 import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.NodeEdgeMap;
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.aspect.AspectEdge;
 import groove.rel.RegExprLabel;
+import groove.util.FormatException;
 
 
 /**
  * Subclass of edges that records the edges' role as
  * EMBARGO, ERASER, READER or CREATOR.
  * Only {@link RuleEdge}s are allowed in a {@link RuleGraph};
- * any other type of edge will result in a {@link GraphFormatException}
+ * any other type of edge will result in a {@link FormatException}
  * when trying to convert the rule graph into a graph or rule.
  * This implementation supports both unary and binary edges.
  * @deprecated replaced by {@link AspectEdge}
@@ -48,7 +48,7 @@ public class RuleEdge extends AbstractEdge implements Edge {
      * <tt>isValidRole(role) || role == NO_ROLE</tt>
      * @see RuleGraph#isValidRole(int)
      */
-    public RuleEdge(RuleNode source, Label label, int role) throws GraphFormatException {
+    public RuleEdge(RuleNode source, Label label, int role) throws FormatException {
         this(source, label, null, role);
     }
 
@@ -65,7 +65,7 @@ public class RuleEdge extends AbstractEdge implements Edge {
      * @see RuleGraph#isValidRole(int)
      */
     public RuleEdge(RuleNode source, Label label, RuleNode target, int role)
-            throws GraphFormatException {
+            throws FormatException {
         // start of constructor body
         super(source, label);
         this.target = target;
@@ -81,39 +81,39 @@ public class RuleEdge extends AbstractEdge implements Edge {
             else if (targetRole == RuleGraph.READER || RuleGraph.inLHS(targetRole) && sourceRole == RuleGraph.EMBARGO)
                 role = sourceRole;
             else
-                throw new GraphFormatException(
+                throw new FormatException(
                     "Rule edge '" + label + "' between nodes with incompatible roles");
         }
         switch (role) {
             case RuleGraph.EMBARGO :
                 if (sourceRole == RuleGraph.CREATOR || targetRole == RuleGraph.CREATOR)
-                    throw new GraphFormatException("Embargo edge '" + label + "' may not be between creator nodes");
+                    throw new FormatException("Embargo edge '" + label + "' may not be between creator nodes");
                 else if (
                     label.equals(RuleGraph.MERGE_LABEL) && source != target && !(RuleGraph.inLHS(sourceRole) && RuleGraph.inLHS(targetRole)))
-                    throw new GraphFormatException("Merge embargo must be between LHS nodes");
+                    throw new FormatException("Merge embargo must be between LHS nodes");
                 break;
             case RuleGraph.ERASER :
                 if (!(RuleGraph.inLHS(sourceRole) && RuleGraph.inLHS(targetRole))) {
-                    throw new GraphFormatException("Eraser edge '" + label + "' must be between LHS nodes");
+                    throw new FormatException("Eraser edge '" + label + "' must be between LHS nodes");
                 }
                 break;
             case RuleGraph.READER :
                 if (!(sourceRole == RuleGraph.READER) && (targetRole == RuleGraph.READER))
-                    throw new GraphFormatException("Reader edge '" + label + "' must be between reader nodes");
+                    throw new FormatException("Reader edge '" + label + "' must be between reader nodes");
                 break;
             case RuleGraph.CREATOR :
                 if (!(RuleGraph.inRHS(sourceRole) && RuleGraph.inRHS(targetRole)))
-                    throw new GraphFormatException("Creator edge '" + label + "' must be between RHS nodes");
+                    throw new FormatException("Creator edge '" + label + "' must be between RHS nodes");
             default :
                 break;
         }
         if (label.equals(RuleGraph.MERGE_LABEL)) {
             if (role != RuleGraph.CREATOR && role != RuleGraph.EMBARGO) {
-                throw new GraphFormatException("Merge labels only allowed on empargo and creator edges");
+                throw new FormatException("Merge labels only allowed on empargo and creator edges");
             }                    
         } else if (label instanceof RegExprLabel && RegExprLabel.getWildcardId(label) == null) {
             if (role != RuleGraph.READER && role != RuleGraph.EMBARGO) {
-                throw new GraphFormatException("Regular expression \""+label+"\" only allowed on reader and empargo edges");
+                throw new FormatException("Regular expression \""+label+"\" only allowed on reader and empargo edges");
             }
         }
         this.role = role;
@@ -129,7 +129,7 @@ public class RuleEdge extends AbstractEdge implements Edge {
      * <tt>isValidRole(role) || role == NO_ROLE</tt>
      * @see RuleGraph#isValidRole(int)
      */
-    public RuleEdge(Node[] ends, Label label, int role) throws GraphFormatException {
+    public RuleEdge(Node[] ends, Label label, int role) throws FormatException {
         this((RuleNode) ends[SOURCE_INDEX], label, (RuleNode) ends[TARGET_INDEX], role);
     }
     
@@ -151,7 +151,7 @@ public class RuleEdge extends AbstractEdge implements Edge {
     public Edge newEdge(Node source, Node target) {
         try {
             return new RuleEdge((RuleNode) source, label(), (RuleNode) target, role);
-        } catch (GraphFormatException exc) {
+        } catch (FormatException exc) {
             assert false;
             return null;
         }

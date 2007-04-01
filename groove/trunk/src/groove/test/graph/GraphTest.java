@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.4 2007-03-30 15:50:47 rensink Exp $
+ * $Id: GraphTest.java,v 1.5 2007-04-01 12:50:39 rensink Exp $
  */
 package groove.test.graph;
 
@@ -35,7 +35,6 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphShape;
-import groove.graph.InjectiveMorphism;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -51,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -180,29 +179,29 @@ public class GraphTest extends TestCase {
         matches = matchDom[3].getMatchesTo(matchCod);
         assertEquals(1, matches.size());
     }
-
-    final public void testGetInjectiveMatchesTo() {
-        Collection<? extends Morphism> matches = matchDom[0].getInjectiveMatchesTo(matchCod);
-        assertEquals(1, matches.size());
-        Iterator<? extends Morphism> matchIter = matches.iterator();
-        while (matchIter.hasNext()) {
-            Object match = matchIter.next();
-            assertTrue(match instanceof InjectiveMorphism);
-            Morphism matchAsMorphism = (Morphism) match;
-            assertTrue(matchAsMorphism.isTotal());
-        }
-        matches = matchDom[1].getInjectiveMatchesTo(matchCod);
-        assertEquals(1, matches.size());
-        matches = matchDom[2].getInjectiveMatchesTo(matchCod);
-        assertEquals(1, matches.size());
-        matches = matchDom[3].getInjectiveMatchesTo(matchCod);
-        assertEquals(1, matches.size());
-        matches = matchDom[1].getInjectiveMatchesTo(matchDom[3]);
-        assertEquals(0, matches.size());
-    }
+//
+//    final public void testGetInjectiveMatchesTo() {
+//        Collection<? extends Morphism> matches = matchDom[0].getInjectiveMatchesTo(matchCod);
+//        assertEquals(1, matches.size());
+//        Iterator<? extends Morphism> matchIter = matches.iterator();
+//        while (matchIter.hasNext()) {
+//            Object match = matchIter.next();
+//            assertTrue(match instanceof InjectiveMorphism);
+//            Morphism matchAsMorphism = (Morphism) match;
+//            assertTrue(matchAsMorphism.isTotal());
+//        }
+//        matches = matchDom[1].getInjectiveMatchesTo(matchCod);
+//        assertEquals(1, matches.size());
+//        matches = matchDom[2].getInjectiveMatchesTo(matchCod);
+//        assertEquals(1, matches.size());
+//        matches = matchDom[3].getInjectiveMatchesTo(matchCod);
+//        assertEquals(1, matches.size());
+//        matches = matchDom[1].getInjectiveMatchesTo(matchDom[3]);
+//        assertEquals(0, matches.size());
+//    }
 
     final public void testGetIsomorphismTo() {
-        InjectiveMorphism iso = matchDom[0].getIsomorphismTo(isoGraph[0]);
+        Morphism iso = matchDom[0].getIsomorphismTo(isoGraph[0]);
         assertNotNull(iso);
         assertTrue(iso.isTotal());
         assertTrue(iso.isSurjective());
@@ -265,20 +264,6 @@ public class GraphTest extends TestCase {
         assertTrue((elementCount - 5) >= partitionMap.size());
     }
     
-    private Collection<Object> getPartitionElements(Collection<?> values) {
-        Set<Object> result = new HashSet<Object>();
-        Iterator<?> valueIter = values.iterator();
-        while (valueIter.hasNext()) {
-            Object value = valueIter.next();
-            if (value instanceof Collection) {
-                result.addAll((Collection) value);
-            } else {
-                result.add(value);
-            }
-        }
-        return result;
-    }
-
     final public void testClone() {
         // graphs and clones should have equals node and edge sets
         for (int i = 0; i < matchDom.length; i++) {

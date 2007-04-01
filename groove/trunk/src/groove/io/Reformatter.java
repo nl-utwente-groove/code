@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Reformatter.java,v 1.3 2007-03-28 15:12:32 rensink Exp $
+ * $Id: Reformatter.java,v 1.4 2007-04-01 12:50:23 rensink Exp $
  */
 package groove.io;
 
@@ -23,11 +23,11 @@ import groove.graph.Edge;
 import groove.graph.GenericNodeEdgeHashMap;
 import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
-import groove.graph.GraphFormatException;
 import groove.graph.Node;
 import groove.graph.aspect.AspectParser;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
+import groove.util.FormatException;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -62,7 +62,7 @@ import org.jgraph.graph.AttributeMap;
  * Where both types of files are found, the first overrules the second.
  * The tool works both on individual files and, recursively, in directories.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Reformatter {
     /**
@@ -217,7 +217,7 @@ public class Reformatter {
                 System.out.println("Failed");
             }
             if (verbosity > FileReformatter.QUIET_MODE) {
-                if (exc instanceof XmlException) {
+                if (exc instanceof FormatException) {
                     System.out.println("Xml format error : " + exc.getMessage());
                 } else if (exc instanceof FileNotFoundException) {
                     System.out.println("Error interpreting " + file + ": " + exc.getMessage());
@@ -265,7 +265,7 @@ public class Reformatter {
 					System.out.println("Normalizing merge labels: replacing "
 							+ edge + " by " + newEdge);
 				}
-			} catch (GraphFormatException exc) {
+			} catch (FormatException exc) {
 				throw new IllegalArgumentException(String.format("Graph contains label %s, which cannot be parsed", edge.label()));
 			}
 		}

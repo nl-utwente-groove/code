@@ -12,13 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.4 2007-03-30 15:50:35 rensink Exp $
+ * $Id: Editor.java,v 1.5 2007-04-01 12:50:29 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.PARSE_ATTRIBUTES_OPTION;
 import groove.graph.Graph;
-import groove.graph.GraphFormatException;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
@@ -28,8 +27,7 @@ import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.Xml;
-import groove.io.XmlException;
-import groove.trans.AttributedSPORuleFactory;
+import groove.util.FormatException;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.NameLabel;
 import groove.trans.RuleFactory;
@@ -89,7 +87,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.4 $ $Date: 2007-03-30 15:50:35 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-01 12:50:29 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -276,7 +274,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.4 $
+     * @version $Revision: 1.5 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -400,7 +398,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         Graph graph = null;
         try {
             graph = layoutGxl.unmarshalGraph(fromFile);
-        } catch (XmlException e) {
+        } catch (FormatException e) {
             throw new IOException("Can't load graph from " + fromFile.getName() + ": format error");
         } catch (FileNotFoundException e) {
             // we create a new model
@@ -419,7 +417,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * @param toFile the file to save to
      * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
      */
-    public void doSaveGraph(File toFile) throws IOException {
+    public void doSaveGraph(File toFile) throws FormatException, IOException {
         currentFile = toFile;
         currentDir = toFile.getParentFile();
         Graph saveGraph = getModel().toPlainGraph();
@@ -594,7 +592,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
                 setSelectInsertedCells(true);
                 return true;
             }
-        } catch (GraphFormatException exc) {
+        } catch (FormatException exc) {
             showErrorDialog("Error in graph format", exc);
         }
         return false;
@@ -637,11 +635,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 		// listen to the option controlling the parsing of attributed graphs
 		attributedGraphsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if (attributedGraphsItem.isSelected()) {
-					setRuleFactory(AttributedSPORuleFactory.getInstance());
-				} else {
-					setRuleFactory(DefaultRuleFactory.getInstance());
-				}
+				setRuleFactory(DefaultRuleFactory.getInstance());
 			}
 		});
     }

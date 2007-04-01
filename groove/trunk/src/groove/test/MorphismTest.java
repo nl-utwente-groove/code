@@ -12,23 +12,21 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: MorphismTest.java,v 1.2 2007-03-30 15:50:40 rensink Exp $
+ * $Id: MorphismTest.java,v 1.3 2007-04-01 12:50:31 rensink Exp $
  */
 package groove.test;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultInjectiveMorphism;
 import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
-import groove.graph.InjectiveMorphism;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:40 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-01 12:50:31 $
  */
 public class MorphismTest extends TestCase {
     public MorphismTest(String name) {
@@ -43,7 +41,7 @@ public class MorphismTest extends TestCase {
     protected Edge[][] e;
 
     protected DefaultGraph[] g;
-    protected InjectiveMorphism m2To1InTot, m1To0InTot, m1To2InPart;
+    protected Morphism m2To1InTot, m1To0InTot, m1To2InPart;
     protected Morphism m2To0NonInPart;
 
     /** The setup is depicted in test-graphs.fig */
@@ -88,14 +86,14 @@ public class MorphismTest extends TestCase {
                 g[i].addEdge(e[i][j]);
         }
 
-        m2To1InTot = new DefaultInjectiveMorphism(g[2], g[1]);
+        m2To1InTot = new DefaultMorphism(g[2], g[1]);
         m2To1InTot.putNode(n[2][0], n[1][2]);
         m2To1InTot.putNode(n[2][1], n[1][3]);
         m2To1InTot.putNode(n[2][2], n[1][0]);
         m2To1InTot.putNode(n[2][3], n[1][1]);
         m2To1InTot.putEdge(e[2][1], e[1][2]);
 
-        m1To0InTot = new DefaultInjectiveMorphism(g[1], g[0]);
+        m1To0InTot = new DefaultMorphism(g[1], g[0]);
         m1To0InTot.putNode(n[1][2], n[0][3]);
         m1To0InTot.putNode(n[1][3], n[0][2]);
         m1To0InTot.putNode(n[1][0], n[0][0]);
@@ -108,7 +106,7 @@ public class MorphismTest extends TestCase {
         m2To0NonInPart.putNode(n[2][3], n[0][2]);
         m2To0NonInPart.putEdge(e[2][3], e[0][1]);
 
-        m1To2InPart = new DefaultInjectiveMorphism(g[1],g[2]);
+        m1To2InPart = new DefaultMorphism(g[1],g[2]);
         m1To2InPart.putNode(n[1][3],n[2][1]);
         m1To2InPart.putNode(n[1][0],n[2][2]);
         m1To2InPart.putEdge(e[1][2],e[2][1]);
@@ -129,31 +127,17 @@ public class MorphismTest extends TestCase {
     }
 
     public void testAfter() {
-        InjectiveMorphism m2To2InPart = (InjectiveMorphism) m1To2InPart.after(m2To1InTot);
+        Morphism m2To2InPart = m1To2InPart.after(m2To1InTot);
         assertEquals(null,m2To2InPart.getNode(n[2][0]));
         assertEquals(n[2][1],m2To2InPart.getNode(n[2][1]));
         assertEquals(n[2][2],m2To2InPart.getNode(n[2][2]));
         assertEquals(null,m2To2InPart.getNode(n[2][3]));
 
-        assertEquals(m2To2InPart, m2To2InPart.inverse());
-
-        assertEquals(m2To2InPart.inverse(), 
-                     m1To2InPart.inverse().then(m2To1InTot.inverse()));
-
-        InjectiveMorphism m2To0InTot = (InjectiveMorphism) m1To0InTot.after(m2To1InTot);
+        Morphism m2To0InTot = m1To0InTot.after(m2To1InTot);
         assertEquals(n[0][3],m2To0InTot.getNode(n[2][0]));
         assertEquals(n[0][2],m2To0InTot.getNode(n[2][1]));
         assertEquals(n[0][0],m2To0InTot.getNode(n[2][2]));
         assertEquals(n[0][1],m2To0InTot.getNode(n[2][3]));
-
-        assertEquals(m2To0InTot.inverse(), 
-                     m1To0InTot.inverse().then(m2To1InTot.inverse()));
-
-        Morphism m0To0NonInPart = m2To0NonInPart.after(m2To0InTot.inverse());
-        assertEquals(n[0][1],m0To0NonInPart.getNode(n[0][0]));
-        assertEquals(n[0][2],m0To0NonInPart.getNode(n[0][1]));
-        assertEquals(null,m0To0NonInPart.getNode(n[0][2]));
-        assertEquals(n[0][1],m0To0NonInPart.getNode(n[0][3]));
     }
 //
 //    public void testInverse() {

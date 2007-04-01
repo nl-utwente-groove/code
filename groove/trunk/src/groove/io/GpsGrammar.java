@@ -12,14 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GpsGrammar.java,v 1.5 2007-03-30 15:50:43 rensink Exp $
+ * $Id: GpsGrammar.java,v 1.6 2007-04-01 12:50:13 rensink Exp $
  */
 
 package groove.io;
 
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.GraphFormatException;
 import groove.graph.algebra.AttributedGraph;
 import groove.trans.AttributedSPORuleFactory;
 import groove.trans.DefaultRuleFactory;
@@ -32,7 +31,7 @@ import groove.trans.StructuredRuleName;
 import groove.trans.view.AspectualRuleView;
 import groove.trans.view.RuleView;
 import groove.trans.view.RuleViewGrammar;
-import groove.trans.view.RuleFormatException;
+import groove.util.FormatException;
 import groove.util.Groove;
 
 import java.io.File;
@@ -49,7 +48,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @deprecated use {@link AspectualGpsGrammar} or {@link LayedOutGpsGrammar} instead
  */
 @Deprecated
@@ -143,7 +142,7 @@ public class GpsGrammar implements XmlGrammar {
 			for (AspectualRuleView ruleGraph: ruleGraphMap.values()) {
 			    result.add(ruleGraph);
 			}
-		} catch (RuleFormatException exc) {
+		} catch (FormatException exc) {
 			throw new IOException(String.format("Format error in rules: %s", exc.getMessage()));
 		}
 
@@ -172,7 +171,7 @@ public class GpsGrammar implements XmlGrammar {
                 result.setStartGraph(startGraph);
             } catch (FileNotFoundException exc) {
                 throw new IOException(LOAD_ERROR + ": start graph " + startGraphFile + " not found");
-            } catch (GraphFormatException exc) {
+            } catch (FormatException exc) {
 				throw new IOException(LOAD_ERROR + ": start graph "
 						+ startGraphFile + " not found");
 			}
@@ -193,12 +192,12 @@ public class GpsGrammar implements XmlGrammar {
 	        PriorityFileName priorityFileName = new PriorityFileName(filename);
 	        StructuredRuleName ruleName = new StructuredRuleName(priorityFileName.getRuleName());
 	        return createRuleGraph(getGraphMarshaller().unmarshalGraph(location), ruleName, priorityFileName.getPriority().intValue());
-	    } catch (GraphFormatException exc) {
+	    } catch (FormatException exc) {
 	        throw new IOException("Error in graph format: "+exc.getMessage());
 	    }
 	}
 
-	public void marshalGrammar(GraphGrammar gg, File location) throws IOException {
+	public void marshalGrammar(GraphGrammar gg, File location) throws FormatException, IOException {
         marshalRuleSystem(gg, location);
         // save start graph
         File startGraphLocation = new File(location, XmlGrammar.DEFAULT_START_GRAPH_NAME);
@@ -240,7 +239,7 @@ public class GpsGrammar implements XmlGrammar {
                 }
                 marshalRule(ruleGraph, location);
             }
-        } catch (RuleFormatException exc) {
+        } catch (FormatException exc) {
             throw new IOException("Error in creating rule graph: "+exc.getMessage());
         }
     }
@@ -252,7 +251,7 @@ public class GpsGrammar implements XmlGrammar {
      * @param location the location to which the rule is to be marshalled
      * @throws IOException if {@link Xml#marshalGraph(Graph, File)} throws an exception
      */
-    public void marshalRule(AspectualRuleView ruleGraph, File location) throws IOException {
+    public void marshalRule(AspectualRuleView ruleGraph, File location) throws FormatException, IOException {
         File ruleLocation = location;
         NameLabel ruleName = ruleGraph.getName();
         int priority = ruleGraph.getPriority();
@@ -376,11 +375,8 @@ public class GpsGrammar implements XmlGrammar {
                     try {
                         AspectualRuleView ruleGraph = createRuleGraph(getGraphMarshaller().unmarshalGraph(files[i]), ruleName, priorityFileName.getPriority().intValue());
                         ruleGraphMap.put(ruleName, ruleGraph);
-                    } catch (GraphFormatException exc) {
+                    } catch (FormatException exc) {
                         throw new IOException(LOAD_ERROR + ": rule format error in "
-                                + files[i].getName()+": "+exc.getMessage());
-                    } catch (XmlException exc) {
-                        throw new IOException(LOAD_ERROR + ": xml format error in "
                                 + files[i].getName()+": "+exc.getMessage());
                     } catch (FileNotFoundException exc) {
                         // proceed; this should not occur but I'm not sure now and don't want
@@ -410,11 +406,11 @@ public class GpsGrammar implements XmlGrammar {
      * @param ruleName the name of the rule to be created
      * @param priority the priority of the rule to be created
      * @return the {@link groove.trans.view.RuleGraph} created from the given graph
-     * @throws GraphFormatException when the given graph does not conform to
+     * @throws FormatException when the given graph does not conform to
      * the requirements for making a rule-graph out of it
      */
     protected AspectualRuleView createRuleGraph(Graph graph, StructuredRuleName ruleName, int priority)
-            throws GraphFormatException {
+            throws FormatException {
     	return (AspectualRuleView) getRuleFactory().createRuleView(graph, ruleName, priority);
     }
     
@@ -422,11 +418,11 @@ public class GpsGrammar implements XmlGrammar {
      * Callback method to create a rule graph from a rule.
      * @param rule the rule from which to create a {@link groove.trans.view.RuleGraph}
      * @return the {@link groove.trans.view.RuleGraph} created from the given rule
-     * @throws RuleFormatException when the given rule does not conform the
+     * @throws FormatException when the given rule does not conform the
      * requirements for making a {@link groove.trans.view.RuleGraph} from it
      * @see #marshalGrammar(GraphGrammar, File)
      */
-    protected AspectualRuleView createRuleGraph(Rule rule) throws RuleFormatException {
+    protected AspectualRuleView createRuleGraph(Rule rule) throws FormatException {
         return new AspectualRuleView(rule);
     }
 

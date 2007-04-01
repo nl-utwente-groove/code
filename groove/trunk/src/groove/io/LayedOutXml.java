@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.3 2007-03-29 09:59:51 rensink Exp $
+ * $Id: LayedOutXml.java,v 1.4 2007-04-01 12:50:23 rensink Exp $
  */
 package groove.io;
 
@@ -25,7 +25,7 @@ import groove.graph.Node;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.util.ExprFormatException;
+import groove.util.FormatException;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -50,7 +50,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class LayedOutXml implements Xml<Graph> {
     /** 
@@ -108,7 +108,7 @@ public class LayedOutXml implements Xml<Graph> {
     }
 
     /** First marshals the graph; then the layout map if there is one. */
-    public void marshalGraph(Graph graph, File file) throws XmlException, IOException {
+    public void marshalGraph(Graph graph, File file) throws FormatException, IOException {
         if (GraphInfo.hasLayoutMap(graph)) {
             marshal(graph, GraphInfo.getLayoutMap(graph), file);
         } else {
@@ -120,7 +120,7 @@ public class LayedOutXml implements Xml<Graph> {
     }
 
     /** Marshals the graph and stores the layout map. */
-    public void marshal(Graph graph, LayoutMap<Node, Edge> layoutMap, File file) throws XmlException, IOException {
+    public void marshal(Graph graph, LayoutMap<Node, Edge> layoutMap, File file) throws FormatException, IOException {
         // first marshal the graph
         marshaller.marshalGraph(graph, file);
         // if there is layout information, create a file for it
@@ -141,7 +141,7 @@ public class LayedOutXml implements Xml<Graph> {
     }
 
     /** This implementation also retrieves layout information. */
-    public Graph unmarshalGraph(File file) throws XmlException, IOException {
+    public Graph unmarshalGraph(File file) throws FormatException, IOException {
     	// first get the non-layed out result
         Pair<Graph,Map<String,Node>> preliminary = marshaller.unmarshalGraphMap(file);
         Graph result = preliminary.first();
@@ -160,7 +160,7 @@ public class LayedOutXml implements Xml<Graph> {
                 String[] parts;
                 try {
                     parts = ExprParser.splitExpr(nextLine, WHITESPACE);
-                } catch (ExprFormatException exc) {
+                } catch (FormatException exc) {
                     throw new IOException(LAYOUT_FORMAT_ERROR + ": " + exc.getMessage());
                 }
                 if (parts.length > 0) {

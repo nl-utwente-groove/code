@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import groove.graph.DefaultNode;
-import groove.graph.GraphFormatException;
+import groove.util.FormatException;
 
 /**
  * Graph node implementation that supports aspects.
@@ -39,9 +39,9 @@ public class AspectNode extends DefaultNode implements AspectElement {
     /**
      * Adds an aspect value to the node, or updates an existing value.
      * @param value the aspect value to be added
-     * @throws GraphFormatException if the node already has a value for <code>value.getAspect()</code>
+     * @throws FormatException if the node already has a value for <code>value.getAspect()</code>
      */
-    public void setInferredValue(AspectValue value) throws GraphFormatException {
+    public void setInferredValue(AspectValue value) throws FormatException {
     	Aspect aspect = value.getAspect();
     	AspectValue oldValue = getAspectMap().get(value.getAspect());
     	AspectValue newValue = aspect.getMax(value, oldValue);
@@ -51,9 +51,9 @@ public class AspectNode extends DefaultNode implements AspectElement {
     /**
      * Adds an aspect value to the node.
      * @param value the aspect value to be added
-     * @throws GraphFormatException if the node already has a value for <code>value.getAspect()</code>
+     * @throws FormatException if the node already has a value for <code>value.getAspect()</code>
      */
-    public void setDeclaredValue(AspectValue value) throws GraphFormatException {
+    public void setDeclaredValue(AspectValue value) throws FormatException {
     	getDeclaredValues().add(value);
     	setInferredValue(value);
     }

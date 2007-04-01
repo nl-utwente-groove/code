@@ -12,22 +12,22 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphFactory.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
+ * $Id: GraphFactory.java,v 1.3 2007-04-01 12:49:57 rensink Exp $
  */
 package groove.graph;
+
+import groove.util.FormatException;
 
 /**
  * Abstract Factory interface for graph-related classes.
  * Objects implementing this factory can create instances of
  * <tt>Graph</tt>, <tt>Morphism</tt> and <tt>InjectiveMorphism</tt>.   
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class GraphFactory {
     static public final Morphism defaultPrototypeMorphism =
         DefaultMorphism.prototype;
-    static public final InjectiveMorphism defaultPrototypeInjectiveMorphism =
-        DefaultInjectiveMorphism.prototype;
     static public final Graph defaultPrototypeGraph =
         NodeSetEdgeSetGraph.getPrototype();
 
@@ -37,14 +37,12 @@ public abstract class GraphFactory {
      * for morphisms.
      * @see #defaultPrototypeGraph
      * @see #defaultPrototypeMorphism
-     * @see #defaultPrototypeInjectiveMorphism
      * @see #newGraph()
      */
     static public GraphFactory getInstance() {
         return getInstance(
             defaultPrototypeGraph,
-            defaultPrototypeMorphism,
-            defaultPrototypeInjectiveMorphism);
+            defaultPrototypeMorphism);
     }
 
     /**
@@ -52,12 +50,10 @@ public abstract class GraphFactory {
      * prototype morphism and prototype injective morphism.
      * @param prototypeGraph the source of new graphs in this factory
      * @param prototypeMorphism the source of new morphisms in this factory
-     * @param prototypeInjectiveMorphism the source of new injective morphisms in this factory
      */
     static public GraphFactory getInstance(
         final Graph prototypeGraph,
-        final Morphism prototypeMorphism,
-        final InjectiveMorphism prototypeInjectiveMorphism) {
+        final Morphism prototypeMorphism) {
         assert prototypeMorphism != null;
         return new GraphFactory() {
         	@Override
@@ -70,20 +66,11 @@ public abstract class GraphFactory {
                 Graph result = null;
                 try {
                 	result = prototypeGraph.newGraph(graph);
-                } catch (GraphFormatException gfe) {
+                } catch (FormatException gfe) {
                     result = prototypeGraph.newGraph();
                     gfe.printStackTrace();
                 }
                 return result;
-            }
-
-        	@Override
-            public InjectiveMorphism newInjectiveMorphism(
-                Graph dom,
-                Graph cod) {
-                return (InjectiveMorphism) prototypeInjectiveMorphism.createMorphism(
-                    dom,
-                    cod);
             }
 
         	@Override
@@ -100,7 +87,7 @@ public abstract class GraphFactory {
      * @param prototypeGraph the source of new graphs in this factory
      */
     static public GraphFactory getInstance(Graph prototypeGraph) {
-        return getInstance(prototypeGraph, defaultPrototypeMorphism, defaultPrototypeInjectiveMorphism);
+        return getInstance(prototypeGraph, defaultPrototypeMorphism);
     }
 
     /**
@@ -120,17 +107,4 @@ public abstract class GraphFactory {
      *          or <tt>null</tt> if <tt>dom</tt> or <tt>cod</tt> are incorrectly typed.
      */
     public abstract Morphism newMorphism(Graph dom, Graph cod);
-
-    /**
-     * Creates a new, empty <tt>InjectiveMorphism</tt> between two given <tt>Graph</tt> instances.
-     * The method returns <tt>null</tt> if the <tt>Graph</tt> instances are of incorrect
-     * type (for the factory instance).
-     * @param dom the source graph of the new injective morphism
-     * @param cod the target graph of the new injective morphism
-     * @return a new, empty injective morphism from <tt>dom</tt> to <tt>cod</tt>,
-     *          or <tt>null</tt> if <tt>dom</tt> or <tt>cod</tt> are incorrectly typed.
-     */
-    public abstract InjectiveMorphism newInjectiveMorphism(
-    Graph dom,
-    Graph cod);
 }

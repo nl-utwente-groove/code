@@ -12,22 +12,22 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: RuleFactory.java,v 1.2 2007-04-01 12:49:51 rensink Exp $
  */
 package groove.trans;
 
 
 import groove.graph.Graph;
-import groove.graph.GraphFormatException;
 import groove.graph.Morphism;
 import groove.graph.Simulation;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.view.RuleView;
+import groove.util.FormatException;
 
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
+ * @version $Revision: 1.2 $ $Date: 2007-04-01 12:49:51 $
  */
 public interface RuleFactory {
 	/**
@@ -35,7 +35,7 @@ public interface RuleFactory {
 	 * @param graph the graph encoding the rule
 	 * @return a rule view over the rule encoded in the given graph
 	 */
-	public RuleView createRuleView(Graph graph, NameLabel name, int priority) throws GraphFormatException;
+	public RuleView createRuleView(Graph graph, NameLabel name, int priority) throws FormatException;
 
 	/**
 	 * Actual factory method for the rule.

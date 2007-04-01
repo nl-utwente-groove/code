@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ProductNode.java,v 1.4 2007-03-30 15:50:45 rensink Exp $
+ * $Id: ProductNode.java,v 1.5 2007-04-01 12:49:50 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -30,7 +30,7 @@ import java.util.List;
  * attached to it through {@link AlgebraEdge}s, and <i>operands</i>, which
  * are the corresponding {@link Constant}s on those nodes.
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-03-30 15:50:45 $
+ * @version $Revision 1.0$ $Date: 2007-04-01 12:49:50 $
  */
 public class ProductNode extends DefaultNode {
 	// AREND I think the operands of a product node should be fixed at
@@ -73,10 +73,10 @@ public class ProductNode extends DefaultNode {
     		throw new IllegalArgumentException(String.format("Argument number %d already contains %s", i, oldArg));
     	}
     }
-    
-    /** Retrieves one of the arguments of the product node. */
-    public ValueNode getArgument(int i) {
-    	return arguments.get(i);
+
+    /** Retrieves the list of arguments of the product node. */
+    public List<ValueNode> getArguments() {
+    	return arguments;
     }
 
     /**

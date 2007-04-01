@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultSimulation.java,v 1.3 2007-03-30 15:50:24 rensink Exp $
+ * $Id: DefaultSimulation.java,v 1.4 2007-04-01 12:49:56 rensink Exp $
  */
 
 package groove.graph;
 
+import groove.graph.match.DefaultMatcher;
 import groove.util.FilterIterator;
 import groove.util.Reporter;
 import groove.util.SingularIterator;
@@ -41,12 +42,10 @@ import java.util.Set;
  * Refinement consists of repeatedly selecting an image for those domain
  * elements that have multiple images.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
+ * @deprecated use {@link DefaultMatcher} instead
  */
-/**
- * @author Harmen
- *
- */
+@Deprecated
 public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.ImageSet<Node>,Edge,Simulation.ImageSet<Edge>> implements Simulation {
     static protected final IllegalStateException emptyImageSet = new IllegalStateException();
     static protected final Iterator<NodeEdgeMap> emptyIterator = Collections.<NodeEdgeMap>emptySet().iterator();

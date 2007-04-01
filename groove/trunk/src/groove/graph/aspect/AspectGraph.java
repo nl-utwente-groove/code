@@ -27,7 +27,6 @@ import java.util.Set;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphFormatException;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.Label;
@@ -35,6 +34,7 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.util.FormatException;
 import groove.util.Groove;
 
 /**
@@ -75,7 +75,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 			} else {
 				try {
 					testFile(file);
-				} catch (GraphFormatException exc) {
+				} catch (FormatException exc) {
 					exc.printStackTrace();
 				}
 			}
@@ -87,7 +87,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * and back, using {@link #testTranslation(Graph)}. 
 	 * Recursively descends into directories.
 	 */
-	private static void testFile(File file) throws GraphFormatException {
+	private static void testFile(File file) throws FormatException {
 		if (file.isDirectory()) {
 			for (File nestedFile: file.listFiles()) {
 				testFile(nestedFile);
@@ -108,21 +108,21 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * Tests the {@link AspectGraph} implementation 
 	 * by translating a plain graph to an aspect graph and back,
 	 * and checking if the result is isomorphic to the original.
-	 * @throws GraphFormatException if anything goes wrong in the translation
+	 * @throws FormatException if anything goes wrong in the translation
 	 */
-	public static void testTranslation(Graph plainGraph) throws GraphFormatException {
+	public static void testTranslation(Graph plainGraph) throws FormatException {
 		NodeEdgeMap fromPlainToAspect = new NodeEdgeHashMap();
 		NodeEdgeMap fromAspectToPlain = new NodeEdgeHashMap();
 		AspectGraph aspectGraph = getFactory().fromPlainGraph(plainGraph, fromPlainToAspect);
 		Graph result = aspectGraph.toPlainGraph(fromAspectToPlain);
 		if (result.nodeCount() > plainGraph.nodeCount()) {
-			throw new GraphFormatException(
+			throw new FormatException(
 					"Result graph has more nodes: %s (%d) than original: %s (%d)",
 					plainGraph.nodeSet(), plainGraph.nodeCount(),
 					result.nodeSet(), result.nodeCount());
 		}
 		if (result.edgeCount() > plainGraph.edgeCount()) {
-			throw new GraphFormatException(
+			throw new FormatException(
 					"Result graph has more nodes: %s (%d) than original: %s (%d)",
 					plainGraph.edgeSet(), plainGraph.edgeCount(),
 					result.edgeSet(), result.edgeCount());
@@ -130,33 +130,33 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 		for (Node plainNode: plainGraph.nodeSet()) {
 			Node aspectNode = fromPlainToAspect.getNode(plainNode);
 			if (aspectNode == null) {
-				throw new GraphFormatException("Node %s not translated to aspect node", plainNode);
+				throw new FormatException("Node %s not translated to aspect node", plainNode);
 			}
 			Node resultNode = fromAspectToPlain.getNode(aspectNode);
 			if (resultNode == null) {
-				throw new GraphFormatException("Node %s translated to aspect node %s, but not back", plainNode, aspectNode);
+				throw new FormatException("Node %s translated to aspect node %s, but not back", plainNode, aspectNode);
 			}
 			Set<AspectValue> plainNodeValues = getNodeValues(plainGraph, plainNode);
 			Set<AspectValue> resultNodeValues = getNodeValues(result, resultNode);
 			if (! plainNodeValues.equals(resultNodeValues)) {
-				throw new GraphFormatException("Node values for %s and %s differ: %s versus %s", plainNode, resultNode, plainNodeValues, resultNodeValues);
+				throw new FormatException("Node values for %s and %s differ: %s versus %s", plainNode, resultNode, plainNodeValues, resultNodeValues);
 			}
 		}
 		for (Edge plainEdge: plainGraph.edgeSet()) {
 			Edge aspectEdge = fromPlainToAspect.getEdge(plainEdge);
 			if (aspectGraph.getNodeValue(plainEdge) == null) {
 				if (aspectEdge == null) {
-					throw new GraphFormatException(
+					throw new FormatException(
 							"Edge %s not translated to aspect edge", plainEdge);
 				}
 				Edge resultEdge = fromAspectToPlain.getEdge(aspectEdge);
 				if (resultEdge == null) {
-					throw new GraphFormatException(
+					throw new FormatException(
 							"Edge %s translated to aspect edge %s, but not back", plainEdge, aspectEdge);
 				}
 			} else {
 				if (aspectEdge != null) {
-					throw new GraphFormatException(
+					throw new FormatException(
 							"Node value-encoding edge %s translated to aspect edge %s", plainEdge, aspectEdge);
 				}
 			}
@@ -166,7 +166,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	/**
 	 * Retrieves all node values of a given node in a given (plain) graph.
 	 */
-	private static Set<AspectValue> getNodeValues(Graph graph, Node node) throws GraphFormatException {
+	private static Set<AspectValue> getNodeValues(Graph graph, Node node) throws FormatException {
 		Set<AspectValue> result = new HashSet<AspectValue>();
 		for (Edge outEdge: graph.outEdgeSet(node)) {
 			AspectValue nodeValue = getFactory().getNodeValue(outEdge);
@@ -214,9 +214,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * This means that nodes with self-edges that have no text (apart from 
 	 * their aspect prefixes) are treated as indicating the node aspect.
 	 * @param graph the graph to take as input.
-	 * @throws GraphFormatException if <code>graph</code> is not formatted correctly. 
+	 * @throws FormatException if <code>graph</code> is not formatted correctly. 
 	 */
-	public AspectGraph fromPlainGraph(GraphShape graph) throws GraphFormatException {
+	public AspectGraph fromPlainGraph(GraphShape graph) throws FormatException {
 		// map from original graph elements to aspect graph elements
 		NodeEdgeMap elementMap = new NodeEdgeHashMap();
 		return fromPlainGraph(graph, elementMap);
@@ -231,9 +231,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * @param graph the graph to take as input.
 	 * @param elementMap output parameter for mapping from plain graph elements to resulting {@link AspectGraph} elements;
 	 * should be initially empty
-	 * @throws GraphFormatException if <code>graph</code> is not formatted correctly. 
+	 * @throws FormatException if <code>graph</code> is not formatted correctly. 
 	 */
-	private AspectGraph fromPlainGraph(GraphShape graph, NodeEdgeMap elementMap) throws GraphFormatException {
+	private AspectGraph fromPlainGraph(GraphShape graph, NodeEdgeMap elementMap) throws FormatException {
 		assert elementMap != null && elementMap.isEmpty();
 		AspectGraph result = new AspectGraph();
 		Set<Edge> edges = new HashSet<Edge>(graph.edgeSet());
@@ -351,10 +351,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * @param edge the edge to be tested
 	 * @return a node aspect value for the (unique) endpoint of the edge, or
 	 * <code>null</code> if <code>edge</code> does not encode a node aspect value.
-	 * @throws GraphFormatException if <code>edge</code> does ancode a node aspect
+	 * @throws FormatException if <code>edge</code> does ancode a node aspect
 	 * value, but is not a self-edge or contains more than one aspect value
 	 */
-	protected AspectValue getNodeValue(Edge edge) throws GraphFormatException {
+	protected AspectValue getNodeValue(Edge edge) throws FormatException {
 		AspectValue result;	
 		String labelText = edge.label().text();
 		AspectParseData parseData = parser.getParseData(labelText);
@@ -363,10 +363,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 			// this edge indicates a node aspect
 			if (edge.opposite() != edge.source()) {
 				// Only one aspect per node self-edge
-				throw new GraphFormatException("Node aspect indicator %s only allowed on self-edges",labelText);
+				throw new FormatException("Node aspect indicator %s only allowed on self-edges",labelText);
 			} else if (aspectMap.size() != 1) {
 				// Only one aspect per node self-edge
-				throw new GraphFormatException("Multiple node aspect indicator "+labelText);
+				throw new FormatException("Multiple node aspect indicator "+labelText);
 			} else {
 				// add the aspect value found
 				result = aspectMap.values().iterator().next();
@@ -395,9 +395,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 
 	/**
 	 * Factory method for an <code>AspectEdge</code>.
-	 * @throws GraphFormatException if the aspect label is inconsistent with the end node aspect values
+	 * @throws FormatException if the aspect label is inconsistent with the end node aspect values
 	 */
-	AspectEdge createAspectEdge(AspectNode source, AspectNode target, AspectParseData aspectLabel) throws GraphFormatException {
+	AspectEdge createAspectEdge(AspectNode source, AspectNode target, AspectParseData aspectLabel) throws FormatException {
 		return new AspectEdge(source, target, aspectLabel);
 	}
 	

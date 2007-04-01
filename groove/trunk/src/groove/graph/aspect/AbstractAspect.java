@@ -16,8 +16,8 @@
  */
 package groove.graph.aspect;
 
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
+import groove.util.FormatException;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,10 +43,10 @@ public abstract class AbstractAspect implements Aspect {
     /**
      * Adds an {@link AspectValue} to the values of this aspect.
      * @param name the name of the new aspect value
-     * @throws GraphFormatException if <code>name</code> is an already existing aspect value name.
+     * @throws FormatException if <code>name</code> is an already existing aspect value name.
      * The actual aspect value instance is created by {@link #createValue(String)}.
      */
-    protected AspectValue addValue(String name) throws GraphFormatException {
+    protected AspectValue addValue(String name) throws FormatException {
         AspectValue result = createValue(name); 
         addNodeValue(result);
         addEdgeValue(result);
@@ -56,10 +56,10 @@ public abstract class AbstractAspect implements Aspect {
     /**
      * Adds an {@link AspectValue} to the node values of this aspect.
      * @param name the name of the new aspect value
-     * @throws GraphFormatException if <code>name</code> is an already existing aspect value name.
+     * @throws FormatException if <code>name</code> is an already existing aspect value name.
      * The actual aspect value instance is created by {@link #createValue(String)}.
      */
-    protected AspectValue addNodeValue(String name) throws GraphFormatException {
+    protected AspectValue addNodeValue(String name) throws FormatException {
         AspectValue result = createValue(name); 
         addNodeValue(result);
         return result;
@@ -68,10 +68,10 @@ public abstract class AbstractAspect implements Aspect {
     /**
      * Adds an {@link AspectValue} to the edge values of this aspect.
      * @param name the name of the new aspect value
-     * @throws GraphFormatException if <code>name</code> is an already existing aspect value name.
+     * @throws FormatException if <code>name</code> is an already existing aspect value name.
      * The actual aspect value instance is created by {@link #createValue(String)}.
      */
-    protected AspectValue addEdgeValue(String name) throws GraphFormatException {
+    protected AspectValue addEdgeValue(String name) throws FormatException {
         AspectValue result = createValue(name); 
         addEdgeValue(result);
         return result;
@@ -254,9 +254,9 @@ public abstract class AbstractAspect implements Aspect {
      * @param name the name of the new aspect value
      * @return a n aspect value such that <code>result.getAspect().equals(this))</code>
      * and <code>result.getName().equals(name)</code>
-     * @throws GraphFormatException if <code>name</code> is the name of an already existing aspect value
+     * @throws FormatException if <code>name</code> is the name of an already existing aspect value
      */
-    protected AspectValue createValue(String name) throws GraphFormatException {
+    protected AspectValue createValue(String name) throws FormatException {
         return new AspectValue(this, name);
     }
 
@@ -298,15 +298,15 @@ public abstract class AbstractAspect implements Aspect {
 	
 	/**
 	 * Compares a number of aspect values and returns the most demanding, i.e.,
-	 * the value that overrules the others. Throws a {@link GraphFormatException}
+	 * the value that overrules the others. Throws a {@link FormatException}
 	 * if there is no preference. <code>null</code> values are disregarded.
 	 * @param values the values to be compared
 	 * @return a value from <code>values</code> such that for all others,
 	 * either they are <code>null</code> or <code>result = getMax(result, other)</code> 
-	 * @throws GraphFormatException if <code>getMax(value1, value2)</code>
+	 * @throws FormatException if <code>getMax(value1, value2)</code>
 	 * throws an exception for two non-<code>null</code> elements of <code>values</code>
 	 */
-	final public AspectValue getMax(AspectValue... values) throws GraphFormatException {
+	final public AspectValue getMax(AspectValue... values) throws FormatException {
 		AspectValue result = null;
 		for (AspectValue value: values) {
 			if (result == null) {
@@ -320,28 +320,28 @@ public abstract class AbstractAspect implements Aspect {
 	
 	/**
 	 * Compares two non-<code>null</code>aspect values and returns the most demanding, i.e.,
-	 * the value of the two that overrules the other. Throws a {@link GraphFormatException}
+	 * the value of the two that overrules the other. Throws a {@link FormatException}
 	 * if there is no preference. 
-	 * This implementation throws a {@link GraphFormatException} always.
+	 * This implementation throws a {@link FormatException} always.
 	 * @param value1 the first aspect value to be compared; not <code>null</code>
 	 * @param value2 the second aspect value to be compared; not <code>null</code>
 	 * @return the value of <code>value1</code> and <code>value2</code> that 
 	 * overrules the other (according to this aspect)
-	 * @throws GraphFormatException if <code>value1</code> and <code>value2</code>
+	 * @throws FormatException if <code>value1</code> and <code>value2</code>
 	 * cannot be ordered
 	 */
-	protected AspectValue getMaxValue(AspectValue value1, AspectValue value2) throws GraphFormatException {
+	protected AspectValue getMaxValue(AspectValue value1, AspectValue value2) throws FormatException {
 		if (value1 == value2 && value1 != null) {
 			return value1;
 		} else {
-			throw new GraphFormatException("Incomparable aspect values '%s' and '%s'", value1, value2);
+			throw new FormatException("Incomparable aspect values '%s' and '%s'", value1, value2);
 		}
 	}
 
 	/**
 	 * This never throws the exception.
 	 */
-	public void testLabel(Label label, AspectValue declaredValue, AspectValue inferredValue) throws GraphFormatException {
+	public void testLabel(Label label, AspectValue declaredValue, AspectValue inferredValue) throws FormatException {
 		// does nothing
 	}
 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributedSPORule.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
+ * $Id: AttributedSPORule.java,v 1.3 2007-04-01 12:49:54 rensink Exp $
  */
 package groove.trans;
 
@@ -28,8 +28,10 @@ import groove.graph.algebra.ValueNode;
  * nodes.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:27 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-01 12:49:54 $
+ * @deprecated all funtionality now in {@link SPORule}.
  */
+@Deprecated
 public class AttributedSPORule extends SPORule {
 
 //    public Graph getGraphFactory() {
@@ -39,18 +41,18 @@ public class AttributedSPORule extends SPORule {
 //        return new DefaultAttributedGraph();
 //    }
 
-    /**
-     * Constructor creating an rule (probably) using attributes based on the given
-     * morphism with the given name.
-     * 
-     * @param morphism the morphism on which this rule is based
-     * @param name the name of this rule
-     */
-    public AttributedSPORule(Morphism morphism, NameLabel name, RuleFactory ruleFactory) {
-    	super(morphism, name, ruleFactory);
-//    	this.dom = lhs();
-    	this.cod = lhs();
-    }
+//    /**
+//     * Constructor creating an rule (probably) using attributes based on the given
+//     * morphism with the given name.
+//     * 
+//     * @param morphism the morphism on which this rule is based
+//     * @param name the name of this rule
+//     */
+//    public AttributedSPORule(Morphism morphism, NameLabel name, RuleFactory ruleFactory) {
+//    	super(morphism, name, ruleFactory);
+////    	this.dom = lhs();
+//    	this.cod = lhs();
+//    }
 
     /**
      * Constructor.
@@ -60,8 +62,7 @@ public class AttributedSPORule extends SPORule {
      * @param ruleFactory
      */
     public AttributedSPORule(Morphism morphism, NameLabel name, int priority, RuleFactory ruleFactory) {
-    	this(morphism, name, ruleFactory);
-    	this.setPriority(priority);
+    	super(morphism, name, priority, ruleFactory);
     }
 
     /**
@@ -84,9 +85,9 @@ public class AttributedSPORule extends SPORule {
     		return true;
    		return super.containsElement(graph, element);
     }
-
-	@Override
-	protected MatchingScheduleFactory createMatchingScheduleFactory() {
-		return new AttributeScheduleFactory();
-	}
+//
+//	@Override
+//	protected ConditionSearchPlanFactory createSearchPlanFactory() {
+//		return new AttributeScheduleFactory();
+//	}
 }

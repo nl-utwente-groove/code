@@ -12,11 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatcher.java,v 1.3 2007-03-27 14:18:35 rensink Exp $
+ * $Id: DefaultMatcher.java,v 1.4 2007-04-01 12:50:10 rensink Exp $
  */
 package groove.graph.match;
 
-import groove.graph.DefaultSimulation;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.NodeEdgeHashMap;
@@ -34,7 +33,7 @@ import java.util.NoSuchElementException;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultMatcher implements Matcher {
 	/** 
@@ -286,9 +285,9 @@ public class DefaultMatcher implements Matcher {
 	/** Flag indicating that the last call of #find() yielded a solution. */
 	private boolean found;
     
-    static protected final Reporter reporter = DefaultSimulation.reporter;
-    static protected final int GET_REFINEMENT = DefaultSimulation.GET_REFINEMENT;
-    static protected final int GET_REFINEMENT_SET = DefaultSimulation.GET_REFINEMENT_SET;
-    static protected final int GET_REFINEMENT_ITER = DefaultSimulation.GET_REFINEMENT_ITER;
+    static protected final Reporter reporter = Matcher.reporter;
+    static protected final int GET_REFINEMENT = reporter.newMethod("getRefinement()");
+    static protected final int GET_REFINEMENT_SET = reporter.newMethod("getRefinementSet()");
+    static protected final int GET_REFINEMENT_ITER = reporter.newMethod("getRefinementIter()");
     static protected final int FIND = reporter.newMethod("find()");
 }

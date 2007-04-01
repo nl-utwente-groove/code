@@ -27,6 +27,7 @@ import groove.calc.DefaultGraphResult;
 import groove.calc.GraphCalculator;
 import groove.calc.GraphResult;
 import groove.trans.GraphGrammar;
+import groove.util.FormatException;
 import groove.util.Groove;
 
 /**
@@ -68,6 +69,8 @@ public class CalculatorSample {
 				index++;
 			}
 		} catch (IOException exc) {
+			System.err.println("Error: "+ exc.getMessage());
+		} catch (FormatException exc) {
 			System.err.println("Error: "+ exc.getMessage());
 		}
 	}

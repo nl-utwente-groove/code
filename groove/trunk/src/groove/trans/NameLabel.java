@@ -12,20 +12,20 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NameLabel.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
+ * $Id: NameLabel.java,v 1.3 2007-04-01 12:49:55 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.graph.WrapperLabel;
+import groove.util.FormatException;
 
 /**
  * The name of a production rule.
  * The displayed version of the rule is between <tt>BEGIN_CHAR</tt> and
  * <tt>END_CHAR</tt>-characters.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:27 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-01 12:49:55 $
  */
 public class NameLabel extends WrapperLabel<String> {
     /** The obligatory first character of a rule name. */
@@ -45,12 +45,12 @@ public class NameLabel extends WrapperLabel<String> {
 
     @Deprecated
     @Override
-    public Label parse(String text) throws GraphFormatException {
+    public Label parse(String text) throws FormatException {
         if ( text.charAt(0) == BEGIN_CHAR
              && text.charAt(text.length()-1) == END_CHAR)
             return new NameLabel(text.substring(1,text.length()-1));
         else
-            throw new GraphFormatException
+            throw new FormatException
                 ("Rule names must be between '"+BEGIN_CHAR+"' and '"+END_CHAR+"'");
     }
 

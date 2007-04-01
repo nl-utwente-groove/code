@@ -28,7 +28,6 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.GraphCache;
 import groove.graph.DeltaTarget;
-import groove.graph.InjectiveMorphism;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -42,7 +41,7 @@ import groove.util.TransformIterator;
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DerivedGraphState extends DefaultGraphState implements GraphNextState {
     /**
@@ -276,7 +275,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
                 && derivedTarget.nodeSet().equals(realTarget.nodeSet())) {
             return appl.getMorphism();
         } else {
-            InjectiveMorphism iso = derivedTarget.getIsomorphismTo(realTarget);
+            Morphism iso = derivedTarget.getIsomorphismTo(realTarget);
             assert iso != null : "Can't reconstruct derivation from graph transition " + this
                     + ": \n" + AbstractGraph.toString(derivedTarget) + " and \n"
                     + AbstractGraph.toString(realTarget) + " \nnot isomorphic";

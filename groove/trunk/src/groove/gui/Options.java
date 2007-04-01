@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.3 2007-03-30 15:50:35 rensink Exp $
+ * $Id: Options.java,v 1.4 2007-04-01 12:50:29 rensink Exp $
  */
 package groove.gui;
 
@@ -29,7 +29,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Options {
     /** Edit menu name */
@@ -199,9 +199,7 @@ public class Options {
     static public final String IMAGE_ACTION_NAME = "Image";
 
     /** Show anchors option */
-    static public final String SHOW_ANCHORS_OPTION = "Show anchors and anchor images";
-    /** Rule anchor option */
-    static public final String RULE_ANCHOR_OPTION = "Include anchor in rule status";
+    static public final String SHOW_ANCHORS_OPTION = "Show anchors";
     /** Show node ids option */
     static public final String SHOW_NODE_IDS_OPTION = "Show node identities";
     /** Show state ids option */
@@ -209,7 +207,7 @@ public class Options {
     /** Vertices are labels options */
     static public final String VERTEX_LABEL_OPTION = "Allow node labels";
     /** Show aspects in graphs and rules option */
-    static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes in states and rules";
+    static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
     /** Parse attributed graphs option */
     static public final String PARSE_ATTRIBUTES_OPTION = "Parse as attributed graph";
 

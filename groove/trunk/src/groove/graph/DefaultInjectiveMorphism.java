@@ -12,11 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultInjectiveMorphism.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
+ * $Id: DefaultInjectiveMorphism.java,v 1.3 2007-04-01 12:49:56 rensink Exp $
  */
 package groove.graph;
 
 import groove.graph.iso.IsoMatcher;
+import groove.util.CollectionView;
+import groove.util.FilterIterator;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -30,16 +32,18 @@ import java.util.Map;
  * Implementation of an injective morphism between <tt>Graph</tt>s,
  * as an extension of <tt>DefaultMorphism</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
+ * @deprecated the {@link InjectiveMorphism} hierarchy is being abandoned
  */
+@Deprecated
 public class DefaultInjectiveMorphism extends DefaultMorphism implements InjectiveMorphism {
-    /**
-     * A protytpe object of this class, to be used as a factory
-     * for new (default) injective morphisms. That is, the object is only intended to
-     * be used for invoking <tt>newInjectiveMorphism(SimpleGraph,SimpleGraph)</tt>.
-     */
-    static public final InjectiveMorphism prototype = new DefaultInjectiveMorphism();
-
+//    /**
+//     * A protytpe object of this class, to be used as a factory
+//     * for new (default) injective morphisms. That is, the object is only intended to
+//     * be used for invoking <tt>newInjectiveMorphism(SimpleGraph,SimpleGraph)</tt>.
+//     */
+//    static public final InjectiveMorphism prototype = new DefaultInjectiveMorphism();
+//
     /**
      * Constant null reference.
      */
@@ -53,38 +57,39 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     public DefaultInjectiveMorphism(Graph dom, Graph cod) {
         super(dom, cod);
     }
-
-    /**
-     * Creates an injective morphism from a given morphism if that is
-     * injective. Throws an {@link IllegalArgumentException} if the 
-     * passed-in morphism is not injective.
-     * @param morph the morphism to be copied
-     * @throws IllegalArgumentException if <code>morph</code> is not injective
-     */
-    public DefaultInjectiveMorphism(Morphism morph) throws IllegalArgumentException {
-        this(morph.dom(), morph.cod(), morph.elementMap());
-        if (!morph.isInjective()) {
-            throw new IllegalArgumentException("Attempting to construct injective morphism from non-injective element map");
-        }
-    }
-
-    /**
-     * Constructs a new injective morphism with a given domain and codomain,
-     * and including the given element map.
-     * @require dom != null, cod != null
-     * @ensure dom() == from, cod() == to, keySet().isEmpty()
-     */
-    protected DefaultInjectiveMorphism(Graph dom, Graph cod, NodeEdgeMap nodeEdgeMap) {
-        this(dom, cod);
-        elementMap().putAll(nodeEdgeMap);
-    }
-
-    /**
-     * Clones a given injective morphism.
-     */
-    protected DefaultInjectiveMorphism(InjectiveMorphism other) {
-        this(other.dom(), other.cod(), other.elementMap());
-    }
+//
+//    /**
+//     * Creates an injective morphism from a given morphism if that is
+//     * injective. Throws an {@link IllegalArgumentException} if the 
+//     * passed-in morphism is not injective.
+//     * @param morph the morphism to be copied
+//     * @throws IllegalArgumentException if <code>morph</code> is not injective
+//     */
+//    public DefaultInjectiveMorphism(Morphism morph) throws IllegalArgumentException {
+//        this(morph.dom(), morph.cod(), morph.elementMap());
+//        if (!morph.isInjective()) {
+//            throw new IllegalArgumentException("Attempting to construct injective morphism from non-injective element map");
+//        }
+//    }
+//
+//    /**
+//     * Constructs a new injective morphism with a given domain and codomain,
+//     * and including the given element map.
+//     * @require dom != null, cod != null
+//     * @ensure dom() == from, cod() == to, keySet().isEmpty()
+//     */
+//    protected DefaultInjectiveMorphism(Graph dom, Graph cod, NodeEdgeMap nodeEdgeMap) {
+//        this(dom, cod);
+//        elementMap().putAll(nodeEdgeMap);
+//    }
+//
+//    /**
+//     * Clones a given injective morphism.
+//     */
+//    protected DefaultInjectiveMorphism(InjectiveMorphism other) {
+//        this(other.dom(), other.cod());
+//        elementMap().putAll(other.elementMap());
+//    }
 
     /**
      * Creates a clone of a given injective morphism.
@@ -93,16 +98,16 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     protected DefaultInjectiveMorphism(DefaultInjectiveMorphism morph) {
         super(morph);
     }
-
-    /**
-     * Constructs a protytpe object of this class, to be used as a factory
-     * for new (default) injective morphisms. The prototype is only intended to
-     * be used for its <tt>newInjectiveMorphism()</tt> method.
-     * @see #prototype
-     */
-    protected DefaultInjectiveMorphism() {
-    	// empty constructor needed for subclasses
-    }
+//
+//    /**
+//     * Constructs a protytpe object of this class, to be used as a factory
+//     * for new (default) injective morphisms. The prototype is only intended to
+//     * be used for its <tt>newInjectiveMorphism()</tt> method.
+//     * @see #prototype
+//     */
+//    protected DefaultInjectiveMorphism() {
+//    	// empty constructor needed for subclasses
+//    }
 
     @Deprecated
     public Element getInverseElement(Element elem) {
@@ -138,7 +143,9 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     }
 
     public InjectiveMorphism inverse() {
-        return new DefaultInjectiveMorphism(cod, dom, inverseElementMap());
+    	InjectiveMorphism result = new DefaultInjectiveMorphism(cod, dom);
+        result.putAll(inverseElementMap());
+        return result;
     }
 
     /**
@@ -179,13 +186,38 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     public InjectiveMorphism createInjectiveMorphism(Graph dom, Graph cod) {
         return new DefaultInjectiveMorphism(dom, cod);
     }
+    
+    @Override
+	public Morphism getTotalExtension() {
+    	Iterator<? extends Morphism> iter = getTotalExtensionsIter();
+    	if (iter.hasNext()) {
+    		return iter.next();
+    	} else {
+    		return null;
+    	}
+	}
 
-    // -------------------------- COMMANDS ------------------------
+	@Override
+	public Collection<? extends Morphism> getTotalExtensions() {
+		return new CollectionView<Morphism>(super.getTotalExtensions()) {
+			@Override
+			public boolean approves(Object morph) {
+				return morph instanceof Morphism && ((Morphism) morph).isInjective();
+			}
+		};
+	}
 
-    /* (non-Javadoc)
-     * @see groove.graph.InjectiveMorphism#hasIsomorphismExtension()
-     */
-    public boolean hasIsomorphismExtension() {
+	@Override
+	public Iterator<? extends Morphism> getTotalExtensionsIter() {
+		return new FilterIterator<Morphism>(super.getTotalExtensionsIter()) {
+			@Override
+			public boolean approves(Object morph) {
+				return morph instanceof Morphism && ((Morphism) morph).isInjective();
+			}
+		};
+	}
+
+	public boolean hasIsomorphismExtension() {
         reporter.start(EXTEND_TO_ISOMORPHISM);
         try {
         	Simulation sim = createIsoSimulation();
@@ -355,17 +387,17 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
         }
         return result;
     }
+//
+//    /**
+//     * This implementation returns an <tt>{@link InjectiveSimulation}</tt>.
+//     */
+//    @Override
+//    protected Simulation createSimulation() {
+//        return new InjectiveSimulation(this);
+//    }
 
     /**
-     * This implementation returns an <tt>{@link InjectiveSimulation}</tt>.
-     */
-    @Override
-    protected Simulation createSimulation() {
-        return new InjectiveSimulation(this);
-    }
-
-    /**
-     * This implementation returns an <tt>{@link InjectiveSimulation}</tt>.
+     * This implementation returns an {@link IsoSimulation}.
      */
     protected Simulation createIsoSimulation() {
         return new IsoMatcher(this);

@@ -12,20 +12,19 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MatchingSimulation.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: MatchingSimulation.java,v 1.3 2007-04-01 12:49:54 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Node;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.RegExprSimulation;
+import groove.trans.match.MatchingMatcher;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,8 +33,10 @@ import java.util.Set;
  * The embargoes must be provided through (abstract) factory methods,
  * {@link #computeInjectionMap()} and {@link #computeEmbargoMap()}.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
+ * @deprecated use {@link MatchingMatcher} instead
  */
+@Deprecated
 public class MatchingSimulation extends RegExprSimulation {
     public MatchingSimulation(Matching mapping, RuleFactory ruleFactory) {
         super(mapping);
@@ -199,18 +200,18 @@ public class MatchingSimulation extends RegExprSimulation {
         return ((DefaultGraphCondition) getCondition()).getNegationMap();        
     }
     
-    /**
-     * Callback factory method to create the matching order.
-     * The matching order is used to generate the key iterator.
-     * This implementation takes the matching order from the matching's graph condition
-     * (assumed to be a {@link DefaultGraphCondition}).
-     * @see #initSimulation()
-     */
-    @Override
-    protected List<Element> computeMatchingSchedule() {
-        return ((DefaultGraphCondition) getCondition()).getMatchingSchedule();        
-    }
-    
+//    /**
+//     * Callback factory method to create the matching order.
+//     * The matching order is used to generate the key iterator.
+//     * This implementation takes the matching order from the matching's graph condition
+//     * (assumed to be a {@link DefaultGraphCondition}).
+//     * @see #initSimulation()
+//     */
+//    @Override
+//    protected List<Element> computeMatchingSchedule() {
+//        return new IndegreeScheduleFactory();        
+//    }
+//    
     /**
      * Mapping from domain nodes to sets of domain nodes that should be matched
      * injectively with respect to it.

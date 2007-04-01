@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: TemporalFormula.java,v 1.1.1.2 2007-03-20 10:43:01 kastenberg Exp $
+ * $Id: TemporalFormula.java,v 1.2 2007-04-01 12:50:25 rensink Exp $
  */
 
 package groove.verify;
@@ -23,7 +23,7 @@ import groove.lts.State;
 import groove.trans.GraphCondition;
 import groove.trans.NameLabel;
 import groove.trans.StructuredRuleName;
-import groove.util.ExprFormatException;
+import groove.util.FormatException;
 import groove.verify.CTLStarFormula.All;
 import groove.verify.CTLStarFormula.And;
 import groove.verify.CTLStarFormula.Atom;
@@ -43,7 +43,7 @@ import java.util.Set;
 /**
  * Abstract class as a generalization of LTL and CTL formulas.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:01 $
+ * @version $Revision: 1.2 $ $Date: 2007-04-01 12:50:25 $
  */
 public abstract class TemporalFormula {
 
@@ -128,9 +128,9 @@ public abstract class TemporalFormula {
      * 
      * @param expr the expression to be parsed
      * @return the CTL-expression represented by the given string
-     * @throws ExprFormatException if the string expression is in the wrong format
+     * @throws FormatException if the string expression is in the wrong format
      */
-    abstract protected TemporalFormula parseOperator(String expr) throws ExprFormatException ;
+    abstract protected TemporalFormula parseOperator(String expr) throws FormatException ;
 
     /**
      * Mark all the states that satisfy this CTL-expression.
@@ -152,12 +152,12 @@ public abstract class TemporalFormula {
      * exception if the text contains any of the operator strings in {@link #operators}
      * as a sub-string. which is the case if the text does not contain any special characters
      * @param text the text to be tested
-     * @throws ExprFormatException if the text contains a special character
+     * @throws FormatException if the text contains a special character
      */
-    protected void assertAtom(String text) throws ExprFormatException {
+    protected void assertAtom(String text) throws FormatException {
         for (int c = 0; c < operators.size(); c++) {
             if (text.indexOf((String) operators.get(c)) >= 0) {
-                throw new ExprFormatException("Operator " + operators.get(c) + " in unquoted atom "
+                throw new FormatException("Operator " + operators.get(c) + " in unquoted atom "
                         + text);
             }
         }

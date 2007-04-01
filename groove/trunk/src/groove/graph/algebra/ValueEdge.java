@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ValueEdge.java,v 1.2 2007-03-27 14:18:30 rensink Exp $
+ * $Id: ValueEdge.java,v 1.3 2007-04-01 12:49:50 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -26,7 +26,9 @@ import groove.graph.DefaultEdge;
  * unclear what they represent.
  *
  * @author Harmen Kastenberg
+ * @deprecated no longer needed
  */
+@Deprecated
 public class ValueEdge extends DefaultEdge {
 
     /**
@@ -34,7 +36,7 @@ public class ValueEdge extends DefaultEdge {
      * @param node the <code>ValueNode</code> from which to create a <code>ValueEdge</code>
      */
     public ValueEdge(ValueNode node) {
-        super(node, node.getConstant().prefix() + node.getConstant().symbol(), node);
+        super(node, node.toString(), node);
 //        super(node, node.getConstant().symbol(), node);
         this.constant = node.getConstant();
     }

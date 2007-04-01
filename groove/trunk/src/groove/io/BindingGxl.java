@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BindingGxl.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
+ * $Id: BindingGxl.java,v 1.3 2007-04-01 12:50:23 rensink Exp $
  */
 package groove.io;
 
@@ -23,6 +23,7 @@ import groove.graph.GraphFactory;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
+import groove.util.FormatException;
 import groove.util.Pair;
 
 import java.io.File;
@@ -44,7 +45,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @deprecated use {@link UntypedGxl}
  */
 @Deprecated
@@ -178,7 +179,7 @@ public class BindingGxl extends AbstractXml {
     }
 
     @Override
-    public Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws XmlException, IOException {
+    public Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws FormatException, IOException {
         Graph graph = graphFactory.newGraph();
         // get a gxl object from the reader
         groove.gxl.Gxl gxl;
@@ -189,15 +190,15 @@ public class BindingGxl extends AbstractXml {
             unmarshaller.unmarshal(new FileReader(file));
         } catch (MarshalException e) {
             e.printStackTrace();
-            throw new XmlException(e.getMessage());
+            throw new FormatException(e.getMessage());
         } catch (ValidationException e) {
             e.printStackTrace();
-            throw new XmlException(e.getMessage());
+            throw new FormatException(e.getMessage());
         }
 
         // now convert the gxl to a graph        
         if (gxl.getGraphCount() != 1)
-            throw new XmlException("Only one graph allowed in document");
+            throw new FormatException("Only one graph allowed in document");
         // Get the first and only graph element
         groove.gxl.Graph gxlGraph = gxl.getGraph(0);
 
@@ -258,7 +259,7 @@ public class BindingGxl extends AbstractXml {
                 }
                 // decompose labelText and add new graph edges
                 if (labelText == null) {
-                    throw new XmlException("Graph " + gxlGraph.getId() + " contains edge without label");
+                    throw new FormatException("Graph " + gxlGraph.getId() + " contains edge without label");
                 }
                 if (targetNode == null) {
                     graph.addEdge(new Node[] { sourceNode }, DefaultLabel.createLabel(labelText));

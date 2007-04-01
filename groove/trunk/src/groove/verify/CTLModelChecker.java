@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLModelChecker.java,v 1.4 2007-03-29 09:59:50 rensink Exp $
+ * $Id: CTLModelChecker.java,v 1.5 2007-04-01 12:50:25 rensink Exp $
  */
 package groove.verify;
 
@@ -28,7 +28,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.util.CommandLineTool;
-import groove.util.ExprFormatException;
+import groove.util.FormatException;
 import groove.util.Generator;
 
 import java.io.BufferedReader;
@@ -53,7 +53,7 @@ import java.util.Set;
  * Command-line tool directing the model checking process.
  *  
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-03-29 09:59:50 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-01 12:50:25 $
  */
 public class CTLModelChecker extends CommandLineTool {
 
@@ -207,7 +207,7 @@ public class CTLModelChecker extends CommandLineTool {
     public void setProperty(String property) {
     	try {
     		setProperty(CTLFormula.parseFormula(property));
-    	} catch (ExprFormatException efe) {
+    	} catch (FormatException efe) {
     		print("Format error in property: " + efe.getMessage());
     	}
     }
@@ -237,7 +237,7 @@ public class CTLModelChecker extends CommandLineTool {
             }
         } catch (IOException e) {
             e.printStackTrace();
-        } catch (ExprFormatException efe) {
+        } catch (FormatException efe) {
         	System.err.println("Wrong format. Retry.");
         	return nextProperty();
 //            efe.printStackTrace();
@@ -322,6 +322,8 @@ public class CTLModelChecker extends CommandLineTool {
 	            grammar = loader.unmarshalGrammar(new File(grammarLocation), startStateName);
 	        } catch (IOException exc) {
 	            printError("Can't load grammar: " + exc.getMessage());
+	        } catch (FormatException exc) {
+	            printError("Grammar format error: " + exc.getMessage());
 	        }
     	}
     	else {

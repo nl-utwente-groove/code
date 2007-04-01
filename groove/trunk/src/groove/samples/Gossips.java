@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.2 2007-03-30 15:50:43 rensink Exp $
+ * $Id: Gossips.java,v 1.3 2007-04-01 12:50:27 rensink Exp $
  */
 package groove.samples;
 
@@ -39,7 +39,7 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleFactory;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
-import groove.trans.view.RuleFormatException;
+import groove.util.FormatException;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
 
@@ -124,7 +124,7 @@ public class Gossips {
             GraphResult result2 = calc2.getFirst(READY_CONDITION_NAME);
             report(result2);
 //            Groove.saveGraph(calc2.getGTS(), ATOMIC_GOSSIP_GPS_NAME+"+"+startGraphName);
-        } catch (RuleFormatException exc) {
+        } catch (FormatException exc) {
             exc.printStackTrace();
         } catch (IOException exc) {
             exc.printStackTrace();

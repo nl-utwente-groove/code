@@ -1,10 +1,10 @@
 /*
- * $Id: IsoMatcher.java,v 1.2 2007-03-20 23:02:57 rensink Exp $
+ * $Id: IsoMatcher.java,v 1.3 2007-04-01 12:49:58 rensink Exp $
  */
 package groove.graph.iso;
 
 import groove.graph.Element;
-import groove.graph.InjectiveMorphism;
+import groove.graph.Morphism;
 import groove.graph.match.DefaultMatcher;
 import groove.graph.match.SearchPlanFactory;
 
@@ -19,14 +19,14 @@ import java.util.Set;
  * into play in the construction and refinement of the simulation..
  * The graphs' partition maps are used to match elements.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class IsoMatcher extends DefaultMatcher {
 	/** The factory for creating search plans. */
 	private static final IsoSearchPlanFactory searchPlanFactory = new IsoSearchPlanFactory();
 	
 	/** Constructs a matcher based on a given injective morphism. */
-    public IsoMatcher(InjectiveMorphism morph) {
+    public IsoMatcher(Morphism morph) {
         super(morph);
     }
     

@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMorphism.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
+ * $Id: AbstractMorphism.java,v 1.3 2007-04-01 12:49:57 rensink Exp $
  */
 package groove.graph;
 
+import groove.util.FormatException;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
 
@@ -30,7 +31,7 @@ import java.util.Set;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edge,Edge> implements Morphism {
     /**
@@ -171,7 +172,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
             Morphism result = createMorphism(morph.cod(), cod);
             constructInvertConcat(morph, this, result);
             return result;
-        } catch (GraphFormatException exc) {
+        } catch (FormatException exc) {
             return null;
         } finally {
             reporter.stop();
@@ -187,7 +188,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
             Morphism result = createMorphism(cod, morph.cod());
             constructInvertConcat(this, morph, result);
             return result;
-        } catch (GraphFormatException exc) {
+        } catch (FormatException exc) {
             return null;
         } finally {
             reporter.stop();
@@ -512,15 +513,15 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
      * followed by anotherm morphism, if this concatention exists. 
      * It may fail to exist if the inverted morphism is non-injective on elements
      * on which the concatenated morphism is injective; in this case 
-     * an {@link GraphFormatException} is thrown.
+     * an {@link FormatException} is thrown.
      * The result is to be stored in a predefined morphism, whose
      * domain and codomain are assumed to have been constructed correctly.
      * @param invert morphism whose inverse is serving as the first argument of the concatenation
      * @param concat second argument of the concatenation
-     * @param result morphism where the result is to be stored; may be affected even if a {@link GraphFormatException} is thrown
-     * @throws GraphFormatException if the injectivity of <tt>arg1</tt> and <tt>arg2</tt> is inconsistent 
+     * @param result morphism where the result is to be stored; may be affected even if a {@link FormatException} is thrown
+     * @throws FormatException if the injectivity of <tt>arg1</tt> and <tt>arg2</tt> is inconsistent 
      */
-    static protected void constructInvertConcat(Morphism invert, Morphism concat, Morphism result) throws GraphFormatException {
+    static protected void constructInvertConcat(Morphism invert, Morphism concat, Morphism result) throws FormatException {
     	for (Map.Entry<Node,Node> entry: invert.nodeMap().entrySet()) {
             Node image = concat.getNode(entry.getKey());
             if (image != null) {
@@ -530,7 +531,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
                 // stop the whole thing; otherwise we're fine
                 Node oldImage = result.putNode(key, image);
                 if (oldImage != null && !oldImage.equals(image)) {
-                    throw new GraphFormatException();
+                    throw new FormatException();
                 }
             }
         }        
@@ -543,7 +544,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
                 // stop the whole thing; otherwise we're fine
                 Edge oldImage = result.putEdge(key, image);
                 if (oldImage != null && !oldImage.equals(image)) {
-                    throw new GraphFormatException();
+                    throw new FormatException();
                 }
             }
         }        

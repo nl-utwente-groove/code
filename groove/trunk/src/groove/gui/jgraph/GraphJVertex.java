@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.3 2007-03-30 15:50:22 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.4 2007-04-01 12:49:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -20,6 +20,7 @@ import groove.algebra.Constant;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
+import groove.graph.aspect.AttributeAspect;
 import groove.util.Converter;
 
 import java.util.ArrayList;
@@ -134,8 +135,9 @@ public class GraphJVertex extends JVertex {
     		Constant value = ((ValueNode) getNode()).getConstant();
     		if (value != null) {
     			valueLabel = value.toString();
-    			if (jModel.isShowLocalAspects()) {
-    				valueLabel = value.prefix()+valueLabel;
+    			if (jModel.isShowAspects()) {
+    				String prefix = AttributeAspect.getValue(value.algebra()).getPrefix();
+    				valueLabel = prefix+valueLabel;
     			}
     		}
     	}

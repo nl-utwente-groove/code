@@ -2,7 +2,6 @@ package groove.util;
 
 
 import groove.graph.DefaultLabel;
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
@@ -86,7 +85,7 @@ public class GraphDatabase {
                     nesg.addEdge(nodes[source], label, nodes[target]);
                 }
             }
-        } catch (GraphFormatException e) {
+        } catch (FormatException e) {
             System.err.println("label parse error"+ e.getMessage());            
         } catch (FileNotFoundException e) {
             System.err.println("Graph file " + location + " does not exist.");

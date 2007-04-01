@@ -16,8 +16,8 @@
  */
 package groove.graph.aspect;
 
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
+import groove.util.FormatException;
 import groove.util.Groove;
 
 import java.util.Set;
@@ -76,9 +76,9 @@ public interface Aspect {
      * @param values the aspect values to be compared; there should be at least one.
      * @return the maximum of <code>values</code>
      * @throws IllegalArgumentException if <code>values.length == 0</code>
-     * @throws GraphFormatException if the values are incompatible
+     * @throws FormatException if the values are incompatible
      */
-    AspectValue getMax(AspectValue... values) throws GraphFormatException;
+    AspectValue getMax(AspectValue... values) throws FormatException;
     
     /**
      * Tests if an edge label is allowed, given a declared and an inferred aspect value
@@ -86,7 +86,7 @@ public interface Aspect {
      * @param label the label to be tested
      * @param declaredValue the declared aspect value; should be a value of this aspect
      * @param inferredValue the inferred aspect value; should be a value of this aspect
-     * @throws GraphFormatException if the label is not correct, given the aspect values
+     * @throws FormatException if the label is not correct, given the aspect values
      */
-    void testLabel(Label label, AspectValue declaredValue, AspectValue inferredValue) throws GraphFormatException;
+    void testLabel(Label label, AspectValue declaredValue, AspectValue inferredValue) throws FormatException;
 }

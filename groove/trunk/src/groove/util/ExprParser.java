@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExprParser.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: ExprParser.java,v 1.3 2007-04-01 12:50:01 rensink Exp $
  */
 package groove.util;
 
@@ -30,7 +30,7 @@ import java.util.Stack;
  * A class that helps parse an expression.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ExprParser {
     /** The single quote character, to control parsing. */
@@ -85,7 +85,7 @@ public class ExprParser {
      * @return the result of the parsing; <tt>result[0] instanceof String</tt>
      * and <tt>result[1] instanceof List</tt>. See above for further explanation.
      */
-    static public Pair<String, List<String>> parseExpr(String expr) throws ExprFormatException {
+    static public Pair<String, List<String>> parseExpr(String expr) throws FormatException {
         return prototype.parse(expr);
     }
 
@@ -99,7 +99,7 @@ public class ExprParser {
         try {
             parseExpr(expr);
             return true;
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             return false;
         }
     }
@@ -139,7 +139,7 @@ public class ExprParser {
      * Convenience method; abbreviates <tt>new ExprParser().split(expr,split)</tt>.
      * @see #split(String,String)
      */
-    static public String[] splitExpr(String expr, String split) throws ExprFormatException {
+    static public String[] splitExpr(String expr, String split) throws FormatException {
         return prototype.split(expr, split);
     }
 
@@ -150,7 +150,7 @@ public class ExprParser {
      * Convenience method; abbreviates <tt>new ExprParser().split(expr,split,position)</tt>.
      * @see #split(String,String,int)
      */
-    static public String[] splitExpr(String expr, String split, int position) throws ExprFormatException {
+    static public String[] splitExpr(String expr, String split, int position) throws FormatException {
         return prototype.split(expr, split, position);
     }
 
@@ -319,7 +319,7 @@ public class ExprParser {
             System.out.println("Parsing: " + expr);
             Pair<String,?> result = parseExpr(expr);
             System.out.println("Result: " + result.first() + " with replacements " + result.second());
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             System.out.println("Error: " + exc.getMessage());
         }
         System.out.println();
@@ -341,7 +341,7 @@ public class ExprParser {
                 }
                 System.out.println("\"]");
             }
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             System.out.println("Error: " + exc.getMessage());
         }
         System.out.println();
@@ -366,7 +366,7 @@ public class ExprParser {
                 }
                 System.out.println("\"]");
             }
-        } catch (ExprFormatException exc) {
+        } catch (FormatException exc) {
             System.out.println("Error: " + exc.getMessage());
         }
         System.out.println();
@@ -409,7 +409,7 @@ public class ExprParser {
      * @return the result of the parsing; see {@link #parseExpr(String)}.
      * @see #parseExpr
      */
-    public Pair<String, List<String>> parse(String expr) throws ExprFormatException {
+    public Pair<String, List<String>> parse(String expr) throws FormatException {
         StreamTokenizer tokenizer = new StreamTokenizer(new StringReader(expr));
         tokenizer.resetSyntax();
         for (Character quoteChar: quoteChars) {
@@ -430,7 +430,7 @@ public class ExprParser {
                 } else if (closeBrackets.contains(nextTokenChar)) {
                     // we have a closing bracket; see if it is expected
                     if (bracketStack.isEmpty()) {
-                        throw new ExprFormatException(
+                        throw new FormatException(
                             "Unbalanced brackets in expression \""
                                 + expr
                                 + "\": '"
@@ -440,7 +440,7 @@ public class ExprParser {
                     int openBracketIndex = openBrackets.indexOf(bracketStack.peek());
                     int closeBracketIndex = closeBrackets.indexOf(nextTokenChar);
                     if (openBracketIndex != closeBracketIndex) {
-                        throw new ExprFormatException(
+                        throw new FormatException(
                             "Unbalanced brackets in expression \""
                                 + expr
                                 + "\": '"
@@ -478,7 +478,7 @@ public class ExprParser {
                 nextToken = tokenizer.nextToken();
             }
             if (replacement.length() != 0) {
-                throw new ExprFormatException(
+                throw new FormatException(
                     "Unbalanced brackets in expression \"" + expr + "\": '" + bracketStack.peek() + "' is not closed");
             }
         } catch (IOException e) {
@@ -517,10 +517,10 @@ public class ExprParser {
      * @param expr the string to be split
      * @param split the regular expression used to split the expression.
      * @return the resulting array of strings
-     * @throws ExprFormatException if <tt>expr</tt> has unbalanced brackets
+     * @throws FormatException if <tt>expr</tt> has unbalanced brackets
      * @see String#split(String,int)
      */
-    public String[] split(String expr, String split) throws ExprFormatException {
+    public String[] split(String expr, String split) throws FormatException {
         Pair<String,List<String>> parseResult = parse(expr);
         String parseExpr = parseResult.first();
         List<String> replacements = parseResult.second();
@@ -561,9 +561,9 @@ public class ExprParser {
      * @param oper the operator; note that it is <i>not</i> a regular expression
      * @param position the positioning property of the operator; one of <tt>INFIX</tt>, <tt>PREFIX</tt> or <tt>POSTFIX</tt>
      * @return the resulting array of strings
-     * @throws ExprFormatException if <tt>expr</tt> has unbalanced brackets, or the positioning of the operator is not as required
+     * @throws FormatException if <tt>expr</tt> has unbalanced brackets, or the positioning of the operator is not as required
      */
-    public String[] split(String expr, String oper, int position) throws ExprFormatException {
+    public String[] split(String expr, String oper, int position) throws FormatException {
         expr = expr.trim();
         switch (position) {
             case INFIX_POSITION :
@@ -577,7 +577,7 @@ public class ExprParser {
                 }
                 for (int i = 0; i < result.length; i++) {
                     if (result[i].length() == 0) {
-                        throw new ExprFormatException(
+                        throw new FormatException(
                             "Infix operator '"
                                 + oper
                                 + "' has empty operand nr. "
@@ -596,10 +596,10 @@ public class ExprParser {
                 if (operIndex < 0) {
                     return null;
                 } else if (operIndex > 0) {
-                    throw new ExprFormatException(
+                    throw new FormatException(
                         "Prefix operator '" + oper + "' occurs in wrong position in \"" + expr + "\"");
                 } else if (expr.length() == oper.length()) {
-                    throw new ExprFormatException(
+                    throw new FormatException(
                         "Prefix operator '" + oper + "' has empty operand in \"" + expr + "\"");                    
                 } else {
                     return new String[] { unparse(parsedBasis.substring(oper.length()), replacements.iterator()) };
@@ -612,10 +612,10 @@ public class ExprParser {
                 if (operIndex < 0) {
                     return null;
                 } else if (operIndex < parsedBasis.length() - oper.length()) {
-                    throw new ExprFormatException(
+                    throw new FormatException(
                         "Postfix operator '" + oper + "' occurs in wrong position in \"" + expr + "\"");                    
                 } else if (operIndex == 0) {
-                    throw new ExprFormatException(
+                    throw new FormatException(
                         "Postfix operator '" + oper + "' has empty operand in \"" + expr + "\"");                    
                 } else {
                     return new String[] { unparse(parsedBasis.substring(0, operIndex), replacements.iterator()) };

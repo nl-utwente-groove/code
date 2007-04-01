@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AttributeScheduleFactory.java,v 1.3 2007-03-30 15:50:26 rensink Exp $
+ * $Id: AttributeScheduleFactory.java,v 1.4 2007-04-01 12:49:55 rensink Exp $
  */
 
 package groove.trans;
@@ -31,6 +31,7 @@ import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.graph.match.SearchPlanFactory;
 import groove.util.Bag;
 import groove.util.HashBag;
 
@@ -46,8 +47,10 @@ import java.util.Set;
  * that may not be matched in the source graph.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:26 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:55 $
+ * @deprecated taken over by the {@link SearchPlanFactory} hierarchy
  */
+@Deprecated
 public class AttributeScheduleFactory extends IndegreeScheduleFactory {
 	/** A label with the empty string as text. */
 	public static final DefaultLabel EMPTY_LABEL = DefaultLabel.createLabel("");

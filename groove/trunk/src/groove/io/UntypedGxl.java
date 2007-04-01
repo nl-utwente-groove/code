@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UntypedGxl.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
+ * $Id: UntypedGxl.java,v 1.3 2007-04-01 12:50:13 rensink Exp $
  */
 package groove.io;
 
@@ -23,10 +23,10 @@ import groove.graph.GraphFactory;
 import groove.graph.GraphShape;
 import groove.graph.HyperEdge;
 import groove.graph.Label;
-import groove.graph.GraphFormatException;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
+import groove.util.FormatException;
 import groove.util.Pair;
 
 import java.io.File;
@@ -51,7 +51,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class UntypedGxl extends AbstractXml {
     /**
@@ -69,7 +69,7 @@ public class UntypedGxl extends AbstractXml {
          * @throws UnsupportedOperationException always
          */
         @Deprecated
-        public Label parse(String text) throws GraphFormatException {
+        public Label parse(String text) throws FormatException {
             throw new UnsupportedOperationException();
         }
 
@@ -189,7 +189,7 @@ public class UntypedGxl extends AbstractXml {
 	 * using {@link #attrToGxlGraph}, and marshalling the result
 	 * using {@link #marshalGxlGraph}.
 	 */
-	public void marshalGraph(Graph graph, File file) throws XmlException, IOException {
+	public void marshalGraph(Graph graph, File file) throws FormatException, IOException {
 	    Graph attrGraph = normToAttrGraph(graph);
 	    groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
 	    // now marshal the attribute graph
@@ -203,7 +203,7 @@ public class UntypedGxl extends AbstractXml {
 	 */
 	@Override
 	public Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file)
-			throws XmlException, FileNotFoundException {
+			throws FormatException, FileNotFoundException {
 		groove.gxl.Graph gxlGraph = unmarshalGxlGraph(file);
 		Pair<Graph,Map<String,Node>> attrGraph = gxlToAttrGraph(gxlGraph);
 		Graph result = attrToNormGraph(attrGraph.first());
@@ -387,7 +387,7 @@ public class UntypedGxl extends AbstractXml {
      * @param file the source of the unmarhalling
      * @return the resulting GXL graph
      */
-    private groove.gxl.Graph unmarshalGxlGraph(File file) throws XmlException, FileNotFoundException {
+    private groove.gxl.Graph unmarshalGxlGraph(File file) throws FormatException, FileNotFoundException {
         // get a gxl object from the reader
         groove.gxl.Gxl gxl;
         try {
@@ -397,14 +397,14 @@ public class UntypedGxl extends AbstractXml {
             Reader reader = new FileReader(file);
             unmarshaller.unmarshal(reader);
         } catch (MarshalException e) {
-            throw new XmlException(e.getMessage());
+            throw new FormatException(e.getMessage());
         } catch (ValidationException e) {
-            throw new XmlException(e.getMessage());
+            throw new FormatException(e.getMessage());
         }
 
         // now convert the gxl to an attribute graph        
         if (gxl.getGraphCount() != 1)
-            throw new XmlException("Only one graph allowed in document");
+            throw new FormatException("Only one graph allowed in document");
         // Get the first and only graph element
         return gxl.getGraph(0);
     }

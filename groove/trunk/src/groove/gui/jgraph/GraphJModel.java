@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.4 2007-03-30 15:50:22 rensink Exp $
+ * $Id: GraphJModel.java,v 1.5 2007-04-01 12:49:36 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -50,7 +50,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */
@@ -504,6 +504,18 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	    return new GraphJVertex(this, node, isVertexLabelled());
 	}
 
+    /**
+     * Returns the attribute change required to mark a vertex as 
+     * a value (i.e., attribute-related) vertex.
+     */
+    protected AttributeMap getJVertexValueAttr() {
+    	if (vertexValueAttr == null) {
+    		this.vertexValueAttr = new AttributeMap();
+    		GraphConstants.setBackground(vertexValueAttr, JAttr.VALUE_BACKGROUND);
+    	}
+    	return vertexValueAttr;
+    	
+    }
 	/**
 	 * Tries to create the attributes based on the set of edges contained in the j-edge.
 	 * Calls the super method only if this fails, i.e., if #createJEdge.
@@ -546,12 +558,10 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	 * Callback method from {@link #createJVertexAttr(JVertex)}.
 	 */
 	protected AttributeMap createJVertexAttr(Node node) {
-        AttributeMap result;
+        AttributeMap result = (AttributeMap) defaultNodeAttr.clone();
 		if (node instanceof ValueNode) {
-			result = (AttributeMap) valueNodeAttr.clone();
-		} else {
-			result = (AttributeMap) defaultNodeAttr.clone();
-		}
+			result.applyMap(getJVertexValueAttr());
+		} 
         return result;
 	}
 
@@ -598,7 +608,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     /**
 	 * Indicates whether aspect prefixes should be shown for nodes and edges.
 	 */
-	public final boolean isShowLocalAspects() {
+	public final boolean isShowAspects() {
 		return getOptionValue(Options.SHOW_ASPECTS_OPTION) || showLocalAspects;
 	}
 
@@ -646,6 +656,11 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
     protected final List<JCell> addedJCells = new LinkedList<JCell>();
 
+    /**
+     * Value node attributes used in this graph model.
+     * Set in the constructor.
+     */
+    protected AttributeMap vertexValueAttr;
 	/** Flag indicating that aspect prefixes should be included for nodes and edges. */
     private boolean showLocalAspects;
 //

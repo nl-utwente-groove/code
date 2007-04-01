@@ -12,11 +12,10 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.3 2007-03-30 15:50:25 rensink Exp $
+ * $Id: SPORule.java,v 1.4 2007-04-01 12:49:54 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.DefaultInjectiveMorphism;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -25,7 +24,6 @@ import groove.graph.Node;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarGraph;
-import groove.util.ExprFormatException;
 import groove.util.Groove;
 
 import java.util.ArrayList;
@@ -42,7 +40,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -96,8 +94,25 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * @param ruleFactory the factory this rule used to instantiate related classes
      */
     public SPORule(Morphism morph, NameLabel name, int priority, RuleFactory ruleFactory) {
-    	this(morph, name, ruleFactory);
+        super((VarGraph) morph.dom().newGraph(), (VarGraph) morph.dom(), name, ruleFactory);
+        if (CONSTRUCTOR_DEBUG) {
+            Groove.message("Constructing rule: " + name);
+            Groove.message("Rule morphism: " + morph);
+        }
+//        this.isInjective = morph.isInjective();
+        this.hasCreators = !morph.isSurjective();
+        this.morphism = morph;
+        this.lhs = (VarGraph) morphism.dom();
+        this.rhs = (VarGraph) morphism.cod();
+//        this.modifying = computeModifying();
     	this.priority = priority;
+        if (CONSTRUCTOR_DEBUG) {
+            Groove.message("Rule " + name + ": " + this);
+            System.out.println("LHS nodes to be removed:\n" + Arrays.toString(getEraserNodes()));
+            System.out.println("LHS edges to be removed:\n" + Arrays.toString(getEraserEdges()));
+            System.out.println("LHS node map:\n" + mergeMap);
+            System.out.println("Anchors:\n" + anchor());
+        }
     }
 
     /**
@@ -111,24 +126,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      *         rhs().equals(morph.cod())
      */
     public SPORule(Morphism morph, NameLabel name, RuleFactory ruleFactory) {
-        super((VarGraph) morph.dom().newGraph(), (VarGraph) morph.dom(), name, ruleFactory);
-        if (CONSTRUCTOR_DEBUG) {
-            Groove.message("Constructing rule: " + name);
-            Groove.message("Rule morphism: " + morph);
-        }
-        this.isInjective = morph.isInjective();
-        this.hasCreators = !morph.isSurjective();
-        this.morphism = morph;
-        this.lhs = (VarGraph) morphism.dom();
-        this.rhs = (VarGraph) morphism.cod();
-//        this.modifying = computeModifying();
-        if (CONSTRUCTOR_DEBUG) {
-            Groove.message("Rule " + name + ": " + this);
-            System.out.println("LHS nodes to be removed:\n" + Arrays.toString(getEraserNodes()));
-            System.out.println("LHS edges to be removed:\n" + Arrays.toString(getEraserEdges()));
-            System.out.println("LHS node map:\n" + mergeMap);
-            System.out.println("Anchors:\n" + anchor());
-        }
+    	this(morph, name, DEFAULT_PRIORITY, ruleFactory);
     }
 
     public RuleEvent getEvent(VarNodeEdgeMap anchorMap) {
@@ -195,7 +193,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * Computes the underlying rule morphism from a given morphism.
 	 */
 	protected Morphism computeRuleMorphism(Morphism morph) {
-		Morphism result = isInjective ? new DefaultInjectiveMorphism(morph) : morph;
+//		Morphism result = isInjective ? new DefaultInjectiveMorphism(morph) : morph;
+		Morphism result = morph;
 		result.setFixed();
 	    return result;
 	}
@@ -345,44 +344,42 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * @param source the graph in which to look for the element
      * @param element the element to look for
      * @return <tt>true</tt> if the graph contains the element, <tt>false</tt> otherwise
+     * @deprecated funtionality now in {@link SPOEvent}
      */
+	@Deprecated
     protected boolean containsElement(Graph source, Element element) {
     	return source.containsElement(element);
     }
-
-	/**
-	 * Overwrites the super method in order to query the {@link GraphGrammar}
-	 * (as given by {@link #getGrammar()}) for a {@link GraphGrammar#CONTROL_LABELS}
-	 * property; if that is found, creates a schedule factory using 
-	 * {@link #createMatchingScheduleFactory(String)}.
-	 * Uses the <code>super</code> method otherwise.
-	 */
-    @Override
-	protected MatchingScheduleFactory computeMatchingScheduleFactory() {
-		MatchingScheduleFactory result = super.computeMatchingScheduleFactory();
-		GraphGrammar grammar = getGrammar();
-		if (grammar != null) {
-			String controlLabels = grammar.getProperties().getProperty(GraphGrammar.CONTROL_LABELS);
-			if (controlLabels != null) {
-				result = createMatchingScheduleFactory(controlLabels);
-			}
-		}
-		return result;
-	}
-    
-    /**
-     * Callback factory method to create a matching schedule factory from a given hint.
-     * Returns <code>null</code> if the hint cannot be parsed.
-     * This implementation turns the hint into a list of labels and creates a 
-     * {@link HintedIndegreeScheduleFactory}.
-     */
-    protected MatchingScheduleFactory createMatchingScheduleFactory(String controlLabels) {
-        try {
-            return new HintedIndegreeScheduleFactory(controlLabels);
-        } catch (ExprFormatException exc) {
-            return createMatchingScheduleFactory();
-        }
-    }
+//
+//	/**
+//	 * Overwrites the super method in order to query the {@link GraphGrammar}
+//	 * (as given by {@link #getGrammar()}) for a {@link GraphGrammar#CONTROL_LABELS}
+//	 * property; if that is found, creates a schedule factory using 
+//	 * {@link #createMatchingScheduleFactory(String)}.
+//	 * Uses the <code>super</code> method otherwise.
+//	 */
+//    @Override
+//	protected ConditionSearchPlanFactory computeSearchPlanFactory() {
+//		ConditionSearchPlanFactory result = super.computeSearchPlanFactory();
+//		GraphGrammar grammar = getGrammar();
+//		if (grammar != null) {
+//			List<String> controlLabels = grammar.getControlLabels();
+//			if (controlLabels != null) {
+//				result = createMatchingScheduleFactory(controlLabels);
+//			}
+//		}
+//		return result;
+//	}
+//    
+//    /**
+//     * Callback factory method to create a matching schedule factory from a given hint.
+//     * Returns <code>null</code> if the hint cannot be parsed.
+//     * This implementation turns the hint into a list of labels and creates a 
+//     * {@link HintedIndegreeScheduleFactory}.
+//     */
+//    protected MatchingScheduleFactory createMatchingScheduleFactory(List<String> controlLabels) {
+//    	return new HintedIndegreeScheduleFactory(controlLabels);
+//    }
 
     /** Returns the eraser (i.e., LHS-only) edges. */
     final Edge[] getEraserEdges() {
@@ -617,12 +614,12 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	protected Edge[] computeVarEdges() {
 		return lhs.varEdgeSet().toArray(new Edge[0]);
 	}
-
-	/**
-     * Indicates if this rule is injective.
-     * @invariant <tt>isInjective == ruleMorph.isInjective()</tt>
-     */
-    private final boolean isInjective;
+//
+//	/**
+//     * Indicates if this rule is injective.
+//     * @invariant <tt>isInjective == ruleMorph.isInjective()</tt>
+//     */
+//    private final boolean isInjective;
     /**
      * Indicates if this rule has creator edges or nodes.
      * @invariant <tt>hasCreators == ! ruleMorph.isSurjective()</tt>

@@ -1,7 +1,6 @@
 package groove.util;
 
 import groove.graph.DefaultLabel;
-import groove.graph.GraphFormatException;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
@@ -33,7 +32,7 @@ public class MatchingTestCases {
             nesg.addEdge(zero, label, one);
             nesg.addEdge(zero, label, two);
             
-        } catch (GraphFormatException e) {
+        } catch (FormatException e) {
             e.printStackTrace();
         }
 
@@ -66,7 +65,7 @@ public class MatchingTestCases {
             nesg.addEdge(two, label, three);
             nesg.addEdge(three, label, one);
 
-        } catch (GraphFormatException e) {
+        } catch (FormatException e) {
             e.printStackTrace();
         }
 
@@ -89,7 +88,7 @@ public class MatchingTestCases {
 
             nesg.addEdge(zero, label, one);
 
-        } catch (GraphFormatException e) {
+        } catch (FormatException e) {
             e.printStackTrace();
         }
 
@@ -115,7 +114,7 @@ public class MatchingTestCases {
             nesg.addEdge(zero, label, one);
             nesg.addNode(two);
 
-        } catch (GraphFormatException e) {
+        } catch (FormatException e) {
             e.printStackTrace();
         }
 
@@ -141,7 +140,7 @@ public class MatchingTestCases {
             nesg.addEdge(zero, label, one);
             nesg.addEdge(one, label, two);            
 
-        } catch (GraphFormatException e) {
+        } catch (FormatException e) {
             e.printStackTrace();
         }
 
@@ -168,7 +167,7 @@ public class MatchingTestCases {
 
             nesg.addEdge(zero, label, one);
 
-        } catch (GraphFormatException e) {
+        } catch (FormatException e) {
             e.printStackTrace();
         }
 

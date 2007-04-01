@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ValueNode.java,v 1.3 2007-03-30 15:50:45 rensink Exp $
+ * $Id: ValueNode.java,v 1.4 2007-04-01 12:49:50 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -23,16 +23,24 @@ import groove.algebra.Constant;
 import groove.algebra.Variable;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.graph.aspect.AttributeAspect;
+import groove.util.Groove;
 
 /**
  * Implementation of graph elements that represent algebraic data values.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:45 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:50 $
  */
 public class ValueNode extends ProductNode {
+	/** 
+	 * The string separating the algebra name from the value label 
+	 * in the the value node description.
+	 */
+	String VALUE_SEPARATOR = Groove.getXMLProperty("label.value.separator");
+	
 	/** Tests if a given graph contains value nodes. */
-	static public boolean isAttributed(Graph graph) {
+	static public boolean hasValueNodes(Graph graph) {
 		boolean result = false;
 		Iterator<? extends Node> nodeIter = graph.nodeSet().iterator();
 		while (!result && nodeIter.hasNext()) {
@@ -115,6 +123,15 @@ public class ValueNode extends ProductNode {
     }
 
     /**
+     * Indicates if the constant has a definite value, i.e., is not a variable.
+     * Convenience method for <code>!(getConstant() instanceof Variable)</code>.
+     * @return <code>true</code> if this node's constant is not a variable
+     */
+    public boolean hasValue() {
+    	return !(constant == null || constant instanceof Variable);
+    }
+    
+    /**
      * Sets the <code>constant</code>-field of this <code>ValueNode</code>
      * @param constant the new value for the <code>constant</code>-field
      */
@@ -131,7 +148,8 @@ public class ValueNode extends ProductNode {
 		if (getAlgebra() == null) {
 			return "x"+(getNumber()-AlgebraGraph.START_NODE_NR);
 		} else {
-			return getAlgebra().prefix() + constant.symbol();
+			String algebraName = AttributeAspect.getValue(getAlgebra()).getName();
+			return algebraName + VALUE_SEPARATOR + constant.symbol();
 		}
 	}
 }
