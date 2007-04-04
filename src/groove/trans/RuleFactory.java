@@ -12,14 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleFactory.java,v 1.2 2007-04-01 12:49:51 rensink Exp $
+ * $Id: RuleFactory.java,v 1.3 2007-04-04 07:04:19 rensink Exp $
  */
 package groove.trans;
 
-
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.graph.Simulation;
+import groove.graph.match.Matcher;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.view.RuleView;
 import groove.util.FormatException;
@@ -27,31 +26,44 @@ import groove.util.FormatException;
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-04-01 12:49:51 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-04 07:04:19 $
  */
 public interface RuleFactory {
 	/**
 	 * Creates a rule view of the correct kind for this rule factory.
 	 * @param graph the graph encoding the rule
+	 * @param properties TODO
 	 * @return a rule view over the rule encoded in the given graph
 	 */
-	public RuleView createRuleView(Graph graph, NameLabel name, int priority) throws FormatException;
+	public RuleView createRuleView(Graph graph, NameLabel name, int priority, RuleProperties properties) throws FormatException;
 
 	/**
-	 * Actual factory method for the rule.
-	 * The actual creation is deferred to this method.
+	 * Creates a named rule from a morphism.
+	 * The rule gets default rule properties and priority.
+	 * @see #createRule(Morphism, NameLabel, int, RuleProperties)
+	 * @see RuleProperties#DEFAULT_PROPERTIES
+	 * @see Rule#DEFAULT_PRIORITY
+	 * @throws FormatException if a rule cannot be created due to incompatibility
+	 * of the morphism and the default rule properties
 	 */
-	public Rule createRule(Morphism morphism, NameLabel name, int priority);
+	public Rule createRule(Morphism morphism, NameLabel name) throws FormatException;
+
+	/**
+	 * Creates a named rule with a given priority and rule properties.
+	 * @throws FormatException if a rule cannot be created due to incompatibility
+	 * of the morphism and the declared rule properties
+	 */
+	public Rule createRule(Morphism morphism, NameLabel name, int priority, RuleProperties properties) throws FormatException;
 
     /**
      * Creates and returns a fresh rule application object, of the kind required by the
      * rules of this factory.
      * @param event the rule instance for which an applier is to be created; is required
      * to be of the type of this factory.
-     * @param source the host graph to which the rule is to be applied
+     * @param host the host graph to which the rule is to be applied
 	 * @return a RuleApplication of the given rule if there is a matching
 	 */
-	public RuleApplication createRuleApplication(RuleEvent event, Graph source);
+	public RuleApplication createRuleApplication(RuleEvent event, Graph host);
 
     /**
      * Creates and returns a fresh rule event.
@@ -61,10 +73,18 @@ public interface RuleFactory {
      */
 	public RuleEvent createRuleEvent(Rule rule, VarNodeEdgeMap anchorMap);
 
+    /**
+     * Creates and returns a fresh rule event.
+     * @param rule the rule for which an event is to be created; is required
+     * to be of the type of this factory.
+     * @param anchorMap matching of the rule's left hand side in the host graph
+     */
+	public RuleEvent createRuleEvent(Rule rule, VarNodeEdgeMap anchorMap, DerivationData record);
+
 	/**
-	 * Creates a simulation for a given matching.
+	 * Creates a matcher for a given matching.
 	 */
-	public Simulation createSimulation(Matching match);
+	public Matcher createMatcher(Matching match);
 
 	/**
 	 * Creates and returns a matching for a given rule to a given graph, 
@@ -83,14 +103,14 @@ public interface RuleFactory {
 	 * @param graph the graph to which the rule's LHS is to be matched
 	 */
 	public Matching createMatching(GraphCondition rule, VarNodeEdgeMap partialMap, Graph graph);
-
-	/**
-	 * Creates and returns a matching based on a given simulation.
-	 * The domain and codomain, as well as the element map, are derived from 
-	 * the simulation.
-	 * @param sim the simulation on which the matching is based
-	 */
-	public Matching createMatching(Simulation sim);
+//
+//	/**
+//	 * Creates and returns a matching based on a given simulation.
+//	 * The domain and codomain, as well as the element map, are derived from 
+//	 * the simulation.
+//	 * @param sim the simulation on which the matching is based
+//	 */
+//	public Matching createMatching(Simulation sim);
 
 	/**
 	 * Creates a target graph of the kind corresponding to the specific

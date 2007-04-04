@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultSearchPlanFactory.java,v 1.2 2007-04-01 12:50:11 rensink Exp $
+ * $Id: DefaultSearchPlanFactory.java,v 1.3 2007-04-04 07:04:28 rensink Exp $
  */
 package groove.graph.match;
 
@@ -46,7 +46,7 @@ import groove.util.HashBag;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	/**
@@ -236,18 +236,7 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	        // pick the best remaining edge each time and add it to the
 	        // result, adjusting the remaining edges, nodes and indegrees
 	        while (! remainingEdges.isEmpty()) {
-	        	// see if there is a product edge whose arguments are all matched
-	        	Iterator<Map.Entry<ProductEdge,Set<Node>>> productEdgeIter = productEdgeMap.entrySet().iterator();
-	        	while (productEdgeIter.hasNext()) {
-	        		Map.Entry<ProductEdge,Set<Node>> productEdgeEntry = productEdgeIter.next();
-	        		Set<Node> arguments = new HashSet<Node>(productEdgeEntry.getValue());
-	        		if (!arguments.removeAll(remainingNodes)) {
-	        			boolean targetMatched = !remainingNodes.remove(productEdgeEntry.getKey().target());
-	        			boolean[] matched = new boolean[] { true, targetMatched };
-	        			result.add(createEdgeSearchItem(productEdgeEntry.getKey(), matched));
-	        			productEdgeIter.remove();
-	        		}
-	        	}
+	        	scheduleProductEdges(result, remainingNodes, productEdgeMap);
 	            Edge bestEdge = Collections.max(remainingEdges, this);
 	            int arity = bestEdge.endCount();
 	            boolean allMatched = true;
@@ -264,6 +253,7 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	            setChanged();
 	            notifyObservers(bestEdge);
 	        }
+	        scheduleProductEdges(result, remainingNodes, productEdgeMap);
 	        // remaining nodes are loose nodes: add them
 	        for (Node node: remainingNodes) {
 	        	assert ! (node instanceof ValueNode) : String.format("Remaining value node %s", node);
@@ -271,6 +261,33 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	        }
 	        assert productEdgeMap.isEmpty() : String.format("Remaining operator edges %s", productEdgeMap.keySet());
 	        return result;
+		}
+
+		/**
+		 * Schedules all produce edges of which the arguments have 
+		 * already been scheduled (i.e., are no longer in the remaining nodes).
+		 */
+		private void scheduleProductEdges(List<SearchItem> result, Set<Node> remainingNodes, Map<ProductEdge, Set<Node>> productEdgeMap) {
+			// flag to indicate there might yeat be something to be scheduled
+			boolean schedule;
+			do {
+				schedule = false;
+				// see if there is a product edge whose arguments are all
+				// matched
+				Iterator<Map.Entry<ProductEdge, Set<Node>>> productEdgeIter = productEdgeMap.entrySet().iterator();
+				while (productEdgeIter.hasNext()) {
+					Map.Entry<ProductEdge, Set<Node>> productEdgeEntry = productEdgeIter.next();
+					Set<Node> arguments = new HashSet<Node>(productEdgeEntry.getValue());
+					if (!arguments.removeAll(remainingNodes)) {
+						ProductEdge productEdge = productEdgeEntry.getKey();
+						boolean targetMatched = !remainingNodes.remove(productEdge.target());
+						boolean[] matched = new boolean[] { true, targetMatched };
+						result.add(createEdgeSearchItem(productEdge, matched));
+						productEdgeIter.remove();
+						schedule = true;
+					}
+				}
+			} while (schedule);
 		}
 		
 		/**

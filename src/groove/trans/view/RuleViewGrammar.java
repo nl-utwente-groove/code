@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleViewGrammar.java,v 1.4 2007-04-01 12:50:08 rensink Exp $
+ * $Id: RuleViewGrammar.java,v 1.5 2007-04-04 07:04:23 rensink Exp $
  */
 package groove.trans.view;
 
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
+import groove.trans.RuleFactory;
 import groove.util.FormatException;
 
 import java.util.HashMap;
@@ -28,6 +29,13 @@ import java.util.Map;
  * Graph grammar with {@link RuleView} information for each rule.
  */
 public class RuleViewGrammar extends GraphGrammar {
+    /**
+     * Constructs a named, empty grammar based on a given rule factory.
+     */
+    public RuleViewGrammar(RuleFactory ruleFactory, String name) {
+        super(ruleFactory, name);
+    }
+
     /**
      * Constructs a named, empty grammar.
      */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.3 2007-04-01 12:50:08 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.4 2007-04-04 07:04:23 rensink Exp $
  */
 
 package groove.trans.view;
@@ -44,7 +44,6 @@ import groove.rel.RegExprLabel;
 //import groove.rel.VarBinaryEdge;
 import groove.rel.VarGraph;
 import groove.trans.DefaultNAC;
-import groove.trans.DefaultRuleFactory;
 import groove.trans.EdgeEmbargo;
 import groove.trans.GraphCondition;
 import groove.trans.MergeEmbargo;
@@ -52,6 +51,8 @@ import groove.trans.NAC;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
+import groove.trans.RuleProperties;
+import groove.trans.SPORule;
 import groove.util.FormatException;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -76,7 +77,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -169,6 +170,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     	this.name = rule.getName();
         this.priority = rule.getPriority();
         this.rule = rule;
+        this.properties = rule.getProperties();
         this.graphToRuleMap = new HashMap<AspectNode,Node>();
         this.graph = computeAspectGraph(rule, graphToRuleMap);
     }
@@ -198,10 +200,10 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * @throws FormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public AspectualRuleView(AspectGraph graph, NameLabel name, int priority, RuleFactory ruleFactory) throws FormatException {
+    public AspectualRuleView(AspectGraph graph, NameLabel name, int priority, RuleProperties properties) throws FormatException {
         this.name = name;
         this.priority = priority;
-        this.ruleFactory = ruleFactory;
+        this.properties = properties;
         this.graph = graph;
         this.graphToRuleMap = new HashMap<AspectNode,Node>();
         this.rule = computeRule(graph, graphToRuleMap);
@@ -257,10 +259,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * @return the rule factory.
      */
     public RuleFactory getRuleFactory() {
-    	if (ruleFactory == null) {
-    		ruleFactory = DefaultRuleFactory.getInstance();
-    	}
-    	return ruleFactory;
+    	return properties.getFactory();
     }
 
     /** Returns the name of the rule represented by this rule graph, set at construction time. */
@@ -383,7 +382,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
             }
         }
         // the resulting rule
-        Rule result = getRuleFactory().createRule(ruleMorph, name, priority);
+        Rule result = createRule(ruleMorph, name, priority);
         // add the nacs to the rule
         for (Pair<Set<Node>,Set<Edge>> nacPair: AbstractGraph.getConnectedSets(nacNodeSet, nacEdgeSet)) {
             result.setAndNot(computeNac(result.lhs(), nacPair.first(), nacPair.second()));
@@ -564,8 +563,8 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 * @param priority the priority of the new rule.
 	 * @return the fresh rule created by the factory
 	 */
-	protected Rule createRule(Morphism ruleMorphism, NameLabel name, int priority) {
-	    return getRuleFactory().createRule(ruleMorphism, name, priority);
+	protected Rule createRule(Morphism ruleMorphism, NameLabel name, int priority) throws FormatException {
+	    return new SPORule(ruleMorphism, name, priority, properties);
 	}
 
 	/**
@@ -876,7 +875,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      */
     private final Map<AspectNode,Node> graphToRuleMap;
     /** Rule factory set for this rule. */
-    private RuleFactory ruleFactory;
+    private final RuleProperties properties;
 
     /** Debug flag for creating rules. */
     static private final boolean TO_RULE_DEBUG = false;

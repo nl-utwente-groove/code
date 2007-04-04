@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GpsGrammar.java,v 1.6 2007-04-01 12:50:13 rensink Exp $
+ * $Id: GpsGrammar.java,v 1.7 2007-04-04 07:04:22 rensink Exp $
  */
 
 package groove.io;
@@ -26,6 +26,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
+import groove.trans.RuleProperties;
 import groove.trans.RuleSystem;
 import groove.trans.StructuredRuleName;
 import groove.trans.view.AspectualRuleView;
@@ -48,7 +49,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @deprecated use {@link AspectualGpsGrammar} or {@link LayedOutGpsGrammar} instead
  */
 @Deprecated
@@ -138,7 +139,7 @@ public class GpsGrammar implements XmlGrammar {
         try {
 			// load the rules from location
 			Map<StructuredRuleName,AspectualRuleView> ruleGraphMap = new HashMap<StructuredRuleName,AspectualRuleView>();
-			loadRules(location, null, ruleGraphMap);
+			loadRules(location, null, ruleGraphMap, result.getProperties());
 			for (AspectualRuleView ruleGraph: ruleGraphMap.values()) {
 			    result.add(ruleGraph);
 			}
@@ -183,15 +184,16 @@ public class GpsGrammar implements XmlGrammar {
 	 * Unmarshals a rule from a file in <tt>.gpr</tt> format.
 	 * The rule gets the filename (without directory path) as name.
 	 * @param location the file to get the rule from
+     * @param properties the rule properties of the rule to be unmarshalled
 	 * @return a rule view for the given rule.
 	 * @throws IOException
 	 */
-	public AspectualRuleView unmarshalRule(File location) throws IOException {
+	public AspectualRuleView unmarshalRule(File location, RuleProperties properties) throws IOException {
 	    try {
 	        String filename = Groove.createRuleFilter().stripExtension(location.getName());
 	        PriorityFileName priorityFileName = new PriorityFileName(filename);
 	        StructuredRuleName ruleName = new StructuredRuleName(priorityFileName.getRuleName());
-	        return createRuleGraph(getGraphMarshaller().unmarshalGraph(location), ruleName, priorityFileName.getPriority().intValue());
+	        return createRuleGraph(getGraphMarshaller().unmarshalGraph(location), ruleName, priorityFileName.getPriority().intValue(), properties);
 	    } catch (FormatException exc) {
 	        throw new IOException("Error in graph format: "+exc.getMessage());
 	    }
@@ -308,8 +310,8 @@ public class GpsGrammar implements XmlGrammar {
      * of attributed graphs, <tt>false</tt> otherwise
      */
     protected boolean isAttributedGrammar(GraphGrammar grammar) {
-		String attributes = grammar.getProperties().getProperty(GraphGrammar.ATTRIBUTE_SUPPORT);
-		return attributes != null && attributes.equals(GraphGrammar.ATTRIBUTES_YES);
+		String attributes = grammar.getProperties().getProperty(RuleProperties.ATTRIBUTE_SUPPORT);
+		return attributes != null && attributes.equals(RuleProperties.ATTRIBUTES_YES);
     }
 
     /**
@@ -353,11 +355,12 @@ public class GpsGrammar implements XmlGrammar {
      *        <tt>directory</tt>
      * @param ruleGraphMap output parameter: mapping from the names of the rules found to the
      *        corresponding rule graphs 
+     * @param properties the properties of the rules to be loaded
      * @require <tt>directory.exists() && directory.isDirectory()</tt>
      * @throws IOException if <tt>directory</tt> contains duplicate or malformed production rules
      */
     private void loadRules(File directory, StructuredRuleName rulePath,
-            Map<StructuredRuleName,AspectualRuleView> ruleGraphMap) throws IOException {
+            Map<StructuredRuleName,AspectualRuleView> ruleGraphMap, RuleProperties properties) throws IOException {
         File[] files = directory.listFiles(RULE_FILTER);
         if (files == null) {
             throw new IOException(LOAD_ERROR+": exception when reading rules from location "+directory);
@@ -373,7 +376,7 @@ public class GpsGrammar implements XmlGrammar {
                     throw new IOException(LOAD_ERROR + ": duplicate rule name \"" + ruleName+"\"");
                 if (!files[i].isDirectory()) {
                     try {
-                        AspectualRuleView ruleGraph = createRuleGraph(getGraphMarshaller().unmarshalGraph(files[i]), ruleName, priorityFileName.getPriority().intValue());
+                        AspectualRuleView ruleGraph = createRuleGraph(getGraphMarshaller().unmarshalGraph(files[i]), ruleName, priorityFileName.getPriority(), properties);
                         ruleGraphMap.put(ruleName, ruleGraph);
                     } catch (FormatException exc) {
                         throw new IOException(LOAD_ERROR + ": rule format error in "
@@ -384,7 +387,7 @@ public class GpsGrammar implements XmlGrammar {
                     }
                 } else {
                     assert files[i].isDirectory();
-                    loadRules(files[i], ruleName, ruleGraphMap);
+                    loadRules(files[i], ruleName, ruleGraphMap, properties);
                 }
             }
         }
@@ -405,13 +408,14 @@ public class GpsGrammar implements XmlGrammar {
      * @param graph the graph from which to create the rule-graph
      * @param ruleName the name of the rule to be created
      * @param priority the priority of the rule to be created
+     * @param properties the properties of the rule to be created
      * @return the {@link groove.trans.view.RuleGraph} created from the given graph
      * @throws FormatException when the given graph does not conform to
      * the requirements for making a rule-graph out of it
      */
-    protected AspectualRuleView createRuleGraph(Graph graph, StructuredRuleName ruleName, int priority)
+    protected AspectualRuleView createRuleGraph(Graph graph, StructuredRuleName ruleName, int priority, RuleProperties properties)
             throws FormatException {
-    	return (AspectualRuleView) getRuleFactory().createRuleView(graph, ruleName, priority);
+    	return (AspectualRuleView) getRuleFactory().createRuleView(graph, ruleName, priority, properties);
     }
     
     /**

@@ -12,15 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributeMatching.java,v 1.3 2007-03-30 15:50:26 rensink Exp $
+ * $Id: AttributeMatching.java,v 1.4 2007-04-04 07:04:20 rensink Exp $
  */
 
 package groove.trans;
 
-import groove.graph.AttributeSimulation;
 import groove.graph.Graph;
-import groove.graph.Simulation;
-import groove.rel.VarNodeEdgeMap;
 
 /**
  * Creates an morphism between attributed graphs from a given morphism.
@@ -47,20 +44,20 @@ public class AttributeMatching extends DefaultMatching {
 //    protected AttributeSimulation createSimulation() {
 //        return new AttributeSimulation(this);
 //    }
-
-    /* (non-Javadoc)
-     * @see groove.graph.DefaultMorphism#createMorphism(groove.graph.Simulation)
-     */
-    @Override
-    protected AttributeMatching createMorphism(final Simulation sim) {
-        final AttributeSimulation attrSim = (AttributeSimulation) sim;
-        AttributeMatching result = new AttributeMatching((DefaultGraphCondition) attrSim.getCondition(), attrSim.cod(), getRuleFactory()) {
-            @Override
-            protected VarNodeEdgeMap createElementMap() {
-                return attrSim.getSingularMap();
-            }
-        };
-        result.setFixed();
-        return result;
-    }
+//
+//    /* (non-Javadoc)
+//     * @see groove.graph.DefaultMorphism#createMorphism(groove.graph.Simulation)
+//     */
+//    @Override
+//    protected AttributeMatching createMorphism(final Simulation sim) {
+//        final AttributeSimulation attrSim = (AttributeSimulation) sim;
+//        AttributeMatching result = new AttributeMatching((DefaultGraphCondition) attrSim.getCondition(), attrSim.cod(), getRuleFactory()) {
+//            @Override
+//            protected VarNodeEdgeMap createElementMap() {
+//                return attrSim.getSingularMap();
+//            }
+//        };
+//        result.setFixed();
+//        return result;
+//    }
 }

@@ -1,11 +1,10 @@
 /*
- * $Id: DefaultConditionSearchPlanFactory.java,v 1.3 2007-03-30 15:50:44 rensink Exp $
+ * $Id: DefaultConditionSearchPlanFactory.java,v 1.4 2007-04-04 07:04:07 rensink Exp $
  */
 package groove.trans.match;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -16,11 +15,12 @@ import java.util.Set;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
-import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.match.EdgeSearchItem;
 import groove.graph.match.NodeSearchItem;
+import groove.graph.match.ProductEdgeSearchItem;
 import groove.graph.match.SearchItem;
+import groove.graph.match.ValueNodeSearchItem;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.match.RegExprSearchPlanFactory;
@@ -28,6 +28,7 @@ import groove.trans.DefaultGraphCondition;
 import groove.trans.GraphCondition;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
+import groove.trans.RuleProperties;
 
 /**
  * Strategy that yields the edges in order of ascending indegree of
@@ -37,7 +38,7 @@ import groove.trans.Rule;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory implements ConditionSearchPlanFactory {
 	/**
@@ -92,9 +93,9 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
      * @version $Revision $
      */
     protected class GrammarPlanData extends PlanData {
-    	protected GrammarPlanData(GraphGrammar grammar, Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
+    	protected GrammarPlanData(RuleProperties properties, Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
     		super(nodeSet, edgeSet);
-    		this.grammar = grammar;
+    		this.properties = properties;
     	}
     	
     	/**
@@ -102,13 +103,13 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
     	 */
     	@Override
 		protected List<Comparator<Edge>> computeComparators() {
-			return DefaultConditionSearchPlanFactory.this.createComparators(grammar, nodeSet, edgeSet);
+			return DefaultConditionSearchPlanFactory.this.createComparators(properties, nodeSet, edgeSet);
 		}
 
     	/**
     	 * The grammar for this plan data.
     	 */
-		protected final GraphGrammar grammar;
+		protected final RuleProperties properties;
     }
 
 	/**
@@ -116,31 +117,28 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	 * and adds embargo tests to the schedule. 
 	 */
     public List<SearchItem> createSearchPlan(GraphCondition condition) {
-    	return createSearchPlan(condition, Collections.<Node>emptySet(), Collections.<Edge>emptySet());
+    	return createSearchPlan(condition, condition.getPattern().nodeMap().values(), condition.getContext().edgeSet());
     }
 
 	/**
 	 * Takes control labels into account if there are any,
 	 * and adds embargo tests to the schedule. 
 	 */
-    public List<SearchItem> createSearchPlan(GraphCondition condition, Set<Node> preMatchedNodes, Set<Edge> preMatchedEdges) {
-    	Morphism morphism = condition.getPattern();
+    public List<SearchItem> createSearchPlan(GraphCondition condition, Collection<? extends Node> boundNodes, Collection<? extends Edge> boundEdges) {
     	Graph subject = condition.getTarget();
     	Set<Node> nodeSet = new HashSet<Node>(subject.nodeSet());
-    	nodeSet.removeAll(preMatchedNodes);
-    	nodeSet.removeAll(morphism.nodeMap().values());
+    	nodeSet.removeAll(boundNodes);
     	Set<Edge> edgeSet = new HashSet<Edge>(subject.edgeSet());
-    	edgeSet.removeAll(preMatchedEdges);
-    	edgeSet.removeAll(morphism.edgeMap().values());
+    	edgeSet.removeAll(boundEdges);
     	PlanData planData;
     	if (condition instanceof Rule) {
-    		planData = new GrammarPlanData(((Rule) condition).getGrammar(), nodeSet, edgeSet);
+    		planData = new GrammarPlanData(((Rule) condition).getProperties(), nodeSet, edgeSet);
     	} else {
     		planData = new PlanData(nodeSet, edgeSet);
     	}
     	List<SearchItem> result = planData.getPlan();
     	if (condition instanceof DefaultGraphCondition) {
-    		addEmbargoes((DefaultGraphCondition) condition, result, preMatchedNodes, preMatchedEdges);
+    		addEmbargoes((DefaultGraphCondition) condition, result, boundNodes, boundEdges);
     	}
     	return result;
     }
@@ -150,29 +148,19 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	 * @param condition the condition from which the embargoes are to be retrieved
 	 * @param result the already computed search plan
 	 * @param prematchedNodes the nodes that are already matched (and hence not in <code>result</code>)
-	 * @param preMatchedEdges the edges that are already matched (and hence not in <code>result</code>)
+	 * @param boundEdges the edges that are already matched (and hence not in <code>result</code>)
 	 */
-	private void addEmbargoes(DefaultGraphCondition condition, List<SearchItem> result, Set<Node> preMatchedNodes, Set<Edge> preMatchedEdges) {
-		Map<Node, Collection<Edge>> embargoMap = condition.getNegationMap();
-		if (embargoMap != null) {
-			for (Map.Entry<Node, Collection<Edge>> embargoEntry : embargoMap.entrySet()) {
-				Node source = embargoEntry.getKey();
-				for (Edge embargoEdge : embargoEntry.getValue()) {
-					if (source.equals(embargoEdge.source())) {
-						addEdgeEmbargo(result, embargoEdge, preMatchedNodes, preMatchedEdges);
-					}
-				}
+	private void addEmbargoes(DefaultGraphCondition condition, List<SearchItem> result, Collection<? extends Node> boundNodes, Collection<? extends Edge> boundEdges) {
+		Set<Edge> negations = condition.getNegations();
+		if (negations != null) {
+			for (Edge embargoEdge : negations) {
+				addEdgeEmbargo(result, embargoEdge, boundNodes, boundEdges);
 			}
 		}
-		Map<Node, Set<Node>> injectionMap = condition.getInjectionMap();
-		if (injectionMap != null) {
-			for (Map.Entry<Node, Set<Node>> injectionEntry : injectionMap.entrySet()) {
-				Node node1 = injectionEntry.getKey();
-				for (Node node2 : injectionEntry.getValue()) {
-					if (node1.compareTo(node2) < 0) {
-						addMergeEmbargo(result, node1, node2, preMatchedNodes);
-					}
-				}
+		Set<Set<? extends Node>> injections = condition.getInjections();
+		if (injections != null) {
+			for (Set<? extends Node> injection : injections) {
+				addMergeEmbargo(result, injection, boundNodes);
 			}
 		}
 	}
@@ -186,10 +174,10 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	 * @return a list of comparators determining the order in which edges should be matched
 	 * @see #createComparators(Set, Set)
 	 */
-	protected List<Comparator<Edge>> createComparators(GraphGrammar grammar, Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
+	protected List<Comparator<Edge>> createComparators(RuleProperties properties, Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
 		List<Comparator<Edge>> result = super.createComparators(nodeSet, edgeSet);
-		if (grammar != null) {
-			List<String> controlLabels = grammar.getControlLabels();
+		if (properties != null) {
+			List<String> controlLabels = properties.getControlLabels();
 			result.add(0, new ControlLabelComparator(controlLabels));
 		}
 		return result;
@@ -201,32 +189,32 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	 * @param result the pre-existing search plan
 	 * @param embargoEdge the embargo edge to be inserted
 	 * @param prematchedNodes the nodes that are already matched (and hence not in <code>result</code>)
-	 * @param preMatchedEdges the edges that are already matched (and hence not in <code>result</code>)
+	 * @param boundEdges the edges that are already matched (and hence not in <code>result</code>)
 	 */
-    protected void addEdgeEmbargo(List<SearchItem> result, Edge embargoEdge, Set<Node> preMatchedNodes, Set<Edge> preMatchedEdges) {
-    	Set<Node> endSet = new HashSet<Node>();
-    	for (Node end: embargoEdge.ends()) {
-        	if (!preMatchedNodes.contains(end)) {
-        		endSet.add(end);
-        	}
-    	}
+    private void addEdgeEmbargo(List<SearchItem> result, Edge embargoEdge, Collection<? extends Node> boundNodes, Collection<? extends Edge> boundEdges) {
+    	Set<Node> endSet = new HashSet<Node>(Arrays.asList(embargoEdge.ends()));
+    	endSet.removeAll(boundNodes);
     	// the set of variables possibly occurring in the edge
     	Set<String> varSet = new HashSet<String>();
     	RegExpr edgeExpr = getRegExpr(embargoEdge);
     	if (edgeExpr != null) {
     		varSet.addAll(edgeExpr.allVarSet());
-    		for (Edge preMatchedEdge: preMatchedEdges) {
+    		for (Edge preMatchedEdge: boundEdges) {
     			edgeExpr = getRegExpr(preMatchedEdge);
     			if (edgeExpr != null) {
     				varSet.removeAll(edgeExpr.boundVarSet());
     			}
     		}
     	}
+    	// look for first position in result after which all
+    	// the embargo's ends and variables have been scheduled
     	int index = 0;
-    	while (! endSet.isEmpty() || ! varSet.isEmpty()) {
+    	while (index < result.size() && ! (endSet.isEmpty() && varSet.isEmpty())) {
     		SearchItem next = result.get(index);
     		if (next instanceof NodeSearchItem) {
     			endSet.remove(((NodeSearchItem) next).getNode());
+    		} else if (next instanceof ValueNodeSearchItem) {
+    			endSet.remove(((ValueNodeSearchItem) next).getNode());
     		} else if (next instanceof EdgeSearchItem) {
     			Edge edge = ((EdgeSearchItem) next).getEdge();
     			endSet.removeAll(Arrays.asList(edge.ends()));
@@ -234,8 +222,14 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
     			if (edgeExpr != null) {
     				varSet.removeAll(edgeExpr.boundVarSet());
     			}
+    		} else if (next instanceof ProductEdgeSearchItem) {
+    			Edge edge = ((ProductEdgeSearchItem) next).getEdge();
+    			endSet.removeAll(Arrays.asList(edge.ends()));
     		}
     		index++;
+    	}
+    	if (!endSet.isEmpty() || !varSet.isEmpty()) {
+    		throw new IllegalStateException(String.format("Embargo edge %s cannot be acheduled in %s", embargoEdge, result));
     	}
     	result.add(index, createNegatedSearchItem(createEdgeSearchItem(embargoEdge, null)));
     }
@@ -252,17 +246,11 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	 * Inserts a merge embargo search item at the appropriate place in a 
 	 * search plan, namely directly after the nodes have been matched.
 	 * @param result the pre-existing search plan
-	 * @param node1 the first node to be matched injectively
-	 * @param node2 the second node to be matched injectively
+   	 * @param injection the first node to be matched injectively
 	 */
-    protected void addMergeEmbargo(List<SearchItem> result, Node node1, Node node2, Set<Node> preMatchedNodes) {
-    	Set<Node> nodeSet = new HashSet<Node>();
-    	if (!preMatchedNodes.contains(node1)) {
-    		nodeSet.add(node1);
-    	}
-    	if (!preMatchedNodes.contains(node2)) {
-    		nodeSet.add(node2);
-    	}
+    private void addMergeEmbargo(List<SearchItem> result, Set<? extends Node> injection, Collection<? extends Node> boundNodes) {
+    	Set<Node> nodeSet = new HashSet<Node>(injection);
+    	nodeSet.removeAll(boundNodes);
     	int index = 0;
     	while (! nodeSet.isEmpty()) {
     		SearchItem next = result.get(index);
@@ -275,7 +263,7 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
     		}
     		index++;
     	}
-    	result.add(index, createInjectionSearchItem(node1, node2));
+    	result.add(index, createInjectionSearchItem(injection));
     }
     
     /**
@@ -289,11 +277,10 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
     
     /**
      * Callback factory method for an injection search item.
-     * @param node1 the first node to be matched injectively
-     * @param node2 the second node to be matched injectively
+     * @param injection the first node to be matched injectively
      * @return an instance of {@link InjectionSearchItem}
      */
-    protected InjectionSearchItem createInjectionSearchItem(Node node1, Node node2) {
-    	return new InjectionSearchItem(node1, node2);
+    protected InjectionSearchItem createInjectionSearchItem(Set<? extends Node> injection) {
+    	return new InjectionSearchItem(injection);
     }    
 }

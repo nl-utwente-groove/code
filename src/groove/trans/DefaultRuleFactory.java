@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.5 2007-04-01 12:49:55 rensink Exp $
+ * $Id: DefaultRuleFactory.java,v 1.6 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.graph.Simulation;
 import groove.graph.aspect.AspectGraph;
+import groove.graph.match.Matcher;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.match.MatchingMatcher;
 import groove.trans.view.AspectualRuleView;
@@ -36,7 +36,7 @@ import groove.util.FormatException;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultRuleFactory implements RuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */
@@ -77,24 +77,24 @@ public class DefaultRuleFactory implements RuleFactory {
 	}
 
 	/**
-	 * This implementation returns a {@link DefaultMatching}.
+	 * This implementation returns an {@link SPORule}.
 	 */
-	public Matching createMatching(final Simulation sim) {
-		return createMatching((SPORule) sim.dom(), (VarNodeEdgeMap) sim.getSingularMap(), sim.cod());
+	public Rule createRule(Morphism morphism, NameLabel name) throws FormatException {
+		return createRule(morphism, name, Rule.DEFAULT_PRIORITY, RuleProperties.DEFAULT_PROPERTIES);
 	}
 
 	/**
 	 * This implementation returns an {@link SPORule}.
 	 */
-	public Rule createRule(Morphism morphism, NameLabel name, int priority) {
-		return new SPORule(morphism, name, priority, this);
+	public Rule createRule(Morphism morphism, NameLabel name, int priority, RuleProperties properties) throws FormatException {
+		return new SPORule(morphism, name, priority, properties);
 	}
 
 	/**
 	 * This implementation returns an {@link SPOApplication}.
 	 */
-	public RuleApplication createRuleApplication(RuleEvent event, Graph source) {
-        return new SPOApplication((SPOEvent) event, source, this);
+	public RuleApplication createRuleApplication(RuleEvent event, Graph host) {
+        return new SPOApplication((SPOEvent) event, host);
 	}
 
 	/**
@@ -105,16 +105,23 @@ public class DefaultRuleFactory implements RuleFactory {
 	}
 
 	/**
+	 * This implementation returns an {@link SPOEvent}.
+	 */
+	public RuleEvent createRuleEvent(Rule rule, VarNodeEdgeMap anchorMap, DerivationData record) {
+		return new SPOEvent((SPORule) rule, anchorMap, record);
+	}
+
+	/**
 	 * This implementation returns an {@link AspectualRuleView}.
 	 */
-	public AspectualRuleView createRuleView(Graph graph, NameLabel name, int priority) throws FormatException {
-		return new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), name, priority, this);
+	public AspectualRuleView createRuleView(Graph graph, NameLabel name, int priority, RuleProperties properties) throws FormatException {
+		return new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), name, priority, properties);
 	}
 
 	/**
 	 * This implementation returns a {@link MatchingSimulation}.
 	 */
-	public Simulation createSimulation(Matching morphism) {
+	public Matcher createMatcher(Matching morphism) {
       return new MatchingMatcher(morphism);
 	}
 

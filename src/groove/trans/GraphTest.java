@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.2 2007-03-30 15:50:26 rensink Exp $
+ * $Id: GraphTest.java,v 1.3 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
@@ -27,7 +27,7 @@ import java.util.Iterator;
  * Super-interface for tests over graphs.
  * Contains the common functionality of {@link GraphPredicate} and {@link GraphCondition}.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface GraphTest {    
     /**
@@ -57,14 +57,14 @@ public interface GraphTest {
      * Convenience method for <code>getContext().isEmpty()</code>.
      * @return <code>true</code> if this predicate has an empty context.
      */
-    public boolean isClosed();
+    public boolean isGround();
     
     /**
      * Returns the context of this predicate.
      * The context is a subgraph that has to be matched already before
      * this predicate can become relevant.
      * If the context is empty, we call the predicate <i>closed</i>.
-     * @see #isClosed()
+     * @see #isGround()
      */
     public VarGraph getContext();
     

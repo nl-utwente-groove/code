@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.3 2007-03-30 15:50:22 rensink Exp $
+ * $Id: LTSJModel.java,v 1.4 2007-04-04 07:04:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -38,7 +38,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class LTSJModel extends GraphJModel {
 	/** Dummy LTS model. */
@@ -148,7 +148,6 @@ public class LTSJModel extends GraphJModel {
 				return ((GraphTransition) object).getRule().getName().text();
 			}
 		}
-
 	}
 
     /** Constant defining an italic font, for displaying state identities. */
@@ -164,16 +163,20 @@ public class LTSJModel extends GraphJModel {
     /** The default edge attributes of the LTS */
     private static final AttributeMap LTS_EDGE_ATTR;
 
-    /** Emphasized node attributes of the LTS */
+    /** Active node attributes of the LTS */
     private static final AttributeMap LTS_NODE_ACTIVE_CHANGE;
-    /** Emphasized edge attributes of the LTS */
+    /** Active edge attributes of the LTS */
     private static final AttributeMap LTS_EDGE_ACTIVE_CHANGE;
+    /** Emphasized active node attributes of the LTS */
+    private static final AttributeMap LTS_ACTIVE_EMPH_NODE_CHANGE;
 
     // set the emphasis attributes
     static {
         // active LTS nodes
         LTS_NODE_ACTIVE_CHANGE = new AttributeMap();
         GraphConstants.setBorder(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_BORDER);
+        GraphConstants.setLineColor(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
+        GraphConstants.setLineWidth(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
         // active LTS edges
         LTS_EDGE_ACTIVE_CHANGE = new AttributeMap();
         GraphConstants.setForeground(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
@@ -192,6 +195,9 @@ public class LTSJModel extends GraphJModel {
         // LTS final nodes
         LTS_FINAL_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
         GraphConstants.setBackground(LTS_FINAL_NODE_ATTR, JAttr.LTS_FINAL_BACKGROUND);
+        LTS_ACTIVE_EMPH_NODE_CHANGE = new AttributeMap();
+        GraphConstants.setBorder(LTS_ACTIVE_EMPH_NODE_CHANGE, JAttr.LTS_ACTIVE_EMPH_BORDER);
+        GraphConstants.setLineWidth(LTS_ACTIVE_EMPH_NODE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
         // LTS edges
         LTS_EDGE_ATTR = (AttributeMap) JAttr.DEFAULT_EDGE_ATTR.clone();
         GraphConstants.setConnectable(LTS_EDGE_ATTR, false);
@@ -339,6 +345,19 @@ public class LTSJModel extends GraphJModel {
         }
         return result;
     }
+
+    /** Adds the correct border emphasis. */
+	@Override
+	protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
+		AttributeMap result;
+        State state = (State) ((GraphJVertex) jCell).getNode();
+        if (state.equals(getActiveState())) {
+        	result = LTS_ACTIVE_EMPH_NODE_CHANGE;
+        } else {
+        	result = super.getJVertexEmphAttr(jCell);
+        }
+        return result;
+	}
 
     /**
      * This implementation checks if the edge to be added is a flag with special label

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.6 2007-04-01 12:50:28 rensink Exp $
+ * $Id: Simulator.java,v 1.7 2007-04-04 07:04:27 rensink Exp $
  */
 package groove.gui;
 
@@ -52,8 +52,6 @@ import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
-import groove.trans.match.MatchingMatcher;
-//import groove.trans.view.RuleGraph;
 import groove.trans.view.AspectualRuleView;
 import groove.trans.view.RuleViewGrammar;
 import groove.util.Converter;
@@ -113,7 +111,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class Simulator {
     /**
@@ -215,7 +213,9 @@ public class Simulator {
 	        } catch (InterruptedException exc) {
 	        	// thread is done
 	        }
-	        cancelDialog.dispose();
+	        synchronized (cancelDialog) {
+	        	cancelDialog.dispose();
+	        }
 	    }
 	
 	    /**
@@ -1200,7 +1200,7 @@ public class Simulator {
             NameLabel currentRuleName = currentRule.getName();
             int currentRulePriority = currentRule.getPriority();
             try {
-                AspectualRuleView newRuleGraph = (AspectualRuleView) ruleFactory.createRuleView(ruleAsGraph, currentRuleName, currentRulePriority);
+                AspectualRuleView newRuleGraph = (AspectualRuleView) ruleFactory.createRuleView(ruleAsGraph, currentRuleName, currentRulePriority, currentGrammar.getProperties());
                 currentGrammar.add(newRuleGraph);
                 ((AspectualGpsGrammar) currentGrammarLoader).marshalRule(newRuleGraph, currentGrammarFile);
                 NameLabel oldRuleName = currentRuleName;
@@ -1222,7 +1222,6 @@ public class Simulator {
      * @see #notifySetGrammar(GTS)
      */
     public synchronized void setGrammar(GTS gts) {
-        clearGrammar();
         this.currentGTS = gts;
         this.currentGrammar = (RuleViewGrammar) gts.ruleSystem();
         this.stateGenerator = createStateGenerator(gts);
@@ -1247,14 +1246,6 @@ public class Simulator {
             ((JSplitPane) frame.getContentPane()).resetToPreferredSizes();
         }
     }
-
-	/**
-	 * Clears temporary storage space occupied by the computations
-	 * for the current graph grammar. 
-	 */
-	private void clearGrammar() {
-		MatchingMatcher.clear();
-	}
 
     /**
      * Sets the current state graph to a given state. Adds the previous state or active derivation

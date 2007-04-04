@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultMatching.java,v 1.4 2007-04-01 12:49:54 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.5 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
@@ -25,7 +25,7 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.NodeEdgeMap;
-import groove.graph.Simulation;
+import groove.graph.match.Matcher;
 import groove.rel.RegExprLabel;
 import groove.rel.RegExprMorphism;
 import groove.rel.ValuationEdge;
@@ -39,7 +39,7 @@ import groove.util.FilterIterator;
  * Expecially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
@@ -174,22 +174,22 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
 
     /**
      * This implementation defers the creation to the rule factory.
-     * @see RuleFactory#createSimulation(Matching)
+     * @see RuleFactory#createMatcher(Matching)
      */
     @Override
-    protected Simulation createSimulation() {
-    	return getRuleFactory().createSimulation(this);
+    protected Matcher createMatcher() {
+    	return getRuleFactory().createMatcher(this);
     }
-
-    /**
-     * This implementation defers the creation to the rule factory.
-     * It is assumed that the simulation <code>sim</code> is a {@link MatchingSimulation}.
-     * @see RuleFactory#createMatching(MatchingSimulation)
-     */
-    @Override
-    protected DefaultMatching createMorphism(final Simulation sim) {
-    	return (DefaultMatching) getRuleFactory().createMatching(sim);
-    }
+//
+//    /**
+//     * This implementation defers the creation to the rule factory.
+//     * It is assumed that the simulation <code>sim</code> is a {@link MatchingSimulation}.
+//     * @see RuleFactory#createMatching(MatchingSimulation)
+//     */
+//    @Override
+//    protected DefaultMatching createMorphism(final Simulation sim) {
+//    	return (DefaultMatching) getRuleFactory().createMatching(sim);
+//    }
 
     /**
      * This implementation returns a {@link RegExprMorphism}.
@@ -210,7 +210,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * @see #getTotalExtensionsIter()
      */
     protected boolean hasComplexNegConjunct() {
-        return condition.hasComplexNegConditions();
+        return condition.hasComplexNegConjunct();
     }
 
     /**

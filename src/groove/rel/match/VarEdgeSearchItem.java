@@ -1,4 +1,4 @@
-/* $Id: VarEdgeSearchItem.java,v 1.2 2007-03-27 14:18:34 rensink Exp $ */
+/* $Id: VarEdgeSearchItem.java,v 1.3 2007-04-04 07:04:22 rensink Exp $ */
 package groove.rel.match;
 
 import groove.graph.BinaryEdge;
@@ -54,7 +54,7 @@ public class VarEdgeSearchItem extends EdgeSearchItem<Edge> {
 
 		@Override
 		protected void initImages() {
-			if (varPreMatched && isAllEndsPreMatched()) {
+			if (varPreMatched && isAllEndsBound()) {
 				Edge image = edge.imageFor(matcher.getSingularMap());
 				if (matcher.cod().containsElement(image)) {
 					setSingular(image);

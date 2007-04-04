@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.5 2007-03-30 15:50:41 rensink Exp $
+ * $Id: GTS.java,v 1.6 2007-04-04 07:04:24 rensink Exp $
  */
 package groove.lts;
 
@@ -22,10 +22,10 @@ import groove.graph.GraphShapeListener;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
+import groove.trans.DerivationData;
 import groove.trans.Deriver;
 import groove.trans.GraphGrammar;
 import groove.trans.RuleApplication;
-import groove.trans.RuleSystem;
 import groove.util.FilterIterator;
 import groove.util.NestedIterator;
 import groove.util.SetView;
@@ -45,7 +45,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-03-30 15:50:41 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-04 07:04:24 $
  */
 public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	/**
@@ -361,20 +361,33 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
     }
     
     /**
+	 * Returns the (fixed) derivation record for this GTS.
+	 */
+	public final DerivationData getDerivationData() {
+		if (record == null) {
+			record = createDerivationData();
+		}
+		return record;
+	}
+
+	protected DerivationData createDerivationData() {
+		return new DerivationData(ruleSystem());
+	}
+	/**
      * Factory method for a graph deriver from a given rule system.
      * Use to initialize this GTS's deriver if it is not set explicitly.
      * @param ruleSystem the rule system to create the deriver for
      * @deprecated
      */
     @Deprecated
-    protected Deriver createDeriver(RuleSystem ruleSystem) {
+    protected Deriver createDeriver(GraphGrammar ruleSystem) {
 //    	return new DefaultDeriver(ruleSystem.getRules());
-    	return new NextStateDeriver(ruleSystem.getRules());
+    	return new NextStateDeriver(getDerivationData());
     }
     
     /**
      * Returns the deriver.
-     * Lazily creates the deriver (using {@link #createDeriver(RuleSystem)}).
+     * Lazily creates the deriver (using {@link #createDeriver(GraphGrammar)}).
      * @return a deriver for the current rule system; never <code>null</code>
      * @deprecated
      */
@@ -560,6 +573,8 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
      * The current graph deriver.
      */
     private Deriver deriver;
+    /** The derivation record for this GTS. */
+    private DerivationData record;
     /**
      * The number of closed states in the GTS.
      */

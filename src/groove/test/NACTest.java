@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.3 2007-04-01 12:50:31 rensink Exp $
+ * $Id: NACTest.java,v 1.4 2007-04-04 07:04:28 rensink Exp $
  */
 package groove.test;
 
@@ -31,8 +31,10 @@ import groove.trans.MergeEmbargo;
 import groove.trans.NAC;
 import groove.trans.NameLabel;
 import groove.trans.RuleApplication;
+import groove.trans.RuleProperties;
 import groove.trans.SPORule;
 import groove.trans.DefaultRuleFactory;
+import groove.util.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -54,7 +56,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -90,7 +92,11 @@ public class NACTest extends TestCase {
         ruleMorphism.dom().addNode(n[0][0]);
         ruleMorphism.cod().addNode(n[1][0]);
         ruleMorphism.putNode(n[0][0], n[1][0]);
-        rule = (SPORule) DefaultRuleFactory.getInstance().createRule(ruleMorphism, new NameLabel("test"), 0);
+        try {
+			rule = (SPORule) DefaultRuleFactory.getInstance().createRule(ruleMorphism, new NameLabel("test"), 0, RuleProperties.DEFAULT_PROPERTIES);
+		} catch (FormatException exc) {
+			throw new IllegalStateException(exc);
+		}
 
         NACs[0] = new MergeEmbargo(lhs, n[0][0],n[0][1], DefaultRuleFactory.getInstance());
         //String[] NAC1Lab = {"c"};

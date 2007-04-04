@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MatchingSimulation.java,v 1.3 2007-04-01 12:49:54 rensink Exp $
+ * $Id: MatchingSimulation.java,v 1.4 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
@@ -23,7 +23,10 @@ import groove.rel.RegExprLabel;
 import groove.rel.RegExprSimulation;
 import groove.trans.match.MatchingMatcher;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -33,7 +36,7 @@ import java.util.Set;
  * The embargoes must be provided through (abstract) factory methods,
  * {@link #computeInjectionMap()} and {@link #computeEmbargoMap()}.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @deprecated use {@link MatchingMatcher} instead
  */
 @Deprecated
@@ -185,24 +188,59 @@ public class MatchingSimulation extends RegExprSimulation {
      * @see #initSimulation()
      */
     protected Map<Node, Set<Node>> computeInjectionMap() {
-        return ((DefaultGraphCondition) getCondition()).getInjectionMap();
+    	Map<Node,Set<Node>> result = null;
+        Set<Set<? extends Node>> injections = ((DefaultGraphCondition) getCondition()).getInjections();
+        if (injections != null) {
+			result = new HashMap<Node, Set<Node>>();
+			for (Set<? extends Node> injection : injections) {
+				// first add the injection to the injection map
+				for (Node injectionKey : injection) {
+					Set<Node> injectiveSet = result.get(injectionKey);
+					if (injectiveSet == null) {
+						result.put(injectionKey,
+								injectiveSet = new HashSet<Node>());
+					}
+					injectiveSet.addAll(injection);
+					injectiveSet.remove(injectionKey);
+				}
+			}
+        }
+        return result;
     }
     
     /**
-     * Callback method to create the embargo map.
-     * The embargo map is a partial map from domain nodes to sets of incident
-     * embargo edges.
-     * This implementation takes the map from the matching's graph condition
-     * (assumed to be a {@link DefaultGraphCondition}).
-     * @see #initSimulation()
-     */
+	 * Callback method to create the embargo map. The embargo map is a partial
+	 * map from domain nodes to sets of incident embargo edges. This
+	 * implementation takes the map from the matching's graph condition (assumed
+	 * to be a {@link DefaultGraphCondition}).
+	 * 
+	 * @see #initSimulation()
+	 */
     protected Map<Node, Collection<Edge>> computeEmbargoMap() {
-        return ((DefaultGraphCondition) getCondition()).getNegationMap();        
-    }
+		Map<Node, Collection<Edge>> result = null;
+		Set<Edge> embargoes = ((DefaultGraphCondition) getCondition()).getNegations();
+		if (embargoes != null) {
+			result = new HashMap<Node, Collection<Edge>>();
+			for (Edge negativeEdge : embargoes) {
+				// first add the negative edge to the negation map
+				int arity = negativeEdge.endCount();
+				for (int i = 0; i < arity; i++) {
+					Node embargoEnd = negativeEdge.end(i);
+					Collection<Edge> embargo = result.get(embargoEnd);
+					if (embargo == null) {
+						embargo = new ArrayList<Edge>();
+						result.put(embargoEnd, embargo);
+					}
+					embargo.add(negativeEdge);
+				}
+			}
+		}
+		return result;
+	}
     
-//    /**
-//     * Callback factory method to create the matching order.
-//     * The matching order is used to generate the key iterator.
+// /**
+// * Callback factory method to create the matching order.
+// * The matching order is used to generate the key iterator.
 //     * This implementation takes the matching order from the matching's graph condition
 //     * (assumed to be a {@link DefaultGraphCondition}).
 //     * @see #initSimulation()

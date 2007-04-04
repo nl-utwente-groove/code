@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMorphism.java,v 1.3 2007-04-01 12:49:57 rensink Exp $
+ * $Id: AbstractMorphism.java,v 1.4 2007-04-04 07:04:18 rensink Exp $
  */
 package groove.graph;
 
+import groove.graph.match.Matcher;
 import groove.util.FormatException;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
@@ -31,7 +32,7 @@ import java.util.Set;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edge,Edge> implements Morphism {
     /**
@@ -197,14 +198,14 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
 
     public boolean hasTotalExtensions() {
         reporter.start(HAS_TOTAL_EXTENSIONS);
-        Simulation sim = createSimulation();
+        Matcher sim = createMatcher();
         boolean result = sim.hasRefinement();
         reporter.stop();
         return result;
     }
 
     public Morphism getTotalExtension() {
-        NodeEdgeMap sim = createSimulation().getRefinement();
+        NodeEdgeMap sim = createMatcher().getRefinement();
         if (sim == null) {
             return null;
         } else {
@@ -215,7 +216,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     public Collection<? extends Morphism> getTotalExtensions() {
         reporter.start(GET_TOTAL_EXTENSIONS);
         try {
-            Simulation sim = createSimulation();
+        	Matcher sim = createMatcher();
             // we choose a LinkedList because there will be removal
             // a HashSet would be an option but then we need to take care of
             // the equals method of the morphisms returned by createMorphism,
@@ -246,7 +247,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     public Iterator<? extends Morphism> getTotalExtensionsIter() {
         reporter.start(GET_TOTAL_EXTENSIONS);
         try {
-            Simulation sim = createSimulation();
+        	Matcher sim = createMatcher();
             return new TransformIterator<NodeEdgeMap,Morphism>(sim.getRefinementIter()) {
             	@Override
             	public Morphism toOuter(NodeEdgeMap obj) {
@@ -576,7 +577,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     /**
      * Factory method for simulations.
      */
-    abstract protected Simulation createSimulation();
+    abstract protected Matcher createMatcher();
     
     /**
      * The codomain of this Morphism.

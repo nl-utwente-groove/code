@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.4 2007-04-01 12:49:54 rensink Exp $
+ * $Id: RuleSystem.java,v 1.5 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
@@ -23,9 +23,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
@@ -38,34 +36,25 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:54 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-04 07:04:20 $
  * @see NameLabel
  * @see SPORule
  */
 public class RuleSystem {
-    /**
-     * Property name of the list of control labels of a graph grammar.
-     * The control labels will be first in the matching order.
-     */
-    static public final String CONTROL_LABELS = "controlLabels";
-    /**
-     * Property name of the list of common labels of a graph grammar.
-     * These will be used to determine the order in which the NACs are checked.
-     */
-    static public final String COMMON_LABELS = "commonLabels";
     /** 
-     * Property that determines if the graph grammar uses attributes.
-     * @see #ATTRIBUTES_YES
-     */
-    static public final String ATTRIBUTE_SUPPORT = "attributeSupport";
-    /**
-     * Value of {@link #ATTRIBUTES_YES} that means attributes are used.
-     */
-    static public final String ATTRIBUTES_YES = "1";
-
-	/** Constructs an initially empty rule system. */
+	 * Constructs an initially empty rule system, with
+	 * default rule factory. 
+	 */
     public RuleSystem() {
         // explicit empty constructor
+    }
+
+	/** 
+	 * Constructs an initially empty rule system with a give
+	 * rule factory. 
+	 */
+    public RuleSystem(RuleFactory ruleFactory) {
+        this.ruleFactory = ruleFactory;
     }
 
     /**
@@ -75,6 +64,8 @@ public class RuleSystem {
      * @ensure <tt>equals(ruleSystem)</tt>
      */
     public RuleSystem(RuleSystem other) {
+    	this(other.getRuleFactory());
+    	getProperties().putAll(other.getProperties());
         nameRuleMap.putAll(other.nameRuleMap);
         // the target sets of the priority rule map must be copied, not aliased
         for (Map.Entry<Integer,Set<Rule>> priorityRuleEntry: other.priorityRuleMap.entrySet()) {
@@ -83,6 +74,7 @@ public class RuleSystem {
             priorityRuleMap.put(priorityRuleEntry.getKey(), newRuleSet);
         }
     }
+    
     /**
      * Returns the production rule known under a given name, if any.
      * @param name the name of the requested production rule
@@ -186,11 +178,11 @@ public class RuleSystem {
      * Clears the current properties first.
      * @param properties the new properties mapping
      */
-    public void setProperties(Properties properties) {
+    public void setProperties(java.util.Properties properties) {
     	testRuleSystemEmpty();
-        Properties currentProperties = getProperties();
-        currentProperties.clear();
-        currentProperties.putAll(properties);
+        RuleProperties currentRuleProperties = getProperties();
+        currentRuleProperties.clear();
+        currentRuleProperties.putAll(properties);
     }
 
     /**
@@ -205,50 +197,11 @@ public class RuleSystem {
      * Returns the properties object for this graph grammar.
      * The properties object is immutable.
      */
-    public Properties getProperties() {
-        if (properties == null) {
-            properties = createProperties();
+    public RuleProperties getProperties() {
+        if (ruleProperties == null) {
+            ruleProperties = createRuleProperties();
         }
-        return properties;
-    }
-
-    /** 
-     * Indicates if the rule system is attributed, according to the
-     * properties. 
-     * @see #ATTRIBUTE_SUPPORT
-     * @see #ATTRIBUTES_YES
-     */
-    public boolean isAttributed() {
-    	String attributed = getProperty(ATTRIBUTE_SUPPORT);
-    	return attributed != null && attributed.equals(ATTRIBUTES_YES);
-    }
-
-    /** 
-     * Returns a list of control labels, according to the {@link #CONTROL_LABELS}
-     * property of the rule system.
-     * @see #CONTROL_LABELS
-     */
-    public List<String> getControlLabels() {
-    	String controlLabels = getProperty(CONTROL_LABELS);
-    	if (controlLabels == null) {
-    		return Collections.emptyList();
-    	} else {
-    		return Arrays.asList(controlLabels.split("\\s"));
-    	}
-    }
-
-    /** 
-     * Returns a list of common labels, according to the {@link #COMMON_LABELS}
-     * property of the rule system.
-     * @see #COMMON_LABELS
-     */
-    public List<String> getCommonLabels() {
-    	String commonLabels = getProperty(COMMON_LABELS);
-    	if (commonLabels == null) {
-    		return Collections.emptyList();
-    	} else {
-    		return Arrays.asList(commonLabels.split("\\s"));
-    	}
+        return ruleProperties;
     }
     
     /** 
@@ -265,7 +218,7 @@ public class RuleSystem {
      * properties of the rule system, or <code>null</code> if it is not inconsistent.
      */
     public String getInconsistency(Rule rule) {
-    	if (isAttributed()) {
+    	if (getProperties().isAttributed()) {
     		if (((SPORule) rule).getIsolatedNodes().length > 0) {
     			return String.format("Isolated nodes in rule not allowed in attributed rule systems", rule.getName());
     		}
@@ -278,11 +231,24 @@ public class RuleSystem {
     }
     
     /**
-     * Callback factory method to create an initially empty {@link Properties} object 
+	 * Lazily creates and returns the (fixed) rule factory for this rule 
+	 * system. The factory is used to create all the rules and rule applications.
+	 * If it is not initialised at construction time, it is set to
+	 * {@link DefaultRuleFactory#getInstance()}.
+	 */
+	public final RuleFactory getRuleFactory() {
+		if (ruleFactory == null) {
+			ruleFactory = DefaultRuleFactory.getInstance();
+		}
+		return ruleFactory;
+	}
+
+	/**
+     * Callback factory method to create an initially empty {@link RuleProperties} object 
      * for this graph grammar.
      */
-    protected Properties createProperties() {
-        return new GrammarProperties();
+    protected RuleProperties createRuleProperties() {
+        return new RuleProperties(this);
     }
     
     /**
@@ -317,7 +283,7 @@ public class RuleSystem {
      * throws an exception if it does.
      * @throws IllegalStateException if {@link #getRules()} returns a non-empty set.
      */
-    private void testRuleSystemEmpty() throws IllegalStateException {
+    void testRuleSystemEmpty() throws IllegalStateException {
     	if (! getRules().isEmpty()) {
     		throw new IllegalStateException(String.format("Rule system not empty: %s", getRuleNames()));
     	}
@@ -340,24 +306,7 @@ public class RuleSystem {
     /**
      * The properties bundle of this grammar.
      */
-    private Properties properties;    
-    
-    /** Properties specialisation that forbids setting properties after construction. */
-    private class GrammarProperties extends Properties {
-    	/** Constructs a properties object with some initial properties. */
-    	GrammarProperties(Properties properties) {
-    		putAll(properties);
-    	}
-    	
-    	/** Constructs an empty properties object. */
-    	GrammarProperties() {
-    		// empty
-    	}
-    	
-		@Override
-		public synchronized Object setProperty(String key, String value) {
-			testRuleSystemEmpty();
-			return super.setProperty(key, value);
-		}    	
-    }
+    private RuleProperties ruleProperties; 
+    /** The (fixed) rule factory for this rule system. */
+    private RuleFactory ruleFactory;
 }

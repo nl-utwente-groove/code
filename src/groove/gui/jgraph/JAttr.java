@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.4 2007-04-01 12:49:36 rensink Exp $
+ * $Id: JAttr.java,v 1.5 2007-04-04 07:04:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -42,7 +42,7 @@ import groove.util.Groove;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class JAttr {
     /**
@@ -99,36 +99,6 @@ public class JAttr {
      * Dash pattern specifying "no dash"
      */
     static public final float[] NO_DASH = { 10f, 0f };
-
-    /** Line width of ordinary inactive LTS cells. */
-    static public final int LTS_NORM_WIDTH = Integer.parseInt(Groove.getGUIProperty("default.width"));
-
-    /** Line width of active LTS cells. */
-    static public final int LTS_ACTIVE_WIDTH = Integer.parseInt(Groove.getGUIProperty("lts.emphasis.width"));
-
-    /** Foreground color of ordinary inactive LTS cells. */
-    static public final Color LTS_NORM_COLOR = Colors.findColor(Groove.getGUIProperty("default.color"));
-
-    /** Color of active LTS cells. */
-    static public final Color LTS_ACTIVE_COLOR = Colors.findColor(Groove.getGUIProperty("lts.emphasis.color"));
-
-    /** Background color of ordinary (non-emphasized) LTS cells. */
-    static public final Color LTS_NORM_BACKGROUND = Colors.findColor(Groove.getGUIProperty("default.background"));
-
-    /** Background color of LTS start cells. */
-    static public final Color LTS_START_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.start.background"));
-
-    /** Background color of unexplored LTS cells. */
-    static public final Color LTS_OPEN_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.open.background"));
-
-    /** Background color of final LTS cells. */
-    static public final Color LTS_FINAL_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.final.background"));
-
-    /** Borders of ordinary (non-active) LTS nodes. */
-    static public final Border LTS_NORM_BORDER = createNodeBorder(new LineBorder(LTS_NORM_COLOR, LTS_NORM_WIDTH), false);
-
-    /** Borders of active LTS nodes. */
-    static public final Border LTS_ACTIVE_BORDER = createNodeBorder(new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH), true);
 
     /** The color used for hidden cells. */
     static public final Color INVISIBLE_COLOR = Colors.findColor(Groove.getGUIProperty("invisible.color"));
@@ -207,6 +177,8 @@ public class JAttr {
 
     /** Line width used for emphasized cells. */
     public static final int EMPH_WIDTH = Integer.parseInt(Groove.getGUIProperty("state.emphasis.width"));
+    /** Difference in line width between emphasized and non-emphasized. */
+    private static final int EMPH_INCREMENT = EMPH_WIDTH - DEFAULT_LINE_WIDTH;
     /**
 	 * Border insets for emphasised nodes.
 	 */
@@ -242,11 +214,66 @@ public class JAttr {
     }
 
     /**
-     * Creates a new border from a given border, by inserting space to the left and right.
-     */
-    private static Border createNodeBorder(Border border, boolean emph) {
-        return new CompoundBorder(border, emph ? EMPH_INSET_BORDER : EMPTY_INSET_BORDER);
-    }
+	 * Creates a new border from a given border, by inserting space to the left and right.
+	 */
+	private static Border createNodeBorder(Border border, boolean emph) {
+	    return new CompoundBorder(border, emph ? EMPH_INSET_BORDER : EMPTY_INSET_BORDER);
+	}
+
+	/**
+	 * Line width of ordinary inactive LTS cells. 
+	 */
+	static public final int LTS_NORM_WIDTH = Integer.parseInt(Groove.getGUIProperty("default.width"));
+
+	/**
+	 * Line width of active LTS cells. 
+	 */
+	static public final int LTS_ACTIVE_WIDTH = Integer.parseInt(Groove.getGUIProperty("lts.emphasis.width"));
+
+	/**
+	 * Foreground color of ordinary inactive LTS cells. 
+	 */
+	static public final Color LTS_NORM_COLOR = Colors.findColor(Groove.getGUIProperty("default.color"));
+
+	/**
+	 * Color of active LTS cells. 
+	 */
+	static public final Color LTS_ACTIVE_COLOR = Colors.findColor(Groove.getGUIProperty("lts.emphasis.color"));
+
+	/**
+	 * Background color of ordinary (non-emphasized) LTS cells. 
+	 */
+	static public final Color LTS_NORM_BACKGROUND = Colors.findColor(Groove.getGUIProperty("default.background"));
+
+	/**
+	 * Background color of LTS start cells. 
+	 */
+	static public final Color LTS_START_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.start.background"));
+
+	/**
+	 * Background color of unexplored LTS cells. 
+	 */
+	static public final Color LTS_OPEN_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.open.background"));
+
+	/**
+	 * Background color of final LTS cells. 
+	 */
+	static public final Color LTS_FINAL_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.final.background"));
+
+	/**
+	 * Borders of ordinary (non-active) LTS nodes. 
+	 */
+	static public final Border LTS_NORM_BORDER = createNodeBorder(new LineBorder(LTS_NORM_COLOR, LTS_NORM_WIDTH), false);
+
+	/**
+	 * Borders of active LTS nodes. 
+	 */
+	static public final Border LTS_ACTIVE_BORDER = createNodeBorder(new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH), false);
+
+	/**
+	 * Emphasized borders of active LTS nodes. 
+	 */
+	static public final Border LTS_ACTIVE_EMPH_BORDER = createNodeBorder(new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH + EMPH_INCREMENT), true);
 
 	/**
 	 * Store of colours for each role. 
@@ -290,7 +317,7 @@ public class JAttr {
 	        float[] dash = Groove.toFloatArray(Groove.getGUIProperty(RULE_PREFIXES.get(role) + "dash"));
 	        RULE_DASH.put(role,dash == null ? JAttr.NO_DASH : dash);
 	        RULE_BORDER.put(role,createNodeBorder(createRuleBorder(RULE_COLOR.get(role), RULE_WIDTH.get(role), RULE_DASH.get(role)), false));
-	        RULE_EMPH_WIDTH.put(role,RULE_WIDTH.get(role) + 2);
+	        RULE_EMPH_WIDTH.put(role,RULE_WIDTH.get(role) + EMPH_INCREMENT);
 	        RULE_EMPH_BORDER.put(role,createNodeBorder(createRuleBorder(RULE_COLOR.get(role), RULE_EMPH_WIDTH.get(role), RULE_DASH.get(role)), true));
 	    }
 	}

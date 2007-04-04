@@ -12,15 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.5 2007-04-01 12:49:54 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.6 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -44,7 +41,7 @@ import groove.util.Reporter;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -135,7 +132,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
         if (condition instanceof EdgeEmbargo) {
         	addNegation(((EdgeEmbargo) condition).getEmbargoEdge());
         } else if (condition instanceof MergeEmbargo) {
-            Set<Node> injection = new HashSet<Node>(Arrays.asList(((MergeEmbargo) condition).getNodes()));
+            Set<? extends Node> injection = condition.getPattern().elementMap().nodeMap().keySet();
             addInjection(injection);
         } else {
             addComplexNegCondition(condition);
@@ -152,36 +149,19 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     
     /** Adds a negative edge, i.e., an edge empargo, to this condition. */
     protected void addNegation(Edge negativeEdge) {
-        if (negationMap == null) {
-            negationMap = new HashMap<Node,Collection<Edge>>();
+        if (negations == null) {
+            negations = new HashSet<Edge>();
         }
-        // first add the negative edge to the negation map
-        int arity = negativeEdge.endCount();
-        for (int i = 0; i < arity; i++) {
-            Node embargoEnd = negativeEdge.end(i);
-            Collection<Edge> embargo = negationMap.get(embargoEnd);
-            if (embargo == null) {
-                embargo = new ArrayList<Edge>();
-                negationMap.put(embargoEnd, embargo);
-            }
-            embargo.add(negativeEdge);
-        }
+        negations.add(negativeEdge);
     }
 
     /** Adds an injection constraint, i.e., a merge empargo, to this condition. */
-    protected void addInjection(Collection<Node> injection) {
-        if (injectionMap == null) {
-            injectionMap = new HashMap<Node,Set<Node>>();
+    protected void addInjection(Set<? extends Node> injection) {
+    	assert injection.size() == 2 : String.format("Injection %s should have size 2", injection);
+        if (injections == null) {
+            injections = new HashSet<Set<? extends Node>>();
         }
-        // first add the injection to the injection map
-        for (Node injectionKey: injection) {
-            Set<Node> injectiveSet = injectionMap.get(injectionKey);
-            if (injectiveSet == null) {
-                injectionMap.put(injectionKey, injectiveSet = new HashSet<Node>());
-            }
-            injectiveSet.addAll(injection);
-            injectiveSet.remove(injectionKey);
-        }
+        injections.add(injection);
     }
 
     public GraphCondition setAndNot(Edge embargoEdge) {
@@ -238,7 +218,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     /**
      * Delegates to <code>getContext().isEmpty()</code> as per contract.
      */
-    public boolean isClosed() {
+    public boolean isGround() {
         return getContext().isEmpty();
     }
 
@@ -262,7 +242,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * result.
      */
     public boolean hasMatching(Graph graph) {
-        testClosed();
+        testGround();
 		reporter.start(HAS_MATCHING);
 		try {
 			return createMatching(graph).hasTotalExtensions();
@@ -287,12 +267,13 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     }
 
     /**
-	 * If {@link #isClosed()} holds, returns a total matching from a given graph
+	 * If the condition is ground, returns a total matching from a given graph
 	 * to this condition's target pattern, if one exists. Otherwise, throws an
 	 * exception as per contract.
+	 * @see #isGround()
 	 */
     public Matching getMatching(Graph graph) {
-        testClosed();
+        testGround();
 		reporter.start(GET_MATCHING);
 		try {
 			return (Matching) createMatching(graph).getTotalExtension();
@@ -320,16 +301,16 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	}
 
     /**
-	 * If {@link #isClosed()} holds, returns the set of total extensions of an
+	 * If the condition is ground, returns the set of total extensions of an
 	 * initially empty matching to the given graph. Otherwise, throws an
 	 * exception as per contract.
-	 * 
+	 * @see #isGround()
 	 * @see Matching#getTotalExtensions()
 	 */
     public Collection<? extends Matching> getMatchingSet(Graph graph) {
         reporter.start(GET_MATCHING);
         try {
-            testClosed();
+            testGround();
         	return createMatching(graph).getTotalExtensions();
         } finally {
         	reporter.stop();
@@ -353,14 +334,15 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     }
 
     /**
-     * If {@link #isClosed()} holds, returns an iterator over the total extensions
+     * If the condition is ground, returns an iterator over the total extensions
      * of an initially empty matching to the given graph.
      * Otherwise, throws an exception as per contract.
+     * @see #isGround()
      */
     public Iterator<? extends Matching> getMatchingIter(Graph graph) {
         reporter.start(GET_MATCHING);
 		try {
-			testClosed();
+			testGround();
 			return createMatching(graph).getTotalExtensionsIter();
 		} finally {
 			reporter.stop();
@@ -491,39 +473,39 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     }
 
     /**
-     * Callback method to create a matching order.
-     * Typically invoked once, at the first invocation of {@link #getSearchPlan()}.
-     * This implementation retrieves its value from the matching order factory.
-     * @see #getSearchPlan()
-     * @see #getSearchPlanFactory()
-     * For a (non-closed) graph condition, it is more efficient to start the matching at the edges
-     * connected to the context.
-     */
-    protected List<SearchItem> computeSearchPlan() {
-        setFixed();
-        return getSearchPlanFactory().createSearchPlan(this);
-    }
-
-    /**
      * Returns the precomputed matching order for the elements of the target pattern. First creates
-     * the order using {@link #computeSearchPlan()} if that has not been done.
-     * @see #computeSearchPlan()
+     * the order using {@link #createSearchPlan()} if that has not been done.
+     * @see #createSearchPlan()
      */
     public List<SearchItem> getSearchPlan() {
         if (searchPlan == null) {
-            searchPlan = computeSearchPlan();
+            searchPlan = createSearchPlan();
         }
         return searchPlan;
     }
     
     /**
+	 * Callback method to create a matching order.
+	 * Typically invoked once, at the first invocation of {@link #getSearchPlan()}.
+	 * This implementation retrieves its value from the matching order factory.
+	 * @see #getSearchPlan()
+	 * @see #getSearchPlanFactory()
+	 * For a (non-closed) graph condition, it is more efficient to start the matching at the edges
+	 * connected to the context.
+	 */
+	protected List<SearchItem> createSearchPlan() {
+	    setFixed();
+	    return getSearchPlanFactory().createSearchPlan(this);
+	}
+
+	/**
      * Returns the fragment of the negated conjunct without the edge or merge embargoes. Since we
      * are checking for those already in the simulation, the search for matchings only has to regard
      * the complex negated conjunct. May be <code>null</code>, if only simple negative conditions
      * were added.
      * @see #getNegConjunct()
-     * @see #getInjectionMap()
-     * @see #getNegationMap()
+     * @see #getInjections()
+     * @see #getNegations()
      */
     protected GraphPredicate getComplexNegConjunct() {
         return complexNegConjunct;
@@ -534,75 +516,55 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * injections and negtions.
      * Convenience method for <code>getComplexNegConjunct() != null</code>. 
      */
-    protected boolean hasComplexNegConditions() {
+    protected boolean hasComplexNegConjunct() {
         return complexNegConjunct != null;
     }
     
     /**
      * Returns the map from nodes to sets of injectively matchable nodes.
      */
-    public Map<Node, Set<Node>> getInjectionMap() {
-        return injectionMap;
+    public Set<Set<? extends Node>> getInjections() {
+        return injections;
     }
 
     /**
      * Returns the map from lhs nodes to incident negative edges.
      */
-    public Map<Node, Collection<Edge>> getNegationMap() {
-        return negationMap;
+    public Set<Edge> getNegations() {
+        return negations;
     }
 
     /**
      * Throws an {@link IllegalStateException} if the graph condition is not fixed.
-     *
      */
-    protected void testFixed() {
+    protected void testFixed() throws IllegalStateException {
         if (! isFixed()) {
             throw new IllegalStateException("Graph condition should be fixed before invoking this method");
         }
     }
 
     /**
-     * Throws an {@link IllegalArgumentException} if this predicate is not closed.
+     * Throws an {@link IllegalArgumentException} if this predicate is not ground.
+     * @see #isGround()
      */
-    protected void testClosed() {
-        if (! isClosed()) {
+    private void testGround() throws IllegalArgumentException {
+        if (! isGround()) {
             throw new IllegalArgumentException("Method only allowed on closed predicate");
         }
     }
     
     /**
-     * Sets the matching schedule factory.
-     * Affects only the matching schedules created <i>after</i> this
-     * method invocation, either in this condition or in conditions cloned from it.
-     * @see #computeSearchPlan()
-     */
-    public void setSearchPlanFactory(ConditionSearchPlanFactory searchPlanFactory) {
-        this.searchPlanFactory = searchPlanFactory;
-    }
-    
-    /**
-     * Returns the current matching schedule factory.
-     * The factory should have been set previously by a call to {@link #setSearchPlanFactory(MatchingScheduleFactory)}.
+     * Returns the search plan factory factory.
      * If no matching schedule factory yet exists, one is created using
      * {@link #computeSearchPlanFactory()}.
-     * @see #setSearchPlanFactory(MatchingScheduleFactory)
      * @see #computeSearchPlanFactory()
-     * @see #computeSearchPlan()
+     * @see #createSearchPlan()
      */
     protected ConditionSearchPlanFactory getSearchPlanFactory() {
     	if (searchPlanFactory == null) {
-    		searchPlanFactory = computeSearchPlanFactory();
+    		searchPlanFactory = createSearchPlanFactory();
     	}
         return searchPlanFactory;
-    }
-    
-    /**
-     * Callback initialisation method for the matching schedule factory.
-     * This implementation merely invokes {@link #createSearchPlanFactory()}.
-     */
-    protected ConditionSearchPlanFactory computeSearchPlanFactory() {
-    	return createSearchPlanFactory();
     }
     
     /**
@@ -630,13 +592,13 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * Mapping from codomain nodes to sets of other codomain nodes with which
      * they must be matched injectively.
      */
-    private Map<Node,Set<Node>> injectionMap;
+    private Set<Set<? extends Node>> injections;
     
     /**
      * Mapping from codomain nodes to single or sets of incident codomain edges
      * that must be absent in the matching.
      */
-    private Map<Node,Collection<Edge>> negationMap;
+    private Set<Edge> negations;
     /**
      * The fixed matching order for this graph condition.
      * Initially <code>null</code>; set by {@link #getSearchPlan()} upon its

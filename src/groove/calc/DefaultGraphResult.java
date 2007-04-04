@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphResult.java,v 1.2 2007-03-30 15:50:48 rensink Exp $
+ * $Id: DefaultGraphResult.java,v 1.3 2007-04-04 07:04:29 rensink Exp $
  */
 package groove.calc;
 
@@ -21,6 +21,7 @@ import groove.graph.Morphism;
 import groove.lts.DerivedGraphState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.trans.DerivationData;
 import groove.trans.GraphTest;
 import groove.trans.Matching;
 import groove.trans.Rule;
@@ -95,7 +96,8 @@ public class DefaultGraphResult implements GraphResult {
         if (match == null) {
         	return null;
         } else {
-			GraphState nextState = (GraphState) rule.createApplication(match).getTarget();
+			DerivationData data = calculator.getGTS().getDerivationData();
+			GraphState nextState = (GraphState) data.getApplication(rule, match).getTarget();
 			return calculator.createResult(nextState);
 		}
     }
@@ -106,7 +108,8 @@ public class DefaultGraphResult implements GraphResult {
         Iterator<? extends Matching> matchIter = rule.getMatchingIter(state.getGraph());
         while (matchIter.hasNext()) {
 			Matching match = matchIter.next();
-			GraphState nextState = (GraphState) rule.createApplication(match).getTarget();
+			DerivationData data = calculator.getGTS().getDerivationData();
+			GraphState nextState = (GraphState) data.getApplication(rule, match).getTarget();
 			result.add(calculator.createResult(nextState));
 		}
         return result;

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.4 2007-04-01 12:50:02 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.5 2007-04-04 07:04:29 rensink Exp $
  */
 package groove.util;
 
@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-01 12:50:02 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-04 07:04:29 $
  */
 public class TypeDiscoverer {
 	public static final String TYPE_EXTENSION = ".type";
@@ -168,7 +168,7 @@ public class TypeDiscoverer {
                 ruleHandle.addEdge(ruleIdNode, createFreshLabel(), creatorImage);
             }
             Morphism introduceMorph = new DefaultMorphism(createVarGraph(), ruleHandle);
-            Rule introduce = createRule(introduceMorph, rule.getName());
+            Rule introduce = createRule(introduceMorph, rule.getName(), introduceSystem);
             introduce.addNAC(new DefaultNAC(introduceMorph, DefaultRuleFactory.getInstance()));
             introduceSystem.add(introduce);
             // now the deletion rule
@@ -176,7 +176,7 @@ public class TypeDiscoverer {
             deleteLhs.addNode(ruleIdNode);
             deleteLhs.addEdge(ruleIdEdge);
             Morphism deleteMorph = new DefaultMorphism(deleteLhs, createVarGraph());
-            deleteSystem.add(createRule(deleteMorph, rule.getName()));
+            deleteSystem.add(createRule(deleteMorph, rule.getName(), deleteSystem));
             // now the merging rule
             Graph mergeLhs = rule.lhs().clone();
             Graph mergeRhs = rule.rhs().clone();
@@ -218,7 +218,7 @@ public class TypeDiscoverer {
                 mergeRhs.addEdge(handleEdgeImage);
                 mergeMorph.putEdge(handleEdge, handleEdgeImage);
             }
-            Rule merge = createRule(mergeMorph, rule.getName());
+            Rule merge = createRule(mergeMorph, rule.getName(), mergeSystem);
             // probably adding the NAC only slows things down
             // merge.addNAC(new DefaultNAC(mergeMorph));
             mergeSystem.add(merge);
@@ -261,8 +261,8 @@ public class TypeDiscoverer {
         return new RegExprGraph();
     }
     
-    protected Rule createRule(Morphism ruleMorphism, NameLabel name) {
-        return new SPORule(ruleMorphism, name, DefaultRuleFactory.getInstance());
+    protected Rule createRule(Morphism ruleMorphism, NameLabel name, RuleSystem ruleSystem) {
+        return new SPORule(ruleMorphism, name, Rule.DEFAULT_PRIORITY, ruleSystem.getProperties());
     }
     
     protected Set<Node> getCreatorNodes(Rule rule) {

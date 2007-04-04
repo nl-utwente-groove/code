@@ -1,5 +1,8 @@
-/* $Id: InjectionSearchItem.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $ */
+/* $Id: InjectionSearchItem.java,v 1.2 2007-04-04 07:04:07 rensink Exp $ */
 package groove.trans.match;
+
+import java.util.Iterator;
+import java.util.Set;
 
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -30,9 +33,11 @@ public class InjectionSearchItem extends ConditionSearchItem {
 		private final Matcher matcher;
 	}
 
-	public InjectionSearchItem(Node node1, Node node2) {
-		this.node1 = node1;
-		this.node2 = node2;
+	public InjectionSearchItem(Set<? extends Node> nodes) {
+		assert nodes.size() == 2: String.format("Injection %s should have size 2", nodes);
+		Iterator<? extends Node> nodeIter = nodes.iterator();
+		this.node1 = nodeIter.next();
+		this.node2 = nodeIter.next();
 	}
 	
 	public Record get(Matcher matcher) {

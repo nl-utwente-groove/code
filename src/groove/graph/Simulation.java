@@ -12,9 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Simulation.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: Simulation.java,v 1.2 2007-04-04 07:04:18 rensink Exp $
  */
 package groove.graph;
+
+import groove.graph.match.Matcher;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,8 +32,10 @@ import java.util.Set;
  * A simulation is called <i>consistent</i> if all image sets are nonempty, and <i>refined</i> if
  * all image sets are singular.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
+ * @deprecated overtaken by {@link Matcher}
  */
+@Deprecated
 public interface Simulation {
     /**
      * Set of codomain elements (of the simulation) that constitute the images of some domain element.

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GgxGrammar.java,v 1.5 2007-04-01 12:50:23 rensink Exp $
+ * $Id: GgxGrammar.java,v 1.6 2007-04-04 07:04:22 rensink Exp $
  */
 package groove.io;
 
@@ -21,7 +21,6 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.InjectiveMorphism;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.trans.DefaultNAC;
@@ -29,6 +28,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
+import groove.trans.RuleProperties;
 import groove.trans.StructuredRuleName;
 import groove.util.FormatException;
 
@@ -50,7 +50,7 @@ import org.w3c.dom.Document;
  * GGX is the "proprietary" AGG format.
  * @deprecated experimental, not supported
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 @Deprecated
 public class GgxGrammar implements XmlGrammar {
@@ -492,8 +492,8 @@ public class GgxGrammar implements XmlGrammar {
      * @param name
      * @return the rule
      */
-    protected Rule createRule(Morphism ruleMorph, NameLabel name) {
-        return getRuleFactory().createRule(ruleMorph, name, 0);
+    protected Rule createRule(Morphism ruleMorph, NameLabel name) throws FormatException {
+        return getRuleFactory().createRule(ruleMorph, name, 0, RuleProperties.DEFAULT_PROPERTIES);
     }
     
     /**

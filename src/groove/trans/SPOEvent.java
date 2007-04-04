@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.4 2007-04-01 12:49:54 rensink Exp $
+ * $Id: SPOEvent.java,v 1.5 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
@@ -45,7 +45,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:54 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-04 07:04:20 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -75,11 +75,29 @@ public class SPOEvent implements RuleEvent {
         this.freshNodeList = createFreshNodeList();
     }
 
+    /**
+     * Constructs a new event on the basis of a given production rule and anchor map.
+     * @param rule the production rule involved
+     * @param anchorMap the match of the rule's LHS elements to the host graph
+     */
+    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, DerivationData record) {
+    	this(rule, anchorMap, record.getRuleSystem().getRuleFactory());
+    	this.record = record;
+    }
+
 	/**
 	 * Returns the rule factory of this event.
      */
-    protected RuleFactory getRuleFactory() {
+    public RuleFactory getRuleFactory() {
     	return ruleFactory;
+    }
+    
+    /** 
+     * Returns the derivation record associated with this event. 
+     * May be <code>null</code>.
+     */
+    protected DerivationData getRecord() {
+    	return record;
     }
 
     public SPORule getRule() {
@@ -272,7 +290,7 @@ public class SPOEvent implements RuleEvent {
 	    return result.toString();
 	}
 
-    /**
+	/**
      * Computes a matching to a given graph,
      * based on the precomputed anchor map.
      * Returns <code>null</code> if a matching does not exist.
@@ -564,11 +582,11 @@ public class SPOEvent implements RuleEvent {
 	 * Creates an array of lists to store the fresh nodes
 	 * created by this rule.
 	 */
-	protected List<Node>[] createFreshNodeList() {
+	protected List<List<Node>> createFreshNodeList() {
 		int creatorNodeCount = getRule().coanchor().length;
-		List<Node>[] result = new List[creatorNodeCount];
+		List<List<Node>> result = new ArrayList<List<Node>>();
         for (int i = 0; i < creatorNodeCount; i++) {
-        	result[i] = new ArrayList<Node>();
+        	result.add(new ArrayList<Node>());
         }
         return result;
 	}
@@ -604,26 +622,12 @@ public class SPOEvent implements RuleEvent {
     protected VarNodeEdgeMap createVarMap() {
     	return new VarNodeEdgeHashMap();
     }
-//
-//	/**
-//     * Returns the fixpoint in a given map for a given key.
-//     * The fixpoint is the last element in the chain of key-image pairs
-//     * reachable from the key.
-//     */
-//    private Element getFixpoint(ElementMap map, Element key) {
-//    	Element nextImage = map.get(key);
-//        while (nextImage != key) {
-//            key = nextImage;
-//            nextImage = map.get(key);
-//        }
-//        return key;
-//    }
 
 	/**
 	 * Returns the list of all previously created fresh nodes.
 	 */
     protected List<Node> getFreshNodes(int creatorIndex) {
-        return freshNodeList[creatorIndex];
+        return freshNodeList.get(creatorIndex);
     }
 
     /**
@@ -634,6 +638,8 @@ public class SPOEvent implements RuleEvent {
      * The factory to be used to instantiate classes specific for this rule event type.
      */
     private final RuleFactory ruleFactory;
+    /** The derivation record that has created this event, if any. */
+    private DerivationData record;
     /**
      * Matching from the rule's lhs to the source graph.
      */
@@ -685,7 +691,7 @@ public class SPOEvent implements RuleEvent {
 	/**
 	 * The list of nodes created by   {@link #createNode()}  .
 	 */
-	private final List<Node> freshNodeList[];
+	private final List<List<Node>> freshNodeList;
 	
 	static private Reporter reporter = new Reporter(RuleEvent.class);
 	static private int HASHCODE = reporter.newMethod("hashCode()");

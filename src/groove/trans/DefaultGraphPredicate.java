@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphPredicate.java,v 1.3 2007-03-30 15:50:26 rensink Exp $
+ * $Id: DefaultGraphPredicate.java,v 1.4 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import groove.util.TransformIterator;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultGraphPredicate extends HashSet<GraphCondition> implements GraphPredicate {
 	/** Empty graph, to be used in the standard construction of an initial morphism. */
@@ -96,7 +96,7 @@ public class DefaultGraphPredicate extends HashSet<GraphCondition> implements Gr
     /**
      * Delegates to <code>getContext().isEmpty()</code> as per contract.
      */
-    public boolean isClosed() {
+    public boolean isGround() {
         return getContext().isEmpty();
     }
 
@@ -118,7 +118,7 @@ public class DefaultGraphPredicate extends HashSet<GraphCondition> implements Gr
 	}
 
 	/**
-     * If {@link #isClosed()} holds, delegates to {@link #hasMatching(VarMorphism)} 
+     * If {@link #isGround()} holds, delegates to {@link #hasMatching(VarMorphism)} 
      * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
      * Otherwise, throws an exception as per contract.
      */
@@ -142,7 +142,7 @@ public class DefaultGraphPredicate extends HashSet<GraphCondition> implements Gr
     }
 
     /**
-     * If {@link #isClosed()} holds, delegates to {@link #getMatching(VarMorphism)} 
+     * If {@link #isGround()} holds, delegates to {@link #getMatching(VarMorphism)} 
      * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
      * Otherwise, throws an exception as per contract.
      */
@@ -166,7 +166,7 @@ public class DefaultGraphPredicate extends HashSet<GraphCondition> implements Gr
     }
 
     /**
-     * If {@link #isClosed()} holds, delegates to {@link #getMatching(VarMorphism)} 
+     * If {@link #isGround()} holds, delegates to {@link #getMatching(VarMorphism)} 
      * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
      * Otherwise, throws an exception as per contract.
      */
@@ -187,7 +187,7 @@ public class DefaultGraphPredicate extends HashSet<GraphCondition> implements Gr
     }
 
     /**
-     * If {@link #isClosed()} holds, delegates to {@link #getMatching(VarMorphism)} 
+     * If {@link #isGround()} holds, delegates to {@link #getMatching(VarMorphism)} 
      * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
      * Otherwise, throws an exception as per contract.
      */
@@ -244,7 +244,7 @@ public class DefaultGraphPredicate extends HashSet<GraphCondition> implements Gr
      * Throws an {@link IllegalArgumentException} if this predicate is not closed.
      */
     protected void testClosed() {
-        if (!isClosed()) {
+        if (!isGround()) {
             throw new IllegalArgumentException("Method only allowed on closed predicate");
         }
     }

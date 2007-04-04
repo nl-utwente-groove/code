@@ -33,9 +33,16 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
     }
     
     /** Constructs an alias application, without yet setting a prior transition. */
-    public AliasSPOApplication(SPOEvent event, Graph source, RuleFactory ruleFactory) {
-        super(event, source, ruleFactory);
+    public AliasSPOApplication(SPOEvent event, Graph source) {
+        super(event, source);
     }
+
+	/**
+	 * Returns the rule factory of this applier.
+	 */
+	protected RuleFactory getRuleFactory() {
+		return getEvent().getRuleFactory();
+	}
 
     public GraphOutTransition getPrior() {
     	return prior;

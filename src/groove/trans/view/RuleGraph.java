@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleGraph.java,v 1.7 2007-04-01 12:50:08 rensink Exp $
+ * $Id: RuleGraph.java,v 1.8 2007-04-04 07:04:23 rensink Exp $
  */
 
 package groove.trans.view;
@@ -38,7 +38,6 @@ import groove.rel.RegExprGraph;
 import groove.rel.RegExprLabel;
 import groove.rel.VarGraph;
 import groove.trans.DefaultNAC;
-import groove.trans.DefaultRuleFactory;
 import groove.trans.EdgeEmbargo;
 import groove.trans.GraphCondition;
 import groove.trans.MergeEmbargo;
@@ -46,6 +45,7 @@ import groove.trans.NAC;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
+import groove.trans.RuleProperties;
 import groove.util.FormatException;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -65,7 +65,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @deprecated replaced by AspectRuleView
  */
 @Deprecated
@@ -293,9 +293,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * for instance because its NACs are nested too deep or not connected
      */
     public RuleGraph(Rule rule) throws FormatException {
-        name = rule.getName();
-        priority = rule.getPriority();
-        ruleFactory = null;
+    	this.name = rule.getName();
+        this.priority = rule.getPriority();
+        this.properties = rule.getProperties();
+        this.rule = rule;
         try {
             // start with lhs
             Map<Node,RuleNode> lhsNodeMap = new HashMap<Node,RuleNode>();
@@ -431,7 +432,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * the required meta-format
      */
     public RuleGraph(GraphShape graph, NameLabel name) throws FormatException {
-        this(graph, name, Rule.DEFAULT_PRIORITY, null);
+        this(graph, name, Rule.DEFAULT_PRIORITY, RuleProperties.DEFAULT_PROPERTIES);
     }
 
     /**
@@ -444,10 +445,10 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @throws FormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public RuleGraph(GraphShape graph, NameLabel name, int priority, RuleFactory ruleFactory) throws FormatException {
+    public RuleGraph(GraphShape graph, NameLabel name, int priority, RuleProperties properties) throws FormatException {
         this.name = name;
         this.priority = priority;
-        this.ruleFactory = ruleFactory;
+        this.properties = properties;
         boolean emptyLabelIsMerge = true;
         NodeEdgeMap graphToRuleGraphMap = new NodeEdgeHashMap();
 //        this.ruleFactory = ruleFactory;
@@ -514,61 +515,36 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
         }
         GraphInfo.transfer(graph, this, graphToRuleGraphMap);
         setFixed();
+        rule = computeRule();
     }
-//    
-//    /**
-//     * Constructs a rule graph with a given name from an (ordinary) graph.
-//     * @param graph the graph to be converted
-//     * @param name the name of the rule
-//     * @param priority the priority ot the rule
-//     * @param emptyLabelIsMerge if <tt>true</tt>, then empty labels (after the role prefix)
-//     * @param ruleFactory the factory for creating the actual rules
-//     * are interpreted as merge labels; if <tt>false</tt>, then empty labels generate an exception
-//     * @require <tt>graph != null</tt>
-//     * @throws GraphFormatException if <tt>graph</tt> does not have
-//     * the required meta-format
-//     * @see #MERGE_LABEL
-//     */
-//    public RuleGraph(GraphShape graph, NameLabel name, int priority, boolean emptyLabelIsMerge, RuleFactory ruleFactory) throws GraphFormatException {
-//    	this(graph, name, priority, emptyLabelIsMerge);
-//    	this.setRuleFactory(ruleFactory);
-//    }
-//
-//    /**
-//     * Sets the rule factory.
-//     * @param ruleFactory the new rule factory
-//     */
-//    public void setRuleFactory(RuleFactory ruleFactory) {
-//    	this.ruleFactory = ruleFactory;
-//    }
+
+    /**
+     * Returns the rule factory.
+     * @return the rule factory.
+     */
+    public RuleProperties getRuleProperties() {
+    	return properties;
+    }
 
     /**
      * Returns the rule factory.
      * @return the rule factory.
      */
     public RuleFactory getRuleFactory() {
-    	if (ruleFactory == null) {
-    		ruleFactory = DefaultRuleFactory.getInstance();
-    	}
-    	return ruleFactory;
+    	return properties.getFactory();
     }
 
     /**
-     * Creates and returns the production rule corresponding to this rule graph.
-     * @ensure <tt>result != null</tt>
+     * Returns the production rule corresponding to this rule graph.
      */
     public Rule toRule() {
-    	// compute the rule once and then store it
-    	if (rule == null) {
-    		rule = computeRule();
-    	}
     	return rule;
     }
     
     /**
      * Callback method to compute the rule for this rule graph.
      */
-    protected Rule computeRule() {
+    protected Rule computeRule() throws FormatException {
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
@@ -659,7 +635,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
         }
         assert lhs.boundVarSet().containsAll(rhs.allVarSet()) : "Right hand side variables "+rhs.allVarSet()+" not all bound on left hand side";
         // the resulting rule
-        Rule result = getRuleFactory().createRule(ruleMorph, name, priority);
+        Rule result = createRule(ruleMorph, name, priority);
         // add the nacs to the rule
         for (Pair<Set<Node>,Set<Edge>> nacSet: getConnectedSets(nacNodeSet, nacEdgeSet)) {
             result.setAndNot(constructNac(result.lhs(), nacSet.first(), nacSet.second()));
@@ -962,8 +938,8 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @param priority the priority of the new rule.
      * @return the fresh rule created by the factory
      */
-    protected Rule createRule(Morphism ruleMorphism, NameLabel name, int priority) {
-        return getRuleFactory().createRule(ruleMorphism, name, priority);
+    protected Rule createRule(Morphism ruleMorphism, NameLabel name, int priority) throws FormatException {
+        return getRuleFactory().createRule(ruleMorphism, name, priority, RuleProperties.DEFAULT_PROPERTIES);
     }
 
     /**
@@ -1204,9 +1180,9 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
 //    protected NodeEdgeMap graphToRuleGraphMap = new NodeEdgeHashMap();
 
     /** The rule derived from this graph, once it is computed. */
-    private Rule rule;
-    /** Rule factory set for this rule. */
-    private RuleFactory ruleFactory;
+    private final Rule rule;
+    /** Rule properties (non-<code>null</code>). */
+    private final RuleProperties properties;
 
     /** Debug flag for creating embargoes. */
     static private final boolean CREATE_EMBARGO_DEBUG = false;

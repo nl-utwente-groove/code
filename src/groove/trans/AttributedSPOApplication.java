@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AttributedSPOApplication.java,v 1.3 2007-04-01 12:49:54 rensink Exp $
+ * $Id: AttributedSPOApplication.java,v 1.4 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
@@ -27,7 +27,7 @@ import java.util.Collection;
 /**
  * Class representing the application of a {@link groove.trans.AttributedSPORule} to a graph. 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-04-01 12:49:54 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-04 07:04:20 $
  * @deprecated all functionality now in {@link SPOApplication}
  */
 @Deprecated
@@ -40,7 +40,7 @@ public class AttributedSPOApplication extends SPOApplication {
 	 * @param ruleFactory the rule factory used for doing the things correctly
 	 */
 	AttributedSPOApplication(SPOEvent event, Graph source, RuleFactory ruleFactory) {
-		super(event, source, ruleFactory);
+		super(event, source);
 		removalCandidates = new ArrayList<ValueNode>();
 	}
 

@@ -12,13 +12,16 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: RuleEvent.java,v 1.2 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
 
+import java.util.List;
+
 import groove.graph.Graph;
 import groove.graph.Label;
+import groove.graph.match.SearchItem;
 import groove.rel.VarNodeEdgeMap;
 
 /**
@@ -26,7 +29,7 @@ import groove.rel.VarNodeEdgeMap;
  * Together with the source and target state, the event uniquely defines the transition.
  * Typically, the event stores the anchor images of the particular rule application in the host graph.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:56 $
+ * @version $Revision: 1.2 $ $Date: 2007-04-04 07:04:20 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
