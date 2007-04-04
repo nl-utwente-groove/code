@@ -220,7 +220,7 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 		AspectValue sourceInference = sourceValue == null ? null : sourceValue.sourceToEdge();
 		AspectValue targetValue = targetMap.get(aspect);
 		AspectValue targetInference = targetValue == null ? null : targetValue.targetToEdge();
-		result = aspect.getMax(sourceInference, targetInference, edgeValue);
+		result = aspect.getMax(edgeValue, sourceInference, targetInference);
 		if (edgeValue != null && edgeValue != result) {
 			throw new FormatException("Inferred %s value '%s' differs from declared value '%s'", aspect, result, edgeValue);
 		}
