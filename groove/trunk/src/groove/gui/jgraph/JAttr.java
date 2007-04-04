@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.5 2007-04-04 07:04:17 rensink Exp $
+ * $Id: JAttr.java,v 1.6 2007-04-04 08:57:09 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -42,7 +42,7 @@ import groove.util.Groove;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class JAttr {
     /**
@@ -286,6 +286,11 @@ public class JAttr {
 	static public final Map<AspectValue, Integer> RULE_WIDTH = new HashMap<AspectValue, Integer>();
 
 	/**
+	 * Store of line widths for each role. 
+	 */
+	static public final Map<AspectValue, Color> RULE_BACKGROUND = new HashMap<AspectValue, Color>();
+
+	/**
 	 * Store of dash patterns for each role. 
 	 */
 	static public final Map<AspectValue, float[]> RULE_DASH = new HashMap<AspectValue, float[]>();
@@ -311,10 +316,15 @@ public class JAttr {
         RULE_PREFIXES.put(RuleAspect.EMBARGO, "embargo.");
         RULE_PREFIXES.put(RuleAspect.ERASER, "eraser.");
         RULE_PREFIXES.put(RuleAspect.CREATOR, "creator.");
+        RULE_PREFIXES.put(RuleAspect.REMARK, "remark.");
 	    for (AspectValue role: RuleAspect.getInstance().getValues()) {
 	        RULE_COLOR.put(role,Colors.findColor(Groove.getGUIProperty(RULE_PREFIXES.get(role) + "color")));
 	        RULE_WIDTH.put(role,Integer.parseInt(Groove.getGUIProperty(RULE_PREFIXES.get(role) + "width")));
 	        float[] dash = Groove.toFloatArray(Groove.getGUIProperty(RULE_PREFIXES.get(role) + "dash"));
+	        String background = Groove.getGUIProperty(RULE_PREFIXES.get(role) + "background");
+	        if (background != null) {
+	        	RULE_BACKGROUND.put(role, Colors.findColor(background));
+	        }
 	        RULE_DASH.put(role,dash == null ? JAttr.NO_DASH : dash);
 	        RULE_BORDER.put(role,createNodeBorder(createRuleBorder(RULE_COLOR.get(role), RULE_WIDTH.get(role), RULE_DASH.get(role)), false));
 	        RULE_EMPH_WIDTH.put(role,RULE_WIDTH.get(role) + EMPH_INCREMENT);

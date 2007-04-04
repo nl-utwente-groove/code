@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.5 2007-04-04 07:04:17 rensink Exp $
+ * $Id: AspectJModel.java,v 1.6 2007-04-04 08:57:09 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -47,7 +47,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class AspectJModel extends GraphJModel {
     /** Empty instance of the {@link AspectJModel}. */
@@ -86,6 +86,10 @@ public class AspectJModel extends GraphJModel {
             GraphConstants.setSizeable(nodeAttr, false);
             GraphConstants.setBorder(nodeAttr, RULE_BORDER.get(role));
             GraphConstants.setLineWidth(nodeAttr, RULE_WIDTH.get(role));
+            Color background = RULE_BACKGROUND.get(role);
+            if (background != null) {
+            	GraphConstants.setBackground(nodeAttr, background);
+            }
             RULE_NODE_ATTR.put(role,nodeAttr);
         }
     }

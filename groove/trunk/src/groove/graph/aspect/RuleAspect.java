@@ -45,6 +45,10 @@ public class RuleAspect extends AbstractAspect {
     public static final String CREATOR_NAME = Groove.getXMLProperty("label.creator.prefix");
     /** The creator aspect value. */
     public static final AspectValue CREATOR;
+    /** Name of the remark aspect value. */
+    public static final String REMARK_NAME = Groove.getXMLProperty("label.remark.prefix");
+    /** The remark aspect value. */
+    public static final AspectValue REMARK;
     /** Name of the embargo aspect value. */
     public static final String EMBARGO_NAME = Groove.getXMLProperty("label.embargo.prefix");
     /** The embargo aspect value. */
@@ -62,6 +66,7 @@ public class RuleAspect extends AbstractAspect {
 			CREATOR = instance.addValue(CREATOR_NAME);
 			EMBARGO = instance.addValue(EMBARGO_NAME);
 			READER = instance.addValue(READER_NAME);
+			REMARK = instance.addValue(REMARK_NAME);
 			instance.setDefaultValue(READER);
 			CREATOR.setSourceToEdge(CREATOR);
 			CREATOR.setTargetToEdge(CREATOR);
@@ -69,6 +74,8 @@ public class RuleAspect extends AbstractAspect {
 			ERASER.setTargetToEdge(ERASER);
 			EMBARGO.setSourceToEdge(EMBARGO);
 			EMBARGO.setTargetToEdge(EMBARGO);
+			REMARK.setSourceToEdge(REMARK);
+			REMARK.setTargetToEdge(REMARK);
 			VALUE_COUNT = instance.getValues().size();
 		} catch (FormatException exc) {
 			throw new Error("Aspect '" + RULE_ASPECT_NAME
@@ -152,6 +159,8 @@ public class RuleAspect extends AbstractAspect {
 			return EMBARGO;
 		} else if (value1 == EMBARGO && value2 == ERASER) {
 			return EMBARGO;
+		} else if (value1 == REMARK || value2 == REMARK) {
+			return REMARK;
 		} else {
 			return super.getMaxValue(value1, value2);
 		}
