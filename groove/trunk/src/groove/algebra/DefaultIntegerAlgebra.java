@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIntegerAlgebra.java,v 1.2 2007-03-30 15:50:31 rensink Exp $
+ * $Id: DefaultIntegerAlgebra.java,v 1.3 2007-04-04 20:45:16 rensink Exp $
  */
 
 package groove.algebra;
@@ -28,7 +28,7 @@ import java.util.List;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:31 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-04 20:45:16 $
  */
 public class DefaultIntegerAlgebra extends Algebra {
 
@@ -201,23 +201,27 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
-			Constant result = null;
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return the sum of both operands
-			int value1 = Integer.parseInt(oper1.symbol());
-			int value2 = Integer.parseInt(oper2.symbol());
-			int sum = value1 + value2;
-
+		public Constant apply(List<Constant> operands)
+				throws IllegalArgumentException {
 			try {
-				result = (Constant) algebra().getOperation("" + sum); 
+				Constant result = null;
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+
+				// return the sum of both operands
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				int sum = value1 + value2;
+
+				try {
+					result = (Constant) algebra().getOperation("" + sum);
+				} catch (UnknownSymbolException use) {
+					System.err.println(use.toString());
+				}
+				return result;
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
 			}
-			catch (UnknownSymbolException use) {
-				System.err.println(use.toString());
-			}
-			return result;
 		}
 	}
 
@@ -247,24 +251,27 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
-			Constant result = null;
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return the value obtained by subtracting the
-			// second operand from the first operand
-			int value1 = Integer.parseInt(oper1.symbol());
-			int value2 = Integer.parseInt(oper2.symbol());
-			int sub = value1 - value2;
-
+		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-				result = (Constant) algebra().getOperation("" + sub); 
+				Constant result = null;
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+
+				// return the value obtained by subtracting the
+				// second operand from the first operand
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				int sub = value1 - value2;
+
+				try {
+					result = (Constant) algebra().getOperation("" + sub);
+				} catch (UnknownSymbolException use) {
+					System.err.println(use.toString());
+				}
+				return result;
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
 			}
-			catch (UnknownSymbolException use) {
-				System.err.println(use.toString());
-			}
-			return result;
 		}
 	}
 
@@ -294,24 +301,28 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
-			Constant result = null;
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return the value obtained by multiplying
-			// both operands
-			int value1 = Integer.parseInt(oper1.symbol());
-			int value2 = Integer.parseInt(oper2.symbol());
-			int mul = value1 * value2;
-
+		public Constant apply(List<Constant> operands)
+				throws IllegalArgumentException {
 			try {
-				result = (Constant) algebra().getOperation("" + mul); 
+				Constant result = null;
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+
+				// return the value obtained by multiplying
+				// both operands
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				int mul = value1 * value2;
+
+				try {
+					result = (Constant) algebra().getOperation("" + mul);
+				} catch (UnknownSymbolException use) {
+					System.err.println(use.toString());
+				}
+				return result;
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
 			}
-			catch (UnknownSymbolException use) {
-				System.err.println(use.toString());
-			}
-			return result;
 		}
 	}
 
@@ -341,24 +352,30 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
-			Constant result = null;
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return the value obtained by dividing the first
-			// operand by the second operand
-			int value1 = Integer.parseInt(oper1.symbol());
-			int value2 = Integer.parseInt(oper2.symbol());
-			int div = value1 / value2;
-
+		public Constant apply(List<Constant> operands)
+				throws IllegalArgumentException {
 			try {
-				result = (Constant) algebra().getOperation("" + div); 
+				Constant result = null;
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+
+				// return the value obtained by dividing the first
+				// operand by the second operand
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				int div = value1 / value2;
+
+				try {
+					result = (Constant) algebra().getOperation("" + div);
+				} catch (UnknownSymbolException use) {
+					System.err.println(use.toString());
+				}
+				return result;
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
+			} catch (ArithmeticException exc) {
+				throw new IllegalArgumentException(exc);
 			}
-			catch (UnknownSymbolException use) {
-				System.err.println(use.toString());
-			}
-			return result;
 		}
 	}
 
@@ -388,24 +405,29 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
-			Constant result = null;
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return the value obtained by taking the modulo
-			// of the first operand with the second operand
-			int value1 = Integer.parseInt(oper1.symbol());
-			int value2 = Integer.parseInt(oper2.symbol());
-			int mod = value1 % value2;
-
+		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-				result = (Constant) algebra().getOperation("" + mod); 
+				Constant result = null;
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+
+				// return the value obtained by taking the modulo
+				// of the first operand with the second operand
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				int mod = value1 % value2;
+
+				try {
+					result = (Constant) algebra().getOperation("" + mod);
+				} catch (UnknownSymbolException use) {
+					System.err.println(use.toString());
+				}
+				return result;
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
+			} catch (ArithmeticException exc) {
+				throw new IllegalArgumentException(exc);
 			}
-			catch (UnknownSymbolException use) {
-				System.err.println(use.toString());
-			}
-			return result;
 		}
 	}
 
@@ -435,29 +457,32 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
-			Constant result = null;
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return true if the first operand is less than
-			// the second operand and false otherwise
-			int value1 = Integer.parseInt(oper1.symbol());
-			int value2 = Integer.parseInt(oper2.symbol());
-			boolean lessThan = value1 < value2;
-
+		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-			    AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-			    Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-			    if (lessThan)
-			        result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
-			    else
-			        result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
+				Constant result = null;
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+
+				// return true if the first operand is less than
+				// the second operand and false otherwise
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				boolean lessThan = value1 < value2;
+
+				try {
+					AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
+					Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
+					if (lessThan)
+						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
+					else
+						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
+				} catch (UnknownSymbolException use) {
+					System.err.println(use.toString());
+				}
+				return result;
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
 			}
-			catch (UnknownSymbolException use) {
-				System.err.println(use.toString());
-			}
-			return result;
 		}
 	}
 
@@ -487,29 +512,32 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
-			Constant result = null;
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return true if the first operand is less than
-			// the second operand and false otherwise
-			int value1 = Integer.parseInt(oper1.symbol());
-			int value2 = Integer.parseInt(oper2.symbol());
-			boolean lessEqual = value1 <= value2;
-
+		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-			    AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-			    Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-			    if (lessEqual)
-			        result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
-			    else
-			        result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
+				Constant result = null;
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+
+				// return true if the first operand is less than
+				// the second operand and false otherwise
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				boolean lessEqual = value1 <= value2;
+
+				try {
+					AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
+					Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
+					if (lessEqual)
+						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
+					else
+						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
+				} catch (UnknownSymbolException use) {
+					System.err.println(use.toString());
+				}
+				return result;
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
 			}
-			catch (UnknownSymbolException use) {
-				System.err.println(use.toString());
-			}
-			return result;
 		}
 	}
 
@@ -539,29 +567,33 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
-			Constant result = null;
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return true if the first operand is greater than
-			// the second operand and false otherwise
-			int value1 = Integer.parseInt(oper1.symbol());
-			int value2 = Integer.parseInt(oper2.symbol());
-			boolean greaterThan = value1 > value2;
-
+		public Constant apply(List<Constant> operands)
+				throws IllegalArgumentException {
 			try {
-			    AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-			    Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-			    if (greaterThan)
-			        result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
-			    else
-			        result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
+				Constant result = null;
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+
+				// return true if the first operand is greater than
+				// the second operand and false otherwise
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				boolean greaterThan = value1 > value2;
+
+				try {
+					AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
+					Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
+					if (greaterThan)
+						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
+					else
+						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
+				} catch (UnknownSymbolException use) {
+					System.err.println(use.toString());
+				}
+				return result;
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
 			}
-			catch (UnknownSymbolException use) {
-				System.err.println(use.toString());
-			}
-			return result;
 		}
 	}
 
@@ -591,29 +623,32 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
-			Constant result = null;
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return true if the first operand is greater than
-			// the second operand and false otherwise
-			int value1 = Integer.parseInt(oper1.symbol());
-			int value2 = Integer.parseInt(oper2.symbol());
-			boolean greaterEqual = value1 >= value2;
-
+		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-			    AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-			    Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-			    if (greaterEqual)
-			        result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
-			    else
-			        result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
+				Constant result = null;
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+
+				// return true if the first operand is greater than
+				// the second operand and false otherwise
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				boolean greaterEqual = value1 >= value2;
+
+				try {
+					AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
+					Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
+					if (greaterEqual)
+						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
+					else
+						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
+				} catch (UnknownSymbolException use) {
+					System.err.println(use.toString());
+				}
+				return result;
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
 			}
-			catch (UnknownSymbolException use) {
-				System.err.println(use.toString());
-			}
-			return result;
 		}
 	}
 
@@ -643,29 +678,32 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
-			Constant result = null;
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return true if both operands are equal
-			// and false otherwise
-			int value1 = Integer.parseInt(oper1.symbol());
-			int value2 = Integer.parseInt(oper2.symbol());
-			boolean equals = (value1 == value2);
-
+		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-			    AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-			    Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-			    if (equals)
-			        result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
-			    else
-			        result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
+				Constant result = null;
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+
+				// return true if both operands are equal
+				// and false otherwise
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				boolean equals = (value1 == value2);
+
+				try {
+					AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
+					Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
+					if (equals)
+						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
+					else
+						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
+				} catch (UnknownSymbolException use) {
+					System.err.println(use.toString());
+				}
+				return result;
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
 			}
-			catch (UnknownSymbolException use) {
-				System.err.println(use.toString());
-			}
-			return result;
 		}
 	}
 }
