@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultOperation.java,v 1.2 2007-03-27 14:18:39 rensink Exp $
+ * $Id: DefaultOperation.java,v 1.3 2007-04-04 20:45:16 rensink Exp $
  */
 package groove.algebra;
 
@@ -23,7 +23,7 @@ import java.util.List;
  * Class implementing the <tt>Operation</tt> interface.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:39 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-04 20:45:16 $
  */
 public class DefaultOperation implements Operation {
 
@@ -143,7 +143,7 @@ public class DefaultOperation implements Operation {
 	/* (non-Javadoc)
 	 * @see groove.util.Operation#apply(java.util.List)
 	 */
-	public Constant apply(List<Constant> operands) {
+	public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 		return new DefaultConstant();
 	}
 

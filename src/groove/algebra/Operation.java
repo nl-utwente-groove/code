@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Operation.java,v 1.2 2007-03-20 23:00:22 rensink Exp $
+ * $Id: Operation.java,v 1.3 2007-04-04 20:45:16 rensink Exp $
  */
 package groove.algebra;
 
@@ -22,18 +22,19 @@ import java.util.List;
  * Interface specifying what methods each Operation needs to implement.
  * AREND: Shouldn't the types of the arguments be included somehow?
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-20 23:00:22 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-04 20:45:16 $
  */
 public interface Operation {
-
 	/**
 	 * Apply this operation on the list of operands and return the
 	 * result.
 	 * @param operands the operands on which this operation operates
 	 * @return the resulting {@link groove.algebra.Operation} when applying this
 	 * operation on its <tt>operands</tt>
+	 * @throws IllegalArgumentException if the operation cannot be performed,
+	 * due to typing errors of the operands or zero division
 	 */
-	public Constant apply(List<Constant> operands);
+	public Constant apply(List<Constant> operands) throws IllegalArgumentException;
 
 	/**
 	 * @return the String representation of this operation

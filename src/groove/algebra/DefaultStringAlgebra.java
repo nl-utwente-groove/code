@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultStringAlgebra.java,v 1.3 2007-03-30 15:50:31 rensink Exp $
+ * $Id: DefaultStringAlgebra.java,v 1.4 2007-04-04 20:45:16 rensink Exp $
  */
 package groove.algebra;
 
@@ -27,7 +27,7 @@ import java.util.List;
  * on strings.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:31 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-04 20:45:16 $
  */
 public class DefaultStringAlgebra extends Algebra {
 
@@ -123,7 +123,7 @@ public class DefaultStringAlgebra extends Algebra {
 	    }
 
 		@Override
-	    public Constant apply(List<Constant> operands) {
+	    public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 	        return getInstance();
 	    }
 	}
@@ -146,7 +146,7 @@ public class DefaultStringAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
+		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
 			Constant oper2 = operands.get(1);
@@ -181,7 +181,7 @@ public class DefaultStringAlgebra extends Algebra {
 		}
 
 		@Override
-		public Constant apply(List<Constant> operands) {
+		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			Constant result = null;
 			Constant oper1 = operands.get(0);
 			Constant oper2 = operands.get(1);

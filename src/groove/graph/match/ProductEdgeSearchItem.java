@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductEdgeSearchItem.java,v 1.2 2007-04-04 07:04:28 rensink Exp $
+ * $Id: ProductEdgeSearchItem.java,v 1.3 2007-04-04 20:45:20 rensink Exp $
  */
 package groove.graph.match;
 
@@ -116,9 +116,8 @@ public class ProductEdgeSearchItem implements SearchItem {
 		 * @return the result of the operation, or <code>null</code> if it cannot
 		 * be calculated due to the fact that one of the arguments was bound to
 		 * a non-value.
-		 * TODO take care of bindings to values of wrong types in the same way
 		 */
-		private Constant calculateResult() {
+		private Constant calculateResult() throws IllegalArgumentException {
 			Constant[] operands = new Constant[arguments.size()];
 			for (int i = 0; i < arguments.size(); i++) {
 				Node operandImage = matcher.getSingularMap().getNode(arguments.get(i));
@@ -130,8 +129,12 @@ public class ProductEdgeSearchItem implements SearchItem {
 				}
 				operands[i] = ((ValueNode) operandImage).getConstant();
 			}
-			Constant outcome = operation.apply(Arrays.asList(operands));
-			return outcome;
+			try {
+				Constant outcome = operation.apply(Arrays.asList(operands));
+				return outcome;
+			} catch (IllegalArgumentException exc) {
+				return null;
+			}
 		}
 		
 		@Override
