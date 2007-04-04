@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.2 2007-03-30 15:50:35 rensink Exp $
+ * $Id: RuleJTree.java,v 1.3 2007-04-04 21:31:32 rensink Exp $
  */
 package groove.gui;
 
@@ -61,7 +61,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -156,7 +156,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             RuleTreeNode ruleNode = new RuleTreeNode(ruleName);
             parentNode.add(ruleNode);
             expandPath(new TreePath(ruleNode.getPath()));
-            ruleNodeMap.put(rule.getName(), ruleNode);
+            ruleNodeMap.put(ruleName, ruleNode);
         }
         ruleDirectory.reload(topDirectoryNode);
         setEnabled(true);
@@ -280,6 +280,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * @param derivations the set of derivation edges used to create match nodes
      */
     private void refreshMatches(Collection<GraphTransition> derivations) {
+    	if (displayedState != simulator.getCurrentState()) {
         // remove current matches
     	for (MatchTreeNode matchNode: matchNodeMap.values()) {
             ruleDirectory.removeNodeFromParent(matchNode);
@@ -314,6 +315,8 @@ public class RuleJTree extends JTree implements SimulationListener {
             expandPath(new TreePath(ruleNode.getPath()));
             matchNodeMap.put(edge, matchNode);
         }
+        displayedState = simulator.getCurrentState();
+    	}
     }
 
     /** Convenience method to retrieve the current GTS from the simulator. */
@@ -563,4 +566,5 @@ public class RuleJTree extends JTree implements SimulationListener {
     private Color enabledBackground;
     /** Flag to indicate that the anchor image option listener has been set. */
     private boolean anchorImageOptionListenerSet = false;
+    private GraphState displayedState;
 }
