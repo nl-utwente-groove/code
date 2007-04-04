@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributedSPORule.java,v 1.3 2007-04-01 12:49:54 rensink Exp $
+ * $Id: AttributedSPORule.java,v 1.4 2007-04-04 07:04:19 rensink Exp $
  */
 package groove.trans;
 
@@ -28,7 +28,7 @@ import groove.graph.algebra.ValueNode;
  * nodes.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-04-01 12:49:54 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-04 07:04:19 $
  * @deprecated all funtionality now in {@link SPORule}.
  */
 @Deprecated
@@ -59,10 +59,10 @@ public class AttributedSPORule extends SPORule {
      * @param morphism the rule morphism from which to create the rule
      * @param name the name of this rule
      * @param priority the priority of this rule
-     * @param ruleFactory
+     * @param properties
      */
-    public AttributedSPORule(Morphism morphism, NameLabel name, int priority, RuleFactory ruleFactory) {
-    	super(morphism, name, priority, ruleFactory);
+    public AttributedSPORule(Morphism morphism, NameLabel name, int priority, RuleProperties properties) {
+    	super(morphism, name, priority, properties);
     }
 
     /**

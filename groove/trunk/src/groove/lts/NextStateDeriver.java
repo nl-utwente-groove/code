@@ -22,6 +22,7 @@ import java.util.Set;
 
 import groove.graph.Graph;
 import groove.trans.DefaultDeriver;
+import groove.trans.DerivationData;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleDependencies;
@@ -57,10 +58,10 @@ public class NextStateDeriver extends DefaultDeriver {
 
     /**
 	 * Constructs a new deriver, on the basis of a given set of rules.
-	 * @param rules the rules for this deriver
+	 * @param record the rules for this deriver
 	 */
-	public NextStateDeriver(Collection<Rule> rules) {
-		super(rules);
+	public NextStateDeriver(DerivationData record) {
+		super(record);
 	}
 
 	@Override

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.3 2007-04-01 12:50:27 rensink Exp $
+ * $Id: Gossips.java,v 1.4 2007-04-04 07:04:25 rensink Exp $
  */
 package groove.samples;
 
@@ -37,6 +37,7 @@ import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleFactory;
+import groove.trans.RuleProperties;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.util.FormatException;
@@ -109,7 +110,7 @@ public class Gossips {
 //            GraphResult result = calc.getFirst(READY_CONDITION_NAME);
 //            report(result);
             GraphGrammar atomic = Groove.loadGrammar(ATOMIC_GOSSIP_GPS_NAME, startGraphName);
-            atomic.add(new GossipRule(Groove.loadRuleGraph(BASIC_GOSSIP_RULE_NAME).toRule(), new GossipRuleFactory()));
+            atomic.add(new GossipRule(Groove.loadRuleGraph(BASIC_GOSSIP_RULE_NAME).toRule(), atomic.getProperties()));
             GraphCalculator calc2 = Groove.createCalculator(atomic);
             calc2.addGTSListener(new GenerateProgressMonitor());
 //            Collection result2 = calc2.getAllMax();
@@ -132,8 +133,8 @@ public class Gossips {
     }
     
     static class GossipRule extends SPORule {
-        public GossipRule(Rule basicRule, RuleFactory ruleFactory) {
-            super(basicRule.getMorphism(), basicRule.getName(), ruleFactory);
+        public GossipRule(Rule basicRule, RuleProperties properties) {
+            super(basicRule.getMorphism(), basicRule.getName(), DEFAULT_PRIORITY, properties);
             setAndNot(basicRule.getNegConjunct());
             setPriority(1);
         }
@@ -177,8 +178,8 @@ public class Gossips {
     }
     
     static class GossipApplication extends AliasSPOApplication {
-        public GossipApplication(SPOEvent event, Graph source, RuleFactory ruleFactory) {
-            super(event, source, ruleFactory);
+        public GossipApplication(SPOEvent event, Graph source) {
+            super(event, source);
         }
 
         @Override
@@ -213,7 +214,7 @@ public class Gossips {
     	/** This implementation returns a {@link GossipApplication}. */
     	@Override
     	public RuleApplication createRuleApplication(RuleEvent event, Graph source) {
-    		return new GossipApplication((GossipEvent) event, source, this);
+    		return new GossipApplication((GossipEvent) event, source);
     	}
 
     	/** This implementation returns a {@link GossipEvent}. */

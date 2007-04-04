@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.4 2007-04-01 12:49:36 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.5 2007-04-04 07:04:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -23,10 +23,13 @@ import groove.graph.algebra.ValueNode;
 import groove.graph.aspect.AttributeAspect;
 import groove.util.Converter;
 
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+
+import org.jgraph.graph.GraphConstants;
 
 /**
  * Extends DefaultGraphCell to use a Node as user object but
@@ -79,23 +82,23 @@ public class GraphJVertex extends JVertex {
      */
     @Override
     public String getHtmlText() {
-    	String result = "";
+    	StringBuffer result = new StringBuffer();
     	// show the node identity if required
     	if (isShowNodeIdentity()) {
-    		result = italicTag.on(getNodeIdentity());
+    		result.append(italicTag.on(getNodeIdentity()));
     	}
     	String labels = getUserObject().toString();
     	// add the labels if nonempty
     	if (labels.length() > 0) {
     		// add a separator between node identity and label
     		if (result.length() > 0) {
-                result += Converter.HTML_LINEBREAK; //HORIZONTAL_LINE;
+                result.append(Converter.HTML_LINEBREAK); //HORIZONTAL_LINE;
     		}
-    		result += strongTag.on(labels, true);
+    		result.append(strongTag.on(labels, true));
     	}
-    	return result;
+    	return result.toString();
     }
-    
+
     /** 
      * Callback mathod to yield a string description of the underlying 
      * node, used for the node inscription in case node identities 

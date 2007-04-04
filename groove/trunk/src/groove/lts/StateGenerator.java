@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.2 2007-03-23 15:42:58 rensink Exp $
+ * $Id: StateGenerator.java,v 1.3 2007-04-04 07:04:24 rensink Exp $
  */
 package groove.lts;
 
@@ -230,13 +230,13 @@ public class StateGenerator {
 		}
 		return deriver;
 	}
-	
+
 	/**
 	 * Callback factory method.
 	 * Creates a derivation strategy based on the rule system of the GTS.
 	 */
 	protected Deriver createDeriver() {
-		return new NextStateDeriver(gts.ruleSystem().getRules());
+		return new NextStateDeriver(gts.getDerivationData());
 	}
 
 	/** The deriver strategy generating the rule productions. */

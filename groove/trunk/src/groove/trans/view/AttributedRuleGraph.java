@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributedRuleGraph.java,v 1.6 2007-04-01 12:50:05 rensink Exp $
+ * $Id: AttributedRuleGraph.java,v 1.7 2007-04-04 07:04:23 rensink Exp $
  */
 package groove.trans.view;
 
@@ -31,7 +31,7 @@ import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
-import groove.trans.RuleFactory;
+import groove.trans.RuleProperties;
 import groove.util.FormatException;
 
 /**
@@ -39,7 +39,7 @@ import groove.util.FormatException;
  * NACs for attributed graphs.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $ $Date: 2007-04-01 12:50:05 $
+ * @version $Revision: 1.7 $ $Date: 2007-04-04 07:04:23 $
  * @deprecated replaced by {@link AspectualRuleView}
  */
 @Deprecated
@@ -60,12 +60,12 @@ public class AttributedRuleGraph extends RuleGraph {
      * @param graph the graph from which to create the rule
      * @param name the name for this rule
      * @param priority the priority of this rule
-     * @param ruleFactory the rule factory for this rule-graph
+     * @param properties the rule factory for this rule-graph
      * @throws FormatException when the given graph does not fulfill the
      * requirements for making an attributed rule from it
      */
-    public AttributedRuleGraph(GraphShape graph, NameLabel name, int priority, RuleFactory ruleFactory) throws FormatException {
-		super(graph, name, priority, ruleFactory);
+    public AttributedRuleGraph(GraphShape graph, NameLabel name, int priority, RuleProperties properties) throws FormatException {
+		super(graph, name, priority, properties);
 	}
 
 	/* (non-Javadoc)

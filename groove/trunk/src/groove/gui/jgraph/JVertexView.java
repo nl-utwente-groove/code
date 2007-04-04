@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: JVertexView.java,v 1.3 2007-04-04 07:04:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -50,7 +50,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class JVertexView extends VertexView {
 	/** HTML tag to make text bold. */
@@ -117,6 +117,38 @@ public class JVertexView extends VertexView {
         return editor;
     }
     
+	public String getHtmlText() {
+		String result = getCell().getHtmlText();
+		if (result.length() > 0) {
+			Color lineColor = GraphConstants.getLineColor(getAllAttributes());
+			if (lineColor != null && ! lineColor.equals(Color.BLACK)) {
+				result = getColoredText(result, lineColor);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Returns a given HTML-formatted text, surrounded by a HTML tag to 
+	 * set it in a given colour.
+	 */
+	private String getColoredText(String innerText, Color lineColor) {
+		StringBuffer result = new StringBuffer();
+		int red = lineColor.getRed();
+		int blue = lineColor.getBlue();
+		int green = lineColor.getGreen();
+		result.append("<span style=\"color: rgb(");
+		result.append(red);
+		result.append(",");
+		result.append(green);
+		result.append(",");
+		result.append(blue);
+		result.append(");\">");
+		result.append(innerText);
+		result.append("</span>");
+		return result.toString();
+	}
+
 	/**
 	 * Overwrites the super method because we have a different renderer.
 	 * This implementation is in fact taken from {@link VertexRenderer#getPerimeterPoint(VertexView, Point2D, Point2D)}.
@@ -302,7 +334,7 @@ public class JVertexView extends VertexView {
                 boolean focus, boolean preview) {
         	assert view instanceof JVertexView : String.format("This renderer is only meant for %s", JVertexView.class);
             JVertex jVertex = ((JVertexView) view).getCell();
-            setText(jVertex.getHtmlText(), ((JGraph) graph).getModel().isHidden(jVertex));
+            setText(((JVertexView) view).getHtmlText(), ((JGraph) graph).getModel().isHidden(jVertex));
             this.graph = graph;
             this.selected = sel;
             this.preview = preview;
@@ -323,7 +355,7 @@ public class JVertexView extends VertexView {
 
         public void setText(String text, boolean hidden) {
         	if (text.length() == 0) {
-        		text = fontTag.on("&nbsp;&nbsp;&nbsp;");
+        		text = "&nbsp;&nbsp;&nbsp;";
         	}
         	String displayText = fontTag.on(text);
             if (hidden) {
@@ -334,15 +366,13 @@ public class JVertexView extends VertexView {
         }
         
         @Override
-		public Dimension getPreferredSize() {
+		public synchronized Dimension getPreferredSize() {
 				Dimension dimension = super.getPreferredSize();
 				// the preferred size may be too high because line breaks are
 				// taken into account
 				// so try again after the width has been set
 				setSize(dimension);
 				dimension = super.getPreferredSize();
-//				double width = Math.max(dimension.getWidth(),
-//						JAttr.DEFAULT_NODE_SIZE.getWidth());
 				double height = Math.max(dimension.getHeight(),
 						JAttr.DEFAULT_NODE_SIZE.getHeight());
 				return new Dimension((int) dimension.getWidth(), (int) height);

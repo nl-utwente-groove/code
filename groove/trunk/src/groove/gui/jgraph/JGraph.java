@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.3 2007-03-30 15:50:22 rensink Exp $
+ * $Id: JGraph.java,v 1.4 2007-04-04 07:04:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -25,6 +25,7 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.Layouter;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -51,6 +52,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
+import javax.swing.border.Border;
 
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
@@ -71,7 +73,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:22 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-04 07:04:17 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
@@ -639,12 +641,21 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 			public Dimension2D getPreferredSize(org.jgraph.JGraph graph, CellView view) {
 				Dimension2D result = null;
 				if (view instanceof JVertexView) {
-					String text = convertDigits(((JVertexView) view).getCell().getHtmlText());
+					JVertexView vertexView = (JVertexView) view;
+					String text = convertDigits(vertexView.getHtmlText());
 					result = sizeMap.get(text);
 					if (result == null) {
-						result = super.getPreferredSize(graph, view);
+						result = super.getPreferredSize(graph, vertexView);
+						// normalize for linewidth of the border
+						int linewidth = (int) GraphConstants.getLineWidth(vertexView.getAllAttributes());
+						int lineDiff = linewidth - JAttr.DEFAULT_LINE_WIDTH;
+						result = new Dimension((int) result.getWidth()-lineDiff, (int) result.getHeight()-lineDiff);
 						sizeMap.put(text, result);
 					}
+					// adjust for linewidth of the border
+					int linewidth = (int) GraphConstants.getLineWidth(vertexView.getAllAttributes());
+					int lineDiff = linewidth - JAttr.DEFAULT_LINE_WIDTH;
+					result = new Dimension((int) result.getWidth()+lineDiff, (int) result.getHeight()+lineDiff);
 				} else {
 					result = super.getPreferredSize(graph, view);
 				}

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.3 2007-04-01 12:50:11 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.4 2007-04-04 07:04:28 rensink Exp $
  */
 package groove.graph.match;
 
@@ -42,7 +42,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		 */
 		protected EdgeRecord(M matcher) {
 			this.matcher = matcher;
-			assert ! matcher.getMorphism().containsKey(edge);
+			assert ! matcher.getMorphism().containsKey(edge) : String.format("Edge %s already in %s", edge, matcher.getMorphism().elementMap());
 		}
 
 		public boolean find() {
@@ -130,14 +130,15 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 				NodeEdgeMap elementMap = matcher.getSingularMap();
 				int endIndex = 0;
 				for (endIndex = 0; result && endIndex < arity; endIndex++) {
+					Node keyEnd = edge.end(endIndex);
 					Node imageEnd = image.end(endIndex);
 					if (duplicates[endIndex] < endIndex) {
 						result = imageEnd == image.end(duplicates[endIndex]);
 					} else if (isPreMatched(endIndex)) {
-						result = elementMap.getNode(edge.end(endIndex)) == imageEnd;
+						result = elementMap.getNode(keyEnd) == imageEnd;
 					} else {
-						Node endImage = elementMap.putNode(edge.end(endIndex), imageEnd);
-						assert endImage == null;
+						Node endImage = elementMap.putNode(keyEnd, imageEnd);
+						assert endImage == null : String.format("Node %s already has image %s in map %s", keyEnd, endImage, matcher.getSingularMap());
 					}
 				}
 				if (! result) {
@@ -207,9 +208,9 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		 * depending on whether a unique image can be determined for the edge.
 		 */
 		protected void initImages() {
-			if (isAllEndsPreMatched()) {
+			if (isAllEndsBound()) {
 				Edge image = edge.imageFor(matcher.getSingularMap());
-				assert image != null;
+				assert image != null : String.format("%s has no image in %s", edge, matcher.getSingularMap());
 				if (matcher.cod().containsElement(image)) {
 					setSingular(image);
 				} else {
@@ -423,20 +424,20 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	 * Creates a search item for a given edge, for which it is know
 	 * which edge ends have already been matched (in the search plan) before this one.
 	 * @param edge the edge to be matched
-	 * @param preMatched array of booleans indicating if the corresponding edge
+	 * @param bound array of booleans indicating if the corresponding edge
 	 * end has been pre-matched according to the search plan; or <code>null</code>
 	 * if all ends have been pre-matched.
 	 */
-	public EdgeSearchItem(E edge, boolean[] preMatched) {
+	public EdgeSearchItem(E edge, boolean[] bound) {
 		this.edge = edge;
 		this.arity = edge.endCount();
-		boolean allEndsPreMatched = true;
-		if (preMatched != null) {
-			for (boolean endPreMatched : preMatched) {
-				allEndsPreMatched &= endPreMatched;
+		boolean allEndsBound = true;
+		if (bound != null) {
+			for (boolean endBound : bound) {
+				allEndsBound &= endBound;
 			}
 		}
-		this.preMatched = allEndsPreMatched ? null : preMatched;
+		this.bound = allEndsBound ? null : bound;
 	}
 	
 	public Record get(Matcher matcher) {
@@ -458,14 +459,14 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	 * Indicates if a given edge end has been pre-matched.
 	 */
 	protected boolean isPreMatched(int i) {
-		return isAllEndsPreMatched() || preMatched[i];
+		return isAllEndsBound() || bound[i];
 	}
 	
 	/**
 	 * Indicates if all edge ends have been pre-matched.
 	 */
-	protected boolean isAllEndsPreMatched() {
-		return preMatched == null;
+	protected boolean isAllEndsBound() {
+		return bound == null;
 	}
 	
 	/**
@@ -518,7 +519,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	 * Array of flags indicating if the corresponding end of {@link #edge}.
 	 * May be <code>null</code> if all ends are matched.
 	 */
-	protected final boolean[] preMatched;
+	protected final boolean[] bound;
 	/**
 	 * Array of lower end indices that are duplicates of a given end.
 	 * That is, duplicates[i] is the smallest j smaller than or equal to i

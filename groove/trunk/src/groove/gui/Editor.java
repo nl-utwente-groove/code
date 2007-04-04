@@ -12,11 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.5 2007-04-01 12:50:29 rensink Exp $
+ * $Id: Editor.java,v 1.6 2007-04-04 07:04:27 rensink Exp $
  */
 package groove.gui;
 
-import static groove.gui.Options.PARSE_ATTRIBUTES_OPTION;
+import static groove.gui.Options.IS_ATTRIBUTED_OPTION;
 import groove.graph.Graph;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
@@ -31,6 +31,7 @@ import groove.util.FormatException;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.NameLabel;
 import groove.trans.RuleFactory;
+import groove.trans.RuleProperties;
 import groove.trans.view.AspectualRuleView;
 import groove.util.Converter;
 import groove.util.Groove;
@@ -87,7 +88,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.5 $ $Date: 2007-04-01 12:50:29 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-04 07:04:27 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -274,7 +275,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.5 $
+     * @version $Revision: 1.6 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -573,10 +574,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
 	protected boolean handlePreview() {
 	    try {
-//	    	DefaultRuleFactory ruleFactory = DefaultRuleFactory.getInstance();
-//	    	ruleFactory = DefaultRuleFactory.getInstance();
 	    	NameLabel ruleName = new NameLabel("temp");
-            AspectualRuleView ruleGraph = (AspectualRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0);
+            AspectualRuleView ruleGraph = (AspectualRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0, getRuleProperties());
             AspectJModel ruleModel = new AspectJModel(ruleGraph, getOptions());
             JGraph previewGraph = new JGraph(ruleModel);
             JOptionPane previewPane = new JOptionPane(new JScrollPane(previewGraph),
@@ -631,7 +630,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             }
         });
 
-		final JCheckBoxMenuItem attributedGraphsItem = getOptions().getItem(Options.PARSE_ATTRIBUTES_OPTION);
+		final JCheckBoxMenuItem attributedGraphsItem = getOptions().getItem(Options.IS_ATTRIBUTED_OPTION);
 		// listen to the option controlling the parsing of attributed graphs
 		attributedGraphsItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -939,7 +938,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         // options menu
         JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
         menuBar.add(optionsMenu);
-        optionsMenu.add(options.getItem(PARSE_ATTRIBUTES_OPTION));
+        optionsMenu.add(options.getItem(IS_ATTRIBUTED_OPTION));
 
         return menuBar;
     }
@@ -981,6 +980,11 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         return toolbar;
     }
 
+    /** Returns a rule properties object based on the current options setting. */
+    protected RuleProperties getRuleProperties() {
+    	return RuleProperties.getInstance(getOptions().getValue(IS_ATTRIBUTED_OPTION));
+    }
+    
 	/**
 	 * Returns the group of editing mode buttons, lazily creating it first.
 	 */
@@ -1149,7 +1153,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     	// lazily creates the options 
     	if (options == null) {
     		options = new Options();
-        	options.add(Options.PARSE_ATTRIBUTES_OPTION);
+        	options.add(Options.IS_ATTRIBUTED_OPTION);
     	}
     	return options;
     }

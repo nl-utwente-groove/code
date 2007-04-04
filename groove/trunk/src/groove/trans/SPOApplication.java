@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.4 2007-04-01 12:49:54 rensink Exp $
+ * $Id: SPOApplication.java,v 1.5 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
@@ -43,7 +43,7 @@ import groove.util.Reporter;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:54 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-04 07:04:20 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -58,21 +58,17 @@ public class SPOApplication implements RuleApplication, Derivation {
      */
     private static int freshNodeCount;
 
-
     /**
-     * Constructs a new derivation on the basis of a given production rule, host graph and anchor map.
+     * Constructs a new derivation on the basis of a given production rule, host graph and rule factory.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
      */
-    public SPOApplication(SPOEvent event, Graph source, RuleFactory ruleFactory) {
-    	this.ruleFactory = ruleFactory;
+    public SPOApplication(SPOEvent event, Graph source) {
     	this.event = event;
         this.rule = event.getRule();
         this.source = source;
         this.anchorMap = event.getAnchorMap();
-        boolean test = event.hasMatching(source);
-        assert test: String.format("Rule event %s has no matching in %s", event, AbstractGraph.toString(source));
-//        assert source.containsElementSet(anchorMap.values()) : "Anchor map "+anchorMap+" does not fit to source graph "+source;
+        assert event.hasMatching(source): String.format("Rule event %s has no matching in %s", event, AbstractGraph.toString(source));
     }
 
     /*
@@ -88,13 +84,6 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 */
 	public Rule getRule() {
 	    return rule;
-	}
-
-	/**
-	 * Returns the rule factory of this applier.
-	 */
-	protected RuleFactory getRuleFactory() {
-		return ruleFactory;
 	}
 
 	/* (non-Javadoc)
@@ -306,6 +295,10 @@ public class SPOApplication implements RuleApplication, Derivation {
         if (isolatedValueNodes != null) {
         	for (ValueNode node : isolatedValueNodes) {
 				target.removeNode(node);
+				if (removedValueNodes == null) {
+					removedValueNodes = new HashSet<ValueNode>();
+				}
+				removedValueNodes.add(node);
 			}
         }
 	}
@@ -519,9 +512,12 @@ public class SPOApplication implements RuleApplication, Derivation {
 			target.addEdge(edge);
 		}
 		Node targetNode = edge.opposite();
-		if (targetNode instanceof ValueNode && !source.containsElement(targetNode) && !getAddedValueNodes().contains(targetNode)) {
+		if (targetNode instanceof ValueNode && (!source.containsElement(targetNode) && !getAddedValueNodes().contains(targetNode)) || removedValueNodes != null && removedValueNodes.contains(targetNode)) {
 			target.addNode(targetNode);
 			getAddedValueNodes().add((ValueNode) targetNode);
+			if (removedValueNodes != null && removedValueNodes.contains(targetNode)) {
+				removedValueNodes.remove(targetNode);
+			}
 		}
 	}
 
@@ -562,7 +558,7 @@ public class SPOApplication implements RuleApplication, Derivation {
     	// the following is a stopgap: to ensure node uniqueness we ask the grammar,
     	// but this may be null, in which case we rely on the DefaultNode's capacity
     	// to generate unique node nrs
-    	DerivationRecord record = getRecord();
+    	DerivationData record = getEvent().getRecord();
     	if (record == null) {
     		result = new DefaultNode();
     	} else {
@@ -570,11 +566,6 @@ public class SPOApplication implements RuleApplication, Derivation {
     	}
         freshNodeCount++;
         return result;
-    }
-    
-    /** Returns the derivation record associated with this rule application. */
-    protected DerivationRecord getRecord() {
-    	return getRule().getGrammar();
     }
 
 	/**
@@ -695,11 +686,8 @@ public class SPOApplication implements RuleApplication, Derivation {
     private Set<ValueNode> isolatedValueNodes;
     /** The set of value nodes that have been added due to edge creation. */
     private Set<ValueNode> addedValueNodes;
-    /**
-     * The factory to be used to instantiate classes specific for this rule application type.
-     */
-    private final RuleFactory ruleFactory;
-
+    /** The set of value nodes that have been added due to edge creation. */
+    private Set<ValueNode> removedValueNodes;
     /** Reporter for prifiling the application class. */
     static public final Reporter reporter = Reporter.register(RuleApplication.class);
     /** Handle for profiling the actual rule application. */

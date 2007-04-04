@@ -12,16 +12,18 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
- * $Date: 2007-03-28 15:12:27 $
+ * $Id: Rule.java,v 1.3 2007-04-04 07:04:20 rensink Exp $
+ * $Date: 2007-04-04 07:04:20 $
  */
 package groove.trans;
+
+import java.util.List;
 
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.rel.VarNodeEdgeMap;
+import groove.graph.match.SearchItem;
 import groove.rel.VarGraph;
 
 /**
@@ -31,7 +33,7 @@ import groove.rel.VarGraph;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -73,19 +75,12 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * @see #rhs()
      */
     public Morphism getMorphism();
-    
-    /**
-     * Associates a graph grammar with this rule.
-     * @see #getGrammar()
-     */
-    public void setGrammar(GraphGrammar grammar);
 
     /**
-     * Returns the grammar to which this rule is associated.
+     * Returns the properties of this rule.
      * May be <code>null</code> if there is no associated grammar.
-     * @see #setGrammar(GraphGrammar)
      */
-    public GraphGrammar getGrammar();
+    public RuleProperties getProperties();
 
     /**
      * Indicates if application of this rule actually changes the host graph.
@@ -108,33 +103,24 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      */
     public Node[] coanchor();
     
+//    /**
+//     * Factory method to create an event based on this rule and a given anchor map.
+//     * @ensure <code>result.getRule() == this</code>
+//     */
+//    public RuleEvent getEvent(VarNodeEdgeMap anchorMap);
+//
     /**
-     * Factory method to create an event based on this rule and a given anchor map.
-     * @ensure <code>result.getRule() == this</code>
+     * Lazily creates and returns a search plan for rule events of this rule,
+     * which tries to find the anchor image in a given graph. 
      */
-    public RuleEvent getEvent(VarNodeEdgeMap anchorMap);
-
+    public List<SearchItem> getEventSearchPlan();
+    
     /**
      * Factory method to create an application for this rule from a given
      * matching.
-     * The effect is the same as calling <code>getEvent().createApplication(match)</code>.
-     * @see #getEvent(VarNodeEdgeMap)
      * @see RuleEvent#createApplication(Graph)
      */
     public RuleApplication createApplication(Matching match);
-//
-//    /**
-//     * Constructs a negative application condition.
-//     */
-//    public NAC constructNac(RuleGraph graph, Set nacElemSet);
-//    
-//    /**
-//     * Returns the set of negative application conditions of this rule.
-//     * @ensure <tt>result \subseteq { m\in NAC | m.source().equals(lhs())  }</tt>
-//     * @deprecated use {@link #getNegConjunct()} instead.
-//     */
-//    public Collection nacSet();
-//    // --------------------------- COMMANDS ------------------------------
 
     /** 
      * Adds a negative application condition to this rule.

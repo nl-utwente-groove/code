@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.4 2007-04-01 12:49:36 rensink Exp $
+ * $Id: AspectJModel.java,v 1.5 2007-04-04 07:04:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -47,7 +47,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class AspectJModel extends GraphJModel {
     /** Empty instance of the {@link AspectJModel}. */
@@ -85,6 +85,7 @@ public class AspectJModel extends GraphJModel {
             GraphConstants.setAutoSize(nodeAttr, true);
             GraphConstants.setSizeable(nodeAttr, false);
             GraphConstants.setBorder(nodeAttr, RULE_BORDER.get(role));
+            GraphConstants.setLineWidth(nodeAttr, RULE_WIDTH.get(role));
             RULE_NODE_ATTR.put(role,nodeAttr);
         }
     }
@@ -158,27 +159,42 @@ public class AspectJModel extends GraphJModel {
             }
         }
         
-        /**
-         * Adds the appropriate colour around the text. 
-         */
-        @Override
-		public String getHtmlText() {
-        	String innerText = super.getHtmlText();
-			if (innerText.length() > 0) {
-				Color roleColour = RULE_COLOR.get(role);
-				int red = roleColour.getRed();
-				int blue = roleColour.getBlue();
-				int green = roleColour.getGreen();
-				return String.format("<span style=\"color: rgb(%s,%s,%s);\">%s</span>",
-						red,
-						green,
-						blue,
-						innerText);
-        	} else {
-        		return innerText;
-        	}
-		}
-        
+//        /**
+//         * Adds the appropriate colour around the text. 
+//         */
+//        @Override
+//		public String getHtmlText() {
+//        	String innerText = super.getHtmlText();
+//			if (innerText.length() > 0) {
+//				Color lineColor = GraphConstants.getLineColor(getAttributes());
+//				if (lineColor != null && lineColor != Color.BLACK) {
+//					return getColoredText(innerText, lineColor);
+//				}
+//			}
+//			return innerText;
+//		}
+//
+//		/**
+//		 * Returns a given HTML-formatted text, surrounded by a HTML tag to 
+//		 * set it in a given colour.
+//		 */
+//		private String getColoredText(String innerText, Color lineColor) {
+//			StringBuffer result = new StringBuffer();
+//			int red = lineColor.getRed();
+//			int blue = lineColor.getBlue();
+//			int green = lineColor.getGreen();
+//			result.append("<span style=\"color: rgb(");
+//			result.append(red);
+//			result.append(",");
+//			result.append(green);
+//			result.append(",");
+//			result.append(blue);
+//			result.append(");\">");
+//			result.append(innerText);
+//			result.append("</span>");
+//			return result.toString();
+//		}
+//        
 		/**
 		 * On demand prefixes the label with the edge's aspect values.
 		 */

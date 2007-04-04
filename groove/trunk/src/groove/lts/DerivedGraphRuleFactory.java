@@ -42,8 +42,8 @@ public class DerivedGraphRuleFactory extends DefaultRuleFactory {
 	 * This implementation returns an {@link AliasSPOApplication}.
 	 */
 	@Override
-	public RuleApplication createRuleApplication(RuleEvent event, Graph source) {
-        return new AliasSPOApplication((SPOEvent) event, source, this);
+	public RuleApplication createRuleApplication(RuleEvent event, Graph host) {
+        return new AliasSPOApplication((SPOEvent) event, host);
 	}
 
 	/**

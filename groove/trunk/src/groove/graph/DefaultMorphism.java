@@ -12,11 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultMorphism.java,v 1.3 2007-04-01 12:49:56 rensink Exp $
+ * $Id: DefaultMorphism.java,v 1.4 2007-04-04 07:04:18 rensink Exp $
  */
 package groove.graph;
 
 import groove.graph.match.DefaultMatcher;
+import groove.graph.match.Matcher;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -25,7 +26,7 @@ import java.util.Map;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultMorphism extends AbstractMorphism {
     /**
@@ -138,26 +139,26 @@ public class DefaultMorphism extends AbstractMorphism {
         testNotFixed();
         return super.removeEdge(key);
     }
-    
-    /**
-     * Callback method to create a fixed morphism from a simulation.
-     * The underlying element map of the morphism will be derived from the
-     * key-to-singular-image mapping of the simulation.  
-     * @param sim the simulation to underly the morphism
-     * @see #getTotalExtension()
-     * @see #getTotalExtensions()
-     * @see #getTotalExtensionsIter()
-     */
-    protected Morphism createMorphism(final Simulation sim) {
-        Morphism result = new DefaultMorphism(sim.dom(), sim.cod()) {
-        	@Override
-            protected NodeEdgeMap createElementMap() {
-                return sim.getSingularMap();
-            }
-        };
-        result.setFixed();
-        return result;
-    }
+//    
+//    /**
+//     * Callback method to create a fixed morphism from a simulation.
+//     * The underlying element map of the morphism will be derived from the
+//     * key-to-singular-image mapping of the simulation.  
+//     * @param sim the simulation to underly the morphism
+//     * @see #getTotalExtension()
+//     * @see #getTotalExtensions()
+//     * @see #getTotalExtensionsIter()
+//     */
+//    protected Morphism createMorphism(final Simulation sim) {
+//        Morphism result = new DefaultMorphism(sim.dom(), sim.cod()) {
+//        	@Override
+//            protected NodeEdgeMap createElementMap() {
+//                return sim.getSingularMap();
+//            }
+//        };
+//        result.setFixed();
+//        return result;
+//    }
 
 	/**
      * This implementation returns a new <tt>DefaultMorphism</tt>,
@@ -196,7 +197,7 @@ public class DefaultMorphism extends AbstractMorphism {
      * This implementation returns a <tt>{@link DefaultSimulation}</tt>.
      */
 	@Override
-    protected Simulation createSimulation() {
+    protected Matcher createMatcher() {
         return new DefaultMatcher(this);
     }
     

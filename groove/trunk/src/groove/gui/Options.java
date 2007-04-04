@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.4 2007-04-01 12:50:29 rensink Exp $
+ * $Id: Options.java,v 1.5 2007-04-04 07:04:27 rensink Exp $
  */
 package groove.gui;
 
@@ -29,7 +29,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class Options {
     /** Edit menu name */
@@ -209,7 +209,7 @@ public class Options {
     /** Show aspects in graphs and rules option */
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
     /** Parse attributed graphs option */
-    static public final String PARSE_ATTRIBUTES_OPTION = "Parse as attributed graph";
+    static public final String IS_ATTRIBUTED_OPTION = "Parse as attributed graph";
 
     /**
      * Convenience method to convert line style codes to names.
@@ -256,7 +256,7 @@ public class Options {
 		add(SHOW_ASPECTS_OPTION);
 		add(VERTEX_LABEL_OPTION);
 		add(SHOW_STATE_IDS_OPTION);
-		add(PARSE_ATTRIBUTES_OPTION);
+		add(IS_ATTRIBUTED_OPTION);
 	}
 
     /**

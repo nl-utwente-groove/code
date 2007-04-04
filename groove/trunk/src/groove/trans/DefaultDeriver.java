@@ -31,16 +31,16 @@ import java.util.Set;
  * Deriver that uses straightforward application of a set of rules,
  * while taking rule priorities into account.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultDeriver implements Deriver {
 	/**
 	 * Creates a deriver for a given set of rules.
 	 * The rules must be ordered (for an iterator created over the set) by descending priority.
-	 * @param rules the rules to be used in this deriver
+	 * @param record the rules to be used in this deriver
 	 */
-	public DefaultDeriver(Collection<Rule> rules) {
-		this.rules = rules;
+	public DefaultDeriver(DerivationData record) {
+		this.data = record;
 	}
 	
 	/** This implementation just returns <code>freshNextStates().iterator()</code>. */
@@ -57,7 +57,7 @@ public class DefaultDeriver implements Deriver {
                         nextIter = new TransformIterator<Matching,RuleApplication>(nextRule.getMatchingIter(graph)) {
                         	@Override
                             public RuleApplication toOuter(Matching from) {
-                                return nextRule.createApplication(from);
+                                return data.getApplication(nextRule, from);
                             }
                         };
 
@@ -85,7 +85,7 @@ public class DefaultDeriver implements Deriver {
             }
 
             /** An iterator over the priority rule sets of the rule system. */
-            private final Iterator<Rule> ruleIter = rules.iterator();
+            private final Iterator<Rule> ruleIter = getRules().iterator();
             /** The next iterator to be returned by {@link #nextIterator()} */
             private Iterator<RuleApplication> nextIter;
             /** A flag indicating if we have reached the end of applicable rules. */
@@ -102,7 +102,7 @@ public class DefaultDeriver implements Deriver {
 		Set<RuleApplication> result = createApplicationSet();
 		int currentPriority = Integer.MIN_VALUE;
 		boolean sufficientPriority = true;
-		for (Rule rule: rules) {
+		for (Rule rule: getRules()) {
             int rulePriority = rule.getPriority();
 			sufficientPriority = (rulePriority >= currentPriority);
 			if (sufficientPriority && collectApplications(rule, graph, result)) {
@@ -117,7 +117,7 @@ public class DefaultDeriver implements Deriver {
 	 * Returns the set of rules of this deriver.
 	 */
 	protected Collection<Rule> getRules() {
-		return rules;
+		return data.getRuleSystem().getRules();
 	}
 	
     /**
@@ -134,7 +134,8 @@ public class DefaultDeriver implements Deriver {
         boolean added = false;
         // compute applications of this production rule to graph
         for (Matching match: rule.getMatchingSet(graph)) {
-            added |= result.add(rule.createApplication(match));
+//            added |= result.add(rule.createApplication(match));
+            added |= result.add(data.getApplication(rule, match));
         }
 		reporter.stop();
         return added;
@@ -150,9 +151,9 @@ public class DefaultDeriver implements Deriver {
     }
 
     /**
-	 * The set of rules for this deriver.
+	 * The (fixed) derivation data used by this deriver.
 	 */
-	private final Collection<Rule> rules;
+	private final DerivationData data;
 	
 	/** Reporter instance for profiling this class. */
     static protected final Reporter reporter = Reporter.register(Deriver.class);

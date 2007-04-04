@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.4 2007-04-01 12:49:54 rensink Exp $
+ * $Id: SPORule.java,v 1.5 2007-04-04 07:04:20 rensink Exp $
  */
 package groove.trans;
 
@@ -21,6 +21,7 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.match.SearchItem;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarGraph;
@@ -40,7 +41,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -91,10 +92,11 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /**
      * @param morph the morphism on which this production is to be based
      * @param name the name of the new rule
-     * @param ruleFactory the factory this rule used to instantiate related classes
+     * @param priority the priority of this rule; should be non-negative
+     * @param properties the factory this rule used to instantiate related classes
      */
-    public SPORule(Morphism morph, NameLabel name, int priority, RuleFactory ruleFactory) {
-        super((VarGraph) morph.dom().newGraph(), (VarGraph) morph.dom(), name, ruleFactory);
+    public SPORule(Morphism morph, NameLabel name, int priority, RuleProperties properties) {
+        super((VarGraph) morph.dom().newGraph(), (VarGraph) morph.dom(), name, properties.getFactory());
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Constructing rule: " + name);
             Groove.message("Rule morphism: " + morph);
@@ -114,41 +116,48 @@ public class SPORule extends DefaultGraphCondition implements Rule {
             System.out.println("Anchors:\n" + anchor());
         }
     }
+//
+//    /**
+//     * Constructs a rule on the basis of a given morphism, and with a given name.
+//     * The priority is initially set to {@link #DEFAULT_PRIORITY}.
+//     * After constructing the rule, the morphism should not be modified!
+//     * @param morph the morphism on which this production is to be based.
+//     * @param name the name of the new rule
+//     * @ensure morphism().equals(morphism);
+//     *         lhs().equals(morph.dom());
+//     *         rhs().equals(morph.cod())
+//     */
+//    public SPORule(Morphism morph, NameLabel name, RuleFactory ruleFactory) {
+//    	this(morph, name, DEFAULT_PRIORITY, ruleFactory);
+//    }
 
     /**
-     * Constructs a rule on the basis of a given morphism, and with a given name.
-     * The priority is initially set to {@link #DEFAULT_PRIORITY}.
-     * After constructing the rule, the morphism should not be modified!
-     * @param morph the morphism on which this production is to be based.
-     * @param name the name of the new rule
-     * @ensure morphism().equals(morphism);
-     *         lhs().equals(morph.dom());
-     *         rhs().equals(morph.cod())
+     * Factory method to create an event based on this rule and a given anchor map.
+     * @ensure <code>result.getRule() == this</code>
      */
-    public SPORule(Morphism morph, NameLabel name, RuleFactory ruleFactory) {
-    	this(morph, name, DEFAULT_PRIORITY, ruleFactory);
-    }
-
-    public RuleEvent getEvent(VarNodeEdgeMap anchorMap) {
+    protected RuleEvent getEvent(VarNodeEdgeMap anchorMap) {
+    	RuleEvent result;
+    	reporter.start(GET_EVENT);
         if (isModifying()) {
             RuleEvent event = createEvent(anchorMap);
             // look if we have an event with the same characteristics
-            RuleEvent result = eventMap.get(event);
+            result = eventMap.get(event);
             if (result == null) {
                 // no, the event is new.
                 result = event;
                 eventMap.put(event, result);
                 eventCount++;
             }
-            return result;
         } else {
             // there can be at most one event
             if (unmodifyingEvent == null) {
                 unmodifyingEvent = createEvent(anchorMap);
                 eventCount++;
             }
-            return unmodifyingEvent;
+            result = unmodifyingEvent;
         }
+        reporter.stop();
+        return result;
     }
     
     /**
@@ -177,6 +186,14 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     	return getRuleFactory().createMatching(this, graph);
     }
 
+	/** Creates the search plan using the rule's search plan factory. */
+    public List<SearchItem> getEventSearchPlan() {
+		if (eventSearchPlan == null) {
+			eventSearchPlan = getSearchPlanFactory().createSearchPlan(this, getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
+		}
+		return eventSearchPlan;
+	}
+
     public VarGraph lhs() {
         return lhs;
     }
@@ -189,16 +206,6 @@ public class SPORule extends DefaultGraphCondition implements Rule {
         return morphism;
     }
 
-    /**
-	 * Computes the underlying rule morphism from a given morphism.
-	 */
-	protected Morphism computeRuleMorphism(Morphism morph) {
-//		Morphism result = isInjective ? new DefaultInjectiveMorphism(morph) : morph;
-		Morphism result = morph;
-		result.setFixed();
-	    return result;
-	}
-	
 	public Element[] anchor() {
         if (anchor == null) {
             anchor = computeAnchor();
@@ -234,13 +241,13 @@ public class SPORule extends DefaultGraphCondition implements Rule {
                 + rhs
                 + "\nRule morphism:\n    "
                 + getMorphism().elementMap();
-        if (getInjectionMap() != null && !getInjectionMap().isEmpty()) {
-            res += "\nInjection constraints: "+getInjectionMap();
+        if (getInjections() != null && !getInjections().isEmpty()) {
+            res += "\nInjection constraints: "+getInjections();
         }
-        if (getNegationMap() != null && !getNegationMap().isEmpty()) {
-            res += "\nEmbargo edges "+getNegationMap();
+        if (getNegations() != null && !getNegations().isEmpty()) {
+            res += "\nEmbargo edges "+getNegations();
         }
-        if (hasComplexNegConditions()) {
+        if (hasComplexNegConjunct()) {
             res += "\nNegative application conditions:";
             Iterator<NAC> nacIter = ((Set<NAC>) getComplexNegConjunct()).iterator();
             while (nacIter.hasNext()) {
@@ -272,19 +279,11 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 		return priority;
 	}
     
-    /* (non-Javadoc)
-     * @see groove.trans.Rule#getGrammar()
-     */
-    public GraphGrammar getGrammar() {
-		return grammar;
-	}
-
-    /**
-     * Sets the associated grammar for this rule.
-     * @see #getGrammar()
-     */
-	public void setGrammar(GraphGrammar grammar) {
-		this.grammar = grammar;
+    public RuleProperties getProperties() {
+    	if (properties == null) {
+    		properties = RuleProperties.DEFAULT_PROPERTIES;
+    	}
+		return properties;
 	}
 
 	/**
@@ -614,12 +613,37 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	protected Edge[] computeVarEdges() {
 		return lhs.varEdgeSet().toArray(new Edge[0]);
 	}
-//
-//	/**
-//     * Indicates if this rule is injective.
-//     * @invariant <tt>isInjective == ruleMorph.isInjective()</tt>
-//     */
-//    private final boolean isInjective;
+	
+	/**
+	 * Lazily creates and returns the anchor graph of this rule.
+	 * The anchor graph is the smallest subgraph of the LHS that is
+	 * necessary to apply the rule. This means it contains all eraser
+	 * edges and all variables and nodes necessary for creation.
+	 */
+	Graph getAnchorGraph() {
+		if (anchorGraph == null) {
+			anchorGraph = computeAnchorGraph();
+		}
+		return anchorGraph;
+	}
+	
+	/**
+	 * Computes the anchor graph of this rule.
+	 * @see #getAnchorGraph()
+	 */
+	Graph computeAnchorGraph() {
+		Graph result = lhs().newGraph();
+		for (Element elem: anchor()) {
+			if (elem instanceof Node) {
+				result.addNode((Node) elem);
+			} else {
+				result.addEdge((Edge) elem);
+			}
+		}
+		result.addEdgeSet(Arrays.asList(getEraserEdges()));
+		return result;
+	}
+	
     /**
      * Indicates if this rule has creator edges or nodes.
      * @invariant <tt>hasCreators == ! ruleMorph.isSurjective()</tt>
@@ -651,7 +675,12 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /**
      * The grammar with which this rule is associated; may be <code>null</code>.
      */
-    private GraphGrammar grammar;
+    private RuleProperties properties;
+    /** 
+     * Smallest subgraph of the left hand side that is necessary to
+     * apply the rule.
+     */
+    private Graph anchorGraph;
     /**
      * A sub-graph of the production rule's right hand side,
      * consisting only of the fresh nodes and edges.
@@ -723,6 +752,10 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * @see #isModifying()
      */
     private RuleEvent unmodifyingEvent;
+    /** The search plan for events of this rule. */
+    private List<SearchItem> eventSearchPlan;
     /** Debug flag for the constructor. */
     private static final boolean CONSTRUCTOR_DEBUG = false;
+    /** Handle for profiling {@link #hasMatching(Graph)} and related methods. */
+    static public final int GET_EVENT = reporter.newMethod("getEvent");
 }

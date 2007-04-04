@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.5 2007-04-01 12:50:01 rensink Exp $
+ * $Id: Groove.java,v 1.6 2007-04-04 07:04:29 rensink Exp $
  */
 package groove.util;
 
@@ -25,6 +25,7 @@ import groove.io.UntypedGxl;
 import groove.io.Xml;
 import groove.lts.DerivedGraphRuleFactory;
 import groove.trans.GraphGrammar;
+import groove.trans.RuleProperties;
 import groove.trans.view.AspectualRuleView;
 //import groove.trans.view.RuleGraph;
 
@@ -40,7 +41,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.5 $ 
+ * @version $Revision: 1.6 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -273,7 +274,7 @@ public class Groove {
         File file = new File(createGxlFilter().addExtension(filename));
         graphLoader.marshalGraph(graph, file);
     }
-    
+
     /**
      * Attempts to load in a rule graph from a given <tt>.gpr</tt> file and return it.
      * Adds the <tt>.gpr</tt> extension if the filename has no extension.
@@ -282,34 +283,21 @@ public class Groove {
      * @throws IOException if <code>filename</code> does not exist or is wrongly formatted
      */
     static public AspectualRuleView loadRuleGraph(String filename) throws IOException {
+        return loadRuleGraph(filename, RuleProperties.DEFAULT_PROPERTIES);
+    }
+
+    /**
+     * Attempts to load in a rule graph from a given <tt>.gpr</tt> file and return it.
+     * Adds the <tt>.gpr</tt> extension if the filename has no extension.
+     * @param filename the name of the file to load the rule graph from
+     * @return the rule graph contained in <code>filename</code>
+     * @throws IOException if <code>filename</code> does not exist or is wrongly formatted
+     */
+    static public AspectualRuleView loadRuleGraph(String filename, RuleProperties properties) throws IOException {
         File file = new File(createRuleFilter().addExtension(filename));
-        return gpsLoader.unmarshalRule(file);
+        return gpsLoader.unmarshalRule(file, properties);
     }
     
-//    /**
-//     * Attempts to load in a rule system from a given <tt>.gps</tt> directory and return it.
-//     * Adds the <tt>.gps</tt> extension if the directory name has no extension.
-//     * @param dirname the name of the directory to load the rule system from
-//     * @return the rule system contained in <code>dirname</code>
-//     * @throws IOException if <code>dirname</code> does not exist or is wrongly formatted
-//     */
-//    static public RuleSystem loadRuleSystem(String dirname) throws IOException {
-//        File dir = new File(createRuleSystemFilter().addExtension(dirname));
-//        return gpsLoader.unmarshalGrammar(dir);
-//    }
-//    
-//    /**
-//     * Attempts to save a rule system to a directory with a given name.
-//     * Adds the <tt>.gps</tt> extension if the directory name has no extension.
-//     * @param rules the rule rystem to be saved
-//     * @param dirname the intended directory name
-//     * @throws IOException if saving ran into problems
-//     */
-//    static public void saveRuleSystem(RuleSystem rules, String dirname) throws IOException {
-//        File file = new File(createRuleSystemFilter().addExtension(dirname));
-//        gpsLoader.marshalRuleSystem(rules, file);
-//    }
-//    
     /**
      * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory and return it.
      * Adds the <tt>.gps</tt> extension if the directory name has no extension.

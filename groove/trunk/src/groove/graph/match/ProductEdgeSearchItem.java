@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductEdgeSearchItem.java,v 1.1 2007-04-01 12:50:11 rensink Exp $
+ * $Id: ProductEdgeSearchItem.java,v 1.2 2007-04-04 07:04:28 rensink Exp $
  */
 package groove.graph.match;
 
@@ -78,8 +78,16 @@ public class ProductEdgeSearchItem implements SearchItem {
 		 */
 		public boolean select() {
 			Constant outcome = calculateResult();
-			if (targetPreMatched) {
-				ValueNode currentTargetImage = (ValueNode) matcher.getSingularMap().getNode(target);
+			if (outcome == null) {
+				return false;
+			} else if (targetPreMatched) {
+				ValueNode currentTargetImage;
+				if (target.hasValue()) {
+					currentTargetImage = target;
+				} else {
+					currentTargetImage = (ValueNode) matcher.getSingularMap().getNode(target);
+				}
+				assert currentTargetImage != null: String.format("Target image of %s null in %s", edge, matcher.getSingularMap());
 				return currentTargetImage.getConstant().equals(outcome);
 			} else {
 				ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(outcome);
@@ -105,14 +113,24 @@ public class ProductEdgeSearchItem implements SearchItem {
 		/**
 		 * Calculates the result of the operation in {@link #getEdge()},
 		 * based on the currently installed images of the arguments.
+		 * @return the result of the operation, or <code>null</code> if it cannot
+		 * be calculated due to the fact that one of the arguments was bound to
+		 * a non-value.
+		 * TODO take care of bindings to values of wrong types in the same way
 		 */
 		private Constant calculateResult() {
-			Constant[] arguments = new Constant[operands.size()];
-			for (int i = 0; i < operands.size(); i++) {
-				Node operandImage = matcher.getSingularMap().getNode(operands.get(i));
-				arguments[i] = ((ValueNode) operandImage).getConstant();
+			Constant[] operands = new Constant[arguments.size()];
+			for (int i = 0; i < arguments.size(); i++) {
+				Node operandImage = matcher.getSingularMap().getNode(arguments.get(i));
+				if (! (operandImage instanceof ValueNode)) {
+					// one of the arguments was not bound to a value
+					// (probably due to some typing error in another rule)
+					// and so we cannot match the edge
+					return null;
+				}
+				operands[i] = ((ValueNode) operandImage).getConstant();
 			}
-			Constant outcome = operation.apply(Arrays.asList(arguments));
+			Constant outcome = operation.apply(Arrays.asList(operands));
 			return outcome;
 		}
 		
@@ -140,7 +158,7 @@ public class ProductEdgeSearchItem implements SearchItem {
 	public ProductEdgeSearchItem(ProductEdge edge, boolean[] preMatched) {
 		this.edge = edge;
 		this.operation = edge.getOperation();
-		this.operands = edge.source().getArguments();
+		this.arguments = edge.source().getArguments();
 		this.target = edge.target();
 		this.targetPreMatched = preMatched == null || preMatched[Edge.TARGET_INDEX];
 	}
@@ -151,7 +169,12 @@ public class ProductEdgeSearchItem implements SearchItem {
 
 	@Override
 	public String toString() {
-		return String.format("Find %s", edge); 
+		return String.format("Compute %s", edge); 
+	}
+	
+	/** Returns the product edge being calculated by this search item. */
+	public ProductEdge getEdge() {
+		return edge;
 	}
 
 	/** The product edge for which we seek an image. */
@@ -159,7 +182,7 @@ public class ProductEdgeSearchItem implements SearchItem {
 	/** The operation of the product edge. */
 	private final Operation operation;
 	/** List of operands of the product edge's source node. */
-	private final List<ValueNode> operands;
+	private final List<ValueNode> arguments;
 	/** The target node of the product edge. */
 	private final ValueNode target;
 	/** Flag indicating whether the target of the edge is prematched. */

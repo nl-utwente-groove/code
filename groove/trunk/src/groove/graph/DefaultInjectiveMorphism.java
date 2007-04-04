@@ -12,11 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultInjectiveMorphism.java,v 1.3 2007-04-01 12:49:56 rensink Exp $
+ * $Id: DefaultInjectiveMorphism.java,v 1.4 2007-04-04 07:04:18 rensink Exp $
  */
 package groove.graph;
 
 import groove.graph.iso.IsoMatcher;
+import groove.graph.match.Matcher;
 import groove.util.CollectionView;
 import groove.util.FilterIterator;
 
@@ -32,7 +33,7 @@ import java.util.Map;
  * Implementation of an injective morphism between <tt>Graph</tt>s,
  * as an extension of <tt>DefaultMorphism</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @deprecated the {@link InjectiveMorphism} hierarchy is being abandoned
  */
 @Deprecated
@@ -220,7 +221,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
 	public boolean hasIsomorphismExtension() {
         reporter.start(EXTEND_TO_ISOMORPHISM);
         try {
-        	Simulation sim = createIsoSimulation();
+        	Matcher sim = createIsoMatcher();
         	boolean result = sim.hasRefinement();
         	return result;
         } finally {
@@ -255,7 +256,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
             	return true;
             }
             // that didn't work; construct a simulation instead
-            NodeEdgeMap refinement = createIsoSimulation().getRefinement();
+            NodeEdgeMap refinement = createIsoMatcher().getRefinement();
             if (refinement == null) {
                 return false;
             } else {
@@ -399,7 +400,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
     /**
      * This implementation returns an {@link IsoSimulation}.
      */
-    protected Simulation createIsoSimulation() {
+    protected Matcher createIsoMatcher() {
         return new IsoMatcher(this);
     }
 

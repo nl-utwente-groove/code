@@ -12,18 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.1 2007-04-01 12:50:10 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.2 2007-04-04 07:04:28 rensink Exp $
  */
 package groove.graph.match;
 
-import groove.graph.Node;
-import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 
 /**
- * A search item for a product edge.
- * The source node (a {@link ProductNode}) will typically have no images;
- * instead, its operands are guaranteed to have images. 
+ * A search item for a value node.
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -107,9 +103,14 @@ public class ValueNodeSearchItem implements SearchItem {
 
 	@Override
 	public String toString() {
-		return String.format("Find %s", node); 
+		return String.format("Value %s", node); 
 	}
 
+	/** Returns the value node we are looking up. */
+	public ValueNode getNode() {
+		return node;
+	}
+	
 	/** The value node to be matched. */
-	private final Node node;
+	private final ValueNode node;
 }
