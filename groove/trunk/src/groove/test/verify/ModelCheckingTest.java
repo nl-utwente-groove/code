@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ModelCheckingTest.java,v 1.5 2007-04-01 12:50:00 rensink Exp $
+ * $Id: ModelCheckingTest.java,v 1.6 2007-04-10 12:40:35 kastenberg Exp $
  */
 
 package groove.test.verify;
@@ -33,7 +33,7 @@ import junit.framework.TestCase;
 /**
  * Tests the CTLStarFormula class.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ModelCheckingTest extends TestCase {
     @Override
@@ -41,6 +41,11 @@ public class ModelCheckingTest extends TestCase {
 		//
     }
 
+	/**
+	 * Tests whether the circular buffer fulfills certain properties
+	 * and whether the number of counter examples is correct for other
+	 * properties.
+	 */
 	public void testCircularBuffer() {
 		try {
 			List<String> list = new ArrayList<String>();
