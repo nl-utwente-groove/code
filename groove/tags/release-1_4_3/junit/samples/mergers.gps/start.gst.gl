@@ -1,0 +1,14 @@
+# Layout information for .\mergers.gps\.new\start.gst
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+e n76 n75 "a-to-b" 500 500 148 87 256 117 11
+n n76 144 78 18 18 
+n n73 318 186 18 18 
+e n74 n72 "a-to-c" 500 500 124 183 220 243 11
+e n76 n74 "a-to-a" 500 500 148 87 124 183 11
+n n75 252 108 18 18 
+n n74 120 174 18 18 
+e n72 n73 "c-to-b" 420 420 220 243 322 195 11
+e n75 n73 "b-to-b" 500 500 256 117 322 195 11
+n n72 216 234 18 18 
