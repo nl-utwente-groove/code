@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.5 2007-04-12 13:45:45 rensink Exp $
+ * $Id: LabelList.java,v 1.6 2007-04-12 16:14:52 rensink Exp $
  */
 package groove.gui;
 
@@ -44,7 +44,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /** Pseudo-label maintained in this list for cells with an empty label set. */
@@ -141,7 +141,9 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         jmodel.addGraphModelListener(this);
         for (int i = 0; i < jmodel.getRootCount(); i++) {
             JCell cell = (JCell) jmodel.getRootAt(i);
-            addToLabels(cell);
+            if (isListable(cell)) {
+            	addToLabels(cell);
+            }
         }
         updateList();
         setEnabled(true);
@@ -203,7 +205,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         }
     }
 
-	/**
+    /**
 	 * Records the changes imposed by a graph change that is
 	 * not a {@link JModel.RefreshEdit}.
 	 */
@@ -212,7 +214,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 		if (changeMap != null) {
 			for (Object changeEntry : changeMap.entrySet()) {
 				Object obj = ((Map.Entry) changeEntry).getKey();
-				if (obj instanceof JCell) { //&& attributes.containsKey(GraphConstants.VALUE)) {
+				if (isListable(obj)) { //&& attributes.containsKey(GraphConstants.VALUE)) {
 					changed |= modifyLabels((JCell) obj);
 				}
 			}
@@ -223,7 +225,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 			for (int i = 0; i < addedArray.length; i++) {
 				// the cell may be a port, so we have to check for
 				// JCell-hood
-				if (addedArray[i] instanceof JCell) {
+				if (isListable(addedArray[i])) {
 					JCell cell = (JCell) addedArray[i];
 					changed |= addToLabels(cell);
 				}
@@ -235,7 +237,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 			for (int i = 0; i < removedArray.length; i++) {
 				// the cell may be a port, so we have to check for
 				// JCell-hood
-				if (removedArray[i] instanceof JCell) {
+				if (isListable(removedArray[i])) {
 					JCell cell = (JCell) removedArray[i];
 					changed |= removeFromLabels(cell);
 				}
@@ -248,15 +250,25 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 	 * Processes the changes of a {@link JModel.RefreshEdit}.
 	 */
 	private boolean processRefresh(JModel.RefreshEdit change, boolean changed) {
-//		if (!valueChangeUnderway) {
-			for (JCell cell : change.getRefreshedJCells()) {
+		for (JCell cell : change.getRefreshedJCells()) {
+			if (isListable(cell)) {
 				changed |= modifyLabels(cell);
 			}
-//		}
+		}
 		return changed;
 	}
 
-    /**
+    /** 
+	 * Callback method to determine whether a given cell should be included
+	 * in the label list. 
+	 * This should only be the case if the cell is a {@link JCell} for
+	 * which {@link JCell#isListable()} holds.
+	 */
+	private boolean isListable(Object cell) {
+		return cell instanceof JCell && ((JCell) cell).isListable();
+	}
+
+	/**
 	 * Emphasizes/deemphasizes cells in the associated jmodel, based on the list
 	 * selection.
 	 */
@@ -395,7 +407,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     	}
     	return result;
     }
-
+    
     /**
      * The list model used for the JList.
      * @require <tt>listModel == listComponent.getModel()</tt>

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NoLayouter.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: NoLayouter.java,v 1.2 2007-04-12 16:14:52 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -23,11 +23,12 @@ import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 
 /**
- * An abstract class for layout actions.
+ * A layouter that does nothing.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class NoLayouter implements Layouter {
+	/** Name of this layouter. */
     static public final String ACTION_NAME = "No layout";
 
     /**
@@ -81,5 +82,6 @@ public class NoLayouter implements Layouter {
         // does nothing
     }
     
+    /** The j-graph instance that this layouter is working on. */
     protected final JGraph jGraph;
 }

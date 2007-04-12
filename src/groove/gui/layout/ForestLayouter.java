@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForestLayouter.java,v 1.2 2007-03-30 15:50:28 rensink Exp $
+ * $Id: ForestLayouter.java,v 1.3 2007-04-12 16:14:52 rensink Exp $
  */
 package groove.gui.layout;
 
+import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
 import groove.util.CollectionOfCollections;
@@ -41,9 +42,10 @@ import org.jgraph.graph.EdgeView;
  * Layout action for JGraphs that creates a top-to-bottom
  * forest layout.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ForestLayouter extends AbstractLayouter {
+	/** Name of the layouter. */
     static public final String ACTION_NAME = "Forest layout";
     /**  The minimum horizontal space to between child nodes, not including node width */
     static public final int MIN_CHILD_DISTANCE = 60;
@@ -52,10 +54,16 @@ public class ForestLayouter extends AbstractLayouter {
     /** The vertical space between levels, excluding the node height. */
     static public final int VERTICAL_SPACE = 40;
 
+    /**
+     * Constructs a factory instance of this layouter.
+     */
     public ForestLayouter() {
         super(ACTION_NAME);
     }
 
+    /**
+     * Constructs a layouter for a given j-graph.
+     */
     protected ForestLayouter(String name, JGraph jgraph) {
         super(name, jgraph);
         //        setEnabled(true);
@@ -117,8 +125,10 @@ public class ForestLayouter extends AbstractLayouter {
             Layoutable cellLayoutable = cellLayoutableEntry.getValue();
             // add the layoutable to the leaves and the branch map
             Set<Layoutable> branchSet = new LinkedHashSet<Layoutable>();
-            branchMap.put(cellLayoutable, branchSet);
-            if (key instanceof DefaultGraphCell) {
+        	if (!(key instanceof JCell) || jmodel.isMoveable((JCell) key)) {
+        		branchMap.put(cellLayoutable, branchSet);
+        	}
+            if (key instanceof JCell) {
                 // initialize the incoming edge count
                 int inEdgeCount = 0;
                 // calculate the incoming edge count and outgoing edge map
@@ -126,7 +136,7 @@ public class ForestLayouter extends AbstractLayouter {
                 Iterator<?> edgeIter = ((DefaultPort) ((DefaultGraphCell) key).getChildAt(0)).edges();
                 while (edgeIter.hasNext()) {
                     JEdge edge = (JEdge) edgeIter.next();
-                    if (! jmodel.isHidden(edge)) {
+                    if (! jmodel.isGrayedOut(edge)) {
                     // the edge source is a node for sure
                     Object sourceNode = ((DefaultPort) edge.getSource()).getParent();
                     // the edge target may be a point only

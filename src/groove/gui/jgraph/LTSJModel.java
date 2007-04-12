@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.4 2007-04-04 07:04:17 rensink Exp $
+ * $Id: LTSJModel.java,v 1.5 2007-04-12 16:14:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.gui.Options;
@@ -38,7 +39,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class LTSJModel extends GraphJModel {
 	/** Dummy LTS model. */
@@ -51,7 +52,7 @@ public class LTSJModel extends GraphJModel {
 	 */
     protected class TransitionJEdge extends GraphJEdge {
     	/** Creates a new instance from a given edge (required to be a {@link GraphTransition}). */
-		public TransitionJEdge(Edge edge) {
+		public TransitionJEdge(BinaryEdge edge) {
 			super(edge);
 		}
 
@@ -208,7 +209,6 @@ public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
     public LTSJModel(LTS lts, Options options) {
         super(lts, LTS_NODE_ATTR, LTS_EDGE_ATTR, options);
-        options.getItem(Options.SHOW_STATE_IDS_OPTION).setState(true);
     }
     
     /** Constructs a dummy, empty model. */
@@ -292,7 +292,7 @@ public class LTSJModel extends GraphJModel {
      * This implementation returns a {@link TransitionJEdge}.
      */
     @Override
-	protected TransitionJEdge createJEdge(Edge edge) {
+	protected TransitionJEdge createJEdge(BinaryEdge edge) {
 		return new TransitionJEdge(edge);
 	}
 

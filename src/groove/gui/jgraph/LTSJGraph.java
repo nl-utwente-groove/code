@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJGraph.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: LTSJGraph.java,v 1.3 2007-04-12 16:14:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -21,14 +21,12 @@ import groove.gui.ExploreStrategyMenu;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.Simulator;
-import groove.gui.layout.ForestLayouter;
 import groove.gui.layout.Layouter;
 import groove.gui.layout.SpringLayouter;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.Transition;
-import groove.util.Groove;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -53,71 +51,22 @@ import org.jgraph.graph.DefaultGraphCell;
  * after all global final variables have been set.
  */
 public class LTSJGraph extends JGraph {
-    /**
-     * Action to scroll the LTS display to a (previously set) node or edge.
-     */
-    public class ScrollToCurrentAction extends AbstractAction {
-        public void actionPerformed(ActionEvent evt) {
-            if (simulator.getCurrentState() == null)
-                scrollTo(simulator.getCurrentTransition());
-            else
-                scrollTo(simulator.getCurrentState());
-        }
-
-        public void setTransition(Transition edge) {
-            putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " derivation");
-        }
-
-        public void setState(State node) {
-            putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " state");
-        }
-    }
-
-    /**
-     * A specialization of the forest layouter that takes the LTS start graph
-     * as its suggested root.
-     */
-    protected class MyForestLayouter extends groove.gui.layout.ForestLayouter {
-        /**
-         * Creates a prototype layouter
-         */
-        public MyForestLayouter() {
-            super();
-        }
-
-        /**
-         * Creates a new instance, for a given {@link JGraph}.
-         */
-        public MyForestLayouter(String name, JGraph jgraph) {
-            super(name, jgraph);
-        }
-
-        /**
-         * This method returns a singleton set consisting of the LTS start state.
-         */
-        @Override
-        protected Collection<?> getSuggestedRoots() {
-            LTSJModel jModel = getModel();
-            return Collections.singleton(jModel.getJCell(jModel.graph().startState()));
-        }
-
-        /**
-         * This implementation returns a {@link MyForestLayouter}.
-         */
-        @Override
-        public Layouter newInstance(JGraph jGraph) {
-            return new MyForestLayouter(name, jGraph);
-        }
-    }
-    
+    /** Constructs an instance of tje j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
     	super(LTSJModel.EMPTY_JMODEL);
         this.simulator = simulator;
         this.exploreMenu = new ExploreStrategyMenu(simulator);
         addMouseListener(createMouseListener());
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
-        setLayoutMenu.selectLayoutAction(new MyForestLayouter());
+        setLayoutMenu.selectLayoutAction(createInitialLayouter());
     }
+
+	/**
+	 * Creates the layouter to be used at construction time.
+	 */
+	protected Layouter createInitialLayouter() {
+		return new MyForestLayouter();
+	}
     
     /** Specialises the return type to a {@link JModel}. */
     @Override
@@ -131,32 +80,34 @@ public class LTSJGraph extends JGraph {
      * subsequently invokes the super implementation. 
      */
     @Override
-    protected void initPopupMenu(JPopupMenu popupMenu) {
-        addSeparatorUnlessFirst(popupMenu);
+    protected void fillPopupMenu(JPopupMenu result) {
+        addSeparatorUnlessFirst(result);
         // State exploration sub-menu
-        popupMenu.add(simulator.getApplyTransitionAction());
-        popupMenu.add(exploreMenu);
+        result.add(simulator.getApplyTransitionAction());
+        result.add(getExploreMenu());
 
         // Goto sub-menu
-        popupMenu.addSeparator();
-        popupMenu.add(simulator.getGotoStartStateAction());
-        popupMenu.add(scrollToCurrentAction);
-        
-        super.initPopupMenu(popupMenu);
+        result.addSeparator();
+        result.add(simulator.getGotoStartStateAction());
+        result.add(scrollToCurrentAction);
+        super.fillPopupMenu(result);
     }
 
     @Override
-    public JPopupMenu activatePopupMenu(Point cell) {
-        JPopupMenu result = super.activatePopupMenu(cell);
+    protected void activatePopupMenu(Point atPoint) {
+        super.activatePopupMenu(atPoint);
         if (getModel().getActiveTransition() == null)
             scrollToCurrentAction.setState(simulator.getCurrentState());
         else {
             scrollToCurrentAction.setTransition(simulator.getCurrentTransition());
         }
-
-        return result;
     }
 
+    /** 
+     * Creates a mouse listener that
+     * activates a state or transition on a single click, and
+     * switches to the state panel on a double click.
+     */
     protected MouseListener createMouseListener() {
         return new MouseAdapter() {
             @Override
@@ -190,7 +141,7 @@ public class LTSJGraph extends JGraph {
     @Override
     protected SetLayoutMenu createSetLayoutMenu() {
         SetLayoutMenu result = new SetLayoutMenu(this, new SpringLayouter());
-        result.addLayoutItem(new MyForestLayouter());
+        result.addLayoutItem(createInitialLayouter());
         return result;
     }
     
@@ -200,12 +151,8 @@ public class LTSJGraph extends JGraph {
      * @require nodeOrEdge instanceof State || nodeOrEdge instanceof Transition
      */
     public void scrollTo(Element nodeOrEdge) {
-        if (TIME)
-            Groove.startMessage("LTSFrame.srollTo");
         JCell cell = ((GraphJModel) getModel()).getJCell(nodeOrEdge);
         assert cell != null;
-        if (TIME)
-            Groove.message("Calling JGraph.srollCellToVisible(" + cell + ")");
         Rectangle2D bounds = getCellBounds(cell);
         if (bounds != null) {
             Rectangle scrollRect = new Rectangle((int) bounds.getX() - 100,
@@ -213,29 +160,94 @@ public class LTSJGraph extends JGraph {
                     (int) bounds.getHeight() + 200);
             scrollRectToVisible(scrollRect);
         }
-        if (TIME)
-            Groove.endMessage("LTSFrame.scrollTo");
     }
 
-    /**
+	/**
+	 * Lazily creates and returns the exploration menu.
+	 */
+	protected final JMenu getExploreMenu() {
+		if (exploreMenu == null) {
+			exploreMenu = new ExploreStrategyMenu(simulator);
+		}
+		return this.exploreMenu;
+	}
+
+	/**
      * The simulator to which this j-graph is associated.
      */
     private final Simulator simulator;
     /**
      * The exploration menu for this jgraph.
      */
-    private final JMenu exploreMenu;
-    /**
-     * The layouting menu for this subgraph.
-     */
-    private final SetLayoutMenu setLayoutActionMenu = new SetLayoutMenu(this, new ForestLayouter());
-    {
-        setLayoutActionMenu.addLayoutItem(new SpringLayouter(0));
-    }
+    private JMenu exploreMenu;
     /**
      * Action to scroll the JGraph to the current state or derivation.
      */
     private final ScrollToCurrentAction scrollToCurrentAction = new ScrollToCurrentAction();
     
-    private static final boolean TIME = false;
+	/**
+	 * Action to scroll the LTS display to a (previously set) node or edge.
+	 * @see #scrollTo(Element)
+	 */
+	public class ScrollToCurrentAction extends AbstractAction {
+	    public void actionPerformed(ActionEvent evt) {
+	        if (simulator.getCurrentState() == null)
+	            scrollTo(simulator.getCurrentTransition());
+	        else
+	            scrollTo(simulator.getCurrentState());
+	    }
+	
+	    /** 
+	     * Adapts the name of the action so that it reflects that the element
+	     * to scroll to is a given transition.
+	     */
+	    public void setTransition(Transition edge) {
+	        putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " derivation");
+	    }
+	
+	    /** 
+	     * Adapts the name of the action so that it reflects that the element
+	     * to scroll to is a given state.
+	     */
+	    public void setState(State node) {
+	        putValue(Action.NAME, Options.SCROLL_TO_ACTION_NAME + " state");
+	    }
+	}
+
+	/**
+	 * A specialization of the forest layouter that takes the LTS start graph
+	 * as its suggested root.
+	 */
+	protected class MyForestLayouter extends groove.gui.layout.ForestLayouter {
+	    /**
+	     * Creates a prototype layouter
+	     */
+	    public MyForestLayouter() {
+	        super();
+	    }
+	
+	    /**
+	     * Creates a new instance, for a given {@link JGraph}.
+	     */
+	    public MyForestLayouter(String name, JGraph jgraph) {
+	        super(name, jgraph);
+	    }
+	
+	    /**
+	     * This method returns a singleton set consisting of the LTS start state.
+	     */
+	    @Override
+	    protected Collection<?> getSuggestedRoots() {
+	        LTSJModel jModel = getModel();
+	        return Collections.singleton(jModel.getJCell(jModel.graph().startState()));
+	    }
+	
+	    /**
+	     * This implementation returns a {@link MyForestLayouter}.
+	     */
+	    @Override
+	    public Layouter newInstance(JGraph jGraph) {
+	        return new MyForestLayouter(name, jGraph);
+	    }
+	}
 }

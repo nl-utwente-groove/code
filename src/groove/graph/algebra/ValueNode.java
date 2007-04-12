@@ -12,11 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ValueNode.java,v 1.4 2007-04-01 12:49:50 rensink Exp $
+ * $Id: ValueNode.java,v 1.5 2007-04-12 16:14:55 rensink Exp $
  */
 package groove.graph.algebra;
 
 import java.util.Iterator;
+
+import static groove.graph.aspect.Aspect.CONTENT_SEPARATOR;
 
 import groove.algebra.Algebra;
 import groove.algebra.Constant;
@@ -24,21 +26,14 @@ import groove.algebra.Variable;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.aspect.AttributeAspect;
-import groove.util.Groove;
 
 /**
  * Implementation of graph elements that represent algebraic data values.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:50 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-12 16:14:55 $
  */
 public class ValueNode extends ProductNode {
-	/** 
-	 * The string separating the algebra name from the value label 
-	 * in the the value node description.
-	 */
-	String VALUE_SEPARATOR = Groove.getXMLProperty("label.value.separator");
-	
 	/** Tests if a given graph contains value nodes. */
 	static public boolean hasValueNodes(Graph graph) {
 		boolean result = false;
@@ -149,7 +144,7 @@ public class ValueNode extends ProductNode {
 			return "x"+(getNumber()-AlgebraGraph.START_NODE_NR);
 		} else {
 			String algebraName = AttributeAspect.getValue(getAlgebra()).getName();
-			return algebraName + VALUE_SEPARATOR + constant.symbol();
+			return algebraName + CONTENT_SEPARATOR + constant.symbol();
 		}
 	}
 }

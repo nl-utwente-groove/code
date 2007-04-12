@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.4 2007-04-04 07:04:17 rensink Exp $
+ * $Id: JGraph.java,v 1.5 2007-04-12 16:14:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -52,7 +52,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
-import javax.swing.border.Border;
 
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
@@ -73,7 +72,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-04 07:04:17 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-12 16:14:49 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
@@ -249,14 +248,27 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * A layout cache that, for efficiency, does not pass on all change events,
      * and sets a {@link JCellViewFactory}.
+     * It should be possible to use the partiality of the cache to 
+     * hide elements, but this seems unnecessarily complicated.
      */
     private class MyGraphLayoutCache extends GraphLayoutCache {   
     	/** Constructs an instance of the cache. */
         public MyGraphLayoutCache() {
             super(JGraph.this.getModel(), new JCellViewFactory(JGraph.this));
         }
-        
-        /**
+//        
+//        /** 
+//         * After calling the super method, sets all roots to visible.
+//         * This is necessary because the cache is partial.
+//         */
+//        @Override
+//		public void setModel(GraphModel model) {
+//        	initializing = true;
+//			super.setModel(model);
+//			initializing = false;
+//		}
+
+		/**
          * Overrides the method so {@link JModel.RefreshEdit}s are not
          * passed on.
          */
@@ -266,6 +278,18 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 super.graphChanged(change);
             }
         }
+//
+//        /** Also returns <code>true</code> if a new model is being loaded. */
+//		@Override
+//		public boolean isPartial() {
+//			return !initializing && super.isPartial();
+//		}
+//        
+//		/** 
+//		 * Flag indicating that a new model is being loaded,
+//		 * so that for the moment the cache should not be partial.
+//		 */
+//        private boolean initializing;
     }
     
     /**
@@ -301,8 +325,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         public void mousePressed(MouseEvent evt) {
             if (!evt.isConsumed() && jGraph.isPopupMenuEvent(evt)) {
                 Point atPoint = evt.getPoint();
-                JPopupMenu popupMenu = jGraph.activatePopupMenu(atPoint);
-                popupMenu.show(jGraph, atPoint.x, atPoint.y);
+                jGraph.getPopupMenu(atPoint).show(jGraph, atPoint.x, atPoint.y);
                 evt.consume();
             } else if (jGraph.isAddPointEvent(evt)) {
                 JCell jCell = (JCell) jGraph.getSelectionCell();
@@ -335,7 +358,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         public void addSelectionCells(Object[] cells) {
             List<Object> visibleCells = new LinkedList<Object>();
             for (int i = 0; i < cells.length; i++) {
-                if (!getModel().isHidden((JCell) cells[i])) {
+                if (!getModel().isGrayedOut((JCell) cells[i])) {
                     visibleCells.add(cells[i]);
                 }
             }
@@ -346,7 +369,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         public void setSelectionCells(Object[] cells) {
             List<Object> visibleCells = new LinkedList<Object>();
             for (int i = 0; i < cells.length; i++) {
-                if (!getModel().isHidden((JCell) cells[i])) {
+                if (!getModel().isGrayedOut((JCell) cells[i])) {
                     visibleCells.add(cells[i]);
                 }
             }
@@ -360,13 +383,13 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     public JGraph(JModel model) {
         super(model);
+        setGraphLayoutCache(createGraphLayoutCache());
         setMarqueeHandler(createMarqueeHandler());
         setSelectionModel(createSelectionModel());
-        // for efficiency, set a graph layout cache that does not react
-        // to all change events
-        setGraphLayoutCache(createGraphLayoutCache());
-        // initialize the label list
-        labelList = new LabelList(this);
+        setModel(model);
+//        // for efficiency, set a graph layout cache that does not react
+//        // to all change events
+//        setGraphLayoutCache(createGraphLayoutCache());
         // Make Ports invisible by Default
         setPortsVisible(false);
         // Save edits to a cell whenever something else happens
@@ -445,11 +468,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * Overrides the super method to make sure hidden cells ae never editable.
      * If the specified cell is hidden (according to the underlying model), returns false;
      * otherwise, passes on the query to super.
-     * @see JModel#isHidden(JCell)
+     * @see JModel#isGrayedOut(JCell)
      */
     @Override
     public boolean isCellEditable(Object cell) {
-        return !(cell instanceof JCell && getModel().isHidden((JCell) cell)) && super.isCellEditable(cell);
+        return !(cell instanceof JCell && getModel().isGrayedOut((JCell) cell)) && super.isCellEditable(cell);
     }
     
     /**
@@ -490,7 +513,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 if (jView != null) {
                     jView.changeAttributes(transientAttributes);
                 }
-                if (getModel().isHidden(jCell)) {
+                if (getModel().isGrayedOut(jCell)) {
                     getSelectionModel().removeSelectionCell(jCell);
                 }
             }
@@ -519,7 +542,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             CellView jCellView = viewRoots[i];
             Object jCell = jCellView.getCell();
             boolean typeCorrect = vertex ? jCell instanceof JVertex : jCell instanceof JCell;
-            if (typeCorrect && !jModel.isHidden((JCell) jCell)) {
+            if (typeCorrect && !jModel.isGrayedOut((JCell) jCell)) {
                 // now see if this jCell is sufficiently close to the point
 //                CellView jCellView = graphLayoutCache.getMapping(jCell, false);
                 if (jCellView != null && jCellView.intersects(this, xyArea)) {
@@ -574,13 +597,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             getModel().removeGraphModelListener(this);
         }
         super.setModel(model);
-        if (labelList != null) {
-            labelList.updateModel();
-        }
+        getLabelList().updateModel();
         model.addGraphModelListener(this);
         if (initialized) {
-            popupMenu.removeAll();
-            initPopupMenu(popupMenu);
+        	// invalidate the popup menu
+            popupMenu = null;
             if (layouter != null && !jModel.isLayedOut()) {
                 if (jModel.freeze()) {
                 	layouter.start(false);
@@ -610,11 +631,22 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 setBackground(enabledBackground);
             }
         }
-        labelList.setEnabled(enabled);
+        getLabelList().setEnabled(enabled);
         super.setEnabled(enabled);
     }
-    
-    /**
+//    
+//    /** Lazily creates the graph layout cache. */
+//    @Override
+//	public GraphLayoutCache getGraphLayoutCache() {
+//    	GraphLayoutCache result = super.getGraphLayoutCache();
+//    	if (result == null) {
+//    		result = createGraphLayoutCache();
+//    		setGraphLayoutCache(result);
+//    	}
+//    	return result;
+//	}
+
+	/**
      * Completely refreshes the view of the graph.
      */
     public void refreshView() {
@@ -645,7 +677,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 					String text = convertDigits(vertexView.getHtmlText());
 					result = sizeMap.get(text);
 					if (result == null) {
-						result = super.getPreferredSize(graph, vertexView);
+						if (text.length() == 0) {
+							result = JAttr.DEFAULT_NODE_SIZE;
+						} else {
+							result = super.getPreferredSize(graph, vertexView);
+						}
 						// normalize for linewidth of the border
 						int linewidth = (int) GraphConstants.getLineWidth(vertexView.getAllAttributes());
 						int lineDiff = linewidth - JAttr.DEFAULT_LINE_WIDTH;
@@ -817,10 +853,12 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * @return the label list associated with this jgraph.
-     * @ensure <tt>return.getJGraph() == this</tt>
+     * Lazily creates and returns the label list associated with this jgraph.
      */
     public LabelList getLabelList() {
+    	if (labelList == null) {
+    		labelList = new LabelList(this);
+    	}
         return labelList;
     }
 
@@ -898,7 +936,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         return addPointAction;
     }
 
-    /**
+	/**
      * @return an action to remove a point from the currently selected j-edge.
      */
     public JCellEditAction getRemovePointAction() {
@@ -1014,30 +1052,33 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
-     * Activates and returns a popup menu, given a certain point at which it is to appear. The menu
-     * may be freshly created, but will typically be fixed.
-     * @param point the selected point at the moment of menu popup
-     */
-    protected JPopupMenu activatePopupMenu(Point point) {
-        getAddPointAction().setLocation(point);
-        getRemovePointAction().setLocation(point);
-        return popupMenu;
-    }
+	 * Lazily creates and returns the popup menu for this j-graph, activated
+	 * for a given point of the j-graph.
+     * @param atPoint the point at which the menu is to be activated
+	 */
+	protected final JPopupMenu getPopupMenu(Point atPoint) {
+		if (popupMenu == null) {
+			popupMenu = new JPopupMenu();
+			fillPopupMenu(popupMenu);
+		}
+		activatePopupMenu(atPoint);
+		return this.popupMenu;
+	}
 
-    /**
-     * Fills out the popup menu for this jgraph. Does not clear the menu first. This method is
-     * invoked at least once whenever a new jmodel is set. This implementation successively invokes
-     * {@link #fillOutLayoutMenu(JPopupMenu)}and {@link #fillOutDisplayMenu(JPopupMenu)}.
-     * @param popupMenu the popup menu to be filled out
-     * @see #activatePopupMenu(Point)
-     */
-    protected void initPopupMenu(JPopupMenu popupMenu) {
-        fillOutEditMenu(popupMenu);
-        fillOutDisplayMenu(popupMenu);
-        fillOutLayoutMenu(popupMenu);
-    }
-    
-    /**
+	/**
+	 * Fills out the popup menu for this jgraph. Does not clear the menu first. This method is
+	 * invoked at least once whenever a new jmodel is set. This implementation successively invokes
+	 * {@link #fillOutLayoutMenu(JPopupMenu)}and {@link #fillOutDisplayMenu(JPopupMenu)}.
+	 * @param result the menu to be initialised
+	 * @see #activatePopupMenu(Point)
+	 */
+	protected void fillPopupMenu(JPopupMenu result) {
+	    fillOutEditMenu(result);
+	    fillOutDisplayMenu(result);
+	    fillOutLayoutMenu(result);
+	}
+
+	/**
      * Adds a separator to a menu, unless the menu is empty.
      */
     protected void addSeparatorUnlessFirst(JPopupMenu menu) {
@@ -1047,6 +1088,16 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
 
     /**
+	 * Activates and returns a popup menu, given a certain point at which it is to appear. The menu
+	 * may be freshly created, but will typically be fixed.
+	 * @param point the selected point at the moment of menu popup
+	 */
+	protected void activatePopupMenu(Point point) {
+	    getAddPointAction().setLocation(point);
+	    getRemovePointAction().setLocation(point);
+	}
+
+	/**
      * Creates and returns a fresh zoom menu upon this jgraph.
      */
     protected ZoomMenu createZoomMenu() {
@@ -1093,7 +1144,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * The popup menu for the jgraph.
      */
-    protected final JPopupMenu popupMenu = new JPopupMenu();
+    protected JPopupMenu popupMenu;
 
     /**
      * A standard layouter setting menu over this jgraph.
@@ -1103,7 +1154,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * The label list associated with this jgraph.
      */
-    protected final LabelList labelList;
+    protected LabelList labelList;
 
     /**
      * The currently selected prototype layouter.

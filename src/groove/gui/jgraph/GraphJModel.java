@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.5 2007-04-01 12:49:36 rensink Exp $
+ * $Id: GraphJModel.java,v 1.6 2007-04-12 16:14:50 rensink Exp $
  */
 
 package groove.gui.jgraph;
 
 import groove.graph.AbstractGraph;
+import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GenericNodeEdgeHashMap;
@@ -50,11 +51,12 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */
 	static public final GraphJModel EMPTY_JMODEL = new GraphJModel();
+	/** Fixed empty attribute map. */
 
     /** 
      * Creates a new GraphJModel instance on top of a given Graph, with given
@@ -324,7 +326,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 
 	/**
      * Creates a j-cell corresponding to a given node in the graph.
-     * Adds the j-cell to {@link #addedJCells}, and updates {@link #toJCellNodeMap}.
+     * Adds the j-cell to {@link #addedJCells}, and updates {@link #toJCellMap}.
      */
     protected JCell addNode(Node node) {
         GraphJVertex jVertex = computeJVertex(node);
@@ -340,11 +342,12 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * or an existing j-edge, if the edge can be represented by it.
      * Otherwise, it will be a new j-edge.
      */
-    protected JCell addEdge(Edge edge) {
+    protected JCell addEdge(Edge hyperEdge) {
         // for now we just support binary edges
-        if (edge.endCount() != 2) {
-            throw new IllegalArgumentException("Non-binary edge "+edge+" not supported");
+        if (hyperEdge.endCount() != 2) {
+            throw new IllegalArgumentException("Non-binary edge "+hyperEdge+" not supported");
         }
+        BinaryEdge edge = (BinaryEdge) hyperEdge;
         Node source = edge.end(Edge.SOURCE_INDEX);
         Node target = edge.end(Edge.TARGET_INDEX);
         // self-edges are treated differently
@@ -445,12 +448,12 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
     /**
-     * Creates a new j-edge using {@link #createJEdge(Edge)}, and 
+     * Creates a new j-edge using {@link #createJEdge(BinaryEdge)}, and 
      * sets the attributes using {@link #createJEdgeAttr(JEdge)} and
      * adds available layout information from the layout map stored in this model.
      * @param edge graph edge for which a corresponding j-edge is to be created 
      */
-    protected GraphJEdge computeJEdge(Edge edge) {
+    protected GraphJEdge computeJEdge(BinaryEdge edge) {
         GraphJEdge result = createJEdge(edge);
         result.getAttributes().applyMap(createJEdgeAttr(result));
         JEdgeLayout layout = layoutMap.getEdge(edge);
@@ -470,27 +473,32 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     protected GraphJVertex computeJVertex(Node node) {
         GraphJVertex result = createJVertex(node);
         result.getAttributes().applyMap(createJVertexAttr(result));
-        JVertexLayout layout = layoutMap.getNode(node);
-        if (layout != null) {
-            result.getAttributes().applyMap(layout.toJAttr());
-        } else {
-            layoutableJCells.add(result);
-            Rectangle newBounds =
-                new Rectangle(nodeX, nodeY, JAttr.DEFAULT_NODE_BOUNDS.width, JAttr.DEFAULT_NODE_BOUNDS.height);
-            GraphConstants.setBounds(result.getAttributes(), newBounds);
-            nodeX = randomCoordinate();
-            nodeY = randomCoordinate();
-        }
+        if (GraphConstants.isMoveable(result.getAttributes())) {
+			JVertexLayout layout = layoutMap.getNode(node);
+			if (layout != null) {
+				result.getAttributes().applyMap(layout.toJAttr());
+			} else {
+				layoutableJCells.add(result);
+				Rectangle newBounds = new Rectangle(nodeX, nodeY,
+						JAttr.DEFAULT_NODE_BOUNDS.width,
+						JAttr.DEFAULT_NODE_BOUNDS.height);
+				GraphConstants.setBounds(result.getAttributes(), newBounds);
+				nodeX = randomCoordinate();
+				nodeY = randomCoordinate();
+			}
+		}
         return result;
     }
     
     /**
 	 * Factory method for jgraph edges.
-	 * @param edge graph edge for which a corresponding j-edge is to be created
+	 * 
+	 * @param edge
+	 *            graph edge for which a corresponding j-edge is to be created
 	 * @return j-edge corresponding to <tt>edge</tt>
 	 * @ensure <tt>result.getEdgeSet().contains(edge)</tt>
 	 */
-	protected GraphJEdge createJEdge(Edge edge) {
+	protected GraphJEdge createJEdge(BinaryEdge edge) {
 	    return new GraphJEdge(edge);
 	}
 
@@ -513,19 +521,26 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     		this.vertexValueAttr = new AttributeMap();
     		GraphConstants.setBackground(vertexValueAttr, JAttr.VALUE_BACKGROUND);
     	}
-    	return vertexValueAttr;
-    	
+    	return vertexValueAttr;	
     }
+    
 	/**
-	 * Tries to create the attributes based on the set of edges contained in the j-edge.
+	 * If the edge is visible, tries to create the attributes based on the set of edges contained in the j-edge.
 	 * Calls the super method only if this fails, i.e., if #createJEdge.
+	 * If the edge is invisible, reteurns {@link JAttr#INVISIBLE_ATTR}.
 	 * @see #createJEdgeAttr(Set)
+	 * @see GraphJVertex#isVisible()
 	 */
 	@Override
 	final protected AttributeMap createJEdgeAttr(JEdge jEdge) {
-		AttributeMap result = createJEdgeAttr(((GraphJEdge) jEdge).getEdgeSet());
-		if (result == null) {
-			result = super.createJEdgeAttr(jEdge);
+		AttributeMap result;
+		if (jEdge.isVisible()) {
+			result = createJEdgeAttr(((GraphJEdge) jEdge).getEdgeSet());
+			if (result == null) {
+				result = super.createJEdgeAttr(jEdge);
+			}
+		} else {
+			result = JAttr.INVISIBLE_ATTR;
 		}
 		return result;
 	}
@@ -540,15 +555,22 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	}
 
 	/**
-	 * Tries to create the attributes based on the node contained in the j-vertex.
+	 * If the vertex is visible, tries to create the attributes based on the node contained in the j-vertex.
 	 * Calls the super method only if this fails.
+	 * If the vertex is invisible, reteurns {@link JAttr#INVISIBLE_ATTR}.
+	 * @see GraphJVertex#isVisible()
 	 * @see #createJVertexAttr(JVertex)
 	 */
 	@Override
 	final protected AttributeMap createJVertexAttr(JVertex jVertex) {
-		AttributeMap result = createJVertexAttr(((GraphJVertex) jVertex).getNode());
-		if (result == null) {
-			result = super.createJVertexAttr(jVertex);
+		AttributeMap result;
+		if (jVertex.isVisible()) {
+			result = createJVertexAttr(((GraphJVertex) jVertex).getNode());
+			if (result == null) {
+				result = super.createJVertexAttr(jVertex);
+			}
+		} else {
+			result = JAttr.INVISIBLE_ATTR;
 		}
 		return result;
 	}
@@ -563,6 +585,16 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 			result.applyMap(getJVertexValueAttr());
 		} 
         return result;
+	}
+
+	/** Returns an empty map if the cell is not visible. */
+	@Override
+	protected AttributeMap createTransientJAttr(JCell jCell) {
+		if (jCell.isVisible()) {
+			return super.createTransientJAttr(jCell);
+		} else {
+			return JAttr.INVISIBLE_ATTR;
+		}
 	}
 
 	/**
@@ -663,9 +695,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     protected AttributeMap vertexValueAttr;
 	/** Flag indicating that aspect prefixes should be included for nodes and edges. */
     private boolean showLocalAspects;
-//
-//	/** Flag indicating that node identities should be shown on the nodes. */
-//    private boolean showNodeIdentities;
 
     /**
      * Set of GraphModel connections. Used in the process of constructing a GraphJModel.

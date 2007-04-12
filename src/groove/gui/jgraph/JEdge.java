@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.3 2007-03-28 15:12:26 rensink Exp $
+ * $Id: JEdge.java,v 1.4 2007-04-12 16:14:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -32,7 +32,7 @@ import org.jgraph.graph.DefaultEdge;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
@@ -71,6 +71,20 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     @Override
     public String toString() {
         return getUserObject().toString();
+    }
+
+    /** 
+     * This implementation always returns <code>true</code>.
+     */
+    public boolean isVisible() {
+    	return true;
+    }
+
+    /** 
+     * This implementation always returns <code>true</code>.
+     */
+    public boolean isListable() {
+    	return true;
     }
 
 	/**

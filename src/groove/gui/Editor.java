@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.6 2007-04-04 07:04:27 rensink Exp $
+ * $Id: Editor.java,v 1.7 2007-04-12 16:14:52 rensink Exp $
  */
 package groove.gui;
 
@@ -88,7 +88,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.6 $ $Date: 2007-04-04 07:04:27 $
+ * @version $Revision: 1.7 $ $Date: 2007-04-12 16:14:52 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -275,7 +275,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.6 $
+     * @version $Revision: 1.7 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -602,6 +602,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
     protected void handleClose() {
         getRootComponent().setVisible(false);
+        this.dispose();
     }
 
     /**
@@ -938,7 +939,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         // options menu
         JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
         menuBar.add(optionsMenu);
-        optionsMenu.add(options.getItem(IS_ATTRIBUTED_OPTION));
+        optionsMenu.add(getOptions().getItem(IS_ATTRIBUTED_OPTION));
 
         return menuBar;
     }
@@ -1062,7 +1063,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     
     /** Updates the status bar with information about the currently edited graph. */
     protected void updateStatus() {
-        int elementCount = getModel().getRootCount() - getModel().getHiddenCount();
+        int elementCount = getModel().getRootCount() - getModel().getGrayedOutCount();
         statusBar.setText(""+elementCount+" visible elements");
     }
     
@@ -1153,7 +1154,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     	// lazily creates the options 
     	if (options == null) {
     		options = new Options();
-        	options.add(Options.IS_ATTRIBUTED_OPTION);
+        	options.getItem(Options.SHOW_REMARKS_OPTION).setSelected(true);
     	}
     	return options;
     }

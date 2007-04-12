@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ShowHideMenu.java,v 1.4 2007-04-01 12:50:29 rensink Exp $
+ * $Id: ShowHideMenu.java,v 1.5 2007-04-12 16:14:53 rensink Exp $
  */
 package groove.gui;
 
@@ -54,7 +54,7 @@ import org.jgraph.graph.DefaultPort;
 /**
  * Menu to control the visibility of nodes and edges in a jgraph.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ShowHideMenu extends JMenu {
     /**
@@ -314,7 +314,7 @@ public class ShowHideMenu extends JMenu {
          * @param hidden <tt>true</tt> if the cells are to be changed to hidden
          */
         protected final void setHidden(Set<JCell> cells, boolean hidden) {
-            jgraph.getModel().setHidden(cells, hidden);
+            jgraph.getModel().setGrayedOut(cells, hidden);
         }
 
         /**
@@ -323,7 +323,7 @@ public class ShowHideMenu extends JMenu {
          * @return <tt>true</tt> if jcell is hidden in the underlying jgraph
          */
         protected final boolean isHidden(JCell jCell) {
-            return jgraph.getModel().isHidden(jCell);
+            return jgraph.getModel().isGrayedOut(jCell);
         }
 
         /**
@@ -630,7 +630,7 @@ public class ShowHideMenu extends JMenu {
      * Show/hide action based on the currently emphasized cells. The action adds the selection to
      * the shown or hidden cells
      * @author Arend Rensink
-     * @version $Revision: 1.4 $
+     * @version $Revision: 1.5 $
      */
     static protected class EmphasizedAction extends ShowHideAction {
     	/** 

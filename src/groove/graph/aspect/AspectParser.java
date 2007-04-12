@@ -22,7 +22,7 @@ import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.util.FormatException;
 
-import static groove.graph.aspect.Aspect.SEPARATOR;
+import static groove.graph.aspect.Aspect.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -78,7 +78,7 @@ public class AspectParser {
 	 * by {@link #getParseData(String)}.
 	 */
 	static public String toString(AspectValue value) {
-		return value.getName()+SEPARATOR;
+		return value.toString()+VALUE_SEPARATOR;
 	}
 
 	/**
@@ -90,8 +90,8 @@ public class AspectParser {
 		for (AspectValue value: values) {
 			result.append(AspectParser.toString(value));
 		}
-		if (values.size() > 0 && (labelText.length() == 0 || labelText.contains(SEPARATOR))) {
-			result.append(SEPARATOR);
+		if (values.size() > 0 && (labelText.length() == 0 || labelText.contains(VALUE_SEPARATOR))) {
+			result.append(VALUE_SEPARATOR);
 		}
 		result.append(labelText);
 		return result.toString();
@@ -148,20 +148,28 @@ public class AspectParser {
 		boolean stopParsing = false;
 		boolean endFound = false;
 		int prevIndex = 0;
-		int nextIndex = plainText.indexOf(SEPARATOR, prevIndex);
+		int nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
 		while (!stopParsing && nextIndex >= prevIndex) {
 			// look for the next aspect value between prevIndex and nextIndex
 			String valueText = plainText.substring(prevIndex, nextIndex);
-			prevIndex = nextIndex + SEPARATOR.length();
+			prevIndex = nextIndex + VALUE_SEPARATOR.length();
 			stopParsing = endFound = valueText.length() == 0;
 			if (! endFound) {
 	            try {
-					stopParsing = addParsedValue(parsedValues, valueText);
+	            	String contentText;
+	            	int assignIndex = valueText.indexOf(CONTENT_ASSIGN);
+	            	if (assignIndex < 0) {
+	            		contentText = null;
+	            	} else {
+	            		contentText = valueText.substring(assignIndex + CONTENT_ASSIGN.length());
+	            		valueText = valueText.substring(0, assignIndex);
+	            	}
+					stopParsing = addParsedValue(parsedValues, valueText, contentText);
 				} catch (FormatException exc) {
 					throw new FormatException("%s in label '%s'", exc.getMessage(), plainText);
 				}
 			}
-			nextIndex = plainText.indexOf(SEPARATOR, prevIndex);
+			nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
 		}
 		String text = plainText.substring(prevIndex);
 		return createParseData(parsedValues, endFound, createLabel(text));
@@ -186,29 +194,35 @@ public class AspectParser {
 	 * return value <code>true</code>, otherwise it results in a {@link FormatException}.
 	 * @param parsedValues the already existing map
 	 * @param valueText string description of a new {@link AspectValue}
+	 * @param contentText string description for the new value's content; <code>null</code> if
+	 * the aspect value is not a {@link ContentAspectValue}.
 	 * @return <code>true</code> if <code>valueText</code> is a duplicate value 
 	 * for an existing aspect, and {@link #isLenient()} is set.
 	 * @throws FormatException if <code>valueText</code> is not a 
 	 * valid {@link AspectValue}, or duplicates another and the parser is
-	 * not lenient.
+	 * not lenient, or the presence of content is not as it should be.
 	 */
-	private boolean addParsedValue(AspectMap parsedValues, String valueText) throws FormatException {
+	private boolean addParsedValue(AspectMap parsedValues, String valueText, String contentText) throws FormatException {
 		boolean stopParsing = false;
 		AspectValue value = AspectValue.getValue(valueText);
 		if (value == null) {
 			throw new FormatException(String.format("Unknown aspect value '%s'", valueText));
-		} else {
-			AspectValue oldValue = parsedValues.put(value.getAspect(), value);
-			if (oldValue != null) {
-				if (isLenient()) {
-					stopParsing = true;
-				} else {
-					throw new FormatException(
-							String.format("Aspect %s has values '%s' and '%s'",
-									value.getAspect(),
-									oldValue,
-									value));
-				}
+		} else if (value instanceof ContentAspectValue) {
+			// use the value as a factory to get a correct instance
+			value = ((ContentAspectValue) value).newValue(contentText == null ? "" : contentText);
+		} else if (contentText != null) {
+			throw new FormatException(String.format("Aspect value '%s' cannot have content '%s'", valueText, contentText));
+		}
+		AspectValue oldValue = parsedValues.put(value.getAspect(), value);
+		if (oldValue != null) {
+			if (isLenient()) {
+				stopParsing = true;
+			} else {
+				throw new FormatException(
+						String.format("Aspect %s has values '%s' and '%s'",
+								value.getAspect(),
+								oldValue,
+								value));
 			}
 		}
 		return stopParsing;
