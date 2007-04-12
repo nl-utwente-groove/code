@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import groove.util.FormatException;
-import static groove.graph.aspect.Aspect.SEPARATOR;
+import static groove.graph.aspect.Aspect.VALUE_SEPARATOR;
 
 /**
  * Class implementing values of a given aspect.
@@ -71,10 +71,22 @@ public class AspectValue {
      * @throws groove.util.FormatException if the value name is already used
      */
     public AspectValue(Aspect aspect, String name) throws FormatException {
+    	this(aspect, name, new HashSet<AspectValue>());
+        registerValue(this);
+    }
+    
+    /**
+     * Creates a new aspect value, for a given aspect and with a given name
+     * and set of incompatible values. This is a local constructor, not to be
+     * invoked directly.
+     * @param aspect the aspect for which this is a value
+     * @param name the name of the aspect value
+     * @param incompatibles the set of aspect values that are incompatible with this one
+     */
+    AspectValue(Aspect aspect, String name, Set<AspectValue> incompatibles) {
         this.aspect = aspect;
         this.name = name;
-        this.incompatibles = new HashSet<AspectValue>();
-        registerValue(this);
+        this.incompatibles = incompatibles;
     }
     
     /**
@@ -96,10 +108,10 @@ public class AspectValue {
      * Returns the prefix of the aspect value.
      * The prefix consists of the name followed by the separator.
      * @see #getName()
-     * @see #SEPARATOR
+     * @see #VALUE_SEPARATOR
      */
     public String getPrefix() {
-        return name + SEPARATOR;
+        return name + VALUE_SEPARATOR;
     }
 
     /** 
@@ -185,6 +197,13 @@ public class AspectValue {
     void setIncompatible(AspectValue other) {
     	assert other.getAspect() != getAspect() : String.format("Incompatible values %s and %s are of the same aspect", this, other);
     	incompatibles.add(other);
+    }
+    
+    /**
+     * Returns the set of aspect values incompatible with this one.
+     */
+    Set<AspectValue> getIncompatibles() {
+    	return incompatibles;
     }
     
     /**

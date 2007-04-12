@@ -13,12 +13,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.5 2007-04-04 07:04:27 rensink Exp $
+ * $Id: Options.java,v 1.6 2007-04-12 16:14:52 rensink Exp $
  */
 package groove.gui;
 
 import java.awt.event.KeyEvent;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -29,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class Options {
     /** Edit menu name */
@@ -208,6 +209,8 @@ public class Options {
     static public final String VERTEX_LABEL_OPTION = "Allow node labels";
     /** Show aspects in graphs and rules option */
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
+    /** Show remark nodes and edges. */
+    static public final String SHOW_REMARKS_OPTION = "Show remarks";
     /** Parse attributed graphs option */
     static public final String IS_ATTRIBUTED_OPTION = "Parse as attributed graph";
 
@@ -254,6 +257,7 @@ public class Options {
 		add(SHOW_NODE_IDS_OPTION);
 		add(SHOW_ANCHORS_OPTION);
 		add(SHOW_ASPECTS_OPTION);
+		add(SHOW_REMARKS_OPTION);
 		add(VERTEX_LABEL_OPTION);
 		add(SHOW_STATE_IDS_OPTION);
 		add(IS_ATTRIBUTED_OPTION);
@@ -298,7 +302,17 @@ public class Options {
     	return itemMap.get(name).isSelected();
     }
 
-    /**
+    /** Returns a map from option keys to the enabled status of the option. */
+    @Override
+	public String toString() {
+    	Map<String,Boolean> result = new HashMap<String,Boolean>();
+    	for (Map.Entry<String,JCheckBoxMenuItem> entry: itemMap.entrySet()) {
+    		result.put(entry.getKey(), entry.getValue().isSelected());
+    	}
+    	return result.toString();
+	}
+
+	/**
      * Map from option names to menu items.
      */
     private Map<String,JCheckBoxMenuItem> itemMap = new LinkedHashMap<String,JCheckBoxMenuItem>();

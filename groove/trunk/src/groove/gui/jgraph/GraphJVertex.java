@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.5 2007-04-04 07:04:17 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.6 2007-04-12 16:14:50 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -23,13 +23,10 @@ import groove.graph.algebra.ValueNode;
 import groove.graph.aspect.AttributeAspect;
 import groove.util.Converter;
 
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
-
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Extends DefaultGraphCell to use a Node as user object but
@@ -85,7 +82,10 @@ public class GraphJVertex extends JVertex {
     	StringBuffer result = new StringBuffer();
     	// show the node identity if required
     	if (isShowNodeIdentity()) {
-    		result.append(italicTag.on(getNodeIdentity()));
+    		String id = getNodeIdentity();
+    		if (id != null) {
+    			result.append(italicTag.on(id));
+    		}
     	}
     	String labels = getUserObject().toString();
     	// add the labels if nonempty
@@ -103,7 +103,9 @@ public class GraphJVertex extends JVertex {
      * Callback mathod to yield a string description of the underlying 
      * node, used for the node inscription in case node identities 
      * are to be shown.
+     * The result may be <code>null</code>, if the node has no proper identity.
      * This implementation delegates to <code>getNode().toString()</code>.
+     * @return A node descriptor, or <code>null</code> if the node has no proper identity
      */
     protected String getNodeIdentity() {
     	return node.toString();
@@ -211,7 +213,13 @@ public class GraphJVertex extends JVertex {
     /** This implementation includes the node number of the underlying node. */
     @Override
 	protected String getNodeDescription() {
-		return "Node "+italicTag.on(getNodeIdentity());
+    	StringBuffer result = new StringBuffer("Node");
+    	String id = getNodeIdentity();
+    	if (id != null) {
+    		result.append(" ");
+    		result.append(italicTag.on(getNodeIdentity()));
+    	}
+		return result.toString();
 	}
 
 	/**

@@ -1,4 +1,4 @@
-/* $Id: AspectualGraphView.java,v 1.3 2007-04-01 12:49:49 rensink Exp $ */
+/* $Id: AspectualGraphView.java,v 1.4 2007-04-12 16:14:51 rensink Exp $ */
 package groove.graph.aspect;
 
 import groove.algebra.Constant;
@@ -127,6 +127,14 @@ public class AspectualGraphView implements AspectualView<Graph> {
 		return edge instanceof ProductEdge && ((ProductEdge) edge).getOperation() instanceof Constant;
 	}
 
+	/**
+	 * Constructs an aspect graph from a possibly attributed graph,
+	 * together with a mapping from that aspect graph to the original graph.
+	 * @param model the graph to be converted (which may be attributed, i.e.,
+	 * contains 
+	 * @return a pair of aspect graph plus a mapping from that aspect graph
+	 * to <code>model</code>
+	 */
 	protected Pair<AspectGraph,Map<AspectNode,Node>> computeView(Graph model) {
 		AspectGraph view = new AspectGraph();
 		// we need to record the view-to-model node map for the return value
@@ -139,7 +147,10 @@ public class AspectualGraphView implements AspectualView<Graph> {
 			// create the nodes of the view
 			for (Node node: model.nodeSet()) {
 				AspectNode nodeImage = view.createNode();
-				nodeImage.setDeclaredValue(AttributeAspect.getAttributeValue(node));
+				AspectValue value = AttributeAspect.getAttributeValue(node);
+				if (value != null) {
+					nodeImage.setDeclaredValue(value);
+				}
 				view.addNode(nodeImage);
 				viewToModelMap.put(nodeImage, node);
 				modelToViewMap.put(node, nodeImage);

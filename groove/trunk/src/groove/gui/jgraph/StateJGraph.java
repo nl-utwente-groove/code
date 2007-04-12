@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateJGraph.java,v 1.3 2007-03-30 15:50:22 rensink Exp $
+ * $Id: StateJGraph.java,v 1.4 2007-04-12 16:14:50 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,7 +28,7 @@ import javax.swing.JPopupMenu;
 
 /**
  * Implementation of {@link JGraph} that provides the proper popup menu.
- * To construct an instance, {@link #initPopupMenu(JPopupMenu)} should be called
+ * To construct an instance, {@link #fillPopupMenu(JPopupMenu)} should be called
  * after all global final variables have been set.
  */
 public class StateJGraph extends JGraph {
@@ -51,19 +51,17 @@ public class StateJGraph extends JGraph {
     }
 
     @Override
-    protected void initPopupMenu(JPopupMenu toMenu) {
-        if (toMenu != null) {
-            addSeparatorUnlessFirst(toMenu);
-            toMenu.add(simulator.getApplyTransitionAction());
-            toMenu.addSeparator();
-            toMenu.add(simulator.getEditGraphAction());
-            super.initPopupMenu(toMenu);
-        }
+    protected void fillPopupMenu(JPopupMenu result) {
+		addSeparatorUnlessFirst(result);
+		result.add(simulator.getApplyTransitionAction());
+		result.addSeparator();
+		result.add(simulator.getEditGraphAction());
+		super.fillPopupMenu(result);
     }
 
     /**
-     * Returns the bounds of a set of graph elements.
-     */
+	 * Returns the bounds of a set of graph elements.
+	 */
     public Rectangle2D getElementBounds(Set<Element> elemSet) {
         Set<JCell> jCellSet = new HashSet<JCell>();
         for (Element elem: elemSet) {

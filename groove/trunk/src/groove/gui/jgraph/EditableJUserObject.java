@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJUserObject.java,v 1.4 2007-04-01 12:49:36 rensink Exp $
+ * $Id: EditableJUserObject.java,v 1.5 2007-04-12 16:14:50 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -124,21 +124,27 @@ public class EditableJUserObject extends JUserObject<String> {
 	        if (value.length() > 0 || ! isAllowEmptyLabelSet()) {
 	            String[] labels = value
 	                    .split(WHITESPACE + trim(getEditSeparator()) + WHITESPACE, 0);
-	            for (int i = 0; i < labels.length; i++) {
-	                try {
-	                	Pair<String,List<String>> parseResult = ExprParser.parseExpr(labels[i]); 
-	                    add(ExprParser.toString(parseResult.first(), parseResult.second()));
-	                } catch (FormatException e) {
-	                    assert false : "Error in label expression "+value+": "+e;
-	                }
+	            for (String label: labels) {
+	            	if (label.length() > 0) {
+						try {
+							Pair<String, List<String>> parseResult = ExprParser.parseExpr(label);
+							add(ExprParser.toString(parseResult.first(),
+									parseResult.second()));
+						} catch (FormatException e) {
+							assert false : "Error in label expression " + value
+									+ ": " + e;
+						}
+					}
 	            }
 	        }
 	    }
 	}
 
 	/**
-	 * Loads the user object collection from a given label set. 
-	 * @param labelSet the label set from which to load the user object
+	 * Loads the user object collection from a given label set.
+	 * 
+	 * @param labelSet
+	 *            the label set from which to load the user object
 	 */
 	public void load(Collection<String> labelSet) {
 	    clear();

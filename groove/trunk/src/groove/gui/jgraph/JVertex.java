@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertex.java,v 1.3 2007-03-28 15:12:27 rensink Exp $
+ * $Id: JVertex.java,v 1.4 2007-04-12 16:14:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.DefaultPort;
  * JGraph vertex with a single port, and a fixed set of labels as a user object (through
  * {@link groove.gui.jgraph.JUserObject}).
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 abstract public class JVertex extends DefaultGraphCell implements JCell {
 	/** HTML tag to make text bold. */
@@ -66,7 +66,21 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
     		return userObjectString;
     	}
     }
-    
+
+    /** 
+     * This implementation always returns <code>true</code>.
+     */
+    public boolean isVisible() {
+    	return true;
+    }
+
+    /** 
+     * This implementation always returns <code>true</code>.
+     */
+    public boolean isListable() {
+    	return true;
+    }
+
     /**
      * This implementation delegates the query to the user object.
      */

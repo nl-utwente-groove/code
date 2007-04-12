@@ -190,24 +190,30 @@ public class AttributeAspect extends AbstractAspect {
 		Node result;
 		// check if there is a single constant edge on this node
 		Collection<AspectEdge> outEdges = graph.outEdgeSet(node);
-		if (outEdges.isEmpty()) {
+		Set<AspectEdge> attributeEdges = new HashSet<AspectEdge>();
+		for (AspectEdge outEdge: outEdges) {
+			if (outEdge.getValue(getInstance()) != null) {
+				attributeEdges.add(outEdge);
+			}
+		}
+		if (attributeEdges.isEmpty()) {
 			result = new ValueNode();
-		} else if (outEdges.size() > 1) {
-			throw new FormatException("Too many edges on constant node: %s", outEdges);
+		} else if (attributeEdges.size() > 1) {
+			throw new FormatException("Too many edges on constant node: %s", attributeEdges);
 		} else {
-			AspectEdge outEdge = outEdges.iterator().next();
-			AspectValue algebraValue = outEdge.getValue(getInstance());
+			AspectEdge attributeEdge = attributeEdges.iterator().next();
+			AspectValue algebraValue = attributeEdge.getValue(getInstance());
 			if (algebraValue == null) {
-				throw new FormatException("Label %s on value node should be a constant", outEdge.getLabelText());
+				throw new FormatException("Label %s on value node should be a constant", attributeEdge.getLabelText());
 			}
 			Algebra algebra = algebraMap.get(algebraValue);
 			if (algebra == null) {
-				throw new FormatException("Label %s on value node should be a constant", outEdge.getLabelText());
+				throw new FormatException("Label %s on value node should be a constant", attributeEdge.getLabelText());
 			}
 			try {
-				Operation nodeValue = algebra.getOperation(outEdge.label().text());
+				Operation nodeValue = algebra.getOperation(attributeEdge.label().text());
 				if (! (nodeValue instanceof Constant)) {
-					throw new FormatException("Operation %s on value node should be a constant", outEdge.label());
+					throw new FormatException("Operation %s on value node should be a constant", attributeEdge.label());
 				}
 				result = AlgebraGraph.getInstance().getValueNode(((Constant) nodeValue));
 			} catch (UnknownSymbolException exc) {

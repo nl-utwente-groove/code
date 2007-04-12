@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JCell.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: JCell.java,v 1.3 2007-04-12 16:14:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -26,9 +26,13 @@ import org.jgraph.graph.GraphCell;
  * on a set of strings, displayed in multiline format but edited in
  * single-line format.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface JCell extends GraphCell, Serializable {
+	/** Indicates if the cell is currently visible in the j-model. */
+	public boolean isVisible();
+	/** Indicates if the cell should be registered in the label list. */
+	public boolean isListable();
     /**
      * Returns un unmodifiable view upon the set of labels (as strings) in the user object.
      * @return the underlying set of strings

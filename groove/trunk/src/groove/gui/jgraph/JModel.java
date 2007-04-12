@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.5 2007-04-01 12:49:36 rensink Exp $
+ * $Id: JModel.java,v 1.6 2007-04-12 16:14:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -59,7 +59,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -67,7 +67,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.5 $
+     * @version $Revision: 1.6 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -118,7 +118,7 @@ abstract public class JModel extends DefaultGraphModel {
      * @require cell != null
      */
     public String getToolTipText(JCell jCell) {
-        if (jCell != null) {
+        if (jCell != null && jCell.isVisible()) {
             return jCell.getToolTipText();
         } else {
             return null;
@@ -145,6 +145,11 @@ abstract public class JModel extends DefaultGraphModel {
         }
     }
 
+    /** Callback method to determine whether a cell should in principle be moveable. */
+    public boolean isMoveable(JCell jCell) {
+    	return true;
+    }
+    
     /**
      * Adds a j-cell to the layoutable cells of this j-model.
      * The j-cell is required to be in the model already.
@@ -165,28 +170,28 @@ abstract public class JModel extends DefaultGraphModel {
         layoutableJCells.remove(jCell);
     }
 
-    /**
-     * Returns the set of jcells whose label sets contain at least one of the labels in a given set.
-     * @param labelSet the set of labels looked for
-     * @return the set of {@link JCell}s for which {@link  JCell#getLabelSet()}contains at least
-     *         one of the elements of <tt>labelSet</tt>.
-     */
-    public Set<JCell> getJCellsForLabels(Set<String> labelSet) {
-        Set<JCell> result = new HashSet<JCell>();
-        for (int i = 0; i < getRootCount(); i++) {
-            JCell jCell = (JCell) getRootAt(i);
-            Iterator<String> jCellLabelIter = jCell.getLabelSet().iterator();
-            boolean found = false;
-            while (!found && jCellLabelIter.hasNext()) {
-                Object jCellLabel = jCellLabelIter.next();
-                if (labelSet.contains(jCellLabel)) {
-                    result.add(jCell);
-                    found = true;
-                }
-            }
-        }
-        return result;
-    }
+//    /**
+//     * Returns the set of jcells whose label sets contain at least one of the labels in a given set.
+//     * @param labelSet the set of labels looked for
+//     * @return the set of {@link JCell}s for which {@link  JCell#getLabelSet()}contains at least
+//     *         one of the elements of <tt>labelSet</tt>.
+//     */
+//    public Set<JCell> getJCellsForLabels(Set<String> labelSet) {
+//        Set<JCell> result = new HashSet<JCell>();
+//        for (int i = 0; i < getRootCount(); i++) {
+//            JCell jCell = (JCell) getRootAt(i);
+//            Iterator<String> jCellLabelIter = jCell.getLabelSet().iterator();
+//            boolean found = false;
+//            while (!found && jCellLabelIter.hasNext()) {
+//                Object jCellLabel = jCellLabelIter.next();
+//                if (labelSet.contains(jCellLabel)) {
+//                    result.add(jCell);
+//                    found = true;
+//                }
+//            }
+//        }
+//        return result;
+//    }
 
     /**
      * Sets all jcells to unmovable, except those that have been added since the last layout action.
@@ -307,44 +312,41 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Tests the hiding status of a given jgraph cell.
+     * Tests the grayed-out status of a given jgraph cell.
      * @param cell the cell that is to be tested
-     * @return <tt>true</tt> if the cell is currently hidden
-     * @see #setHidden(Set,boolean)
+     * @return <tt>true</tt> if the cell is currently grayed-out
+     * @see #setGrayedOut(Set,boolean)
      */
-    public boolean isHidden(JCell cell) {
-        return hiddenJCells.contains(cell);
+    public boolean isGrayedOut(JCell cell) {
+        return grayedOutJCells.contains(cell);
     }
 
     /**
-     * Hides or unhides a given jgraph cell. Hiding a cell means graying it out and making it
-     * uneditable etc. Unhiding is the reverse operation. The hidden status of cells ican be tested
-     * using <tt>isHidden(DefaultGraphCell)</tt>
-     * @param cell the cell whose hidden status is to be changed
-     * @param hidden the new hiding status of the cell
-     * @ensure <tt>isHidden(cell) == hidden</tt>
-     * @see #setHidden(Set,boolean)
-     * @see #isHidden
+     * Changes the grayed-out status of a given jgraph cell. Graying out a cell means making it
+     * uneditable etc. The grayed-out status of cells can be tested
+     * using {@link #isGrayedOut(JCell)}.
+     * @param cell the cell whose grayed-out status is to be changed
+     * @param hidden the new grayed-out status of the cell
+     * @see #setGrayedOut(JCell, boolean)
+     * @see #isGrayedOut(JCell)
      */
-    public void setHidden(JCell cell, boolean hidden) {
-        setHidden(Collections.singleton(cell), hidden);
+    public void setGrayedOut(JCell cell, boolean hidden) {
+        setGrayedOut(Collections.singleton(cell), hidden);
     }
 
     /**
-     * Hides or unhides a given set of jgraph cells. Hiding a cell means graying it out and making
-     * it uneditable etc. Unhiding is the reverse operation.
+     * Changes the grayed-out status of a given set of jgraph cells.
      * @param jCells the cells whose hiding status is to be changed
-     * @param hidden the new hiding status of the cell
-     * @ensure if <tt>cells.contains(cell)</tt> then <tt>isHidden(cell) == hidden</tt>
-     * @see #setHidden(JCell,boolean)
-     * @see #isHidden
+     * @param grayedOut the new grayed-out status of the cell
+     * @see #setGrayedOut(JCell,boolean)
+     * @see #isGrayedOut(JCell)
      */
-    public void setHidden(Set<JCell> jCells, boolean hidden) {
+    public void setGrayedOut(Set<JCell> jCells, boolean grayedOut) {
         Set<JCell> changedJCells = new HashSet<JCell>();
         for (JCell jCell: jCells) {
-            if (hidden != isHidden(jCell)) {
-                if (hidden) {
-                    hiddenJCells.add(jCell);
+            if (grayedOut != isGrayedOut(jCell)) {
+                if (grayedOut) {
+                    grayedOutJCells.add(jCell);
                     changedJCells.add(jCell);
                     // change.put(cell, createJAttr(cell));
                     // removeSelectionCell(cell);
@@ -352,23 +354,23 @@ abstract public class JModel extends DefaultGraphModel {
                         Iterator<?> jEdgeIter = ((JVertex) jCell).getPort().edges();
                         while (jEdgeIter.hasNext()) {
                             JEdge jEdge = (JEdge) jEdgeIter.next();
-                            if (hiddenJCells.add(jEdge)) {
+                            if (grayedOutJCells.add(jEdge)) {
                                 changedJCells.add(jEdge);
                             }
                         }
                     }
                 } else {
-                    hiddenJCells.remove(jCell);
+                    grayedOutJCells.remove(jCell);
                     changedJCells.add(jCell);
                     if (isEdge(jCell)) {
                         JCell sourceJVertex = (JCell) ((DefaultPort) ((org.jgraph.graph.DefaultEdge) jCell).getSource())
                                 .getParent();
-                        if (hiddenJCells.remove(sourceJVertex)) {
+                        if (grayedOutJCells.remove(sourceJVertex)) {
                             changedJCells.add(sourceJVertex);
                         }
                         JCell targetJVertex = (JCell) ((DefaultPort) ((org.jgraph.graph.DefaultEdge) jCell).getTarget())
                                 .getParent();
-                        if (hiddenJCells.remove(targetJVertex)) {
+                        if (grayedOutJCells.remove(targetJVertex)) {
                             changedJCells.add(targetJVertex);
                         }
                     }
@@ -376,15 +378,15 @@ abstract public class JModel extends DefaultGraphModel {
             }
         }
         refresh(changedJCells);
-		createLayerEdit(hiddenJCells.toArray(),
+		createLayerEdit(grayedOutJCells.toArray(),
 			GraphModelLayerEdit.BACK).execute();
     }
     
     /**
-     * Returns the number of hidden cells.
+     * Returns the number of grayed-out cells.
      */
-    public int getHiddenCount() {
-        return hiddenJCells.size();
+    public int getGrayedOutCount() {
+        return grayedOutJCells.size();
     }
 
     /**
@@ -471,11 +473,19 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Returns the map of attribute changes needed to hide a jcell. 
-     * This implementation returns {@link JAttr#HIDDEN_ATTR}. 
+     * Returns the map of attribute changes needed to gray-out a jcell. 
+     * This implementation returns {@link JAttr#GRAYED_OUT_ATTR}. 
      */
-    protected AttributeMap getHiddenAttr() {
-        return JAttr.HIDDEN_ATTR;
+    protected AttributeMap getGrayedOutAttr() {
+        return JAttr.GRAYED_OUT_ATTR;
+    }
+
+    /**
+     * Returns the map of attribute changes needed to hide a jcell. 
+     * This implementation returns {@link JAttr#INVISIBLE_ATTR}. 
+     */
+    protected AttributeMap getInvisibleAttr() {
+        return JAttr.INVISIBLE_ATTR;
     }
 
     /**
@@ -533,8 +543,8 @@ abstract public class JModel extends DefaultGraphModel {
                 result.applyMap(getJVertexEmphAttr((JVertex) jCell));
             }
         }
-        if (isHidden(jCell)) {
-            result.applyMap(getHiddenAttr());
+        if (isGrayedOut(jCell)) {
+            result.applyMap(getGrayedOutAttr());
         }
         return result;
     }
@@ -553,7 +563,7 @@ abstract public class JModel extends DefaultGraphModel {
     /**
      * The set of currently hidden jcells.
      */
-    protected final Set<JCell> hiddenJCells = new HashSet<JCell>();
+    protected final Set<JCell> grayedOutJCells = new HashSet<JCell>();
 
     /** The set of currently emphasized j-cells. */
     protected final Set<JCell> emphJCells = new HashSet<JCell>();

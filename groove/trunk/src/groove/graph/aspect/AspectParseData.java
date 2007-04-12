@@ -17,7 +17,7 @@
 package groove.graph.aspect;
 
 import groove.graph.Label;
-import static groove.graph.aspect.Aspect.SEPARATOR;
+import static groove.graph.aspect.Aspect.VALUE_SEPARATOR;
 
 /**
  * Combination of aspect values and actual label text, as derived from a plain label.
@@ -31,7 +31,7 @@ class AspectParseData {
 	 * @param label actual label text
 	 */
 	AspectParseData(AspectMap values, Label label) {
-		this(values, label.text().contains(SEPARATOR), label);
+		this(values, label.text().contains(VALUE_SEPARATOR), label);
 	}
 	
 	/**
@@ -89,7 +89,7 @@ class AspectParseData {
 		}
 		// append the end marking, if any
 		if (isHasEnd()) {
-			result.append(SEPARATOR);
+			result.append(VALUE_SEPARATOR);
 		}
 		// append the label text, if any
 		Label label = getLabel();

@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.6 2007-04-04 08:57:09 rensink Exp $
+ * $Id: AspectJModel.java,v 1.7 2007-04-12 16:14:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.aspect.AspectEdge;
@@ -28,12 +29,15 @@ import groove.graph.aspect.AttributeAspect;
 import groove.graph.aspect.RuleAspect;
 import groove.gui.Options;
 import groove.rel.RegExprLabel;
+import groove.trans.NameLabel;
 import groove.util.Groove;
+import groove.util.Pair;
 
 import static groove.gui.jgraph.JAttr.*;
 import static groove.graph.aspect.RuleAspect.*;
 
 import java.awt.Color;
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,7 +51,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class AspectJModel extends GraphJModel {
     /** Empty instance of the {@link AspectJModel}. */
@@ -92,6 +96,8 @@ public class AspectJModel extends GraphJModel {
             }
             RULE_NODE_ATTR.put(role,nodeAttr);
         }
+        GraphConstants.setSelectable(RULE_EDGE_ATTR.get(RULE), false);
+        GraphConstants.setSelectable(RULE_NODE_ATTR.get(RULE), false);
     }
 
     /** Role names (for the tool tips). */
@@ -104,11 +110,15 @@ public class AspectJModel extends GraphJModel {
         ROLE_NAMES.put(READER,"Reader");
         ROLE_NAMES.put(CREATOR,"Creator");
         ROLE_NAMES.put(ERASER,"Eraser");
+        ROLE_NAMES.put(REMARK,"Remark");
+        ROLE_NAMES.put(RULE,"Rule");
         
         ROLE_DESCRIPTIONS.put(EMBARGO,"Must be absent from a graph for this rule to apply");
         ROLE_DESCRIPTIONS.put(READER, "Must be present in a graph for this rule to apply");
         ROLE_DESCRIPTIONS.put(CREATOR,"Will be created by applying this rule");
         ROLE_DESCRIPTIONS.put(ERASER,"Will be deleted by applying this rule");
+        ROLE_DESCRIPTIONS.put(REMARK,"Has no effect on the execution of the rule");
+        ROLE_DESCRIPTIONS.put(RULE,"Has no effect on the execution of the rule");
     }
 
     /** Helper method to return the rule aspect value of an aspect node. */
@@ -120,6 +130,7 @@ public class AspectJModel extends GraphJModel {
      * Specialized j-vertex for rule graphs, with its own tool tip text.
      */
     public class AspectJVertex extends GraphJVertex {
+    	/** Creates a j-vertex on the basis of a given (aspectual) node. */
         public AspectJVertex(AspectJModel jModel, AspectNode node) {
             super(jModel, node);
             this.role = role(node);
@@ -163,42 +174,21 @@ public class AspectJModel extends GraphJModel {
             }
         }
         
-//        /**
-//         * Adds the appropriate colour around the text. 
-//         */
-//        @Override
-//		public String getHtmlText() {
-//        	String innerText = super.getHtmlText();
-//			if (innerText.length() > 0) {
-//				Color lineColor = GraphConstants.getLineColor(getAttributes());
-//				if (lineColor != null && lineColor != Color.BLACK) {
-//					return getColoredText(innerText, lineColor);
-//				}
-//			}
-//			return innerText;
-//		}
-//
-//		/**
-//		 * Returns a given HTML-formatted text, surrounded by a HTML tag to 
-//		 * set it in a given colour.
-//		 */
-//		private String getColoredText(String innerText, Color lineColor) {
-//			StringBuffer result = new StringBuffer();
-//			int red = lineColor.getRed();
-//			int blue = lineColor.getBlue();
-//			int green = lineColor.getGreen();
-//			result.append("<span style=\"color: rgb(");
-//			result.append(red);
-//			result.append(",");
-//			result.append(green);
-//			result.append(",");
-//			result.append(blue);
-//			result.append(");\">");
-//			result.append(innerText);
-//			result.append("</span>");
-//			return result.toString();
-//		}
-//        
+        /**
+         * Takes care of rule node display.
+         */
+        @Override
+		public String getHtmlText() {
+    		Pair<NameLabel,Integer> ruleContent = RuleAspect.getRuleContent(getNode());
+        	if (ruleContent != null) {
+        		String name = ruleContent.first().name();
+        		int priority = ruleContent.second();
+        		return "Rule "+name + (priority >= 0 ? ", priority "+priority : "");
+        	} else {
+        		return super.getHtmlText();
+        	}
+		}
+        
 		/**
 		 * On demand prefixes the label with the edge's aspect values.
 		 */
@@ -229,11 +219,30 @@ public class AspectJModel extends GraphJModel {
 
 		/**
 		 * This implementation retrieves the node's image in the
-		 * model and uses that one's identity.
+		 * view and uses that one's identity.
 		 */
 		@Override
 		protected String getNodeIdentity() {
-			return view.getMap().get(getNode()).toString();
+			Node ruleNode = view.getMap().get(getNode());
+			return ruleNode == null ? null : ruleNode.toString();
+		}
+
+		/** 
+		 * This implementation makes remark edges invisible as demanded 
+		 * by the {@link Options#SHOW_REMARKS_OPTION}.
+		 */
+		@Override
+		public boolean isVisible() {
+			return isShowRemarks() || ! RuleAspect.isRemark(getNode());
+		}
+
+		/** 
+		 * This implementation only returns <code>true</code> only if
+		 * {@link RuleAspect#inRule(AspectElement)} holds for the underlying node.
+		 */
+		@Override
+		public boolean isListable() {
+			return RuleAspect.inRule(getNode());
 		}
 
 		/** The role of the underlying rule node. */
@@ -244,12 +253,19 @@ public class AspectJModel extends GraphJModel {
      * Specialized j-edge for rule graphs, with its own tool tip text.
      */
     public class AspectJEdge extends GraphJEdge {
+    	/** Creates a j-edge on the basis of a given (aspectual) edge. */
         public AspectJEdge(AspectEdge edge) {
             super(edge);
             this.role = role(edge);
         }
 
-        /**
+        /** Specialises the return type. */
+        @Override
+		public AspectEdge getEdge() {
+			return (AspectEdge) super.getEdge();
+		}
+
+		/**
          * Overwrites the method to provide production rule specific
          * tool tips for edges.
          */
@@ -271,22 +287,14 @@ public class AspectJModel extends GraphJModel {
          * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
          */
         @Override
-        public boolean addEdge(Edge edge) {
+        public boolean addEdge(BinaryEdge edge) {
             if (role((AspectEdge) edge) == role) {
                 return super.addEdge(edge);
             } else {
                 return false;
             }
         }
-//        
-//		/**
-//		 * Specialises the return type.
-//		 */
-//		@Override
-//		public Set<AspectEdge> getEdgeSet() {
-//			return (Set<AspectEdge>) super.getEdgeSet();
-//		}
-//		
+        
 		/**
 		 * On demand prefixes the label with the edge's aspect values.
 		 */
@@ -318,6 +326,24 @@ public class AspectJModel extends GraphJModel {
 			return view.getMap().get(getTargetNode()).toString();
 		}
 
+		/** 
+		 * This implementation makes remark edges invisible as demanded 
+		 * by the {@link Options#SHOW_REMARKS_OPTION}.
+		 */
+		@Override
+		public boolean isVisible() {
+			return isShowRemarks() || role(getEdge()) != RuleAspect.REMARK;
+		}
+
+		/** 
+		 * This implementation only returns <code>true</code> only if
+		 * {@link RuleAspect#inRule(AspectElement)} holds for the underlying edge.
+		 */
+		@Override
+		public boolean isListable() {
+			return RuleAspect.inRule(getEdge());
+		}
+
 		private final AspectValue role;
     }
 
@@ -343,6 +369,30 @@ public class AspectJModel extends GraphJModel {
     	view = null;
     }
 
+    /** 
+     * This implementation returns <code>false</code> if the node 
+     * represented by the cell has a {@link RuleAspect#RULE} role.
+     */
+	@Override
+	public boolean isMoveable(JCell jCell) {
+		return jCell instanceof JEdge || isMoveable(((AspectJVertex) jCell).getNode());
+	}
+
+    /** 
+     * Callback method to determine whether a certain node is moveable in
+     * the GUI. Rule-identifying nodes are not moveable.
+     */
+	protected boolean isMoveable(AspectNode node) {
+		return !(role(node) instanceof RuleAspect.RuleAspectValue);
+	}
+
+    /**
+	 * Indicates whether aspect prefixes should be shown for nodes and edges.
+	 */
+	public final boolean isShowRemarks() {
+		return getOptionValue(Options.SHOW_REMARKS_OPTION);
+	}
+
 	@Override
     protected AttributeMap createJVertexAttr(Node node) {
 		AspectNode aspectNode = (AspectNode) node;
@@ -350,6 +400,10 @@ public class AspectJModel extends GraphJModel {
         AttributeMap result = (AttributeMap) RULE_NODE_ATTR.get(role).clone();
         if (aspectNode.getValue(AttributeAspect.getInstance()) != null) {
         	result.applyMap(getJVertexValueAttr());
+        }
+        if (! isMoveable(aspectNode)) {
+        	GraphConstants.setMoveable(result, false);
+        	GraphConstants.setBounds(result, new Rectangle(0,0));
         }
         return result;
     }
@@ -372,7 +426,7 @@ public class AspectJModel extends GraphJModel {
 	@Override
 	protected AttributeMap getJEdgeEmphAttr(JEdge jCell) {
 		AttributeMap result = super.getJEdgeEmphAttr(jCell);
-        AspectEdge ruleEdge = (AspectEdge) ((AspectJEdge) jCell).getEdge();
+        AspectEdge ruleEdge = ((AspectJEdge) jCell).getEdge();
 		GraphConstants.setLineWidth(result, JAttr.RULE_EMPH_WIDTH.get(role(ruleEdge)));
 		return result;
 	}
@@ -394,44 +448,18 @@ public class AspectJModel extends GraphJModel {
     protected GraphJVertex createJVertex(Node node) {
         return new AspectJVertex(this, (AspectNode) node);
     }
-/**
+    
+    /**
 	 * Overwrites the method so as to return a rule edge.
 	 * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
 	 */
 	@Override
-	protected GraphJEdge createJEdge(Edge edge) {
+	protected GraphJEdge createJEdge(BinaryEdge edge) {
 	    return new AspectJEdge((AspectEdge) edge);
 	}
-	//
-//    /**
-//     * Makes sure aspect information is included in the labels.
-//	 */
-//	@Override
-//	protected Collection<String> getLabels(JEdge jEdge) {
-//		// briefly set the show-aspects property to true
-//		boolean oldShowAspects = isShowAspects();
-//		setShowAspects(true);
-//		Collection<String> result = super.getLabels(jEdge);
-//		// reset the show-aspects property
-//		setShowAspects(oldShowAspects);
-//		return result;
-//	}
-//
-//    /**
-//     * Makes sure aspect information is included in the labels.
-//	 */
-//	@Override
-//	protected Collection<String> getLabels(JVertex jCell) {
-//		// briefly set the show-aspects property to true
-//		boolean oldShowAspects = isShowAspects();
-//		setShowAspects(true);
-//		Collection<String> result = super.getLabels(jCell);
-//		// reset the show-aspects property
-//		setShowAspects(oldShowAspects);
-//		return result;
-//	}
+	
     /**
      * The underlying view of this graph model.
      */
-    private final AspectualView view;
+    private final AspectualView<?> view;
 }

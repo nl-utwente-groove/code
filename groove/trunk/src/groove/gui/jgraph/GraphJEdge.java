@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.3 2007-04-12 16:14:50 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -45,22 +45,11 @@ public class GraphJEdge extends JEdge {
      *         source() == edge.source(), target() == edge.target()
      * @throws IllegalArgumentException if <code>edge.endCount() < 2</code> 
      */
-    protected GraphJEdge(Edge edge) {
-//        super(new JUserObject(PRINT_SEPARATOR, EDIT_SEPARATOR) {
-//            protected String getLabel(Object obj) {
-//                assert obj instanceof Edge : "Edge set contains "+obj;
-//            	return ((Edge) obj).label().text();
-//            }
-//            
-//            protected Object createObject(String value) {
-//                throw new UnsupportedOperationException();
-//            }
-//        });
+    protected GraphJEdge(BinaryEdge edge) {
         this.source = edge.end(BinaryEdge.SOURCE_INDEX);
         this.target = edge.end(BinaryEdge.TARGET_INDEX);
         getUserObject().add(edge);
         getUserObject().setAllowEmptyLabelSet(false);
-//        update();
     }
 
     /**
@@ -101,7 +90,7 @@ public class GraphJEdge extends JEdge {
     /**
      * Returns an arbitrary edge from the set of underlying edges.
      */
-    public Edge getEdge() {
+    public BinaryEdge getEdge() {
         return getUserObject().iterator().next();
     }
     
@@ -116,8 +105,8 @@ public class GraphJEdge extends JEdge {
 
 	/** Specialises the return type of the method. */
     @Override
-	public JUserObject<Edge> getUserObject() {
-		return (JUserObject<Edge>) super.getUserObject();
+	public JUserObject<BinaryEdge> getUserObject() {
+		return (JUserObject<BinaryEdge>) super.getUserObject();
 	}
 //
 //    @Override
@@ -163,7 +152,7 @@ public class GraphJEdge extends JEdge {
      * @require <tt>edge.source() == getSourceNode</tt> and <tt>edge.target() == getTargetNode()</tt>
      * @ensure if <tt>result</tt> then <tt>getEdgeSet().contains(edge)</tt>
      */
-    public boolean addEdge(Edge edge) {
+    public boolean addEdge(BinaryEdge edge) {
         getUserObject().add(edge);
         return true;
     }

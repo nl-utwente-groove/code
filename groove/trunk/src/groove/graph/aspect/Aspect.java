@@ -36,7 +36,16 @@ public interface Aspect {
 	 * When the separator occurs twice in direct succession, this denotes the
 	 * end of the aspect prefix.
 	 */
-    public static final String SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
+    public static final String VALUE_SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
+	/** 
+	 * String used to separate the name and content of aspect values.
+	 */
+    public static final String CONTENT_ASSIGN = Groove.getXMLProperty("label.content.assign");
+	/** 
+	 * String used to separate substrings within the content of an aspect value.
+	 */
+    public static final String CONTENT_SEPARATOR = Groove.getXMLProperty("label.content.separator");
+    
 
 	/** Array of all known aspects. */
 	public Aspect[] allAspects = { AttributeAspect.getInstance(), RuleAspect.getInstance() };

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.3 2007-04-04 07:04:17 rensink Exp $
+ * $Id: JVertexView.java,v 1.4 2007-04-12 16:14:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -50,7 +50,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class JVertexView extends VertexView {
 	/** HTML tag to make text bold. */
@@ -63,7 +63,7 @@ public class JVertexView extends VertexView {
     protected static final Converter.HTMLTag hiddenTag;
     // initialise the hiddenTag
     static {
-        Color colour = JAttr.INVISIBLE_COLOR;
+        Color colour = JAttr.GRAYED_OUT_COLOR;
         int opacity =  (100 * colour.getAlpha())/255;
         String arguments = String.format("style=\"color: rgb(%s,%s,%s); opacity:%s; filter: alpha(opacity=%s);\"",
             colour.getRed(),
@@ -78,6 +78,9 @@ public class JVertexView extends VertexView {
 
     /** The editor for all instances of <tt>JVertexView</tt>. */
     static protected final MultiLinedEditor editor = new MultiLinedEditor();
+    
+    /** The maximum alpha value according to {@link Color#getAlpha()}. */
+    private static final int MAX_ALPHA = 255;
 
     /**
      * Creates a vertex view for a given node, to be displayed on a given graph.
@@ -87,8 +90,6 @@ public class JVertexView extends VertexView {
     public JVertexView(JVertex jNode, JGraph jGraph) {
         super(jNode);
         this.jGraph = jGraph;
-//        AttributeMap attributes = jModel.createJVertexAttr(jNode);
-//        jNode.getAttributes().applyMap(attributes);
 		refresh(jGraph.getModel(), jGraph.getGraphLayoutCache(), false);
         jGraph.updateAutoSize(this);
     }
@@ -117,6 +118,12 @@ public class JVertexView extends VertexView {
         return editor;
     }
     
+	/** 
+	 * Retrieves the HTML text for the vertex,
+	 * and adapts the text colour to the line colour if the line colour is not
+	 * black.
+	 * @see JVertex#getHtmlText()
+	 */
 	public String getHtmlText() {
 		String result = getCell().getHtmlText();
 		if (result.length() > 0) {
@@ -137,13 +144,25 @@ public class JVertexView extends VertexView {
 		int red = lineColor.getRed();
 		int blue = lineColor.getBlue();
 		int green = lineColor.getGreen();
+		int alpha = lineColor.getAlpha();
 		result.append("<span style=\"color: rgb(");
 		result.append(red);
 		result.append(",");
 		result.append(green);
 		result.append(",");
 		result.append(blue);
-		result.append(");\">");
+		result.append(");");
+		if (alpha != MAX_ALPHA) {
+			// the following is taken from the internet; it is to make
+			// sure that all html interpretations set the opacity correctly.
+			double alphaFraction = ((double) alpha) / MAX_ALPHA;
+			result.append("float:left;filter:alpha(opacity=");
+			result.append((int) (100 * alphaFraction));
+			result.append(");opacity:");
+			result.append(alphaFraction);
+			result.append(";");
+		}
+		result.append("\">");
 		result.append(innerText);
 		result.append("</span>");
 		return result.toString();
@@ -333,8 +352,8 @@ public class JVertexView extends VertexView {
         public Component getRendererComponent(org.jgraph.JGraph graph, CellView view, boolean sel,
                 boolean focus, boolean preview) {
         	assert view instanceof JVertexView : String.format("This renderer is only meant for %s", JVertexView.class);
-            JVertex jVertex = ((JVertexView) view).getCell();
-            setText(((JVertexView) view).getHtmlText(), ((JGraph) graph).getModel().isHidden(jVertex));
+//            JVertex jVertex = ((JVertexView) view).getCell();
+            setText(((JVertexView) view).getHtmlText());//((JGraph) graph).getModel().isGrayedOut(jVertex));
             this.graph = graph;
             this.selected = sel;
             this.preview = preview;
@@ -353,16 +372,13 @@ public class JVertexView extends VertexView {
         	paintSelectionBorder(g);
         }
 
-        public void setText(String text, boolean hidden) {
+        @Override
+        public void setText(String text) {
         	if (text.length() == 0) {
         		text = "&nbsp;&nbsp;&nbsp;";
         	}
         	String displayText = fontTag.on(text);
-            if (hidden) {
-                super.setText(hiddenTag.on(displayText));
-            } else {
-                super.setText(displayText);
-            }
+        	super.setText(displayText);
         }
         
         @Override

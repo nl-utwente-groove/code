@@ -46,39 +46,39 @@ public abstract class AbstractAspect implements Aspect {
      * @throws FormatException if <code>name</code> is an already existing aspect value name.
      * The actual aspect value instance is created by {@link #createValue(String)}.
      */
-    protected AspectValue addValue(String name) throws FormatException {
+    AspectValue addValue(String name) throws FormatException {
         AspectValue result = createValue(name); 
         addNodeValue(result);
         addEdgeValue(result);
         return result;
     }
-    
+
     /**
      * Adds an {@link AspectValue} to the node values of this aspect.
      * @param name the name of the new aspect value
      * @throws FormatException if <code>name</code> is an already existing aspect value name.
      * The actual aspect value instance is created by {@link #createValue(String)}.
      */
-    protected AspectValue addNodeValue(String name) throws FormatException {
+    AspectValue addNodeValue(String name) throws FormatException {
         AspectValue result = createValue(name); 
         addNodeValue(result);
         return result;
     }
-    
+
     /**
      * Adds an {@link AspectValue} to the edge values of this aspect.
      * @param name the name of the new aspect value
      * @throws FormatException if <code>name</code> is an already existing aspect value name.
      * The actual aspect value instance is created by {@link #createValue(String)}.
      */
-    protected AspectValue addEdgeValue(String name) throws FormatException {
+    AspectValue addEdgeValue(String name) throws FormatException {
         AspectValue result = createValue(name); 
         addEdgeValue(result);
         return result;
     }
     
     /** Adds a value to the set of allowed node aspect values. */
-    protected void addNodeValue(AspectValue value) {
+    void addNodeValue(AspectValue value) {
         if (!value.getAspect().equals(this)) {
             throw new IllegalArgumentException("Aspect value "+value.getName()+" does not belong to aspect "+this);
         }
@@ -87,7 +87,7 @@ public abstract class AbstractAspect implements Aspect {
     }
     
     /** Adds a value to the set of allowed edge aspect values. */
-    protected void addEdgeValue(AspectValue value) {
+    void addEdgeValue(AspectValue value) {
         if (!value.getAspect().equals(this)) {
             throw new IllegalArgumentException("Aspect value "+value.getName()+" does not belong to aspect "+this);
         }
@@ -252,7 +252,7 @@ public abstract class AbstractAspect implements Aspect {
      * Factory method for aspect values.
      * This implementation returns an {@link AspectValue}.
      * @param name the name of the new aspect value
-     * @return a n aspect value such that <code>result.getAspect().equals(this))</code>
+     * @return an aspect value such that <code>result.getAspect().equals(this))</code>
      * and <code>result.getName().equals(name)</code>
      * @throws FormatException if <code>name</code> is the name of an already existing aspect value
      */

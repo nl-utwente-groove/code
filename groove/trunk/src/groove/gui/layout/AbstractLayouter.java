@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractLayouter.java,v 1.2 2007-03-30 15:50:28 rensink Exp $
+ * $Id: AbstractLayouter.java,v 1.3 2007-04-12 16:14:52 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -42,7 +42,7 @@ import org.jgraph.graph.VertexView;
 /**
  * An abstract class for layout actions.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 abstract public class AbstractLayouter implements Layouter {
     /**
@@ -222,53 +222,57 @@ abstract public class AbstractLayouter implements Layouter {
         for (int i = 0; i < cellViews.length; i++) {
             CellView cellView = cellViews[i];
             JCell jCell = (JCell) cellView.getCell();
-            if (!jmodel.isHidden(jCell)) {
-            // Map viewAttr = cellView.getAttributes();
-            boolean immovable = !GraphConstants.isMoveable(jCell.getAttributes());
-            if (cellView instanceof JEdgeView) {
-                // all true points (i.e., that are not PortViews) are subject to layouting
-                List<Object> points = ((JEdgeView) cellView).getViewPoints();
-                // failed attempt to store edges beck so they will be layed out live
-                // GraphConstants.setPoints(cell.getAttributes(),points);
-                for (int p = 1; p < points.size(); p++) {
-                    Object point = points.get(p);
-                    if (point instanceof Point2D) {
-                        Layoutable layoutable = new PointLayoutable((Point2D) point);
-                        toLayoutableMap.put(point, layoutable);
-                        if (immovable) {
-                            immovableSet.add(layoutable);
-                        }
-                    }
-                }
-            } else {
-                assert cellView instanceof VertexView;
-                // insert the bounds of the cell as layoutable
-                // failed attempt to store edges beck so they will be layed out live
-                // GraphConstants.setBounds(cell.getAttributes(), cellBounds);
-                Layoutable layoutable = new VertexLayoutable((VertexView) cellView);
-                toLayoutableMap.put(jCell, layoutable);
-                if (immovable) {
-                    immovableSet.add(layoutable);
-                }
-            }
-            }
+            if (!jmodel.isGrayedOut(jCell)) {
+				boolean immovable = !GraphConstants.isMoveable(jCell.getAttributes());
+				if (cellView instanceof JEdgeView) {
+					// all true points (i.e., that are not PortViews) are
+					// subject to layouting
+					List<Object> points = ((JEdgeView) cellView).getViewPoints();
+					// failed attempt to store edges beck so they will be layed
+					// out live
+					// GraphConstants.setPoints(cell.getAttributes(),points);
+					for (int p = 1; p < points.size(); p++) {
+						Object point = points.get(p);
+						if (point instanceof Point2D) {
+							Layoutable layoutable = new PointLayoutable(
+									(Point2D) point);
+							toLayoutableMap.put(point, layoutable);
+							if (immovable) {
+								immovableSet.add(layoutable);
+							}
+						}
+					}
+				} else {
+					assert cellView instanceof VertexView : String.format("%s instance of %s", cellView, cellView.getClass());
+					// insert the bounds of the cell as layoutable
+					// failed attempt to store edges beck so they will be layed
+					// out live
+					// GraphConstants.setBounds(cell.getAttributes(),
+					// cellBounds);
+					Layoutable layoutable = new VertexLayoutable(
+							(VertexView) cellView);
+					toLayoutableMap.put(jCell, layoutable);
+					if (immovable) {
+						immovableSet.add(layoutable);
+					}
+				}
+			}
         }
-//        jgraphWasToolTipEnabled = jgraph.getToolTipEnabled();
         jgraph.setToolTipEnabled(false);
         reporter.stop();
     }
 
     /**
-     * Finalizes the layouting, by performing an edit on the model that records the node bounds and
-     * edge points.
-     */
+	 * Finalizes the layouting, by performing an edit on the model that records
+	 * the node bounds and edge points.
+	 */
     protected void finish() {
         reporter.start(FINISH);
         final Map<JCell,AttributeMap> change = new HashMap<JCell,AttributeMap>();
         CellView[] cellViews = jgraph.getGraphLayoutCache().getRoots();
         for (int i = 0; i < cellViews.length; i++) {
             JCell cell = (JCell) cellViews[i].getCell();
-            GraphConstants.setMoveable(cell.getAttributes(), true);
+            GraphConstants.setMoveable(cell.getAttributes(), jmodel.isMoveable(cell));
             AttributeMap modelAttr = new AttributeMap();
             if (cellViews[i] instanceof VertexView) {
                 // store the bounds back into the model

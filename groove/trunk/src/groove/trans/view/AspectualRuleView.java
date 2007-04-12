@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.4 2007-04-04 07:04:23 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.5 2007-04-12 16:14:55 rensink Exp $
  */
 
 package groove.trans.view;
@@ -77,7 +77,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -325,22 +325,24 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
         Morphism ruleMorph = createMorphism(lhs, rhs);
         // first add nodes to lhs, rhs, morphism and NAC graph
         for (AspectNode node: graph.nodeSet()) {
-        	Node nodeImage = computeNodeImage(node, graph);
-            graphToRuleMap.put(node, nodeImage);
-            if (RuleAspect.inLHS(node)) {
-            	left.addNode(nodeImage);
-                lhs.addNode(nodeImage);
-            }
-            if (RuleAspect.inRHS(node)) {
-            	rhs.addNode(nodeImage);
-            	toRight.put(node, nodeImage);
-                if (RuleAspect.inLHS(node)) {
-                    ruleMorph.putNode(nodeImage, nodeImage);
-                }
-            } else if (RuleAspect.inNAC(node)) {
-            	left.addNode(nodeImage);
-                nacNodeSet.add(nodeImage);
-            }
+        	if (RuleAspect.inRule(node)) {
+				Node nodeImage = computeNodeImage(node, graph);
+				graphToRuleMap.put(node, nodeImage);
+				if (RuleAspect.inLHS(node)) {
+					left.addNode(nodeImage);
+					lhs.addNode(nodeImage);
+				}
+				if (RuleAspect.inRHS(node)) {
+					rhs.addNode(nodeImage);
+					toRight.put(node, nodeImage);
+					if (RuleAspect.inLHS(node)) {
+						ruleMorph.putNode(nodeImage, nodeImage);
+					}
+				} else if (RuleAspect.inNAC(node)) {
+					left.addNode(nodeImage);
+					nacNodeSet.add(nodeImage);
+				}
+			}
         }
         // add merger edges
         for (AspectEdge edge: graph.edgeSet()) {
@@ -356,30 +358,34 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
         // now add edges to lhs, rhs and morphism
         Set<GraphCondition> embargoes = new HashSet<GraphCondition>();
         for (AspectEdge edge: graph.edgeSet()) {
-            Edge edgeImage = computeEdgeImage(edge, graph, graphToRuleMap);
-        	boolean isEmbargo = false;
-            if (RuleAspect.inLHS(edge)) {
-                NAC embargo = computeEmbargoFromNegation(lhs, edgeImage);
-                isEmbargo = embargo != null;
-                if (isEmbargo) {
-                	embargoes.add(embargo);
-                } else {
-                	left.addEdge(edgeImage);
-                	lhs.addEdge(edgeImage);
-                }
-            }
-            if (!isEmbargo && RuleAspect.inRHS(edge) && ! (RuleAspect.isCreator(edge) && RegExprLabel.isEmpty(edge.label()))) {
-            	// use the toRight map because we may have merged nodes
-            	Edge rhsEdgeImage = computeEdgeImage(edge, graph, toRight);
-            	rhs.addEdge(rhsEdgeImage);
-            	if (RuleAspect.inLHS(edge)) {
-            		ruleMorph.putEdge(edgeImage, rhsEdgeImage);
-                }
-            }
-            if (RuleAspect.inNAC(edge)) {
-            	left.addEdge(edgeImage);
-                nacEdgeSet.add(edgeImage);
-            }
+        	if (RuleAspect.inRule(edge)) {
+				Edge edgeImage = computeEdgeImage(edge, graph, graphToRuleMap);
+				boolean isEmbargo = false;
+				if (RuleAspect.inLHS(edge)) {
+					NAC embargo = computeEmbargoFromNegation(lhs, edgeImage);
+					isEmbargo = embargo != null;
+					if (isEmbargo) {
+						embargoes.add(embargo);
+					} else {
+						left.addEdge(edgeImage);
+						lhs.addEdge(edgeImage);
+					}
+				}
+				if (!isEmbargo
+						&& RuleAspect.inRHS(edge)
+						&& !(RuleAspect.isCreator(edge) && RegExprLabel.isEmpty(edge.label()))) {
+					// use the toRight map because we may have merged nodes
+					Edge rhsEdgeImage = computeEdgeImage(edge, graph, toRight);
+					rhs.addEdge(rhsEdgeImage);
+					if (RuleAspect.inLHS(edge)) {
+						ruleMorph.putEdge(edgeImage, rhsEdgeImage);
+					}
+				}
+				if (RuleAspect.inNAC(edge)) {
+					left.addEdge(edgeImage);
+					nacEdgeSet.add(edgeImage);
+				}
+			}
         }
         // the resulting rule
         Rule result = createRule(ruleMorph, name, priority);
@@ -433,7 +439,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     	for (int i = 0; i < ends.length; i++) {
     		Node endImage = elementMap.get(edge.end(i));
     		assert endImage != null : String.format("Cannot compute image of %s: node %s does not have image in %s", edge, edge.end(i), elementMap);
-    			ends[i] = endImage;
+    		ends[i] = endImage;
     	}
     	if (edge.getValue(AttributeAspect.getInstance()) == null) {
     		return createEdge(ends, edge.label());

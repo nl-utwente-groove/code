@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.7 2007-04-04 07:04:27 rensink Exp $
+ * $Id: Simulator.java,v 1.8 2007-04-12 16:14:52 rensink Exp $
  */
 package groove.gui;
 
@@ -111,7 +111,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class Simulator {
     /**
@@ -1557,10 +1557,11 @@ public class Simulator {
         // options menu
         JMenu optionsMenu = new JMenu(OPTIONS_MENU_NAME);
         menuBar.add(optionsMenu);
-        optionsMenu.add(options.getItem(SHOW_NODE_IDS_OPTION));
-        optionsMenu.add(options.getItem(SHOW_ANCHORS_OPTION));
-    	optionsMenu.add(options.getItem(SHOW_ASPECTS_OPTION));
-    	optionsMenu.add(options.getItem(SHOW_STATE_IDS_OPTION));
+        optionsMenu.add(getOptions().getItem(SHOW_NODE_IDS_OPTION));
+        optionsMenu.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
+    	optionsMenu.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
+    	optionsMenu.add(getOptions().getItem(SHOW_REMARKS_OPTION));
+    	optionsMenu.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
         return menuBar;
     }
 
@@ -1722,6 +1723,8 @@ public class Simulator {
     	// lazily creates the options 
     	if (options == null) {
     		options = new Options();
+    		options.getItem(SHOW_REMARKS_OPTION).setState(true);
+            options.getItem(SHOW_STATE_IDS_OPTION).setState(true);
     	}
     	return options;
     }

@@ -12,13 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RulePanel.java,v 1.4 2007-03-30 15:50:35 rensink Exp $
+ * $Id: RulePanel.java,v 1.5 2007-04-12 16:14:52 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_REMARKS_OPTION;
 
 import groove.gui.jgraph.*;
 import groove.lts.GTS;
@@ -38,9 +39,9 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
-public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationListener {
+public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
     protected static final String INITIAL_FRAME_NAME = "No rule selected";
 
@@ -48,11 +49,13 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
      * Constructs a new rule frame on the basis of a given graph.
      */
     public RulePanel(Simulator simulator) {
-        super(new RuleJGraph(simulator), true, simulator.getOptions());
+        super(new AspectJGraph(simulator), true, simulator.getOptions());
         this.simulator = simulator;
+        setEnabled(false);
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_ASPECTS_OPTION);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
+        addRefreshListener(SHOW_REMARKS_OPTION);
         simulator.addSimulationListener(this);
         jGraph.setToolTipEnabled(true);
     }
@@ -128,7 +131,7 @@ public class RulePanel extends JGraphPanel<RuleJGraph> implements SimulationList
     @Override
     protected String getStatusText() {
     	String text;
-    	if (isEnabled()) {
+    	if (getJGraph().isEnabled()) {
         	Rule rule = simulator.getCurrentRule();
     		text = "Rule " + rule.getName().name();
     		if (getOptionsItem(SHOW_ANCHORS_OPTION).getState()) {
