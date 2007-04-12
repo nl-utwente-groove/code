@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.5 2007-04-04 07:04:20 rensink Exp $
+ * $Id: SPOEvent.java,v 1.6 2007-04-12 13:45:44 rensink Exp $
  */
 package groove.trans;
 
@@ -26,6 +26,7 @@ import java.util.Set;
 
 import groove.graph.Edge;
 import groove.graph.Element;
+import groove.graph.GraphShape;
 import groove.graph.NodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.MergeMap;
@@ -45,7 +46,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-04-04 07:04:20 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-12 13:45:44 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -689,7 +690,7 @@ public class SPOEvent implements RuleEvent {
 	 */
 	private int hashCode;
 	/**
-	 * The list of nodes created by   {@link #createNode()}  .
+	 * The list of nodes created by {@link SPOApplication#createNode()}  .
 	 */
 	private final List<List<Node>> freshNodeList;
 	

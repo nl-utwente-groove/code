@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeSetLabelEdgeMapGraph.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
+ * $Id: NodeSetLabelEdgeMapGraph.java,v 1.3 2007-04-12 13:45:34 rensink Exp $
  */
 package groove.graph;
 
@@ -31,7 +31,7 @@ import java.util.Set;
  * Graph implementation based on a set of nodes and a map from labels to edges.
  * implementations
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NodeSetLabelEdgeMapGraph extends AbstractGraph {
     /**
@@ -87,7 +87,7 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph {
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = nodeSet.add(node);
         if (added) {
-            assert nodeCount() == new NodeSet(nodeSet()).size() : String.format("Overlapping node number for %s in %s", node, nodeSet());
+            assert nodeCount() == new HashSet<Node>(nodeSet()).size() : String.format("Overlapping node number for %s in %s", node, nodeSet());
             fireAddNode(node);
         }
         reporter.stop();
@@ -218,6 +218,8 @@ public class NodeSetLabelEdgeMapGraph extends AbstractGraph {
         return Collections.unmodifiableSet(nodeSet);
     }
 
+    /** Map from labels to sets of edges with that label. */
     protected final Map<Label,Set<Edge>> labelEdgeMap = new HashMap<Label,Set<Edge>>();
+    /** Set of nodes of this graph. */
     protected final Set<Node> nodeSet = new HashSet<Node>();
 }

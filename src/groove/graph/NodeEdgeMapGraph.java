@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NodeEdgeMapGraph.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
+ * $Id: NodeEdgeMapGraph.java,v 1.3 2007-04-12 13:45:34 rensink Exp $
  */
 package groove.graph;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * Implementation of {@link groove.graph.Graph} based on node-to-edge-set maps for
  * all node ends. This facilitates node removal, but is expensive in terms of space.
  * Arbitrary edge arities are supported.
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:29 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-12 13:45:34 $
  */
 public class NodeEdgeMapGraph extends AbstractGraph {
 	/**
@@ -125,7 +125,7 @@ public class NodeEdgeMapGraph extends AbstractGraph {
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = !containsElement(node);
         if (added) {
-            assert nodeCount() == new NodeSet(nodeSet()).size() : String.format("Overlapping node number for %s in %s", node, nodeSet());
+            assert nodeCount() == new HashSet<Node>(nodeSet()).size() : String.format("Overlapping node number for %s in %s", node, nodeSet());
             sourceEdgeMap.put(node, new HashSet<Edge>());
             fireAddNode(node);
         }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaGraph.java,v 1.3 2007-03-27 14:18:32 rensink Exp $
+ * $Id: DeltaGraph.java,v 1.4 2007-04-12 13:45:34 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * the changes. This implementation caches the element set so as to avoid too frequent
  * reconstruction.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DeltaGraph extends AbstractGraph implements DeltaApplier {
     /**
@@ -64,7 +64,7 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = getCachedNodeSet().add(node);
         if (added) {
-            assert nodeCount() == new NodeSet(nodeSet()).size() : String.format("Overlapping node number for %s in %s", node, nodeSet());
+            assert nodeCount() == new HashSet<Node>(nodeSet()).size() : String.format("Overlapping node number for %s in %s", node, nodeSet());
             fireAddNode(node);
         }
         reporter.stop();

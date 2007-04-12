@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraph.java,v 1.2 2007-03-28 15:12:29 rensink Exp $
+ * $Id: DefaultGraph.java,v 1.3 2007-04-12 13:45:34 rensink Exp $
  */
 package groove.graph;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * Implementation of Graph based on a set of nodes and a 
  * mapping from nodes to sets of outgoing edges.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:29 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-12 13:45:34 $
  */
 public class DefaultGraph extends AbstractGraph {
     /**
@@ -153,7 +153,7 @@ public class DefaultGraph extends AbstractGraph {
         reporter.start(ADD_NODE);
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = !containsElement(node);
-        assert added == ! new NodeSet(nodeSet()).contains(node) : String.format("Overlapping node number for %s in %s", node, nodeSet());
+        assert added == ! new HashSet<Node>(nodeSet()).contains(node) : String.format("Overlapping node number for %s in %s", node, nodeSet());
         if (added) {
             edgeMap.put(node, new HashSet<Edge>());
             fireAddNode(node);
