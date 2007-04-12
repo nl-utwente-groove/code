@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeSetEdgeSetGraph.java,v 1.2 2007-03-20 18:22:03 rensink Exp $
+ * $Id: NodeSetEdgeSetGraph.java,v 1.3 2007-04-12 13:45:34 rensink Exp $
  */
 package groove.graph;
 
@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * Graph implementation based on distinct sets of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NodeSetEdgeSetGraph
     extends AbstractGraph
@@ -75,7 +75,7 @@ public class NodeSetEdgeSetGraph
         reporter.start(ADD_NODE);
 		assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
 		result = graphNodeSet.add(node);
-		assert nodeCount() == new NodeSet(nodeSet()).size() : String.format("Overlapping node number for %s in %s",
+		assert nodeCount() == new HashSet<Node>(nodeSet()).size() : String.format("Overlapping node number for %s in %s",
 				node,
 				nodeSet());
 		reporter.stop();
@@ -279,6 +279,7 @@ public class NodeSetEdgeSetGraph
             E latest;
         }
         
+        /** Constructs an empty set. */
         public NotifySet() {
         	// we need an explicit empty constructor
         }
@@ -361,8 +362,8 @@ public class NodeSetEdgeSetGraph
     }
     
     /**
-     * Class that delegates {@link #fireAdd(Element)} to {@link NodeSetEdgeSetGraph#fireAddNode(Node)}
-     * and {@link #fireRemove(Element)} to {@link NodeSetEdgeSetGraph#fireRemoveNode(Node)}
+     * Class that delegates {@link #fireAdd(Node)} to {@link NodeSetEdgeSetGraph#fireAddNode(Node)}
+     * and {@link #fireRemove(Node)} to {@link NodeSetEdgeSetGraph#fireRemoveNode(Node)}
      */
     private class NodeNotifySet extends NotifySet<Node> {
 		/**
@@ -395,8 +396,8 @@ public class NodeSetEdgeSetGraph
     }
     
     /**
-     * Class that delegates {@link #fireAdd(Element)} to {@link NodeSetEdgeSetGraph#fireAddNode(Node)}
-     * and {@link #fireRemove(Element)} to {@link NodeSetEdgeSetGraph#fireRemoveNode(Node)}
+     * Class that delegates {@link #fireAdd(Edge)} to {@link NodeSetEdgeSetGraph#fireAddNode(Node)}
+     * and {@link #fireRemove(Edge)} to {@link NodeSetEdgeSetGraph#fireRemoveNode(Node)}
      */
     private class EdgeNotifySet extends NotifySet<Edge> {
 		/**

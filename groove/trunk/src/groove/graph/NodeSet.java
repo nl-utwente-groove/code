@@ -28,12 +28,14 @@ import java.util.Collection;
  * @version $Revision $
  */
 public class NodeSet extends TreeHashSet3<Node> {
+    /** Constructs an empty set. */
 	public NodeSet() {
 		super(DefaultNode.getNodeCount(), HASHCODE_EQUATOR);
 		//            super(NODE_SET_RESOLUTION, DefaultNode.getNodeCount(), HASHCODE_EQUATOR);
 		//            super(NODE_SET_RESOLUTION, HASHCODE_EQUATOR);
 	}
 
+    /** Constructs a copy of an existing set. */
 	public NodeSet(Collection<? extends Node> other) {
 		super(other, HASHCODE_EQUATOR);
 		//            super(other, NODE_SET_RESOLUTION, HASHCODE_EQUATOR);
@@ -41,6 +43,10 @@ public class NodeSet extends TreeHashSet3<Node> {
 
 	@Override
 	protected int getCode(Object key) {
-		return ((DefaultNode) key).getNumber();
+        if (key instanceof DefaultNode) {
+            return ((DefaultNode) key).getNumber();
+        } else {
+            return key.hashCode();
+        }
 	}
 }

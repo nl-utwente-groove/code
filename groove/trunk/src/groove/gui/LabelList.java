@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.4 2007-03-30 15:50:35 rensink Exp $
+ * $Id: LabelList.java,v 1.5 2007-04-12 13:45:45 rensink Exp $
  */
 package groove.gui;
 
@@ -40,12 +40,11 @@ import javax.swing.event.ListSelectionListener;
 
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
-import org.jgraph.graph.GraphConstants;
 
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /** Pseudo-label maintained in this list for cells with an empty label set. */
@@ -213,8 +212,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 		if (changeMap != null) {
 			for (Object changeEntry : changeMap.entrySet()) {
 				Object obj = ((Map.Entry) changeEntry).getKey();
-				Map attributes = (Map) ((Map.Entry) changeEntry).getValue();
-				if (obj instanceof JCell && attributes.containsKey(GraphConstants.VALUE)) {
+				if (obj instanceof JCell) { //&& attributes.containsKey(GraphConstants.VALUE)) {
 					changed |= modifyLabels((JCell) obj);
 				}
 			}

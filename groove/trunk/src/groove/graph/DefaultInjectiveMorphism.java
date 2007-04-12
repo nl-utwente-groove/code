@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultInjectiveMorphism.java,v 1.4 2007-04-04 07:04:18 rensink Exp $
+ * $Id: DefaultInjectiveMorphism.java,v 1.5 2007-04-12 13:45:34 rensink Exp $
  */
 package groove.graph;
 
@@ -33,7 +33,7 @@ import java.util.Map;
  * Implementation of an injective morphism between <tt>Graph</tt>s,
  * as an extension of <tt>DefaultMorphism</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @deprecated the {@link InjectiveMorphism} hierarchy is being abandoned
  */
 @Deprecated
@@ -398,7 +398,7 @@ public class DefaultInjectiveMorphism extends DefaultMorphism implements Injecti
 //    }
 
     /**
-     * This implementation returns an {@link IsoSimulation}.
+     * This implementation returns an {@link IsoMatcher}.
      */
     protected Matcher createIsoMatcher() {
         return new IsoMatcher(this);

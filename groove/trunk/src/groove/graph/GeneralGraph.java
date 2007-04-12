@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GeneralGraph.java,v 1.2 2007-03-20 18:22:03 rensink Exp $
+ * $Id: GeneralGraph.java,v 1.3 2007-04-12 13:45:33 rensink Exp $
  */
 package groove.graph;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * This graph changes the storage structure of DefaultGraph,
  * in an attempt to improve performance.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @deprecated Use {@link NodeSetEdgeSetGraph} instead
  */
 @Deprecated
@@ -53,7 +53,9 @@ public class GeneralGraph extends AbstractGraph {
             return type.isInstance(obj);
         }
 
+        /** The type for which we have instantiated this (generic) set. */
         protected Class<E> type;
+        /** Internally stored set size, for efficiency. */
         protected int size = -1;
     }
 
@@ -135,7 +137,7 @@ public class GeneralGraph extends AbstractGraph {
         assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
         boolean added = elementSet.add(node);
         if (added) {
-            assert nodeCount() == new NodeSet(nodeSet()).size() : String.format("Overlapping node number for %s in %s", node, nodeSet());
+            assert nodeCount() == new HashSet<Node>(nodeSet()).size() : String.format("Overlapping node number for %s in %s", node, nodeSet());
             fireAddNode(node);
         }
         reporter.stop();
