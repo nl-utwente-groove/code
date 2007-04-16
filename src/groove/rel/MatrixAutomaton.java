@@ -1114,7 +1114,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                     targetAllVarSet.addAll(expr.allVarSet());
                     targetBoundVarSet.addAll(expr.boundVarSet());
                 }
-                if (allVarMap.containsKey(outEdge.opposite())) {
+                if (allVarMap.containsKey(target)) {
                     // the target is known; take the union of all vars and the intersection of the bound vars
                     allVarMap.get(target).addAll(targetAllVarSet);
                     boundVarMap.get(target).retainAll(targetAllVarSet);
@@ -1127,7 +1127,13 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             }
         }
         this.allVarSet = allVarMap.get(getEndNode());
-        this.boundVarSet = allVarMap.get(getEndNode());
+        if (allVarSet == null) {
+            allVarSet = Collections.emptySet();
+        }
+        this.boundVarSet = boundVarMap.get(getEndNode());
+        if (boundVarSet == null) {
+            boundVarSet = Collections.emptySet();
+        }
     }
     
     /**
