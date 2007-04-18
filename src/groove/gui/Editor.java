@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.10 2007-04-18 11:18:37 rensink Exp $
+ * $Id: Editor.java,v 1.11 2007-04-18 15:15:19 rensink Exp $
  */
 package groove.gui;
 
@@ -90,7 +90,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.10 $ $Date: 2007-04-18 11:18:37 $
+ * @version $Revision: 1.11 $ $Date: 2007-04-18 15:15:19 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -277,7 +277,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.10 $
+     * @version $Revision: 1.11 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -382,8 +382,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * some other frame.
      */
     public boolean isAuxiliary() {
-//        return auxiliary;
-        return false;
+        return auxiliary;
+//        return false;
     }
 
     /**
@@ -532,6 +532,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * Handler method to execute a {@link SaveGraphAction}.
      * Invokes a file chooser dialog, and calls {@link #doSaveGraph(File)} 
      * if a file is selected. 
+     * The return value is the save file, or <code>null</code> if nothing was saved.
      */
     protected File handleSaveGraph() {
         // set filter to the one that accepts the current file (if any)
@@ -553,6 +554,9 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
                         && getConfirmPreviewCheckBox().isSelected()) {
                     if (handlePreview()) {
                         doSaveGraph(toFile);
+                    } else {
+                        // the graph was after all not saved
+                        toFile = null;
                     }
                 } else {
                     doSaveGraph(toFile);
@@ -1235,12 +1239,18 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     private boolean showAbandonDialog() {
         if (isCurrentGraphModified()) {
             int res = JOptionPane.showConfirmDialog(jGraphPanel,
-                "Abandon changes in current graph?",
+                "Save changes in current graph?",
                 null,
-                JOptionPane.OK_CANCEL_OPTION);
-            return res == JOptionPane.OK_OPTION;
-        } else
+                JOptionPane.YES_NO_CANCEL_OPTION);
+            if (res == JOptionPane.YES_OPTION) {
+                File toFile = handleSaveGraph();
+                return toFile != null;
+            } else {
+                return res == JOptionPane.NO_OPTION;
+            }
+        } else {
             return true;
+        }
     }
 
 	/**
