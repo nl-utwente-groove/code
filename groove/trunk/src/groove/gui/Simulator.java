@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.11 2007-04-18 16:39:35 rensink Exp $
+ * $Id: Simulator.java,v 1.12 2007-04-18 16:42:04 rensink Exp $
  */
 package groove.gui;
 
@@ -112,7 +112,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class Simulator {
     /**
@@ -1498,6 +1498,7 @@ public class Simulator {
      */
     private JTabbedPane getGraphViewsPanel() {
         if (graphViewsPanel == null) {
+            graphViewsPanel = new JTabbedPane();
             graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON, getStatePanel(), "");
             graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(), "");
             graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, getLtsPanel(), "");
@@ -1953,28 +1954,28 @@ public class Simulator {
     /**
      * This application's main frame.
      */
-    protected JFrame frame;
+    private JFrame frame;
 
     /** Production rule directory. */
-    protected JTree ruleJTree;
+    private JTree ruleJTree;
 
     /** Production rule display panel. */
-    protected RulePanel rulePanel;
+    private RulePanel rulePanel;
 
     /** State display panel. */
-    protected StatePanel statePanel;
+    private StatePanel statePanel;
 
     /** LTS display panel. */
-    protected LTSPanel ltsPanel;
+    private LTSPanel ltsPanel;
 
     /** Undo history. */
-    protected UndoHistory undoHistory;
+    private UndoHistory undoHistory;
 
     /** background for displays. */
-    protected final JTabbedPane graphViewsPanel = new JTabbedPane();
+    private JTabbedPane graphViewsPanel;
 
     /** panel for the rule directory. */
-    protected JScrollPane ruleJTreePanel;
+    private JScrollPane ruleJTreePanel;
 
     // --------------------------- Action bjects ---------------------------------
     /** The state save action permanently associated with this simulator. */
