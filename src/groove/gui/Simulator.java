@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.10 2007-04-18 11:18:37 rensink Exp $
+ * $Id: Simulator.java,v 1.11 2007-04-18 16:39:35 rensink Exp $
  */
 package groove.gui;
 
@@ -112,7 +112,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class Simulator {
     /**
@@ -274,7 +274,7 @@ public class Simulator {
 	     * @param strategy the exploration strategy of this thread
 	     */
 	    GenerateThread(ExploreStrategy strategy) {
-	    	super(ltsPanel, "Exploring state space");
+	    	super(getLtsPanel(), "Exploring state space");
 	        this.strategy = strategy;
 	        this.progressListener = createProgressListener();
 	    }
@@ -462,9 +462,9 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent evt) {
 //            stateFileChooser.setSelectedFile(currentStartStateFile);
-            int result = getStateFileChooser().showOpenDialog(frame);
+            int result = getStateFileChooser().showOpenDialog(getFrame());
             // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(getValue(NAME).toString())) {
                 doLoadStartState(getStateFileChooser().getSelectedFile());
             }
         }
@@ -482,9 +482,9 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            int result = getGrammarFileChooser().showOpenDialog(frame);
+            int result = getGrammarFileChooser().showOpenDialog(getFrame());
             // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(getValue(NAME).toString())) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
                 FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
                 doLoadGrammar(grammarLoaderMap.get(filterUsed), selectedFile, null);
@@ -504,7 +504,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            if (confirmAbandon()) {
+            if (confirmAbandon(getValue(NAME).toString())) {
                 doRefreshGrammar();
             }
         }
@@ -523,7 +523,7 @@ public class Simulator {
             // initialize current directory if necessary
             getGrammarFileChooser().rescanCurrentDirectory();
 
-            int result = getGrammarFileChooser().showOpenDialog(frame);
+            int result = getGrammarFileChooser().showOpenDialog(getFrame());
             // now load, if so required
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
@@ -569,7 +569,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            new AboutBox(Simulator.this.frame);
+            new AboutBox(getFrame());
         }
     }
 
@@ -625,9 +625,9 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (getGraphPanel() == getLtsPanel()) {
-                handleSaveGraph(false, ltsPanel.getJModel(), LTS_FILE_NAME);
+                handleSaveGraph(false, getLtsPanel().getJModel(), LTS_FILE_NAME);
             } else {
-                handleSaveGraph(true, statePanel.getJModel(), currentState.toString());
+                handleSaveGraph(true, getStatePanel().getJModel(), currentState.toString());
             }
         }
 
@@ -675,7 +675,7 @@ public class Simulator {
                 jGraph = getRulePanel().getJGraph();
             }
             getExportChooser().setSelectedFile(new File(fileName));
-            File selectedFile = ExtensionFilter.showSaveDialog(getExportChooser(), frame);
+            File selectedFile = ExtensionFilter.showSaveDialog(getExportChooser(), getFrame());
             // now save, if so required
             if (selectedFile != null) {
                 doExportGraph(jGraph, selectedFile);
@@ -707,10 +707,9 @@ public class Simulator {
      */
     public Simulator() {
         initGrammarLoaders();
-        initContentPane();
-        initActions();
+        getFrame();
+//        setActionsEnabled();
         // set the menu bar
-        frame.setJMenuBar(createMenuBar());
     }
 
     /**
@@ -758,8 +757,8 @@ public class Simulator {
 
     /** Starts the simulator, by calling {@link JFrame#pack()} and {@link JFrame#setVisible(boolean)}. */
     public void start() {
-        frame.pack();
-        frame.setVisible(true);
+        getFrame().pack();
+        getFrame().setVisible(true);
     }
 
     /**
@@ -768,6 +767,11 @@ public class Simulator {
      * @see #setGraphPanel(JGraphPanel)
      */
     public StatePanel getStatePanel() {
+        if (statePanel == null) {
+            // panel for state display
+            statePanel = new StatePanel(this);
+            statePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
+        }
         return statePanel;
     }
 
@@ -777,6 +781,12 @@ public class Simulator {
      * @see #setGraphPanel(JGraphPanel)
      */
     public RulePanel getRulePanel() {
+        if (rulePanel == null) {
+            // panel for production display
+            rulePanel = new RulePanel(this);
+            // res.setSize(preferredFrameDimension);
+            rulePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
+        }
         return rulePanel;
     }
 
@@ -786,6 +796,10 @@ public class Simulator {
      * @see #setGraphPanel(JGraphPanel)
      */
     public LTSPanel getLtsPanel() {
+        if (ltsPanel == null) {
+            ltsPanel = new LTSPanel(this);
+            ltsPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
+        }
         return ltsPanel;
     }
 
@@ -793,6 +807,9 @@ public class Simulator {
      * Returns the tree of rules and matches displayed in the simulator.
      */
     public JTree getRuleTree() {
+        if (ruleJTree == null) {
+            ruleJTree = new RuleJTree(this);
+        }
         return ruleJTree;
     }
 
@@ -841,6 +858,7 @@ public class Simulator {
     public Action getApplyTransitionAction() {
     	if (applyTransitionAction == null) {
     		applyTransitionAction = new ApplyTransitionAction();
+            addAccelerator(applyTransitionAction);
     	}
         return applyTransitionAction;
     }
@@ -880,6 +898,7 @@ public class Simulator {
     	// lazily create the action
     	if (loadGrammarAction == null) {
     		loadGrammarAction = new LoadGrammarAction();
+            addAccelerator(loadGrammarAction);
     	}
         return loadGrammarAction;
     }
@@ -889,6 +908,7 @@ public class Simulator {
     	// lazily create the action
     	if (refreshGrammarAction == null) {
     		refreshGrammarAction = new RefreshGrammarAction();
+            addAccelerator(refreshGrammarAction);
     	}
         return refreshGrammarAction;
     }
@@ -931,12 +951,20 @@ public class Simulator {
 
     /** Returns the redo action permanently associated with this simulator. */
     public Action getRedoAction() {
-    	return getUndoHistory().getRedoAction();
+        if (redoAction == null) {
+            redoAction = getUndoHistory().getRedoAction();
+            addAccelerator(redoAction);
+        }
+        return redoAction;
     }
 
     /** Returns the undo action permanently associated with this simulator. */
     public Action getUndoAction() {
-    	return getUndoHistory().getUndoAction();
+        if (undoAction == null) {
+            undoAction = getUndoHistory().getUndoAction();
+            addAccelerator(undoAction);
+        }
+        return undoAction;
     }
 
     /**
@@ -947,7 +975,7 @@ public class Simulator {
      * @see #setGraphPanel(JGraphPanel)
      */
     public JGraphPanel<?> getGraphPanel() {
-        return (JGraphPanel) graphViewsPanel.getSelectedComponent();
+        return (JGraphPanel) getGraphViewsPanel().getSelectedComponent();
     }
     
     /** Returns (after lazily creating) the undo history for this simulator. */
@@ -968,7 +996,7 @@ public class Simulator {
      * @see #getGraphPanel()
      */
     public void setGraphPanel(JGraphPanel<?> component) {
-        graphViewsPanel.setSelectedComponent(component);
+        getGraphViewsPanel().setSelectedComponent(component);
     }
 
     /**
@@ -983,7 +1011,7 @@ public class Simulator {
     public File handleSaveGraph(boolean state, JModel jModel, String proposedName) {
         getStateFileChooser().setFileFilter(state ? stateFilter : gxlFilter);
         getStateFileChooser().setSelectedFile(new File(proposedName));
-        File selectedFile = ExtensionFilter.showSaveDialog(getStateFileChooser(), frame);
+        File selectedFile = ExtensionFilter.showSaveDialog(getStateFileChooser(), getFrame());
         // now save, if so required
         if (selectedFile != null) {
             doSaveGraph(jModel, selectedFile);
@@ -999,8 +1027,8 @@ public class Simulator {
     public void handleEditState() {
         Editor editor = new Editor(true);
         String stateName = currentState.toString();
-        editor.setModel(stateName, new GraphJModel(statePanel.getJModel().toPlainGraph(), getOptions()));
-        editorDialog = Editor.createEditorDialog(frame, true, editor);
+        editor.setModel(stateName, new GraphJModel(getStatePanel().getJModel().toPlainGraph(), getOptions()));
+        JDialog editorDialog = Editor.createEditorDialog(getFrame(), true, editor);
         editor.getRulePreviewAction().setEnabled(false);
         editorDialog.setVisible(true);
         // now the editor is done; see if we have do make any updates
@@ -1025,7 +1053,7 @@ public class Simulator {
         String ruleName = currentRule.getName().toString();
         AspectJModel ruleJModel = getRulePanel().getJGraph().getModel();
         editor.setModel(ruleName, new GraphJModel(ruleJModel.toPlainGraph(), getOptions()));
-        editorDialog = Editor.createEditorDialog(frame, true, editor);
+        JDialog editorDialog = Editor.createEditorDialog(getFrame(), true, editor);
         editorDialog.setVisible(true);
         // now the editor is done; see if we have do make any updates
         if (editor.isCurrentGraphModified()) {
@@ -1064,7 +1092,7 @@ public class Simulator {
                 g2d.close();
             }
         } catch (IOException exc) {
-            new ErrorDialog(frame, "Error while saving to " + file, exc);
+            new ErrorDialog(getFrame(), "Error while saving to " + file, exc);
         }
     }
 
@@ -1154,7 +1182,7 @@ public class Simulator {
      * Ends the program.
      */
     public void doQuit() {
-        if (confirmAbandon()) {
+        if (confirmAbandon(QUIT_ACTION_NAME)) {
             if (REPORT) {
                 try {
                     BufferedReader systemIn = new BufferedReader(new InputStreamReader(System.in));
@@ -1169,7 +1197,7 @@ public class Simulator {
                 }
                 groove.util.Reporter.report(new PrintWriter(System.out));
             }
-            frame.dispose();
+            getFrame().dispose();
         }
     }
 
@@ -1257,8 +1285,8 @@ public class Simulator {
         currentTransition = null;
         notifySetGrammar(gts);
         setActionsEnabled();
-        if (frame.getContentPane() instanceof JSplitPane) {
-            ((JSplitPane) frame.getContentPane()).resetToPreferredSizes();
+        if (getFrame().getContentPane() instanceof JSplitPane) {
+            ((JSplitPane) getFrame().getContentPane()).resetToPreferredSizes();
         }
     }
 
@@ -1414,86 +1442,93 @@ public class Simulator {
 	}
 
     /**
-     * Sets up the content pane of the GUI.
+     * Lazily creates and returns the frame of this simulator.
      */
-    protected void initContentPane() {
-        // production rule directory
-        ruleJTree = new RuleJTree(this);
-        // make sure the preferred width is not smaller than the minimum width
-        ruleJTreePanel = new JScrollPane(ruleJTree) {
-    		@Override
-            public Dimension getPreferredSize() {
-                Dimension superSize = super.getPreferredSize();
-                return new Dimension((int) Math.max(superSize.getWidth(), RULE_TREE_MINIMUM_WIDTH),
-                        (int) superSize.getHeight());
-            }
-        };
-        ruleJTreePanel.setMinimumSize(new Dimension(RULE_TREE_MINIMUM_WIDTH, 0));
+    protected JFrame getFrame() {
+        if (frame == null) {
+            // set up the content pane of the frame as a splt pane,
+            // with the rule directory to the left and a desktop pane to the right
+            JSplitPane contentPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+            contentPane.setLeftComponent(getRuleJTreePanel());
+            contentPane.setRightComponent(getGraphViewsPanel());
 
-        // desktop for displaying internal frames
-        graphViewsPanel.setVisible(true);
-        // panel for state display
-        statePanel = new StatePanel(this);
-        statePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
-        graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON, statePanel, "");
-        // panel for production display
-        rulePanel = new RulePanel(this);
-        // res.setSize(preferredFrameDimension);
-        rulePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
-        graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, rulePanel, "");
-        // panel for lts display
-        ltsPanel = new LTSPanel(this);
-        ltsPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
-        graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, ltsPanel, "");
-        // add this simulator as a listener so that the actions are updated regularly
-        graphViewsPanel.addChangeListener(new ChangeListener() {
-            public void stateChanged(ChangeEvent evt) {
-                setActionsEnabled();
-            }
-        });
+            // set up the frame
+            frame = new JFrame(APPLICATION_NAME);
+            // small icon doesn't look nice due to shadow
+            frame.setIconImage(Groove.GROOVE_ICON_16x16.getImage());
+            // frame.setSize(500,300);
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setContentPane(contentPane);
+            frame.setJMenuBar(createMenuBar());
+        }
+        return frame;
+    }
 
-        // set up the content pane of the frame as a splt pane,
-        // with the rule directory to the left and a desktop pane to the right
-        JSplitPane contentPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-        contentPane.setLeftComponent(ruleJTreePanel);
-        contentPane.setRightComponent(graphViewsPanel);
+    //
+//    /**
+//     * Initializes the simulator actions.
+//     * @require {@link #initGrammarLoaders()}should be invoked first
+//     */
+//    protected void initActions() {
+//        addAccelerator(getLoadGrammarAction());
+//        addAccelerator(getRefreshGrammarAction());
+////
+////        getLoadStartStateAction().setEnabled(false);
+////        getSaveGraphAction().setEnabled(false);
+////        getExportGraphAction().setEnabled(false);
+//
+//
+//        // We initialize the UndoHistory now, whereas this should
+//        // actually be part of initComponents. However, this causes
+//        // dependency problems, since the undo and redo actions are
+//        // created in the UndoHistory; for the other components they
+//        // are created in the Simulator instead.
+//
+//        // undo action
+//        addAccelerator(getUndoAction());
+//        // redo action
+//        addAccelerator(getRedoAction());
+//        // derivation actions
+//        addAccelerator(getApplyTransitionAction());
+//        
+//    }
 
-        // set up the frame
-        frame = new JFrame(APPLICATION_NAME);
-        // small icon doesn't look nice due to shadow
-        frame.setIconImage(Groove.GROOVE_ICON_16x16.getImage());
-        // frame.setSize(500,300);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        frame.setContentPane(contentPane);
+    /**
+     * Lazily creates and returns the panel with the state, rule and LTS views.
+     */
+    private JTabbedPane getGraphViewsPanel() {
+        if (graphViewsPanel == null) {
+            graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON, getStatePanel(), "");
+            graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(), "");
+            graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, getLtsPanel(), "");
+            // add this simulator as a listener so that the actions are updated regularly
+            graphViewsPanel.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent evt) {
+                    setActionsEnabled();
+                }
+            });
+            graphViewsPanel.setVisible(true);
+        }
+        return graphViewsPanel;
     }
 
     /**
-     * Initializes the simulator actions.
-     * @require {@link #initGrammarLoaders()}should be invoked first
+     * Lazily creates and returns the panel with the rule tree.
      */
-    protected void initActions() {
-        addAccelerator(getLoadGrammarAction());
-        addAccelerator(getRefreshGrammarAction());
-//
-//        getLoadStartStateAction().setEnabled(false);
-//        getSaveGraphAction().setEnabled(false);
-//        getExportGraphAction().setEnabled(false);
-
-
-        // We initialize the UndoHistory now, whereas this should
-        // actually be part of initComponents. However, this causes
-        // dependency problems, since the undo and redo actions are
-        // created in the UndoHistory; for the other components they
-        // are created in the Simulator instead.
-
-        // undo action
-        addAccelerator(getUndoAction());
-        // redo action
-        addAccelerator(getRedoAction());
-        // derivation actions
-        addAccelerator(getApplyTransitionAction());
-        
-        setActionsEnabled();
+    private JScrollPane getRuleJTreePanel() {
+        if (ruleJTreePanel == null) {
+            // make sure the preferred width is not smaller than the minimum width
+            ruleJTreePanel = new JScrollPane(getRuleTree()) {
+                @Override
+                public Dimension getPreferredSize() {
+                    Dimension superSize = super.getPreferredSize();
+                    return new Dimension((int) Math.max(superSize.getWidth(),
+                        RULE_TREE_MINIMUM_WIDTH), (int) superSize.getHeight());
+                }
+            };
+            ruleJTreePanel.setMinimumSize(new Dimension(RULE_TREE_MINIMUM_WIDTH, 0));
+        }
+        return ruleJTreePanel;
     }
 
     /**
@@ -1516,7 +1551,7 @@ public class Simulator {
      * @require <tt>frame.getContentPane()</tt> should be initialized
      */
     protected void addAccelerator(Action action) {
-        JComponent contentPane = (JComponent) frame.getContentPane();
+        JComponent contentPane = (JComponent) getFrame().getContentPane();
         ActionMap am = contentPane.getActionMap();
         am.put(action.getValue(Action.NAME), action);
         InputMap im = contentPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
@@ -1543,7 +1578,8 @@ public class Simulator {
 	private JMenu createFileMenu() {
 	    JMenu result = new JMenu(Options.FILE_MENU_NAME);
 	    result.add(new JMenuItem(getLoadGrammarAction()));
-	    result.add(new JMenuItem(getLoadStartStateAction()));
+        result.add(new JMenuItem(getLoadStartStateAction()));
+        result.add(new JMenuItem(getRefreshGrammarAction()));
 	    result.addSeparator();
 	    result.add(new JMenuItem(getSaveGraphAction()));
 	    result.add(new JMenuItem(getExportGraphAction()));
@@ -1724,7 +1760,7 @@ public class Simulator {
      * Sets the title of the frame to a given title.
      */
     protected void setTitle(String title) {
-        frame.setTitle(title);
+        getFrame().setTitle(title);
     }
 
     /** Callback factory method for the state generator. */
@@ -1734,11 +1770,12 @@ public class Simulator {
     
     /**
      * If the current grammar is set, asks through a dialog whether it may be abandoned.
+     * @param title the title of the dialog
      * @return <tt>true</tt> if the current grammar may be abandoned
      */
-    private boolean confirmAbandon() {
+    private boolean confirmAbandon(String title) {
         if (currentGrammar != null) {
-            int res = JOptionPane.showConfirmDialog(frame,
+            int res = JOptionPane.showConfirmDialog(getFrame(),
                 "Abandon current LTS?",
                 null,
                 JOptionPane.OK_CANCEL_OPTION);
@@ -1752,7 +1789,7 @@ public class Simulator {
      * Asks whether the current rule should be replaced by the edited version.
      */
     private boolean confirmReplaceRule(String ruleName) {
-        int answer = JOptionPane.showConfirmDialog(frame, "Replace rule " + ruleName
+        int answer = JOptionPane.showConfirmDialog(getFrame(), "Replace rule " + ruleName
                 + " with edited version?", null, JOptionPane.OK_CANCEL_OPTION);
         return answer == JOptionPane.OK_OPTION;
     }
@@ -1761,14 +1798,14 @@ public class Simulator {
      * Asks whether the current rule should be replaced by the edited version.
      */
     private boolean confirmLoadStartState(String stateName) {
-        int answer = JOptionPane.showConfirmDialog(frame, "Replace start state with " + stateName
+        int answer = JOptionPane.showConfirmDialog(getFrame(), "Replace start state with " + stateName
                 + "?", null, JOptionPane.OK_CANCEL_OPTION);
         return answer == JOptionPane.OK_OPTION;
     }
 
     /** Creates and shows an {@link ErrorDialog} for a given message and exception. */
     private void showErrorDialog(String message, Exception exc) {
-        new ErrorDialog(frame, message, exc).setVisible(true);
+        new ErrorDialog(getFrame(), message, exc).setVisible(true);
     }
     
     /**
@@ -1842,11 +1879,6 @@ public class Simulator {
      * The loader used for unmarshalling gps-formatted graph grammars.
      */
     protected LayedOutGpsGrammar gpsLoader;
-
-    /**
-     * The loader used for unmarshalling ggx grammars.
-     */
-    protected XmlGrammar ggxLoader;
 
     /**
      * A mapping from extension filters (recognizing the file formats from the names) to the
@@ -1935,9 +1967,6 @@ public class Simulator {
     /** LTS display panel. */
     protected LTSPanel ltsPanel;
 
-    /** The dialog for the editor component used in this simulator. */
-    protected JDialog editorDialog;
-
     /** Undo history. */
     protected UndoHistory undoHistory;
 
@@ -1968,6 +1997,12 @@ public class Simulator {
 
     /** The quit action permanently associated with this simulator. */
     private QuitAction quitAction;
+
+    /** The undo action permanently associated with this simulator. */
+    private Action undoAction;
+
+    /** The redo action permanently associated with this simulator. */
+    private Action redoAction;
 
     /** The go-to start state action permanently associated with this simulator. */
     private GotoStartStateAction gotoStartStateAction;
