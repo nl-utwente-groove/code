@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.8 2007-04-18 08:36:24 rensink Exp $
+ * $Id: Editor.java,v 1.9 2007-04-18 10:34:03 rensink Exp $
  */
 package groove.gui;
 
+import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.IS_ATTRIBUTED_OPTION;
 import groove.graph.Graph;
 import groove.gui.jgraph.EditorJGraph;
@@ -68,6 +69,7 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -88,7 +90,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.8 $ $Date: 2007-04-18 08:36:24 $
+ * @version $Revision: 1.9 $ $Date: 2007-04-18 10:34:03 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -275,7 +277,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.8 $
+     * @version $Revision: 1.9 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -311,9 +313,22 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         public void actionPerformed(ActionEvent e) {
             handleQuit();
         }
-    
     }
-    
+
+    /**
+     * Action for displaying an about box.
+     */
+    protected class AboutAction extends AbstractAction {
+    	/** Constructs an instance of the action. */
+        protected AboutAction() {
+            super(Options.ABOUT_ACTION_NAME);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            new AboutBox(Editor.this);
+        }
+    }
+
     /**
      * An action to close the editor, used if the editor is invoked in the
      * context of some other frame.
@@ -902,47 +917,78 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         JMenuBar menuBar = new JMenuBar();
         // file menu, only if the component is not auxiliary
         if (! isAuxiliary()) {
-        JMenu fileMenu = new JMenu(Options.FILE_MENU_NAME);
-        menuBar.add(fileMenu);
-        fileMenu.add(newAction);
-        fileMenu.add(openAction);
-        fileMenu.addSeparator();
-        fileMenu.add(saveAction);
-        fileMenu.add(exportAction);
-        fileMenu.addSeparator();
-        fileMenu.add(quitAction);
+        	menuBar.add(createFileMenu());
         }
+        menuBar.add(createEditMenu());
+        menuBar.add(createDisplayMenu());
+        menuBar.add(createOptionsMenu());
+        menuBar.add(createHelpMenu());
+        return menuBar;
+    }
 
-        // edit menu
-        JMenu editMenu = new JMenu(Options.EDIT_MENU_NAME);
-        menuBar.add(editMenu);
-        editMenu.add(undoAction);
-        editMenu.add(redoAction);
-        editMenu.addSeparator();
-        editMenu.add(cutAction);
-        editMenu.add(copyAction);
-        editMenu.add(pasteAction);
-        editMenu.add(deleteAction);
-        editMenu.addSeparator();
-        editMenu.add(selectModeAction);
-        editMenu.add(nodeModeAction);
-        editMenu.add(edgeModeAction);
-        jgraph.fillOutEditMenu(editMenu.getPopupMenu());
+	/**
+	 * Creates and returns a file menu for the menu bar.
+	 */
+	private JMenu createFileMenu() {
+		JMenu result = new JMenu(Options.FILE_MENU_NAME);
+	    result.add(newAction);
+	    result.add(openAction);
+	    result.addSeparator();
+	    result.add(saveAction);
+	    result.add(exportAction);
+	    result.addSeparator();
+	    result.add(quitAction);
+	    return result;
+	}
 
-        // display menu
+	/**
+	 * Creates and returns an edit menu for the menu bar.
+	 */
+	private JMenu createEditMenu() {
+	    JMenu result = new JMenu(Options.EDIT_MENU_NAME);
+	    result.add(undoAction);
+	    result.add(redoAction);
+	    result.addSeparator();
+	    result.add(cutAction);
+	    result.add(copyAction);
+	    result.add(pasteAction);
+	    result.add(deleteAction);
+	    result.addSeparator();
+	    result.add(selectModeAction);
+	    result.add(nodeModeAction);
+	    result.add(edgeModeAction);
+	    jgraph.fillOutEditMenu(result.getPopupMenu());
+	    return result;
+	}
+
+	/**
+	 * Creates and returns an options menu for the menu bar.
+	 */
+	private JMenu createOptionsMenu() {
+        JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
+        optionsMenu.add(getOptions().getItem(IS_ATTRIBUTED_OPTION));
+        return optionsMenu;
+	}
+
+	/**
+	 * Creates and returns a display menu for the menu bar.
+	 */
+	private JMenu createDisplayMenu() {
         JMenu displayMenu = new JMenu(Options.DISPLAY_MENU_NAME);
-        menuBar.add(displayMenu);
         jgraph.fillOutDisplayMenu(displayMenu.getPopupMenu());
         displayMenu.addSeparator();
         displayMenu.add(jGraphPanel.getViewLabelListItem());
+        return displayMenu;
+	}
 
-        // options menu
-        JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
-        menuBar.add(optionsMenu);
-        optionsMenu.add(getOptions().getItem(IS_ATTRIBUTED_OPTION));
-
-        return menuBar;
-    }
+	/**
+	 * Creates and returns a help menu for the menu bar.
+	 */
+	private JMenu createHelpMenu() {
+		JMenu result = new JMenu(HELP_MENU_NAME);
+    	result.add(new JMenuItem(new AboutAction()));
+    	return result;
+	}
 
     /**
      * Creates and returns the tool bar. Requires the actions to have been initialized.

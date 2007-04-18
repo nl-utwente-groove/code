@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.6 2007-04-12 16:14:52 rensink Exp $
+ * $Id: Options.java,v 1.7 2007-04-18 10:34:03 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class Options {
     /** Edit menu name */
@@ -53,12 +53,17 @@ public class Options {
     public static final String OPTIONS_MENU_NAME = "Options";
     /** Verify menu name */
     public static final String VERIFY_MENU_NAME = "Verify";
-    
+    /** Help menu name */
+    public static final String HELP_MENU_NAME = "Help";
     // Titles
     /** Label pane title */
     public static final String LABEL_PANE_TITLE = "Labels";
 
-    // Action names
+    /**
+	 * About action name 
+	 */
+	public static final String ABOUT_ACTION_NAME = "About";
+	// Action names
     /** Add point action name */
     public static final String ADD_POINT_ACTION = "Add Point";
     /** Apply transition action name */
