@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.3 2007-04-04 21:31:32 rensink Exp $
+ * $Id: RuleJTree.java,v 1.4 2007-04-18 08:41:19 rensink Exp $
  */
 package groove.gui;
 
@@ -61,7 +61,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -95,12 +95,16 @@ public class RuleJTree extends JTree implements SimulationListener {
             @Override
             public void mouseClicked(MouseEvent evt) {
                 if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
-                    Object selectedNode = getSelectionPath().getLastPathComponent();
-                    if (selectedNode instanceof MatchTreeNode) {
-                        // selected tree node is a derivation edge (level 2 node)
-                        simulator.setTransition(((MatchTreeNode) selectedNode).edge());
-                        simulator.applyTransition();
-                    }
+                    TreePath path = getSelectionPath();
+                    if (path != null) {
+						Object selectedNode = path.getLastPathComponent();
+						if (selectedNode instanceof MatchTreeNode) {
+							// selected tree node is a derivation edge (level 2
+							// node)
+							simulator.setTransition(((MatchTreeNode) selectedNode).edge());
+							simulator.applyTransition();
+						}
+					}
                 }
             }
 
