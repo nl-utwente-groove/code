@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributedSPORule.java,v 1.4 2007-04-04 07:04:19 rensink Exp $
+ * $Id: AttributedSPORule.java,v 1.5 2007-04-18 08:36:10 rensink Exp $
  */
 package groove.trans;
 
@@ -22,13 +22,14 @@ import groove.graph.Morphism;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.util.FormatException;
 
 /**
  * Extension of the normal SPO-rule in which we take special care about attribute
  * nodes.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-04-04 07:04:19 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-18 08:36:10 $
  * @deprecated all funtionality now in {@link SPORule}.
  */
 @Deprecated
@@ -61,7 +62,7 @@ public class AttributedSPORule extends SPORule {
      * @param priority the priority of this rule
      * @param properties
      */
-    public AttributedSPORule(Morphism morphism, NameLabel name, int priority, RuleProperties properties) {
+    public AttributedSPORule(Morphism morphism, NameLabel name, int priority, SystemProperties properties) throws FormatException {
     	super(morphism, name, priority, properties);
     }
 

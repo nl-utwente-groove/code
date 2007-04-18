@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleDependencies.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: RuleDependencies.java,v 1.3 2007-04-18 08:36:09 rensink Exp $
  */
 package groove.trans;
 
@@ -40,7 +40,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:31 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-18 08:36:09 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */
@@ -103,6 +103,7 @@ public class RuleDependencies {
 		}
 	}
 	
+	/** Constructs a new dependencies object, for a given set of rules. */
     public RuleDependencies(Collection<Rule> rules) {
     	this.rules = rules;
     }
@@ -351,20 +352,28 @@ public class RuleDependencies {
     			// yep, it's a fresh edge
 					Label label = edge.label();
 					if (label instanceof RegExprLabel) {
+						Set<Label> posOrNeg;
+						RegExpr negOperand = RegExprLabel.getNegOperand(label);
+						if (negOperand == null) {
+							posOrNeg = positive;
+						} else {
+							label = negOperand.toLabel();
+							posOrNeg = negative;
+						}
 						Automaton labelAut = ((RegExprLabel) label).getAutomaton();
 						// if a regular expression accepts the empty word, merging is allowed
 						if (labelAut.isAcceptsEmptyWord()) {
-							positive.add(MERGE_LABEL);
+							posOrNeg.add(MERGE_LABEL);
 						}
 						if (RegExprLabel.isWildcard(label) || RegExprLabel.getRegExpr(label).containsOperator(RegExpr.wildcard())) {
 							// testing for a wildcard means all labels are positive
-							positive.add(ALL_LABEL);						
+							posOrNeg.add(ALL_LABEL);						
 						} else {
 							// all the labels in the regular expression's automaton are positive
 							for (Edge labelAutEdge: labelAut.edgeSet()) {
 								Label innerLabel = labelAutEdge.label();
 								assert !(innerLabel instanceof RegExprLabel) : String.format("Wildcard label %s should have been caught above", innerLabel);
-								positive.add(innerLabel);
+								posOrNeg.add(innerLabel);
 							}
 						}
 					} else {

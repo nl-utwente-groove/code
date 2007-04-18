@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UntypedGxl.java,v 1.3 2007-04-01 12:50:13 rensink Exp $
+ * $Id: UntypedGxl.java,v 1.4 2007-04-18 08:36:21 rensink Exp $
  */
 package groove.io;
 
@@ -51,7 +51,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class UntypedGxl extends AbstractXml {
     /**
@@ -397,9 +397,9 @@ public class UntypedGxl extends AbstractXml {
             Reader reader = new FileReader(file);
             unmarshaller.unmarshal(reader);
         } catch (MarshalException e) {
-            throw new FormatException(e.getMessage());
+            throw new FormatException("Error while unmarshalling %s: %s", file, e.getMessage());
         } catch (ValidationException e) {
-            throw new FormatException(e.getMessage());
+            throw new FormatException("Error while unmarshalling %s: %s", file, e.getMessage());
         }
 
         // now convert the gxl to an attribute graph        

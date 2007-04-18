@@ -1,17 +1,21 @@
 /*
- * $Id: RegExprSearchPlanFactory.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: RegExprSearchPlanFactory.java,v 1.3 2007-04-18 08:36:08 rensink Exp $
  */
 package groove.rel.match;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 
+import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.match.DefaultSearchPlanFactory;
 import groove.graph.match.SearchItem;
+import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.match.RegExprEdgeSearchItem;
 import groove.rel.match.VarEdgeSearchItem;
@@ -21,7 +25,7 @@ import groove.rel.match.VarEdgeSearchItem;
  * their source nodes.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class RegExprSearchPlanFactory extends DefaultSearchPlanFactory {
 	/**
@@ -40,12 +44,19 @@ public class RegExprSearchPlanFactory extends DefaultSearchPlanFactory {
 		 * </ul>
 		 */
 		public int compare(Edge o1, Edge o2) {
-			Label firstLabel = o1.label();
+			Label first = o1.label();
 			Label second = o2.label();
 			int result = compare(second instanceof RegExprLabel,
-					firstLabel instanceof RegExprLabel);
-			if (result == 0 && firstLabel instanceof RegExprLabel) {
-				result = compare(!((RegExprLabel) firstLabel).getAutomaton().isAcceptsEmptyWord(),
+					first instanceof RegExprLabel);
+			if (result == 0 && first instanceof RegExprLabel) {
+				// remove the potential outer negation from the labels
+				if (RegExprLabel.isNeg(first)) {
+					first = RegExprLabel.getNegOperand(first).toLabel();
+				}
+				if (RegExprLabel.isNeg(second)) {
+					second = RegExprLabel.getNegOperand(second).toLabel();
+				}
+				result = compare(!((RegExprLabel) first).getAutomaton().isAcceptsEmptyWord(),
 						!((RegExprLabel) second).getAutomaton().isAcceptsEmptyWord());
 			}
 			return result;
@@ -78,12 +89,42 @@ public class RegExprSearchPlanFactory extends DefaultSearchPlanFactory {
      */
     @Override
     protected SearchItem createEdgeSearchItem(Edge edge, boolean[] matched) {
-    	if (RegExprLabel.getWildcardId(edge.label()) != null) {
+    	Label label = edge.label();
+    	RegExpr negOperand = RegExprLabel.getNegOperand(label);
+    	if (negOperand instanceof RegExpr.Empty) {
+    		return createInjectionSearchItem(Arrays.asList(edge.ends()));
+    	} else if (negOperand != null) {
+    		Edge negatedEdge = DefaultEdge.createEdge(edge.source(), negOperand.toLabel(), edge.opposite());
+    		return createNegatedSearchItem(createEdgeSearchItem(negatedEdge, matched));
+//    	} else if (RegExprLabel.isEmpty(label)) {
+//    		return createInjectionSearchItem(Arrays.asList(edge.ends()));
+    	} else if (RegExprLabel.getWildcardId(label) != null) {
     		return new VarEdgeSearchItem(edge, matched);
-    	} else if (edge.label() instanceof RegExprLabel) {
+    	} else if (RegExprLabel.isAtom(label)) {
+    		Edge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
+    		return super.createEdgeSearchItem(defaultEdge, matched);
+    	} else if (label instanceof RegExprLabel) {
     		return new RegExprEdgeSearchItem(edge, matched);
     	} else {
         	return super.createEdgeSearchItem(edge, matched);
     	}
     }
+    
+    /**
+     * Callback factory method for a negated search item.
+     * @param inner the internal search item which this one negates
+     * @return an instance of {@link NegatedSearchItem}
+     */
+    protected NegatedSearchItem createNegatedSearchItem(SearchItem inner) {
+    	return new NegatedSearchItem(inner);
+    }
+    
+    /**
+     * Callback factory method for an injection search item.
+     * @param injection the first node to be matched injectively
+     * @return an instance of {@link InjectionSearchItem}
+     */
+    protected InjectionSearchItem createInjectionSearchItem(Collection<? extends Node> injection) {
+    	return new InjectionSearchItem(injection);
+    }    
 }

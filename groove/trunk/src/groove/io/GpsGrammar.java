@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GpsGrammar.java,v 1.7 2007-04-04 07:04:22 rensink Exp $
+ * $Id: GpsGrammar.java,v 1.8 2007-04-18 08:36:21 rensink Exp $
  */
 
 package groove.io;
@@ -26,7 +26,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
-import groove.trans.RuleProperties;
+import groove.trans.SystemProperties;
 import groove.trans.RuleSystem;
 import groove.trans.StructuredRuleName;
 import groove.trans.view.AspectualRuleView;
@@ -49,7 +49,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @deprecated use {@link AspectualGpsGrammar} or {@link LayedOutGpsGrammar} instead
  */
 @Deprecated
@@ -188,7 +188,7 @@ public class GpsGrammar implements XmlGrammar {
 	 * @return a rule view for the given rule.
 	 * @throws IOException
 	 */
-	public AspectualRuleView unmarshalRule(File location, RuleProperties properties) throws IOException {
+	public AspectualRuleView unmarshalRule(File location, SystemProperties properties) throws IOException {
 	    try {
 	        String filename = Groove.createRuleFilter().stripExtension(location.getName());
 	        PriorityFileName priorityFileName = new PriorityFileName(filename);
@@ -310,8 +310,8 @@ public class GpsGrammar implements XmlGrammar {
      * of attributed graphs, <tt>false</tt> otherwise
      */
     protected boolean isAttributedGrammar(GraphGrammar grammar) {
-		String attributes = grammar.getProperties().getProperty(RuleProperties.ATTRIBUTE_SUPPORT);
-		return attributes != null && attributes.equals(RuleProperties.ATTRIBUTES_YES);
+		String attributes = grammar.getProperties().getProperty(SystemProperties.ATTRIBUTE_SUPPORT);
+		return attributes != null && attributes.equals(SystemProperties.ATTRIBUTES_YES);
     }
 
     /**
@@ -360,7 +360,7 @@ public class GpsGrammar implements XmlGrammar {
      * @throws IOException if <tt>directory</tt> contains duplicate or malformed production rules
      */
     private void loadRules(File directory, StructuredRuleName rulePath,
-            Map<StructuredRuleName,AspectualRuleView> ruleGraphMap, RuleProperties properties) throws IOException {
+            Map<StructuredRuleName,AspectualRuleView> ruleGraphMap, SystemProperties properties) throws IOException {
         File[] files = directory.listFiles(RULE_FILTER);
         if (files == null) {
             throw new IOException(LOAD_ERROR+": exception when reading rules from location "+directory);
@@ -413,7 +413,7 @@ public class GpsGrammar implements XmlGrammar {
      * @throws FormatException when the given graph does not conform to
      * the requirements for making a rule-graph out of it
      */
-    protected AspectualRuleView createRuleGraph(Graph graph, StructuredRuleName ruleName, int priority, RuleProperties properties)
+    protected AspectualRuleView createRuleGraph(Graph graph, StructuredRuleName ruleName, int priority, SystemProperties properties)
             throws FormatException {
     	return (AspectualRuleView) getRuleFactory().createRuleView(graph, ruleName, priority, properties);
     }

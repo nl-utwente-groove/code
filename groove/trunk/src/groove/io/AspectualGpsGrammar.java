@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGpsGrammar.java,v 1.4 2007-04-04 07:04:22 rensink Exp $
+ * $Id: AspectualGpsGrammar.java,v 1.5 2007-04-18 08:36:21 rensink Exp $
  */
 
 package groove.io;
@@ -26,7 +26,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
-import groove.trans.RuleProperties;
+import groove.trans.SystemProperties;
 import groove.trans.StructuredRuleName;
 import groove.trans.view.AspectualRuleView;
 import groove.trans.view.RuleView;
@@ -46,7 +46,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
     /** Error message if a grammar cannot be loaded. */
@@ -183,7 +183,7 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
 	 * Loads in and returns a single rule from a given location, 
 	 * giving it a given name and priority, and using a given rule factory.
 	 */
-	private AspectualRuleView loadRule(File location, int priority, StructuredRuleName ruleName, RuleProperties properties) throws IOException {
+	private AspectualRuleView loadRule(File location, int priority, StructuredRuleName ruleName, SystemProperties properties) throws IOException {
 		try {
 			AspectGraph unmarshalledRule = getGraphMarshaller().unmarshalGraph(location);
 		    return createRuleGraph(unmarshalledRule, ruleName, priority, properties);
@@ -238,7 +238,7 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
      * @return a rule view for the given rule.
      * @throws IOException
      */
-    public AspectualRuleView unmarshalRule(File location, RuleProperties properties) throws IOException {
+    public AspectualRuleView unmarshalRule(File location, SystemProperties properties) throws IOException {
         try {
             String filename = Groove.createRuleFilter().stripExtension(location.getName());
             PriorityFileName priorityFileName = new PriorityFileName(filename);
@@ -376,7 +376,7 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
      * @throws FormatException when the given graph does not conform to
      * the requirements for making a rule-graph out of it
      */
-    protected AspectualRuleView createRuleGraph(AspectGraph graph, NameLabel ruleName, int priority, RuleProperties properties)
+    protected AspectualRuleView createRuleGraph(AspectGraph graph, NameLabel ruleName, int priority, SystemProperties properties)
             throws FormatException {
     	return new AspectualRuleView(graph, ruleName, priority, properties);
 //    	return (AspectualRuleView) getRuleFactory().createRuleView(graph, ruleName, priority);
@@ -407,8 +407,8 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
 	 * of attributed graphs, <tt>false</tt> otherwise
 	 */
 	protected boolean isAttributed(Properties grammarProperties) {
-		String attributes = grammarProperties.getProperty(RuleProperties.ATTRIBUTE_SUPPORT);
-		return attributes != null && attributes.equals(RuleProperties.ATTRIBUTES_YES);
+		String attributes = grammarProperties.getProperty(SystemProperties.ATTRIBUTE_SUPPORT);
+		return attributes != null && attributes.equals(SystemProperties.ATTRIBUTES_YES);
 	}
 
 	/**

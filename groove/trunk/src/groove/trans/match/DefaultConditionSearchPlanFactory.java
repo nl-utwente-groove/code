@@ -1,5 +1,5 @@
 /*
- * $Id: DefaultConditionSearchPlanFactory.java,v 1.4 2007-04-04 07:04:07 rensink Exp $
+ * $Id: DefaultConditionSearchPlanFactory.java,v 1.5 2007-04-18 08:35:55 rensink Exp $
  */
 package groove.trans.match;
 
@@ -14,7 +14,6 @@ import java.util.Set;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.match.EdgeSearchItem;
 import groove.graph.match.NodeSearchItem;
@@ -26,9 +25,7 @@ import groove.rel.RegExprLabel;
 import groove.rel.match.RegExprSearchPlanFactory;
 import groove.trans.DefaultGraphCondition;
 import groove.trans.GraphCondition;
-import groove.trans.GraphGrammar;
-import groove.trans.Rule;
-import groove.trans.RuleProperties;
+import groove.trans.SystemProperties;
 
 /**
  * Strategy that yields the edges in order of ascending indegree of
@@ -38,7 +35,7 @@ import groove.trans.RuleProperties;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory implements ConditionSearchPlanFactory {
 	/**
@@ -68,7 +65,6 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
         
         /**
          * Returns the priority of an edge, judged by its label.
-         * @see #getPriority(Label)
          */
         private int getEdgePriority(Edge edge) {
         	Integer result = priorities.get(edge.label().text());
@@ -93,13 +89,21 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
      * @version $Revision $
      */
     protected class GrammarPlanData extends PlanData {
-    	protected GrammarPlanData(RuleProperties properties, Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
+    	/** 
+    	 * Constructs a fresh instance of the plan data,
+    	 * based on a given set of system properties, and sets
+    	 * of already matched nodes and edges. 
+    	 * @param properties the rule system properties (including common and control labels)
+    	 * @param nodeSet set of already matched nodes
+    	 * @param edgeSet set of already matched edges
+    	 */
+    	protected GrammarPlanData(SystemProperties properties, Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
     		super(nodeSet, edgeSet);
     		this.properties = properties;
     	}
     	
     	/**
-    	 * Calls {@link DefaultConditionSearchPlanFactory#createComparators(GraphGrammar, Set, Set)}.
+    	 * Calls {@link DefaultConditionSearchPlanFactory#createComparators(SystemProperties, Set, Set)}.
     	 */
     	@Override
 		protected List<Comparator<Edge>> computeComparators() {
@@ -109,7 +113,7 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
     	/**
     	 * The grammar for this plan data.
     	 */
-		protected final RuleProperties properties;
+		protected final SystemProperties properties;
     }
 
 	/**
@@ -130,12 +134,7 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
     	nodeSet.removeAll(boundNodes);
     	Set<Edge> edgeSet = new HashSet<Edge>(subject.edgeSet());
     	edgeSet.removeAll(boundEdges);
-    	PlanData planData;
-    	if (condition instanceof Rule) {
-    		planData = new GrammarPlanData(((Rule) condition).getProperties(), nodeSet, edgeSet);
-    	} else {
-    		planData = new PlanData(nodeSet, edgeSet);
-    	}
+    	PlanData planData = new GrammarPlanData(condition.getProperties(), nodeSet, edgeSet);
     	List<SearchItem> result = planData.getPlan();
     	if (condition instanceof DefaultGraphCondition) {
     		addEmbargoes((DefaultGraphCondition) condition, result, boundNodes, boundEdges);
@@ -147,7 +146,7 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	 * Adds edge and merge embargo search items to an already existing search plan.
 	 * @param condition the condition from which the embargoes are to be retrieved
 	 * @param result the already computed search plan
-	 * @param prematchedNodes the nodes that are already matched (and hence not in <code>result</code>)
+	 * @param boundNodes the nodes that are already matched (and hence not in <code>result</code>)
 	 * @param boundEdges the edges that are already matched (and hence not in <code>result</code>)
 	 */
 	private void addEmbargoes(DefaultGraphCondition condition, List<SearchItem> result, Collection<? extends Node> boundNodes, Collection<? extends Edge> boundEdges) {
@@ -168,13 +167,13 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	/**
 	 * Creates the comparators for the search plan.
 	 * Adds a comparator based on the control labels available in the grammar, if any.
-	 * @param grammar the grammar in which the control labels are to be found
+	 * @param properties rule system properties, including common and control labels are to be found
 	 * @param nodeSet the node set to be matched
 	 * @param edgeSet the edge set to be matched
 	 * @return a list of comparators determining the order in which edges should be matched
 	 * @see #createComparators(Set, Set)
 	 */
-	protected List<Comparator<Edge>> createComparators(RuleProperties properties, Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
+	protected List<Comparator<Edge>> createComparators(SystemProperties properties, Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
 		List<Comparator<Edge>> result = super.createComparators(nodeSet, edgeSet);
 		if (properties != null) {
 			List<String> controlLabels = properties.getControlLabels();
@@ -188,7 +187,7 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 	 * search plan, namely directly after all end nodes have been matched.
 	 * @param result the pre-existing search plan
 	 * @param embargoEdge the embargo edge to be inserted
-	 * @param prematchedNodes the nodes that are already matched (and hence not in <code>result</code>)
+	 * @param boundNodes the nodes that are already matched (and hence not in <code>result</code>)
 	 * @param boundEdges the edges that are already matched (and hence not in <code>result</code>)
 	 */
     private void addEdgeEmbargo(List<SearchItem> result, Edge embargoEdge, Collection<? extends Node> boundNodes, Collection<? extends Edge> boundEdges) {
@@ -265,22 +264,4 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
     	}
     	result.add(index, createInjectionSearchItem(injection));
     }
-    
-    /**
-     * Callback factory method for a negated search item.
-     * @param inner the internal search item which this one negates
-     * @return an instance of {@link NegatedSearchItem}
-     */
-    protected NegatedSearchItem createNegatedSearchItem(SearchItem inner) {
-    	return new NegatedSearchItem(inner);
-    }
-    
-    /**
-     * Callback factory method for an injection search item.
-     * @param injection the first node to be matched injectively
-     * @return an instance of {@link InjectionSearchItem}
-     */
-    protected InjectionSearchItem createInjectionSearchItem(Set<? extends Node> injection) {
-    	return new InjectionSearchItem(injection);
-    }    
 }

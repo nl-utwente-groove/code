@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.7 2007-04-12 16:14:52 rensink Exp $
+ * $Id: Editor.java,v 1.8 2007-04-18 08:36:24 rensink Exp $
  */
 package groove.gui;
 
@@ -31,7 +31,7 @@ import groove.util.FormatException;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.NameLabel;
 import groove.trans.RuleFactory;
-import groove.trans.RuleProperties;
+import groove.trans.SystemProperties;
 import groove.trans.view.AspectualRuleView;
 import groove.util.Converter;
 import groove.util.Groove;
@@ -88,7 +88,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.7 $ $Date: 2007-04-12 16:14:52 $
+ * @version $Revision: 1.8 $ $Date: 2007-04-18 08:36:24 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -275,7 +275,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.7 $
+     * @version $Revision: 1.8 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -982,8 +982,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     }
 
     /** Returns a rule properties object based on the current options setting. */
-    protected RuleProperties getRuleProperties() {
-    	return RuleProperties.getInstance(getOptions().getValue(IS_ATTRIBUTED_OPTION));
+    protected SystemProperties getRuleProperties() {
+    	return SystemProperties.getInstance(getOptions().getValue(IS_ATTRIBUTED_OPTION));
     }
     
 	/**

@@ -1,12 +1,13 @@
-/* $Id: InjectionSearchItem.java,v 1.2 2007-04-04 07:04:07 rensink Exp $ */
-package groove.trans.match;
+/* $Id: InjectionSearchItem.java,v 1.1 2007-04-18 08:36:08 rensink Exp $ */
+package groove.rel.match;
 
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
 
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.match.Matcher;
+import groove.trans.match.ConditionSearchItem;
 
 /**
  * A search item that searches an image for an edge.
@@ -14,7 +15,9 @@ import groove.graph.match.Matcher;
  * @version $Revision $
  */
 public class InjectionSearchItem extends ConditionSearchItem {
+	/** The record for this search item. */
 	protected class MergeEmbargoRecord extends ConditionRecord {
+		/** Constructs a fresh record, for a given matcher. */
 		protected MergeEmbargoRecord(Matcher matcher) {
 			this.matcher = matcher;
 			assert matcher.getSingularMap().containsKey(node1) : String.format("Merge embargo node %s not yet matched", node1);
@@ -33,7 +36,13 @@ public class InjectionSearchItem extends ConditionSearchItem {
 		private final Matcher matcher;
 	}
 
-	public InjectionSearchItem(Set<? extends Node> nodes) {
+	/** 
+	 * Constructs an injection item, which chechks for the injectivity
+	 * of the match found so far. That is, the item will match if and only if the
+	 * nodes in a given set have been matched injectively.
+	 * @param nodes the nodes that should be matched injectively
+	 */
+	public InjectionSearchItem(Collection<? extends Node> nodes) {
 		assert nodes.size() == 2: String.format("Injection %s should have size 2", nodes);
 		Iterator<? extends Node> nodeIter = nodes.iterator();
 		this.node1 = nodeIter.next();
@@ -50,7 +59,11 @@ public class InjectionSearchItem extends ConditionSearchItem {
 	}
 
 	/**
-	 * The nodes which may not be merged.
+	 * First node which may not be merged.
 	 */
-	protected final Node node1, node2;
+	protected final Node node1;
+	/**
+	 * Second node which may not be merged.
+	 */
+	protected final Node node2;
 }

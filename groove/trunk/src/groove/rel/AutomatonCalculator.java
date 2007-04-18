@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AutomatonCalculator.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: AutomatonCalculator.java,v 1.2 2007-04-18 08:36:15 rensink Exp $
  */
 package groove.rel;
 
@@ -38,7 +38,7 @@ import groove.rel.RegExpr.Wildcard;
  * Visitor for a {@link groove.rel.RegExpr} that constructs a regular automaton.
  * The automaton is a graph with a distinguished start state and end node.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     /**
@@ -187,7 +187,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
      */
     public Automaton computeWildcard(Wildcard expr) {
         Automaton result = createAutomaton();
-        result.addEdge(result.getStartNode(), new RegExprLabel(expr), result.getEndNode());
+        result.addEdge(result.getStartNode(), expr.toLabel(), result.getEndNode());
         return result;
     }
 
@@ -219,10 +219,10 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
         RegExpr invOperand = RegExprLabel.getInvOperand(label);
         if (invOperand == null) {
             RegExpr innerExpr = label instanceof RegExprLabel ? ((RegExprLabel) label).getRegExpr() : RegExpr.atom(label.text()); 
-            return new RegExprLabel(innerExpr.inv());
+            return innerExpr.inv().toLabel();
         } else {
             if (invOperand.isWildcard()) {
-                return new RegExprLabel(invOperand);
+                return invOperand.toLabel();
             } else {
                 return DefaultLabel.createLabel(invOperand.getAtomText());
             }

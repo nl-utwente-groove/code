@@ -12,30 +12,31 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultNAC.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: DefaultNAC.java,v 1.2 2007-04-18 08:36:10 rensink Exp $
  */
 package groove.trans;
 
+import groove.graph.DefaultMorphism;
 import groove.graph.Morphism;
 import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
 
 /**
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
+ * @version $Revision: 1.2 $ $Date: 2007-04-18 08:36:10 $
  */
 public class DefaultNAC extends DefaultGraphCondition implements NAC {
     /**
      * Creates a NAC based on a given (partial) morphism.
      */
-    public DefaultNAC(Morphism partial, RuleFactory ruleFactory) {
-        super(partial, ruleFactory);
+    public DefaultNAC(Morphism partial, SystemProperties properties) {
+        super(partial, properties);
     }
 
     /**
      * Creates a NAC over a default context and an initially empty target pattern.
      */
-    public DefaultNAC(VarGraph context, RuleFactory ruleFactory) {
-        super(context, (VarGraph) context.newGraph(), ruleFactory);
+    public DefaultNAC(VarGraph context, SystemProperties properties) {
+        this(new DefaultMorphism(context, context.newGraph()), properties);
     }
 
     /**

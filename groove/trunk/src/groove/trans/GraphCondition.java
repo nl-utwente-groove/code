@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: GraphCondition.java,v 1.2 2007-04-18 08:36:09 rensink Exp $
  */
 package groove.trans;
 
@@ -26,7 +26,7 @@ import groove.rel.VarMorphism;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface GraphCondition extends GraphTest {
     /**
@@ -43,7 +43,12 @@ public interface GraphCondition extends GraphTest {
      * Convenience method for <code>getPattern().cod()</code>.
      */
     public VarGraph getTarget();
-    
+
+    /**
+     * Returns the properties for matching this condition.
+     */
+    public SystemProperties getProperties();
+
     /**
      * Returns the negative predicate of this graph condition.
      * The negative predicate has this condition's pattern codomain as it's context;
@@ -77,7 +82,9 @@ public interface GraphCondition extends GraphTest {
      * @param node1 first node of the injectivity constraint
      * @param node2 second node of the injectivity constraint
      * @see #setAndNot(GraphTest)
+     * @deprecated no longer used (since new search plan implementation)
      */
+    @Deprecated
     public GraphCondition setAndDistinct(Node node1, Node node2);
 
     /**
@@ -85,7 +92,9 @@ public interface GraphCondition extends GraphTest {
      * nodes in a given node array. The array is required to be binary.
      * Convenience method for <code>addMergeEmbargo(nodes[0], nodes[1])</code>.
      * @see #setAndDistinct(Node, Node)
+     * @deprecated no longer used (since new search plan implementation)
      */
+    @Deprecated
     public GraphCondition setAndDistinct(Node[] nodes);
     
     /**
@@ -95,7 +104,9 @@ public interface GraphCondition extends GraphTest {
      * it to the negative predicate using {@link #setAndNot(GraphTest)}.
      * @param embargoEdge the edge that is forbidden
      * @see #setAndNot(GraphTest)
+     * @deprecated no longer used (since new search plan implementation)
      */
+    @Deprecated
     public GraphCondition setAndNot(Edge embargoEdge);
     
     /**

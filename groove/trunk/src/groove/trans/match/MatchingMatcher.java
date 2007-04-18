@@ -1,5 +1,5 @@
 /*
- * $Id: MatchingMatcher.java,v 1.3 2007-04-04 07:04:06 rensink Exp $
+ * $Id: MatchingMatcher.java,v 1.4 2007-04-18 08:35:55 rensink Exp $
  */
 package groove.trans.match;
 
@@ -15,7 +15,7 @@ import java.util.List;
 /**
  * Matcher that takes conditions into account.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class MatchingMatcher extends RegExprMatcher {
 //	/** 
@@ -84,7 +84,7 @@ public class MatchingMatcher extends RegExprMatcher {
 			return condition.getSearchPlan();
     	} else {
     		assert condition instanceof Rule : "Bound matching only implemented for rules";
-			result = ((Rule) condition).getEventSearchPlan();
+			result = ((Rule) condition).getAnchorSearchPlan();
 		}
 		return result;
     }

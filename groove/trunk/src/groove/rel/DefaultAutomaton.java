@@ -42,7 +42,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
      */
     static private final int BACKWARD = 1;
     /** Constant wildcard label serving as a key in label-to-edge-sets maps. */
-    static private final RegExprLabel WILDCARD_LABEL = new RegExprLabel(RegExpr.wildcard());
+    static private final RegExprLabel WILDCARD_LABEL = RegExpr.wildcard().toLabel();
     
     /**
      * Class to encapsulate the algorithm used to compute the result of

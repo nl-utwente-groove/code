@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExpr.java,v 1.3 2007-04-01 12:50:34 rensink Exp $
+ * $Id: RegExpr.java,v 1.4 2007-04-18 08:36:15 rensink Exp $
  */
 package groove.rel;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 abstract public class RegExpr implements VarSetSupport {
     /** 
@@ -1353,6 +1353,14 @@ abstract public class RegExpr implements VarSetSupport {
 		return obj instanceof RegExpr && toString().equals(obj.toString());
 	}
 
+	/** Returns a label based on this expression. */
+	public RegExprLabel toLabel() {
+		if (label == null) {
+			label = new RegExprLabel(this);
+		}
+		return label;
+	}
+	
 	/**
 	 * Returns the hash code of the {@link #toString()} method,
 	 * combined with a bit pattern derived from the {@link RegExpr} class.
@@ -1482,4 +1490,8 @@ abstract public class RegExpr implements VarSetSupport {
      * The symbolic name operator of this kind of expression.
      */
     private final String symbol;
+    /**
+     * A regular expression label based on this expression.
+     */
+    private RegExprLabel label;
 }

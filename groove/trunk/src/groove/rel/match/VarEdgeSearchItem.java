@@ -1,4 +1,4 @@
-/* $Id: VarEdgeSearchItem.java,v 1.3 2007-04-04 07:04:22 rensink Exp $ */
+/* $Id: VarEdgeSearchItem.java,v 1.4 2007-04-18 08:36:08 rensink Exp $ */
 package groove.rel.match;
 
 import groove.graph.BinaryEdge;
@@ -18,7 +18,9 @@ import groove.rel.VarNodeEdgeMap;
  * @version $Revision $
  */
 public class VarEdgeSearchItem extends EdgeSearchItem<Edge> {
+	/** Record for this type of search item. */
 	protected class VarEdgeRecord extends EdgeRecord<RegExprMatcher> {
+		/** Constructs a new record, for a given matcher. */
 		protected VarEdgeRecord(RegExprMatcher matcher) {
 			super(matcher);
 			varPreMatched = matcher.getVar(var) != null;
@@ -100,6 +102,11 @@ public class VarEdgeSearchItem extends EdgeSearchItem<Edge> {
 		private final boolean varPreMatched;
 	}
 
+	/** 
+	 * Constructs a new search item.
+	 * The item will match any edge between the end images, and record
+	 * the edge label as value of the wildcard variable.
+	 */
 	public VarEdgeSearchItem(Edge edge, boolean... matched) {
 		super(edge, matched);
 		this.var = RegExprLabel.getWildcardId(edge.label());
@@ -112,5 +119,6 @@ public class VarEdgeSearchItem extends EdgeSearchItem<Edge> {
 		return new VarEdgeRecord((RegExprMatcher) matcher);
 	}
 	
+	/** The variable bound in the wildcard (not <code>null</code>). */
 	protected final String var;
 }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.5 2007-04-04 07:04:20 rensink Exp $
+ * $Id: RuleSystem.java,v 1.6 2007-04-18 08:36:10 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-04-04 07:04:20 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-18 08:36:10 $
  * @see NameLabel
  * @see SPORule
  */
@@ -103,7 +103,7 @@ public class RuleSystem {
      * @ensure <tt>result.equals(getPriorityRuleMap().get(new Integer(priority))))</tt>
      */
     public Set<Rule> getRules(int priority) {
-        return Collections.unmodifiableSet(priorityRuleMap.get(new Integer(priority)));
+        return Collections.unmodifiableSet(priorityRuleMap.get(priority));
     }
 
     /**
@@ -148,11 +148,11 @@ public class RuleSystem {
     		throw new FormatException(getInconsistency(rule));
     	}
         NameLabel ruleName = rule.getName();
-        Integer priority = new Integer(rule.getPriority());
+        int priority = rule.getPriority();
         Rule oldRuleForName = nameRuleMap.put(ruleName, rule);
         // now remove the old rule with this name, if any
         if (oldRuleForName != null) {
-            Integer oldPriorityForName = new Integer(oldRuleForName.getPriority());
+            int oldPriorityForName = oldRuleForName.getPriority();
             Set<Rule> oldPriorityRuleSet = priorityRuleMap.get(oldPriorityForName);
             oldPriorityRuleSet.remove(oldRuleForName);
             // if this is the last rule with this priority, remove the entry from the map
@@ -180,7 +180,7 @@ public class RuleSystem {
      */
     public void setProperties(java.util.Properties properties) {
     	testRuleSystemEmpty();
-        RuleProperties currentRuleProperties = getProperties();
+        SystemProperties currentRuleProperties = getProperties();
         currentRuleProperties.clear();
         currentRuleProperties.putAll(properties);
     }
@@ -197,11 +197,11 @@ public class RuleSystem {
      * Returns the properties object for this graph grammar.
      * The properties object is immutable.
      */
-    public RuleProperties getProperties() {
-        if (ruleProperties == null) {
-            ruleProperties = createRuleProperties();
+    public SystemProperties getProperties() {
+        if (properties == null) {
+            properties = createRuleProperties();
         }
-        return ruleProperties;
+        return properties;
     }
     
     /** 
@@ -244,11 +244,11 @@ public class RuleSystem {
 	}
 
 	/**
-     * Callback factory method to create an initially empty {@link RuleProperties} object 
+     * Callback factory method to create an initially empty {@link SystemProperties} object 
      * for this graph grammar.
      */
-    protected RuleProperties createRuleProperties() {
-        return new RuleProperties(this);
+    protected SystemProperties createRuleProperties() {
+        return new SystemProperties(this);
     }
     
     /**
@@ -304,9 +304,9 @@ public class RuleSystem {
      */
     private Collection<Rule> ruleSet;
     /**
-     * The properties bundle of this grammar.
+     * The properties bundle of this rule system.
      */
-    private RuleProperties ruleProperties; 
+    private SystemProperties properties; 
     /** The (fixed) rule factory for this rule system. */
     private RuleFactory ruleFactory;
 }

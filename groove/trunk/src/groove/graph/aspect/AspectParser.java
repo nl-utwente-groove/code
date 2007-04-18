@@ -249,7 +249,7 @@ public class AspectParser {
 				// to maintain existing quotes, just take the original text
 				return DefaultLabel.createLabel(text);
 			} else {
-				return new RegExprLabel(textAsRegExpr);
+				return textAsRegExpr.toLabel();
 			}
 		} catch (FormatException exc) {
 			if (isLenient()) {

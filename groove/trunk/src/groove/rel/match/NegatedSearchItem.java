@@ -1,8 +1,9 @@
-/* $Id: NegatedSearchItem.java,v 1.2 2007-03-28 15:12:36 rensink Exp $ */
-package groove.trans.match;
+/* $Id: NegatedSearchItem.java,v 1.1 2007-04-18 08:36:08 rensink Exp $ */
+package groove.rel.match;
 
 import groove.graph.match.Matcher;
 import groove.graph.match.SearchItem;
+import groove.trans.match.ConditionSearchItem;
 
 /**
  * A search item that negates another search item.
@@ -10,7 +11,9 @@ import groove.graph.match.SearchItem;
  * @version $Revision $
  */
 public class NegatedSearchItem extends ConditionSearchItem {
+	/** Record for the negated search item. */
 	protected class NegatedSearchRecord extends ConditionRecord {
+		/** Constructs a new record, for a given matcher. */
 		protected NegatedSearchRecord(Matcher matcher) {
 			this.innerRecord = inner.get(matcher);
 		}
@@ -40,6 +43,11 @@ public class NegatedSearchItem extends ConditionSearchItem {
 		private final SearchItem.Record innerRecord;
 	}
 
+	/** 
+	 * Constructs a new search item. The item will match (precisely once)
+	 * if and only the underlying item does not match.
+	 * @param item the underlying, negated item
+	 */
 	public NegatedSearchItem(SearchItem item) {
 		this.inner = item;
 	}

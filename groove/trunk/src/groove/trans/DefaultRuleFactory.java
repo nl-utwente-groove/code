@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.6 2007-04-04 07:04:20 rensink Exp $
+ * $Id: DefaultRuleFactory.java,v 1.7 2007-04-18 08:36:10 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import groove.util.FormatException;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class DefaultRuleFactory implements RuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */
@@ -80,13 +80,13 @@ public class DefaultRuleFactory implements RuleFactory {
 	 * This implementation returns an {@link SPORule}.
 	 */
 	public Rule createRule(Morphism morphism, NameLabel name) throws FormatException {
-		return createRule(morphism, name, Rule.DEFAULT_PRIORITY, RuleProperties.DEFAULT_PROPERTIES);
+		return createRule(morphism, name, Rule.DEFAULT_PRIORITY, SystemProperties.DEFAULT_PROPERTIES);
 	}
 
 	/**
 	 * This implementation returns an {@link SPORule}.
 	 */
-	public Rule createRule(Morphism morphism, NameLabel name, int priority, RuleProperties properties) throws FormatException {
+	public Rule createRule(Morphism morphism, NameLabel name, int priority, SystemProperties properties) throws FormatException {
 		return new SPORule(morphism, name, priority, properties);
 	}
 
@@ -114,7 +114,7 @@ public class DefaultRuleFactory implements RuleFactory {
 	/**
 	 * This implementation returns an {@link AspectualRuleView}.
 	 */
-	public AspectualRuleView createRuleView(Graph graph, NameLabel name, int priority, RuleProperties properties) throws FormatException {
+	public AspectualRuleView createRuleView(Graph graph, NameLabel name, int priority, SystemProperties properties) throws FormatException {
 		return new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), name, priority, properties);
 	}
 

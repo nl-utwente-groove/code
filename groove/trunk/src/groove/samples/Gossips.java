@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.4 2007-04-04 07:04:25 rensink Exp $
+ * $Id: Gossips.java,v 1.5 2007-04-18 08:36:24 rensink Exp $
  */
 package groove.samples;
 
@@ -37,7 +37,7 @@ import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleFactory;
-import groove.trans.RuleProperties;
+import groove.trans.SystemProperties;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.util.FormatException;
@@ -133,10 +133,9 @@ public class Gossips {
     }
     
     static class GossipRule extends SPORule {
-        public GossipRule(Rule basicRule, RuleProperties properties) {
-            super(basicRule.getMorphism(), basicRule.getName(), DEFAULT_PRIORITY, properties);
+        public GossipRule(Rule basicRule, SystemProperties properties) throws FormatException {
+            super(basicRule.getMorphism(), basicRule.getName(), 1, properties);
             setAndNot(basicRule.getNegConjunct());
-            setPriority(1);
         }
 
         @Override
