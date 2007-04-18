@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.11 2007-04-18 15:15:19 rensink Exp $
+ * $Id: Editor.java,v 1.12 2007-04-18 15:58:30 rensink Exp $
  */
 package groove.gui;
 
@@ -41,7 +41,6 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -61,7 +60,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -90,7 +88,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.11 $ $Date: 2007-04-18 15:15:19 $
+ * @version $Revision: 1.12 $ $Date: 2007-04-18 15:58:30 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -263,8 +261,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             super.actionPerformed(evt);
             evt = new ActionEvent(jgraph, evt.getID(), evt.getActionCommand(), evt.getModifiers());
             action.actionPerformed(evt);
-            if (this == cutAction || this == copyAction) {
-                pasteAction.setEnabled(true);
+            if (this == getCutAction() || this == getCopyAction()) {
+                getPasteAction().setEnabled(true);
             }
         }
         
@@ -277,7 +275,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.11 $
+     * @version $Revision: 1.12 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -372,7 +370,6 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         jGraphPanel = new JGraphPanel<EditorJGraph>(jgraph);
 
         initListeners();
-        initActions();
         initGUI();
         pack();
     }
@@ -478,7 +475,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
     public void setModel(String name, GraphJModel model) {
         // unregister listeners with the model
-        getModel().removeUndoableEditListener(undoManager);
+        getModel().removeUndoableEditListener(getUndoManager());
         getModel().removeGraphModelListener(this);
         if (model == null) {
             jgraph.setModel(new EditorJModel(name));
@@ -486,8 +483,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             jgraph.setModel(new EditorJModel(name, model));
         }
         setCurrentGraphModified(false);
-        undoManager.discardAllEdits();
-        getModel().addUndoableEditListener(undoManager);
+        getUndoManager().discardAllEdits();
+        getModel().addUndoableEditListener(getUndoManager());
         getModel().addGraphModelListener(this);
         updateHistoryButtons();
         updateStatus();
@@ -632,9 +629,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
     protected void handleQuit() {
         if (showAbandonDialog()) {
-            dispose();
             // calling exit is too rigorous
-            // System.exit(0);
+            dispose();
         }
     }
     
@@ -645,111 +641,202 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         jgraph.getSelectionModel().addGraphSelectionListener(new GraphSelectionListener() {
             public void valueChanged(GraphSelectionEvent e) {
                 // Update Button States based on Current Selection
-                boolean enabled = !jgraph.isSelectionEmpty();
-                deleteAction.setEnabled(enabled);
-                copyAction.setEnabled(enabled);
-                cutAction.setEnabled(enabled);
+                boolean selected = !jgraph.isSelectionEmpty();
+                getDeleteAction().setEnabled(selected);
+                getCopyAction().setEnabled(selected);
+                getCutAction().setEnabled(selected);
             }
         });
+//
+//		final JCheckBoxMenuItem attributedGraphsItem = getOptions().getItem(Options.IS_ATTRIBUTED_OPTION);
+//		// listen to the option controlling the parsing of attributed graphs
+//		attributedGraphsItem.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				setRuleFactory(DefaultRuleFactory.getInstance());
+//			}
+//		});
+    }
+//
+//    /**
+//     * Initializes the actions, including keyboard shortcuts.
+//     */
+//    protected void initActions() {
+////        // actions if the component is not auxiliary
+////        if (isAuxiliary()) {
+////            closeAction = getCloseEditorAction();
+////        } else {
+////            newAction = getNewAction();
+////            openAction = getOpenGraphAction();
+////            saveAction = getSaveGraphAction();
+////            exportAction = getExportGraphAction();
+////            quitAction = getQuitAction();
+////        }
+////        // Set selection mode
+////        getSelectModeAction();
+////        getNodeModeAction();
+////        getEdgeModeAction();
+////
+////        getUndoAction();
+////
+////        getRedoAction();
+//        getUndoManager();
+////
+////        getCopyAction();
+////        getPasteAction();
+////        getCutAction();
+////        getDeleteAction();
+//    }
 
-		final JCheckBoxMenuItem attributedGraphsItem = getOptions().getItem(Options.IS_ATTRIBUTED_OPTION);
-		// listen to the option controlling the parsing of attributed graphs
-		attributedGraphsItem.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				setRuleFactory(DefaultRuleFactory.getInstance());
-			}
-		});
+    /**
+     * Creates and lazily returns the undo manager for this editor.
+     */
+    private GraphUndoManager getUndoManager() {
+        if (undoManager == null) {
+            // Create a GraphUndoManager which also Updates the ToolBar
+            undoManager = new GraphUndoManager() {
+                @Override
+                public void undoableEditHappened(UndoableEditEvent e) {
+                    super.undoableEditHappened(e);
+                    updateHistoryButtons();
+                }
+            };
+        }
+        return undoManager;
     }
 
     /**
-     * Initializes the actions, including keyboard shortcuts.
+     * Lazily creates and returns the action to cut graph elements in the editor.
      */
-    protected void initActions() {
-//        // actions if the component is not auxiliary
-//        if (isAuxiliary()) {
-//            closeAction = getCloseEditorAction();
-//        } else {
-//            newAction = getNewAction();
-//            openAction = getOpenGraphAction();
-//            saveAction = getSaveGraphAction();
-//            exportAction = getExportGraphAction();
-//            quitAction = getQuitAction();
-//        }
-        // Set selection mode
-        ImageIcon selectIcon = new ImageIcon(Groove.getResource("select.gif"));
-        selectModeAction = new SetEditingModeAction(Options.SELECT_MODE_NAME,
-                Options.SELECT_MODE_KEY, selectIcon);
-        ImageIcon nodeIcon = new ImageIcon(Groove.getResource("rectangle.gif"));
-        nodeModeAction = new SetEditingModeAction(Options.NODE_MODE_NAME, Options.NODE_MODE_KEY,
-                nodeIcon);
-        ImageIcon edgeIcon = new ImageIcon(Groove.getResource("edge.gif"));
-        edgeModeAction = new SetEditingModeAction(Options.EDGE_MODE_NAME, Options.EDGE_MODE_KEY,
-                edgeIcon);
-
-        // Undo
-        ImageIcon undoIcon = new ImageIcon(Groove.getResource("undo.gif"));
-        undoAction = new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY, undoIcon) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                super.actionPerformed(evt);
-                undoLastEdit();
-            }
-        };
-        undoAction.setEnabled(false);
-
-        // Redo
-        ImageIcon redoIcon = new ImageIcon(Groove.getResource("redo.gif"));
-        redoAction = new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY, redoIcon) {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                super.actionPerformed(evt);
-                redoLastEdit();
-            }
-        };
-        redoAction.setEnabled(false);
-        // Create a GraphUndoManager which also Updates the ToolBar
-        undoManager = new GraphUndoManager() {
-            @Override
-            public void undoableEditHappened(UndoableEditEvent e) {
-                super.undoableEditHappened(e);
-                updateHistoryButtons();
-            }
-        };
-
-        Action action;
-
-        // Copy
-        action = TransferHandler.getCopyAction();
-        action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("copy.gif")));
-        copyAction = new TransferAction(action, Options.COPY_KEY, Options.COPY_ACTION_NAME);
-
-        // Paste
-        action = TransferHandler.getPasteAction();
-        action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("paste.gif")));
-        pasteAction = new TransferAction(action, Options.PASTE_KEY, Options.PASTE_ACTION_NAME);
-
-        // Cut
-        action = TransferHandler.getCutAction();
-        action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("cut.gif")));
-        action.putValue(Action.ACCELERATOR_KEY, Options.CUT_KEY);
-        cutAction = new TransferAction(action, Options.CUT_KEY, Options.CUT_ACTION_NAME);
-
-        // Remove
-        ImageIcon deleteIcon = new ImageIcon(Groove.getResource("delete.gif"));
-        deleteAction = new ToolbarAction(Options.DELETE_ACTION_NAME, Options.DELETE_KEY, deleteIcon) {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                if (!jgraph.isSelectionEmpty()) {
-                    Object[] cells = jgraph.getSelectionCells();
-                    cells = jgraph.getDescendants(cells);
-                    jgraph.getModel().remove(cells);
-                }
-            }
-        };
-        deleteAction.setEnabled(false);
+    private Action getCutAction() {
+        if (cutAction == null) {
+            Action action = TransferHandler.getCutAction();
+            action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("cut.gif")));
+            action.putValue(Action.ACCELERATOR_KEY, Options.CUT_KEY);
+            cutAction = new TransferAction(action, Options.CUT_KEY, Options.CUT_ACTION_NAME);
+        }
+        return cutAction;
     }
 
-	/**
+    /**
+     * Lazily creates and returns the action to copy graph elements in the editor.
+     */
+    private Action getCopyAction() {
+        if (copyAction == null) {
+            Action action = TransferHandler.getCopyAction();
+            action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("copy.gif")));
+            copyAction = new TransferAction(action, Options.COPY_KEY, Options.COPY_ACTION_NAME);
+        }
+        return copyAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to paste graph elements into the editor.
+     */
+    private Action getPasteAction() {
+        if (pasteAction == null) {
+            Action action = TransferHandler.getPasteAction();
+            action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("paste.gif")));
+            pasteAction = new TransferAction(action, Options.PASTE_KEY, Options.PASTE_ACTION_NAME);
+        }
+        return pasteAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to delete graph elements from the editor.
+     */
+    private Action getDeleteAction() {
+        if (deleteAction == null) {
+            // Remove
+            ImageIcon deleteIcon = new ImageIcon(Groove.getResource("delete.gif"));
+            deleteAction = new ToolbarAction(Options.DELETE_ACTION_NAME, Options.DELETE_KEY,
+                    deleteIcon) {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    if (!jgraph.isSelectionEmpty()) {
+                        Object[] cells = jgraph.getSelectionCells();
+                        cells = jgraph.getDescendants(cells);
+                        jgraph.getModel().remove(cells);
+                    }
+                }
+            };
+            deleteAction.setEnabled(false);
+        }
+        return deleteAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to redo the last editor action.
+     */
+    private Action getRedoAction() {
+        if (redoAction == null) {
+            ImageIcon redoIcon = new ImageIcon(Groove.getResource("redo.gif"));
+            redoAction = new ToolbarAction(Options.REDO_ACTION_NAME, Options.REDO_KEY, redoIcon) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    super.actionPerformed(evt);
+                    redoLastEdit();
+                }
+            };
+            redoAction.setEnabled(false);
+        }
+        return redoAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to undo the last editor action.
+     */
+    private Action getUndoAction() {
+        if (undoAction == null) {
+            ImageIcon undoIcon = new ImageIcon(Groove.getResource("undo.gif"));
+            undoAction = new ToolbarAction(Options.UNDO_ACTION_NAME, Options.UNDO_KEY, undoIcon) {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    super.actionPerformed(evt);
+                    undoLastEdit();
+                }
+            };
+            undoAction.setEnabled(false);
+        }
+        return undoAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to set the editor to selection mode.
+     */
+    private Action getSelectModeAction() {
+        if (selectModeAction == null) {
+            ImageIcon selectIcon = new ImageIcon(Groove.getResource("select.gif"));
+            selectModeAction = new SetEditingModeAction(Options.SELECT_MODE_NAME,
+                    Options.SELECT_MODE_KEY, selectIcon);
+        }
+        return selectModeAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to set the editor to node editing mode.
+     */
+    private Action getNodeModeAction() {
+        if (nodeModeAction == null) {
+            ImageIcon nodeIcon = new ImageIcon(Groove.getResource("rectangle.gif"));
+            nodeModeAction = new SetEditingModeAction(Options.NODE_MODE_NAME,
+                    Options.NODE_MODE_KEY, nodeIcon);
+        }
+        return nodeModeAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to set the editor to edge editing mode.
+     */
+    private Action getEdgeModeAction() {
+        if (edgeModeAction == null) {
+            ImageIcon edgeIcon = new ImageIcon(Groove.getResource("edge.gif"));
+            edgeModeAction = new SetEditingModeAction(Options.EDGE_MODE_NAME,
+                    Options.EDGE_MODE_KEY, edgeIcon);
+        }
+        return edgeModeAction;
+    }
+
+    /**
 	 * Lazily creates and returns the action to close the editor (in case it is auxiliary).
 	 */
 	private Action getCloseEditorAction() {
@@ -1027,17 +1114,17 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	 */
 	private JMenu createEditMenu() {
 	    JMenu result = new JMenu(Options.EDIT_MENU_NAME);
-	    result.add(undoAction);
-	    result.add(redoAction);
+	    result.add(getUndoAction());
+	    result.add(getRedoAction());
 	    result.addSeparator();
-	    result.add(cutAction);
-	    result.add(copyAction);
-	    result.add(pasteAction);
-	    result.add(deleteAction);
+	    result.add(getCutAction());
+	    result.add(getCopyAction());
+	    result.add(getPasteAction());
+	    result.add(getDeleteAction());
 	    result.addSeparator();
-	    result.add(selectModeAction);
-	    result.add(nodeModeAction);
-	    result.add(edgeModeAction);
+	    result.add(getSelectModeAction());
+	    result.add(getNodeModeAction());
+	    result.add(getEdgeModeAction());
 	    jgraph.fillOutEditMenu(result.getPopupMenu());
 	    return result;
 	}
@@ -1096,15 +1183,15 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 
         // Undo Block
         toolbar.addSeparator();
-        toolbar.add(undoAction);
-        toolbar.add(redoAction);
+        toolbar.add(getUndoAction());
+        toolbar.add(getRedoAction());
 
         // Edit Block
         toolbar.addSeparator();
-        toolbar.add(copyAction);
-        toolbar.add(pasteAction);
-        toolbar.add(cutAction);
-        toolbar.add(deleteAction);
+        toolbar.add(getCopyAction());
+        toolbar.add(getPasteAction());
+        toolbar.add(getCutAction());
+        toolbar.add(getDeleteAction());
         return toolbar;
     }
 
@@ -1131,7 +1218,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	 */
 	private JToggleButton getEdgeModeButton() {
 		if (edgeModeButton == null) {
-			edgeModeButton = new JToggleButton(edgeModeAction);
+			edgeModeButton = new JToggleButton(getEdgeModeAction());
 			edgeModeButton.setText(null);
 			edgeModeButton.setToolTipText(Options.EDGE_MODE_NAME);
 		}
@@ -1143,7 +1230,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	 */
 	private JToggleButton getNodeModeButton() {
 		if (nodeModeButton == null) {
-			nodeModeButton = new JToggleButton(nodeModeAction);
+			nodeModeButton = new JToggleButton(getNodeModeAction());
 			nodeModeButton.setText(null);
 			nodeModeButton.setToolTipText(Options.NODE_MODE_NAME);
 		}
@@ -1155,7 +1242,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	 */
 	private JToggleButton getSelectModeButton() {
 		if (selectModeButton == null) {
-			selectModeButton = new JToggleButton(selectModeAction);
+			selectModeButton = new JToggleButton(getSelectModeAction());
 			selectModeButton.setText(null);
 			selectModeButton.setToolTipText(Options.SELECT_MODE_NAME);
 			selectModeButton.doClick();
@@ -1169,9 +1256,9 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
     protected void updateHistoryButtons() {
         // The View Argument Defines the Context
-        undoAction.setEnabled(undoManager.canUndo());
-        redoAction.setEnabled(undoManager.canRedo());
-        setCurrentGraphModified(undoManager.canUndo());
+        getUndoAction().setEnabled(getUndoManager().canUndo());
+        getRedoAction().setEnabled(getUndoManager().canRedo());
+        setCurrentGraphModified(getUndoManager().canUndo());
     }
 
     /**
@@ -1208,7 +1295,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     protected void undoLastEdit() {
         try {
             setSelectInsertedCells(false);
-            undoManager.undo(jgraph.getGraphLayoutCache());
+            getUndoManager().undo(jgraph.getGraphLayoutCache());
             setSelectInsertedCells(true);
         } catch (Exception ex) {
             System.err.println(ex);
@@ -1221,7 +1308,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     protected void redoLastEdit() {
         try {
             setSelectInsertedCells(false);
-            undoManager.redo(jgraph.getGraphLayoutCache());
+            getUndoManager().redo(jgraph.getGraphLayoutCache());
             setSelectInsertedCells(true);
         } catch (Exception ex) {
             System.err.println(ex);
@@ -1252,14 +1339,14 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             return true;
         }
     }
-
-	/**
-     * Sets the {@link #ruleFactory} with the given object.
-     * @param ruleFactory the new rule factory
-     */
-    protected void setRuleFactory(RuleFactory ruleFactory) {
-    	this.ruleFactory = ruleFactory;
-    }
+//
+//	/**
+//     * Sets the {@link #ruleFactory} with the given object.
+//     * @param ruleFactory the new rule factory
+//     */
+//    protected void setRuleFactory(RuleFactory ruleFactory) {
+//    	this.ruleFactory = ruleFactory;
+//    }
 
     /**
      * Returns the rule factory.
@@ -1456,15 +1543,15 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     private Action newAction;
 
     /** Action to close the editor. Only if the editor is auxiliary. */
-    protected Action closeAction;
+    private Action closeAction;
     /** Action to quit the editor. Only if the editor is not auxiliary. */
-    protected Action quitAction;
+    private Action quitAction;
     /** Action to set the editor to selection mode. */
-    protected Action selectModeAction;
+    private Action selectModeAction;
     /** Action to set the editor to node editing mode. */
-    protected Action nodeModeAction;
+    private Action nodeModeAction;
     /** Action to set the editor to edge editing mode. */
-    protected Action edgeModeAction;
+    private Action edgeModeAction;
 
     /** Button for setting edge editing mode. */
     private transient JToggleButton edgeModeButton;

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ZoomMenu.java,v 1.2 2007-03-30 15:50:35 rensink Exp $
+ * $Id: ZoomMenu.java,v 1.3 2007-04-18 15:58:30 rensink Exp $
  */
 package groove.gui;
 
@@ -32,7 +32,7 @@ import javax.swing.JViewport;
 /**
  * Menu for zoomin in/out on a jgraph.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ZoomMenu extends JMenu {
 	/** The menu name. */
@@ -77,7 +77,7 @@ public class ZoomMenu extends JMenu {
 
     /** Enables the menu actions according to the current scaling. */
     protected void setActionsEnabled() {
-        zoomInAction.setEnabled(jgraph.getScale() < 1);
+//        zoomInAction.setEnabled(jgraph.getScale() < 1);
     }
 
     /**
@@ -109,7 +109,8 @@ public class ZoomMenu extends JMenu {
     protected final Action zoomInAction = new AbstractAction("Zoom in") {
         public void actionPerformed(ActionEvent evt) {
             double scale = jgraph.getScale() * 2;
-            jgraph.setScale(Math.min(1, scale));
+//            jgraph.setScale(Math.min(1, scale));
+            jgraph.setScale(scale);
             setActionsEnabled();
         }
     };
