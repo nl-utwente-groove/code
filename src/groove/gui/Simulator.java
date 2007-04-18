@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.9 2007-04-18 10:34:03 rensink Exp $
+ * $Id: Simulator.java,v 1.10 2007-04-18 11:18:37 rensink Exp $
  */
 package groove.gui;
 
@@ -112,7 +112,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class Simulator {
     /**
@@ -1004,7 +1004,7 @@ public class Simulator {
         editor.getRulePreviewAction().setEnabled(false);
         editorDialog.setVisible(true);
         // now the editor is done; see if we have do make any updates
-        if (editor.isJGraphModified()) {
+        if (editor.isCurrentGraphModified()) {
 			File saveFile = handleSaveGraph(true,
 					editor.getModel(),
 					stateName);
@@ -1028,7 +1028,7 @@ public class Simulator {
         editorDialog = Editor.createEditorDialog(frame, true, editor);
         editorDialog.setVisible(true);
         // now the editor is done; see if we have do make any updates
-        if (editor.isJGraphModified()) {
+        if (editor.isCurrentGraphModified()) {
             Graph editedGraph = editor.getModel().toPlainGraph();
             if (confirmReplaceRule(ruleName)) {
                 replaceCurrentRule(editedGraph);
