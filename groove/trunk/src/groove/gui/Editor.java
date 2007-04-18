@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.9 2007-04-18 10:34:03 rensink Exp $
+ * $Id: Editor.java,v 1.10 2007-04-18 11:18:37 rensink Exp $
  */
 package groove.gui;
 
@@ -90,7 +90,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.9 $ $Date: 2007-04-18 10:34:03 $
+ * @version $Revision: 1.10 $ $Date: 2007-04-18 11:18:37 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -277,7 +277,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.9 $
+     * @version $Revision: 1.10 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -382,7 +382,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * some other frame.
      */
     public boolean isAuxiliary() {
-        return auxiliary;
+//        return auxiliary;
+        return false;
     }
 
     /**
@@ -439,7 +440,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         Graph saveGraph = getModel().toPlainGraph();
         layoutGxl.marshalGraph(saveGraph, toFile);
         setModelName(currentFile.getName());
-        setJGraphModified(false);
+        setCurrentGraphModified(false);
+        notifyGraphSaved();
     }
 
     /**
@@ -483,7 +485,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         } else {
             jgraph.setModel(new EditorJModel(name, model));
         }
-        setJGraphModified(false);
+        setCurrentGraphModified(false);
         undoManager.discardAllEdits();
         getModel().addUndoableEditListener(undoManager);
         getModel().addGraphModelListener(this);
@@ -659,16 +661,16 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * Initializes the actions, including keyboard shortcuts.
      */
     protected void initActions() {
-        // actions if the component is not auxiliary
-        if (auxiliary) {
-            closeAction = new CloseEditorAction();
-        } else {
-            newAction = new NewGraphAction();
-            openAction = new OpenGraphAction();
-            saveAction = new SaveGraphAction();
-            exportAction = new ExportGraphAction();
-            quitAction = new QuitAction();
-        }
+//        // actions if the component is not auxiliary
+//        if (isAuxiliary()) {
+//            closeAction = getCloseEditorAction();
+//        } else {
+//            newAction = getNewAction();
+//            openAction = getOpenGraphAction();
+//            saveAction = getSaveGraphAction();
+//            exportAction = getExportGraphAction();
+//            quitAction = getQuitAction();
+//        }
         // Set selection mode
         ImageIcon selectIcon = new ImageIcon(Groove.getResource("select.gif"));
         selectModeAction = new SetEditingModeAction(Options.SELECT_MODE_NAME,
@@ -742,6 +744,66 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         };
         deleteAction.setEnabled(false);
     }
+
+	/**
+	 * Lazily creates and returns the action to close the editor (in case it is auxiliary).
+	 */
+	private Action getCloseEditorAction() {
+		if (closeAction == null) {
+			closeAction = new CloseEditorAction();
+		}
+		return closeAction;
+	}
+
+	/**
+	 * Lazily creates and returns the action to quit the editor.
+	 */
+	private Action getQuitAction() {
+		if (quitAction == null) {
+			quitAction = new QuitAction();
+		}
+		return quitAction;
+	}
+
+	/**
+	 * Lazily creates and returns the action to export the current graph.
+	 */
+	private Action getExportGraphAction() {
+		if (exportAction == null) {
+			exportAction = new ExportGraphAction();
+		}
+		return exportAction;
+	}
+
+	/**
+	 * Lazily creates and returns the action to save the current graph.
+	 */
+	private Action getSaveGraphAction() {
+		if (saveAction == null) {
+			saveAction = new SaveGraphAction();
+		}
+		return saveAction;
+	}
+
+	/**
+	 * Lazily creates and returns the action to open a new graph.
+	 */
+	private Action getOpenGraphAction() {
+		if (openAction == null) {
+			openAction =  new OpenGraphAction();
+		}
+		return openAction;
+	}
+
+	/**
+	 * Lazily creates and returns the action to start editing a fresh graph.
+	 */
+	private Action getNewAction() {
+		if (newAction == null) {
+			newAction = new NewGraphAction();
+		}
+		return newAction;
+	}
 
     /** Initialises the GUI. */
     protected void initGUI() {
@@ -838,24 +900,39 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	}
     
     /**
-	 * Sets the modified status of the underlying jgraph. Also updates the frame
+	 * Sets the modified status of the currentle edited graph. Also updates the frame
 	 * title to reflect the new modified status.
 	 * 
 	 * @param modified
 	 *            the new modified status
-	 * @see #isJGraphModified()
+	 * @see #isCurrentGraphModified()
 	 */
-    protected void setJGraphModified(boolean modified) {
-    	jgraphModified = modified;
+    protected void setCurrentGraphModified(boolean modified) {
+    	currentGraphModified = modified;
 		refreshTitle();
     }
-    
+
     /**
      * Returns the current modified status of the underlying jgraph.
-     * @see #setJGraphModified(boolean)
+     * @see #setCurrentGraphModified(boolean)
      */
-    protected boolean isJGraphModified() {
-        return jgraphModified;
+    protected boolean isCurrentGraphModified() {
+        return currentGraphModified;
+    }
+
+    /**
+	 * Registers that a graph has been saved.
+	 * @see #isAnyGraphSaved()
+	 */
+    protected void notifyGraphSaved() {
+    	anyGraphSaved = true;
+    }
+
+    /**
+     * Indicates if any graph was saved during the lifetime of this editor.
+     */
+    protected boolean isAnyGraphSaved() {
+        return anyGraphSaved;
     }
 
     /**
@@ -890,7 +967,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
     protected void refreshTitle() {
         String modelName = getModelName();
-        String title = (jgraphModified ? MODIFIED_INDICATOR: "") + (modelName == null ? NEW_GRAPH_NAME : modelName) + " - " + EDITOR_NAME;
+        String title = (currentGraphModified ? MODIFIED_INDICATOR: "") + (modelName == null ? NEW_GRAPH_NAME : modelName) + " - " + EDITOR_NAME;
         Component window = getRootComponent();
         if (window instanceof JFrame) {
             ((JFrame) window).setTitle(title);        
@@ -931,13 +1008,13 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	 */
 	private JMenu createFileMenu() {
 		JMenu result = new JMenu(Options.FILE_MENU_NAME);
-	    result.add(newAction);
-	    result.add(openAction);
+	    result.add(getNewAction());
+	    result.add(getOpenGraphAction());
 	    result.addSeparator();
-	    result.add(saveAction);
-	    result.add(exportAction);
+	    result.add(getSaveGraphAction());
+	    result.add(getExportGraphAction());
 	    result.addSeparator();
-	    result.add(quitAction);
+	    result.add(getQuitAction());
 	    return result;
 	}
 
@@ -997,11 +1074,11 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         if (isAuxiliary()) {
-            toolbar.add(closeAction);
+            toolbar.add(getCloseEditorAction());
         } else {
-            toolbar.add(newAction);
-            toolbar.add(openAction);
-            toolbar.add(saveAction);
+            toolbar.add(getNewAction());
+            toolbar.add(getOpenGraphAction());
+            toolbar.add(getSaveGraphAction());
         }
         toolbar.add(getRulePreviewAction());
 
@@ -1084,13 +1161,13 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 
     /** 
      * Updates the Undo/Redo Button State based on Undo Manager.
-     * Also sets {@link #jgraphModified} if no more undos are available.
+     * Also sets {@link #isCurrentGraphModified()} if no more undos are available.
      */
     protected void updateHistoryButtons() {
         // The View Argument Defines the Context
         undoAction.setEnabled(undoManager.canUndo());
         redoAction.setEnabled(undoManager.canRedo());
-        setJGraphModified(undoManager.canUndo());
+        setCurrentGraphModified(undoManager.canUndo());
     }
 
     /**
@@ -1156,7 +1233,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 
     /** Creates and shows a confirmation dialog for abandoning the currently edited graph. */
     private boolean showAbandonDialog() {
-        if (isJGraphModified()) {
+        if (isCurrentGraphModified()) {
             int res = JOptionPane.showConfirmDialog(jGraphPanel,
                 "Abandon changes in current graph?",
                 null,
@@ -1236,7 +1313,10 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     private JCheckBox confirmPreviewCheckBox;
 
     /** Indicates whether jgraph has been modified since the last save. */
-    private boolean jgraphModified;
+    private boolean currentGraphModified;
+
+    /** Indicates whether jgraph has been modified since the last save. */
+    private boolean anyGraphSaved;
 
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
