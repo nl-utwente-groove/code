@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleFactory.java,v 1.3 2007-04-04 07:04:19 rensink Exp $
+ * $Id: RuleFactory.java,v 1.4 2007-04-18 08:36:10 rensink Exp $
  */
 package groove.trans;
 
@@ -26,7 +26,7 @@ import groove.util.FormatException;
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-04-04 07:04:19 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-18 08:36:10 $
  */
 public interface RuleFactory {
 	/**
@@ -35,13 +35,13 @@ public interface RuleFactory {
 	 * @param properties TODO
 	 * @return a rule view over the rule encoded in the given graph
 	 */
-	public RuleView createRuleView(Graph graph, NameLabel name, int priority, RuleProperties properties) throws FormatException;
+	public RuleView createRuleView(Graph graph, NameLabel name, int priority, SystemProperties properties) throws FormatException;
 
 	/**
 	 * Creates a named rule from a morphism.
 	 * The rule gets default rule properties and priority.
-	 * @see #createRule(Morphism, NameLabel, int, RuleProperties)
-	 * @see RuleProperties#DEFAULT_PROPERTIES
+	 * @see #createRule(Morphism, NameLabel, int, SystemProperties)
+	 * @see SystemProperties#DEFAULT_PROPERTIES
 	 * @see Rule#DEFAULT_PRIORITY
 	 * @throws FormatException if a rule cannot be created due to incompatibility
 	 * of the morphism and the default rule properties
@@ -53,7 +53,7 @@ public interface RuleFactory {
 	 * @throws FormatException if a rule cannot be created due to incompatibility
 	 * of the morphism and the declared rule properties
 	 */
-	public Rule createRule(Morphism morphism, NameLabel name, int priority, RuleProperties properties) throws FormatException;
+	public Rule createRule(Morphism morphism, NameLabel name, int priority, SystemProperties properties) throws FormatException;
 
     /**
      * Creates and returns a fresh rule application object, of the kind required by the

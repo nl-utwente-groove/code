@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.5 2007-04-04 07:04:20 rensink Exp $
+ * $Id: SPORule.java,v 1.6 2007-04-18 08:36:10 rensink Exp $
  */
 package groove.trans;
 
@@ -25,6 +25,7 @@ import groove.graph.match.SearchItem;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarGraph;
+import groove.util.FormatException;
 import groove.util.Groove;
 
 import java.util.ArrayList;
@@ -41,7 +42,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -94,19 +95,18 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * @param name the name of the new rule
      * @param priority the priority of this rule; should be non-negative
      * @param properties the factory this rule used to instantiate related classes
+     * @throws FormatException if the rule system properties do not concur with the rule itself
      */
-    public SPORule(Morphism morph, NameLabel name, int priority, RuleProperties properties) {
-        super((VarGraph) morph.dom().newGraph(), (VarGraph) morph.dom(), name, properties.getFactory());
+    public SPORule(Morphism morph, NameLabel name, int priority, SystemProperties properties) throws FormatException {
+        super((VarGraph) morph.dom(), name, properties);
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Constructing rule: " + name);
             Groove.message("Rule morphism: " + morph);
         }
-//        this.isInjective = morph.isInjective();
         this.hasCreators = !morph.isSurjective();
         this.morphism = morph;
         this.lhs = (VarGraph) morphism.dom();
         this.rhs = (VarGraph) morphism.cod();
-//        this.modifying = computeModifying();
     	this.priority = priority;
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Rule " + name + ": " + this);
@@ -116,20 +116,22 @@ public class SPORule extends DefaultGraphCondition implements Rule {
             System.out.println("Anchors:\n" + anchor());
         }
     }
-//
-//    /**
-//     * Constructs a rule on the basis of a given morphism, and with a given name.
-//     * The priority is initially set to {@link #DEFAULT_PRIORITY}.
-//     * After constructing the rule, the morphism should not be modified!
-//     * @param morph the morphism on which this production is to be based.
-//     * @param name the name of the new rule
-//     * @ensure morphism().equals(morphism);
-//     *         lhs().equals(morph.dom());
-//     *         rhs().equals(morph.cod())
-//     */
-//    public SPORule(Morphism morph, NameLabel name, RuleFactory ruleFactory) {
-//    	this(morph, name, DEFAULT_PRIORITY, ruleFactory);
-//    }
+    
+    /**
+     * Tests if the rule is consistent with the rule properties.
+     * @throws FormatException if the rule data are not compatible with the rule (system) properties
+     */
+    private void testConsistency() throws FormatException {
+    	if (getProperties().isAttributed()) {
+    		if (getIsolatedNodes().length > 0) {
+    			throw new FormatException("Isolated nodes in rule not allowed in attributed rule systems", getName());
+    		}
+    	} else {
+    		if (isAttributed()) {
+    			throw new FormatException("Attributed rule %s not allowed in non-attributed rule system", getName());
+    		}
+    	}
+    }
 
     /**
      * Factory method to create an event based on this rule and a given anchor map.
@@ -180,14 +182,14 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     	return getRuleFactory().createRuleApplication(getEvent(match.elementMap()), match.cod());
 //        return getEvent(match.elementMap()).createApplication(match.cod());
     }
-
-    @Override
-    public Matching createMatching(Graph graph) {
-    	return getRuleFactory().createMatching(this, graph);
-    }
+//
+//    @Override
+//    public Matching createMatching(Graph graph) {
+//    	return getRuleFactory().createMatching(this, graph);
+//    }
 
 	/** Creates the search plan using the rule's search plan factory. */
-    public List<SearchItem> getEventSearchPlan() {
+    public List<SearchItem> getAnchorSearchPlan() {
 		if (eventSearchPlan == null) {
 			eventSearchPlan = getSearchPlanFactory().createSearchPlan(this, getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
 		}
@@ -270,7 +272,9 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /** 
      * This method now delegates to {@link #setAndNot(GraphTest)}.
      * @see #setAndNot(GraphTest)
+     * @deprecated use {@link #setAndNot(Edge)} instead
      */
+    @Deprecated
     public void addNAC(NAC nac) {
         setAndNot(nac);
     }
@@ -278,19 +282,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     public int getPriority() {
 		return priority;
 	}
-    
-    public RuleProperties getProperties() {
-    	if (properties == null) {
-    		properties = RuleProperties.DEFAULT_PROPERTIES;
-    	}
-		return properties;
-	}
 
-	/**
-     * Sets the priority of this rule.
-     * Should be called at initialization time, before the first application.
-     * @param priority the priority of the rule
-     */
+    @Deprecated
     public void setPriority(int priority) {
 		this.priority = priority;
 	}
@@ -672,10 +665,10 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * @invariant rhs != null
      */
     private final VarGraph rhs;
-    /**
-     * The grammar with which this rule is associated; may be <code>null</code>.
-     */
-    private RuleProperties properties;
+//    /**
+//     * The grammar with which this rule is associated; may be <code>null</code>.
+//     */
+//    private SystemProperties properties;
     /** 
      * Smallest subgraph of the left hand side that is necessary to
      * apply the rule.

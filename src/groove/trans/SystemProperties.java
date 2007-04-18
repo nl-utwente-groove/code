@@ -18,18 +18,18 @@ import java.util.Map.Entry;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleProperties extends java.util.Properties {
+public class SystemProperties extends java.util.Properties {
 	/** 
 	 * Constructs an empty properties object for a given rule system.
 	 * @param system the rule system with which these properties are associated
 	 */
-	RuleProperties(RuleSystem system) {
+	SystemProperties(RuleSystem system) {
 		this.ruleSystem = system;
 		// empty
 	}
 	
 	/** Constructs an empty properties object, not associated to any rule system. */
-	public RuleProperties() {
+	public SystemProperties() {
 		this(null);
 		// empty
 	}
@@ -49,8 +49,8 @@ public class RuleProperties extends java.util.Properties {
      * @see #ATTRIBUTES_YES
      */
     public boolean isAttributed() {
-    	String attributed = getProperty(RuleProperties.ATTRIBUTE_SUPPORT);
-    	return attributed != null && attributed.equals(RuleProperties.ATTRIBUTES_YES);
+    	String attributed = getProperty(SystemProperties.ATTRIBUTE_SUPPORT);
+    	return attributed != null && attributed.equals(SystemProperties.ATTRIBUTES_YES);
     }
     
     /**
@@ -67,7 +67,7 @@ public class RuleProperties extends java.util.Properties {
      * @see #CONTROL_LABELS
      */
     public List<String> getControlLabels() {
-    	String controlLabels = getProperty(RuleProperties.CONTROL_LABELS);
+    	String controlLabels = getProperty(SystemProperties.CONTROL_LABELS);
     	if (controlLabels == null) {
     		return Collections.emptyList();
     	} else {
@@ -89,7 +89,7 @@ public class RuleProperties extends java.util.Properties {
      * @see #COMMON_LABELS
      */
     public List<String> getCommonLabels() {
-    	String commonLabels = getProperty(RuleProperties.COMMON_LABELS);
+    	String commonLabels = getProperty(SystemProperties.COMMON_LABELS);
     	if (commonLabels == null) {
     		return Collections.emptyList();
     	} else {
@@ -246,12 +246,12 @@ public class RuleProperties extends java.util.Properties {
 	static public final String ATTRIBUTES_NO = "0";
 	
 	/** Map storing default property instances. */
-	static private final Map<Boolean,RuleProperties> instances = new HashMap<Boolean,RuleProperties>();
+	static private final Map<Boolean,SystemProperties> instances = new HashMap<Boolean,SystemProperties>();
 	
 	static {
 		// initialize the instance map
 		for (boolean attributed: new boolean[] { true, false } ) {
-			RuleProperties properties = new RuleProperties();
+			SystemProperties properties = new SystemProperties();
 			properties.setAttributed(attributed);
 			properties.setFixed();
 			instances.put(attributed, properties);
@@ -264,7 +264,7 @@ public class RuleProperties extends java.util.Properties {
 	 * @param attributed <code>true</code> if the attributed property of the
 	 * returned properties object is to be set
 	 */
-	static public RuleProperties getInstance(boolean attributed) {
+	static public SystemProperties getInstance(boolean attributed) {
 		return instances.get(attributed);
 	}
 
@@ -272,6 +272,6 @@ public class RuleProperties extends java.util.Properties {
 	 * The default rule properties: not attributed, no control or common labels,
 	 * and a {@link DefaultRuleFactory}. 
 	 */
-	static public final RuleProperties DEFAULT_PROPERTIES = getInstance(false);
+	static public final SystemProperties DEFAULT_PROPERTIES = getInstance(false);
 
 }

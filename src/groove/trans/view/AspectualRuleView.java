@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.5 2007-04-12 16:14:55 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.6 2007-04-18 08:36:23 rensink Exp $
  */
 
 package groove.trans.view;
@@ -21,7 +21,6 @@ import static groove.graph.aspect.RuleAspect.*;
 
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultEdge;
-import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -51,8 +50,7 @@ import groove.trans.NAC;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
-import groove.trans.RuleProperties;
-import groove.trans.SPORule;
+import groove.trans.SystemProperties;
 import groove.util.FormatException;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -77,13 +75,13 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
-    static public final Label MERGE_LABEL = new RegExprLabel(RegExpr.empty());
-    /** Label for injection constraints */
-    static public final Label NEGATIVE_MERGE_LABEL = new RegExprLabel(RegExpr.empty().neg());
+    static public final Label MERGE_LABEL = RegExpr.empty().toLabel();
+//    /** Label for injection constraints */
+//    static public final Label NEGATIVE_MERGE_LABEL = RegExpr.empty().neg().toLabel();
 
     /** Isomorphism checker (used for testing purposes). */
     static private final IsoChecker isoChecker = new DefaultIsoChecker();
@@ -111,7 +109,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 * and back, using {@link #testTranslation(String,AspectGraph)}. 
 	 * Recursively descends into directories.
 	 */
-	private static void testFile(File file) throws FormatException, FormatException {
+	private static void testFile(File file) {
         AspectGraph factory = AspectGraph.getFactory();
 		if (file.isDirectory()) {
 			for (File nestedFile: file.listFiles()) {
@@ -124,6 +122,8 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 				testTranslation(file.getName(), factory.fromPlainGraph(plainGraph));
 				System.out.println(" - OK");
 			}
+		} catch (FormatException exc) {
+			// do nothing (skip)
 		} catch (IOException exc) {
 			// do nothing (skip)
 		}
@@ -200,7 +200,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * @throws FormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public AspectualRuleView(AspectGraph graph, NameLabel name, int priority, RuleProperties properties) throws FormatException {
+    public AspectualRuleView(AspectGraph graph, NameLabel name, int priority, SystemProperties properties) throws FormatException {
         this.name = name;
         this.priority = priority;
         this.properties = properties;
@@ -360,19 +360,19 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
         for (AspectEdge edge: graph.edgeSet()) {
         	if (RuleAspect.inRule(edge)) {
 				Edge edgeImage = computeEdgeImage(edge, graph, graphToRuleMap);
-				boolean isEmbargo = false;
+//				boolean isEmbargo = false;
 				if (RuleAspect.inLHS(edge)) {
-					NAC embargo = computeEmbargoFromNegation(lhs, edgeImage);
-					isEmbargo = embargo != null;
-					if (isEmbargo) {
-						embargoes.add(embargo);
-					} else {
+//					NAC embargo = computeEmbargoFromNegation(lhs, edgeImage);
+//					isEmbargo = embargo != null;
+//					if (isEmbargo) {
+//						embargoes.add(embargo);
+//					} else {
 						left.addEdge(edgeImage);
 						lhs.addEdge(edgeImage);
-					}
+//					}
 				}
-				if (!isEmbargo
-						&& RuleAspect.inRHS(edge)
+//				if (!isEmbargo
+				if (RuleAspect.inRHS(edge)
 						&& !(RuleAspect.isCreator(edge) && RegExprLabel.isEmpty(edge.label()))) {
 					// use the toRight map because we may have merged nodes
 					Edge rhsEdgeImage = computeEdgeImage(edge, graph, toRight);
@@ -488,46 +488,46 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 						nacMorphism.putNode(end, end);
 					}
 				}
-				NAC subEmbargo = computeEmbargoFromNegation(nacTarget, edge);
-				if (subEmbargo == null) {
+//				NAC subEmbargo = computeEmbargoFromNegation(nacTarget, edge);
+//				if (subEmbargo == null) {
 					nacTarget.addEdge(edge);
-				} else {
-					result.setAndNot(subEmbargo);
-				}
+//				} else {
+//					result.setAndNot(subEmbargo);
+//				}
 			}
 		}
         return result;
     }
-
-	/**
-     * Callback method to construct a merge or edge embargo from a given edge,
-     * in case the edge label is a negated regular expression. If the inner
-     * regular expression is an {@link RegExpr.Empty}, the method yields a 
-     * merge embargo, for any other it yields an edge embargo. If the label is
-     * not a negation, the method returns <code>null</code>.
-	 * @param graph the context for the embargo, if one is constructed
-	 * @param edge the edge from which the embargo is constructed
-	 * @return the embargo, or <code>null</code> if <code>edge</code> does
-	 * not have a top-level {@link RegExpr.Neg} operator.
-     */
-    protected NAC computeEmbargoFromNegation(VarGraph graph, Edge edge) {
-        RegExpr negOperand = RegExprLabel.getNegOperand(edge.label());
-        if (negOperand == null) {
-            // the label is not a negation: no embargo
-            return null;
-        } else if (negOperand instanceof RegExpr.Empty) {
-            return createMergeEmbargo(graph, edge.ends());
-        } else {
-            // it is an edge embargo. we prefer DefaultLabels.
-            Label embargoLabel;
-            if (negOperand instanceof RegExpr.Atom) {
-                embargoLabel = DefaultLabel.createLabel(((RegExpr.Atom) negOperand).text());
-            } else {
-                embargoLabel = new RegExprLabel(negOperand);
-            }
-            return createEdgeEmbargo(graph, createEdge(edge.ends(), embargoLabel));
-        }
-    }
+//
+//	/**
+//     * Callback method to construct a merge or edge embargo from a given edge,
+//     * in case the edge label is a negated regular expression. If the inner
+//     * regular expression is an {@link RegExpr.Empty}, the method yields a 
+//     * merge embargo, for any other it yields an edge embargo. If the label is
+//     * not a negation, the method returns <code>null</code>.
+//	 * @param graph the context for the embargo, if one is constructed
+//	 * @param edge the edge from which the embargo is constructed
+//	 * @return the embargo, or <code>null</code> if <code>edge</code> does
+//	 * not have a top-level {@link RegExpr.Neg} operator.
+//     */
+//    protected NAC computeEmbargoFromNegation(VarGraph graph, Edge edge) {
+//        RegExpr negOperand = RegExprLabel.getNegOperand(edge.label());
+//        if (negOperand == null) {
+//            // the label is not a negation: no embargo
+//            return null;
+//        } else if (negOperand instanceof RegExpr.Empty) {
+//            return createMergeEmbargo(graph, edge.ends());
+//        } else {
+//            // it is an edge embargo. we prefer DefaultLabels.
+//            Label embargoLabel;
+//            if (negOperand instanceof RegExpr.Atom) {
+//                embargoLabel = DefaultLabel.createLabel(((RegExpr.Atom) negOperand).text());
+//            } else {
+//                embargoLabel = new RegExprLabel(negOperand);
+//            }
+//            return createEdgeEmbargo(graph, createEdge(edge.ends(), embargoLabel));
+//        }
+//    }
     
     /**
 	 * Callback method to create a merge embargo.
@@ -537,7 +537,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 * @see #toRule()
 	 */
 	protected MergeEmbargo createMergeEmbargo(VarGraph context, Node[] embargoNodes) {
-	    return new MergeEmbargo(context, embargoNodes, getRuleFactory());
+	    return new MergeEmbargo(context, embargoNodes, properties);
 	}
 
 	/**
@@ -548,7 +548,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 * @see #toRule()
 	 */
 	protected EdgeEmbargo createEdgeEmbargo(VarGraph context, Edge embargoEdge) {
-	    return new EdgeEmbargo(context, embargoEdge, getRuleFactory());
+	    return new EdgeEmbargo(context, embargoEdge, properties);
 	}
 
 	/**
@@ -558,19 +558,18 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 * @see #toRule()
 	 */
 	protected NAC createNAC(VarGraph context) {
-	    return new DefaultNAC(context, getRuleFactory());
+	    return new DefaultNAC(context, properties);
 	}
 
 	/**
 	 * Factory method for rules.
-	 * This implementation delegates to {@link #getRuleFactory()}.
 	 * @param ruleMorphism morphism of the new rule to be created
 	 * @param name name of the new rule to be created
 	 * @param priority the priority of the new rule.
 	 * @return the fresh rule created by the factory
 	 */
 	protected Rule createRule(Morphism ruleMorphism, NameLabel name, int priority) throws FormatException {
-	    return new SPORule(ruleMorphism, name, priority, properties);
+	    return getRuleFactory().createRule(ruleMorphism, name, priority, properties);
 	}
 
 	/**
@@ -712,23 +711,23 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 					result.addEdge(nacEdgeImage);
 					nacGraph.addEdge(nacEdgeImage);
 				}
-				for (GraphCondition subNac : nac.getNegConjunct().getConditions()) {
-					AspectEdge subNacEdgeImage;
-					if (subNac instanceof MergeEmbargo) {
-						subNacEdgeImage = createInjectionEdge((MergeEmbargo) subNac,
-								nacNodeMap,
-								EMBARGO);
-					} else if (subNac instanceof EdgeEmbargo) {
-						subNacEdgeImage = createNegationEdge((EdgeEmbargo) subNac,
-								nacNodeMap,
-								EMBARGO);
-					} else {
-						throw new FormatException(
-								"Level 2 NACs must be merge or edge embargoes");
-					}
-					result.addEdge(subNacEdgeImage);
-					nacGraph.addEdge(subNacEdgeImage);
-				}
+//				for (GraphCondition subNac : nac.getNegConjunct().getConditions()) {
+//					AspectEdge subNacEdgeImage;
+//					if (subNac instanceof MergeEmbargo) {
+//						subNacEdgeImage = createInjectionEdge((MergeEmbargo) subNac,
+//								nacNodeMap,
+//								EMBARGO);
+//					} else if (subNac instanceof EdgeEmbargo) {
+//						subNacEdgeImage = createNegationEdge((EdgeEmbargo) subNac,
+//								nacNodeMap,
+//								EMBARGO);
+//					} else {
+//						throw new FormatException(
+//								"Level 2 NACs must be merge or edge embargoes");
+//					}
+//					result.addEdge(subNacEdgeImage);
+//					nacGraph.addEdge(subNacEdgeImage);
+//				}
 				testConnected(nacGraph);
 			}
 		}
@@ -798,30 +797,30 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     		return null;
     	}
     }
-    
-    /**
-	 * Creates an injection edge based on a given merge embargo.
-	 * The embargo is interpreted under a certain node mapping.
-	 * A role parameter controls whether it is a level 1 injection (READER) or level 2 (EMBARGO)
-	 */
-	private AspectEdge createInjectionEdge(MergeEmbargo embargo, Map<Node,AspectNode> nodeMap, AspectValue role) {
-	    return computeAspectEdge(images(nodeMap, embargo.getNodes()), NEGATIVE_MERGE_LABEL, role, null);
-	}
-
-	/**
-	 * Creates a negation edge based on a given edge embargo.
-	 * The embargo is interpreted under a certain node mapping.
-	 * A role parameter controls whether it is a level 1 negation (READER) or level 2 (EMBARGO)
-	 */
-	private AspectEdge createNegationEdge(EdgeEmbargo embargo, Map<Node,AspectNode> nodeMap, AspectValue role) {
-	    Edge embargoEdge = embargo.getEmbargoEdge();
-	    Label label = embargoEdge.label();
-	    // we have to add a negation to the label, which may mean we first have
-	    // to turn it into a regular expression
-	    RegExpr labelExpr = label instanceof RegExprLabel ? ((RegExprLabel) label).getRegExpr() : RegExpr.atom(label.text());
-	    List<AspectNode> endImages = images(nodeMap, embargoEdge.ends());
-	    return computeAspectEdge(endImages, new RegExprLabel(labelExpr.neg()), role, null);
-	}
+//    
+//    /**
+//	 * Creates an injection edge based on a given merge embargo.
+//	 * The embargo is interpreted under a certain node mapping.
+//	 * A role parameter controls whether it is a level 1 injection (READER) or level 2 (EMBARGO)
+//	 */
+//	private AspectEdge createInjectionEdge(MergeEmbargo embargo, Map<Node,AspectNode> nodeMap, AspectValue role) {
+//	    return computeAspectEdge(images(nodeMap, embargo.getNodes()), NEGATIVE_MERGE_LABEL, role, null);
+//	}
+//
+//	/**
+//	 * Creates a negation edge based on a given edge embargo.
+//	 * The embargo is interpreted under a certain node mapping.
+//	 * A role parameter controls whether it is a level 1 negation (READER) or level 2 (EMBARGO)
+//	 */
+//	private AspectEdge createNegationEdge(EdgeEmbargo embargo, Map<Node,AspectNode> nodeMap, AspectValue role) {
+//	    Edge embargoEdge = embargo.getEmbargoEdge();
+//	    Label label = embargoEdge.label();
+//	    // we have to add a negation to the label, which may mean we first have
+//	    // to turn it into a regular expression
+//	    RegExpr labelExpr = label instanceof RegExprLabel ? ((RegExprLabel) label).getRegExpr() : RegExpr.atom(label.text());
+//	    List<AspectNode> endImages = images(nodeMap, embargoEdge.ends());
+//	    return computeAspectEdge(endImages, labelExpr.neg().toLabel(), role, null);
+//	}
 
 	/**
      * Tests if a given morphism is injective; throws a {@link IllegalArgumentException} if it is not.
@@ -881,7 +880,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      */
     private final Map<AspectNode,Node> graphToRuleMap;
     /** Rule factory set for this rule. */
-    private final RuleProperties properties;
+    private final SystemProperties properties;
 
     /** Debug flag for creating rules. */
     static private final boolean TO_RULE_DEBUG = false;

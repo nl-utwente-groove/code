@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleGraph.java,v 1.8 2007-04-04 07:04:23 rensink Exp $
+ * $Id: RuleGraph.java,v 1.9 2007-04-18 08:36:23 rensink Exp $
  */
 
 package groove.trans.view;
@@ -45,7 +45,7 @@ import groove.trans.NAC;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
-import groove.trans.RuleProperties;
+import groove.trans.SystemProperties;
 import groove.util.FormatException;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -65,7 +65,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @deprecated replaced by AspectRuleView
  */
 @Deprecated
@@ -90,7 +90,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
     /** Label for merges (merger edges and merge embargoes) */
     static public final Label MERGE_LABEL = DefaultLabel.createLabel(MERGE_LABEL_TEXT);
     /** Label for injection constraints */
-    static public final Label NEGATIVE_MERGE_LABEL = new RegExprLabel(RegExpr.atom(MERGE_LABEL_TEXT).neg());
+    static public final Label NEGATIVE_MERGE_LABEL = RegExpr.atom(MERGE_LABEL_TEXT).neg().toLabel();
 
     /** Seperator string for role prefixes. */
     static public final String SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
@@ -417,7 +417,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
         // we have to add a negation to the label, which may mean we first have
         // to turn it into a regular expression
         RegExpr labelExpr = label instanceof RegExprLabel ? ((RegExprLabel) label).getRegExpr() : RegExpr.atom(label.text());
-        addRuleEdge(images(nodeMap, embargoEdge.ends()), new RegExprLabel(labelExpr.neg()), role);
+        addRuleEdge(images(nodeMap, embargoEdge.ends()), labelExpr.neg().toLabel(), role);
     }
     
     /**
@@ -432,7 +432,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * the required meta-format
      */
     public RuleGraph(GraphShape graph, NameLabel name) throws FormatException {
-        this(graph, name, Rule.DEFAULT_PRIORITY, RuleProperties.DEFAULT_PROPERTIES);
+        this(graph, name, Rule.DEFAULT_PRIORITY, SystemProperties.DEFAULT_PROPERTIES);
     }
 
     /**
@@ -445,7 +445,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @throws FormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public RuleGraph(GraphShape graph, NameLabel name, int priority, RuleProperties properties) throws FormatException {
+    public RuleGraph(GraphShape graph, NameLabel name, int priority, SystemProperties properties) throws FormatException {
         this.name = name;
         this.priority = priority;
         this.properties = properties;
@@ -522,7 +522,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * Returns the rule factory.
      * @return the rule factory.
      */
-    public RuleProperties getRuleProperties() {
+    public SystemProperties getMatchProperties() {
     	return properties;
     }
 
@@ -704,7 +704,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
         if (CREATE_EMBARGO_DEBUG)
             Groove.message("Constructing general structure embargo from " + nacNodeSet);
 
-        NAC result = new DefaultNAC(lhs, getRuleFactory());
+        NAC result = new DefaultNAC(lhs, getMatchProperties());
         Morphism nacMorphism = result.getPattern();
         VarGraph nacTarget = result.getTarget();
         // add all nodes to nacTarget, and insert mappings for LHS elements
@@ -812,7 +812,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
             if (negOperand instanceof RegExpr.Atom) {
                 embargoLabel = DefaultLabel.createLabel(((RegExpr.Atom) negOperand).text());
             } else {
-                embargoLabel = new RegExprLabel(negOperand);
+                embargoLabel = negOperand.toLabel();
             }
             return createEdgeEmbargo(graph, createEdge(edge.ends(), embargoLabel));
         }
@@ -898,7 +898,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
 					// to maintain existing quotes, just take the original text
 					return DefaultLabel.createLabel(text);
 				} else {
-					return new RegExprLabel(textAsRegExpr);
+					return textAsRegExpr.toLabel();
 				}
 			} catch (FormatException exc) {
                 throw new FormatException(exc);
@@ -939,7 +939,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @return the fresh rule created by the factory
      */
     protected Rule createRule(Morphism ruleMorphism, NameLabel name, int priority) throws FormatException {
-        return getRuleFactory().createRule(ruleMorphism, name, priority, RuleProperties.DEFAULT_PROPERTIES);
+        return getRuleFactory().createRule(ruleMorphism, name, priority, SystemProperties.DEFAULT_PROPERTIES);
     }
 
     /**
@@ -987,7 +987,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @see #toRule()
      */
     public MergeEmbargo createMergeEmbargo(VarGraph context, Node[] embargoNodes) {
-        return new MergeEmbargo(context, embargoNodes, getRuleFactory());
+        return new MergeEmbargo(context, embargoNodes, getMatchProperties());
     }
     
     /**
@@ -998,7 +998,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @see #toRule()
      */
     public EdgeEmbargo createEdgeEmbargo(VarGraph context, Edge embargoEdge) {
-        return new EdgeEmbargo(context, embargoEdge, getRuleFactory());
+        return new EdgeEmbargo(context, embargoEdge, getMatchProperties());
     }
     
     /**
@@ -1008,7 +1008,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
      * @see #toRule()
      */
     protected NAC createNAC(VarGraph context) {
-        return new DefaultNAC(context, getRuleFactory());
+        return new DefaultNAC(context, getMatchProperties());
     }
     
     /**
@@ -1182,7 +1182,7 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
     /** The rule derived from this graph, once it is computed. */
     private final Rule rule;
     /** Rule properties (non-<code>null</code>). */
-    private final RuleProperties properties;
+    private final SystemProperties properties;
 
     /** Debug flag for creating embargoes. */
     static private final boolean CREATE_EMBARGO_DEBUG = false;

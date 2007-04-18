@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.2 2007-03-27 14:18:34 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.3 2007-04-18 08:36:08 rensink Exp $ */
 package groove.rel.match;
 
 import java.util.Collection;
@@ -25,7 +25,9 @@ import groove.rel.VarAutomaton;
  * @version $Revision $
  */
 public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
+	/** Record for the search item. */
 	protected class RegExprEdgeRecord extends EdgeRecord<RegExprMatcher> {
+		/** Constructs a new record, for a given matcher. */
 		protected RegExprEdgeRecord(RegExprMatcher matcher) {
 			super(matcher);
 		}
@@ -73,6 +75,10 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
 			setMultiple(computeImageSet());
 		}
 
+		/** 
+		 * Computes the image set by querying the automaton derived
+		 * for the edge label.
+		 */
 		protected Collection<? extends Edge> computeImageSet() {
 	    	NodeEdgeMap elementMap = matcher.getSingularMap();
 	    	Node imageSource = elementMap.getNode(edge.source());
@@ -91,6 +97,10 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
 		private Set<String> freshVars;
 	}
 
+	/** 
+	 * Constructs a new search item. The item will match 
+	 * according to the regular expression on the edge label.
+	 */
 	public RegExprEdgeSearchItem(Edge edge, boolean... matched) {
 		super(edge, matched);
 		this.labelAutomaton = ((RegExprLabel) edge.label()).getAutomaton();

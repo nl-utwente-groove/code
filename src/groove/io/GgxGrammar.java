@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GgxGrammar.java,v 1.6 2007-04-04 07:04:22 rensink Exp $
+ * $Id: GgxGrammar.java,v 1.7 2007-04-18 08:36:21 rensink Exp $
  */
 package groove.io;
 
@@ -28,7 +28,7 @@ import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
-import groove.trans.RuleProperties;
+import groove.trans.SystemProperties;
 import groove.trans.StructuredRuleName;
 import groove.util.FormatException;
 
@@ -50,7 +50,7 @@ import org.w3c.dom.Document;
  * GGX is the "proprietary" AGG format.
  * @deprecated experimental, not supported
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 @Deprecated
 public class GgxGrammar implements XmlGrammar {
@@ -313,7 +313,7 @@ public class GgxGrammar implements XmlGrammar {
             org.w3c.dom.Element nacMorphismElement = (org.w3c.dom.Element) nacMorphismList.item(0);
             Morphism nacMorphism = getMorphism(nacMorphismElement, lhs, lhsElementMap, nacTarget, nacElementMap);
             // Construct and add the NAC
-            result.addNAC(new DefaultNAC(nacMorphism, getRuleFactory()));
+            result.setAndNot(new DefaultNAC(nacMorphism, SystemProperties.getInstance(true)));
         }
 
         return result;
@@ -493,7 +493,7 @@ public class GgxGrammar implements XmlGrammar {
      * @return the rule
      */
     protected Rule createRule(Morphism ruleMorph, NameLabel name) throws FormatException {
-        return getRuleFactory().createRule(ruleMorph, name, 0, RuleProperties.DEFAULT_PROPERTIES);
+        return getRuleFactory().createRule(ruleMorph, name, 0, SystemProperties.DEFAULT_PROPERTIES);
     }
     
     /**

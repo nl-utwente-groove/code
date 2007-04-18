@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.6 2007-04-04 07:04:29 rensink Exp $
+ * $Id: Groove.java,v 1.7 2007-04-18 08:36:18 rensink Exp $
  */
 package groove.util;
 
@@ -25,7 +25,7 @@ import groove.io.UntypedGxl;
 import groove.io.Xml;
 import groove.lts.DerivedGraphRuleFactory;
 import groove.trans.GraphGrammar;
-import groove.trans.RuleProperties;
+import groove.trans.SystemProperties;
 import groove.trans.view.AspectualRuleView;
 //import groove.trans.view.RuleGraph;
 
@@ -41,7 +41,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.6 $ 
+ * @version $Revision: 1.7 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -283,7 +283,7 @@ public class Groove {
      * @throws IOException if <code>filename</code> does not exist or is wrongly formatted
      */
     static public AspectualRuleView loadRuleGraph(String filename) throws IOException {
-        return loadRuleGraph(filename, RuleProperties.DEFAULT_PROPERTIES);
+        return loadRuleGraph(filename, SystemProperties.DEFAULT_PROPERTIES);
     }
 
     /**
@@ -293,7 +293,7 @@ public class Groove {
      * @return the rule graph contained in <code>filename</code>
      * @throws IOException if <code>filename</code> does not exist or is wrongly formatted
      */
-    static public AspectualRuleView loadRuleGraph(String filename, RuleProperties properties) throws IOException {
+    static public AspectualRuleView loadRuleGraph(String filename, SystemProperties properties) throws IOException {
         File file = new File(createRuleFilter().addExtension(filename));
         return gpsLoader.unmarshalRule(file, properties);
     }

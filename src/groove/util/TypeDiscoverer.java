@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.5 2007-04-04 07:04:29 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.6 2007-04-18 08:36:18 rensink Exp $
  */
 package groove.util;
 
@@ -31,8 +31,8 @@ import groove.graph.NodeSetEdgeSetGraph;
 import groove.rel.RegExprGraph;
 import groove.rel.VarGraph;
 import groove.trans.DefaultNAC;
-import groove.trans.DefaultRuleFactory;
 import groove.trans.GraphGrammar;
+import groove.trans.SystemProperties;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleSystem;
@@ -47,9 +47,10 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-04-04 07:04:29 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-18 08:36:18 $
  */
 public class TypeDiscoverer {
+	/** Extension of files containing type information. */
 	public static final String TYPE_EXTENSION = ".type";
 	
     /**
@@ -169,7 +170,7 @@ public class TypeDiscoverer {
             }
             Morphism introduceMorph = new DefaultMorphism(createVarGraph(), ruleHandle);
             Rule introduce = createRule(introduceMorph, rule.getName(), introduceSystem);
-            introduce.addNAC(new DefaultNAC(introduceMorph, DefaultRuleFactory.getInstance()));
+            introduce.setAndNot(new DefaultNAC(introduceMorph, SystemProperties.getInstance(true)));
             introduceSystem.add(introduce);
             // now the deletion rule
             Graph deleteLhs = createVarGraph();
@@ -261,10 +262,12 @@ public class TypeDiscoverer {
         return new RegExprGraph();
     }
     
-    protected Rule createRule(Morphism ruleMorphism, NameLabel name, RuleSystem ruleSystem) {
-        return new SPORule(ruleMorphism, name, Rule.DEFAULT_PRIORITY, ruleSystem.getProperties());
+    /** Callback factory method to create a rule. */
+    protected Rule createRule(Morphism ruleMorphism, NameLabel name, RuleSystem ruleSystem) throws FormatException {
+        return ruleSystem.getRuleFactory().createRule(ruleMorphism, name, Rule.DEFAULT_PRIORITY, ruleSystem.getProperties());
     }
     
+    /** Callback method to retrieve the creator nodes from a rule. */
     protected Set<Node> getCreatorNodes(Rule rule) {
         Set<Node> result = new HashSet<Node>(rule.rhs().nodeSet());
         result.removeAll(rule.getMorphism().elementMap().nodeMap().keySet());

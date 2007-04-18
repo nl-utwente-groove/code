@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.6 2007-04-04 07:04:20 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.7 2007-04-18 08:36:10 rensink Exp $
  */
 package groove.trans;
 
@@ -41,73 +41,81 @@ import groove.util.Reporter;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
-     * Constructs a graph condition with given context, pattern target and name,
-     * and initially empty negated predicate.
+     * Constructs a (named) graph condition based on a given pattern morphism.
+     * The name may be <code>null</code>.
      */
-    protected DefaultGraphCondition(VarGraph context, VarGraph target, NameLabel name, RuleFactory ruleFactory) {
-        super(context, target);
-		this.ruleFactory = ruleFactory;
+    protected DefaultGraphCondition(Morphism pattern, NameLabel name, SystemProperties properties) {
+        super(pattern);
+		this.properties = properties;
         this.name = name;
-        this.negConjunct = createGraphPredicate();
-    }
-
-    /**
-     * Constructs a graph condition with given initial pattern morphism and name.
-     */
-    protected DefaultGraphCondition(Morphism pattern, NameLabel name, RuleFactory ruleFactory) {
-        this((VarGraph) pattern.dom(), (VarGraph) pattern.cod(), name, ruleFactory);
-        elementMap.putAll(pattern.elementMap());
-    }
-
-    /**
-     * Constructs a closed graph condition with given target pattern and name.
-     * The negative conjunct is initially empty.
-     */
-    protected DefaultGraphCondition(VarGraph target, NameLabel name, RuleFactory ruleFactory) {
-        this((VarGraph) target.newGraph(), target, name, ruleFactory);
     }
     
     /**
-     * Constructs a graph condition with given context, pattern target and name,
-     * and initially empty negated predicate.
+     * Constructs a (named) ground graph condition based on a given pattern target.
+     * and initially empty nested predicate.
+     * The name may be <code>null</code>.
      */
-    protected DefaultGraphCondition(VarGraph context, VarGraph target, RuleFactory ruleFactory) {
-        this(context, target, null, ruleFactory);
+    protected DefaultGraphCondition(VarGraph target, NameLabel name, SystemProperties properties) {
+        super(target.newGraph(), target);
+		this.properties = properties;
+        this.name = name;
     }
+//
+//    /**
+//     * Constructs a closed graph condition with given target pattern and name.
+//     * The negative conjunct is initially empty.
+//     */
+//    protected DefaultGraphCondition(VarGraph target, NameLabel name, SystemProperties matchProperties) {
+//        this((VarGraph) target.newGraph(), target, name, matchProperties);
+//    }
+//    
+//    /**
+//     * Constructs a graph condition with given context, pattern target and name,
+//     * and initially empty negated predicate.
+//     */
+//    protected DefaultGraphCondition(VarGraph context, VarGraph target, SystemProperties properties) {
+//        this(context, target, null, properties);
+//    }
 
     /**
      * Constructs an anonymous graph condition with given initial pattern morphism.
      */
-    protected DefaultGraphCondition(Morphism pattern, RuleFactory ruleFactory) {
-        this(pattern, null, ruleFactory);
+    protected DefaultGraphCondition(Morphism pattern, SystemProperties properties) {
+        this(pattern, null, properties);
     }
+//
+//    /**
+//     * Constructs an anonymous closed graph condition with given target pattern,
+//     * and initially empty negated conjunct.
+//     */
+//    protected DefaultGraphCondition(VarGraph context, SystemProperties matchProperties) {
+//        this(context, (NameLabel) null, matchProperties);
+//    }
 
-    /**
-     * Constructs an anonymous closed graph condition with given target pattern,
-     * and initially empty negated conjunct.
-     */
-    protected DefaultGraphCondition(VarGraph context, RuleFactory ruleFactory) {
-        this(context, (NameLabel) null, ruleFactory);
-    }
+    public SystemProperties getProperties() {
+		return properties;
+	}
 
-    
-    /**
+	/**
      * Returns the rule factory of this graph condition. 
 	 */
 	protected RuleFactory getRuleFactory() {
-		return ruleFactory;
+		return getProperties().getFactory();
 	}
 
 	/**
      * Calls <code>getNegPredicate().setOr(test)</code>,
      * and for all the conditions in <code>test</code> calls
      * {@link #addAndNot(GraphCondition)}.
+     * @throws IllegalStateException if the condition is fixed at the time of invocation
+     * @see #isFixed()
      */
-    public void setAndNot(GraphTest test) {
+    public void setAndNot(GraphTest test) throws IllegalStateException {
+    	testFixed(false);
         getNegConjunct().setOr(test);
         if (test instanceof GraphCondition) {
             addAndNot((GraphCondition) test);
@@ -121,10 +129,10 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     /**
      * If the condition is an edge embargo, calls
      * {@link #addNegation(Edge)} with the embardo edge, and if it
-     * is a merge embargo, calle {@link #addInjection(Collection)} with
+     * is a merge embargo, calle {@link #addInjection(Set)} with
      * the injectively matchable nodes. If it is neither, adds the
      * condition to the complex negated conjunct.
-     * @see #addInjection(Collection)
+     * @see #addInjection(Set)
      * @see #addNegation(Edge)
      * @see #addComplexNegCondition(GraphCondition)
      */
@@ -164,18 +172,21 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
         injections.add(injection);
     }
 
+    @Deprecated
     public GraphCondition setAndNot(Edge embargoEdge) {
         GraphCondition result = createEdgeEmbargo(embargoEdge); 
         setAndNot(result);
         return result;
     }
     
+    @Deprecated
     public GraphCondition setAndDistinct(Node node1, Node node2) {
         GraphCondition result = createMergeEmbargo(node1, node2);
         setAndNot(result);
         return result;
     }
 
+    @Deprecated
     public GraphCondition setAndDistinct(Node[] nodes) {
         if (nodes.length != 2) {
             throw new IllegalArgumentException("Merge embargo must be binary");
@@ -191,6 +202,9 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     }
 
     public GraphPredicate getNegConjunct() {
+    	if (negConjunct == null) {
+    		negConjunct = createGraphPredicate();
+    	}
         return negConjunct;
     }
 
@@ -234,7 +248,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * contains {@link ValueNode}s, or the negative conjunct is attributed.
      */
     public boolean isAttributed() {
-		return ValueNode.hasValueNodes(getTarget()) && getNegConjunct().isAttributed();
+		return ValueNode.hasValueNodes(getTarget()) || getNegConjunct().isAttributed();
 	}
 
 	/**
@@ -243,6 +257,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      */
     public boolean hasMatching(Graph graph) {
         testGround();
+        testFixed(true);
 		reporter.start(HAS_MATCHING);
 		try {
 			return createMatching(graph).hasTotalExtensions();
@@ -257,6 +272,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	 */
     public boolean hasMatching(VarMorphism subject) {
         reporter.start(HAS_MATCHING);
+        testFixed(true);
 		try {
 			Matching partialMatch = createMatching(subject);
 			return partialMatch == null ? false : partialMatch
@@ -273,13 +289,13 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	 * @see #isGround()
 	 */
     public Matching getMatching(Graph graph) {
-        testGround();
+		Matching result;
 		reporter.start(GET_MATCHING);
-		try {
-			return (Matching) createMatching(graph).getTotalExtension();
-		} finally {
-			reporter.stop();
-		}
+        testGround();
+        testFixed(true);
+        result = (Matching) createMatching(graph).getTotalExtension();
+        reporter.stop();
+		return result;
 	}
 
     /**
@@ -291,13 +307,14 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	 * @see Matching#getTotalExtension()
 	 */
 	public Matching getMatching(VarMorphism subject) {
+		Matching result;
 		reporter.start(GET_MATCHING);
-		try {
-			Matching partialMatch = createMatching(subject);
-			return partialMatch == null ? null : (Matching) partialMatch.getTotalExtension();
-		} finally {
-			reporter.stop();
-		}
+        testFixed(true);
+		Matching partialMatch = createMatching(subject);
+		result = partialMatch == null ? null
+				: (Matching) partialMatch.getTotalExtension();
+		reporter.stop();
+		return result;
 	}
 
     /**
@@ -308,45 +325,49 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	 * @see Matching#getTotalExtensions()
 	 */
     public Collection<? extends Matching> getMatchingSet(Graph graph) {
+    	Collection <? extends Matching> result;
         reporter.start(GET_MATCHING);
-        try {
-            testGround();
-        	return createMatching(graph).getTotalExtensions();
-        } finally {
-        	reporter.stop();
-        }
+		testGround();
+		testFixed(true);
+		result = createMatching(graph).getTotalExtensions();
+		reporter.stop();
+		return result;
     }
 
     /**
-     * Creates an initial match using the inverse of <code>this</code> followed by
-     * <code>morph</code>, and constructs the set of total extensions.
-     * Returns the set of those total extensions that do not satisfies the sub-predicate.
-     * @see Morphism#getTotalExtensions()
-     */
+	 * Creates an initial match using the inverse of <code>this</code>
+	 * followed by <code>morph</code>, and constructs the set of total
+	 * extensions. Returns the set of those total extensions that do not
+	 * satisfies the sub-predicate.
+	 * 
+	 * @see Morphism#getTotalExtensions()
+	 */
     public Collection<? extends Matching> getMatchingSet(VarMorphism subject) {
+    	Collection <? extends Matching> result;
         reporter.start(GET_MATCHING);
-        try {
-        	Matching partialMatch = createMatching(subject);
-        	return partialMatch == null ? Collections.<Matching>emptySet() : partialMatch.getTotalExtensions();
-        } finally {
-        	reporter.stop();
-        }
+		testFixed(true);
+		Matching partialMatch = createMatching(subject);
+		result = partialMatch == null ? Collections.<Matching> emptySet()
+				: partialMatch.getTotalExtensions();
+		reporter.stop();
+		return result;
     }
 
     /**
-     * If the condition is ground, returns an iterator over the total extensions
-     * of an initially empty matching to the given graph.
-     * Otherwise, throws an exception as per contract.
-     * @see #isGround()
-     */
+	 * If the condition is ground, returns an iterator over the total extensions
+	 * of an initially empty matching to the given graph. Otherwise, throws an
+	 * exception as per contract.
+	 * 
+	 * @see #isGround()
+	 */
     public Iterator<? extends Matching> getMatchingIter(Graph graph) {
+    	Iterator<? extends Matching> result;
         reporter.start(GET_MATCHING);
-		try {
-			testGround();
-			return createMatching(graph).getTotalExtensionsIter();
-		} finally {
-			reporter.stop();
-		}
+		testFixed(true);
+		testGround();
+		result = createMatching(graph).getTotalExtensionsIter();
+		reporter.stop();
+		return result;
 	}
 
     /**
@@ -358,14 +379,14 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	 * @see Morphism#getTotalExtensionsIter()
 	 */
     public Iterator<? extends Matching> getMatchingIter(VarMorphism subject) {
+    	Iterator<? extends Matching> result;
 		reporter.start(GET_MATCHING);
-		try {
-			Matching partialMatch = createMatching(subject);
-			return partialMatch == null ? Collections.<Matching>emptySet().iterator()
-					: partialMatch.getTotalExtensionsIter();
-		} finally {
-			reporter.stop();
-		}
+		testFixed(true);
+		Matching partialMatch = createMatching(subject);
+		result = partialMatch == null ? Collections.<Matching>emptySet().iterator()
+				: partialMatch.getTotalExtensionsIter();
+		reporter.stop();
+		return result;
 	}
 
     /**
@@ -402,7 +423,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     
     /**
      * Callback method for creating the negated and complex negated conjuncts.
-     * @see #DefaultGraphCondition(VarGraph, VarGraph, NameLabel, RuleFactory)
+     * @see #DefaultGraphCondition(VarGraph, NameLabel, SystemProperties)
      * @see #addComplexNegCondition(GraphCondition)
      */
     protected GraphPredicate createGraphPredicate() {
@@ -443,7 +464,6 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      */
     protected Matching createMatching(Graph graph) {
     	return getRuleFactory().createMatching(this, graph);
-//        return new DefaultMatching(this, graph, getRuleFactory());
     }
     
     /**
@@ -459,17 +479,21 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * Callback method to create a merge embargo.
      * @see #setAndDistinct(Node, Node)
      * @see #setAndDistinct(Node[])
+     * @deprecated No longer used since new search plan implementation
      */
+    @Deprecated
     protected MergeEmbargo createMergeEmbargo(Node node1, Node node2) {
-        return new MergeEmbargo((VarGraph) cod(), node1, node2, getRuleFactory());
+        return new MergeEmbargo((VarGraph) cod(), node1, node2, getProperties());
     }
     
     /**
      * Callback method to create a merge embargo.
      * @see #setAndNot(Edge)
+     * @deprecated No longer used since new search plan implementation
      */
+    @Deprecated
     protected EdgeEmbargo createEdgeEmbargo(Edge embargoEdge) {
-        return new EdgeEmbargo((VarGraph) cod(), embargoEdge, getRuleFactory());
+        return new EdgeEmbargo((VarGraph) cod(), embargoEdge, getProperties());
     }
 
     /**
@@ -535,29 +559,41 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     }
 
     /**
-     * Throws an {@link IllegalStateException} if the graph condition is not fixed.
+     * Tests if the condition is fixed or not.
+     * Throws an exception if the fixedness does not coincide with the given value.
+     * @param value the expected fixedness state
+     * @throws IllegalStateException if {@link #isFixed()} does not yield <code>value</code>
      */
-    protected void testFixed() throws IllegalStateException {
-        if (! isFixed()) {
-            throw new IllegalStateException("Graph condition should be fixed before invoking this method");
+    protected void testFixed(boolean value) throws IllegalStateException {
+        if (isFixed() != value) {
+        	String message;
+        	if (value) {
+        		message = "Graph condition should be fixed in this state";
+        	} else {
+        		message = "Graph condition should not be fixed in this state";
+        	}
+            throw new IllegalStateException(message);
         }
     }
 
     /**
-     * Throws an {@link IllegalArgumentException} if this predicate is not ground.
+     * Tests if the condition can be used to tests on graphs rather than morphisms.
+     * This is the case if and only if the condition is ground (i.e., the
+     * context graph is empty), as determined by {@link #isGround()}.
+     * @throws IllegalStateException if this condition is not ground.
      * @see #isGround()
      */
-    private void testGround() throws IllegalArgumentException {
+    private void testGround() throws IllegalStateException {
         if (! isGround()) {
-            throw new IllegalArgumentException("Method only allowed on closed predicate");
+            throw new IllegalStateException("Method only allowed on ground condition");
         }
     }
     
     /**
      * Returns the search plan factory factory.
      * If no matching schedule factory yet exists, one is created using
-     * {@link #computeSearchPlanFactory()}.
-     * @see #computeSearchPlanFactory()
+     * {@link #createSearchPlanFactory()}.
+     * @see #createSearchPlanFactory()
      * @see #createSearchPlan()
      */
     protected ConditionSearchPlanFactory getSearchPlanFactory() {
@@ -582,7 +618,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     /** 
      * The negated cunjunct of this graph condition.
      */
-    private final GraphPredicate negConjunct;
+    private GraphPredicate negConjunct;
     /** 
      * The fragment of the negated conjunct without edge and merge embargoes.
      */
@@ -613,7 +649,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     /**
      * Factory instance for creating the correct simulation.
      */
-    private final RuleFactory ruleFactory;
+    private final SystemProperties properties;
 
     /** Reporter instance for profiling this class. */
     static public final Reporter reporter = Reporter.register(GraphTest.class);

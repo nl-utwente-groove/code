@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: EdgeEmbargo.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: EdgeEmbargo.java,v 1.2 2007-04-18 08:36:09 rensink Exp $
  */
 package groove.trans;
 
+import groove.graph.DefaultMorphism;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -26,7 +27,7 @@ import groove.util.Groove;
 /**
  * A specialised NAC that forbids the presence of a certain edge.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class EdgeEmbargo extends DefaultGraphCondition implements NAC {
     /**
@@ -35,8 +36,8 @@ public class EdgeEmbargo extends DefaultGraphCondition implements NAC {
      * @param graph the graph on which this embargo works
      * @param embargoEdge the edge that is forbidden
      */
-    public EdgeEmbargo(VarGraph graph, Edge embargoEdge, RuleFactory ruleFactory) {
-        super(graph, (VarGraph) graph.newGraph(), ruleFactory);
+    public EdgeEmbargo(VarGraph graph, Edge embargoEdge, SystemProperties properties) {
+        super(new DefaultMorphism(graph, graph.newGraph()), properties);
         this.embargoEdge = embargoEdge;
         int arity = embargoEdge.endCount();
         Node[] endImages = new Node[arity];

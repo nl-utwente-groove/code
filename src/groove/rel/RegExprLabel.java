@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RegExprLabel.java,v 1.3 2007-04-01 12:50:34 rensink Exp $
+ * $Id: RegExprLabel.java,v 1.4 2007-04-18 08:36:15 rensink Exp $
  */
 package groove.rel;
 
@@ -25,7 +25,7 @@ import groove.util.FormatException;
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-04-01 12:50:34 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-18 08:36:15 $
  */
 public class RegExprLabel extends AbstractLabel {
     /**
@@ -40,7 +40,7 @@ public class RegExprLabel extends AbstractLabel {
 	@Deprecated
     public static RegExprLabel parseLabel(String text) throws FormatException {
         try {
-            return new RegExprLabel(RegExpr.parse(text));
+            return RegExpr.parse(text).toLabel();
         } catch (FormatException exc) {
             throw new FormatException(exc.getMessage());
         }
@@ -223,9 +223,10 @@ public class RegExprLabel extends AbstractLabel {
     
     /**
      * Constructs a regular expression label on the basis of a regular expression.
+     * Local constructor; should be called only from {@link RegExpr#toLabel()}.
      * @param regExpr the underlying regular expression; may not be <tt>null</tt>
      */
-    public RegExprLabel(RegExpr regExpr) {
+    RegExprLabel(RegExpr regExpr) {
         if (regExpr == null) {
             throw new IllegalArgumentException("Can't create regular expression label from null expression");
         }
@@ -261,31 +262,6 @@ public class RegExprLabel extends AbstractLabel {
         }
         return automaton;
     }
-//    
-//    /**
-//     * Compares the textual descriptions.
-//     */
-//    public int compareTo(Object obj) {
-//        return text().compareTo(obj.toString());
-//    }
-//
-//    /**
-//     * Returns the hash code of the regular expression.
-//     */
-//    public int hashCode() {
-//        return regExpr.hashCode();
-//    }
-//
-//    public boolean equals(Object obj) {
-//        return (obj instanceof RegExprLabel) && regExpr.equals(((RegExprLabel) obj).regExpr);
-//    }
-//
-//    /**
-//     * Returns the textual description of the label.
-//     */
-//    public String toString() {
-//        return regExpr.toString();
-//    }
 
     /** The underlying regular expression. */
     protected final RegExpr regExpr;

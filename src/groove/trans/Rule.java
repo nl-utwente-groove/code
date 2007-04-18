@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.3 2007-04-04 07:04:20 rensink Exp $
- * $Date: 2007-04-04 07:04:20 $
+ * $Id: Rule.java,v 1.4 2007-04-18 08:36:10 rensink Exp $
+ * $Date: 2007-04-18 08:36:10 $
  */
 package groove.trans;
 
@@ -33,7 +33,7 @@ import groove.rel.VarGraph;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -46,7 +46,9 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * Sets the priority of this rule.
      * Should be called at initialization time, before the first application.
      * @param priority the priority of the rule
+     * @deprecated Priority should be set at construction time
      */
+	@Deprecated
 	public void setPriority(int priority);
 
 	/**
@@ -75,12 +77,6 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * @see #rhs()
      */
     public Morphism getMorphism();
-
-    /**
-     * Returns the properties of this rule.
-     * May be <code>null</code> if there is no associated grammar.
-     */
-    public RuleProperties getProperties();
 
     /**
      * Indicates if application of this rule actually changes the host graph.
@@ -113,7 +109,7 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * Lazily creates and returns a search plan for rule events of this rule,
      * which tries to find the anchor image in a given graph. 
      */
-    public List<SearchItem> getEventSearchPlan();
+    public List<SearchItem> getAnchorSearchPlan();
     
     /**
      * Factory method to create an application for this rule from a given
@@ -128,6 +124,8 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * @param nac the negative application condition to be added
      * @require <tt>nac.source().equals(lhs())</tt>
      * @ensure <tt>nacSet().contains(nac)</tt>
+     * @deprecated use {@link DefaultGraphCondition#setAndNot(GraphTest)} instead
      */
+    @Deprecated
     public void addNAC(NAC nac);
 }

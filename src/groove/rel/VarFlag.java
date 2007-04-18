@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: VarFlag.java,v 1.3 2007-03-28 15:12:34 rensink Exp $
+ * $Id: VarFlag.java,v 1.4 2007-04-18 08:36:16 rensink Exp $
  */
 package groove.rel;
 
@@ -26,7 +26,7 @@ import groove.graph.UnaryEdge;
  * Specialization of a default edge with a variable as label
  * (in the form of a {@link groove.rel.RegExpr.Wildcard}).
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 @Deprecated
 public class VarFlag extends DefaultFlag {
@@ -36,7 +36,7 @@ public class VarFlag extends DefaultFlag {
      * @param var the variable name to wrap in the label of the new edge
      */
     public VarFlag(Node source, String var) {
-        super(source, new RegExprLabel(RegExpr.wildcard(var)));
+        super(source, RegExpr.wildcard(var).toLabel());
         this.var = var;
     }
 
