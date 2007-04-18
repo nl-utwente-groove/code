@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.8 2007-04-12 16:14:52 rensink Exp $
+ * $Id: Simulator.java,v 1.9 2007-04-18 10:34:03 rensink Exp $
  */
 package groove.gui;
 
@@ -95,6 +95,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -111,7 +112,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class Simulator {
     /**
@@ -543,7 +544,7 @@ public class Simulator {
     }
 
     /**
-     * Action for quiting the simulator.
+     * Action for quitting the simulator.
      * @see Simulator#doQuit()
      */
     protected class QuitAction extends AbstractAction {
@@ -555,6 +556,20 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent evt) {
             doQuit();
+        }
+    }
+
+    /**
+     * Action for displaying an about box.
+     */
+    protected class AboutAction extends AbstractAction {
+    	/** Constructs an instance of the action. */
+        protected AboutAction() {
+            super(Options.ABOUT_ACTION_NAME);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            new AboutBox(Simulator.this.frame);
         }
     }
 
@@ -575,11 +590,11 @@ public class Simulator {
          * {@link #setEnabled(boolean)}.
          */
         public void checkEnabled() {
-            if (getGraphPanel() == statePanel) {
-                setEnabled(getStatePanel().getJGraph().isEnabled());
+            if (getGraphPanel() == getStatePanel()) {
+                setEnabled(getCurrentState() != null);
                 putValue(NAME, Options.EDIT_STATE_ACTION_NAME);
             } else if (getGraphPanel() == getRulePanel()) {
-                setEnabled(getRulePanel().getJGraph().isEnabled());
+                setEnabled(getCurrentRule() != null);
                 putValue(NAME, Options.EDIT_RULE_ACTION_NAME);
             } else {
                 setEnabled(false);
@@ -623,10 +638,10 @@ public class Simulator {
          */
         protected void checkEnabled() {
             if (getGraphPanel() == getLtsPanel()) {
-                setEnabled(true);
+                setEnabled(getCurrentGTS() != null);
                 putValue(NAME, Options.SAVE_LTS_ACTION_NAME);
             } else if (getGraphPanel() == getStatePanel()) {
-                setEnabled(true);
+                setEnabled(getCurrentState() != null);
                 putValue(NAME, Options.SAVE_STATE_ACTION_NAME);
             } else {
                 setEnabled(false);
@@ -651,13 +666,13 @@ public class Simulator {
             JGraph jGraph;
             if (getGraphPanel() == getLtsPanel()) {
                 fileName = "lts";
-                jGraph = ltsPanel.getJGraph();
+                jGraph = getLtsPanel().getJGraph();
             } else if (getGraphPanel() == getStatePanel()) {
-                fileName = currentState.toString();
-                jGraph = statePanel.getJGraph();
+                fileName = getCurrentState().toString();
+                jGraph = getStatePanel().getJGraph();
             } else {
-                fileName = currentRule.getName().toString();
-                jGraph = rulePanel.getJGraph();
+                fileName = getCurrentRule().getName().toString();
+                jGraph = getRulePanel().getJGraph();
             }
             getExportChooser().setSelectedFile(new File(fileName));
             File selectedFile = ExtensionFilter.showSaveDialog(getExportChooser(), frame);
@@ -672,14 +687,14 @@ public class Simulator {
          * and also modifies the action name.
          */
         protected void checkEnabled() {
-            if (getGraphPanel() == ltsPanel) {
-                setEnabled(true);
+            if (getGraphPanel() == getLtsPanel()) {
+                setEnabled(getCurrentGTS() != null);
                 putValue(NAME, Options.EXPORT_LTS_ACTION_NAME);
-            } else if (getGraphPanel() == statePanel) {
-                setEnabled(true);
+            } else if (getGraphPanel() == getStatePanel()) {
+                setEnabled(getCurrentState() != null);
                 putValue(NAME, Options.EXPORT_STATE_ACTION_NAME);
             } else {
-                setEnabled(currentRule != null);
+                setEnabled(getCurrentRule() != null);
                 putValue(NAME, Options.EXPORT_RULE_ACTION_NAME);
             }
         }
@@ -1459,10 +1474,10 @@ public class Simulator {
     protected void initActions() {
         addAccelerator(getLoadGrammarAction());
         addAccelerator(getRefreshGrammarAction());
-
-        getLoadStartStateAction().setEnabled(false);
-        getSaveGraphAction().setEnabled(false);
-        getExportGraphAction().setEnabled(false);
+//
+//        getLoadStartStateAction().setEnabled(false);
+//        getSaveGraphAction().setEnabled(false);
+//        getExportGraphAction().setEnabled(false);
 
 
         // We initialize the UndoHistory now, whereas this should
@@ -1477,6 +1492,8 @@ public class Simulator {
         addAccelerator(getRedoAction());
         // derivation actions
         addAccelerator(getApplyTransitionAction());
+        
+        setActionsEnabled();
     }
 
     /**
@@ -1484,9 +1501,9 @@ public class Simulator {
      * view panel to allow actions to be enabled and disabled.
      */
     protected void setActionsEnabled() {
-        getApplyTransitionAction().setEnabled(currentTransition != null);
-        getGotoStartStateAction().setEnabled(currentState != null && currentState != currentGTS.startState());
-        getLoadStartStateAction().setEnabled(true);
+        getApplyTransitionAction().setEnabled(getCurrentTransition() != null);
+        getGotoStartStateAction().setEnabled(getCurrentState() != null && getCurrentState() != getCurrentGTS().startState());
+        getLoadStartStateAction().setEnabled(getCurrentGrammar() != null);
         getSaveGraphAction().checkEnabled();
         getExportGraphAction().checkEnabled();
         getEditGraphAction().checkEnabled();
@@ -1512,60 +1529,98 @@ public class Simulator {
      */
     protected JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
-
-        // file menu
-        JMenu fileMenu = new JMenu(Options.FILE_MENU_NAME);
-        menuBar.add(fileMenu);
-        fileMenu.add(new JMenuItem(getLoadGrammarAction()));
-        fileMenu.add(new JMenuItem(getLoadStartStateAction()));
-        fileMenu.addSeparator();
-        fileMenu.add(new JMenuItem(getSaveGraphAction()));
-        fileMenu.add(new JMenuItem(getExportGraphAction()));
-        fileMenu.addSeparator();
-        fileMenu.add(new JMenuItem(getEditGraphAction()));
-        fileMenu.addSeparator();
-        fileMenu.add(new JMenuItem(getQuitAction()));
-        //
-        // display menu
-        // we fill it out each time it gets selected
-        // so as to be sure it applies to the current jgraph
-        menuBar.add(new JMenu(Options.DISPLAY_MENU_NAME) {
-    		@Override
-            public void menuSelectionChanged(boolean selected) {
-                removeAll();
-                JGraph jgraph = getGraphPanel().getJGraph();
-                jgraph.fillOutEditMenu(getPopupMenu());
-                jgraph.fillOutDisplayMenu(getPopupMenu());
-                super.menuSelectionChanged(selected);
-            }
-        });
-
-        // generate menu
-        JMenu exploreMenu = new ExploreStrategyMenu(this, false);
-        menuBar.add(exploreMenu);
-        exploreMenu.add(new JMenuItem(getUndoAction()), 0);
-        exploreMenu.add(new JMenuItem(getRedoAction()), 1);
-        exploreMenu.insertSeparator(2);
-        exploreMenu.add(new JMenuItem(getApplyTransitionAction()), 3);
-        exploreMenu.add(new JMenuItem(getGotoStartStateAction()), 4);
-        exploreMenu.insertSeparator(5);
-
-        // verify menu
-        JMenu verifyMenu = new VerifyMenu(this);
-        menuBar.add(verifyMenu);
-
-        // options menu
-        JMenu optionsMenu = new JMenu(OPTIONS_MENU_NAME);
-        menuBar.add(optionsMenu);
-        optionsMenu.add(getOptions().getItem(SHOW_NODE_IDS_OPTION));
-        optionsMenu.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
-    	optionsMenu.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
-    	optionsMenu.add(getOptions().getItem(SHOW_REMARKS_OPTION));
-    	optionsMenu.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
+        menuBar.add(createFileMenu());
+        menuBar.add(createDisplayMenu());
+        menuBar.add(createExploreMenu());
+        menuBar.add(createVerifyMenu());
+        menuBar.add(createHelpMenu());
         return menuBar;
     }
 
-    /**
+	/**
+	 * Creates and returns a file menu for the menu bar.
+	 */
+	private JMenu createFileMenu() {
+	    JMenu result = new JMenu(Options.FILE_MENU_NAME);
+	    result.add(new JMenuItem(getLoadGrammarAction()));
+	    result.add(new JMenuItem(getLoadStartStateAction()));
+	    result.addSeparator();
+	    result.add(new JMenuItem(getSaveGraphAction()));
+	    result.add(new JMenuItem(getExportGraphAction()));
+	    result.addSeparator();
+	    result.add(new JMenuItem(getEditGraphAction()));
+	    result.addSeparator();
+	    result.add(new JMenuItem(getQuitAction()));
+	    return result;
+	}
+
+	/**
+	 * Creates and returns a display menu for the menu bar.
+	 * The menu is filled out each time it gets selected
+	 * so as to be sure it applies to the current jgraph
+	 */
+	private JMenu createDisplayMenu() {
+	    JMenu result = new JMenu(Options.DISPLAY_MENU_NAME) {
+			@Override
+	        public void menuSelectionChanged(boolean selected) {
+	            removeAll();
+	            JGraph jgraph = getGraphPanel().getJGraph();
+	            JPopupMenu popupMenu = getPopupMenu();
+	            jgraph.fillOutEditMenu(popupMenu);
+	            jgraph.fillOutDisplayMenu(popupMenu);
+	            popupMenu.addSeparator();
+	            popupMenu.add(createOptionsMenu());
+	            super.menuSelectionChanged(selected);
+	        }
+	    };
+	    return result;
+	}
+
+	/**
+	 * Creates and returns an options menu for the menu bar.
+	 */
+	private JMenu createOptionsMenu() {
+        JMenu result = new JMenu(OPTIONS_MENU_NAME);
+        result.add(getOptions().getItem(SHOW_NODE_IDS_OPTION));
+        result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
+    	result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
+    	result.add(getOptions().getItem(SHOW_REMARKS_OPTION));
+    	result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
+    	return result;
+	}
+
+	/**
+	 * Creates and returns an exploration menu for the menu bar.
+	 */
+	private JMenu createExploreMenu() {
+        JMenu result = new ExploreStrategyMenu(this, false);
+        result.add(new JMenuItem(getUndoAction()), 0);
+        result.add(new JMenuItem(getRedoAction()), 1);
+        result.insertSeparator(2);
+        result.add(new JMenuItem(getApplyTransitionAction()), 3);
+        result.add(new JMenuItem(getGotoStartStateAction()), 4);
+        result.insertSeparator(5);
+        return result;
+	}
+
+	/**
+	 * Creates and returns a verification menu for the menu bar.
+	 */
+	private JMenu createVerifyMenu() {
+	    JMenu result = new VerifyMenu(this);
+	    return result;
+	}
+
+	/**
+	 * Creates and returns a help menu for the menu bar.
+	 */
+	private JMenu createHelpMenu() {
+		JMenu result = new JMenu(HELP_MENU_NAME);
+		result.add(new JMenuItem(new AboutAction()));
+		return result;
+	}
+
+	/**
      * Adds all implemented grammar loaders to the menu.
      */
     protected void initGrammarLoaders() {
