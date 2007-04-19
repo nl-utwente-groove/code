@@ -1,4 +1,4 @@
-/* $Id: DerivationData.java,v 1.2 2007-04-19 06:39:23 rensink Exp $ */
+/* $Id: DerivationData.java,v 1.3 2007-04-19 09:21:31 rensink Exp $ */
 package groove.trans;
 
 import java.util.HashMap;
@@ -23,10 +23,17 @@ import groove.util.Reporter;
  */
 public class DerivationData {
     /**
-     * The total number of events (over all rules) created in {@link #getEvent(Rule, Matching)}.
+     * The total number of events (over all rules) created in {@link #getEvent(Rule, VarNodeEdgeMap)}.
      */
     private static int eventCount;
-    
+
+    /**
+     * Returns the number of events created in the course of rule application.
+     */
+    static public int getEventCount() {
+    	return eventCount;
+    }
+
     /** 
      * Constructs a derivation record from a given fixed graph grammar and rule counter, using
      * a given node number for the first fresh node. 
@@ -51,7 +58,7 @@ public class DerivationData {
 
 	/** Returns a rule application for a given rule and matching of that rule. */
 	public RuleApplication getApplication(Rule rule, Matching matching) {
-		return getRuleFactory().createRuleApplication(getEvent(rule, matching), matching.cod());
+		return getEvent(rule, matching.elementMap()).newApplication(matching.cod());
 	}
 
 	/** 
@@ -59,11 +66,11 @@ public class DerivationData {
 	 * The events are stored internally; an event is reused if it has the
 	 * correct rule and anchor map.
 	 */
-    public RuleEvent getEvent(Rule rule, Matching matching) {
+    public RuleEvent getEvent(Rule rule, VarNodeEdgeMap elementMap) {
     	RuleEvent result;
     	reporter.start(GET_EVENT);
         if (rule.isModifying()) {
-            RuleEvent event = createEvent(rule, matching);
+            RuleEvent event = rule.newEvent(elementMap, this);
 //            // look if we have an event with the same characteristics
 //            Map<RuleEvent,RuleEvent> eventMap = normalEventMap.get(rule);
 //            if (eventMap == null) {
@@ -81,23 +88,23 @@ public class DerivationData {
         	result = unmodifyingEventMap.get(rule);
             // there can be at most one event
             if (result == null) {
-                unmodifyingEventMap.put(rule, result = createEvent(rule, matching));
+                unmodifyingEventMap.put(rule, result = rule.newEvent(elementMap, this));
                 eventCount++;
             }
         }
         reporter.stop();
         return result;
     }
-    
-    /** 
-     * Callback method to create a rule event.
-     * This implementation defers to the rule factory obtained from the rule system.
-     * @see RuleFactory#createRuleEvent(Rule, VarNodeEdgeMap)
-     */
-	protected RuleEvent createEvent(Rule rule, Matching matching) {
-		return getRuleFactory().createRuleEvent(rule, matching.elementMap(), this);
-	}
-	
+//    
+//    /** 
+//     * Callback method to create a rule event.
+//     * This implementation defers to the rule factory obtained from the rule system.
+//     * @see RuleFactory#createRuleEvent(Rule, VarNodeEdgeMap, DerivationData)
+//     */
+//	protected RuleEvent createEvent(Rule rule, Matching matching) {
+//		return getRuleFactory().createRuleEvent(rule, matching.elementMap(), this);
+//	}
+//	
 	/** 
 	 * Returns the highest node number occurring in a given graph,
 	 * taking only true {@link DefaultNode}s into account.
@@ -113,14 +120,6 @@ public class DerivationData {
 		return result;
 	}
 	
-	/** 
-	 * Convenienct method to retrieve the rule factory from the rule system.
-	 * The rule factory is used to create rule events and applications.
-	 */
-	private RuleFactory getRuleFactory() {
-		return getRuleSystem().getRuleFactory();
-	}
-
 	/** The internally stored node counter. */
 	private final DefaultDispenser nodeCounter;
 	/** The associated rule system. */

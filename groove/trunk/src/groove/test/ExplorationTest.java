@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.6 2007-04-01 12:50:31 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.7 2007-04-19 09:21:33 rensink Exp $
  */
 
 package groove.test;
@@ -45,7 +45,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ExplorationTest extends TestCase {
     static public final String INPUT_DIR = "junit/samples";
@@ -221,6 +221,7 @@ public class ExplorationTest extends TestCase {
             int edgeCount, int openCount) {
         try {
             GraphGrammar gg = loader.unmarshalGrammar(new File(INPUT_DIR + "\\"+ grammarName), startGraphName);
+            gg.setFixed();
             GTS lts = new GTS(gg);
             ExploreStrategy strategy;
             if (strategyDescr != null) {

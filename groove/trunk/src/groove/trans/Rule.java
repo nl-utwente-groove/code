@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.4 2007-04-18 08:36:10 rensink Exp $
- * $Date: 2007-04-18 08:36:10 $
+ * $Id: Rule.java,v 1.5 2007-04-19 09:21:32 rensink Exp $
+ * $Date: 2007-04-19 09:21:32 $
  */
 package groove.trans;
 
@@ -25,6 +25,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.match.SearchItem;
 import groove.rel.VarGraph;
+import groove.rel.VarNodeEdgeMap;
 
 /**
  * Interface of a production rule.
@@ -33,7 +34,7 @@ import groove.rel.VarGraph;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -99,12 +100,15 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      */
     public Node[] coanchor();
     
-//    /**
-//     * Factory method to create an event based on this rule and a given anchor map.
-//     * @ensure <code>result.getRule() == this</code>
-//     */
-//    public RuleEvent getEvent(VarNodeEdgeMap anchorMap);
-//
+    /**
+     * Factory method to create an event based on this rule.
+     * Parameters are an anchor map and an optional derivation record.
+     * @param anchorMap the anchor map of the event, being a mapping from the 
+     * anchors to elements presumably in the host graph
+     * @param record an object queried for fresh node numbers
+     */
+    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, DerivationData record);
+
     /**
      * Lazily creates and returns a search plan for rule events of this rule,
      * which tries to find the anchor image in a given graph. 
@@ -114,8 +118,11 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
     /**
      * Factory method to create an application for this rule from a given
      * matching.
-     * @see RuleEvent#createApplication(Graph)
+     * @see RuleEvent#newApplication(Graph)
+     * @deprecated use {@link #newEvent(VarNodeEdgeMap, DerivationData)} and
+     * {@link RuleEvent#newApplication(Graph)} instead
      */
+    @Deprecated
     public RuleApplication createApplication(Matching match);
 
     /** 

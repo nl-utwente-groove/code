@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.7 2007-04-19 06:39:23 rensink Exp $
+ * $Id: SPORule.java,v 1.8 2007-04-19 09:21:32 rensink Exp $
  */
 package groove.trans;
 
@@ -43,7 +43,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -73,19 +73,19 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     static public long getMatchingTime() {
         return DefaultGraphCondition.reporter.getTotalTime(GET_MATCHING);
     }
-    
-    /**
-     * Returns the number of events created in the course of rule application.
-     */
-    static public int getEventCount() {
-    	return eventCount;
-    }
-
-    /**
-     * The total number of events (over all rules) created in {@link #getEvent(VarNodeEdgeMap)}.
-     */
-    private static int eventCount;
-    
+//    
+//    /**
+//     * Returns the number of events created in the course of rule application.
+//     */
+//    static public int getEventCount() {
+//    	return eventCount;
+//    }
+//
+//    /**
+//     * The total number of events (over all rules) created in {@link #getEvent(VarNodeEdgeMap)}.
+//     */
+//    private static int eventCount;
+//    
     /**
      * The factory used for creating rule anchors.
      */
@@ -136,55 +136,52 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     		throw prior;
     	}
     }
-
-    /**
-     * Factory method to create an event based on this rule and a given anchor map.
-     * @ensure <code>result.getRule() == this</code>
-     */
-    protected RuleEvent getEvent(VarNodeEdgeMap anchorMap) {
-    	RuleEvent result;
-    	reporter.start(GET_EVENT);
-        if (isModifying()) {
-            RuleEvent event = createEvent(anchorMap);
-            // look if we have an event with the same characteristics
-            result = eventMap.get(event);
-            if (result == null) {
-                // no, the event is new.
-                result = event;
-                eventMap.put(event, result);
-                eventCount++;
-            }
-        } else {
-            // there can be at most one event
-            if (unmodifyingEvent == null) {
-                unmodifyingEvent = createEvent(anchorMap);
-                eventCount++;
-            }
-            result = unmodifyingEvent;
-        }
-        reporter.stop();
-        return result;
+//
+//    /**
+//     * Factory method to create an event based on this rule and a given anchor map.
+//     * @ensure <code>result.getRule() == this</code>
+//     */
+//    protected RuleEvent getEvent(VarNodeEdgeMap anchorMap) {
+//    	RuleEvent result;
+//    	reporter.start(GET_EVENT);
+//        if (isModifying()) {
+//            RuleEvent event = createEvent(anchorMap, record);
+//            // look if we have an event with the same characteristics
+//            result = eventMap.get(event);
+//            if (result == null) {
+//                // no, the event is new.
+//                result = event;
+//                eventMap.put(event, result);
+//                eventCount++;
+//            }
+//        } else {
+//            // there can be at most one event
+//            if (unmodifyingEvent == null) {
+//                unmodifyingEvent = createEvent(anchorMap, record);
+//                eventCount++;
+//            }
+//            result = unmodifyingEvent;
+//        }
+//        reporter.stop();
+//        return result;
+//    }
+//    
+//    /**
+//     * Clears all event information from the rule.
+//     * This should be done before a new GTS is developed, so as to
+//     * avoid node number clashes.
+//     */
+//    public void clearEvents() {
+//    	eventMap.clear();
+//    }
+    
+    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, DerivationData record) {
+        return new SPOEvent(this, anchorMap, record);
     }
     
-    /**
-     * Clears all event information from the rule.
-     * This should be done before a new GTS is developed, so as to
-     * avoid node number clashes.
-     */
-    public void clearEvents() {
-    	eventMap.clear();
-    }
-    
-    /**
-     * Callback factory method to create a rule event for this rule.
-     */
-    protected RuleEvent createEvent(VarNodeEdgeMap anchorMap) {
-        return getRuleFactory().createRuleEvent(this, anchorMap);
-    }
-    
+    @Deprecated
     public RuleApplication createApplication(Matching match) {
-    	return getRuleFactory().createRuleApplication(getEvent(match.elementMap()), match.cod());
-//        return getEvent(match.elementMap()).createApplication(match.cod());
+    	return newEvent(match.elementMap(), null).newApplication(match.cod());
     }
 //
 //    @Override
@@ -739,16 +736,16 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * The priority of this rule.
      */
     private int priority;
-    /**
-     * Map from anchor maps to {@link RuleEvent}s.
-     */
-    private final Map<RuleEvent,RuleEvent> eventMap = new HashMap<RuleEvent,RuleEvent>();
-
-	/**
-     * The unique event in case this rule is not modifying.
-     * @see #isModifying()
-     */
-    private RuleEvent unmodifyingEvent;
+//    /**
+//     * Map from anchor maps to {@link RuleEvent}s.
+//     */
+//    private final Map<RuleEvent,RuleEvent> eventMap = new HashMap<RuleEvent,RuleEvent>();
+//
+//	/**
+//     * The unique event in case this rule is not modifying.
+//     * @see #isModifying()
+//     */
+//    private RuleEvent unmodifyingEvent;
     /** The search plan for events of this rule. */
     private List<SearchItem> eventSearchPlan;
     /** Debug flag for the constructor. */

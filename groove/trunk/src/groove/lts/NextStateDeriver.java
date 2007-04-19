@@ -126,7 +126,7 @@ public class NextStateDeriver extends DefaultDeriver {
             RuleEvent event = prevTransition.getEvent();
 //            if (!disabledRules.contains(rule) || !((SPOEvent) state.getEvent()).disables(event) && event.hasMatching(state)) {
             if (isUseDependencies() && !disabledRules.contains(rule) || event.hasMatching(state.getGraph())) {
-                AliasRuleApplication appl = (AliasRuleApplication) event.createApplication(state.getGraph());
+                AliasRuleApplication appl = (AliasRuleApplication) event.newApplication(state.getGraph());
                 appl.setPrior(prevTransition);
                 added |= result.add(appl);
         	}

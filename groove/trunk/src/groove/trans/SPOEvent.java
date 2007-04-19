@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.7 2007-04-19 06:39:23 rensink Exp $
+ * $Id: SPOEvent.java,v 1.8 2007-04-19 09:21:32 rensink Exp $
  */
 package groove.trans;
 
@@ -46,7 +46,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-04-19 06:39:23 $
+ * @version $Revision: 1.8 $ $Date: 2007-04-19 09:21:32 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -70,11 +70,11 @@ public class SPOEvent implements RuleEvent {
      * @param rule the production rule involved
      * @param anchorMap the match of the rule's LHS elements to the host graph
      */
-    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, RuleFactory ruleFactory) {
+    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap) {
     	rule.testFixed(true);
         this.rule = rule;
         this.anchorMap = anchorMap;
-		this.ruleFactory = ruleFactory;
+		this.ruleFactory = rule.getRuleFactory();
         this.freshNodeList = createFreshNodeList();
     }
 
@@ -84,7 +84,7 @@ public class SPOEvent implements RuleEvent {
      * @param anchorMap the match of the rule's LHS elements to the host graph
      */
     public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, DerivationData record) {
-    	this(rule, anchorMap, record.getRuleSystem().getRuleFactory());
+    	this(rule, anchorMap);
     	this.record = record;
     }
 
@@ -200,10 +200,7 @@ public class SPOEvent implements RuleEvent {
 		return result;
 	}
 
-	public RuleApplication createApplication(Graph source) {
-//		ruleFactory.createRuleEvent();
-//		RuleApplication result = getRuleFactory().createRuleApplication(this, source);
-//		return result;
+	public RuleApplication newApplication(Graph source) {
 		return getRuleFactory().createRuleApplication(this, source);
 	}
     

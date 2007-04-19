@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.3 2007-04-01 12:50:33 rensink Exp $
+ * $Id: DefaultGraphTransition.java,v 1.4 2007-04-19 09:21:26 rensink Exp $
  */
 package groove.lts;
 
@@ -24,7 +24,6 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.trans.Matching;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
@@ -33,7 +32,7 @@ import groove.trans.RuleEvent;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-04-01 12:50:33 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-19 09:21:26 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphOutTransition, GraphTransition {
     /** The total number of anchor images created. */
@@ -104,7 +103,7 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
         return getEvent().getRule();
     }
 
-    public Matching matching() {
+    public Morphism matching() {
     	return getEvent().getMatching(source().getGraph());
     }
 
@@ -136,7 +135,7 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
      * Constructs an underlying morphism for the transition from the stored footprint.
      */
     protected Morphism computeMorphism() {
-        RuleApplication appl = getEvent().createApplication(source().getGraph());
+        RuleApplication appl = getEvent().newApplication(source().getGraph());
         Graph derivedTarget = appl.getTarget();
         Graph realTarget = target().getGraph();
         if (derivedTarget.edgeSet().equals(realTarget.edgeSet())

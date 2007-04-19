@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: XmlGrammar.java,v 1.5 2007-04-19 06:39:24 rensink Exp $
+ * $Id: XmlGrammar.java,v 1.6 2007-04-19 09:21:32 rensink Exp $
  */
 package groove.io;
 
@@ -27,7 +27,7 @@ import java.io.IOException;
  * Interface for the conversion of graph grammars to and from 
  * (sets of) XML documents.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public interface XmlGrammar<GG extends GraphGrammar> {
     /**
@@ -55,7 +55,7 @@ public interface XmlGrammar<GG extends GraphGrammar> {
 	
     /**
      * Converts an XML formatted file or set of files into a graph grammar, 
-     * and returns the fixed graph grammar.
+     * and returns the graph grammar. The resulting grammar is not yet fixed.
      * Convenience method for <code>unmarshal(file, null)</code>.
      * @see #unmarshalGrammar(File, String)
      */
@@ -63,7 +63,7 @@ public interface XmlGrammar<GG extends GraphGrammar> {
 
     /**
      * Converts an XML formatted file or set of files into a graph grammar, 
-     * and returns the fixed graph grammar.
+     * and returns the graph grammar. The resulting grammar is not yet fixed.
      * The start state is given explicitly by a string, which either 
      * stands for the name of the start state within the grammar, or for
      * the name of a separate file containing the start state. If <code>null</code>,
@@ -73,7 +73,7 @@ public interface XmlGrammar<GG extends GraphGrammar> {
      * in a single file) or directory (if the grammar is stored as a set of files)
      * @param startStateName the file where the start state is to be found; if <tt>null</tt>,
      * the default name {@link #DEFAULT_START_GRAPH_NAME} is tried.
-     * @return the unmarshalled graph grammar
+     * @return the unmarshalled (unfixed) graph grammar
      * @throws FormatException if an error occurs in the conversion
      * @throws IOException if an error occurs during file input
      */

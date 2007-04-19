@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.6 2007-04-01 12:50:02 rensink Exp $
+ * $Id: Generator.java,v 1.7 2007-04-19 09:21:34 rensink Exp $
  */
 package groove.util;
 
@@ -45,6 +45,7 @@ import groove.lts.explore.LinearStrategy;
 import groove.lts.explore.BarbedStrategy;
 import groove.lts.explore.LiveStrategy;
 import groove.lts.explore.NodeBoundedStrategy;
+import groove.trans.DerivationData;
 import groove.trans.GraphTest;
 import groove.trans.NameLabel;
 import groove.trans.GraphGrammar;
@@ -71,7 +72,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -190,6 +191,7 @@ public class Generator extends CommandLineTool {
         if (grammar == null) {
             try {
                 grammar = loader.unmarshalGrammar(new File(grammarLocation), startStateName);
+                grammar.setFixed();
             } catch (IOException exc) {
                 printError("Can't load grammar: " + exc.getMessage());
             } catch (FormatException exc) {
@@ -412,7 +414,7 @@ public class Generator extends CommandLineTool {
     private void reportTransitionStatistics() {
         println("\tTransitions:\tAliased:\t"+AliasSPOApplication.getPriorTransitionCount());
         println("\t\tConfluent:\t" + StateGenerator.getConfluentDiamondCount());
-        println("\t\tEvents:\t" + SPORule.getEventCount());
+        println("\t\tEvents:\t" + DerivationData.getEventCount());
     }
 
     /**
