@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GpsGrammar.java,v 1.9 2007-04-19 06:39:24 rensink Exp $
+ * $Id: GpsGrammar.java,v 1.10 2007-04-19 09:21:32 rensink Exp $
  */
 
 package groove.io;
@@ -49,7 +49,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @deprecated use {@link AspectualGpsGrammar} or {@link LayedOutGpsGrammar} instead
  */
 @Deprecated
@@ -178,12 +178,6 @@ public class GpsGrammar implements XmlGrammar {
             	exc.insert(formatExc);
             	formatExc = exc;
 			}
-        }
-        try {
-        	result.setFixed();
-        } catch (FormatException exc) {
-        	exc.insert(formatExc);
-        	formatExc = exc;
         }
         if (formatExc != null) {
         	throw formatExc;

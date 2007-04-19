@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLModelChecker.java,v 1.5 2007-04-01 12:50:25 rensink Exp $
+ * $Id: CTLModelChecker.java,v 1.6 2007-04-19 09:21:33 rensink Exp $
  */
 package groove.verify;
 
@@ -53,7 +53,7 @@ import java.util.Set;
  * Command-line tool directing the model checking process.
  *  
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-04-01 12:50:25 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-19 09:21:33 $
  */
 public class CTLModelChecker extends CommandLineTool {
 
@@ -320,6 +320,7 @@ public class CTLModelChecker extends CommandLineTool {
     	if (grammarLocation != null) {
 	        try {
 	            grammar = loader.unmarshalGrammar(new File(grammarLocation), startStateName);
+	            grammar.setFixed();
 	        } catch (IOException exc) {
 	            printError("Can't load grammar: " + exc.getMessage());
 	        } catch (FormatException exc) {

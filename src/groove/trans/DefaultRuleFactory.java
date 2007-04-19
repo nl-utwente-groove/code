@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.7 2007-04-18 08:36:10 rensink Exp $
+ * $Id: DefaultRuleFactory.java,v 1.8 2007-04-19 09:21:32 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import groove.util.FormatException;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class DefaultRuleFactory implements RuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */
@@ -101,7 +101,7 @@ public class DefaultRuleFactory implements RuleFactory {
 	 * This implementation returns an {@link SPOEvent}.
 	 */
 	public RuleEvent createRuleEvent(Rule rule, VarNodeEdgeMap anchorMap) {
-		return new SPOEvent((SPORule) rule, anchorMap, this);
+		return new SPOEvent((SPORule) rule, anchorMap);
 	}
 
 	/**

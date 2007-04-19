@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGpsGrammar.java,v 1.6 2007-04-19 06:39:24 rensink Exp $
+ * $Id: AspectualGpsGrammar.java,v 1.7 2007-04-19 09:21:32 rensink Exp $
  */
 
 package groove.io;
@@ -45,7 +45,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
     /** Error message if a grammar cannot be loaded. */
@@ -120,12 +120,6 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
 		}
         try {
 			loadStartGraph(result, startGraphName, location);
-		} catch (FormatException exc) {
-			exc.insert(formatExc);
-			formatExc = exc;
-		}
-        try {
-			result.setFixed();
 		} catch (FormatException exc) {
 			exc.insert(formatExc);
 			formatExc = exc;
@@ -259,7 +253,7 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
      * Unmarshals a rule from a file in <tt>.gpr</tt> format.
      * The rule gets the filename (without directory path) as name.
      * @param location the file to get the rule from
-	 * @param properties TODO
+	 * @param properties the properties for the rule to be unmarshalled
      * @return a rule view for the given rule.
      * @throws IOException
      */
@@ -347,7 +341,7 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
      * @param location the location to which the rule is to be marshalled
      * @throws IOException if {@link Xml#marshalGraph(Graph, File)} throws an exception
      */
-    public void marshalRule(AspectualRuleView ruleGraph, File location) throws IOException {
+    public void marshalRule(RuleView ruleGraph, File location) throws IOException {
         File ruleLocation = location;
         NameLabel ruleName = ruleGraph.getName();
         int priority = ruleGraph.getPriority();

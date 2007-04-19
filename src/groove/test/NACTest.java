@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.5 2007-04-18 08:36:17 rensink Exp $
+ * $Id: NACTest.java,v 1.6 2007-04-19 09:21:33 rensink Exp $
  */
 package groove.test;
 
@@ -56,7 +56,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -240,7 +240,7 @@ public class NACTest extends TestCase {
     	Iterator<? extends Matching> matchIter = rule.getMatchingIter(graph);
     	while (matchIter.hasNext()) {
 			Matching match = matchIter.next();
-			result.add(rule.createApplication(match));
+			result.add(rule.newEvent(match.elementMap(), null).newApplication(match.cod()));
 		}
     	return result;
     }

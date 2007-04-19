@@ -17,12 +17,11 @@
 package groove.lts;
 
 import groove.graph.Morphism;
-import groove.trans.Matching;
 
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface GraphTransition extends Transition, GraphOutTransition {
 	/** Overrides the method to specialise the result type. */
@@ -32,13 +31,12 @@ public interface GraphTransition extends Transition, GraphOutTransition {
 	GraphState target();
 
 	/**
-	 * Reconstructs the matching from the information stored in this transition.
+	 * Returns the matching of the LHS into the source graph.
 	 */
-    public Matching matching();
+    public Morphism matching();
 
 	/**
-	 * Reconstructs the derivation from the information stored in this transition.
+	 * Returns the (partial) morphism from the source to the target graph.
 	 */
-	public abstract Morphism morphism();
-
+	public Morphism morphism();
 }

@@ -31,7 +31,6 @@ import groove.graph.DeltaTarget;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.trans.Matching;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
@@ -41,7 +40,7 @@ import groove.util.TransformIterator;
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DerivedGraphState extends DefaultGraphState implements GraphNextState {
     /**
@@ -260,7 +259,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 * @see #getRule()
 	 * @see RuleEvent#getMatching(Graph)
 	 */
-	public Matching matching() {
+	public Morphism matching() {
     	return getEvent().getMatching(getBasis());
 	}
     
@@ -268,7 +267,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      * Constructs an underlying morphism for the transition from the stored footprint.
      */
     public Morphism morphism() {
-        RuleApplication appl = getEvent().createApplication(source().getGraph());
+        RuleApplication appl = getEvent().newApplication(source().getGraph());
         Graph derivedTarget = appl.getTarget();
         Graph realTarget = target().getGraph();
         if (derivedTarget.edgeSet().equals(realTarget.edgeSet())
@@ -674,7 +673,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 		AbstractGraph basis = getBasis() instanceof AbstractGraph ? (AbstractGraph) getBasis() : null;
 		boolean basisCacheCleared = basis != null && basis.isCacheCleared();
 		// do the actual rule application
-		RuleApplication applier = getEvent().createApplication(getBasis());
+		RuleApplication applier = getEvent().newApplication(getBasis());
 		applier.setCoanchorImage(getCoanchorImage());
 	    applier.applyDelta(target);
 	    // clear the basis cache

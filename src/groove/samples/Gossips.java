@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.5 2007-04-18 08:36:24 rensink Exp $
+ * $Id: Gossips.java,v 1.6 2007-04-19 09:21:33 rensink Exp $
  */
 package groove.samples;
 
@@ -24,6 +24,7 @@ import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.lts.AliasSPOApplication;
 import groove.lts.DefaultGraphTransition;
@@ -32,11 +33,11 @@ import groove.lts.GraphState;
 import groove.lts.NextStateDeriver;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.DefaultRuleFactory;
+import groove.trans.DerivationData;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
-import groove.trans.RuleFactory;
 import groove.trans.SystemProperties;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
@@ -56,6 +57,7 @@ public class Gossips {
     static private final String BASIC_GOSSIP_RULE_NAME = "basic";
     static private final DefaultLabel GIRL_EDGE_LABEL = DefaultLabel.createLabel("Meisje");
     static private final String SECRET_LABEL_TEXT = "kent";
+    static private final Label SECRET_LABEL = DefaultLabel.createLabel(SECRET_LABEL_TEXT);
     
     static private long startTime;
     
@@ -95,6 +97,10 @@ public class Gossips {
         System.out.println("Edges: "+edgeCount);
     }
     
+    /** 
+     * Loads the gossips rule system and generates the LTS.
+     * @param args The first argument is an (optional) name of the start state
+     */ 
     public static void main(String[] args) {
         init();
         // set some policies
@@ -111,6 +117,7 @@ public class Gossips {
 //            report(result);
             GraphGrammar atomic = Groove.loadGrammar(ATOMIC_GOSSIP_GPS_NAME, startGraphName);
             atomic.add(new GossipRule(Groove.loadRuleGraph(BASIC_GOSSIP_RULE_NAME).toRule(), atomic.getProperties()));
+            atomic.setFixed();
             GraphCalculator calc2 = Groove.createCalculator(atomic);
             calc2.addGTSListener(new GenerateProgressMonitor());
 //            Collection result2 = calc2.getAllMax();
@@ -158,21 +165,21 @@ public class Gossips {
         }
 
         @Override
-        public RuleEvent createEvent(VarNodeEdgeMap anchorMap) {
-        	return getRuleFactory().createRuleEvent(this, anchorMap);
-//            return new GossipEvent(this, anchorMap);
+        public RuleEvent newEvent(VarNodeEdgeMap anchorMap, DerivationData record) {
+//        	return getRuleFactory().createRuleEvent(this, anchorMap);
+            return new GossipEvent(this, anchorMap, record);
         }
     }
     
     static class GossipEvent extends SPOEvent {
-        public GossipEvent(GossipRule gossipRule, VarNodeEdgeMap anchorMap, RuleFactory ruleFactory) {
-            super(gossipRule, anchorMap, ruleFactory);
+        public GossipEvent(GossipRule gossipRule, VarNodeEdgeMap anchorMap, DerivationData record) {
+            super(gossipRule, anchorMap, record);
         }
 
         @Override
-        public RuleApplication createApplication(Graph source) {
-        	return getRuleFactory().createRuleApplication(this, source);
-//            return new GossipApplication(this, source);
+        public RuleApplication newApplication(Graph source) {
+//        	return getRuleFactory().createRuleApplication(this, source);
+            return new GossipApplication(this, source);
         }
     }
     
@@ -188,8 +195,8 @@ public class Gossips {
             Node girl1 = girlIter.next();
             Node girl2 = girlIter.next();
             for (Edge secretEdge: source.outEdgeSet(girl1)) {
-                if (secretEdge.label().equals(SECRET_LABEL_TEXT)) {
-                    Edge newEdge = DefaultEdge.createEdge(girl2, SECRET_LABEL_TEXT, secretEdge.opposite());
+                if (secretEdge.label().equals(SECRET_LABEL)) {
+                    Edge newEdge = DefaultEdge.createEdge(girl2, SECRET_LABEL, secretEdge.opposite());
                     if (!source.containsElement(newEdge)) {
                         target.addEdge(newEdge);
                         added = true;
@@ -197,8 +204,8 @@ public class Gossips {
                 }
             }
             for (Edge secretEdge: source.outEdgeSet(girl2)) {
-                if (secretEdge.label().equals(SECRET_LABEL_TEXT)) {
-                    Edge newEdge = DefaultEdge.createEdge(girl1, SECRET_LABEL_TEXT, secretEdge.opposite());
+                if (secretEdge.label().equals(SECRET_LABEL)) {
+                    Edge newEdge = DefaultEdge.createEdge(girl1, SECRET_LABEL, secretEdge.opposite());
                     if (!source.containsElement(newEdge)) {
                         target.addEdge(newEdge);
                         added = true;
@@ -208,18 +215,18 @@ public class Gossips {
             assert added : "No edges added";
         }        
     }
-
-    static class GossipRuleFactory extends DefaultRuleFactory {
-    	/** This implementation returns a {@link GossipApplication}. */
-    	@Override
-    	public RuleApplication createRuleApplication(RuleEvent event, Graph source) {
-    		return new GossipApplication((GossipEvent) event, source);
-    	}
-
-    	/** This implementation returns a {@link GossipEvent}. */
-    	@Override
-    	public RuleEvent createRuleEvent(Rule rule, VarNodeEdgeMap anchorMap) {
-    		return new GossipEvent((GossipRule) rule, anchorMap, this);
-    	}
-    }
+//
+//    static class GossipRuleFactory extends DefaultRuleFactory {
+//    	/** This implementation returns a {@link GossipApplication}. */
+//    	@Override
+//    	public RuleApplication createRuleApplication(RuleEvent event, Graph source) {
+//    		return new GossipApplication((GossipEvent) event, source);
+//    	}
+//
+//    	/** This implementation returns a {@link GossipEvent}. */
+//    	@Override
+//    	public RuleEvent createRuleEvent(Rule rule, VarNodeEdgeMap anchorMap, DerivationData record) {
+//    		return new GossipEvent((GossipRule) rule, anchorMap, record);
+//    	}
+//    }
 }

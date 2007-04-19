@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.13 2007-04-19 06:39:26 rensink Exp $
+ * $Id: Simulator.java,v 1.14 2007-04-19 09:21:34 rensink Exp $
  */
 package groove.gui;
 
@@ -48,7 +48,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.StateGenerator;
-import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
@@ -112,7 +111,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class Simulator {
     /**
@@ -265,6 +264,15 @@ public class Simulator {
 		private final JDialog cancelDialog;
 	}
 
+	/** Interface for actions that should be refreshed upon changes. */
+	private interface Refreshable { 
+		/** 
+		 * Callback method to refresh attributes of the action
+		 * such as its name and enabledness status.
+		 */
+		void refresh();
+	}
+	
 	/**
 	 * Thread class to wrap the exploration of the simulator's current GTS.
 	 */
@@ -401,34 +409,40 @@ public class Simulator {
      * @see GTS#startState()
      * @see Simulator#setState(GraphState)
      */
-    protected class GotoStartStateAction extends AbstractAction {
+    protected class GotoStartStateAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
         protected GotoStartStateAction() {
             super(Options.GOTO_START_STATE_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
-            setEnabled(false);
         }
 
         public void actionPerformed(ActionEvent evt) {
             setState(currentGTS.startState());
         }
+
+		public void refresh() {
+			setEnabled(getCurrentGTS() != null);
+		}
     }
 
     /**
      * Action for applying the current derivation to the current state.
      * @see Simulator#applyTransition()
      */
-    protected class ApplyTransitionAction extends AbstractAction {
+    protected class ApplyTransitionAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
         protected ApplyTransitionAction() {
             super(Options.APPLY_TRANSITION_ACTION_NAME);
             putValue(Action.ACCELERATOR_KEY, Options.APPLY_KEY);
-            setEnabled(false);
         }
 
         public void actionPerformed(ActionEvent evt) {
             applyTransition();
         }
+
+		public void refresh() {
+			setEnabled(getCurrentTransition() != null);
+		}
     }
 
     /**
@@ -454,7 +468,7 @@ public class Simulator {
      * Action for loading and setting a new initial state.
      * @see Simulator#doLoadStartState(File)
      */
-    protected class LoadStartStateAction extends AbstractAction {
+    protected class LoadStartStateAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
         protected LoadStartStateAction() {
             super(Options.LOAD_START_STATE_ACTION_NAME);
@@ -467,6 +481,11 @@ public class Simulator {
             if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(getValue(NAME).toString())) {
                 doLoadStartState(getStateFileChooser().getSelectedFile());
             }
+        }
+        
+        /** Sets the enabling status of this action, depending on whether a grammar is currently loaded. */ 
+        public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
         }
     }
 
@@ -496,7 +515,7 @@ public class Simulator {
      * Action for refreshing the rule system. Reloads the current rule system and start graph.
      * @see Simulator#doRefreshGrammar()
      */
-    protected class RefreshGrammarAction extends AbstractAction {
+    protected class RefreshGrammarAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
         protected RefreshGrammarAction() {
             super(Options.REFRESH_GRAMMAR_ACTION_NAME);
@@ -508,12 +527,16 @@ public class Simulator {
                 doRefreshGrammar();
             }
         }
+
+		public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+		}
     }
 
     /**
      * Action for saving a rule system. Currently not enabled.
      */
-    protected class SaveGrammarAction extends AbstractAction {
+    protected class SaveGrammarAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
         protected SaveGrammarAction() {
             super(Options.SAVE_GRAMMAR_ACTION_NAME);
@@ -541,6 +564,10 @@ public class Simulator {
                 }
             }
         }
+
+		public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+		}
     }
 
     /**
@@ -578,7 +605,7 @@ public class Simulator {
      * @see Simulator#handleEditState()
      * @see Simulator#handleEditRule()
      */
-    protected class EditGraphAction extends AbstractAction {
+    protected class EditGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
         protected EditGraphAction() {
             super(Options.EDIT_ACTION_NAME);
@@ -589,7 +616,7 @@ public class Simulator {
          * Checks if the enabling condition is satisfied, and if so, calls
          * {@link #setEnabled(boolean)}.
          */
-        public void checkEnabled() {
+        public void refresh() {
             if (getGraphPanel() == getStatePanel()) {
                 setEnabled(getCurrentState() != null);
                 putValue(NAME, Options.EDIT_STATE_ACTION_NAME);
@@ -616,7 +643,7 @@ public class Simulator {
      * @see Simulator#handleSaveGraph(boolean, JModel, String)
      * @see Simulator#doSaveGraph(JModel, File)
      */
-    protected class SaveGraphAction extends AbstractAction {
+    protected class SaveGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
         protected SaveGraphAction() {
             super(Options.SAVE_ACTION_NAME);
@@ -636,7 +663,7 @@ public class Simulator {
          * and also modifies the action name.
          * 
          */
-        protected void checkEnabled() {
+        public void refresh() {
             if (getGraphPanel() == getLtsPanel()) {
                 setEnabled(getCurrentGTS() != null);
                 putValue(NAME, Options.SAVE_LTS_ACTION_NAME);
@@ -654,7 +681,7 @@ public class Simulator {
      * Action to save the state, as a graph or in some export format.
      * @see Simulator#doExportGraph(JGraph, File)
      */
-    protected class ExportGraphAction extends AbstractAction {
+    protected class ExportGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
         protected ExportGraphAction() {
             super(Options.EXPORT_ACTION_NAME);
@@ -686,7 +713,7 @@ public class Simulator {
          * Tests if the action should be enabled according to the current state of the simulator,
          * and also modifies the action name.
          */
-        protected void checkEnabled() {
+        public void refresh() {
             if (getGraphPanel() == getLtsPanel()) {
                 setEnabled(getCurrentGTS() != null);
                 putValue(NAME, Options.EXPORT_LTS_ACTION_NAME);
@@ -733,7 +760,7 @@ public class Simulator {
         this();
         if (grammarLocation != null) {
             final File location = new File(Groove.createRuleSystemFilter().addExtension(grammarLocation));
-            XmlGrammar grammarLoader = null;
+            XmlGrammar<RuleViewGrammar> grammarLoader = null;
             for (Map.Entry<ExtensionFilter,XmlGrammar<RuleViewGrammar>> loaderEntry: grammarLoaderMap.entrySet()) {
                 ExtensionFilter filter = loaderEntry.getKey();
                 if (filter.accept(location)) {
@@ -745,7 +772,7 @@ public class Simulator {
             } else {
             	// load the grammar, but on the event dispatch thread so we don't get
             	// concurrency issues
-            	final XmlGrammar loader = grammarLoader;
+            	final XmlGrammar<RuleViewGrammar> loader = grammarLoader;
             	SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 		                doLoadGrammar(loader, location, startGraphName);                
@@ -855,9 +882,10 @@ public class Simulator {
     /**
      * Returns the transition application action permanently associated with this simulator.
      */
-    public Action getApplyTransitionAction() {
+    public ApplyTransitionAction getApplyTransitionAction() {
     	if (applyTransitionAction == null) {
     		applyTransitionAction = new ApplyTransitionAction();
+    		addRefreshable(applyTransitionAction);
             addAccelerator(applyTransitionAction);
     	}
         return applyTransitionAction;
@@ -876,19 +904,21 @@ public class Simulator {
     /**
      * Returns the go-to start state action permanently associated with this simulator.
      */
-    public Action getGotoStartStateAction() {
+    public GotoStartStateAction getGotoStartStateAction() {
     	// lazily create the action
     	if (gotoStartStateAction == null) {
     		gotoStartStateAction = new GotoStartStateAction();
+    		addRefreshable(gotoStartStateAction);
     	}
         return gotoStartStateAction;
     }
 
     /** Returns the start state load action permanently associated with this simulator. */
-    public Action getLoadStartStateAction() {
+    public LoadStartStateAction getLoadStartStateAction() {
     	// lazily create the action
     	if (loadStartStateAction == null) {
     		loadStartStateAction = new LoadStartStateAction();
+    		addRefreshable(loadStartStateAction);
     	}
         return loadStartStateAction;
     }
@@ -904,11 +934,12 @@ public class Simulator {
     }
 
     /** Returns the grammar refresh action permanently associated with this simulator. */
-    public Action getRefreshGrammarAction() {
+    public RefreshGrammarAction getRefreshGrammarAction() {
     	// lazily create the action
     	if (refreshGrammarAction == null) {
     		refreshGrammarAction = new RefreshGrammarAction();
             addAccelerator(refreshGrammarAction);
+    		addRefreshable(refreshGrammarAction);
     	}
         return refreshGrammarAction;
     }
@@ -918,6 +949,7 @@ public class Simulator {
     	// lazily create the action
     	if (saveGraphAction == null) {
     		saveGraphAction = new SaveGraphAction();
+    		addRefreshable(saveGraphAction);
     	}
         return saveGraphAction;
     }
@@ -926,7 +958,8 @@ public class Simulator {
     public ExportGraphAction getExportGraphAction() {
     	// lazily create the action
     	if (exportGraphAction == null) {
-    		exportGraphAction = new ExportGraphAction();
+    		exportGraphAction = new ExportGraphAction(); 
+    		addRefreshable(exportGraphAction);
     	}
         return exportGraphAction;
     }
@@ -936,6 +969,7 @@ public class Simulator {
     	// lazily create the action
     	if (editGraphAction == null) {
     		editGraphAction = new EditGraphAction();
+    		addRefreshable(editGraphAction);
     	}
         return editGraphAction;
     }
@@ -1107,10 +1141,10 @@ public class Simulator {
      *        start state name is used
      * @see XmlGrammar#DEFAULT_START_GRAPH_NAME
      */
-    public void doLoadGrammar(XmlGrammar grammarLoader, File grammarFile, String startStateName) {
+    public void doLoadGrammar(XmlGrammar<RuleViewGrammar> grammarLoader, File grammarFile, String startStateName) {
         try {
-        	GraphGrammar grammar = grammarLoader.unmarshalGrammar(grammarFile, startStateName);
-        	setGrammar(new GTS(grammar));
+        	RuleViewGrammar grammar = grammarLoader.unmarshalGrammar(grammarFile, startStateName);
+        	setGrammar(grammar);
             // now we know loading succeeded, we can set the current names & files
             currentGrammarFile = grammarFile;
             currentGrammarLoader = grammarLoader;
@@ -1137,10 +1171,9 @@ public class Simulator {
         try {
             AspectGraph aspectStartGraph = graphLoader.unmarshalGraph(file);
             Graph startGraph = new AspectualGraphView(aspectStartGraph).getModel();
-            GraphGrammar newGrammar = new RuleViewGrammar(getCurrentGrammar());
+            RuleViewGrammar newGrammar = new RuleViewGrammar(getCurrentGrammar());
             newGrammar.setStartGraph(startGraph);
-            newGrammar.setFixed();
-            setGrammar(new GTS(newGrammar));
+            setGrammar(newGrammar);
             currentStartStateName = file.getName();
         } catch (IOException exc) {
             showErrorDialog("Could not load start graph from " + file.getName(),
@@ -1209,8 +1242,7 @@ public class Simulator {
     public void doRefreshGrammar() {
         if (currentGrammarFile != null) {
             try {
-            	GraphGrammar newGrammar = currentGrammarLoader.unmarshalGrammar(currentGrammarFile, currentStartStateName);
-                setGrammar(new GTS(newGrammar)); 
+                setGrammar(currentGrammarLoader.unmarshalGrammar(currentGrammarFile, currentStartStateName)); 
             } catch (IOException exc) {
                 showErrorDialog("Error while loading grammar from " + currentGrammarFile, exc);
             } catch (FormatException exc) {
@@ -1238,68 +1270,76 @@ public class Simulator {
      * @param ruleAsGraph the new rule, given in editor input format
      */
     public void replaceCurrentRule(Graph ruleAsGraph) {
-        if (currentGrammarLoader instanceof AspectualGpsGrammar) {
-        	RuleFactory ruleFactory = currentGrammarLoader.getRuleFactory();
-            Rule currentRule = getCurrentRule();
-            NameLabel currentRuleName = currentRule.getName();
-            int currentRulePriority = currentRule.getPriority();
-            try {
-                AspectualRuleView newRuleGraph = (AspectualRuleView) ruleFactory.createRuleView(ruleAsGraph, currentRuleName, currentRulePriority, currentGrammar.getProperties());
-                RuleViewGrammar newGrammar = new RuleViewGrammar(getCurrentGrammar());
-                newGrammar.add(newRuleGraph);
-                newGrammar.setFixed();
-                ((AspectualGpsGrammar) currentGrammarLoader).marshalRule(newRuleGraph, currentGrammarFile);
-                NameLabel oldRuleName = currentRuleName;
-                setGrammar(new GTS(newGrammar));
-                setRule(oldRuleName);
-            } catch (IOException exc) {
-                showErrorDialog("Error while saving edited rule", exc);
-            } catch (FormatException exc) {
-                showErrorDialog("Error in rule format", exc);
-            }
-        }
+    	RuleFactory ruleFactory = currentGrammarLoader.getRuleFactory();
+		Rule currentRule = getCurrentRule();
+		NameLabel currentRuleName = currentRule.getName();
+		int currentRulePriority = currentRule.getPriority();
+		try {
+			AspectualRuleView newRuleGraph = (AspectualRuleView) ruleFactory.createRuleView(
+					ruleAsGraph, currentRuleName, currentRulePriority, currentGrammar
+							.getProperties());
+			RuleViewGrammar newGrammar = new RuleViewGrammar(getCurrentGrammar());
+			newGrammar.add(newRuleGraph);
+			((AspectualGpsGrammar) currentGrammarLoader).marshalRule(newRuleGraph,
+					currentGrammarFile);
+			NameLabel oldRuleName = currentRuleName;
+			setGrammar(newGrammar);
+			setRule(oldRuleName);
+		} catch (IOException exc) {
+			showErrorDialog("Error while saving edited rule", exc);
+		} catch (FormatException exc) {
+			showErrorDialog("Error in rule format", exc);
+		}
     }
 
     /**
-     * Sets a new graph transition system. 
-     * Invokes {@link #notifySetGrammar(GTS)} to notify all
-     * observers of the change. 
-     * @param gts the new graph transition system
-     * @see #notifySetGrammar(GTS)
-     */
-    public synchronized void setGrammar(GTS gts) {
-        this.currentGTS = gts;
-        this.currentGrammar = (RuleViewGrammar) gts.ruleSystem();
-        this.stateGenerator = createStateGenerator(gts);
-        if (currentGrammar.getName() == null) {
-            setTitle(APPLICATION_NAME);
-        } else {
-            setTitle(currentGrammar.getName() + " - " + APPLICATION_NAME);
-        }
-        // reset the node numbering
-        // DefaultNode.resetNodeNr();
-        if (gts == null) {
-            currentState = null;
-        } else {
-            currentState = gts.startState();
-            stateGenerator.computeSuccessors(currentState);
-        }
-        currentRule = null;
-        currentTransition = null;
-        notifySetGrammar(gts);
-        setActionsEnabled();
-        if (getFrame().getContentPane() instanceof JSplitPane) {
-            ((JSplitPane) getFrame().getContentPane()).resetToPreferredSizes();
-        }
+	 * Sets a new graph transition system. Invokes
+	 * {@link #notifySetGrammar(GTS)} to notify all observers of the change.
+	 * 
+	 * @param grammar
+	 *            the new graph transition system
+	 * @see #notifySetGrammar(GTS)
+	 */
+    public synchronized void setGrammar(RuleViewGrammar grammar) {
+    	try {
+			grammar.setFixed();
+			this.currentGTS = new GTS(grammar);
+			this.currentGrammar = grammar;
+			this.stateGenerator = createStateGenerator(currentGTS);
+			if (currentGrammar.getName() == null) {
+				setTitle(APPLICATION_NAME);
+			} else {
+				setTitle(currentGrammar.getName() + " - " + APPLICATION_NAME);
+			}
+			// reset the node numbering
+			// DefaultNode.resetNodeNr();
+			if (grammar == null) {
+				currentState = null;
+			} else {
+				currentState = currentGTS.startState();
+				stateGenerator.computeSuccessors(currentState);
+			}
+			currentRule = null;
+			currentTransition = null;
+			notifySetGrammar(currentGTS);
+			refreshActions();
+			if (getFrame().getContentPane() instanceof JSplitPane) {
+				((JSplitPane) getFrame().getContentPane()).resetToPreferredSizes();
+			}
+		} catch (FormatException exc) {
+			showErrorDialog("Error while setting grammar", exc);
+		}
     }
 
     /**
-     * Sets the current state graph to a given state. Adds the previous state or active derivation
-     * to the history. Invokes <tt>notifySetState(state)</tt> to notify all observers of the
-     * change.
-     * @param state the new state
-     * @see #notifySetState(GraphState)
-     */
+	 * Sets the current state graph to a given state. Adds the previous state or
+	 * active derivation to the history. Invokes <tt>notifySetState(state)</tt>
+	 * to notify all observers of the change.
+	 * 
+	 * @param state
+	 *            the new state
+	 * @see #notifySetState(GraphState)
+	 */
     public synchronized void setState(GraphState state) {
         if (currentState != state) {
             currentState = state;
@@ -1307,7 +1347,7 @@ public class Simulator {
         }
         currentTransition = null;
         notifySetState(currentState);
-        setActionsEnabled();
+        refreshActions();
     }
 
     /**
@@ -1321,7 +1361,7 @@ public class Simulator {
         currentRule = currentGrammar.getRule(name);
         currentTransition = null;
         notifySetRule(name);
-        setActionsEnabled();
+        refreshActions();
     }
 
     /**
@@ -1340,7 +1380,7 @@ public class Simulator {
             currentRule = edge.getRule();
         }
         notifySetTransition(currentTransition);
-        setActionsEnabled();
+        refreshActions();
     }
 
     /**
@@ -1355,7 +1395,7 @@ public class Simulator {
         currentTransition = null;
         stateGenerator.computeSuccessors(currentState);
         notifyApplyTransition(appliedTransition);
-        setActionsEnabled();
+        refreshActions();
     }
 
     /**
@@ -1508,7 +1548,7 @@ public class Simulator {
             // add this simulator as a listener so that the actions are updated regularly
             graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
-                    setActionsEnabled();
+                    refreshActions();
                 }
             });
             graphViewsPanel.setVisible(true);
@@ -1535,17 +1575,30 @@ public class Simulator {
         return ruleJTreePanel;
     }
 
+    /** 
+     * Adds an element to the set of refreshables.
+     * Also calls {@link Refreshable#refresh()} on the element. 
+     */
+    private void addRefreshable(Refreshable element) {
+    	element.refresh();
+    	refreshables.add(element);
+    }
+    
     /**
      * Is called after a change to current state, rule or derivation or to the currently selected
-     * view panel to allow actions to be enabled and disabled.
+     * view panel to allow registered refreshable elements to refresh themselves.
      */
-    protected void setActionsEnabled() {
-        getApplyTransitionAction().setEnabled(getCurrentTransition() != null);
-        getGotoStartStateAction().setEnabled(getCurrentState() != null && getCurrentState() != getCurrentGTS().startState());
-        getLoadStartStateAction().setEnabled(getCurrentGrammar() != null);
-        getSaveGraphAction().checkEnabled();
-        getExportGraphAction().checkEnabled();
-        getEditGraphAction().checkEnabled();
+    protected void refreshActions() {
+    	for (Refreshable action: refreshables) {
+    		action.refresh();
+    	}
+//    	getRefreshGrammarAction().setEnabled(getCurrentGrammar() != null);
+//        getApplyTransitionAction().setEnabled(getCurrentTransition() != null);
+//        getGotoStartStateAction().setEnabled(getCurrentState() != null && getCurrentState() != getCurrentGTS().startState());
+//        getLoadStartStateAction().refresh();
+//        getSaveGraphAction().refresh();
+//        getExportGraphAction().refresh();
+//        getEditGraphAction().refresh();
     }
 
     /**
@@ -1676,9 +1729,9 @@ public class Simulator {
      * Notifies all listeners of a new graph grammar. As a result,
      * {@link SimulationListener#setGrammarUpdate(GTS)}is invoked on all currently
      * registered listeners. This method should not be called directly: use
-     * {@link #setGrammar(GTS)}instead.
+     * {@link #setGrammar(RuleViewGrammar)}instead.
      * @see SimulationListener#setGrammarUpdate(GTS)
-     * @see #setGrammar(GTS)
+     * @see #setGrammar(RuleViewGrammar)
      */
     protected synchronized void notifySetGrammar(GTS gts) {
     	for (SimulationListener listener: listeners) {
@@ -1874,7 +1927,7 @@ public class Simulator {
      * The loader used to load the current grammar, if <tt>currentGrammarFile</tt> is not
      * <tt>null</tt>.
      */
-    protected XmlGrammar currentGrammarLoader;
+    protected XmlGrammar<RuleViewGrammar> currentGrammarLoader;
     
     /** The state generator strategy for the current GTS. */
     private StateGenerator stateGenerator;
@@ -1954,6 +2007,8 @@ public class Simulator {
      */
     protected final Set<SimulationListener> listeners = new HashSet<SimulationListener>();
 
+    /** Current set of refreshables of this simulator. */
+    private final Set<Refreshable> refreshables = new HashSet<Refreshable>();
     /**
      * This application's main frame.
      */
