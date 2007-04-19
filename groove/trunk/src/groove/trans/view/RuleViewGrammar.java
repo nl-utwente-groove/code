@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleViewGrammar.java,v 1.5 2007-04-04 07:04:23 rensink Exp $
+ * $Id: RuleViewGrammar.java,v 1.6 2007-04-19 06:39:27 rensink Exp $
  */
 package groove.trans.view;
 
@@ -20,7 +20,6 @@ import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
-import groove.util.FormatException;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -30,28 +29,39 @@ import java.util.Map;
  */
 public class RuleViewGrammar extends GraphGrammar {
     /**
+     * Constructs a (non-fixed) copy of an existing rule view grammar.
+     */
+    public RuleViewGrammar(RuleViewGrammar oldGrammar) {
+        this(oldGrammar.getRuleFactory(), oldGrammar.getName());
+        getProperties().putAll(oldGrammar.getProperties());
+        for (RuleView ruleView: oldGrammar.ruleViewMap.values()) {
+        	add(ruleView);
+        }
+        setStartGraph(oldGrammar.getStartGraph());
+    }
+
+    /**
      * Constructs a named, empty grammar based on a given rule factory.
      */
     public RuleViewGrammar(RuleFactory ruleFactory, String name) {
         super(ruleFactory, name);
     }
+//
+//    /**
+//     * Constructs a named, empty grammar.
+//     */
+//    public RuleViewGrammar(String name) {
+//        super(name);
+//    }
 
     /**
-     * Constructs a named, empty grammar.
-     */
-    public RuleViewGrammar(String name) {
-        super(name);
-    }
-
-    /**
-     * Adds a rule based on a given rule view and priority.
-     * If the priority is <code>null</code>, it is constructed as in 
-     * {@link #add(Rule)}.
+     * Adds a rule based on a given rule view.
      * Calls {@link #add(Rule)} on <code>super</code>,
-     * and adds the <code>ruleGraph</code> to the map.
+     * and adds the <code>ruleView</code> to the map.
+     * @see #getRuleView(NameLabel)
      * @return the added rule, obtained from <code>ruleGraph.toRule()</code>
      */
-    public Rule add(RuleView ruleView) throws FormatException {
+    public Rule add(RuleView ruleView) throws IllegalStateException {
         Rule result = super.add(ruleView.toRule());
         ruleViewMap.put(ruleView.getName(), ruleView);
         return result;

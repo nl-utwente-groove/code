@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.3 2007-04-04 07:04:20 rensink Exp $
+ * $Id: GraphTest.java,v 1.4 2007-04-19 06:39:23 rensink Exp $
  */
 package groove.trans;
 
@@ -27,7 +27,7 @@ import java.util.Iterator;
  * Super-interface for tests over graphs.
  * Contains the common functionality of {@link GraphPredicate} and {@link GraphCondition}.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface GraphTest {    
     /**
@@ -67,11 +67,6 @@ public interface GraphTest {
      * @see #isGround()
      */
     public VarGraph getContext();
-    
-    /**
-     * Indicates if this graph test uses data attributes.
-     */
-    public boolean isAttributed();
     
     /**
      * Indicates if a given graph satisfies this predicate.

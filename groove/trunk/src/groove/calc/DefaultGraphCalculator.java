@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.2 2007-03-30 15:50:48 rensink Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.3 2007-04-19 06:39:12 rensink Exp $
  */
 package groove.calc;
 
@@ -31,7 +31,8 @@ import groove.lts.explore.LinearStrategy;
 import groove.trans.GraphGrammar;
 import groove.trans.GraphTest;
 import groove.trans.Rule;
-import groove.trans.RuleSystem;
+import groove.util.FormatException;
+import groove.util.Groove;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -45,39 +46,40 @@ import java.util.List;
  * @version $Revision $
  */
 public class DefaultGraphCalculator implements GraphCalculator {
+//    /**
+//     * Creates a graph calculator for a given rule set and start graph.
+//     * @param rules the rule system for the calculator
+//     * @param start the start graph for the calculator
+//     */
+//    public DefaultGraphCalculator(RuleSystem rules, Graph start) {
+//        this(new GraphGrammar(rules, start), false);
+//    }
+//    
     /**
-     * Creates a graph calculator for a given rule set and start graph.
-     * @param rules the rule system for the calculator
-     * @param start the start graph for the calculator
-     */
-    public DefaultGraphCalculator(RuleSystem rules, Graph start) {
-        this(new GraphGrammar(rules, start), false);
-    }
-    
-    /**
-     * Creates a graph calculator for a given graph grammar.
+     * Creates a graph calculator for a given, fixed graph grammar.
      * @param grammar the graph grammar for the calculator
      */
     public DefaultGraphCalculator(GraphGrammar grammar) {
         this(grammar, false);
     }
-
-    /**
-     * Creates a prototype calculator, with a <code>null</code> start graph.
-     * @param rules the rule set of the prototype
-     */
-    public DefaultGraphCalculator(RuleSystem rules) {
-        this(new GraphGrammar(rules), true);
-    }
+//
+//    /**
+//     * Creates a prototype calculator, with a <code>null</code> start graph.
+//     * @param rules the rule set of the prototype
+//     */
+//    public DefaultGraphCalculator(RuleSystem rules) {
+//        this(new GraphGrammar(rules), true);
+//    }
 
     /**
      * Creates a (possibly prototype) calculator on the basis of a given,
-     * existing graph grammar.
+     * fixed graph grammar.
      * @param grammar the pre-existing graph grammar
      * @param prototype flag to indicate whether the constructed calculator is to be used
      * as a prototype
      */
     protected DefaultGraphCalculator(GraphGrammar grammar, boolean prototype) {
+    	grammar.testFixed(true);
         this.grammar = grammar;
         this.gts = new GTS(grammar);
         this.generator = new StateGenerator(gts);
@@ -230,8 +232,14 @@ public class DefaultGraphCalculator implements GraphCalculator {
         }
     }
 
-    public GraphCalculator newInstance(Graph start) {
-        return new DefaultGraphCalculator(grammar, start);
+    public GraphCalculator newInstance(Graph start) throws IllegalArgumentException {
+    	try {
+			GraphGrammar newGrammar = new GraphGrammar(grammar, start);
+			grammar.setFixed();
+			return new DefaultGraphCalculator(newGrammar);
+		} catch (FormatException exc) {
+			throw new IllegalArgumentException(exc.getMessage(), exc);
+		}
     }
     
     public void addGTSListener(GraphListener listener) {

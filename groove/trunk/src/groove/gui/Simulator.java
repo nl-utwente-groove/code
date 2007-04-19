@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.12 2007-04-18 16:42:04 rensink Exp $
+ * $Id: Simulator.java,v 1.13 2007-04-19 06:39:26 rensink Exp $
  */
 package groove.gui;
 
@@ -112,7 +112,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class Simulator {
     /**
@@ -1137,9 +1137,10 @@ public class Simulator {
         try {
             AspectGraph aspectStartGraph = graphLoader.unmarshalGraph(file);
             Graph startGraph = new AspectualGraphView(aspectStartGraph).getModel();
-            startGraph.setFixed();
-            currentGrammar.setStartGraph(startGraph);
-            setGrammar(new GTS(currentGrammar));
+            GraphGrammar newGrammar = new RuleViewGrammar(getCurrentGrammar());
+            newGrammar.setStartGraph(startGraph);
+            newGrammar.setFixed();
+            setGrammar(new GTS(newGrammar));
             currentStartStateName = file.getName();
         } catch (IOException exc) {
             showErrorDialog("Could not load start graph from " + file.getName(),
@@ -1244,10 +1245,12 @@ public class Simulator {
             int currentRulePriority = currentRule.getPriority();
             try {
                 AspectualRuleView newRuleGraph = (AspectualRuleView) ruleFactory.createRuleView(ruleAsGraph, currentRuleName, currentRulePriority, currentGrammar.getProperties());
-                currentGrammar.add(newRuleGraph);
+                RuleViewGrammar newGrammar = new RuleViewGrammar(getCurrentGrammar());
+                newGrammar.add(newRuleGraph);
+                newGrammar.setFixed();
                 ((AspectualGpsGrammar) currentGrammarLoader).marshalRule(newRuleGraph, currentGrammarFile);
                 NameLabel oldRuleName = currentRuleName;
-                setGrammar(new GTS(currentGrammar));
+                setGrammar(new GTS(newGrammar));
                 setRule(oldRuleName);
             } catch (IOException exc) {
                 showErrorDialog("Error while saving edited rule", exc);

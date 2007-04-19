@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphPredicate.java,v 1.4 2007-04-04 07:04:20 rensink Exp $
+ * $Id: DefaultGraphPredicate.java,v 1.5 2007-04-19 06:39:23 rensink Exp $
  */
 package groove.trans;
 
@@ -36,9 +36,9 @@ import groove.util.TransformIterator;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
-public class DefaultGraphPredicate extends HashSet<GraphCondition> implements GraphPredicate {
+public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implements GraphPredicate {
 	/** Empty graph, to be used in the standard construction of an initial morphism. */
     static private final VarGraph EMPTY_VAR_GRAPH = new RegExprGraph();
     
@@ -63,14 +63,14 @@ public class DefaultGraphPredicate extends HashSet<GraphCondition> implements Gr
         if (isFixed()) {
             throw new IllegalStateException("No conditions may be added to fixed predicate");
         }
-        if (test instanceof GraphCondition) {
-            add((GraphCondition) test);
+        if (test instanceof DefaultGraphCondition) {
+            add((DefaultGraphCondition) test);
         } else {
-            addAll(((GraphPredicate) test).getConditions());
+            addAll(((DefaultGraphPredicate) test).getConditions());
         }
     }
 
-    public Set<GraphCondition> getConditions() {
+    public Set<DefaultGraphCondition> getConditions() {
         return Collections.unmodifiableSet(this);
     }
 
@@ -106,16 +106,16 @@ public class DefaultGraphPredicate extends HashSet<GraphCondition> implements Gr
     public VarGraph getContext() {
         return context;
     }
-
-    /** Returns <code>true</code> if any of the graph conditions does. */
-    public boolean isAttributed() {
-    	boolean result = false;
-    	Iterator<GraphCondition> conditionIter = this.iterator();
-    	while (! result && conditionIter.hasNext()) {
-    		result = conditionIter.next().isAttributed();
-    	}
-		return result;
-	}
+//
+//    /** Returns <code>true</code> if any of the graph conditions does. */
+//    public boolean isAttributed() {
+//    	boolean result = false;
+//    	Iterator<GraphCondition> conditionIter = this.iterator();
+//    	while (! result && conditionIter.hasNext()) {
+//    		result = conditionIter.next().isAttributed();
+//    	}
+//		return result;
+//	}
 
 	/**
      * If {@link #isGround()} holds, delegates to {@link #hasMatching(VarMorphism)} 

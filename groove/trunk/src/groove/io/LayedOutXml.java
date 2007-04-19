@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.4 2007-04-01 12:50:23 rensink Exp $
+ * $Id: LayedOutXml.java,v 1.5 2007-04-19 06:39:24 rensink Exp $
  */
 package groove.io;
 
@@ -50,7 +50,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class LayedOutXml implements Xml<Graph> {
     /** 
@@ -154,45 +154,51 @@ public class LayedOutXml implements Xml<Graph> {
                 return result;
             }
             BufferedReader layoutReader = new BufferedReader(new FileReader(layoutFile));
-            int version = 1;
-            // read in from the layout file until done
-            for (String nextLine = layoutReader.readLine(); nextLine != null; nextLine = layoutReader.readLine()) {
-                String[] parts;
-                try {
-                    parts = ExprParser.splitExpr(nextLine, WHITESPACE);
-                } catch (FormatException exc) {
-                    throw new IOException(LAYOUT_FORMAT_ERROR + ": " + exc.getMessage());
-                }
-                if (parts.length > 0) {
-                	String command = parts[0];
-					if (command.equals(NODE_PREFIX)) {
-						putVertexLayout(layoutMap, parts, nodeMap);
-					} else if (command.equals(EDGE_PREFIX)) {
-						Edge edge = putEdgeLayout(layoutMap, parts, nodeMap, version);
-						if (!result.containsElement(edge)) {
-							layoutReader.close();
-							throw new IOException(LAYOUT_FORMAT_ERROR
-									+ ": unknown edge " + edge);
-						}
-					} else if (command.equals(VERSION_PREFIX)) {
-						try {
-							version = Integer.parseInt(parts[1]);
-						} catch (Exception exc) {
-							throw new IOException(String.format("%s: Version number format error", LAYOUT_FORMAT_ERROR));
+            try {
+				int version = 1;
+				// read in from the layout file until done
+				for (String nextLine = layoutReader.readLine(); nextLine != null; nextLine = layoutReader
+						.readLine()) {
+					String[] parts;
+					try {
+						parts = ExprParser.splitExpr(nextLine, WHITESPACE);
+					} catch (FormatException exc) {
+						throw new FormatException("%s in %s: %s", LAYOUT_FORMAT_ERROR, file, exc
+								.getMessage());
+					}
+					if (parts.length > 0) {
+						String command = parts[0];
+						if (command.equals(NODE_PREFIX)) {
+							putVertexLayout(layoutMap, parts, nodeMap);
+						} else if (command.equals(EDGE_PREFIX)) {
+							Edge edge = putEdgeLayout(layoutMap, parts, nodeMap, version);
+							if (!result.containsElement(edge)) {
+								layoutReader.close();
+								throw new FormatException("%s in %s: unknown edge ",
+										LAYOUT_FORMAT_ERROR, file, edge);
+							}
+						} else if (command.equals(VERSION_PREFIX)) {
+							try {
+								version = Integer.parseInt(parts[1]);
+							} catch (Exception exc) {
+								throw new FormatException("%s in %s: Version number format error",
+										LAYOUT_FORMAT_ERROR, file);
+							}
 						}
 					}
-                }
-            }
-            layoutReader.close();
+				}
+			} finally {
+				layoutReader.close();
+			}
             GraphInfo.setLayoutMap(result, layoutMap);
         }
         return result;
     }
 
     /**
-     * Inserts vertex layout information in a given layout map,
-     * based on a string array description and node map.
-     */
+	 * Inserts vertex layout information in a given layout map, based on a
+	 * string array description and node map.
+	 */
     protected void putVertexLayout(LayoutMap<Node, Edge> layoutMap, String[] parts, Map<String, Node> nodeMap) throws IOException {
         Node node = nodeMap.get(parts[1]);
         if (node == null) {

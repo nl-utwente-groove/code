@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.6 2007-04-18 08:36:10 rensink Exp $
+ * $Id: RuleSystem.java,v 1.7 2007-04-19 06:39:23 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-04-18 08:36:10 $
+ * @version $Revision: 1.7 $ $Date: 2007-04-19 06:39:23 $
  * @see NameLabel
  * @see SPORule
  */
@@ -114,10 +114,14 @@ public class RuleSystem {
      * @ensure <tt>result: Label -> Rule</tt>
      */
     public Collection<Rule> getRules() {
-    	if (ruleSet == null) {
-    		ruleSet = Arrays.asList(new CollectionOfCollections<Rule>(priorityRuleMap.values()).toArray(new Rule[0]));
+    	Collection<Rule> result = ruleSet;
+    	if (result == null) {
+    		result = Arrays.asList(new CollectionOfCollections<Rule>(priorityRuleMap.values()).toArray(new Rule[0]));
+    		if (isFixed()) {
+    			ruleSet = result;
+    		}
     	}
-    	return ruleSet;
+    	return result;
     }
 
     /**
@@ -137,29 +141,19 @@ public class RuleSystem {
     }
 
     /**
-     * Adds a production rule to this production system, taking the rule priority into account.
+     * Adds a production rule to this rule system.
      * Removes the existing rule with the same name, if any, and returns it.
+     * This is only allowed if the grammar is not yet fixed, as indicated by {@link #isFixed()}.
      * @param rule the production rule to be added
      * @require <tt>rule != null</tt>
-     * @throws FormatException if the new rule does not comply with the grammar properties
+     * @throws IllegalStateException if the rule system is fixed
+     * @see #isFixed()
      */
-    public Rule add(Rule rule) throws FormatException {
-    	if (! isConsistent(rule)) {
-    		throw new FormatException(getInconsistency(rule));
-    	}
+    public Rule add(Rule rule) {
+    	testFixed(false);
         NameLabel ruleName = rule.getName();
         int priority = rule.getPriority();
-        Rule oldRuleForName = nameRuleMap.put(ruleName, rule);
-        // now remove the old rule with this name, if any
-        if (oldRuleForName != null) {
-            int oldPriorityForName = oldRuleForName.getPriority();
-            Set<Rule> oldPriorityRuleSet = priorityRuleMap.get(oldPriorityForName);
-            oldPriorityRuleSet.remove(oldRuleForName);
-            // if this is the last rule with this priority, remove the entry from the map
-            if (oldPriorityRuleSet.isEmpty()) {
-                priorityRuleMap.remove(oldPriorityForName);
-            }
-        }
+        Rule oldRuleForName = remove(ruleName);
         // add the rule to the priority map
         Set<Rule> priorityRuleSet = priorityRuleMap.get(priority);
         // if there is not yet any rule with this priority, create a set
@@ -169,11 +163,72 @@ public class RuleSystem {
         priorityRuleSet.add(rule);
         // add the rule to the map
         nameRuleMap.put(ruleName, rule);
-        ruleSet = null;
         return oldRuleForName;
     }
 
     /**
+     * Removes a named production rule from this rule system, and returns it.
+     * This is only allowed if the grammar is not yet fixed, as indicated by {@link #isFixed()}.
+     * @param ruleName the name of the production rule to be added
+     * @throws IllegalStateException if the rule system is fixed
+     * @see #isFixed()
+     */
+    public Rule remove(NameLabel ruleName) {
+    	testFixed(false);
+        Rule result = nameRuleMap.remove(ruleName);
+        // now remove the old rule with this name, if any
+        if (result != null) {
+            int priority = result.getPriority();
+            Set<Rule> priorityRuleSet = priorityRuleMap.get(priority);
+            priorityRuleSet.remove(result);
+            // if this is the last rule with this priority, remove the entry from the map
+            if (priorityRuleSet.isEmpty()) {
+                priorityRuleMap.remove(priority);
+            }
+        }
+        return result;
+    }
+
+    /**
+	 * Indicates if the rule system is fixed.
+	 * Rules can only be added or edited in a non-fixed rule system, 
+	 * whereas the rule system can only be used for derivations when it is fixed. 
+	 */
+	public final boolean isFixed() {
+		return fixed;
+	}
+
+	/**
+	 * Sets the rule system to fixed.
+	 * After invoking this method, {@link #add(Rule)} will throw an {@link IllegalStateException}.
+	 * @throws FormatException if the rules are inconsistent with the system properties
+	 * or there is some other reason why they cannot be used in derivations.
+	 * @see #testConsistent()
+	 */
+	public void setFixed() throws FormatException {
+		testConsistent();
+		this.fixed = true;
+		for (Rule rule: getRules()) {
+			rule.setFixed();
+		}
+	}
+	
+	/**
+	 * Tests the the fixedness of the rule system.
+	 * @param value the expected fixedness
+	 * @throws IllegalStateException if {@link #isFixed()} does not equal <code>value</code>
+	 */
+	public final void testFixed(boolean value) throws IllegalStateException {
+		if (isFixed() != value) {
+			if (value) {
+				throw new IllegalStateException("Operation not allowed: Rule system is not fixed");
+			} else {
+				throw new IllegalStateException("Operation not allowed: Rule system is fixed");
+			}
+		}
+	}
+
+	/**
      * Sets the properties of this graph grammar by copying a given property mapping.
      * Clears the current properties first.
      * @param properties the new properties mapping
@@ -199,7 +254,7 @@ public class RuleSystem {
      */
     public SystemProperties getProperties() {
         if (properties == null) {
-            properties = createRuleProperties();
+            properties = createProperties();
         }
         return properties;
     }
@@ -209,25 +264,21 @@ public class RuleSystem {
      * If it is not consistent, then it cannot be added to the rule system.
      * The reason for the inconsistency can be retrieved using #getInconsistency(Rule)
      */
-    public boolean isConsistent(Rule rule) {
-    	return getInconsistency(rule) == null;
-    }
-    
-    /**
-     * Gives a description of the reason why a given rule is inconsistent with the
-     * properties of the rule system, or <code>null</code> if it is not inconsistent.
-     */
-    public String getInconsistency(Rule rule) {
-    	if (getProperties().isAttributed()) {
-    		if (((SPORule) rule).getIsolatedNodes().length > 0) {
-    			return String.format("Isolated nodes in rule not allowed in attributed rule systems", rule.getName());
-    		}
-    	} else {
-    		if (rule.isAttributed()) {
-    			return String.format("Attributed rule %s not allowed in non-attributed rule system", rule.getName());
+    public void testConsistent() throws FormatException {
+    	FormatException result = null;
+    	// collect the exceptions of the rules
+    	for (Rule rule: getRules()) {
+    		try {
+    		rule.testConsistent();
+    		} catch (FormatException exc) {
+    			exc.insert(result);
+    			result = exc;
     		}
     	}
-    	return null;
+    	// if any exception was encountered, throw it
+    	if (result != null) {
+    		throw result;
+    	}
     }
     
     /**
@@ -247,7 +298,7 @@ public class RuleSystem {
      * Callback factory method to create an initially empty {@link SystemProperties} object 
      * for this graph grammar.
      */
-    protected SystemProperties createRuleProperties() {
+    protected SystemProperties createProperties() {
         return new SystemProperties(this);
     }
     
@@ -309,4 +360,6 @@ public class RuleSystem {
     private SystemProperties properties; 
     /** The (fixed) rule factory for this rule system. */
     private RuleFactory ruleFactory;
+    /** Flag indicating that the rule system has been fixed and is ready for use. */
+    private boolean fixed;
 }

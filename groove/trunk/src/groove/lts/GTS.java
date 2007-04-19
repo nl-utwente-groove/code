@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.6 2007-04-04 07:04:24 rensink Exp $
+ * $Id: GTS.java,v 1.7 2007-04-19 06:39:25 rensink Exp $
  */
 package groove.lts;
 
@@ -45,7 +45,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-04-04 07:04:24 $
+ * @version $Revision: 1.7 $ $Date: 2007-04-19 06:39:25 $
  */
 public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	/**
@@ -84,7 +84,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
     }
     
     /**
-     * Constructs a GTS from a graph grammar.
+     * Constructs a GTS from a (fixed) graph grammar.
      * @ensure <tt>startState().isEmpty()</tt> and
      * <tt>nodeSet().contains(startState())</tt> and
      * <tt>getExploreStarategy() instanceof FullStrategy</tt>
@@ -100,6 +100,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
      * <tt>nodeSet().contains(startState())</tt> 
      */
     private GTS(GraphGrammar grammar, boolean storeTransitions) {
+    	grammar.testFixed(true);
         this.ruleSystem = grammar;
         this.storeTransitions = storeTransitions;
         this.startState = computeStartState(grammar.getStartGraph());
@@ -370,9 +371,11 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 		return record;
 	}
 
+	/** Callback method to create a derivation data store for this GTS. */
 	protected DerivationData createDerivationData() {
 		return new DerivationData(ruleSystem());
 	}
+	
 	/**
      * Factory method for a graph deriver from a given rule system.
      * Use to initialize this GTS's deriver if it is not set explicitly.

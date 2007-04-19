@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ErrorDialog.java,v 1.1.1.2 2007-03-20 10:42:44 kastenberg Exp $
+ * $Id: ErrorDialog.java,v 1.2 2007-04-19 06:39:26 rensink Exp $
  */
 package groove.gui;
 
@@ -38,7 +38,7 @@ import javax.swing.border.EmptyBorder;
 /**
  * Implements a dialog with the ability to show details about the error.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class ErrorDialog extends JDialog {
 	/** Dialog title. */
@@ -82,6 +82,7 @@ public class ErrorDialog extends JDialog {
      */
     public ErrorDialog(Component component, String message, Exception exc) {
         super(getParentFrame(component), ERROR_MESSAGE_TEXT, true);
+        setLocationRelativeTo(component);
         this.exc = exc;
 
         // setup cancel button

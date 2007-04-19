@@ -1,4 +1,4 @@
-/* $Id: DerivationData.java,v 1.1 2007-04-04 07:04:20 rensink Exp $ */
+/* $Id: DerivationData.java,v 1.2 2007-04-19 06:39:23 rensink Exp $ */
 package groove.trans;
 
 import java.util.HashMap;
@@ -23,15 +23,17 @@ import groove.util.Reporter;
  */
 public class DerivationData {
     /**
-     * The total number of events (over all rules) created in {@link #getEvent(VarNodeEdgeMap)}.
+     * The total number of events (over all rules) created in {@link #getEvent(Rule, Matching)}.
      */
     private static int eventCount;
     
     /** 
-     * Constructs a derivation record from a given rule system and rule counter, using
+     * Constructs a derivation record from a given fixed graph grammar and rule counter, using
      * a given node number for the first fresh node. 
+     * @throws IllegalStateException if the grammar is not fixed.
      */
-	public DerivationData(final GraphGrammar grammar) {
+	public DerivationData(final GraphGrammar grammar) throws IllegalStateException {
+		grammar.testFixed(true);
 		this.ruleSystem = grammar;
 		this.nodeCounter = new DefaultDispenser();
 		nodeCounter.setCount(computeHighestNodeNr(grammar.getStartGraph())+1);
@@ -87,6 +89,11 @@ public class DerivationData {
         return result;
     }
     
+    /** 
+     * Callback method to create a rule event.
+     * This implementation defers to the rule factory obtained from the rule system.
+     * @see RuleFactory#createRuleEvent(Rule, VarNodeEdgeMap)
+     */
 	protected RuleEvent createEvent(Rule rule, Matching matching) {
 		return getRuleFactory().createRuleEvent(rule, matching.elementMap(), this);
 	}

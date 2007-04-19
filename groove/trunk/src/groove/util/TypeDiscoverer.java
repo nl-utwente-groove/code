@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.6 2007-04-18 08:36:18 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.7 2007-04-19 06:39:25 rensink Exp $
  */
 package groove.util;
 
@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-04-18 08:36:18 $
+ * @version $Revision: 1.7 $ $Date: 2007-04-19 06:39:25 $
  */
 public class TypeDiscoverer {
 	/** Extension of files containing type information. */
@@ -76,6 +76,9 @@ public class TypeDiscoverer {
             default : printUsage();
             return;
             }
+        } catch (FormatException exc) {
+            System.err.println("Error loading graph grammar: "+exc.getMessage());
+            return;
         } catch (IOException exc) {
             System.err.println("Error loading graph grammar: "+exc.getMessage());
             return;
@@ -233,8 +236,9 @@ public class TypeDiscoverer {
 //        }
         GraphResult deleted;
 		Graph typeStartGraph = new NodeSetEdgeSetGraph(grammar.getStartGraph());
-		GraphCalculator calculator = new DefaultGraphCalculator(
-				introduceSystem, typeStartGraph);
+		GraphGrammar newGrammar = new GraphGrammar(introduceSystem, typeStartGraph);
+		newGrammar.setFixed();
+		GraphCalculator calculator = new DefaultGraphCalculator(newGrammar);
 		GraphResult introduced = calculator.getMax();
 		GraphResult merged = introduced.getMax(mergeSystem);
 		deleted = merged.getMax(deleteSystem);

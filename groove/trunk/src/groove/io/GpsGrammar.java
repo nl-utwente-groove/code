@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GpsGrammar.java,v 1.8 2007-04-18 08:36:21 rensink Exp $
+ * $Id: GpsGrammar.java,v 1.9 2007-04-19 06:39:24 rensink Exp $
  */
 
 package groove.io;
@@ -49,7 +49,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @deprecated use {@link AspectualGpsGrammar} or {@link LayedOutGpsGrammar} instead
  */
 @Deprecated
@@ -107,11 +107,12 @@ public class GpsGrammar implements XmlGrammar {
         return GRAMMAR_FILTER;
     }
 
-    public GraphGrammar unmarshalGrammar(File location) throws IOException {
+    public GraphGrammar unmarshalGrammar(File location) throws IOException, FormatException {
         return unmarshalGrammar(location, null);
     }
     
-    public GraphGrammar unmarshalGrammar(File location, String startGraphName) throws IOException {
+    public GraphGrammar unmarshalGrammar(File location, String startGraphName) throws IOException, FormatException {
+    	FormatException formatExc = null;
         if (!location.exists()) {
             throw new FileNotFoundException(LOAD_ERROR + ": rule rystem location \"" + location
                     + "\" does not exist");
@@ -144,7 +145,8 @@ public class GpsGrammar implements XmlGrammar {
 			    result.add(ruleGraph);
 			}
 		} catch (FormatException exc) {
-			throw new IOException(String.format("Format error in rules: %s", exc.getMessage()));
+			exc.insert(formatExc);
+			formatExc = exc;
 		}
 
         // determine the start graph file
@@ -173,11 +175,21 @@ public class GpsGrammar implements XmlGrammar {
             } catch (FileNotFoundException exc) {
                 throw new IOException(LOAD_ERROR + ": start graph " + startGraphFile + " not found");
             } catch (FormatException exc) {
-				throw new IOException(LOAD_ERROR + ": start graph "
-						+ startGraphFile + " not found");
+            	exc.insert(formatExc);
+            	formatExc = exc;
 			}
         }
-        return result;
+        try {
+        	result.setFixed();
+        } catch (FormatException exc) {
+        	exc.insert(formatExc);
+        	formatExc = exc;
+        }
+        if (formatExc != null) {
+        	throw formatExc;
+        } else {
+        	return result;
+        }
     }
 
     /**
@@ -285,6 +297,7 @@ public class GpsGrammar implements XmlGrammar {
         return graphLoader;
     }
 
+    /** Callback factory method to create a graph marshaller. */
     protected Xml<Graph> createGraphMarshaller(GraphFactory graphFactory) {
     	return new UntypedGxl(graphFactory);
     }
@@ -360,7 +373,8 @@ public class GpsGrammar implements XmlGrammar {
      * @throws IOException if <tt>directory</tt> contains duplicate or malformed production rules
      */
     private void loadRules(File directory, StructuredRuleName rulePath,
-            Map<StructuredRuleName,AspectualRuleView> ruleGraphMap, SystemProperties properties) throws IOException {
+            Map<StructuredRuleName,AspectualRuleView> ruleGraphMap, SystemProperties properties) throws IOException, FormatException {
+    	FormatException formatExc = null;
         File[] files = directory.listFiles(RULE_FILTER);
         if (files == null) {
             throw new IOException(LOAD_ERROR+": exception when reading rules from location "+directory);
@@ -379,8 +393,10 @@ public class GpsGrammar implements XmlGrammar {
                         AspectualRuleView ruleGraph = createRuleGraph(getGraphMarshaller().unmarshalGraph(files[i]), ruleName, priorityFileName.getPriority(), properties);
                         ruleGraphMap.put(ruleName, ruleGraph);
                     } catch (FormatException exc) {
-                        throw new IOException(LOAD_ERROR + ": rule format error in "
-                                + files[i].getName()+": "+exc.getMessage());
+                    	exc.insert(formatExc);
+                    	formatExc = exc;
+//                        throw new IOException(LOAD_ERROR + ": rule format error in "
+//                                + files[i].getName()+": "+exc.getMessage());
                     } catch (FileNotFoundException exc) {
                         // proceed; this should not occur but I'm not sure now and don't want
                         // to turn it into an assert
@@ -391,6 +407,9 @@ public class GpsGrammar implements XmlGrammar {
                 }
             }
         }
+        if (formatExc != null) {
+        	throw formatExc;
+        }
     }
     
     /**
@@ -399,7 +418,7 @@ public class GpsGrammar implements XmlGrammar {
      * @return a new {@link groove.trans.view.RuleViewGrammar} with the given name
      */
     protected RuleViewGrammar createGrammar(String name) {
-        return new RuleViewGrammar(name);
+        return new RuleViewGrammar(getRuleFactory(), name);
     }
 
     /**
