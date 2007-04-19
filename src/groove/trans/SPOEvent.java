@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.9 2007-04-19 11:33:50 rensink Exp $
+ * $Id: SPOEvent.java,v 1.10 2007-04-19 16:19:20 rensink Exp $
  */
 package groove.trans;
 
@@ -48,7 +48,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-04-19 11:33:50 $
+ * @version $Revision: 1.10 $ $Date: 2007-04-19 16:19:20 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -507,37 +507,65 @@ public class SPOEvent implements RuleEvent {
 	    return erasedNodes;
 	}
 
-	/**
-	 * Returns the set of explicitly erased edges, i.e., the
-	 * images of the LHS eraser edges.
-	 */
+    /**
+     * Returns the set of explicitly erased edges, i.e., the
+     * images of the LHS eraser edges.
+     */
     protected Set<Edge> getErasedEdges() {
-		if (erasedEdgeSet == null) {
-			erasedEdgeSet = computeErasedEdges();
-		}
-		return erasedEdgeSet;
-	}
+        if (erasedEdgeSet == null) {
+            erasedEdgeSet = computeErasedEdges();
+        }
+        return erasedEdgeSet;
+    }
 
-	/**
-	 * Computes the set of explicitly erased edges, i.e., the
-	 * images of the LHS eraser edges.
-	 * Callback method from {@link #getErasedEdges()}.
-	 */
-	protected Set<Edge> computeErasedEdges() {
-		Set<Edge> result = createEdgeSet();
-		VarNodeEdgeMap anchorMap = getAnchorMap();
-		Edge[] eraserEdges = getRule().getEraserEdges();
-		for (int i = 0; i < eraserEdges.length; i++) {
-	    	Edge edge = eraserEdges[i];
-	        Edge edgeImage = anchorMap.getEdge(edge);
-	        if (edgeImage == null) {
-	        	edgeImage = edge.imageFor(anchorMap);
-	        	assert edgeImage != null : "Image of "+edge+" cannot be deduced from "+anchorMap;
-	        }
-	        result.add(edgeImage);
-	    }
-	    return result;
-	}
+    /**
+     * Computes the set of explicitly erased edges, i.e., the
+     * images of the LHS eraser edges.
+     * Callback method from {@link #getErasedEdges()}.
+     */
+    protected Set<Edge> computeErasedEdges() {
+        Set<Edge> result = createEdgeSet();
+        VarNodeEdgeMap anchorMap = getAnchorMap();
+        Edge[] eraserEdges = getRule().getEraserEdges();
+        for (int i = 0; i < eraserEdges.length; i++) {
+            Edge edge = eraserEdges[i];
+            Edge edgeImage = anchorMap.getEdge(edge);
+            if (edgeImage == null) {
+                edgeImage = edge.imageFor(anchorMap);
+                assert edgeImage != null : "Image of "+edge+" cannot be deduced from "+anchorMap;
+            }
+            result.add(edgeImage);
+        }
+        return result;
+    }
+
+    /**
+     * Returns the set of explicitly erased edges, i.e., the
+     * images of the LHS eraser edges.
+     */
+    protected Set<Edge> getSimpleCreatedEdges() {
+        if (simpleCreatedEdgeSet == null) {
+            simpleCreatedEdgeSet = computeSimpleCreatedEdges();
+        }
+        return simpleCreatedEdgeSet;
+    }
+
+    /**
+     * Computes the set of explicitly erased edges, i.e., the
+     * images of the LHS eraser edges.
+     * Callback method from {@link #getErasedEdges()}.
+     */
+    private Set<Edge> computeSimpleCreatedEdges() {
+        Set<Edge> result = createEdgeSet();
+        VarNodeEdgeMap coAnchorMap = getCoanchorMap();
+        for (Edge edge: getRule().getSimpleCreatorEdges()) {
+            Edge edgeImage = edge.imageFor(coAnchorMap);
+            if (edgeImage != null) {
+                result.add(edgeImage);
+            }
+        }
+        return result;
+    }
 
     /**
 	 * Returns a mapping from source to target graph nodes, dictated by
@@ -684,6 +712,10 @@ public class SPOEvent implements RuleEvent {
      * Set of edges from the source that are to be erased in the target.
      */
     private Set<Edge> erasedEdgeSet;
+    /**
+     * Images of the simple creator edges.
+     */
+    private Set<Edge> simpleCreatedEdgeSet;
 //    /**
 //     * The footprint of a derivation consists of the anchor images of the match
 //     * together with the images of the creator nodes.

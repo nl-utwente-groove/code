@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.3 2007-04-04 07:04:24 rensink Exp $
+ * $Id: StateGenerator.java,v 1.4 2007-04-19 16:19:25 rensink Exp $
  */
 package groove.lts;
 
@@ -213,6 +213,12 @@ public class StateGenerator {
             return null;
         }
         GraphTransition prevTransition = (DerivedGraphState) appl.getSource();
+//        if (prior.getEvent().overlaps(prevTransition.getEvent())) {
+//            return null;
+//        }
+//        if (((AliasSPOApplication) appl).) {
+//            
+//        }
         GraphState result = priorTarget.getNextState(prevTransition.getEvent());
         if (result != null) {
         	confluentDiamondCount++;

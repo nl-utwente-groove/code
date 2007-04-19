@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.9 2007-04-19 11:33:50 rensink Exp $
+ * $Id: SPORule.java,v 1.10 2007-04-19 16:19:20 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -436,24 +436,84 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 		return hasCreators;
 	}
 
-	/**
-	 * Returns the RHS edges that are not images of an LHS edge.
-	 */
-	final Edge[] getCreatorEdges() {
-		if (creatorEdges == null) {
-			creatorEdges = computeCreatorEdges();
-		}
-		return creatorEdges;
-	}
+    /**
+     * Returns the creator edges between reader nodes.
+     */
+    final Edge[] getSimpleCreatorEdges() {
+        if (simpleCreatorEdges == null) {
+            simpleCreatorEdges = computeSimpleCreatorEdges();
+        }
+        return simpleCreatorEdges;
+    }
 
-	/**
-	 * Computes the creator (i.e., RHS-only) edges.
-	 */
-	protected Edge[] computeCreatorEdges() {
-		Set<Edge> result = new HashSet<Edge>(rhs.edgeSet());
-	    result.removeAll(getMorphism().edgeMap().values());
-		return result.toArray(new Edge[0]);
-	}
+    /**
+     * Computes the creator edges between reader nodes.
+     */
+    private Edge[] computeSimpleCreatorEdges() {
+        List<Edge> result = new ArrayList<Edge>();
+        // iterate over all creator edges
+        for (Edge creatorEdge: getCreatorEdges()) {
+            // determine if this edge is simple
+            boolean isSimple = true;
+            for (int i = 0; isSimple && i < creatorEdge.endCount(); i++) {
+                isSimple = getCreatorMap().containsKey(creatorEdge.end(i));
+            }
+            // if so, add it
+            if (isSimple) {
+                result.add(creatorEdge);
+            }
+        }
+        return result.toArray(new Edge[0]);
+    }
+
+    /**
+     * Returns the creator edges that have at least one creator end.
+     */
+    final Edge[] getComplexCreatorEdges() {
+        if (complexCreatorEdges == null) {
+            complexCreatorEdges = computeComplexCreatorEdges();
+        }
+        return complexCreatorEdges;
+    }
+
+    /**
+     * Computes the creator edges that have at least one creator end.
+     */
+    private Edge[] computeComplexCreatorEdges() {
+        List<Edge> result = new ArrayList<Edge>();
+        // iterate over all creator edges
+        for (Edge creatorEdge: getCreatorEdges()) {
+            // determine if this edge is complex
+            boolean isComplex = false;
+            for (int i = 0; !isComplex && i < creatorEdge.endCount(); i++) {
+                isComplex = !getCreatorMap().containsKey(creatorEdge.end(i));
+            }
+            // if so, add it
+            if (isComplex) {
+                result.add(creatorEdge);
+            }
+        }
+        return result.toArray(new Edge[0]);
+    }
+
+    /**
+     * Returns the RHS edges that are not images of an LHS edge.
+     */
+    final Edge[] getCreatorEdges() {
+        if (creatorEdges == null) {
+            creatorEdges = computeCreatorEdges();
+        }
+        return creatorEdges;
+    }
+
+    /**
+     * Computes the creator (i.e., RHS-only) edges.
+     */
+    private Edge[] computeCreatorEdges() {
+        Set<Edge> result = new HashSet<Edge>(rhs.edgeSet());
+        result.removeAll(getMorphism().edgeMap().values());
+        return result.toArray(new Edge[0]);
+    }
 
 	/**
 	 * Returns the RHS nodes that are not images of an LHS node.
@@ -717,9 +777,16 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     private Node[] creatorNodes;
     /** 
      * The rhs edges that are not ruleMorph images
-     * @invariant rhsOnlyEdgeSet \subseteq rhs.edgeSet()
      */
     private Edge[] creatorEdges;
+    /** 
+     * The rhs edges that are not ruleMorph images but with all ends morphism images
+     */
+    private Edge[] simpleCreatorEdges;
+    /** 
+     * The rhs edges with at least one end not a morphism image
+     */
+    private Edge[] complexCreatorEdges;
     /**
      * Variables occurring in the rhsOnlyEdges
      */
