@@ -12,11 +12,9 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributedSPORuleFactory.java,v 1.3 2007-04-01 12:49:54 rensink Exp $
+ * $Id: AttributedSPORuleFactory.java,v 1.4 2007-04-19 11:33:50 rensink Exp $
  */
 package groove.trans;
-
-import groove.graph.Graph;
 
 /**
  * Factory class for attributed SPO rules.
@@ -28,7 +26,7 @@ import groove.graph.Graph;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-04-01 12:49:54 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-19 11:33:50 $
  * @deprecated all functionality now in the {@link DefaultRuleFactory} classes
  */
 @Deprecated
@@ -58,14 +56,14 @@ public class AttributedSPORuleFactory extends DefaultRuleFactory {
 //	public Rule createRule(Morphism morphism, NameLabel name, int priority) {
 //		return new AttributedSPORule(morphism, name, priority, this);
 //	}
-
-	/**
-	 * This implementation returns an {@link AttributedSPOApplication}.
-	 */
-	@Override
-	public RuleApplication createRuleApplication(RuleEvent event, Graph source) {
-        return new AttributedSPOApplication((SPOEvent) event, source, this);
-	}
+//
+//	/**
+//	 * This implementation returns an {@link AttributedSPOApplication}.
+//	 */
+//	@Override
+//	public RuleApplication createRuleApplication(RuleEvent event, Graph source) {
+//        return new AttributedSPOApplication((SPOEvent) event, source, this);
+//	}
 //
 //	/**
 //	 * This implementation returns an {@link AttributedRuleGraph}.

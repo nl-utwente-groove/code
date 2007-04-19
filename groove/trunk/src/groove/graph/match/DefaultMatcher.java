@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatcher.java,v 1.4 2007-04-01 12:50:10 rensink Exp $
+ * $Id: DefaultMatcher.java,v 1.5 2007-04-19 11:33:55 rensink Exp $
  */
 package groove.graph.match;
 
@@ -33,7 +33,7 @@ import java.util.NoSuchElementException;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class DefaultMatcher implements Matcher {
 	/** 
@@ -53,16 +53,6 @@ public class DefaultMatcher implements Matcher {
         this.morphism = morphism;
     }
 
-    @Deprecated
-    public boolean isConsistent() {
-        return true;
-    }
-
-    @Deprecated
-    public boolean isRefined() {
-        return getSingularMap().size() == morphism.dom().size();
-    }
-    
     /**
      * Returns the currently built map between the domain and codomain
      * elements. 
@@ -285,9 +275,14 @@ public class DefaultMatcher implements Matcher {
 	/** Flag indicating that the last call of #find() yielded a solution. */
 	private boolean found;
     
+	/** Reporter instance to profile matcher methods. */
     static protected final Reporter reporter = Matcher.reporter;
+    /** Handle for profiling {@link #getRefinement()} */
     static protected final int GET_REFINEMENT = reporter.newMethod("getRefinement()");
+    /** Handle for profiling {@link #getRefinementSet()} */
     static protected final int GET_REFINEMENT_SET = reporter.newMethod("getRefinementSet()");
+    /** Handle for profiling {@link #getRefinementIter()} */
     static protected final int GET_REFINEMENT_ITER = reporter.newMethod("getRefinementIter()");
+    /** Handle for profiling {@link #find()} */
     static protected final int FIND = reporter.newMethod("find()");
 }

@@ -12,21 +12,19 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleFactory.java,v 1.4 2007-04-18 08:36:10 rensink Exp $
+ * $Id: RuleFactory.java,v 1.5 2007-04-19 11:33:50 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.graph.match.Matcher;
-import groove.rel.VarNodeEdgeMap;
 import groove.trans.view.RuleView;
 import groove.util.FormatException;
 
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-18 08:36:10 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-19 11:33:50 $
  */
 public interface RuleFactory {
 	/**
@@ -36,17 +34,17 @@ public interface RuleFactory {
 	 * @return a rule view over the rule encoded in the given graph
 	 */
 	public RuleView createRuleView(Graph graph, NameLabel name, int priority, SystemProperties properties) throws FormatException;
-
-	/**
-	 * Creates a named rule from a morphism.
-	 * The rule gets default rule properties and priority.
-	 * @see #createRule(Morphism, NameLabel, int, SystemProperties)
-	 * @see SystemProperties#DEFAULT_PROPERTIES
-	 * @see Rule#DEFAULT_PRIORITY
-	 * @throws FormatException if a rule cannot be created due to incompatibility
-	 * of the morphism and the default rule properties
-	 */
-	public Rule createRule(Morphism morphism, NameLabel name) throws FormatException;
+//
+//	/**
+//	 * Creates a named rule from a morphism.
+//	 * The rule gets default rule properties and priority.
+//	 * @see #createRule(Morphism, NameLabel, int, SystemProperties)
+//	 * @see SystemProperties#DEFAULT_PROPERTIES
+//	 * @see Rule#DEFAULT_PRIORITY
+//	 * @throws FormatException if a rule cannot be created due to incompatibility
+//	 * of the morphism and the default rule properties
+//	 */
+//	public Rule createRule(Morphism morphism, NameLabel name) throws FormatException;
 
 	/**
 	 * Creates a named rule with a given priority and rule properties.
@@ -54,55 +52,55 @@ public interface RuleFactory {
 	 * of the morphism and the declared rule properties
 	 */
 	public Rule createRule(Morphism morphism, NameLabel name, int priority, SystemProperties properties) throws FormatException;
-
-    /**
-     * Creates and returns a fresh rule application object, of the kind required by the
-     * rules of this factory.
-     * @param event the rule instance for which an applier is to be created; is required
-     * to be of the type of this factory.
-     * @param host the host graph to which the rule is to be applied
-	 * @return a RuleApplication of the given rule if there is a matching
-	 */
-	public RuleApplication createRuleApplication(RuleEvent event, Graph host);
-
-    /**
-     * Creates and returns a fresh rule event.
-     * @param rule the rule for which an event is to be created; is required
-     * to be of the type of this factory.
-     * @param anchorMap matching of the rule's left hand side in the host graph
-     */
-	public RuleEvent createRuleEvent(Rule rule, VarNodeEdgeMap anchorMap);
-
-    /**
-     * Creates and returns a fresh rule event.
-     * @param rule the rule for which an event is to be created; is required
-     * to be of the type of this factory.
-     * @param anchorMap matching of the rule's left hand side in the host graph
-     */
-	public RuleEvent createRuleEvent(Rule rule, VarNodeEdgeMap anchorMap, DerivationData record);
-
-	/**
-	 * Creates a matcher for a given matching.
-	 */
-	public Matcher createMatcher(Matching match);
-
-	/**
-	 * Creates and returns a matching for a given rule to a given graph, 
-	 * of the type required by the rules of this factory.
-	 * @param rule the rule of which the LHS is to be matched; is required to be of the 
-	 * type of this factory.
-	 * @param graph the graph to which the rule's LHS is to be matched
-	 */
-	public Matching createMatching(GraphCondition rule, Graph graph);
-
-	/**
-	 * Creates and returns a matching for a given rule to a given graph, 
-	 * on the basis of a given (partial) element map.
-	 * @param rule the rule of which the LHS is to be matched; is required to be of the 
-	 * type of this factory.
-	 * @param graph the graph to which the rule's LHS is to be matched
-	 */
-	public Matching createMatching(GraphCondition rule, VarNodeEdgeMap partialMap, Graph graph);
+//
+//    /**
+//     * Creates and returns a fresh rule application object, of the kind required by the
+//     * rules of this factory.
+//     * @param event the rule instance for which an applier is to be created; is required
+//     * to be of the type of this factory.
+//     * @param host the host graph to which the rule is to be applied
+//	 * @return a RuleApplication of the given rule if there is a matching
+//	 */
+//	public RuleApplication createRuleApplication(RuleEvent event, Graph host);
+//
+//    /**
+//     * Creates and returns a fresh rule event.
+//     * @param rule the rule for which an event is to be created; is required
+//     * to be of the type of this factory.
+//     * @param anchorMap matching of the rule's left hand side in the host graph
+//     */
+//	public RuleEvent createRuleEvent(Rule rule, VarNodeEdgeMap anchorMap);
+//
+//    /**
+//     * Creates and returns a fresh rule event.
+//     * @param rule the rule for which an event is to be created; is required
+//     * to be of the type of this factory.
+//     * @param anchorMap matching of the rule's left hand side in the host graph
+//     */
+//	public RuleEvent createRuleEvent(Rule rule, VarNodeEdgeMap anchorMap, DerivationData record);
+//
+//	/**
+//	 * Creates a matcher for a given matching.
+//	 */
+//	public Matcher createMatcher(Matching match);
+//
+//	/**
+//	 * Creates and returns a matching for a given rule to a given graph, 
+//	 * of the type required by the rules of this factory.
+//	 * @param rule the rule of which the LHS is to be matched; is required to be of the 
+//	 * type of this factory.
+//	 * @param graph the graph to which the rule's LHS is to be matched
+//	 */
+//	public Matching createMatching(GraphCondition rule, Graph graph);
+//
+//	/**
+//	 * Creates and returns a matching for a given rule to a given graph, 
+//	 * on the basis of a given (partial) element map.
+//	 * @param rule the rule of which the LHS is to be matched; is required to be of the 
+//	 * type of this factory.
+//	 * @param graph the graph to which the rule's LHS is to be matched
+//	 */
+//	public Matching createMatching(GraphCondition rule, VarNodeEdgeMap partialMap, Graph graph);
 //
 //	/**
 //	 * Creates and returns a matching based on a given simulation.

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultMatching.java,v 1.5 2007-04-04 07:04:20 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.6 2007-04-19 11:33:50 rensink Exp $
  */
 package groove.trans;
 
@@ -21,16 +21,14 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.NodeEdgeMap;
 import groove.graph.match.Matcher;
-import groove.rel.RegExprLabel;
 import groove.rel.RegExprMorphism;
-import groove.rel.ValuationEdge;
 import groove.rel.VarMorphism;
 import groove.rel.VarNodeEdgeMap;
+import groove.trans.match.MatchingMatcher;
 import groove.util.FilterIterator;
 
 /**
@@ -39,7 +37,7 @@ import groove.util.FilterIterator;
  * Expecially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
@@ -48,33 +46,18 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * @param condition the graph condition for which this is a matching
      * @param graph the graph to be matched
      */
-    public DefaultMatching(DefaultGraphCondition condition, Graph graph, RuleFactory ruleFactory) {
+    public DefaultMatching(DefaultGraphCondition condition, Graph graph) {
         super(condition.getTarget(), graph);
-        this.ruleFactory = ruleFactory;
+//        this.ruleFactory = ruleFactory;
         this.condition = condition;
     }
-
-    /**
-     * In addition to invoking the <code>super</code> method,
-     * registers the valuation if <code>key</code> binds variables.
-     */
-    @Override
-    public Edge putEdge(Edge key, Edge value) {
-    	String var = RegExprLabel.getWildcardId(key.label());
-    	if (var != null) {
-            putVar(var, value.label());
-        } else if (value instanceof ValuationEdge) {
-        	putAllVar(((ValuationEdge) value).getValue());
-        }
-        return super.putEdge(key, value);
-    }
-
-    /**
-     * Returns the rule factory instance of this mathing.
-     */
-    public RuleFactory getRuleFactory() {
-    	return ruleFactory;
-    }
+//
+//    /**
+//     * Returns the rule factory instance of this mathing.
+//     */
+//    public RuleFactory getRuleFactory() {
+//    	return ruleFactory;
+//    }
 
     public DefaultGraphCondition getCondition() {
         return condition;
@@ -173,12 +156,11 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
     }
 
     /**
-     * This implementation defers the creation to the rule factory.
-     * @see RuleFactory#createMatcher(Matching)
+     * This implementation returns a {@link MatchingMatcher} based on this matching.
      */
     @Override
     protected Matcher createMatcher() {
-    	return getRuleFactory().createMatcher(this);
+        return new MatchingMatcher(this);
     }
 //
 //    /**
@@ -191,14 +173,16 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
 //    	return (DefaultMatching) getRuleFactory().createMatching(sim);
 //    }
 
-    /**
-     * This implementation returns a {@link RegExprMorphism}.
-     * The simulation is required to be a {@link RegExprSimulation};
-     * the variable map is taken from the simulation.
-     */
     @Override
     protected DefaultMatching createMorphism(final NodeEdgeMap sim) {
-    	return (DefaultMatching) getRuleFactory().createMatching(getCondition(), (VarNodeEdgeMap) sim, cod());
+    	DefaultMatching result = new DefaultMatching(getCondition(), cod()) {
+            @Override
+            protected VarNodeEdgeMap createElementMap() {
+                return (VarNodeEdgeMap) sim;
+            }
+        };
+        return result;
+//    	return (DefaultMatching) getRuleFactory().createMatching(getCondition(), (VarNodeEdgeMap) sim, cod());
     }
 
     /**
@@ -223,17 +207,17 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * @see #getTotalExtensionsIter()
      */
     protected boolean matchesComplexNegConjunct(VarMorphism candidate) {
-        GraphPredicate complexNegConjunct = condition.getComplexNegConjunct();
-        return complexNegConjunct == null || complexNegConjunct.hasMatching(candidate);
+        DefaultGraphPredicate complexNegConjunct = condition.getComplexNegConjunct();
+        return complexNegConjunct == null || complexNegConjunct.matches(candidate);
     }
     
     /**
      * The graph condition for which this is a matching.
      */
     private final DefaultGraphCondition condition;
-
-    /**
-     * Factory instance for creating the correct simulation.
-     */
-    private final RuleFactory ruleFactory;
+//
+//    /**
+//     * Factory instance for creating the correct simulation.
+//     */
+//    private final RuleFactory ruleFactory;
 }

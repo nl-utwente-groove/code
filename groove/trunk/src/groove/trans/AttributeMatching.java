@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributeMatching.java,v 1.4 2007-04-04 07:04:20 rensink Exp $
+ * $Id: AttributeMatching.java,v 1.5 2007-04-19 11:33:50 rensink Exp $
  */
 
 package groove.trans;
@@ -35,7 +35,7 @@ public class AttributeMatching extends DefaultMatching {
      * @param graph
      */
     public AttributeMatching(DefaultGraphCondition condition, Graph graph, RuleFactory ruleFactory) {
-        super(condition, graph, ruleFactory);
+        super(condition, graph);
     }
 
 	/* (non-Javadoc)

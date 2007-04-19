@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.8 2007-04-19 09:21:32 rensink Exp $
+ * $Id: SPOEvent.java,v 1.9 2007-04-19 11:33:50 rensink Exp $
  */
 package groove.trans;
 
@@ -27,6 +27,7 @@ import java.util.Set;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphShape;
+import groove.graph.Morphism;
 import groove.graph.NodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.MergeMap;
@@ -35,6 +36,7 @@ import groove.graph.Node;
 import groove.graph.NodeSet;
 import groove.graph.WrapperLabel;
 import groove.graph.algebra.ValueNode;
+import groove.lts.AliasSPOApplication;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
@@ -46,7 +48,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-04-19 09:21:32 $
+ * @version $Revision: 1.9 $ $Date: 2007-04-19 11:33:50 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -200,8 +202,9 @@ public class SPOEvent implements RuleEvent {
 		return result;
 	}
 
-	public RuleApplication newApplication(Graph source) {
-		return getRuleFactory().createRuleApplication(this, source);
+	public RuleApplication newApplication(Graph host) {
+//		return new SPOApplication(this, host);
+		return new AliasSPOApplication(this, host);
 	}
     
     /**
@@ -295,12 +298,12 @@ public class SPOEvent implements RuleEvent {
      * based on the precomputed anchor map.
      * Returns <code>null</code> if a matching does not exist.
      */
-    public Matching getMatching(Graph host) {
-        Matching result = getPartialMatching(host);
+    public Morphism getMatching(Graph host) {
+        Matching result = computeMatcher(host);
         if (result == null) {
         	return result;
         } else {
-        	return (Matching) result.getTotalExtension();
+        	return result.getTotalExtension();
         }
     }
 
@@ -310,7 +313,7 @@ public class SPOEvent implements RuleEvent {
 	 * anchor images is not in the source graph.
 	 */
 	public boolean hasMatching(Graph host) {
-        Matching result = getPartialMatching(host);
+        Matching result = computeMatcher(host);
         if (result == null) {
         	return false;
         } else {
@@ -366,11 +369,11 @@ public class SPOEvent implements RuleEvent {
 	}
 
 	/**
-	 * Computes a matching to a given graph,
+	 * Computes a matcher for this event in a given graph,
 	 * based on the precomputed anchor map.
-	 * Returns <code>null</code> if a matching does not exist.
+	 * Returns <code>null</code> the anchor map does not fir to the host graph.
 	 */
-	protected Matching getPartialMatching(Graph host) {
+	protected Matching computeMatcher(Graph host) {
 		reporter.start(GET_PARTIAL_MATCH);
 	    Matching result;
 	    VarNodeEdgeMap anchorMap = getAnchorMap();
@@ -385,9 +388,24 @@ public class SPOEvent implements RuleEvent {
 		    	correct = virtuallyContains(host, nodeImageIter.next());
 			}
 		}
-		result = correct ? getRuleFactory().createMatching(getRule(), anchorMap, host) : null;
+		result = correct ? createMatcher(host) : null;
 	    reporter.stop();
 		return result;
+	}
+
+	/**
+	 * Creates a matcher for this event in a given host graph, based on the rule and anchor map.
+	 */
+	private Matching createMatcher(Graph host) {
+		DefaultMatching result = new DefaultMatching(getRule(), host) {
+			@Override
+			protected VarNodeEdgeMap createElementMap() {
+				return getAnchorMap();
+			}
+		};
+		result.setFixed();
+		return result;
+//		return getRuleFactory().createMatching(getRule(), getAnchorMap(), host);
 	}
     
 	/** 

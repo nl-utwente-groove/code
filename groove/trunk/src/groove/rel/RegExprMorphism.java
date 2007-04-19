@@ -12,11 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExprMorphism.java,v 1.3 2007-04-04 07:04:26 rensink Exp $
+ * $Id: RegExprMorphism.java,v 1.4 2007-04-19 11:33:55 rensink Exp $
  */
 package groove.rel;
 
 import groove.graph.DefaultMorphism;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
@@ -30,7 +31,7 @@ import java.util.Map;
  * Implementation of the {@link groove.rel.VarMorphism} interface that
  * implements the required variable by putting it into the element map.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
     /**
@@ -54,6 +55,21 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
 		return (VarNodeEdgeMap) super.elementMap();
 	}
 
+    /**
+     * In addition to invoking the <code>super</code> method,
+     * registers the valuation if <code>key</code> binds variables.
+     */
+    @Override
+    public Edge putEdge(Edge key, Edge value) {
+    	String var = RegExprLabel.getWildcardId(key.label());
+    	if (var != null) {
+            putVar(var, value.label());
+        } else if (value instanceof ValuationEdge) {
+        	putAllVar(((ValuationEdge) value).getValue());
+        }
+        return super.putEdge(key, value);
+    }
+
     @Override
 	public Morphism clone() {
         return new RegExprMorphism(this);
@@ -65,7 +81,6 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
      */
     @Override
     public RegExprMorphism createMorphism(Graph dom, Graph cod) {
-    	// TODO: should we use the rule-factory to create the morphism?
         return new RegExprMorphism((VarGraph) dom, cod);
     }
 
@@ -75,7 +90,7 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
      * the variable map is taken from the simulation.
      */
     @Override
-    protected RegExprMorphism createMorphism(final NodeEdgeMap sim) {
+    protected Morphism createMorphism(final NodeEdgeMap sim) {
         RegExprMorphism result = new RegExprMorphism((VarGraph) dom(), cod()) {
             @Override
             protected VarNodeEdgeMap createElementMap() {

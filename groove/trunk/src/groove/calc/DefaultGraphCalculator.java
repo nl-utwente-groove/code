@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.3 2007-04-19 06:39:12 rensink Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.4 2007-04-19 11:33:52 rensink Exp $
  */
 package groove.calc;
 
@@ -196,7 +196,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
         Iterator<GraphState> stateIter = getBreadthFirstIterator();
         while (result == null && stateIter.hasNext()) {
             GraphState state = stateIter.next();
-            if (condition.hasMatching(state.getGraph())) {
+            if (condition.matches(state.getGraph())) {
                 result = state;
             }
         }
@@ -217,7 +217,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
         Collection<GraphResult> result = new HashSet<GraphResult>();
         // go over the states and do a maximality test
         for (GraphState state: gts.nodeSet()) {
-            if (condition.hasMatching(state.getGraph())) {
+            if (condition.matches(state.getGraph())) {
                 result.add(createResult(state));
             }
         }

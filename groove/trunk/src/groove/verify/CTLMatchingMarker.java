@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLMatchingMarker.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
+ * $Id: CTLMatchingMarker.java,v 1.2 2007-04-19 11:33:54 rensink Exp $
  */
 package groove.verify;
 
@@ -40,7 +40,7 @@ import java.util.Set;
  * Visitor-implementation of {@link groove.verify.CTLFormulaMarker} using the matching-strategy on
  * the Atom-level.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
+ * @version $Revision: 1.2 $ $Date: 2007-04-19 11:33:54 $
  */
 public class CTLMatchingMarker implements CTLFormulaMarker {
 
@@ -99,7 +99,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
 	        Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
 	        while(stateIter.hasNext()) {
 	            GraphState nextState = stateIter.next();
-	            if (condition.hasMatching(nextState.getGraph())) {
+	            if (condition.matches(nextState.getGraph())) {
 	                marking.set(nextState, property, true);
 	            }
 	            else {

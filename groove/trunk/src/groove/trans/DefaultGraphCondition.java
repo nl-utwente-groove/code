@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.8 2007-04-19 06:39:23 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.9 2007-04-19 11:33:50 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import groove.util.Reporter;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -290,29 +290,29 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	}
 
 	/**
-	 * Returns <code>true</code> if {@link #hasMatching(Graph)} returns a non-<code>null</code>
+	 * Returns <code>true</code> if {@link #matches(Graph)} returns a non-<code>null</code>
 	 * result.
 	 */
-    public boolean hasMatching(Graph graph) {
+    public boolean matches(Graph graph) {
         testGround();
         testFixed(true);
 		reporter.start(HAS_MATCHING);
 		try {
-			return createMatching(graph).hasTotalExtensions();
+			return newMatcher(graph).hasTotalExtensions();
 		} finally {
 			reporter.stop();
 		}
 	}
 
     /**
-	 * Returns <code>true</code> if {@link #hasMatching(VarMorphism)} returns
+	 * Returns <code>true</code> if {@link #matches(VarMorphism)} returns
 	 * a non-<code>null</code> result.
 	 */
-    public boolean hasMatching(VarMorphism subject) {
+    public boolean matches(VarMorphism subject) {
         reporter.start(HAS_MATCHING);
         testFixed(true);
 		try {
-			Matching partialMatch = createMatching(subject);
+			Matching partialMatch = newMatcher(subject);
 			return partialMatch == null ? false : partialMatch
 					.hasTotalExtensions();
 		} finally {
@@ -331,7 +331,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 		reporter.start(GET_MATCHING);
         testGround();
         testFixed(true);
-        result = (Matching) createMatching(graph).getTotalExtension();
+        result = (Matching) newMatcher(graph).getTotalExtension();
         reporter.stop();
 		return result;
 	}
@@ -348,7 +348,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 		Matching result;
 		reporter.start(GET_MATCHING);
         testFixed(true);
-		Matching partialMatch = createMatching(subject);
+		Matching partialMatch = newMatcher(subject);
 		result = partialMatch == null ? null
 				: (Matching) partialMatch.getTotalExtension();
 		reporter.stop();
@@ -367,7 +367,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
         reporter.start(GET_MATCHING);
 		testGround();
 		testFixed(true);
-		result = createMatching(graph).getTotalExtensions();
+		result = newMatcher(graph).getTotalExtensions();
 		reporter.stop();
 		return result;
     }
@@ -384,7 +384,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     	Collection <? extends Matching> result;
         reporter.start(GET_MATCHING);
 		testFixed(true);
-		Matching partialMatch = createMatching(subject);
+		Matching partialMatch = newMatcher(subject);
 		result = partialMatch == null ? Collections.<Matching> emptySet()
 				: partialMatch.getTotalExtensions();
 		reporter.stop();
@@ -403,7 +403,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
         reporter.start(GET_MATCHING);
 		testFixed(true);
 		testGround();
-		result = createMatching(graph).getTotalExtensionsIter();
+		result = newMatcher(graph).getTotalExtensionsIter();
 		reporter.stop();
 		return result;
 	}
@@ -420,7 +420,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     	Iterator<? extends Matching> result;
 		reporter.start(GET_MATCHING);
 		testFixed(true);
-		Matching partialMatch = createMatching(subject);
+		Matching partialMatch = newMatcher(subject);
 		result = partialMatch == null ? Collections.<Matching>emptySet().iterator()
 				: partialMatch.getTotalExtensionsIter();
 		reporter.stop();
@@ -435,7 +435,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	 * @see Morphism#getTotalExtension()
 	 */
     public GraphConditionOutcome getOutcome(VarMorphism subject) {
-        Matching partialMatch = createMatching(subject);
+        Matching partialMatch = newMatcher(subject);
         Map<Matching,GraphPredicateOutcome> matchMap = partialMatch == null ? Collections.<Matching,GraphPredicateOutcome>emptyMap() : partialMatch.getTotalExtensionMap();
         return createOutcome(subject, matchMap);
     }
@@ -473,14 +473,14 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * morphism. The matching goes from the target pattern of this condition to 
      * the subject's codomain.
      * This implementation builds the result upon an empty matching obtained from
-     * {@link #createMatching(Graph)} by inverting the underlying morphism of 
+     * {@link #newMatcher(Graph)} by inverting the underlying morphism of 
      * this condition and concatenating the subject morphism.
      * Returns <code>null</code> if this fails due to inconsistent injectivity constraints
      * of <code>this</code> and <code>subject</code>.
      */
-    protected Matching createMatching(VarMorphism subject) {
+    protected Matching newMatcher(VarMorphism subject) {
         try {
-            Matching result = createMatching(subject.cod());
+            Matching result = newMatcher(subject.cod());
             constructInvertConcat(this, subject, result);
             for (Map.Entry<String,Label> varEntry: subject.getValuation().entrySet()) {
                 String var = varEntry.getKey();
@@ -498,10 +498,10 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * Callback method to create an initial (empty) matching from this condition's
      * target pattern to a given graph.
      * This implementation returns a {@link DefaultMatching}.
-     * @see #createMatching(VarMorphism)
+     * @see #newMatcher(VarMorphism)
      */
-    protected Matching createMatching(Graph graph) {
-    	return getRuleFactory().createMatching(this, graph);
+    public Matching newMatcher(Graph graph) {
+    	return new DefaultMatching(this, graph);
     }
     
     /**
@@ -569,7 +569,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * @see #getInjections()
      * @see #getNegations()
      */
-    protected GraphPredicate getComplexNegConjunct() {
+    protected DefaultGraphPredicate getComplexNegConjunct() {
         return complexNegConjunct;
     }
     
@@ -693,6 +693,6 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     static public final Reporter reporter = Reporter.register(GraphTest.class);
     /** Handle for profiling {@link #getMatching(Graph)} and related methods. */
     static public final int GET_MATCHING = reporter.newMethod("getMatching...");
-    /** Handle for profiling {@link #hasMatching(Graph)} and related methods. */
+    /** Handle for profiling {@link #matches(Graph)} and related methods. */
     static public final int HAS_MATCHING = reporter.newMethod("hasMatching...");
 }

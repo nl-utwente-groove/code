@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.6 2007-04-19 09:21:33 rensink Exp $
+ * $Id: Gossips.java,v 1.7 2007-04-19 11:33:53 rensink Exp $
  */
 package groove.samples;
 
@@ -32,7 +32,6 @@ import groove.lts.DerivedGraphState;
 import groove.lts.GraphState;
 import groove.lts.NextStateDeriver;
 import groove.rel.VarNodeEdgeMap;
-import groove.trans.DefaultRuleFactory;
 import groove.trans.DerivationData;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
@@ -50,6 +49,12 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Sample class for a universal rule.
+ * The example is based on the <i>gossiping girl</i> case.
+ * @author Arend Rensink
+ * @version $Revision: 1.7 $
+ */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";
     static private final String ATOMIC_GOSSIP_GPS_NAME = "babbelaars-snel";
@@ -139,7 +144,9 @@ public class Gossips {
         }
     }
     
+    /** Rule for spreading gossip. */
     static class GossipRule extends SPORule {
+    	/** Constructs an instance of the rule. */
         public GossipRule(Rule basicRule, SystemProperties properties) throws FormatException {
             super(basicRule.getMorphism(), basicRule.getName(), 1, properties);
             setAndNot(basicRule.getNegConjunct());
@@ -171,7 +178,9 @@ public class Gossips {
         }
     }
     
+    /** Event class corresponding to the {@link GossipRule}. */
     static class GossipEvent extends SPOEvent {
+    	/** Constructs an event for the gossip rule. */
         public GossipEvent(GossipRule gossipRule, VarNodeEdgeMap anchorMap, DerivationData record) {
             super(gossipRule, anchorMap, record);
         }
@@ -183,7 +192,9 @@ public class Gossips {
         }
     }
     
+    /** Application class corresponding to the {@link GossipRule}. */
     static class GossipApplication extends AliasSPOApplication {
+    	/** Constructs a rule application for the gossip rule. */
         public GossipApplication(SPOEvent event, Graph source) {
             super(event, source);
         }

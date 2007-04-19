@@ -37,14 +37,14 @@ public class DerivedGraphRuleFactory extends DefaultRuleFactory {
 	protected DerivedGraphRuleFactory() {
 		// empty constructor
 	}
-
-	/**
-	 * This implementation returns an {@link AliasSPOApplication}.
-	 */
-	@Override
-	public RuleApplication createRuleApplication(RuleEvent event, Graph host) {
-        return new AliasSPOApplication((SPOEvent) event, host);
-	}
+//
+//	/**
+//	 * This implementation returns an {@link AliasSPOApplication}.
+//	 */
+//	@Override
+//	public RuleApplication createRuleApplication(RuleEvent event, Graph host) {
+//        return new AliasSPOApplication((SPOEvent) event, host);
+//	}
 
 	/**
 	 * This implementation returns a {@link DerivedGraphState}.

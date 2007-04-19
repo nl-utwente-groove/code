@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultNAC.java,v 1.2 2007-04-18 08:36:10 rensink Exp $
+ * $Id: DefaultNAC.java,v 1.3 2007-04-19 11:33:50 rensink Exp $
  */
 package groove.trans;
 
@@ -22,7 +22,7 @@ import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
 
 /**
- * @version $Revision: 1.2 $ $Date: 2007-04-18 08:36:10 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-19 11:33:50 $
  */
 public class DefaultNAC extends DefaultGraphCondition implements NAC {
     /**
@@ -40,10 +40,10 @@ public class DefaultNAC extends DefaultGraphCondition implements NAC {
     }
 
     /**
-     * Delegates to {@link #hasMatching(VarMorphism)}
+     * Delegates to {@link #matches(VarMorphism)}
      * @require this.dom().equals(match.dom())
      */
     public boolean forbids(VarMorphism match) {
-        return hasMatching(match);
+        return matches(match);
     }
 }

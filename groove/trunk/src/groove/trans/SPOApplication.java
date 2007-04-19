@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.5 2007-04-04 07:04:20 rensink Exp $
+ * $Id: SPOApplication.java,v 1.6 2007-04-19 11:33:50 rensink Exp $
  */
 package groove.trans;
 
@@ -43,7 +43,7 @@ import groove.util.Reporter;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-04-04 07:04:20 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-19 11:33:50 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -122,7 +122,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 		return target;
 	}
 
-	public Matching getMatching() {
+	public Morphism getMatching() {
     	if (match == null) {
     		match = computeMatching(); 
     	}
@@ -133,7 +133,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 * Callback method to create the matching from the rule's LHS to the source graph. 
 	 * @see #getMatching()
 	 */
-	protected Matching computeMatching() {
+	protected Morphism computeMatching() {
 		return getEvent().getMatching(source);
 	}
 
@@ -667,7 +667,7 @@ public class SPOApplication implements RuleApplication, Derivation {
      * Matching from the rule's LHS to the source.
      * Created lazily in {@link #getMatching()}.
      */
-    protected Matching match;
+    protected Morphism match;
     /**
      * Underlying morphism from the source to the target.
      */

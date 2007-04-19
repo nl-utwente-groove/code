@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BoundedStrategy.java,v 1.2 2007-03-30 15:50:42 rensink Exp $
+ * $Id: BoundedStrategy.java,v 1.3 2007-04-19 11:33:53 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -34,7 +34,7 @@ import groove.trans.Rule;
  * (the bounding condition) is violated; from such states no further exploration takes place.
  * Currently, the bounding condition is expressed by a graph transformation rule.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BoundedStrategy extends BranchingStrategy implements ConditionalExploreStrategy {
 	/** Name of this exploration strategy. */
@@ -139,7 +139,7 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
      */
     @Override
     protected boolean isExplorable(State state) {
-        return rule.hasMatching(((GraphState) state).getGraph()) != negated;
+        return rule.matches(((GraphState) state).getGraph()) != negated;
     }
 
     /**

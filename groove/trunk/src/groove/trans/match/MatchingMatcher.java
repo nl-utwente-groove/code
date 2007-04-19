@@ -1,5 +1,5 @@
 /*
- * $Id: MatchingMatcher.java,v 1.4 2007-04-18 08:35:55 rensink Exp $
+ * $Id: MatchingMatcher.java,v 1.5 2007-04-19 11:33:54 rensink Exp $
  */
 package groove.trans.match;
 
@@ -15,37 +15,9 @@ import java.util.List;
 /**
  * Matcher that takes conditions into account.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class MatchingMatcher extends RegExprMatcher {
-//	/** 
-//	 * A static mapping from graph conditions to search plans for those conditions.
-//	 * TODO: this is a stopgap measure until the notion of matching has been revised
-//	 * in the main branch. 
-//	 */
-//	private static final Map<GraphCondition,List<SearchItem>> searchPlanMap = new HashMap<GraphCondition,List<SearchItem>>();
-//	
-//	/** 
-//	 * A static mapping from graph conditions to search plans for those conditions,
-//	 * where for the search plan the anchor of the condition (as an {@link SPORule})
-//	 * has been pre-matched.
-//	 * TODO: this is a stopgap measure until the notion of matching has been revised
-//	 * in the main branch. 
-//	 */
-//	private static final Map<GraphCondition,List<SearchItem>> preMatchedSearchPlanMap = new HashMap<GraphCondition,List<SearchItem>>();
-//	
-//	/**
-//	 * The factory used to create the search plans in {@link #searchPlanMap}.
-//	 */
-//	private static final ConditionSearchPlanFactory searchPlanFactory = new DefaultConditionSearchPlanFactory();
-//	
-//	/** 
-//	 * Temporary method as long as the search plan maps are static.
-//	 */
-//	public static void clear() {
-//		preMatchedSearchPlanMap.clear();
-//	}
-	
 	/** Constructs a matcher on the basis of a pre-existing mapping. */
 	public MatchingMatcher(Matching mapping) {
         super(mapping);
@@ -63,14 +35,6 @@ public class MatchingMatcher extends RegExprMatcher {
     protected DefaultGraphCondition getCondition() {
         return getMorphism().getCondition();
     }
-//    
-//	/**
-//	 * Returns the factory used for creating search plans 
-//	 */
-//    @Override
-//	protected ConditionSearchPlanFactory getSearchPlanFactory() {
-//		return searchPlanFactory;
-//	}
 
 	/**
 	 * Search plans for matching the whole condition and
