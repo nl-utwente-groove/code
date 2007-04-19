@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: XmlGrammar.java,v 1.4 2007-04-01 12:50:14 rensink Exp $
+ * $Id: XmlGrammar.java,v 1.5 2007-04-19 06:39:24 rensink Exp $
  */
 package groove.io;
 
@@ -27,7 +27,7 @@ import java.io.IOException;
  * Interface for the conversion of graph grammars to and from 
  * (sets of) XML documents.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface XmlGrammar<GG extends GraphGrammar> {
     /**
@@ -55,7 +55,7 @@ public interface XmlGrammar<GG extends GraphGrammar> {
 	
     /**
      * Converts an XML formatted file or set of files into a graph grammar, 
-     * and returns the graph grammar.
+     * and returns the fixed graph grammar.
      * Convenience method for <code>unmarshal(file, null)</code>.
      * @see #unmarshalGrammar(File, String)
      */
@@ -63,7 +63,7 @@ public interface XmlGrammar<GG extends GraphGrammar> {
 
     /**
      * Converts an XML formatted file or set of files into a graph grammar, 
-     * and returns the graph grammar.
+     * and returns the fixed graph grammar.
      * The start state is given explicitly by a string, which either 
      * stands for the name of the start state within the grammar, or for
      * the name of a separate file containing the start state. If <code>null</code>,

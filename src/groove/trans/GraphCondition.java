@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.2 2007-04-18 08:36:09 rensink Exp $
+ * $Id: GraphCondition.java,v 1.3 2007-04-19 06:39:23 rensink Exp $
  */
 package groove.trans;
 
@@ -21,12 +21,13 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
+import groove.util.FormatException;
 
 /**
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface GraphCondition extends GraphTest {
     /**
@@ -43,11 +44,25 @@ public interface GraphCondition extends GraphTest {
      * Convenience method for <code>getPattern().cod()</code>.
      */
     public VarGraph getTarget();
-
-    /**
-     * Returns the properties for matching this condition.
-     */
+    
+    /** Returns the secondary properties of this graph condition. */
     public SystemProperties getProperties();
+    
+    /**
+     * Tests if this graph condition is internally consistent.
+     * Inconsistencies may arise for instance due to incompatibility of the
+     * actual condition and the secondary properties, as returned by {@link #getProperties()}.
+     * The method does nothing if this graph condition is consistent, and throws an exception
+     * if it is not.
+     * @throws FormatException if this graph condition is inconsistent. The exception contains
+     * a list of errors. 
+     */
+    public void testConsistent() throws FormatException;
+//    
+//    /**
+//     * Indicates if this graph condition uses data attributes in any way.
+//     */
+//    public boolean hasAttributes();
 
     /**
      * Returns the negative predicate of this graph condition.

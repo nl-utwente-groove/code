@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.6 2007-04-12 13:45:44 rensink Exp $
+ * $Id: SPOEvent.java,v 1.7 2007-04-19 06:39:23 rensink Exp $
  */
 package groove.trans;
 
@@ -46,7 +46,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-04-12 13:45:44 $
+ * @version $Revision: 1.7 $ $Date: 2007-04-19 06:39:23 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -66,10 +66,12 @@ public class SPOEvent implements RuleEvent {
 	static public final String ANCHOR_END = ")";
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
+     * The rule is required to be fixed, as inticated by {@link SPORule#isFixed()}.
      * @param rule the production rule involved
      * @param anchorMap the match of the rule's LHS elements to the host graph
      */
     public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, RuleFactory ruleFactory) {
+    	rule.testFixed(true);
         this.rule = rule;
         this.anchorMap = anchorMap;
 		this.ruleFactory = ruleFactory;

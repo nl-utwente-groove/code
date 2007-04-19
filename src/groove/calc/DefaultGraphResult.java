@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphResult.java,v 1.3 2007-04-04 07:04:29 rensink Exp $
+ * $Id: DefaultGraphResult.java,v 1.4 2007-04-19 06:39:12 rensink Exp $
  */
 package groove.calc;
 
@@ -22,10 +22,13 @@ import groove.lts.DerivedGraphState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.DerivationData;
+import groove.trans.GraphGrammar;
 import groove.trans.GraphTest;
 import groove.trans.Matching;
 import groove.trans.Rule;
 import groove.trans.RuleSystem;
+import groove.util.FormatException;
+import groove.util.Groove;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -149,9 +152,15 @@ public class DefaultGraphResult implements GraphResult {
      * @param rules the rule system for the calculator
      * @param start the start graph
      */
-    protected GraphCalculator createCalculator(RuleSystem rules, Graph start) {
-        return new DefaultGraphCalculator(rules, start);
-    }
+    protected GraphCalculator createCalculator(RuleSystem rules, Graph start) throws IllegalArgumentException {
+    	try {
+			GraphGrammar newGrammar = new GraphGrammar(rules, start);
+			newGrammar.setFixed();
+			return new DefaultGraphCalculator(newGrammar);
+		} catch (FormatException exc) {
+			throw new IllegalArgumentException(exc.getMessage(), exc);
+		}
+	}
     
     /**
      * The state underlying this result.

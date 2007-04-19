@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GgxGrammar.java,v 1.7 2007-04-18 08:36:21 rensink Exp $
+ * $Id: GgxGrammar.java,v 1.8 2007-04-19 06:39:24 rensink Exp $
  */
 package groove.io;
 
@@ -50,7 +50,7 @@ import org.w3c.dom.Document;
  * GGX is the "proprietary" AGG format.
  * @deprecated experimental, not supported
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 @Deprecated
 public class GgxGrammar implements XmlGrammar {
@@ -186,7 +186,7 @@ public class GgxGrammar implements XmlGrammar {
      * @throws FormatException 
      */
     protected GraphGrammar unmarshal(Document doc) throws FormatException {
-        GraphGrammar gg = new GraphGrammar();
+        GraphGrammar gg = new GraphGrammar(doc.getLocalName());
         org.w3c.dom.Element gxl = doc.getDocumentElement();
 
         org.w3c.dom.NodeList gtss = gxl.getElementsByTagName(GTS_TAG);

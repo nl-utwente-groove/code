@@ -12,12 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.7 2007-04-04 07:04:20 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.8 2007-04-19 06:39:23 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
+import groove.graph.algebra.ValueNode;
+import groove.util.FormatException;
 
 /**
  * Default model of a graph grammar, consisting of a production rule system
@@ -25,7 +27,7 @@ import groove.graph.GraphFactory;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-04-04 07:04:20 $
+ * @version $Revision: 1.8 $ $Date: 2007-04-19 06:39:23 $
  */
 public class GraphGrammar extends RuleSystem {   
     /**
@@ -42,9 +44,6 @@ public class GraphGrammar extends RuleSystem {
      */
     public GraphGrammar(RuleSystem ruleSystem, Graph startGraph, String name) {
         super(ruleSystem);
-        if (startGraph != null) {
-        	startGraph.setFixed();
-        }
         this.startGraph = startGraph;
         this.name = name;
     }
@@ -77,19 +76,19 @@ public class GraphGrammar extends RuleSystem {
     public GraphGrammar(RuleSystem ruleSystem, String name) {
         this(ruleSystem, null, name);
     }
-    
-    /**
-     * Constructs an anonymous graph grammar on ths basis of a given production system.
-     * The initial graph is set to empty. 
-     * @param ruleSystem the underlying production system
-     * @require <tt>ruleSystem != null</tt>
-     * @ensure ruleSystem().equals(ruleSystem), 
-     *         gts().nodeSet().size() == 1, gts().edgeSet().size() == 0,
-     *         getStartGraph().isEmpty()
-     */
-    public GraphGrammar(RuleSystem ruleSystem) {
-        this(ruleSystem, (String) null);
-    }
+//    
+//    /**
+//     * Constructs an anonymous graph grammar on ths basis of a given production system.
+//     * The initial graph is set to empty. 
+//     * @param ruleSystem the underlying production system
+//     * @require <tt>ruleSystem != null</tt>
+//     * @ensure ruleSystem().equals(ruleSystem), 
+//     *         gts().nodeSet().size() == 1, gts().edgeSet().size() == 0,
+//     *         getStartGraph().isEmpty()
+//     */
+//    public GraphGrammar(RuleSystem ruleSystem) {
+//        this(ruleSystem, (String) null);
+//    }
 
     /**
      * Constructs a named graph grammar with a given rule factory.
@@ -106,14 +105,14 @@ public class GraphGrammar extends RuleSystem {
     public GraphGrammar(String name) {
         this(new RuleSystem(), name);
     }
-
-    /**
-     * Constructs an anonymous graph grammar with empty rule system and 
-     * empty start graph.
-     */
-    public GraphGrammar() {
-        // empty
-    }
+//
+//    /**
+//     * Constructs an anonymous graph grammar with empty rule system and 
+//     * empty start graph.
+//     */
+//    public GraphGrammar() {
+//        this((String) null);
+//    }
 
     /**
      * Returns the name of this grammar.
@@ -122,15 +121,15 @@ public class GraphGrammar extends RuleSystem {
     public String getName() {
         return name;
     }
-
-    /**
-     * Sets the name of this grammar.
-     * @param name the name of the grammar; <tt>null</tt> if the grammar is anonymous
-     * @ensure <tt>getName().equals(name)</tt>
-     */
-    public void setName(String name) {
-        this.name = name;
-    }
+//
+//    /**
+//     * Sets the name of this grammar.
+//     * @param name the name of the grammar; <tt>null</tt> if the grammar is anonymous
+//     * @ensure <tt>getName().equals(name)</tt>
+//     */
+//    public void setName(String name) {
+//        this.name = name;
+//    }
 
     /**
      * Returns the start graph of this graph grammar.
@@ -147,18 +146,50 @@ public class GraphGrammar extends RuleSystem {
     }
     
     /**
+	 * Returns the rule system that is part of this graph grammar.
+	 */
+	public RuleSystem getRuleSystem() {
+		return this;
+	}
+
+	/**
      * Changes or sets the start graph of this graph grammar.
-     * Note that this invalidates the previous GTS.
+     * This is only allowed if the grammar is not yet fixed, as indicated by {@link #isFixed()}.
      * @param startGraph the new start graph of this graph grammar
-     * @require <tt>startGraph != null</tt>
-     * @ensure <tt>getStartGraph().equals(startGraph)</tt>
+     * @throws IllegalStateException if the grammar is already fixed
+     * @see #isFixed()
      */
-    public void setStartGraph(Graph startGraph) {
+    public void setStartGraph(Graph startGraph) throws IllegalStateException {
+    	testFixed(false);
         this.startGraph = startGraph;
-        this.startGraph.setFixed();
     }
 
-    /** Tests for equality of the rule system and the start graph. */
+    /** Fixes the start graph, in addition to calling the <code>super</code> method. */
+	@Override
+	public void setFixed() throws FormatException {
+		super.setFixed();
+		getStartGraph().setFixed();
+	}
+	
+	/** Combines the consistency errors in the rules and start graph. */
+	@Override
+	public void testConsistent() throws FormatException {
+		FormatException prior = null;
+		// collect the exception o fthe super test, if any
+		try {
+			super.testConsistent();
+		} catch (FormatException exc) {
+			prior = exc;
+		}
+		// chain the consistency problems in the start graph
+		if (!getProperties().isAttributed() && ValueNode.hasValueNodes(getStartGraph())) {
+			throw new FormatException(prior, "Consistency error: start graph contains attributes, contrary to  system property");
+		} else if (prior != null) {
+			throw prior;
+		}
+	}
+
+	/** Tests for equality of the rule system and the start graph. */
     @Override
     public boolean equals(Object obj) {
         return (obj instanceof GraphGrammar)
@@ -178,11 +209,7 @@ public class GraphGrammar extends RuleSystem {
             + "\nStart graph:\n    "   + getStartGraph().toString();
     }
 
-    public RuleSystem getRuleSystem() {
-		return this;
-	}
-
-	/**
+    /**
      * The start Graph of this graph grammar.
      * @invariant <tt>startGraph != null</tt>
      */
@@ -191,5 +218,5 @@ public class GraphGrammar extends RuleSystem {
      * The name of this grammar;
      * <tt>null</tt> if the grammar is anonymous.
      */
-    protected String name;
+    protected final String name;
 }

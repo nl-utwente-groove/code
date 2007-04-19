@@ -63,7 +63,7 @@ public class VarroBenchmark {
 				result = result.getFirstAfter("giveRule");
 				System.out.println("giveRule "+i);
 			}
-		} catch (IOException exc) {
+		} catch (Exception exc) {
 			System.err.println("Error: "+ exc.getMessage());
 		}
 	}

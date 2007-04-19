@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphPredicate.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: GraphPredicate.java,v 1.2 2007-04-19 06:39:23 rensink Exp $
  */
 package groove.trans;
 
@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * Interface for predicates over graphs.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface GraphPredicate extends GraphTest {    
     /**
@@ -43,7 +43,7 @@ public interface GraphPredicate extends GraphTest {
      * The predicate is considered to hold (for a given morphism) if at least <i>one</i>
      * of its coonditions holds.
      */
-    public Set<GraphCondition> getConditions();
+    public Set<? extends GraphCondition> getConditions();
     
     /**
      * Specialises the return type.

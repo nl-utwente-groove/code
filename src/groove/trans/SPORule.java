@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.6 2007-04-18 08:36:10 rensink Exp $
+ * $Id: SPORule.java,v 1.7 2007-04-19 06:39:23 rensink Exp $
  */
 package groove.trans;
 
@@ -21,6 +21,7 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.graph.match.SearchItem;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
@@ -42,7 +43,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -118,18 +119,21 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     }
     
     /**
-     * Tests if the rule is consistent with the rule properties.
-     * @throws FormatException if the rule data are not compatible with the rule (system) properties
+     * Apart from the super method, also tests the RHS of the rule for 
+     * attributes.
      */
-    private void testConsistency() throws FormatException {
-    	if (getProperties().isAttributed()) {
-    		if (getIsolatedNodes().length > 0) {
-    			throw new FormatException("Isolated nodes in rule not allowed in attributed rule systems", getName());
-    		}
-    	} else {
-    		if (isAttributed()) {
-    			throw new FormatException("Attributed rule %s not allowed in non-attributed rule system", getName());
-    		}
+    @Override
+    public void testConsistent() throws FormatException {
+    	FormatException prior = null;
+    	try {
+    		super.testConsistent();
+    	} catch (FormatException exc) {
+    		prior = exc;
+    	}
+    	if (!getProperties().isAttributed() && ValueNode.hasValueNodes(rhs())) {
+			throw new FormatException(prior, "Consistency error in %s: RHS uses attributes, contrary to system property", getName());
+    	} else if (prior != null) {
+    		throw prior;
     	}
     }
 

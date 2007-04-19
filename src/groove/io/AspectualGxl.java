@@ -1,4 +1,4 @@
-/* $Id: AspectualGxl.java,v 1.3 2007-04-01 12:50:23 rensink Exp $ */
+/* $Id: AspectualGxl.java,v 1.4 2007-04-19 06:39:24 rensink Exp $ */
 package groove.io;
 
 import groove.graph.Graph;
@@ -41,11 +41,11 @@ public class AspectualGxl implements Xml<AspectGraph> {
 	 * @see AspectGraph#fromPlainGraph(GraphShape)
 	 */
 	public AspectGraph unmarshalGraph(File file) throws FormatException, IOException {
-		try {
+//		try {
 			return AspectGraph.getFactory().fromPlainGraph(marshaller.unmarshalGraph(file));
-		} catch (FormatException exc) {
-			throw new FormatException(exc.getMessage());
-		}
+//		} catch (FormatException exc) {
+//			throw new FormatException(exc.getMessage());
+//		}
 	}
 
 	/** The marshaller to get and store graphs, which are then converted to aspect graphs. */

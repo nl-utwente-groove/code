@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.7 2007-04-18 08:36:18 rensink Exp $
+ * $Id: Groove.java,v 1.8 2007-04-19 06:39:25 rensink Exp $
  */
 package groove.util;
 
@@ -41,7 +41,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.7 $ 
+ * @version $Revision: 1.8 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -305,7 +305,7 @@ public class Groove {
      * @return the rule system contained in <code>dirname</code>
      * @throws IOException if <code>dirname</code> does not exist or is wrongly formatted
      */
-    static public GraphGrammar loadGrammar(String dirname) throws IOException {
+    static public GraphGrammar loadGrammar(String dirname) throws IOException, FormatException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
         return gpsLoader.unmarshalGrammar(dir);
     }
@@ -317,7 +317,7 @@ public class Groove {
      * @return A graph calculator based on the graph grammar found at <code>filename</code>
      * @throws IOException if no grammar can be found at <code>filename</code>
      */
-    static public GraphCalculator createCalculator(String filename) throws IOException {
+    static public GraphCalculator createCalculator(String filename) throws IOException, FormatException {
         return createCalculator(loadGrammar(filename));
     }
     
@@ -329,7 +329,7 @@ public class Groove {
      * @return A graph calculator based on the graph grammar found at <code>grammarFilename</code> and <code>startFilename</code>
      * @throws IOException if no grammar can be found at <code>grammarFilename</code>
      */
-    static public GraphCalculator createCalculator(String grammarFilename, String startfilename) throws IOException {
+    static public GraphCalculator createCalculator(String grammarFilename, String startfilename) throws IOException, FormatException {
         return createCalculator(loadGrammar(grammarFilename, startfilename));
     }
     
@@ -351,7 +351,7 @@ public class Groove {
      * @return the graph grammar made up by <code>dirname</code> and <code>startfilename</code>
      * @throws IOException if <code>dirname</code> or <code>startfilename</code> do not exist or are wrongly formatted
      */
-    static public GraphGrammar loadGrammar(String dirname, String startfilename) throws IOException {
+    static public GraphGrammar loadGrammar(String dirname, String startfilename) throws IOException, FormatException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
         return gpsLoader.unmarshalGrammar(dir, startfilename);
     }

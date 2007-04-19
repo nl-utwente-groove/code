@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.7 2007-04-18 08:36:10 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.8 2007-04-19 06:39:23 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import groove.util.Reporter;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -201,7 +201,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
         super.setFixed();
     }
 
-    public GraphPredicate getNegConjunct() {
+    public DefaultGraphPredicate getNegConjunct() {
     	if (negConjunct == null) {
     		negConjunct = createGraphPredicate();
     	}
@@ -243,18 +243,56 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
         return (VarGraph) dom();
     }
 
-    /**
-     * Returns <code>true</code> if the target graph of the condition
-     * contains {@link ValueNode}s, or the negative conjunct is attributed.
+    /** 
+     * This implementation tests for the use of attributes and the presence of isolated nodes.
+     * @see #hasAttributes()
+     * @see SystemProperties#isAttributed()
      */
-    public boolean isAttributed() {
-		return ValueNode.hasValueNodes(getTarget()) || getNegConjunct().isAttributed();
+	public void testConsistent() throws FormatException {
+		if (getProperties().isAttributed()) {
+			if (hasIsolatedNodes()) {
+				throw new FormatException("Consistency error in %s: Attributed condition has isolated nodes", getName());
+			}
+		} else if (hasAttributes()) {
+			throw new FormatException("Consistency error in %s: Condition uses attributes, contrary to system property", getName());
+		}
 	}
 
 	/**
-     * Returns <code>true</code> if {@link #hasMatching(Graph)} returns a non-<code>null</code>
-     * result.
-     */
+	 * Returns <code>true</code> if the target graph of the condition
+	 * contains {@link ValueNode}s, or the negative conjunct is attributed.
+	 */
+	protected boolean hasAttributes() {
+		boolean result = ValueNode.hasValueNodes(getTarget());
+		Iterator<DefaultGraphCondition> subConditionIter = getNegConjunct().getConditions().iterator();
+		while (!result && subConditionIter.hasNext()) {
+			result = subConditionIter.next().hasAttributes();
+		}
+		return result;
+	}
+
+	/**
+	 * Returns <code>true</code> if the target graph of the condition
+	 * contains nodes without incident edges, or one of the sub-conditions does.
+	 */
+	protected boolean hasIsolatedNodes() {
+		boolean result = false;
+		// first test if the pattern target has isolated nodes
+		Iterator<? extends Node> nodeIter = getTarget().nodeSet().iterator();
+		while (!result && nodeIter.hasNext()) {
+			result = getTarget().edgeSet(nodeIter.next()).isEmpty();
+		}// now recursively test the sub-conditions
+		Iterator<DefaultGraphCondition> subConditionIter = getNegConjunct().getConditions().iterator();
+		while (!result && subConditionIter.hasNext()) {
+			result = subConditionIter.next().hasIsolatedNodes();
+		}
+		return result;
+	}
+
+	/**
+	 * Returns <code>true</code> if {@link #hasMatching(Graph)} returns a non-<code>null</code>
+	 * result.
+	 */
     public boolean hasMatching(Graph graph) {
         testGround();
         testFixed(true);
@@ -426,7 +464,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * @see #DefaultGraphCondition(VarGraph, NameLabel, SystemProperties)
      * @see #addComplexNegCondition(GraphCondition)
      */
-    protected GraphPredicate createGraphPredicate() {
+    protected DefaultGraphPredicate createGraphPredicate() {
         return new DefaultGraphPredicate(getTarget());
     }
 
@@ -618,11 +656,11 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     /** 
      * The negated cunjunct of this graph condition.
      */
-    private GraphPredicate negConjunct;
+    private DefaultGraphPredicate negConjunct;
     /** 
      * The fragment of the negated conjunct without edge and merge embargoes.
      */
-    private GraphPredicate complexNegConjunct;
+    private DefaultGraphPredicate complexNegConjunct;
 
     /**
      * Mapping from codomain nodes to sets of other codomain nodes with which
