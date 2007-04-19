@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.6 2007-04-19 11:33:50 rensink Exp $
+ * $Id: SPOApplication.java,v 1.7 2007-04-19 16:19:20 rensink Exp $
  */
 package groove.trans;
 
@@ -43,7 +43,7 @@ import groove.util.Reporter;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-04-19 11:33:50 $
+ * @version $Revision: 1.7 $ $Date: 2007-04-19 16:19:20 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -79,10 +79,7 @@ public class SPOApplication implements RuleApplication, Derivation {
         return source;
     }
 
-    /* (non-Javadoc)
-	 * @see groove.trans.Dev#rule()
-	 */
-	public Rule getRule() {
+	public SPORule getRule() {
 	    return rule;
 	}
 
@@ -181,7 +178,7 @@ public class SPOApplication implements RuleApplication, Derivation {
     }
 
 	/**
-	 * Constructs a map from the reader nodes of the RHS that are endpoints of
+	 * Constructs a map from all nodes of the RHS that are endpoints of
 	 * creator edges.
 	 */
 	protected VarNodeEdgeMap computeCoanchorMap() {
@@ -210,10 +207,9 @@ public class SPOApplication implements RuleApplication, Derivation {
     }
     
     /**
-	 * Callback factory method to create a footprint for this application from a
-	 * given match and for a given host graph. The footprint consists of the
-	 * anchor images of the match and fresh images for the creator nodes of the
-	 * rule.
+	 * Callback factory method to create a coanchor image for this application from a
+	 * given match and for a given host graph. The image consists of 
+	 * fresh images for the creator nodes of the rule.
 	 */
 	protected Element[] computeCoanchorImage() {
         Node[] coanchor = rule.coanchor();
@@ -387,15 +383,18 @@ public class SPOApplication implements RuleApplication, Derivation {
      */
     protected void createEdges(DeltaTarget target) {
         if (rule.hasCreators()) {
-            Edge[] creatorEdges = rule.getCreatorEdges();
-            int creatorEdgeCount = creatorEdges.length;
-            NodeEdgeMap comatch = getCoanchorMap();
-            for (int i = 0; i < creatorEdgeCount; i++) {
-                Edge edge = creatorEdges[i];
-                Edge image = edge.imageFor(comatch);
-                // the edge should only be added if it is not in the source,
-                // or if it has been explicitly erased
-                if (image != null && (!source.containsElement(image)) || getErasedEdges().contains(image)) {
+            // first add the (pre-computed) simple creator edge images
+            for (Edge image: getEvent().getSimpleCreatedEdges()) {
+                // only add if not already in the source or just erased
+                if (! source.containsElement(image) || getErasedEdges().contains(image)) {
+                    addEdge(target, image);
+                }
+            }
+            // now compute and add the complex creator edge images
+            for (Edge edge: getRule().getComplexCreatorEdges()) {
+                Edge image = edge.imageFor(getCoanchorMap());
+                // only add if the image exists
+                if (image != null) {
                 	addEdge(target, image);
                 }
             }

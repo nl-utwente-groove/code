@@ -55,7 +55,7 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
     }
 
     public void setPrior(GraphOutTransition prior) {
-    	assert prior.getEvent() == getEvent() : "Rule of prime is "+prior.getRule().getName()+" whereas mine is "+getRule().getName();
+    	assert prior.getEvent() == getEvent() : String.format("Prior events differ: %s for me vs. %s for prior", getEvent(), prior.getEvent());
 		this.prior = prior;
         priorTransitionCount++;
 	}
