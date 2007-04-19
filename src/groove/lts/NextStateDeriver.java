@@ -27,6 +27,7 @@ import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleDependencies;
 import groove.trans.RuleEvent;
+import groove.trans.SPOEvent;
 
 /**
  * Deriver that uses information about the underlying transition of a {@link NextState}
@@ -126,13 +127,17 @@ public class NextStateDeriver extends DefaultDeriver {
             RuleEvent event = prevTransition.getEvent();
 //            if (!disabledRules.contains(rule) || !((SPOEvent) state.getEvent()).disables(event) && event.hasMatching(state)) {
             if (isUseDependencies() && !disabledRules.contains(rule) || event.hasMatching(state.getGraph())) {
-                AliasRuleApplication appl = (AliasRuleApplication) event.newApplication(state.getGraph());
-                appl.setPrior(prevTransition);
+                RuleApplication appl = createApplication((SPOEvent) event, state.getGraph(), prevTransition);
                 added |= result.add(appl);
         	}
         }
         reporter.stop();
         return added;
+    }
+    
+    /** Callback factory method to create an {@link AliasSPOApplication}. */
+    private RuleApplication createApplication(SPOEvent event, Graph host, GraphOutTransition prior) {
+    	return new AliasSPOApplication(event, host, prior); 
     }
 
 	/**

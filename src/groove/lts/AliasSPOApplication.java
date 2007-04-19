@@ -31,10 +31,16 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
     public static int getPriorTransitionCount() {
         return priorTransitionCount;
     }
-    
+
     /** Constructs an alias application, without yet setting a prior transition. */
     public AliasSPOApplication(SPOEvent event, Graph source) {
         super(event, source);
+    }
+
+    /** Constructs an alias application with a prior transition. */
+    public AliasSPOApplication(SPOEvent event, Graph source, GraphOutTransition prior) {
+        super(event, source);
+        setPrior(prior);
     }
 
 	/**
@@ -80,7 +86,8 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
      */
     @Override
     protected Graph createTarget() {
-    	return getRuleFactory().createTarget(this);
+    	return new DerivedGraphState(this);
+//    	return getRuleFactory().createTarget(this);
     }
     
     /** The prior transition for this aliased application, if any. */

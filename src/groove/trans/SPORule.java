@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.8 2007-04-19 09:21:32 rensink Exp $
+ * $Id: SPORule.java,v 1.9 2007-04-19 11:33:50 rensink Exp $
  */
 package groove.trans;
 
@@ -33,7 +33,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -43,7 +42,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -252,9 +251,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
         }
         if (hasComplexNegConjunct()) {
             res += "\nNegative application conditions:";
-            Iterator<NAC> nacIter = ((Set<NAC>) getComplexNegConjunct()).iterator();
-            while (nacIter.hasNext()) {
-                NAC nextNac = nacIter.next();
+            for (GraphCondition nextNac: getComplexNegConjunct()) {
                 if (nextNac instanceof DefaultNAC) {
                     res += "\n    " + nextNac.toString();
                 }
@@ -750,6 +747,6 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     private List<SearchItem> eventSearchPlan;
     /** Debug flag for the constructor. */
     private static final boolean CONSTRUCTOR_DEBUG = false;
-    /** Handle for profiling {@link #hasMatching(Graph)} and related methods. */
+    /** Handle for profiling {@link #matches(Graph)} and related methods. */
     static public final int GET_EVENT = reporter.newMethod("getEvent");
 }

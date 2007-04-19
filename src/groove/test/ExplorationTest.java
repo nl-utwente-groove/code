@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.7 2007-04-19 09:21:33 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.8 2007-04-19 11:33:55 rensink Exp $
  */
 
 package groove.test;
@@ -45,9 +45,10 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class ExplorationTest extends TestCase {
+	/** Location of the samples. */
     static public final String INPUT_DIR = "junit/samples";
     /**
      * Name of a text file to be found in the same package as this class. 
@@ -59,17 +60,17 @@ public class ExplorationTest extends TestCase {
 
     /** Position of the command on a test case line. */
     static public final int COMMAND_INDEX = 0;
-
+    /** Position of the grammar name on a test case line. */
     static public final int GRAMMAR_INDEX = 1;
-
+    /** Position of the start state name on a test case line. */
     static public final int START_STATE_INDEX = 2;
-
+    /** Position of the strategy indicator on a test case line. */
     static public final int STRATEGY_INDEX = 3;
-
+    /** Position of the expected node count on a test case line. */
     static public final int NODE_COUNT_INDEX = 4;
-
+    /** Position of the expected edge count on a test case line. */
     static public final int EDGE_COUNT_INDEX = 5;
-
+    /** Position of the expected open-state count on a test case line. */
     static public final int OPEN_COUNT_INDEX = 6;
 
     /**
@@ -107,6 +108,7 @@ public class ExplorationTest extends TestCase {
         public final int openCount;
     }
     
+    /** Tests the append sample. */
     public void testAppend() {
         testExploration("append.gps", "append-2-list-5", null, 145, 256);
         testExploration("append.gps", "append-2-list-5", "full", 145, 256);
@@ -115,38 +117,46 @@ public class ExplorationTest extends TestCase {
         testExploration("append.gps", "append-2-list-5", "edge-bounded:append=6", 79, 108, 12);
     }
 
+    /** Tests the ferryman sample. */
     public void testFerryman() {
         testExploration("ferryman.gps", "start", "full", 114, 198);
         testExploration("ferryman.gps", "start", "bounded:!eat", 40, 51);
     }
 
+    /** Tests the mergers sample. */
     public void testMergers() {
         testExploration("mergers.gps", 66, 143);
     }
 
+    /** Tests the regexpr sample. */
     public void testRegExpr() {
         testExploration("regexpr.gps", 16, 48);
     }
 
+    /** Tests the lose-nodes sample. */
     public void testLooseNodes() {
         testExploration("loose-nodes.gps", 104, 468);
         testExploration("loose-nodes.gps", "start", "linear", 10, 9);
     }
 
+    /** Tests the priorities sample. */
     public void testPriorities() {
         testExploration("priorities.gps", "start", "full", 13, 34);
         testExploration("priorities.gps", "start", "branching", 13, 34);
         testExploration("priorities.gps", "start", "linear", 8, 8);
     }
 
+    /** Tests the variables sample. */
     public void testVariables() {
         testExploration("variables.gps", "start-smaller", "full", 61, 176);
     }
 
+    /** Tests the counting sample. */
     public void testCounting() {
         testExploration("counting.gps", 10, 9);
     }
 
+    /** Tests the attributes sample. */
     public void testAttributes() {
         testExploration("attributed-graphs.gps", 6, 16);
     }

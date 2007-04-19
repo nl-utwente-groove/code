@@ -12,11 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.3 2007-04-19 06:39:23 rensink Exp $
+ * $Id: GraphCondition.java,v 1.4 2007-04-19 11:33:50 rensink Exp $
  */
 package groove.trans;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 import groove.graph.Edge;
+import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.rel.VarGraph;
@@ -27,7 +31,7 @@ import groove.util.FormatException;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface GraphCondition extends GraphTest {
     /**
@@ -35,7 +39,7 @@ public interface GraphCondition extends GraphTest {
      * Together with the negative predicate this determines the complete condition.
      * @return a graph that must be present for this condition to hold
      * @see #getNegConjunct()
-     * @see #hasMatching(VarMorphism)
+     * @see #matches(VarMorphism)
      */
     public Morphism getPattern();
     
@@ -71,7 +75,7 @@ public interface GraphCondition extends GraphTest {
      * @ensure <code>result.getCountext() == getPattern().cod()</code>
      * @return A predicate over the pattern codomain that
      * @see #getPattern()
-     * @see #hasMatching(VarMorphism)
+     * @see #matches(VarMorphism)
      */
     public GraphPredicate getNegConjunct();
     
@@ -124,19 +128,119 @@ public interface GraphCondition extends GraphTest {
     @Deprecated
     public GraphCondition setAndNot(Edge embargoEdge);
     
+    /** 
+     * Factory method to create an initially empty matcher for this condition
+     * and a given graph.
+     * @param graph the graph in which we want to match this condition
+     * @return an initially empty matching, to be refined to get a real matching.
+     */
+    public Matching newMatcher(Graph graph);
+    
     /**
      * Specialises the return type.
      */
     public GraphConditionOutcome getOutcome(VarMorphism subject);
 //
 //    /**
-//     * @param ruleFactory the rule-factory to be set
+//     * Indicates if a given graph satisfies this predicate.
+//     * Only applicable if this predicate is closed; throws an
+//     * {@link IllegalArgumentException} otherwise.
+//     * @param graph the graph to be tested
+//     * @return <code>true</code> if this predicate is closed and <code>graph</code> satisfies it
+//     * @throws IllegalArgumentException if <code>! isClosed()</code>
+//     * @see #matches(VarMorphism)
+//     * @see #getMatching(Graph)
 //     */
-//    public void setRuleFactory(RuleFactory ruleFactory);
-//
+//    public boolean matches(Graph graph);
+//    
 //    /**
-//     * Returns the <code>ruleFactory</code>.
-//     * @return the <code>ruleFactory</code>
+//     * Indicates if a given graph morphism satisfies this predicate.
+//     * It is required that the morphism domain equals this condition's context
+//     * and that the morphism is total;
+//     * an <code>IllegalArgumentException</code> may be thrown otherwise.
+//     * @param subject the morphism to be tested
+//     * @return <code>true</code> if <code>morph</code> satisfies this predicate
+//     * @see #getMatching(VarMorphism)
+//     * @throws IllegalArgumentException if <code>! subject.isTotal()</code> or <code>subject.dom() != getContext()</code>
 //     */
-//    public RuleFactory getRuleFactory();
+//    public boolean matches(VarMorphism subject);
+    
+    /**
+     * Returns a matching for a given graph, or <code>null</code> if no matching exists.
+     * The matching condition is this condition.
+     * Refines the result of {@link #matches(Graph)} by indicating the <i>reason</i>
+     * why the condition is satisfied.
+     * Only applicable if this condition is ground; throws an
+     * {@link IllegalArgumentException} otherwise.
+     * @param graph the graph to be tested
+     * @see #matches(Graph)
+     * @throws IllegalArgumentException if {@link #isGround()} does not hold.
+     */
+    public Matching getMatching(Graph graph);
+
+    /**
+     * Returns a matching for the codomain of a given morphism.
+     * The matching condition is this condition.
+     * Refines the result of {@link #matches(VarMorphism)} by indicating the <i>reason</i>
+     * why the test is or is not satisfied.
+     * @param subject the morphism to be tested
+     * @require <code>getContext() == subject.dom()</code>
+     * @ensure <code>result.cod() == subject.cod()</code>
+     * @see #matches(VarMorphism)
+     * @throws IllegalArgumentException if <code>! subject.isTotal()</code> or <code>subject.dom() != getContext()</code>
+     */
+    public Matching getMatching(VarMorphism subject);
+
+    /**
+     * Returns the set of all matchings for a given graph.
+     * The matching condition is this condition.
+     * Only applicable if this condition is ground; throws an
+     * {@link IllegalArgumentException} otherwise.
+     * @param graph the graph to be tested
+     * @require <code>!isClosed()</code>
+     * @see #getMatching(Graph)
+     * @see #matches(Graph)
+     * @throws IllegalArgumentException if {@link #isGround()} does not hold.
+     */
+    public Collection<? extends Matching> getMatchingSet(Graph graph);
+
+    /**
+     * Returns the set of all matchings for a given morphism.
+     * The matching condition is this condition.
+     * @param subject the morphism to be tested
+     * @require <code>getContext() == subject.dom()</code>
+     * @see #matches(VarMorphism)
+     * @see #getMatching(VarMorphism)
+     * @throws IllegalArgumentException if <code>! subject.isTotal()</code> or <code>subject.dom() != getContext()</code>
+     */
+    public Collection<? extends Matching> getMatchingSet(VarMorphism subject);
+
+    /**
+     * Returns an iterator over the set of all matchings for a given graph.
+     * The iterator may be computed in a lazy fashion.
+     * The matching condition is this condition.
+     * Only applicable if this condition is ground; throws an
+     * {@link IllegalArgumentException} otherwise.
+     * @param graph the graph to be tested
+     * @see #matches(Graph)
+     * @see #getMatching(Graph)
+     * @see #getMatchingSet(Graph)
+     * @throws IllegalArgumentException if  {@link #isGround()} does not hold.
+     */
+    public Iterator<? extends Matching> getMatchingIter(Graph graph);
+
+    /**
+     * Returns an iterator over the set of all matchings for a given morphism.
+     * The iterator may be computed in a lazy fashion.
+     * The matching condition is this condition.
+     * Only applicable if this condition is ground; throws an
+     * {@link IllegalArgumentException} otherwise.
+     * @param subject the morphism to be tested
+     * @require <code>getContext() == subject.dom()</code>
+     * @see #matches(VarMorphism)
+     * @see #getMatching(VarMorphism)
+     * @see #getMatchingSet(VarMorphism)
+     * @throws IllegalArgumentException if <code>! subject.isTotal()</code> or <code>subject.dom() != getContext()</code>
+     */
+    public Iterator<? extends Matching> getMatchingIter(VarMorphism subject);
 }

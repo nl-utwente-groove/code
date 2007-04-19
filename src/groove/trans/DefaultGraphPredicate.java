@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphPredicate.java,v 1.5 2007-04-19 06:39:23 rensink Exp $
+ * $Id: DefaultGraphPredicate.java,v 1.6 2007-04-19 11:33:50 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import groove.util.TransformIterator;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implements GraphPredicate {
 	/** Empty graph, to be used in the standard construction of an initial morphism. */
@@ -118,13 +118,13 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
 //	}
 
 	/**
-     * If {@link #isGround()} holds, delegates to {@link #hasMatching(VarMorphism)} 
+     * If {@link #isGround()} holds, delegates to {@link #matches(VarMorphism)} 
      * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
      * Otherwise, throws an exception as per contract.
      */
-    public boolean hasMatching(Graph graph) {
+    public boolean matches(Graph graph) {
         testClosed();
-        return hasMatching(createInitialMorphism(graph));
+        return matches(createInitialMorphism(graph));
     }
 
     /**
@@ -132,9 +132,9 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
      * <code>morph</code>, and tests whether that can be extended to a total morphism.
      * @see Morphism#hasTotalExtensions()
      */
-    public boolean hasMatching(VarMorphism subject) {
+    public boolean matches(VarMorphism subject) {
     	for (GraphCondition condition: this) {
-            if (condition.hasMatching(subject)) {
+            if (condition.matches(subject)) {
                 return true;
             }
         }
