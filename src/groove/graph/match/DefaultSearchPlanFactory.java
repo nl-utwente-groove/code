@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultSearchPlanFactory.java,v 1.3 2007-04-04 07:04:28 rensink Exp $
+ * $Id: DefaultSearchPlanFactory.java,v 1.4 2007-04-20 10:03:32 rensink Exp $
  */
 package groove.graph.match;
 
@@ -46,7 +46,7 @@ import groove.util.HashBag;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	/**
@@ -118,7 +118,7 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
-	private class IndegreeComparator implements Comparator<Edge>, Observer {
+	protected class IndegreeComparator implements Comparator<Edge>, Observer {
 		/**
 		 * Constructs a comparator on the basis of the set of currently unmatched
 		 * edges.
