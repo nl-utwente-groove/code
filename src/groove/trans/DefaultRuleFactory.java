@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.9 2007-04-19 11:33:50 rensink Exp $
+ * $Id: DefaultRuleFactory.java,v 1.10 2007-04-20 09:02:26 rensink Exp $
  */
 package groove.trans;
 
@@ -33,7 +33,7 @@ import groove.util.FormatException;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class DefaultRuleFactory implements RuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */
@@ -125,6 +125,7 @@ public class DefaultRuleFactory implements RuleFactory {
 	/**
 	 * This implementation throws an {@link UnsupportedOperationException}.
 	 */
+	@Deprecated
 	public Graph createTarget(RuleApplication ruleApplication) {
 		throw new UnsupportedOperationException();
 	}

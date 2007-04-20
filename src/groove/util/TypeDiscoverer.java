@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.7 2007-04-19 06:39:25 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.8 2007-04-20 09:02:27 rensink Exp $
  */
 package groove.util;
 
@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-04-19 06:39:25 $
+ * @version $Revision: 1.8 $ $Date: 2007-04-20 09:02:27 $
  */
 public class TypeDiscoverer {
 	/** Extension of files containing type information. */
@@ -268,7 +268,7 @@ public class TypeDiscoverer {
     
     /** Callback factory method to create a rule. */
     protected Rule createRule(Morphism ruleMorphism, NameLabel name, RuleSystem ruleSystem) throws FormatException {
-        return ruleSystem.getRuleFactory().createRule(ruleMorphism, name, Rule.DEFAULT_PRIORITY, ruleSystem.getProperties());
+        return new SPORule(ruleMorphism, name, Rule.DEFAULT_PRIORITY, ruleSystem.getProperties());
     }
     
     /** Callback method to retrieve the creator nodes from a rule. */

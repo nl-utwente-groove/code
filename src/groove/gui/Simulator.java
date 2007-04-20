@@ -13,12 +13,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.14 2007-04-19 09:21:34 rensink Exp $
+ * $Id: Simulator.java,v 1.15 2007-04-20 09:02:28 rensink Exp $
  */
 package groove.gui;
 
-import static groove.gui.Options.*;
-
+import static groove.gui.Options.HELP_MENU_NAME;
+import static groove.gui.Options.OPTIONS_MENU_NAME;
+import static groove.gui.Options.QUIT_ACTION_NAME;
+import static groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static groove.gui.Options.SHOW_ASPECTS_OPTION;
+import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_REMARKS_OPTION;
+import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphListener;
@@ -26,13 +32,13 @@ import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.graph.aspect.AspectGraph;
 import groove.graph.aspect.AspectualGraphView;
+import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
-import groove.gui.jgraph.AspectJModel;
 import groove.io.AspectualGpsGrammar;
 import groove.io.AspectualGxl;
 import groove.io.ExtensionFilter;
@@ -41,7 +47,6 @@ import groove.io.LayedOutGpsGrammar;
 import groove.io.LayedOutXml;
 import groove.io.Xml;
 import groove.io.XmlGrammar;
-import groove.lts.DerivedGraphRuleFactory;
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -111,7 +116,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class Simulator {
     /**
@@ -1718,7 +1723,7 @@ public class Simulator {
      */
     protected void initGrammarLoaders() {
         grammarLoaderMap.clear();
-        gpsLoader = new LayedOutGpsGrammar(DerivedGraphRuleFactory.getInstance());
+        gpsLoader = new LayedOutGpsGrammar();
 //        gpsLoader = new GpsGrammar(graphLoader, DefaultRuleFactory.getInstance());
         grammarLoaderMap.put(gpsLoader.getExtensionFilter(), gpsLoader);
 //        ggxLoader = new GgxGrammar();

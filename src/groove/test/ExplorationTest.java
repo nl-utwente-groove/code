@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.8 2007-04-19 11:33:55 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.9 2007-04-20 09:02:27 rensink Exp $
  */
 
 package groove.test;
@@ -20,7 +20,6 @@ package groove.test;
 import groove.io.AspectualGpsGrammar;
 import groove.io.XmlGrammar;
 import groove.lts.ConditionalExploreStrategy;
-import groove.lts.DerivedGraphRuleFactory;
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.explore.FullStrategy;
@@ -45,7 +44,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -349,5 +348,5 @@ public class ExplorationTest extends TestCase {
     /**
      * Grammar loader used in this test case.
      */
-    protected XmlGrammar loader = new AspectualGpsGrammar(DerivedGraphRuleFactory.getInstance());
+    protected XmlGrammar loader = new AspectualGpsGrammar();
 }

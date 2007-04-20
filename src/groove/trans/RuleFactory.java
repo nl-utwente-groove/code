@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleFactory.java,v 1.5 2007-04-19 11:33:50 rensink Exp $
+ * $Id: RuleFactory.java,v 1.6 2007-04-20 09:02:25 rensink Exp $
  */
 package groove.trans;
 
@@ -24,7 +24,7 @@ import groove.util.FormatException;
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-04-19 11:33:50 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-20 09:02:25 $
  */
 public interface RuleFactory {
 	/**
@@ -117,7 +117,9 @@ public interface RuleFactory {
 	 * @param ruleApplication the rule application providing the necessary
 	 * information to create the specific target graph
 	 * @return the target graph
+	 * @deprecated do it yourself!  
 	 */
+	@Deprecated
 	public Graph createTarget(RuleApplication ruleApplication);
 
 	/**

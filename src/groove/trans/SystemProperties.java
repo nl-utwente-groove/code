@@ -19,21 +19,21 @@ import java.util.Map.Entry;
  * @version $Revision $
  */
 public class SystemProperties extends java.util.Properties {
-	/** 
-	 * Constructs an empty properties object for a given rule system.
-	 * @param system the rule system with which these properties are associated
-	 */
-	SystemProperties(RuleSystem system) {
-		this.ruleSystem = system;
-		// empty
-	}
-	
-	/** Constructs an empty properties object, not associated to any rule system. */
-	public SystemProperties() {
-		this(null);
-		// empty
-	}
-	
+//	/** 
+//	 * Constructs an empty properties object for a given rule system.
+//	 * @param system the rule system with which these properties are associated
+//	 */
+//	SystemProperties(RuleSystem system) {
+////		this.ruleSystem = system;
+//		// empty
+//	}
+//	
+//	/** Constructs an empty properties object, not associated to any rule system. */
+//	public SystemProperties() {
+//		this(null);
+//		// empty
+//	}
+//	
 	/** 
 	 * Freezes the properties object, after which 
 	 * changing any properties becomes illegal.
@@ -104,15 +104,15 @@ public class SystemProperties extends java.util.Properties {
     public void setCommonLabels(List<String> commonLabels) {
     	setProperty(COMMON_LABELS, Groove.toString(commonLabels.toArray(), "", "", " "));
     }
-    
-    /** Returns the rule factory associated with the rule system. */
-    public RuleFactory getFactory() {
-    	if (ruleSystem == null) {
-    		return DefaultRuleFactory.getInstance();
-    	} else {
-    		return ruleSystem.getRuleFactory();
-    	}
-    }
+//    
+//    /** Returns the rule factory associated with the rule system. */
+//    public RuleFactory getFactory() {
+//    	if (ruleSystem == null) {
+//    		return DefaultRuleFactory.getInstance();
+//    	} else {
+//    		return ruleSystem.getRuleFactory();
+//    	}
+//    }
 
 	/** 
 	 * Before calling the super method, tests if the properties are fixed
@@ -214,10 +214,10 @@ public class SystemProperties extends java.util.Properties {
      * Flag to indicate that the properties have been frozen.
      */
     private boolean fixed;
-	/**
-	 * Comment for <code>ruleSystem</code>
-	 */
-	private final RuleSystem ruleSystem;
+//	/**
+//	 * Comment for <code>ruleSystem</code>
+//	 */
+//	private final RuleSystem ruleSystem;
 	/**
 	 * Property name of the list of control labels of a graph grammar.
      * The control labels are those labels which should be matched first
