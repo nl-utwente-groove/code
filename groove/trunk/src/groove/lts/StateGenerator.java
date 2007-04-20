@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.4 2007-04-19 16:19:25 rensink Exp $
+ * $Id: StateGenerator.java,v 1.5 2007-04-20 08:41:06 rensink Exp $
  */
 package groove.lts;
 
@@ -21,6 +21,9 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
+import groove.graph.GraphAdapter;
+import groove.graph.GraphShape;
+import groove.graph.Node;
 import groove.trans.Deriver;
 import groove.trans.RuleApplication;
 import groove.util.Reporter;
@@ -56,6 +59,8 @@ public class StateGenerator {
 	 */
 	public StateGenerator(final GTS gts) {
 		this.gts = gts;
+		this.collector = new FreshStateCollector();
+		gts.addGraphListener(collector);
 	}
 
 	/**
@@ -76,21 +81,25 @@ public class StateGenerator {
             if (derivations.isEmpty()) {
                 gts.setFinal(state);
             } else {
-                Iterator<RuleApplication> derivationIter = derivations.iterator();
-                do {
-                    RuleApplication appl = derivationIter.next();
-                    // to test if the eventual target is fresh, compare it 
-                    // with the original derivation's target
-                    GraphState realTarget = addTransition(appl);
-                    if (appl.isTargetSet() && appl.getTarget() == realTarget && realTarget != state) {
-                    	result.add(realTarget);
-                    }
-                } while (derivationIter.hasNext());
+            	collector.set(result);
+            	for (RuleApplication appl: derivations) {
+                    addTransition(appl);
+            	}
+                collector.reset();
             }
             gts.setClosed(state);
         }
         reporter.stop();
         return result;
+    }
+    
+    /**
+     * Creates a fresh graph state, based on a given rule application.
+     */
+    GraphNextState createState(RuleApplication appl) {
+    	DerivedGraphState result = new DerivedGraphState(appl);
+    	result.setFixed();
+    	return result;
     }
     
 	/**
@@ -148,14 +157,11 @@ public class StateGenerator {
     /**
      * Adds a transition to the GTS, constructed from a given rule application.
      * The application's target graph is compared to the existing states for symmetry;
-     * if a symmetric one is found then that is taken as target state, and
-     * the derivation is adjusted accordingly. If no symmetric state is found,
-     * then a fresh target state is added.
+     * if a symmetric one is found then that is taken as target state. 
+     * If no symmetric state is found, then a fresh target state is added.
      * The actual target state is returned as the result of the method.
      * @param appl the derivation underlying the transition to be added
      * @return the target state of the resulting transition
-     * @require <tt>devon.dom() == state.getGraph()</tt>
-     * @ensure <tt>state.containsOutTransition(new GraphTransition(devon.rule(), devon.match(), result))</tt>
      */
     public GraphState addTransition(RuleApplication appl) {
         reporter.start(ADD_TRANSITION);
@@ -167,7 +173,7 @@ public class StateGenerator {
             // determine target state of this transition
             targetState = computeTargetState(appl);
         }
-        gts.addTransition((GraphState) appl.getSource(), appl, targetState);
+        gts.addTransition((GraphState) appl.getSource(), appl.getEvent(), targetState);
         reporter.stop();
         return targetState;
     }
@@ -176,14 +182,14 @@ public class StateGenerator {
 	 * Computes the target state of a rule application.
 	 * The target state is added to the underlying GTS, after checking for already
 	 * existing isomorphic states.
-	 * @param appl the rule application from which the target state is
-	 * to be extracted
+	 * @param appl the provisional target from which the real target state is to be extracted
 	 */
 	private GraphState computeTargetState(RuleApplication appl) {
-		GraphState result = (GraphState) appl.getTarget();
+		GraphState result;
         // see if isomorphic graph is already in the LTS
         // special case: source = target
-        if (appl.getSource() != result) {
+        if (appl.getRule().isModifying()) {
+        	result = createState(appl);
             GraphState isoState = gts.addState(result);
             if (isoState != null) {
                 // the following line is to ensure the cache is cleared
@@ -191,6 +197,8 @@ public class StateGenerator {
             	result.dispose();
                 result = isoState;
             }
+        } else {
+        	result = (GraphState) appl.getSource();
         }
 		return result;
 	}
@@ -204,21 +212,18 @@ public class StateGenerator {
         if (!NextStateDeriver.isUseDependencies() || !(appl instanceof AliasRuleApplication)) {
             return null;
         }
-        GraphOutTransition prior = ((AliasRuleApplication) appl).getPrior();
-        if (prior == null) {
-            return null;
-        }
+        AliasRuleApplication aliasAppl = (AliasRuleApplication) appl;
+        GraphOutTransition prior = aliasAppl.getPrior();
         GraphState priorTarget = prior.target();
         if (!priorTarget.isClosed()) {
+        	// the prior target does not have its outgoing transitions computed yet
             return null;
         }
-        GraphTransition prevTransition = (DerivedGraphState) appl.getSource();
-//        if (prior.getEvent().overlaps(prevTransition.getEvent())) {
-//            return null;
-//        }
-//        if (((AliasSPOApplication) appl).) {
-//            
-//        }
+        GraphTransition prevTransition = (DerivedGraphState) aliasAppl.getSource();
+        if (prior.getEvent().conflicts(prevTransition.getEvent())) {
+        	// alternating the events does not imply confluence
+            return null;
+        }
         GraphState result = priorTarget.getNextState(prevTransition.getEvent());
         if (result != null) {
         	confluentDiamondCount++;
@@ -249,6 +254,37 @@ public class StateGenerator {
 	private Deriver deriver;
 	/** The underlying GTS. */
 	private final GTS gts;
+	/** Collector instance that listens to the underlying GTS. */
+	private final FreshStateCollector collector;
+
+	/**
+	 * Listener that collects the fresh states into a set.
+	 */
+	static class FreshStateCollector extends GraphAdapter {
+		/**
+		 * Sets the result set to an alial of a given set.
+		 */
+		public void set(Collection<GraphState> result){
+			this.result = result;
+		}
+		
+		/**
+		 * Sets the result set to the empty set.
+		 */
+		public void reset() {
+			result = null;
+		}
+		
+		@Override
+		public void addUpdate(GraphShape graph, Node node) {
+			if (result != null) {
+				result.add((GraphState) node);
+			}
+		}
+		
+		/** The set to collect the fresh states. */
+		private Collection<GraphState> result;
+	}
 	
     /** Reporter for profiling information; aliased to {@link GTS#reporter}. */
     static private final Reporter reporter = new Reporter(StateGenerator.class);

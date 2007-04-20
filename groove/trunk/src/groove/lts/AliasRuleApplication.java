@@ -23,17 +23,17 @@ import groove.trans.RuleApplication;
  * which is a pre-existing graph transition that essentially equals the one we
  * are deriving now, at an earlier stage.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface AliasRuleApplication extends RuleApplication {
-    /**
-     * Sets the prior transition of this application.
-     * The prior transition is essentially an outgoing transition from the previous state
-     * of which this application is an alias.
-     * Among other things, the prior serves as a hint for the footprint.
-     */
-    public void setPrior(GraphOutTransition prior);
-
+//    /**
+//     * Sets the prior transition of this application.
+//     * The prior transition is essentially an outgoing transition from the previous state
+//     * of which this application is an alias.
+//     * Among other things, the prior serves as a hint for the footprint.
+//     */
+//    public void setPrior(GraphOutTransition prior);
+//
     /**
      * Returns the stored prior prime of this application,
      * or <code>null</code> if no prior transition is set.
@@ -42,6 +42,8 @@ public interface AliasRuleApplication extends RuleApplication {
     
     /**
      * Indicates if a prior transition has been set for this application.
+     * @deprecated prior is now always set
      */
+    @Deprecated
     public boolean hasPrior();
 }
