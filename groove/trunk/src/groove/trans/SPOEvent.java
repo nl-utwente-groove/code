@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.11 2007-04-20 08:41:39 rensink Exp $
+ * $Id: SPOEvent.java,v 1.12 2007-04-20 09:02:25 rensink Exp $
  */
 package groove.trans;
 
@@ -47,7 +47,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-04-20 08:41:39 $
+ * @version $Revision: 1.12 $ $Date: 2007-04-20 09:02:25 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -75,7 +75,7 @@ public class SPOEvent implements RuleEvent {
     	rule.testFixed(true);
         this.rule = rule;
         this.anchorMap = anchorMap;
-		this.ruleFactory = rule.getRuleFactory();
+//		this.ruleFactory = rule.getRuleFactory();
         this.freshNodeList = createFreshNodeList();
     }
 
@@ -88,13 +88,13 @@ public class SPOEvent implements RuleEvent {
     	this(rule, anchorMap);
     	this.record = record;
     }
-
-	/**
-	 * Returns the rule factory of this event.
-     */
-    public RuleFactory getRuleFactory() {
-    	return ruleFactory;
-    }
+//
+//	/**
+//	 * Returns the rule factory of this event.
+//     */
+//    public RuleFactory getRuleFactory() {
+//    	return ruleFactory;
+//    }
     
     /** 
      * Returns the derivation record associated with this event. 
@@ -705,10 +705,10 @@ public class SPOEvent implements RuleEvent {
 	 * Matching from the rule's lhs to the source graph.
 	 */
     protected final SPORule rule;
-    /**
-     * The factory to be used to instantiate classes specific for this rule event type.
-     */
-    private final RuleFactory ruleFactory;
+//    /**
+//     * The factory to be used to instantiate classes specific for this rule event type.
+//     */
+//    private final RuleFactory ruleFactory;
     /** The derivation record that has created this event, if any. */
     private DerivationData record;
     /**

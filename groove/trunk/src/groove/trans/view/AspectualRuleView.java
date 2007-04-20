@@ -12,13 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.6 2007-04-18 08:36:23 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.7 2007-04-20 09:02:27 rensink Exp $
  */
 
 package groove.trans.view;
 
-import static groove.graph.aspect.RuleAspect.*;
-
+import static groove.graph.aspect.RuleAspect.CREATOR;
+import static groove.graph.aspect.RuleAspect.EMBARGO;
+import static groove.graph.aspect.RuleAspect.ERASER;
+import static groove.graph.aspect.RuleAspect.READER;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
@@ -40,7 +42,6 @@ import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
 import groove.rel.RegExprGraph;
 import groove.rel.RegExprLabel;
-//import groove.rel.VarBinaryEdge;
 import groove.rel.VarGraph;
 import groove.trans.DefaultNAC;
 import groove.trans.EdgeEmbargo;
@@ -49,7 +50,7 @@ import groove.trans.MergeEmbargo;
 import groove.trans.NAC;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
-import groove.trans.RuleFactory;
+import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.util.FormatException;
 import groove.util.Groove;
@@ -75,7 +76,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -253,14 +254,14 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	    }
 	    return result;
 	}
-
-	/**
-     * Returns the rule factory.
-     * @return the rule factory.
-     */
-    public RuleFactory getRuleFactory() {
-    	return properties.getFactory();
-    }
+//
+//	/**
+//     * Returns the rule factory.
+//     * @return the rule factory.
+//     */
+//    public RuleFactory getRuleFactory() {
+//    	return properties.getFactory();
+//    }
 
     /** Returns the name of the rule represented by this rule graph, set at construction time. */
 	public NameLabel getName() {
@@ -569,7 +570,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 * @return the fresh rule created by the factory
 	 */
 	protected Rule createRule(Morphism ruleMorphism, NameLabel name, int priority) throws FormatException {
-	    return getRuleFactory().createRule(ruleMorphism, name, priority, properties);
+	    return new SPORule(ruleMorphism, name, priority, properties);
 	}
 
 	/**

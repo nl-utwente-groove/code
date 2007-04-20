@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.7 2007-04-19 06:39:23 rensink Exp $
+ * $Id: RuleSystem.java,v 1.8 2007-04-20 09:02:25 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-04-19 06:39:23 $
+ * @version $Revision: 1.8 $ $Date: 2007-04-20 09:02:25 $
  * @see NameLabel
  * @see SPORule
  */
@@ -49,14 +49,6 @@ public class RuleSystem {
         // explicit empty constructor
     }
 
-	/** 
-	 * Constructs an initially empty rule system with a give
-	 * rule factory. 
-	 */
-    public RuleSystem(RuleFactory ruleFactory) {
-        this.ruleFactory = ruleFactory;
-    }
-
     /**
      * Constructs a clone of a given rule system.
      * @param other the rule system to be cloned
@@ -64,7 +56,7 @@ public class RuleSystem {
      * @ensure <tt>equals(ruleSystem)</tt>
      */
     public RuleSystem(RuleSystem other) {
-    	this(other.getRuleFactory());
+    	this();
     	getProperties().putAll(other.getProperties());
         nameRuleMap.putAll(other.nameRuleMap);
         // the target sets of the priority rule map must be copied, not aliased
@@ -280,26 +272,26 @@ public class RuleSystem {
     		throw result;
     	}
     }
-    
-    /**
-	 * Lazily creates and returns the (fixed) rule factory for this rule 
-	 * system. The factory is used to create all the rules and rule applications.
-	 * If it is not initialised at construction time, it is set to
-	 * {@link DefaultRuleFactory#getInstance()}.
-	 */
-	public final RuleFactory getRuleFactory() {
-		if (ruleFactory == null) {
-			ruleFactory = DefaultRuleFactory.getInstance();
-		}
-		return ruleFactory;
-	}
+//    
+//    /**
+//	 * Lazily creates and returns the (fixed) rule factory for this rule 
+//	 * system. The factory is used to create all the rules and rule applications.
+//	 * If it is not initialised at construction time, it is set to
+//	 * {@link DefaultRuleFactory#getInstance()}.
+//	 */
+//	public final RuleFactory getRuleFactory() {
+//		if (ruleFactory == null) {
+//			ruleFactory = DefaultRuleFactory.getInstance();
+//		}
+//		return ruleFactory;
+//	}
 
 	/**
      * Callback factory method to create an initially empty {@link SystemProperties} object 
      * for this graph grammar.
      */
     protected SystemProperties createProperties() {
-        return new SystemProperties(this);
+        return new SystemProperties();
     }
     
     /**
@@ -358,8 +350,8 @@ public class RuleSystem {
      * The properties bundle of this rule system.
      */
     private SystemProperties properties; 
-    /** The (fixed) rule factory for this rule system. */
-    private RuleFactory ruleFactory;
+//    /** The (fixed) rule factory for this rule system. */
+//    private RuleFactory ruleFactory;
     /** Flag indicating that the rule system has been fixed and is ready for use. */
     private boolean fixed;
 }

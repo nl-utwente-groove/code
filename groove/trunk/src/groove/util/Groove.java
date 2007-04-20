@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.8 2007-04-19 06:39:25 rensink Exp $
+ * $Id: Groove.java,v 1.9 2007-04-20 09:02:27 rensink Exp $
  */
 package groove.util;
 
@@ -23,11 +23,9 @@ import groove.io.AspectualGpsGrammar;
 import groove.io.ExtensionFilter;
 import groove.io.UntypedGxl;
 import groove.io.Xml;
-import groove.lts.DerivedGraphRuleFactory;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemProperties;
 import groove.trans.view.AspectualRuleView;
-//import groove.trans.view.RuleGraph;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -41,7 +39,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.8 $ 
+ * @version $Revision: 1.9 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -603,5 +601,5 @@ public class Groove {
     /**
      * The fixed grammar loader.
      */
-    static private final AspectualGpsGrammar gpsLoader = new AspectualGpsGrammar(DerivedGraphRuleFactory.getInstance());
+    static private final AspectualGpsGrammar gpsLoader = new AspectualGpsGrammar();
 }

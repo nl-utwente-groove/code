@@ -16,12 +16,12 @@ package groove.lts;
 import groove.graph.Graph;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.RuleApplication;
-import groove.trans.RuleEvent;
-import groove.trans.SPOEvent;
 
 /**
  * Factory whose rule applications generate {@link DerivedGraphState}s.
+ * @deprecated use DefaultRuleFactory instead
  */
+@Deprecated
 public class DerivedGraphRuleFactory extends DefaultRuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */
 	static private final DerivedGraphRuleFactory singleton = new DerivedGraphRuleFactory();
@@ -50,6 +50,7 @@ public class DerivedGraphRuleFactory extends DefaultRuleFactory {
 	 * This implementation returns a {@link DerivedGraphState}.
 	 */
 	@Override
+	@Deprecated
 	public Graph createTarget(RuleApplication ruleApplication) {
         return new DerivedGraphState(ruleApplication);
 	}

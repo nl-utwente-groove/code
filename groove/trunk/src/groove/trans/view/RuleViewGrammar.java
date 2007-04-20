@@ -12,14 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleViewGrammar.java,v 1.6 2007-04-19 06:39:27 rensink Exp $
+ * $Id: RuleViewGrammar.java,v 1.7 2007-04-20 09:02:27 rensink Exp $
  */
 package groove.trans.view;
 
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
-import groove.trans.RuleFactory;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class RuleViewGrammar extends GraphGrammar {
      * Constructs a (non-fixed) copy of an existing rule view grammar.
      */
     public RuleViewGrammar(RuleViewGrammar oldGrammar) {
-        this(oldGrammar.getRuleFactory(), oldGrammar.getName());
+        this(oldGrammar.getName());
         getProperties().putAll(oldGrammar.getProperties());
         for (RuleView ruleView: oldGrammar.ruleViewMap.values()) {
         	add(ruleView);
@@ -43,8 +42,8 @@ public class RuleViewGrammar extends GraphGrammar {
     /**
      * Constructs a named, empty grammar based on a given rule factory.
      */
-    public RuleViewGrammar(RuleFactory ruleFactory, String name) {
-        super(ruleFactory, name);
+    public RuleViewGrammar(String name) {
+        super(name);
     }
 //
 //    /**

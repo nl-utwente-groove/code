@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGpsGrammar.java,v 1.7 2007-04-19 09:21:32 rensink Exp $
+ * $Id: AspectualGpsGrammar.java,v 1.8 2007-04-20 09:02:26 rensink Exp $
  */
 
 package groove.io;
@@ -45,7 +45,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
     /** Error message if a grammar cannot be loaded. */
@@ -383,12 +383,11 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
      * @return a new {@link groove.trans.view.RuleViewGrammar} with the given name
      */
     protected RuleViewGrammar createGrammar(String name) {
-        return new RuleViewGrammar(getRuleFactory(), name);
+        return new RuleViewGrammar(name);
     }
 
     /**
-     * Creates a rule-graph from the given graph by delegating the actual creation
-     * to {@link #getRuleFactory()}.
+     * Creates an {@link AspectualRuleView}.
      * @param graph the graph from which to create the rule-graph
      * @param ruleName the name of the rule to be created
      * @param priority the priority of the rule to be created

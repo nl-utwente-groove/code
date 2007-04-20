@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleGraph.java,v 1.9 2007-04-18 08:36:23 rensink Exp $
+ * $Id: RuleGraph.java,v 1.10 2007-04-20 09:02:27 rensink Exp $
  */
 
 package groove.trans.view;
@@ -44,7 +44,7 @@ import groove.trans.MergeEmbargo;
 import groove.trans.NAC;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
-import groove.trans.RuleFactory;
+import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.util.FormatException;
 import groove.util.Groove;
@@ -65,7 +65,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @deprecated replaced by AspectRuleView
  */
 @Deprecated
@@ -526,13 +526,13 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
     	return properties;
     }
 
-    /**
-     * Returns the rule factory.
-     * @return the rule factory.
-     */
-    public RuleFactory getRuleFactory() {
-    	return properties.getFactory();
-    }
+//    /**
+//     * Returns the rule factory.
+//     * @return the rule factory.
+//     */
+//    public RuleFactory getRuleFactory() {
+//    	return properties.getFactory();
+//    }
 
     /**
      * Returns the production rule corresponding to this rule graph.
@@ -932,14 +932,14 @@ public class RuleGraph extends NodeSetEdgeSetGraph implements RuleView {
     
     /**
      * Factory method for rules.
-     * This implementation delegates to {@link #getRuleFactory()}.
+     * This implementation creates an {@link SPORule}.
      * @param ruleMorphism morphism of the new rule to be created
      * @param name name of the new rule to be created
      * @param priority the priority of the new rule.
      * @return the fresh rule created by the factory
      */
     protected Rule createRule(Morphism ruleMorphism, NameLabel name, int priority) throws FormatException {
-        return getRuleFactory().createRule(ruleMorphism, name, priority, SystemProperties.DEFAULT_PROPERTIES);
+        return new SPORule(ruleMorphism, name, priority, SystemProperties.DEFAULT_PROPERTIES);
     }
 
     /**

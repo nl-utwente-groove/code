@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.9 2007-04-19 11:33:50 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.10 2007-04-20 09:02:25 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import groove.util.Reporter;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -99,13 +99,13 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     public SystemProperties getProperties() {
 		return properties;
 	}
-
-	/**
-     * Returns the rule factory of this graph condition. 
-	 */
-	protected RuleFactory getRuleFactory() {
-		return getProperties().getFactory();
-	}
+//
+//	/**
+//     * Returns the rule factory of this graph condition. 
+//	 */
+//	protected RuleFactory getRuleFactory() {
+//		return getProperties().getFactory();
+//	}
 
 	/**
      * Calls <code>getNegPredicate().setOr(test)</code>,
