@@ -1,5 +1,5 @@
 /*
- * $Id: DefaultConditionSearchPlanFactory.java,v 1.5 2007-04-18 08:35:55 rensink Exp $
+ * $Id: DefaultConditionSearchPlanFactory.java,v 1.6 2007-04-20 10:03:22 rensink Exp $
  */
 package groove.trans.match;
 
@@ -35,41 +35,61 @@ import groove.trans.SystemProperties;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory implements ConditionSearchPlanFactory {
 	/**
-	 * Edge comparator on the basis of a list of control labels.
+	 * Edge comparator on the basis of lists of high- and low-priority labels.
 	 * Preference is given to labels occurring early in this list.
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
     private class ControlLabelComparator implements Comparator<Edge> {
     	/**
-    	 * Constructs a comparator on the basis of a given list of labels.
+    	 * Constructs a comparator on the basis of two lists of labels.
+    	 * The first list contains high-priority labels, in the order of decreasing priority;
+    	 * the second list low-priority labels, in order of increasing priority.
+    	 * Labels not in either list have intermediate priority and are ordered
+    	 * alphabetically.
+    	 * @param high high-priority labels, in order of decreasing priority; may be <code>null</code>
+    	 * @param low low-priority labels, in order of increasing priority; may be <code>null</code>
     	 */
-    	private ControlLabelComparator(List<String> hint) {
+    	private ControlLabelComparator(List<String> high, List<String> low) {
 			this.priorities = new HashMap<String, Integer>();
-			for (int hintIndex = 0; hintIndex < hint.size(); hintIndex++) {
-				priorities.put(hint.get(hintIndex), new Integer(hintIndex));
+			if (high != null) {
+				for (int i = 0; i < high.size(); i++) {
+					priorities.put(high.get(i), high.size() - i);
+				}
+			}
+			if (low != null) {
+				for (int i = 0; i < low.size(); i++) {
+					priorities.put(low.get(i), i - low.size());
+				}
 			}
 		}
 
     	/**
-    	 * Favours the edge occurring earliest in the list of control labels.
+    	 * Favours the edge occurring earliest in the high-priority labels, or
+    	 * latest in the low-priority labels. In case of equal priority, alphabetical ordering is used.
     	 */
     	public int compare(Edge first, Edge second) {
-			// compare edge priorities (lower = better)
-			return getEdgePriority(second) - getEdgePriority(first);
+    		String firstLabel = first.label().text();
+    		String secondLabel = second.label().text();
+			// compare edge priorities
+			return getEdgePriority(firstLabel) - getEdgePriority(secondLabel);
+//			if (result == 0) {
+//				result = firstLabel.compareTo(secondLabel);
+//			}
+//			return result;
 		}
         
         /**
          * Returns the priority of an edge, judged by its label.
          */
-        private int getEdgePriority(Edge edge) {
-        	Integer result = priorities.get(edge.label().text());
+        private int getEdgePriority(String edgeLabel) {
+        	Integer result = priorities.get(edgeLabel);
         	if (result == null) {
-        		return Integer.MAX_VALUE;
+        		return 0;
         	} else {
         		return result;
         	}
@@ -177,7 +197,13 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 		List<Comparator<Edge>> result = super.createComparators(nodeSet, edgeSet);
 		if (properties != null) {
 			List<String> controlLabels = properties.getControlLabels();
-			result.add(0, new ControlLabelComparator(controlLabels));
+			List<String> commonLabels = properties.getCommonLabels();
+			Comparator<Edge> labelComparator = new ControlLabelComparator(controlLabels, commonLabels);
+			int position = 0;
+			while (position < result.size() && !(result.get(position) instanceof IndegreeComparator)) {
+				position++;
+			}
+			result.add(position, labelComparator);
 		}
 		return result;
 	}
