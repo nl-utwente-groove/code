@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.12 2007-04-20 09:02:25 rensink Exp $
+ * $Id: SPOEvent.java,v 1.13 2007-04-20 15:12:28 rensink Exp $
  */
 package groove.trans;
 
@@ -47,7 +47,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-04-20 09:02:25 $
+ * @version $Revision: 1.13 $ $Date: 2007-04-20 15:12:28 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -84,7 +84,7 @@ public class SPOEvent implements RuleEvent {
      * @param rule the production rule involved
      * @param anchorMap the match of the rule's LHS elements to the host graph
      */
-    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, DerivationData record) {
+    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, SystemRecord record) {
     	this(rule, anchorMap);
     	this.record = record;
     }
@@ -100,7 +100,7 @@ public class SPOEvent implements RuleEvent {
      * Returns the derivation record associated with this event. 
      * May be <code>null</code>.
      */
-    protected DerivationData getRecord() {
+    protected SystemRecord getRecord() {
     	return record;
     }
 
@@ -710,7 +710,7 @@ public class SPOEvent implements RuleEvent {
 //     */
 //    private final RuleFactory ruleFactory;
     /** The derivation record that has created this event, if any. */
-    private DerivationData record;
+    private SystemRecord record;
     /**
      * Matching from the rule's lhs to the source graph.
      */

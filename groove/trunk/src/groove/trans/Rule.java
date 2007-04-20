@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.5 2007-04-19 09:21:32 rensink Exp $
- * $Date: 2007-04-19 09:21:32 $
+ * $Id: Rule.java,v 1.6 2007-04-20 15:12:28 rensink Exp $
+ * $Date: 2007-04-20 15:12:28 $
  */
 package groove.trans;
 
@@ -34,7 +34,7 @@ import groove.rel.VarNodeEdgeMap;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -107,7 +107,7 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * anchors to elements presumably in the host graph
      * @param record an object queried for fresh node numbers
      */
-    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, DerivationData record);
+    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, SystemRecord record);
 
     /**
      * Lazily creates and returns a search plan for rule events of this rule,
@@ -119,7 +119,7 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * Factory method to create an application for this rule from a given
      * matching.
      * @see RuleEvent#newApplication(Graph)
-     * @deprecated use {@link #newEvent(VarNodeEdgeMap, DerivationData)} and
+     * @deprecated use {@link #newEvent(VarNodeEdgeMap, SystemRecord)} and
      * {@link RuleEvent#newApplication(Graph)} instead
      */
     @Deprecated

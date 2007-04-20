@@ -12,22 +12,22 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.5 2007-04-20 08:41:06 rensink Exp $
+ * $Id: StateGenerator.java,v 1.6 2007-04-20 15:12:27 rensink Exp $
  */
 package groove.lts;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
 
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
-import groove.trans.Deriver;
 import groove.trans.RuleApplication;
+import groove.trans.RuleApplier;
+import groove.trans.SystemRecord;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Class providing functionality to generate new states in a GTS.
@@ -59,8 +59,15 @@ public class StateGenerator {
 	 */
 	public StateGenerator(final GTS gts) {
 		this.gts = gts;
+		this.record = new SystemRecord(gts.ruleSystem());
 		this.collector = new FreshStateCollector();
 		gts.addGraphListener(collector);
+		applier = new AliasRuleApplier(record);
+	}
+
+	/** Returns the system record kept by this generator. */
+	public final SystemRecord getRecord() {
+		return record;
 	}
 
 	/**
@@ -76,17 +83,27 @@ public class StateGenerator {
         final Collection<GraphState> result = new ArrayList<GraphState>();
         // check if the transitions have not yet been generated
         if (!state.isClosed()) {
-            Set<RuleApplication> derivations = getDeriver().getDerivations(state.getGraph());
-            // if there are no rule applications, the state is final
-            if (derivations.isEmpty()) {
+        	collector.set(result);
+        	getApplier(state).doApplications(new RuleApplier.Action() {
+				public void perform(RuleApplication application) {
+                    addTransition(application);
+				}
+        	});
+            collector.reset();
+            if (result.isEmpty()) {
                 gts.setFinal(state);
-            } else {
-            	collector.set(result);
-            	for (RuleApplication appl: derivations) {
-                    addTransition(appl);
-            	}
-                collector.reset();
             }
+//            Set<RuleApplication> derivations = getApplier(state).getApplications();
+//            // if there are no rule applications, the state is final
+//            if (derivations.isEmpty()) {
+//                gts.setFinal(state);
+//            } else {
+//            	collector.set(result);
+//            	for (RuleApplication appl: derivations) {
+//                    addTransition(appl);
+//            	}
+//                collector.reset();
+//            }
             gts.setClosed(state);
         }
         reporter.stop();
@@ -94,15 +111,6 @@ public class StateGenerator {
     }
     
     /**
-     * Creates a fresh graph state, based on a given rule application.
-     */
-    GraphNextState createState(RuleApplication appl) {
-    	DerivedGraphState result = new DerivedGraphState(appl);
-    	result.setFixed();
-    	return result;
-    }
-    
-	/**
 	 * Generates the set of successor states of a given state and
 	 * adds them to the underlying GTS; then returns the set of all
 	 * successor states.
@@ -127,7 +135,7 @@ public class StateGenerator {
             // get the next states from the outgoing edges
             return state.getNextStateIter();
         } else {
-            final Iterator<RuleApplication> derivationIter = getDeriver().getDerivationIter(state.getGraph());
+            final Iterator<RuleApplication> derivationIter = getApplier(state).getApplicationIter();
             if (!derivationIter.hasNext()) {
                 gts.setFinal(state);
             }
@@ -209,7 +217,7 @@ public class StateGenerator {
      * target directly.
      */
     private GraphState getConfluentTarget(RuleApplication appl) {
-        if (!NextStateDeriver.isUseDependencies() || !(appl instanceof AliasRuleApplication)) {
+        if (!AliasRuleApplier.isUseDependencies() || !(appl instanceof AliasRuleApplication)) {
             return null;
         }
         AliasRuleApplication aliasAppl = (AliasRuleApplication) appl;
@@ -230,33 +238,44 @@ public class StateGenerator {
         }
         return result;
     }
+//
+//	/**
+//	 * @return Returns the deriver, lazily creating it using 
+//	 * {@link #createDeriver(GraphState)} if it has not been initialised at construction time.
+//	 */
+//	protected Deriver getDeriver() {
+//		if (deriver == null) {
+//			deriver = createDeriver(state);
+//		}
+//		return deriver;
+//	}
 
 	/**
-	 * @return Returns the deriver, lazily creating it using 
-	 * {@link #createDeriver()} if it has not been initialised at construction time.
+	 * Creates a fresh graph state, based on a given rule application.
 	 */
-	protected Deriver getDeriver() {
-		if (deriver == null) {
-			deriver = createDeriver();
-		}
-		return deriver;
+	private GraphNextState createState(RuleApplication appl) {
+		DerivedGraphState result = new DerivedGraphState(appl);
+		result.setFixed();
+		return result;
 	}
 
 	/**
-	 * Callback factory method.
-	 * Creates a derivation strategy based on the rule system of the GTS.
+	 * Callback method to obtain a rule applier for this generator's rule set.
+	 * This implementation uses flyweight, so discard the result before calling the method again.
 	 */
-	protected Deriver createDeriver() {
-		return new NextStateDeriver(gts.getDerivationData());
+	private RuleApplier getApplier(GraphState state) {
+		applier.setState(state);
+		return applier;
 	}
 
-	/** The deriver strategy generating the rule productions. */
-	private Deriver deriver;
 	/** The underlying GTS. */
 	private final GTS gts;
+	/** The rule system instance used by this generator. */
+	private final SystemRecord record;
 	/** Collector instance that listens to the underlying GTS. */
 	private final FreshStateCollector collector;
-
+	/** The fixed rule applier for this generator. */
+	private final AliasRuleApplier applier;
 	/**
 	 * Listener that collects the fresh states into a set.
 	 */

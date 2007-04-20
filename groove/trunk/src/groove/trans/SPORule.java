@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.10 2007-04-19 16:19:20 rensink Exp $
+ * $Id: SPORule.java,v 1.11 2007-04-20 15:12:28 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -62,7 +62,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * Returns the total time doing transformation-related computations.
      */
     static public long getTransformingTime() {
-        return DefaultDeriver.reporter.getTotalTime(DefaultDeriver.GET_DERIVATIONS) - getMatchingTime();
+        return AbstractRuleApplier.reporter.getTotalTime(AbstractRuleApplier.GET_DERIVATIONS) - getMatchingTime();
     }
     
     /**
@@ -174,7 +174,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 //    	eventMap.clear();
 //    }
     
-    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, DerivationData record) {
+    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, SystemRecord record) {
         return new SPOEvent(this, anchorMap, record);
     }
     

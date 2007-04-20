@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.8 2007-04-20 08:41:06 rensink Exp $
+ * $Id: GTS.java,v 1.9 2007-04-20 15:12:27 rensink Exp $
  */
 package groove.lts;
 
@@ -22,7 +22,6 @@ import groove.graph.GraphShapeListener;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
-import groove.trans.DerivationData;
 import groove.trans.GraphGrammar;
 import groove.trans.RuleEvent;
 import groove.util.FilterIterator;
@@ -43,7 +42,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-04-20 08:41:06 $
+ * @version $Revision: 1.9 $ $Date: 2007-04-20 15:12:27 $
  */
 public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	/**
@@ -358,22 +357,22 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
     protected GraphShapeCache createCache() {
         return new GraphShapeCache(this, false);
     }
-    
-    /**
-	 * Returns the (fixed) derivation record for this GTS.
-	 */
-	public final DerivationData getDerivationData() {
-		if (record == null) {
-			record = createDerivationData();
-		}
-		return record;
-	}
-
-	/** Callback method to create a derivation data store for this GTS. */
-	protected DerivationData createDerivationData() {
-		return new DerivationData(ruleSystem());
-	}
-	
+//    
+//    /**
+//	 * Returns the (fixed) derivation record for this GTS.
+//	 */
+//	public final SystemRecord getDerivationData() {
+//		if (record == null) {
+//			record = createDerivationData();
+//		}
+//		return record;
+//	}
+//
+//	/** Callback method to create a derivation data store for this GTS. */
+//	protected SystemRecord createDerivationData() {
+//		return new SystemRecord(ruleSystem());
+//	}
+//	
 //	/**
 //     * Factory method for a graph deriver from a given rule system.
 //     * Use to initialize this GTS's deriver if it is not set explicitly.
@@ -574,8 +573,8 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 //     * The current graph deriver.
 //     */
 //    private Deriver deriver;
-    /** The derivation record for this GTS. */
-    private DerivationData record;
+//    /** The derivation record for this GTS. */
+//    private SystemRecord record;
     /**
      * The number of closed states in the GTS.
      */
