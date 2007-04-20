@@ -40,7 +40,7 @@ import groove.util.TransformIterator;
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class DerivedGraphState extends DefaultGraphState implements GraphNextState {
     /**
@@ -525,7 +525,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      */
     protected GraphOutTransition createOutTransitionTo(DerivedGraphState source) {
     	if (source != source()) {
-    		return createOutTransitionTo(getSourceEvent());
+    		return createOutTransitionToThis(getSourceEvent());
     	} else {
     		return this;
     	}
@@ -537,28 +537,21 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 * Otherwise it invokes <code>super</code>.
 	 */
     @Override
-	protected GraphOutTransition createOutTransitionTo(RuleApplication appl) {
-	    if (appl.getSource() == source() && appl.getEvent() == getEvent()) {
+	protected GraphOutTransition createOutTransitionToThis(GraphState source, RuleEvent event) {
+	    if (source == source() && event == getEvent()) {
 	        return this;
-	    } else if (appl instanceof AliasRuleApplication) {
-	        GraphOutTransition prior = ((AliasRuleApplication) appl).getPrior();
-	        if (prior != null) {
-	        	RuleEvent priorEvent = prior.getEvent();
-	        	if (appl.getSource() != source() && getSourceEvent() == priorEvent) {
-	        		return this;
-	        	} else {
-	        		return createOutTransitionTo(priorEvent);
-	        	}
-	        }
-	    }
-	    return super.createOutTransitionTo(appl);
+	    } else if (source != source() && event == getSourceEvent()) {
+			return this;
+		} else {
+			return createOutTransitionToThis(event);
+		}
 	}
 
 	/**
-     * This implementation takes into account that an outgoing transition
-     * may actually be an alias to some other transition that forms the outer
-     * end of a confluent diamond with this one.
-     */
+	 * This implementation takes into account that an outgoing transition may
+	 * actually be an alias to some other transition that forms the outer end of
+	 * a confluent diamond with this one.
+	 */
     @Override
 	protected RuleEvent getEvent(GraphOutTransition trans) {
 		if (trans instanceof DerivedGraphState && ((DerivedGraphState)trans).source() != this) {

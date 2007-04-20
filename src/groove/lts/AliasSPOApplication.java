@@ -15,7 +15,6 @@ package groove.lts;
 
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.trans.RuleFactory;
 import groove.trans.SPOApplication;
 import groove.trans.SPOEvent;
 
@@ -32,34 +31,18 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
         return priorTransitionCount;
     }
 
-    /** Constructs an alias application, without yet setting a prior transition. */
-    public AliasSPOApplication(SPOEvent event, Graph source) {
-        super(event, source);
-    }
-
     /** Constructs an alias application with a prior transition. */
-    public AliasSPOApplication(SPOEvent event, Graph source, GraphOutTransition prior) {
-        super(event, source);
-        setPrior(prior);
+    public AliasSPOApplication(GraphOutTransition prior, Graph source) {
+        super((SPOEvent) prior.getEvent(), source);
+        this.prior = prior;
+        priorTransitionCount++;
     }
-
-	/**
-	 * Returns the rule factory of this applier.
-	 */
-	protected RuleFactory getRuleFactory() {
-		return getEvent().getRuleFactory();
-	}
 
     public GraphOutTransition getPrior() {
     	return prior;
     }
-
-    public void setPrior(GraphOutTransition prior) {
-    	assert prior.getEvent() == getEvent() : String.format("Prior events differ: %s for me vs. %s for prior", getEvent(), prior.getEvent());
-		this.prior = prior;
-        priorTransitionCount++;
-	}
     
+    @Deprecated
     public boolean hasPrior() {
         return prior != null;
     }
@@ -72,24 +55,7 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
             return super.computeCoanchorImage();
         }
     }
-
-    @Override
-    protected Graph computeTarget() {
-		Graph target = createTarget();
-		target.setFixed();
-		return target;
-	}
-    
-    /**
-     * This implementation defers to the rule factory.
-     * @see RuleFactory#createTarget(groove.trans.RuleApplication)
-     */
-    @Override
-    protected Graph createTarget() {
-    	return new DerivedGraphState(this);
-//    	return getRuleFactory().createTarget(this);
-    }
     
     /** The prior transition for this aliased application, if any. */
-    private GraphOutTransition prior;
+    private final GraphOutTransition prior;
 }

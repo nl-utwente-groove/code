@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.7 2007-04-19 11:33:53 rensink Exp $
+ * $Id: Gossips.java,v 1.8 2007-04-20 08:41:42 rensink Exp $
  */
 package groove.samples;
 
@@ -26,7 +26,6 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.lts.AliasSPOApplication;
 import groove.lts.DefaultGraphTransition;
 import groove.lts.DerivedGraphState;
 import groove.lts.GraphState;
@@ -37,9 +36,10 @@ import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
-import groove.trans.SystemProperties;
+import groove.trans.SPOApplication;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
+import groove.trans.SystemProperties;
 import groove.util.FormatException;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
@@ -53,7 +53,7 @@ import java.util.List;
  * Sample class for a universal rule.
  * The example is based on the <i>gossiping girl</i> case.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";
@@ -193,7 +193,7 @@ public class Gossips {
     }
     
     /** Application class corresponding to the {@link GossipRule}. */
-    static class GossipApplication extends AliasSPOApplication {
+    static class GossipApplication extends SPOApplication {
     	/** Constructs a rule application for the gossip rule. */
         public GossipApplication(SPOEvent event, Graph source) {
             super(event, source);

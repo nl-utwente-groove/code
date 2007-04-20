@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.4 2007-04-19 09:21:26 rensink Exp $
+ * $Id: DefaultGraphTransition.java,v 1.5 2007-04-20 08:41:06 rensink Exp $
  */
 package groove.lts;
 
@@ -32,7 +32,7 @@ import groove.trans.RuleEvent;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-19 09:21:26 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-20 08:41:06 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphOutTransition, GraphTransition {
     /** The total number of anchor images created. */
@@ -142,10 +142,10 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
                 && derivedTarget.nodeSet().equals(realTarget.nodeSet())) {
             return appl.getMorphism();
         } else {
-            Morphism iso = derivedTarget.getIsomorphismTo(target().getGraph());
+            Morphism iso = derivedTarget.getIsomorphismTo(realTarget);
             assert iso != null : "Can't reconstruct derivation from graph transition " + this
                     + ": \n" + AbstractGraph.toString(derivedTarget) + " and \n"
-                    + AbstractGraph.toString(target().getGraph()) + " \nnot isomorphic";
+                    + AbstractGraph.toString(realTarget) + " \nnot isomorphic";
             return appl.getMorphism().then(iso);
         }
     }

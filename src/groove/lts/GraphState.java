@@ -12,12 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphState.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: GraphState.java,v 1.2 2007-04-20 08:41:06 rensink Exp $
  */
 package groove.lts;
 
 import groove.graph.Graph;
-import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 
 import java.util.Collection;
@@ -28,7 +27,7 @@ import java.util.Iterator;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:52 $
+ * @version $Revision: 1.2 $ $Date: 2007-04-20 08:41:06 $
  */
 public interface GraphState extends State {
 	/** Returns the graph contained in this state. */
@@ -74,12 +73,11 @@ public interface GraphState extends State {
 
     /**
      * Add an outgoing transition to this state, if it is not yet there.
-     * The new transition is based on a given derivation and explicit target state;
-     * the latter may be different from (but isomorphic to) the target of the derivation.
-     * Returns the {@link GraphTransition} that was added, or <code>null</code>
+     * The new transition is based on a given rule event and explicit target state.
+     * Returns the {@link GraphOutTransition} that was added, or <code>null</code>
      * if no new transition was added.
      */
-    public GraphOutTransition addOutTransition(RuleApplication appl, GraphState target);
+    public GraphOutTransition addOutTransition(RuleEvent event, GraphState target);
     
     /**
      * Tests if a certain transition is among the currently generated 

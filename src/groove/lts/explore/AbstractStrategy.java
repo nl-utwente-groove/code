@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractStrategy.java,v 1.3 2007-04-04 07:04:25 rensink Exp $
+ * $Id: AbstractStrategy.java,v 1.4 2007-04-20 08:41:45 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -30,7 +30,7 @@ import groove.trans.DerivationData;
 /**
  * Abstract LTS exploration strategy.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class AbstractStrategy implements ExploreStrategy {
     /** Value for the depth parameter of the strategy that means no depth is set. */
@@ -154,6 +154,7 @@ public abstract class AbstractStrategy implements ExploreStrategy {
         return generator;
     }
     
+    /** Retrieves the derivation data from the GTS. */
     protected DerivationData getDerivationData() {
     	return getLTS().getDerivationData();
     }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.10 2007-04-19 16:19:20 rensink Exp $
+ * $Id: SPOEvent.java,v 1.11 2007-04-20 08:41:39 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,6 @@ import groove.graph.Node;
 import groove.graph.NodeSet;
 import groove.graph.WrapperLabel;
 import groove.graph.algebra.ValueNode;
-import groove.lts.AliasSPOApplication;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
@@ -48,7 +47,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-04-19 16:19:20 $
+ * @version $Revision: 1.11 $ $Date: 2007-04-20 08:41:39 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -203,8 +202,7 @@ public class SPOEvent implements RuleEvent {
 	}
 
 	public RuleApplication newApplication(Graph host) {
-//		return new SPOApplication(this, host);
-		return new AliasSPOApplication(this, host);
+		return new SPOApplication(this, host);
 	}
     
     /**
@@ -371,7 +369,7 @@ public class SPOEvent implements RuleEvent {
 	/**
 	 * Computes a matcher for this event in a given graph,
 	 * based on the precomputed anchor map.
-	 * Returns <code>null</code> the anchor map does not fir to the host graph.
+	 * Returns <code>null</code> if the anchor map does not fit to the host graph.
 	 */
 	protected Matching computeMatcher(Graph host) {
 		reporter.start(GET_PARTIAL_MATCH);
@@ -459,12 +457,39 @@ public class SPOEvent implements RuleEvent {
         return anchorImageSet;
     }
 
-    /**
-     * Indicates if this rule event removes a part of the anchor image of another.
-     * If so, it means that the other event will not match in any graph reached after this one.
-     * @param other the event that we want to establish conflict with
-     * @return <code>true</code> if this event disables the other
-     */
+    public boolean conflicts(RuleEvent other) {
+    	boolean result;
+    	if (other instanceof SPOEvent) {
+    		result = false;
+    		// check if the other creates edges that this event erases
+			Iterator<Edge> myErasedEdgeIter = getErasedEdges().iterator();
+			Set<Edge> otherCreatedEdges = ((SPOEvent) other).getSimpleCreatedEdges();
+			while (!result && myErasedEdgeIter.hasNext()) {
+				result = otherCreatedEdges.contains(myErasedEdgeIter.next());
+			}
+			if (!result) {
+	    		// check if the other erases edges that this event creates
+				Iterator<Edge> myCreatedEdgeIter = getSimpleCreatedEdges().iterator();
+				Set<Edge> otherErasedEdges = ((SPOEvent) other).getErasedEdges();
+				while (!result && myCreatedEdgeIter.hasNext()) {
+					result = otherErasedEdges.contains(myCreatedEdgeIter.next());
+				}
+			}
+		} else {
+			result = true;
+		}
+		return result;
+	}
+
+	/**
+	 * Indicates if this rule event removes a part of the anchor image of
+	 * another. If so, it means that the other event will not match in any graph
+	 * reached after this one.
+	 * 
+	 * @param other
+	 *            the event that we want to establish conflict with
+	 * @return <code>true</code> if this event disables the other
+	 */
     public boolean disables(RuleEvent other) {
         boolean result = false;
         Set<Element> anchorImage = ((SPOEvent) other).getAnchorImageSet();

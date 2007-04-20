@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.7 2007-04-19 06:39:25 rensink Exp $
+ * $Id: GTS.java,v 1.8 2007-04-20 08:41:06 rensink Exp $
  */
 package groove.lts;
 
@@ -23,9 +23,8 @@ import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.DerivationData;
-import groove.trans.Deriver;
 import groove.trans.GraphGrammar;
-import groove.trans.RuleApplication;
+import groove.trans.RuleEvent;
 import groove.util.FilterIterator;
 import groove.util.NestedIterator;
 import groove.util.SetView;
@@ -33,7 +32,6 @@ import groove.util.TransformIterator;
 import groove.util.TreeHashSet;
 
 import java.util.AbstractSet;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -45,7 +43,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-04-19 06:39:25 $
+ * @version $Revision: 1.8 $ $Date: 2007-04-20 08:41:06 $
  */
 public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	/**
@@ -132,48 +130,48 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
     public GraphState startState() {
         return startState;
     }
-
-    /** @deprecated */
-    @Deprecated
-    public Collection<? extends GraphState> nextStates(State state) {
-        freshNextStates(state);
-        return ((GraphState) state).getNextStateSet();
-    }
-    
-    /** @deprecated */
-    @Deprecated
-    public Iterator<? extends GraphState> nextStateIter(final State state) {
-        if (state.isClosed()) {
-            // get the next states from the outgoing edges
-            return ((GraphState) state).getNextStateIter();
-        } else {
-            final Iterator<RuleApplication> derivationIter = getDeriver().getDerivationIter(((GraphState) state).getGraph());
-            if (!derivationIter.hasNext()) {
-                finalStates.add((GraphState) state);
-            }
-            // get the next states by adding transitions for the derivations
-            return new TransformIterator<RuleApplication,GraphState>(derivationIter) {
-            	@Override
-                public boolean hasNext() {
-                    if (hasNext) {
-                        hasNext = super.hasNext();
-                        if (!hasNext) {
-                            setClosed(state);
-                        }
-                    }
-                    return hasNext;
-                }
-
-            	@Override
-                protected GraphState toOuter(RuleApplication from) {
-                    return addTransition(from);
-                }
-                
-                private boolean hasNext = true;
-            };
-        }
-    }
-    
+//
+//    /** @deprecated */
+//    @Deprecated
+//    public Collection<? extends GraphState> nextStates(State state) {
+//        freshNextStates(state);
+//        return ((GraphState) state).getNextStateSet();
+//    }
+//    
+//    /** @deprecated */
+//    @Deprecated
+//    public Iterator<? extends GraphState> nextStateIter(final State state) {
+//        if (state.isClosed()) {
+//            // get the next states from the outgoing edges
+//            return ((GraphState) state).getNextStateIter();
+//        } else {
+//            final Iterator<RuleApplication> derivationIter = getDeriver().getDerivationIter(((GraphState) state).getGraph());
+//            if (!derivationIter.hasNext()) {
+//                finalStates.add((GraphState) state);
+//            }
+//            // get the next states by adding transitions for the derivations
+//            return new TransformIterator<RuleApplication,GraphState>(derivationIter) {
+//            	@Override
+//                public boolean hasNext() {
+//                    if (hasNext) {
+//                        hasNext = super.hasNext();
+//                        if (!hasNext) {
+//                            setClosed(state);
+//                        }
+//                    }
+//                    return hasNext;
+//                }
+//
+//            	@Override
+//                protected GraphState toOuter(RuleApplication from) {
+//                    return addTransition(from);
+//                }
+//                
+//                private boolean hasNext = true;
+//            };
+//        }
+//    }
+//    
     
     /**
      * Returns the rule system underlying this GTS.
@@ -257,36 +255,36 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
             closedCount++;
         }
     }
-    
-    /** @deprecated */
-    @Deprecated
-    public synchronized Collection<? extends GraphState> freshNextStates(State state) {
-        reporter.start(CLOSE);
-        final Collection<GraphState> result = new ArrayList<GraphState>();
-        // check if the transitions have not yet been generated
-        if (!state.isClosed()) {
-            Set<RuleApplication> derivations = getDeriver().getDerivations(((GraphState) state).getGraph());
-            // if there are no rule applications, the state is final
-            if (derivations.isEmpty()) {
-                finalStates.add((GraphState) state);
-            } else {
-                Iterator<RuleApplication> derivationIter = derivations.iterator();
-                do {
-                    RuleApplication appl = derivationIter.next();
-                    // to test if the eventual target is fresh, compare it 
-                    // with the original derivation's target
-                    GraphState realTarget = addTransition(appl);
-                    if (appl.isTargetSet() && appl.getTarget() == realTarget && realTarget != state) {
-                    	result.add(realTarget);
-                    }
-                } while (derivationIter.hasNext());
-            }
-            setClosed(state);
-        }
-        reporter.stop();
-        return result;
-    }
-    
+//    
+//    /** @deprecated */
+//    @Deprecated
+//    public synchronized Collection<? extends GraphState> freshNextStates(State state) {
+//        reporter.start(CLOSE);
+//        final Collection<GraphState> result = new ArrayList<GraphState>();
+//        // check if the transitions have not yet been generated
+//        if (!state.isClosed()) {
+//            Set<RuleApplication> derivations = getDeriver().getDerivations(((GraphState) state).getGraph());
+//            // if there are no rule applications, the state is final
+//            if (derivations.isEmpty()) {
+//                finalStates.add((GraphState) state);
+//            } else {
+//                Iterator<RuleApplication> derivationIter = derivations.iterator();
+//                do {
+//                    RuleApplication appl = derivationIter.next();
+//                    // to test if the eventual target is fresh, compare it 
+//                    // with the original derivation's target
+//                    GraphState realTarget = addTransition(appl);
+//                    if (appl.isTargetSet() && appl.getTarget() == realTarget && realTarget != state) {
+//                    	result.add(realTarget);
+//                    }
+//                } while (derivationIter.hasNext());
+//            }
+//            setClosed(state);
+//        }
+//        reporter.stop();
+//        return result;
+//    }
+//    
     /** @deprecated */
     @Deprecated
     public synchronized void explore(State atState) throws InterruptedException {
@@ -376,31 +374,31 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 		return new DerivationData(ruleSystem());
 	}
 	
-	/**
-     * Factory method for a graph deriver from a given rule system.
-     * Use to initialize this GTS's deriver if it is not set explicitly.
-     * @param ruleSystem the rule system to create the deriver for
-     * @deprecated
-     */
-    @Deprecated
-    protected Deriver createDeriver(GraphGrammar ruleSystem) {
-//    	return new DefaultDeriver(ruleSystem.getRules());
-    	return new NextStateDeriver(getDerivationData());
-    }
-    
-    /**
-     * Returns the deriver.
-     * Lazily creates the deriver (using {@link #createDeriver(GraphGrammar)}).
-     * @return a deriver for the current rule system; never <code>null</code>
-     * @deprecated
-     */
-    @Deprecated
-    protected Deriver getDeriver() {
-    	if (deriver == null) {
-    		deriver = createDeriver(ruleSystem);
-    	}
-    	return deriver;
-    }
+//	/**
+//     * Factory method for a graph deriver from a given rule system.
+//     * Use to initialize this GTS's deriver if it is not set explicitly.
+//     * @param ruleSystem the rule system to create the deriver for
+//     * @deprecated
+//     */
+//    @Deprecated
+//    protected Deriver createDeriver(GraphGrammar ruleSystem) {
+////    	return new DefaultDeriver(ruleSystem.getRules());
+//    	return new NextStateDeriver(getDerivationData());
+//    }
+//    
+//    /**
+//     * Returns the deriver.
+//     * Lazily creates the deriver (using {@link #createDeriver(GraphGrammar)}).
+//     * @return a deriver for the current rule system; never <code>null</code>
+//     * @deprecated
+//     */
+//    @Deprecated
+//    protected Deriver getDeriver() {
+//    	if (deriver == null) {
+//    		deriver = createDeriver(ruleSystem);
+//    	}
+//    	return deriver;
+//    }
 //    
 //    /**
 //     * Sets the deriver for this GTS.
@@ -414,61 +412,61 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 //    	}
 //    	this.deriver = deriver;
 //    }
-    
-    /**
-     * Adds a transition to the GTS, from a given source state and with a
-     * given underlying derivation.
-     * The derivation's target graph is compared to the existing states for isomorphism;
-     * if an isomorphic one is found then that is taken as target state, and
-     * the derivation is adjusted accordingly. If no isomorphic state is found,
-     * then a fresh target state is added.
-     * The actual target state is returned as the result of the method.
-     * @param appl the derivation underlying the transition to be added
-     * @return the target state of the resulting transition
-     * @require <tt>devon.dom() == state.getGraph()</tt>
-     * @ensure <tt>state.containsOutTransition(new GraphTransition(devon.rule(), devon.match(), result))</tt>
-     * @deprecated
-     */
-    @Deprecated
-    public GraphState addTransition(RuleApplication appl) {
-//        reporter.start(ADD_TRANSITION);
-//        reporter.start(ADD_TRANSITION_START);
-        GraphState sourceState = (GraphState) appl.getSource();
-        // check for confluent diamond
-        GraphState targetState = getConfluentTarget(appl);
-//        reporter.stop();
-        if (targetState == null) {
-            // determine target state of this transition
-            targetState = (GraphState) appl.getTarget();
-            // see if isomorphic graph is already in the LTS
-            // special case: source = target
-            if (sourceState != targetState) {
-                GraphState isoState = addState(targetState);
-                if (isoState != null) {
-                    // the following line is to ensure the cache is cleared
-                    // even if the state is still used as the basis of another
-                    targetState.dispose();
-                    targetState = isoState;
-                }
-            }
-        }
-        addTransition(sourceState, appl, targetState);
-//        reporter.stop();
-        return targetState;
-    }
+//    
+//    /**
+//     * Adds a transition to the GTS, from a given source state and with a
+//     * given underlying derivation.
+//     * The derivation's target graph is compared to the existing states for isomorphism;
+//     * if an isomorphic one is found then that is taken as target state, and
+//     * the derivation is adjusted accordingly. If no isomorphic state is found,
+//     * then a fresh target state is added.
+//     * The actual target state is returned as the result of the method.
+//     * @param appl the derivation underlying the transition to be added
+//     * @return the target state of the resulting transition
+//     * @require <tt>devon.dom() == state.getGraph()</tt>
+//     * @ensure <tt>state.containsOutTransition(new GraphTransition(devon.rule(), devon.match(), result))</tt>
+//     * @deprecated
+//     */
+//    @Deprecated
+//    public GraphState addTransition(RuleApplication appl) {
+////        reporter.start(ADD_TRANSITION);
+////        reporter.start(ADD_TRANSITION_START);
+//        GraphState sourceState = (GraphState) appl.getSource();
+//        // check for confluent diamond
+//        GraphState targetState = getConfluentTarget(appl);
+////        reporter.stop();
+//        if (targetState == null) {
+//            // determine target state of this transition
+//            targetState = (GraphState) appl.getTarget();
+//            // see if isomorphic graph is already in the LTS
+//            // special case: source = target
+//            if (sourceState != targetState) {
+//                GraphState isoState = addState(targetState);
+//                if (isoState != null) {
+//                    // the following line is to ensure the cache is cleared
+//                    // even if the state is still used as the basis of another
+//                    targetState.dispose();
+//                    targetState = isoState;
+//                }
+//            }
+//        }
+//        addTransition(sourceState, appl.getEvent(), targetState);
+////        reporter.stop();
+//        return targetState;
+//    }
 
 	/**
 	 * Adds a transition to the GTS, under the assumption that the source
 	 * and target states are already present.
 	 * @param sourceState the source state of the transition to be added
-	 * @param appl the rule application giving rise to the transition
+	 * @param event the rule application giving rise to the transition
 	 * @param targetState the target state of the transition to be added
 	 */
-	public void addTransition(GraphState sourceState, RuleApplication appl, GraphState targetState) {
+	public void addTransition(GraphState sourceState, RuleEvent event, GraphState targetState) {
 		if (isStoreTransitions()) {
             reporter.start(ADD_TRANSITION_STOP);
             // add (possibly isomorphically modified) edge to LTS
-            GraphOutTransition outTrans = sourceState.addOutTransition(appl, targetState);
+            GraphOutTransition outTrans = sourceState.addOutTransition(event, targetState);
             if (outTrans == null) {
                 spuriousTransitionCount++;
             } else {
@@ -478,29 +476,29 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
             reporter.stop();
         }
 	}
-
-    /**
-     * Returns the target of a given rule application, by trying to walk 
-     * around three sides of a confluent diamond instead of computing the
-     * target directly.
-     */
-	@Deprecated
-    protected GraphState getConfluentTarget(RuleApplication appl) {
-        if (!NextStateDeriver.isUseDependencies() || !(appl instanceof AliasRuleApplication)) {
-            return null;
-        }
-        GraphOutTransition prior = ((AliasRuleApplication) appl).getPrior();
-        if (prior == null) {
-            return null;
-        }
-        GraphState priorTarget = prior.target();
-        if (!priorTarget.isClosed()) {
-            return null;
-        }
-        GraphTransition prevTransition = (DerivedGraphState) appl.getSource();
-        GraphState result = priorTarget.getNextState(prevTransition.getEvent());
-        return result;
-    }
+//
+//    /**
+//     * Returns the target of a given rule application, by trying to walk 
+//     * around three sides of a confluent diamond instead of computing the
+//     * target directly.
+//     */
+//	@Deprecated
+//    protected GraphState getConfluentTarget(RuleApplication appl) {
+//        if (!NextStateDeriver.isUseDependencies() || !(appl instanceof AliasRuleApplication)) {
+//            return null;
+//        }
+//        GraphOutTransition prior = ((AliasRuleApplication) appl).getPrior();
+//        if (prior == null) {
+//            return null;
+//        }
+//        GraphState priorTarget = prior.target();
+//        if (!priorTarget.isClosed()) {
+//            return null;
+//        }
+//        GraphTransition prevTransition = (DerivedGraphState) appl.getSource();
+//        GraphState result = priorTarget.getNextState(prevTransition.getEvent());
+//        return result;
+//    }
 
     /**
      * Adds a state to the GTS, if it is not isomorphic to an existing state.
@@ -572,10 +570,10 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
      * @invariant <tt>freshStates \subseteq nodes</tt>
      */
     protected final Set<GraphState> finalStates = new HashSet<GraphState>();
-    /**
-     * The current graph deriver.
-     */
-    private Deriver deriver;
+//    /**
+//     * The current graph deriver.
+//     */
+//    private Deriver deriver;
     /** The derivation record for this GTS. */
     private DerivationData record;
     /**
@@ -674,6 +672,6 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
     static public final int ADD_STATE = reporter.newMethod("addState");
     /** Profiling aid for adding transitions. */
     static public final int ADD_TRANSITION_STOP = reporter.newMethod("addTransition  - stop");
-    /** Profiling aid for closing states. */
-    static private final int CLOSE = reporter.newMethod("close(State)");
+//    /** Profiling aid for closing states. */
+//    static private final int CLOSE = reporter.newMethod("close(State)");
 }

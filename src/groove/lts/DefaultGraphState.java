@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphState.java,v 1.3 2007-03-28 15:12:33 rensink Exp $
+ * $Id: DefaultGraphState.java,v 1.4 2007-04-20 08:41:06 rensink Exp $
  */
 package groove.lts;
 
@@ -23,7 +23,6 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.GraphCache;
 import groove.graph.Node;
-import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.util.ArrayIterator;
 import groove.util.TransformCollection;
@@ -40,7 +39,7 @@ import java.util.Iterator;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-03-28 15:12:33 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-20 08:41:06 $
  */
 public class DefaultGraphState extends DeltaGraph implements GraphState {
 	/**
@@ -220,8 +219,8 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      * Returns the {@link GraphTransition} that was added, or <code>null</code>
      * if no new transition was added.
      */
-    public GraphOutTransition addOutTransition(RuleApplication appl, GraphState target) {
-        GraphOutTransition outTransition = createOutTransition(appl, target);
+    public GraphOutTransition addOutTransition(RuleEvent event, GraphState target) {
+        GraphOutTransition outTransition = createOutTransition(event, target);
 //        if (semiTransitions == Collections.EMPTY_SET) {
 //            semiTransitions = new HashSet();
 //        }
@@ -412,30 +411,30 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
     /**
      * Callback factory method for creating an outgoing transition (from this state) for the given
      * derivation and target state.
-     * This implementation invokes {@link #createOutTransitionTo(RuleApplication)} if the target is 
+     * This implementation invokes {@link #createOutTransitionToThis(GraphState, RuleEvent)} if the target is 
      * a {@link DefaultGraphState}, otherwise it creates a {@link DefaultGraphOutTransition}.
      */
-    protected GraphOutTransition createOutTransition(RuleApplication appl, GraphState target) {
+    protected GraphOutTransition createOutTransition(RuleEvent event, GraphState target) {
         if (target instanceof DefaultGraphState) {
-            return ((DefaultGraphState) target).createOutTransitionTo(appl);
+            return ((DefaultGraphState) target).createOutTransitionToThis(this, event);
         } else {
-            return new DefaultGraphOutTransition(appl.getEvent(), target);
+            return new DefaultGraphOutTransition(event, target);
         }
     }
     
     /**
      * Callback factory method for creating a semi-transition to this state,
-     * on the basis of a given derivation.
+     * from a given graph and with a given rule event.
      */
-    protected GraphOutTransition createOutTransitionTo(RuleApplication appl) {
-        return createOutTransitionTo(appl.getEvent());
+    protected GraphOutTransition createOutTransitionToThis(GraphState source, RuleEvent event) {
+        return createOutTransitionToThis(event);
     }
     
     /**
      * Callback factory method to create a {@link groove.lts.GraphOutTransition} with
      * this state as a target, based on a given event.
      */
-    protected GraphOutTransition createOutTransitionTo(RuleEvent event) {
+    protected GraphOutTransition createOutTransitionToThis(RuleEvent event) {
     	return new DefaultGraphOutTransition(event, this);
     }
 
