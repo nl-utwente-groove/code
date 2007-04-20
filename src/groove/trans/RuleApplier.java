@@ -12,11 +12,10 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Deriver.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id$
  */
 package groove.trans;
 
-import groove.graph.Graph;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -25,25 +24,38 @@ import java.util.Set;
  * Class that wraps the algorithm to explore rule applications
  * for a given graph.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:55 $
+ * @version $Revision$ $Date$
  */
-public interface Deriver {
+public interface RuleApplier {
     /**
      * Returns a set of {@link RuleApplication}s for a given graph,
      * according to the derivation strategy of this deriver.
-     * @param graph the host graph to derive the applications for
      * @return a set of rule applicatons.
      */
-	public Set<RuleApplication> getDerivations(Graph graph);
+	public Set<RuleApplication> getApplications();
 	
     /**
      * Returns an iterator over the {@link RuleApplication}s for a given graph,
      * according to the derivation strategy of this deriver.
      * The iterator may operate lazily; it is guaranteed to return every application
      * at most once, so that it behaves functionally the same as <code>getDerivations(graph).iterator()</code>
-     * @param graph the host graph to derive the applications for
      * @return an iterator over the rule applicatons for <code>graph</code>
-     * @see #getDerivations(Graph)
+     * @see #getApplications()
      */
-	public Iterator<RuleApplication> getDerivationIter(Graph graph);
+	public Iterator<RuleApplication> getApplicationIter();
+	
+	/**
+	 * Calls the action's <code>perform</code> method for all rule applications.
+	 * These are the same rule applications returned by {@link #getApplications()}.
+	 * @param action the action to be performed
+	 */
+	public void doApplications(Action action);
+	
+	/** Interface for a method that is called during {@link RuleApplier#doApplications(Action)}. */
+	interface Action {
+		/** Callback method that is invoked for all rule applications found 
+		 * in an invocation of {@link RuleApplier#doApplications(Action)}. 
+		 */
+		void perform(RuleApplication application);
+	}
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphResult.java,v 1.5 2007-04-20 09:02:25 rensink Exp $
+ * $Id: DefaultGraphResult.java,v 1.6 2007-04-20 15:12:28 rensink Exp $
  */
 package groove.calc;
 
@@ -21,7 +21,7 @@ import groove.graph.Morphism;
 import groove.lts.DerivedGraphState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.DerivationData;
+import groove.trans.SystemRecord;
 import groove.trans.GraphGrammar;
 import groove.trans.GraphTest;
 import groove.trans.Matching;
@@ -98,8 +98,8 @@ public class DefaultGraphResult implements GraphResult {
         if (match == null) {
         	return null;
         } else {
-			DerivationData data = calculator.getGTS().getDerivationData();
-			GraphState nextState = (GraphState) data.getApplication(rule, match).getTarget();
+			SystemRecord record = calculator.getGenerator().getRecord();
+			GraphState nextState = (GraphState) record.getApplication(rule, match).getTarget();
 			return calculator.createResult(nextState);
 		}
     }
@@ -110,8 +110,8 @@ public class DefaultGraphResult implements GraphResult {
         Iterator<? extends Matching> matchIter = rule.getMatchingIter(state.getGraph());
         while (matchIter.hasNext()) {
 			Matching match = matchIter.next();
-			DerivationData data = calculator.getGTS().getDerivationData();
-			GraphState nextState = (GraphState) data.getApplication(rule, match).getTarget();
+			SystemRecord record = calculator.getGenerator().getRecord();
+			GraphState nextState = (GraphState) record.getApplication(rule, match).getTarget();
 			result.add(calculator.createResult(nextState));
 		}
         return result;

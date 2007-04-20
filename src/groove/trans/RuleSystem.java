@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.8 2007-04-20 09:02:25 rensink Exp $
+ * $Id: RuleSystem.java,v 1.9 2007-04-20 15:12:28 rensink Exp $
  */
 package groove.trans;
 
@@ -25,6 +25,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -36,7 +37,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-04-20 09:02:25 $
+ * @version $Revision: 1.9 $ $Date: 2007-04-20 15:12:28 $
  * @see NameLabel
  * @see SPORule
  */
@@ -91,11 +92,11 @@ public class RuleSystem {
     }
 
     /**
-     * Returns an unmodifiable view upon the set of rules with a given priority.
-     * @ensure <tt>result.equals(getPriorityRuleMap().get(new Integer(priority))))</tt>
+     * Returns an unmodifiable view upon the map from available priorities to 
+     * rules with that priority. The map is sorted from high to low priority.
      */
-    public Set<Rule> getRules(int priority) {
-        return Collections.unmodifiableSet(priorityRuleMap.get(priority));
+    public SortedMap<Integer, Set<Rule>> getRuleMap() {
+        return Collections.unmodifiableSortedMap(priorityRuleMap);
     }
 
     /**
@@ -120,7 +121,7 @@ public class RuleSystem {
      * Returns <tt>true</tt> if the rule system has rules at more than one priority.
      */
     public boolean hasMultiplePriorities() {
-        return priorityRuleMap.keySet().size() > 1;
+        return priorityRuleMap.size() > 1;
     }
 
     @Override
@@ -340,7 +341,7 @@ public class RuleSystem {
      * A mapping from priorities to sets of rules having that priority.
      * The ordering is from high to low priority. 
      */
-    protected final Map<Integer,Set<Rule>> priorityRuleMap = new TreeMap<Integer,Set<Rule>>(createPriorityComparator());
+    protected final SortedMap<Integer,Set<Rule>> priorityRuleMap = new TreeMap<Integer,Set<Rule>>(createPriorityComparator());
     /**
      * Set of rules, collected separately for purposes of speedup.
      * @see #getRules()

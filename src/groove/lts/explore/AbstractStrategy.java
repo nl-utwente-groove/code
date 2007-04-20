@@ -12,12 +12,9 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractStrategy.java,v 1.4 2007-04-20 08:41:45 rensink Exp $
+ * $Id: AbstractStrategy.java,v 1.5 2007-04-20 15:12:29 rensink Exp $
  */
 package groove.lts.explore;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
@@ -25,12 +22,14 @@ import groove.lts.GraphState;
 import groove.lts.LTS;
 import groove.lts.State;
 import groove.lts.StateGenerator;
-import groove.trans.DerivationData;
+
+import java.util.ArrayList;
+import java.util.Collection;
 
 /**
  * Abstract LTS exploration strategy.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class AbstractStrategy implements ExploreStrategy {
     /** Value for the depth parameter of the strategy that means no depth is set. */
@@ -117,6 +116,17 @@ public abstract class AbstractStrategy implements ExploreStrategy {
     }
 
     /**
+	 * Lazily creates and returns the state generator for this strategy.
+	 * @return a generator for the current GTS; never <code>null</code>
+	 */
+	protected StateGenerator getGenerator() {
+	    if (generator == null) {
+	    	generator = new StateGenerator(getLTS());
+	    }
+	    return generator;
+	}
+
+	/**
      * Callback method to create the (initially empty) collection of open states 
      * for a given LTS, with an initial capacity.
      */
@@ -130,33 +140,6 @@ public abstract class AbstractStrategy implements ExploreStrategy {
      */
     protected Collection<State> createStateSet() {
         return new ArrayList<State>();
-    }
-    
-
-    /**
-     * Factory method for a state generator for a given GTS.
-     * @param gts the GTS to create the generator for
-     */
-    protected StateGenerator createGenerator(GTS gts) {
-//      return new DefaultDeriver(ruleSystem.getRules());
-        return new StateGenerator(gts);
-    }
-    
-    /**
-     * Returns the state generator for this strategy
-     * Lazily creates the generator first (using {@link #createGenerator(GTS)}).
-     * @return a generator for the current GTS; never <code>null</code>
-     */
-    protected StateGenerator getGenerator() {
-        if (generator == null) {
-        	generator = createGenerator(getLTS());
-        }
-        return generator;
-    }
-    
-    /** Retrieves the derivation data from the GTS. */
-    protected DerivationData getDerivationData() {
-    	return getLTS().getDerivationData();
     }
     
     /**

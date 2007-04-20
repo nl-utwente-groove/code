@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.8 2007-04-20 08:41:42 rensink Exp $
+ * $Id: Gossips.java,v 1.9 2007-04-20 15:12:29 rensink Exp $
  */
 package groove.samples;
 
@@ -29,9 +29,9 @@ import groove.graph.Node;
 import groove.lts.DefaultGraphTransition;
 import groove.lts.DerivedGraphState;
 import groove.lts.GraphState;
-import groove.lts.NextStateDeriver;
+import groove.lts.AliasRuleApplier;
 import groove.rel.VarNodeEdgeMap;
-import groove.trans.DerivationData;
+import groove.trans.SystemRecord;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
@@ -53,7 +53,7 @@ import java.util.List;
  * Sample class for a universal rule.
  * The example is based on the <i>gossiping girl</i> case.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";
@@ -110,7 +110,7 @@ public class Gossips {
         init();
         // set some policies
         DefaultGraphTransition.setRuleLabelled(false);
-        NextStateDeriver.setUseDependencies(false);
+        AliasRuleApplier.setUseDependencies(false);
         try {
             String startGraphName = "start7";
             if (args.length != 0) {
@@ -172,7 +172,7 @@ public class Gossips {
         }
 
         @Override
-        public RuleEvent newEvent(VarNodeEdgeMap anchorMap, DerivationData record) {
+        public RuleEvent newEvent(VarNodeEdgeMap anchorMap, SystemRecord record) {
 //        	return getRuleFactory().createRuleEvent(this, anchorMap);
             return new GossipEvent(this, anchorMap, record);
         }
@@ -181,7 +181,7 @@ public class Gossips {
     /** Event class corresponding to the {@link GossipRule}. */
     static class GossipEvent extends SPOEvent {
     	/** Constructs an event for the gossip rule. */
-        public GossipEvent(GossipRule gossipRule, VarNodeEdgeMap anchorMap, DerivationData record) {
+        public GossipEvent(GossipRule gossipRule, VarNodeEdgeMap anchorMap, SystemRecord record) {
             super(gossipRule, anchorMap, record);
         }
 

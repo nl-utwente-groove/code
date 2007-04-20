@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleDependencies.java,v 1.4 2007-04-19 06:39:23 rensink Exp $
+ * $Id: RuleDependencies.java,v 1.5 2007-04-20 15:12:27 rensink Exp $
  */
 package groove.trans;
 
@@ -27,7 +27,6 @@ import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.util.Groove;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -40,7 +39,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-19 06:39:23 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-20 15:12:27 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */

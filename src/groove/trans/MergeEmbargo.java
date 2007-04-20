@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MergeEmbargo.java,v 1.2 2007-04-18 08:36:10 rensink Exp $
+ * $Id: MergeEmbargo.java,v 1.3 2007-04-20 15:12:28 rensink Exp $
  */
 package groove.trans;
 
@@ -27,7 +27,7 @@ import groove.rel.VarMorphism;
  * by early enforcement (while searching for matchings of the enclosing graph condition).
  * A merge embargo may itself not have negative conditions.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class MergeEmbargo extends DefaultGraphCondition implements NAC, GraphCondition {
     /**
@@ -64,10 +64,9 @@ public class MergeEmbargo extends DefaultGraphCondition implements NAC, GraphCon
     /**
      * Overwrites the method for efficienty: just an injectivity test is required.
      */
+    @Deprecated
     public boolean forbids(VarMorphism match) {
-        reporter.start(MERGE_FORBID);
         boolean result = match.getNode(node1).equals(match.getNode(node2));
-        reporter.stop();
         return result;
     }
 
@@ -100,6 +99,4 @@ public class MergeEmbargo extends DefaultGraphCondition implements NAC, GraphCon
     private final Node node1;
     /** Second node whose merging this embargo forbids. */
     private final Node node2;
-    
-    private final static int MERGE_FORBID = reporter.newMethod("MergeEmbargo.forbids(Morphism");
 }

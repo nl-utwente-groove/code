@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlledStrategy.java,v 1.3 2007-04-20 08:41:44 rensink Exp $
+ * $Id: ControlledStrategy.java,v 1.4 2007-04-20 15:12:29 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -33,7 +33,7 @@ import java.util.Stack;
  * Strategy that searches the state space in a depth-first fashion, using a list of rules
  * to control the search.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ControlledStrategy extends AbstractStrategy {
     /** Name of this strategy. */
@@ -100,20 +100,20 @@ public class ControlledStrategy extends AbstractStrategy {
         while (pc >= 0 && pc < program.size()) {
             GraphState currentState = states.peek();
             // retrieve the current search record
-            Iterator<? extends Matching> record;
+            Iterator<? extends Matching> matchingIter;
             if (forward) {
                 // make a new record
-                record = program.get(pc).getMatchingIter(currentState.getGraph());
-                images.push(record);
+                matchingIter = program.get(pc).getMatchingIter(currentState.getGraph());
+                images.push(matchingIter);
             } else {
                 // take it from the existing records
-                record = images.peek();
+                matchingIter = images.peek();
             }
             // find a new image 
-            forward = record.hasNext();
+            forward = matchingIter.hasNext();
             if (forward) {
             	Rule rule = program.get(pc);
-                RuleApplication ruleApplication = getDerivationData().getApplication(rule, record.next());
+                RuleApplication ruleApplication = getGenerator().getRecord().getApplication(rule, matchingIter.next());
                 GraphState realNextState = getGenerator().addTransition(ruleApplication);
                 states.push(realNextState);
                 pc++;

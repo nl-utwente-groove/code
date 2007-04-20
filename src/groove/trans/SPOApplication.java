@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.8 2007-04-20 08:41:40 rensink Exp $
+ * $Id: SPOApplication.java,v 1.9 2007-04-20 15:12:28 rensink Exp $
  */
 package groove.trans;
 
@@ -43,7 +43,7 @@ import groove.util.Reporter;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-04-20 08:41:40 $
+ * @version $Revision: 1.9 $ $Date: 2007-04-20 15:12:28 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -403,11 +403,11 @@ public class SPOApplication implements RuleApplication, Derivation {
     }
     
     /**
-     * The hash code is based on that of the event.
+     * The hash code is based on the identity of the event.
      */
     @Override
     public int hashCode() {
-    	return getEvent().hashCode();
+    	return System.identityHashCode(getEvent());
     }
     
     /**
@@ -554,18 +554,9 @@ public class SPOApplication implements RuleApplication, Derivation {
      * a node number determined by the grammar's node counter.
      */
     protected Node createNode() {
-    	Node result;
-    	// the following is a stopgap: to ensure node uniqueness we ask the grammar,
-    	// but this may be null, in which case we rely on the DefaultNode's capacity
-    	// to generate unique node nrs
-    	DerivationData record = getEvent().getRecord();
-    	if (record == null) {
-    		result = new DefaultNode();
-    	} else {
-    		result = new DefaultNode(record.getNodeCounter());
-    	}
         freshNodeCount++;
-        return result;
+    	SystemRecord record = getEvent().getRecord();
+    	return record == null ? new DefaultNode() : record.newNode();
     }
 
 	/**
