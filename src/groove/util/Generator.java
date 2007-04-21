@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.9 2007-04-20 15:12:29 rensink Exp $
+ * $Id: Generator.java,v 1.10 2007-04-21 07:28:39 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,6 @@ import groove.io.RuleList;
 import groove.io.XmlGrammar;
 import groove.lts.AliasSPOApplication;
 import groove.lts.ConditionalExploreStrategy;
-import groove.lts.DerivedGraphState;
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -71,7 +70,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -422,8 +421,8 @@ public class Generator extends CommandLineTool {
     private void reportCacheStatistics() {
         println("\tCaches:\tCreated:\t" + DeltaGraph.getCacheCreateCount());
         println("\t\tCleared:\t" + DeltaGraph.getCacheClearCount());
-        println("\t\tCollected:\t" + DeltaGraph.getCacheCollectCount());
-        println("\t\tReconstructed:\t" + DerivedGraphState.getReincarnationSize());
+        println("\t\tCollected:\t" + CacheReference.getCacheCollectCount());
+        println("\t\tReconstructed:\t" + CacheReference.getIncarnationCount());
         println("\t\tDistribution:\t" + getCacheReconstructionDistribution());
     }
 
@@ -463,21 +462,16 @@ public class Generator extends CommandLineTool {
 
     /** Returns a string describing the distribution of cache reconstruction counts. */
     private String getCacheReconstructionDistribution() {
-        StringBuffer result = new StringBuffer("[");
-        int count = 0;
-        int thisFrequency = DerivedGraphState.getIncarnationSize(count);
-        while (thisFrequency > 0) {
-            int nextFrequency = DerivedGraphState.getIncarnationSize(count+1);
-            int value = thisFrequency - nextFrequency;
-            if (count > 0) {
-                result.append(",");
-            }
-            result.append(""+count+"="+value);
-            count++;
-            thisFrequency = nextFrequency;
-        }
-        result.append("]");
-        return result.toString();
+    	List<Integer> sizes = new ArrayList<Integer>();
+    	boolean finished = false;
+    	for (int incarnation = 1; !finished; incarnation++) {
+    		int size = CacheReference.getIncarnationSize(incarnation);
+    		finished = size == 0;
+    		if (! finished) {
+    			sizes.add(size);
+    		}
+    	}
+    	return Groove.toString(sizes.toArray());
     }
     
     /**
