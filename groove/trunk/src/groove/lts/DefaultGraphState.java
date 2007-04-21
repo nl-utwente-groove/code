@@ -12,24 +12,21 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphState.java,v 1.4 2007-04-20 08:41:06 rensink Exp $
+ * $Id: DefaultGraphState.java,v 1.5 2007-04-21 07:28:42 rensink Exp $
  */
 package groove.lts;
 
 import groove.graph.DeltaGraph;
 import groove.graph.Element;
-import groove.graph.GraphShapeCache;
-import groove.graph.NodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.GraphCache;
 import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.trans.RuleEvent;
 import groove.util.ArrayIterator;
 import groove.util.TransformCollection;
 import groove.util.TransformIterator;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -39,53 +36,53 @@ import java.util.Iterator;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-20 08:41:06 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-21 07:28:42 $
  */
 public class DefaultGraphState extends DeltaGraph implements GraphState {
-	/**
-	 * Default constant null reference for open states.
-	 */
-	static private final SoftReference<DefaultStateCache> OPEN_NULL_REFERENCE = new SoftReference<DefaultStateCache>(null);
-	/**
-	 * Default constant null reference for closed states.
-	 */
-	static private final SoftReference<DefaultStateCache> CLOSED_NULL_REFERENCE = new SoftReference<DefaultStateCache>(null);
-    
-    /**
-     * Interface for objects that can be closed in some sense.
-     */
-    static protected interface Closeable {
-    	/** Tests if the object is currently closed. */
-        public boolean isClosed();
-        /**
-         * Sets the state of the object to closed.
-         */
-        public void setClosed();
-    }
-    
-    /**
-     * Cache reference class that adds the functionality of {@link Closeable}.
-     */
-    protected class StateCacheReference<R extends DefaultStateCache> extends CacheReference<R> implements Closeable {
-    	/** Creates a new reference, which is closed if the underlying graph is. */
-        public StateCacheReference(R referent) {
-            super(referent);
-            this.closed = DefaultGraphState.this.isClosed();
-        }
-
-        public boolean isClosed() {
-        	return closed;
-        }
-
-        public void setClosed() {
-        	closed = true;
-        }
-        
-        /**
-         * Flag indicating if the state having this reference is closed.
-         */
-        private boolean closed;
-    }
+//	/**
+//	 * Default constant null reference for open states.
+//	 */
+//	static private final SoftReference<DefaultStateCache> OPEN_NULL_REFERENCE = new SoftReference<DefaultStateCache>(null);
+//	/**
+//	 * Default constant null reference for closed states.
+//	 */
+//	static private final SoftReference<DefaultStateCache> CLOSED_NULL_REFERENCE = new SoftReference<DefaultStateCache>(null);
+//    
+//    /**
+//     * Interface for objects that can be closed in some sense.
+//     */
+//    static protected interface Closeable {
+//    	/** Tests if the object is currently closed. */
+//        public boolean isClosed();
+//        /**
+//         * Sets the state of the object to closed.
+//         */
+//        public void setClosed();
+//    }
+//    
+//    /**
+//     * Cache reference class that adds the functionality of {@link Closeable}.
+//     */
+//    protected class StateCacheReference<R extends DefaultStateCache> extends CacheReference<R> implements Closeable {
+//    	/** Creates a new reference, which is closed if the underlying graph is. */
+//        public StateCacheReference(R referent) {
+//            super(referent);
+//            this.closed = DefaultGraphState.this.isClosed();
+//        }
+//
+//        public boolean isClosed() {
+//        	return closed;
+//        }
+//
+//        public void setClosed() {
+//        	closed = true;
+//        }
+//        
+//        /**
+//         * Flag indicating if the state having this reference is closed.
+//         */
+//        private boolean closed;
+//    }
 
     /**
      * Constructs a new, empty graph state with a fresh number.
@@ -181,7 +178,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
     }
 
     public GraphState getNextState(RuleEvent event) {
-        reporter.start(GET_PRIMED);
+        reporter.start(GET_NEXT_STATE);
         assert event != null;
         GraphState result = null;
         if (isClosed()) {
@@ -231,15 +228,23 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
         }
     }
 
+    @Override
+    protected void registerFixed() {
+    	// does nothing; the registration is already done
+    	// because the delta array is fixed. We don't want to release the cache
+    	// until the state is closed
+    }
+    
     public boolean isClosed() {
-        // we have put the knowledge about the state of the graph into the
-    	// reference object.
-    	Reference<?> cacheReference = getCacheReference();
-    	if (cacheReference instanceof Closeable) {
-    		return ((Closeable)cacheReference).isClosed();
-    	} else {
-    		return cacheReference == CLOSED_NULL_REFERENCE;
-    	}
+    	return ! getCacheReference().isStrong();
+//        // we have put the knowledge about the state of the graph into the
+//    	// reference object.
+//    	Reference<?> cacheReference = getCacheReference();
+//    	if (cacheReference instanceof Closeable) {
+//    		return ((Closeable)cacheReference).isClosed();
+//    	} else {
+//    		return cacheReference == CLOSED_NULL_REFERENCE;
+//    	}
     }
 
     // -------------------- groove.graph.Element methods -----------
@@ -252,7 +257,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
     public boolean setClosed() {
         if (!isClosed()) {
             storeOutTransitionSet();
-            ((Closeable) getCacheReference()).setClosed();
+            getCacheReference().setSoft();
             // this is a point where clearing the cache might be worth considering,
             // on the assumption that the state is not going to be revisited soon
 //          ((DefaultStateCache) getCache()).clearOutTransitionSet();
@@ -360,24 +365,24 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
 		}
 		super.clearCache();
 	}
-
-	/**
-     * This implementation returns a {@link StateCacheReference}.
-     */
-	@Override
-    protected StateCacheReference<? extends DefaultStateCache> createCacheReference(GraphShapeCache referent) {
-    	return new StateCacheReference<DefaultStateCache>((DefaultStateCache) referent);
-	}
-
-	/**
-     * This implementation calls {@link #createNullReference(boolean)} with
-     * the current (open or closed) state of the graph as a parameter, as
-     * indicated by {@link #isClosed()}.
-     */
-	@Override
-    final protected Reference<? extends DefaultStateCache> createNullReference() {
-    	return createNullReference(isClosed());
-    }
+//
+//	/**
+//     * This implementation returns a {@link StateCacheReference}.
+//     */
+//	@Override
+//    protected StateCacheReference<? extends DefaultStateCache> createCacheReference(GraphShapeCache referent) {
+//    	return new StateCacheReference<DefaultStateCache>((DefaultStateCache) referent);
+//	}
+//
+//	/**
+//     * This implementation calls {@link #createNullReference(boolean)} with
+//     * the current (open or closed) state of the graph as a parameter, as
+//     * indicated by {@link #isClosed()}.
+//     */
+//	@Override
+//    final protected Reference<? extends DefaultStateCache> createNullReference() {
+//    	return createNullReference(isClosed());
+//    }
 
     /**
      * This implementation also takes into account any transitions
@@ -395,19 +400,19 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
 		System.arraycopy(getDeltaArray(), deltaSize, result, graphSize, transitionCount);
 		return result;
 	}
-
-	/**
-	 * This implementation returns the {@link #OPEN_NULL_REFERENCE} or
-	 * {@link #CLOSED_NULL_REFERENCE}, depending on the parameter.
-	 */
-    protected Reference<? extends DefaultStateCache> createNullReference(boolean closed) {
-    	if (closed) {
-    		return CLOSED_NULL_REFERENCE;
-    	} else {
-    		return OPEN_NULL_REFERENCE;
-    	}
-    }
-    
+//
+//	/**
+//	 * This implementation returns the {@link #OPEN_NULL_REFERENCE} or
+//	 * {@link #CLOSED_NULL_REFERENCE}, depending on the parameter.
+//	 */
+//    protected Reference<? extends DefaultStateCache> createNullReference(boolean closed) {
+//    	if (closed) {
+//    		return CLOSED_NULL_REFERENCE;
+//    	} else {
+//    		return OPEN_NULL_REFERENCE;
+//    	}
+//    }
+//    
     /**
      * Callback factory method for creating an outgoing transition (from this state) for the given
      * derivation and target state.
@@ -568,5 +573,5 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
     private static int stateCount;
 
     /** Profiles the {@link #getNextState(RuleEvent)} method. */
-    protected static int GET_PRIMED = reporter.newMethod("getPrimedOutTransition"); 
+    protected static int GET_NEXT_STATE = reporter.newMethod("getNextState"); 
 }

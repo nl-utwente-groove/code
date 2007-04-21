@@ -12,19 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphShape.java,v 1.3 2007-04-01 12:49:57 rensink Exp $
+ * $Id: AbstractGraphShape.java,v 1.4 2007-04-21 07:28:42 rensink Exp $
  */
 
 package groove.graph;
 
 import groove.rel.RelationEdge;
+import groove.util.CacheReference;
 import groove.util.CollectionOfCollections;
 import groove.util.Groove;
+import groove.util.CacheHolder;
 import groove.util.Reporter;
 import groove.util.UnmodifiableCollectionView;
 
 import java.lang.ref.Reference;
-import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.Collection;
@@ -38,9 +39,9 @@ import java.util.Set;
 /**
  * Partial implementation of a graph. Records a set of <tt>GraphListener</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
-public abstract class AbstractGraphShape implements GraphShape {
+public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
     /**
      * Private copy of the static variable to allow compiler optimization.
      */
@@ -56,11 +57,6 @@ public abstract class AbstractGraphShape implements GraphShape {
      * Number of effective invocations of {@link #clearCache()}.
      */
     static private int cacheClearCount;
-
-    /**
-     * Number of cache clearances counted in the {@link #cacheReferenceQueue}.
-     */
-    static private int cacheCollectCount;
 
     /**
      * A global empty soft reference, used to save space when clearing the cache explicitly.
@@ -81,14 +77,6 @@ public abstract class AbstractGraphShape implements GraphShape {
      */
     static public int getCacheClearCount() {
         return cacheClearCount;
-    }
-
-    /**
-     * Returns the number of times a cache was collected by the garbage collector.
-     * @return the number of times a cache was collected by the garbage collector
-     */
-    static public int getCacheCollectCount() {
-        return cacheCollectCount;
     }
 
     /**
@@ -114,7 +102,7 @@ public abstract class AbstractGraphShape implements GraphShape {
      */
     protected AbstractGraphShape() {
         modifiableGraphCount++;
-        cacheReference = createNullReference();
+//        cacheReference = createNullReference();
     }
 
     @Deprecated
@@ -294,16 +282,30 @@ public abstract class AbstractGraphShape implements GraphShape {
     }
 
     public boolean isFixed() {
-        return listeners == null;
+        return !getCacheReference().isStrong();
     }
+    
     public void setFixed() {
         if (!isFixed()) {
+        	registerFixed();
             listeners = null;
             if (GATHER_STATISTICS) {
                 modifiableGraphCount--;
             }
         }
     }
+
+	/**
+	 * Callback method to register that the graph should be set to fixed.
+	 * Called from {@link #setFixed()} in case the graph is actually currently fixed.
+	 */
+	protected void registerFixed() {
+		if (getCacheReference().get() == null) {
+			setCacheReference(CacheReference.getNullInstance(false));
+		} else {
+			getCacheReference().setSoft();
+		}
+	}
 
     /** Calls {@link #toString(GraphShape)}. */
     @Override
@@ -406,11 +408,20 @@ public abstract class AbstractGraphShape implements GraphShape {
     }
 
     /**
+	 * Factory method for a graph cache.
+	 * This implementation returns a {@link GraphCache}.
+	 * @return the graph cache
+	 */
+	protected GraphShapeCache createCache() {
+	    return new GraphShapeCache(this);
+	}
+
+	/**
      * Returns the current reference to the graph cache for this graph.
      * The referent may be <tt>null</tt>.
      * @return the current reference to the graph cache for this graph
      */
-    final public Reference<? extends GraphShapeCache> getCacheReference() {
+    final public CacheReference<? extends GraphShapeCache> getCacheReference() {
         return cacheReference;
     }
 
@@ -418,26 +429,17 @@ public abstract class AbstractGraphShape implements GraphShape {
      * Sets the current reference to the graph cache to the given value.
      * @param cacheReference the new graph cache reference
      */
-    final protected void setCacheReference(Reference<? extends GraphShapeCache> cacheReference) {
+    final public void setCacheReference(CacheReference cacheReference) {
         this.cacheReference = cacheReference;
     }
 
-    /**
-     * Factory method for a graph cache.
-     * This implementation returns a {@link GraphCache}.
-     * @return the graph cache
-     */
-    protected GraphShapeCache createCache() {
-        return new GraphShapeCache(this);
-    }
-    
     /**
      * Factory method for a reference to a given graph cache.
      * @param referent the graph cache for which to create a reference
      * @return This implementation returns a {@link CacheReference}.
      */
-    protected CacheReference<? extends GraphShapeCache> createCacheReference(GraphShapeCache referent) {
-        return new CacheReference<GraphShapeCache>(referent);
+    protected <C extends GraphShapeCache> CacheReference<C> createCacheReference(C referent) {
+        return CacheReference.<C>getInstance(this, referent);
     }
 
     /** 
@@ -451,7 +453,8 @@ public abstract class AbstractGraphShape implements GraphShape {
                 cacheClearCount++;
             }
         }
-        cacheReference = createNullReference();
+        getCacheReference().clear();
+//        cacheReference = createNullReference();
     }
 
     /**
@@ -461,37 +464,37 @@ public abstract class AbstractGraphShape implements GraphShape {
     public final boolean isCacheCleared() {
         return cacheReference.get() == null;
     }
-
-    /** 
-     * Callback method invoked when the cache of this graph has been
-     * garbage collected.
-     * Note that there is a delay between cache collection and the call of this method,
-     * and in the meanwhile the cache might already have been reconstructed. 
-     * This implementation sets the cache reference to a shared null reference,
-     * to save memory.
-     * @see #createNullReference()
-     */
-    protected void notifyCacheCollected() {
-        if (GATHER_STATISTICS) {
-            cacheCollectCount++;
-        }
-        // only do something if the cache is currently cleared
-        if (isCacheCleared()) {
-            cacheReference = createNullReference();
-        }
-    }
-    
-    /**
-     * Factory method for a reference to a <code>null</code> value.
-     * This is invoked when the graph is cleared explicitly (in {@link #clearCache()})
-     * or found to have been collected (in {@link #notifyCacheCollected()}).
-     * The method should attempt to return a fixed value that can be shared by 
-     * all graphs with a cleared cache.
-     * @return This implementation returns {@link #NULL_REFERENCE}.
-     */
-    protected Reference<? extends GraphShapeCache> createNullReference() {
-        return NULL_REFERENCE;
-    }
+//
+//    /** 
+//     * Callback method invoked when the cache of this graph has been
+//     * garbage collected.
+//     * Note that there is a delay between cache collection and the call of this method,
+//     * and in the meanwhile the cache might already have been reconstructed. 
+//     * This implementation sets the cache reference to a shared null reference,
+//     * to save memory.
+//     * @see #createNullReference()
+//     */
+//    protected void notifyCacheCollected() {
+//        if (GATHER_STATISTICS) {
+//            cacheCollectCount++;
+//        }
+//        // only do something if the cache is currently cleared
+//        if (isCacheCleared()) {
+//            cacheReference = createNullReference();
+//        }
+//    }
+//    
+//    /**
+//     * Factory method for a reference to a <code>null</code> value.
+//     * This is invoked when the graph is cleared explicitly (in {@link #clearCache()})
+//     * or found to have been collected (in {@link #notifyCacheCollected()}).
+//     * The method should attempt to return a fixed value that can be shared by 
+//     * all graphs with a cleared cache.
+//     * @return This implementation returns {@link #NULL_REFERENCE}.
+//     */
+//    protected Reference<? extends GraphShapeCache> createNullReference() {
+//        return NULL_REFERENCE;
+//    }
 
     /**
      * Set of  {@link GraphListener} s to be identified of changes in this graph. Set to <tt>null</tt> when the graph is fixed.
@@ -504,53 +507,53 @@ public abstract class AbstractGraphShape implements GraphShape {
      * @invariant <tt>graphCache.get() == null || labelEdgeMap.get() instanceof GraphCache.
      * @see #createCache()
      */
-    private Reference<? extends GraphShapeCache> cacheReference;
+    private CacheReference<? extends GraphShapeCache> cacheReference = CacheReference.getNullInstance();
 
     /**
      * Map in which varies kinds of data can be stored.
      */
     private GraphInfo graphInfo;
-
-    /** 
-     * Reference queue to store all cache refs cleared by the garbage collector,
-     * so we can also call {@link #clearCache()} on the graph.
-     */
-    static protected ReferenceQueue<GraphShapeCache> cacheReferenceQueue = new ReferenceQueue<GraphShapeCache>();
-
-    /**
-     * Reference class for cache references.
-     * The additional functionality is that {@link #clearCache()}
-     * is called as a result of {@link Reference#clear()},
-     * and that {@link #notifyCollected()} if the cache is cound to have been garbage collected.
-     */
-    protected class CacheReference<R extends GraphShapeCache> extends SoftReference<R> {
-    	/** Creates a reference for a given cache referent. */
-        protected CacheReference(R referent) {
-            super(referent, cacheReferenceQueue);
-            // see if there is any post-clearing up to be done for caches
-            // that have been collected by the gc
-            CacheReference<?> cache = (CacheReference<?>) cacheReferenceQueue.poll();
-            while (cache != null) {
-                cache.notifyCollected();
-                cache = (CacheReference<?>) cacheReferenceQueue.poll();
-            }
-        }
-
-        /**
-         * Invokes {@link #clearCache()} on the corresponding graph.
-         */
-        @Override
-        public void clear() {
-            clearCache();
-        }
-        
-        /**
-         * Invokes {@link #notifyCacheCollected()} on the corresponding graph.
-         */
-        public void notifyCollected() {
-            notifyCacheCollected();
-        }
-    }
+//
+//    /** 
+//     * Reference queue to store all cache refs cleared by the garbage collector,
+//     * so we can also call {@link #clearCache()} on the graph.
+//     */
+//    static protected ReferenceQueue<GraphShapeCache> cacheReferenceQueue = new ReferenceQueue<GraphShapeCache>();
+//
+//    /**
+//     * Reference class for cache references.
+//     * The additional functionality is that {@link #clearCache()}
+//     * is called as a result of {@link Reference#clear()},
+//     * and that {@link #notifyCollected()} if the cache is cound to have been garbage collected.
+//     */
+//    protected class CacheReference<R extends GraphShapeCache> extends SoftReference<R> {
+//    	/** Creates a reference for a given cache referent. */
+//        protected CacheReference(R referent) {
+//            super(referent, cacheReferenceQueue);
+//            // see if there is any post-clearing up to be done for caches
+//            // that have been collected by the gc
+//            CacheReference<?> cache = (CacheReference<?>) cacheReferenceQueue.poll();
+//            while (cache != null) {
+//                cache.notifyCollected();
+//                cache = (CacheReference<?>) cacheReferenceQueue.poll();
+//            }
+//        }
+//
+//        /**
+//         * Invokes {@link #clearCache()} on the corresponding graph.
+//         */
+//        @Override
+//        public void clear() {
+//            clearCache();
+//        }
+//        
+//        /**
+//         * Invokes {@link #notifyCacheCollected()} on the corresponding graph.
+//         */
+//        public void notifyCollected() {
+//            notifyCacheCollected();
+//        }
+//    }
 
     /** Reporter instance for profiling graph methods. */
     static public final Reporter reporter = Reporter.register(GraphShape.class);

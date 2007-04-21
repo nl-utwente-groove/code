@@ -13,34 +13,32 @@
 // language governing permissions and limitations under the License.
 package groove.lts;
 
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
-import java.util.Arrays;
-import java.util.Iterator;
-
 import groove.graph.AbstractEdge;
 import groove.graph.AbstractGraph;
 import groove.graph.DeltaGraph;
+import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GraphShapeCache;
-import groove.graph.NodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.GraphCache;
-import groove.graph.DeltaTarget;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
+import groove.util.CacheReference;
 import groove.util.TransformIterator;
+
+import java.util.Arrays;
+import java.util.Iterator;
 
 /**
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DerivedGraphState extends DefaultGraphState implements GraphNextState {
     /**
@@ -56,189 +54,164 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
     static {
         AbstractEdge.setMaxEndCount(END_COUNT);
     }
+//
+//    /**
+//     * Interface for graph cache references that offers the functionality
+//     * to retrieve the incarnation count of the cache.
+//     */
+//    static protected interface Counter {
+//        /** Returns the incarnation count of the referent. */
+//        public int getCount();
+//    }
+//    
+//    /**
+//     * Class used for shared <code>null</code> references that
+//     * additionally record the incarnation count.
+//     */
+//    static protected class CountingNullReference extends SoftReference<DerivedStateCache> implements Counter, Closeable {
+//    	/** Creates a new null reference, for a given incarnation count and closure information. */
+//        public CountingNullReference(int count, boolean closed) {
+//            super(null);
+//            this.count = count;
+//            this.closed = closed;
+//        }
+//        
+//        public int getCount() {
+//            return count;
+//        }
+//
+//        public void setClosed() {
+//        	throw new UnsupportedOperationException();
+//        }
+//        
+//        public boolean isClosed() {
+//        	return closed;
+//        }
+//        
+//        /**
+//         * The incarnation count of this cache.
+//         */
+//        private final int count;
+//        /**
+//         * Flag indicating if the state having this reference is closed.
+//         */
+//        private final boolean closed;
+//    }
+//    
+//    /**
+//     * Cache reference that additionally records the incarnation count.
+//     */
+//    protected class CountingCacheReference extends StateCacheReference<DerivedStateCache> implements Counter {
+//        /**
+//         * Constructs a reference, and sets the incarnation count by increasing
+//         * the count of the current (presumably <code>null</code>) cache reference.
+//         * @param referent
+//         */
+//        protected CountingCacheReference(DerivedStateCache referent) {
+//            super(referent);
+//            Reference<?> currentCacheReference = getCacheReference();
+//            if (currentCacheReference instanceof Counter) {
+//                count = ((Counter) currentCacheReference).getCount()+1;
+//                if (CACHE_SCHEDULE_DEBUG) {
+//                    System.err.println(DerivedGraphState.this+": Cache reconstruction #"+count+", depth "+getDepth());
+//                }
+//            } else {
+//                count = 0;
+//            }
+//            incIncarnationSize(count);
+//        }
+//        
+//        public int getCount() {
+//            return count;
+//        }
+//
+//        /** Cache incarnation count of this reference. */
+//        private final int count;
+//    }
+//    /**
+//     * Array of open {@link CountingNullReference}s for different incarnation counts.
+//     */
+//    static private CountingNullReference[] openNullReferences;
+//    /**
+//     * Array of closed {@link CountingNullReference}s for different incarnation counts.
+//     */
+//    static private CountingNullReference[] closedNullReferences;
+//    /**
+//     * Array of frequency counters for each incarnation count. 
+//     */
+//    static private int[] incarnationSize;
+//    /**
+//     * Global counter of the total number of cache reincarnations.
+//     */
+//    static private int reincarnationSize;
+//    /**
+//     * The length of the {@link #openNullReferences} array.
+//     */
+//    static private int countSize;
+//    /**
+//     * Initial size of the {@link #openNullReferences} array.
+//     */
+//    static private int INIT_COUNT_SIZE = 10;
+//    
+//    static {
+//        fillNullReferences();
+//    }
+//
+//	/**
+//     * Returns a {@link SoftReference} to an {@link Integer} object that
+//     * can be used (for instance) to store information about a cache when
+//     * the cache itself is cleared.
+//     * The {@link Integer} object is shared to save memory usage,
+//     * and a hard reference to it is maintained internally to ensure that
+//     * the reference is never cleared.  
+//     * @param count the value to be stored in the referenced {@link Integer}
+//     * @return a reference to an {@link Integer} with value <code>count</code>,
+//     * guaranteed never to be cleared
+//     */
+//    static protected Reference<DerivedStateCache> getNullReference(int count, boolean closed) {
+//        if (count+1 >= countSize) {
+//            fillNullReferences();
+//        }
+//        if (closed) {
+//            return closedNullReferences[count+1];
+//        } else {
+//            return openNullReferences[count+1];
+//        }
+//    }
+//    
+//    /**
+//     * Fills out the arrays of count objects, references or frequency.
+//     */
+//    static protected void fillNullReferences() {
+//        int oldSize = countSize;
+//        countSize = (oldSize == 0) ? INIT_COUNT_SIZE : oldSize*2;
+//        Reference[] oldOpenNullReferences = openNullReferences;
+//        Reference[] oldClosedNullReferences = closedNullReferences;
+//        int[] oldCountFrequency = incarnationSize;
+//        openNullReferences = new CountingNullReference[countSize];
+//        closedNullReferences = new CountingNullReference[countSize];
+//        incarnationSize = new int[countSize];
+//        if (oldSize > 0) {
+//            System.arraycopy(oldOpenNullReferences, 0, openNullReferences, 0, oldSize);
+//            System.arraycopy(oldClosedNullReferences, 0, closedNullReferences, 0, oldSize);
+//            System.arraycopy(oldCountFrequency, 0, incarnationSize, 0, oldSize);
+//        }
+//        for (int i = oldSize; i < countSize; i++) {
+//            openNullReferences[i] = new CountingNullReference(i-1, false);
+//            closedNullReferences[i] = new CountingNullReference(i-1, true);
+//        }
+//    }
 
     /**
-     * Interface for graph cache references that offers the functionality
-     * to retrieve the incarnation count of the cache.
-     */
-    static protected interface Counter {
-        /** Returns the incarnation count of the referent. */
-        public int getCount();
-    }
-    
-    /**
-     * Class used for shared <code>null</code> references that
-     * additionally record the incarnation count.
-     */
-    static protected class CountingNullReference extends SoftReference<DerivedStateCache> implements Counter, Closeable {
-    	/** Creates a new null reference, for a given incarnation count and closure information. */
-        public CountingNullReference(int count, boolean closed) {
-            super(null);
-            this.count = count;
-            this.closed = closed;
-        }
-        
-        public int getCount() {
-            return count;
-        }
-
-        public void setClosed() {
-        	throw new UnsupportedOperationException();
-        }
-        
-        public boolean isClosed() {
-        	return closed;
-        }
-        
-        /**
-         * The incarnation count of this cache.
-         */
-        private final int count;
-        /**
-         * Flag indicating if the state having this reference is closed.
-         */
-        private final boolean closed;
-    }
-    
-    /**
-     * Cache reference that additionally records the incarnation count.
-     */
-    protected class CountingCacheReference extends StateCacheReference<DerivedStateCache> implements Counter {
-        /**
-         * Constructs a reference, and sets the incarnation count by increasing
-         * the count of the current (presumably <code>null</code>) cache reference.
-         * @param referent
-         */
-        protected CountingCacheReference(DerivedStateCache referent) {
-            super(referent);
-            Reference<?> currentCacheReference = getCacheReference();
-            if (currentCacheReference instanceof Counter) {
-                count = ((Counter) currentCacheReference).getCount()+1;
-                if (CACHE_SCHEDULE_DEBUG) {
-                    System.err.println(DerivedGraphState.this+": Cache reconstruction #"+count+", depth "+getDepth());
-                }
-            } else {
-                count = 0;
-            }
-            incIncarnationSize(count);
-        }
-        
-        public int getCount() {
-            return count;
-        }
-
-        /** Cache incarnation count of this reference. */
-        private final int count;
-    }
-    /**
-     * Array of open {@link CountingNullReference}s for different incarnation counts.
-     */
-    static private CountingNullReference[] openNullReferences;
-    /**
-     * Array of closed {@link CountingNullReference}s for different incarnation counts.
-     */
-    static private CountingNullReference[] closedNullReferences;
-    /**
-     * Array of frequency counters for each incarnation count. 
-     */
-    static private int[] incarnationSize;
-    /**
-     * Global counter of the total number of cache reincarnations.
-     */
-    static private int reincarnationSize;
-    /**
-     * The length of the {@link #openNullReferences} array.
-     */
-    static private int countSize;
-    /**
-     * Initial size of the {@link #openNullReferences} array.
-     */
-    static private int INIT_COUNT_SIZE = 10;
-    
-    static {
-        fillNullReferences();
-    }
-
-	/**
-     * Returns a {@link SoftReference} to an {@link Integer} object that
-     * can be used (for instance) to store information about a cache when
-     * the cache itself is cleared.
-     * The {@link Integer} object is shared to save memory usage,
-     * and a hard reference to it is maintained internally to ensure that
-     * the reference is never cleared.  
-     * @param count the value to be stored in the referenced {@link Integer}
-     * @return a reference to an {@link Integer} with value <code>count</code>,
-     * guaranteed never to be cleared
-     */
-    static protected Reference<DerivedStateCache> getNullReference(int count, boolean closed) {
-        if (count+1 >= countSize) {
-            fillNullReferences();
-        }
-        if (closed) {
-            return closedNullReferences[count+1];
-        } else {
-            return openNullReferences[count+1];
-        }
-    }
-    
-    /**
-     * Fills out the arrays of count objects, references or frequency.
-     */
-    static protected void fillNullReferences() {
-        int oldSize = countSize;
-        countSize = (oldSize == 0) ? INIT_COUNT_SIZE : oldSize*2;
-        Reference[] oldOpenNullReferences = openNullReferences;
-        Reference[] oldClosedNullReferences = closedNullReferences;
-        int[] oldCountFrequency = incarnationSize;
-        openNullReferences = new CountingNullReference[countSize];
-        closedNullReferences = new CountingNullReference[countSize];
-        incarnationSize = new int[countSize];
-        if (oldSize > 0) {
-            System.arraycopy(oldOpenNullReferences, 0, openNullReferences, 0, oldSize);
-            System.arraycopy(oldClosedNullReferences, 0, closedNullReferences, 0, oldSize);
-            System.arraycopy(oldCountFrequency, 0, incarnationSize, 0, oldSize);
-        }
-        for (int i = oldSize; i < countSize; i++) {
-            openNullReferences[i] = new CountingNullReference(i-1, false);
-            closedNullReferences[i] = new CountingNullReference(i-1, true);
-        }
-    }
-
-    /**
-     * Returns the array of frequencies with which the various counts were used.
-     * This is used to obtain a distribution of cache collection.
-     */
-    static public void incIncarnationSize(int count) {
-        if (count >= countSize) {
-            fillNullReferences();
-        }
-        incarnationSize[count]++;
-        if (count > 0) {
-            reincarnationSize++;
-        }
-    }
-    
-    /**
-     * Returns the number of caches at a given incarnation count.
-     */
-    static public int getIncarnationSize(int count) {
-        return count >= countSize ? 0 : incarnationSize[count];
-    }
-
-    /**
-     * Returns the total number of cache reincarnations.
-     */
-    static public int getReincarnationSize() {
-        return reincarnationSize;
-    }
-
-    /**
-	 * Constructs a state on the basis of a given source and application.
+	 * Constructs a state on the basis of a given source state, rule event and coanchor image.
+     * @param source the source state of this derived state
+     * @param event the rule event leading from the source state to this state
+     * @param coanchorImage the fresh nodes created by the rule application
 	 */
-	public DerivedGraphState(RuleApplication applier) {
-		super(applier.getSource());
-		this.event = applier.getEvent();
-		setCoanchorImage(applier.getCoanchorImage());
+	public DerivedGraphState(GraphState source, RuleEvent event, Element[] coanchorImage) {
+		super(source.getGraph());
+		this.event = event;
+		setCoanchorImage(coanchorImage);
 	}
 	
 	/**
@@ -467,11 +440,11 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      * in a policy to force early cache clearance, so as to save time on garbage collection.
      */
     public int getCacheIncarnationCount() {
-        Counter cacheReference = (Counter) getCacheReference();
+        CacheReference cacheReference = getCacheReference();
         if (cacheReference == null) {
         	return -1;
         } else {
-            return cacheReference.getCount();
+            return cacheReference.getIncarnation();
         }
     }
     
@@ -482,23 +455,23 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	protected GraphCache createCache() {
 	    return new DerivedStateCache(this);
     }
-    
-    /**
-     * This implementation returns a {@link CountingCacheReference}.
-     */
-    @Override
-    protected StateCacheReference<? extends DerivedStateCache> createCacheReference(GraphShapeCache referent) {
-        return new CountingCacheReference((DerivedStateCache) referent);
-    }
-    
-    /**
-     * This implementation returns a {@link CountingNullReference}.
-     * @see #getNullReference(int,boolean)
-     */
-    @Override
-    protected Reference<DerivedStateCache> createNullReference(boolean closed) {
-        return getNullReference(getCacheIncarnationCount(), closed);
-    }
+//    
+//    /**
+//     * This implementation returns a {@link CountingCacheReference}.
+//     */
+//    @Override
+//    protected StateCacheReference<? extends DerivedStateCache> createCacheReference(GraphShapeCache referent) {
+//        return new CountingCacheReference((DerivedStateCache) referent);
+//    }
+//    
+//    /**
+//     * This implementation returns a {@link CountingNullReference}.
+//     * @see #getNullReference(int,boolean)
+//     */
+//    @Override
+//    protected Reference<DerivedStateCache> createNullReference(boolean closed) {
+//        return getNullReference(getCacheIncarnationCount(), closed);
+//    }
 
     /**
      * This implementation transforms the outgoing transitions from
@@ -671,8 +644,8 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	    applier.applyDelta(target);
 	    // clear the basis cache
 	    if (basisCacheCleared) {
-	    	Reference<?> reference = basis.getCacheReference();
-	    	if (reference instanceof Counter && ((Counter) reference).getCount() < CLEAR_UPPER_BOUND) {
+	    	CacheReference<?> reference = basis.getCacheReference();
+	    	if (reference != null && reference.getIncarnation() < CLEAR_UPPER_BOUND) {
 	    		basis.clearCache();
 	    	}
 	    }
@@ -682,6 +655,6 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 * The rule of the incoming transition with which this state was created.
 	 */
 	private final RuleEvent event;
-    /** Debugging flag for the cache scheduling mechanism. */
-    private final static boolean CACHE_SCHEDULE_DEBUG = false;
+//    /** Debugging flag for the cache scheduling mechanism. */
+//    private final static boolean CACHE_SCHEDULE_DEBUG = false;
 }

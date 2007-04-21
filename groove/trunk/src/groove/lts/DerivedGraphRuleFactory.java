@@ -52,6 +52,6 @@ public class DerivedGraphRuleFactory extends DefaultRuleFactory {
 	@Override
 	@Deprecated
 	public Graph createTarget(RuleApplication ruleApplication) {
-        return new DerivedGraphState(ruleApplication);
+        return new DerivedGraphState((GraphState) ruleApplication.getSource(), ruleApplication.getEvent(), ruleApplication.getCoanchorImage());
 	}
 }

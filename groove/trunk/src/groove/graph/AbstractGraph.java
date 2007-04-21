@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.3 2007-04-01 12:49:56 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.4 2007-04-21 07:28:42 rensink Exp $
  */
 
 package groove.graph;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class AbstractGraph extends AbstractGraphShape implements InternalGraph {
     /**
@@ -526,8 +526,6 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
 
     /**
      * Factory method for an injective morphism.
-     * This implementation invokes {@link GraphFactory#newInjectiveMorphism(Graph, Graph)} on
-     * the current graph factory.
      * @param dom  the domain of the injective morphism to be created
      * @param cod the codomain of the injective morphism to be created
      * @return the created injective morphism
@@ -548,16 +546,16 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
         return new GraphCache(this);
     }
     
-    /**
-     * Factory method for a reference to a given graph cache.
-     * @param referent the graph cache for which to create a reference
-     * @return This implementation returns a {@link CacheReference}.
-     */
-    @Override
-    protected CacheReference<? extends GraphCache> createCacheReference(GraphShapeCache referent) {
-        return new CacheReference<GraphCache>((GraphCache) referent);
-    }
-    
+//    /**
+//     * Factory method for a reference to a given graph cache.
+//     * @param referent the graph cache for which to create a reference
+//     * @return This implementation returns a {@link CacheReference}.
+//     */
+//    @Override
+//    protected CacheReference<? extends GraphCache> createCacheReference(GraphShapeCache referent) {
+//        return new CacheReference<GraphCache>(this, (GraphCache) referent);
+//    }
+//    
     /**
      * Adds identitiy pairs to a given morphism for all the nodes and edges in this graph.
      * @param morph the morphism to which to add identities

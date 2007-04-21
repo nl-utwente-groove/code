@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaGraph.java,v 1.4 2007-04-12 13:45:34 rensink Exp $
+ * $Id: DeltaGraph.java,v 1.5 2007-04-21 07:28:42 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * the changes. This implementation caches the element set so as to avoid too frequent
  * reconstruction.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class DeltaGraph extends AbstractGraph implements DeltaApplier {
     /**
@@ -130,8 +130,13 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
         }
         return result;
     }
+    
+    @Override
+	public boolean isFixed() {
+		return isDeltaArraySet();
+	}
 
-    /**
+	/**
      * Sets the delta using {@link #computeFixedDeltaArray()}. In either case the super implementation
      * is called at the end.
      */
@@ -258,6 +263,10 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
         }
     }
     
+    /** 
+     * Resets the basis of this delta graph, and suggests to the
+     * old basis that it take this graph as its basis instead.
+     */
     protected void invertBasis() {
 	    Graph oldBasis = basis;
 	    Element[] oldDelta = computeFixedDeltaArray();

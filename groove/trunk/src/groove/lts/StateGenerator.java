@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.6 2007-04-20 15:12:27 rensink Exp $
+ * $Id: StateGenerator.java,v 1.7 2007-04-21 07:28:42 rensink Exp $
  */
 package groove.lts;
 
@@ -78,7 +78,7 @@ public class StateGenerator {
 	 * assumed to be in the GTS
 	 * @return the new states generated as a result of the invocation
 	 */
-    public Collection<? extends GraphState> computeSuccessors(GraphState state) {
+    public Collection<? extends GraphState> computeSuccessors(final GraphState state) {
         reporter.start(SUCC);
         final Collection<GraphState> result = new ArrayList<GraphState>();
         // check if the transitions have not yet been generated
@@ -86,7 +86,7 @@ public class StateGenerator {
         	collector.set(result);
         	getApplier(state).doApplications(new RuleApplier.Action() {
 				public void perform(RuleApplication application) {
-                    addTransition(application);
+                    addTransition(state, application);
 				}
         	});
             collector.reset();
@@ -154,7 +154,7 @@ public class StateGenerator {
 
             	@Override
                 protected GraphState toOuter(RuleApplication from) {
-                    return addTransition(from);
+                    return addTransition(state, from);
                 }
                 
                 private boolean hasNext = true;
@@ -168,10 +168,11 @@ public class StateGenerator {
      * if a symmetric one is found then that is taken as target state. 
      * If no symmetric state is found, then a fresh target state is added.
      * The actual target state is returned as the result of the method.
+     * @param source the source state of the new transition
      * @param appl the derivation underlying the transition to be added
      * @return the target state of the resulting transition
      */
-    public GraphState addTransition(RuleApplication appl) {
+    public GraphState addTransition(GraphState source, RuleApplication appl) {
         reporter.start(ADD_TRANSITION);
         reporter.start(ADD_TRANSITION_START);
         // check for confluent diamond
@@ -179,7 +180,7 @@ public class StateGenerator {
         reporter.stop();
         if (targetState == null) {
             // determine target state of this transition
-            targetState = computeTargetState(appl);
+            targetState = computeTargetState(source, appl);
         }
         gts.addTransition((GraphState) appl.getSource(), appl.getEvent(), targetState);
         reporter.stop();
@@ -190,14 +191,15 @@ public class StateGenerator {
 	 * Computes the target state of a rule application.
 	 * The target state is added to the underlying GTS, after checking for already
 	 * existing isomorphic states.
+	 * @param source the source state of the rule application
 	 * @param appl the provisional target from which the real target state is to be extracted
 	 */
-	private GraphState computeTargetState(RuleApplication appl) {
+	private GraphState computeTargetState(GraphState source, RuleApplication appl) {
 		GraphState result;
         // see if isomorphic graph is already in the LTS
         // special case: source = target
         if (appl.getRule().isModifying()) {
-        	result = createState(appl);
+        	result = createState(source, appl);
             GraphState isoState = gts.addState(result);
             if (isoState != null) {
                 // the following line is to ensure the cache is cleared
@@ -251,10 +253,10 @@ public class StateGenerator {
 //	}
 
 	/**
-	 * Creates a fresh graph state, based on a given rule application.
+	 * Creates a fresh graph state, based on a given source state and rule application.
 	 */
-	private GraphNextState createState(RuleApplication appl) {
-		DerivedGraphState result = new DerivedGraphState(appl);
+	private GraphNextState createState(GraphState source, RuleApplication appl) {
+		DerivedGraphState result = new DerivedGraphState(source, appl.getEvent(), appl.getCoanchorImage());
 		result.setFixed();
 		return result;
 	}
