@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.9 2007-04-20 15:12:28 rensink Exp $
+ * $Id: SPOApplication.java,v 1.10 2007-04-22 23:32:24 rensink Exp $
  */
 package groove.trans;
 
@@ -43,7 +43,7 @@ import groove.util.Reporter;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-04-20 15:12:28 $
+ * @version $Revision: 1.10 $ $Date: 2007-04-22 23:32:24 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -189,6 +189,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 		int coanchorSize = coanchor.length;
 		Element[] coanchorImage = this.coanchorImage;
 		for (int i = 0; i < coanchorSize; i++) {
+			assert coanchorImage == null || coanchorImage[i] instanceof Node : String.format("Anchor image at %d is %s", i, coanchorImage[i]);
             Node hint = coanchorImage == null ? null : (Node) coanchorImage[i];
             boolean hintValid = hint != null && !source.containsElement(hint);
             if (hintValid) {
@@ -204,6 +205,7 @@ public class SPOApplication implements RuleApplication, Derivation {
     	if (coanchorImage == null) {
     		coanchorImage = computeCoanchorImage();
     	}
+	    assert getRule().coanchor().length == 0 || coanchorImage[0] instanceof Node;
         return coanchorImage;
     }
     
@@ -226,6 +228,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 
 	public void setCoanchorImage(Element[] image) {
 	    this.coanchorImage = image; 
+	    assert getRule().coanchor().length == 0 || image[0] instanceof Node;
 	}
 
 	public void applyDelta(DeltaTarget target) {

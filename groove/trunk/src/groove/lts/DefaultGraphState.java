@@ -12,33 +12,33 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphState.java,v 1.5 2007-04-21 07:28:42 rensink Exp $
+ * $Id: DefaultGraphState.java,v 1.6 2007-04-22 23:32:14 rensink Exp $
  */
 package groove.lts;
 
 import groove.graph.DeltaGraph;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.GraphCache;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.trans.RuleEvent;
 import groove.util.ArrayIterator;
-import groove.util.TransformCollection;
 import groove.util.TransformIterator;
+import groove.util.TransformSet;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Combination of graph and node functionality, used to store the state of a graph transition
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-04-21 07:28:42 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-22 23:32:14 $
  */
-public class DefaultGraphState extends DeltaGraph implements GraphState {
+public class DefaultGraphState extends DeltaGraph<DefaultStateCache> implements GraphState {
 //	/**
 //	 * Default constant null reference for open states.
 //	 */
@@ -109,125 +109,179 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
         return this;
     }
 
-    /* (non-Javadoc)
-     * @see groove.lts.GraphState#getOutTransitionIter()
-     */
     public Iterator<GraphTransition> getTransitionIter() {
-        // the iterator is created as a transformation of the iterator on the
-        // stored OutGraphTransitions.
-        return new TransformIterator<GraphOutTransition,GraphTransition>(getOutTransitionIter()) {
+    	if (!isCacheCleared() && getCache().isTransitionMapSet()) {
+    		return getCache().getTransitionMap().values().iterator();
+    	} else {
+    		return new TransformIterator<GraphTransitionStub,GraphTransition>(getStoredStubIter()) {
+				@Override
+				protected GraphTransition toOuter(GraphTransitionStub from) {
+					return from.createTransition(DefaultGraphState.this);
+				}
+    		};
+    	}
+    }
+
+    public Set<GraphTransition> getTransitionSet() {
+    	final Map<RuleEvent,GraphTransition> transitionMap = getCache().getTransitionMap();
+        return new TransformSet<Map.Entry<RuleEvent,GraphTransition>,GraphTransition>(transitionMap.entrySet()) {
         	@Override
-            public GraphTransition toOuter(GraphOutTransition obj) {
-                return obj.createTransition(DefaultGraphState.this);
+            protected GraphTransition toOuter(Map.Entry<RuleEvent,GraphTransition> obj) {
+                return obj.getValue();
             }
+
+			@Override
+			public boolean contains(Object o) {
+				if (o instanceof GraphTransition && ((GraphTransition) o).source() == DefaultGraphState.this) {
+					return transitionMap.containsKey(((GraphTransition) o).getEvent()); 
+				} else {
+					return false;
+				}
+			}
+
+			@Override
+			public boolean remove(Object o) {
+				if (o instanceof GraphTransition && ((GraphTransition) o).source() == DefaultGraphState.this) {
+					return transitionMap.remove(((GraphTransition) o).getEvent()) != null; 
+				} else {
+					return false;
+				}
+			}
+//            
+//        	@Override
+//			protected GraphTransitionStub toInner(Object key) {
+//                if (key instanceof GraphTransition) {
+//                	RuleEvent keyEvent = ((GraphTransition) key).getEvent();
+//                	GraphState keyTarget = ((GraphTransition) key).target();
+//                    return createTransitionStub(keyEvent, keyTarget);
+//                } else {
+//                    return null;
+//                }
+//			}
         };
     }
 
-    /* (non-Javadoc)
-     * @see groove.lts.GraphState#getOutTransitionSet()
-     */
-    public Collection<GraphTransition> getTransitionSet() {
-        return new TransformCollection<GraphOutTransition,GraphTransition>(getOutTransitionSet()) {
-        	@Override
-            public GraphTransition toOuter(GraphOutTransition obj) {
-                return obj.createTransition(DefaultGraphState.this);
-            }
-            
-        	@Override
-            public boolean contains(Object obj) {
-                if (obj instanceof GraphTransition) {
-                    return containsTransition((GraphTransition) obj);
-                } else {
-                    return false;
-                }
-            }
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see groove.lts.GraphState#getNextStateSet()
-     */
-    public Collection<GraphState> getNextStateSet() {
-        Collection<GraphState> result = new HashSet<GraphState>();
-        Iterator<GraphOutTransition> outTransitionIter = getRawOutTransitionIter();
-        while (outTransitionIter.hasNext()) {
-            GraphOutTransition semiTransition = outTransitionIter.next();
-            result.add(semiTransition.target());
-        }
-        return result;
-    }
-
-    /* (non-Javadoc)
-     * @see groove.lts.GraphState#getNextStateIter()
-     */
-    public Iterator<GraphState> getNextStateIter() {
-        return new TransformIterator<GraphOutTransition,GraphState>(getRawOutTransitionIter()) {
-        	@Override
-            public GraphState toOuter(GraphOutTransition obj) {
-                return obj.target();
-            }
-        };
-    }
-
-    /* (non-Javadoc)
-     * @see groove.lts.GraphState#containsOutTransition(groove.lts.GraphTransition)
-     */
     public boolean containsTransition(GraphTransition transition) {
-        return transition.source().equals(this) && getOutTransitionSet().contains(
-                new DefaultGraphOutTransition(transition.getEvent(), transition.target()));
+	    return transition.source().equals(this) && getNextState(transition.getEvent()) != null;
+	}
+
+	//    
+	//    /**
+	//     * Callback method to retrieve the event from an outgoing transition.
+	//     */
+	//    protected RuleEvent getEvent(GraphOutTransition trans) {
+	//    	return trans.getEvent();
+	//    }
+	//    
+	    // ----------------------- commands -----------------------------
+
+	/**
+	 * Add an outgoing transition to this state, if it is not yet there. Returns
+	 * the {@link GraphTransition} that was added, or <code>null</code> if no
+	 * new transition was added.
+	 */
+	public boolean addTransition(GraphTransition transition) {
+		return getCache().addTransition(transition);
+	}
+//
+//	/** Callback factory method for creating an outgoing graph transition. */
+//	protected GraphTransition createTransition(RuleEvent event, GraphState target) {
+//		if (target instanceof GraphTransition) {
+//			GraphTransition candidate = (GraphTransition) target;
+//			if (candidate.source() == this && candidate.getEvent() == event) {
+//				return candidate;
+//			}
+//		}
+//		return new DefaultGraphTransition(event, this, target, null);
+//	}
+
+	public Collection<GraphState> getNextStateSet() {
+        return new TransformSet<Map.Entry<RuleEvent,GraphTransition>,GraphState>(getCache().getTransitionMap().entrySet()) {
+        	@Override
+            public GraphState toOuter(Map.Entry<RuleEvent,GraphTransition> entry) {
+                return entry.getValue().target();
+            }
+        };
+//        Set<GraphState> result = new HashSet<GraphState>();
+//        Iterator<GraphTransitionStub> outTransitionIter = getTransitionStubIter();
+//        while (outTransitionIter.hasNext()) {
+//            GraphTransitionStub stub = outTransitionIter.next();
+//            result.add(stub.target());
+//        }
+//        return result;
+    }
+
+    public Iterator<GraphState> getNextStateIter() {
+    	if (isClosed()) {
+			return new TransformIterator<GraphTransitionStub, GraphState>(
+					getTransitionStubIter()) {
+				@Override
+				public GraphState toOuter(GraphTransitionStub stub) {
+					return stub.target();
+				}
+			};
+		} else {
+            return new TransformIterator<GraphTransition,GraphState>(getTransitionIter()) {
+            	@Override
+                public GraphState toOuter(GraphTransition transition) {
+                    return transition.target();
+                }
+            };
+    	}
+    }
+    
+    /** 
+     * Returns an iterator over the transition stubs for this state.
+     * If the state is closed, the cache is not (re)constructed for this purpose. 
+     */
+    public Iterator<GraphTransitionStub> getTransitionStubIter() {
+    	if (isClosed()) {
+    		return getStoredStubIter();
+    	} else {
+    		return new TransformIterator<GraphTransition,GraphTransitionStub>(getTransitionIter()) {
+				@Override
+				protected GraphTransitionStub toOuter(GraphTransition from) {
+					return from.toStub();
+				}
+    		};
+    	}
     }
 
     public GraphState getNextState(RuleEvent event) {
-        reporter.start(GET_NEXT_STATE);
-        assert event != null;
-        GraphState result = null;
-        if (isClosed()) {
-            Element[] deltaArray = getDeltaArray();
-            for (int i = getDeltaSize(); result == null && i < deltaArray.length; i++) {
-                GraphOutTransition trans = (GraphOutTransition) deltaArray[i];
-                if (getEvent(trans) == event) {
-                    result = trans.target();
-                }
-            }
-        } else {
-            Iterator<GraphOutTransition> outTransIter = getOutTransitionIter();
-            while (result == null && outTransIter.hasNext()) {
-                GraphOutTransition trans = outTransIter.next();
-                if (getEvent(trans) == event) {
-                    result = trans.target();
-                }
-            }
-        }
+		reporter.start(GET_NEXT_STATE);
+		assert event != null;
+		GraphTransition transition = getCache().getTransitionMap().get(event);
+		GraphState result = transition == null ? null : transition.target();
+// if (isClosed()) {
+//            Element[] deltaArray = getDeltaArray();
+//            for (int i = getDeltaSize(); result == null && i < deltaArray.length; i++) {
+//                GraphTransitionStub trans = (GraphTransitionStub) deltaArray[i];
+//                if (trans.getEvent(this) == event) {
+//                    result = trans.target();
+//                }
+//            }
+//        } else {
+//            Iterator<GraphTransitionStub> outTransIter = getTransitionStubIter();
+//            while (result == null && outTransIter.hasNext()) {
+//                GraphTransitionStub trans = outTransIter.next();
+//                if (trans.getEvent(this) == event) {
+//                    result = trans.target();
+//                }
+//            }
+//        }
         reporter.stop();
         return result;
     }
-    
-    /**
-     * Callback method to retrieve the event from an outgoing transition.
-     */
-    protected RuleEvent getEvent(GraphOutTransition trans) {
-    	return trans.getEvent();
-    }
-    
+//    
+//    /**
+//     * Callback method to retrieve the event from an outgoing transition.
+//     */
+//    protected RuleEvent getEvent(GraphOutTransition trans) {
+//    	return trans.getEvent();
+//    }
+//    
     // ----------------------- commands -----------------------------
     
-    /**
-     * Add an outgoing transition to this state, if it is not yet there.
-     * Returns the {@link GraphTransition} that was added, or <code>null</code>
-     * if no new transition was added.
-     */
-    public GraphOutTransition addOutTransition(RuleEvent event, GraphState target) {
-        GraphOutTransition outTransition = createOutTransition(event, target);
-//        if (semiTransitions == Collections.EMPTY_SET) {
-//            semiTransitions = new HashSet();
-//        }
-        if (getOutTransitionSet().add(outTransition)) {
-            return outTransition;
-        } else {
-            return null;
-        }
-    }
-
     @Override
     protected void registerFixed() {
     	// does nothing; the registration is already done
@@ -256,7 +310,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      */
     public boolean setClosed() {
         if (!isClosed()) {
-            storeOutTransitionSet();
+            storeTransitionStubSet();
             getCacheReference().setSoft();
             // this is a point where clearing the cache might be worth considering,
             // on the assumption that the state is not going to be revisited soon
@@ -269,13 +323,13 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
             return false;
         }
     }
-    
-    /**
-     * This implementation clears the cache upon disposal.
-     */
-    public void dispose() {
-        clearCache();
-    }
+//    
+//    /**
+//     * This implementation clears the cache upon disposal.
+//     */
+//    public void dispose() {
+//        clearCache();
+//    }
 
     public Element imageFor(NodeEdgeMap elementMap) {
         throw new UnsupportedOperationException(
@@ -350,7 +404,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      * This implementation returns a {@link DefaultStateCache}.
      */
 	@Override
-    protected GraphCache createCache() {
+    protected DefaultStateCache createCache() {
         return new DefaultStateCache(this);
     }
 
@@ -361,7 +415,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
 	@Override
 	public void clearCache() {
 		if (!isClosed()) {
-			storeOutTransitionSet();
+			storeTransitionStubSet();
 		}
 		super.clearCache();
 	}
@@ -400,49 +454,29 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
 		System.arraycopy(getDeltaArray(), deltaSize, result, graphSize, transitionCount);
 		return result;
 	}
-//
-//	/**
-//	 * This implementation returns the {@link #OPEN_NULL_REFERENCE} or
-//	 * {@link #CLOSED_NULL_REFERENCE}, depending on the parameter.
-//	 */
-//    protected Reference<? extends DefaultStateCache> createNullReference(boolean closed) {
-//    	if (closed) {
-//    		return CLOSED_NULL_REFERENCE;
-//    	} else {
-//    		return OPEN_NULL_REFERENCE;
-//    	}
+    
+//    /**
+//     * Callback factory method for creating an outgoing transition (from this state) for the given
+//     * derivation and target state.
+//     * This implementation invokes {@link #createInTransitionStub(GraphState, RuleEvent)} if the target is 
+//     * a {@link DefaultGraphState}, otherwise it creates a {@link IdGraphTransitionStub}.
+//     */
+//    protected GraphTransitionStub createTransitionStub(RuleEvent event, GraphState target) {
+//        if (target instanceof DefaultGraphState) {
+//            return ((DefaultGraphState) target).createInTransitionStub(this, event);
+//        } else {
+//            return new IdGraphTransitionStub(event, target);
+//        }
 //    }
 //    
-    /**
-     * Callback factory method for creating an outgoing transition (from this state) for the given
-     * derivation and target state.
-     * This implementation invokes {@link #createOutTransitionToThis(GraphState, RuleEvent)} if the target is 
-     * a {@link DefaultGraphState}, otherwise it creates a {@link DefaultGraphOutTransition}.
-     */
-    protected GraphOutTransition createOutTransition(RuleEvent event, GraphState target) {
-        if (target instanceof DefaultGraphState) {
-            return ((DefaultGraphState) target).createOutTransitionToThis(this, event);
-        } else {
-            return new DefaultGraphOutTransition(event, target);
-        }
-    }
-    
-    /**
-     * Callback factory method for creating a semi-transition to this state,
-     * from a given graph and with a given rule event.
-     */
-    protected GraphOutTransition createOutTransitionToThis(GraphState source, RuleEvent event) {
-        return createOutTransitionToThis(event);
-    }
-    
-    /**
-     * Callback factory method to create a {@link groove.lts.GraphOutTransition} with
-     * this state as a target, based on a given event.
-     */
-    protected GraphOutTransition createOutTransitionToThis(RuleEvent event) {
-    	return new DefaultGraphOutTransition(event, this);
-    }
-
+//    /**
+//     * Callback factory method for creating a transition stub to this state,
+//     * from a given graph and with a given rule event.
+//     */
+//    protected GraphTransitionStub createInTransitionStub(GraphState source, RuleEvent event) {
+//    	return new IdGraphTransitionStub(event, this);
+//    }
+//    
     /** Indicates whether the state has already been assigned a number. */
     protected boolean hasStateNumber() {
     	return this.nr >= 0;
@@ -476,31 +510,35 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
         }
     	this.nr = nr;
     }
-
-    /**
-     * Returns a list view upon the current outgoing transitions.
-     */
-    public Iterator<GraphOutTransition> getOutTransitionIter() {
-    	return getRawOutTransitionIter();
-    }
-
-    /**
-	 * Returns an iterator over the outgoing transitions as stored,
-	 * i.e., without encodings taken into account.
-	 */
-	final protected Iterator<GraphOutTransition> getRawOutTransitionIter() {
-        if (isClosed()) {
-            return getStoredOutTransitionIter();
-        } else {
-            return getOutTransitionSet().iterator();
-        }
-	}
+//
+//    /**
+//     * Returns a list view upon the current outgoing transitions.
+//     */
+//    public Iterator<GraphTransitionStub> getOutTransitionIter() {
+//    	return getTransitionStubIter();
+//    }
+//
+//    /**
+//	 * Returns an iterator over the outgoing transitions as stored,
+//	 * i.e., without encodings taken into account.
+//	 */
+//	final protected Iterator<GraphTransitionStub> getTransitionStubIter() {
+//        if (isClosed()) {
+//            return getStoredStubIter();
+//        } else {
+//            return getTransitionStubSet().iterator();
+//        }
+//	}
 
     /**
 	 * Returns an iterator over the outgoing transitions as stored in the delta array.
 	 */
-	final protected Iterator<GraphOutTransition> getStoredOutTransitionIter() {
-		return new ArrayIterator<GraphOutTransition>(getDeltaArray(), getDeltaSize());
+	final protected Iterator<GraphTransitionStub> getStoredStubIter() {
+		if (getDeltaArray() == null) {
+			return null;
+		} else {
+			return new ArrayIterator<GraphTransitionStub>(getDeltaArray(), getDeltaSize());
+		}
 	}
 
 	/**
@@ -516,34 +554,35 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
     	}
     	return result;
     }
-    
-    /**
-     * Returns a list view upon the current outgoing transitions.
-     */
-    private Collection<GraphOutTransition> getOutTransitionSet() {
-    	return ((DefaultStateCache) getCache()).getOutTransitionSet();
-    }
+//    
+//    /**
+//     * Returns a list view upon the current outgoing transitions.
+//     */
+//    private Set<GraphTransitionStub> getTransitionStubSet() {
+//    	return getCache().getStubSet();
+//    }
 
     /**
      * Stores the outgoing transitions in a memory efficient way.
      */
-    private void storeOutTransitionSet() {
-    	Collection<GraphOutTransition> outTransitionSet = getOutTransitionSet();
+    private void storeTransitionStubSet() {
+    	Map<RuleEvent, GraphTransition> transitionMap = getCache().getTransitionMap();
+//    	Collection<GraphTransitionStub> outTransitionSet = getTransitionStubSet();
     	Element[] oldDelta = getDeltaArray();
     	int oldDeltaSize = getDeltaSize();
-    	Element[] newDelta = new Element[oldDeltaSize + outTransitionSet.size()];
+    	Element[] newDelta = new Element[oldDeltaSize + transitionMap.size()];
     	System.arraycopy(oldDelta, 0, newDelta, 0, oldDeltaSize);
     	int index = oldDeltaSize;
-    	for (Element semiTransition: outTransitionSet) {
-			newDelta[index] = semiTransition;
+    	for (GraphTransition transition: transitionMap.values()) {
+			newDelta[index] = transition.toStub();
 			index++;
 		}
     	setDeltaArray(newDelta);
-    	((DefaultStateCache) getCache()).clearOutTransitionSet();
+    	getCache().clear();
     }
     
     /** Indicates if this graph currently stores any transitions. */
-    boolean storesOutTransition() {
+    boolean storesTransitionStubs() {
     	Element[] delta = getDeltaArray();
     	return delta.length > 0 && ! isTrueDeltaElement(delta[delta.length-1]);
     }
@@ -555,7 +594,7 @@ public class DefaultGraphState extends DeltaGraph implements GraphState {
      * @return <code>true</code> if <code>elem</code> is part of the true delta.
      */
     protected boolean isTrueDeltaElement(Element elem) {
-    	return !(elem instanceof GraphOutTransition);
+    	return !(elem instanceof GraphTransitionStub);
     }
     
     /**

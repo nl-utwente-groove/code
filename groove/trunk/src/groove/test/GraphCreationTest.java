@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphCreationTest.java,v 1.2 2007-03-30 15:50:40 rensink Exp $
+ * $Id: GraphCreationTest.java,v 1.3 2007-04-22 23:32:25 rensink Exp $
  */
 package groove.test;
 
@@ -33,7 +33,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class GraphCreationTest extends TestCase {
     protected static int NR_NODES_TOTAL = 9;
@@ -110,14 +110,9 @@ public class GraphCreationTest extends TestCase {
     }
     */
 
-    public void testCloneAndCompare() {
-        Graph g2 = g.clone();
-        assertEquals(g.nodeSet(),g2.nodeSet());
-        assertEquals(g.edgeSet(),g2.edgeSet());
-    }
-
     public void testAddRemoveContains() {
-        Graph g2 = g.clone();
+    	Set<Node> nodeSet = new HashSet<Node>(g.nodeSet());
+    	Set<Edge> edgeSet = new HashSet<Edge>(g.edgeSet());
 
         for (int i = 0; i < NR_EDGES; i++) {
              assertTrue(g.containsElement(e[i]));
@@ -136,8 +131,8 @@ public class GraphCreationTest extends TestCase {
              g.addEdge(e[i]);
         }
 
-        assertEquals(g.nodeSet(),g2.nodeSet());
-        assertEquals(g.edgeSet(),g2.edgeSet());
+        assertEquals(g.nodeSet(),nodeSet);
+        assertEquals(g.edgeSet(),edgeSet);
     }
 
     public void testGetOutEdges() {

@@ -25,7 +25,7 @@ import groove.util.TreeIntSet;
 /**
  * Class to test the various implementations of {@link groove.util.IntSet} regarding speed.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class IntSetSpeedTest {
 	static private final int SMALL_SAMPLE_SIZE = 500;
@@ -111,7 +111,7 @@ public class IntSetSpeedTest {
 	
 	private final IntSet object;
 	
-	static private final Reporter reporter = new Reporter(IntSetSpeedTest.class);
+	static private final Reporter reporter = Reporter.register(IntSetSpeedTest.class);
 	private final int[] TEST_RANDOM_SMALL = new int[] {
 			reporter.newMethod("Random, small sample:  "),
 			reporter.newMethod("          Fresh addition: "),

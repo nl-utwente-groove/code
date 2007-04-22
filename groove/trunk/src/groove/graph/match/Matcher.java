@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Matcher.java,v 1.3 2007-04-04 07:04:28 rensink Exp $
+ * $Id: Matcher.java,v 1.4 2007-04-22 23:32:27 rensink Exp $
  */
 package groove.graph.match;
 
@@ -81,5 +81,5 @@ public interface Matcher {
     Iterator<? extends NodeEdgeMap> getRefinementIter();
     
     /** Reporter instance to profile this interface. */
-	public static Reporter reporter = new Reporter(Matcher.class);
+	public static Reporter reporter = Reporter.register(Matcher.class);
 }

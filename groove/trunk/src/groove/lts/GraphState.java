@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphState.java,v 1.2 2007-04-20 08:41:06 rensink Exp $
+ * $Id: GraphState.java,v 1.3 2007-04-22 23:32:15 rensink Exp $
  */
 package groove.lts;
 
@@ -21,25 +21,26 @@ import groove.trans.RuleEvent;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Combination of graph and node functionality, used to store the state of a graph transition
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-04-20 08:41:06 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-22 23:32:15 $
  */
 public interface GraphState extends State {
 	/** Returns the graph contained in this state. */
 	public Graph getGraph();
-	
-    /**
-     * Returns an iterator over the current set of 
-     * outgoing transitions starting in this state, as {@link groove.lts.GraphOutTransition}s.
-     * @see #getTransitionIter()
-     */
-    public Iterator<GraphOutTransition> getOutTransitionIter();
-    
+//	
+//    /**
+//     * Returns an iterator over the current set of 
+//     * outgoing transitions starting in this state, as {@link groove.lts.GraphTransitionStub}s.
+//     * @see #getTransitionIter()
+//     */
+//    public Iterator<GraphTransitionStub> getOutTransitionIter();
+//    
     /**
      * Retrieves an outgoing transition with a given event, if it exists.
      * Yields <code>null</code> otherwise.
@@ -47,9 +48,8 @@ public interface GraphState extends State {
     public GraphState getNextState(RuleEvent prime);
     
     /**
-     * Returns an iterator over the current set f 
+     * Returns an iterator over the current set of 
      * outgoing transitions starting in this state, as {@link GraphTransition}s.
-     * @see #getOutTransitionIter()
      */
     public Iterator<GraphTransition> getTransitionIter();
 
@@ -57,7 +57,7 @@ public interface GraphState extends State {
      * Returns an unmodifiable set view on the currently generated 
      * outgoing transitions starting in this state.
      */
-    public Collection<GraphTransition> getTransitionSet();
+    public Set<GraphTransition> getTransitionSet();
 
     /**
      * Returns (a copy of) the set of next states reachable from this state, according to the
@@ -72,12 +72,9 @@ public interface GraphState extends State {
     public Iterator<GraphState> getNextStateIter();
 
     /**
-     * Add an outgoing transition to this state, if it is not yet there.
-     * The new transition is based on a given rule event and explicit target state.
-     * Returns the {@link GraphOutTransition} that was added, or <code>null</code>
-     * if no new transition was added.
+     * Adds an outgoing transition to this state, if it is not yet there.
      */
-    public GraphOutTransition addOutTransition(RuleEvent event, GraphState target);
+    public boolean addTransition(GraphTransition transition);
     
     /**
      * Tests if a certain transition is among the currently generated 
@@ -94,15 +91,10 @@ public interface GraphState extends State {
      * @see #isClosed()
      */
     public boolean setClosed();
-    
-    /**
-     * Conveys the information that the state will not be used in the LTS.
-     * This may give reason to do some cleanup.
-     */
-    public void dispose();
-
-    /* (non-Javadoc)
-     * @see groove.graph.State#clone()
-     */
-    public GraphState clone();
+//    
+//    /**
+//     * Conveys the information that the state will not be used in the LTS.
+//     * This may give reason to do some cleanup.
+//     */
+//    public void dispose();
 }

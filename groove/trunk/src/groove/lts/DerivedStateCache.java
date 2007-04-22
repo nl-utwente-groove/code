@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DerivedStateCache.java,v 1.2 2007-03-30 15:50:41 rensink Exp $
+ * $Id: DerivedStateCache.java,v 1.3 2007-04-22 23:32:14 rensink Exp $
  */
 package groove.lts;
 
@@ -20,26 +20,13 @@ import groove.graph.DeltaGraph;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DerivedStateCache extends DefaultStateCache {
 	/** Constructs a new cache for a given derived state graph. */
     public DerivedStateCache(DerivedGraphState graph) {
         super(graph);
     }
-
-	/**
-	 * This implementation returns a measure based on the footprint size of the state's rule.
-	 */
-    @Override
-	protected int computeFreezeDecrement(DeltaGraph graph) {
-		if (graph instanceof DerivedGraphState) {
-			return 4 * ((DerivedGraphState) graph).getRule().anchor().length;
-		} else {
-			return super.computeFreezeDecrement(graph);
-		}
-	}
-	
     /**
      * A derived state is never truly modifiable, but may appear so
      * during the time it is still being fixed. For the purpose of the cache, we 
@@ -48,5 +35,26 @@ public class DerivedStateCache extends DefaultStateCache {
     @Override
 	protected void initModifiableCache() {
 		initFixedCache();
+	}
+
+    @Override
+	protected FreezeCondition createFreezeCondition() {
+		return new StateFreezeCondition();
+	}
+
+	/** Specialisation that computes the freeze decrement differently. */
+    protected class StateFreezeCondition extends FreezeCondition {
+		/**
+		 * This implementation returns a measure based on the footprint size of
+		 * the state's rule.
+		 */
+		@Override
+		protected int computeFreezeDecrement(DeltaGraph graph) {
+			if (graph instanceof DerivedGraphState) {
+				return 4 * ((DerivedGraphState) graph).getRule().anchor().length;
+			} else {
+				return super.computeFreezeDecrement(graph);
+			}
+		}
 	}
 }

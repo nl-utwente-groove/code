@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.5 2007-04-01 12:50:39 rensink Exp $
+ * $Id: GraphTest.java,v 1.6 2007-04-22 23:32:26 rensink Exp $
  */
 package groove.test.graph;
 
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -264,21 +264,6 @@ public class GraphTest extends TestCase {
         assertTrue((elementCount - 5) >= partitionMap.size());
     }
     
-    final public void testClone() {
-        // graphs and clones should have equals node and edge sets
-        for (int i = 0; i < matchDom.length; i++) {
-            Object clone = matchDom[i].clone();
-            assertTrue(clone instanceof Graph);
-            assertTrue(isoChecker.areIsomorphic((Graph) clone,matchDom[i]));
-        }
-        // changes to the graph should not affect the clone
-        Graph clone = graph.clone();
-        int cloneSize = clone.size();
-        graph.addNode();
-        graph.addEdge(aTarget, cLabel, bTarget);
-        assertEquals(cloneSize, clone.size());
-    }
-
     final public void testNewGraph() {
         Graph newGraph = matchDom[0].newGraph();
         assertEquals(0, newGraph.nodeCount());
@@ -583,26 +568,6 @@ public class GraphTest extends TestCase {
         assertTrue(graph.isFixed());
         // fixedness of the graph is not tested, it is a precondition
         // so there is little else to do here
-    }
-
-    /*
-     * Test for boolean equals(Object)
-     */
-    final public void testEqualsObject() {
-        // according to the current implementation,
-        // equality is deferred to <tt>Object</tt>
-        // so not even graphs and their clones are equal
-        assertFalse(graph.equals(graph.clone()));
-    }
-
-    /*
-     * Test for boolean equals(GraphShape)
-     */
-    final public void testEqualsGraphShape() {
-        // according to the current implementation,
-        // equality is deferred to <tt>Object</tt>
-        // so not even graphs and their clones are equal
-        assertFalse(graph.equals(graph.clone()));
     }
 
     final public void testAddGraphListenerAdd() {

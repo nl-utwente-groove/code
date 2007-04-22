@@ -12,18 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphShape.java,v 1.4 2007-04-21 07:28:42 rensink Exp $
+ * $Id: AbstractGraphShape.java,v 1.5 2007-04-22 23:32:23 rensink Exp $
  */
 
 package groove.graph;
 
 import groove.rel.RelationEdge;
-import groove.util.CacheReference;
+import groove.util.AbstractCacheHolder;
 import groove.util.CollectionOfCollections;
 import groove.util.Groove;
-import groove.util.CacheHolder;
 import groove.util.Reporter;
-import groove.util.UnmodifiableCollectionView;
+import groove.util.SetView;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
@@ -33,15 +32,16 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Partial implementation of a graph. Records a set of <tt>GraphListener</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
-public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
+public abstract class AbstractGraphShape<C extends GraphShapeCache> extends AbstractCacheHolder<C> implements GraphShape {
     /**
      * Private copy of the static variable to allow compiler optimization.
      */
@@ -171,12 +171,12 @@ public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
      * This implementation retrieves the node-to-edges mapping from the cache,
      * and looks up the required set in the image for <tt>node</tt>.
      */
-    public Collection<? extends Edge> edgeSet(Node node) {
-        Collection<Edge> result = getCache().getNodeEdgeMap().get(node);
+    public Set<? extends Edge> edgeSet(Node node) {
+        Set<Edge> result = getCache().getNodeEdgeMap().get(node);
         if (result == null) {
             return Collections.emptySet();
         } else {
-            return Collections.unmodifiableCollection(result);
+            return Collections.unmodifiableSet(result);
         }
     }
     
@@ -184,16 +184,16 @@ public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
      * This implementation returns a set view on the incident edge set,
      * selecting just those edges of which <tt>end(i).equals(node)</tt>.
      */
-    public Collection<? extends Edge> edgeSet(final Node node, final int i) {
-        return new UnmodifiableCollectionView<Edge>(edgeSet(node)) {
+    public Set<? extends Edge> edgeSet(final Node node, final int i) {
+        return new SetView<Edge>(edgeSet(node)) {
         	@Override
             public boolean approves(Object obj) {
-                return ((Edge) obj).end(i).equals(node);
+                return obj instanceof Edge && ((Edge) obj).end(i).equals(node);
             }
         };
     }
-    
-    public Collection<? extends Edge> outEdgeSet(Node node) {
+
+    public Set<? extends Edge> outEdgeSet(Node node) {
         return edgeSet(node, Edge.SOURCE_INDEX);
     }
     
@@ -214,56 +214,56 @@ public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
     }
 
     public Map<Label, ? extends Set<? extends Edge>> labelEdgeMap(int i) {
-        return Collections.unmodifiableMap(getLabelEdgeMaps()[i]);
+        return Collections.unmodifiableMap(getLabelEdgeMaps().get(i));
     }
 
     /**
      * Returns the array of label-to-edge maps from the graph cache.
      * @return the array of label-to-edge maps from the graph cache
      */
-    protected Map<Label, Set<Edge>>[] getLabelEdgeMaps() {
+    protected List<Map<Label,Set<Edge>>> getLabelEdgeMaps() {
         return getCache().getLabelEdgeMaps();
     }
-    
-    /**
-     * Computes an array containing mappings from a label to the set of edges
-     * with that label, indexed by the arity of the edges.
-     * @return the computed mapping
-     */
-    protected Map<Label, Set<Edge>>[] computeArityLabelEdgeMap() {
-        Map<Label, Set<Edge>>[] result = new Map[AbstractEdge.getMaxEndCount()];
-        for (int arity = 0; arity < result.length; arity++) {
-            result[arity] = new HashMap<Label, Set<Edge>>();
-        }
-        for (Edge edge: edgeSet()) {
-            Map<Label, Set<Edge>> labelEdgeMap = result[edge.endCount() - 1];
-            Set<Edge> labelEdgeSet = labelEdgeMap.get(edge.label());
-            if (labelEdgeSet == null) {
-                labelEdgeSet = new HashSet<Edge>();
-                labelEdgeMap.put(edge.label(), labelEdgeSet);
-            }
-            labelEdgeSet.add(edge);
-        }
-        return result;
-    }
-
-    /** 
-     * Computes and returns a mapping from nodes to sets of outgoing edges for that node.
-     * The map returns <tt>null</tt> for nodes without outgoing edges.
-     * @return the computed mapping
-     */
-    protected Map<Node, Set<Edge>> computeOutEdgeMap() {
-        Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>();
-        for (Edge edge: edgeSet()) {
-            Node source = edge.source();
-            Set<Edge> outEdgeSet = result.get(source);
-            if (outEdgeSet == null) {
-                result.put(source, outEdgeSet = new HashSet<Edge>());
-            }
-            outEdgeSet.add(edge);
-        }
-        return result;
-    }
+//    
+//    /**
+//     * Computes an array containing mappings from a label to the set of edges
+//     * with that label, indexed by the arity of the edges.
+//     * @return the computed mapping
+//     */
+//    protected Map<Label, Set<Edge>>[] computeArityLabelEdgeMap() {
+//        Map<Label, Set<Edge>>[] result = new Map[AbstractEdge.getMaxEndCount()];
+//        for (int arity = 0; arity < result.length; arity++) {
+//            result[arity] = new HashMap<Label, Set<Edge>>();
+//        }
+//        for (Edge edge: edgeSet()) {
+//            Map<Label, Set<Edge>> labelEdgeMap = result[edge.endCount() - 1];
+//            Set<Edge> labelEdgeSet = labelEdgeMap.get(edge.label());
+//            if (labelEdgeSet == null) {
+//                labelEdgeSet = new HashSet<Edge>();
+//                labelEdgeMap.put(edge.label(), labelEdgeSet);
+//            }
+//            labelEdgeSet.add(edge);
+//        }
+//        return result;
+//    }
+//
+//    /** 
+//     * Computes and returns a mapping from nodes to sets of outgoing edges for that node.
+//     * The map returns <tt>null</tt> for nodes without outgoing edges.
+//     * @return the computed mapping
+//     */
+//    protected Map<Node, Set<Edge>> computeOutEdgeMap() {
+//        Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>();
+//        for (Edge edge: edgeSet()) {
+//            Node source = edge.source();
+//            Set<Edge> outEdgeSet = result.get(source);
+//            if (outEdgeSet == null) {
+//                result.put(source, outEdgeSet = new HashSet<Edge>());
+//            }
+//            outEdgeSet.add(edge);
+//        }
+//        return result;
+//    }
 
     public GraphInfo getInfo() {
         return graphInfo;
@@ -282,13 +282,13 @@ public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
     }
 
     public boolean isFixed() {
-        return !getCacheReference().isStrong();
+        return listeners == null;
     }
     
     public void setFixed() {
         if (!isFixed()) {
         	registerFixed();
-            listeners = null;
+    		listeners = null;
             if (GATHER_STATISTICS) {
                 modifiableGraphCount--;
             }
@@ -297,14 +297,10 @@ public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
 
 	/**
 	 * Callback method to register that the graph should be set to fixed.
-	 * Called from {@link #setFixed()} in case the graph is actually currently fixed.
+	 * Called from {@link #setFixed()} if the graph is actually currently not fixed.
 	 */
 	protected void registerFixed() {
-		if (getCacheReference().get() == null) {
-			setCacheReference(CacheReference.getNullInstance(false));
-		} else {
-			getCacheReference().setSoft();
-		}
+		setCacheCollectable();
 	}
 
     /** Calls {@link #toString(GraphShape)}. */
@@ -332,7 +328,7 @@ public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
      * Adds a graph listener to this graph.
      */
     public synchronized void addGraphListener(GraphShapeListener listener) {
-        if (!isFixed()) {
+        if (listeners != null) {
             listeners.put(listener,null);
         }
     }
@@ -392,55 +388,56 @@ public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
         }
     }
 
-    /**
-     * Returns a graph cache for this graph.
-     * The graph cache is newly created, using {@link #createCache()}, if no
-     * cache is currently set. A reference to the cache is created using
-     * {@link #createCacheReference(GraphCache)}.
-     * @return a graph cache for this graph
-     */
-    public GraphShapeCache getCache() {
-        GraphShapeCache result = cacheReference.get();
-        if (result == null) {
-            cacheReference = createCacheReference(result = createCache());
-        }
-        return result;
-    }
+//    /**
+//     * Returns a graph cache for this graph.
+//     * The graph cache is newly created, using {@link #createCache()}, if no
+//     * cache is currently set. A reference to the cache is created using
+//     * {@link #createCacheReference(GraphCache)}.
+//     * @return a graph cache for this graph
+//     */
+//    public GraphShapeCache getCache() {
+//        GraphShapeCache result = cacheReference.get();
+//        if (result == null) {
+//            cacheReference = createCacheReference(result = createCache());
+//        }
+//        return result;
+//    }
 
     /**
 	 * Factory method for a graph cache.
 	 * This implementation returns a {@link GraphCache}.
 	 * @return the graph cache
 	 */
-	protected GraphShapeCache createCache() {
-	    return new GraphShapeCache(this);
+    @Override
+	protected C createCache() {
+	    return (C) new GraphShapeCache(this);
 	}
-
-	/**
-     * Returns the current reference to the graph cache for this graph.
-     * The referent may be <tt>null</tt>.
-     * @return the current reference to the graph cache for this graph
-     */
-    final public CacheReference<? extends GraphShapeCache> getCacheReference() {
-        return cacheReference;
-    }
-
-    /**
-     * Sets the current reference to the graph cache to the given value.
-     * @param cacheReference the new graph cache reference
-     */
-    final public void setCacheReference(CacheReference cacheReference) {
-        this.cacheReference = cacheReference;
-    }
-
-    /**
-     * Factory method for a reference to a given graph cache.
-     * @param referent the graph cache for which to create a reference
-     * @return This implementation returns a {@link CacheReference}.
-     */
-    protected <C extends GraphShapeCache> CacheReference<C> createCacheReference(C referent) {
-        return CacheReference.<C>getInstance(this, referent);
-    }
+//
+//	/**
+//     * Returns the current reference to the graph cache for this graph.
+//     * The referent may be <tt>null</tt>.
+//     * @return the current reference to the graph cache for this graph
+//     */
+//    final public CacheReference<? extends GraphShapeCache> getCacheReference() {
+//        return cacheReference;
+//    }
+//
+//    /**
+//     * Sets the current reference to the graph cache to the given value.
+//     * @param cacheReference the new graph cache reference
+//     */
+//    final public void setCacheReference(CacheReference cacheReference) {
+//        this.cacheReference = cacheReference;
+//    }
+//
+//    /**
+//     * Factory method for a reference to a given graph cache.
+//     * @param referent the graph cache for which to create a reference
+//     * @return This implementation returns a {@link CacheReference}.
+//     */
+//    protected <C extends GraphShapeCache> CacheReference<C> createCacheReference(C referent) {
+//        return CacheReference.<C>getInstance(this, referent);
+//    }
 
     /** 
      * Cleares the stored graph cache reference.
@@ -449,21 +446,20 @@ public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
      */
     public void clearCache() {
         if (GATHER_STATISTICS) {
-            if (cacheReference.get() != null) {
+            if (!isCacheCleared()) {
                 cacheClearCount++;
             }
         }
         getCacheReference().clear();
-//        cacheReference = createNullReference();
     }
-
-    /**
-     * Signals if the current cache reference contains a <code>null</code> value.
-     * @return <tt>true</tt> if the current cache reference is <code>null</code>, <tt>false</tt> otherwise
-     */
-    public final boolean isCacheCleared() {
-        return cacheReference.get() == null;
-    }
+//
+//    /**
+//     * Signals if the current cache reference contains a <code>null</code> value.
+//     * @return <tt>true</tt> if the current cache reference is <code>null</code>, <tt>false</tt> otherwise
+//     */
+//    public final boolean isCacheCleared() {
+//        return cacheReference.get() == null;
+//    }
 //
 //    /** 
 //     * Callback method invoked when the cache of this graph has been
@@ -500,14 +496,14 @@ public abstract class AbstractGraphShape implements GraphShape, CacheHolder {
      * Set of  {@link GraphListener} s to be identified of changes in this graph. Set to <tt>null</tt> when the graph is fixed.
      */
     protected Map<GraphShapeListener,Object> listeners = new HashMap<GraphShapeListener,Object>();
-
-    /**
-     * Weak referece to the current graph cache.
-     * Initialized by a call of the factory method, {@link #createCache()}.
-     * @invariant <tt>graphCache.get() == null || labelEdgeMap.get() instanceof GraphCache.
-     * @see #createCache()
-     */
-    private CacheReference<? extends GraphShapeCache> cacheReference = CacheReference.getNullInstance();
+//
+//    /**
+//     * Weak referece to the current graph cache.
+//     * Initialized by a call of the factory method, {@link #createCache()}.
+//     * @invariant <tt>graphCache.get() == null || labelEdgeMap.get() instanceof GraphCache.
+//     * @see #createCache()
+//     */
+//    private CacheReference<? extends GraphShapeCache> cacheReference = CacheReference.getNullInstance();
 
     /**
      * Map in which varies kinds of data can be stored.

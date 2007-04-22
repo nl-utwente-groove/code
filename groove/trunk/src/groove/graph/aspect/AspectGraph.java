@@ -16,14 +16,6 @@
  */
 package groove.graph.aspect;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -36,6 +28,13 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.NodeSetEdgeSetGraph;
 import groove.util.FormatException;
 import groove.util.Groove;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Graph implementation to convert from a label prefix representation
@@ -196,8 +195,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * Specialises the return type.
 	 */
 	@Override
-	public Collection<AspectEdge> outEdgeSet(Node node) {
-		return (Collection<AspectEdge>) super.outEdgeSet(node);
+	public Set<AspectEdge> outEdgeSet(Node node) {
+		return (Set<AspectEdge>) super.outEdgeSet(node);
 	}
 
 	/**

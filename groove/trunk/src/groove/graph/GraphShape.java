@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphShape.java,v 1.4 2007-03-30 15:50:24 rensink Exp $
+ * $Id: GraphShape.java,v 1.5 2007-04-22 23:32:22 rensink Exp $
  */
 package groove.graph;
 
@@ -24,7 +24,7 @@ import java.util.Set;
 /**
  * Model of a graph shape, consisting of nodes and labelled edges between them..
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-03-30 15:50:24 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-22 23:32:22 $
  */
 public interface GraphShape extends java.io.Serializable {
     /**
@@ -94,7 +94,7 @@ public interface GraphShape extends java.io.Serializable {
       * @ensure result == { edge \in E | \exists i: edge.end(i).equals(node) }
       * @see #edgeSet(Node, int)
       */
-    Collection<? extends Edge> edgeSet(Node node);
+    Set<? extends Edge> edgeSet(Node node);
 
     /**
      * Returns the set of incident edges of a given node of this graph,
@@ -109,7 +109,7 @@ public interface GraphShape extends java.io.Serializable {
      * @see #edgeSet(Node)
      * @see #outEdgeSet(Node)
      */
-    Collection<? extends Edge> edgeSet(Node node, int i);
+    Set<? extends Edge> edgeSet(Node node, int i);
 
     /**
      * Returns the set of outgoing edges of a given node of this graph.

@@ -12,22 +12,25 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaGraphCache.java,v 1.2 2007-03-30 15:50:23 rensink Exp $
+ * $Id: DeltaGraphCache.java,v 1.3 2007-04-22 23:32:22 rensink Exp $
  */
 package groove.graph;
 
 import groove.util.CollectionOfCollections;
+import groove.util.Condition;
 import groove.util.DeltaSet;
 import groove.util.StackedSet;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DeltaGraphCache extends GraphCache {
     /**
@@ -183,6 +186,12 @@ public class DeltaGraphCache extends GraphCache {
 		getGraph().applyDelta(cacheDelta);
 	}
 
+	/**
+	 * Computes the node set of the underlying graph, by applying the
+	 * cache delta to the basis (if the basis exists) or to an empty set.
+	 * @see #getCacheBasis()
+	 * @see #getCacheDelta()
+	 */
 	protected Set<Node> computeNodeSet() {
 		reporter.start(COMPUTE_NODE_SET);
 		Set<Node> result;
@@ -197,6 +206,12 @@ public class DeltaGraphCache extends GraphCache {
 		return result;
 	}
 
+	/**
+	 * Computes the edge set of the underlying graph, by applying the
+	 * cache delta to the basis (if the basis exists) or to an empty set.
+	 * @see #getCacheBasis()
+	 * @see #getCacheDelta()
+	 */
     protected Set<Edge> computeEdgeSet() {
     	reporter.start(COMPUTE_EDGE_SET);
     	Set<Edge> result;
@@ -217,7 +232,7 @@ public class DeltaGraphCache extends GraphCache {
      * Otherwise, delegates to super.
      */
     @Override
-    protected Map<Label, Set<Edge>>[] computeLabelEdgeMaps() {
+    protected List<Map<Label, Set<Edge>>> computeLabelEdgeMaps() {
     	// the cache basis
     	Graph basis = getCacheBasis();
     	if (!(basis instanceof AbstractGraph)) {
@@ -229,11 +244,12 @@ public class DeltaGraphCache extends GraphCache {
     		// otherwise, we can use the cache delta
             reporter.start(COMPUTE_LABEL_EDGE_MAP);
     		DeltaApplier delta = getCacheDelta();
-    		final Map<Label, Set<Edge>>[] basisMaps = ((AbstractGraph) basis).getLabelEdgeMaps();
-			final Map<Label, Set<Edge>>[] result = new Map[basisMaps.length];
-			for (int i = 1; i < result.length; i++) {
-				if (basisMaps[i] != null) {
-					result[i] = new HashMap<Label,Set<Edge>>(basisMaps[i]);
+    		final List<Map<Label, Set<Edge>>> basisMaps = ((AbstractGraph) basis).getLabelEdgeMaps();
+			final List<Map<Label, Set<Edge>>> result = new ArrayList<Map<Label,Set<Edge>>>();//[basisMaps.length];
+			result.add(null);
+			for (int i = 1; i < basisMaps.size(); i++) {
+				if (basisMaps.get(i) != null) {
+					result.add(new HashMap<Label,Set<Edge>>(basisMaps.get(i)));
 				}
 			}
 			DeltaTarget target = new DeltaTarget() {
@@ -255,8 +271,8 @@ public class DeltaGraphCache extends GraphCache {
 			};
 			delta.applyDelta(target, DeltaApplier.EDGES_ONLY);
 			reporter.stop();
-			assert getEdgeSet().containsAll(new CollectionOfCollections<Edge>(result[2].values())) : "Edges not correct: "
-					+ getEdgeSet() + " does not contains all of " + result[2].values();
+			assert getEdgeSet().containsAll(new CollectionOfCollections<Edge>(result.get(2).values())) : "Edges not correct: "
+					+ getEdgeSet() + " does not contains all of " + result.get(2).values();
 			return result;
 		}
     }
@@ -354,14 +370,14 @@ public class DeltaGraphCache extends GraphCache {
      * @return <code>true</code> if the edge was indeed added, i.e., was not
      * yet there in the first place
      */
-    boolean addToLabelEdgeMaps(Map<Label, Set<Edge>>[] newMaps, Edge edge, Map<Label, Set<Edge>>[] basisMaps) {
+    boolean addToLabelEdgeMaps(List<Map<Label, Set<Edge>>> newMaps, Edge edge, List<Map<Label, Set<Edge>>> basisMaps) {
 		int arity = edge.endCount();
-		Map<Label,Set<Edge>> labelEdgeMap = newMaps[arity];
+		Map<Label,Set<Edge>> labelEdgeMap = newMaps.get(arity);
 		Set<Edge> labelEdgeSet = labelEdgeMap.get(edge.label());
 		if (labelEdgeSet == null) {
 			labelEdgeSet = createEdgeSet(null);
 			labelEdgeMap.put(edge.label(), labelEdgeSet);
-		} else if (labelEdgeSet == basisMaps[arity].get(edge.label())) {
+		} else if (labelEdgeSet == basisMaps.get(arity).get(edge.label())) {
 			labelEdgeSet = createEdgeSet(labelEdgeSet);
 			labelEdgeMap.put(edge.label(), labelEdgeSet);
 		}
@@ -377,10 +393,10 @@ public class DeltaGraphCache extends GraphCache {
 	 *            the edge to be removed
      * @return <code>true</code> if the edge was actually there in the first place
 	 */
-    boolean removeFromLabelEdgeMaps(Map<Label, Set<Edge>>[] newMaps, Edge edge, Map<Label, Set<Edge>>[] basisMaps) {
-		Map<Label,Set<Edge>> labelEdgeMap = newMaps[edge.endCount()];
+    boolean removeFromLabelEdgeMaps(List<Map<Label, Set<Edge>>> newMaps, Edge edge, List<Map<Label, Set<Edge>>> basisMaps) {
+		Map<Label,Set<Edge>> labelEdgeMap = newMaps.get(edge.endCount());
 		Set<Edge> labelEdgeSet = labelEdgeMap.get(edge.label());
-		if (labelEdgeSet == basisMaps[edge.endCount()].get(edge.label())) {
+		if (labelEdgeSet == basisMaps.get(edge.endCount()).get(edge.label())) {
 			labelEdgeSet = createEdgeSet(labelEdgeSet);
 			labelEdgeMap.put(edge.label(), labelEdgeSet);
 		}
@@ -512,121 +528,45 @@ public class DeltaGraphCache extends GraphCache {
     	edgeSet = null;
     	cacheDelta = null;
         cacheBasis = null;
-        freezeDistance = INIT_DISTANCE;
+        freezeCondition = null;
     }
-//
-//	/**
-//	 * The basis of the underlying graph, or <code>null</code> if the underlying
-//	 * graph is frozen.
-//	 */
-//	protected Graph getGraphBasis() {
-//		if (isFrozen()) {
-//			return null;
-//		} else {
-//			return getGraph().getBasis();
-//		}
-//	}
-//
-//	/**
-//	 * Returns the checkpoint of this cache.
-//	 * The checkpoint is the graph with respect to which the added and removed sets
-//	 * have been computed.
-//	 * Looks up the checkpoint first, using {@link #initOrigin()}, if this has
-//	 * not yet been done. 
-//	 */
-//	protected Graph getOrigin() {
-//		if (! isOriginSet()) {
-//			initOrigin();
-//		}
-//		return origin;
-//	}
 
 	/**
 	 * Suggests that it might be worth considering checkpointing the underlying graph.
-	 * The suggestion is followed if {@link #getFreezeDistance()} supports it;
+	 * The suggestion is followed if {@link #getFreezeCondition()} supports it;
 	 * if so, {@link #notifySetFrozen()} is called to actually checkpoint the graph.
 	 * The return value indicates if the graph was indeed ckheckpointed.
 	 */
 	protected boolean suggestSetFrozen() {
 		if (isFrozen()) {
 			return true;
-		} else if (getFreezeDistance() < 0) {
+		} else if (getFreezeCondition().isSatisfied(this)) {
 			getGraph().setFrozen();
 			return true;
 		} else {
 			return false;
 		}
 	}
-
-	/**
-	 * Returns the checkpoint distance of this cache.
-	 * The checpoint distance is a measure used to determine whether the underlying
-	 * graph should be checkpointed. The lower the measure, the more urgent the
-	 * need to checkpoint the graph; if it is <code>0</code>, checkpointing is in order.
-	 * Computes the checkpoint distance first, using {@link #initOrigin()}, if this has
-	 * not yet been done. 
-	 */
-	protected int getFreezeDistance() {
-		if (freezeDistance == INIT_DISTANCE) {
-			freezeDistance = computeFreezeDistance();
+	
+	/** Returns the condition that decides whether the underlying graph should be frozen. */
+	final protected FreezeCondition getFreezeCondition() {
+		if (freezeCondition == null) {
+			freezeCondition = createFreezeCondition();
 		}
-		return freezeDistance;
+		return freezeCondition;
 	}
-//	
-//	/**
-//	 * Tests if the origin has been initialized.
-//	 * Callback mathod from {@link #isFrozen()} and {@link #getFreezeDistance()}.
-//	 */
-//	protected boolean isOriginSet() {
-//		return freezeDistance != INIT_DISTANCE;
-//	}
+	
+	/** Returns the condition that decides whether the underlying graph should be frozen. */
+	protected FreezeCondition createFreezeCondition() {
+		return new FreezeCondition();
+	}
 
-	/**
-	 * Initializes the origin and origin distance.
-	 * Callback mathod from {@link #isFrozen()} and {@link #getFreezeDistance()}.
+	/** 
+	 * Retrieves the node set of a given graph.
+	 * This is either done through the graph's cache, if that exists,
+	 * or by querying the graph itself.
+	 * @see #getDeltaCache(Graph)
 	 */
-	protected int computeFreezeDistance() {
-		int result;
-		DeltaGraph graph = getGraph();
-		if (isFrozen()) {
-			result = computeFreezeMeasure(graph);
-		} else {
-			DeltaGraphCache basisCache = getDeltaCache(graph.getBasis());
-			if (basisCache == null) {
-				result = 1;
-			} else if (basisCache.isFrozen()) {
-				result = basisCache.getFreezeDistance();
-			} else {
-				result = basisCache.getFreezeDistance() - computeFreezeDecrement(basisCache.getGraph());
-//				if (result < 0 && basisCache.suggestSetFrozen()) {
-//					// now the basis cache is after all frozen
-//					result = basisCache.getFreezeDistance();
-//				}
-			}
-		}
-		return result;
-	}
-
-	/**
-	 * Computes the freezing measure for a given (frozen) graph.
-	 * This is a measure for when the next graph should be frozen.
-	 * @see #getFreezeDistance()
-	 * @see #computeFreezeDecrement(DeltaGraph)
-	 */
-	protected int computeFreezeMeasure(Graph graph) {
-		int graphSize = graph instanceof DeltaGraph ? ((DeltaGraph) graph).getDeltaSize() : graph.size();
-		return 2 * graphSize;
-	}
-
-	/**
-	 * Computes the difference in freezing distance caused by a given delta graph.
-	 * This is subtracted from the freezing distance of the basis.
-	 * @see #getFreezeDistance()
-	 */
-	protected int computeFreezeDecrement(DeltaGraph graph) {
-		return graph.getDeltaSize();
-	}
-
 	protected Set<? extends Edge> getEdgeSet(Graph graph) {
 		DeltaGraphCache cache = getDeltaCache(graph);
 		if (cache == null) {
@@ -636,6 +576,12 @@ public class DeltaGraphCache extends GraphCache {
 		}
 	}
 
+	/** 
+	 * Retrieves the edge set of a given graph.
+	 * This is either done through the graph's cache, if that exists,
+	 * or by querying the graph itself.
+	 * @see #getDeltaCache(Graph)
+	 */
 	protected Set<? extends Node> getNodeSet(Graph graph) {
 		DeltaGraphCache cache = getDeltaCache(graph);
 		if (cache == null) {
@@ -713,7 +659,7 @@ public class DeltaGraphCache extends GraphCache {
 	 */
 	protected DeltaGraphCache getDeltaCache(Graph graph) {
 		if (graph instanceof DeltaGraph && !((DeltaGraph) graph).isCacheCleared()) {
-			return ((DeltaGraph) graph).getDeltaCache();
+			return ((DeltaGraph<?>) graph).getCache();
 		} else {
 			return null;
 		}
@@ -762,18 +708,89 @@ public class DeltaGraphCache extends GraphCache {
      * If <code>distance == 0</code>, the underlying graph is itself a checkpoint.
      * The initial value is set to negative, to indicate that the distance has not been initializd.
      */
-    private int freezeDistance = INIT_DISTANCE;
+    private FreezeCondition freezeCondition;
     /** Flag indicating that the underlying graph is frozen. */
     private boolean frozen;
-    /**
-     * Initial value for {@link #freezeDistance}, which indicates that it 
-     * has not yet been computed.
-     */
-    static private final int INIT_DISTANCE = Integer.MAX_VALUE; 
-	/**
-	 * The treshhold for the depth: when it grows above this size the graph is frozen.
-	 */
-	public static final int FREEZE_DEPTH = 8;
+    
+    /** Condition testing if a given graph is eligible for freezing. */
+    protected class FreezeCondition implements Condition<DeltaGraphCache> {
+		public boolean isSatisfied(DeltaGraphCache subject) {
+			return getFreezeDistance() < 0;
+		}    	
+		
+		/**
+		 * Returns the checkpoint distance of this cache.
+		 * The checpoint distance is a measure used to determine whether the underlying
+		 * graph should be checkpointed. The lower the measure, the more urgent the
+		 * need to checkpoint the graph; if it is <code>0</code>, checkpointing is in order.
+		 */
+		int getFreezeDistance() {
+			if (freezeDistance == INIT_DISTANCE) {
+				freezeDistance = computeFreezeDistance();
+			}
+			return freezeDistance;
+		}
+		
+		/** Resets the condition to its initial state. */
+		void reset() {
+			freezeDistance = INIT_DISTANCE;
+		}
+		
+		/**
+		 * Initializes the origin and origin distance.
+		 * Callback mathod from {@link #isFrozen()} and {@link #getFreezeDistance()}.
+		 */
+		private int computeFreezeDistance() {
+			int result;
+			DeltaGraph graph = getGraph();
+			if (isFrozen()) {
+				result = computeFreezeMeasure(graph);
+			} else {
+				DeltaGraphCache basisCache = getDeltaCache(graph.getBasis());
+				if (basisCache == null) {
+					result = 1;
+				} else if (basisCache.isFrozen()) {
+					result = basisCache.getFreezeCondition().getFreezeDistance();
+				} else {
+					result = basisCache.getFreezeCondition().getFreezeDistance() - computeFreezeDecrement(basisCache.getGraph());
+				}
+			}
+			return result;
+		}
+
+		/**
+		 * Computes the freezing measure for a given (frozen) graph.
+		 * This is a measure for when the next graph should be frozen.
+		 * @see #getFreezeDistance()
+		 * @see #computeFreezeDecrement(DeltaGraph)
+		 */
+		private int computeFreezeMeasure(Graph graph) {
+			int graphSize = graph instanceof DeltaGraph ? ((DeltaGraph) graph).getDeltaSize() : graph.size();
+			return 2 * graphSize;
+		}
+
+		/**
+		 * Computes the difference in freezing distance caused by a given delta graph.
+		 * This is subtracted from the freezing distance of the basis.
+		 * @see #getFreezeDistance()
+		 */
+		protected int computeFreezeDecrement(DeltaGraph graph) {
+			return graph.getDeltaSize();
+		}
+		
+	    /**
+	     * The distance between the checkpoint and the underlying graph of this cache.
+	     * If <code>distance == 0</code>, the underlying graph is itself a checkpoint.
+	     * The initial value is set to negative, to indicate that the distance has not been initializd.
+	     */
+	    private int freezeDistance = INIT_DISTANCE;
+	    
+	    /**
+	     * Initial value for {@link #freezeDistance}, which indicates that it 
+	     * has not yet been computed.
+	     */
+	    static private final int INIT_DISTANCE = Integer.MAX_VALUE; 
+    }
     
     static final int INIT_DELTA = reporter.newMethod("computeCacheDelta()");
     static final int NODESET_LOWER = reporter.newMethod("setFixed - lower");

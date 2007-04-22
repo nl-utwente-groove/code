@@ -17,7 +17,6 @@
 package groove.lts;
 
 import groove.graph.Element;
-import groove.trans.Rule;
 import groove.trans.RuleEvent;
 
 /**
@@ -25,17 +24,23 @@ import groove.trans.RuleEvent;
  * These objects typically do not store the source of the transition;
  * instead they are stored inside by the source state.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.1 $
  */
-interface GraphOutTransition extends Element {
-	/**
-	 * Returns the transformation event of this transition.
+interface GraphTransitionStub extends Element {
+//	/**
+//	 * Returns the transformation event of this transition.
+//	 */
+//	public RuleEvent getEvent();
+//	/**
+//	 * Returns the underlying rule of this graph transition.
+//	 */
+//	public abstract Rule getRule();
+	
+	/** 
+	 * Returns the event that underlies the transition from a given source
+	 * to this object.
 	 */
-	public RuleEvent getEvent();
-	/**
-	 * Returns the underlying rule of this graph transition.
-	 */
-	public abstract Rule getRule();
+	RuleEvent getEvent(GraphState source);
 
 	/**
 	 * Returns the target state of this graph transition.
@@ -43,7 +48,7 @@ interface GraphOutTransition extends Element {
 	 * {@link groove.graph.BinaryEdge#target()}, but this implementation always 
 	 * returns a {@link GraphState}.
 	 */
-	public abstract GraphState target();
+	GraphState target();
 
 	/** 
 	 * Constructs a graph transition from this out-transition,
@@ -52,5 +57,5 @@ interface GraphOutTransition extends Element {
 	 * @return A graph transition based on the given source, and the
 	 * rule, anchor images and target state stored in this out-transition.
 	 */
-	public abstract GraphTransition createTransition(GraphState source);
+	GraphTransition createTransition(GraphState source);
 }

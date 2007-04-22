@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HashSpeedTest.java,v 1.1.1.2 2007-03-20 10:42:54 kastenberg Exp $
+ * $Id: HashSpeedTest.java,v 1.2 2007-04-22 23:32:25 rensink Exp $
  */
 package groove.test;
 
@@ -36,7 +36,7 @@ import groove.util.Reporter;
  * <li> Iterating over the keyset and getting the image versus iterating over the entry set.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class HashSpeedTest {
     static final int CREATE_TRY_COUNT = 500000;
@@ -235,7 +235,7 @@ public class HashSpeedTest {
         Reporter.report();
     }
 
-    static final Reporter reporter = new Reporter(HashSpeedTest.class);
+    static final Reporter reporter = Reporter.register(HashSpeedTest.class);
     static final int CREATE = reporter.newMethod("create");
     static final int CLEAR = reporter.newMethod("clear");
     static final int KEY = reporter.newMethod("key");

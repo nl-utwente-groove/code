@@ -12,20 +12,22 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Reporter.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: Reporter.java,v 1.2 2007-04-22 23:32:24 rensink Exp $
  */
 package groove.util;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * Class used to generate performance reports.
  * Performance reports concern number of calls made and time taken.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class Reporter {
     // ------------------------------- switches ----------------------------------
@@ -49,8 +51,14 @@ public class Reporter {
     /** Field name of the average duration */
     static public final String AVG_TIME_FIELD = "avg(mu)";
 
+    /** Returns a reporter for a given type. */
     static public Reporter register(Class<?> type) {
-        return new Reporter(type);
+    	Reporter result = reporters.get(type);
+    	if (result == null) {
+    		result = new Reporter(type);
+            reporters.put(type, result);
+    	}
+        return result;
     }
 
     /**
@@ -70,7 +78,7 @@ public class Reporter {
             int totTimeLength = 0;
             int avgTimeLength = 0;
             int classNameLength = 0;
-            for (Reporter reporter: reporters) {
+            for (Reporter reporter: reporters.values()) {
                 reporter.calculateFieldWidths();
                 methodNameLength = Math.max(reporter.methodNameLength, methodNameLength);
                 topCountLength = Math.max(reporter.topCountLength, topCountLength);
@@ -89,7 +97,7 @@ public class Reporter {
             out.println(line);
             out.println();
             // print the method reports from the individual reporters
-            for (Reporter reporter: new HashSet<Reporter>(reporters)) {
+            for (Reporter reporter: reporters.values()) {
                 reporter.myReport(
                     out,
                     methodNameLength,
@@ -101,7 +109,7 @@ public class Reporter {
             }
             // print the total amounts of time measured by the reporters
             out.println("Total measured time spent in");
-            for (Reporter reporter: reporters) {
+            for (Reporter reporter: reporters.values()) {
                 out.println(INDENT + Groove.pad(reporter.type.toString(), classNameLength, false) + ": " + reporter.totalTime + " ms");
             }
             out.println();
@@ -115,21 +123,21 @@ public class Reporter {
             out.println("Method call reporting has been switched off");
         }
     }
-    
+
+    /**
+     * Returns the total time spent in measuring.
+     */
     static public long getTotalTime() {
         return reportTime;
     }
 
+    /**
+     * Prints a report of the measured data on the standard output.
+     * @see #report(PrintWriter)
+     */
     static public void report() {
         report(new PrintWriter(System.out));
     }
-//
-//    static private String pad(Object text, int length) {
-//        StringBuffer res = new StringBuffer(text.toString());
-//        while (res.length() < length)
-//            res.insert(0," ");
-//        return res.toString();
-//    }
 
     /** The expected maximal nesting depth. */
     static private final int MAX_NESTING = 50;
@@ -139,16 +147,20 @@ public class Reporter {
     static private final boolean TIME_METHODS = true;
     /** Flag to control whether all executions or just top-level ones are reported. */
     static private final boolean TIME_TOP_ONLY = TIME_METHODS && false;
-    /** List of all registered reporters */
-    static private List<Reporter> reporters = new ArrayList<Reporter>();
+    /** Sorted map of all registered reporters */
+    static private Map<Class,Reporter> reporters = new TreeMap<Class,Reporter>(new Comparator<Class>() {
+		public int compare(Class o1, Class o2) {
+			return o1.getName().compareTo(o2.getName());
+		}
+    });
     /** System time spent reporting */
     static private long reportTime;
 
     // ------------------------------- instance methods --------------------------
 
-    public Reporter(Class<?> type) {
+    /** Constructor for a new instance. */
+    private Reporter(Class<?> type) {
         this.type = type;
-        reporters.add(this);
     }
 
     /**
@@ -194,6 +206,10 @@ public class Reporter {
         return topCount[method]+nestedCount[method];
     }
     
+    /** 
+     * Returns the method name associated with a given index.
+     * The index should be obtained by {@link #newMethod(String)}.
+     */
     public String getMethodName(int method) {
     	return methodNames.get(method);
     }

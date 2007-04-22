@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaGraph.java,v 1.5 2007-04-21 07:28:42 rensink Exp $
+ * $Id: DeltaGraph.java,v 1.6 2007-04-22 23:32:23 rensink Exp $
  */
 package groove.graph;
 
@@ -30,9 +30,9 @@ import java.util.Set;
  * the changes. This implementation caches the element set so as to avoid too frequent
  * reconstruction.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
-public class DeltaGraph extends AbstractGraph implements DeltaApplier {
+public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> implements DeltaApplier {
     /**
      * An empty array constant, to share in order to save space.
      */
@@ -130,11 +130,11 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
         }
         return result;
     }
-    
-    @Override
-	public boolean isFixed() {
-		return isDeltaArraySet();
-	}
+//    
+//    @Override
+//	public boolean isFixed() {
+//		return isDeltaArraySet();
+//	}
 
 	/**
      * Sets the delta using {@link #computeFixedDeltaArray()}. In either case the super implementation
@@ -146,7 +146,7 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
             reporter.start(SET_FIXED);
             setDeltaArray(computeFixedDeltaArray());
             super.setFixed();
-            getDeltaCache().notifySetFixed();
+            getCache().notifySetFixed();
             if (Groove.GATHER_STATISTICS) {
                 totalEdgeCount += this.edgeCount();
                 totalNodeCount += this.nodeCount();
@@ -192,13 +192,13 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
     /** Delegates to {@link DeltaGraphCache#getEdgeCount()}. */
     @Override
     final public int edgeCount() {
-    	return getDeltaCache().getEdgeCount();
+    	return getCache().getEdgeCount();
     }
 
     /** Delegates to {@link DeltaGraphCache#getNodeCount()}. */
     @Override
     final public int nodeCount() {
-    	return getDeltaCache().getNodeCount();
+    	return getCache().getNodeCount();
     }
 
     /**
@@ -225,14 +225,14 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
      * Returns the cached node set of this graph.
      */
     protected Set<Node> getCachedNodeSet() {
-        return getDeltaCache().getNodeSet();
+        return getCache().getNodeSet();
     }
 
     /**
      * Returns the cached edge set of this graph.
      */
     protected Set<Edge> getCachedEdgeSet() {
-        return getDeltaCache().getEdgeSet();
+        return getCache().getEdgeSet();
     }
 
     /**
@@ -257,7 +257,7 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
     	assert isFixed() : "Graphs should only be frozen after they are fixed";
         setDeltaArray(computeFrozenDeltaArray());
         invertBasis();
-        getDeltaCache().notifySetFrozen();
+        getCache().notifySetFrozen();
         if (Groove.GATHER_STATISTICS) {
         	frozenDeltaGraphCount++;
         }
@@ -272,7 +272,7 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
 	    Element[] oldDelta = computeFixedDeltaArray();
 	    this.basis = null;
         // reset the cache, since it may have stored the wrong delta
-        getDeltaCache().resetCache();
+        getCache().resetCache();
 	    // here we ask the old basis if it would not rather take us as
 	    // a new basis, since we have a small reconstruction depth
 	    // Given that caches are reconstructed only rarely, it's not
@@ -359,21 +359,21 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
             return basisDepth + 1;
         }
     }
-
-    /**
-	 * Convenience method for <tt>(DeltaGraphCache) getCache()</tt>.
-	 */
-	final protected DeltaGraphCache getDeltaCache() {
-	    return (DeltaGraphCache) getCache();
-	}
+//
+//    /**
+//	 * Convenience method for <tt>(DeltaGraphCache) getCache()</tt>.
+//	 */
+//	final protected DeltaGraphCache getDeltaCache() {
+//	    return (DeltaGraphCache) getCache();
+//	}
 
 	/**
      * This implementation returns a {@link DeltaGraphCache}. Note that the cache will attempt to
      * initialize itself using the basis' node and edge sets, if this graph is not fixed.
      */
 	@Override
-    protected GraphCache createCache() {
-        return new DeltaGraphCache(this);
+    protected C createCache() {
+        return (C) new DeltaGraphCache(this);
     }
 
     /**
@@ -411,7 +411,7 @@ public class DeltaGraph extends AbstractGraph implements DeltaApplier {
 	 * graph cache.
 	 */
 	protected Element[] computeFixedDeltaArray() {
-		return computeDeltaArray(getDeltaCache().getCacheDelta());
+		return computeDeltaArray(getCache().getCacheDelta());
 	}
 
 	/**

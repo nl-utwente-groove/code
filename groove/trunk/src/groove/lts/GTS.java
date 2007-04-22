@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.9 2007-04-20 15:12:27 rensink Exp $
+ * $Id: GTS.java,v 1.10 2007-04-22 23:32:14 rensink Exp $
  */
 package groove.lts;
 
+import groove.graph.AbstractGraphShape;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
 import groove.graph.GraphShapeListener;
@@ -23,7 +24,6 @@ import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
-import groove.trans.RuleEvent;
 import groove.util.FilterIterator;
 import groove.util.NestedIterator;
 import groove.util.SetView;
@@ -42,9 +42,9 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-04-20 15:12:27 $
+ * @version $Revision: 1.10 $ $Date: 2007-04-22 23:32:14 $
  */
-public class GTS extends groove.graph.AbstractGraphShape implements LTS {
+public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
 	 * Tree resolution of the state set (which is a {@link TreeHashSet}).
 	 * A smaller value means memory savings; a larger value means speedup.
@@ -335,7 +335,7 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	 * @require <tt>node instanceof GraphState</tt>
 	 */
 	@Override
-	public Collection<GraphTransition> outEdgeSet(Node node) {
+	public Set<GraphTransition> outEdgeSet(Node node) {
 		return ((GraphState) node).getTransitionSet();
 	}
 	
@@ -457,20 +457,17 @@ public class GTS extends groove.graph.AbstractGraphShape implements LTS {
 	/**
 	 * Adds a transition to the GTS, under the assumption that the source
 	 * and target states are already present.
-	 * @param sourceState the source state of the transition to be added
-	 * @param event the rule application giving rise to the transition
-	 * @param targetState the target state of the transition to be added
+	 * @param transition the source state of the transition to be added
 	 */
-	public void addTransition(GraphState sourceState, RuleEvent event, GraphState targetState) {
+	public void addTransition(GraphTransition transition) {
 		if (isStoreTransitions()) {
             reporter.start(ADD_TRANSITION_STOP);
             // add (possibly isomorphically modified) edge to LTS
-            GraphOutTransition outTrans = sourceState.addOutTransition(event, targetState);
-            if (outTrans == null) {
-                spuriousTransitionCount++;
-            } else {
+            if (transition.source().addTransition(transition)) {
                 transitionCount++;
-                fireAddEdge(outTrans.createTransition(sourceState));
+                fireAddEdge(transition);
+            } else {
+                spuriousTransitionCount++;
             }
             reporter.stop();
         }
