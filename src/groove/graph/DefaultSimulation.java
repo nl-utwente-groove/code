@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultSimulation.java,v 1.4 2007-04-01 12:49:56 rensink Exp $
+ * $Id: DefaultSimulation.java,v 1.5 2007-04-22 23:32:23 rensink Exp $
  */
 
 package groove.graph;
@@ -42,7 +42,7 @@ import java.util.Set;
  * Refinement consists of repeatedly selecting an image for those domain
  * elements that have multiple images.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @deprecated use {@link DefaultMatcher} instead
  */
 @Deprecated
@@ -281,6 +281,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
      * the size is reduced to zero, and indicating singularity through
      * <tt>isSingular</tt> 
      */
+    @Deprecated
     protected class DefaultImageSet<E extends Element> extends HashSet<E> implements Simulation.ImageSet<E> {
         /**
          * Implements an iterator over an image set.
@@ -610,6 +611,7 @@ public class DefaultSimulation extends GenericNodeEdgeHashMap<Node,Simulation.Im
      * A map whose images are constructed as 
      * a view upon the simulation's image sets.
      */
+    @Deprecated
     protected class SingularTransformMap<E extends Element> extends TransformMap<E,ImageSet<E>,E> {
     	protected SingularTransformMap(Map<E,ImageSet<E>> map) {
     		super(map);

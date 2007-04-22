@@ -87,8 +87,8 @@ public class CacheReference<C> extends SoftReference<C> {
 	/** Sets the appropriate <code>null</code> reference in the holder. */
 	@Override
 	public void clear() {
-		updateCleared();
 		super.clear();
+		updateCleared();
 	}
 
 	/**

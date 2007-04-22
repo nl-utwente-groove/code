@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.4 2007-04-21 07:28:42 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.5 2007-04-22 23:32:23 rensink Exp $
  */
 
 package groove.graph;
@@ -38,9 +38,9 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
-public abstract class AbstractGraph extends AbstractGraphShape implements InternalGraph {
+public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     /**
      * The factory used to get morphisms from
      * @see #createMorphism(Graph,Graph)
@@ -61,7 +61,7 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
     static private CertificateStrategy certificateFactory = new groove.graph.iso.Bisimulator(null);
     
     /** Fixed empty graphs, used for the constant <tt>{@link #EMPTY_GRAPH}</tt>. */
-    private static class EmptyGraph extends AbstractGraph {
+    private static class EmptyGraph extends AbstractGraph<GraphCache> {
         /**
          * The empty graph to which no elements can be added.
          */
@@ -400,6 +400,7 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
         return clone();
     }
     
+    /** This should return a <i>modifiable</i> clone of the graph. */
     @Override
     public abstract Graph clone();
 
@@ -502,18 +503,18 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
     protected IsoChecker getIsoChecker() {
     	return isoChecker;
     }
-
-    /**
-     * Returns a graph cache for this graph.
-     * The graph cache is newly created, using {@link #createCache()}, if no
-     * cache is currently set. A reference to the cache is created using
-     * {@link #createCacheReference(GraphCache)}.
-     * @return a graph cache for this graph
-     */
-    @Override
-    public GraphCache getCache() {
-        return (GraphCache) super.getCache();
-    }
+//
+//    /**
+//     * Returns a graph cache for this graph.
+//     * The graph cache is newly created, using {@link #createCache()}, if no
+//     * cache is currently set. A reference to the cache is created using
+//     * {@link #createCacheReference(GraphCache)}.
+//     * @return a graph cache for this graph
+//     */
+//    @Override
+//    public GraphCache getCache() {
+//        return (GraphCache) super.getCache();
+//    }
 
     /**
      * Factory method for a morphism.
@@ -542,8 +543,8 @@ public abstract class AbstractGraph extends AbstractGraphShape implements Intern
      * @return the graph cache
      */
     @Override
-    protected GraphCache createCache() {
-        return new GraphCache(this);
+    protected C createCache() {
+        return (C) new GraphCache(this);
     }
     
 //    /**

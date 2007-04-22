@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UnmodifiableSetView.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: UnmodifiableSetView.java,v 1.3 2007-04-22 23:32:25 rensink Exp $
  */
 package groove.util;
 
@@ -20,11 +20,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
- * Provides a shared view upon an underlying set, filtering those values
- * that satisfy a certain condition, to be provided through the abstract
- * method <tt>approve(Object)</tt>.
+ * Variation on the set view in which removal is not supported.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class UnmodifiableSetView<T> extends SetView<T> {    
     /**
@@ -44,7 +42,7 @@ public abstract class UnmodifiableSetView<T> extends SetView<T> {
     /**
      * Constucts a shared set view on a given underlying set.
      */
-    public UnmodifiableSetView(Set<? super T> set) {
+    public UnmodifiableSetView(Set<?> set) {
         super(set);
     }
 
@@ -64,14 +62,6 @@ public abstract class UnmodifiableSetView<T> extends SetView<T> {
                 return UnmodifiableSetView.this.approves(obj);
             }
         };
-    }
-
-    /**
-     * @throws UnsupportedOperationException always
-     */
-    @Override
-    public boolean add(T elem) {
-        throw new UnsupportedOperationException();
     }
 
     /**

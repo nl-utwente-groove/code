@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TransformSet.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: TransformSet.java,v 1.3 2007-04-22 23:32:25 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * @see groove.util.TransformIterator
  * @see groove.util.TransformMap
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 abstract public class TransformSet<T,U> extends AbstractSet<U> implements Set<U> {
     /** Constructs a set transforming a given inner set. */
@@ -56,7 +56,7 @@ abstract public class TransformSet<T,U> extends AbstractSet<U> implements Set<U>
     
     /** 
      * Converts the parameter using {@link #toInner(Object)}
-     * and delegates the mathod to the inner set.
+     * and delegates the method to the inner set.
      */
     @Override
     public boolean add(Object obj) {
@@ -65,11 +65,18 @@ abstract public class TransformSet<T,U> extends AbstractSet<U> implements Set<U>
 
     /** 
      * Converts the parameter using {@link #toInner(Object)}
-     * and delegates the mathod to the inner set.
+     * and delegates the method to the inner set.
+     * If {@link #toInner(Object)} is not overridden (and so throws an
+     * {@link UnsupportedOperationException}), the super method is used.
      */
     @Override
     public boolean contains(Object o) {
-        return inner.contains(toInner(o));
+    	try {
+    		T innerObject = toInner(o);
+    		return innerObject != null && inner.contains(innerObject);
+    	} catch (UnsupportedOperationException exc) {
+    		return super.contains(o);
+    	}
     }
 
     /** 
@@ -78,7 +85,11 @@ abstract public class TransformSet<T,U> extends AbstractSet<U> implements Set<U>
      */
     @Override
     public boolean remove(Object o) {
-        return inner.remove(toInner(o));
+    	try {
+    		return inner.remove(toInner(o));
+    	} catch (UnsupportedOperationException exc) {
+    		return super.remove(o);
+    	}
     }
 
     /** Delegates the mathod to the inner set. */

@@ -17,18 +17,29 @@
 package groove.lts;
 
 import groove.graph.Morphism;
+import groove.trans.Rule;
+import groove.trans.RuleEvent;
 
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-public interface GraphTransition extends Transition, GraphOutTransition {
+public interface GraphTransition extends Transition {
 	/** Overrides the method to specialise the result type. */
 	GraphState source();
 
 	/** Overrides the method to specialise the result type. */
 	GraphState target();
+
+	/**
+	 * Returns the transformation event of this transition.
+	 */
+	public RuleEvent getEvent();
+	/**
+	 * Returns the underlying rule of this graph transition.
+	 */
+	public abstract Rule getRule();
 
 	/**
 	 * Returns the matching of the LHS into the source graph.
@@ -39,4 +50,18 @@ public interface GraphTransition extends Transition, GraphOutTransition {
 	 * Returns the (partial) morphism from the source to the target graph.
 	 */
 	public Morphism morphism();
+	
+	/** 
+	 * Indicates if the morphism from source to target is a (partial) identity.
+	 * The alternative is that there is true event renaming involved.
+	 * @see #morphism()
+	 */
+	public boolean isIdMorphism();
+	
+	/** 
+	 * Converts this transition to a more memory-efficient representation,
+	 * from which the original transition can be retrieved by 
+	 * {@link GraphTransitionStub#createTransition(GraphState)}.
+	 */
+	public GraphTransitionStub toStub();
 }

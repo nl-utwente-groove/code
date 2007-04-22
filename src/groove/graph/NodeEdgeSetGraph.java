@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeEdgeSetGraph.java,v 1.4 2007-04-12 13:45:34 rensink Exp $
+ * $Id: NodeEdgeSetGraph.java,v 1.5 2007-04-22 23:32:22 rensink Exp $
  */
 package groove.graph;
 
@@ -26,11 +26,11 @@ import java.util.Set;
 /**
  * Graph implementation based on a single set of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @deprecated Use {@link NodeSetEdgeSetGraph} instead
  */
 @Deprecated
-public class NodeEdgeSetGraph extends AbstractGraph {
+public class NodeEdgeSetGraph extends AbstractGraph<GraphCache> {
     private class ElementSet<E extends Element> extends UnmodifiableSetView<E> {
         private ElementSet(Class<E> type) {
             super(elementSet);

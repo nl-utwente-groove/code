@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.5 2007-04-20 08:41:06 rensink Exp $
+ * $Id: DefaultGraphTransition.java,v 1.6 2007-04-22 23:32:15 rensink Exp $
  */
 package groove.lts;
 
@@ -32,9 +32,9 @@ import groove.trans.RuleEvent;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-04-20 08:41:06 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-22 23:32:15 $
  */
-public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphOutTransition, GraphTransition {
+public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphTransitionStub, GraphTransition {
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
     
@@ -87,12 +87,13 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
     }
 
     /**
-     * Constructs a GraphTransition on the basis of a given rule and corresponding
-     * footprint, between a given source and target state.
+     * Constructs a GraphTransition on the basis of a given rule event, 
+     * between a given source and target state.
      */
-    public DefaultGraphTransition(RuleEvent event, GraphState source, GraphState target) {
+    public DefaultGraphTransition(RuleEvent event, GraphState source, GraphState target, boolean idMorphism) {
         super(source, event.getLabel(), target);
         this.event = event;
+        this.idMorphism = idMorphism;
     }
 
     public RuleEvent getEvent() {
@@ -103,11 +104,40 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
         return getEvent().getRule();
     }
 
-    public Morphism matching() {
+    public boolean isIdMorphism() {
+		return idMorphism;
+	}
+
+	public GraphTransitionStub toStub() {
+		if (isIdMorphism()) {
+			if (target() instanceof DerivedGraphState) {
+				return ((DerivedGraphState) target()).createInTransitionStub(source(), getEvent());
+			} else {
+				return new IdGraphTransitionStub(getEvent(), target());
+			}
+		} else {
+			return new IsoGraphTransitionStub(getEvent(), target());
+		}
+	}
+
+	public Morphism matching() {
     	return getEvent().getMatching(source().getGraph());
     }
 
-    /**
+	/**
+     * This implementation throws an {@link IllegalArgumentException} if
+     * <code>source</code> is not equal to the source of the transition,
+     * otherwise it returns {@link #getEvent()}.
+	 */
+    public RuleEvent getEvent(GraphState source) {
+		if (source != source()) {
+			throw new IllegalArgumentException("Source state incompatible");
+		} else {
+			return getEvent();
+		}
+	}
+
+	/**
      * This implementation throws an {@link IllegalArgumentException} if
      * <code>source</code> is not equal to the source of the transition,
      * otherwise it returns <code>this</code>.
@@ -216,10 +246,12 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphO
      * The underlying rule of this transition.
      * @invariant <tt>rule != null</tt>
      */
-    protected final RuleEvent event;
+    private final RuleEvent event;
     /**
      * The underlying morphism of this transition.
      * Computed lazily (using the footprint) using {@link #computeMorphism()}.
      */
-    protected Morphism morphism;
+    private Morphism morphism;
+    /** Flag indicating that the underlying morphism is a partial identity. */
+    private final boolean idMorphism;
 }

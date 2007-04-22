@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.8 2007-04-20 09:02:27 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.9 2007-04-22 23:32:25 rensink Exp $
  */
 package groove.util;
 
@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-04-20 09:02:27 $
+ * @version $Revision: 1.9 $ $Date: 2007-04-22 23:32:25 $
  */
 public class TypeDiscoverer {
 	/** Extension of files containing type information. */
@@ -182,8 +182,8 @@ public class TypeDiscoverer {
             Morphism deleteMorph = new DefaultMorphism(deleteLhs, createVarGraph());
             deleteSystem.add(createRule(deleteMorph, rule.getName(), deleteSystem));
             // now the merging rule
-            Graph mergeLhs = rule.lhs().clone();
-            Graph mergeRhs = rule.rhs().clone();
+            Graph mergeLhs = createVarGraph(rule.lhs());
+            Graph mergeRhs = createVarGraph(rule.rhs());
             Morphism mergeMorph = new DefaultMorphism(mergeLhs, mergeRhs);
             // process the rule's LHS
             for (Node lhsNode: mergeLhs.nodeSet()) {
@@ -244,12 +244,19 @@ public class TypeDiscoverer {
 		deleted = merged.getMax(deleteSystem);
 		return deleted.getGraph();
 	}
-    
+
     /**
      * Factory method for a {@link VarGraph}.
      */
     protected VarGraph createVarGraph() {
         return new RegExprGraph();
+    }
+
+    /**
+     * Factory method for a {@link VarGraph} copy of a given graph.
+     */
+    protected VarGraph createVarGraph(Graph graph) {
+        return new RegExprGraph(graph);
     }
     
     /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.7 2007-04-21 07:28:42 rensink Exp $
+ * $Id: StateGenerator.java,v 1.8 2007-04-22 23:32:15 rensink Exp $
  */
 package groove.lts;
 
@@ -21,6 +21,7 @@ import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.trans.RuleApplication;
 import groove.trans.RuleApplier;
+import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
@@ -174,67 +175,86 @@ public class StateGenerator {
      */
     public GraphState addTransition(GraphState source, RuleApplication appl) {
         reporter.start(ADD_TRANSITION);
-        reporter.start(ADD_TRANSITION_START);
-        // check for confluent diamond
-        GraphState targetState = getConfluentTarget(appl);
-        reporter.stop();
-        if (targetState == null) {
-            // determine target state of this transition
-            targetState = computeTargetState(source, appl);
-        }
-        gts.addTransition((GraphState) appl.getSource(), appl.getEvent(), targetState);
-        reporter.stop();
-        return targetState;
-    }
-
-	/**
-	 * Computes the target state of a rule application.
-	 * The target state is added to the underlying GTS, after checking for already
-	 * existing isomorphic states.
-	 * @param source the source state of the rule application
-	 * @param appl the provisional target from which the real target state is to be extracted
-	 */
-	private GraphState computeTargetState(GraphState source, RuleApplication appl) {
-		GraphState result;
-        // see if isomorphic graph is already in the LTS
-        // special case: source = target
-        if (appl.getRule().isModifying()) {
-        	result = createState(source, appl);
-            GraphState isoState = gts.addState(result);
-            if (isoState != null) {
-                // the following line is to ensure the cache is cleared
-                // even if the state is still used as the basis of another
-            	result.dispose();
-                result = isoState;
-            }
+        GraphTransition result;
+        if (!appl.getRule().isModifying()) {
+        	result = createTransition(appl.getEvent(), source, source, true);
         } else {
-        	result = (GraphState) appl.getSource();
+            // check for confluent diamond
+            GraphState confluentTarget = getConfluentTarget(source, appl);
+        	if (confluentTarget == null) {
+				GraphNextState freshTarget = createState(source, appl);
+				GraphState isoTarget = gts.addState(freshTarget);
+				if (isoTarget == null) {
+					result = freshTarget;
+				} else {
+					// the following line is to ensure the cache is cleared
+					// even if the state is still used as the basis of another
+					// result.dispose();
+					result = createTransition(appl.getEvent(), source, isoTarget, false);
+				}
+			} else {
+            	result = createTransition(appl.getEvent(), source, confluentTarget, true);
+            }
         }
-		return result;
-	}
+        gts.addTransition(result);
+        reporter.stop();
+        return result.target();
+    }
+//
+//	/**
+//	 * Computes the target state of a rule application.
+//	 * The target state is added to the underlying GTS, after checking for already
+//	 * existing isomorphic states.
+//	 * @param source the source state of the rule application
+//	 * @param appl the provisional target from which the real target state is to be extracted
+//	 */
+//	private GraphTransition computeTargetState(GraphState source, RuleApplication appl) {
+//		GraphTransition result;
+//        // see if isomorphic graph is already in the LTS
+//        // special case: source = target
+//        if (appl.getRule().isModifying()) {
+//        	GraphNextState target = createState(source, appl);
+//            GraphState isoState = gts.addState(target);
+//            if (isoState == null) {
+//            	result = target;
+//            } else {
+//                // the following line is to ensure the cache is cleared
+//                // even if the state is still used as the basis of another
+////            	result.dispose();
+//            	result = createTransition(appl.getEvent(), source, target, false);
+//            }
+//        } else {
+//        	result = createTransition(appl.getEvent(), source, source, true);
+//        }
+//		return result;
+//	}
 
     /**
      * Returns the target of a given rule application, by trying to walk 
      * around three sides of a confluent diamond instead of computing the
      * target directly.
+     * @param source TODO
      */
-    private GraphState getConfluentTarget(RuleApplication appl) {
+    private GraphState getConfluentTarget(GraphState source, RuleApplication appl) {
         if (!AliasRuleApplier.isUseDependencies() || !(appl instanceof AliasRuleApplication)) {
             return null;
         }
+        assert source instanceof GraphNextState;
         AliasRuleApplication aliasAppl = (AliasRuleApplication) appl;
-        GraphOutTransition prior = aliasAppl.getPrior();
-        GraphState priorTarget = prior.target();
-        if (!priorTarget.isClosed()) {
-        	// the prior target does not have its outgoing transitions computed yet
-            return null;
+        GraphTransition prior = aliasAppl.getPrior();
+        if (! prior.isIdMorphism()) {
+        	return null;
         }
-        GraphTransition prevTransition = (DerivedGraphState) aliasAppl.getSource();
-        if (prior.getEvent().conflicts(prevTransition.getEvent())) {
+//        if (!priorTarget.isClosed()) {
+//        	// the prior target does not have its outgoing transitions computed yet
+//            return null;
+//        }
+        RuleEvent sourceEvent = ((GraphNextState) source).getEvent();
+        if (aliasAppl.getEvent().conflicts(sourceEvent)) {
         	// alternating the events does not imply confluence
             return null;
         }
-        GraphState result = priorTarget.getNextState(prevTransition.getEvent());
+        GraphState result = prior.target().getNextState(sourceEvent);
         if (result != null) {
         	confluentDiamondCount++;
         }
@@ -261,6 +281,10 @@ public class StateGenerator {
 		return result;
 	}
 
+	private GraphTransition createTransition(RuleEvent event, GraphState source, GraphState target, boolean idMorphism) {
+		return new DefaultGraphTransition(event, source, target, idMorphism);
+	}
+	
 	/**
 	 * Callback method to obtain a rule applier for this generator's rule set.
 	 * This implementation uses flyweight, so discard the result before calling the method again.
@@ -308,7 +332,7 @@ public class StateGenerator {
 	}
 	
     /** Reporter for profiling information; aliased to {@link GTS#reporter}. */
-    static private final Reporter reporter = new Reporter(StateGenerator.class);
+    static private final Reporter reporter = Reporter.register(StateGenerator.class);
     /** Profiling aid for adding states. */
     static public final int ADD_STATE = reporter.newMethod("addState");
     /** Profiling aid for adding transitions. */

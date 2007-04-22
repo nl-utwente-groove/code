@@ -20,7 +20,6 @@ import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.GraphCache;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -29,18 +28,16 @@ import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.util.CacheReference;
-import groove.util.TransformIterator;
 
 import java.util.Arrays;
-import java.util.Iterator;
 
 /**
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
-public class DerivedGraphState extends DefaultGraphState implements GraphNextState {
+public class DerivedGraphState extends DefaultGraphState implements GraphNextState, GraphTransitionStub {
     /**
      * Bound above which the suggestion to clear the cache is not taken.
      */
@@ -212,6 +209,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 		super(source.getGraph());
 		this.event = event;
 		setCoanchorImage(coanchorImage);
+		assert getCoanchorSize() == 0 || getCoanchorImage()[0] instanceof Node;
 	}
 	
 	/**
@@ -353,6 +351,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
     		System.arraycopy(image, 0, copy, 0, coanchorSize);
     		setDeltaArray(copy);
     	} else {
+    		assert image.length == coanchorSize;
     		setDeltaArray(image);
     	}
     }
@@ -374,15 +373,34 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
     	return getRule().coanchor().length;
     }
 
+	/** 
+	 * Returns this state's event if the given source equals this state's
+	 * source; otherwise, returns {@link #getSourceEvent()}.
+	 */
+	public RuleEvent getEvent(GraphState source) {
+		if (source == source()) {
+			return getEvent();
+		} else {
+			return getSourceEvent();
+		}
+	}
+
+	public boolean isIdMorphism() {
+		return true;
+	}
+
+	public GraphTransitionStub toStub() {
+		return this;
+	}
+
 	/**
-     * This implementation throws an {@link IllegalArgumentException} if
-     * <code>source</code> is not equal to the source of the transition,
+     * This implementation creates a {@link DefaultGraphTransition} if
+     * <code>source</code> is not equal to the state source,
      * otherwise it returns <code>this</code>.
 	 */
 	public GraphTransition createTransition(GraphState source) {
 		if (source != source()) {
-			RuleEvent event = getSourceEvent();
-			return new DefaultGraphTransition(event, source, this);
+			return new DefaultGraphTransition(getSourceEvent(), source, this, true);
 		} else {
 			return this;
 		}
@@ -390,42 +408,39 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	
 	/**
 	 * Returns the event from the source of this transition,
-	 * if that is itself a {@link groove.lts.GraphOutTransition}.
+	 * if that is itself a {@link groove.lts.GraphTransitionStub}.
 	 */
 	protected RuleEvent getSourceEvent() {
-		if (source() instanceof GraphOutTransition) {
-			return ((GraphOutTransition) source()).getEvent();
+		if (source() instanceof GraphNextState) {
+			return ((GraphNextState) source()).getEvent();
 		} else {
 			return null;
 		}
 	}
 	
     /**
-     * This implementation compares the event identities.
-     * Callback method from {@link #equals(Object)}.
-     */
-    protected boolean equalsEvent(GraphOutTransition other) {
-        return getEvent() == other.getEvent();
-    }
-
-    /**
-     * This implementation compares the source graph identities.
-     * Callback method from {@link #equals(Object)}.
-     */
-    protected boolean equalsSource(GraphOutTransition other) {
-        return !(other instanceof DerivedGraphState) || source() == ((DerivedGraphState) other).source();
-    }
-    
-    /**
      * This implementation compares the state on the basis of its qualities as
-     * an outgoing transition of its basis.
+     * a {@link GraphNextState}.
      * That is, two objects are considered equal if they have the same basis,
      * rule and anchor images.
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof GraphOutTransition && equalsEvent((GraphOutTransition) obj) && equalsSource((GraphOutTransition) obj);
+    	if (obj == this) {
+    		return true;
+    	} else {
+    		return (obj instanceof GraphNextState) && equalsNextState((GraphNextState) obj);
+    	}
     }
+
+	/**
+	 * This implementation compares the source and event of another {@link GraphNextState}
+	 * to those of this object.
+	 */
+	protected boolean equalsNextState(GraphNextState other) {
+		return source() == other.source() && getEvent() == other.getEvent();
+	}
+ 
 
     /**
      * This implementation combines the identities of source and event.
@@ -452,7 +467,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      * This implementation returns a {@link DerivedStateCache}.
      */
     @Override
-	protected GraphCache createCache() {
+	protected DerivedStateCache createCache() {
 	    return new DerivedStateCache(this);
     }
 //    
@@ -472,69 +487,57 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 //    protected Reference<DerivedStateCache> createNullReference(boolean closed) {
 //        return getNullReference(getCacheIncarnationCount(), closed);
 //    }
-
-    /**
-     * This implementation transforms the outgoing transitions from
-     * their raw format to the proper representation as a {@link groove.lts.GraphOutTransition}
-     * from the current state.
-     */
-    @Override
-    public Iterator<GraphOutTransition> getOutTransitionIter() {
-		return new TransformIterator<GraphOutTransition,GraphOutTransition>(getRawOutTransitionIter()) {
-		    @Override
-			protected GraphOutTransition toOuter(GraphOutTransition inner) {
-				if (inner instanceof DerivedGraphState) {
-					return ((DerivedGraphState) inner).createOutTransitionTo(DerivedGraphState.this);
-				} else {
-					return inner;
-				}
-			}
-		};
-	}
-    
-    /**
-     * Creates an outgoing transition starting in a given source state,
-     * based on the transformation information of this state.
-     */
-    protected GraphOutTransition createOutTransitionTo(DerivedGraphState source) {
-    	if (source != source()) {
-    		return createOutTransitionToThis(getSourceEvent());
-    	} else {
-    		return this;
-    	}
-    }
+//
+//    /**
+//     * This implementation transforms the outgoing transitions from
+//     * their raw format to the proper representation as a {@link groove.lts.GraphTransitionStub}
+//     * from the current state.
+//     */
+//    @Override
+//    public Iterator<GraphTransitionStub> getOutTransitionIter() {
+//		return new TransformIterator<GraphTransitionStub,GraphTransitionStub>(getTransitionStubIter()) {
+//		    @Override
+//			protected GraphTransitionStub toOuter(GraphTransitionStub stub) {
+//				if (stub instanceof DerivedGraphState) {
+//					DerivedGraphState derivedOut = (DerivedGraphState) stub;
+//					if (derivedOut.source() != DerivedGraphState.this) {
+//						return derivedOut.createStubToThis(derivedOut.getSourceEvent());
+//					}
+//				}
+//				return stub;
+//			}
+//		};
+//	}
+//    
+//    
+//    /**
+//     * Creates an outgoing transition starting in a given source state,
+//     * based on the transformation information of this state.
+//     */
+//    protected GraphOutTransition createOutTransitionToThis(DerivedGraphState source) {
+//    	if (source != source()) {
+//    		return createOutTransitionToThis(getSourceEvent());
+//    	} else {
+//    		return this;
+//    	}
+//    }
 
     /**
 	 * This implementation returns <code>this</code> if the derivation's event
 	 * is identical to the event stored in this state.
 	 * Otherwise it invokes <code>super</code>.
 	 */
-    @Override
-	protected GraphOutTransition createOutTransitionToThis(GraphState source, RuleEvent event) {
+	protected GraphTransitionStub createInTransitionStub(GraphState source, RuleEvent event) {
 	    if (source == source() && event == getEvent()) {
 	        return this;
 	    } else if (source != source() && event == getSourceEvent()) {
 			return this;
 		} else {
-			return createOutTransitionToThis(event);
+			return new IdGraphTransitionStub(event, this);
 		}
 	}
 
-	/**
-	 * This implementation takes into account that an outgoing transition may
-	 * actually be an alias to some other transition that forms the outer end of
-	 * a confluent diamond with this one.
-	 */
-    @Override
-	protected RuleEvent getEvent(GraphOutTransition trans) {
-		if (trans instanceof DerivedGraphState && ((DerivedGraphState)trans).source() != this) {
-			return ((DerivedGraphState) trans).getSourceEvent();
-		} else {
-			return super.getEvent(trans);
-		}
-	}
-
-	/**
+    /**
      * This implementation does nothing: reversing the basis
      * is not an option for derived states.
      */
@@ -640,6 +643,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 		boolean basisCacheCleared = basis != null && basis.isCacheCleared();
 		// do the actual rule application
 		RuleApplication applier = getEvent().newApplication(getBasis());
+		assert getCoanchorSize() == 0 || getCoanchorImage()[0] instanceof Node;
 		applier.setCoanchorImage(getCoanchorImage());
 	    applier.applyDelta(target);
 	    // clear the basis cache

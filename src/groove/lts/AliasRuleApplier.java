@@ -24,7 +24,6 @@ import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -117,13 +116,10 @@ public class AliasRuleApplier extends AbstractRuleApplier {
     	reporter.start(COLLECT_ALIASES);
         Collection<Rule> disabledRules = record.getDisabledRules(rule);
         // if the state rule has high enough priority, go through the previous state's transitions
-        Iterator<GraphOutTransition> otherTransitionIter = state.source().getOutTransitionIter();
-        while (otherTransitionIter.hasNext()) {
-            GraphOutTransition otherTransition = otherTransitionIter.next();
-            Rule otherRule = otherTransition.getRule();
+        for (GraphTransition otherTransition: state.source().getTransitionSet()) {
             RuleEvent event = otherTransition.getEvent();
-            if (isUseDependencies() && !disabledRules.contains(otherRule) || event.hasMatching(getGraph())) {
-                result.add(createAlias(otherTransition, getGraph()));
+            if (isUseDependencies() && !disabledRules.contains(event.getRule()) || event.hasMatching(getGraph())) {
+                result.add(createAlias(event, getGraph(), otherTransition));
         	}
         }
         reporter.stop();
@@ -168,8 +164,8 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	}
 
 	/** Callback factory method to create an {@link AliasSPOApplication}. */
-    private RuleApplication createAlias(GraphOutTransition prior, Graph host) {
-    	return new AliasSPOApplication(prior, host); 
+    private RuleApplication createAlias(RuleEvent event, Graph host, GraphTransition prior) {
+    	return new AliasSPOApplication(event, host, prior); 
     }
 
     @Override

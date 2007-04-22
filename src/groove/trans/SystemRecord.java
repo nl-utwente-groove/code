@@ -170,6 +170,6 @@ public class SystemRecord {
      */
     private final Map<Rule,RuleEvent> unmodifyingEventMap = new HashMap<Rule,RuleEvent>();
 
-    static private final Reporter reporter = SPORule.reporter;
-    static private final int GET_EVENT = SPORule.GET_EVENT;
+    static private final Reporter reporter = Reporter.register(RuleEvent.class);
+    static private final int GET_EVENT = reporter.newMethod("getEvent");
 }

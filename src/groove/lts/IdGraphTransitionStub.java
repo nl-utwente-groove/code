@@ -11,30 +11,27 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
-/**
- * 
+/*
+ * $Id: IdGraphTransitionStub.java,v 1.1 2007-04-22 23:32:14 rensink Exp $
  */
 package groove.lts;
 
-import groove.trans.RuleApplication;
+import groove.trans.RuleEvent;
 
 /**
- * Extension of a rule application object that supports a <i>transition cause</i>,
- * which is a pre-existing graph transition that essentially equals the one we
- * are deriving now, at an earlier stage.
+ * Graph transition stub based on an identity morphism.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.1 $
  */
-public interface AliasRuleApplication extends RuleApplication {
+class IdGraphTransitionStub extends AbstractGraphTransitionStub {
     /**
-     * Returns the stored prior target state of this application.
+     * Default constructor, providing the event and target of the stub.
      */
-    public GraphTransition getPrior();
-    
-    /**
-     * Indicates if a prior transition has been set for this application.
-     * @deprecated prior is now always set
-     */
-    @Deprecated
-    public boolean hasPrior();
+    IdGraphTransitionStub(RuleEvent event, GraphState target) {
+    	super(event,target);
+    }
+
+	public GraphTransition createTransition(GraphState source) {
+        return new DefaultGraphTransition(getEvent(), source, target(), true);
+    }
 }

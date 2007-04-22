@@ -12,11 +12,10 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraph.java,v 1.3 2007-04-12 13:45:34 rensink Exp $
+ * $Id: DefaultGraph.java,v 1.4 2007-04-22 23:32:23 rensink Exp $
  */
 package groove.graph;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,7 +27,7 @@ import java.util.Set;
  * Implementation of Graph based on a set of nodes and a 
  * mapping from nodes to sets of outgoing edges.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-04-12 13:45:34 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-22 23:32:23 $
  */
 public class DefaultGraph extends AbstractGraph {
     /**
@@ -89,7 +88,7 @@ public class DefaultGraph extends AbstractGraph {
     }
     
 	@Override
-	public Collection<? extends Edge> outEdgeSet(Node node) {
+	public Set<? extends Edge> outEdgeSet(Node node) {
 		return Collections.unmodifiableSet(edgeMap.get(node));
 	}
 

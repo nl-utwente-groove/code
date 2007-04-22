@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CollectionView.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: CollectionView.java,v 1.3 2007-04-22 23:32:25 rensink Exp $
  */
 package groove.util;
 
@@ -23,9 +23,9 @@ import java.util.Iterator;
 /**
  * Provides a shared view upon an underlying collection, filtering those values
  * that satisfy a certain condition, to be provided through the abstract
- * method <tt>approve(Object)</tt>.
+ * method {@link #approves(Object)}.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class CollectionView<T> extends AbstractCollection<T> {
     /**
@@ -55,41 +55,52 @@ public abstract class CollectionView<T> extends AbstractCollection<T> {
      */
     @Override
     public Iterator<T> iterator() {
-        return new Iterator<T>() {
-            public boolean hasNext() {
-                while (elemIter.hasNext()
-                    && !(headValid && approves(headElem))) {
-                    headElem = elemIter.next();
-                    headValid = true;
-                    if (ITERATE_DEBUG)
-                        Groove.message("Searching for hasNext(); now at "+headElem);
-                }
-                if (ITERATE_DEBUG)
-                    Groove.message("Found next? "+(headValid && approves(headElem)?"Yes":"No"));
-                return headValid && approves(headElem);
-            }
-
-            public T next() {
-                while (!(headValid && approves(headElem))) {
-                    headElem = elemIter.next();
-                    headValid = true;
-                    if (ITERATE_DEBUG)
-                        Groove.message("Searching for next(); now at "+headElem);
-                } 
-                headValid = false;
-                if (ITERATE_DEBUG)
-                    Groove.message("Found next(): "+headElem);
-                return (T) headElem;
-            }
-
+        return new FilterIterator<T>(coll.iterator()) {
+            @Override
             public void remove() {
                 throw new UnsupportedOperationException();
             }
-
-            private Iterator<?> elemIter = coll.iterator();
-            private Object headElem = null;
-            private boolean headValid = false;
+            
+            @Override
+            protected boolean approves(Object obj) {
+                return CollectionView.this.approves(obj);
+            }
         };
+//        return new Iterator<T>() {
+//            public boolean hasNext() {
+//                while (elemIter.hasNext()
+//                    && !(headValid && approves(headElem))) {
+//                    headElem = elemIter.next();
+//                    headValid = true;
+//                    if (ITERATE_DEBUG)
+//                        Groove.message("Searching for hasNext(); now at "+headElem);
+//                }
+//                if (ITERATE_DEBUG)
+//                    Groove.message("Found next? "+(headValid && approves(headElem)?"Yes":"No"));
+//                return headValid && approves(headElem);
+//            }
+//
+//            public T next() {
+//                while (!(headValid && approves(headElem))) {
+//                    headElem = elemIter.next();
+//                    headValid = true;
+//                    if (ITERATE_DEBUG)
+//                        Groove.message("Searching for next(); now at "+headElem);
+//                } 
+//                headValid = false;
+//                if (ITERATE_DEBUG)
+//                    Groove.message("Found next(): "+headElem);
+//                return (T) headElem;
+//            }
+//
+//            public void remove() {
+//                throw new UnsupportedOperationException();
+//            }
+//
+//            private Iterator<?> elemIter = coll.iterator();
+//            private Object headElem = null;
+//            private boolean headValid = false;
+//        };
     }
 
     /**
@@ -115,7 +126,6 @@ public abstract class CollectionView<T> extends AbstractCollection<T> {
      */
     public abstract boolean approves(Object obj);
 
+    /** The underlying collection. */
     protected final Collection<?> coll;
-    
-    static private final boolean ITERATE_DEBUG = false;
 }

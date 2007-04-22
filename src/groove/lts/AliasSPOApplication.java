@@ -15,6 +15,8 @@ package groove.lts;
 
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.Node;
+import groove.trans.RuleEvent;
 import groove.trans.SPOApplication;
 import groove.trans.SPOEvent;
 
@@ -24,21 +26,26 @@ import groove.trans.SPOEvent;
  */
 public class AliasSPOApplication extends SPOApplication implements AliasRuleApplication {
 	/** Counter for the number of true application aliases created. */
-    private static int priorTransitionCount;
+    private static int aliasCount;
     
     /** Returns the total number of true application aliases created. */
-    public static int getPriorTransitionCount() {
-        return priorTransitionCount;
+    public static int getAliasCount() {
+        return aliasCount;
     }
 
-    /** Constructs an alias application with a prior transition. */
-    public AliasSPOApplication(GraphOutTransition prior, Graph source) {
-        super((SPOEvent) prior.getEvent(), source);
+    /** 
+     * Constructs an SPO application with a given prior target state. 
+     * @param event the rule event of this application
+     * @param host the source graph of this application
+     * source state's predecessor, with the same event
+     */
+    public AliasSPOApplication(RuleEvent event, Graph host, GraphTransition prior) {
+        super((SPOEvent) event, host);
         this.prior = prior;
-        priorTransitionCount++;
+        aliasCount++;
     }
 
-    public GraphOutTransition getPrior() {
+	public GraphTransition getPrior() {
     	return prior;
     }
     
@@ -49,13 +56,16 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
     
     @Override
     protected Element[] computeCoanchorImage() {
-        if (prior instanceof DerivedGraphState) {
-        	return ((DerivedGraphState) prior).getCoanchorImage();
+    	Element[] result;
+        if (prior.isIdMorphism() && ((DerivedGraphState) prior.target()).getEvent() == getEvent()) {
+        	result = ((DerivedGraphState) prior.target()).getCoanchorImage();
         } else {
-            return super.computeCoanchorImage();
+            result = super.computeCoanchorImage();
         }
+	    assert getRule().coanchor().length == 0 || result[0] instanceof Node;
+	    return result;
     }
     
     /** The prior transition for this aliased application, if any. */
-    private final GraphOutTransition prior;
+    private final GraphTransition prior;
 }

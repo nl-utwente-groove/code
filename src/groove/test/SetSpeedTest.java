@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * Class to test the various implementations of {@link groove.util.IntSet} regarding speed.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class SetSpeedTest {
 	static private final int SMALL_SAMPLE_SIZE = 100;
@@ -198,7 +198,7 @@ public class SetSpeedTest {
 	
 	private final Set<Object> object;
 	
-	static private final Reporter reporter = new Reporter(IntSetSpeedTest.class);
+	static private final Reporter reporter = Reporter.register(IntSetSpeedTest.class);
 	private final int[] TEST_RANDOM_SMALL = new int[] {
 			reporter.newMethod("Random, small sample:  "),
 			reporter.newMethod("          Fresh addition: "),

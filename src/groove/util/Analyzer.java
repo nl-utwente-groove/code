@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Analyzer.java,v 1.2 2007-03-30 15:50:37 rensink Exp $
+ * $Id: Analyzer.java,v 1.3 2007-04-22 23:32:24 rensink Exp $
  */
 package groove.util;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * Class to analyze the efectiveness and efficientcy of bisimilarity checking.
  * Works upon a stream file of graphs.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Analyzer extends CommandLineTool {
     static public final String USAGE_MESSAGE = "Usage: Analyzer <graph stream files>";
@@ -58,7 +58,7 @@ public class Analyzer extends CommandLineTool {
      */
     static private final int LINE_UNIT = 100;
 
-    static protected final Reporter reporter = new Reporter(Analyzer.class);
+    static protected final Reporter reporter = Reporter.register(Analyzer.class);
     static protected final int EQUAL = reporter.newMethod("Equality check");
     static protected final int ISO = reporter.newMethod("Full isomorphism check");
     static protected final int CERT = reporter.newMethod("Certificate check");

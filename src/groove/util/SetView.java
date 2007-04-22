@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SetView.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: SetView.java,v 1.3 2007-04-22 23:32:24 rensink Exp $
  */
 package groove.util;
 
@@ -25,8 +25,9 @@ import java.util.Set;
  * Provides a shared view upon an underlying set, filtering those values
  * that satisfy a certain condition, to be provided through the abstract
  * method <tt>approve(Object)</tt>.
+ * The view allows removal but not addition of values.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class SetView<T> extends AbstractSet<T> {
     /**
@@ -46,7 +47,7 @@ public abstract class SetView<T> extends AbstractSet<T> {
     /**
      * Constucts a shared set view on a given underlying set.
      */
-    public SetView(Set<? super T> set) {
+    public SetView(Set<?> set) {
         this.set = set;
     }
 
@@ -87,11 +88,11 @@ public abstract class SetView<T> extends AbstractSet<T> {
     }
 
     /**
-     * Adds the element only if it is approved by <tt>{@link #approves(Object)}</tt>.
+     * Addition through the view is not supported; this method throws an exception.
      */
     @Override
     public boolean add(T elem) {
-        return approves(elem) && set.add(elem);
+        throw new UnsupportedOperationException();
     }
 
     /**
@@ -117,5 +118,5 @@ public abstract class SetView<T> extends AbstractSet<T> {
     /**
      * The underlying set.
      */
-    protected final Set<? super T> set;
+    protected final Set<?> set;
 }

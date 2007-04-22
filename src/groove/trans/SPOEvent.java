@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.13 2007-04-20 15:12:28 rensink Exp $
+ * $Id: SPOEvent.java,v 1.14 2007-04-22 23:32:24 rensink Exp $
  */
 package groove.trans;
 
@@ -47,7 +47,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2007-04-20 15:12:28 $
+ * @version $Revision: 1.14 $ $Date: 2007-04-22 23:32:24 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -211,12 +211,10 @@ public class SPOEvent implements RuleEvent {
      */
 	@Override
     public int hashCode() {
-    	reporter.start(HASHCODE);
     	if (!hashCodeSet) {
     		hashCode = computeHashCode();
     		hashCodeSet = true;
     	}
-    	reporter.stop();
     	return hashCode;
     }
     
@@ -224,6 +222,7 @@ public class SPOEvent implements RuleEvent {
      * Callback method to compute the hash code.
      */
     protected int computeHashCode() {
+    	reporter.start(HASHCODE);
         int result = getRule().hashCode();
         // we don't use getAnchorImage() because the events are often
         // just created to look up a stored event; then we shouldn't spend too
@@ -240,6 +239,7 @@ public class SPOEvent implements RuleEvent {
         		result += anchorMap.getEdge((Edge) anchor).hashCode() << i;
         	}
         }
+    	reporter.stop();
         return result;
     }
     
@@ -249,15 +249,17 @@ public class SPOEvent implements RuleEvent {
      */
 	@Override
     public boolean equals(Object obj) {
-    	reporter.start(EQUALS);
     	boolean result;
-        if (obj instanceof SPOEvent) {
+    	if (obj == this) {
+    		result = true;
+    	} else if (obj instanceof SPOEvent) {
+        	reporter.start(EQUALS);
         	SPOEvent other = (SPOEvent) obj;
             result = equalsRule(other) && equalsAnchorImage(other);
+            reporter.stop();
         } else {
             result = false;
         }
-        reporter.stop();
         return result;
     }
     
@@ -768,8 +770,8 @@ public class SPOEvent implements RuleEvent {
 	 */
 	private final List<List<Node>> freshNodeList;
 	
-	static private Reporter reporter = new Reporter(RuleEvent.class);
-	static private int HASHCODE = reporter.newMethod("hashCode()");
+	static private Reporter reporter = Reporter.register(RuleEvent.class);
+	static private int HASHCODE = reporter.newMethod("computeHashCode()");
 	static private int EQUALS = reporter.newMethod("equals()");
 	static private int GET_PARTIAL_MATCH = reporter.newMethod("getPartialMatch()");
 	static private int GET_ANCHOR_IMAGE = reporter.newMethod("getAnchorImage()");

@@ -12,21 +12,22 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultStateCache.java,v 1.2 2007-03-30 15:50:41 rensink Exp $
+ * $Id: DefaultStateCache.java,v 1.3 2007-04-22 23:32:15 rensink Exp $
  */
 package groove.lts;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-
 import groove.graph.DeltaGraphCache;
+import groove.trans.RuleEvent;
+
+import java.util.IdentityHashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultStateCache extends DeltaGraphCache {
     /**
@@ -35,60 +36,129 @@ public class DefaultStateCache extends DeltaGraphCache {
     protected DefaultStateCache(DefaultGraphState state) {
         super(state);
     }
-   
-    /**
-     * Returns the cached set out {@link GraphOutTransition}s.
-     * The set is constructed lazily if the state is closed,
-     * using {@link #computeOutTransitionSet()}; if the state s not closed,
-     * an empty set is initialized.
+    
+    /** 
+     * Adds an outgoing transition to the structures stored in this cache.
      */
-    Collection<GraphOutTransition> getOutTransitionSet() {
-        if (outTransitionSet == null) {
-        	outTransitionSet = computeOutTransitionSet();
-        }
-        return outTransitionSet;
+    boolean addTransition(GraphTransition transition) {
+//    	boolean result = getStubSet().add(getGraph().createTransitionStub(event, target));
+    	boolean result = getTransitionMap().put(transition.getEvent(), transition) == null;
+    	return result;
+    }
+
+    /** 
+     * Lazily creates and returns a mapping from the events to the target states 
+     * of the currently stored outgoing transitions of this state.
+     */
+    Map<RuleEvent, GraphTransition> getTransitionMap() {
+    	if (transitionMap == null) {
+    		transitionMap = computeTransitionMap();
+    	}
+    	return transitionMap;
     }
     
+    /** Indicates if the transition map is currently initialised. */
+    boolean isTransitionMapSet() {
+    	return transitionMap != null;
+    }
+    
+    /** 
+     * Computes a mapping from the events to the target states 
+     * of the currently stored outgoing transitions of this state.
+     */
+    private Map<RuleEvent, GraphTransition> computeTransitionMap() {
+    	Map<RuleEvent,GraphTransition> result = createTransitionMap();
+    	Iterator<GraphTransitionStub> stubIter = getGraph().getStoredStubIter();
+    	if (stubIter != null) {
+			while (stubIter.hasNext()) {
+				GraphTransitionStub stub = stubIter.next();
+				result.put(stub.getEvent(getGraph()),
+						stub.createTransition(getGraph()));
+			}
+		}
+    	return result;
+    }
+    
+    /** Callback factory method to create the transition map. */
+    private Map<RuleEvent,GraphTransition> createTransitionMap() {
+    	return new IdentityHashMap<RuleEvent,GraphTransition>();
+    }
+//
+//    /**
+//     * Returns the cached set out {@link GraphTransitionStub}s.
+//     * The set is constructed lazily if the state is closed,
+//     * using {@link #computeStubSet()}; if the state s not closed,
+//     * an empty set is initialized.
+//     */
+//    Set<GraphTransitionStub> getStubSet() {
+//        if (stubSet == null) {
+//        	stubSet = computeStubSet();
+//        }
+//        return stubSet;
+//    }
+//    
     /**
      * Clears the cached set, so it does not occupy memory.
      * This is typically done at the moment the state is closed.
      */
-    void clearOutTransitionSet() {
-    	outTransitionSet = null;
+    void clear() {
+//    	stubSet = null;
+    	transitionMap = null;
     }
-    
-    /**
-     * Reconstructs the set of {@link groove.lts.GraphOutTransition}s from the corresponding
-     * {@link groove.util.ListEntry} in the underlying graph state.
-     * It is assumed that <code>getState().isClosed()</code>.
-     */
-    protected Collection<GraphOutTransition> computeOutTransitionSet() {
-        Collection<GraphOutTransition> result = createOutTransitionSet();
-        if (getGraph().storesOutTransition()) {
-			Iterator<GraphOutTransition> outTransitionIter = getGraph().getStoredOutTransitionIter();
-			while (outTransitionIter.hasNext()) {
-				GraphOutTransition outTransition = outTransitionIter.next();
-				result.add(outTransition);
-			}
-		}
-        return result;
-    }
-    
-    /**
-     * Factory method for the outgoing transition set.
-     */
-    protected Collection<GraphOutTransition> createOutTransitionSet() {
-    	return new ArrayList<GraphOutTransition>();
-    }
+//    
+//    /**
+//     * Reconstructs the set of {@link groove.lts.GraphTransitionStub}s from the corresponding
+//     * {@link groove.util.ListEntry} in the underlying graph state.
+//     * It is assumed that <code>getState().isClosed()</code>.
+//     */
+//    private Set<GraphTransitionStub> computeStubSet() {
+//        Set<GraphTransitionStub> result = createStubSet();
+//        if (getGraph().storesTransitionStubs()) {
+//			Iterator<GraphTransitionStub> outTransitionIter = getGraph().getStoredStubIter();
+//			while (outTransitionIter.hasNext()) {
+//				GraphTransitionStub outTransition = outTransitionIter.next();
+//				result.add(outTransition);
+//			}
+//		}
+//        return result;
+//    }
+//    
+//    /**
+//     * Factory method for the outgoing transition set.
+//     */
+//    private Set<GraphTransitionStub> createStubSet() {
+//    	return new TreeHashSet<GraphTransitionStub>() {
+//			@Override
+//			protected boolean areEqual(Object key, Object otherKey) {
+//				return getEvent(key) == getEvent(otherKey);
+//			}
+//
+//			@Override
+//			protected int getCode(Object key) {
+//				RuleEvent keyEvent = getEvent(key);
+//				return keyEvent == null ? 0 : System.identityHashCode(keyEvent);
+//			}
+//			
+//			private RuleEvent getEvent(Object key) {
+//				if (key instanceof GraphTransitionStub) {
+//					return ((GraphTransitionStub) key).getEvent(getGraph());
+//				} else {
+//					return null;
+//				}
+//			}
+//    	};
+//    }
     
     /** Specialises the returnt ype of the super methods. */
     @Override
     public DefaultGraphState getGraph() {
     	return (DefaultGraphState) super.getGraph();
     }
-    
-    /**
-     * The set of outgoing transitions computed for the underlying graph.
-     */
-    private Collection<GraphOutTransition> outTransitionSet;
+//    
+//    /**
+//     * The set of outgoing transitions computed for the underlying graph.
+//     */
+//    private Set<GraphTransitionStub> stubSet;
+    /** Mapping from rule events to target states of transitions from this (source) state. */
+    private Map<RuleEvent,GraphTransition> transitionMap;
 }

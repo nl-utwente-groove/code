@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.10 2007-04-21 07:28:39 rensink Exp $
+ * $Id: Generator.java,v 1.11 2007-04-22 23:32:25 rensink Exp $
  */
 package groove.util;
 
@@ -70,7 +70,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -410,7 +410,7 @@ public class Generator extends CommandLineTool {
      * Gives some statistics regarding the generated transitions. 
      */
     private void reportTransitionStatistics() {
-        println("\tTransitions:\tAliased:\t"+AliasSPOApplication.getPriorTransitionCount());
+        println("\tTransitions:\tAliased:\t"+AliasSPOApplication.getAliasCount());
         println("\t\tConfluent:\t" + StateGenerator.getConfluentDiamondCount());
         println("\t\tEvents:\t" + SystemRecord.getEventCount());
     }
