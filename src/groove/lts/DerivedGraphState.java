@@ -35,7 +35,7 @@ import java.util.Arrays;
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class DerivedGraphState extends DefaultGraphState implements GraphNextState, GraphTransitionStub {
     /**
@@ -385,8 +385,8 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 		}
 	}
 
-	public boolean isIdMorphism() {
-		return true;
+	public boolean isSymmetry() {
+		return false;
 	}
 
 	public GraphTransitionStub toStub() {
@@ -398,9 +398,9 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
      * <code>source</code> is not equal to the state source,
      * otherwise it returns <code>this</code>.
 	 */
-	public GraphTransition createTransition(GraphState source) {
+	public GraphTransition toTransition(GraphState source) {
 		if (source != source()) {
-			return new DefaultGraphTransition(getSourceEvent(), source, this, true);
+			return new DefaultGraphTransition(getSourceEvent(), source, this, false);
 		} else {
 			return this;
 		}
@@ -533,7 +533,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	    } else if (source != source() && event == getSourceEvent()) {
 			return this;
 		} else {
-			return new IdGraphTransitionStub(event, this);
+			return new IdentityTransitionStub(event, this);
 		}
 	}
 

@@ -23,7 +23,7 @@ import groove.trans.RuleEvent;
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface GraphTransition extends Transition {
 	/** Overrides the method to specialise the result type. */
@@ -52,16 +52,19 @@ public interface GraphTransition extends Transition {
 	public Morphism morphism();
 	
 	/** 
-	 * Indicates if the morphism from source to target is a (partial) identity.
-	 * The alternative is that there is true event renaming involved.
+	 * Indicates if the transition involves a non-trivial symmetry.
+	 * This is the case if and only if there is a non-trivial isomorphism from
+	 * the directly derived target of the event applied to the source, to the
+	 * actual (stored) target.
+	 * @return <code>true</code> if the transition involves a non-trivial symmetry 
 	 * @see #morphism()
 	 */
-	public boolean isIdMorphism();
+	public boolean isSymmetry();
 	
 	/** 
 	 * Converts this transition to a more memory-efficient representation,
 	 * from which the original transition can be retrieved by 
-	 * {@link GraphTransitionStub#createTransition(GraphState)}.
+	 * {@link GraphTransitionStub#toTransition(GraphState)}.
 	 */
 	public GraphTransitionStub toStub();
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.4 2007-04-12 16:14:49 rensink Exp $
+ * $Id: JVertexView.java,v 1.5 2007-04-24 10:06:48 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -50,7 +50,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class JVertexView extends VertexView {
 	/** HTML tag to make text bold. */
@@ -425,6 +425,30 @@ public class JVertexView extends VertexView {
             if (r != null) {
                 setBounds(Groove.toRectangle(r));
             }
+        }
+        
+        /** Overridden for performance reasons. Copied from {@link org.jgraph.graph.VertexRenderer}. */
+        @Override
+        public void validate() {
+            // empty
+        }
+
+        /** Overridden for performance reasons. Copied from {@link org.jgraph.graph.VertexRenderer}. */
+        @Override
+        public void revalidate() {
+            // empty
+        }
+
+        /** Overridden for performance reasons. Copied from {@link org.jgraph.graph.VertexRenderer}. */
+        @Override
+        public void repaint(long tm, int x, int y, int width, int height) {
+            // empty
+        }
+
+        /** Overridden for performance reasons. Copied from {@link org.jgraph.graph.VertexRenderer}. */
+        @Override
+        public void repaint(Rectangle r) {
+            // empty
         }
     }
 }

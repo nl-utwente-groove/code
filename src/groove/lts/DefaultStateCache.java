@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultStateCache.java,v 1.3 2007-04-22 23:32:15 rensink Exp $
+ * $Id: DefaultStateCache.java,v 1.4 2007-04-24 10:06:43 rensink Exp $
  */
 package groove.lts;
 
@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultStateCache extends DeltaGraphCache {
     /**
@@ -73,7 +73,7 @@ public class DefaultStateCache extends DeltaGraphCache {
 			while (stubIter.hasNext()) {
 				GraphTransitionStub stub = stubIter.next();
 				result.put(stub.getEvent(getGraph()),
-						stub.createTransition(getGraph()));
+						stub.toTransition(getGraph()));
 			}
 		}
     	return result;

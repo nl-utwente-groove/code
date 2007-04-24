@@ -33,7 +33,7 @@ import groove.util.Reporter;
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy},
  * and if that fails, attempts to create an {@link groove.graph.InjectiveMorphism}. 
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -170,7 +170,6 @@ public class DefaultIsoChecker implements IsoChecker {
     
     /**
      * The factory used to get morphisms from
-     * @see #createInjectiveMorphism(Graph,Graph)
      */
     static private GraphFactory graphFactory = GraphFactory.getInstance();
 

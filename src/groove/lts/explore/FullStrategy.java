@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: FullStrategy.java,v 1.2 2007-03-30 15:50:42 rensink Exp $
+ * $Id: FullStrategy.java,v 1.3 2007-04-24 10:06:44 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -20,16 +20,18 @@ import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
+import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.LTS;
 import groove.lts.State;
+import groove.lts.StateGenerator;
 
 import java.util.Collection;
 
 /**
  * Recursively explores all open states of the LTS, in a breadth first manner.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class FullStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
@@ -46,28 +48,24 @@ public class FullStrategy extends AbstractStrategy {
     
     /**
      * Constructs an exploration strategy for a given LTS.
-     * @param lts
+     * @param generator
      */
-    public FullStrategy(LTS lts) {
-    	setLTS(lts);
+    public FullStrategy(StateGenerator generator) {
+    	setGenerator(generator);
     }
     
     /**
      * Initializes the set of open states, then calls the super method.
      */
     @Override
-    public void setLTS(LTS lts) {
+    public void setLTS(GTS gts, StateGenerator generator) {
         if (getLTS() != null) {
             getLTS().removeGraphListener(graphListener);
         }
-        lts.addGraphListener(graphListener);
+        gts.addGraphListener(graphListener);
         openStateSet = createOpenStateSet();
-        for (State state: lts.nodeSet()) {
-            if (!state.isClosed()) {
-                openStateSet.add(state);
-            }
-        }
-        super.setLTS(lts);
+        openStateSet.addAll(gts.getOpenStates());
+        super.setLTS(gts, generator);
     }
 
     /** 

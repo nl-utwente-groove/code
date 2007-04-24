@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.6 2007-04-12 16:14:49 rensink Exp $
+ * $Id: JModel.java,v 1.7 2007-04-24 10:06:48 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -36,6 +36,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import javax.swing.SwingUtilities;
 
@@ -59,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -67,7 +69,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.6 $
+     * @version $Revision: 1.7 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -112,6 +114,23 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
+	 * Returns the properties associated with this j-model.
+	 */
+	public final SortedMap<String, Object> getProperties() {
+		if (properties == null) {
+			properties = new TreeMap<String,Object>();
+		}
+		return this.properties;
+	}
+
+	/**
+	 * Sets the properties of this j-model to a given properties map.
+	 */
+	public final void setProperties(SortedMap<String, Object> properties) {
+		this.properties = properties;
+	}
+
+	/**
      * Returns a tool tip text for a given graph cell.
      * Does not test if the cell is hidden.
      * @param jCell the graph cell (of this graph model) for which a tool tip is to be returned
@@ -258,6 +277,7 @@ abstract public class JModel extends DefaultGraphModel {
             }
         }
         GraphInfo.setLayoutMap(result, layoutMap);
+        GraphInfo.setProperties(result, getProperties());
         return result;
     }
 
@@ -575,4 +595,6 @@ abstract public class JModel extends DefaultGraphModel {
     protected final Set<JCell> layoutableJCells = new HashSet<JCell>();
 	/** Set of options values to control the display. May be <code>null</code>. */
 	private final Options options;
+	/** Properties map of the graph being displayed or edited. */
+	private SortedMap<String,Object> properties;
 }

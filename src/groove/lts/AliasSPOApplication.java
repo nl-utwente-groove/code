@@ -56,13 +56,25 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
     
     @Override
     protected Element[] computeCoanchorImage() {
-    	Element[] result;
-        if (prior.isIdMorphism() && ((DerivedGraphState) prior.target()).getEvent() == getEvent()) {
-        	result = ((DerivedGraphState) prior.target()).getCoanchorImage();
-        } else {
+    	Element[] result = null;
+    	int coanchorSize = getRule().coanchor().length;
+        if (!prior.isSymmetry() && coanchorSize > 0) {
+        	DerivedGraphState priorTarget = (DerivedGraphState) prior.target();
+        	if (priorTarget.getEvent() == getEvent()) {
+        		Element[] coanchorImage = priorTarget.getCoanchorImage();
+        		boolean resultFresh = true;
+        		for (int i = 0; resultFresh && i < coanchorSize; i++) {
+        			resultFresh = ! getSource().containsElement(coanchorImage[i]);
+        		}
+        		if (resultFresh) {
+        			result = coanchorImage;
+        		}
+        	}
+        }
+        if (result == null) {
             result = super.computeCoanchorImage();
         }
-	    assert getRule().coanchor().length == 0 || result[0] instanceof Node;
+	    assert coanchorSize == 0 || result[coanchorSize-1] instanceof Node;
 	    return result;
     }
     

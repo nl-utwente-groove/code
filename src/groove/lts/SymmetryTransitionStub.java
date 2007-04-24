@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IsoGraphTransitionStub.java,v 1.1 2007-04-22 23:32:14 rensink Exp $
+ * $Id: SymmetryTransitionStub.java,v 1.1 2007-04-24 10:06:43 rensink Exp $
  */
 package groove.lts;
 
@@ -23,15 +23,16 @@ import groove.trans.RuleEvent;
  * @author Arend Rensink
  * @version $Revision: 1.1 $
  */
-class IsoGraphTransitionStub extends AbstractGraphTransitionStub {
+class SymmetryTransitionStub extends AbstractGraphTransitionStub {
     /**
      * Default constructor, providing the event and target of the stub.
      */
-    IsoGraphTransitionStub(RuleEvent event, GraphState target) {
+    SymmetryTransitionStub(RuleEvent event, GraphState target) {
     	super(event,target);
     }
 
-	public GraphTransition createTransition(GraphState source) {
-        return new DefaultGraphTransition(getEvent(), source, target(), false);
-    }
+    /** This type of transition stub involves a non-trivial symmetry. */
+	public boolean isSymmetry() {
+		return true;
+	}	
 }

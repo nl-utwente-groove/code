@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractGraphTransitionStub.java,v 1.1 2007-04-22 23:32:15 rensink Exp $
+ * $Id: AbstractGraphTransitionStub.java,v 1.2 2007-04-24 10:06:43 rensink Exp $
  */
 package groove.lts;
 
@@ -23,10 +23,10 @@ import groove.trans.RuleEvent;
 /**
  * Abstract graph transition stub that only stores an event and a target state.
  * There are two specialisations: one that is based on an identity morphism
- * ({@link IsoGraphTransitionStub}) and one that is not ({@link IsoGraphTransitionStub}).
- * The only abstract method is {@link #createTransition(GraphState)}.
+ * ({@link SymmetryTransitionStub}) and one that is not ({@link SymmetryTransitionStub}).
+ * The only abstract method is {@link #toTransition(GraphState)}.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     /**
@@ -59,6 +59,10 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
         } else {
             return obj instanceof AbstractGraphTransitionStub && equalsStub((AbstractGraphTransitionStub) obj);
         }
+    }
+
+	public GraphTransition toTransition(GraphState source) {
+        return new DefaultGraphTransition(getEvent(), source, target(), isSymmetry());
     }
 
     /**

@@ -12,12 +12,9 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExploreStrategyMenu.java,v 1.2 2007-03-30 15:50:35 rensink Exp $
+ * $Id: ExploreStrategyMenu.java,v 1.3 2007-04-24 10:06:44 rensink Exp $
  */
 package groove.gui;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -28,14 +25,16 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
-import groove.lts.LTSListener;
 import groove.lts.State;
+import groove.lts.explore.BarbedStrategy;
 import groove.lts.explore.BoundedStrategy;
 import groove.lts.explore.BranchingStrategy;
-import groove.lts.explore.LinearStrategy;
 import groove.lts.explore.FullStrategy;
-import groove.lts.explore.BarbedStrategy;
+import groove.lts.explore.LinearStrategy;
 import groove.trans.NameLabel;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
@@ -43,7 +42,7 @@ import javax.swing.JMenu;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     /**
@@ -81,38 +80,30 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
      */
     public void addExploreStrategy(ExploreStrategy strategy) {
         Action generateAction = simulator.new GenerateLTSAction(strategy);
-        generateAction.setEnabled(false);
         strategyActionMap.put(strategy, generateAction);
         add(generateAction);
     }
 
     // ----------------------------- simulation listener methods -----------------------
     public void setGrammarUpdate(GTS gts) {
-        if (isLTSLoaded()) {
-        	gts.removeGraphListener(ltsListener);
-        }
-        currentGTS = gts;
-        // the initial state is open
-        openStateCount = 1;
-        if (currentGTS != null) {
-        	currentGTS.addGraphListener(ltsListener);
+        gtsListener.set(gts);
+        if (gts == null) {
+        	setStateUpdate(null);
+        } else {
             // the lts's of the strategies in this menu are changed
             // moreover, the conditions in condition strategies are reset
             // furthermore, the enabling is (re)set
             for (Map.Entry<ExploreStrategy,Action> entry: strategyActionMap.entrySet()) {
                 ExploreStrategy strategy = entry.getKey();
-                strategy.setLTS(currentGTS);
                 Action generateAction = entry.getValue();
                 if (strategy instanceof ConditionalExploreStrategy) {
                     ((ConditionalExploreStrategy) strategy).setCondition(null);
                     generateAction.putValue(Action.NAME, strategy.toString());
                     generateAction.setEnabled(false);
-                } else {
-                    generateAction.setEnabled(!isLTSExplored());
                 }
             }
+            setStateUpdate(gts.startState());
         }
-        setStateUpdate(!isLTSLoaded() ? null : (GraphState) currentGTS.startState());
     }
 
     public void setStateUpdate(GraphState state) {
@@ -122,7 +113,6 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
             strategy.setAtState(state);
             generateAction.putValue(Action.NAME, strategy.toString());
         }
-        this.setEnabled(!isLTSExplored());
     }
 
     public void setRuleUpdate(NameLabel name) {
@@ -130,12 +120,11 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
             ExploreStrategy strategy = entry.getKey();
             if (strategy instanceof ConditionalExploreStrategy) {
                 Action generateAction = entry.getValue();
-                ((ConditionalExploreStrategy) strategy).setCondition(currentGTS.ruleSystem().getRule(name));
+                ((ConditionalExploreStrategy) strategy).setCondition(simulator.getCurrentGrammar().getRule(name));
                 generateAction.putValue(Action.NAME, strategy.toString());
                 generateAction.setEnabled(true);
             }
         }
-        this.setEnabled(!isLTSExplored());
     }
 
     public void setTransitionUpdate(GraphTransition transition) {
@@ -147,23 +136,6 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     }
 
     /**
-     * Indicates if an LTS is currently loaded.
-     * This may fail to be the case if no grammar was loaded, or the loaded grammar
-     * has no start state.
-     */
-    protected boolean isLTSLoaded() {
-        return currentGTS != null;
-    }
-
-    /**
-     * Indicates if the currently loaded LTS is fully explored.
-     * Also returns <code>true</code> if there is no LTS loaded.
-     */
-    protected boolean isLTSExplored() {
-        return isLTSLoaded() && openStateCount == 0;
-    }
-    
-    /**
      * The simulator with which this menu is associated.
      */
     private final Simulator simulator;
@@ -173,19 +145,31 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     private final boolean disableOnFinish;
     /** Mapping from exploratin strategies to {@link Action}s resulting in that strategy. */
     private final Map<ExploreStrategy,Action> strategyActionMap = new HashMap<ExploreStrategy,Action>();
-    /** The currently loaded graph grammar. */
-    private GTS currentGTS;
-//    /** The transition system of the currently loaded grammar; may be <code>null</code>. */
-//    private LTS currentLTS;
-    /** The number of open states of the currently loaded LTS (if any). */
-    private int openStateCount;
-    /** The (permanent) LTS listener associated with this menu. */
-    private final LTSListener ltsListener = new LTSAdapter() {
+    /** The (permanent) GTS listener associated with this menu. */
+    private final GTSListener gtsListener = new GTSListener();
+    /** Listener that can be refreshed with the current GTS. */
+    private class GTSListener extends LTSAdapter {
+    	/** Sets the GTS to listen to. */
+    	public void set(GTS newGTS) {
+    		if (gts != null) {
+    			gts.removeGraphListener(this);
+    		}
+    		gts = newGTS;
+    		if (gts != null) {
+    			gts.addGraphListener(this);
+    			openStateCount = gts.openStateCount();
+    			setEnabled(true);
+    		}
+    	}
+    	
         @Override
         public void closeUpdate(LTS graph, State explored) {
-            assert graph == currentGTS;
+            assert graph == gts;
             openStateCount--;
-            setEnabled(!disableOnFinish || !isLTSExplored());
+            assert openStateCount == gts.openStateCount();
+            if (openStateCount == 0 && ! disableOnFinish) {
+            	setEnabled(false);
+            }
         }
 
         /** If the added element is a state, increases the open state count. */
@@ -193,5 +177,11 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
         public void addUpdate(GraphShape graph, Node node) {
         	openStateCount++;
         }
-    };
+        
+        /** The GTS this listener currently listens to. */
+        private GTS gts;    
+        /** The number of open states of the currently loaded LTS (if any). */
+        private int openStateCount;
+
+    }
 }

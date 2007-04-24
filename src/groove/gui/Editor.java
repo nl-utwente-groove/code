@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.12 2007-04-18 15:58:30 rensink Exp $
+ * $Id: Editor.java,v 1.13 2007-04-24 10:06:44 rensink Exp $
  */
 package groove.gui;
 
@@ -88,7 +88,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.12 $ $Date: 2007-04-18 15:58:30 $
+ * @version $Revision: 1.13 $ $Date: 2007-04-24 10:06:44 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -275,7 +275,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.12 $
+     * @version $Revision: 1.13 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -338,9 +338,28 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             super(Options.STOP_EDIT_ACTION_NAME);
         }
         
-        /** Callse {@link Editor#handleClose()}. */
+        /** Calls {@link Editor#handleClose()}. */
         public void actionPerformed(ActionEvent e) {
             handleClose();
+        }
+    }
+
+    private class EditPropertiesAction extends AbstractAction {
+    	/** Constructs an instance of the action. */
+        public EditPropertiesAction() {
+            super(Options.EDIT_ACTION_NAME);
+        }
+        
+        /** 
+         * Displays a {@link PropertiesDialog} for the properties
+         * of the edited graph.
+         */
+        public void actionPerformed(ActionEvent e) {
+            PropertiesDialog dialog = new PropertiesDialog(Editor.this, getModel().getProperties(), true);
+            if (dialog.showDialog()) {
+            	getModel().setProperties(dialog.getProperties());
+            	currentGraphModified = true;
+            }
         }
     }
 
@@ -593,7 +612,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	protected boolean handlePreview() {
 	    try {
 	    	NameLabel ruleName = new NameLabel("temp");
-            AspectualRuleView ruleGraph = (AspectualRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0, getRuleProperties());
+            AspectualRuleView ruleGraph = (AspectualRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0, getSystemProperties());
             AspectJModel ruleModel = new AspectJModel(ruleGraph, getOptions());
             JGraph previewGraph = new JGraph(ruleModel);
             JOptionPane previewPane = new JOptionPane(new JScrollPane(previewGraph),
@@ -895,6 +914,16 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 		}
 		return newAction;
 	}
+	
+	/**
+	 * Lazily creates and returns the action to edit the graph properties.
+	 */
+	private Action getEditPropertiesAction() {
+		if (editPropertiesAction == null) {
+			editPropertiesAction = new EditPropertiesAction();
+		}
+		return editPropertiesAction;
+	}
 
     /** Initialises the GUI. */
     protected void initGUI() {
@@ -1088,6 +1117,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         	menuBar.add(createFileMenu());
         }
         menuBar.add(createEditMenu());
+        menuBar.add(createPropertiesMenu());
         menuBar.add(createDisplayMenu());
         menuBar.add(createOptionsMenu());
         menuBar.add(createHelpMenu());
@@ -1136,6 +1166,16 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
         optionsMenu.add(getOptions().getItem(IS_ATTRIBUTED_OPTION));
         return optionsMenu;
+	}
+
+	/**
+	 * Creates and returns a properties menu for the menu bar.
+	 */
+	private JMenu createPropertiesMenu() {
+        JMenu result = new JMenu(Options.PROPERTIES_MENU_NAME);
+	    result.addSeparator();
+	    result.add(getEditPropertiesAction());
+        return result;
 	}
 
 	/**
@@ -1196,7 +1236,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     }
 
     /** Returns a rule properties object based on the current options setting. */
-    protected SystemProperties getRuleProperties() {
+    protected SystemProperties getSystemProperties() {
     	return SystemProperties.getInstance(getOptions().getValue(IS_ATTRIBUTED_OPTION));
     }
     
@@ -1537,6 +1577,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     private Action saveAction;
     /** Action to export the current graph in an image format. */
     private Action exportAction;
+    /** Action to edit the graph properties. */
+    private Action editPropertiesAction;
     /** Action to open a new graph for editing. */
     private Action openAction;
     /** Action to start an empty graph for editing. */

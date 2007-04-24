@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphState.java,v 1.6 2007-04-22 23:32:14 rensink Exp $
+ * $Id: DefaultGraphState.java,v 1.7 2007-04-24 10:06:42 rensink Exp $
  */
 package groove.lts;
 
@@ -36,7 +36,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-04-22 23:32:14 $
+ * @version $Revision: 1.7 $ $Date: 2007-04-24 10:06:42 $
  */
 public class DefaultGraphState extends DeltaGraph<DefaultStateCache> implements GraphState {
 //	/**
@@ -116,7 +116,7 @@ public class DefaultGraphState extends DeltaGraph<DefaultStateCache> implements 
     		return new TransformIterator<GraphTransitionStub,GraphTransition>(getStoredStubIter()) {
 				@Override
 				protected GraphTransition toOuter(GraphTransitionStub from) {
-					return from.createTransition(DefaultGraphState.this);
+					return from.toTransition(DefaultGraphState.this);
 				}
     		};
     	}

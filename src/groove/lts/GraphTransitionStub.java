@@ -24,18 +24,9 @@ import groove.trans.RuleEvent;
  * These objects typically do not store the source of the transition;
  * instead they are stored inside by the source state.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 interface GraphTransitionStub extends Element {
-//	/**
-//	 * Returns the transformation event of this transition.
-//	 */
-//	public RuleEvent getEvent();
-//	/**
-//	 * Returns the underlying rule of this graph transition.
-//	 */
-//	public abstract Rule getRule();
-	
 	/** 
 	 * Returns the event that underlies the transition from a given source
 	 * to this object.
@@ -43,19 +34,23 @@ interface GraphTransitionStub extends Element {
 	RuleEvent getEvent(GraphState source);
 
 	/**
-	 * Returns the target state of this graph transition.
-	 * The return type is <code>Node</code> to make it compatible with
-	 * {@link groove.graph.BinaryEdge#target()}, but this implementation always 
-	 * returns a {@link GraphState}.
+	 * Returns the target state of this graph transition stub.
 	 */
 	GraphState target();
 
 	/** 
-	 * Constructs a graph transition from this out-transition,
+	 * Constructs a graph transition from this transition stub,
 	 * based on a given source.
 	 * @param source the source state for the graph transition
 	 * @return A graph transition based on the given source, and the
 	 * rule, anchor images and target state stored in this out-transition.
 	 */
-	GraphTransition createTransition(GraphState source);
+	GraphTransition toTransition(GraphState source);
+	
+	/** 
+	 * Indicates if the transition stub involves a non-trivial symmetry.
+	 * @return <code>true</code> if the transition involves a non-trivial symmetry 
+	 * @see GraphTransition#isSymmetry()
+	 */
+	boolean isSymmetry();
 }

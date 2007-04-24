@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.6 2007-04-22 23:32:15 rensink Exp $
+ * $Id: DefaultGraphTransition.java,v 1.7 2007-04-24 10:06:43 rensink Exp $
  */
 package groove.lts;
 
@@ -32,7 +32,7 @@ import groove.trans.RuleEvent;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-04-22 23:32:15 $
+ * @version $Revision: 1.7 $ $Date: 2007-04-24 10:06:43 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphTransitionStub, GraphTransition {
     /** The total number of anchor images created. */
@@ -93,7 +93,7 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
     public DefaultGraphTransition(RuleEvent event, GraphState source, GraphState target, boolean idMorphism) {
         super(source, event.getLabel(), target);
         this.event = event;
-        this.idMorphism = idMorphism;
+        this.symmetry = idMorphism;
     }
 
     public RuleEvent getEvent() {
@@ -104,19 +104,18 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
         return getEvent().getRule();
     }
 
-    public boolean isIdMorphism() {
-		return idMorphism;
+    public boolean isSymmetry() {
+		return symmetry;
 	}
 
 	public GraphTransitionStub toStub() {
-		if (isIdMorphism()) {
-			if (target() instanceof DerivedGraphState) {
-				return ((DerivedGraphState) target()).createInTransitionStub(source(), getEvent());
-			} else {
-				return new IdGraphTransitionStub(getEvent(), target());
-			}
+		if (isSymmetry()) {
+			return new SymmetryTransitionStub(getEvent(), target());
+		} else if (target() instanceof DerivedGraphState) {
+			return ((DerivedGraphState) target()).createInTransitionStub(source(),
+					getEvent());
 		} else {
-			return new IsoGraphTransitionStub(getEvent(), target());
+			return new IdentityTransitionStub(getEvent(), target());
 		}
 	}
 
@@ -142,7 +141,7 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
      * <code>source</code> is not equal to the source of the transition,
      * otherwise it returns <code>this</code>.
 	 */
-	public GraphTransition createTransition(GraphState source) {
+	public GraphTransition toTransition(GraphState source) {
 		if (source != source()) {
 			throw new IllegalArgumentException("Source state incompatible");
 		} else {
@@ -166,17 +165,16 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
      */
     protected Morphism computeMorphism() {
         RuleApplication appl = getEvent().newApplication(source().getGraph());
-        Graph derivedTarget = appl.getTarget();
-        Graph realTarget = target().getGraph();
-        if (derivedTarget.edgeSet().equals(realTarget.edgeSet())
-                && derivedTarget.nodeSet().equals(realTarget.nodeSet())) {
-            return appl.getMorphism();
-        } else {
+        if (isSymmetry()) {
+            Graph derivedTarget = appl.getTarget();
+            Graph realTarget = target().getGraph();
             Morphism iso = derivedTarget.getIsomorphismTo(realTarget);
             assert iso != null : "Can't reconstruct derivation from graph transition " + this
                     + ": \n" + AbstractGraph.toString(derivedTarget) + " and \n"
                     + AbstractGraph.toString(realTarget) + " \nnot isomorphic";
             return appl.getMorphism().then(iso);
+        } else {
+            return appl.getMorphism();
         }
     }
 
@@ -253,5 +251,5 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
      */
     private Morphism morphism;
     /** Flag indicating that the underlying morphism is a partial identity. */
-    private final boolean idMorphism;
+    private final boolean symmetry;
 }

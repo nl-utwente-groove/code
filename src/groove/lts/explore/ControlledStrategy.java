@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlledStrategy.java,v 1.5 2007-04-21 07:28:43 rensink Exp $
+ * $Id: ControlledStrategy.java,v 1.6 2007-04-24 10:06:44 rensink Exp $
  */
 package groove.lts.explore;
 
+import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.LTS;
 import groove.lts.State;
+import groove.lts.StateGenerator;
 import groove.trans.Matching;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
@@ -33,7 +34,7 @@ import java.util.Stack;
  * Strategy that searches the state space in a depth-first fashion, using a list of rules
  * to control the search.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ControlledStrategy extends AbstractStrategy {
     /** Name of this strategy. */
@@ -54,8 +55,8 @@ public class ControlledStrategy extends AbstractStrategy {
     
     /** In addition to calling the <code>super</code> method, also resets any previous exploration data. */
     @Override
-    public void setLTS(LTS lts) {
-        super.setLTS(lts);
+    protected void setLTS(GTS lts, StateGenerator generator) {
+        super.setLTS(lts, generator);
         pc = 0;
         found = false;
     }
