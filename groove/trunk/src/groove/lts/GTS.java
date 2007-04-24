@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.10 2007-04-22 23:32:14 rensink Exp $
+ * $Id: GTS.java,v 1.11 2007-04-24 10:06:43 rensink Exp $
  */
 package groove.lts;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-04-22 23:32:14 $
+ * @version $Revision: 1.11 $ $Date: 2007-04-24 10:06:43 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -250,8 +250,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     public void setClosed(State state) {
         GraphState graphState = (GraphState) state;
         if (graphState.setClosed()) {
-            notifyLTSListenersOfClose(state);
             closedCount++;
+            notifyLTSListenersOfClose(state);
         }
     }
 //    

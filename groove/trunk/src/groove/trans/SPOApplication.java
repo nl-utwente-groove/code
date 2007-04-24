@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.10 2007-04-22 23:32:24 rensink Exp $
+ * $Id: SPOApplication.java,v 1.11 2007-04-24 10:06:45 rensink Exp $
  */
 package groove.trans;
 
@@ -43,7 +43,7 @@ import groove.util.Reporter;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-04-22 23:32:24 $
+ * @version $Revision: 1.11 $ $Date: 2007-04-24 10:06:45 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -187,16 +187,12 @@ public class SPOApplication implements RuleApplication, Derivation {
 		// add creator node images
 		Node[] coanchor = rule.coanchor();
 		int coanchorSize = coanchor.length;
-		Element[] coanchorImage = this.coanchorImage;
+		Element[] coanchorImage = getCoanchorImage();
 		for (int i = 0; i < coanchorSize; i++) {
-			assert coanchorImage == null || coanchorImage[i] instanceof Node : String.format("Anchor image at %d is %s", i, coanchorImage[i]);
-            Node hint = coanchorImage == null ? null : (Node) coanchorImage[i];
-            boolean hintValid = hint != null && !source.containsElement(hint);
-            if (hintValid) {
-                result.putNode(coanchor[i], hint);
-            } else {
-                result.putNode(coanchor[i], getFreshNode(i, source));
-            }
+			assert coanchorImage[i] instanceof Node : String.format("Coanchor image at %d is %s",
+					i,
+					coanchorImage[i]);
+			result.putNode(coanchor[i], (Node) coanchorImage[i]);
 		}
 		return result;
 	}
@@ -215,15 +211,29 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 * fresh images for the creator nodes of the rule.
 	 */
 	protected Element[] computeCoanchorImage() {
-        Node[] coanchor = rule.coanchor();
-        int coanchorSize = coanchor.length;
+		int coanchorSize = getRule().coanchor().length;
 		Element[] result = new Element[coanchorSize];
-        VarNodeEdgeMap coanchorMap = getCoanchorMap();
 		for (int i = 0; i < coanchorSize; i++) {
-			result[i] = coanchorMap.getNode(coanchor[i]);
-			assert result[i] != null : "Coanchor map "+coanchorMap+" should have image for element "+coanchor[i];
+			result[i] = computeCoanchorImageAt(i);
 		}
+//
+//        Node[] coanchor = rule.coanchor();
+//        int coanchorSize = coanchor.length;
+//		Element[] result = new Element[coanchorSize];
+//        VarNodeEdgeMap coanchorMap = getCoanchorMap();
+//		for (int i = 0; i < coanchorSize; i++) {
+//			result[i] = coanchorMap.getNode(coanchor[i]);
+//			assert result[i] != null : "Coanchor map "+coanchorMap+" should have image for element "+coanchor[i];
+//		}
 		return result;
+	}
+    
+    /**
+	 * Callback factory method to create fresh element for the coanchor image
+	 * at a given index. The fresh node is actually created using {@link #getFreshNode(int, Graph)}.
+	 */
+	protected Node computeCoanchorImageAt(int i) {
+		return getFreshNode(i, source);
 	}
 
 	public void setCoanchorImage(Element[] image) {
@@ -537,7 +547,8 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 */
 	public Node getFreshNode(int creatorIndex, Graph graph) {
 		Node result = null;
-		Iterator<Node> freshNodeIter = getEvent().getFreshNodes(creatorIndex).iterator();
+		Collection<Node> currentFreshNodes = getEvent().getFreshNodes(creatorIndex);
+		Iterator<Node> freshNodeIter = currentFreshNodes.iterator();
 		while (result == null && freshNodeIter.hasNext()) {
 			Node freshNode = freshNodeIter.next();
 			if (!graph.containsElement(freshNode)) {
@@ -546,7 +557,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 		}
 		if (result == null) {
 			result = createNode();
-			getEvent().getFreshNodes(creatorIndex).add(result);
+			currentFreshNodes.add(result);
 		}
 		return result;
 	}

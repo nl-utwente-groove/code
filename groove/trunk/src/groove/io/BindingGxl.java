@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BindingGxl.java,v 1.3 2007-04-01 12:50:23 rensink Exp $
+ * $Id: BindingGxl.java,v 1.4 2007-04-24 10:06:47 rensink Exp $
  */
 package groove.io;
 
@@ -45,7 +45,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @deprecated use {@link UntypedGxl}
  */
 @Deprecated
@@ -63,6 +63,7 @@ public class BindingGxl extends AbstractXml {
         return defaultGraphFactory;
     }
 
+    /** Test method: tries loading and saving graphs, and comparing them for isomorphism. */
     static public void main(String[] args) {
         System.out.println("Test of groove.io.BindingGxl");
         System.out.println("===================");
@@ -109,7 +110,7 @@ public class BindingGxl extends AbstractXml {
      * fails for some internal reason
      */
     public BindingGxl(GraphFactory graphFactory) throws XmlRuntimeException {
-        this.graphFactory = graphFactory;
+        super(graphFactory);
     }
 
     /**
@@ -180,7 +181,7 @@ public class BindingGxl extends AbstractXml {
 
     @Override
     public Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws FormatException, IOException {
-        Graph graph = graphFactory.newGraph();
+        Graph graph = getGraphFactory().newGraph();
         // get a gxl object from the reader
         groove.gxl.Gxl gxl;
         try {
@@ -271,16 +272,16 @@ public class BindingGxl extends AbstractXml {
         graph.setFixed();
         return new Pair<Graph,Map<String,Node>>(graph, nodeIds);
     }
-
-    /**
-     * Implementation of <tt>AbstractXml</tt>'s abstract method.
-     * Returns the graph factory set by the constructor.
-     * @see #BindingGxl(GraphFactory)
-     */
-    @Override
-    protected GraphFactory getGraphFactory() {
-        return graphFactory;
-    }
-
-    protected final GraphFactory graphFactory;
+//
+//    /**
+//     * Implementation of <tt>AbstractXml</tt>'s abstract method.
+//     * Returns the graph factory set by the constructor.
+//     * @see #BindingGxl(GraphFactory)
+//     */
+//    @Override
+//    protected GraphFactory getGraphFactory() {
+//        return graphFactory;
+//    }
+//
+//    protected final GraphFactory graphFactory;
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.6 2007-04-12 16:14:50 rensink Exp $
+ * $Id: GraphJModel.java,v 1.7 2007-04-24 10:06:48 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -42,6 +42,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
@@ -51,7 +52,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */
@@ -82,6 +83,10 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         addNodeSet(graph.nodeSet());
         addEdgeSet(graph.edgeSet());
         doInsert();
+        SortedMap<String,Object> graphProperties = GraphInfo.getProperties(graph);
+        if (graphProperties != null) {
+        	setProperties(graphProperties);
+        }
         graph.addGraphListener(this);
     }
 //
@@ -153,6 +158,10 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         addedEdgeSet.removeAll(toJCellMap.edgeMap().keySet());
         addEdgeSet(addedEdgeSet);
         doInsert();
+        SortedMap<String,Object> graphProperties = GraphInfo.getProperties(graph);
+        if (graphProperties != null) {
+        	setProperties(graphProperties);
+        }
         // add the model as a graph listener
         graph.addGraphListener(this);
     }

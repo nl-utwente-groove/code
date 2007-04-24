@@ -12,9 +12,10 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExploreStrategy.java,v 1.2 2007-03-30 15:50:41 rensink Exp $
+ * $Id: ExploreStrategy.java,v 1.3 2007-04-24 10:06:43 rensink Exp $
  */
 package groove.lts;
+
 
 import java.util.Collection;
 
@@ -22,7 +23,7 @@ import java.util.Collection;
  * A strategy interface for state space exploration.
  * Intended for implementation as depth-first, breadth-first, etc.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface ExploreStrategy {
     /**
@@ -62,16 +63,22 @@ public interface ExploreStrategy {
     int getToDepth();
     
     /**
-     * Sets the LTS to be explored.
-     * @param lts the LTS to be explored
-     * @require <tt>lts != null</tt>
-     * @ensure <tt>getLTS().equals(lts)</tt> and <tt>getAtState().equals(lts.startState())</tt>
+     * Sets the generator to be used for exploration.
+     * The GTS to be explored is derived from the generator.
+     * @param generator the generator to be used in exploration
      */
-    public void setLTS(LTS lts);
+    public void setGenerator(StateGenerator generator);
     
     /**
-     * Returns the LTS currently being explored.
-     * @return the LTS currently being explored; <tt>null</tt> if no LTS is set
+     * Sets the GTS to be explored.
+     * A new state generator is created for the exploration.
+     * @param gts the GTS to be explored
+     */
+    public void setLTS(GTS gts);
+    
+    /**
+     * Returns the GTS currently being explored.
+     * @return the LTS currently being explored; <tt>null</tt> if no GTS is set
      */
     public LTS getLTS();
 

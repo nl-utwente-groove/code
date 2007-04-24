@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UntypedGxl.java,v 1.4 2007-04-18 08:36:21 rensink Exp $
+ * $Id: UntypedGxl.java,v 1.5 2007-04-24 10:06:47 rensink Exp $
  */
 package groove.io;
 
@@ -20,6 +20,7 @@ import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
+import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.HyperEdge;
 import groove.graph.Label;
@@ -40,6 +41,8 @@ import java.io.Writer;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.Marshaller;
@@ -51,69 +54,11 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class UntypedGxl extends AbstractXml {
-    /**
-     * The following implementation of <tt>Label</tt> allows us to
-     * use graphs to store attribute maps. It does not strictly satisfy
-     * the contract of <tt>Label</tt> since parsing is not supported.
-     */
-    static public class AttributeLabel implements Label {
-        public AttributeLabel(Map<String, String> attributes) {
-            this.attributes = new HashMap<String,String>(attributes);
-        }
-
-        /**
-         * Parsing is not supported for attribute labels.
-         * @throws UnsupportedOperationException always
-         */
-        @Deprecated
-        public Label parse(String text) throws FormatException {
-            throw new UnsupportedOperationException();
-        }
-
-        public String text() {
-            return attributes.toString();
-        }
-
-        @Override
-        public String toString() {
-            return attributes.toString();
-        }
-
-        public Map<String, String> getAttributes() {
-            return attributes;
-        }
-
-        private final Map<String,String> attributes;
-
-        /**
-         * This implementation compares the string descriptions (as given by
-         * <tt>toString</tt>).
-         */
-        public int compareTo(Label o) {
-            return toString().compareTo(o.toString());
-        }
-    }
-
-    static public class AttributeEdge extends HyperEdge {
-        public AttributeEdge(Node source, AttributeLabel label, Node target) {
-            this(new Node[] { source, target }, label);
-        }
-        
-        public AttributeEdge(Node[] ends, AttributeLabel label) {
-            super(ends, label);
-        }
-        
-        public AttributeEdge(Node source, Map<String, String> attributes, Node target) {
-            this(source, new AttributeLabel(attributes), target);
-        }
-    }
-    
-    /** Attribute name for node and edge ids */
+    /** Attribute name for node and edge ids. */
     static public final String LABEL_ATTR_NAME = "label";
-
     static private final IsoChecker isoChecker = new DefaultIsoChecker();
     static private GraphFactory defaultGraphFactory = GraphFactory.getInstance();
 
@@ -125,6 +70,7 @@ public class UntypedGxl extends AbstractXml {
         return defaultGraphFactory;
     }
 
+    /** Test method: tries loading and saving graphs, and comparing them for isomorphism. */
     static public void main(String[] args) {
         System.out.println("Test of groove.io.UntypedGxl");
         System.out.println("===================");
@@ -171,7 +117,7 @@ public class UntypedGxl extends AbstractXml {
      * fails for some internal reason
      */
     public UntypedGxl(GraphFactory graphFactory) throws XmlRuntimeException {
-        this.graphFactory = graphFactory;
+        super(graphFactory);
     }
 
     /**
@@ -260,17 +206,44 @@ public class UntypedGxl extends AbstractXml {
             gxlGraphTypeItem.setEdge(gxlEdge);
             gxlGraph.addGraphTypeItem(gxlGraphTypeItem);
         }
+        // add the graph attributes
+        Map<String,Object> properties = GraphInfo.getProperties(graph);
+        if (properties != null) {
+			for (Map.Entry<String, Object> entry : properties.entrySet()) {
+				String attrName = entry.getKey().toLowerCase();
+				if (isKnownPropertyKey(attrName)) {
+					groove.gxl.Value gxlValue = new groove.gxl.Value();
+					Object value = entry.getValue();
+					if (value instanceof Boolean) {
+						gxlValue.setBool((Boolean) value);
+					} else if (value instanceof Integer) {
+						gxlValue.setInt((Integer) value);
+					} else if (value instanceof Float) {
+						gxlValue.setFloat((Float) value);
+					} else {
+						gxlValue.setString(value.toString());
+					}
+					groove.gxl.Attr gxlLabelAttr = new groove.gxl.Attr();
+					gxlLabelAttr.setName(attrName);
+					gxlLabelAttr.setValue(gxlValue);
+					gxlGraph.addAttr(gxlLabelAttr);
+				}
+			}
+		}
         return gxlGraph;
     }
 
     /**
-     * Converts an untyped GXL graph to an attributed (groove) graph.
-     * Node attributes are ignored.
-     * Edge attributes are encoded in <tt>AttributeLabel</tt>s.
-     * The method returns a map from GXL node ids to <tt>Node</tt>s.
-     * @param gxlGraph the source of the unmarhalling
-     * @return graph the resulting attribute graph; i.e., it will receive only <tt>AttributeLabel</tt>s
-     */
+	 * Converts an untyped GXL graph to an attributed (groove) graph. Node
+	 * attributes are ignored. Edge attributes are encoded in
+	 * <tt>AttributeLabel</tt>s. The method returns a map from GXL node ids
+	 * to <tt>Node</tt>s.
+	 * 
+	 * @param gxlGraph
+	 *            the source of the unmarhalling
+	 * @return graph the resulting attribute graph; i.e., it will receive only
+	 *         <tt>AttributeLabel</tt>s
+	 */
     private Pair<Graph, Map<String, Node>> gxlToAttrGraph(groove.gxl.Graph gxlGraph) {
         Graph graph = getGraphFactory().newGraph();
         // Hashmap for the ID lookup (ID to Vertex)
@@ -315,6 +288,30 @@ public class UntypedGxl extends AbstractXml {
                 graph.addEdge(createEdge(sourceNode, attributes, targetNode));
             }
         }
+        // add the graph attributes
+        Enumeration<?> attrEnum = gxlGraph.enumerateAttr();
+        SortedMap<String,Object> properties = new TreeMap<String,Object>();
+        while (attrEnum.hasMoreElements()) {
+            groove.gxl.Attr attr = (groove.gxl.Attr) attrEnum.nextElement();
+            String attrName = attr.getName().toLowerCase();
+            if (isKnownPropertyKey(attrName)) {
+            	groove.gxl.Value attrValue = attr.getValue();
+            	Object dataValue;
+            	if (attrValue.hasBool()) {
+            		dataValue = attrValue.getBool();
+            	} else if (attrValue.hasInt()) {
+            		dataValue = attrValue.getInt();
+            	} else if (attrValue.hasFloat()) {
+            		dataValue = attrValue.getFloat();
+            	} else {
+            		dataValue = attrValue.getString();
+            	}
+            	properties.put(attrName, dataValue);
+            }
+        }
+        if (!properties.isEmpty()) {
+        	GraphInfo.setProperties(graph, properties);
+        }
         return new Pair<Graph,Map<String,Node>>(graph, nodeIds);
     }
 
@@ -325,7 +322,7 @@ public class UntypedGxl extends AbstractXml {
      * @return the new, equivalent attribute graph.
      */
     private Graph normToAttrGraph(GraphShape graph) {
-        Graph attrGraph = graphFactory.newGraph();
+        Graph attrGraph = getGraphFactory().newGraph();
         // just copy the nodes
         attrGraph.addNodeSet(graph.nodeSet());
         // turn the edges into attribute maps and store those
@@ -334,11 +331,12 @@ public class UntypedGxl extends AbstractXml {
             labelAttr.put(LABEL_ATTR_NAME, edge.label().text());
             attrGraph.addEdge(createEdge(edge.ends(), labelAttr));
         }
+        transferGraphProperties(graph, attrGraph);
         attrGraph.setFixed();
         return attrGraph;
     }
 
-    /**
+	/**
      * Converts an attribute graph into an ordinary graph,
      * by turning maps with a <tt>LABEL_ATTR_NAME</tt>-key into a {@link DefaultLabel}.
      * @param attrGraph the original attributed graph
@@ -353,10 +351,22 @@ public class UntypedGxl extends AbstractXml {
             Map<String,String> attributes = ((AttributeLabel) edge.label()).getAttributes();
             graph.addEdge(edge.ends(), DefaultLabel.createLabel(attributes.get(LABEL_ATTR_NAME)));
         }
+        transferGraphProperties(attrGraph, graph);
         return graph;
     }
 
     /**
+	 * Transfers the graph information items with allowed property names
+	 * from one graph to another.
+	 * @param source the source graph
+	 * @param target the target graph
+	 * @see #getPropertyKeys()
+	 */
+	private void transferGraphProperties(GraphShape source, Graph target) {
+		GraphInfo.setProperties(target, GraphInfo.getProperties(source));
+	}
+
+	/**
      * Marshals a GXL graph to an untyped GXL writer.
      * @param gxlGraph the GXL graph
      * @param file the destination for the marshalling operation
@@ -429,4 +439,56 @@ public class UntypedGxl extends AbstractXml {
             return new AttributeEdge(new Node[] { sourceNode, targetNode }, new AttributeLabel(attributes));            
         }
     }
+    
+	/**
+	 * The following implementation of <tt>Label</tt> allows us to
+	 * use graphs to store attribute maps. 
+	 */
+	static private class AttributeLabel implements Label {
+		/** Constructs an instance, based on a given attribute map. */
+	    public AttributeLabel(Map<String, String> attributes) {
+	        this.attributes = new HashMap<String,String>(attributes);
+	    }
+	
+	    /**
+	     * Parsing is not supported for attribute labels.
+	     * @throws UnsupportedOperationException always
+	     */
+	    @Deprecated
+	    public Label parse(String text) throws FormatException {
+	        throw new UnsupportedOperationException();
+	    }
+	
+	    public String text() {
+	        return attributes.toString();
+	    }
+	
+	    @Override
+	    public String toString() {
+	        return attributes.toString();
+	    }
+	
+	    /** Returns the attribute map of this label instance. */
+	    public Map<String, String> getAttributes() {
+	        return attributes;
+	    }
+	
+	    private final Map<String,String> attributes;
+	
+	    /**
+	     * This implementation compares the string descriptions (as given by
+	     * <tt>toString</tt>).
+	     */
+	    public int compareTo(Label o) {
+	        return toString().compareTo(o.toString());
+	    }
+	}
+
+	/** Edge carrying an attribute map on its label, with an unknown end count. */ 
+	static private class AttributeEdge extends HyperEdge {
+		/** Constructs in instance for given ends and label. */
+	    public AttributeEdge(Node[] ends, AttributeLabel label) {
+	        super(ends, label);
+	    }
+	}
 }

@@ -12,14 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractStrategy.java,v 1.5 2007-04-20 15:12:29 rensink Exp $
+ * $Id: AbstractStrategy.java,v 1.6 2007-04-24 10:06:44 rensink Exp $
  */
 package groove.lts.explore;
 
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.LTS;
 import groove.lts.State;
 import groove.lts.StateGenerator;
 
@@ -29,7 +28,7 @@ import java.util.Collection;
 /**
  * Abstract LTS exploration strategy.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public abstract class AbstractStrategy implements ExploreStrategy {
     /** Value for the depth parameter of the strategy that means no depth is set. */
@@ -81,17 +80,38 @@ public abstract class AbstractStrategy implements ExploreStrategy {
     public void setToDepth(int toDepth) {
         this.toDepth = toDepth;
     }
-
+    
     /**
-     * Sets the underlying lts to which this exploration strategy should be applied.
-     * The current state is set to <tt>null</tt>.
-     * @param lts the new underlying lts to be explored
-     * @ensure <tt>getLTS() == lts</tt> and <tt>getAtState() == null</tt>
+     * Sets the GTS to which this exploration strategy should be applied.
+     * The current state is set to the GTS's start state.
+     * The state generator is not initialised.
+     * @param gts the new underlying GTS to be explored
      */
-    public void setLTS(LTS lts) {
-        this.lts = (GTS) lts;
+    public final void setLTS(GTS gts) {
+        setLTS(gts, null);
+    }
+    
+    /**
+     * Sets the state generator for this strategy.
+     * The GTS is also initialised, to the generator's GTS.
+     * @param generator the new state generator to be used for exploration
+     */
+    public final void setGenerator(StateGenerator generator) {
+    	setLTS(generator.getGTS(), generator);
+    }
+        
+    /**
+     * Sets the generator and GTS at the same time.
+     * @param gts the new underlying GTS to be explored
+     * @param generator the new state generator to be used for exploration;
+     * if not <code>null</code>, it should satisfy <code>gts == generator.getGTS()</code>
+     * @see #setLTS(GTS)
+     * @see #setGenerator(StateGenerator)
+     */
+    protected void setLTS(GTS gts, StateGenerator generator) {
+        this.lts = gts;
+        this.generator = generator;
         // invalidate the generator
-        this.generator = null;
         setAtState(lts.startState());
     }
 

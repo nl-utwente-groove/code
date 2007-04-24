@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BoundedStrategy.java,v 1.3 2007-04-19 11:33:53 rensink Exp $
+ * $Id: BoundedStrategy.java,v 1.4 2007-04-24 10:06:44 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -23,9 +23,10 @@ import groove.graph.GraphShape;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
 import groove.lts.ConditionalExploreStrategy;
+import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.LTS;
 import groove.lts.State;
+import groove.lts.StateGenerator;
 import groove.trans.GraphTest;
 import groove.trans.Rule;
 
@@ -34,7 +35,7 @@ import groove.trans.Rule;
  * (the bounding condition) is violated; from such states no further exploration takes place.
  * Currently, the bounding condition is expressed by a graph transformation rule.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class BoundedStrategy extends BranchingStrategy implements ConditionalExploreStrategy {
 	/** Name of this exploration strategy. */
@@ -73,18 +74,14 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
      * Initializes the set of open states, then calls the super method.
      */
     @Override
-    public void setLTS(LTS lts) {
+    protected void setLTS(GTS gts, StateGenerator generator) {
         if (getLTS() != null) {
             getLTS().removeGraphListener(graphListener);
         }
-        lts.addGraphListener(graphListener);
+        gts.addGraphListener(graphListener);
         openStateSet = createStateSet();
-        for (State state: lts.nodeSet()) {
-            if (!state.isClosed()) {
-                openStateSet.add(state);
-            }
-        }
-        super.setLTS(lts);
+        openStateSet.addAll(gts.getOpenStates());
+        super.setLTS(gts, generator);
     }
 
     @Override

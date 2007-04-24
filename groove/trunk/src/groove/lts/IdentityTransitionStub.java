@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IdGraphTransitionStub.java,v 1.1 2007-04-22 23:32:14 rensink Exp $
+ * $Id: IdentityTransitionStub.java,v 1.1 2007-04-24 10:06:43 rensink Exp $
  */
 package groove.lts;
 
@@ -23,15 +23,16 @@ import groove.trans.RuleEvent;
  * @author Arend Rensink
  * @version $Revision: 1.1 $
  */
-class IdGraphTransitionStub extends AbstractGraphTransitionStub {
+class IdentityTransitionStub extends AbstractGraphTransitionStub {
     /**
      * Default constructor, providing the event and target of the stub.
      */
-    IdGraphTransitionStub(RuleEvent event, GraphState target) {
+    IdentityTransitionStub(RuleEvent event, GraphState target) {
     	super(event,target);
     }
 
-	public GraphTransition createTransition(GraphState source) {
-        return new DefaultGraphTransition(getEvent(), source, target(), true);
-    }
+    /** This type of transition stub involves no non-trivial symmetry. */
+	public boolean isSymmetry() {
+		return false;
+	}	
 }

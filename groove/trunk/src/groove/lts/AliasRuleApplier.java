@@ -115,7 +115,6 @@ public class AliasRuleApplier extends AbstractRuleApplier {
     protected void collectAliases(Set<RuleApplication> result) {
     	reporter.start(COLLECT_ALIASES);
         Collection<Rule> disabledRules = record.getDisabledRules(rule);
-        // if the state rule has high enough priority, go through the previous state's transitions
         for (GraphTransition otherTransition: state.source().getTransitionSet()) {
             RuleEvent event = otherTransition.getEvent();
             if (isUseDependencies() && !disabledRules.contains(event.getRule()) || event.hasMatching(getGraph())) {

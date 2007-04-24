@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorJModel.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: EditorJModel.java,v 1.3 2007-04-24 10:06:48 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -33,7 +33,7 @@ import org.jgraph.graph.GraphConstants;
  * Moreover, there is some control as to the possible source and target points
  * of new edges.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class EditorJModel extends JModel {
     /**
@@ -108,7 +108,8 @@ public class EditorJModel extends JModel {
                     || GraphConstants.getPoints(((JEdge) cell).getAttributes()).size() > 2) {
                 layoutableJCells.add(toResultCellMap.get(cell));
             }
-        }        
+        }
+        setProperties(jModel.getProperties());
     }
 
     /**

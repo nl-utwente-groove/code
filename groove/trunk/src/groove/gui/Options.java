@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.7 2007-04-18 10:34:03 rensink Exp $
+ * $Id: Options.java,v 1.8 2007-04-24 10:06:44 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class Options {
     /** Edit menu name */
@@ -41,20 +41,22 @@ public class Options {
     public static final String EXPLORE_MENU_NAME = "Explore";
     /** File menu name */
     public static final String FILE_MENU_NAME = "File";
-    /** Set line style context menu name */
-    static public final String SET_LINE_STYLE_MENU = "Set Line Style";
-    /** Show/Hide menu name */
-    static public final String SHOW_HIDE_MENU_NAME = "Show/Hide";
-    /** Set layout menu name */
-    public static final String SET_LAYOUT_MENU_NAME = "Set layouter";
-    /** Save menu name */
-    public static final String SAVE_MENU_NAME = "Save";
-    /** Options menu name */
-    public static final String OPTIONS_MENU_NAME = "Options";
-    /** Verify menu name */
-    public static final String VERIFY_MENU_NAME = "Verify";
     /** Help menu name */
     public static final String HELP_MENU_NAME = "Help";
+    /** Options menu name */
+    public static final String OPTIONS_MENU_NAME = "Options";
+    /** Options menu name */
+    public static final String PROPERTIES_MENU_NAME = "Properties";
+    /** Save menu name */
+    public static final String SAVE_MENU_NAME = "Save";
+    /** Set line style context menu name */
+    static public final String SET_LINE_STYLE_MENU = "Set Line Style";
+    /** Set layout menu name */
+    public static final String SET_LAYOUT_MENU_NAME = "Set layouter";
+    /** Show/Hide menu name */
+    static public final String SHOW_HIDE_MENU_NAME = "Show/Hide";
+    /** Verify menu name */
+    public static final String VERIFY_MENU_NAME = "Verify";
     // Titles
     /** Label pane title */
     public static final String LABEL_PANE_TITLE = "Labels";
@@ -86,6 +88,8 @@ public class Options {
     public static final String EDIT_STATE_ACTION_NAME = "Edit State ...";
     /** Edit action name */
     public static final String EDIT_ACTION_NAME = "Edit ...";
+    /** Edit action name */
+    public static final String PROPERTIES_ACTION_NAME = "Properties ...";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export rule action name */

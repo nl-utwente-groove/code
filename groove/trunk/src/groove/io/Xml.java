@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Xml.java,v 1.4 2007-04-01 12:50:24 rensink Exp $
+ * $Id: Xml.java,v 1.5 2007-04-24 10:06:47 rensink Exp $
  */
 package groove.io;
 
@@ -21,13 +21,14 @@ import groove.util.FormatException;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 
 /**
  * Interface for the conversion of graphs to and from XML documents.
  * To be implemented for particular XML formats.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface Xml<G extends Graph> {
 	/**
@@ -38,20 +39,7 @@ public interface Xml<G extends Graph> {
      * @throws IOException if an error occurred during file output
 	 */
 	public void marshalGraph(G graph, File file) throws FormatException, IOException;
-//	
-//	/**
-//	 * Reads a graph from an XML formatted file and returns it.
-//     * Also constructs a map from node identities in the XML file to graph nodes.
-//     * This can be used to connect with layout information.
-//	 * @param file the file to be read from
-//     * @param elementMap if not <tt>null</tt>, will be cleared and set to
-//     * a {@link String} to {@link groove.graph.Node} map from node identities in the XML file to graph nodes
-//     * @return the unmarshalled graph
-//	 * @throws XmlException if an error occurred during the conversion
-//     * @throws IOException if an error occurred during file input
-//	 */
-//	public Graph unmarshal(File file, Map<String, Node> elementMap) throws XmlException, IOException ;
-    
+	
     /**
      * Converts an XML formatted file into a graph, and returns the graph.
      * Convenience method for <code>unmarshal(file, null)</code>.
@@ -61,4 +49,9 @@ public interface Xml<G extends Graph> {
      * @throws IOException if an error occurred during file input
      */
     public G unmarshalGraph(File file) throws FormatException, IOException ;
+    
+	/**
+	 * Sets the names of properties possibly stored for the graph.
+	 */
+	public void setPropertyKeys(Collection<String> propertyNames);
 }

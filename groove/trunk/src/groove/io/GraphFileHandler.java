@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphFileHandler.java,v 1.1.1.2 2007-03-20 10:42:50 kastenberg Exp $
+ * $Id: GraphFileHandler.java,v 1.2 2007-04-24 10:06:47 rensink Exp $
  */
 package groove.io;
 
@@ -27,7 +27,7 @@ import groove.util.Groove;
  * Class to facilitate operations that have to be performed upon a 
  * set of graph files, such as validation or transformation.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class GraphFileHandler {
     /** Lowest verbosity setting. */
@@ -181,7 +181,8 @@ public class GraphFileHandler {
         }
     }
 
-    protected final ExtensionFilter[] FILTERS =
+    /** The file types that this handler recognises. */
+    private final ExtensionFilter[] FILTERS =
         { Groove.createGxlFilter(false), Groove.createRuleFilter(false), Groove.createStateFilter(false)};
 
     /** Verbosity of validation: 0 = quiet, 1 = normal, 2 = verbose */

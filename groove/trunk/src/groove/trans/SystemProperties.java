@@ -104,15 +104,28 @@ public class SystemProperties extends java.util.Properties {
     public void setCommonLabels(List<String> commonLabels) {
     	setProperty(COMMON_LABELS, Groove.toString(commonLabels.toArray(), "", "", " "));
     }
-//    
-//    /** Returns the rule factory associated with the rule system. */
-//    public RuleFactory getFactory() {
-//    	if (ruleSystem == null) {
-//    		return DefaultRuleFactory.getInstance();
-//    	} else {
-//    		return ruleSystem.getRuleFactory();
-//    	}
-//    }
+
+    /** 
+     * Returns a list of graph property names, according to the {@link #GRAPH_PROPERTIES}
+     * property of the rule system.
+     * @see #GRAPH_PROPERTIES
+     */
+    public List<String> getGraphProperties() {
+    	String graphProperties = getProperty(GRAPH_PROPERTIES);
+    	if (graphProperties == null) {
+    		return Collections.emptyList();
+    	} else {
+    		return Arrays.asList(graphProperties.split("\\s"));
+    	}
+    }
+
+    /** 
+     * Sets the graph properties property.
+     * @see #GRAPH_PROPERTIES
+     */
+    public void setGraphProperties(List<String> graphProperties) {
+    	setProperty(GRAPH_PROPERTIES, Groove.toString(graphProperties.toArray(), "", "", " "));
+    }
 
 	/** 
 	 * Before calling the super method, tests if the properties are fixed
@@ -244,6 +257,10 @@ public class SystemProperties extends java.util.Properties {
 	 * Value of {@link #ATTRIBUTE_SUPPORT} that means attributes are not used.
 	 */
 	static public final String ATTRIBUTES_NO = "0";
+	/** 
+	 * Property that determines the graph properties that can be stored.
+	 */
+	static public final String GRAPH_PROPERTIES = "graphProperties";
 	
 	/** Map storing default property instances. */
 	static private final Map<Boolean,SystemProperties> instances = new HashMap<Boolean,SystemProperties>();

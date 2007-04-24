@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.5 2007-04-20 09:02:25 rensink Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.6 2007-04-24 10:06:49 rensink Exp $
  */
 package groove.calc;
 
@@ -96,7 +96,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
             // first do a linear exploration from any open state
             // (by the assumption of uniqueness, the choice of open state should not matter)
         	ExploreStrategy strategy = new LinearStrategy();
-        	strategy.setLTS(gts);
+        	strategy.setGenerator(generator);
 //            gts.setExploreStrategy(new LinearStrategy());
             try {
             	strategy.setAtState(gts.getOpenStateIter().next());
@@ -152,7 +152,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
     public Collection<GraphResult> getAllMax() {
         testPrototype();
         // first do a full exploration
-        ExploreStrategy strategy = new FullStrategy(gts);
+        ExploreStrategy strategy = new FullStrategy(generator);
 //        gts.setExploreStrategy(new FullStrategy());
         try {
             strategy.explore();
@@ -205,7 +205,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
     public Collection<GraphResult> getAll(GraphTest condition) {
         testPrototype();
         // first do a full exploration
-        ExploreStrategy strategy = new FullStrategy(gts);
+        ExploreStrategy strategy = new FullStrategy(generator);
 //        gts.setExploreStrategy(new FullStrategy());
         try {
 //            gts.explore();

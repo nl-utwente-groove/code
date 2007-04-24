@@ -12,12 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphInfo.java,v 1.2 2007-03-30 15:50:24 rensink Exp $
+ * $Id: GraphInfo.java,v 1.3 2007-04-24 10:06:48 rensink Exp $
  */
 package groove.graph;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import groove.gui.layout.LayoutMap;
 
@@ -25,13 +27,22 @@ import groove.gui.layout.LayoutMap;
  * A class that provides the keys needed for storing and retrieving data
  * needed for specific features.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:24 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-24 10:06:48 $
  */
 public class GraphInfo {
-	/**
-	 * Key for layout-info.
+	/** 
+	 * Convenience method to retrieve a {@link GraphInfo} object form
+	 * a given graph, creating it if necessary. 
+	 * @param graph the graph for which the info object is to be (created and) retrieved
+	 * @return a non-<code>null</code> value which equals (afterwards) <code>graph.getInfo()</code>
 	 */
-	public static final String LAYOUT = "layout";
+	public static GraphInfo getInfo(GraphShape graph) {
+		GraphInfo result = graph.getInfo();
+		if (result == null) {
+			result = graph.setInfo(new GraphInfo());
+		}
+		return result;
+	}
 	
 	/**
 	 * Convenience method to test if a graph contains layout information.
@@ -63,11 +74,31 @@ public class GraphInfo {
 	 */
 	public static void setLayoutMap(GraphShape graph, LayoutMap<Node,Edge> layoutMap) {
 		if (layoutMap != null) {
-            GraphInfo graphInfo = graph.getInfo();
-            if (graphInfo == null) {
-                graph.setInfo(graphInfo = new GraphInfo());
-            }
-			graph.getInfo().setLayoutMap(layoutMap);
+            getInfo(graph).setLayoutMap(layoutMap);
+		}
+	}
+	
+	/**
+	 * Convenience method to retrieve the properties map from a graph,
+	 * if any.
+	 * @return the properties map of <code>graph</code>, or <code>null</code>
+	 */
+	public static SortedMap<String, Object> getProperties(GraphShape graph) {
+        GraphInfo graphInfo = graph.getInfo();
+        if (graphInfo == null) {
+            return null; 
+        } else {
+            return graphInfo.getProperties();
+        }
+	}
+	
+	/**
+	 * Convenience method to set the graph properties of a graph.
+	 * Only sets the map if it is not <code>null</code> or empty.
+	 */
+	public static void setProperties(GraphShape graph, SortedMap<String, Object> properties) {
+		if (properties != null) {
+            getInfo(graph).setProperties(properties);
 		}
 	}
 	
@@ -122,6 +153,25 @@ public class GraphInfo {
         data.put(LAYOUT, layoutMap);
     }
     
+    /** 
+     * Returns the graph properties map associated with the graph.
+     * The map's target objects are of type {@link Boolean}, {@link Integer},
+     * {@link Float} or {@link String}.
+     * @return a property map, or <code>null</code> 
+     * @see #setProperties(SortedMap)
+     */
+    public SortedMap<String, Object> getProperties() {
+    	return (SortedMap<String,Object>) data.get(PROPERTIES);
+    }
+    
+    /**
+     * Sets the properties map (key {@link #PROPERTIES}) in this info object to a certain value.
+     * @see #getProperties()
+     */
+    public void setProperties(SortedMap<String, Object> properties) {
+    	data.put(PROPERTIES, new TreeMap<String,Object>(properties));
+    }
+    
     /**
      * Copies another graph info object into this one, overwriting all existing keys but preserving
      * those that are not overwritten.
@@ -136,7 +186,7 @@ public class GraphInfo {
 	}
 
 	/** Returns the internally stored data. */
-    protected final Map<String,Object> getData() {
+    public final Map<String,Object> getData() {
         return data;
     }
     
@@ -144,4 +194,21 @@ public class GraphInfo {
      * Map for the internally stored data.
      */
     private final Map<String,Object> data;
+	/**
+	 * Key for layout-info.
+	 */
+	public static final String LAYOUT = "layout";
+	/**
+	 * Key for graph properties.
+	 */
+	public static final String PROPERTIES = "properties";
+	/** 
+	 * Key for rule priorities in the graph properties map. 
+	 * The corresponding value should be an integer.
+	 */
+	static public final String RULE_PRIORITY = "priority";
+	/** 
+	 * Key for graph names in the graph properties map. 
+	 */
+	static public final String GRAPH_NAME = "name";
 }

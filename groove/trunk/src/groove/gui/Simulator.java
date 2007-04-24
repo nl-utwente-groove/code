@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.15 2007-04-20 09:02:28 rensink Exp $
+ * $Id: Simulator.java,v 1.16 2007-04-24 10:06:44 rensink Exp $
  */
 package groove.gui;
 
@@ -53,6 +53,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.StateGenerator;
+import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
@@ -79,9 +80,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.imageio.ImageIO;
@@ -116,7 +119,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class Simulator {
     /**
@@ -297,7 +300,7 @@ public class Simulator {
 			displayProgress(currentGTS);
 			currentGTS.addGraphListener(progressListener);
 			try {
-				strategy.setLTS(currentGTS);
+				strategy.setGenerator(stateGenerator);
 				strategy.setAtState(currentState);
 				strategy.explore();
 			} catch (InterruptedException exc) {
@@ -731,7 +734,39 @@ public class Simulator {
             }
         }
     }
-    
+
+    /** Action to show the system properties. */
+    private class ShowPropertiesAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        public ShowPropertiesAction() {
+            super(Options.PROPERTIES_ACTION_NAME);
+        }
+        
+        /** 
+         * Displays a {@link PropertiesDialog} for the properties
+         * of the edited graph.
+         */
+        public void actionPerformed(ActionEvent e) {
+        	Map<String,Object> properties = new HashMap<String,Object>();
+        	Properties systemProperties = getCurrentGrammar().getProperties();
+        	for (Map.Entry<Object,Object> entry: systemProperties.entrySet()) {
+        		if (entry.getKey() instanceof String) {
+        			properties.put((String) entry.getKey(), entry.getValue());
+        		}
+        	}
+            new PropertiesDialog(Simulator.this.getFrame(), properties, false).showDialog();
+        }
+        
+        /**
+         * Tests if the currently selected grammar has non-<code>null</code>
+         * system properties.
+         */
+        public void refresh() {
+        	GraphGrammar grammar = getCurrentGrammar();
+        	setEnabled(grammar != null && grammar.getProperties() != null);
+        }
+    }
+
     // --------------------- INSTANCE DEFINITIONS -----------------------------
 
     /**
@@ -843,6 +878,13 @@ public class Simulator {
             ruleJTree = new RuleJTree(this);
         }
         return ruleJTree;
+    }
+
+    /**
+     * Returns the currently loaded graph grammar, or <tt>null</tt> if none is loaded.
+     */
+    public StateGenerator getCurrentGenerator() {
+        return stateGenerator;
     }
 
     /**
@@ -977,6 +1019,16 @@ public class Simulator {
     		addRefreshable(editGraphAction);
     	}
         return editGraphAction;
+    }
+
+    /** Returns the action to show the system properties of the current grammar. */
+    private Action getShowPropertiesAction() {
+    	// lazily create the action
+    	if (showPropertiesAction == null) {
+    		showPropertiesAction = new ShowPropertiesAction();
+    		addRefreshable(showPropertiesAction);
+    	}
+        return showPropertiesAction;
     }
 
     /** Returns the quit action permanently associated with this simulator. */
@@ -1647,6 +1699,7 @@ public class Simulator {
 	    result.add(new JMenuItem(getExportGraphAction()));
 	    result.addSeparator();
 	    result.add(new JMenuItem(getEditGraphAction()));
+	    result.add(new JMenuItem(getShowPropertiesAction()));
 	    result.addSeparator();
 	    result.add(new JMenuItem(getQuitAction()));
 	    return result;
@@ -1892,47 +1945,47 @@ public class Simulator {
      * The underlying graph grammar of this simulator. If <tt>null</tt>, no grammar has been
      * loaded.
      */
-    protected RuleViewGrammar currentGrammar;
+    private RuleViewGrammar currentGrammar;
 
     /**
      * The current graph transition system.
      */
-    protected GTS currentGTS;
+    private GTS currentGTS;
 
     /**
      * The currently selected state graph.
      */
-    protected GraphState currentState;
+    private GraphState currentState;
 
     /**
      * The currently selected production rule.
      */
-    protected Rule currentRule;
+    private Rule currentRule;
 
     /**
      * The currently activated derivation.
      * @invariant currentTransition == null || currentTransition.source().equals(currentState) &&
      *            currentTransition.rule().equals(currentRule)
      */
-    protected GraphTransition currentTransition;
+    private GraphTransition currentTransition;
 
     /**
      * The name of the current start state.
      * May be a file name or the name of a graph within the current grammar or <code>null</code>.
      */
-    protected String currentStartStateName;
+    private String currentStartStateName;
 
     /**
      * The file or directory containing the last loaded or saved grammar, or <tt>null</tt> if no
      * grammar was yet loaded.
      */
-    protected File currentGrammarFile;
+    private File currentGrammarFile;
 
     /**
      * The loader used to load the current grammar, if <tt>currentGrammarFile</tt> is not
      * <tt>null</tt>.
      */
-    protected XmlGrammar<RuleViewGrammar> currentGrammarLoader;
+    private XmlGrammar<RuleViewGrammar> currentGrammarLoader;
     
     /** The state generator strategy for the current GTS. */
     private StateGenerator stateGenerator;
@@ -2058,7 +2111,8 @@ public class Simulator {
 
     /** The state and rule edit action permanently associated with this simulator. */
     private EditGraphAction editGraphAction;
-
+    /** The action to show the system properties of the currently selected grammar. */
+    private ShowPropertiesAction showPropertiesAction;
     /** The quit action permanently associated with this simulator. */
     private QuitAction quitAction;
 

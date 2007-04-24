@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.8 2007-04-22 23:32:15 rensink Exp $
+ * $Id: StateGenerator.java,v 1.9 2007-04-24 10:06:43 rensink Exp $
  */
 package groove.lts;
 
+import groove.graph.Edge;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -72,6 +73,13 @@ public class StateGenerator {
 	}
 
 	/**
+	 * Returns the underlying GTS.
+	 */
+	public final GTS getGTS() {
+		return this.gts;
+	}
+
+	/**
 	 * Computes and returns the set of successor states of a given state,
 	 * insofar thay are not yet in the GTS at time of invocation.
 	 * The states that are returned are added to the GTS first.
@@ -90,21 +98,10 @@ public class StateGenerator {
                     addTransition(state, application);
 				}
         	});
-            collector.reset();
-            if (result.isEmpty()) {
+            if (! collector.isTransitionsAdded()) {
                 gts.setFinal(state);
             }
-//            Set<RuleApplication> derivations = getApplier(state).getApplications();
-//            // if there are no rule applications, the state is final
-//            if (derivations.isEmpty()) {
-//                gts.setFinal(state);
-//            } else {
-//            	collector.set(result);
-//            	for (RuleApplication appl: derivations) {
-//                    addTransition(appl);
-//            	}
-//                collector.reset();
-//            }
+            collector.reset();
             gts.setClosed(state);
         }
         reporter.stop();
@@ -177,7 +174,7 @@ public class StateGenerator {
         reporter.start(ADD_TRANSITION);
         GraphTransition result;
         if (!appl.getRule().isModifying()) {
-        	result = createTransition(appl.getEvent(), source, source, true);
+        	result = createTransition(appl.getEvent(), source, source, false);
         } else {
             // check for confluent diamond
             GraphState confluentTarget = getConfluentTarget(source, appl);
@@ -190,10 +187,10 @@ public class StateGenerator {
 					// the following line is to ensure the cache is cleared
 					// even if the state is still used as the basis of another
 					// result.dispose();
-					result = createTransition(appl.getEvent(), source, isoTarget, false);
+					result = createTransition(appl.getEvent(), source, isoTarget, true);
 				}
 			} else {
-            	result = createTransition(appl.getEvent(), source, confluentTarget, true);
+            	result = createTransition(appl.getEvent(), source, confluentTarget, false);
             }
         }
         gts.addTransition(result);
@@ -233,7 +230,9 @@ public class StateGenerator {
      * Returns the target of a given rule application, by trying to walk 
      * around three sides of a confluent diamond instead of computing the
      * target directly.
-     * @param source TODO
+     * @param source the source state of the fourth side of the (prospective) diamond
+     * @param appl the rule application (applied to <code>source.getGraph()</code>)
+     * @return the target state; <code>null</code> if no confluent diamond was found
      */
     private GraphState getConfluentTarget(GraphState source, RuleApplication appl) {
         if (!AliasRuleApplier.isUseDependencies() || !(appl instanceof AliasRuleApplication)) {
@@ -242,7 +241,7 @@ public class StateGenerator {
         assert source instanceof GraphNextState;
         AliasRuleApplication aliasAppl = (AliasRuleApplication) appl;
         GraphTransition prior = aliasAppl.getPrior();
-        if (! prior.isIdMorphism()) {
+        if (prior.isSymmetry()) {
         	return null;
         }
 //        if (!priorTarget.isClosed()) {
@@ -281,8 +280,8 @@ public class StateGenerator {
 		return result;
 	}
 
-	private GraphTransition createTransition(RuleEvent event, GraphState source, GraphState target, boolean idMorphism) {
-		return new DefaultGraphTransition(event, source, target, idMorphism);
+	private GraphTransition createTransition(RuleEvent event, GraphState source, GraphState target, boolean symmetry) {
+		return new DefaultGraphTransition(event, source, target, symmetry);
 	}
 	
 	/**
@@ -311,6 +310,7 @@ public class StateGenerator {
 		 */
 		public void set(Collection<GraphState> result){
 			this.result = result;
+			transitionsAdded = false;
 		}
 		
 		/**
@@ -318,6 +318,16 @@ public class StateGenerator {
 		 */
 		public void reset() {
 			result = null;
+			transitionsAdded = false;
+		}
+		
+		/** 
+		 * Indicates if any transitions were added since {@link #set(Collection)}
+		 * was last called.
+		 * @return <code>true</code> if any transitions were added
+		 */
+		public boolean isTransitionsAdded() {
+			return transitionsAdded;
 		}
 		
 		@Override
@@ -327,8 +337,14 @@ public class StateGenerator {
 			}
 		}
 		
+		@Override
+		public void addUpdate(GraphShape graph, Edge edge) {
+			transitionsAdded = true;
+		}
+		
 		/** The set to collect the fresh states. */
 		private Collection<GraphState> result;
+		private boolean transitionsAdded;
 	}
 	
     /** Reporter for profiling information; aliased to {@link GTS#reporter}. */
