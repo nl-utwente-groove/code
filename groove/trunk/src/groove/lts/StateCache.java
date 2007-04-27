@@ -12,11 +12,18 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.1 2007-04-22 23:32:14 rensink Exp $
+ * $Id: StateCache.java,v 1.2 2007-04-27 22:06:26 rensink Exp $
  */
 package groove.lts;
 
+import groove.graph.DeltaApplier;
+import groove.graph.DeltaGraphFactory;
+import groove.graph.DeltaTarget;
+import groove.graph.Edge;
+import groove.graph.Element;
+import groove.graph.FixedDeltaGraph;
 import groove.graph.Graph;
+import groove.graph.Node;
 import groove.trans.RuleEvent;
 import groove.util.TreeHashSet;
 
@@ -28,7 +35,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class StateCache {
     /**
@@ -48,22 +55,134 @@ public class StateCache {
     }
     
     /** 
-     * Returns the graph of the underlying state.
+     * Lazily creates and returns the graph of the underlying state.
      * This is only supported if the state is a {@link GraphNextState}
      * @throws IllegalStateException if the underlying state is not a {@link GraphNextState}
      */
     Graph getGraph() {
-    	if (state instanceof DefaultGraphNextState) {
-    		return ((DefaultGraphNextState) state).computeGraph();
-    	} else {
-    		throw new IllegalStateException();
+    	if (graph == null) {
+    		graph = computeGraph();
     	}
+    	return graph;
     }
     
     /** 
-     * Lazily creates and returns a mapping from the events to the target states 
-     * of the currently stored outgoing transitions of this state.
+     * Compute the graph from the information in the state.
+     * The state is assumed to be a {@link DefaultGraphNextState}.
      */
+    private Graph computeGraph() {
+		Element[] frozenGraph = state.getFrozenGraph();
+    	Graph result;
+		if (frozenGraph != null) {
+			result = graphFactory.newGraph(null, computeFrozenDelta(frozenGraph));
+		} else if (!(state instanceof GraphNextState)) {
+			throw new IllegalStateException("Underlying state does not have information to reconstruct the graph");
+		} else {
+			DefaultGraphNextState state = (DefaultGraphNextState) this.state;
+			result = graphFactory.newGraph(state.source().getGraph(), state.getDelta());
+			// If the state is closed, then we are reconstructing the graph
+			// for the second time at least; see if we should freeze it
+			if (state.isClosed() && isFreezeGraph()) {
+				state.setFrozenGraph(computeFrozenGraph(result));
+			}
+		}
+		return result;
+    }
+
+    /**
+     * Decides whether the underlying graph should be frozen.
+     * The decision is taken on the basis of the <i>freeze count</i>, as
+     * computed by {@link #getFreezeCount()}; the graph is frozen if the freeze
+     * count exceeds {@link #FREEZE_BOUND}.
+     * @return <code>true</code> if the graph should be frozen
+     */
+    private boolean isFreezeGraph() {
+    	return getFreezeCount() > FREEZE_BOUND;
+    }
+
+    /** 
+     * Computes a number expressing the urgency of freezing the underlying graph.
+     * The current measure is based on the number of steps from the previous
+     * frozen graph.
+     * @return the freeze count of the underlying state
+     */
+    private int getFreezeCount() {
+    	if (state instanceof DefaultGraphNextState) {
+    		return getFreezeCount((DefaultGraphNextState) state);
+    	} else {
+    		return 0;
+    	}
+    }
+    
+    /**
+     * Computes a number expressing the urgency of freezing the graph of a given
+     * state.
+     * The current measure is based on the number of steps from the previous
+     * frozen graph, following the chain of parents from the given state.
+     * @return the freeze count of a given state
+     */
+    private int getFreezeCount(DefaultGraphNextState state) {
+    	// determine the freeze count of the state's parent state
+    	int parentCount;
+    	AbstractGraphState parent = state.source();
+    	if (parent.getFrozenGraph() != null || !(parent instanceof DefaultGraphNextState)) {
+    		parentCount = 0;
+    	} else if (parent.isCacheCleared()) {
+    		parentCount = getFreezeCount((DefaultGraphNextState) parent);
+    	} else {
+    		parentCount = parent.getCache().getFreezeCount();
+    	}
+    	return parentCount + 1;
+    }
+    
+    /** 
+     * Computes a frozen graph representation from a given graph.
+     * The frozen graph representation consists of all nodes and edges of the
+     * graph in a single array. 
+     */
+    Element[] computeFrozenGraph(Graph graph) {
+    	Element[] result = new Element[graph.size()];
+    	int index = 0;
+    	for (Node node: graph.nodeSet()) {
+    		result[index] = node;
+    		index++;
+    	}
+    	for (Edge edge: graph.edgeSet()) {
+    		result[index] = edge;
+    		index++;
+    	}
+    	return result;
+    }
+    
+    /**
+     * Converts a frozen graph representation into a delta applier.
+     * It is assumed that the frozen graph representation contains all nodes
+     * and edges of the graph in a single array.
+     * @param elements the frozen graph representation; non-<code>null</code>
+     * @return a delta applier based on <code>elements</code>
+     */
+    private DeltaApplier computeFrozenDelta(final Element[] elements) {
+		return new DeltaApplier() {
+			public void applyDelta(DeltaTarget target, int mode) {
+				for (Element elem : elements) {
+					if (elem instanceof Node && mode != EDGES_ONLY) {
+						target.addNode((Node) elem);
+					} else if (elem instanceof Edge && mode != NODES_ONLY) {
+						target.addEdge((Edge) elem);
+					}
+				}
+			}
+
+			public void applyDelta(DeltaTarget target) {
+				applyDelta(target, ALL_ELEMENTS);
+			}
+		};
+	}
+    
+    /**
+	 * Lazily creates and returns a mapping from the events to the target states
+	 * of the currently stored outgoing transitions of this state.
+	 */
     Map<RuleEvent,GraphState> getTransitionMap() {
     	if (transitionMap == null) {
     		transitionMap = computeTransitionMap();
@@ -83,7 +202,7 @@ public class StateCache {
     	return result;
     }
     
-    /** Callback factory method to create the transition map. */
+    /** Callback factory method to create the transition map object. */
     private Map<RuleEvent,GraphState> createTransitionMap() {
     	return new IdentityHashMap<RuleEvent,GraphState>();
     }
@@ -145,18 +264,20 @@ public class StateCache {
 			}
     	};
     }
-//    
-//    /** Specialises the returnt ype of the super methods. */
-//    @Override
-//    public DefaultGraphState getGraph() {
-//    	return (DefaultGraphState) super.getGraph();
-//    }
-//    
+    
     /**
      * The set of outgoing transitions computed for the underlying graph.
      */
     private Set<GraphTransitionStub> stubSet;
     /** The graph state of this cache. */
     private final AbstractGraphState state;
+    /** Cached map from events to target transitions. */
     private Map<RuleEvent,GraphState> transitionMap;
+    /** Cached graph for this state. */
+    private Graph graph;
+    
+    /** The graph factory currently used for states. */
+    static private final DeltaGraphFactory graphFactory = FixedDeltaGraph.getInstance();
+    /** The bound above which the underlying graph will be frozen. */
+    static private final int FREEZE_BOUND = 10;
 }

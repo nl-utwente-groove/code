@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LinearStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: LinearStrategy.java,v 1.2 2007-04-27 22:06:58 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -29,7 +29,7 @@ import java.util.Iterator;
  * <i>maximal</i> state is found; that is, a state that only loops back to already explored states.
  * The maximum depth of the search can be set; a depth of 0 means unbounded depth.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class LinearStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
@@ -42,16 +42,16 @@ public class LinearStrategy extends AbstractStrategy {
     public Collection<? extends State> explore() throws InterruptedException {
         boolean intermediateState = true;
         GraphState atState = getAtState();
-        Collection<State> result = createStateSet();
+        Collection<GraphState> result = createStateSet();
         while (intermediateState) {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
             }
-            Iterator<? extends GraphState> nextStateIter = getGenerator().getSuccessorIter(atState);
+            Iterator<? extends GraphState> nextStateIter = getSuccessorIter(atState);
             GraphState nextOpenState = null;
             while (nextOpenState == null && nextStateIter.hasNext()) {
             	GraphState nextState = nextStateIter.next();
-            	if (getLTS().outEdgeSet(nextState).isEmpty() && !nextState.isClosed()) {
+            	if (getGTS().outEdgeSet(nextState).isEmpty() && !nextState.isClosed()) {
             		nextOpenState = nextState;
             	}
             }

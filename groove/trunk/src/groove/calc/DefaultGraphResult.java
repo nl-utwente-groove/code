@@ -12,13 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphResult.java,v 1.6 2007-04-20 15:12:28 rensink Exp $
+ * $Id: DefaultGraphResult.java,v 1.7 2007-04-27 22:07:00 rensink Exp $
  */
 package groove.calc;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.lts.DerivedGraphState;
+import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.SystemRecord;
@@ -63,26 +63,26 @@ public class DefaultGraphResult implements GraphResult {
         return state.getGraph();
     }
 
-    public List<Graph> getTrace() {
-        List<Graph> result = new LinkedList<Graph>();
-        result.add(state.getGraph());
+    public List<GraphState> getTrace() {
+        List<GraphState> result = new LinkedList<GraphState>();
+        result.add(state);
         GraphState intermediate = state;
-        while (intermediate != calculator.getBasis()) {
-            intermediate = ((DerivedGraphState) intermediate).source();
-            result.add(0, intermediate.getGraph());
+        while (intermediate.getGraph() != calculator.getBasis()) {
+            intermediate = ((GraphNextState) intermediate).source();
+            result.add(0, intermediate);
         }
         return result;
     }
 
     public Morphism getMorphism() {
         // we iterate over the steps in the trace
-        Iterator<Graph> graphIter = getTrace().iterator();
+        Iterator<GraphState> graphIter = getTrace().iterator();
         // first create an isomorphism from the basis to itself
-        Graph first = graphIter.next();
-        Morphism result = first.getIsomorphismTo(first);
+        GraphState first = graphIter.next();
+        Morphism result = first.getGraph().getIsomorphismTo(first.getGraph());
         // now concatenate the morphisms underlying the next transitions
         while (graphIter.hasNext()) {
-            GraphTransition next = (DerivedGraphState) graphIter.next();
+            GraphTransition next = (GraphNextState) graphIter.next();
             result = next.morphism().after(result);
         }
         return result;
@@ -98,7 +98,7 @@ public class DefaultGraphResult implements GraphResult {
         if (match == null) {
         	return null;
         } else {
-			SystemRecord record = calculator.getGenerator().getRecord();
+			SystemRecord record = calculator.getGTS().getRecord();
 			GraphState nextState = (GraphState) record.getApplication(rule, match).getTarget();
 			return calculator.createResult(nextState);
 		}
@@ -110,7 +110,7 @@ public class DefaultGraphResult implements GraphResult {
         Iterator<? extends Matching> matchIter = rule.getMatchingIter(state.getGraph());
         while (matchIter.hasNext()) {
 			Matching match = matchIter.next();
-			SystemRecord record = calculator.getGenerator().getRecord();
+			SystemRecord record = calculator.getGTS().getRecord();
 			GraphState nextState = (GraphState) record.getApplication(rule, match).getTarget();
 			result.add(calculator.createResult(nextState));
 		}

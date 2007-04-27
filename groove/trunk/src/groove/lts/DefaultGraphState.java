@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphState.java,v 1.7 2007-04-24 10:06:42 rensink Exp $
+ * $Id: DefaultGraphState.java,v 1.8 2007-04-27 22:06:25 rensink Exp $
  */
 package groove.lts;
 
@@ -36,7 +36,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-04-24 10:06:42 $
+ * @version $Revision: 1.8 $ $Date: 2007-04-27 22:06:25 $
  */
 public class DefaultGraphState extends DeltaGraph<DefaultStateCache> implements GraphState {
 //	/**
@@ -107,6 +107,11 @@ public class DefaultGraphState extends DeltaGraph<DefaultStateCache> implements 
     
     public Graph getGraph() {
         return this;
+    }
+    
+    /** This state type always returns <code>null</code> as control location. */
+    public Object getControl() {
+    	return null;
     }
 
     public Iterator<GraphTransition> getTransitionIter() {

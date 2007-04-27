@@ -12,15 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleApplication.java,v 1.2 2007-04-20 08:41:41 rensink Exp $
+ * $Id: RuleApplication.java,v 1.3 2007-04-27 22:07:01 rensink Exp $
  */
 package groove.trans;
 
 
 import groove.graph.DeltaApplier;
-import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.DeltaTarget;
+import groove.graph.Node;
 import groove.rel.VarNodeEdgeMap;
 
 /**
@@ -29,7 +29,7 @@ import groove.rel.VarNodeEdgeMap;
  * derivation, and to reconstruct the matching and the target graph after they
  * have been minimized, if the cached representation has been discarded.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface RuleApplication extends Derivation, DeltaApplier {
     /**
@@ -76,13 +76,13 @@ public interface RuleApplication extends Derivation, DeltaApplier {
      * Sets the image of the rule's coanchor in the target graph.
      * @see #getCoanchorImage()
      */
-    public void setCoanchorImage(Element[] image);
+    public void setCoanchorImage(Node[] image);
     
     /**
      * Returns the image of the rule's coanchor in the target graph.
      * @see Rule#anchor()
      */
-	public Element[] getCoanchorImage();
+	public Node[] getCoanchorImage();
 
     /**
      * Applies the rule to a given source graph, using a previously computed footprint

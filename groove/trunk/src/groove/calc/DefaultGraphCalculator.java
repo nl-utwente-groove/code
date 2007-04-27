@@ -12,21 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.6 2007-04-24 10:06:49 rensink Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.7 2007-04-27 22:06:59 rensink Exp $
  */
 package groove.calc;
 
 import groove.graph.Graph;
-import groove.graph.GraphListener;
-import groove.lts.DerivedGraphState;
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
+import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.lts.State;
-import groove.lts.StateGenerator;
-import groove.lts.Transition;
-import groove.lts.explore.FullStrategy;
 import groove.lts.explore.LinearStrategy;
 import groove.trans.GraphGrammar;
 import groove.trans.GraphTest;
@@ -34,7 +29,6 @@ import groove.trans.Rule;
 import groove.util.FormatException;
 
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -81,7 +75,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
     	grammar.testFixed(true);
         this.grammar = grammar;
         this.gts = new GTS(grammar);
-        this.generator = new StateGenerator(gts);
         this.prototype = prototype;
     }
 
@@ -96,12 +89,10 @@ public class DefaultGraphCalculator implements GraphCalculator {
             // first do a linear exploration from any open state
             // (by the assumption of uniqueness, the choice of open state should not matter)
         	ExploreStrategy strategy = new LinearStrategy();
-        	strategy.setGenerator(generator);
-//            gts.setExploreStrategy(new LinearStrategy());
+        	strategy.setGTS(getGTS());
             try {
             	strategy.setAtState(gts.getOpenStateIter().next());
             	strategy.explore();
-//                gts.explore(gts.getOpenStateIter().next());
             } catch (InterruptedException exc) {
                 // empty catch block
             }
@@ -138,35 +129,12 @@ public class DefaultGraphCalculator implements GraphCalculator {
 	 */
 	public GraphResult getFirstMax() {
         testPrototype();
-        GraphState result = null;
-        Iterator<? extends GraphState> stateIter = getBreadthFirstIterator();
-        while (result == null && stateIter.hasNext()) {
-            GraphState graph = stateIter.next();
-            if (isMaximal(graph)) {
-                result = graph;
-            }
-        }
-        return createResult(result);
+        return getGenerator().get(isMaximal, toResult);
     }
 
     public Collection<GraphResult> getAllMax() {
         testPrototype();
-        // first do a full exploration
-        ExploreStrategy strategy = new FullStrategy(generator);
-//        gts.setExploreStrategy(new FullStrategy());
-        try {
-            strategy.explore();
-        } catch (InterruptedException exc) {
-            // empty catch block
-        }
-        Collection<GraphResult> result = new HashSet<GraphResult>();
-        // go over the states and do a maximality test
-        for (GraphState graph: gts.nodeSet()) {
-            if (isMaximal(graph)) {
-                result.add(createResult(graph));
-            }
-        }
-        return result;
+        return getGenerator().getAll(isMaximal, toResult);
     }
 
     public Collection<GraphResult> getAll(String conditionName) {
@@ -191,36 +159,12 @@ public class DefaultGraphCalculator implements GraphCalculator {
 
     public GraphResult getFirst(GraphTest condition) {
         testPrototype();
-        GraphState result = null;
-        Iterator<GraphState> stateIter = getBreadthFirstIterator();
-        while (result == null && stateIter.hasNext()) {
-            GraphState state = stateIter.next();
-            if (condition.matches(state.getGraph())) {
-                result = state;
-            }
-        }
-        return result == null ? null : createResult(result);
+        return getGenerator().get(getMatcher(condition), toResult);
     }
 
-    public Collection<GraphResult> getAll(GraphTest condition) {
+    public Collection<GraphResult> getAll(final GraphTest condition) {
         testPrototype();
-        // first do a full exploration
-        ExploreStrategy strategy = new FullStrategy(generator);
-//        gts.setExploreStrategy(new FullStrategy());
-        try {
-//            gts.explore();
-        	strategy.explore();
-        } catch (InterruptedException exc) {
-            // empty catch block
-        }
-        Collection<GraphResult> result = new HashSet<GraphResult>();
-        // go over the states and do a maximality test
-        for (GraphState state: gts.nodeSet()) {
-            if (condition.matches(state.getGraph())) {
-                result.add(createResult(state));
-            }
-        }
-        return result;
+        return getGenerator().getAll(getMatcher(condition), toResult);
     }
 
     public Graph getBasis() {
@@ -241,15 +185,16 @@ public class DefaultGraphCalculator implements GraphCalculator {
 		}
     }
     
-    public void addGTSListener(GraphListener listener) {
-        gts.addGraphListener(listener);
-    }
-
     public GTS getGTS() {
         return gts;
     }
     
-	public StateGenerator getGenerator() {
+    /** Lazily constructs and returns a state generator for the GTS. */
+	private Explorer getGenerator() {
+		if (generator == null) {
+			generator = new Explorer();
+			generator.setGTS(getGTS());
+		}
 		return generator;
 	}
 
@@ -279,9 +224,9 @@ public class DefaultGraphCalculator implements GraphCalculator {
                     GraphState result = next.get(0);
                     next.remove(0);
                     // now add those states that are really derived from result to the list
-                    for (GraphState succ: generator.getSuccessors(result)) {
-                        if ((succ instanceof DerivedGraphState)) {
-                            GraphState source = ((DerivedGraphState) succ).source();
+                    for (GraphState succ: getGenerator().getSuccessors(result)) {
+                        if ((succ instanceof GraphNextState)) {
+                            GraphState source = ((GraphNextState) succ).source();
                             if (source == result) {
                                 next.add(succ);
                             } else {
@@ -296,8 +241,8 @@ public class DefaultGraphCalculator implements GraphCalculator {
             }
             
             int depth(State state) {
-                if (state instanceof DerivedGraphState) {
-                    return depth(((DerivedGraphState) state).source())+1;
+                if (state instanceof GraphNextState) {
+                    return depth(((GraphNextState) state).source())+1;
                 } else {
                     return 0;
                 }
@@ -325,10 +270,9 @@ public class DefaultGraphCalculator implements GraphCalculator {
      */
     protected boolean isMaximal(GraphState state) {
         boolean result = true;
-        Iterator<GraphTransition> outTransIter = state.getTransitionIter();
-        while (result && outTransIter.hasNext()) {
-            Transition element = outTransIter.next();
-            result = element.opposite() == state;
+        Iterator<? extends GraphState> nextStateIter = getGenerator().getSuccessorIter(state);
+        while (result && nextStateIter.hasNext()) {
+            result = nextStateIter.next() == state;
         }
         return result;
     }
@@ -340,11 +284,39 @@ public class DefaultGraphCalculator implements GraphCalculator {
     protected boolean isPrototype() {
         return prototype;
     }
+
+    /** Returns a property that tests for the matching of a graph to a test. */
+    private final Property<GraphState> getMatcher(final GraphTest test) {
+    	return new Property<GraphState>() {
+        	@Override
+			public boolean isSatisfied(GraphState state) {
+				return test.matches(state.getGraph());
+			}
+        };
+    }
+    
+    /** Property that tests for the maximality of a state, using {@link #isMaximal(GraphState)}. */
+    private final Property<GraphState> isMaximal = new Property<GraphState>() {
+    	@Override
+		boolean isSatisfied(GraphState state) {
+			return isMaximal(state);
+		}
+    };
+    
+    /** Function from graph states to graph results, using {@link #createResult(GraphState)}. */
+    private final Function<GraphState, GraphResult> toResult = new Function<GraphState, GraphResult>() {
+		@Override
+		public GraphResult apply(GraphState arg) {
+			return arg == null ? null : createResult(arg);
+		}
+	};
     
     /**
-     * Method to test if the calculator is a prototype.
-     * @throws IllegalStateException if the calculator is a prototype
-     */
+	 * Method to test if the calculator is a prototype.
+	 * 
+	 * @throws IllegalStateException
+	 *             if the calculator is a prototype
+	 */
     private void testPrototype() {
         if (isPrototype()) {
             throw new IllegalStateException();
@@ -359,7 +331,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
      */
     private final GTS gts;
     /** The state explorer for the transition system. */
-    private final StateGenerator generator;
+    private Explorer generator;
     /**
      * Switch indicating if the calculator is a prototype only.
      */

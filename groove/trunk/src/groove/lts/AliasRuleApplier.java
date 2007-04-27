@@ -24,6 +24,7 @@ import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -78,9 +79,9 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 		this.graph = state.getGraph();
 		if (state instanceof GraphNextState && ((GraphNextState) state).source().isClosed()) {
 			this.state = (GraphNextState) state;
-			this.rule = this.state.getRule();
-			this.priority = this.state.getRule().getPriority();
-			this.enabledRules = record.getEnabledRules(this.state.getRule());
+			this.rule = this.state.getEvent().getRule();
+			this.priority = this.rule.getPriority();
+			this.enabledRules = record.getEnabledRules(this.rule);
 		} else {
 			this.state = null;
 			this.rule = null;
@@ -110,15 +111,21 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	/**
      * Constructs the aliased applications from the outgoing transitions of the previous state.
      * The return value indicates if any applications were found.
+     * TODO this method should probably not rely on the stored transitions;
+     * rather, a separate map could be used to keep outgoing transitions as long
+     * as they may be required.
 	 * @param result the collection to add the resulting applications to
      */
     protected void collectAliases(Set<RuleApplication> result) {
     	reporter.start(COLLECT_ALIASES);
         Collection<Rule> disabledRules = record.getDisabledRules(rule);
-        for (GraphTransition otherTransition: state.source().getTransitionSet()) {
-            RuleEvent event = otherTransition.getEvent();
+        Iterator<GraphTransitionStub> iter =  ((AbstractGraphState) state.source()).getTransitionStubIter();
+        //        for (GraphTransition otherTransition: state.source().getTransitionSet()) {
+        while (iter.hasNext()) {
+        	GraphTransitionStub stub = iter.next();
+            RuleEvent event = stub.getEvent(state.source());
             if (isUseDependencies() && !disabledRules.contains(event.getRule()) || event.hasMatching(getGraph())) {
-                result.add(createAlias(event, getGraph(), otherTransition));
+                result.add(createAlias(event, state, stub));
         	}
         }
         reporter.stop();
@@ -163,8 +170,8 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	}
 
 	/** Callback factory method to create an {@link AliasSPOApplication}. */
-    private RuleApplication createAlias(RuleEvent event, Graph host, GraphTransition prior) {
-    	return new AliasSPOApplication(event, host, prior); 
+    private RuleApplication createAlias(RuleEvent event, GraphNextState source, GraphTransitionStub prior) {
+    	return new AliasSPOApplication(event, source, prior); 
     }
 
     @Override

@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphTransitionStub.java,v 1.3 2007-04-27 12:50:12 iovka Exp $
+ * $Id: AbstractGraphTransitionStub.java,v 1.4 2007-04-27 22:06:26 rensink Exp $
  */
 package groove.lts;
 
 import groove.graph.Element;
+import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.trans.RuleEvent;
 
@@ -26,14 +27,15 @@ import groove.trans.RuleEvent;
  * ({@link SymmetryTransitionStub}) and one that is not ({@link SymmetryTransitionStub}).
  * The only abstract method is {@link #toTransition(GraphState)}.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     /**
-     * Constructs a stub on the basis of a given rule event and target state.
+     * Constructs a stub on the basis of a given rule event, added nodes and target state.
      */
-    AbstractGraphTransitionStub(RuleEvent event, GraphState target) {
+    AbstractGraphTransitionStub(RuleEvent event, Node[] addedNodes, GraphState target) {
     	this.event = event;
+    	this.addedNodes = addedNodes;
         this.target = target;
     }
 
@@ -45,11 +47,16 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
 	public final RuleEvent getEvent() {
 		return event;
 	}
+	
     public RuleEvent getEvent(GraphState source) {
 		return getEvent();
 	}
+    
+    public Node[] getAddedNodes(GraphState source) {
+		return addedNodes;
+	}
 
-    /**
+	/**
      * This implementation compares events for identity.
     */
     @Override
@@ -62,7 +69,7 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     }
 
 	public GraphTransition toTransition(GraphState source) {
-        return new DefaultGraphTransition(getEvent(), source, target(), isSymmetry());
+        return new DefaultGraphTransition(getEvent(source), getAddedNodes(source), source, target(), isSymmetry());
     }
 
     /**
@@ -105,7 +112,11 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
      */
     private final GraphState target;
     /**
-     * The rule event wrapper in this out-transition
+     * The rule event of this transition stub.
      */
     private final RuleEvent event;
+    /**
+     * The added nodes of this transition stub.
+     */
+    private final Node[] addedNodes;
 }

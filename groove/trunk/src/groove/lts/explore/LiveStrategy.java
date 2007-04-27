@@ -12,21 +12,20 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LiveStrategy.java,v 1.2 2007-03-30 15:50:42 rensink Exp $
+ * $Id: LiveStrategy.java,v 1.3 2007-04-27 22:06:58 rensink Exp $
  */
 package groove.lts.explore;
+
+import groove.lts.GraphState;
 
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
-import groove.lts.GraphState;
-import groove.lts.State;
-
 /**
  * Breadth-first exploration strategy that stops at the first final state (i.e., state without outgoing transitions.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class LiveStrategy extends BranchingStrategy {
 	/** Short name of this strategy. */
@@ -49,31 +48,33 @@ public class LiveStrategy extends BranchingStrategy {
      * (as indicated by <tt>isExplorable</tt>).
      */
     @Override
-    protected Collection<State> computeNextStates(Collection<? extends State> atStates) throws InterruptedException {
-        Collection<State> result = new LinkedList<State>();
+    protected Collection<GraphState> computeNextStates(Collection<GraphState> atStates) throws InterruptedException {
+        Collection<GraphState> result = new LinkedList<GraphState>();
+        getCollector().set(result);
         boolean halt = false;
-        Iterator<? extends State> openStateIter = atStates.iterator();
+        Iterator<GraphState> openStateIter = atStates.iterator();
         while (!halt && openStateIter.hasNext()) {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
             }
-            State openState = openStateIter.next();
+            GraphState openState = openStateIter.next();
             if (isExplorable(openState)) {
-                result.addAll(getGenerator().computeSuccessors((GraphState) openState));
+                explore(openState);
             } else {
                 halt = true;
                 result.clear();
             }
         }
+        getCollector().reset();
         return result;
     }
-
+    
     /**
      * Overwrites the method so states are explorable as long as no final states
      * exis in the lts.
      */
     @Override
-    protected boolean isExplorable(State state) {
-        return ! getLTS().getFinalStates().isEmpty();
+    protected boolean isExplorable(GraphState state) {
+        return ! getGTS().getFinalStates().isEmpty();
     }
 }

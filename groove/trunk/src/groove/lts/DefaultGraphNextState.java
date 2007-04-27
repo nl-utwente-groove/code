@@ -14,7 +14,9 @@
 package groove.lts;
 
 import groove.graph.AbstractGraph;
+import groove.graph.DeltaApplier;
 import groove.graph.DeltaTarget;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
@@ -27,22 +29,33 @@ import groove.trans.RuleEvent;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
-	 * Constructs a state on the basis of a given source and application.
+	 * Constructs a successor state on the basis of a given parent state and 
+	 * rule application, and a given control location.
 	 */
-	public DefaultGraphNextState(GraphState source, RuleEvent event, Node[] coAnchorImage) {
+	public DefaultGraphNextState(AbstractGraphState source, RuleEvent event, Node[] addedNodes, Object control) {
+		super(control);
 		this.source = source;
 		this.event = event;
-		this.addedNodes = coAnchorImage;
+		this.addedNodes = addedNodes;
+	}
+	
+    /**
+	 * Constructs a state on the basis of a given parent state and 
+	 * rule application, with <code>null</code> control location.
+	 */
+	public DefaultGraphNextState(AbstractGraphState source, RuleEvent event, Node[] addedNodes) {
+		this(source, event, addedNodes, null);
 	}
 	
 	/**
 	 * Return the rule of the incoming transition with which this state
 	 * was created.
 	 */
+	@Deprecated
 	public Rule getRule() {
 		return getEvent().getRule(); 
 	}
@@ -51,6 +64,10 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 		return event;
 	}
 	
+	public Node[] getAddedNodes() {
+		return addedNodes;
+	}
+
 	/**
 	 * This implementation reconstructs the matching using the
 	 * rule, the anchor images, and the basis graph.
@@ -88,16 +105,28 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	}
 
 	/**
+	 * Returns the basis graph of the delta graph (which is guaranteed to be 
+	 * a {@link GraphState}).
+	 */
+	public AbstractGraphState source() {
+		return source;
+	}
+
+	/**
 	 * This implementation returns <code>this</code>.
 	 */
-	public GraphState target() {
+	public DefaultGraphNextState target() {
 		return this;
+	}
+
+	public Node opposite() {
+		return target();
 	}
 
 	/**
 	 * Returns <code>getBasis()</code> or <code>this</code>, depending on the index.
 	 */
-	public Node end(int i) {
+	public AbstractGraphState end(int i) {
 		switch (i) {
 		case SOURCE_INDEX : return source();
 		case TARGET_INDEX : return target();
@@ -130,22 +159,10 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 		return source().equals(node) || target().equals(node);
 	}
 
-	public Node opposite() {
-		return target();
-	}
-
 	/**
-	 * Returns the basis graph of the delta graph (which is guaranteed to be 
-	 * a {@link GraphState}).
-	 */
-	public GraphState source() {
-		return source;
-	}
-	
-    /**
      * This implementation retrieves the coanchor image from the delta array.
      */
-    public Node[] getCoanchorImage() {
+    public Element[] getCoanchorImage() {
     	return addedNodes;
     }
     
@@ -155,6 +172,14 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 		} else {
 			return getSourceEvent();
 		}
+	}	
+
+	public Node[] getAddedNodes(GraphState source) {
+		if (source == source()) {
+			return getAddedNodes();
+		} else {
+			return getSourceAddedNodes();
+		}
 	}
 
 	public boolean isSymmetry() {
@@ -162,7 +187,8 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	}
 
 	public GraphTransitionStub toStub() {
-		return new IdentityTransitionStub(getEvent(), target());
+		return this;
+//		return new IdentityTransitionStub(getEvent(), getAddedNodes(), target());
 	}
 
 	/**
@@ -172,7 +198,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	 */
 	public GraphTransition toTransition(GraphState source) {
 		if (source != source()) {
-			return new DefaultGraphTransition(getSourceEvent(), source, this, isSymmetry());
+			return new DefaultGraphTransition(getSourceEvent(), getSourceAddedNodes(), source, this, isSymmetry());
 		} else {
 			return this;
 		}
@@ -182,15 +208,20 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	public Graph getGraph() {
 		return getCache().getGraph();
 	}
-
-	/** Constructs the graph for this state from the stored information. */
-	Graph computeGraph() {
-		return getEvent().newApplication(source().getGraph()).getTarget();
+	
+	/** 
+	 * Returns the delta applier associated with the rule application
+	 * leading up to this state.
+	 */
+	DeltaApplier getDelta() {
+		RuleApplication result = getEvent().newApplication(source().getGraph());
+		result.setCoanchorImage(getAddedNodes());
+		return result;
 	}
 	
 	@Override
 	protected void updateClosed() {
-		// empty
+		clearCache();
 	}
 
 	/**
@@ -200,6 +231,18 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	protected RuleEvent getSourceEvent() {
 		if (source() instanceof GraphNextState) {
 			return ((GraphNextState) source()).getEvent();
+		} else {
+			return null;
+		}
+	}
+	
+	/**
+	 * Returns the event from the source of this transition,
+	 * if that is itself a {@link groove.lts.GraphTransitionStub}.
+	 */
+	protected Node[] getSourceAddedNodes() {
+		if (source() instanceof GraphNextState) {
+			return ((GraphNextState) source()).getAddedNodes();
 		} else {
 			return null;
 		}
@@ -223,24 +266,24 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 //    
     /**
      * This implementation compares the state on the basis of its qualities as
-     * a {@link GraphNextState}.
-     * That is, two objects are considered equal if they have the same basis,
-     * rule and anchor images.
+     * a {@link GraphTransition}.
+     * That is, two objects are considered equal if they have the same source and event.
+     * @see #equalsTransition(GraphTransition)
      */
     @Override
     public boolean equals(Object obj) {
     	if (obj == this) {
     		return true;
     	} else {
-    		return (obj instanceof GraphNextState) && equalsNextState((GraphNextState) obj);
+    		return (obj instanceof GraphTransition) && equalsTransition((GraphTransition) obj);
     	}
     }
 
 	/**
-	 * This implementation compares the source and event of another {@link GraphNextState}
+	 * This implementation compares the source and event of another {@link GraphTransition}
 	 * to those of this object.
 	 */
-	protected boolean equalsNextState(GraphNextState other) {
+	protected boolean equalsTransition(GraphTransition other) {
 		return source() == other.source() && getEvent() == other.getEvent();
 	}
  
@@ -298,13 +341,13 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	 * Otherwise it invokes <code>super</code>.
 	 */
     @Override
-	protected GraphTransitionStub createInTransitionStub(GraphState source, RuleEvent event) {
+	protected GraphTransitionStub createInTransitionStub(GraphState source, RuleEvent event, Node[] addedNodes) {
 	    if (source == source() && event == getEvent()) {
 	        return this;
 	    } else if (source != source() && event == getSourceEvent()) {
 			return this;
 		} else {
-			return super.createInTransitionStub(source, event);
+			return super.createInTransitionStub(source, event, addedNodes);
 		}
 	}
 //    
@@ -332,21 +375,19 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	protected void applyRule(DeltaTarget target) {
 		// if the basis graph cache is cleared before rule application, 
 		// clear it again afterwards
-		boolean sourceCacheCleared = source instanceof AbstractGraphState && ((AbstractGraphState) source).isCacheCleared();
+		boolean sourceCacheCleared = source.isCacheCleared();
 		// do the actual rule application
-		RuleApplication applier = getEvent().newApplication(source.getGraph());
-		applier.setCoanchorImage(getCoanchorImage());
-	    applier.applyDelta(target);
+		getDelta().applyDelta(target);
 	    // clear the basis cache
 	    if (sourceCacheCleared) {
-	    	((AbstractGraphState) source).clearCache();
+	    	source.clearCache();
 	    }
 	}
 	
 	/**
 	 * The rule of the incoming transition with which this state was created.
 	 */
-	private final GraphState source;
+	private final AbstractGraphState source;
 	/**
 	 * The rule event of the incoming transition with which this state was created.
 	 */

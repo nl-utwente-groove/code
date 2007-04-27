@@ -23,13 +23,13 @@ import groove.trans.RuleApplication;
  * which is a pre-existing graph transition that essentially equals the one we
  * are deriving now, at an earlier stage.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface AliasRuleApplication extends RuleApplication {
     /**
      * Returns the stored prior target state of this application.
      */
-    public GraphTransition getPrior();
+    public GraphTransitionStub getPrior();
     
     /**
      * Indicates if a prior transition has been set for this application.

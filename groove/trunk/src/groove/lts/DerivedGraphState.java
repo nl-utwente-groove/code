@@ -35,7 +35,7 @@ import java.util.Arrays;
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class DerivedGraphState extends DefaultGraphState implements GraphNextState, GraphTransitionStub {
     /**
@@ -216,6 +216,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 * Return the rule of the incoming transition with which this state
 	 * was created.
 	 */
+	@Deprecated
 	public Rule getRule() {
 		return getEvent().getRule(); 
 	}
@@ -224,6 +225,25 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 		return event;
 	}
 	
+	/** 
+	 * Copies and returns the initial fragment of the delta array that
+	 * contains the added nodes. 
+	 */
+	public Node[] getAddedNodes() {
+		Element[] image = getCoanchorImage();
+		// copy the initial fragment of the image that contains nodes
+		boolean imageOK = true;
+		int maxNodeIndex = 0;
+		while (imageOK && maxNodeIndex < image.length) {
+			imageOK = image[maxNodeIndex] instanceof Node;
+			if (imageOK) {
+				maxNodeIndex++;
+			}
+		}
+		Node[] result = new Node[maxNodeIndex];
+		return result;
+	}
+
 	/**
 	 * This implementation reconstructs the matching using the
 	 * rule, the anchor images, and the basis graph.
@@ -385,6 +405,18 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 		}
 	}
 
+	/** 
+	 * Returns this state's added nodes if the given source equals this state's
+	 * source; otherwise, returns {@link #getSourceEvent()}.
+	 */
+	public Node[] getAddedNodes(GraphState source) {
+		if (source == source()) {
+			return getAddedNodes();
+		} else {
+			return getSourceAddedNodes();
+		}
+	}
+
 	public boolean isSymmetry() {
 		return false;
 	}
@@ -400,12 +432,12 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 */
 	public GraphTransition toTransition(GraphState source) {
 		if (source != source()) {
-			return new DefaultGraphTransition(getSourceEvent(), source, this, false);
+			return new DefaultGraphTransition(getSourceEvent(), getSourceAddedNodes(), source, this, false);
 		} else {
 			return this;
 		}
 	}
-	
+
 	/**
 	 * Returns the event from the source of this transition,
 	 * if that is itself a {@link groove.lts.GraphTransitionStub}.
@@ -417,27 +449,39 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 			return null;
 		}
 	}
+
+	/**
+	 * Returns the event from the source of this transition,
+	 * if that is itself a {@link groove.lts.GraphTransitionStub}.
+	 */
+	protected Node[] getSourceAddedNodes() {
+		if (source() instanceof GraphNextState) {
+			return ((GraphNextState) source()).getAddedNodes();
+		} else {
+			return null;
+		}
+	}
 	
     /**
      * This implementation compares the state on the basis of its qualities as
      * a {@link GraphNextState}.
-     * That is, two objects are considered equal if they have the same basis,
-     * rule and anchor images.
+     * That is, two objects are considered equal if they have the same source and event.
+     * @see #equalsTransition(GraphTransition)
      */
     @Override
     public boolean equals(Object obj) {
     	if (obj == this) {
     		return true;
     	} else {
-    		return (obj instanceof GraphNextState) && equalsNextState((GraphNextState) obj);
+    		return (obj instanceof GraphTransition) && equalsTransition((GraphTransition) obj);
     	}
     }
 
 	/**
-	 * This implementation compares the source and event of another {@link GraphNextState}
+	 * This implementation compares the source and event of another {@link GraphTransition}
 	 * to those of this object.
 	 */
-	protected boolean equalsNextState(GraphNextState other) {
+	protected boolean equalsTransition(GraphTransition other) {
 		return source() == other.source() && getEvent() == other.getEvent();
 	}
  
@@ -526,14 +570,15 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 * This implementation returns <code>this</code> if the derivation's event
 	 * is identical to the event stored in this state.
 	 * Otherwise it invokes <code>super</code>.
+     * @param addedNodes TODO
 	 */
-	protected GraphTransitionStub createInTransitionStub(GraphState source, RuleEvent event) {
+	protected GraphTransitionStub createInTransitionStub(GraphState source, RuleEvent event, Node[] addedNodes) {
 	    if (source == source() && event == getEvent()) {
 	        return this;
 	    } else if (source != source() && event == getSourceEvent()) {
 			return this;
 		} else {
-			return new IdentityTransitionStub(event, this);
+			return new IdentityTransitionStub(event, addedNodes, this);
 		}
 	}
 
@@ -644,7 +689,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 		// do the actual rule application
 		RuleApplication applier = getEvent().newApplication(getBasis());
 		assert getCoanchorSize() == 0 || getCoanchorImage()[0] instanceof Node;
-		applier.setCoanchorImage(getCoanchorImage());
+		applier.setCoanchorImage(getAddedNodes());
 	    applier.applyDelta(target);
 	    // clear the basis cache
 	    if (basisCacheCleared) {

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.7 2007-04-24 10:06:43 rensink Exp $
+ * $Id: DefaultGraphTransition.java,v 1.8 2007-04-27 22:06:26 rensink Exp $
  */
 package groove.lts;
 
@@ -32,7 +32,7 @@ import groove.trans.RuleEvent;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-04-24 10:06:43 $
+ * @version $Revision: 1.8 $ $Date: 2007-04-27 22:06:26 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphTransitionStub, GraphTransition {
     /** The total number of anchor images created. */
@@ -89,17 +89,20 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
     /**
      * Constructs a GraphTransition on the basis of a given rule event, 
      * between a given source and target state.
+     * @param addedNodes TODO
      */
-    public DefaultGraphTransition(RuleEvent event, GraphState source, GraphState target, boolean idMorphism) {
+    public DefaultGraphTransition(RuleEvent event, Node[] addedNodes, GraphState source, GraphState target, boolean symmetry) {
         super(source, event.getLabel(), target);
         this.event = event;
-        this.symmetry = idMorphism;
+        this.addedNodes = addedNodes;
+        this.symmetry = symmetry;
     }
 
     public RuleEvent getEvent() {
 		return event;
 	}
 
+    @Deprecated
 	public Rule getRule() {
         return getEvent().getRule();
     }
@@ -108,14 +111,18 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
 		return symmetry;
 	}
 
+	public Node[] getAddedNodes() {
+		return addedNodes;
+	}
+
 	public GraphTransitionStub toStub() {
 		if (isSymmetry()) {
-			return new SymmetryTransitionStub(getEvent(), target());
-		} else if (target() instanceof DerivedGraphState) {
-			return ((DerivedGraphState) target()).createInTransitionStub(source(),
-					getEvent());
+			return new SymmetryTransitionStub(getEvent(), getAddedNodes(), target());
+		} else if (target() instanceof DefaultGraphNextState) {
+			return ((DefaultGraphNextState) target()).createInTransitionStub(source(),
+					getEvent(), getAddedNodes());
 		} else {
-			return new IdentityTransitionStub(getEvent(), target());
+			return new IdentityTransitionStub(getEvent(), getAddedNodes(), target());
 		}
 	}
 
@@ -133,6 +140,19 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
 			throw new IllegalArgumentException("Source state incompatible");
 		} else {
 			return getEvent();
+		}
+	}
+
+	/**
+     * This implementation throws an {@link IllegalArgumentException} if
+     * <code>source</code> is not equal to the source of the transition,
+     * otherwise it returns {@link #getAddedNodes()}.
+	 */
+    public Node[] getAddedNodes(GraphState source) {
+		if (source != source()) {
+			throw new IllegalArgumentException("Source state incompatible");
+		} else {
+			return getAddedNodes();
 		}
 	}
 
@@ -195,7 +215,7 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
      * source graph, rule and anchor images.
      */
     protected boolean equalsSource(GraphTransition other) {
-        return source().equals(other.source());
+        return source() == other.source();
     }
 
     /**
@@ -216,14 +236,14 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
     
     /** This implementation specialises the return type to a {@link DefaultGraphState}. */
     @Override
-    public DefaultGraphState source() {
-    	return (DefaultGraphState) source;
+    public AbstractGraphState source() {
+    	return (AbstractGraphState) source;
     }
     
     /** This implementation specialises the return type to a {@link DefaultGraphState}. */
     @Override
-    public DefaultGraphState target() {
-    	return (DefaultGraphState) target;
+    public AbstractGraphState target() {
+    	return (AbstractGraphState) target;
     }
 
     /** Always throws an <tt>UnsupportedOperationException</tt>. */
@@ -237,7 +257,7 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
      */
 	@Override
     protected int computeHashCode() {
-        return source.hashCode() + event.hashCode();
+        return System.identityHashCode(source) + System.identityHashCode(event);
     }
 
     /**
@@ -245,6 +265,8 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
      * @invariant <tt>rule != null</tt>
      */
     private final RuleEvent event;
+    /** The array of added nodes of this transition. */
+    private final Node[] addedNodes;
     /**
      * The underlying morphism of this transition.
      * Computed lazily (using the footprint) using {@link #computeMorphism()}.

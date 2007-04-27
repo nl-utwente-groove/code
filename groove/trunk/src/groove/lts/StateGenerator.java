@@ -12,14 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.9 2007-04-24 10:06:43 rensink Exp $
+ * $Id: StateGenerator.java,v 1.10 2007-04-27 22:06:26 rensink Exp $
  */
 package groove.lts;
 
 import groove.graph.Edge;
-import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
-import groove.graph.Node;
 import groove.trans.RuleApplication;
 import groove.trans.RuleApplier;
 import groove.trans.RuleEvent;
@@ -27,7 +25,6 @@ import groove.trans.SystemRecord;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -37,41 +34,11 @@ import java.util.Iterator;
  * @version $Revision $
  */
 public class StateGenerator {
-    /**
-     * The number of confluent diamonds found.
-     */
-    private static int confluentDiamondCount;
-    /**
-     * Returns the number of confluent diamonds found during generation.
-     */
-    public static int getConfluentDiamondCount() {
-        return confluentDiamondCount;
-    }
-    
-    /**
-     * Returns the time spent generating successors.
-     */
-    public static long getGenerateTime() {
-        return reporter.getTotalTime(ADD_TRANSITION);
-    }
-    
-	/**
-	 * Constructs an explorer for a given GTS.
-	 * @param gts the GTS for which the states are to be explored.
-	 */
-	public StateGenerator(final GTS gts) {
-		this.gts = gts;
-		this.record = new SystemRecord(gts.ruleSystem());
-		this.collector = new FreshStateCollector();
-		gts.addGraphListener(collector);
-		applier = new AliasRuleApplier(record);
+	/** Constructs a state generator with no GTS or system record set. */
+	public StateGenerator() {
+		this.collector = new AddTransitionListener();
 	}
-
-	/** Returns the system record kept by this generator. */
-	public final SystemRecord getRecord() {
-		return record;
-	}
-
+	
 	/**
 	 * Returns the underlying GTS.
 	 */
@@ -80,32 +47,42 @@ public class StateGenerator {
 	}
 
 	/**
+	 * Sets a new GTS, and resets the system record.
+	 */
+	public void setGTS(GTS gts) {
+		this.gts = gts;
+		this.collector.setGTS(gts);
+		this.applier = null;
+	}
+
+	/** Convenience method to retrieve the record from the current GTS. */
+	protected final SystemRecord getRecord() {
+		return getGTS().getRecord();
+	}
+
+	/**
 	 * Computes and returns the set of successor states of a given state,
 	 * insofar thay are not yet in the GTS at time of invocation.
 	 * The states that are returned are added to the GTS first.
 	 * @param state the state for which the successors are to be generated;
 	 * assumed to be in the GTS
-	 * @return the new states generated as a result of the invocation
 	 */
-    public Collection<? extends GraphState> computeSuccessors(final GraphState state) {
+    public void explore(final GraphState state) {
         reporter.start(SUCC);
-        final Collection<GraphState> result = new ArrayList<GraphState>();
         // check if the transitions have not yet been generated
         if (!state.isClosed()) {
-        	collector.set(result);
+            collector.reset();
         	getApplier(state).doApplications(new RuleApplier.Action() {
 				public void perform(RuleApplication application) {
                     addTransition(state, application);
 				}
         	});
             if (! collector.isTransitionsAdded()) {
-                gts.setFinal(state);
+                getGTS().setFinal(state);
             }
-            collector.reset();
-            gts.setClosed(state);
+            getGTS().setClosed(state);
         }
         reporter.stop();
-        return result;
     }
     
     /**
@@ -116,8 +93,8 @@ public class StateGenerator {
 	 * assumed to be in the GTS
 	 * @return the set of all successors of <code>state</code>
 	 */
-    public Collection<? extends GraphState> getSuccessors(GraphState state) {
-        computeSuccessors(state);
+    public Collection<GraphState> getSuccessors(GraphState state) {
+        explore(state);
         return state.getNextStateSet();
     }
 
@@ -135,7 +112,7 @@ public class StateGenerator {
         } else {
             final Iterator<RuleApplication> derivationIter = getApplier(state).getApplicationIter();
             if (!derivationIter.hasNext()) {
-                gts.setFinal(state);
+            	getGTS().setFinal(state);
             }
             // get the next states by adding transitions for the derivations
             return new TransformIterator<RuleApplication,GraphState>(derivationIter) {
@@ -144,7 +121,7 @@ public class StateGenerator {
                     if (hasNext) {
                         hasNext = super.hasNext();
                         if (!hasNext) {
-                            gts.setClosed(state);
+                        	getGTS().setClosed(state);
                         }
                     }
                     return hasNext;
@@ -174,26 +151,26 @@ public class StateGenerator {
         reporter.start(ADD_TRANSITION);
         GraphTransition result;
         if (!appl.getRule().isModifying()) {
-        	result = createTransition(appl.getEvent(), source, source, false);
+        	result = createTransition(appl, source, source, false);
         } else {
             // check for confluent diamond
             GraphState confluentTarget = getConfluentTarget(source, appl);
         	if (confluentTarget == null) {
 				GraphNextState freshTarget = createState(source, appl);
-				GraphState isoTarget = gts.addState(freshTarget);
+				GraphState isoTarget = getGTS().addState(freshTarget);
 				if (isoTarget == null) {
 					result = freshTarget;
 				} else {
 					// the following line is to ensure the cache is cleared
 					// even if the state is still used as the basis of another
 					// result.dispose();
-					result = createTransition(appl.getEvent(), source, isoTarget, true);
+					result = createTransition(appl, source, isoTarget, true);
 				}
 			} else {
-            	result = createTransition(appl.getEvent(), source, confluentTarget, false);
+            	result = createTransition(appl, source, confluentTarget, false);
             }
         }
-        gts.addTransition(result);
+        getGTS().addTransition(result);
         reporter.stop();
         return result.target();
     }
@@ -240,7 +217,7 @@ public class StateGenerator {
         }
         assert source instanceof GraphNextState;
         AliasRuleApplication aliasAppl = (AliasRuleApplication) appl;
-        GraphTransition prior = aliasAppl.getPrior();
+        GraphTransitionStub prior = aliasAppl.getPrior();
         if (prior.isSymmetry()) {
         	return null;
         }
@@ -275,13 +252,14 @@ public class StateGenerator {
 	 * Creates a fresh graph state, based on a given source state and rule application.
 	 */
 	private GraphNextState createState(GraphState source, RuleApplication appl) {
-		DerivedGraphState result = new DerivedGraphState(source, appl.getEvent(), appl.getCoanchorImage());
-		result.setFixed();
-		return result;
+//		DerivedGraphState result = new DerivedGraphState(source, appl.getEvent(), appl.getCoanchorImage());
+//		result.setFixed();
+//		return result;
+		return new DefaultGraphNextState((AbstractGraphState) source, appl.getEvent(), appl.getCoanchorImage());
 	}
 
-	private GraphTransition createTransition(RuleEvent event, GraphState source, GraphState target, boolean symmetry) {
-		return new DefaultGraphTransition(event, source, target, symmetry);
+	private GraphTransition createTransition(RuleApplication appl, GraphState source, GraphState target, boolean symmetry) {
+		return new DefaultGraphTransition(appl.getEvent(), appl.getCoanchorImage(), source, target, symmetry);
 	}
 	
 	/**
@@ -289,65 +267,39 @@ public class StateGenerator {
 	 * This implementation uses flyweight, so discard the result before calling the method again.
 	 */
 	private RuleApplier getApplier(GraphState state) {
-		applier.setState(state);
+		if (applier == null) {
+			applier = new AliasRuleApplier(getRecord(), state);
+		} else {
+			applier.setState(state);
+		}
 		return applier;
 	}
 
 	/** The underlying GTS. */
-	private final GTS gts;
-	/** The rule system instance used by this generator. */
-	private final SystemRecord record;
+	private GTS gts;
 	/** Collector instance that listens to the underlying GTS. */
-	private final FreshStateCollector collector;
+	private final AddTransitionListener collector;
 	/** The fixed rule applier for this generator. */
-	private final AliasRuleApplier applier;
+	private AliasRuleApplier applier;
 	/**
-	 * Listener that collects the fresh states into a set.
+	 * The number of confluent diamonds found.
 	 */
-	static class FreshStateCollector extends GraphAdapter {
-		/**
-		 * Sets the result set to an alial of a given set.
-		 */
-		public void set(Collection<GraphState> result){
-			this.result = result;
-			transitionsAdded = false;
-		}
-		
-		/**
-		 * Sets the result set to the empty set.
-		 */
-		public void reset() {
-			result = null;
-			transitionsAdded = false;
-		}
-		
-		/** 
-		 * Indicates if any transitions were added since {@link #set(Collection)}
-		 * was last called.
-		 * @return <code>true</code> if any transitions were added
-		 */
-		public boolean isTransitionsAdded() {
-			return transitionsAdded;
-		}
-		
-		@Override
-		public void addUpdate(GraphShape graph, Node node) {
-			if (result != null) {
-				result.add((GraphState) node);
-			}
-		}
-		
-		@Override
-		public void addUpdate(GraphShape graph, Edge edge) {
-			transitionsAdded = true;
-		}
-		
-		/** The set to collect the fresh states. */
-		private Collection<GraphState> result;
-		private boolean transitionsAdded;
+	private static int confluentDiamondCount;
+	/**
+	 * Returns the number of confluent diamonds found during generation.
+	 */
+	public static int getConfluentDiamondCount() {
+	    return confluentDiamondCount;
 	}
-	
-    /** Reporter for profiling information; aliased to {@link GTS#reporter}. */
+
+	/**
+	 * Returns the time spent generating successors.
+	 */
+	public static long getGenerateTime() {
+	    return reporter.getTotalTime(ADD_TRANSITION);
+	}
+
+	/** Reporter for profiling information; aliased to {@link GTS#reporter}. */
     static private final Reporter reporter = Reporter.register(StateGenerator.class);
     /** Profiling aid for adding states. */
     static public final int ADD_STATE = reporter.newMethod("addState");
@@ -357,4 +309,57 @@ public class StateGenerator {
     static public final int ADD_TRANSITION_START = reporter.newMethod("addTransition - start");
     /** Profiling aid for adding transitions. */
     static private final int SUCC = reporter.newMethod("computing successors");
+	/**
+	 * Listener that collects the fresh states into a set.
+	 */
+	abstract static protected class GTSListener extends LTSAdapter {
+		/** 
+		 * Sets or changes the GTS to which the listener is listening.
+		 * @param gts the new GTS to which the listener should listen; may be <code>null</code> 
+		 */
+		public void setGTS(GTS gts) {
+			if (this.gts != null) {
+				this.gts.removeGraphListener(this);
+			}
+			this.gts = gts;
+			if (this.gts != null) {
+				this.gts.addGraphListener(this);
+			}
+		}
+		
+		/** GTS to which the listener is currently listening. */
+		private GTS gts;
+	}
+	
+	/**
+	 * Listener that collects the fresh states into a set.
+	 */
+	static private class AddTransitionListener extends GTSListener {
+		/**
+		 * Sets the result set to the empty set.
+		 */
+		public void reset() {
+			transitionsAdded = false;
+		}
+		
+		/** 
+		 * Indicates if any transitions were added since {@link #reset()}
+		 * was last called.
+		 * @return <code>true</code> if any transitions were added
+		 */
+		public boolean isTransitionsAdded() {
+			return transitionsAdded;
+		}
+		
+		@Override
+		public void addUpdate(GraphShape graph, Edge edge) {
+			transitionsAdded = true;
+		}
+		
+		/** 
+		 * Variable that records if any transition have been added since the last
+		 * {@link #reset()}.
+		 */
+		private boolean transitionsAdded;
+	}
 }

@@ -12,14 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphCalculator.java,v 1.2 2007-04-19 06:39:12 rensink Exp $
+ * $Id: GraphCalculator.java,v 1.3 2007-04-27 22:06:59 rensink Exp $
  */
 package groove.calc;
 
 import groove.graph.Graph;
-import groove.graph.GraphListener;
 import groove.lts.GTS;
-import groove.lts.StateGenerator;
 import groove.trans.GraphGrammar;
 import groove.trans.GraphTest;
 
@@ -30,7 +28,7 @@ import java.util.Collection;
  * A graph calculator is loaded with a grammar, i.e., a rule system and a basis graph.
  * Essentially it gives an easier interface to the underlying GTS.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface GraphCalculator {
     /**
@@ -129,21 +127,15 @@ public interface GraphCalculator {
      */
     GraphCalculator newInstance(Graph basis) throws IllegalArgumentException;
     
-    
-    /**
-     * Adds a graph listener to the GTS built up in this calculator.
-     */
-    public void addGTSListener(GraphListener listener);
-
     /**
      * Returns the GTS built up in this calculator. 
      */
     public GTS getGTS();
-
-    /**
-	 * Returns the state generator used in this calculator.
-	 */
-    public StateGenerator getGenerator();
+//
+//    /**
+//	 * Returns the state generator used in this calculator.
+//	 */
+//    public StateGenerator getGenerator();
     
     /**
      * Returns the underlying graph grammar of the GTS.

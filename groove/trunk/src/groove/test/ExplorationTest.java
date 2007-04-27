@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.9 2007-04-20 09:02:27 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.10 2007-04-27 22:07:07 rensink Exp $
  */
 
 package groove.test;
@@ -44,7 +44,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -246,7 +246,7 @@ public class ExplorationTest extends TestCase {
             } else {
             	strategy = new FullStrategy();
             }
-            strategy.setLTS(lts);
+            strategy.setGTS(lts);
             try {
             	strategy.explore();
             } catch (InterruptedException exc) { // proceed

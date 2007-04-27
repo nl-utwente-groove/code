@@ -1,5 +1,5 @@
 /*
- * $Id: IsoMatcher.java,v 1.3 2007-04-01 12:49:58 rensink Exp $
+ * $Id: IsoMatcher.java,v 1.4 2007-04-27 22:07:02 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -19,7 +19,7 @@ import java.util.Set;
  * into play in the construction and refinement of the simulation..
  * The graphs' partition maps are used to match elements.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class IsoMatcher extends DefaultMatcher {
 	/** The factory for creating search plans. */
@@ -61,7 +61,7 @@ public class IsoMatcher extends DefaultMatcher {
 	 * by querying the codomain's certificate strategy.
 	 */
 	protected PartitionMap computeCodPartitionMap() {
-		return cod().getCertificateStrategy().getPartitionMap();
+		return cod().getCertifier().getPartitionMap();
 	}
 
 	/** 
@@ -80,7 +80,7 @@ public class IsoMatcher extends DefaultMatcher {
 	 * by querying the codomain's certificate strategy.
 	 */
 	protected Map<Element,Object> computeDomCertificateMap() {
-		return dom().getCertificateStrategy().getCertificateMap();
+		return dom().getCertifier().getCertificateMap();
 	}
 
 	/**

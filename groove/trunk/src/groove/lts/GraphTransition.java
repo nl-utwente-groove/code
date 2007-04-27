@@ -16,14 +16,16 @@
  */
 package groove.lts;
 
+
 import groove.graph.Morphism;
+import groove.graph.Node;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface GraphTransition extends Transition {
 	/** Overrides the method to specialise the result type. */
@@ -38,9 +40,17 @@ public interface GraphTransition extends Transition {
 	public RuleEvent getEvent();
 	/**
 	 * Returns the underlying rule of this graph transition.
+	 * @deprecated use <code>getEvent().getRule()</code>
 	 */
+	@Deprecated
 	public abstract Rule getRule();
 
+	/** 
+	 * Returns the set of nodes added by this transition.
+	 * The iterator over the set returns the nodes in the coanchor order.
+	 */
+	public Node[] getAddedNodes();
+	
 	/**
 	 * Returns the matching of the LHS into the source graph.
 	 */

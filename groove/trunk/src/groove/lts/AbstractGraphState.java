@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.2 2007-04-27 12:28:11 iovka Exp $
+ * $Id: AbstractGraphState.java,v 1.3 2007-04-27 22:06:26 rensink Exp $
  */
 package groove.lts;
 
@@ -36,19 +36,32 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-04-27 12:28:11 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-27 22:06:26 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
-     * Constructs a an abstract graph state.
+     * Constructs a an abstract graph state, with a given control location.
+     * @param location the control location; may be <code>null</code>.
+     */
+    public AbstractGraphState(Object location) {
+    	this.location = location;
+        stateCount++;
+    }
+    
+    /**
+     * Constructs a an abstract graph state, with <code>null</code> control location.
      */
     public AbstractGraphState() {
-        stateCount++;
+        this(null);
     }
     
     abstract public Graph getGraph();
 
-    /* (non-Javadoc)
+	public final Object getControl() {
+		return this.location;
+	}
+
+	/* (non-Javadoc)
      * @see groove.lts.GraphState#getOutTransitionIter()
      */
     public Iterator<GraphTransition> getTransitionIter() {
@@ -73,8 +86,9 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 			protected GraphTransitionStub toInner(Object key) {
                 if (key instanceof GraphTransition) {
                 	RuleEvent keyEvent = ((GraphTransition) key).getEvent();
+                	Node[] keyAddedNodes = ((GraphTransition) key).getAddedNodes();
                 	GraphState keyTarget = ((GraphTransition) key).target();
-                    return createTransitionStub(keyEvent, keyTarget);
+                    return createTransitionStub(keyEvent, keyAddedNodes, keyTarget);
                 } else {
                     return null;
                 }
@@ -83,7 +97,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     public boolean containsTransition(GraphTransition transition) {
-	    return transition.source().equals(this) && getTransitionStubSet().contains(createTransitionStub(transition.getEvent(), transition.target()));
+	    return transition.source().equals(this) && getTransitionStubSet().contains(createTransitionStub(transition.getEvent(), transition.getAddedNodes(), transition.target()));
 	}
 
 	//    
@@ -124,27 +138,27 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     public GraphState getNextState(RuleEvent event) {
-    	return getCache().getTransitionMap().get(event);
-//        assert event != null;
-//        GraphState result = null;
-//        if (isClosed()) {
-//            GraphTransitionStub[] outTransitions = this.transitionStubs;
-//            for (int i = 0; result == null && i < outTransitions.length; i++) {
-//                GraphTransitionStub trans = outTransitions[i];
-//                if (trans.getEvent(this) == event) {
-//                    result = trans.target();
-//                }
-//            }
-//        } else {
-//            Iterator<GraphTransitionStub> outTransIter = getTransitionStubIter();
-//            while (result == null && outTransIter.hasNext()) {
-//                GraphTransitionStub trans = outTransIter.next();
-//                if (trans.getEvent(this) == event) {
-//                    result = trans.target();
-//                }
-//            }
-//        }
-//        return result;
+//    	return getCache().getTransitionMap().get(event);
+        assert event != null;
+        GraphState result = null;
+        if (isClosed()) {
+            GraphTransitionStub[] outTransitions = this.transitionStubs;
+            for (int i = 0; result == null && i < outTransitions.length; i++) {
+                GraphTransitionStub trans = outTransitions[i];
+                if (trans.getEvent(this) == event) {
+                    result = trans.target();
+                }
+            }
+        } else {
+            Iterator<GraphTransitionStub> outTransIter = getTransitionStubIter();
+            while (result == null && outTransIter.hasNext()) {
+                GraphTransitionStub trans = outTransIter.next();
+                if (trans.getEvent(this) == event) {
+                    result = trans.target();
+                }
+            }
+        }
+        return result;
     }
 //    
 //    /**
@@ -159,14 +173,14 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     /**
 	 * Callback factory method for creating an outgoing transition (from this state) for the given
 	 * derivation and target state.
-	 * This implementation invokes {@link #createInTransitionStub(GraphState, RuleEvent)} if the target is 
+	 * This implementation invokes {@link #createInTransitionStub(GraphState, RuleEvent, Node[])} if the target is 
 	 * a {@link AbstractGraphState}, otherwise it creates a {@link IdentityTransitionStub}.
 	 */
-	protected GraphTransitionStub createTransitionStub(RuleEvent event, GraphState target) {
+	protected GraphTransitionStub createTransitionStub(RuleEvent event, Node[] addedNodes, GraphState target) {
 	    if (target instanceof AbstractGraphState) {
-	        return ((AbstractGraphState) target).createInTransitionStub(this, event);
+	        return ((AbstractGraphState) target).createInTransitionStub(this, event, addedNodes);
 	    } else {
-	        return new IdentityTransitionStub(event, target);
+	        return new IdentityTransitionStub(event, addedNodes, target);
 	    }
 	}
 
@@ -174,8 +188,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 	 * Callback factory method for creating a transition stub to this state,
 	 * from a given graph and with a given rule event.
 	 */
-	protected GraphTransitionStub createInTransitionStub(GraphState source, RuleEvent event) {
-		return new IdentityTransitionStub(event, this);
+	protected GraphTransitionStub createInTransitionStub(GraphState source, RuleEvent event, Node[] addedNodes) {
+		return new IdentityTransitionStub(event, addedNodes, this);
 	}
 
 	/**
@@ -230,6 +244,22 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     
     /** Callback method to notify that the state was closed. */
     abstract protected void updateClosed(); 
+    
+    /**
+     * Retrieves a frozen representation of the graph, in the form of all
+     * nodes and edges collected in one array.
+     * May return <code>null</code> if there is no frozen representation.
+     * @return All nodes and edges of the graph, or <code>null</code>
+     */
+    Element[] getFrozenGraph() {
+    	return frozenGraph;
+    }
+    
+    /** Stores a frozen representation of the graph. */
+    void setFrozenGraph(Element[] frozenGraph) {
+    	this.frozenGraph = frozenGraph;
+    	frozenGraphCount++;
+    }
     
     @Deprecated
     public State newState() {
@@ -313,11 +343,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     /**
      * Stores the transitions from the cache, if the state is not already closed.
 	 */
+	@Override
 	public void clearCache() {
 		if (!isClosed()) {
 			setStoredTransitionStubs(getTransitionStubSet());
 		}
-		getCacheReference().clear();
+		super.clearCache();
 	}
 
     /** Indicates whether the state has already been assigned a number. */
@@ -353,10 +384,18 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         }
     	this.nr = nr;
     }
+    
+    /** The internally stored (optional) control location. */
+    private final Object location;
 
     /** Global constant empty stub array. */
     private GraphTransitionStub[] transitionStubs = EMPTY_TRANSITION_STUBS;
     
+    /** 
+     * Slot to store a frozen graph representation.
+     * When filled, this provides a faster way to reconstruct the graph of this state. 
+     */
+    private Element[] frozenGraph;
     /**
      * The number of this Node.
      * 
@@ -364,6 +403,14 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      */
     private int nr = -1;
 
+    /** Returns the total number of fixed delta graphs. */
+    static public int getFrozenGraphCount() {
+        return frozenGraphCount;
+    }
+
+    /** The total number of delta graphs frozen. */
+    static private int frozenGraphCount;
+    
     /**
      * The number of DefaultStates constructed.
      * 

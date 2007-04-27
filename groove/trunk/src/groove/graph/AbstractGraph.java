@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.5 2007-04-22 23:32:23 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.6 2007-04-27 22:07:04 rensink Exp $
  */
 
 package groove.graph;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     /**
@@ -56,7 +56,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 
     /**
      * The current strategy for computing isomorphism certificates.
-     * @see #getCertificateStrategy()
+     * @see #getCertifier()
      */
     static private CertificateStrategy certificateFactory = new groove.graph.iso.Bisimulator(null);
     
@@ -122,7 +122,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     /**
      * Changes the strategy for computing isomorphism certificates.
      * @param certificateFactory the new strategy
-     * @see #getCertificateStrategy()
+     * @see #getCertifier()
      */
     static protected void setCertificateFactory(CertificateStrategy certificateFactory) {
         AbstractGraph.certificateFactory = certificateFactory;
@@ -192,11 +192,12 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 
     /** 
      * This implementation delegates the method to the {@link CertificateStrategy}.
-     * @see #getCertificateStrategy()
+     * @see #getCertifier()
      * @see CertificateStrategy#getGraphCertificate()
      */
+    @Deprecated
     public Object getCertificate() {
-        return getCertificateStrategy().getGraphCertificate();
+        return getCertifier().getGraphCertificate();
     }
 
     /**
@@ -490,7 +491,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
      * This implementation retrieves the strategy from the graph cache.
      * @see #getCertificate()
      */
-    public CertificateStrategy getCertificateStrategy() {
+    public CertificateStrategy getCertifier() {
         return getCache().getCertificateStrategy();
     }
     

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.16 2007-04-24 10:06:44 rensink Exp $
+ * $Id: Simulator.java,v 1.17 2007-04-27 22:07:06 rensink Exp $
  */
 package groove.gui;
 
@@ -119,7 +119,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class Simulator {
     /**
@@ -300,7 +300,7 @@ public class Simulator {
 			displayProgress(currentGTS);
 			currentGTS.addGraphListener(progressListener);
 			try {
-				strategy.setGenerator(stateGenerator);
+				strategy.setGTS(currentGTS);
 				strategy.setAtState(currentState);
 				strategy.explore();
 			} catch (InterruptedException exc) {
@@ -1374,7 +1374,7 @@ public class Simulator {
 				currentState = null;
 			} else {
 				currentState = currentGTS.startState();
-				stateGenerator.computeSuccessors(currentState);
+				stateGenerator.explore(currentState);
 			}
 			currentRule = null;
 			currentTransition = null;
@@ -1400,7 +1400,7 @@ public class Simulator {
     public synchronized void setState(GraphState state) {
         if (currentState != state) {
             currentState = state;
-            stateGenerator.computeSuccessors(currentState);
+            stateGenerator.explore(currentState);
         }
         currentTransition = null;
         notifySetState(currentState);
@@ -1434,7 +1434,7 @@ public class Simulator {
             }
             // also set the new current state to the source of the derivation
             currentTransition = edge;
-            currentRule = edge.getRule();
+            currentRule = edge.getEvent().getRule();
         }
         notifySetTransition(currentTransition);
         refreshActions();
@@ -1450,7 +1450,7 @@ public class Simulator {
         currentState = currentTransition.target();
         GraphTransition appliedTransition = currentTransition;
         currentTransition = null;
-        stateGenerator.computeSuccessors(currentState);
+        stateGenerator.explore(currentState);
         notifyApplyTransition(appliedTransition);
         refreshActions();
     }
@@ -1880,7 +1880,9 @@ public class Simulator {
 
     /** Callback factory method for the state generator. */
     protected StateGenerator createStateGenerator(GTS gts) {
-    	return new StateGenerator(gts);
+    	StateGenerator result = new StateGenerator();
+    	result.setGTS(gts);
+    	return result;
     }
     
     /**

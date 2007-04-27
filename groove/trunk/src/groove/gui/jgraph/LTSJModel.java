@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.5 2007-04-12 16:14:49 rensink Exp $
+ * $Id: LTSJModel.java,v 1.6 2007-04-27 22:07:12 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -39,7 +39,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class LTSJModel extends GraphJModel {
 	/** Dummy LTS model. */
@@ -72,7 +72,7 @@ public class LTSJModel extends GraphJModel {
 	    		if (isShowAnchors()) {
 	    			description = trans.getEvent().toString();
 	    		} else {
-	    			description = trans.getRule().getName().toString();
+	    			description = trans.getEvent().getName().toString();
 	    		}
 	    		displayedLabels[labelIndex] = strongTag.on(description, true);
 	    		labelIndex++;
@@ -92,7 +92,7 @@ public class LTSJModel extends GraphJModel {
 			if (isShowAnchors()) {
 				return ((GraphTransition) object).label().text();
 			} else {
-				return ((GraphTransition) object).getRule().getName().text();
+				return ((GraphTransition) object).getEvent().getName().text();
 			}
 		}
         
@@ -146,7 +146,7 @@ public class LTSJModel extends GraphJModel {
 			if (isShowAnchors()) {
 				return ((GraphTransition) object).label().text();
 			} else {
-				return ((GraphTransition) object).getRule().getName().text();
+				return ((GraphTransition) object).getEvent().getName().text();
 			}
 		}
 	}
@@ -253,10 +253,14 @@ public class LTSJModel extends GraphJModel {
         activeTransition = trans;
         Set<JCell> changedCells = new HashSet<JCell>();
         if (trans != null) {
-            changedCells.add(getJCell(trans));
+        	JCell jCell = getJCell(trans);
+        	assert jCell != null : String.format("No image for %s in jModel", trans);
+            changedCells.add(jCell);
         }
         if (result != null) {
-            changedCells.add(getJCell(result));
+        	JCell jCell = getJCell(result);
+        	assert jCell != null : String.format("No image for %s in jModel", result);
+            changedCells.add(jCell);
         }
         refresh(changedCells);
         return result;

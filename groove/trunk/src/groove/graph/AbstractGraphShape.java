@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphShape.java,v 1.6 2007-04-24 10:06:48 rensink Exp $
+ * $Id: AbstractGraphShape.java,v 1.7 2007-04-27 22:07:04 rensink Exp $
  */
 
 package groove.graph;
@@ -25,7 +25,6 @@ import groove.util.Reporter;
 import groove.util.SetView;
 
 import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -39,7 +38,7 @@ import java.util.Set;
 /**
  * Partial implementation of a graph. Records a set of <tt>GraphListener</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public abstract class AbstractGraphShape<C extends GraphShapeCache> extends AbstractCacheHolder<C> implements GraphShape {
     /**
@@ -54,37 +53,11 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     static private int modifiableGraphCount = 0;
 
     /**
-     * Number of effective invocations of {@link #clearCache()}.
-     */
-    static private int cacheClearCount;
-
-    /**
-     * A global empty soft reference, used to save space when clearing the cache explicitly.
-     */
-    static public final Reference<? extends GraphShapeCache> NULL_REFERENCE = new SoftReference<GraphShapeCache>(null);
-
-    /**
      * Returns the number of graphs created and never fixed. 
      * @return the number of graphs created and never fixed
      */
     static public int getModifiableGraphCount() {
         return modifiableGraphCount;
-    }
-
-    /**
-     * Returns the number of times a cache was cleared explicitly.
-     * @return the number of times a cache was cleared explicitly
-     */
-    static public int getCacheClearCount() {
-        return cacheClearCount;
-    }
-
-    /**
-     * Returns the total number of caches created.
-     * @return the total number of caches created
-     */
-    static public int getCacheCreateCount() {
-        return GraphCache.getCreateCount();
     }
 
     /**
@@ -208,7 +181,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
         return Collections.unmodifiableMap(getCache().getNodeEdgeMap());
     }
 
-    public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
+    public Set<Edge> labelEdgeSet(int arity, Label label) {
         Set<? extends Edge> result = labelEdgeMap(arity).get(label);
         if (result != null) {
             return Collections.unmodifiableSet(result);
@@ -217,7 +190,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
         }
     }
 
-    public Map<Label, ? extends Set<? extends Edge>> labelEdgeMap(int i) {
+    public Map<Label, Set<Edge>> labelEdgeMap(int i) {
         return Collections.unmodifiableMap(getLabelEdgeMaps().get(i));
     }
 
@@ -442,20 +415,6 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
 //    protected <C extends GraphShapeCache> CacheReference<C> createCacheReference(C referent) {
 //        return CacheReference.<C>getInstance(this, referent);
 //    }
-
-    /** 
-     * Cleares the stored graph cache reference.
-     * This frees the cache for clearing, if that has not yet occurred,
-     * and saves memory by sharing a single null reference.
-     */
-    public void clearCache() {
-        if (GATHER_STATISTICS) {
-            if (!isCacheCleared()) {
-                cacheClearCount++;
-            }
-        }
-        getCacheReference().clear();
-    }
 //
 //    /**
 //     * Signals if the current cache reference contains a <code>null</code> value.

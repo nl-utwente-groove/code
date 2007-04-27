@@ -12,19 +12,23 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.11 2007-04-22 23:32:25 rensink Exp $
+ * $Id: Generator.java,v 1.12 2007-04-27 22:07:02 rensink Exp $
  */
 package groove.util;
 
 import groove.graph.DefaultLabel;
 import groove.graph.DeltaGraph;
+import groove.graph.GraphAdapter;
+import groove.graph.GraphShape;
 import groove.graph.Label;
+import groove.graph.Node;
 import groove.graph.iso.Bisimulator;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.io.AspectualGpsGrammar;
 import groove.io.ExtensionFilter;
 import groove.io.RuleList;
 import groove.io.XmlGrammar;
+import groove.lts.AbstractGraphState;
 import groove.lts.AliasSPOApplication;
 import groove.lts.ConditionalExploreStrategy;
 import groove.lts.ExploreStrategy;
@@ -43,6 +47,7 @@ import groove.lts.explore.InvariantStrategy;
 import groove.lts.explore.LinearStrategy;
 import groove.lts.explore.LiveStrategy;
 import groove.lts.explore.NodeBoundedStrategy;
+import groove.trans.SPOEvent;
 import groove.trans.SystemRecord;
 import groove.trans.GraphGrammar;
 import groove.trans.GraphTest;
@@ -70,7 +75,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -278,7 +283,7 @@ public class Generator extends CommandLineTool {
      * The initialization phase of state space generation. Called from <tt>{@link #start}</tt>.
      */
     protected void init() {
-        getStrategy().setLTS(getGTS());
+        getStrategy().setGTS(getGTS());
     }
 
     /**
@@ -296,6 +301,9 @@ public class Generator extends CommandLineTool {
                     + (startStateName == null ? "default" : startStateName));
             System.out.println("Exploration: " + getStrategy());
             getGTS().addGraphListener(new GenerateProgressMonitor(getGTS(), getStrategy()));
+        }
+        if (getVerbosity() == HIGH_VERBOSITY) {
+        	getGTS().addGraphListener(getStatisticsListener());
         }
         startTime = System.currentTimeMillis();
         try {
@@ -330,8 +338,8 @@ public class Generator extends CommandLineTool {
             final Runtime runTime = Runtime.getRuntime();
             // clear all caches to see all available memory
             for (GraphState state: getGTS().nodeSet()) {
-                if (state instanceof DeltaGraph) {
-                    ((DeltaGraph) state).clearAllCaches();
+                if (state instanceof AbstractCacheHolder) {
+                    ((AbstractCacheHolder) state).clearCache();
                 }
             }
             // the following is to make sure that the graph reference queue gets flushed
@@ -399,29 +407,29 @@ public class Generator extends CommandLineTool {
      * Gives some statistics regarding the graphs and deltas. 
      */
     private void reportGraphStatistics() {
-        println("\tGraphs:\tModifiable:\t"
-                + groove.graph.AbstractGraph.getModifiableGraphCount());
-        println("\t\tFrozen:\t" + DeltaGraph.getFrozenDeltaGraphCount());
-        println("\t\tFraction:\t" + percentage(DeltaGraph.getFrozenFraction()));
-        println("\t\tBytes/state:\t"+getGTS().getBytesPerState());
+        printf("\tGraphs:\tModifiable:\t%d%n", groove.graph.AbstractGraph.getModifiableGraphCount());
+        printf("\t\tFrozen:\t%d%n", AbstractGraphState.getFrozenGraphCount());
+//        printf("\t\tFraction:\t%s%n", percentage(DeltaGraph.getFrozenFraction()));
+        printf("\t\tBytes/state:\t%.1f%n", getGTS().getBytesPerState());
     }
 
     /**
      * Gives some statistics regarding the generated transitions. 
      */
     private void reportTransitionStatistics() {
-        println("\tTransitions:\tAliased:\t"+AliasSPOApplication.getAliasCount());
-        println("\t\tConfluent:\t" + StateGenerator.getConfluentDiamondCount());
-        println("\t\tEvents:\t" + SystemRecord.getEventCount());
+        printf("\tTransitions:\tAliased:\t%d%n", AliasSPOApplication.getAliasCount());
+        printf("\t\tConfluent:\t%d%n", StateGenerator.getConfluentDiamondCount());
+        printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
+        printf("\tCoanchor reuse:\t%d/%d%n", SPOEvent.getCoanchorImageOverlap(), SPOEvent.getCoanchorImageCount());
     }
 
     /**
      * Reports on the cache usage.
      */
     private void reportCacheStatistics() {
-        println("\tCaches:\tCreated:\t" + DeltaGraph.getCacheCreateCount());
-        println("\t\tCleared:\t" + DeltaGraph.getCacheClearCount());
-        println("\t\tCollected:\t" + CacheReference.getCacheCollectCount());
+        println("\tCaches:\tCreated:\t" + CacheReference.getCreateCount());
+        println("\t\tCleared:\t" + CacheReference.getClearCount());
+        println("\t\tCollected:\t" + CacheReference.getCollectCount());
         println("\t\tReconstructed:\t" + CacheReference.getIncarnationCount());
         println("\t\tDistribution:\t" + getCacheReconstructionDistribution());
     }
@@ -430,13 +438,15 @@ public class Generator extends CommandLineTool {
      * Reports on the graph data. 
      */
     private void reportGraphElementStatistics() {
-        println("\tDefault nodes:\t" + groove.graph.DefaultNode.getNodeCount());
-        println("\tDefault labels:\t" + groove.graph.DefaultLabel.getLabelCount());
-        println("\tFresh nodes:\t" + SPOApplication.getFreshNodeCount());
-        println("\tFresh edges:\t" + groove.graph.DefaultEdge.getEdgeCount());
-        println("\tAverage:\tNodes:\t" + groove.graph.DeltaGraph.getNodeAvg());
-        println("\t\tEdges:\t" + groove.graph.DeltaGraph.getEdgeAvg());
-        println("\t\tDelta:\t" + groove.graph.DeltaGraph.getDeltaElementAvg());
+        printf("\tDefault nodes:\t%d%n", groove.graph.DefaultNode.getNodeCount());
+        printf("\tDefault labels:\t%d%n", groove.graph.DefaultLabel.getLabelCount());
+        printf("\tFresh nodes:\t%d%n", SPOApplication.getFreshNodeCount());
+        printf("\tFresh edges:\t%d%n", groove.graph.DefaultEdge.getEdgeCount());
+        double nodeAvg = (double) getStatisticsListener().getNodeCount() / getGTS().nodeCount();
+        printf("\tAverage:\tNodes:\t%3.1f%n", nodeAvg);
+        double edgeAvg = (double) getStatisticsListener().getEdgeCount() / getGTS().nodeCount();
+        printf("\t\tEdges:\t%3.1f%n", edgeAvg);
+//        println("\t\tDelta:\t" + groove.graph.DeltaGraph.getDeltaElementAvg());
 //        println("\tAnchor images:\t" + DefaultGraphTransition.getAnchorImageCount());
     }
 
@@ -565,6 +575,12 @@ public class Generator extends CommandLineTool {
         return USAGE_MESSAGE;
     }
 
+    private StatisticsListener getStatisticsListener() {
+    	if (statisticsListener == null) {
+    		statisticsListener = new StatisticsListener();
+    	}
+    	return statisticsListener;
+    }
     /**
      * Returns a string representation of a double as a percentage.
      */
@@ -613,6 +629,8 @@ public class Generator extends CommandLineTool {
     private String startStateName;
     /** The graph grammar used for the generation. */
     private GraphGrammar grammar;
+    /** Statistics listener to the GTS. */
+    private StatisticsListener statisticsListener;
     
     /** File filter for rule systems. */
     protected final ExtensionFilter ruleSystemFilter = Groove.createRuleSystemFilter();
@@ -899,5 +917,28 @@ public class Generator extends CommandLineTool {
         
         /** Switch indicating if the condition was negated. */
         private RuleList parsedProgram;
+    }
+    
+    /** Listener to an LTS that counts the nodes and edges of the states. */
+    private static class StatisticsListener extends GraphAdapter {
+		@Override
+		public void addUpdate(GraphShape graph, Node node) {
+			GraphState state = (GraphState) node;
+			nodeCount += state.getGraph().nodeCount();
+			edgeCount += state.getGraph().edgeCount();
+		}
+    	
+		/** Returns the number of nodes in the added states. */
+		public int getNodeCount() {
+			return nodeCount;
+		}
+    	
+		/** Returns the number of edges in the added states. */
+		public int getEdgeCount() {
+			return edgeCount;
+		}
+		
+		private int nodeCount;
+		private int edgeCount;
     }
 }

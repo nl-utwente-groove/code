@@ -13,8 +13,6 @@
 // language governing permissions and limitations under the License.
 package groove.lts;
 
-import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.Node;
 import groove.trans.RuleEvent;
 import groove.trans.SPOApplication;
@@ -36,16 +34,18 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
     /** 
      * Constructs an SPO application with a given prior target state. 
      * @param event the rule event of this application
-     * @param host the source graph of this application
+     * @param source the source graph of this application
      * source state's predecessor, with the same event
      */
-    public AliasSPOApplication(RuleEvent event, Graph host, GraphTransition prior) {
-        super((SPOEvent) event, host);
+    public AliasSPOApplication(RuleEvent event, GraphNextState source, GraphTransitionStub prior) {
+        super((SPOEvent) event, source.getGraph());
+        assert event == prior.getEvent(source.source());
+        this.source = source;
         this.prior = prior;
         aliasCount++;
     }
 
-	public GraphTransition getPrior() {
+	public GraphTransitionStub getPrior() {
     	return prior;
     }
     
@@ -54,30 +54,31 @@ public class AliasSPOApplication extends SPOApplication implements AliasRuleAppl
         return prior != null;
     }
     
+    /** Convenience method to retrieve the parent state of this application's source. */
+    private GraphState getParent() {
+    	return source.source();
+    }
+    
     @Override
-    protected Element[] computeCoanchorImage() {
-    	Element[] result = null;
-    	int coanchorSize = getRule().coanchor().length;
-        if (!prior.isSymmetry() && coanchorSize > 0) {
-        	DerivedGraphState priorTarget = (DerivedGraphState) prior.target();
-        	if (priorTarget.getEvent() == getEvent()) {
-        		Element[] coanchorImage = priorTarget.getCoanchorImage();
-        		boolean resultFresh = true;
-        		for (int i = 0; resultFresh && i < coanchorSize; i++) {
-        			resultFresh = ! getSource().containsElement(coanchorImage[i]);
-        		}
-        		if (resultFresh) {
-        			result = coanchorImage;
-        		}
-        	}
-        }
-        if (result == null) {
-            result = super.computeCoanchorImage();
-        }
-	    assert coanchorSize == 0 || result[coanchorSize-1] instanceof Node;
+    protected Node[] computeCoanchorImage() {
+    	Node[] result = prior.getAddedNodes(getParent());
+    	// if this application's event is the same as that of prior,
+    	// the added nodes may coincide
+    	if (result.length > 0 && source.getEvent() == prior.getEvent(getParent())) {
+    		Node[] sourceAddedNodes = source.getAddedNodes();
+    		boolean conflict = false;
+    		for (int i = 0; !conflict && i < result.length; i++) {
+    			conflict = result[i] == sourceAddedNodes[i];
+    			assert conflict || !getSource().containsElement(result[i]);
+    		}
+    		if (conflict) {
+                result = super.computeCoanchorImage();
+    		}
+    	}
 	    return result;
     }
     
+    private final GraphNextState source;
     /** The prior transition for this aliased application, if any. */
-    private final GraphTransition prior;
+    private final GraphTransitionStub prior;
 }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: InvariantStrategy.java,v 1.3 2007-04-19 11:33:53 rensink Exp $
+ * $Id: InvariantStrategy.java,v 1.4 2007-04-27 22:06:58 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -22,7 +22,6 @@ import java.util.LinkedList;
 
 import groove.lts.ConditionalExploreStrategy;
 import groove.lts.GraphState;
-import groove.lts.State;
 import groove.trans.GraphTest;
 import groove.trans.Rule;
 
@@ -31,7 +30,7 @@ import groove.trans.Rule;
  * (the invariant) is found to be violated somewhere; this halts the entire explorations.
  * Currently, the condition is expressed by the applicability of a rule.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class InvariantStrategy extends BranchingStrategy implements ConditionalExploreStrategy {
 	/** Name of this exploration strategy. */
@@ -90,7 +89,7 @@ public class InvariantStrategy extends BranchingStrategy implements ConditionalE
             result += "!";
         }
         result += rule == null ? "..." : rule.getName().toString();
-        if (getLTS() != null && getAtState() != getLTS().startState()) {
+        if (getGTS() != null && getAtState() != getGTS().startState()) {
             result += " (starting at " + getAtState() + ")";
         }
         return result;
@@ -101,22 +100,24 @@ public class InvariantStrategy extends BranchingStrategy implements ConditionalE
      * (as indicated by <tt>isExplorable</tt>).
      */
     @Override
-    protected Collection<State> computeNextStates(Collection<? extends State> atStates) throws InterruptedException {
-        Collection<State> result = new LinkedList<State>();
+    protected Collection<GraphState> computeNextStates(Collection<GraphState> atStates) throws InterruptedException {
+        Collection<GraphState> result = new LinkedList<GraphState>();
+        getCollector().set(result);
         boolean halt = false;
-        Iterator<? extends State> openStateIter = atStates.iterator();
+        Iterator<GraphState> openStateIter = atStates.iterator();
         while (!halt && openStateIter.hasNext()) {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
             }
-            State openState = openStateIter.next();
+            GraphState openState = openStateIter.next();
             if (isExplorable(openState)) {
-                result.addAll(getGenerator().computeSuccessors((GraphState) openState));
+                explore(openState);
             } else {
                 halt = true;
                 result.clear();
             }
         }
+        getCollector().reset();
         return result;
     }
 
@@ -125,8 +126,8 @@ public class InvariantStrategy extends BranchingStrategy implements ConditionalE
      * of the invariant condition is discovered.
      */
     @Override
-    protected boolean isExplorable(State state) {
-        valid = valid && rule.matches(((GraphState) state).getGraph()) != isNegated();
+    protected boolean isExplorable(GraphState state) {
+        valid = valid && rule.matches(state.getGraph()) != isNegated();
         return valid;
     }
 
