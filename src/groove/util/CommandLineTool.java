@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CommandLineTool.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: CommandLineTool.java,v 1.2 2007-04-27 22:07:02 rensink Exp $
  */
 package groove.util;
 
@@ -39,7 +39,7 @@ import java.util.Map;
  * Each of these options can be enabled or disabled in subclasses by overwriting 
  * the respective <tt>supports...Option</tt> methods.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class CommandLineTool {
     /**
@@ -295,6 +295,16 @@ public class CommandLineTool {
         System.out.println(text);
         if (logging) {
             logWriter.println(text);
+        }
+    }
+
+    /**
+     * Prints a line of text to the standard output and, if logging is activated, to the log file.
+     */
+    protected void printf(String text, Object... args) {
+        System.out.printf(text, args);
+        if (logging) {
+            logWriter.printf(text, args);
         }
     }
 

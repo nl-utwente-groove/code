@@ -12,18 +12,17 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeBoundedStrategy.java,v 1.2 2007-03-30 15:50:42 rensink Exp $
+ * $Id: NodeBoundedStrategy.java,v 1.3 2007-04-27 22:06:58 rensink Exp $
  */
 package groove.lts.explore;
 
 import groove.lts.GraphState;
-import groove.lts.State;
 
 /**
  * This class implements an exploration strategy in which the number of nodes
  * is guaranteed not to exceed a given bound. That makes the state space finite.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NodeBoundedStrategy extends BranchingStrategy {
     /** Name of this strategy. */
@@ -79,7 +78,7 @@ public class NodeBoundedStrategy extends BranchingStrategy {
         if (bound != NO_BOUND) {
             result += " to size " + bound;
         }
-        if (getLTS() != null && getAtState() != getLTS().startState()) {
+        if (getGTS() != null && getAtState() != getGTS().startState()) {
             result += " (starting at " + getAtState() + ")";
         }
         return result;
@@ -89,8 +88,8 @@ public class NodeBoundedStrategy extends BranchingStrategy {
      * The state is explorable if its node count does not exceed <tt>{@link #getBound}</tt>.
      */
     @Override
-    protected boolean isExplorable(State state) {
-        return ((GraphState) state).getGraph().nodeCount() <= bound;
+    protected boolean isExplorable(GraphState state) {
+        return state.getGraph().nodeCount() <= bound;
     }
 
     /**

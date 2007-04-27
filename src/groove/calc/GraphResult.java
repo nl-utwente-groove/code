@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphResult.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: GraphResult.java,v 1.2 2007-04-27 22:07:00 rensink Exp $
  */
 package groove.calc;
 
@@ -21,6 +21,7 @@ import java.util.List;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
+import groove.lts.GraphState;
 import groove.trans.GraphTest;
 import groove.trans.RuleSystem;
 
@@ -28,7 +29,7 @@ import groove.trans.RuleSystem;
  * Class wrapping the outcome of a graph calculation.
  * @see groove.calc.GraphCalculator
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface GraphResult {
     /**
@@ -41,7 +42,7 @@ public interface GraphResult {
      * Returns the derivation trace from the start graph to the graph in 
      * this result.
      */
-    List<Graph> getTrace();
+    List<GraphState> getTrace();
     
     /**
      * Returns the morphism from the start graph of the calculator to this graph.

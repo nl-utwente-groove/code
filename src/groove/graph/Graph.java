@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Graph.java,v 1.4 2007-04-01 12:49:56 rensink Exp $
+ * $Id: Graph.java,v 1.5 2007-04-27 22:07:04 rensink Exp $
  */
 package groove.graph;
 
@@ -32,7 +32,7 @@ import java.util.Set;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.4 $ $Date: 2007-04-01 12:49:56 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-27 22:07:04 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
     /**
@@ -111,7 +111,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * The certificate strategy is used to decide isomorphism between graphs.
      * @see #getCertificate()
      */
-    public CertificateStrategy getCertificateStrategy();
+    public CertificateStrategy getCertifier();
 
     /**
      * Returns an isomorphism certificate for this graph, i.e., an object
@@ -120,8 +120,10 @@ public interface Graph extends GraphShape, DeltaTarget {
      * coincide according to {@link Object#equals(java.lang.Object)}). 
      * Yields the same result as <code>getCertificateStrategy().getCertificate()</code>.
      * @return an isomorphism certificate for this graph
-     * @see #getCertificateStrategy()
+     * @see #getCertifier()
+     * @deprecated use {@link #getCertifier()} and {@link CertificateStrategy#getGraphCertificate()}
      */
+    @Deprecated
     Object getCertificate();
     
     /**

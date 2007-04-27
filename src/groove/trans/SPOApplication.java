@@ -12,38 +12,36 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.11 2007-04-24 10:06:45 rensink Exp $
+ * $Id: SPOApplication.java,v 1.12 2007-04-27 22:07:01 rensink Exp $
  */
 package groove.trans;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultMorphism;
-import groove.graph.DefaultNode;
+import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.NodeEdgeMap;
 import groove.graph.FilteredDeltaTarget;
 import groove.graph.Graph;
-import groove.graph.DeltaTarget;
-import groove.graph.MergeMap;
 import groove.graph.InternalGraph;
+import groove.graph.MergeMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-04-24 10:06:45 $
+ * @version $Revision: 1.12 $ $Date: 2007-04-27 22:07:01 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -54,9 +52,9 @@ public class SPOApplication implements RuleApplication, Derivation {
     }
 
     /**
-     * The total number of nodes (over all rules) created by {@link #createNode()}.
+     * The total number of nodes (over all rules) created by {@link SPOEvent#createNode()}.
      */
-    private static int freshNodeCount;
+    static int freshNodeCount;
 
     /**
      * Constructs a new derivation on the basis of a given production rule, host graph and rule factory.
@@ -197,11 +195,10 @@ public class SPOApplication implements RuleApplication, Derivation {
 		return result;
 	}
 
-	public Element[] getCoanchorImage() {
+	public Node[] getCoanchorImage() {
     	if (coanchorImage == null) {
     		coanchorImage = computeCoanchorImage();
     	}
-	    assert getRule().coanchor().length == 0 || coanchorImage[0] instanceof Node;
         return coanchorImage;
     }
     
@@ -210,35 +207,29 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 * given match and for a given host graph. The image consists of 
 	 * fresh images for the creator nodes of the rule.
 	 */
-	protected Element[] computeCoanchorImage() {
-		int coanchorSize = getRule().coanchor().length;
-		Element[] result = new Element[coanchorSize];
-		for (int i = 0; i < coanchorSize; i++) {
-			result[i] = computeCoanchorImageAt(i);
+	protected Node[] computeCoanchorImage() {
+		if (getCoanchorSize() == 0) {
+			return EMPTY_COANCHOR_IMAGE;
+		} else {
+			return getEvent().getCoanchorImage(source);
 		}
-//
-//        Node[] coanchor = rule.coanchor();
-//        int coanchorSize = coanchor.length;
-//		Element[] result = new Element[coanchorSize];
-//        VarNodeEdgeMap coanchorMap = getCoanchorMap();
-//		for (int i = 0; i < coanchorSize; i++) {
-//			result[i] = coanchorMap.getNode(coanchor[i]);
-//			assert result[i] != null : "Coanchor map "+coanchorMap+" should have image for element "+coanchor[i];
-//		}
-		return result;
 	}
-    
-    /**
-	 * Callback factory method to create fresh element for the coanchor image
-	 * at a given index. The fresh node is actually created using {@link #getFreshNode(int, Graph)}.
-	 */
-	protected Node computeCoanchorImageAt(int i) {
-		return getFreshNode(i, source);
-	}
+//    
+//    /**
+//	 * Callback factory method to create fresh element for the coanchor image
+//	 * at a given index. The fresh node is actually created using {@link #getFreshNode(int, Graph)}.
+//	 */
+//	protected Node computeCoanchorImageAt(int i) {
+//		return getFreshNode(i, source);
+//	}
 
-	public void setCoanchorImage(Element[] image) {
-	    this.coanchorImage = image; 
-	    assert getRule().coanchor().length == 0 || image[0] instanceof Node;
+	public void setCoanchorImage(Node[] image) {
+		this.coanchorImage = image;			
+	}
+	
+	/** Convenience method to obtain the size of the coanchor. */
+	private int getCoanchorSize() {
+		return getRule().coanchor().length;
 	}
 
 	public void applyDelta(DeltaTarget target) {
@@ -279,9 +270,21 @@ public class SPOApplication implements RuleApplication, Derivation {
      */
     protected void eraseNodes(DeltaTarget target) {
         Set<Node> nodeSet = getErasedNodes();
-        removeNodeSet(target, nodeSet);
 		// also remove the incident edges of the eraser nodes
         if (!nodeSet.isEmpty()) {
+//        	// there is a choice here to query the graph for its incident edge set
+//        	// which may be expensive if it hasn't yet been computed
+//        	Set<Edge> removedEdges = new HashSet<Edge>();
+//        	for (Node node: nodeSet) {
+//        		for (Edge edge: source.edgeSet(node)) {
+//        			if (removedEdges.add(edge)) {
+//        				target.removeEdge(edge);
+//						registerErasure(edge);
+//        			}
+//        		}
+//        	}
+        	// the alternative is to iterate over all edges of the source graph
+        	// currently this seems to be fastest
         	for (Edge edgeMatch: source.edgeSet()) {
                 int arity = edgeMatch.endCount();
                 boolean removed = false;
@@ -293,6 +296,7 @@ public class SPOApplication implements RuleApplication, Derivation {
                 	registerErasure(edgeMatch);
                 }
             }
+            removeNodeSet(target, nodeSet);
         }
         removeIsolatedValueNodes(target);
 	}
@@ -534,44 +538,44 @@ public class SPOApplication implements RuleApplication, Derivation {
 		}
 	}
 
-    /**
-	 * Returns a node that is fresh with respect to a given graph. 
-	 * The previously created fresh nodes are tried first (see {@link SPOEvent#getFreshNodes(int)}; 
-	 * only if all of those are already in the graph, a new fresh node is created using
-	 * {@link #createNode()}.
-	 * @param creatorIndex
-	 *            index in the rhsOnlyNodes array indicating the node of the
-	 *            rule for which a new image is to be created
-	 * @param graph
-	 *            the graph to which a node should be added
-	 */
-	public Node getFreshNode(int creatorIndex, Graph graph) {
-		Node result = null;
-		Collection<Node> currentFreshNodes = getEvent().getFreshNodes(creatorIndex);
-		Iterator<Node> freshNodeIter = currentFreshNodes.iterator();
-		while (result == null && freshNodeIter.hasNext()) {
-			Node freshNode = freshNodeIter.next();
-			if (!graph.containsElement(freshNode)) {
-				result = freshNode;
-			}
-		}
-		if (result == null) {
-			result = createNode();
-			currentFreshNodes.add(result);
-		}
-		return result;
-	}
-
-    /**
-     * Callback factory method for a newly constructed node.
-     * This implementation returns a {@link DefaultNode}, with
-     * a node number determined by the grammar's node counter.
-     */
-    protected Node createNode() {
-        freshNodeCount++;
-    	SystemRecord record = getEvent().getRecord();
-    	return record == null ? new DefaultNode() : record.newNode();
-    }
+//    /**
+//	 * Returns a node that is fresh with respect to a given graph. 
+//	 * The previously created fresh nodes are tried first (see {@link SPOEvent#getFreshNodes(int)}; 
+//	 * only if all of those are already in the graph, a new fresh node is created using
+//	 * {@link #createNode()}.
+//	 * @param creatorIndex
+//	 *            index in the rhsOnlyNodes array indicating the node of the
+//	 *            rule for which a new image is to be created
+//	 * @param graph
+//	 *            the graph to which a node should be added
+//	 */
+//	public Node getFreshNode(int creatorIndex, Graph graph) {
+//		Node result = null;
+//		Collection<Node> currentFreshNodes = getEvent().getFreshNodes(creatorIndex);
+//		Iterator<Node> freshNodeIter = currentFreshNodes.iterator();
+//		while (result == null && freshNodeIter.hasNext()) {
+//			Node freshNode = freshNodeIter.next();
+//			if (!graph.containsElement(freshNode)) {
+//				result = freshNode;
+//			}
+//		}
+//		if (result == null) {
+//			result = createNode();
+//			currentFreshNodes.add(result);
+//		}
+//		return result;
+//	}
+//
+//    /**
+//     * Callback factory method for a newly constructed node.
+//     * This implementation returns a {@link DefaultNode}, with
+//     * a node number determined by the grammar's node counter.
+//     */
+//    protected Node createNode() {
+//        freshNodeCount++;
+//    	SystemRecord record = getEvent().getRecord();
+//    	return record == null ? new DefaultNode() : record.newNode();
+//    }
 
 	/**
 	 * Removes a node from a delta target. Optimizes by trying to call
@@ -681,7 +685,7 @@ public class SPOApplication implements RuleApplication, Derivation {
      * The images of the creator nodes.
      * This is part of the information needed to (re)construct the derivation target.
      */
-    protected Element[] coanchorImage;
+    protected Node[] coanchorImage;
     /**
 	 * A mapping from target value nodes of erased edges to their
 	 * remaining incident edges, used to judge spurious value nodes.
@@ -693,6 +697,9 @@ public class SPOApplication implements RuleApplication, Derivation {
     private Set<ValueNode> addedValueNodes;
     /** The set of value nodes that have been added due to edge creation. */
     private Set<ValueNode> removedValueNodes;
+    
+    /** Static constant for rules with coanchors. */
+    static private final Node[] EMPTY_COANCHOR_IMAGE = new Node[0];
     /** Reporter for prifiling the application class. */
     static public final Reporter reporter = Reporter.register(RuleApplication.class);
     /** Handle for profiling the actual rule application. */

@@ -17,6 +17,7 @@
 package groove.lts;
 
 import groove.graph.Element;
+import groove.graph.Node;
 import groove.trans.RuleEvent;
 
 /**
@@ -24,7 +25,7 @@ import groove.trans.RuleEvent;
  * These objects typically do not store the source of the transition;
  * instead they are stored inside by the source state.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 interface GraphTransitionStub extends Element {
 	/** 
@@ -33,6 +34,12 @@ interface GraphTransitionStub extends Element {
 	 */
 	RuleEvent getEvent(GraphState source);
 
+	/** 
+	 * Returns the added nodes in the transition from a given source
+	 * to this object.
+	 */
+	Node[] getAddedNodes(GraphState source);
+	
 	/**
 	 * Returns the target state of this graph transition stub.
 	 */

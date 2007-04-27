@@ -12,23 +12,24 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SymmetryTransitionStub.java,v 1.1 2007-04-24 10:06:43 rensink Exp $
+ * $Id: SymmetryTransitionStub.java,v 1.2 2007-04-27 22:06:25 rensink Exp $
  */
 package groove.lts;
 
+import groove.graph.Node;
 import groove.trans.RuleEvent;
 
 /**
  * Graph transition stub based on a true event renaming.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 class SymmetryTransitionStub extends AbstractGraphTransitionStub {
     /**
-     * Default constructor, providing the event and target of the stub.
+     * Default constructor, providing the event, added nodes and target of the stub.
      */
-    SymmetryTransitionStub(RuleEvent event, GraphState target) {
-    	super(event,target);
+    SymmetryTransitionStub(RuleEvent event, Node[] addedNodes, GraphState target) {
+    	super(event, addedNodes ,target);
     }
 
     /** This type of transition stub involves a non-trivial symmetry. */

@@ -33,7 +33,7 @@ import groove.util.Reporter;
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy},
  * and if that fails, attempts to create an {@link groove.graph.InjectiveMorphism}. 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -182,10 +182,13 @@ public class DefaultIsoChecker implements IsoChecker {
         } else if (areGraphEqual(dom, cod)) {
             equalGraphsCount++;
         	result = true;
-        } else if (hasDistinctCerts(dom)) {
+        } else {
+        	CertificateStrategy domCertifier = dom.getCertifier();
+        	CertificateStrategy codCertifier = cod.getCertifier();
+        	if (hasDistinctCerts(codCertifier)) {
         	reporter.start(ISO_CERT_CHECK);
-        	if (hasDistinctCerts(cod)) {
-            	result = areCertEqual(dom, cod);
+        	if (hasDistinctCerts(domCertifier)) {
+            	result = areCertEqual(domCertifier, codCertifier);
         	} else {
         		result = false;
         	}
@@ -197,7 +200,7 @@ public class DefaultIsoChecker implements IsoChecker {
     		}
         } else {
         	reporter.start(ISO_SIM_CHECK);
-        	if (getNodePartitionCount(dom) == getNodePartitionCount(cod)) {
+        	if (getNodePartitionCount(domCertifier) == getNodePartitionCount(codCertifier)) {
         		result = new IsoMatcher(graphFactory.newMorphism(dom, cod)).hasRefinement();
         	} else {
         		result = false;
@@ -209,6 +212,7 @@ public class DefaultIsoChecker implements IsoChecker {
                 distinctSimCount++;
             }
         }
+        }
         reporter.stop();
         totalCheckCount++;
         return result;
@@ -216,20 +220,20 @@ public class DefaultIsoChecker implements IsoChecker {
 
 	/**
 	 * Tests if the elements of a graph have all different certificates.
-	 * If this holds, then {@link #areCertEqual(Graph, Graph)} can be
+	 * If this holds, then {@link #areCertEqual(CertificateStrategy, CertificateStrategy)} can be
 	 * called to check for isomorphism.
-	 * @param graph the graph to be tested
+	 * @param certifier the graph to be tested
 	 * @return <code>true</code> if <code>graph</code> has distinct certificates
 	 */
-	private boolean hasDistinctCerts(Graph graph) {
-		return graph.getCertificateStrategy().getPartitionMap().isOneToOne();
+	private boolean hasDistinctCerts(CertificateStrategy certifier) {
+		return certifier.getPartitionMap().isOneToOne();
 	}
 
 	/**
 	 * Convenience method for <code>graph.getCertificateStrategy().getNodePartitionCount()</code>.
 	 */
-	private int getNodePartitionCount(Graph graph) {
-		return graph.getCertificateStrategy().getNodePartitionCount();
+	private int getNodePartitionCount(CertificateStrategy certifier) {
+		return certifier.getNodePartitionCount();
 	}
 	
 	/**
@@ -238,14 +242,14 @@ public class DefaultIsoChecker implements IsoChecker {
 	 * @param dom the first graph to be tested
 	 * @param cod the second graph to be tested
 	 */
-	private boolean areCertEqual(Graph dom, Graph cod) {
+	private boolean areCertEqual(CertificateStrategy dom, CertificateStrategy cod) {
 		boolean result;
 		reporter.stop();
 		reporter.stop();
 		// the certificates uniquely identify the dom elements;
 		// it suffices to test if this gives rise to a consistent one-to-one node map
-		Map<Element,Object> domCertificateMap = dom.getCertificateStrategy().getCertificateMap();
-		PartitionMap codPartitionMap = cod.getCertificateStrategy().getPartitionMap();
+		Map<Element,Object> domCertificateMap = dom.getCertificateMap();
+		PartitionMap codPartitionMap = cod.getPartitionMap();
 		reporter.restart(ISO_CHECK);
 		reporter.restart(ISO_CERT_CHECK);
 		result = true;
@@ -309,7 +313,7 @@ public class DefaultIsoChecker implements IsoChecker {
     static public final Reporter reporter = Reporter.register(IsoChecker.class);
     /** Handle for profiling {@link #areIsomorphic(Graph, Graph)}. */
     static public final int ISO_CHECK = reporter.newMethod("areIsomorphic(Graph,Graph)");
-    /** Handle for profiling {@link #areCertEqual(Graph, Graph)}. */
+    /** Handle for profiling {@link #areCertEqual(CertificateStrategy, CertificateStrategy)}. */
     static final int ISO_CERT_CHECK = reporter.newMethod("Isomorphism by certificates");
     /** Handle for profiling isomorphism by simulation. */
     static final int ISO_SIM_CHECK = reporter.newMethod("Isomorphism by simulation");

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: FullStrategy.java,v 1.3 2007-04-24 10:06:44 rensink Exp $
+ * $Id: FullStrategy.java,v 1.4 2007-04-27 22:06:58 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -24,48 +24,47 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.LTS;
 import groove.lts.State;
-import groove.lts.StateGenerator;
 
 import java.util.Collection;
 
 /**
  * Recursively explores all open states of the LTS, in a breadth first manner.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class FullStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
     static public final String STRATEGY_NAME = "Full";
     /** Short description of this exploration strategy. */
     static public final String STRATEGY_DESCRIPTION = "At each pass, asks the LTS for all remaining open states, and explores them";
-    
-    /**
-     * Constructs a strategy without setting an LTS.
-     */
-    public FullStrategy() {
-    	// empty constructor
-    }
-    
-    /**
-     * Constructs an exploration strategy for a given LTS.
-     * @param generator
-     */
-    public FullStrategy(StateGenerator generator) {
-    	setGenerator(generator);
-    }
-    
+//    
+//    /**
+//     * Constructs a strategy without setting an LTS.
+//     */
+//    public FullStrategy() {
+//    	// empty constructor
+//    }
+//    
+//    /**
+//     * Constructs an exploration strategy for a given LTS.
+//     * @param generator
+//     */
+//    public FullStrategy(StateGenerator generator) {
+//    	setSubject(generator);
+//    }
+//    
     /**
      * Initializes the set of open states, then calls the super method.
      */
     @Override
-    public void setLTS(GTS gts, StateGenerator generator) {
-        if (getLTS() != null) {
-            getLTS().removeGraphListener(graphListener);
+    public void setGTS(GTS gts) {
+        if (getGTS() != null) {
+            getGTS().removeGraphListener(graphListener);
         }
         gts.addGraphListener(graphListener);
         openStateSet = createOpenStateSet();
         openStateSet.addAll(gts.getOpenStates());
-        super.setLTS(gts, generator);
+        super.setGTS(gts);
     }
 
     /** 
@@ -74,13 +73,19 @@ public class FullStrategy extends AbstractStrategy {
      */
     public Collection<? extends State> explore() throws InterruptedException {
         while (!openStateSet.isEmpty() && !Thread.interrupted()) {
-            Collection<State> openStateSet = this.openStateSet;
+            Collection<GraphState> openStateSet = this.openStateSet;
             this.openStateSet = createOpenStateSet();
-            for (State openState: openStateSet) {
-                getGenerator().computeSuccessors((GraphState) openState);                
+            for (GraphState openState: openStateSet) {
+                explore(openState);                
             }
+//            // clear some caches, just to outsmart the garbage collector
+//            for (GraphState openState: openStateSet) {
+//                if (openState instanceof AbstractGraphState) {
+//                	((AbstractGraphState) openState).clearCache();
+//                }
+//            }
         }
-        return getLTS().getFinalStates();
+        return getGTS().getFinalStates();
     }
 
     public String getName() {
@@ -100,7 +105,7 @@ public class FullStrategy extends AbstractStrategy {
      * Callback method to create the (initially empty) collection of open states 
      * for a given LTS.
      */
-    protected Collection<State> createOpenStateSet() {
+    protected Collection<GraphState> createOpenStateSet() {
         int newSize = predictNewOpenStateCount();
         return createStateSet(newSize);
     }
@@ -123,7 +128,7 @@ public class FullStrategy extends AbstractStrategy {
     /**
      * The current set of open states.
      */
-    private Collection<State> openStateSet;
+    private Collection<GraphState> openStateSet;
     /**
      * The size of the {@link #openStateSet} at the previous invocation of
      * {@link #predictNewOpenStateCount()}.

@@ -1,4 +1,4 @@
-/* $Id: AbstractCacheHolder.java,v 1.1 2007-04-22 23:32:24 rensink Exp $ */
+/* $Id: AbstractCacheHolder.java,v 1.2 2007-04-27 22:07:02 rensink Exp $ */
 package groove.util;
 
 /**
@@ -23,7 +23,16 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
 		}
 		return result;
 	}
-	
+
+    /** 
+     * Cleares the stored graph cache reference.
+     * This frees the cache for clearing, if that has not yet occurred,
+     * and saves memory by sharing a single null reference.
+     */
+    public void clearCache() {
+        getCacheReference().clear();
+    }
+    
 	/**
 	 * Tests if the cache is currently cleared.
 	 */

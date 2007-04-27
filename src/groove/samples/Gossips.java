@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.9 2007-04-20 15:12:29 rensink Exp $
+ * $Id: Gossips.java,v 1.10 2007-04-27 22:07:09 rensink Exp $
  */
 package groove.samples;
 
@@ -27,7 +27,7 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.lts.DefaultGraphTransition;
-import groove.lts.DerivedGraphState;
+import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.AliasRuleApplier;
 import groove.rel.VarNodeEdgeMap;
@@ -53,7 +53,7 @@ import java.util.List;
  * Sample class for a universal rule.
  * The example is based on the <i>gossiping girl</i> case.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";
@@ -84,17 +84,17 @@ public class Gossips {
     
     /** Prints the result to standard output. */
     static void printResult(GraphResult result) {
-        List<Graph> trace = result.getTrace();
+        List<GraphState> trace = result.getTrace();
         List<RuleEvent> rules = new ArrayList<RuleEvent>();
-        Iterator<Graph> traceIter = trace.listIterator(1);
+        Iterator<GraphState> traceIter = trace.listIterator(1);
         while (traceIter.hasNext()) {
-            DerivedGraphState element = (DerivedGraphState) traceIter.next();
+            GraphNextState element = (GraphNextState) traceIter.next();
             rules.add(element.getEvent());
         }
         List<Integer> edgeCount = new ArrayList<Integer>();
         traceIter = trace.listIterator(0);
         while (traceIter.hasNext()) {
-            GraphState element = (GraphState) traceIter.next();
+            GraphState element = traceIter.next();
             edgeCount.add(element.getGraph().edgeCount());
         }
         System.out.println("Trace of length: "+rules.size());
@@ -124,7 +124,7 @@ public class Gossips {
             atomic.add(new GossipRule(Groove.loadRuleGraph(BASIC_GOSSIP_RULE_NAME).toRule(), atomic.getProperties()));
             atomic.setFixed();
             GraphCalculator calc2 = Groove.createCalculator(atomic);
-            calc2.addGTSListener(new GenerateProgressMonitor());
+            calc2.getGTS().addGraphListener(new GenerateProgressMonitor());
 //            Collection result2 = calc2.getAllMax();
 //            System.out.println("\nNumber of solutions: "+result2);
 //            Iterator resultIter = result2.iterator();

@@ -3,6 +3,8 @@
  */
 package groove.util;
 
+import groove.graph.GraphCache;
+
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 
@@ -43,6 +45,9 @@ public class CacheReference<C> extends SoftReference<C> {
             cache.updateCleared();
 			cacheCollectCount++;
             cache = (CacheReference<?>) queue.poll();
+        }
+        if (holder != null) {
+        	createCount++;
         }
 	}
 	
@@ -113,6 +118,15 @@ public class CacheReference<C> extends SoftReference<C> {
 	private C referent;
 	/** The incarnation count of this reference. */
 	private final int incarnation;
+	/**
+	 * Number of effective invocations of {@link #clear()}.
+	 */
+	private static int cacheClearCount;
+	/**
+     * The total number of non-<code>null</code> graph cache references created.
+     */
+    static private int createCount;
+
 	
 	/** Queue for garbage collected {@link CacheReference} objects. */
 	static final private ReferenceQueue<Object> queue = new ReferenceQueue<Object>();
@@ -224,10 +238,26 @@ public class CacheReference<C> extends SoftReference<C> {
 	}
 
 	/**
+	 * Returns the total number of caches created.
+	 * @return the total number of caches created
+	 */
+	static public int getCreateCount() {
+	    return createCount;
+	}
+
+	/**
+	 * Returns the number of times a cache was cleared explicitly.
+	 * @return the number of times a cache was cleared explicitly
+	 */
+	static public int getClearCount() {
+	    return cacheClearCount;
+	}
+
+	/**
 	 * Returns the number of times a cache was collected by the garbage collector.
 	 * @return the number of times a cache was collected by the garbage collector
 	 */
-	static public int getCacheCollectCount() {
+	static public int getCollectCount() {
 	    return cacheCollectCount;
 	}
 

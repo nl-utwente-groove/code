@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.4 2007-04-18 08:41:19 rensink Exp $
+ * $Id: RuleJTree.java,v 1.5 2007-04-27 22:07:06 rensink Exp $
  */
 package groove.gui;
 
@@ -61,7 +61,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -142,7 +142,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         int lastPriority = Integer.MAX_VALUE;
         DefaultMutableTreeNode topNode = topDirectoryNode;
         // get the rule names
-        GraphGrammar grammar = gts.ruleSystem();
+        GraphGrammar grammar = gts.getGrammar();
         for (Rule rule: new ArrayList<Rule>(grammar.getRules())) {
             StructuredRuleName ruleName = (StructuredRuleName) rule.getName();
             // create new top node for the rule, if the rule has a different priority then the last
@@ -311,7 +311,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         orderedDerivations.addAll(derivations);
         // insert new matches
         for (GraphTransition edge: orderedDerivations) {
-            Label ruleName = edge.getRule().getName();
+            Label ruleName = edge.getEvent().getName();
             RuleTreeNode ruleNode = (RuleTreeNode) ruleNodeMap.get(ruleName);
             int nrOfMatches = ruleNode.getChildCount();
             MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, edge);

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaGraph.java,v 1.6 2007-04-22 23:32:23 rensink Exp $
+ * $Id: DeltaGraph.java,v 1.7 2007-04-27 22:07:04 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * the changes. This implementation caches the element set so as to avoid too frequent
  * reconstruction.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> implements DeltaApplier {
     /**
@@ -147,12 +147,12 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
             setDeltaArray(computeFixedDeltaArray());
             super.setFixed();
             getCache().notifySetFixed();
-            if (Groove.GATHER_STATISTICS) {
-                totalEdgeCount += this.edgeCount();
-                totalNodeCount += this.nodeCount();
-                fixedDeltaGraphCount++;
-                deltaElementCount += deltaArray.length;
-            }
+//            if (Groove.GATHER_STATISTICS) {
+//                totalEdgeCount += this.edgeCount();
+//                totalNodeCount += this.nodeCount();
+//                fixedDeltaGraphCount++;
+//                deltaElementCount += deltaArray.length;
+//            }
             reporter.stop();
         }
     }
@@ -558,16 +558,6 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
     /** The total number of delta graphs frozen. */
     protected static int frozenDeltaGraphCount;
 
-    /**
-     * Number of edges in all fixed delta graphs.
-     */
-    static private int totalEdgeCount;
-
-    /**
-     * Number of nodes in all fixed delta graphs.
-     */
-    static private int totalNodeCount;
-
     /** Returns the total number of frozen delta graphs. */
     static public int getDeltaGraphCount() {
         return deltaGraphCount;
@@ -591,20 +581,5 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
     /** Returns the total number of delta caches reconstructed. */
     static public int getCacheReconstructCount() {
         return cacheReconstructCount;
-    }
-
-    /** Returns the total number of delta elements created. */
-    static public double getDeltaElementAvg() {
-        return (double) deltaElementCount / (double) fixedDeltaGraphCount;
-    }
-
-    /** Returns the average number of edges for all delta graphs. */
-    static public double getEdgeAvg() {
-        return (double) totalEdgeCount / (double) fixedDeltaGraphCount;
-    }
-
-    /** Returns the average number of nodes for all delta graphs. */
-    static public double getNodeAvg() {
-        return (double) totalNodeCount / (double) fixedDeltaGraphCount;
     }
 }

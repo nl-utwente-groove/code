@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.6 2007-04-12 16:14:52 rensink Exp $
+ * $Id: StatePanel.java,v 1.7 2007-04-27 22:07:06 rensink Exp $
  */
 package groove.gui;
 
@@ -56,7 +56,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -80,7 +80,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         getJGraph().getLabelList().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (selectedTransition != null) {
-                    simulator.setRule(selectedTransition.getRule().getName());
+                    simulator.setRule(selectedTransition.getEvent().getName());
                 }
             }
         });
@@ -108,7 +108,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
             GraphJModel stateJModel = getStateJModel(startState);
             // since the GTS states have lost their layout information, we try to
             // retrieve it from the grammar start graph
-            LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(gts.ruleSystem().getStartGraph());
+            LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(gts.getGrammar().getStartGraph());
             if (layoutMap != null) {
                 stateJModel.applyLayout(layoutMap);
             }
@@ -216,7 +216,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     		if (getOptions().getValue(SHOW_ANCHORS_OPTION)) {
         		text = String.format("%s (with match %s)", trans.source(), trans.getEvent());    			
     		} else {
-    			text = String.format("%s (with match of %s)", trans.source(), trans.getRule().getName());
+    			text = String.format("%s (with match of %s)", trans.source(), trans.getEvent().getName());
     		}
     	} else if (simulator.getCurrentState() != null) {
     		text = ""+simulator.getCurrentState();

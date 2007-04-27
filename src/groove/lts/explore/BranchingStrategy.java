@@ -12,15 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BranchingStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: BranchingStrategy.java,v 1.2 2007-04-27 22:06:58 rensink Exp $
  */
 package groove.lts.explore;
 
-import groove.graph.AbstractGraph;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.LTS;
 import groove.lts.State;
+import groove.util.AbstractCacheHolder;
 import groove.util.Reporter;
 
 import java.util.ArrayList;
@@ -28,9 +28,8 @@ import java.util.Collection;
 
 /**
  * LTS exploration strategy based on the principle of breadth first search.
- * The depth of the search can be set; a depth of 0 means unbounded depth.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class BranchingStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
@@ -47,8 +46,8 @@ public class BranchingStrategy extends AbstractStrategy {
      * @see LTS#getFinalStates()
      */
     public Collection<? extends State> explore() throws InterruptedException {
-        explore(getGenerator().getSuccessors(getAtState()));
-        return getLTS().getFinalStates();
+        explore(getSuccessors(getAtState()));
+        return getGTS().getFinalStates();
     }
 
     public String getName() {
@@ -73,7 +72,7 @@ public class BranchingStrategy extends AbstractStrategy {
      * @require <tt>getLTS().containsNodes(atStates)</tt>
      * @see #computeNextStates
      */
-    protected void explore(Collection<? extends State> atStates) throws InterruptedException {
+    protected void explore(Collection<GraphState> atStates) throws InterruptedException {
         while (!atStates.isEmpty()) {
             atStates = computeNextStates(atStates);
         }
@@ -87,10 +86,11 @@ public class BranchingStrategy extends AbstractStrategy {
      * @return the set of open explorable states reachable from <tt>atStates</tt>
      * @require <tt>getLTS().containsNodeSet(atStates)</tt>
      */
-    protected Collection<State> computeNextStates(Collection<? extends State> atStates) throws InterruptedException {
+    protected Collection<GraphState> computeNextStates(Collection<GraphState> atStates) throws InterruptedException {
     	reporter.start(EXTEND);
-        Collection<State> result = createOpenStateSet((int) (atStates.size()*GROWTH_FACTOR));
-        for (State atState: atStates) {
+        Collection<GraphState> result = createOpenStateSet((int) (atStates.size()*GROWTH_FACTOR));
+        getCollector().set(result);
+        for (GraphState atState: atStates) {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
             }
@@ -98,16 +98,16 @@ public class BranchingStrategy extends AbstractStrategy {
             // to test if they are closed.
             if (!atState.isClosed()) {
 				if (isExplorable(atState)) {
-					Collection<? extends State> next = getGenerator().computeSuccessors((GraphState) atState);
-					result.addAll(next);
+					explore(atState);
 				} else {
-					if (atState instanceof AbstractGraph) {
-						((AbstractGraph) atState).clearCache();
+					if (atState instanceof AbstractCacheHolder) {
+						((AbstractCacheHolder) atState).clearCache();
 					}
 					ignoredCount++;
 				}
 			}
         }
+        getCollector().reset();
         reporter.stop();
         return result;
     }
@@ -117,8 +117,8 @@ public class BranchingStrategy extends AbstractStrategy {
      * with a given initial capacity.
      * @param capacity the desired initial capacity
      */
-    protected Collection<State> createOpenStateSet(int capacity) {
-    	return new ArrayList<State>(capacity);
+    protected Collection<GraphState> createOpenStateSet(int capacity) {
+    	return new ArrayList<GraphState>(capacity);
     }
     
     /**
@@ -126,7 +126,7 @@ public class BranchingStrategy extends AbstractStrategy {
 	 * To be overwritten by subclasses; this implementation returns
 	 * <tt>true</tt> always. Called from {@link #computeNextStates}.
 	 */
-    protected boolean isExplorable(State state) {
+    protected boolean isExplorable(GraphState state) {
         return true;
     }
     

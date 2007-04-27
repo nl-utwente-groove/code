@@ -12,18 +12,21 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.14 2007-04-22 23:32:24 rensink Exp $
+ * $Id: SPOEvent.java,v 1.15 2007-04-27 22:07:01 rensink Exp $
  */
 package groove.trans;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.GraphShape;
@@ -47,7 +50,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2007-04-22 23:32:24 $
+ * @version $Revision: 1.15 $ $Date: 2007-04-27 22:07:01 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -119,6 +122,11 @@ public class SPOEvent implements RuleEvent {
     protected Label createLabel() {
         return new WrapperLabel<RuleEvent>(this);
     }
+
+    /** Returns the rule name. */
+	public NameLabel getName() {
+		return getRule().getName();
+	}
 
 	public VarNodeEdgeMap getAnchorMap() {
 		if (!anchorMapNormalised) {
@@ -696,6 +704,69 @@ public class SPOEvent implements RuleEvent {
     	return new VarNodeEdgeHashMap();
     }
 
+    /** 
+     * Returns a coanhor image suitable for a given graph.
+     * This is delegate to the event, which can indeed keep a map of such 
+     * images, and so save memory. 
+     */
+    Node[] getCoanchorImage(Graph host) {
+		int coanchorSize = getRule().coanchor().length;
+		Node[] result = new Node[coanchorSize];
+		for (int i = 0; i < coanchorSize; i++) {
+			result[i] = getFreshNode(i, host);
+		}
+		List<Node> resultAsList = Arrays.asList(result);
+		Node[] existingResult = coanchorImageMap.get(resultAsList);
+		if (existingResult == null) {
+			coanchorImageMap.put(resultAsList, result);
+			coanchorImageCount++;
+		} else {
+			result = existingResult;
+			coanchorImageOverlap++;
+		}
+		return result;
+    }
+
+    /**
+	 * Returns a node that is fresh with respect to a given graph. 
+	 * The previously created fresh nodes are tried first (see {@link SPOEvent#getFreshNodes(int)}; 
+	 * only if all of those are already in the graph, a new fresh node is created using
+	 * {@link #createNode()}.
+	 * @param creatorIndex
+	 *            index in the rhsOnlyNodes array indicating the node of the
+	 *            rule for which a new image is to be created
+	 * @param graph
+	 *            the graph to which a node should be added
+	 */
+	public Node getFreshNode(int creatorIndex, Graph graph) {
+		Node result = null;
+		Collection<Node> currentFreshNodes = getFreshNodes(creatorIndex);
+		Iterator<Node> freshNodeIter = currentFreshNodes.iterator();
+		while (result == null && freshNodeIter.hasNext()) {
+			Node freshNode = freshNodeIter.next();
+			if (!graph.containsElement(freshNode)) {
+				result = freshNode;
+			}
+		}
+		if (result == null) {
+			result = createNode();
+			currentFreshNodes.add(result);
+		}
+		return result;
+	}
+
+    /**
+     * Callback factory method for a newly constructed node.
+     * This implementation returns a {@link DefaultNode}, with
+     * a node number determined by the grammar's node counter.
+     */
+    protected Node createNode() {
+        SPOApplication.freshNodeCount++;
+    	SystemRecord record = getRecord();
+    	Node result = record == null ? new DefaultNode() : record.newNode();
+    	return result;
+    }
+
 	/**
 	 * Returns the list of all previously created fresh nodes.
 	 */
@@ -766,9 +837,30 @@ public class SPOEvent implements RuleEvent {
 	 */
 	private int hashCode;
 	/**
-	 * The list of nodes created by {@link SPOApplication#createNode()}  .
+	 * The list of nodes created by {@link #createNode()}.
 	 */
 	private final List<List<Node>> freshNodeList;
+	/** Store of previously used coanchor images. */
+	private final Map<List<Node>, Node[]> coanchorImageMap = new HashMap<List<Node>, Node[]>();
+
+	/** 
+	 * Reports the number of times a stored coanchor image has been recomputed 
+	 * for a new rule application.
+	 */
+	static public int getCoanchorImageOverlap() {
+		return coanchorImageOverlap;
+	}
+	/** 
+	 * Reports the total number of coanchor images stored. 
+	 */
+	static public int getCoanchorImageCount() {
+		return coanchorImageCount;
+	}
+	
+	/** Counter for the reuse in coanchor images. */
+	static private int coanchorImageOverlap;
+	/** Counter for the coanchor images. */
+	static private int coanchorImageCount;
 	
 	static private Reporter reporter = Reporter.register(RuleEvent.class);
 	static private int HASHCODE = reporter.newMethod("computeHashCode()");

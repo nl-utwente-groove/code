@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.11 2007-04-24 10:06:43 rensink Exp $
+ * $Id: GTS.java,v 1.12 2007-04-27 22:06:26 rensink Exp $
  */
 package groove.lts;
 
@@ -24,6 +24,7 @@ import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
+import groove.trans.SystemRecord;
 import groove.util.FilterIterator;
 import groove.util.NestedIterator;
 import groove.util.SetView;
@@ -42,7 +43,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-04-24 10:06:43 $
+ * @version $Revision: 1.12 $ $Date: 2007-04-27 22:06:26 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -122,7 +123,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * on the basis of a given graph.
      */
     protected GraphState createStartState(Graph startGraph) {
-        return new DefaultGraphState(startGraph);
+        return new StartGraphState(startGraph);
     }
 
     /** This implementation specialises the return type to {@link GraphState}. */
@@ -175,11 +176,11 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**
      * Returns the rule system underlying this GTS.
      */
-    public GraphGrammar ruleSystem() {
+    public GraphGrammar getGrammar() {
         return ruleSystem;
     }
 
-    public Collection<? extends GraphState> getFinalStates() {
+    public Collection<GraphState> getFinalStates() {
         return finalStates;
     }
 
@@ -254,70 +255,10 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             notifyLTSListenersOfClose(state);
         }
     }
-//    
-//    /** @deprecated */
-//    @Deprecated
-//    public synchronized Collection<? extends GraphState> freshNextStates(State state) {
-//        reporter.start(CLOSE);
-//        final Collection<GraphState> result = new ArrayList<GraphState>();
-//        // check if the transitions have not yet been generated
-//        if (!state.isClosed()) {
-//            Set<RuleApplication> derivations = getDeriver().getDerivations(((GraphState) state).getGraph());
-//            // if there are no rule applications, the state is final
-//            if (derivations.isEmpty()) {
-//                finalStates.add((GraphState) state);
-//            } else {
-//                Iterator<RuleApplication> derivationIter = derivations.iterator();
-//                do {
-//                    RuleApplication appl = derivationIter.next();
-//                    // to test if the eventual target is fresh, compare it 
-//                    // with the original derivation's target
-//                    GraphState realTarget = addTransition(appl);
-//                    if (appl.isTargetSet() && appl.getTarget() == realTarget && realTarget != state) {
-//                    	result.add(realTarget);
-//                    }
-//                } while (derivationIter.hasNext());
-//            }
-//            setClosed(state);
-//        }
-//        reporter.stop();
-//        return result;
-//    }
-//    
-    /** @deprecated */
-    @Deprecated
-    public synchronized void explore(State atState) throws InterruptedException {
-//        strategy.setAtState(atState);
-//        strategy.explore();
-    }
-
-    /** @deprecated */
-    @Deprecated
-    public synchronized void explore() throws InterruptedException {
-//        strategy.setAtState(startState());
-//        strategy.explore();
-    }
 
     /** Returns the number of not fully expored states. */
     public int openStateCount() {
         return nodeCount() - closedCount;
-    }
-
-    /** @deprecated */
-    @Deprecated
-    public ExploreStrategy getExploreStrategy() {
-    	return null;
-//        return strategy;
-    }
-
-    /** @deprecated */
-    @Deprecated
-    public void setExploreStrategy(ExploreStrategy strategy) {
-//    	if (this.strategy instanceof GraphListener) {
-//    		removeGraphListener((GraphListener) this.strategy);
-//    	}
-//        this.strategy = strategy;
-//        strategy.setLTS(this);
     }
 
 	@Override
@@ -357,102 +298,21 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     protected GraphShapeCache createCache() {
         return new GraphShapeCache(this, false);
     }
-//    
-//    /**
-//	 * Returns the (fixed) derivation record for this GTS.
-//	 */
-//	public final SystemRecord getDerivationData() {
-//		if (record == null) {
-//			record = createDerivationData();
-//		}
-//		return record;
-//	}
-//
-//	/** Callback method to create a derivation data store for this GTS. */
-//	protected SystemRecord createDerivationData() {
-//		return new SystemRecord(ruleSystem());
-//	}
-//	
-//	/**
-//     * Factory method for a graph deriver from a given rule system.
-//     * Use to initialize this GTS's deriver if it is not set explicitly.
-//     * @param ruleSystem the rule system to create the deriver for
-//     * @deprecated
-//     */
-//    @Deprecated
-//    protected Deriver createDeriver(GraphGrammar ruleSystem) {
-////    	return new DefaultDeriver(ruleSystem.getRules());
-//    	return new NextStateDeriver(getDerivationData());
-//    }
-//    
-//    /**
-//     * Returns the deriver.
-//     * Lazily creates the deriver (using {@link #createDeriver(GraphGrammar)}).
-//     * @return a deriver for the current rule system; never <code>null</code>
-//     * @deprecated
-//     */
-//    @Deprecated
-//    protected Deriver getDeriver() {
-//    	if (deriver == null) {
-//    		deriver = createDeriver(ruleSystem);
-//    	}
-//    	return deriver;
-//    }
-//    
-//    /**
-//     * Sets the deriver for this GTS.
-//     * Only legal if no deriver has been set, explicitly or implicitle.
-//     * @param deriver the deriver to be set; should not be <code>null</code>
-//     * @throws IllegalStateException if the deriver has already been set at the time of invocation
-//     */
-//    protected void setDeriver(Deriver deriver) {
-//    	if (this.deriver != null) {
-//    		throw new IllegalStateException("Graph deriver set twice");
-//    	}
-//    	this.deriver = deriver;
-//    }
-//    
-//    /**
-//     * Adds a transition to the GTS, from a given source state and with a
-//     * given underlying derivation.
-//     * The derivation's target graph is compared to the existing states for isomorphism;
-//     * if an isomorphic one is found then that is taken as target state, and
-//     * the derivation is adjusted accordingly. If no isomorphic state is found,
-//     * then a fresh target state is added.
-//     * The actual target state is returned as the result of the method.
-//     * @param appl the derivation underlying the transition to be added
-//     * @return the target state of the resulting transition
-//     * @require <tt>devon.dom() == state.getGraph()</tt>
-//     * @ensure <tt>state.containsOutTransition(new GraphTransition(devon.rule(), devon.match(), result))</tt>
-//     * @deprecated
-//     */
-//    @Deprecated
-//    public GraphState addTransition(RuleApplication appl) {
-////        reporter.start(ADD_TRANSITION);
-////        reporter.start(ADD_TRANSITION_START);
-//        GraphState sourceState = (GraphState) appl.getSource();
-//        // check for confluent diamond
-//        GraphState targetState = getConfluentTarget(appl);
-////        reporter.stop();
-//        if (targetState == null) {
-//            // determine target state of this transition
-//            targetState = (GraphState) appl.getTarget();
-//            // see if isomorphic graph is already in the LTS
-//            // special case: source = target
-//            if (sourceState != targetState) {
-//                GraphState isoState = addState(targetState);
-//                if (isoState != null) {
-//                    // the following line is to ensure the cache is cleared
-//                    // even if the state is still used as the basis of another
-//                    targetState.dispose();
-//                    targetState = isoState;
-//                }
-//            }
-//        }
-//        addTransition(sourceState, appl.getEvent(), targetState);
-////        reporter.stop();
-//        return targetState;
-//    }
+    
+    /**
+	 * Returns the (fixed) derivation record for this GTS.
+	 */
+	public final SystemRecord getRecord() {
+		if (record == null) {
+			record = createRecord();
+		}
+		return record;
+	}
+
+	/** Callback method to create a derivation data store for this GTS. */
+	private SystemRecord createRecord() {
+		return new SystemRecord(getGrammar());
+	}
 
 	/**
 	 * Adds a transition to the GTS, under the assumption that the source
@@ -472,30 +332,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             reporter.stop();
         }
 	}
-//
-//    /**
-//     * Returns the target of a given rule application, by trying to walk 
-//     * around three sides of a confluent diamond instead of computing the
-//     * target directly.
-//     */
-//	@Deprecated
-//    protected GraphState getConfluentTarget(RuleApplication appl) {
-//        if (!NextStateDeriver.isUseDependencies() || !(appl instanceof AliasRuleApplication)) {
-//            return null;
-//        }
-//        GraphOutTransition prior = ((AliasRuleApplication) appl).getPrior();
-//        if (prior == null) {
-//            return null;
-//        }
-//        GraphState priorTarget = prior.target();
-//        if (!priorTarget.isClosed()) {
-//            return null;
-//        }
-//        GraphTransition prevTransition = (DerivedGraphState) appl.getSource();
-//        GraphState result = priorTarget.getNextState(prevTransition.getEvent());
-//        return result;
-//    }
-
+	
     /**
      * Adds a state to the GTS, if it is not isomorphic to an existing state.
      * Returns the isomorphic state if one was found, or <tt>null</tt> if the state was actually added.
@@ -507,7 +344,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     public GraphState addState(GraphState newState) {
         reporter.start(ADD_STATE);
         // see if isomorphic graph is already in the LTS
-        ((DefaultGraphState) newState).setStateNumber(nodeCount());
+        ((AbstractGraphState) newState).setStateNumber(nodeCount());
         GraphState result = (GraphState) stateSet.put(newState);
         if (result == null) {
             fireAddNode(newState);
@@ -540,38 +377,26 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     }
 
     /**
-     * Returns the number of times an isomorphism was suspected on the basis
-     * of the "early warning system", viz. the graph certificate.
-     */
-    static public int getIntCertOverlap() {
-        return intCertOverlap;
-    }
-    
-    /**
      * The start state of this LTS.
      * @invariant <tt>nodeSet().contains(startState)</tt>
      */
-    protected final GraphState startState;
+    private final GraphState startState;
     
     /**
      * The rule system generating this LTS.
      * @invariant <tt>ruleSystem != null</tt>
      */
-    protected final GraphGrammar ruleSystem;
+    private final GraphGrammar ruleSystem;
     /** The set of states of the GTS. */
-    protected final TreeHashSet<GraphState> stateSet = new TreeHashStateSet();
+    private final TreeHashSet<GraphState> stateSet = new TreeHashStateSet();
     
     /**
      * Set of states that have not yet been extended.
      * @invariant <tt>freshStates \subseteq nodes</tt>
      */
-    protected final Set<GraphState> finalStates = new HashSet<GraphState>();
-//    /**
-//     * The current graph deriver.
-//     */
-//    private Deriver deriver;
-//    /** The derivation record for this GTS. */
-//    private SystemRecord record;
+    private final Set<GraphState> finalStates = new HashSet<GraphState>();
+    /** The system record for this GTS. */
+    private SystemRecord record;
     /**
      * The number of closed states in the GTS.
      */
@@ -580,7 +405,15 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * The number of transitions in the GTS.
      */
     private int transitionCount = 0;
-    /** Flag to indicate whether transitions are to be stored in the GTS. */
+    /**
+	 * Returns the number of times an isomorphism was suspected on the basis
+	 * of the "early warning system", viz. the graph certificate.
+	 */
+	static public int getIntCertOverlap() {
+	    return intCertOverlap;
+	}
+
+	/** Flag to indicate whether transitions are to be stored in the GTS. */
     private final boolean storeTransitions;
     /**
      * The number of isomorphism warnings given while exploring the GTS.
@@ -595,26 +428,38 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         }
         
         /**
-         * Calls {@link IsoChecker#areIsomorphic(Graph, Graph)}.
+         * First compares the control locations, then calls {@link IsoChecker#areIsomorphic(Graph, Graph)}.
+         * @see GraphState#getControl()
          */
     	@Override
         protected boolean areEqual(Object key, Object otherKey) {
-            Graph one = (Graph) key;
-            Graph two = (Graph) otherKey;
-            if (!one.getCertificate().equals(two.getCertificate())) {
-            	intCertOverlap++;
-                return false;
-            } else {
-                return checker.areIsomorphic(one, two);
-            }
-        }
+    		GraphState stateKey = (GraphState) key;
+    		GraphState otherStateKey = (GraphState) otherKey;
+			if (stateKey.getControl() == otherStateKey.getControl()) {
+				Graph one = stateKey.getGraph();
+				Graph two = otherStateKey.getGraph();
+				if (!one.getCertifier().getGraphCertificate().equals(two.getCertifier().getGraphCertificate())) {
+					intCertOverlap++;
+					return false;
+				} else {
+					return checker.areIsomorphic(one, two);
+				}
+			} else {
+				return false;
+			}
+		}
 
         /**
-         * Returns the hash code of the isomorphism certificate.
-         */
+		 * Returns the hash code of the isomorphism certificate, modified by the control
+		 * location (if any).
+		 */
     	@Override
         protected int getCode(Object key) {
-            return ((Graph) key).getCertificate().hashCode();
+    		GraphState stateKey = (GraphState) key;
+    		int result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
+    		Object control = stateKey.getControl();
+    		result += control == null ? 0 : System.identityHashCode(control);
+    		return result;
         }
         
         /** The isomorphism checker of the state set. */

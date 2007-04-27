@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BarbedStrategy.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: BarbedStrategy.java,v 1.2 2007-04-27 22:06:58 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -20,8 +20,9 @@ import groove.lts.GraphState;
 import groove.lts.LTS;
 import groove.lts.State;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.List;
 
 /**
  * LTS exploration strategy based on the principle of depth search.
@@ -29,7 +30,7 @@ import java.util.Iterator;
  * closed state is found.
  * The maximum depth of the search can be set; a depth of 0 means unbounded depth.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class BarbedStrategy extends AbstractStrategy {
 	/** Name of the barbed exploration strategy. */
@@ -43,21 +44,21 @@ public class BarbedStrategy extends AbstractStrategy {
      * @see LTS#getFinalStates()
      */
     public Collection<? extends State> explore() throws InterruptedException {
-        Collection<? extends State> nextStates = getGenerator().getSuccessors(getAtState());
+        List<GraphState> nextStates = new ArrayList<GraphState>(getSuccessors(getAtState()));
         while (!nextStates.isEmpty()) {
             if (Thread.currentThread().isInterrupted()) {
                 throw new InterruptedException();
             }
             // choose randomly among the next states
             int nextIndex = (int) (Math.random() * nextStates.size());
-            State nextState = null;
-            Iterator<? extends State> nextStateIter = nextStates.iterator();
-            for (int i = 0; i <= nextIndex; i++) {
-                nextState = nextStateIter.next();
-            }
-            nextStates = getGenerator().computeSuccessors((GraphState) nextState);
+            GraphState state = nextStates.get(nextIndex);
+            // set nextStates to collect the successors of state
+            nextStates.clear();
+            getCollector().set(nextStates);
+            explore(state);
+            getCollector().reset();
         }
-        return getLTS().getFinalStates();
+        return getGTS().getFinalStates();
     }
 
     public String getName() {
@@ -67,7 +68,4 @@ public class BarbedStrategy extends AbstractStrategy {
     public String getShortDescription() {
         return STRATEGY_DESCRIPTION;
     }
-    //
-    //    static public final Reporter reporter = GTS.reporter;
-    //    static private final int EXTEND = reporter.newMethod("explore");
 }

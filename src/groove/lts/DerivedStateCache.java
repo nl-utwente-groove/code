@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DerivedStateCache.java,v 1.3 2007-04-22 23:32:14 rensink Exp $
+ * $Id: DerivedStateCache.java,v 1.4 2007-04-27 22:06:26 rensink Exp $
  */
 package groove.lts;
 
@@ -20,7 +20,7 @@ import groove.graph.DeltaGraph;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DerivedStateCache extends DefaultStateCache {
 	/** Constructs a new cache for a given derived state graph. */
@@ -51,7 +51,7 @@ public class DerivedStateCache extends DefaultStateCache {
 		@Override
 		protected int computeFreezeDecrement(DeltaGraph graph) {
 			if (graph instanceof DerivedGraphState) {
-				return 4 * ((DerivedGraphState) graph).getRule().anchor().length;
+				return 4 * ((DerivedGraphState) graph).getEvent().getRule().anchor().length;
 			} else {
 				return super.computeFreezeDecrement(graph);
 			}
