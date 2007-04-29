@@ -1,14 +1,13 @@
-/* $Id: AspectualGxl.java,v 1.5 2007-04-24 10:06:47 rensink Exp $ */
+/* $Id: AspectualGxl.java,v 1.6 2007-04-29 09:22:32 rensink Exp $ */
 package groove.io;
 
 import groove.graph.Graph;
 import groove.graph.GraphShape;
-import groove.graph.aspect.AspectGraph;
-import groove.util.FormatException;
+import groove.view.FormatException;
+import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
 
 /**
  * Class to marshal and unmarshal {@link AspectGraph}s as GXL files.
@@ -42,12 +41,7 @@ public class AspectualGxl implements Xml<AspectGraph> {
 	 * @see AspectGraph#fromPlainGraph(GraphShape)
 	 */
 	public AspectGraph unmarshalGraph(File file) throws FormatException, IOException {
-			return AspectGraph.getFactory().fromPlainGraph(marshaller.unmarshalGraph(file));
-	}
-
-    /** Delegates the method to the inner marshaller. */
-    public void setPropertyKeys(Collection<String> propertyNames) {
-		marshaller.setPropertyKeys(propertyNames);
+		return AspectGraph.getFactory().fromPlainGraph(marshaller.unmarshalGraph(file));
 	}
 
 	/** The marshaller to get and store graphs, which are then converted to aspect graphs. */

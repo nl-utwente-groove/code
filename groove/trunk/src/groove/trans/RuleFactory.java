@@ -12,19 +12,19 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleFactory.java,v 1.6 2007-04-20 09:02:25 rensink Exp $
+ * $Id: RuleFactory.java,v 1.7 2007-04-29 09:22:23 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.trans.view.RuleView;
-import groove.util.FormatException;
+import groove.view.FormatException;
+import groove.view.RuleView;
 
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-04-20 09:02:25 $
+ * @version $Revision: 1.7 $ $Date: 2007-04-29 09:22:23 $
  */
 public interface RuleFactory {
 	/**

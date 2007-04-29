@@ -12,12 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ContentAspectValue.java,v 1.1 2007-04-12 16:14:51 rensink Exp $
+ * $Id: ContentAspectValue.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
  */
-package groove.graph.aspect;
+package groove.view.aspect;
 
-import static groove.graph.aspect.Aspect.CONTENT_ASSIGN;
-import groove.util.FormatException;
+import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
+import groove.view.FormatException;
 
 /**
  * Specialisation of aspect values that have additional content.
@@ -35,7 +35,7 @@ abstract public class ContentAspectValue<C> extends AspectValue {
      * Throws an exception if an aspect value with the same name exists already.
      * @param aspect the aspect for which this is a value
      * @param name the name of the aspect value.
-     * @throws groove.util.FormatException if the value name is already used
+     * @throws groove.view.FormatException if the value name is already used
      */
     public ContentAspectValue(Aspect aspect, String name, ContentParser<C> parser) throws FormatException {
     	super(aspect, name);

@@ -12,13 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: Aspect.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
  */
-package groove.graph.aspect;
+package groove.view.aspect;
 
 import groove.graph.Label;
-import groove.util.FormatException;
 import groove.util.Groove;
+import groove.view.FormatException;
 
 import java.util.Set;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * Examples of aspects are: the roles in a rule, typing information, or
  * graph condition information.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 1.1 $
  */
 public interface Aspect {
 	/** 

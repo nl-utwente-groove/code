@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateJGraph.java,v 1.4 2007-04-12 16:14:50 rensink Exp $
+ * $Id: StateJGraph.java,v 1.5 2007-04-29 09:22:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -65,7 +65,10 @@ public class StateJGraph extends JGraph {
     public Rectangle2D getElementBounds(Set<Element> elemSet) {
         Set<JCell> jCellSet = new HashSet<JCell>();
         for (Element elem: elemSet) {
-            jCellSet.add(getModel().getJCell(elem));
+        	JCell jCell = getModel().getJCell(elem);
+        	if (jCell != null) {
+        		jCellSet.add(jCell);
+        	}
         }
         return getCellBounds(jCellSet.toArray());
     }

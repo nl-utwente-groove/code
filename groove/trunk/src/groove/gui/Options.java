@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.8 2007-04-24 10:06:44 rensink Exp $
+ * $Id: Options.java,v 1.9 2007-04-29 09:22:28 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class Options {
     /** Edit menu name */
@@ -65,11 +65,10 @@ public class Options {
 	 * About action name 
 	 */
 	public static final String ABOUT_ACTION_NAME = "About";
-	// Action names
     /** Add point action name */
     public static final String ADD_POINT_ACTION = "Add Point";
     /** Apply transition action name */
-    public static final String APPLY_TRANSITION_ACTION_NAME = "Apply active rule";
+    public static final String APPLY_TRANSITION_ACTION_NAME = "Apply active match";
     /** Close action name */
     public static final String CLOSE_ACTION_NAME = "Close";
     /** Copy action name */
@@ -78,6 +77,8 @@ public class Options {
     public static final String CUT_ACTION_NAME = "Cut";
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
+    /** Edit state action name */
+    public static final String EDIT_GRAPH_ACTION_NAME = "Edit Graph ...";
     /** Edge mode action name */
     public static final String EDGE_MODE_NAME = "Edge mode";
     /** Edit label action name */
@@ -88,8 +89,6 @@ public class Options {
     public static final String EDIT_STATE_ACTION_NAME = "Edit State ...";
     /** Edit action name */
     public static final String EDIT_ACTION_NAME = "Edit ...";
-    /** Edit action name */
-    public static final String PROPERTIES_ACTION_NAME = "Properties ...";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export rule action name */
@@ -118,7 +117,11 @@ public class Options {
     public static final String PARSE_ACTION_NAME = "Paste";
     /** Paste action name */
     public static final String PASTE_ACTION_NAME = "Paste";
-    /** Provide ctl formula action name */
+    /**
+	 * Edit action name 
+	 */
+	public static final String PROPERTIES_ACTION_NAME = "Properties ...";
+	/** Provide ctl formula action name */
     public static final String PROVIDE_CTL_FORMULA_ACTION_NAME = "CTL formula ...";
     /** Quit action name */
     public static final String QUIT_ACTION_NAME = "Quit";
@@ -132,7 +135,11 @@ public class Options {
     public static final String SAVE_STATE_ACTION_NAME = "Save State ...";
     /** Scroll to action name */
     static public final String SCROLL_TO_ACTION_NAME = "Scroll To Current";
-    /** Stop edit action name */
+    /**
+	 * Start simulation action name 
+	 */
+	public static final String START_ACTION_NAME = "Start simulation";
+	/** Stop edit action name */
     public static final String STOP_EDIT_ACTION_NAME = "Close";
     /** Redo action name */
     public static final String REDO_ACTION_NAME = "Redo";
@@ -140,7 +147,11 @@ public class Options {
     public static final String REFRESH_GRAMMAR_ACTION_NAME = "Refresh Grammar";
     /** Reset label position action name */
     static public final String RESET_LABEL_POSITION_ACTION = "Reset Label";
-    /** Remove point action name */
+    /**
+	 * Restart simulation action name 
+	 */
+	public static final String RESTART_ACTION_NAME = "Restart simulation";
+	/** Remove point action name */
     static public final String REMOVE_POINT_ACTION = "Remove Point";
     /** View action name */
     public static final String VIEW_ACTION_NAME = "View as rule";

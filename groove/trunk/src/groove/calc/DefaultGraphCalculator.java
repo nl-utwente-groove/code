@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.7 2007-04-27 22:06:59 rensink Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.8 2007-04-29 09:22:39 rensink Exp $
  */
 package groove.calc;
 
@@ -26,7 +26,7 @@ import groove.lts.explore.LinearStrategy;
 import groove.trans.GraphGrammar;
 import groove.trans.GraphTest;
 import groove.trans.Rule;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 import java.util.Collection;
 import java.util.Iterator;

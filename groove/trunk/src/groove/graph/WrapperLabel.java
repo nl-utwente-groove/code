@@ -11,10 +11,10 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
-/* $Id: WrapperLabel.java,v 1.4 2007-04-01 12:49:56 rensink Exp $ */
+/* $Id: WrapperLabel.java,v 1.5 2007-04-29 09:22:27 rensink Exp $ */
 package groove.graph;
 
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 /**
  * Label class that wraps an immutable object of a given (generic) type.

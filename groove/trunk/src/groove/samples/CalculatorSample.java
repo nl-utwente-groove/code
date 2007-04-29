@@ -27,8 +27,8 @@ import groove.calc.DefaultGraphResult;
 import groove.calc.GraphCalculator;
 import groove.calc.GraphResult;
 import groove.trans.GraphGrammar;
-import groove.util.FormatException;
 import groove.util.Groove;
+import groove.view.FormatException;
 
 /**
  * This class is meant to show an example of how the classes

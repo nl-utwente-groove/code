@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.7 2007-04-24 10:06:48 rensink Exp $
+ * $Id: GraphJModel.java,v 1.8 2007-04-29 09:22:22 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -52,7 +52,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */
@@ -83,7 +83,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         addNodeSet(graph.nodeSet());
         addEdgeSet(graph.edgeSet());
         doInsert();
-        SortedMap<String,Object> graphProperties = GraphInfo.getProperties(graph);
+        SortedMap<String,Object> graphProperties = GraphInfo.getProperties(graph, false);
         if (graphProperties != null) {
         	setProperties(graphProperties);
         }
@@ -131,7 +131,23 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     	this(AbstractGraph.EMPTY_GRAPH, null);
     }
     
-    /**
+    /** 
+     * If the name is not explicitly set, obtains the name of the underlying graph
+     * as set in the graph properties.
+     */
+    @Override
+	public String getName() {
+    	String result = super.getName();
+    	if (result == null) {
+			Map<String, Object> properties = GraphInfo.getProperties(graph(), false);
+			if (properties != null) {
+				result = (String) properties.get(GraphInfo.GRAPH_NAME);
+			}
+		}
+    	return result;
+	}
+
+	/**
      * Returns the underlying Graph of this GraphModel.
      * @ensure result != null
      */
@@ -158,7 +174,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         addedEdgeSet.removeAll(toJCellMap.edgeMap().keySet());
         addEdgeSet(addedEdgeSet);
         doInsert();
-        SortedMap<String,Object> graphProperties = GraphInfo.getProperties(graph);
+        SortedMap<String,Object> graphProperties = GraphInfo.getProperties(graph, false);
         if (graphProperties != null) {
         	setProperties(graphProperties);
         }

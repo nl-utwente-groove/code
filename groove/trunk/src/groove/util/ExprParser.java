@@ -12,9 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExprParser.java,v 1.3 2007-04-01 12:50:01 rensink Exp $
+ * $Id: ExprParser.java,v 1.4 2007-04-29 09:22:29 rensink Exp $
  */
 package groove.util;
+
+import groove.view.FormatException;
 
 import java.io.IOException;
 import java.io.StreamTokenizer;
@@ -30,7 +32,7 @@ import java.util.Stack;
  * A class that helps parse an expression.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ExprParser {
     /** The single quote character, to control parsing. */

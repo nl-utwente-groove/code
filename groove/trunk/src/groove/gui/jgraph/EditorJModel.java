@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorJModel.java,v 1.3 2007-04-24 10:06:48 rensink Exp $
+ * $Id: EditorJModel.java,v 1.4 2007-04-29 09:22:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -33,15 +33,14 @@ import org.jgraph.graph.GraphConstants;
  * Moreover, there is some control as to the possible source and target points
  * of new edges.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class EditorJModel extends JModel {
     /**
-     * Creates an empty, anonymous model.
-     * @ensure <tt>getName() == null</tt>
+     * Creates an empty model with empty name.
      */
     public EditorJModel() {
-        // nothing to be done
+        this("");
     }
 
     /**
@@ -50,7 +49,7 @@ public class EditorJModel extends JModel {
      * @ensure <tt>getName().equals(name)</tt>
      */
     public EditorJModel(String name) {
-        this.name = name;
+        setName(name);
     }
 
     /**
@@ -110,6 +109,7 @@ public class EditorJModel extends JModel {
             }
         }
         setProperties(jModel.getProperties());
+        setName(jModel.getName());
     }
 
     /**
@@ -121,25 +121,7 @@ public class EditorJModel extends JModel {
      */
     public EditorJModel(String name, GraphJModel jModel) {
         this(jModel);
-        this.name = name;
-    }
-
-    /**
-     * Returns the name of this j-model.
-     * The name may be <tt>null</tt> if the model is anonymous.
-     * @see #setName(String)
-     */
-    public String getName() {
-        return name;
-    }
-
-    /**
-     * Sets the name of this j-model to a given name.
-     * The name may be <tt>null</tt> if the model is anonymous.
-     * @see #getName()
-     */
-    public void setName(String name) {
-        this.name = name;
+        setName(name);
     }
 
     /**
@@ -200,7 +182,9 @@ public class EditorJModel extends JModel {
 	                || GraphConstants.getPoints(((JEdge) cell).getAttributes()).size() > 2) {
 	            layoutableJCells.add(toResultCellMap.get(cell));
 	        }
-	    }        
+	    }
+        setProperties(jModel.getProperties());
+        setName(jModel.getName());    
 	}
 
 	/**
@@ -273,9 +257,4 @@ public class EditorJModel extends JModel {
 	    GraphConstants.setDisconnectable(result, true);
 	    return result;
 	}
-
-	/**
-     * The name of this model.
-     */
-    protected String name;
 }

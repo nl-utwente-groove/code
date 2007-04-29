@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AutomatonTest.java,v 1.4 2007-04-01 12:50:31 rensink Exp $
+ * $Id: AutomatonTest.java,v 1.5 2007-04-29 09:22:37 rensink Exp $
  */
 package groove.test;
 
@@ -31,8 +31,8 @@ import groove.rel.NodeRelation;
 import groove.rel.RegExpr;
 import groove.rel.SetNodeRelation;
 import groove.rel.VarAutomaton;
-import groove.util.FormatException;
 import groove.util.ExprParser;
+import groove.view.FormatException;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * Tests the available {@link Automaton} interface.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class AutomatonTest extends TestCase {
     static public final String GRAPH_TEST_DIR = "groove/test/graph";

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphResult.java,v 1.7 2007-04-27 22:07:00 rensink Exp $
+ * $Id: DefaultGraphResult.java,v 1.8 2007-04-29 09:22:39 rensink Exp $
  */
 package groove.calc;
 
@@ -27,7 +27,7 @@ import groove.trans.GraphTest;
 import groove.trans.Matching;
 import groove.trans.Rule;
 import groove.trans.RuleSystem;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;

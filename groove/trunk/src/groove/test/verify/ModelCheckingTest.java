@@ -13,17 +13,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ModelCheckingTest.java,v 1.6 2007-04-10 12:40:35 kastenberg Exp $
+ * $Id: ModelCheckingTest.java,v 1.7 2007-04-29 09:22:28 rensink Exp $
  */
 
 package groove.test.verify;
 
 import groove.lts.GTS;
-import groove.util.FormatException;
 import groove.util.Generator;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
+import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,7 @@ import junit.framework.TestCase;
 /**
  * Tests the CTLStarFormula class.
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ModelCheckingTest extends TestCase {
     @Override

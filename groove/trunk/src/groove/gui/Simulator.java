@@ -13,13 +13,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.17 2007-04-27 22:07:06 rensink Exp $
+ * $Id: Simulator.java,v 1.18 2007-04-29 09:22:28 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.OPTIONS_MENU_NAME;
-import static groove.gui.Options.QUIT_ACTION_NAME;
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
@@ -30,8 +29,6 @@ import groove.graph.GraphAdapter;
 import groove.graph.GraphListener;
 import groove.graph.GraphShape;
 import groove.graph.Node;
-import groove.graph.aspect.AspectGraph;
-import groove.graph.aspect.AspectualGraphView;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
@@ -56,15 +53,16 @@ import groove.lts.StateGenerator;
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
-import groove.trans.RuleFactory;
-import groove.trans.view.AspectualRuleView;
-import groove.trans.view.RuleViewGrammar;
 import groove.util.Converter;
-import groove.util.FormatException;
 import groove.util.Groove;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
+import groove.view.AspectualGraphView;
+import groove.view.AspectualRuleView;
+import groove.view.FormatException;
+import groove.view.RuleViewGrammar;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
 import java.awt.Dimension;
@@ -119,7 +117,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class Simulator {
     /**
@@ -169,603 +167,6 @@ public class Simulator {
 	        // System.exit(0);
 	    }
 	}
-
-	/**
-	 * Class that spawns a thread to perform a long-lasting action,
-	 * while displaying a dialog that can interrupt the thread.
-	 */
-	abstract private class CancellableAction extends Thread {
-	    /**
-	     * Constructs an action that can be cancelled through a dialog.
-	     * @param parentComponent the parent for the cancel dialog
-	     * @param cancelDialogTitle the title of the cancel dialog
-	     */
-		public CancellableAction(Component parentComponent, String cancelDialogTitle) {
-	        this.cancelDialog = createCancelDialog(parentComponent, cancelDialogTitle);
-	    }
-	
-		/**
-		 * Calls {@link #doAction()}, then disposes the cancel dialog.
-		 */
-		@Override
-		final public void run() {
-			doAction();
-			synchronized (cancelDialog) {
-				// wait for the cancel dialog to become visible
-				// (this is necessary if the doAction was actually very fast)
-				while (!cancelDialog.isVisible()) {
-					try {
-						wait(10);
-					} catch (InterruptedException e) {
-						// do nothing
-					}
-				}
-				cancelDialog.setVisible(false);
-			}
-		}
-		
-		/** 
-		 * Method that should contain the code to be executed in parallel.
-		 * It is invoked as a callback method from {@link #run()}.
-		 */ 
-		abstract protected void doAction();
-		
-		@Override
-	    public void start() {
-	        super.start();
-	        // make dialog visible
-	        cancelDialog.setVisible(true);
-	        // wait for the thread to return
-	        try {
-	        	this.join();
-	        } catch (InterruptedException exc) {
-	        	// thread is done
-	        }
-	        synchronized (cancelDialog) {
-	        	cancelDialog.dispose();
-	        }
-	    }
-	
-	    /**
-	     * Hook to give subclasses the opportunity to put something on the
-	     * cancel dialog.
-	     * Note that this callback mathod is invoked at construction time,
-	     * so should not make reference to instance variables.
-	     */
-	    protected Object createCancelDialogContent() {
-	    	return new JLabel();
-	    }
-	    
-		/**
-		 * Creates a modal dialog that will interrupt this thread,
-		 * when the cancel button is pressed.
-		 * @param parentComponent the parent for the dialog
-		 * @param title the title of the dialog
-		 */
-		private JDialog createCancelDialog(Component parentComponent, String title) {
-			JDialog result;
-			// create message dialog
-		    JOptionPane message = new JOptionPane(createCancelDialogContent(), JOptionPane.PLAIN_MESSAGE);
-		    JButton cancelButton = new JButton("Cancel");
-		    // add a button to interrupt the generation process and
-		    // wait for the thread to finish and rejoin this one
-		    cancelButton.addActionListener(createCancelListener());
-		    message.setOptions(new Object[] { cancelButton });
-		    result = message.createDialog(parentComponent, title);
-		    result.pack();
-		    return result;
-		}
-
-		/** 
-		 * Returns a listener to this {@link GenerateThread} that 
-		 * interrupts the thread and waits for it to rejoin this thread.
-		 */
-		private ActionListener createCancelListener() {
-		    return new ActionListener() {
-		        public void actionPerformed(ActionEvent evt) {
-		            CancellableAction.this.interrupt();
-		        }
-		    };
-		}
-
-		/** Dialog for cancelling the thread. */
-		private final JDialog cancelDialog;
-	}
-
-	/** Interface for actions that should be refreshed upon changes. */
-	private interface Refreshable { 
-		/** 
-		 * Callback method to refresh attributes of the action
-		 * such as its name and enabledness status.
-		 */
-		void refresh();
-	}
-	
-	/**
-	 * Thread class to wrap the exploration of the simulator's current GTS.
-	 */
-	private class GenerateThread extends CancellableAction {
-	    /**
-	     * Constructs a generate thread for a given exploration stragegy.
-	     * @param strategy the exploration strategy of this thread
-	     */
-	    GenerateThread(ExploreStrategy strategy) {
-	    	super(getLtsPanel(), "Exploring state space");
-	        this.strategy = strategy;
-	        this.progressListener = createProgressListener();
-	    }
-
-		@Override
-		public void doAction() {
-			displayProgress(currentGTS);
-			currentGTS.addGraphListener(progressListener);
-			try {
-				strategy.setGTS(currentGTS);
-				strategy.setAtState(currentState);
-				strategy.explore();
-			} catch (InterruptedException exc) {
-				// proceed
-			}
-			currentGTS.removeGraphListener(progressListener);
-		}
-
-	    /** This implementation returns the state and transition count labels. */
-		@Override
-		protected Object createCancelDialogContent() {
-			return new Object[] { getStateCountLabel(), getTransitionCountLabel() };
-		}
-
-		/** 
-		 * Creates a graph listener that displays the progress of the generate
-		 * thread on the cancel dialog.
-		 */
-		private GraphListener createProgressListener() {
-			return new GraphAdapter() {
-				@Override
-				public void addUpdate(GraphShape graph, Node node) {
-				    displayProgress(graph);
-				}
-				
-				@Override
-				public void addUpdate(GraphShape graph, groove.graph.Edge edge) {
-				    displayProgress(graph);
-				}
-			};
-		}
-		
-		/**
-		 * Returns the {@link JLabel} used to display the state count in the
-		 * cencel dialog; first creates the label if that is not yet done.
-		 */
-		private JLabel getStateCountLabel() {
-			// lazily create the label
-			if (stateCountLabel == null) {
-				stateCountLabel = new JLabel();
-			}
-			return stateCountLabel;
-		}
-		
-		/**
-		 * Returns the {@link JLabel} used to display the state count in the
-		 * cencel dialog; first creates the label if that is not yet done.
-		 */
-		private JLabel getTransitionCountLabel() {
-			// lazily create the label
-			if (transitionCountLabel == null) {
-				transitionCountLabel = new JLabel();
-			}
-			return transitionCountLabel;
-		}
-
-		/**
-		 * Displays the number of lts states and transitions in the message dialog.
-		 */
-		private void displayProgress(GraphShape graph) {
-		    getStateCountLabel().setText("States: " + graph.nodeCount());
-		    getTransitionCountLabel().setText("Transitions: " + graph.edgeCount());
-		}
-
-		/** LTS generation strategy of this thread. */
-		private final ExploreStrategy strategy;
-		/** Progress listener for the generate thread. */
-		private final GraphListener progressListener;
-		/** Label displaying the number of states generated so far. */
-		private JLabel transitionCountLabel;
-		/** Label displaying the number of transitions generated so far. */
-		private JLabel stateCountLabel;
-	}
-
-	/**
-     * Action to generate (and view) part of the LTS.
-     */
-    protected class GenerateLTSAction extends AbstractAction {
-        /**
-         * Constructs a generate action with a given explore strategy.
-         * @param strategy the strategy to be used during exploration
-         */
-        protected GenerateLTSAction(ExploreStrategy strategy) {
-            super(strategy.toString());
-            this.strategy = strategy;
-        }
-
-        /**
-         * Returns the explore strategy to which this generate action is initialized.
-         */
-        public ExploreStrategy getExploreStrategy() {
-            return strategy;
-        }
-
-        /**
-         * Extends superclass method with a change of action name.
-         */
-		@Override
-        public void setEnabled(boolean enabled) {
-            super.setEnabled(enabled);
-            putValue(Action.NAME, strategy.toString());
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-        	doGenerate(strategy);
-        }
-
-        /** The exploration strategy for the action. */
-		private final ExploreStrategy strategy;
-    }
-
-    /**
-     * Action for setting the initial state of the LTS as current state.
-     * @see GTS#startState()
-     * @see Simulator#setState(GraphState)
-     */
-    protected class GotoStartStateAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        protected GotoStartStateAction() {
-            super(Options.GOTO_START_STATE_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            setState(currentGTS.startState());
-        }
-
-		public void refresh() {
-			setEnabled(getCurrentGTS() != null);
-		}
-    }
-
-    /**
-     * Action for applying the current derivation to the current state.
-     * @see Simulator#applyTransition()
-     */
-    protected class ApplyTransitionAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        protected ApplyTransitionAction() {
-            super(Options.APPLY_TRANSITION_ACTION_NAME);
-            putValue(Action.ACCELERATOR_KEY, Options.APPLY_KEY);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            applyTransition();
-        }
-
-		public void refresh() {
-			setEnabled(getCurrentTransition() != null);
-		}
-    }
-
-    /**
-     * Action for inputting a CTL formula.
-     */
-    protected class ProvideCTLFormulaAction extends AbstractAction {
-    	/** Constructs an instance of the action. */
-    	protected ProvideCTLFormulaAction() {
-    		super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME);
-    		setEnabled(true);
-    	}
-
-    	public void actionPerformed(ActionEvent evt) {
-    		String property = JOptionPane.showInputDialog(null, "Enter the temporal formula to be verified by GROOVE.");
-    		if (property != null) {
-    			verifyProperty(property);
-    		} else {
-    			// do nothing
-    		}
-    	}
-    }
-    /**
-     * Action for loading and setting a new initial state.
-     * @see Simulator#doLoadStartState(File)
-     */
-    protected class LoadStartStateAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        protected LoadStartStateAction() {
-            super(Options.LOAD_START_STATE_ACTION_NAME);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-//            stateFileChooser.setSelectedFile(currentStartStateFile);
-            int result = getStateFileChooser().showOpenDialog(getFrame());
-            // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(getValue(NAME).toString())) {
-                doLoadStartState(getStateFileChooser().getSelectedFile());
-            }
-        }
-        
-        /** Sets the enabling status of this action, depending on whether a grammar is currently loaded. */ 
-        public void refresh() {
-            setEnabled(getCurrentGrammar() != null);
-        }
-    }
-
-    /**
-     * Action for loading a new rule system.
-     * @see Simulator#doLoadGrammar(XmlGrammar, File, String)
-     */
-    protected class LoadGrammarAction extends AbstractAction {
-    	/** Constructs an instance of the action. */
-        protected LoadGrammarAction() {
-            super(Options.LOAD_GRAMMAR_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.OPEN_KEY);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            int result = getGrammarFileChooser().showOpenDialog(getFrame());
-            // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(getValue(NAME).toString())) {
-                File selectedFile = getGrammarFileChooser().getSelectedFile();
-                FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
-                doLoadGrammar(grammarLoaderMap.get(filterUsed), selectedFile, null);
-            }
-        }
-    }
-
-    /**
-     * Action for refreshing the rule system. Reloads the current rule system and start graph.
-     * @see Simulator#doRefreshGrammar()
-     */
-    protected class RefreshGrammarAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        protected RefreshGrammarAction() {
-            super(Options.REFRESH_GRAMMAR_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.REFRESH_KEY);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            if (confirmAbandon(getValue(NAME).toString())) {
-                doRefreshGrammar();
-            }
-        }
-
-		public void refresh() {
-            setEnabled(getCurrentGrammar() != null);
-		}
-    }
-
-    /**
-     * Action for saving a rule system. Currently not enabled.
-     */
-    protected class SaveGrammarAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        protected SaveGrammarAction() {
-            super(Options.SAVE_GRAMMAR_ACTION_NAME);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            // initialize current directory if necessary
-            getGrammarFileChooser().rescanCurrentDirectory();
-
-            int result = getGrammarFileChooser().showOpenDialog(getFrame());
-            // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION) {
-                File selectedFile = getGrammarFileChooser().getSelectedFile();
-                // currentDirectory = selectedFile.getAbsoluteFile().getParentFile();
-                try {
-                    javax.swing.filechooser.FileFilter filterUsed = getGrammarFileChooser()
-                            .getFileFilter();
-                    XmlGrammar<RuleViewGrammar> saver = grammarLoaderMap.get(filterUsed);
-                    saver.marshalGrammar(currentGrammar, selectedFile);
-                    currentGrammarFile = selectedFile;
-                } catch (IOException exc) {
-                    showErrorDialog("Error while exporting to " + selectedFile, exc);
-                } catch (FormatException exc) {
-                    showErrorDialog("Graph format error", exc);
-                }
-            }
-        }
-
-		public void refresh() {
-            setEnabled(getCurrentGrammar() != null);
-		}
-    }
-
-    /**
-     * Action for quitting the simulator.
-     * @see Simulator#doQuit()
-     */
-    protected class QuitAction extends AbstractAction {
-    	/** Constructs an instance of the action. */
-        protected QuitAction() {
-            super(Options.QUIT_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.QUIT_KEY);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            doQuit();
-        }
-    }
-
-    /**
-     * Action for displaying an about box.
-     */
-    protected class AboutAction extends AbstractAction {
-    	/** Constructs an instance of the action. */
-        protected AboutAction() {
-            super(Options.ABOUT_ACTION_NAME);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            new AboutBox(getFrame());
-        }
-    }
-
-    /**
-     * Action for editing the current state or rule.
-     * @see Simulator#handleEditState()
-     * @see Simulator#handleEditRule()
-     */
-    protected class EditGraphAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        protected EditGraphAction() {
-            super(Options.EDIT_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
-        }
-
-        /**
-         * Checks if the enabling condition is satisfied, and if so, calls
-         * {@link #setEnabled(boolean)}.
-         */
-        public void refresh() {
-            if (getGraphPanel() == getStatePanel()) {
-                setEnabled(getCurrentState() != null);
-                putValue(NAME, Options.EDIT_STATE_ACTION_NAME);
-            } else if (getGraphPanel() == getRulePanel()) {
-                setEnabled(getCurrentRule() != null);
-                putValue(NAME, Options.EDIT_RULE_ACTION_NAME);
-            } else {
-                setEnabled(false);
-                putValue(NAME, Options.EDIT_ACTION_NAME);
-            }
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (getGraphPanel() == getStatePanel()) {
-                handleEditState();
-            } else {
-                handleEditRule();
-            }
-        }
-    }
-
-    /**
-     * Action to save the state or LTS as a graph.
-     * @see Simulator#handleSaveGraph(boolean, JModel, String)
-     * @see Simulator#doSaveGraph(JModel, File)
-     */
-    protected class SaveGraphAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        protected SaveGraphAction() {
-            super(Options.SAVE_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            if (getGraphPanel() == getLtsPanel()) {
-                handleSaveGraph(false, getLtsPanel().getJModel(), LTS_FILE_NAME);
-            } else {
-                handleSaveGraph(true, getStatePanel().getJModel(), currentState.toString());
-            }
-        }
-
-        /**
-         * Tests if the action should be enabled according to the current state of the simulator,
-         * and also modifies the action name.
-         * 
-         */
-        public void refresh() {
-            if (getGraphPanel() == getLtsPanel()) {
-                setEnabled(getCurrentGTS() != null);
-                putValue(NAME, Options.SAVE_LTS_ACTION_NAME);
-            } else if (getGraphPanel() == getStatePanel()) {
-                setEnabled(getCurrentState() != null);
-                putValue(NAME, Options.SAVE_STATE_ACTION_NAME);
-            } else {
-                setEnabled(false);
-                putValue(NAME, Options.SAVE_ACTION_NAME);
-            }
-        }
-    }
-
-    /**
-     * Action to save the state, as a graph or in some export format.
-     * @see Simulator#doExportGraph(JGraph, File)
-     */
-    protected class ExportGraphAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        protected ExportGraphAction() {
-            super(Options.EXPORT_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
-        }
-
-        public void actionPerformed(ActionEvent e) {
-            String fileName;
-            JGraph jGraph;
-            if (getGraphPanel() == getLtsPanel()) {
-                fileName = "lts";
-                jGraph = getLtsPanel().getJGraph();
-            } else if (getGraphPanel() == getStatePanel()) {
-                fileName = getCurrentState().toString();
-                jGraph = getStatePanel().getJGraph();
-            } else {
-                fileName = getCurrentRule().getName().toString();
-                jGraph = getRulePanel().getJGraph();
-            }
-            getExportChooser().setSelectedFile(new File(fileName));
-            File selectedFile = ExtensionFilter.showSaveDialog(getExportChooser(), getFrame());
-            // now save, if so required
-            if (selectedFile != null) {
-                doExportGraph(jGraph, selectedFile);
-            }
-        }
-
-        /**
-         * Tests if the action should be enabled according to the current state of the simulator,
-         * and also modifies the action name.
-         */
-        public void refresh() {
-            if (getGraphPanel() == getLtsPanel()) {
-                setEnabled(getCurrentGTS() != null);
-                putValue(NAME, Options.EXPORT_LTS_ACTION_NAME);
-            } else if (getGraphPanel() == getStatePanel()) {
-                setEnabled(getCurrentState() != null);
-                putValue(NAME, Options.EXPORT_STATE_ACTION_NAME);
-            } else {
-                setEnabled(getCurrentRule() != null);
-                putValue(NAME, Options.EXPORT_RULE_ACTION_NAME);
-            }
-        }
-    }
-
-    /** Action to show the system properties. */
-    private class ShowPropertiesAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        public ShowPropertiesAction() {
-            super(Options.PROPERTIES_ACTION_NAME);
-        }
-        
-        /** 
-         * Displays a {@link PropertiesDialog} for the properties
-         * of the edited graph.
-         */
-        public void actionPerformed(ActionEvent e) {
-        	Map<String,Object> properties = new HashMap<String,Object>();
-        	Properties systemProperties = getCurrentGrammar().getProperties();
-        	for (Map.Entry<Object,Object> entry: systemProperties.entrySet()) {
-        		if (entry.getKey() instanceof String) {
-        			properties.put((String) entry.getKey(), entry.getValue());
-        		}
-        	}
-            new PropertiesDialog(Simulator.this.getFrame(), properties, false).showDialog();
-        }
-        
-        /**
-         * Tests if the currently selected grammar has non-<code>null</code>
-         * system properties.
-         */
-        public void refresh() {
-        	GraphGrammar grammar = getCurrentGrammar();
-        	setEnabled(grammar != null && grammar.getProperties() != null);
-        }
-    }
 
     // --------------------- INSTANCE DEFINITIONS -----------------------------
 
@@ -881,13 +282,30 @@ public class Simulator {
     }
 
     /**
-     * Returns the currently loaded graph grammar, or <tt>null</tt> if none is loaded.
-     */
-    public StateGenerator getCurrentGenerator() {
-        return stateGenerator;
-    }
+	 * Returns the currently selected graph view component. This is be the state, rule or LTS view.
+	 * @see #getStatePanel()
+	 * @see #getRulePanel()
+	 * @see #getLtsPanel()
+	 * @see #setGraphPanel(JGraphPanel)
+	 */
+	public JGraphPanel<?> getGraphPanel() {
+	    return (JGraphPanel) getGraphViewsPanel().getSelectedComponent();
+	}
 
-    /**
+	/**
+	 * Brings one of the graph view components to the foreground. This should be the state, rule or
+	 * LTS view.
+	 * @param component the graph view component to bring to the foreground
+	 * @see #getStatePanel()
+	 * @see #getRulePanel()
+	 * @see #getLtsPanel()
+	 * @see #getGraphPanel()
+	 */
+	public void setGraphPanel(JGraphPanel<?> component) {
+	    getGraphViewsPanel().setSelectedComponent(component);
+	}
+
+	/**
      * Returns the currently loaded graph grammar, or <tt>null</tt> if none is loaded.
      */
     public RuleViewGrammar getCurrentGrammar() {
@@ -938,17 +356,27 @@ public class Simulator {
         return applyTransitionAction;
     }
 
-    /**
-     * Returns the ctl formula providing action permanently associated with this simulator.
-     */
-    public Action getProvideCTLFormulaAction() {
-    	if (provideCTLFormulaAction == null) {
-    		provideCTLFormulaAction = new ProvideCTLFormulaAction();
-    	}
-    	return provideCTLFormulaAction;
-    }
+    /** Returns the edit action permanently associated with this simulator. */
+	public EditGraphAction getEditGraphAction() {
+		// lazily create the action
+		if (editGraphAction == null) {
+			editGraphAction = new EditGraphAction();
+			addRefreshable(editGraphAction);
+		}
+	    return editGraphAction;
+	}
 
-    /**
+	/** Returns the graph export action permanently associated with this simulator. */
+	public ExportGraphAction getExportGraphAction() {
+		// lazily create the action
+		if (exportGraphAction == null) {
+			exportGraphAction = new ExportGraphAction(); 
+			addRefreshable(exportGraphAction);
+		}
+	    return exportGraphAction;
+	}
+
+	/**
      * Returns the go-to start state action permanently associated with this simulator.
      */
     public GotoStartStateAction getGotoStartStateAction() {
@@ -980,7 +408,35 @@ public class Simulator {
         return loadGrammarAction;
     }
 
-    /** Returns the grammar refresh action permanently associated with this simulator. */
+    /** Returns the quit action permanently associated with this simulator. */
+	public Action getQuitAction() {
+		// lazily create the action
+		if (quitAction == null) {
+			quitAction = new QuitAction();
+		}
+	    return quitAction;
+	}
+
+	/**
+	 * Returns the ctl formula providing action permanently associated with this simulator.
+	 */
+	public Action getProvideCTLFormulaAction() {
+		if (provideCTLFormulaAction == null) {
+			provideCTLFormulaAction = new ProvideCTLFormulaAction();
+		}
+		return provideCTLFormulaAction;
+	}
+
+	/** Returns the redo action permanently associated with this simulator. */
+	public Action getRedoAction() {
+	    if (redoAction == null) {
+	        redoAction = getUndoHistory().getRedoAction();
+	        addAccelerator(redoAction);
+	    }
+	    return redoAction;
+	}
+
+	/** Returns the grammar refresh action permanently associated with this simulator. */
     public RefreshGrammarAction getRefreshGrammarAction() {
     	// lazily create the action
     	if (refreshGrammarAction == null) {
@@ -1001,26 +457,6 @@ public class Simulator {
         return saveGraphAction;
     }
 
-    /** Returns the graph export action permanently associated with this simulator. */
-    public ExportGraphAction getExportGraphAction() {
-    	// lazily create the action
-    	if (exportGraphAction == null) {
-    		exportGraphAction = new ExportGraphAction(); 
-    		addRefreshable(exportGraphAction);
-    	}
-        return exportGraphAction;
-    }
-
-    /** Returns the edit action permanently associated with this simulator. */
-    public EditGraphAction getEditGraphAction() {
-    	// lazily create the action
-    	if (editGraphAction == null) {
-    		editGraphAction = new EditGraphAction();
-    		addRefreshable(editGraphAction);
-    	}
-        return editGraphAction;
-    }
-
     /** Returns the action to show the system properties of the current grammar. */
     private Action getShowPropertiesAction() {
     	// lazily create the action
@@ -1031,22 +467,14 @@ public class Simulator {
         return showPropertiesAction;
     }
 
-    /** Returns the quit action permanently associated with this simulator. */
-    public Action getQuitAction() {
+    /** Lazily creates and returns an instance of {@link SimulateAction}. */
+    public Action getSimulateAction() {
     	// lazily create the action
-    	if (quitAction == null) {
-    		quitAction = new QuitAction();
+    	if (simulateAction == null) {
+    		simulateAction = new SimulateAction();
+    		addRefreshable(simulateAction);
     	}
-        return quitAction;
-    }
-
-    /** Returns the redo action permanently associated with this simulator. */
-    public Action getRedoAction() {
-        if (redoAction == null) {
-            redoAction = getUndoHistory().getRedoAction();
-            addAccelerator(redoAction);
-        }
-        return redoAction;
+        return simulateAction;    	
     }
 
     /** Returns the undo action permanently associated with this simulator. */
@@ -1058,17 +486,6 @@ public class Simulator {
         return undoAction;
     }
 
-    /**
-     * Returns the currently selected graph view component. This is be the state, rule or LTS view.
-     * @see #getStatePanel()
-     * @see #getRulePanel()
-     * @see #getLtsPanel()
-     * @see #setGraphPanel(JGraphPanel)
-     */
-    public JGraphPanel<?> getGraphPanel() {
-        return (JGraphPanel) getGraphViewsPanel().getSelectedComponent();
-    }
-    
     /** Returns (after lazily creating) the undo history for this simulator. */
     protected UndoHistory getUndoHistory() {
     	if (undoHistory == null) {
@@ -1078,36 +495,36 @@ public class Simulator {
     }
 
     /**
-     * Brings one of the graph view components to the foreground. This should be the state, rule or
-     * LTS view.
-     * @param component the graph view component to bring to the foreground
-     * @see #getStatePanel()
-     * @see #getRulePanel()
-     * @see #getLtsPanel()
-     * @see #getGraphPanel()
-     */
-    public void setGraphPanel(JGraphPanel<?> component) {
-        getGraphViewsPanel().setSelectedComponent(component);
-    }
-
-    /**
-     * Handles the execution of a <code>SaveGraphAction</code>. Calls {@link #doSaveGraph(JModel, File)}
+     * Handles the execution of a <code>SaveGraphAction</code>. Calls {@link #doSaveGraph(Graph, File)}
      * for the actual saving.
      * @param state <tt>true</tt> if it is a state that has to be saved (otherwise it is an LTS)
-     * @param jModel the j-model from which the graph is to be obtained
+     * @param graph the j-model from which the graph is to be obtained
      * @param proposedName the proposed name for the graph, to be filled into the dialog
      * @return the file to which the graph has been saved; <tt>null</tt> if the graph has not been
      *         saved
      */
-    public File handleSaveGraph(boolean state, JModel jModel, String proposedName) {
+    public File handleSaveGraph(boolean state, Graph graph, String proposedName) {
         getStateFileChooser().setFileFilter(state ? stateFilter : gxlFilter);
         getStateFileChooser().setSelectedFile(new File(proposedName));
         File selectedFile = ExtensionFilter.showSaveDialog(getStateFileChooser(), getFrame());
         // now save, if so required
         if (selectedFile != null) {
-            doSaveGraph(jModel, selectedFile);
+            doSaveGraph(graph, selectedFile);
         }
         return selectedFile;
+    }
+
+    /**
+     * Invokes the editor on the current graph in the state panel.
+     * It is assumed that this is not a state in the active simulation,
+     * so no attempt is made to use it as start state.
+     */
+    public void handleEditGraph() {
+    	String name = currentStartStateName == null ? XmlGrammar.DEFAULT_START_GRAPH_NAME: currentStartStateName;
+    	Graph editResult = doEdit(getStatePanel().getJModel(), name);
+        if (editResult != null) {
+			handleSaveGraph(true, editResult, name);
+		}
     }
 
     /**
@@ -1116,17 +533,10 @@ public class Simulator {
      * current panel is the state panel.
      */
     public void handleEditState() {
-        Editor editor = new Editor(true);
-        String stateName = currentState.toString();
-        editor.setModel(stateName, new GraphJModel(getStatePanel().getJModel().toPlainGraph(), getOptions()));
-        JDialog editorDialog = Editor.createEditorDialog(getFrame(), true, editor);
-        editor.getRulePreviewAction().setEnabled(false);
-        editorDialog.setVisible(true);
-        // now the editor is done; see if we have do make any updates
-        if (editor.isCurrentGraphModified()) {
-			File saveFile = handleSaveGraph(true,
-					editor.getModel(),
-					stateName);
+    	String stateName = currentState.toString();
+    	Graph editResult = doEdit(getStatePanel().getJModel(), stateName);
+        if (editResult != null) {
+			File saveFile = handleSaveGraph(true, editResult, stateName);
 			if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
 				doLoadStartState(saveFile);
 			}
@@ -1140,26 +550,42 @@ public class Simulator {
 	 * @require <tt>getCurrentRule != null</tt>.
 	 */
     public void handleEditRule() {
-        Editor editor = new Editor(true);
-        String ruleName = currentRule.getName().toString();
-        AspectJModel ruleJModel = getRulePanel().getJGraph().getModel();
-        editor.setModel(ruleName, new GraphJModel(ruleJModel.toPlainGraph(), getOptions()));
-        JDialog editorDialog = Editor.createEditorDialog(getFrame(), true, editor);
-        editorDialog.setVisible(true);
-        // now the editor is done; see if we have do make any updates
-        if (editor.isCurrentGraphModified()) {
-            Graph editedGraph = editor.getModel().toPlainGraph();
+    	String ruleName = currentRule.getName().toString();
+    	Graph editResult = doEdit(getRulePanel().getJGraph().getModel(), ruleName);
+        if (editResult != null) {
             if (confirmReplaceRule(ruleName)) {
-                replaceCurrentRule(editedGraph);
+                doReplaceCurrentRule(editResult);
             }
         }
     }
 
+    /** Activates the current grammar. */
+    private void handleSimulate() {
+    	if (confirmAbandon()) {
+    		activateGrammar(getCurrentGrammar());
+    	}
+    }
+    
+    private Graph doEdit(JModel jModel, String name) {
+		Editor editor = new Editor(true);
+		editor.setModel(name, new GraphJModel(jModel.toPlainGraph(), getOptions()));
+		JDialog editorDialog = Editor.createEditorDialog(getFrame(),
+				true,
+				editor);
+		editor.getRulePreviewAction().setEnabled(jModel instanceof AspectJModel);
+		editorDialog.setVisible(true);
+		if (editor.isCurrentGraphModified()) {
+			return editor.getModel().toPlainGraph();
+		} else {
+			return null;
+		}
+	}
+    
     /**
      * Exports the current state to a given format. The format is deduced from the file name, using
      * known file filters.
      */
-    public void doExportGraph(JGraph jGraph, File file) {
+    private void doExportGraph(JGraph jGraph, File file) {
         try {
             if (fsmFilter.accept(file)) {
                 PrintWriter writer = new PrintWriter(new FileWriter(file));
@@ -1188,6 +614,35 @@ public class Simulator {
     }
 
     /**
+	 * Applies a given exploration strategy to the current GTS.
+	 * The application is done concurrently, and can be cancelled from the GUI.
+	 */
+	private void doGenerate(ExploreStrategy strategy) {
+	    GraphJModel ltsJModel = getLtsPanel().getJModel();
+	    synchronized (ltsJModel) {
+	        // unhook the lts' jmodel from the lts, for efficiency's sake
+	    	currentGTS.removeGraphListener(ltsJModel);
+	        // disable rule application for the time being
+	        boolean applyEnabled = getApplyTransitionAction().isEnabled();
+	        getApplyTransitionAction().setEnabled(false);
+	        // create a thread to do the work in the background
+	        Thread generateThread = new GenerateThread(strategy);
+	        // go!
+	        generateThread.start();
+	        // get the lts' jmodel back on line and re-synchronize its state
+	        ltsJModel.reload();
+	        // re-enable rule application
+	        getApplyTransitionAction().setEnabled(applyEnabled);
+	        // reset lts display visibility
+	        setGraphPanel(getLtsPanel());
+	    }
+	    LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
+	    if (ltsJGraph.getLayouter() != null) {
+	        ltsJGraph.getLayouter().start(false);
+	    }
+	}
+
+	/**
      * Loads in a grammar from a given grammar and start state file and using a given loader. File
      * and loader may not be <tt>null</tt>; if the start state file is <tt>null</tt>, the
      * default start state name is used. Sets the current grammar and start state files and loader
@@ -1198,10 +653,10 @@ public class Simulator {
      *        start state name is used
      * @see XmlGrammar#DEFAULT_START_GRAPH_NAME
      */
-    public void doLoadGrammar(XmlGrammar<RuleViewGrammar> grammarLoader, File grammarFile, String startStateName) {
+    private void doLoadGrammar(XmlGrammar<RuleViewGrammar> grammarLoader, File grammarFile, String startStateName) {
         try {
         	RuleViewGrammar grammar = grammarLoader.unmarshalGrammar(grammarFile, startStateName);
-        	setGrammar(grammar);
+        	activateGrammar(grammar);
             // now we know loading succeeded, we can set the current names & files
             currentGrammarFile = grammarFile;
             currentGrammarLoader = grammarLoader;
@@ -1224,10 +679,10 @@ public class Simulator {
     /**
      * Sets the contents of a given file as start state. This results in a reset of the LTS.
      */
-    public void doLoadStartState(File file) {
+    private void doLoadStartState(File file) {
         try {
             AspectGraph aspectStartGraph = graphLoader.unmarshalGraph(file);
-            Graph startGraph = new AspectualGraphView(aspectStartGraph).getModel();
+            Graph startGraph = new AspectualGraphView(aspectStartGraph).toModel();
             RuleViewGrammar newGrammar = new RuleViewGrammar(getCurrentGrammar());
             newGrammar.setStartGraph(startGraph);
             setGrammar(newGrammar);
@@ -1241,39 +696,10 @@ public class Simulator {
     }
     
     /**
-     * Applies a given exploration strategy to the current GTS.
-     * The application is done concurrently, and can be cancelled from the GUI.
-     */
-    public void doGenerate(ExploreStrategy strategy) {
-        GraphJModel ltsJModel = getLtsPanel().getJModel();
-        synchronized (ltsJModel) {
-            // unhook the lts' jmodel from the lts, for efficiency's sake
-        	currentGTS.removeGraphListener(ltsJModel);
-            // disable rule application for the time being
-            boolean applyEnabled = getApplyTransitionAction().isEnabled();
-            getApplyTransitionAction().setEnabled(false);
-            // create a thread to do the work in the background
-            Thread generateThread = new GenerateThread(strategy);
-            // go!
-            generateThread.start();
-            // get the lts' jmodel back on line and re-synchronize its state
-            ltsJModel.reload();
-            // re-enable rule application
-            getApplyTransitionAction().setEnabled(applyEnabled);
-            // reset lts display visibility
-            setGraphPanel(getLtsPanel());
-        }
-        LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
-        if (ltsJGraph.getLayouter() != null) {
-            ltsJGraph.getLayouter().start(false);
-        }
-    }
-
-    /**
      * Ends the program.
      */
-    public void doQuit() {
-        if (confirmAbandon(QUIT_ACTION_NAME)) {
+    private void doQuit() {
+        if (confirmAbandon()) {
             if (REPORT) {
                 try {
                     BufferedReader systemIn = new BufferedReader(new InputStreamReader(System.in));
@@ -1293,10 +719,37 @@ public class Simulator {
     }
 
     /**
+	 * Saves a new rule under the name of the currently selected rule.
+	 * @param ruleAsGraph the new rule, given in editor input format
+	 */
+	private void doReplaceCurrentRule(Graph ruleAsGraph) {
+		Rule currentRule = getCurrentRule();
+		NameLabel currentRuleName = currentRule.getName();
+		int currentRulePriority = currentRule.getPriority();
+		try {
+			AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(ruleAsGraph);
+			AspectualRuleView newRuleGraph = new AspectualRuleView(
+					ruleAsAspectGraph, currentRuleName, currentRulePriority, getCurrentGrammar()
+							.getProperties());
+			RuleViewGrammar newGrammar = new RuleViewGrammar(getCurrentGrammar());
+			newGrammar.add(newRuleGraph);
+			((AspectualGpsGrammar) currentGrammarLoader).marshalRule(newRuleGraph,
+					currentGrammarFile);
+			NameLabel oldRuleName = currentRuleName;
+			setGrammar(newGrammar);
+			setRule(oldRuleName);
+		} catch (IOException exc) {
+			showErrorDialog("Error while saving edited rule", exc);
+		} catch (FormatException exc) {
+			showErrorDialog("Error in rule format", exc);
+		}
+	}
+
+	/**
      * Refreshes the currently loaded grammar, if any. Does not ask for confirmation. Has no effect
      * if no grammar is currently loaded.
      */
-    public void doRefreshGrammar() {
+    private void doRefreshGrammar() {
         if (currentGrammarFile != null) {
             try {
                 setGrammar(currentGrammarLoader.unmarshalGrammar(currentGrammarFile, currentStartStateName)); 
@@ -1311,9 +764,9 @@ public class Simulator {
     /**
      * Saves the contents of a given j-model to a given file.
      */
-    public void doSaveGraph(JModel jModel, File file) {
+    private void doSaveGraph(Graph graph, File file) {
         try {
-        	AspectGraph saveGraph = AspectGraph.getFactory().fromPlainGraph(jModel.toPlainGraph());
+        	AspectGraph saveGraph = AspectGraph.getFactory().fromPlainGraph(graph);
             graphLoader.marshalGraph(saveGraph, file);
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
@@ -1323,69 +776,84 @@ public class Simulator {
     }
 
     /**
-     * Saves a new rule under the name of the currently selected rule.
-     * @param ruleAsGraph the new rule, given in editor input format
-     */
-    public void replaceCurrentRule(Graph ruleAsGraph) {
-    	RuleFactory ruleFactory = currentGrammarLoader.getRuleFactory();
-		Rule currentRule = getCurrentRule();
-		NameLabel currentRuleName = currentRule.getName();
-		int currentRulePriority = currentRule.getPriority();
-		try {
-			AspectualRuleView newRuleGraph = (AspectualRuleView) ruleFactory.createRuleView(
-					ruleAsGraph, currentRuleName, currentRulePriority, currentGrammar
-							.getProperties());
-			RuleViewGrammar newGrammar = new RuleViewGrammar(getCurrentGrammar());
-			newGrammar.add(newRuleGraph);
-			((AspectualGpsGrammar) currentGrammarLoader).marshalRule(newRuleGraph,
-					currentGrammarFile);
-			NameLabel oldRuleName = currentRuleName;
-			setGrammar(newGrammar);
-			setRule(oldRuleName);
-		} catch (IOException exc) {
-			showErrorDialog("Error while saving edited rule", exc);
-		} catch (FormatException exc) {
-			showErrorDialog("Error in rule format", exc);
-		}
-    }
-
-    /**
 	 * Sets a new graph transition system. Invokes
-	 * {@link #notifySetGrammar(GTS)} to notify all observers of the change.
+	 * {@link #notifySetGrammar(RuleViewGrammar)} to notify all observers of the change.
 	 * 
 	 * @param grammar
 	 *            the new graph transition system
-	 * @see #notifySetGrammar(GTS)
+	 * @see #notifySetGrammar(RuleViewGrammar)
 	 */
     public synchronized void setGrammar(RuleViewGrammar grammar) {
+		setCurrentGrammar(grammar);
+		setActive(false);
+		notifySetGrammar(grammar);
+		refresh();
+	}
+
+    /**
+	 * Sets a new graph transition system. Invokes
+	 * {@link #notifySetGrammar(RuleViewGrammar)} to notify all observers of the
+	 * change.
+	 * 
+	 * @param grammar
+	 *            the new graph transition system
+	 * @see #notifySetGrammar(RuleViewGrammar)
+	 */
+    public synchronized void activateGrammar(RuleViewGrammar grammar) {
     	try {
+    		setCurrentGrammar(grammar);
 			grammar.setFixed();
-			this.currentGTS = new GTS(grammar);
-			this.currentGrammar = grammar;
-			this.stateGenerator = createStateGenerator(currentGTS);
-			if (currentGrammar.getName() == null) {
-				setTitle(APPLICATION_NAME);
-			} else {
-				setTitle(currentGrammar.getName() + " - " + APPLICATION_NAME);
-			}
-			// reset the node numbering
-			// DefaultNode.resetNodeNr();
-			if (grammar == null) {
-				currentState = null;
-			} else {
-				currentState = currentGTS.startState();
-				stateGenerator.explore(currentState);
-			}
-			currentRule = null;
-			currentTransition = null;
-			notifySetGrammar(currentGTS);
+			GTS gts = setActive(true);
+			getGenerator().explore(getCurrentState());
+			notifyActivateGrammar(gts);
 			refreshActions();
 			if (getFrame().getContentPane() instanceof JSplitPane) {
 				((JSplitPane) getFrame().getContentPane()).resetToPreferredSizes();
 			}
 		} catch (FormatException exc) {
-			showErrorDialog("Error while setting grammar", exc);
+			setGrammar(grammar);
+			showErrorDialog("Error while activating grammar", exc);
 		}
+    }
+    
+    /** 
+     * Sets the {@link #currentGrammar} and {@link #currentRule} fields. 
+     */
+    private void setCurrentGrammar(RuleViewGrammar grammar) {
+		this.currentGrammar = grammar;
+		if (currentRule != null && grammar.getRule(currentRule.getName()) == null) {
+			this.currentRule = null;
+		}
+    }
+
+	/**
+	 * Sets the activity of the current simulation.
+	 * If the simulator is set to active, generates the {@link #currentGTS}, 
+	 * {@link #currentState} and {@link #currentTransition} fields from the current graph grammar.
+	 * If it is set to inactive, resets the fields to <code>null</code>
+	 * @param active indicates if the simulation is to be activated or deactivated
+	 * @return the new GTS, or <code>null</code> if the simulation was deactivated
+	 */
+	private GTS setActive(boolean active) {
+		if (active) {
+			this.currentGTS = new GTS(getCurrentGrammar());
+			this.currentState = currentGTS.startState();
+			this.currentTransition = null;
+			this.stateGenerator = createStateGenerator(currentGTS);
+		} else {
+			this.currentGTS = null;
+			this.currentState = null;
+			this.currentTransition = null;
+			this.stateGenerator = null;
+		}
+		return currentGTS;
+	}
+
+    /**
+     * Returns the state generator for the current GTS, if any.
+     */
+    private StateGenerator getGenerator() {
+        return stateGenerator;
     }
 
     /**
@@ -1496,55 +964,10 @@ public class Simulator {
         listeners.remove(listener);
     }
 
-	/**
-	 * Returns the file chooser for grammar (GPR) files, lazily creating it first.
-	 */
-	protected JFileChooser getGrammarFileChooser() {
-		if (grammarFileChooser == null) {
-			grammarFileChooser = new GrooveFileChooser();
-			grammarFileChooser.setAcceptAllFileFilterUsed(false);
-			for (FileFilter filter : grammarLoaderMap.keySet()) {
-				grammarFileChooser.addChoosableFileFilter(filter);
-			}
-			grammarFileChooser.setFileFilter(gpsLoader.getExtensionFilter());
-			grammarFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-		}
-		return grammarFileChooser;
-	}
-
-	/**
-	 * Returns the file chooser for state (GST or GXL) files, lazily creating it first.
-	 */
-	protected JFileChooser getStateFileChooser() {
-		if (stateFileChooser == null) {
-			stateFileChooser = new GrooveFileChooser();
-			stateFileChooser.addChoosableFileFilter(stateFilter);
-			stateFileChooser.addChoosableFileFilter(gxlFilter);
-			stateFileChooser.setFileFilter(stateFilter);
-		}
-        return stateFileChooser;
-	}
-
-	/**
-	 * Returns the file chooser for exporting, lazily creating it first.
-	 */
-	protected JFileChooser getExportChooser() {
-		if (exportChooser == null) {
-			exportChooser = new GrooveFileChooser();
-			exportChooser.setAcceptAllFileFilterUsed(false);
-			exportChooser.addChoosableFileFilter(fsmFilter);
-			exportChooser.addChoosableFileFilter(jpgFilter);
-			exportChooser.addChoosableFileFilter(pngFilter);
-			exportChooser.addChoosableFileFilter(epsFilter);
-			exportChooser.setFileFilter(pngFilter);
-		} 
-		return exportChooser;
-	}
-
     /**
      * Lazily creates and returns the frame of this simulator.
      */
-    protected JFrame getFrame() {
+    private JFrame getFrame() {
         if (frame == null) {
             // set up the content pane of the frame as a splt pane,
             // with the rule directory to the left and a desktop pane to the right
@@ -1645,17 +1068,10 @@ public class Simulator {
      * Is called after a change to current state, rule or derivation or to the currently selected
      * view panel to allow registered refreshable elements to refresh themselves.
      */
-    protected void refreshActions() {
+    private void refreshActions() {
     	for (Refreshable action: refreshables) {
     		action.refresh();
     	}
-//    	getRefreshGrammarAction().setEnabled(getCurrentGrammar() != null);
-//        getApplyTransitionAction().setEnabled(getCurrentTransition() != null);
-//        getGotoStartStateAction().setEnabled(getCurrentState() != null && getCurrentState() != getCurrentGTS().startState());
-//        getLoadStartStateAction().refresh();
-//        getSaveGraphAction().refresh();
-//        getExportGraphAction().refresh();
-//        getEditGraphAction().refresh();
     }
 
     /**
@@ -1664,7 +1080,7 @@ public class Simulator {
      * @param action the action to be added
      * @require <tt>frame.getContentPane()</tt> should be initialized
      */
-    protected void addAccelerator(Action action) {
+    private void addAccelerator(Action action) {
         JComponent contentPane = (JComponent) getFrame().getContentPane();
         ActionMap am = contentPane.getActionMap();
         am.put(action.getValue(Action.NAME), action);
@@ -1676,7 +1092,7 @@ public class Simulator {
      * Creates, initializes and returns a menu bar for the simulator. The actions have to be
      * initialized before invoking this.
      */
-    protected JMenuBar createMenuBar() {
+    private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createFileMenu());
         menuBar.add(createDisplayMenu());
@@ -1744,13 +1160,20 @@ public class Simulator {
 	 * Creates and returns an exploration menu for the menu bar.
 	 */
 	private JMenu createExploreMenu() {
-        JMenu result = new ExploreStrategyMenu(this, false);
-        result.add(new JMenuItem(getUndoAction()), 0);
-        result.add(new JMenuItem(getRedoAction()), 1);
-        result.insertSeparator(2);
-        result.add(new JMenuItem(getApplyTransitionAction()), 3);
-        result.add(new JMenuItem(getGotoStartStateAction()), 4);
-        result.insertSeparator(5);
+		JMenu result = new JMenu();
+		JMenu exploreMenu = new ExploreStrategyMenu(this, false);
+		result.setText(exploreMenu.getText());
+        result.add(new JMenuItem(getUndoAction()));
+        result.add(new JMenuItem(getRedoAction()));
+        result.addSeparator();
+        result.add(new JMenuItem(getSimulateAction()));
+        result.add(new JMenuItem(getApplyTransitionAction()));
+        result.add(new JMenuItem(getGotoStartStateAction()));
+        result.addSeparator();
+        // copy the exploration meny
+        for (Component menuComponent: exploreMenu.getMenuComponents()) {
+        	result.add(menuComponent);
+        }
         return result;
 	}
 
@@ -1772,6 +1195,51 @@ public class Simulator {
 	}
 
 	/**
+	 * Returns the file chooser for grammar (GPR) files, lazily creating it first.
+	 */
+	private JFileChooser getGrammarFileChooser() {
+		if (grammarFileChooser == null) {
+			grammarFileChooser = new GrooveFileChooser();
+			grammarFileChooser.setAcceptAllFileFilterUsed(false);
+			for (FileFilter filter : grammarLoaderMap.keySet()) {
+				grammarFileChooser.addChoosableFileFilter(filter);
+			}
+			grammarFileChooser.setFileFilter(gpsLoader.getExtensionFilter());
+			grammarFileChooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
+		}
+		return grammarFileChooser;
+	}
+
+	/**
+	 * Returns the file chooser for state (GST or GXL) files, lazily creating it first.
+	 */
+	private JFileChooser getStateFileChooser() {
+		if (stateFileChooser == null) {
+			stateFileChooser = new GrooveFileChooser();
+			stateFileChooser.addChoosableFileFilter(stateFilter);
+			stateFileChooser.addChoosableFileFilter(gxlFilter);
+			stateFileChooser.setFileFilter(stateFilter);
+		}
+        return stateFileChooser;
+	}
+
+	/**
+	 * Returns the file chooser for exporting, lazily creating it first.
+	 */
+	private JFileChooser getExportChooser() {
+		if (exportChooser == null) {
+			exportChooser = new GrooveFileChooser();
+			exportChooser.setAcceptAllFileFilterUsed(false);
+			exportChooser.addChoosableFileFilter(fsmFilter);
+			exportChooser.addChoosableFileFilter(jpgFilter);
+			exportChooser.addChoosableFileFilter(pngFilter);
+			exportChooser.addChoosableFileFilter(epsFilter);
+			exportChooser.setFileFilter(pngFilter);
+		} 
+		return exportChooser;
+	}
+
+	/**
      * Adds all implemented grammar loaders to the menu.
      */
     protected void initGrammarLoaders() {
@@ -1785,15 +1253,27 @@ public class Simulator {
 
     /**
      * Notifies all listeners of a new graph grammar. As a result,
-     * {@link SimulationListener#setGrammarUpdate(GTS)}is invoked on all currently
+     * {@link SimulationListener#setGrammarUpdate(RuleViewGrammar)}is invoked on all currently
      * registered listeners. This method should not be called directly: use
      * {@link #setGrammar(RuleViewGrammar)}instead.
-     * @see SimulationListener#setGrammarUpdate(GTS)
-     * @see #setGrammar(RuleViewGrammar)
+     * @see SimulationListener#setGrammarUpdate(RuleViewGrammar)
      */
-    protected synchronized void notifySetGrammar(GTS gts) {
+    protected synchronized void notifySetGrammar(RuleViewGrammar grammar) {
     	for (SimulationListener listener: listeners) {
-    		listener.setGrammarUpdate(gts);
+    		listener.setGrammarUpdate(grammar);
+        }
+    }
+
+    /**
+     * Notifies all listeners of the start of a new active simulation. As a result,
+     * {@link SimulationListener#activateGrammarUpdate(GTS)} is invoked on all currently
+     * registered listeners. This method should not be called directly: use
+     * {@link #activateGrammar(RuleViewGrammar)}instead.
+     * @see SimulationListener#activateGrammarUpdate(GTS)
+     */
+    protected synchronized void notifyActivateGrammar(GTS gts) {
+    	for (SimulationListener listener: listeners) {
+    		listener.activateGrammarUpdate(gts);
         }
     }
 
@@ -1871,10 +1351,27 @@ public class Simulator {
 //    	System.out.println("Emphasize the states violating the propery.\n" + counterExamples);
     }
 
+	/**
+	 * Refreshes the title bar, layout and actions.
+	 */
+	private void refresh() {
+		setTitle();
+		refreshActions();
+		if (getFrame().getContentPane() instanceof JSplitPane) {
+			((JSplitPane) getFrame().getContentPane()).resetToPreferredSizes();
+		}
+	}
+
     /**
      * Sets the title of the frame to a given title.
      */
-    protected void setTitle(String title) {
+    protected void setTitle() {
+    	String title;
+    	if (currentGrammar == null || currentGrammar.getName() == null) {
+			title = APPLICATION_NAME;
+		} else {
+			title = currentGrammar.getName() + " - " + APPLICATION_NAME;
+		}
         getFrame().setTitle(title);
     }
 
@@ -1887,11 +1384,10 @@ public class Simulator {
     
     /**
      * If the current grammar is set, asks through a dialog whether it may be abandoned.
-     * @param title the title of the dialog
      * @return <tt>true</tt> if the current grammar may be abandoned
      */
-    private boolean confirmAbandon(String title) {
-        if (currentGrammar != null) {
+    private boolean confirmAbandon() {
+        if (getCurrentGTS() != null) {
             int res = JOptionPane.showConfirmDialog(getFrame(),
                 "Abandon current LTS?",
                 null,
@@ -1912,15 +1408,24 @@ public class Simulator {
     }
 
     /**
-     * Asks whether the current rule should be replaced by the edited version.
+     * Asks whether the current start graph should be replaced by the edited version.
      */
     private boolean confirmLoadStartState(String stateName) {
-        int answer = JOptionPane.showConfirmDialog(getFrame(), "Replace start state with " + stateName
-                + "?", null, JOptionPane.OK_CANCEL_OPTION);
-        return answer == JOptionPane.OK_OPTION;
+    	if (getCurrentGTS() != null) {
+			int answer = JOptionPane.showConfirmDialog(getFrame(),
+					"Replace start graph with " + stateName + "?",
+					null,
+					JOptionPane.OK_CANCEL_OPTION);
+			return answer == JOptionPane.OK_OPTION;
+		} else {
+			return true;
+		}
     }
 
-    /** Creates and shows an {@link ErrorDialog} for a given message and exception. */
+    /**
+	 * Creates and shows an {@link ErrorDialog} for a given message and
+	 * exception.
+	 */
     private void showErrorDialog(String message, Exception exc) {
         new ErrorDialog(getFrame(), message, exc).setVisible(true);
     }
@@ -2095,40 +1600,54 @@ public class Simulator {
     /** panel for the rule directory. */
     private JScrollPane ruleJTreePanel;
 
-    // --------------------------- Action bjects ---------------------------------
-    /** The state save action permanently associated with this simulator. */
-    private SaveGraphAction saveGraphAction;
+    /**
+	 * The transition application action permanently associated with this simulator. 
+	 */
+	private ApplyTransitionAction applyTransitionAction;
 
-    /** The state export action permanently associated with this simulator. */
+	/**
+	 * The state and rule edit action permanently associated with this simulator. 
+	 */
+	private EditGraphAction editGraphAction;
+
+	/** The state export action permanently associated with this simulator. */
     private ExportGraphAction exportGraphAction;
 
-    /** The start state load action permanently associated with this simulator. */
+    /**
+	 * The go-to start state action permanently associated with this simulator. 
+	 */
+	private GotoStartStateAction gotoStartStateAction;
+
+	/** The start state load action permanently associated with this simulator. */
     private LoadStartStateAction loadStartStateAction;
 
     /** The grammar load action permanently associated with this simulator. */
     private LoadGrammarAction loadGrammarAction;
 
-    /** The grammar refresh action permanently associated with this simulator. */
+    /**
+	 * The quit action permanently associated with this simulator. 
+	 */
+	private QuitAction quitAction;
+
+	/**
+	 * The redo action permanently associated with this simulator. 
+	 */
+	private Action redoAction;
+
+	/** The grammar refresh action permanently associated with this simulator. */
     private RefreshGrammarAction refreshGrammarAction;
 
-    /** The state and rule edit action permanently associated with this simulator. */
-    private EditGraphAction editGraphAction;
-    /** The action to show the system properties of the currently selected grammar. */
-    private ShowPropertiesAction showPropertiesAction;
-    /** The quit action permanently associated with this simulator. */
-    private QuitAction quitAction;
+    /**
+	 * The state save action permanently associated with this simulator. 
+	 */
+	private SaveGraphAction saveGraphAction;
 
+	/** The action to show the system properties of the currently selected grammar. */
+    private ShowPropertiesAction showPropertiesAction;
+    /** The action to start a new simulation. */
+    private SimulateAction simulateAction;
     /** The undo action permanently associated with this simulator. */
     private Action undoAction;
-
-    /** The redo action permanently associated with this simulator. */
-    private Action redoAction;
-
-    /** The go-to start state action permanently associated with this simulator. */
-    private GotoStartStateAction gotoStartStateAction;
-
-    /** The transition application action permanently associated with this simulator. */
-    private ApplyTransitionAction applyTransitionAction;
 
     /** The ctl formula providing action permanently associated with this simulator. */
     private ProvideCTLFormulaAction provideCTLFormulaAction;
@@ -2137,4 +1656,643 @@ public class Simulator {
 
     /** Flag controlling if a report should be printed after quitting. */
     private static final boolean REPORT = false;
+    
+
+	/**
+	 * Class that spawns a thread to perform a long-lasting action,
+	 * while displaying a dialog that can interrupt the thread.
+	 */
+	abstract private class CancellableThread extends Thread {
+	    /**
+	     * Constructs an action that can be cancelled through a dialog.
+	     * @param parentComponent the parent for the cancel dialog
+	     * @param cancelDialogTitle the title of the cancel dialog
+	     */
+		public CancellableThread(Component parentComponent, String cancelDialogTitle) {
+	        this.cancelDialog = createCancelDialog(parentComponent, cancelDialogTitle);
+	    }
+	
+		/**
+		 * Calls {@link #doAction()}, then disposes the cancel dialog.
+		 */
+		@Override
+		final public void run() {
+			doAction();
+			synchronized (cancelDialog) {
+				// wait for the cancel dialog to become visible
+				// (this is necessary if the doAction was actually very fast)
+				while (!cancelDialog.isVisible()) {
+					try {
+						wait(10);
+					} catch (InterruptedException e) {
+						// do nothing
+					}
+				}
+				cancelDialog.setVisible(false);
+			}
+		}
+		
+		/** 
+		 * Method that should contain the code to be executed in parallel.
+		 * It is invoked as a callback method from {@link #run()}.
+		 */ 
+		abstract protected void doAction();
+		
+		@Override
+	    public void start() {
+	        super.start();
+	        // make dialog visible
+	        cancelDialog.setVisible(true);
+	        // wait for the thread to return
+	        try {
+	        	this.join();
+	        } catch (InterruptedException exc) {
+	        	// thread is done
+	        }
+	        synchronized (cancelDialog) {
+	        	cancelDialog.dispose();
+	        }
+	    }
+	
+	    /**
+	     * Hook to give subclasses the opportunity to put something on the
+	     * cancel dialog.
+	     * Note that this callback mathod is invoked at construction time,
+	     * so should not make reference to instance variables.
+	     */
+	    protected Object createCancelDialogContent() {
+	    	return new JLabel();
+	    }
+	    
+		/**
+		 * Creates a modal dialog that will interrupt this thread,
+		 * when the cancel button is pressed.
+		 * @param parentComponent the parent for the dialog
+		 * @param title the title of the dialog
+		 */
+		private JDialog createCancelDialog(Component parentComponent, String title) {
+			JDialog result;
+			// create message dialog
+		    JOptionPane message = new JOptionPane(createCancelDialogContent(), JOptionPane.PLAIN_MESSAGE);
+		    JButton cancelButton = new JButton("Cancel");
+		    // add a button to interrupt the generation process and
+		    // wait for the thread to finish and rejoin this one
+		    cancelButton.addActionListener(createCancelListener());
+		    message.setOptions(new Object[] { cancelButton });
+		    result = message.createDialog(parentComponent, title);
+		    result.pack();
+		    return result;
+		}
+
+		/** 
+		 * Returns a listener to this {@link GenerateThread} that 
+		 * interrupts the thread and waits for it to rejoin this thread.
+		 */
+		private ActionListener createCancelListener() {
+		    return new ActionListener() {
+		        public void actionPerformed(ActionEvent evt) {
+		            CancellableThread.this.interrupt();
+		        }
+		    };
+		}
+
+		/** Dialog for cancelling the thread. */
+		private final JDialog cancelDialog;
+	}
+
+	/**
+	 * Thread class to wrap the exploration of the simulator's current GTS.
+	 */
+	private class GenerateThread extends CancellableThread {
+	    /**
+	     * Constructs a generate thread for a given exploration stragegy.
+	     * @param strategy the exploration strategy of this thread
+	     */
+	    GenerateThread(ExploreStrategy strategy) {
+	    	super(getLtsPanel(), "Exploring state space");
+	        this.strategy = strategy;
+	        this.progressListener = createProgressListener();
+	    }
+
+		@Override
+		public void doAction() {
+			displayProgress(currentGTS);
+			currentGTS.addGraphListener(progressListener);
+			try {
+				strategy.setGTS(currentGTS);
+				strategy.setAtState(currentState);
+				strategy.explore();
+			} catch (InterruptedException exc) {
+				// proceed
+			}
+			currentGTS.removeGraphListener(progressListener);
+		}
+
+	    /** This implementation returns the state and transition count labels. */
+		@Override
+		protected Object createCancelDialogContent() {
+			return new Object[] { getStateCountLabel(), getTransitionCountLabel() };
+		}
+
+		/** 
+		 * Creates a graph listener that displays the progress of the generate
+		 * thread on the cancel dialog.
+		 */
+		private GraphListener createProgressListener() {
+			return new GraphAdapter() {
+				@Override
+				public void addUpdate(GraphShape graph, Node node) {
+				    displayProgress(graph);
+				}
+				
+				@Override
+				public void addUpdate(GraphShape graph, groove.graph.Edge edge) {
+				    displayProgress(graph);
+				}
+			};
+		}
+		
+		/**
+		 * Returns the {@link JLabel} used to display the state count in the
+		 * cencel dialog; first creates the label if that is not yet done.
+		 */
+		private JLabel getStateCountLabel() {
+			// lazily create the label
+			if (stateCountLabel == null) {
+				stateCountLabel = new JLabel();
+			}
+			return stateCountLabel;
+		}
+		
+		/**
+		 * Returns the {@link JLabel} used to display the state count in the
+		 * cencel dialog; first creates the label if that is not yet done.
+		 */
+		private JLabel getTransitionCountLabel() {
+			// lazily create the label
+			if (transitionCountLabel == null) {
+				transitionCountLabel = new JLabel();
+			}
+			return transitionCountLabel;
+		}
+
+		/**
+		 * Displays the number of lts states and transitions in the message dialog.
+		 */
+		private void displayProgress(GraphShape graph) {
+		    getStateCountLabel().setText("States: " + graph.nodeCount());
+		    getTransitionCountLabel().setText("Transitions: " + graph.edgeCount());
+		}
+
+		/** LTS generation strategy of this thread. */
+		private final ExploreStrategy strategy;
+		/** Progress listener for the generate thread. */
+		private final GraphListener progressListener;
+		/** Label displaying the number of states generated so far. */
+		private JLabel transitionCountLabel;
+		/** Label displaying the number of transitions generated so far. */
+		private JLabel stateCountLabel;
+	}
+
+	/** Interface for actions that should be refreshed upon changes. */
+	private interface Refreshable { 
+		/** 
+		 * Callback method to refresh attributes of the action
+		 * such as its name and enabledness status.
+		 */
+		void refresh();
+	}
+	
+    /**
+     * Action for displaying an about box.
+     */
+    protected class AboutAction extends AbstractAction {
+    	/** Constructs an instance of the action. */
+        protected AboutAction() {
+            super(Options.ABOUT_ACTION_NAME);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            new AboutBox(getFrame());
+        }
+    }
+
+    /**
+     * Action for applying the current derivation to the current state.
+     * @see Simulator#applyTransition()
+     */
+    protected class ApplyTransitionAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        protected ApplyTransitionAction() {
+            super(Options.APPLY_TRANSITION_ACTION_NAME);
+            putValue(Action.ACCELERATOR_KEY, Options.APPLY_KEY);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            applyTransition();
+        }
+
+		public void refresh() {
+			setEnabled(getCurrentTransition() != null);
+		}
+    }
+
+    /**
+     * Action for editing the current state or rule.
+     * @see Simulator#handleEditState()
+     * @see Simulator#handleEditRule()
+     */
+    protected class EditGraphAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        protected EditGraphAction() {
+            super(Options.EDIT_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.EDIT_KEY);
+        }
+
+        /**
+         * Checks if the enabling condition is satisfied, and if so, calls
+         * {@link #setEnabled(boolean)}.
+         */
+        public void refresh() {
+            if (isEditState()) {
+				setEnabled(true);
+				putValue(NAME, Options.EDIT_STATE_ACTION_NAME);
+			} else if (isEditGraph()) {
+				setEnabled(true);
+				putValue(NAME, Options.EDIT_GRAPH_ACTION_NAME);
+			} else if (isEditRule()) {
+                setEnabled(getCurrentRule() != null);
+                putValue(NAME, Options.EDIT_RULE_ACTION_NAME);
+            } else {
+                setEnabled(false);
+                putValue(NAME, Options.EDIT_ACTION_NAME);
+            }
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (isEditState()) {
+                handleEditState();
+            } else if (isEditGraph()) {
+                handleEditState();
+            } else if (isEditRule()) {
+                handleEditRule();
+            }
+        }
+
+        /** Indicates if there is a graph ready to be edited. */
+        private boolean isEditGraph() {
+        	return getGraphPanel() == getStatePanel();
+        }
+
+        /** Indicates if there is a state ready to be edited. */
+        private boolean isEditState() {
+        	return false;
+//        	return getGraphPanel() == getStatePanel() && getCurrentState() != null;
+        }
+        
+        /** Indicates if there is a rule ready to be edited. */
+        private boolean isEditRule() {
+        	return getGraphPanel() == getRulePanel();
+        }
+    }
+
+
+    /**
+     * Action to save the state, as a graph or in some export format.
+     * @see Simulator#doExportGraph(JGraph, File)
+     */
+    protected class ExportGraphAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        protected ExportGraphAction() {
+            super(Options.EXPORT_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            String fileName;
+            JGraph jGraph;
+            if (getGraphPanel() == getLtsPanel()) {
+                fileName = "lts";
+                jGraph = getLtsPanel().getJGraph();
+            } else if (getGraphPanel() == getStatePanel()) {
+                fileName = getCurrentState().toString();
+                jGraph = getStatePanel().getJGraph();
+            } else {
+                fileName = getCurrentRule().getName().toString();
+                jGraph = getRulePanel().getJGraph();
+            }
+            getExportChooser().setSelectedFile(new File(fileName));
+            File selectedFile = ExtensionFilter.showSaveDialog(getExportChooser(), getFrame());
+            // now save, if so required
+            if (selectedFile != null) {
+                doExportGraph(jGraph, selectedFile);
+            }
+        }
+
+        /**
+         * Tests if the action should be enabled according to the current state of the simulator,
+         * and also modifies the action name.
+         */
+        public void refresh() {
+            if (getGraphPanel() == getLtsPanel()) {
+                setEnabled(getCurrentGTS() != null);
+                putValue(NAME, Options.EXPORT_LTS_ACTION_NAME);
+            } else if (getGraphPanel() == getStatePanel()) {
+                setEnabled(getCurrentState() != null);
+                putValue(NAME, Options.EXPORT_STATE_ACTION_NAME);
+            } else {
+                setEnabled(getCurrentRule() != null);
+                putValue(NAME, Options.EXPORT_RULE_ACTION_NAME);
+            }
+        }
+    }
+    
+	/**
+     * Action to generate (and view) part of the LTS.
+     */
+    protected class GenerateLTSAction extends AbstractAction {
+        /**
+         * Constructs a generate action with a given explore strategy.
+         * @param strategy the strategy to be used during exploration
+         */
+        protected GenerateLTSAction(ExploreStrategy strategy) {
+            super(strategy.toString());
+            this.strategy = strategy;
+        }
+
+        /**
+         * Returns the explore strategy to which this generate action is initialized.
+         */
+        public ExploreStrategy getExploreStrategy() {
+            return strategy;
+        }
+
+        /**
+         * Extends superclass method with a change of action name.
+         */
+		@Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+            putValue(Action.NAME, strategy.toString());
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+        	doGenerate(strategy);
+        }
+
+        /** The exploration strategy for the action. */
+		private final ExploreStrategy strategy;
+    }
+
+    /**
+     * Action for setting the initial state of the LTS as current state.
+     * @see GTS#startState()
+     * @see Simulator#setState(GraphState)
+     */
+    protected class GotoStartStateAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        protected GotoStartStateAction() {
+            super(Options.GOTO_START_STATE_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            setState(currentGTS.startState());
+        }
+
+		public void refresh() {
+			setEnabled(getCurrentGTS() != null);
+		}
+    }
+    
+    /**
+     * Action for loading and setting a new initial state.
+     * @see Simulator#doLoadStartState(File)
+     */
+    protected class LoadStartStateAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        protected LoadStartStateAction() {
+            super(Options.LOAD_START_STATE_ACTION_NAME);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+//            stateFileChooser.setSelectedFile(currentStartStateFile);
+            int result = getStateFileChooser().showOpenDialog(getFrame());
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
+                doLoadStartState(getStateFileChooser().getSelectedFile());
+            }
+        }
+        
+        /** Sets the enabling status of this action, depending on whether a grammar is currently loaded. */ 
+        public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+        }
+    }
+
+    /**
+     * Action for loading a new rule system.
+     * @see Simulator#doLoadGrammar(XmlGrammar, File, String)
+     */
+    protected class LoadGrammarAction extends AbstractAction {
+    	/** Constructs an instance of the action. */
+        protected LoadGrammarAction() {
+            super(Options.LOAD_GRAMMAR_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.OPEN_KEY);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            int result = getGrammarFileChooser().showOpenDialog(getFrame());
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
+                File selectedFile = getGrammarFileChooser().getSelectedFile();
+                FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
+                doLoadGrammar(grammarLoaderMap.get(filterUsed), selectedFile, null);
+            }
+        }
+    }
+    
+    /**
+     * Action for inputting a CTL formula.
+     */
+    protected class ProvideCTLFormulaAction extends AbstractAction {
+    	/** Constructs an instance of the action. */
+    	protected ProvideCTLFormulaAction() {
+    		super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME);
+    		setEnabled(true);
+    	}
+
+    	public void actionPerformed(ActionEvent evt) {
+    		String property = JOptionPane.showInputDialog(null, "Enter the temporal formula to be verified by GROOVE.");
+    		if (property != null) {
+    			verifyProperty(property);
+    		} else {
+    			// do nothing
+    		}
+    	}
+    }
+
+    /**
+     * Action for quitting the simulator.
+     * @see Simulator#doQuit()
+     */
+    protected class QuitAction extends AbstractAction {
+    	/** Constructs an instance of the action. */
+        protected QuitAction() {
+            super(Options.QUIT_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.QUIT_KEY);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            doQuit();
+        }
+    }
+    
+    /**
+     * Action for refreshing the rule system. Reloads the current rule system and start graph.
+     * @see Simulator#doRefreshGrammar()
+     */
+    protected class RefreshGrammarAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        protected RefreshGrammarAction() {
+            super(Options.REFRESH_GRAMMAR_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.REFRESH_KEY);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            if (confirmAbandon()) {
+                doRefreshGrammar();
+            }
+        }
+
+		public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+		}
+    }
+    
+
+    /**
+     * Action for saving a rule system. Currently not enabled.
+     */
+    protected class SaveGrammarAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        protected SaveGrammarAction() {
+            super(Options.SAVE_GRAMMAR_ACTION_NAME);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            // initialize current directory if necessary
+            getGrammarFileChooser().rescanCurrentDirectory();
+
+            int result = getGrammarFileChooser().showOpenDialog(getFrame());
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION) {
+                File selectedFile = getGrammarFileChooser().getSelectedFile();
+                // currentDirectory = selectedFile.getAbsoluteFile().getParentFile();
+                try {
+                    javax.swing.filechooser.FileFilter filterUsed = getGrammarFileChooser()
+                            .getFileFilter();
+                    XmlGrammar<RuleViewGrammar> saver = grammarLoaderMap.get(filterUsed);
+                    saver.marshalGrammar(currentGrammar, selectedFile);
+                    currentGrammarFile = selectedFile;
+                } catch (IOException exc) {
+                    showErrorDialog("Error while exporting to " + selectedFile, exc);
+                } catch (FormatException exc) {
+                    showErrorDialog("Graph format error", exc);
+                }
+            }
+        }
+
+		public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+		}
+    }
+
+    /**
+     * Action to save the state or LTS as a graph.
+     * @see Simulator#handleSaveGraph(boolean, Graph, String)
+     * @see Simulator#doSaveGraph(Graph, File)
+     */
+    protected class SaveGraphAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        protected SaveGraphAction() {
+            super(Options.SAVE_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+        	Graph graph = getGraphPanel().getJModel().toPlainGraph();
+            if (getGraphPanel() == getLtsPanel()) {
+                handleSaveGraph(false, graph, LTS_FILE_NAME);
+            } else {
+                handleSaveGraph(true, graph, currentState.toString());
+            }
+        }
+
+        /**
+         * Tests if the action should be enabled according to the current state of the simulator,
+         * and also modifies the action name.
+         * 
+         */
+        public void refresh() {
+            if (getGraphPanel() == getLtsPanel()) {
+                setEnabled(getCurrentGTS() != null);
+                putValue(NAME, Options.SAVE_LTS_ACTION_NAME);
+            } else if (getGraphPanel() == getStatePanel()) {
+                setEnabled(getCurrentState() != null);
+                putValue(NAME, Options.SAVE_STATE_ACTION_NAME);
+            } else {
+                setEnabled(false);
+                putValue(NAME, Options.SAVE_ACTION_NAME);
+            }
+        }
+    }
+
+    /** Action to show the system properties. */
+    private class ShowPropertiesAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        public ShowPropertiesAction() {
+            super(Options.PROPERTIES_ACTION_NAME);
+        }
+        
+        /** 
+         * Displays a {@link PropertiesDialog} for the properties
+         * of the edited graph.
+         */
+        public void actionPerformed(ActionEvent e) {
+        	Map<String,Object> properties = new HashMap<String,Object>();
+        	Properties systemProperties = getCurrentGrammar().getProperties();
+        	for (Map.Entry<Object,Object> entry: systemProperties.entrySet()) {
+        		if (entry.getKey() instanceof String) {
+        			properties.put((String) entry.getKey(), entry.getValue());
+        		}
+        	}
+            new PropertiesDialog(Simulator.this.getFrame(), properties, false).showDialog();
+        }
+        
+        /**
+         * Tests if the currently selected grammar has non-<code>null</code>
+         * system properties.
+         */
+        public void refresh() {
+        	GraphGrammar grammar = getCurrentGrammar();
+        	setEnabled(grammar != null && grammar.getProperties() != null);
+        }
+    }
+    
+    private class SimulateAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        public SimulateAction() {
+            super(Options.START_ACTION_NAME);
+        }
+
+		public void actionPerformed(ActionEvent e) {
+			handleSimulate();
+		}
+
+		public void refresh() {
+			putValue(NAME, getCurrentGTS() == null ? Options.START_ACTION_NAME : Options.RESTART_ACTION_NAME);
+			setEnabled(getCurrentGrammar() != null);
+		}
+    }
 }

@@ -12,16 +12,16 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Label.java,v 1.2 2007-04-01 12:49:57 rensink Exp $
+ * $Id: Label.java,v 1.3 2007-04-29 09:22:27 rensink Exp $
  */
 package groove.graph;
 
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 /**
  * Interface for edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-04-01 12:49:57 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-29 09:22:27 $
  */
 public interface Label extends Comparable<Label>, java.io.Serializable {
     /**

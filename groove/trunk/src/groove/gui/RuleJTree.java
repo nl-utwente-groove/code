@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.5 2007-04-27 22:07:06 rensink Exp $
+ * $Id: RuleJTree.java,v 1.6 2007-04-29 09:22:28 rensink Exp $
  */
 package groove.gui;
 
@@ -22,11 +22,11 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.Transition;
-import groove.trans.GraphGrammar;
-import groove.trans.Rule;
 import groove.trans.NameLabel;
+import groove.trans.Rule;
 import groove.trans.StructuredRuleName;
 import groove.util.Groove;
+import groove.view.RuleViewGrammar;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -48,6 +48,7 @@ import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -61,7 +62,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -129,8 +130,27 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Fills the rule directory with rule nodes, based on a given rule system.
      * Sets the current LTS to the grammar's LTS.
      */
-    public synchronized void setGrammarUpdate(GTS gts) {
-    	boolean oldListenToSelectionChanges = listenToSelectionChanges;
+    public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
+    	if (setDisplayedGrammar(grammar)) {
+			if (grammar == null) {
+				ruleNodeMap.clear();
+				matchNodeMap.clear();
+				topDirectoryNode.removeAllChildren();
+				ruleDirectory.reload();
+				displayedGrammar = null;
+			} else {
+				loadGrammar(grammar);
+			}
+		}
+        refresh();
+    }
+
+	/**
+	 * Loads the j-tree with the data of the given (non-<code>null</code>)
+	 * grammar.
+	 */
+	private void loadGrammar(RuleViewGrammar grammar) {
+		boolean oldListenToSelectionChanges = listenToSelectionChanges;
         listenToSelectionChanges = false;
         setShowAnchorsOptionListener();
         ruleNodeMap.clear();
@@ -142,7 +162,6 @@ public class RuleJTree extends JTree implements SimulationListener {
         int lastPriority = Integer.MAX_VALUE;
         DefaultMutableTreeNode topNode = topDirectoryNode;
         // get the rule names
-        GraphGrammar grammar = gts.getGrammar();
         for (Rule rule: new ArrayList<Rule>(grammar.getRules())) {
             StructuredRuleName ruleName = (StructuredRuleName) rule.getName();
             // create new top node for the rule, if the rule has a different priority then the last
@@ -163,29 +182,18 @@ public class RuleJTree extends JTree implements SimulationListener {
             ruleNodeMap.put(ruleName, ruleNode);
         }
         ruleDirectory.reload(topDirectoryNode);
-        setEnabled(true);
-        refresh();
         listenToSelectionChanges = oldListenToSelectionChanges;
-    }
-
-    /**
-     * In addition to delegating the method to <tt>super</tt>,
-     * sets the background color to <tt>null</tt> when disabled and
-     * back to the default when enabled.
-     */
-    @Override
-    public void setEnabled(boolean enabled) {
-        if (enabled != isEnabled()) {
-            if (!enabled) {
-                enabledBackground = getBackground();
-                setBackground(null);
-            } else if (enabledBackground != null) {
-                setBackground(enabledBackground);
-            }
-        }
-        super.setEnabled(enabled);
-    }
+	}
     
+	/** Refreshes the view, to remove previous match nodes. */
+    public synchronized void activateGrammarUpdate(GTS gts) {
+    	RuleViewGrammar newGrammar = (RuleViewGrammar) gts.getGrammar();
+    	if (setDisplayedGrammar(newGrammar)) {
+    		loadGrammar(newGrammar);
+    	}
+        refresh();
+	}
+
     /**
      * Refreshes the available match nodes, based on a new state.
      * The current LTS is inspected to find out the relevant derivations.
@@ -220,6 +228,24 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
     
     /**
+	 * In addition to delegating the method to <tt>super</tt>,
+	 * sets the background color to <tt>null</tt> when disabled and
+	 * back to the default when enabled.
+	 */
+	@Override
+	public void setEnabled(boolean enabled) {
+	    if (enabled != isEnabled()) {
+	        if (!enabled) {
+	            enabledBackground = getBackground();
+	            setBackground(null);
+	        } else if (enabledBackground != null) {
+	            setBackground(enabledBackground);
+	        }
+	    }
+	    super.setEnabled(enabled);
+	}
+
+	/**
      * Sets a listener to the anchor image option, if that has not yet been done.
      */
     protected void setShowAnchorsOptionListener() {
@@ -264,7 +290,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         listenToSelectionChanges = false;
     	if (getCurrentState() == null) {
             refreshMatches(Collections.<GraphTransition>emptySet());
-    	} else {
+    	} else if (setDisplayedState(simulator.getCurrentState())) {
     		refreshMatches(getCurrentGTS().outEdgeSet(getCurrentState()));
     	}
     	DefaultMutableTreeNode treeNode = null;
@@ -276,6 +302,8 @@ public class RuleJTree extends JTree implements SimulationListener {
         if (treeNode != null) {
             setSelectionPath(new TreePath(treeNode.getPath()));
         }
+        setEnabled(displayedGrammar != null);
+        setBackground(getCurrentGTS() == null ? null : ENABLED_COLOR);
         listenToSelectionChanges = oldListenToSelectionChanges;
     }
     
@@ -284,7 +312,6 @@ public class RuleJTree extends JTree implements SimulationListener {
      * @param derivations the set of derivation edges used to create match nodes
      */
     private void refreshMatches(Collection<GraphTransition> derivations) {
-    	if (displayedState != simulator.getCurrentState()) {
         // remove current matches
     	for (MatchTreeNode matchNode: matchNodeMap.values()) {
             ruleDirectory.removeNodeFromParent(matchNode);
@@ -319,8 +346,6 @@ public class RuleJTree extends JTree implements SimulationListener {
             expandPath(new TreePath(ruleNode.getPath()));
             matchNodeMap.put(edge, matchNode);
         }
-        displayedState = simulator.getCurrentState();
-    	}
     }
 
     /** Convenience method to retrieve the current GTS from the simulator. */
@@ -341,6 +366,30 @@ public class RuleJTree extends JTree implements SimulationListener {
     /** Convenience method to retrieve the currently selected rule from the simulator. */
     private Rule getCurrentRule() {
     	return simulator.getCurrentRule();
+    }
+
+    /** 
+     * Sets the {@link #displayedState} field to a given value, and
+     * returns an indication whether the new value differs from the old.
+     * @param state the new value of the displayed state
+     * @return <code>true</code> if the new value differs from the old
+     */
+    private boolean setDisplayedState(GraphState state) {
+    	boolean result = state != displayedState;
+    	displayedState = state;
+    	return result;
+    }
+
+    /** 
+     * Sets the {@link #displayedGrammar} field to a given value, and
+     * returns an indication whether the new value differs from the old.
+     * @param grammar the new value of the displayed grammar
+     * @return <code>true</code> if the new value differs from the old
+     */
+    private boolean setDisplayedGrammar(RuleViewGrammar grammar) {
+    	boolean result = grammar != displayedGrammar;
+    	displayedGrammar = grammar;
+    	return result;
     }
 
     /**
@@ -364,168 +413,6 @@ public class RuleJTree extends JTree implements SimulationListener {
             }
         });
         return res;
-    }
-
-    /**
-     * Selection listener that invokes <tt>setRule</tt> if a
-     * rule node is selected, and <tt>setDerivation</tt> if
-     * a match node is selected.
-     * @see Simulator#setRule
-     * @see Simulator#setTransition
-     */
-    protected class RuleSelectionListener implements TreeSelectionListener {
-        public void valueChanged(TreeSelectionEvent evt) {
-            // only do something if a path was added to the selection
-            if (listenToSelectionChanges && evt.isAddedPath()) {
-                Object selectedNode = evt.getPath().getLastPathComponent();
-                if (selectedNode instanceof RuleTreeNode) {
-                    // selected tree node is a production rule (level 1 node)
-                    simulator.setRule(((RuleTreeNode) selectedNode).name());
-                } else if (selectedNode instanceof MatchTreeNode) {
-                    // selected tree node is a derivation edge (level 2 node)
-                    simulator.setTransition(((MatchTreeNode) selectedNode).edge());
-                }
-            }
-        }
-    }
-
-    /**
-     * Priority nodes (used only if the rule system has multiple priorities)
-     */
-    protected class PriorityTreeNode extends DefaultMutableTreeNode {
-        /**
-         * Creates a new priority node based on a given priority.
-         * The node can (and will) have children.
-         */
-        public PriorityTreeNode(int priority) {
-            super("Priority "+priority, true);
-        }
-    }
-
-    /**
-     * Rule nodes (= level 1 nodes) of the directory
-     */
-    protected class RuleTreeNode extends DefaultMutableTreeNode {
-        /**
-         * Creates a new rule node based on a given rule name.
-         * The node can have children.
-         */
-        public RuleTreeNode(StructuredRuleName name) {
-            super(name, true);
-        }
-
-        /**
-         * Convenience method to retrieve the user object as a rule name.
-         */
-        public StructuredRuleName name() {
-            return (StructuredRuleName) getUserObject();
-        }
-
-        /**
-         * To display, show child name only
-         */
-        @Override
-        public String toString() {
-            return name().child();
-        }
-    }
-
-    /**
-     * Directory nodes (= level 0 nodes) of the directory
-     */
-    protected class DirectoryTreeNode extends DefaultMutableTreeNode {
-        /**
-         * Creates a new rule node based on a given rule name.
-         * The node can have children.
-         */
-        public DirectoryTreeNode(StructuredRuleName name) {
-            super(name, true);
-        }
-
-        /**
-         * Convenience method to retrieve the user object as a rule name.
-         */
-        public StructuredRuleName name() {
-            return (StructuredRuleName) getUserObject();
-        }
-
-        /**
-         * To display, show child name only
-         */
-        @Override
-        public String toString() {
-            return name().child();
-        }
-    }
-
-    /**
-     * Match nodes (= level 2 nodes) of the directory.
-     * Stores a <tt>Transition</tt> as user object.
-     */
-    protected class MatchTreeNode extends DefaultMutableTreeNode {
-        /**
-         * Creates a new match node on the basis of a given number and derivation edge.
-         * The node cannot have children.
-         */
-        public MatchTreeNode(int nr, Transition edge) {
-            super(edge, false);
-            this.nr = nr;
-        }
-
-        /**
-         * Convenience method to return the underlying derivation edge.
-         */
-        public GraphTransition edge() {
-            return (GraphTransition) getUserObject();
-        }
-
-        /**
-         * Object identity is good enough as a notion of equality.
-         */
-        @Override
-        public boolean equals(Object obj) {
-            return this == obj;
-        }
-
-        /**
-         * A description of this derivation edge in the rule directory.
-         * Returns <tt>"Match ??</tt>, where <tt>??</tt> is the node number.
-         */
-        @Override
-        public String toString() {
-            return simulator.getOptions().getValue(Options.SHOW_ANCHORS_OPTION) ? edge().getEvent().getAnchorImageString() : "Match " + nr;
-        }
-
-        /** The number of this match, used in <tt>toString()</tt> */
-        private final int nr;
-    }
-
-    /**
-     * Class to provide proper icons for directory nodes
-     */
-    protected class MyRenderer extends DefaultTreeCellRenderer {
-        @Override
-        public Component getTreeCellRendererComponent(
-            JTree tree,
-            Object value,
-            boolean sel,
-            boolean expanded,
-            boolean leaf,
-            int row,
-            boolean hasFocus) {
-            // failed attempt to get rid of root handles for childless nodes 
-            // expanded = expanded ||
-            //            ((DefaultMutableTreeNode) value).getChildCount()==0;
-            super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-
-            if (value instanceof DirectoryTreeNode) {
-                setIcon(Groove.GPS_FOLDER_ICON);
-            } else if (value instanceof PriorityTreeNode) {
-                setIcon(null);
-            }
-
-            return this;
-        }
     }
 
     /**
@@ -570,5 +457,178 @@ public class RuleJTree extends JTree implements SimulationListener {
     private Color enabledBackground;
     /** Flag to indicate that the anchor image option listener has been set. */
     private boolean anchorImageOptionListenerSet = false;
+    /** The currently displayed state. */
     private GraphState displayedState;
+    /** The currently displayed grammar. */
+    private RuleViewGrammar displayedGrammar;
+    
+    static private final Color ENABLED_COLOR;
+    
+    static {
+    	JLabel label = new JLabel();
+    	label.setEnabled(true);
+    	ENABLED_COLOR = Color.WHITE;
+    }
+    
+	/**
+	 * Selection listener that invokes <tt>setRule</tt> if a
+	 * rule node is selected, and <tt>setDerivation</tt> if
+	 * a match node is selected.
+	 * @see Simulator#setRule
+	 * @see Simulator#setTransition
+	 */
+	protected class RuleSelectionListener implements TreeSelectionListener {
+	    public void valueChanged(TreeSelectionEvent evt) {
+	        // only do something if a path was added to the selection
+	        if (listenToSelectionChanges && evt.isAddedPath()) {
+	            Object selectedNode = evt.getPath().getLastPathComponent();
+	            if (selectedNode instanceof RuleTreeNode) {
+	                // selected tree node is a production rule (level 1 node)
+	                simulator.setRule(((RuleTreeNode) selectedNode).name());
+	            } else if (selectedNode instanceof MatchTreeNode) {
+	                // selected tree node is a derivation edge (level 2 node)
+	                simulator.setTransition(((MatchTreeNode) selectedNode).edge());
+	            }
+	        }
+	    }
+	}
+
+	/**
+	 * Priority nodes (used only if the rule system has multiple priorities)
+	 */
+	protected class PriorityTreeNode extends DefaultMutableTreeNode {
+	    /**
+	     * Creates a new priority node based on a given priority.
+	     * The node can (and will) have children.
+	     */
+	    public PriorityTreeNode(int priority) {
+	        super("Priority "+priority, true);
+	    }
+	}
+
+	/**
+	 * Rule nodes (= level 1 nodes) of the directory
+	 */
+	protected class RuleTreeNode extends DefaultMutableTreeNode {
+	    /**
+	     * Creates a new rule node based on a given rule name.
+	     * The node can have children.
+	     */
+	    public RuleTreeNode(StructuredRuleName name) {
+	        super(name, true);
+	    }
+	
+	    /**
+	     * Convenience method to retrieve the user object as a rule name.
+	     */
+	    public StructuredRuleName name() {
+	        return (StructuredRuleName) getUserObject();
+	    }
+	
+	    /**
+	     * To display, show child name only
+	     */
+	    @Override
+	    public String toString() {
+	        return name().child();
+	    }
+	}
+
+	/**
+	 * Directory nodes (= level 0 nodes) of the directory
+	 */
+	protected class DirectoryTreeNode extends DefaultMutableTreeNode {
+	    /**
+	     * Creates a new rule node based on a given rule name.
+	     * The node can have children.
+	     */
+	    public DirectoryTreeNode(StructuredRuleName name) {
+	        super(name, true);
+	    }
+	
+	    /**
+	     * Convenience method to retrieve the user object as a rule name.
+	     */
+	    public StructuredRuleName name() {
+	        return (StructuredRuleName) getUserObject();
+	    }
+	
+	    /**
+	     * To display, show child name only
+	     */
+	    @Override
+	    public String toString() {
+	        return name().child();
+	    }
+	}
+
+	/**
+	 * Match nodes (= level 2 nodes) of the directory.
+	 * Stores a <tt>Transition</tt> as user object.
+	 */
+	protected class MatchTreeNode extends DefaultMutableTreeNode {
+	    /**
+	     * Creates a new match node on the basis of a given number and derivation edge.
+	     * The node cannot have children.
+	     */
+	    public MatchTreeNode(int nr, Transition edge) {
+	        super(edge, false);
+	        this.nr = nr;
+	    }
+	
+	    /**
+	     * Convenience method to return the underlying derivation edge.
+	     */
+	    public GraphTransition edge() {
+	        return (GraphTransition) getUserObject();
+	    }
+	
+	    /**
+	     * Object identity is good enough as a notion of equality.
+	     */
+	    @Override
+	    public boolean equals(Object obj) {
+	        return this == obj;
+	    }
+	
+	    /**
+	     * A description of this derivation edge in the rule directory.
+	     * Returns <tt>"Match ??</tt>, where <tt>??</tt> is the node number.
+	     */
+	    @Override
+	    public String toString() {
+	        return simulator.getOptions().getValue(Options.SHOW_ANCHORS_OPTION) ? edge().getEvent().getAnchorImageString() : "Match " + nr;
+	    }
+	
+	    /** The number of this match, used in <tt>toString()</tt> */
+	    private final int nr;
+	}
+
+	/**
+	 * Class to provide proper icons for directory nodes
+	 */
+	protected class MyRenderer extends DefaultTreeCellRenderer {
+	    @Override
+	    public Component getTreeCellRendererComponent(
+	        JTree tree,
+	        Object value,
+	        boolean sel,
+	        boolean expanded,
+	        boolean leaf,
+	        int row,
+	        boolean hasFocus) {
+	        // failed attempt to get rid of root handles for childless nodes 
+	        // expanded = expanded ||
+	        //            ((DefaultMutableTreeNode) value).getChildCount()==0;
+	        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+	
+	        if (value instanceof DirectoryTreeNode) {
+	            setIcon(Groove.GPS_FOLDER_ICON);
+	        } else if (value instanceof PriorityTreeNode) {
+	            setIcon(null);
+	        }
+	        setOpaque(!sel);
+	        return this;
+	    }
+	}
 }

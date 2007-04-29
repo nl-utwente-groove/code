@@ -1,7 +1,8 @@
-/* $Id: StartGraphState.java,v 1.1 2007-04-27 22:06:25 rensink Exp $ */
+/* $Id: StartGraphState.java,v 1.2 2007-04-29 09:22:32 rensink Exp $ */
 package groove.lts;
 
 import groove.graph.Graph;
+import groove.graph.GraphInfo;
 
 /**
  * @author Arend Rensink
@@ -14,6 +15,8 @@ public class StartGraphState extends AbstractGraphState {
 	 */
 	public StartGraphState(Graph graph) {
 		setFrozenGraph(getCache().computeFrozenGraph(graph));
+		this.graph = getCache().getGraph();
+		GraphInfo.transfer(graph, this.graph, null);
 	}
 	
 	/** Creates a start state based on a given graph and control location. */

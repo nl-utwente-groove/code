@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ShowHideMenu.java,v 1.5 2007-04-12 16:14:53 rensink Exp $
+ * $Id: ShowHideMenu.java,v 1.6 2007-04-29 09:22:28 rensink Exp $
  */
 package groove.gui;
 
@@ -31,7 +31,7 @@ import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
 import groove.rel.SupportedSetNodeRelation;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
@@ -54,7 +54,7 @@ import org.jgraph.graph.DefaultPort;
 /**
  * Menu to control the visibility of nodes and edges in a jgraph.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ShowHideMenu extends JMenu {
     /**
@@ -630,7 +630,7 @@ public class ShowHideMenu extends JMenu {
      * Show/hide action based on the currently emphasized cells. The action adds the selection to
      * the shown or hidden cells
      * @author Arend Rensink
-     * @version $Revision: 1.5 $
+     * @version $Revision: 1.6 $
      */
     static protected class EmphasizedAction extends ShowHideAction {
     	/** 

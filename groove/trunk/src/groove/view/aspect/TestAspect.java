@@ -12,15 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: TestAspect.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
  */
-package groove.graph.aspect;
+package groove.view.aspect;
 
 /**
  * Graph aspect dealing with graph tests.
  * Relevant information is: which nested subgraph an element is in.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 1.1 $
  */
 final public class TestAspect extends AbstractAspect {
     /**

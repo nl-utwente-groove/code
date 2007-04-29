@@ -1,4 +1,4 @@
-/* $Id: FixedDeltaGraph.java,v 1.2 2007-04-27 22:07:03 rensink Exp $ */
+/* $Id: FixedDeltaGraph.java,v 1.3 2007-04-29 09:22:27 rensink Exp $ */
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
@@ -233,9 +233,6 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		}
 		// apply the delta to fill the structures
 		delta.applyDelta(new Target(nodeSet, edgeSet, nodeEdgeMap, labelEdgeMaps));
-		if (basis != null) {
-			basis.certifier = null;
-		}
 	}
 
 	private Set<Edge> createEdgeSet() {

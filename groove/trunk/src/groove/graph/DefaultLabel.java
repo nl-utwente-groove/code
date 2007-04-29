@@ -12,11 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultLabel.java,v 1.3 2007-04-01 12:49:57 rensink Exp $
+ * $Id: DefaultLabel.java,v 1.4 2007-04-29 09:22:27 rensink Exp $
  */
 package groove.graph;
 
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -28,7 +28,7 @@ import java.util.Map;
  * Provides a standard implementation of the Label interface.
  * An instance contains just an index into a global list.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ 
+ * @version $Revision: 1.4 $ 
  */
 public final class DefaultLabel extends AbstractLabel {
     /**

@@ -12,16 +12,16 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Validator.java,v 1.4 2007-04-01 12:50:23 rensink Exp $
+ * $Id: Validator.java,v 1.5 2007-04-29 09:22:31 rensink Exp $
  */
 package groove.io;
 
 import groove.graph.GraphShape;
-import groove.graph.aspect.AspectGraph;
 import groove.trans.NameLabel;
-import groove.trans.view.AspectualRuleView;
-import groove.util.FormatException;
 import groove.util.Groove;
+import groove.view.AspectualRuleView;
+import groove.view.FormatException;
+import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Application to check graph and rule file formats.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class Validator {
     static public final String OPTION_PREFIX = "-";

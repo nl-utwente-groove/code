@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributedGraph.java,v 1.5 2007-04-01 12:49:50 rensink Exp $
+ * $Id: AttributedGraph.java,v 1.6 2007-04-29 09:22:38 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -25,8 +25,8 @@ import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.graph.aspect.AspectGraph;
-import groove.util.FormatException;
+import groove.view.FormatException;
+import groove.view.aspect.AspectGraph;
 
 /**
  * This class constructs a real attributed graph from an encoded attributed
@@ -35,7 +35,7 @@ import groove.util.FormatException;
  * knowing this.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-04-01 12:49:50 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-29 09:22:38 $
  * @deprecated Reading in attributes is now done via {@link AspectGraph}
  */
 @Deprecated

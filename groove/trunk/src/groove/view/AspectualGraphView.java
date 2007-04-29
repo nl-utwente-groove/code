@@ -1,5 +1,5 @@
-/* $Id: AspectualGraphView.java,v 1.4 2007-04-12 16:14:51 rensink Exp $ */
-package groove.graph.aspect;
+/* $Id: AspectualGraphView.java,v 1.1 2007-04-29 09:22:36 rensink Exp $ */
+package groove.view;
 
 import groove.algebra.Constant;
 import groove.graph.Edge;
@@ -11,8 +11,12 @@ import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ValueNode;
-import groove.util.FormatException;
 import groove.util.Pair;
+import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectNode;
+import groove.view.aspect.AspectValue;
+import groove.view.aspect.AttributeAspect;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,12 +46,17 @@ public class AspectualGraphView implements AspectualView<Graph> {
 		this.viewToModelMap = viewPlusMap.second();
 	}
 	
-	public AspectGraph getView() {
+	public AspectGraph getAspectGraph() {
 		return view;
 	}
 	
-	public Graph getModel() {
+	public Graph toModel() throws FormatException {
 		return model;
+	}
+
+	public List<String> getErrors() {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	public Map<AspectNode, Node> getMap() {

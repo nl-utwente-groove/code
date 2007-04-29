@@ -12,12 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.9 2007-04-20 15:12:28 rensink Exp $
+ * $Id: RuleSystem.java,v 1.10 2007-04-29 09:22:23 rensink Exp $
  */
 package groove.trans;
 
 import groove.util.CollectionOfCollections;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -37,17 +37,24 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-04-20 15:12:28 $
+ * @version $Revision: 1.10 $ $Date: 2007-04-29 09:22:23 $
  * @see NameLabel
  * @see SPORule
  */
 public class RuleSystem {
     /** 
-	 * Constructs an initially empty rule system, with
+	 * Constructs an initially empty, anonymous rule system, with
 	 * default rule factory. 
 	 */
     public RuleSystem() {
-        // explicit empty constructor
+        this((String) null);
+    }
+
+    /** 
+	 * Constructs an initially empty rule system.
+	 */
+    public RuleSystem(String name) {
+        this.name = name;
     }
 
     /**
@@ -57,7 +64,7 @@ public class RuleSystem {
      * @ensure <tt>equals(ruleSystem)</tt>
      */
     public RuleSystem(RuleSystem other) {
-    	this();
+    	this(other.getName());
     	getProperties().putAll(other.getProperties());
         nameRuleMap.putAll(other.nameRuleMap);
         // the target sets of the priority rule map must be copied, not aliased
@@ -66,6 +73,14 @@ public class RuleSystem {
             newRuleSet.addAll(priorityRuleEntry.getValue());
             priorityRuleMap.put(priorityRuleEntry.getKey(), newRuleSet);
         }
+    }
+
+    /**
+     * Returns the name of this rule system.
+     * May be <tt>null</tt> if the rule system is anonymous.
+     */
+    public String getName() {
+        return name;
     }
     
     /**
@@ -355,4 +370,10 @@ public class RuleSystem {
 //    private RuleFactory ruleFactory;
     /** Flag indicating that the rule system has been fixed and is ready for use. */
     private boolean fixed;
+
+    /**
+     * The name of this grammar;
+     * <tt>null</tt> if the grammar is anonymous.
+     */
+    private final String name;
 }

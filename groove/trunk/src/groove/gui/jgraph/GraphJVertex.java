@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.6 2007-04-12 16:14:50 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.7 2007-04-29 09:22:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -20,8 +20,8 @@ import groove.algebra.Constant;
 import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
-import groove.graph.aspect.AttributeAspect;
 import groove.util.Converter;
+import groove.view.aspect.AttributeAspect;
 
 import java.util.ArrayList;
 import java.util.Collection;

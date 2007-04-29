@@ -12,29 +12,29 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.7 2007-04-12 16:14:49 rensink Exp $
+ * $Id: AspectJModel.java,v 1.8 2007-04-29 09:22:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Node;
-import groove.graph.aspect.AspectEdge;
-import groove.graph.aspect.AspectElement;
-import groove.graph.aspect.AspectNode;
-import groove.graph.aspect.AspectParser;
-import groove.graph.aspect.AspectValue;
-import groove.graph.aspect.AspectualView;
-import groove.graph.aspect.AttributeAspect;
-import groove.graph.aspect.RuleAspect;
 import groove.gui.Options;
 import groove.rel.RegExprLabel;
 import groove.trans.NameLabel;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.view.AspectualView;
+import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectElement;
+import groove.view.aspect.AspectNode;
+import groove.view.aspect.AspectParser;
+import groove.view.aspect.AspectValue;
+import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.RuleAspect;
 
 import static groove.gui.jgraph.JAttr.*;
-import static groove.graph.aspect.RuleAspect.*;
+import static groove.view.aspect.RuleAspect.*;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -51,7 +51,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class AspectJModel extends GraphJModel {
     /** Empty instance of the {@link AspectJModel}. */
@@ -353,7 +353,7 @@ public class AspectJModel extends GraphJModel {
      * Creates a new aspect model instance on top of a given aspectual view.
      */
     public AspectJModel(AspectualView view, Options options) {
-        super(view.getView(), options);
+        super(view.getAspectGraph(), options);
         this.view = view;
     }
 

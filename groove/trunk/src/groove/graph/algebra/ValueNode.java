@@ -12,26 +12,26 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ValueNode.java,v 1.5 2007-04-12 16:14:55 rensink Exp $
+ * $Id: ValueNode.java,v 1.6 2007-04-29 09:22:38 rensink Exp $
  */
 package groove.graph.algebra;
 
 import java.util.Iterator;
 
-import static groove.graph.aspect.Aspect.CONTENT_SEPARATOR;
+import static groove.view.aspect.Aspect.CONTENT_SEPARATOR;
 
 import groove.algebra.Algebra;
 import groove.algebra.Constant;
 import groove.algebra.Variable;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.aspect.AttributeAspect;
+import groove.view.aspect.AttributeAspect;
 
 /**
  * Implementation of graph elements that represent algebraic data values.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-04-12 16:14:55 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-29 09:22:38 $
  */
 public class ValueNode extends ProductNode {
 	/** Tests if a given graph contains value nodes. */

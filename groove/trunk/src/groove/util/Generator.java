@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.12 2007-04-27 22:07:02 rensink Exp $
+ * $Id: Generator.java,v 1.13 2007-04-29 09:22:29 rensink Exp $
  */
 package groove.util;
 
@@ -55,6 +55,7 @@ import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.SPOApplication;
 import groove.trans.SPORule;
+import groove.view.FormatException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -75,7 +76,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -193,7 +194,7 @@ public class Generator extends CommandLineTool {
     public GraphGrammar getGrammar() {
         if (grammar == null) {
             try {
-                grammar = loader.unmarshalGrammar(new File(grammarLocation), startStateName);
+                grammar = loader.unmarshalGrammar(new File(grammarLocation), startStateName).toGrammar();
                 grammar.setFixed();
             } catch (IOException exc) {
                 printError("Can't load grammar: " + exc.getMessage());

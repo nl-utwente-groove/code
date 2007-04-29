@@ -30,11 +30,11 @@ import groove.util.GenerateProgressMonitor;
 
 import java.io.File;
 
+/**
+ * Class encoding one of the benchmarks in the Varro et al paper. 
+ */
 public class VarroBenchmark {
-
-	/**
-	 * @param args
-	 */
+	/** Call with an int parameter to determine the size of the problem. */
 	public static void main(String[] args) {
 		try {
 			int n = Integer.parseInt(args[0]);

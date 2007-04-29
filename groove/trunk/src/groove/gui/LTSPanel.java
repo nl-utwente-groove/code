@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTSPanel.java,v 1.4 2007-04-01 12:50:29 rensink Exp $
+ * $Id: LTSPanel.java,v 1.5 2007-04-29 09:22:28 rensink Exp $
  */
 package groove.gui;
 
@@ -34,6 +34,7 @@ import groove.lts.LTSAdapter;
 import groove.lts.LTSListener;
 import groove.lts.State;
 import groove.trans.NameLabel;
+import groove.view.RuleViewGrammar;
 
 import java.util.Collections;
 
@@ -42,7 +43,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-01 12:50:29 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-29 09:22:28 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -69,28 +70,27 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     /**
      * Sets the underlying grammar.
      * 
-     * @param gts
+     * @param grammar
      *                 the new grammar
      */
-    public synchronized void setGrammarUpdate(GTS gts) {
-        if (isLTSLoaded()) {
-            lts.setFixed();
-            lts.removeGraphListener(ltsListener);
-        }
-        lts = gts;
-        getJGraph().setModel(createJModel(lts));
-        if (lts == null) {
-            setEnabled(false);
-        } else {
-            lts.addGraphListener(ltsListener);
-            setStateUpdate((GraphState) lts.startState());
-        }
+    public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
+        setGTS(null);
+        getJGraph().setModel(createJModel(gts));
+        setEnabled(false);
         refreshStatus();
     }
 
+	public synchronized void activateGrammarUpdate(GTS gts) {
+        setGTS(gts);
+		getJGraph().setModel(createJModel(gts));
+		setStateUpdate(gts.startState());
+		setEnabled(true);
+		refreshStatus();
+	}
+
 	/**
-	 * Callback method to create a fresh JModel for a given lts.
-	 * If the lts is <code>null</code>, returns {@link #EMPTY_JMODEL}.
+	 * Callback method to create a fresh JModel for a given lts. If the lts is
+	 * <code>null</code>, returns {@link #EMPTY_JMODEL}.
 	 */
 	protected LTSJModel createJModel(LTS lts) {
 		return lts == null ? EMPTY_JMODEL : new LTSJModel(lts, getOptions());
@@ -131,7 +131,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
      * Removes the emphasis from the currently emphasized edge, if any.
      */
     public void setRuleUpdate(NameLabel name) {
-        if (isLTSLoaded()) {
+        if (isGTSactivated()) {
         	getJModel().setActiveTransition(null);
         }
     }
@@ -144,37 +144,44 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         setStateUpdate(transition.target());
     }
 
+    /** 
+     * Sets the value of the gts field, and changes the subject of the GTS listener.
+     * The return value indicates if this changes the value.
+     * @param gts the new value for the gts fiels; may be <code>null</code>
+     * @return <code>true</code> if the new value differs from the old
+     */
+    private boolean setGTS(GTS gts) {
+    	boolean result = gts != this.gts;
+    	if (result) {
+    		if (this.gts != null) {
+    			this.gts.removeGraphListener(ltsListener);
+    		} if (gts != null) {
+    			gts.addGraphListener(ltsListener);
+    		}
+    	}
+    	this.gts = gts;
+    	return result;
+    }
+    
     /**
      * Indicates if an LTS is currently loaded.
      * This may fail to be the case if there is no grammar loaded,
      * or if the loaded grammar has no start state.
      */
-    public boolean isLTSLoaded() {
-        return lts != null;
+    private boolean isGTSactivated() {
+        return gts != null;
     }
-//
-//	/**
-//	 * Callback factory method for a listener to the anchors show option.
-//	 */
-//	protected ChangeListener createAnchorsOptionListener() {
-//		return new ChangeListener() {
-//			public void stateChanged(ChangeEvent e) {
-//				getJModel().refresh();
-////				getJGraph().getLabelList().updateModel();
-//			}
-//		};
-//	}
-
+    
     /**
      * Writes a line to the status bar.
      */
     @Override
     protected String getStatusText() {
         String text;
-        if (!isLTSLoaded()) {
+        if (!isGTSactivated()) {
             text = "No start state loaded";
         } else {
-            text = "" + lts.nodeCount() + " nodes, " + lts.edgeCount() + " edges";
+            text = "" + gts.nodeCount() + " nodes, " + gts.edgeCount() + " edges";
         }
         return text;
     }
@@ -184,7 +191,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
      * 
      * @invariant lts == ltsJModel.graph()
      */
-    private LTS lts;
+    private GTS gts;
 
     /** The graph lisener permanently associated with this exploration strategy. */
     private final LTSListener ltsListener = new LTSAdapter() {
@@ -194,7 +201,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
          */
     	@Override
         public void addUpdate(GraphShape graph, Node node) {
-            assert graph == lts : "I want to listen only to my lts";
+            assert graph == gts : "I want to listen only to my lts";
             refreshStatus();
         }
 
@@ -204,7 +211,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
          */
     	@Override
         public void addUpdate(GraphShape graph, Edge edge) {
-            assert graph == lts : "I want to listen only to my lts";
+            assert graph == gts : "I want to listen only to my lts";
             refreshStatus();
         }
 
