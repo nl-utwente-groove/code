@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AlgebraConstants.java,v 1.3 2007-03-30 15:50:45 rensink Exp $
+ * $Id: AlgebraConstants.java,v 1.4 2007-04-29 09:22:38 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -26,17 +26,17 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.aspect.AspectGraph;
-import groove.graph.aspect.AspectNode;
-import groove.graph.aspect.AttributeAspect;
 import groove.util.Groove;
+import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectNode;
+import groove.view.aspect.AttributeAspect;
 
 import java.util.Iterator;
 
 /**
  * Class containing all the constant values used for dealing with attributed graphs.
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-03-30 15:50:45 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-29 09:22:38 $
  */
 public class AlgebraConstants {
 	/** Number of attribute types AREND not used; may be removed? */

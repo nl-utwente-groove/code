@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.10 2007-04-27 22:07:07 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.11 2007-04-29 09:22:37 rensink Exp $
  */
 
 package groove.test;
@@ -26,8 +26,8 @@ import groove.lts.explore.FullStrategy;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.StructuredRuleName;
-import groove.util.FormatException;
 import groove.util.Generator;
+import groove.view.FormatException;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -44,7 +44,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -229,7 +229,7 @@ public class ExplorationTest extends TestCase {
     protected GTS testExploration(String grammarName, String startGraphName, String strategyDescr, int nodeCount,
             int edgeCount, int openCount) {
         try {
-            GraphGrammar gg = loader.unmarshalGrammar(new File(INPUT_DIR + "\\"+ grammarName), startGraphName);
+            GraphGrammar gg = loader.unmarshalGrammar(new File(INPUT_DIR + "\\"+ grammarName), startGraphName).toGrammar();
             gg.setFixed();
             GTS lts = new GTS(gg);
             ExploreStrategy strategy;

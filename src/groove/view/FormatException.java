@@ -12,10 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: FormatException.java,v 1.2 2007-04-19 06:39:25 rensink Exp $
+ * $Id: FormatException.java,v 1.1 2007-04-29 09:22:35 rensink Exp $
  */
-package groove.util;
+package groove.view;
 
+import groove.util.Groove;
+
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -24,7 +27,7 @@ import java.util.List;
  * conversion between one model to another.
  * The class can build on prior exceptions, creating a list of error messages.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-04-19 06:39:25 $
+ * @version $Revision: 1.1 $ $Date: 2007-04-29 09:22:35 $
  */
 public class FormatException extends Exception {
 	/** Text used for an empty format exception message. */
@@ -35,19 +38,19 @@ public class FormatException extends Exception {
      * Calls {@link String#format(String, Object[])} with the message and
      * parameters, and inserts both the prior exceptions messages and the resulting
      * test in the message list.
-     * @see #getMessageList()
+     * @see #getErrors()
      */
     public FormatException(Exception exc, String message, Object... parameters) {
         super(String.format(message, parameters));
         if (exc == null) {
-        	messages = createMessageList();
+        	errors = createMessageList();
         } else if (exc instanceof FormatException) {
-        	messages = ((FormatException) exc).getMessageList();
+        	errors = ((FormatException) exc).getErrors();
         } else {
-        	messages = createMessageList();
-        	messages.add(exc.getMessage());
+        	errors = createMessageList();
+        	errors.add(exc.getMessage());
         }
-    	messages.add(super.getMessage());
+    	errors.add(super.getMessage());
     }
 
     /**
@@ -64,8 +67,8 @@ public class FormatException extends Exception {
      */
     public FormatException(Exception exc) {
         super(exc);
-        messages = createMessageList();
-        messages.add(exc.getMessage());
+        errors = createMessageList();
+        errors.add(exc.getMessage());
     }
     
     /**
@@ -78,19 +81,19 @@ public class FormatException extends Exception {
 	/** Inserts the error messages of a prior exception before the already stored messages. */
 	public void insert(FormatException prior) {
 		if (prior != null) {
-			messages.addAll(0, prior.getMessageList());
+			errors.addAll(0, prior.getErrors());
 		}
 	}
 
 	/** Returns a list of error messages collected in this exception. */
-    public List<String> getMessageList() {
-    	return messages;
+    public List<String> getErrors() {
+    	return Collections.unmodifiableList(errors);
     }
 
 	/** Combines the list of error messages collected in this exception. */
     @Override
     public String getMessage() {
-    	return Groove.toString(messages.toArray(), "", "", "\n");
+    	return Groove.toString(getErrors().toArray(), "", "", "\n");
     }
     
     /**
@@ -101,5 +104,5 @@ public class FormatException extends Exception {
     }
     
     /** List of error messages carried around by this exception. */
-    private final List<String> messages;
+    private final List<String> errors;
 }

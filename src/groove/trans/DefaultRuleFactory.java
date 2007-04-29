@@ -12,16 +12,16 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.10 2007-04-20 09:02:26 rensink Exp $
+ * $Id: DefaultRuleFactory.java,v 1.11 2007-04-29 09:22:23 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.graph.aspect.AspectGraph;
-import groove.trans.view.AspectualRuleView;
 //import groove.trans.view.RuleGraph;
-import groove.util.FormatException;
+import groove.view.AspectualRuleView;
+import groove.view.FormatException;
+import groove.view.aspect.AspectGraph;
 
 /**
  * A rule factory for SPO rules.
@@ -33,7 +33,7 @@ import groove.util.FormatException;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class DefaultRuleFactory implements RuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */

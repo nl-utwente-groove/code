@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractXml.java,v 1.5 2007-04-24 10:06:47 rensink Exp $
+ * $Id: AbstractXml.java,v 1.6 2007-04-29 09:22:32 rensink Exp $
  */
 package groove.io;
 
@@ -20,8 +20,8 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
-import groove.util.FormatException;
 import groove.util.Pair;
+import groove.view.FormatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +37,7 @@ import java.util.Set;
  * abstract methods: <tt>marshal(Graph)</tt> and <tt>unmarshal(Document,Graph)</tt>.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public abstract class AbstractXml implements Xml<Graph> {
 	AbstractXml(GraphFactory graphFactory) {

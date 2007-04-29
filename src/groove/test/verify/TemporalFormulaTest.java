@@ -13,22 +13,22 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: TemporalFormulaTest.java,v 1.3 2007-04-01 12:50:00 rensink Exp $
+ * $Id: TemporalFormulaTest.java,v 1.4 2007-04-29 09:22:28 rensink Exp $
  */
 
 package groove.test.verify;
 
-import groove.util.FormatException;
 import groove.verify.CTLFormula;
 import groove.verify.CTLStarFormula;
 import groove.verify.LTLFormula;
 import groove.verify.TemporalFormula;
+import groove.view.FormatException;
 import junit.framework.TestCase;
 
 /**
  * Tests the CTLStarFormula class.
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class TemporalFormulaTest extends TestCase {
     @Override

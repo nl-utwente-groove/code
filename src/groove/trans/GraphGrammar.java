@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.9 2007-04-20 09:02:25 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.10 2007-04-29 09:22:23 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.algebra.ValueNode;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 /**
  * Default model of a graph grammar, consisting of a production rule system
@@ -27,29 +27,28 @@ import groove.util.FormatException;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-04-20 09:02:25 $
+ * @version $Revision: 1.10 $ $Date: 2007-04-29 09:22:23 $
  */
 public class GraphGrammar extends RuleSystem {   
+//    /**
+//     * Constructs a graph grammar on the basis of a given rule system,
+//     * start graph and name.
+//     * @param ruleSystem the underlying rule system
+//     * @param startGraph the start graph; if <code>null</code>, an empty graph is used
+//     * @param name the name of this grammar; may be <tt>null</tt> if the grammar is anonymous
+//     * @require ruleSystem != null
+//     * @ensure ruleSystem()==ruleSystem, 
+//     *         gts().nodeSet().size() == 1, gts().edgeSet().size() == 0,
+//     *         getStartGraph().equals(startGraph),
+//     *         <tt>getName().equals(name)</tt>
+//     */
+//    public GraphGrammar(RuleSystem ruleSystem, Graph startGraph) {
+//        super(ruleSystem);
+//        this.startGraph = startGraph;
+//    }
+//    
     /**
-     * Constructs a graph grammar on the basis of a given rule system,
-     * start graph and name.
-     * @param ruleSystem the underlying rule system
-     * @param startGraph the start graph; if <code>null</code>, an empty graph is used
-     * @param name the name of this grammar; may be <tt>null</tt> if the grammar is anonymous
-     * @require ruleSystem != null
-     * @ensure ruleSystem()==ruleSystem, 
-     *         gts().nodeSet().size() == 1, gts().edgeSet().size() == 0,
-     *         getStartGraph().equals(startGraph),
-     *         <tt>getName().equals(name)</tt>
-     */
-    public GraphGrammar(RuleSystem ruleSystem, Graph startGraph, String name) {
-        super(ruleSystem);
-        this.startGraph = startGraph;
-        this.name = name;
-    }
-    
-    /**
-     * Constructs an anonymoud graph grammar on the basis of a given rule system and
+     * Constructs an anonymous graph grammar on the basis of a given rule system and
      * start graph.
      * @param ruleSystem the underlying rule system
      * @param startGraph the start graph; if <code>null</code>, an empty graph is used
@@ -60,21 +59,21 @@ public class GraphGrammar extends RuleSystem {
      *         <tt>getName().equals(name)</tt>
      */
     public GraphGrammar(RuleSystem ruleSystem, Graph startGraph) {
-        this(ruleSystem, startGraph, null);
+        super(ruleSystem);
+        this.startGraph = startGraph;
     }
 
     /**
      * Constructs a graph grammar on ths basis of a given production system and name.
      * The initial graph is set to empty (created using {@link GraphFactory}).
      * @param ruleSystem the underlying production system
-     * @param name name the name of this grammar; may be <tt>null</tt> if the grammar is anonymous
      * @require <tt>ruleSystem != null</tt>
      * @ensure ruleSystem().equals(ruleSystem), 
      *         gts().nodeSet().size() == 1, gts().edgeSet().size() == 0,
      *         getStartGraph().isEmpty()
      */
-    public GraphGrammar(RuleSystem ruleSystem, String name) {
-        this(ruleSystem, null, name);
+    public GraphGrammar(RuleSystem ruleSystem) {
+        this(ruleSystem, null);
     }
 //    
 //    /**
@@ -103,7 +102,7 @@ public class GraphGrammar extends RuleSystem {
      * empty start graph.
      */
     public GraphGrammar(String name) {
-        this(new RuleSystem(), name);
+        this(new RuleSystem(name));
     }
 //
 //    /**
@@ -113,14 +112,14 @@ public class GraphGrammar extends RuleSystem {
 //    public GraphGrammar() {
 //        this((String) null);
 //    }
-
-    /**
-     * Returns the name of this grammar.
-     * May be <tt>null</tt> if the grammar is anonymous.
-     */
-    public String getName() {
-        return name;
-    }
+//
+//    /**
+//     * Returns the name of this grammar.
+//     * May be <tt>null</tt> if the grammar is anonymous.
+//     */
+//    public String getName() {
+//        return name;
+//    }
 //
 //    /**
 //     * Sets the name of this grammar.
@@ -213,10 +212,10 @@ public class GraphGrammar extends RuleSystem {
      * The start Graph of this graph grammar.
      * @invariant <tt>startGraph != null</tt>
      */
-    protected Graph startGraph;
-    /**
-     * The name of this grammar;
-     * <tt>null</tt> if the grammar is anonymous.
-     */
-    protected final String name;
+    private Graph startGraph;
+//    /**
+//     * The name of this grammar;
+//     * <tt>null</tt> if the grammar is anonymous.
+//     */
+//    private final String name;
 }

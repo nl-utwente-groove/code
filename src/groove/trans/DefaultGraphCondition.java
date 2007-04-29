@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.10 2007-04-20 09:02:25 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.11 2007-04-29 09:22:23 rensink Exp $
  */
 package groove.trans;
 
@@ -36,12 +36,12 @@ import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
 import groove.trans.match.ConditionSearchPlanFactory;
 import groove.trans.match.DefaultConditionSearchPlanFactory;
-import groove.util.FormatException;
 import groove.util.Reporter;
+import groove.view.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**

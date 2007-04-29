@@ -12,9 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: AttributeAspect.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
  */
-package groove.graph.aspect;
+package groove.view.aspect;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,14 +37,14 @@ import groove.graph.algebra.AlgebraGraph;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
-import groove.util.FormatException;
 import groove.util.Groove;
+import groove.view.FormatException;
 
 /**
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 1.1 $
  */
 public class AttributeAspect extends AbstractAspect {
     /**

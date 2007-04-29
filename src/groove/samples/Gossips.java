@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.10 2007-04-27 22:07:09 rensink Exp $
+ * $Id: Gossips.java,v 1.11 2007-04-29 09:22:36 rensink Exp $
  */
 package groove.samples;
 
@@ -40,9 +40,9 @@ import groove.trans.SPOApplication;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
-import groove.util.FormatException;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
+import groove.view.FormatException;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -53,7 +53,7 @@ import java.util.List;
  * Sample class for a universal rule.
  * The example is based on the <i>gossiping girl</i> case.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";

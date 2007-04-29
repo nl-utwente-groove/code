@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.13 2007-04-24 10:06:44 rensink Exp $
+ * $Id: Editor.java,v 1.14 2007-04-29 09:22:28 rensink Exp $
  */
 package groove.gui;
 
@@ -28,14 +28,14 @@ import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.Xml;
-import groove.util.FormatException;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.NameLabel;
 import groove.trans.RuleFactory;
 import groove.trans.SystemProperties;
-import groove.trans.view.AspectualRuleView;
 import groove.util.Converter;
 import groove.util.Groove;
+import groove.view.AspectualRuleView;
+import groove.view.FormatException;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -88,7 +88,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.13 $ $Date: 2007-04-24 10:06:44 $
+ * @version $Revision: 1.14 $ $Date: 2007-04-29 09:22:28 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -275,7 +275,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.13 $
+     * @version $Revision: 1.14 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */

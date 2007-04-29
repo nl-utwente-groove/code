@@ -12,9 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: AspectGraph.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
  */
-package groove.graph.aspect;
+package groove.view.aspect;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
@@ -26,8 +26,8 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeSetEdgeSetGraph;
-import groove.util.FormatException;
 import groove.util.Groove;
+import groove.view.FormatException;
 
 import java.io.File;
 import java.io.IOException;

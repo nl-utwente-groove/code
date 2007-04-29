@@ -1,7 +1,7 @@
-/* $Id: ContentParser.java,v 1.1 2007-04-12 16:14:51 rensink Exp $ */
-package groove.graph.aspect;
+/* $Id: ContentParser.java,v 1.1 2007-04-29 09:22:24 rensink Exp $ */
+package groove.view.aspect;
 
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 /**
  * Interface for a parser that can translate a string to an aspect value

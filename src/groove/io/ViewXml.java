@@ -12,40 +12,36 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Xml.java,v 1.6 2007-04-29 09:22:32 rensink Exp $
+ * $Id: ViewXml.java,v 1.1 2007-04-29 09:22:31 rensink Exp $
  */
 package groove.io;
 
-import groove.graph.Graph;
-import groove.view.FormatException;
+import groove.view.View;
 
 import java.io.File;
 import java.io.IOException;
 
 /**
- * Interface for the conversion of graphs to and from XML documents.
+ * Interface for the conversion of views to and from XML documents.
  * To be implemented for particular XML formats.
- * 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.1 $
  */
-public interface Xml<G extends Graph> {
+public interface ViewXml<V extends View> {
 	/**
-	 * Writes a graph to a file, in XML format.
-	 * @param graph the graph to be marshalled
+	 * Writes a view to a file, in XML format.
+	 * @param view the graph to be marshalled
 	 * @param file the output file
-     * @throws FormatException if an error occurred during the conversion
-     * @throws IOException if an error occurred during file output
+	 * @throws IOException if an error occurred during file output
 	 */
-	public void marshalGraph(G graph, File file) throws FormatException, IOException;
+	public void marshal(V view, File file) throws IOException;
 	
     /**
      * Converts an XML formatted file into a graph, and returns the graph.
      * Convenience method for <code>unmarshal(file, null)</code>.
      * @param file the file to be read from
      * @return the unmarshalled graph
-     * @throws FormatException if an error occurred during the conversion
      * @throws IOException if an error occurred during file input
      */
-    public G unmarshalGraph(File file) throws FormatException, IOException ;
+    public V unmarshal(File file) throws IOException ;
 }

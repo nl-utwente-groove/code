@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExploreStrategyMenu.java,v 1.3 2007-04-24 10:06:44 rensink Exp $
+ * $Id: ExploreStrategyMenu.java,v 1.4 2007-04-29 09:22:28 rensink Exp $
  */
 package groove.gui;
 
@@ -32,6 +32,7 @@ import groove.lts.explore.BranchingStrategy;
 import groove.lts.explore.FullStrategy;
 import groove.lts.explore.LinearStrategy;
 import groove.trans.NameLabel;
+import groove.view.RuleViewGrammar;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,7 +43,7 @@ import javax.swing.JMenu;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     /**
@@ -85,28 +86,36 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     }
 
     // ----------------------------- simulation listener methods -----------------------
-    public void setGrammarUpdate(GTS gts) {
-        gtsListener.set(gts);
-        if (gts == null) {
-        	setStateUpdate(null);
-        } else {
-            // the lts's of the strategies in this menu are changed
-            // moreover, the conditions in condition strategies are reset
-            // furthermore, the enabling is (re)set
-            for (Map.Entry<ExploreStrategy,Action> entry: strategyActionMap.entrySet()) {
-                ExploreStrategy strategy = entry.getKey();
-                Action generateAction = entry.getValue();
-                if (strategy instanceof ConditionalExploreStrategy) {
-                    ((ConditionalExploreStrategy) strategy).setCondition(null);
-                    generateAction.putValue(Action.NAME, strategy.toString());
-                    generateAction.setEnabled(false);
-                }
-            }
-            setStateUpdate(gts.startState());
-        }
-    }
+    public void setGrammarUpdate(RuleViewGrammar grammar) {
+		setStateUpdate(null);
+		// the lts's of the strategies in this menu are changed
+		// moreover, the conditions in condition strategies are reset
+		// furthermore, the enabling is (re)set
+		for (Action action : strategyActionMap.values()) {
+			action.setEnabled(false);
+		}
+	}
 
-    public void setStateUpdate(GraphState state) {
+    public void activateGrammarUpdate(GTS gts) {
+		gtsListener.set(gts);
+		// the lts's of the strategies in this menu are changed
+		// moreover, the conditions in condition strategies are reset
+		// furthermore, the enabling is (re)set
+		for (Map.Entry<ExploreStrategy, Action> entry : strategyActionMap.entrySet()) {
+			ExploreStrategy strategy = entry.getKey();
+			Action generateAction = entry.getValue();
+			if (strategy instanceof ConditionalExploreStrategy) {
+				((ConditionalExploreStrategy) strategy).setCondition(null);
+				generateAction.putValue(Action.NAME, strategy.toString());
+				generateAction.setEnabled(false);
+			} else {
+				generateAction.setEnabled(true);
+			}
+		}
+		setStateUpdate(gts.startState());
+	}
+
+	public void setStateUpdate(GraphState state) {
         for (Map.Entry<ExploreStrategy,Action> entry: strategyActionMap.entrySet()) {
             ExploreStrategy strategy = entry.getKey();
             Action generateAction = entry.getValue();

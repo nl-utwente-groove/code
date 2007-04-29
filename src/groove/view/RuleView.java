@@ -12,31 +12,28 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleView.java,v 1.3 2007-04-01 12:50:08 rensink Exp $
+ * $Id: RuleView.java,v 1.1 2007-04-29 09:22:36 rensink Exp $
  */
-package groove.trans.view;
+package groove.view;
 
 import groove.trans.NameLabel;
 import groove.trans.Rule;
-import groove.util.FormatException;
 
 /**
  * Interface for a graphical view upon a transformation rule.
- * Currently the only implemented view is the {@link RuleGraph}, which provides
- * a monotithic vew in which all the elements of the rule are part of one graph.
- * Note that the class offers functionality to construct a rule from an existing view,
- * as well as a view of an existing rule,
- * so in fact this class acts as a bridge between an input tool for rules and the
- * {@link Rule} representation.
+ * Currently the only implemented view is the {@link AspectualRuleView}, which provides
+ * a monolithic view in which all the elements of the rule are part of one graph.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.1 $
  */
-public interface RuleView {
+public interface RuleView extends View<Rule> {
     /**
      * Returns the rule of which this is a view.
      * The rule is possibly constructed in the course of this method.
+     * This is just a convenience method for {@link View#toModel()}.
+     * @throws FormatException if there are syntax errors in the view
      */
-    public Rule toRule();
+    public Rule toRule() throws FormatException;
 
     /** 
      * Returns the name of the rule of which this is a view. 

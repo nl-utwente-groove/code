@@ -12,20 +12,20 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NameLabel.java,v 1.3 2007-04-01 12:49:55 rensink Exp $
+ * $Id: NameLabel.java,v 1.4 2007-04-29 09:22:23 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Label;
 import groove.graph.WrapperLabel;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 /**
  * The name of a production rule.
  * The displayed version of the rule is between <tt>BEGIN_CHAR</tt> and
  * <tt>END_CHAR</tt>-characters.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-04-01 12:49:55 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-29 09:22:23 $
  */
 public class NameLabel extends WrapperLabel<String> {
     /** The obligatory first character of a rule name. */

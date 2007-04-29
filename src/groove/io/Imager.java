@@ -12,22 +12,22 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.4 2007-04-01 12:50:23 rensink Exp $
+ * $Id: Imager.java,v 1.5 2007-04-29 09:22:32 rensink Exp $
  */
 package groove.io;
 
-import groove.graph.aspect.AspectGraph;
 import groove.gui.Options;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.AspectJModel;
 import groove.trans.NameLabel;
-import groove.trans.view.AspectualRuleView;
 import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
-import groove.util.FormatException;
 import groove.util.Groove;
+import groove.view.AspectualRuleView;
+import groove.view.FormatException;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -69,7 +69,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class Imager extends CommandLineTool {
     /** Name of the imager application. */

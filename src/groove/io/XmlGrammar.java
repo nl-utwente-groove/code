@@ -12,13 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: XmlGrammar.java,v 1.6 2007-04-19 09:21:32 rensink Exp $
+ * $Id: XmlGrammar.java,v 1.7 2007-04-29 09:22:31 rensink Exp $
  */
 package groove.io;
 
-import groove.trans.GraphGrammar;
-import groove.trans.RuleFactory;
-import groove.util.FormatException;
+import groove.view.FormatException;
+import groove.view.GrammarView;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,9 +26,9 @@ import java.io.IOException;
  * Interface for the conversion of graph grammars to and from 
  * (sets of) XML documents.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
-public interface XmlGrammar<GG extends GraphGrammar> {
+public interface XmlGrammar<GG extends GrammarView> {
     /**
      * The default name of the start state of a grammar.
      */
@@ -48,7 +47,6 @@ public interface XmlGrammar<GG extends GraphGrammar> {
 	 * @param file the output file (if the XML format allows storing the grammar
      * in a single file) or directory (if the grammar is stored as a set of files)
 	 * @throws IOException if an error occurs during file output
-	 * @throws FormatException TODO
 	 * @throws FormatException if an error occurs in the conversion
 	 */
 	public void marshalGrammar(GG gg, File file) throws IOException, FormatException;
@@ -78,10 +76,10 @@ public interface XmlGrammar<GG extends GraphGrammar> {
      * @throws IOException if an error occurs during file input
      */
     public GG unmarshalGrammar(File file, String startStateName) throws FormatException, IOException;
-
-    /**
-     * Returns the {@link groove.trans.RuleFactory} needed for instantiating classes for performing transformations.
-     * @return the current <code>ruleFactory</code>
-     */
-    public RuleFactory getRuleFactory();
+//
+//    /**
+//     * Returns the {@link groove.trans.RuleFactory} needed for instantiating classes for performing transformations.
+//     * @return the current <code>ruleFactory</code>
+//     */
+//    public RuleFactory getRuleFactory();
 }

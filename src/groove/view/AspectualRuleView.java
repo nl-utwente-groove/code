@@ -12,15 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.7 2007-04-20 09:02:27 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.1 2007-04-29 09:22:35 rensink Exp $
  */
 
-package groove.trans.view;
+package groove.view;
 
-import static groove.graph.aspect.RuleAspect.CREATOR;
-import static groove.graph.aspect.RuleAspect.EMBARGO;
-import static groove.graph.aspect.RuleAspect.ERASER;
-import static groove.graph.aspect.RuleAspect.READER;
+import static groove.view.aspect.RuleAspect.CREATOR;
+import static groove.view.aspect.RuleAspect.EMBARGO;
+import static groove.view.aspect.RuleAspect.ERASER;
+import static groove.view.aspect.RuleAspect.READER;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultNode;
@@ -30,13 +30,6 @@ import groove.graph.GraphFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.aspect.AspectEdge;
-import groove.graph.aspect.AspectGraph;
-import groove.graph.aspect.AspectNode;
-import groove.graph.aspect.AspectValue;
-import groove.graph.aspect.AspectualView;
-import groove.graph.aspect.AttributeAspect;
-import groove.graph.aspect.RuleAspect;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
@@ -52,9 +45,14 @@ import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
-import groove.util.FormatException;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectNode;
+import groove.view.aspect.AspectValue;
+import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.RuleAspect;
 
 import java.io.File;
 import java.io.IOException;
@@ -76,7 +74,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.1 $
  */
 public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -144,7 +142,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
         AspectualRuleView newRuleGraph = new AspectualRuleView(rule);
         System.out.println("OK");
         System.out.print("    Testing for isomorphism of original and reconstructed rule graph: ");
-        if (isoChecker.areIsomorphic(newRuleGraph.getView(),ruleGraph.getView())) {
+        if (isoChecker.areIsomorphic(newRuleGraph.getAspectGraph(),ruleGraph.getAspectGraph())) {
             System.out.println("OK");
         } else {
             System.out.println("ERROR");
@@ -153,10 +151,10 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
             System.out.println(rule);
             System.out.println("Original rule graph");
             System.out.println("-----------------");
-            System.out.println(ruleGraph.getView());
+            System.out.println(ruleGraph.getAspectGraph());
             System.out.println("Reconstructed rule graph");
             System.out.println("------------------------");
-            System.out.println(newRuleGraph.getView());
+            System.out.println(newRuleGraph.getAspectGraph());
         }
     }
     
@@ -281,18 +279,22 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/**
      * Creates and returns the production rule corresponding to this rule graph.
      */
-    public Rule getModel() {
+    public Rule toModel() throws FormatException {
     	return rule;
     }
 
 	/**
      * Creates and returns the production rule corresponding to this rule graph.
      */
-    public Rule toRule() {
+    public Rule toRule() throws FormatException {
     	return rule;
     }
     
-	public AspectGraph getView() {
+	public List<String> getErrors() {
+		return null;
+	}
+
+	public AspectGraph getAspectGraph() {
 		return graph;
 	}
 	
@@ -597,7 +599,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     /**
 	 * Callback method to create a graph that can serve as LHS or RHS of a rule.
 	 * @return a fresh instance of {@link groove.rel.RegExprGraph}
-	 * @see #getView()
+	 * @see #getAspectGraph()
 	 */
 	protected VarGraph createVarGraph() {
 	    return new RegExprGraph();

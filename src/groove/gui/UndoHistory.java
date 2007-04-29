@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UndoHistory.java,v 1.2 2007-03-30 15:50:35 rensink Exp $
+ * $Id: UndoHistory.java,v 1.3 2007-04-29 09:22:28 rensink Exp $
  */
 package groove.gui;
 
@@ -24,6 +24,7 @@ import groove.lts.Transition;
 import groove.trans.NameLabel;
 import groove.util.Groove;
 import groove.util.History;
+import groove.view.RuleViewGrammar;
 
 import java.awt.event.ActionEvent;
 
@@ -32,7 +33,7 @@ import javax.swing.Action;
 
 /**
  * Manager of the undo history.
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:35 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-29 09:22:28 $
  * @author Arend Rensink
  */
 class UndoHistory implements SimulationListener {
@@ -67,18 +68,21 @@ class UndoHistory implements SimulationListener {
     /**
      * Clears the history.
      */
-    public synchronized void setGrammarUpdate(GTS gts) {
+    public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
         history.clear();
-        if (gts != null) {
-            history.add(new SetStateAction(gts.startState()));
-            setActionEnablings();
-            ignoreSimulationUpdates = false;
-        }
     }
 
-    /**
-     * Adds a state to the history, if it is not already the current element.
-     */    
+    /** Sets the start state. */
+    public synchronized void activateGrammarUpdate(GTS gts) {
+    	history.clear();
+		history.add(new SetStateAction(gts.startState()));
+		setActionEnablings();
+		ignoreSimulationUpdates = false;
+	}
+
+	/**
+	 * Adds a state to the history, if it is not already the current element.
+	 */    
     public synchronized void setStateUpdate(GraphState state) {
         if (! ignoreSimulationUpdates) {
         	HistoryAction newAction = new SetStateAction(state);

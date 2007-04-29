@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributedSPORule.java,v 1.5 2007-04-18 08:36:10 rensink Exp $
+ * $Id: AttributedSPORule.java,v 1.6 2007-04-29 09:22:23 rensink Exp $
  */
 package groove.trans;
 
@@ -22,14 +22,14 @@ import groove.graph.Morphism;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 /**
  * Extension of the normal SPO-rule in which we take special care about attribute
  * nodes.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-04-18 08:36:10 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-29 09:22:23 $
  * @deprecated all funtionality now in {@link SPORule}.
  */
 @Deprecated

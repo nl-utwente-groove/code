@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: ExtensionFilter.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
+ * $Id: ExtensionFilter.java,v 1.3 2007-04-29 09:22:32 rensink Exp $
  */
 package groove.io;
 
@@ -24,7 +24,7 @@ import javax.swing.JOptionPane;
 /**
  * Implements a file filter based on filename extension.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:32 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-29 09:22:32 $
  */
 public class ExtensionFilter extends javax.swing.filechooser.FileFilter 
                              implements java.io.FileFilter {
@@ -38,17 +38,9 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
      */
     public static File showSaveDialog(JFileChooser chooser,
                                       java.awt.Component parent) {
-        File originalFile = chooser.getSelectedFile();
         chooser.rescanCurrentDirectory();
-        /*
-        javax.swing.filechooser.FileFilter[] filters
-            = chooser.getChoosableFileFilters();
-        if (filters[0] == chooser.getAcceptAllFileFilter())
-            chooser.setFileFilter(filters[1]);
-        else
-            chooser.setFileFilter(filters[0]);
-        */
-        
+        File originalDir = chooser.getCurrentDirectory();
+        File originalFile = new File(originalDir, chooser.getSelectedFile().getName());
         // choose a file name to save to,
         // asking confirmation if an existing file is to be overwritten
         boolean doSave;   // indicates that the save should be carried through
@@ -59,12 +51,6 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
             if (doSave) {
                 // apparently we're set to save
                 res = chooser.getSelectedFile();
-                // extend file name if chosen under an extension filter
-                javax.swing.filechooser.FileFilter filter = chooser.getFileFilter();
-                if (filter instanceof ExtensionFilter) {
-                    res = new File
-                        (((ExtensionFilter) filter).addExtension(res.getPath()));
-                }
                 // if the file exists, defer definite choice
                 noChoice = res.exists() && ! res.equals(originalFile);
                 if (noChoice) {
@@ -75,6 +61,12 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
                     noChoice = (overwrite == JOptionPane.NO_OPTION);
                     // andy answer but YES means don't save
                     doSave = (overwrite == JOptionPane.YES_OPTION);
+                }
+                // extend file name if chosen under an extension filter
+                javax.swing.filechooser.FileFilter filter = chooser.getFileFilter();
+                if (filter instanceof ExtensionFilter) {
+                    res = new File
+                        (((ExtensionFilter) filter).addExtension(res.getPath()));
                 }
             } else
                 // a choice not to save is a definite choice

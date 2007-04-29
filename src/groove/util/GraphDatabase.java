@@ -5,6 +5,7 @@ import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
+import groove.view.FormatException;
 
 import java.io.*;
 import java.util.Vector;

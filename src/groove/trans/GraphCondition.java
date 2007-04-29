@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.4 2007-04-19 11:33:50 rensink Exp $
+ * $Id: GraphCondition.java,v 1.5 2007-04-29 09:22:23 rensink Exp $
  */
 package groove.trans;
 
@@ -25,13 +25,13 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 /**
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface GraphCondition extends GraphTest {
     /**

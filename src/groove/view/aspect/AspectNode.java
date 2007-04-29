@@ -12,21 +12,21 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: AspectNode.java,v 1.1 2007-04-29 09:22:25 rensink Exp $
  */
-package groove.graph.aspect;
+package groove.view.aspect;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import groove.graph.DefaultNode;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 /**
  * Graph node implementation that supports aspects.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 1.1 $
  */
 public class AspectNode extends DefaultNode implements AspectElement {
 	/** Constructs an aspect node with a given number. */

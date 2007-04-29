@@ -12,12 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: AbstractAspect.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
  */
-package groove.graph.aspect;
+package groove.view.aspect;
 
 import groove.graph.Label;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 import java.util.Collections;
 import java.util.HashSet;

@@ -1,10 +1,10 @@
-/* $Id: LayedOutGpsGrammar.java,v 1.2 2007-03-29 09:59:50 rensink Exp $ */
+/* $Id: LayedOutGpsGrammar.java,v 1.3 2007-04-29 09:22:31 rensink Exp $ */
 package groove.io;
 
 import groove.graph.GraphFactory;
-import groove.graph.aspect.AspectGraph;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.RuleFactory;
+import groove.view.aspect.AspectGraph;
 
 /**
  * Grammar marshaller that reads in and constructs layout information

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UntypedGxl.java,v 1.5 2007-04-24 10:06:47 rensink Exp $
+ * $Id: UntypedGxl.java,v 1.6 2007-04-29 09:22:31 rensink Exp $
  */
 package groove.io;
 
@@ -27,8 +27,8 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
-import groove.util.FormatException;
 import groove.util.Pair;
+import groove.view.FormatException;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -54,7 +54,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class UntypedGxl extends AbstractXml {
     /** Attribute name for node and edge ids. */
@@ -153,6 +153,7 @@ public class UntypedGxl extends AbstractXml {
 		groove.gxl.Graph gxlGraph = unmarshalGxlGraph(file);
 		Pair<Graph,Map<String,Node>> attrGraph = gxlToAttrGraph(gxlGraph);
 		Graph result = attrToNormGraph(attrGraph.first());
+		GraphInfo.setFile(result, file);
 		return new Pair<Graph,Map<String,Node>>(result, attrGraph.second());
 	}
 
@@ -207,7 +208,7 @@ public class UntypedGxl extends AbstractXml {
             gxlGraph.addGraphTypeItem(gxlGraphTypeItem);
         }
         // add the graph attributes
-        Map<String,Object> properties = GraphInfo.getProperties(graph);
+        Map<String,Object> properties = GraphInfo.getProperties(graph, false);
         if (properties != null) {
 			for (Map.Entry<String, Object> entry : properties.entrySet()) {
 				String attrName = entry.getKey().toLowerCase();
@@ -363,7 +364,7 @@ public class UntypedGxl extends AbstractXml {
 	 * @see #getPropertyKeys()
 	 */
 	private void transferGraphProperties(GraphShape source, Graph target) {
-		GraphInfo.setProperties(target, GraphInfo.getProperties(source));
+		GraphInfo.setProperties(target, GraphInfo.getProperties(source, false));
 	}
 
 	/**

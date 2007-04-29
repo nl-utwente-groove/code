@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.6 2007-04-24 10:06:47 rensink Exp $
+ * $Id: LayedOutXml.java,v 1.7 2007-04-29 09:22:32 rensink Exp $
  */
 package groove.io;
 
@@ -25,10 +25,10 @@ import groove.graph.Node;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
-import groove.util.FormatException;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.view.FormatException;
 
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -40,7 +40,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -51,7 +50,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class LayedOutXml implements Xml<Graph> {
     /** 
@@ -195,11 +194,6 @@ public class LayedOutXml implements Xml<Graph> {
         }
         return result;
     }
-
-    /** Delegates the method to the inner marshaller. */
-    public void setPropertyKeys(Collection<String> propertyNames) {
-		marshaller.setPropertyKeys(propertyNames);
-	}
 
 	/**
 	 * Inserts vertex layout information in a given layout map, based on a

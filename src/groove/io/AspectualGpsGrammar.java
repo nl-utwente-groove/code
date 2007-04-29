@@ -12,26 +12,26 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGpsGrammar.java,v 1.9 2007-04-24 10:06:47 rensink Exp $
+ * $Id: AspectualGpsGrammar.java,v 1.10 2007-04-29 09:22:31 rensink Exp $
  */
 
 package groove.io;
 
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.aspect.AspectGraph;
-import groove.graph.aspect.AspectualGraphView;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
 import groove.trans.SystemProperties;
 import groove.trans.StructuredRuleName;
-import groove.trans.view.AspectualRuleView;
-import groove.trans.view.RuleView;
-import groove.trans.view.RuleViewGrammar;
-import groove.util.FormatException;
 import groove.util.Groove;
+import groove.view.AspectualGraphView;
+import groove.view.AspectualRuleView;
+import groove.view.FormatException;
+import groove.view.RuleView;
+import groove.view.RuleViewGrammar;
+import groove.view.aspect.AspectGraph;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -45,7 +45,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
     /** Error message if a grammar cannot be loaded. */
@@ -66,10 +66,8 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
      * be used as a rule factory. If no file with the default start graph name exists then the empty
      * graph is taken as a start graph.
      * @param graphFactory the graph format reader
-     * @param ruleFactory production rule to be used as a rule factory
      */
-    private AspectualGpsGrammar(GraphFactory graphFactory, RuleFactory ruleFactory) {
-        this.ruleFactory = ruleFactory;
+    private AspectualGpsGrammar(GraphFactory graphFactory) {
         this.graphMarshaller = createGraphMarshaller(graphFactory);
     }
 
@@ -78,7 +76,7 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
      * @param ruleFactory the {@link groove.trans.RuleFactory} for this grammar
      */
     public AspectualGpsGrammar(RuleFactory ruleFactory) {
-        this(GraphFactory.getInstance(), ruleFactory);
+        this(GraphFactory.getInstance());
     }
 
     /**
@@ -111,7 +109,6 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
                 .getName()));
 
         loadProperties(result, location);
-        getGraphMarshaller().setPropertyKeys(result.getProperties().getGraphProperties());
         FormatException formatExc = null;
         try {
 			loadRules(result, location);
@@ -201,16 +198,12 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
 
 	/**
 	 * Loads in and returns a single rule from a given location, 
-	 * giving it a given name and priority, and using a given rule factory.
+	 * giving it a given name and priority.
 	 */
-	private AspectualRuleView loadRule(File location, int priority, StructuredRuleName ruleName, SystemProperties properties) throws IOException, FormatException {
-//		try {
-			AspectGraph unmarshalledRule = getGraphMarshaller().unmarshalGraph(location);
-		    return createRuleGraph(unmarshalledRule, ruleName, priority, properties);
-//		} catch (FormatException exc) {
-//		    throw new IOException(LOAD_ERROR + ": rule format error in "
-//		            + location.getName()+": "+exc.getMessage());
-//		} 
+	private AspectualRuleView loadRule(File location, int priority,
+			StructuredRuleName ruleName, SystemProperties properties) throws IOException, FormatException {
+		AspectGraph unmarshalledRule = getGraphMarshaller().unmarshalGraph(location);
+		return createRuleView(unmarshalledRule, ruleName, priority, properties);
 	}
 
 	/**
@@ -239,7 +232,7 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
 	    if (startGraphFile != null) {
 	        try {
 	            AspectGraph unmarshalledStartGraph = getGraphMarshaller().unmarshalGraph(startGraphFile);
-	            startGraph = new AspectualGraphView(unmarshalledStartGraph).getModel();
+	            startGraph = new AspectualGraphView(unmarshalledStartGraph).toModel();
 	            startGraph.setFixed();
 	            result.setStartGraph(startGraph);
 	        } catch (FileNotFoundException exc) {
@@ -263,7 +256,7 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
             String filename = Groove.createRuleFilter().stripExtension(location.getName());
             PriorityFileName priorityFileName = new PriorityFileName(filename);
             StructuredRuleName ruleName = new StructuredRuleName(priorityFileName.getRuleName());
-            return createRuleGraph(getGraphMarshaller().unmarshalGraph(location), ruleName, priorityFileName.getPriority(), properties);
+            return createRuleView(getGraphMarshaller().unmarshalGraph(location), ruleName, priorityFileName.getPriority(), properties);
         } catch (FormatException exc) {
             throw new IOException("Error in graph format: "+exc.getMessage());
         }
@@ -300,11 +293,9 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
 	 * then use it directly, otherwise construct an {@link AspectualRuleView}
 	 * from the underlying rule.
 	 */
-	private void saveRule(RuleView ruleView, File location) throws IOException {
+	private void saveRule(AspectualRuleView ruleView, File location) throws IOException {
 		try {
-			AspectualRuleView ruleGraph = ruleView instanceof AspectualRuleView ? (AspectualRuleView) ruleView
-					: createRuleGraph(ruleView.toRule());
-			graphMarshaller.marshalGraph(ruleGraph.getView(), location);
+			graphMarshaller.marshalGraph(ruleView.getAspectGraph(), location);
 		} catch (FormatException exc) {
 			throw new IOException("Error in creating rule graph: "
 					+ exc.getMessage());
@@ -320,7 +311,7 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
 		// save start graph
         File startGraphLocation = new File(location, DEFAULT_START_GRAPH_NAME);
         AspectualGraphView startGraphView = new AspectualGraphView(startGraph);
-        getGraphMarshaller().marshalGraph(startGraphView.getView(), startGraphLocation);
+        getGraphMarshaller().marshalGraph(startGraphView.getAspectGraph(), startGraphLocation);
 	}
 
 	/**
@@ -361,7 +352,7 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
         String prioritizedRuleName = new PriorityFileName(coreRuleName, priority).toString();
         ruleLocation = new File(ruleLocation, RULE_FILTER.addExtension(prioritizedRuleName));
         // now save the rule
-        saveRule(ruleGraph, ruleLocation);
+        saveRule((AspectualRuleView) ruleGraph, ruleLocation);
     }
 
     /**
@@ -379,9 +370,9 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
     }
     
     /**
-     * Creates a {@link groove.trans.view.RuleViewGrammar} with the given name.
-     * @param name the name of the {@link groove.trans.view.RuleViewGrammar} to be created
-     * @return a new {@link groove.trans.view.RuleViewGrammar} with the given name
+     * Creates a {@link groove.view.RuleViewGrammar} with the given name.
+     * @param name the name of the {@link groove.view.RuleViewGrammar} to be created
+     * @return a new {@link groove.view.RuleViewGrammar} with the given name
      */
     protected RuleViewGrammar createGrammar(String name) {
         return new RuleViewGrammar(name);
@@ -392,31 +383,30 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
      * @param graph the graph from which to create the rule-graph
      * @param ruleName the name of the rule to be created
      * @param priority the priority of the rule to be created
-     * @return the {@link groove.trans.view.RuleGraph} created from the given graph
+     * @return the {@link AspectualRuleView} created from the given graph
      * @throws FormatException when the given graph does not conform to
      * the requirements for making a rule-graph out of it
      */
-    protected AspectualRuleView createRuleGraph(AspectGraph graph, NameLabel ruleName, int priority, SystemProperties properties)
+    protected AspectualRuleView createRuleView(AspectGraph graph, NameLabel ruleName, int priority, SystemProperties properties)
             throws FormatException {
     	return new AspectualRuleView(graph, ruleName, priority, properties);
-//    	return (AspectualRuleView) getRuleFactory().createRuleView(graph, ruleName, priority);
     }
     
     /**
      * Callback method to create a rule graph from a rule.
-     * @param rule the rule from which to create a {@link groove.trans.view.RuleGraph}
-     * @return the {@link groove.trans.view.RuleGraph} created from the given rule
+     * @param rule the rule from which to create a {@link AspectualRuleView}
+     * @return the {@link AspectualRuleView} created from the given rule
      * @throws FormatException when the given rule does not conform the
-     * requirements for making a {@link groove.trans.view.RuleGraph} from it
+     * requirements for making a {@link AspectualRuleView} from it
      */
     protected AspectualRuleView createRuleGraph(Rule rule) throws FormatException {
         return new AspectualRuleView(rule);
     }
-
-    /** Returns the rule factory passed in at construction time. */
-    public RuleFactory getRuleFactory() {
-    	return ruleFactory;
-    }
+//
+//    /** Returns the rule factory passed in at construction time. */
+//    public RuleFactory getRuleFactory() {
+//    	return ruleFactory;
+//    }
 //    
 //    /**
 //	 * Tests if a graph grammar contains attributed graphs.
@@ -434,9 +424,9 @@ public class AspectualGpsGrammar implements XmlGrammar<RuleViewGrammar> {
      * The xml reader used to unmarshal graphs.
      */
     private final Xml<AspectGraph> graphMarshaller;
-
-    /**
-     * The production rule factory used to unmarshal graphs.
-     */
-    private final RuleFactory ruleFactory;
+//
+//    /**
+//     * The production rule factory used to unmarshal graphs.
+//     */
+//    private final RuleFactory ruleFactory;
 }

@@ -12,9 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: AspectElement.java,v 1.1 2007-04-29 09:22:25 rensink Exp $
  */
-package groove.graph.aspect;
+package groove.view.aspect;
 
 import java.util.Collection;
 
@@ -23,7 +23,7 @@ import groove.graph.Element;
 /**
  * Extension of the {@link Element} interface with support for {@link Aspect}s.
  * @author Arend Rensink
- * @version $Revision$
+ * @version $Revision: 1.1 $
  */
 public interface AspectElement extends Element {
     /**

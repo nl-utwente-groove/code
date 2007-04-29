@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.9 2007-04-20 09:02:27 rensink Exp $
+ * $Id: Groove.java,v 1.10 2007-04-29 09:22:29 rensink Exp $
  */
 package groove.util;
 
@@ -25,7 +25,8 @@ import groove.io.UntypedGxl;
 import groove.io.Xml;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemProperties;
-import groove.trans.view.AspectualRuleView;
+import groove.view.AspectualRuleView;
+import groove.view.FormatException;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -39,7 +40,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.9 $ 
+ * @version $Revision: 1.10 $ 
  * @version Arend Rensink
  */
 public class Groove {

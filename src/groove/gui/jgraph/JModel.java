@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.7 2007-04-24 10:06:48 rensink Exp $
+ * $Id: JModel.java,v 1.8 2007-04-29 09:22:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -61,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -69,7 +69,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.7 $
+     * @version $Revision: 1.8 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -111,6 +111,20 @@ abstract public class JModel extends DefaultGraphModel {
      */
     public JModel() {
         this(JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, null);
+    }
+
+    /** Returns a (possibly <code>null</code>) name of this model. */
+    public String getName() {
+    	return name;
+    }
+
+    /**
+     * Sets the name of this j-model to a given name.
+     * The name may be <tt>null</tt> if the model is anonymous.
+     * @see #getName()
+     */
+    public final void setName(String name) {
+        this.name = name;
     }
 
     /**
@@ -597,4 +611,8 @@ abstract public class JModel extends DefaultGraphModel {
 	private final Options options;
 	/** Properties map of the graph being displayed or edited. */
 	private SortedMap<String,Object> properties;
+	/**
+     * The name of this model.
+     */
+    private String name;
 }

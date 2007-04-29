@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Graph.java,v 1.5 2007-04-27 22:07:04 rensink Exp $
+ * $Id: Graph.java,v 1.6 2007-04-29 09:22:27 rensink Exp $
  */
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.IsoMatcher;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -32,7 +32,7 @@ import java.util.Set;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.5 $ $Date: 2007-04-27 22:07:04 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-29 09:22:27 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
     /**

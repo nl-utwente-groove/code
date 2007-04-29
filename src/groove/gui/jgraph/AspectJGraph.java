@@ -12,16 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJGraph.java,v 1.1 2007-04-12 16:14:49 rensink Exp $
+ * $Id: AspectJGraph.java,v 1.2 2007-04-29 09:22:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
-import groove.graph.aspect.AspectElement;
-import groove.graph.aspect.RuleAspect;
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.NameLabel;
+import groove.view.aspect.AspectElement;
+import groove.view.aspect.RuleAspect;
 
 import java.awt.event.ActionEvent;
 import java.util.HashSet;

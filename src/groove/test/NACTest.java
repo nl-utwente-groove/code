@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.6 2007-04-19 09:21:33 rensink Exp $
+ * $Id: NACTest.java,v 1.7 2007-04-29 09:22:37 rensink Exp $
  */
 package groove.test;
 
@@ -34,7 +34,7 @@ import groove.trans.RuleApplication;
 import groove.trans.SystemProperties;
 import groove.trans.SPORule;
 import groove.trans.DefaultRuleFactory;
-import groove.util.FormatException;
+import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -56,7 +56,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {

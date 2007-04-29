@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.7 2007-04-12 16:14:49 rensink Exp $
+ * $Id: JAttr.java,v 1.8 2007-04-29 09:22:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -34,15 +34,15 @@ import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
 
-import groove.graph.aspect.AspectValue;
-import groove.graph.aspect.RuleAspect;
 import groove.util.Colors;
 import groove.util.Groove;
+import groove.view.aspect.AspectValue;
+import groove.view.aspect.RuleAspect;
 
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class JAttr {
     /**

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: TemporalFormula.java,v 1.2 2007-04-01 12:50:25 rensink Exp $
+ * $Id: TemporalFormula.java,v 1.3 2007-04-29 09:22:36 rensink Exp $
  */
 
 package groove.verify;
@@ -23,7 +23,6 @@ import groove.lts.State;
 import groove.trans.GraphCondition;
 import groove.trans.NameLabel;
 import groove.trans.StructuredRuleName;
-import groove.util.FormatException;
 import groove.verify.CTLStarFormula.All;
 import groove.verify.CTLStarFormula.And;
 import groove.verify.CTLStarFormula.Atom;
@@ -34,6 +33,7 @@ import groove.verify.CTLStarFormula.Neg;
 import groove.verify.CTLStarFormula.Next;
 import groove.verify.CTLStarFormula.Or;
 import groove.verify.CTLStarFormula.Until;
+import groove.view.FormatException;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -43,7 +43,7 @@ import java.util.Set;
 /**
  * Abstract class as a generalization of LTL and CTL formulas.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-04-01 12:50:25 $
+ * @version $Revision: 1.3 $ $Date: 2007-04-29 09:22:36 $
  */
 public abstract class TemporalFormula {
 

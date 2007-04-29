@@ -12,17 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id$
+ * $Id: AspectValue.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
  */
-package groove.graph.aspect;
+package groove.view.aspect;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import groove.util.FormatException;
-import static groove.graph.aspect.Aspect.VALUE_SEPARATOR;
+import groove.view.FormatException;
+import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 
 /**
  * Class implementing values of a given aspect.
@@ -68,7 +68,7 @@ public class AspectValue {
      * Throws an exception if an aspect value with the same name exists already.
      * @param aspect the aspect for which this is a value
      * @param name the name of the aspect value.
-     * @throws groove.util.FormatException if the value name is already used
+     * @throws groove.view.FormatException if the value name is already used
      */
     public AspectValue(Aspect aspect, String name) throws FormatException {
     	this(aspect, name, new HashSet<AspectValue>());
