@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.6 2007-04-20 15:12:28 rensink Exp $
- * $Date: 2007-04-20 15:12:28 $
+ * $Id: Rule.java,v 1.7 2007-04-30 19:53:27 rensink Exp $
+ * $Date: 2007-04-30 19:53:27 $
  */
 package groove.trans;
 
@@ -34,7 +34,7 @@ import groove.rel.VarNodeEdgeMap;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -52,6 +52,9 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
 	@Deprecated
 	public void setPriority(int priority);
 
+	/** Returns the name of this rule. */
+	public RuleNameLabel getName();
+	
 	/**
 	 * Returns the priority of this object.
 	 * A higher number means higher priority, with {@link #DEFAULT_PRIORITY} the lowest.

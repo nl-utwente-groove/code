@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.10 2007-04-29 09:22:29 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.11 2007-04-30 19:53:32 rensink Exp $
  */
 package groove.util;
 
@@ -32,8 +32,8 @@ import groove.rel.RegExprGraph;
 import groove.rel.VarGraph;
 import groove.trans.DefaultNAC;
 import groove.trans.GraphGrammar;
+import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
-import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.RuleSystem;
 import groove.trans.SPORule;
@@ -48,7 +48,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-04-29 09:22:29 $
+ * @version $Revision: 1.11 $ $Date: 2007-04-30 19:53:32 $
  */
 public class TypeDiscoverer {
 	/** Extension of files containing type information. */
@@ -68,11 +68,11 @@ public class TypeDiscoverer {
         try {
             switch (args.length) {
             case 1 :
-                grammar = Groove.loadGrammar(getGrammarDirname(args));
+                grammar = Groove.loadGrammar(getGrammarDirname(args)).toGrammar();
                 break;
             case 2 :
             case 3 :
-                grammar = Groove.loadGrammar(getGrammarDirname(args), getStartFilename(args));
+                grammar = Groove.loadGrammar(getGrammarDirname(args), getStartFilename(args)).toGrammar();
                 break;
             default : printUsage();
             return;
@@ -275,7 +275,7 @@ public class TypeDiscoverer {
     }
     
     /** Callback factory method to create a rule. */
-    protected Rule createRule(Morphism ruleMorphism, NameLabel name, RuleSystem ruleSystem) throws FormatException {
+    protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name, RuleSystem ruleSystem) throws FormatException {
         return new SPORule(ruleMorphism, name, Rule.DEFAULT_PRIORITY, ruleSystem.getProperties());
     }
     

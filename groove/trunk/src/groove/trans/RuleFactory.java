@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleFactory.java,v 1.7 2007-04-29 09:22:23 rensink Exp $
+ * $Id: RuleFactory.java,v 1.8 2007-04-30 19:53:27 rensink Exp $
  */
 package groove.trans;
 
@@ -24,7 +24,7 @@ import groove.view.RuleView;
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-04-29 09:22:23 $
+ * @version $Revision: 1.8 $ $Date: 2007-04-30 19:53:27 $
  */
 public interface RuleFactory {
 	/**
@@ -33,7 +33,7 @@ public interface RuleFactory {
 	 * @param properties TODO
 	 * @return a rule view over the rule encoded in the given graph
 	 */
-	public RuleView createRuleView(Graph graph, NameLabel name, int priority, SystemProperties properties) throws FormatException;
+	public RuleView createRuleView(Graph graph, RuleNameLabel name, int priority, SystemProperties properties) throws FormatException;
 //
 //	/**
 //	 * Creates a named rule from a morphism.
@@ -51,7 +51,7 @@ public interface RuleFactory {
 	 * @throws FormatException if a rule cannot be created due to incompatibility
 	 * of the morphism and the declared rule properties
 	 */
-	public Rule createRule(Morphism morphism, NameLabel name, int priority, SystemProperties properties) throws FormatException;
+	public Rule createRule(Morphism morphism, RuleNameLabel name, int priority, SystemProperties properties) throws FormatException;
 //
 //    /**
 //     * Creates and returns a fresh rule application object, of the kind required by the

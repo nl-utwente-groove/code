@@ -12,20 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.11 2007-04-29 09:22:37 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.12 2007-04-30 19:53:30 rensink Exp $
  */
 
 package groove.test;
 
-import groove.io.AspectualGpsGrammar;
-import groove.io.XmlGrammar;
+import groove.io.AspectualViewGps;
+import groove.io.GrammarViewXml;
 import groove.lts.ConditionalExploreStrategy;
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.explore.FullStrategy;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
-import groove.trans.StructuredRuleName;
+import groove.trans.RuleNameLabel;
 import groove.util.Generator;
 import groove.view.FormatException;
 
@@ -44,7 +44,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -229,7 +229,7 @@ public class ExplorationTest extends TestCase {
     protected GTS testExploration(String grammarName, String startGraphName, String strategyDescr, int nodeCount,
             int edgeCount, int openCount) {
         try {
-            GraphGrammar gg = loader.unmarshalGrammar(new File(INPUT_DIR + "\\"+ grammarName), startGraphName).toGrammar();
+            GraphGrammar gg = loader.unmarshal(new File(INPUT_DIR + "\\"+ grammarName), startGraphName).toGrammar();
             gg.setFixed();
             GTS lts = new GTS(gg);
             ExploreStrategy strategy;
@@ -237,7 +237,7 @@ public class ExplorationTest extends TestCase {
             	parser.parse(strategyDescr);
                 strategy = parser.getStrategy();
                 if (strategy instanceof ConditionalExploreStrategy) {
-                    Rule conditionRule = gg.getRule(new StructuredRuleName(parser
+                    Rule conditionRule = gg.getRule(new RuleNameLabel(parser
                             .getCondition()));
                     assertNotNull(conditionRule);
                     ((ConditionalExploreStrategy) strategy).setCondition(conditionRule);
@@ -306,7 +306,7 @@ public class ExplorationTest extends TestCase {
      * @return the explored GTS
      */
     protected GTS testExploration(String grammarName, int nodeCount, int edgeCount) {
-        return testExploration(grammarName, XmlGrammar.DEFAULT_START_GRAPH_NAME, nodeCount, edgeCount);
+        return testExploration(grammarName, GrammarViewXml.DEFAULT_START_GRAPH_NAME, nodeCount, edgeCount);
     }
     
     /**
@@ -348,5 +348,5 @@ public class ExplorationTest extends TestCase {
     /**
      * Grammar loader used in this test case.
      */
-    protected XmlGrammar loader = new AspectualGpsGrammar();
+    protected GrammarViewXml loader = new AspectualViewGps();
 }

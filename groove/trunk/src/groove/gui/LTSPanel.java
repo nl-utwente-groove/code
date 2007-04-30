@@ -12,14 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTSPanel.java,v 1.5 2007-04-29 09:22:28 rensink Exp $
+ * $Id: LTSPanel.java,v 1.6 2007-04-30 19:53:29 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.jgraph.LTSJModel.EMPTY_JMODEL;
-
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -34,8 +33,10 @@ import groove.lts.LTSAdapter;
 import groove.lts.LTSListener;
 import groove.lts.State;
 import groove.trans.NameLabel;
-import groove.view.RuleViewGrammar;
+import groove.view.AspectualGrammarView;
 
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.Collections;
 
 /**
@@ -43,12 +44,14 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-04-29 09:22:28 $
+ * @version $Revision: 1.6 $ $Date: 2007-04-30 19:53:29 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
     public LTSPanel(Simulator simulator) {
         super(new LTSJGraph(simulator), true, simulator.getOptions());
+        this.simulator = simulator;
+        getJGraph().addMouseListener(new MyMouseListener());
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         simulator.addSimulationListener(this);
@@ -73,18 +76,20 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
      * @param grammar
      *                 the new grammar
      */
-    public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
+    public synchronized void setGrammarUpdate(AspectualGrammarView grammar) {
         setGTS(null);
-        getJGraph().setModel(createJModel(gts));
+        getJGraph().setModel(LTSJModel.EMPTY_JMODEL);
         setEnabled(false);
+//        simulator.setGraphPanelEnabled(simulator.getLtsPanel(), false);
         refreshStatus();
     }
 
-	public synchronized void activateGrammarUpdate(GTS gts) {
+	public synchronized void runSimulationUpdate(GTS gts) {
         setGTS(gts);
 		getJGraph().setModel(createJModel(gts));
 		setStateUpdate(gts.startState());
 		setEnabled(true);
+//        simulator.setGraphPanelEnabled(simulator.getLtsPanel(), true);
 		refreshStatus();
 	}
 
@@ -193,8 +198,17 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
      */
     private GTS gts;
 
+    /** The simulator to which this panel belongs. */
+    private final Simulator simulator;
+    
     /** The graph lisener permanently associated with this exploration strategy. */
-    private final LTSListener ltsListener = new LTSAdapter() {
+    private final LTSListener ltsListener = new MyLTSListener(); 
+    
+    /**
+     * Listener that makes sure the panel status gets updated when the
+     * LYS is extended.
+     */
+    private class MyLTSListener extends LTSAdapter {
         /**
          * May only be called with the current lts as first parameter. Updates the
          * frame title by showing the number of nodes and edges.
@@ -227,5 +241,22 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
             }
             refreshStatus();
         }
-    };
+    }
+    
+	/** 
+	 * Mouse listener that creates the popup menu and switches the view to 
+	 * the rule panel on double-clicks.
+	 */
+	private class MyMouseListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent evt) {
+            if (evt.getButton() == MouseEvent.BUTTON1) {
+            	if (! isEnabled()) {
+            		simulator.handleRun();
+            	} else if (evt.getClickCount() == 2) {
+            		simulator.setGraphPanel(simulator.getStatePanel());
+            	} 
+            }
+        }
+    }
 }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.10 2007-04-29 09:22:23 rensink Exp $
+ * $Id: RuleSystem.java,v 1.11 2007-04-30 19:53:27 rensink Exp $
  */
 package groove.trans;
 
@@ -37,7 +37,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-04-29 09:22:23 $
+ * @version $Revision: 1.11 $ $Date: 2007-04-30 19:53:27 $
  * @see NameLabel
  * @see SPORule
  */
@@ -242,7 +242,6 @@ public class RuleSystem {
      * @param properties the new properties mapping
      */
     public void setProperties(java.util.Properties properties) {
-    	testRuleSystemEmpty();
         SystemProperties currentRuleProperties = getProperties();
         currentRuleProperties.clear();
         currentRuleProperties.putAll(properties);
@@ -314,7 +313,7 @@ public class RuleSystem {
      * Callback factory method to create a rule name from a {@link String}.
      */
     protected NameLabel createRuleName(String name) {
-        return new StructuredRuleName(name);
+        return new RuleNameLabel(name);
     }
     /** 
      * Factory method to create a set to contain rules.

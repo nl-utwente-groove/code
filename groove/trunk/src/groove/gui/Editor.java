@@ -12,25 +12,25 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.14 2007-04-29 09:22:28 rensink Exp $
+ * $Id: Editor.java,v 1.15 2007-04-30 19:53:29 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.IS_ATTRIBUTED_OPTION;
 import groove.graph.Graph;
+import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.AspectJModel;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.Xml;
 import groove.trans.DefaultRuleFactory;
-import groove.trans.NameLabel;
 import groove.trans.RuleFactory;
+import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.util.Converter;
 import groove.util.Groove;
@@ -88,7 +88,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.14 $ $Date: 2007-04-29 09:22:28 $
+ * @version $Revision: 1.15 $ $Date: 2007-04-30 19:53:29 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -275,7 +275,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.14 $
+     * @version $Revision: 1.15 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -335,7 +335,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     protected class CloseEditorAction extends AbstractAction {
     	/** Constructs an instance of the action. */
         public CloseEditorAction() {
-            super(Options.STOP_EDIT_ACTION_NAME);
+            super(Options.CLOSE_ACTION_NAME);
         }
         
         /** Calls {@link Editor#handleClose()}. */
@@ -611,7 +611,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
 	protected boolean handlePreview() {
 	    try {
-	    	NameLabel ruleName = new NameLabel("temp");
+	    	RuleNameLabel ruleName = new RuleNameLabel("temp");
             AspectualRuleView ruleGraph = (AspectualRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0, getSystemProperties());
             AspectJModel ruleModel = new AspectJModel(ruleGraph, getOptions());
             JGraph previewGraph = new JGraph(ruleModel);

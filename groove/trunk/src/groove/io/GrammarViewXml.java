@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: XmlGrammar.java,v 1.7 2007-04-29 09:22:31 rensink Exp $
+ * $Id: GrammarViewXml.java,v 1.1 2007-04-30 19:53:24 rensink Exp $
  */
 package groove.io;
 
@@ -26,9 +26,9 @@ import java.io.IOException;
  * Interface for the conversion of graph grammars to and from 
  * (sets of) XML documents.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.1 $
  */
-public interface XmlGrammar<GG extends GrammarView> {
+public interface GrammarViewXml<GG extends GrammarView> extends ViewXml<GG> {
     /**
      * The default name of the start state of a grammar.
      */
@@ -47,17 +47,16 @@ public interface XmlGrammar<GG extends GrammarView> {
 	 * @param file the output file (if the XML format allows storing the grammar
      * in a single file) or directory (if the grammar is stored as a set of files)
 	 * @throws IOException if an error occurs during file output
-	 * @throws FormatException if an error occurs in the conversion
 	 */
-	public void marshalGrammar(GG gg, File file) throws IOException, FormatException;
+	public void marshal(GG gg, File file) throws IOException;
 	
     /**
      * Converts an XML formatted file or set of files into a graph grammar, 
      * and returns the graph grammar. The resulting grammar is not yet fixed.
      * Convenience method for <code>unmarshal(file, null)</code>.
-     * @see #unmarshalGrammar(File, String)
+     * @see #unmarshal(File, String)
      */
-    public GG unmarshalGrammar(File file) throws FormatException, IOException;
+    public GG unmarshal(File file) throws IOException;
 
     /**
      * Converts an XML formatted file or set of files into a graph grammar, 
@@ -75,7 +74,7 @@ public interface XmlGrammar<GG extends GrammarView> {
      * @throws FormatException if an error occurs in the conversion
      * @throws IOException if an error occurs during file input
      */
-    public GG unmarshalGrammar(File file, String startStateName) throws FormatException, IOException;
+    public GG unmarshal(File file, String startStateName) throws FormatException, IOException;
 //
 //    /**
 //     * Returns the {@link groove.trans.RuleFactory} needed for instantiating classes for performing transformations.

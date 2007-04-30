@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Xml.java,v 1.6 2007-04-29 09:22:32 rensink Exp $
+ * $Id: Xml.java,v 1.7 2007-04-30 19:53:24 rensink Exp $
  */
 package groove.io;
 
@@ -27,17 +27,16 @@ import java.io.IOException;
  * To be implemented for particular XML formats.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public interface Xml<G extends Graph> {
 	/**
 	 * Writes a graph to a file, in XML format.
 	 * @param graph the graph to be marshalled
 	 * @param file the output file
-     * @throws FormatException if an error occurred during the conversion
-     * @throws IOException if an error occurred during file output
+	 * @throws IOException if an error occurred during file output
 	 */
-	public void marshalGraph(G graph, File file) throws FormatException, IOException;
+	public void marshalGraph(G graph, File file) throws IOException;
 	
     /**
      * Converts an XML formatted file into a graph, and returns the graph.

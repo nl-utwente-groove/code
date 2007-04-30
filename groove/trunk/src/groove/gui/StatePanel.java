@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.8 2007-04-29 09:22:28 rensink Exp $
+ * $Id: StatePanel.java,v 1.9 2007-04-30 19:53:29 rensink Exp $
  */
 package groove.gui;
 
@@ -35,7 +35,7 @@ import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.trans.NameLabel;
 import groove.util.Groove;
-import groove.view.RuleViewGrammar;
+import groove.view.AspectualGrammarView;
 
 import java.awt.Rectangle;
 import java.awt.geom.Rectangle2D;
@@ -54,7 +54,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -95,7 +95,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     /**
      * Sets the underlying model of this state frame to the initial graph of the new grammar.
      */
-    public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
+    public synchronized void setGrammarUpdate(AspectualGrammarView grammar) {
         stateJModelMap.clear();
         graphJModelMap.clear();
         selectedTransition = null;
@@ -104,6 +104,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
             setEnabled(false);
         } else {
         	Graph startGraph = grammar.getStartGraph();
+        	assert startGraph != null;
             GraphJModel graphJModel = getGraphJModel(startGraph);
 //            // since the GTS states have lost their layout information, we try to
 //            // retrieve it from the grammar start graph
@@ -113,17 +114,11 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 //            }
             jGraph.setModel(graphJModel);
         }
-        currentGrammar = grammar;
         refreshStatus();
     }
 
-    public synchronized void activateGrammarUpdate(GTS gts) {
-    	RuleViewGrammar newGrammar = (RuleViewGrammar) gts.getGrammar();
-    	if (newGrammar != currentGrammar) {
-    		setGrammarUpdate(newGrammar);
-    	} else {
-    		stateJModelMap.clear();
-    	}
+    public synchronized void runSimulationUpdate(GTS gts) {
+    	stateJModelMap.clear();
     	// take either the GTS start state or the grammar start graph as model
     	GraphJModel jModel = getStateJModel(gts.startState());
     	if (getJModel() != jModel) {
@@ -349,6 +344,4 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     private GraphTransition selectedTransition;
     /** The simulator to which this panel belongs. */
     private final Simulator simulator;
-    /** The currently set grammar. */
-    private RuleViewGrammar currentGrammar;
 }

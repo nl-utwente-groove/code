@@ -1,4 +1,4 @@
-/* $Id: LayedOutGpsGrammar.java,v 1.3 2007-04-29 09:22:31 rensink Exp $ */
+/* $Id: LayedOutGps.java,v 1.1 2007-04-30 19:53:24 rensink Exp $ */
 package groove.io;
 
 import groove.graph.GraphFactory;
@@ -12,12 +12,12 @@ import groove.view.aspect.AspectGraph;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class LayedOutGpsGrammar extends AspectualGpsGrammar {
+public class LayedOutGps extends AspectualViewGps {
 	/**
 	 * Constructs an instance of the grammar marshaller using a given
 	 * rule factory.
 	 */
-	public LayedOutGpsGrammar(RuleFactory ruleFactory) {
+	public LayedOutGps(RuleFactory ruleFactory) {
 		super(ruleFactory);
 	}
 
@@ -25,13 +25,13 @@ public class LayedOutGpsGrammar extends AspectualGpsGrammar {
 	 * Constructs an instance of the grammar marshaller using the
 	 * {@link DefaultRuleFactory}.
 	 */
-	public LayedOutGpsGrammar() {
+	public LayedOutGps() {
 		super();
 	}
 
 	/** This implementation returns a {@link LayedOutXml} graph reader. */
 	@Override
 	protected Xml<AspectGraph> createGraphMarshaller(GraphFactory graphFactory) {
-    	return new AspectualGxl(new LayedOutXml(new UntypedGxl()));
+    	return new AspectGxl(new LayedOutXml(new DefaultGxl()));
 	}
 }

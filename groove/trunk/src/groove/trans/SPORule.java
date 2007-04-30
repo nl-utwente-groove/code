@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.12 2007-04-29 09:22:23 rensink Exp $
+ * $Id: SPORule.java,v 1.13 2007-04-30 19:53:27 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -97,7 +97,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * @param properties the factory this rule used to instantiate related classes
      * @throws FormatException if the rule system properties do not concur with the rule itself
      */
-    public SPORule(Morphism morph, NameLabel name, int priority, SystemProperties properties) throws FormatException {
+    public SPORule(Morphism morph, RuleNameLabel name, int priority, SystemProperties properties) throws FormatException {
         super((VarGraph) morph.dom(), name, properties);
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Constructing rule: " + name);
@@ -277,6 +277,14 @@ public class SPORule extends DefaultGraphCondition implements Rule {
         setAndNot(nac);
     }
 
+    /**
+     * Specialises the return type.
+     */
+    @Override
+    public RuleNameLabel getName() {
+    	return (RuleNameLabel) name;
+    }
+    
     public int getPriority() {
 		return priority;
 	}

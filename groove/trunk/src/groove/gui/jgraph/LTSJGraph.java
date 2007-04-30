@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJGraph.java,v 1.3 2007-04-12 16:14:49 rensink Exp $
+ * $Id: LTSJGraph.java,v 1.4 2007-04-30 19:53:28 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -33,7 +33,6 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.geom.Rectangle2D;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,7 +55,7 @@ public class LTSJGraph extends JGraph {
     	super(LTSJModel.EMPTY_JMODEL);
         this.simulator = simulator;
         this.exploreMenu = new ExploreStrategyMenu(simulator);
-        addMouseListener(createMouseListener());
+        addMouseListener(new MyMouseListener());
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setLayoutMenu.selectLayoutAction(createInitialLayouter());
     }
@@ -103,41 +102,10 @@ public class LTSJGraph extends JGraph {
         }
     }
 
-    /** 
-     * Creates a mouse listener that
-     * activates a state or transition on a single click, and
-     * switches to the state panel on a double click.
-     */
-    protected MouseListener createMouseListener() {
-        return new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent evt) {
-                if (evt.getButton() == MouseEvent.BUTTON1) {
-                    // scale from screen to model
-                    java.awt.Point loc = evt.getPoint();
-                    // find cell in model coordinates
-                    DefaultGraphCell cell = (DefaultGraphCell) getFirstCellForLocation(loc.x, loc.y);
-                    if (cell instanceof GraphJEdge) {
-                        GraphTransition edge = (GraphTransition) ((GraphJEdge) cell).getEdge();
-                        simulator.setTransition(edge);
-                    } else if (cell instanceof GraphJVertex) {
-                        GraphState node = (GraphState) ((GraphJVertex) cell).getNode();
-                        if (!simulator.getCurrentState().equals(node)) {
-                            simulator.setState(node);
-                        }
-                    }
-                    // on two mouse clicks we switch to the state view
-                    if (evt.getClickCount() == 2) {
-                        simulator.setGraphPanel(simulator.getStatePanel());
-                    }
-                }
-            }
-        };
-    }
-
     /**
-     * Overwrites the menu, so the forest layouter takes the LTS start state as its root.
-     */
+	 * Overwrites the menu, so the forest layouter takes the LTS start state as
+	 * its root.
+	 */
     @Override
     protected SetLayoutMenu createSetLayoutMenu() {
         SetLayoutMenu result = new SetLayoutMenu(this, new SpringLayouter());
@@ -214,11 +182,38 @@ public class LTSJGraph extends JGraph {
 	    }
 	}
 
+    /** 
+     * Mouse listener that
+     * activates a state or transition on a single click, and
+     * switches to the state panel on a double click.
+     */
+    private class MyMouseListener extends MouseAdapter {
+		@Override
+		public void mousePressed(MouseEvent evt) {
+			if (evt.getButton() == MouseEvent.BUTTON1) {
+				// scale from screen to model
+				java.awt.Point loc = evt.getPoint();
+				// find cell in model coordinates
+				DefaultGraphCell cell = (DefaultGraphCell) getFirstCellForLocation(loc.x,
+						loc.y);
+				if (cell instanceof GraphJEdge) {
+					GraphTransition edge = (GraphTransition) ((GraphJEdge) cell).getEdge();
+					simulator.setTransition(edge);
+				} else if (cell instanceof GraphJVertex) {
+					GraphState node = (GraphState) ((GraphJVertex) cell).getNode();
+					if (!simulator.getCurrentState().equals(node)) {
+						simulator.setState(node);
+					}
+				}
+			}
+		}
+	}
+
 	/**
 	 * A specialization of the forest layouter that takes the LTS start graph
 	 * as its suggested root.
 	 */
-	protected class MyForestLayouter extends groove.gui.layout.ForestLayouter {
+	private class MyForestLayouter extends groove.gui.layout.ForestLayouter {
 	    /**
 	     * Creates a prototype layouter
 	     */

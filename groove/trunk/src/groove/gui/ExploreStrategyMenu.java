@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExploreStrategyMenu.java,v 1.4 2007-04-29 09:22:28 rensink Exp $
+ * $Id: ExploreStrategyMenu.java,v 1.5 2007-04-30 19:53:29 rensink Exp $
  */
 package groove.gui;
 
@@ -32,7 +32,7 @@ import groove.lts.explore.BranchingStrategy;
 import groove.lts.explore.FullStrategy;
 import groove.lts.explore.LinearStrategy;
 import groove.trans.NameLabel;
-import groove.view.RuleViewGrammar;
+import groove.view.AspectualGrammarView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +43,7 @@ import javax.swing.JMenu;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     /**
@@ -86,7 +86,7 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     }
 
     // ----------------------------- simulation listener methods -----------------------
-    public void setGrammarUpdate(RuleViewGrammar grammar) {
+    public void setGrammarUpdate(AspectualGrammarView grammar) {
 		setStateUpdate(null);
 		// the lts's of the strategies in this menu are changed
 		// moreover, the conditions in condition strategies are reset
@@ -96,7 +96,7 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
 		}
 	}
 
-    public void activateGrammarUpdate(GTS gts) {
+    public void runSimulationUpdate(GTS gts) {
 		gtsListener.set(gts);
 		// the lts's of the strategies in this menu are changed
 		// moreover, the conditions in condition strategies are reset
@@ -125,15 +125,18 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     }
 
     public void setRuleUpdate(NameLabel name) {
+    	GTS gts = simulator.getCurrentGTS();
+    	if (gts != null) {
         for (Map.Entry<ExploreStrategy,Action> entry: strategyActionMap.entrySet()) {
             ExploreStrategy strategy = entry.getKey();
             if (strategy instanceof ConditionalExploreStrategy) {
                 Action generateAction = entry.getValue();
-                ((ConditionalExploreStrategy) strategy).setCondition(simulator.getCurrentGrammar().getRule(name));
+                ((ConditionalExploreStrategy) strategy).setCondition(gts.getGrammar().getRule(name));
                 generateAction.putValue(Action.NAME, strategy.toString());
                 generateAction.setEnabled(true);
             }
         }
+    	}
     }
 
     public void setTransitionUpdate(GraphTransition transition) {

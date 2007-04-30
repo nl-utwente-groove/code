@@ -60,7 +60,7 @@ public class CalculatorSample {
 		try {
 			String startGraphName = args[0];
 			String targetGraphName = args[1];
-			GraphGrammar sample = Groove.loadGrammar(GRAMMAR_NAME, startGraphName);
+			GraphGrammar sample = Groove.loadGrammar(GRAMMAR_NAME, startGraphName).toGrammar();
 			DefaultGraphCalculator calculator = new DefaultGraphCalculator(sample);
 			Collection<GraphResult> result = new DefaultGraphResult(calculator).getAllAfter(RULE_NAME);
 			int index = 0;

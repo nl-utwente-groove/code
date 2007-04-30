@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.9 2007-04-29 09:22:28 rensink Exp $
+ * $Id: Options.java,v 1.10 2007-04-30 19:53:29 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class Options {
     /** Edit menu name */
@@ -77,8 +77,12 @@ public class Options {
     public static final String CUT_ACTION_NAME = "Cut";
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
-    /** Edit state action name */
+    /** Edit action name */
+    public static final String DISABLE_ACTION_NAME = "Disable";
+    /** Edit graph action name */
     public static final String EDIT_GRAPH_ACTION_NAME = "Edit Graph ...";
+    /** Edit properties action name */
+    public static final String EDIT_PROPERTIES_ACTION_NAME = "Edit Properties ...";
     /** Edge mode action name */
     public static final String EDGE_MODE_NAME = "Edge mode";
     /** Edit label action name */
@@ -89,6 +93,8 @@ public class Options {
     public static final String EDIT_STATE_ACTION_NAME = "Edit State ...";
     /** Edit action name */
     public static final String EDIT_ACTION_NAME = "Edit ...";
+    /** Edit action name */
+    public static final String ENABLE_ACTION_NAME = "Enable";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export rule action name */
@@ -109,6 +115,8 @@ public class Options {
     static public final String MODEL_CHECK_ACTION_NAME = "Verify";
     /** New action name */
     public static final String NEW_ACTION_NAME = "New";
+    /** New action name */
+    public static final String NEW_RULE_ACTION_NAME = "New rule ...";
     /** Node mode action name */
     public static final String NODE_MODE_NAME = "Node mode";
     /** Open action name */
@@ -125,22 +133,6 @@ public class Options {
     public static final String PROVIDE_CTL_FORMULA_ACTION_NAME = "CTL formula ...";
     /** Quit action name */
     public static final String QUIT_ACTION_NAME = "Quit";
-    /** Save action name */
-    public static final String SAVE_ACTION_NAME = "Save ...";
-    /** Save grammar action name */
-    public static final String SAVE_GRAMMAR_ACTION_NAME = "Save Grammar ...";
-    /** Save lts action name */
-    public static final String SAVE_LTS_ACTION_NAME = "Save LTS ...";
-    /** Save state action name */
-    public static final String SAVE_STATE_ACTION_NAME = "Save State ...";
-    /** Scroll to action name */
-    static public final String SCROLL_TO_ACTION_NAME = "Scroll To Current";
-    /**
-	 * Start simulation action name 
-	 */
-	public static final String START_ACTION_NAME = "Start simulation";
-	/** Stop edit action name */
-    public static final String STOP_EDIT_ACTION_NAME = "Close";
     /** Redo action name */
     public static final String REDO_ACTION_NAME = "Redo";
     /** Refresh grammar action name */
@@ -153,48 +145,94 @@ public class Options {
 	public static final String RESTART_ACTION_NAME = "Restart simulation";
 	/** Remove point action name */
     static public final String REMOVE_POINT_ACTION = "Remove Point";
-    /** View action name */
+    /** Delete action name */
+    public static final String RENAME_ACTION_NAME = "Rename";
+    /**
+	 * Start simulation action name 
+	 */
+	public static final String RUN_ACTION_NAME = "Run simulation";
+	/**
+	 * Save action name 
+	 */
+	public static final String SAVE_ACTION_NAME = "Save ...";
+	/**
+	 * Save grammar action name 
+	 */
+	public static final String SAVE_GRAMMAR_ACTION_NAME = "Save Grammar ...";
+	/**
+	 * Save lts action name 
+	 */
+	public static final String SAVE_LTS_ACTION_NAME = "Save LTS ...";
+	/**
+	 * Save state action name 
+	 */
+	public static final String SAVE_STATE_ACTION_NAME = "Save State ...";
+	/**
+	 * Scroll to action name 
+	 */
+	static public final String SCROLL_TO_ACTION_NAME = "Scroll To Current";
+	/** View action name */
     public static final String VIEW_ACTION_NAME = "View as rule";
     /** Undo action name */
     public static final String UNDO_ACTION_NAME = "Undo";
     /** Select mode action name */
     public static final String SELECT_MODE_NAME = "Selection mode";
-    /** Save keystroke */
-    public static final KeyStroke SAVE_KEY = KeyStroke.getKeyStroke("control S");
-    /** New keystroke */
+    /**
+	 * Apply keystroke 
+	 */
+	static public final KeyStroke APPLY_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
+	/**
+	 * Copy keystroke 
+	 */
+	public static final KeyStroke COPY_KEY = KeyStroke.getKeyStroke("control C");
+	/**
+	 * Cut keystroke 
+	 */
+	public static final KeyStroke CUT_KEY = KeyStroke.getKeyStroke("control X");
+	/**
+	 * Delete keystroke 
+	 */
+	public static final KeyStroke DELETE_KEY = KeyStroke.getKeyStroke("DELETE");
+	/**
+	 * Edge mode keystroke 
+	 */
+	public static final KeyStroke EDGE_MODE_KEY = KeyStroke.getKeyStroke("control shift E");
+	/**
+	 * Edit keystroke 
+	 */
+	public static final KeyStroke EDIT_KEY = KeyStroke.getKeyStroke("control E");
+	/**
+	 * Export keystroke 
+	 */
+	public static final KeyStroke EXPORT_KEY = KeyStroke.getKeyStroke("control alt S");
+	/** New keystroke */
     public static final KeyStroke NEW_KEY = KeyStroke.getKeyStroke("control N");
-    /** Open keystroke */
+    /**
+	 * Node mode keystroke 
+	 */
+	public static final KeyStroke NODE_MODE_KEY = KeyStroke.getKeyStroke("control shift N");
+	/** Open keystroke */
     public static final KeyStroke OPEN_KEY = KeyStroke.getKeyStroke("control O");
-    /** Quit keystroke */
+    /**
+	 * Paste keystroke 
+	 */
+	public static final KeyStroke PASTE_KEY = KeyStroke.getKeyStroke("control V");
+	/** Quit keystroke */
     public static final KeyStroke QUIT_KEY = KeyStroke.getKeyStroke("control Q");
-    /** Export keystroke */
-    public static final KeyStroke EXPORT_KEY = KeyStroke.getKeyStroke("control alt S");
-    /** Relabel keystroke */
+    /** Redo keystroke  */
+	public static final KeyStroke REDO_KEY = KeyStroke.getKeyStroke("control Y");
+	/** Refresh keystroke  */
+	public static final KeyStroke REFRESH_KEY = KeyStroke.getKeyStroke("F5");
+	/** Relabel keystroke */
     public static final KeyStroke RELABEL_KEY = KeyStroke.getKeyStroke("F2");
-    /** Refresh keystroke */
-    public static final KeyStroke REFRESH_KEY = KeyStroke.getKeyStroke("F5");
-    /** Select mode keystroke */
+	/** Run keystroke */
+	public static final KeyStroke RUN_KEY = KeyStroke.getKeyStroke("F11");
+    /** Save keystroke */
+	public static final KeyStroke SAVE_KEY = KeyStroke.getKeyStroke("control S");
+	/** Select mode keystroke */
     public static final KeyStroke SELECT_MODE_KEY = KeyStroke.getKeyStroke("control shift S");
-    /** Node mode keystroke */
-    public static final KeyStroke NODE_MODE_KEY = KeyStroke.getKeyStroke("control shift N");
-    /** Edge mode keystroke */
-    public static final KeyStroke EDGE_MODE_KEY = KeyStroke.getKeyStroke("control shift E");
     /** Undo keystroke */
     public static final KeyStroke UNDO_KEY = KeyStroke.getKeyStroke("control Z");
-    /** Redo keystroke */
-    public static final KeyStroke REDO_KEY = KeyStroke.getKeyStroke("control Y");
-    /** Cut keystroke */
-    public static final KeyStroke CUT_KEY = KeyStroke.getKeyStroke("control X");
-    /** Copy keystroke */
-    public static final KeyStroke COPY_KEY = KeyStroke.getKeyStroke("control C");
-    /** Paste keystroke */
-    public static final KeyStroke PASTE_KEY = KeyStroke.getKeyStroke("control V");
-    /** Delete keystroke */
-    public static final KeyStroke DELETE_KEY = KeyStroke.getKeyStroke("DELETE");
-    /** Edit keystroke */
-    public static final KeyStroke EDIT_KEY = KeyStroke.getKeyStroke("control E");
-    /** Apply keystroke */
-    static public final KeyStroke APPLY_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_MASK);
     /** Orthogonal line style keystroke */
     public static final KeyStroke ORTHOGONAL_LINE_STYLE_KEY = KeyStroke.getKeyStroke("control 1");
     /** Spline line style keystroke */

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.7 2007-04-27 22:07:10 rensink Exp $
+ * $Id: GraphTest.java,v 1.8 2007-04-30 19:53:32 rensink Exp $
  */
 package groove.test.graph;
 
@@ -42,7 +42,7 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.PartitionMap;
 import groove.io.ExtensionFilter;
-import groove.io.UntypedGxl;
+import groove.io.DefaultGxl;
 import groove.io.Xml;
 import groove.util.Groove;
 import junit.framework.TestCase;
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -100,7 +100,7 @@ public class GraphTest extends TestCase {
     public GraphTest(String arg0, GraphFactory factory) {
         super(arg0);
 //        this.graphFactory = factory;
-        this.xml = new UntypedGxl(factory);
+        this.xml = new DefaultGxl(factory);
     }
 
     /**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.13 2007-04-29 09:22:29 rensink Exp $
+ * $Id: Generator.java,v 1.14 2007-04-30 19:53:32 rensink Exp $
  */
 package groove.util;
 
@@ -24,10 +24,10 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.Bisimulator;
 import groove.graph.iso.DefaultIsoChecker;
-import groove.io.AspectualGpsGrammar;
+import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
 import groove.io.RuleList;
-import groove.io.XmlGrammar;
+import groove.io.GrammarViewXml;
 import groove.lts.AbstractGraphState;
 import groove.lts.AliasSPOApplication;
 import groove.lts.ConditionalExploreStrategy;
@@ -76,7 +76,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -194,7 +194,7 @@ public class Generator extends CommandLineTool {
     public GraphGrammar getGrammar() {
         if (grammar == null) {
             try {
-                grammar = loader.unmarshalGrammar(new File(grammarLocation), startStateName).toGrammar();
+                grammar = loader.unmarshal(new File(grammarLocation), startStateName).toGrammar();
                 grammar.setFixed();
             } catch (IOException exc) {
                 printError("Can't load grammar: " + exc.getMessage());
@@ -549,8 +549,8 @@ public class Generator extends CommandLineTool {
 	 * Factory method for the grammar loader to be used by state space
 	 * generation. 
 	 */
-    protected XmlGrammar createGrammarLoader() {
-        return new AspectualGpsGrammar();
+    protected GrammarViewXml createGrammarLoader() {
+        return new AspectualViewGps();
 //        return new GpsGrammar(new UntypedGxl(graphFactory), SPORuleFactory.getInstance());
     }
 
@@ -646,7 +646,7 @@ public class Generator extends CommandLineTool {
     /**
      * The grammar loader.
      */
-    protected final XmlGrammar loader = createGrammarLoader();
+    protected final GrammarViewXml loader = createGrammarLoader();
     /**
      * Option to save all final states generated.
      */

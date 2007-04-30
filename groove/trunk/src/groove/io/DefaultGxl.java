@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UntypedGxl.java,v 1.6 2007-04-29 09:22:31 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.1 2007-04-30 19:53:24 rensink Exp $
  */
 package groove.io;
 
@@ -54,9 +54,9 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.1 $
  */
-public class UntypedGxl extends AbstractXml {
+public class DefaultGxl extends AbstractXml {
     /** Attribute name for node and edge ids. */
     static public final String LABEL_ATTR_NAME = "label";
     static private final IsoChecker isoChecker = new DefaultIsoChecker();
@@ -74,7 +74,7 @@ public class UntypedGxl extends AbstractXml {
     static public void main(String[] args) {
         System.out.println("Test of groove.io.UntypedGxl");
         System.out.println("===================");
-        groove.io.UntypedGxl gxl = new groove.io.UntypedGxl();
+        groove.io.DefaultGxl gxl = new groove.io.DefaultGxl();
         for (int i = 0; i < args.length; i++) {
             System.out.println("\nTesting: " + args[i]);
             try {
@@ -113,20 +113,16 @@ public class UntypedGxl extends AbstractXml {
     /**
      * Constructs a Gxl transformer with a given graph factory
      * for the graphs constructed by unmarshalling.
-     * @throws XmlRuntimeException if setting up the document builder 
-     * fails for some internal reason
      */
-    public UntypedGxl(GraphFactory graphFactory) throws XmlRuntimeException {
+    public DefaultGxl(GraphFactory graphFactory) {
         super(graphFactory);
     }
 
     /**
      * Constructs a Gxl transformer with a default graph factory.
-     * @throws XmlRuntimeException if setting up the document builder 
-     * fails for some internal reason
      * @see #getDefaultGraphFactory()
      */
-    public UntypedGxl() throws XmlRuntimeException {
+    public DefaultGxl() {
         this(getDefaultGraphFactory());
     }
 
@@ -135,7 +131,7 @@ public class UntypedGxl extends AbstractXml {
 	 * using {@link #attrToGxlGraph}, and marshalling the result
 	 * using {@link #marshalGxlGraph}.
 	 */
-	public void marshalGraph(Graph graph, File file) throws FormatException, IOException {
+	public void marshalGraph(Graph graph, File file) throws IOException {
 	    Graph attrGraph = normToAttrGraph(graph);
 	    groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
 	    // now marshal the attribute graph
@@ -371,8 +367,9 @@ public class UntypedGxl extends AbstractXml {
      * Marshals a GXL graph to an untyped GXL writer.
      * @param gxlGraph the GXL graph
      * @param file the destination for the marshalling operation
+     * @throws IOException is the marshalling runs into some IO or XML errors
      */
-    private void marshalGxlGraph(groove.gxl.Graph  gxlGraph, File file) {
+    private void marshalGxlGraph(groove.gxl.Graph  gxlGraph, File file) throws IOException {
         groove.gxl.Gxl gxl = new groove.gxl.Gxl();
         gxl.addGraph(gxlGraph);
         try {
@@ -382,14 +379,9 @@ public class UntypedGxl extends AbstractXml {
             marshaller.marshal(gxl);
             writer.close();
         } catch (MarshalException e) {
-            //            e.printStackTrace();
-            throw new XmlRuntimeException(e.getMessage());
-        } catch (IOException e) {
-            //            e.printStackTrace();
-            throw new XmlRuntimeException(e.getMessage());
+            throw new IOException(e.getMessage());
         } catch (ValidationException e) {
-            //            e.printStackTrace();
-            throw new XmlRuntimeException(e.getMessage());
+            throw new IOException(e.getMessage());
         }
     }
 

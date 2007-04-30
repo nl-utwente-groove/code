@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.11 2007-04-29 09:22:36 rensink Exp $
+ * $Id: Gossips.java,v 1.12 2007-04-30 19:53:28 rensink Exp $
  */
 package groove.samples;
 
@@ -53,7 +53,7 @@ import java.util.List;
  * Sample class for a universal rule.
  * The example is based on the <i>gossiping girl</i> case.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";
@@ -120,7 +120,7 @@ public class Gossips {
 //            calc.addGTSListener(new GenerateProgressMonitor());
 //            GraphResult result = calc.getFirst(READY_CONDITION_NAME);
 //            report(result);
-            GraphGrammar atomic = Groove.loadGrammar(ATOMIC_GOSSIP_GPS_NAME, startGraphName);
+            GraphGrammar atomic = Groove.loadGrammar(ATOMIC_GOSSIP_GPS_NAME, startGraphName).toGrammar();
             atomic.add(new GossipRule(Groove.loadRuleGraph(BASIC_GOSSIP_RULE_NAME).toRule(), atomic.getProperties()));
             atomic.setFixed();
             GraphCalculator calc2 = Groove.createCalculator(atomic);

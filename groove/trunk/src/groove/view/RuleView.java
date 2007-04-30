@@ -12,21 +12,21 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleView.java,v 1.1 2007-04-29 09:22:36 rensink Exp $
+ * $Id: RuleView.java,v 1.2 2007-04-30 19:53:31 rensink Exp $
  */
 package groove.view;
 
-import groove.trans.NameLabel;
 import groove.trans.Rule;
+import groove.trans.RuleNameLabel;
 
 /**
  * Interface for a graphical view upon a transformation rule.
  * Currently the only implemented view is the {@link AspectualRuleView}, which provides
  * a monolithic view in which all the elements of the rule are part of one graph.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public interface RuleView extends View<Rule> {
+public interface RuleView extends View<Rule>, Comparable<RuleView> {
     /**
      * Returns the rule of which this is a view.
      * The rule is possibly constructed in the course of this method.
@@ -39,7 +39,7 @@ public interface RuleView extends View<Rule> {
      * Returns the name of the rule of which this is a view. 
      * Yields the same result as <code>toRule().getName()</code>.
      */
-    public NameLabel getName();
+    public RuleNameLabel getName();
 
     /** 
      * Returns the priority of the rule of which this is a view. 

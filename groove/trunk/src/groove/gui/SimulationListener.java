@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SimulationListener.java,v 1.3 2007-04-29 09:22:28 rensink Exp $
+ * $Id: SimulationListener.java,v 1.4 2007-04-30 19:53:29 rensink Exp $
  */
 package groove.gui;
 
@@ -20,7 +20,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
-import groove.view.RuleViewGrammar;
+import groove.view.AspectualGrammarView;
 
 /**
  * Observer (= viewer) interface for production rule simulation.
@@ -29,22 +29,26 @@ import groove.view.RuleViewGrammar;
 public interface SimulationListener {
     /**
      * Reports the update of the graph grammar.
-     * The grammar is not yet active.
      * If the new grammar is <code>null</code>, the entire simulator is reset
-     * @param grammar the new graph grammar; may be <code>null</code>
+     * Note that the content of the grammar view object may change even though
+     * its identity does not; thus, comparing the parameter value with a previous
+     * one is misleading. 
+     * @param grammar the current graph grammar view; may be <code>null</code>
      */
-    void setGrammarUpdate(RuleViewGrammar grammar);
+    void setGrammarUpdate(AspectualGrammarView grammar);
 
     /**
-     * Reports the activation of the simulation by setting a graph transition system.
+     * Reports the start of the simulation by setting a graph transition system.
      * The GTS is not <code>null</code>; deactivation is signalled
-     * through {@link #setGrammarUpdate(RuleViewGrammar)}.
-     * The GTS' grammar may differ from the previously set grammar.
+     * through {@link #setGrammarUpdate(AspectualGrammarView)}.
+     * This update is always preceded by a {@link #setGrammarUpdate(AspectualGrammarView)}
+     * with the relevant grammar view; that is, the GTS' grammar is derived
+     * from the view as last passed through a grammar update. 
      * The start state should also be set as part of this action; no separate call of
      * {@link #setStateUpdate(GraphState)} is guanteed for the start state.
      * @param gts the active graph transition system; non-<code>null</code>
      */
-    void activateGrammarUpdate(GTS gts);
+    void runSimulationUpdate(GTS gts);
 
     /**
      * Reports the update of the currently selected state.

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.15 2007-04-27 22:07:01 rensink Exp $
+ * $Id: SPOEvent.java,v 1.16 2007-04-30 19:53:27 rensink Exp $
  */
 package groove.trans;
 
@@ -50,7 +50,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2007-04-27 22:07:01 $
+ * @version $Revision: 1.16 $ $Date: 2007-04-30 19:53:27 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -124,7 +124,7 @@ public class SPOEvent implements RuleEvent {
     }
 
     /** Returns the rule name. */
-	public NameLabel getName() {
+	public RuleNameLabel getName() {
 		return getRule().getName();
 	}
 

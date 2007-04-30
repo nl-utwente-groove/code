@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.6 2007-04-29 09:22:28 rensink Exp $
+ * $Id: RuleJTree.java,v 1.7 2007-04-30 19:53:29 rensink Exp $
  */
 package groove.gui;
 
+import groove.graph.GraphInfo;
 import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -23,10 +24,12 @@ import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.Transition;
 import groove.trans.NameLabel;
-import groove.trans.Rule;
-import groove.trans.StructuredRuleName;
+import groove.trans.RuleNameLabel;
 import groove.util.Groove;
-import groove.view.RuleViewGrammar;
+import groove.view.AspectualGrammarView;
+import groove.view.AspectualRuleView;
+import groove.view.GrammarView;
+import groove.view.RuleView;
 
 import java.awt.Color;
 import java.awt.Component;
@@ -35,7 +38,6 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -62,7 +64,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -73,7 +75,8 @@ public class RuleJTree extends JTree implements SimulationListener {
         setRootVisible(false);
         setShowsRootHandles(true);
         setEnabled(false);
-        setCellRenderer(new MyRenderer());
+        setToggleClickCount(0);
+        setCellRenderer(new MyTreeCellRenderer());
         getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         // set icons
         DefaultTreeCellRenderer renderer = (DefaultTreeCellRenderer) cellRenderer;
@@ -82,39 +85,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         renderer.setClosedIcon(Groove.RULE_SMALL_ICON);
         addTreeSelectionListener(createRuleSelectionListener());
         this.listenToSelectionChanges = true;
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mousePressed(MouseEvent evt) {
-                maybeShowPopup(evt);
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent evt) {
-                maybeShowPopup(evt);
-            }
-
-            @Override
-            public void mouseClicked(MouseEvent evt) {
-                if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
-                    TreePath path = getSelectionPath();
-                    if (path != null) {
-						Object selectedNode = path.getLastPathComponent();
-						if (selectedNode instanceof MatchTreeNode) {
-							// selected tree node is a derivation edge (level 2
-							// node)
-							simulator.setTransition(((MatchTreeNode) selectedNode).edge());
-							simulator.applyTransition();
-						}
-					}
-                }
-            }
-
-            private void maybeShowPopup(MouseEvent evt) {
-                if (evt.isPopupTrigger()) {
-                    createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
-                }
-            }
-        });
+        addMouseListener(new MyMouseListener());
         topDirectoryNode = new DefaultMutableTreeNode();
         ruleDirectory = new DefaultTreeModel(topDirectoryNode, true);
         setModel(ruleDirectory);
@@ -130,26 +101,25 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Fills the rule directory with rule nodes, based on a given rule system.
      * Sets the current LTS to the grammar's LTS.
      */
-    public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
-    	if (setDisplayedGrammar(grammar)) {
-			if (grammar == null) {
-				ruleNodeMap.clear();
-				matchNodeMap.clear();
-				topDirectoryNode.removeAllChildren();
-				ruleDirectory.reload();
-				displayedGrammar = null;
-			} else {
-				loadGrammar(grammar);
-			}
+    public synchronized void setGrammarUpdate(AspectualGrammarView grammar) {
+    	displayedGrammar = grammar;
+		if (grammar == null) {
+			ruleNodeMap.clear();
+			matchNodeMap.clear();
+			topDirectoryNode.removeAllChildren();
+			ruleDirectory.reload();
+			displayedGrammar = null;
+		} else {
+			loadGrammar(grammar);
 		}
-        refresh();
+		refresh();
     }
 
 	/**
 	 * Loads the j-tree with the data of the given (non-<code>null</code>)
 	 * grammar.
 	 */
-	private void loadGrammar(RuleViewGrammar grammar) {
+	private void loadGrammar(AspectualGrammarView grammar) {
 		boolean oldListenToSelectionChanges = listenToSelectionChanges;
         listenToSelectionChanges = false;
         setShowAnchorsOptionListener();
@@ -161,11 +131,12 @@ public class RuleJTree extends JTree implements SimulationListener {
         // then we need to remember the last priority encountered
         int lastPriority = Integer.MAX_VALUE;
         DefaultMutableTreeNode topNode = topDirectoryNode;
+        boolean hasSpecialPriorities = grammar.getPriorityMap().size() > 1;
         // get the rule names
-        for (Rule rule: new ArrayList<Rule>(grammar.getRules())) {
-            StructuredRuleName ruleName = (StructuredRuleName) rule.getName();
+        for (RuleView rule: grammar.getRuleMap().values()) {
+            RuleNameLabel ruleName = rule.getName();
             // create new top node for the rule, if the rule has a different priority then the last
-            if (grammar.hasMultiplePriorities()) {
+            if (hasSpecialPriorities) {
                 int rulePriority = rule.getPriority();
                 if (lastPriority != rulePriority) {
                     lastPriority = rulePriority;
@@ -176,7 +147,8 @@ public class RuleJTree extends JTree implements SimulationListener {
             // recursively add parent directory nodes as required
             DefaultMutableTreeNode parentNode = addParentNode(topNode, ruleName);
             // create the rule node and register it
-            RuleTreeNode ruleNode = new RuleTreeNode(ruleName);
+            AspectualRuleView ruleView = grammar.getRuleMap().get(ruleName);
+            RuleTreeNode ruleNode = new RuleTreeNode(ruleView);
             parentNode.add(ruleNode);
             expandPath(new TreePath(ruleNode.getPath()));
             ruleNodeMap.put(ruleName, ruleNode);
@@ -185,12 +157,8 @@ public class RuleJTree extends JTree implements SimulationListener {
         listenToSelectionChanges = oldListenToSelectionChanges;
 	}
     
-	/** Refreshes the view, to remove previous match nodes. */
-    public synchronized void activateGrammarUpdate(GTS gts) {
-    	RuleViewGrammar newGrammar = (RuleViewGrammar) gts.getGrammar();
-    	if (setDisplayedGrammar(newGrammar)) {
-    		loadGrammar(newGrammar);
-    	}
+	/** Refreshes the view, to add match nodes. */
+    public synchronized void runSimulationUpdate(GTS gts) {
         refresh();
 	}
 
@@ -264,8 +232,8 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /** Adds tree nodes for all levels of a structured rule name. */
-    private DefaultMutableTreeNode addParentNode(DefaultMutableTreeNode topNode, StructuredRuleName ruleName) {
-        StructuredRuleName parent = ruleName.parent();
+    private DefaultMutableTreeNode addParentNode(DefaultMutableTreeNode topNode, RuleNameLabel ruleName) {
+        RuleNameLabel parent = ruleName.parent();
         if (parent == null)
             // there is no parent rule name; the parent node is the top node
             return topNode;
@@ -340,6 +308,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         for (GraphTransition edge: orderedDerivations) {
             Label ruleName = edge.getEvent().getName();
             RuleTreeNode ruleNode = (RuleTreeNode) ruleNodeMap.get(ruleName);
+            assert ruleNode != null : String.format("Rule %s has no image in map %s", ruleName, ruleNodeMap);
             int nrOfMatches = ruleNode.getChildCount();
             MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, edge);
             ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
@@ -364,7 +333,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /** Convenience method to retrieve the currently selected rule from the simulator. */
-    private Rule getCurrentRule() {
+    private RuleView getCurrentRule() {
     	return simulator.getCurrentRule();
     }
 
@@ -380,17 +349,17 @@ public class RuleJTree extends JTree implements SimulationListener {
     	return result;
     }
 
-    /** 
-     * Sets the {@link #displayedGrammar} field to a given value, and
-     * returns an indication whether the new value differs from the old.
-     * @param grammar the new value of the displayed grammar
-     * @return <code>true</code> if the new value differs from the old
-     */
-    private boolean setDisplayedGrammar(RuleViewGrammar grammar) {
-    	boolean result = grammar != displayedGrammar;
-    	displayedGrammar = grammar;
-    	return result;
-    }
+//    /** 
+//     * Sets the {@link #displayedGrammar} field to a given value, and
+//     * returns an indication whether the new value differs from the old.
+//     * @param grammar the new value of the displayed grammar
+//     * @return <code>true</code> if the new value differs from the old
+//     */
+//    private boolean setDisplayedGrammar(GrammarView grammar) {
+//    	boolean result = grammar != displayedGrammar;
+//    	displayedGrammar = grammar;
+//    	return result;
+//    }
 
     /**
      * Creates the selection listener to be used to
@@ -460,7 +429,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     /** The currently displayed state. */
     private GraphState displayedState;
     /** The currently displayed grammar. */
-    private RuleViewGrammar displayedGrammar;
+    private GrammarView displayedGrammar;
     
     static private final Color ENABLED_COLOR;
     
@@ -477,26 +446,75 @@ public class RuleJTree extends JTree implements SimulationListener {
 	 * @see Simulator#setRule
 	 * @see Simulator#setTransition
 	 */
-	protected class RuleSelectionListener implements TreeSelectionListener {
+	private class RuleSelectionListener implements TreeSelectionListener {
 	    public void valueChanged(TreeSelectionEvent evt) {
 	        // only do something if a path was added to the selection
 	        if (listenToSelectionChanges && evt.isAddedPath()) {
 	            Object selectedNode = evt.getPath().getLastPathComponent();
 	            if (selectedNode instanceof RuleTreeNode) {
 	                // selected tree node is a production rule (level 1 node)
-	                simulator.setRule(((RuleTreeNode) selectedNode).name());
+	                simulator.setRule(((RuleTreeNode) selectedNode).getRule().getName());
 	            } else if (selectedNode instanceof MatchTreeNode) {
-	                // selected tree node is a derivation edge (level 2 node)
+	                // selected tree node is a transition (level 2 node)
 	                simulator.setTransition(((MatchTreeNode) selectedNode).edge());
+	                if (simulator.getGraphPanel() == simulator.getRulePanel()) {
+	                	simulator.setGraphPanel(simulator.getStatePanel());
+	                }
 	            }
 	        }
 	    }
 	}
 
+	/** 
+	 * Mouse listener that creates the popup menu and switches the view to 
+	 * the rule panel on double-clicks.
+	 */
+	private class MyMouseListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent evt) {
+        	if (evt.getButton() == MouseEvent.BUTTON3) {
+        		TreePath selectedPath = getPathForLocation(evt.getX(), evt.getY());
+        		if (selectedPath != null) {
+        			setSelectionPath(selectedPath);
+        		}
+        	}
+            maybeShowPopup(evt);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent evt) {
+            maybeShowPopup(evt);
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent evt) {
+            if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
+                TreePath path = getSelectionPath();
+                if (path != null) {
+					Object selectedNode = path.getLastPathComponent();
+					if (selectedNode instanceof MatchTreeNode) {
+						// selected tree node is a derivation edge (level 2
+						// node)
+						simulator.setTransition(((MatchTreeNode) selectedNode).edge());
+						simulator.applyTransition();
+					} else if (selectedNode instanceof RuleTreeNode) {
+						simulator.setGraphPanel(simulator.getRulePanel());
+					}
+				}
+            }
+        }
+
+        private void maybeShowPopup(MouseEvent evt) {
+            if (evt.isPopupTrigger()) {
+                createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
+            }
+        }
+    }
+	
 	/**
 	 * Priority nodes (used only if the rule system has multiple priorities)
 	 */
-	protected class PriorityTreeNode extends DefaultMutableTreeNode {
+	private class PriorityTreeNode extends DefaultMutableTreeNode {
 	    /**
 	     * Creates a new priority node based on a given priority.
 	     * The node can (and will) have children.
@@ -509,20 +527,20 @@ public class RuleJTree extends JTree implements SimulationListener {
 	/**
 	 * Rule nodes (= level 1 nodes) of the directory
 	 */
-	protected class RuleTreeNode extends DefaultMutableTreeNode {
+	private class RuleTreeNode extends DefaultMutableTreeNode {
 	    /**
 	     * Creates a new rule node based on a given rule name.
 	     * The node can have children.
 	     */
-	    public RuleTreeNode(StructuredRuleName name) {
-	        super(name, true);
+	    public RuleTreeNode(AspectualRuleView rule) {
+	        super(rule, true);
 	    }
 	
 	    /**
 	     * Convenience method to retrieve the user object as a rule name.
 	     */
-	    public StructuredRuleName name() {
-	        return (StructuredRuleName) getUserObject();
+	    public AspectualRuleView getRule() {
+	        return (AspectualRuleView) getUserObject();
 	    }
 	
 	    /**
@@ -530,27 +548,27 @@ public class RuleJTree extends JTree implements SimulationListener {
 	     */
 	    @Override
 	    public String toString() {
-	        return name().child();
+	        return getRule().getName().child();
 	    }
 	}
 
 	/**
 	 * Directory nodes (= level 0 nodes) of the directory
 	 */
-	protected class DirectoryTreeNode extends DefaultMutableTreeNode {
+	private class DirectoryTreeNode extends DefaultMutableTreeNode {
 	    /**
 	     * Creates a new rule node based on a given rule name.
 	     * The node can have children.
 	     */
-	    public DirectoryTreeNode(StructuredRuleName name) {
+	    public DirectoryTreeNode(RuleNameLabel name) {
 	        super(name, true);
 	    }
 	
 	    /**
 	     * Convenience method to retrieve the user object as a rule name.
 	     */
-	    public StructuredRuleName name() {
-	        return (StructuredRuleName) getUserObject();
+	    public RuleNameLabel name() {
+	        return (RuleNameLabel) getUserObject();
 	    }
 	
 	    /**
@@ -566,7 +584,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	 * Match nodes (= level 2 nodes) of the directory.
 	 * Stores a <tt>Transition</tt> as user object.
 	 */
-	protected class MatchTreeNode extends DefaultMutableTreeNode {
+	private class MatchTreeNode extends DefaultMutableTreeNode {
 	    /**
 	     * Creates a new match node on the basis of a given number and derivation edge.
 	     * The node cannot have children.
@@ -607,7 +625,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	/**
 	 * Class to provide proper icons for directory nodes
 	 */
-	protected class MyRenderer extends DefaultTreeCellRenderer {
+	private class MyTreeCellRenderer extends DefaultTreeCellRenderer {
 	    @Override
 	    public Component getTreeCellRendererComponent(
 	        JTree tree,
@@ -626,6 +644,11 @@ public class RuleJTree extends JTree implements SimulationListener {
 	            setIcon(Groove.GPS_FOLDER_ICON);
 	        } else if (value instanceof PriorityTreeNode) {
 	            setIcon(null);
+	        } else if (value instanceof RuleTreeNode) {
+	        	Map properties = GraphInfo.getProperties(((RuleTreeNode) value).getRule().getAspectGraph(), false);
+	        	if (properties != null) {
+	        		setToolTipText(properties.toString());
+	        	}
 	        }
 	        setOpaque(!sel);
 	        return this;

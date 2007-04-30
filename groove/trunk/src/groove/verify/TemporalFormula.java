@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: TemporalFormula.java,v 1.3 2007-04-29 09:22:36 rensink Exp $
+ * $Id: TemporalFormula.java,v 1.4 2007-04-30 19:53:31 rensink Exp $
  */
 
 package groove.verify;
@@ -22,7 +22,7 @@ import groove.lts.GTS;
 import groove.lts.State;
 import groove.trans.GraphCondition;
 import groove.trans.NameLabel;
-import groove.trans.StructuredRuleName;
+import groove.trans.RuleNameLabel;
 import groove.verify.CTLStarFormula.All;
 import groove.verify.CTLStarFormula.And;
 import groove.verify.CTLStarFormula.Atom;
@@ -43,7 +43,7 @@ import java.util.Set;
 /**
  * Abstract class as a generalization of LTL and CTL formulas.
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-04-29 09:22:36 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-30 19:53:31 $
  */
 public abstract class TemporalFormula {
 
@@ -171,7 +171,7 @@ public abstract class TemporalFormula {
      * valid atoms. If not, it returns the string representation of the first found
      * invalid atom.
      */
-    static public String validAtoms(TemporalFormula property, Set<NameLabel> atoms) {
+    static public String validAtoms(TemporalFormula property, Set<RuleNameLabel> atoms) {
     	if (property.getOperands().size() > 0) {
     		for(TemporalFormula operand: property.getOperands()) {
     			String invalidAtom = validAtoms(operand, atoms);
@@ -183,7 +183,7 @@ public abstract class TemporalFormula {
     		assert (property instanceof Atom && property.getOperands().size() == 0) : "An atom should have 0 operands." ;
     		boolean validAtom = false;
     		for(NameLabel nameLabel: atoms) {
-    			String ruleName = ((StructuredRuleName) nameLabel).name();
+    			String ruleName = ((RuleNameLabel) nameLabel).name();
     			if (property.toString().equals(ruleName) ||
     				property.toString().equals(CTLStarFormula.TRUE.toString()) ||
     				property.toString().equals(CTLStarFormula.FALSE.toString())) {

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UndoHistory.java,v 1.3 2007-04-29 09:22:28 rensink Exp $
+ * $Id: UndoHistory.java,v 1.4 2007-04-30 19:53:29 rensink Exp $
  */
 package groove.gui;
 
@@ -24,7 +24,7 @@ import groove.lts.Transition;
 import groove.trans.NameLabel;
 import groove.util.Groove;
 import groove.util.History;
-import groove.view.RuleViewGrammar;
+import groove.view.AspectualGrammarView;
 
 import java.awt.event.ActionEvent;
 
@@ -33,7 +33,7 @@ import javax.swing.Action;
 
 /**
  * Manager of the undo history.
- * @version $Revision: 1.3 $ $Date: 2007-04-29 09:22:28 $
+ * @version $Revision: 1.4 $ $Date: 2007-04-30 19:53:29 $
  * @author Arend Rensink
  */
 class UndoHistory implements SimulationListener {
@@ -68,13 +68,14 @@ class UndoHistory implements SimulationListener {
     /**
      * Clears the history.
      */
-    public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
+    public synchronized void setGrammarUpdate(AspectualGrammarView grammar) {
         history.clear();
+		setActionEnablings();
+		ignoreSimulationUpdates = false;
     }
 
     /** Sets the start state. */
-    public synchronized void activateGrammarUpdate(GTS gts) {
-    	history.clear();
+    public synchronized void runSimulationUpdate(GTS gts) {
 		history.add(new SetStateAction(gts.startState()));
 		setActionEnablings();
 		ignoreSimulationUpdates = false;
