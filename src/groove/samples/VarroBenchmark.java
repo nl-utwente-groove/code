@@ -22,7 +22,7 @@ package groove.samples;
 import groove.calc.DefaultGraphCalculator;
 import groove.calc.DefaultGraphResult;
 import groove.calc.GraphResult;
-import groove.io.AspectualGpsGrammar;
+import groove.io.AspectualViewGps;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
@@ -38,7 +38,7 @@ public class VarroBenchmark {
 	public static void main(String[] args) {
 		try {
 			int n = Integer.parseInt(args[0]);
-			GraphGrammar benchmarkRules = new AspectualGpsGrammar().unmarshalGrammar(new File("sts.gps"));
+			GraphGrammar benchmarkRules = new AspectualViewGps().unmarshal(new File("sts.gps")).toGrammar();
 			DefaultGraphCalculator calculator = new DefaultGraphCalculator(benchmarkRules);
 			GenerateProgressMonitor monitor = new GenerateProgressMonitor();
 			GTS gts = calculator.getGTS();

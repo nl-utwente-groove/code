@@ -12,12 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Validator.java,v 1.5 2007-04-29 09:22:31 rensink Exp $
+ * $Id: Validator.java,v 1.6 2007-04-30 19:53:24 rensink Exp $
  */
 package groove.io;
 
 import groove.graph.GraphShape;
-import groove.trans.NameLabel;
+import groove.trans.RuleNameLabel;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
 import groove.view.FormatException;
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Application to check graph and rule file formats.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class Validator {
     static public final String OPTION_PREFIX = "-";
@@ -174,7 +174,7 @@ public class Validator {
             String name = verbosity == GraphFileHandler.VERBOSE_MODE ? file.getName() : file.toString();
             if (verbosity > GraphFileHandler.QUIET_MODE)
                 System.out.print("* Validating " + name + " as a production rule: ");
-            new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new NameLabel(file.getName()));
+            new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new RuleNameLabel(file.getName()));
             if (verbosity > GraphFileHandler.QUIET_MODE)
                 System.out.println("OK");
         } catch (FormatException exc) {
@@ -206,5 +206,5 @@ public class Validator {
     /** The number of validation errors found. */
     static private int errorsFound;
     /** The GXL transformer used in validation. */
-    static private Xml gxl = new UntypedGxl();
+    static private Xml gxl = new DefaultGxl();
 }

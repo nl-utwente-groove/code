@@ -12,13 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AttributedGraphTest.java,v 1.3 2007-03-30 15:50:47 rensink Exp $
+ * $Id: AttributedGraphTest.java,v 1.4 2007-04-30 19:53:32 rensink Exp $
  */
 package groove.test.graph;
 
 import groove.graph.Graph;
 import groove.graph.algebra.AttributedGraph;
-import groove.io.UntypedGxl;
+import groove.io.DefaultGxl;
 import groove.io.Xml;
 
 import java.io.File;
@@ -29,7 +29,7 @@ import junit.framework.TestCase;
 /**
  * Test class to test <tt>DefaultGraph</tt>
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @deprecated the class {@link AttributedGraph} is deprecated
  */
 @Deprecated
@@ -42,7 +42,7 @@ public class AttributedGraphTest extends TestCase {
 
     public AttributedGraphTest(String name) {
         super(name);
-        this.xml = new UntypedGxl();
+        this.xml = new DefaultGxl();
     }
 
     @Override

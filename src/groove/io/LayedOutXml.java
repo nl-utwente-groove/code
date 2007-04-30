@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.7 2007-04-29 09:22:32 rensink Exp $
+ * $Id: LayedOutXml.java,v 1.8 2007-04-30 19:53:24 rensink Exp $
  */
 package groove.io;
 
@@ -50,7 +50,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class LayedOutXml implements Xml<Graph> {
     /** 
@@ -78,23 +78,23 @@ public class LayedOutXml implements Xml<Graph> {
     static private final String WHITESPACE = " ";
     
     /**
-     * Constructs an xml (un)marshaller, based on {@link UntypedGxl},
+     * Constructs an xml (un)marshaller, based on {@link DefaultGxl},
      * also able to deal with layout information.
      * The graphs constructed by {@link #unmarshalGraph(File)} are as directed by the
      * graph factory, except that layout information is also taken into account.
      */
     public LayedOutXml(GraphFactory factory) {
-        this(new UntypedGxl());
+        this(new DefaultGxl());
     }
 
     /**
-     * Constructs an xml (un)marshaller, based on {@link UntypedGxl},
+     * Constructs an xml (un)marshaller, based on {@link DefaultGxl},
      * also able to deal with layout information.
      * The graphs constructed by {@link #unmarshalGraph(File)} are as directed by the
      * default graph factory, except that layout information is also taken into account.
      */
     public LayedOutXml() {
-        this(new UntypedGxl());
+        this(new DefaultGxl());
     }
 
     /**
@@ -108,7 +108,7 @@ public class LayedOutXml implements Xml<Graph> {
     }
 
     /** First marshals the graph; then the layout map if there is one. */
-    public void marshalGraph(Graph graph, File file) throws FormatException, IOException {
+    public void marshalGraph(Graph graph, File file) throws IOException {
         if (GraphInfo.hasLayoutMap(graph)) {
             marshal(graph, GraphInfo.getLayoutMap(graph), file);
         } else {
@@ -120,7 +120,7 @@ public class LayedOutXml implements Xml<Graph> {
     }
 
     /** Marshals the graph and stores the layout map. */
-    public void marshal(Graph graph, LayoutMap<Node, Edge> layoutMap, File file) throws FormatException, IOException {
+    public void marshal(Graph graph, LayoutMap<Node, Edge> layoutMap, File file) throws IOException {
         // first marshal the graph
         marshaller.marshalGraph(graph, file);
         // if there is layout information, create a file for it

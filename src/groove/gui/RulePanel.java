@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RulePanel.java,v 1.7 2007-04-29 09:22:28 rensink Exp $
+ * $Id: RulePanel.java,v 1.8 2007-04-30 19:53:29 rensink Exp $
  */
 package groove.gui;
 
@@ -20,17 +20,20 @@ import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
-
-import groove.gui.jgraph.*;
+import groove.gui.jgraph.AspectJGraph;
+import groove.gui.jgraph.AspectJModel;
+import groove.gui.jgraph.JModel;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
-import groove.trans.Rule;
+import groove.trans.RuleNameLabel;
 import groove.util.Groove;
+import groove.view.AspectualGrammarView;
 import groove.view.AspectualRuleView;
-import groove.view.RuleViewGrammar;
+import groove.view.FormatException;
+import groove.view.GrammarView;
+import groove.view.RuleView;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -40,7 +43,7 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -66,13 +69,13 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
      * Resets the display, and
      * creates and stores a model for each rule in the system.
      */
-    public synchronized void setGrammarUpdate(RuleViewGrammar grammar) {
+    public synchronized void setGrammarUpdate(AspectualGrammarView grammar) {
     	if (setDisplayedGrammar(grammar)) {
 			// create a mapping from rule names to (fresh) rule models
 			ruleJModelMap.clear();
 			if (grammar != null) {
-				for (NameLabel ruleName : grammar.getRuleNames()) {
-					AspectJModel jModel = computeRuleModel((AspectualRuleView) grammar.getRuleView(ruleName));
+				for (RuleNameLabel ruleName : grammar.getRuleMap().keySet()) {
+					AspectJModel jModel = computeRuleModel(grammar.getRule(ruleName));
 					ruleJModelMap.put(ruleName, jModel);
 				}
 			}
@@ -89,9 +92,9 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
     	}
     }
 
-    /** Has the same effect as setting the grammar. */
-    public synchronized void activateGrammarUpdate(GTS gts) {
-    	setGrammarUpdate((RuleViewGrammar) gts.getGrammar());
+    /** Does nothing (according to contract, the grammar has already been set). */
+    public synchronized void runSimulationUpdate(GTS gts) {
+    	// empty
 	}
 
 	/**
@@ -138,7 +141,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
      * @param grammar the new displayed grammar
      * @return <code>true</code> if the new value is different from the old
      */
-    private boolean setDisplayedGrammar(GraphGrammar grammar) {
+    private boolean setDisplayedGrammar(GrammarView grammar) {
     	boolean result = this.displayedGrammar != grammar;
     	this.displayedGrammar = grammar;
     	return result;
@@ -163,12 +166,16 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
     @Override
     protected String getStatusText() {
     	String text;
-    	Rule rule = simulator.getCurrentRule();
+    	RuleView rule = simulator.getCurrentRule();
     	if (rule != null) {
     		text = "Rule " + rule.getName().name();
     		if (getOptionsItem(SHOW_ANCHORS_OPTION).getState()) {
-    			text += "; anchor "
-    					+ Groove.toString(rule.anchor(), "(", ")", ",");
+    			try {
+					text += "; anchor "
+							+ Groove.toString(rule.toRule().anchor(), "(", ")", ",");
+				} catch (FormatException exc) {
+					// don't add the anchor
+				}
     		}
     	} else {
     		text = INITIAL_FRAME_NAME;
@@ -186,7 +193,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
      */
     private final Map<NameLabel,AspectJModel> ruleJModelMap = new TreeMap<NameLabel,AspectJModel>();
     /** The currently displayed grammar, if any. */
-    private GraphGrammar displayedGrammar;
+    private GrammarView displayedGrammar;
     /** The name of the currently displayed rule, if any. */
     private NameLabel displayedRule;
 }

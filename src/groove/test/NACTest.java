@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.7 2007-04-29 09:22:37 rensink Exp $
+ * $Id: NACTest.java,v 1.8 2007-04-30 19:53:31 rensink Exp $
  */
 package groove.test;
 
@@ -25,15 +25,15 @@ import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.rel.RegExprGraph;
 import groove.rel.VarGraph;
+import groove.trans.DefaultRuleFactory;
 import groove.trans.EdgeEmbargo;
 import groove.trans.Matching;
 import groove.trans.MergeEmbargo;
 import groove.trans.NAC;
-import groove.trans.NameLabel;
 import groove.trans.RuleApplication;
-import groove.trans.SystemProperties;
+import groove.trans.RuleNameLabel;
 import groove.trans.SPORule;
-import groove.trans.DefaultRuleFactory;
+import groove.trans.SystemProperties;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -56,7 +56,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -93,7 +93,7 @@ public class NACTest extends TestCase {
         ruleMorphism.cod().addNode(n[1][0]);
         ruleMorphism.putNode(n[0][0], n[1][0]);
         try {
-			rule = (SPORule) DefaultRuleFactory.getInstance().createRule(ruleMorphism, new NameLabel("test"), 0, SystemProperties.DEFAULT_PROPERTIES);
+			rule = (SPORule) DefaultRuleFactory.getInstance().createRule(ruleMorphism, new RuleNameLabel("test"), 0, SystemProperties.DEFAULT_PROPERTIES);
 		} catch (FormatException exc) {
 			throw new IllegalStateException(exc);
 		}

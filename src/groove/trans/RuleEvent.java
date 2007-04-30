@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.7 2007-04-27 22:07:01 rensink Exp $
+ * $Id: RuleEvent.java,v 1.8 2007-04-30 19:53:27 rensink Exp $
  */
 package groove.trans;
 
@@ -26,7 +26,7 @@ import groove.rel.VarNodeEdgeMap;
  * Together with the source and target state, the event uniquely defines the transition.
  * Typically, the event stores the anchor images of the particular rule application in the host graph.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-04-27 22:07:01 $
+ * @version $Revision: 1.8 $ $Date: 2007-04-30 19:53:27 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -45,7 +45,7 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      * The information provided by the name is less extensive than
      * that of the label (see {@link #getLabel()}).
      */
-    public NameLabel getName();
+    public RuleNameLabel getName();
 
 	/**
      * Returns the mapping from the anchors in the rule's LHS to the source graph.

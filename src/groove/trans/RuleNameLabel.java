@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StructuredRuleName.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $
+ * $Id: RuleNameLabel.java,v 1.1 2007-04-30 19:53:27 rensink Exp $
  *
  * Angela Lozano's thesis. EMOOSE student 2002 - 2003
  * EMOOSE (European Master in Object-Oriented & Software Engineering technologies)
@@ -33,9 +33,9 @@ import java.util.StringTokenizer;
  * the child.
  *
  * @author Angela Lozano and Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:57 $
+ * @version $Revision: 1.1 $ $Date: 2007-04-30 19:53:27 $
  */
-public class StructuredRuleName extends NameLabel {
+public class RuleNameLabel extends NameLabel {
     /**
      * Character to separate constituent tokens.
      */
@@ -49,7 +49,7 @@ public class StructuredRuleName extends NameLabel {
      *             characters)
      * @require <tt>name != null</tt>
      */
-    public StructuredRuleName(String name) {
+    public RuleNameLabel(String name) {
         super(name);
     }
 
@@ -62,7 +62,7 @@ public class StructuredRuleName extends NameLabel {
      * @param child the child rule name (without enclosing characters)
      * @require <tt>child != null</tt>
      */
-    public StructuredRuleName(StructuredRuleName parent, String child) {
+    public RuleNameLabel(RuleNameLabel parent, String child) {
         this(parent == null ? child : parent.name()+SEPARATOR+child);
     }
 
@@ -112,13 +112,13 @@ public class StructuredRuleName extends NameLabel {
      * @return the parent rule name
      * @ensure <tt>return == null</tt> iff <tt>size() == 1</tt>
      */
-    public StructuredRuleName parent() {
+    public RuleNameLabel parent() {
         String name = name();
         int dot = name.lastIndexOf(SEPARATOR);
         if (dot < 0)
             return null;
         else
-            return new StructuredRuleName(name.substring(0,dot));
+            return new RuleNameLabel(name.substring(0,dot));
     }
  
     /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.1 2007-04-29 09:22:35 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.2 2007-04-30 19:53:31 rensink Exp $
  */
 
 package groove.view;
@@ -41,8 +41,8 @@ import groove.trans.EdgeEmbargo;
 import groove.trans.GraphCondition;
 import groove.trans.MergeEmbargo;
 import groove.trans.NAC;
-import groove.trans.NameLabel;
 import groove.trans.Rule;
+import groove.trans.RuleNameLabel;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -58,6 +58,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -74,7 +75,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -130,7 +131,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	
 	/** Tests the translation from an aspect graph to a rule and back. */
 	private static void testTranslation(String name, AspectGraph graph) throws FormatException, FormatException {
-        NameLabel ruleName = new NameLabel(name);
+        RuleNameLabel ruleName = new RuleNameLabel(name);
         // construct rule graph
         AspectualRuleView ruleGraph = new AspectualRuleView(graph, ruleName);
         // convert rule graph into rule
@@ -185,7 +186,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * @throws FormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public AspectualRuleView(AspectGraph graph, NameLabel name) throws FormatException {
+    public AspectualRuleView(AspectGraph graph, RuleNameLabel name) throws FormatException {
         this(graph, name, Rule.DEFAULT_PRIORITY, null);
     }
 
@@ -199,7 +200,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * @throws FormatException if <tt>graph</tt> does not have
      * the required meta-format
      */
-    public AspectualRuleView(AspectGraph graph, NameLabel name, int priority, SystemProperties properties) throws FormatException {
+    public AspectualRuleView(AspectGraph graph, RuleNameLabel name, int priority, SystemProperties properties) throws FormatException {
         this.name = name;
         this.priority = priority;
         this.properties = properties;
@@ -262,13 +263,21 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 //    }
 
     /** Returns the name of the rule represented by this rule graph, set at construction time. */
-	public NameLabel getName() {
+	public RuleNameLabel getName() {
 	    return name;
 	}
 
 	/** Returns the priority of the rule represented by this rule graph, set at construction time. */
 	public int getPriority() {
 	    return priority;
+	}
+
+	public int compareTo(RuleView o) {
+		int result = getPriority() - o.getPriority();
+		if (result == 0) {
+			result = getName().compareTo(o.getName());
+		}
+		return result;
 	}
 
 	/** Invokes {@link #AspectualRuleView(Rule)} to construct a rule graph. */
@@ -291,7 +300,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     }
     
 	public List<String> getErrors() {
-		return null;
+		return Collections.emptyList();
 	}
 
 	public AspectGraph getAspectGraph() {
@@ -571,7 +580,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	 * @param priority the priority of the new rule.
 	 * @return the fresh rule created by the factory
 	 */
-	protected Rule createRule(Morphism ruleMorphism, NameLabel name, int priority) throws FormatException {
+	protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name, int priority) throws FormatException {
 	    return new SPORule(ruleMorphism, name, priority, properties);
 	}
 
@@ -867,7 +876,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     /**
      * The name of the rule represented by this rule graph.
      */
-    protected final NameLabel name;
+    protected final RuleNameLabel name;
     /**
      * The priority of the rule represented by this rule graph.
      */

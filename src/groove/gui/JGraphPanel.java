@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: JGraphPanel.java,v 1.5 2007-04-29 09:22:28 rensink Exp $
+ * $Id: JGraphPanel.java,v 1.6 2007-04-30 19:53:29 rensink Exp $
  */
 package groove.gui;
 
@@ -37,7 +37,7 @@ import javax.swing.JSplitPane;
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
@@ -201,6 +201,11 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         add(editorPane, BorderLayout.CENTER);
         currentPane = editorPane;
         revalidate();
+    }
+    
+    /** Returns the component inside the panel. */
+    protected JComponent getPane() {
+    	return currentPane;
     }
     
     /**

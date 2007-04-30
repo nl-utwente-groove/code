@@ -1,4 +1,4 @@
-/* $Id: AspectualGraphView.java,v 1.1 2007-04-29 09:22:36 rensink Exp $ */
+/* $Id: AspectualGraphView.java,v 1.2 2007-04-30 19:53:31 rensink Exp $ */
 package groove.view;
 
 import groove.algebra.Constant;
@@ -19,6 +19,7 @@ import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -55,8 +56,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 	}
 
 	public List<String> getErrors() {
-		// TODO Auto-generated method stub
-		return null;
+		return Collections.emptyList();
 	}
 
 	public Map<AspectNode, Node> getMap() {

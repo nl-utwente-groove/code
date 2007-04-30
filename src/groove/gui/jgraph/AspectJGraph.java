@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJGraph.java,v 1.2 2007-04-29 09:22:22 rensink Exp $
+ * $Id: AspectJGraph.java,v 1.3 2007-04-30 19:53:28 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -20,6 +20,7 @@ import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.NameLabel;
+import groove.trans.RuleNameLabel;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.RuleAspect;
 
@@ -69,7 +70,7 @@ public class AspectJGraph extends JGraph {
             	if (jCell instanceof AspectJModel.AspectJVertex) {
             		elem = ((AspectJModel.AspectJVertex) jCell).getNode();
             	} else if (jCell instanceof AspectJModel.AspectJEdge) {
-            		elem = (AspectElement) ((AspectJModel.AspectJEdge) jCell).getEdge();
+            		elem = ((AspectJModel.AspectJEdge) jCell).getEdge();
             	}
             	if (RuleAspect.isRemark(elem)) {
             		remarkCells.add(jCell);
@@ -99,7 +100,7 @@ public class AspectJGraph extends JGraph {
             public void menuSelectionChanged(boolean selected) {
                 if (selected) {
                     removeAll();
-                    for (NameLabel ruleName: simulator.getCurrentGrammar().getRuleNames()) {
+                    for (RuleNameLabel ruleName: simulator.getCurrentGrammar().getRuleMap().keySet()) {
                         add(createSetRuleAction(ruleName));                        
                     }
                 }
@@ -109,7 +110,7 @@ public class AspectJGraph extends JGraph {
 	}
 
     /** Action to change the display to a given (named) rule. */
-    protected Action createSetRuleAction(final NameLabel ruleName) {
+    protected Action createSetRuleAction(final RuleNameLabel ruleName) {
         return new AbstractAction(ruleName.toString()) {
             public void actionPerformed(ActionEvent evt) {
                 simulator.setRule(ruleName);
