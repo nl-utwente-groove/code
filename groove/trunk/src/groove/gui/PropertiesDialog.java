@@ -1,5 +1,7 @@
-/* $Id: PropertiesDialog.java,v 1.1 2007-04-24 10:06:44 rensink Exp $ */
+/* $Id: PropertiesDialog.java,v 1.2 2007-05-02 08:44:32 rensink Exp $ */
 package groove.gui;
+
+import groove.graph.GraphProperties;
 
 import java.awt.Container;
 import java.awt.Dimension;
@@ -7,6 +9,7 @@ import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -17,6 +20,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.BevelBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 
@@ -30,9 +34,16 @@ public class PropertiesDialog {
 	 * parent frame, a given (non-<code>null</code>) set of properties,
 	 * and a flag indicating if the properties should be editable.
 	 */
-	public PropertiesDialog(Frame owner, Map<String,? extends Object> properties, boolean editable) {
+	public PropertiesDialog(Frame owner, Properties properties, boolean editable) {
 		this.frame = owner;
-		this.properties = new TreeMap<String,Object>(properties);
+		if (properties instanceof GraphProperties) {
+			this.properties = new TreeMap<String,String>(GraphProperties.getKeyComparator());
+		} else {
+			this.properties = new TreeMap<String,String>();
+		}
+		for (Map.Entry property: properties.entrySet()) {
+			this.properties.put((String) property.getKey(), (String) property.getValue());
+		}
 		this.editable = editable;
 		pane = createContentPane();
 	}
@@ -72,7 +83,7 @@ public class PropertiesDialog {
 	/**
 	 * Returns the (possibly edited) properties in the dialog.
 	 */
-	public final SortedMap<String, Object> getProperties() {
+	public final SortedMap<String, String> getProperties() {
 		return this.properties;
 	}
 
@@ -87,16 +98,27 @@ public class PropertiesDialog {
 	}
 	
 	/** Creates the pane for the table model. */
-	private Container createTablePane() {
+	public Container createTablePane() {
 		JTable table = createTable();
 		JScrollPane scrollPane = new JScrollPane(table);
+		scrollPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
 		return scrollPane;
 	}
 
 	/**
-	 * Creates the actual table component.
+	 * Indicates if the properties are editable.
+	 * @return <code>true</code> if the properties are editable
 	 */
-	private JTable createTable() {
+	public boolean isEditable() {
+		return editable;
+	}
+	
+	/**
+	 * Creates a table of properties, which is editable according to
+	 * the ediability of the dialog, set at constuction time.
+	 * @see #isEditable()
+	 */
+	public JTable createTable() {
 		final JTable table = new JTable(createTableModel());
 		table.setRowSelectionAllowed(false);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
@@ -148,7 +170,7 @@ public class PropertiesDialog {
 	/** Flag indicating that the properties are editable. */
 	private final boolean editable;
 	/** The ectual properties map. */
-	private final SortedMap<String,Object> properties;
+	private final SortedMap<String,String> properties;
 	/** Flag indicating that the properties have changed. */
 	private boolean changed;
 	/** Title of the dialog. */
@@ -185,7 +207,7 @@ public class PropertiesDialog {
 
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			return editable && rowIndex < properties.size() || columnIndex == PROPERTY_COLUMN;
+			return editable && (rowIndex < properties.size() || columnIndex == PROPERTY_COLUMN);
 		}
 
 		@Override
@@ -196,10 +218,10 @@ public class PropertiesDialog {
 					refreshPropertyKeys();
 				}
 			} else if (columnIndex == VALUE_COLUMN) {
-				properties.put(getPropertyKey(rowIndex),aValue);
+				properties.put(getPropertyKey(rowIndex), (String) aValue);
 				fireTableCellUpdated(rowIndex, columnIndex);
 			} else {
-				Object value = properties.remove(getPropertyKey(rowIndex));
+				String value = properties.remove(getPropertyKey(rowIndex));
 				if (aValue instanceof String && ((String) aValue).length() > 0) {
 					properties.put((String) aValue, value);
 				}
@@ -220,11 +242,11 @@ public class PropertiesDialog {
 		 * Lazily creates and returns a list of property keys,
 		 * in the order they occur in the properties map. 
 		 */
-		private List<String> getPropertyKeys() {
-			if (propertyKeys == null) {
+		private List<String> getPropertyKeyList() {
+			if (propertyKeyList == null) {
 				initPropertyKeys();
 			}
-			return propertyKeys;
+			return propertyKeyList;
 		}
 		
 		/** 
@@ -243,15 +265,15 @@ public class PropertiesDialog {
 		 * state of the property map.
 		 */
 		private void initPropertyKeys() {
-			propertyKeys = new ArrayList<String>(properties.keySet());
+			propertyKeyList = new ArrayList<String>(properties.keySet());
 		}
 		
 		/** Retrieves a property key by index. */
 		private String getPropertyKey(int rowIndex) {
-			return getPropertyKeys().get(rowIndex);
+			return getPropertyKeyList().get(rowIndex);
 		}
 
 		/** Helper list to translate indices to property keys. */
-		private List<String> propertyKeys;
+		private List<String> propertyKeyList;
 	}
 }

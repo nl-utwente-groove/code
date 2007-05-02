@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Xml.java,v 1.7 2007-04-30 19:53:24 rensink Exp $
+ * $Id: Xml.java,v 1.8 2007-05-02 08:44:30 rensink Exp $
  */
 package groove.io;
 
@@ -27,7 +27,7 @@ import java.io.IOException;
  * To be implemented for particular XML formats.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public interface Xml<G extends Graph> {
 	/**
@@ -47,4 +47,7 @@ public interface Xml<G extends Graph> {
      * @throws IOException if an error occurred during file input
      */
     public G unmarshalGraph(File file) throws FormatException, IOException ;
+    
+    /** Deletes a file together with further information (such as layout info). */
+    public void deleteGraph(File file);
 }

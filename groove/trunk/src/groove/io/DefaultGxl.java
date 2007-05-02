@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.1 2007-04-30 19:53:24 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.2 2007-05-02 08:44:30 rensink Exp $
  */
 package groove.io;
 
@@ -21,6 +21,7 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.HyperEdge;
 import groove.graph.Label;
@@ -41,8 +42,6 @@ import java.io.Writer;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import org.exolab.castor.xml.MarshalException;
 import org.exolab.castor.xml.Marshaller;
@@ -54,9 +53,11 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class DefaultGxl extends AbstractXml {
+	/** The name of graphs whose name is not explicitly included in the graph info. */
+	static public final String DEFAULT_GRAPH_NAME = "graph";
     /** Attribute name for node and edge ids. */
     static public final String LABEL_ATTR_NAME = "label";
     static private final IsoChecker isoChecker = new DefaultIsoChecker();
@@ -144,13 +145,29 @@ public class DefaultGxl extends AbstractXml {
 	 * the result to an ordinary graph using <tt>{@link #attrToNormGraph}</tt>.
 	 */
 	@Override
-	public Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file)
-			throws FormatException, FileNotFoundException {
-		groove.gxl.Graph gxlGraph = unmarshalGxlGraph(file);
-		Pair<Graph,Map<String,Node>> attrGraph = gxlToAttrGraph(gxlGraph);
-		Graph result = attrToNormGraph(attrGraph.first());
+	public Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws FormatException {
+		Graph result;
+		Map<String, Node> conversion;
+		try {
+			groove.gxl.Graph gxlGraph = unmarshalGxlGraph(file);
+			Pair<Graph, Map<String, Node>> attrGraph = gxlToAttrGraph(gxlGraph);
+			result = attrToNormGraph(attrGraph.first());
+			conversion = attrGraph.second();
+		} catch (FileNotFoundException exc) {
+			result = getGraphFactory().newGraph();
+			conversion = new HashMap<String,Node>();
+		}
 		GraphInfo.setFile(result, file);
-		return new Pair<Graph,Map<String,Node>>(result, attrGraph.second());
+		PriorityFileName priorityName = new PriorityFileName(file);
+		GraphInfo.setName(result, priorityName.getActualName());
+		if (priorityName.hasPriority()) {
+			GraphInfo.getProperties(result, true).setPriority(priorityName.getPriority());
+		}
+		return new Pair<Graph,Map<String,Node>>(result, conversion);
+	}
+
+	public void deleteGraph(File file) {
+		file.delete();
 	}
 
 	/**
@@ -162,7 +179,9 @@ public class DefaultGxl extends AbstractXml {
     private groove.gxl.Graph attrToGxlGraph(Graph graph) {
         groove.gxl.Graph gxlGraph = new groove.gxl.Graph();
         gxlGraph.setEdgeids(false);
-        gxlGraph.setId("graph");
+        String name = GraphInfo.getName(graph);
+        name = name == null ? DEFAULT_GRAPH_NAME : name;
+        gxlGraph.setId(name);
         gxlGraph.setRole("graph");
         // add the nodes
         Map<Node,groove.gxl.Node> nodeMap = new HashMap<Node,groove.gxl.Node>();
@@ -204,27 +223,17 @@ public class DefaultGxl extends AbstractXml {
             gxlGraph.addGraphTypeItem(gxlGraphTypeItem);
         }
         // add the graph attributes
-        Map<String,Object> properties = GraphInfo.getProperties(graph, false);
+        GraphProperties properties = GraphInfo.getProperties(graph, false);
         if (properties != null) {
-			for (Map.Entry<String, Object> entry : properties.entrySet()) {
-				String attrName = entry.getKey().toLowerCase();
-				if (isKnownPropertyKey(attrName)) {
-					groove.gxl.Value gxlValue = new groove.gxl.Value();
-					Object value = entry.getValue();
-					if (value instanceof Boolean) {
-						gxlValue.setBool((Boolean) value);
-					} else if (value instanceof Integer) {
-						gxlValue.setInt((Integer) value);
-					} else if (value instanceof Float) {
-						gxlValue.setFloat((Float) value);
-					} else {
-						gxlValue.setString(value.toString());
-					}
-					groove.gxl.Attr gxlLabelAttr = new groove.gxl.Attr();
-					gxlLabelAttr.setName(attrName);
-					gxlLabelAttr.setValue(gxlValue);
-					gxlGraph.addAttr(gxlLabelAttr);
-				}
+			for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+				String attrName = ((String) entry.getKey()).toLowerCase();
+				String value = (String) entry.getValue();
+				groove.gxl.Value gxlValue = new groove.gxl.Value();
+				gxlValue.setString(value);
+				groove.gxl.Attr gxlLabelAttr = new groove.gxl.Attr();
+				gxlLabelAttr.setName(attrName);
+				gxlLabelAttr.setValue(gxlValue);
+				gxlGraph.addAttr(gxlLabelAttr);
 			}
 		}
         return gxlGraph;
@@ -287,7 +296,7 @@ public class DefaultGxl extends AbstractXml {
         }
         // add the graph attributes
         Enumeration<?> attrEnum = gxlGraph.enumerateAttr();
-        SortedMap<String,Object> properties = new TreeMap<String,Object>();
+        GraphProperties properties = new GraphProperties();
         while (attrEnum.hasMoreElements()) {
             groove.gxl.Attr attr = (groove.gxl.Attr) attrEnum.nextElement();
             String attrName = attr.getName().toLowerCase();
@@ -303,12 +312,13 @@ public class DefaultGxl extends AbstractXml {
             	} else {
             		dataValue = attrValue.getString();
             	}
-            	properties.put(attrName, dataValue);
+            	properties.setProperty(attrName, dataValue.toString());
             }
         }
         if (!properties.isEmpty()) {
         	GraphInfo.setProperties(graph, properties);
         }
+        GraphInfo.setName(graph, gxlGraph.getId());
         return new Pair<Graph,Map<String,Node>>(graph, nodeIds);
     }
 
@@ -407,7 +417,7 @@ public class DefaultGxl extends AbstractXml {
 
         // now convert the gxl to an attribute graph        
         if (gxl.getGraphCount() != 1)
-            throw new FormatException("Only one graph allowed in document");
+            throw new FormatException("Only one graph allowed in document %s", file);
         // Get the first and only graph element
         return gxl.getGraph(0);
     }

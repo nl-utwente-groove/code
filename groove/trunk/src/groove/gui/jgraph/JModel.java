@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.8 2007-04-29 09:22:22 rensink Exp $
+ * $Id: JModel.java,v 1.9 2007-05-02 08:44:33 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -22,6 +22,7 @@ import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
@@ -36,13 +37,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 
 import javax.swing.SwingUtilities;
 
 import org.jgraph.graph.AttributeMap;
-//import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultGraphModel;
 import org.jgraph.graph.DefaultPort;
@@ -61,7 +59,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -69,7 +67,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.8 $
+     * @version $Revision: 1.9 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -130,9 +128,9 @@ abstract public class JModel extends DefaultGraphModel {
     /**
 	 * Returns the properties associated with this j-model.
 	 */
-	public final SortedMap<String, Object> getProperties() {
+	public final GraphProperties getProperties() {
 		if (properties == null) {
-			properties = new TreeMap<String,Object>();
+			properties = new GraphProperties();
 		}
 		return this.properties;
 	}
@@ -140,7 +138,7 @@ abstract public class JModel extends DefaultGraphModel {
 	/**
 	 * Sets the properties of this j-model to a given properties map.
 	 */
-	public final void setProperties(SortedMap<String, Object> properties) {
+	public final void setProperties(GraphProperties properties) {
 		this.properties = properties;
 	}
 
@@ -202,29 +200,6 @@ abstract public class JModel extends DefaultGraphModel {
         assert contains(jCell) : "Cell "+jCell+" is not in model";
         layoutableJCells.remove(jCell);
     }
-
-//    /**
-//     * Returns the set of jcells whose label sets contain at least one of the labels in a given set.
-//     * @param labelSet the set of labels looked for
-//     * @return the set of {@link JCell}s for which {@link  JCell#getLabelSet()}contains at least
-//     *         one of the elements of <tt>labelSet</tt>.
-//     */
-//    public Set<JCell> getJCellsForLabels(Set<String> labelSet) {
-//        Set<JCell> result = new HashSet<JCell>();
-//        for (int i = 0; i < getRootCount(); i++) {
-//            JCell jCell = (JCell) getRootAt(i);
-//            Iterator<String> jCellLabelIter = jCell.getLabelSet().iterator();
-//            boolean found = false;
-//            while (!found && jCellLabelIter.hasNext()) {
-//                Object jCellLabel = jCellLabelIter.next();
-//                if (labelSet.contains(jCellLabel)) {
-//                    result.add(jCell);
-//                    found = true;
-//                }
-//            }
-//        }
-//        return result;
-//    }
 
     /**
      * Sets all jcells to unmovable, except those that have been added since the last layout action.
@@ -292,6 +267,7 @@ abstract public class JModel extends DefaultGraphModel {
         }
         GraphInfo.setLayoutMap(result, layoutMap);
         GraphInfo.setProperties(result, getProperties());
+        GraphInfo.setName(result, getName());
         return result;
     }
 
@@ -610,7 +586,7 @@ abstract public class JModel extends DefaultGraphModel {
 	/** Set of options values to control the display. May be <code>null</code>. */
 	private final Options options;
 	/** Properties map of the graph being displayed or edited. */
-	private SortedMap<String,Object> properties;
+	private GraphProperties properties;
 	/**
      * The name of this model.
      */

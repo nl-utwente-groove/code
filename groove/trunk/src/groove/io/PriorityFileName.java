@@ -12,18 +12,20 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: PriorityFileName.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
+ * $Id: PriorityFileName.java,v 1.3 2007-05-02 08:44:30 rensink Exp $
  */
 package groove.io;
+
+import java.io.File;
 
 import groove.trans.Rule;
 
 /**
  * Encoding of a rule name plus priority as a string
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-class PriorityFileName {
+public class PriorityFileName {
     /** Default priority value, copied from {@link Rule#DEFAULT_PRIORITY}. */
     static public final int DEFAULT_PRIORITY = Rule.DEFAULT_PRIORITY;
     static private String SEPARATOR = ".";
@@ -34,7 +36,7 @@ class PriorityFileName {
      * @throws NumberFormatException if the part before the period cannot be parsed as an integer,
      * or yields a negative number.
      */
-    PriorityFileName(String fullName) {
+    public PriorityFileName(String fullName) {
         int separatorPos = fullName.indexOf(SEPARATOR);
         if (separatorPos <= 0) {
             priority = DEFAULT_PRIORITY;
@@ -59,6 +61,17 @@ class PriorityFileName {
         }
         ruleName = fullName.substring(separatorPos+1);
     }
+    
+    /** 
+     * Parses the name part of a file as <tt>priority.actualName.extension</tt>.
+     * If there is no period in the string, the priority is assumed to be 0.
+     * @throws NumberFormatException if the part before the period cannot be parsed as an integer,
+     * or yields a negative number.
+     */
+    public PriorityFileName(File file) {
+    	this(ExtensionFilter.getPureName(file));
+    	this.extension = file.getName().substring(ruleName.length());
+    }
 
     /**
      * Creates a file name from a given rule name and priority.
@@ -78,11 +91,25 @@ class PriorityFileName {
         return new Integer(priority);
     }
 
+    /** Indicates if the file name has an explicit priority. */
+    public boolean hasPriority() {
+    	return explicitPriority;
+    }
+
     /**
      * Returns the rule name.
      */
-    public String getRuleName() {
+    public String getActualName() {
         return ruleName;
+    }
+
+    /**
+     * Returns the extension, in case this object was constructed by {@link #PriorityFileName(String)}.
+     * @return an extension (including the separator), or <code>null</code> if 
+     * this object was not constructed so as to include an extension.
+     */
+    public String getExtension() {
+        return extension;
     }
 
     /**
@@ -102,6 +129,10 @@ class PriorityFileName {
      * created contained an explicit priority.
      */
     private final boolean explicitPriority;
+    /** The priority in the filename, or {@link Rule#DEFAULT_PRIORITY} if no explicit priority was incorporated. */
     private final int priority;
+    /** The actual rule name, minus directory, priority and extension. */
     private final String ruleName;
+    /** The file name extension, in case this object was created by {@link #PriorityFileName(File)}.*/
+    private String extension;
 }

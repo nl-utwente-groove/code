@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.11 2007-04-30 19:53:27 rensink Exp $
+ * $Id: RuleSystem.java,v 1.12 2007-05-02 08:44:33 rensink Exp $
  */
 package groove.trans;
 
@@ -22,7 +22,6 @@ import groove.view.FormatException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -37,7 +36,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-04-30 19:53:27 $
+ * @version $Revision: 1.12 $ $Date: 2007-05-02 08:44:33 $
  * @see NameLabel
  * @see SPORule
  */
@@ -323,19 +322,6 @@ public class RuleSystem {
         return new TreeSet<Rule>();
     }
     
-    /**
-     * Returns a comparator for priorities, encoded as {@link Integer} objects.
-     * This implementation orders priorities from high to low.
-     */
-    protected Comparator<Integer> createPriorityComparator() {
-        return new Comparator<Integer>() {
-            public int compare(Integer o1, Integer o2) {
-                return o2.intValue() - o1.intValue();
-            }
-            
-        };
-    }
-    
     /** 
      * Tests if the rule system currently contains any rules, and
      * throws an exception if it does.
@@ -355,7 +341,7 @@ public class RuleSystem {
      * A mapping from priorities to sets of rules having that priority.
      * The ordering is from high to low priority. 
      */
-    protected final SortedMap<Integer,Set<Rule>> priorityRuleMap = new TreeMap<Integer,Set<Rule>>(createPriorityComparator());
+    protected final SortedMap<Integer,Set<Rule>> priorityRuleMap = new TreeMap<Integer,Set<Rule>>(Rule.PRIORITY_COMPARATOR);
     /**
      * Set of rules, collected separately for purposes of speedup.
      * @see #getRules()

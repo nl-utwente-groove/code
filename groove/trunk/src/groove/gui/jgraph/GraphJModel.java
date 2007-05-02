@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.8 2007-04-29 09:22:22 rensink Exp $
+ * $Id: GraphJModel.java,v 1.9 2007-05-02 08:44:33 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -25,6 +25,7 @@ import groove.graph.GenericNodeEdgeHashMap;
 import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
@@ -42,7 +43,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.SortedMap;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.ConnectionSet;
@@ -52,7 +52,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */
@@ -83,9 +83,13 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         addNodeSet(graph.nodeSet());
         addEdgeSet(graph.edgeSet());
         doInsert();
-        SortedMap<String,Object> graphProperties = GraphInfo.getProperties(graph, false);
+        GraphProperties graphProperties = GraphInfo.getProperties(graph, false);
         if (graphProperties != null) {
         	setProperties(graphProperties);
+        }
+        String name = GraphInfo.getName(graph);
+        if (name != null) {
+        	setName(name);
         }
         graph.addGraphListener(this);
     }
@@ -139,10 +143,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	public String getName() {
     	String result = super.getName();
     	if (result == null) {
-			Map<String, Object> properties = GraphInfo.getProperties(graph(), false);
-			if (properties != null) {
-				result = (String) properties.get(GraphInfo.GRAPH_NAME);
-			}
+			result = GraphInfo.getName(graph());
 		}
     	return result;
 	}
@@ -174,9 +175,13 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         addedEdgeSet.removeAll(toJCellMap.edgeMap().keySet());
         addEdgeSet(addedEdgeSet);
         doInsert();
-        SortedMap<String,Object> graphProperties = GraphInfo.getProperties(graph, false);
+        GraphProperties graphProperties = GraphInfo.getProperties(graph, false);
         if (graphProperties != null) {
         	setProperties(graphProperties);
+        }
+        String name = GraphInfo.getName(graph);
+        if (name != null) {
+        	setName(name);
         }
         // add the model as a graph listener
         graph.addGraphListener(this);
