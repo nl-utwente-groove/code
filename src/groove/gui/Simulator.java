@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.19 2007-04-30 19:53:29 rensink Exp $
+ * $Id: Simulator.java,v 1.20 2007-05-02 08:44:32 rensink Exp $
  */
 package groove.gui;
 
@@ -28,23 +28,23 @@ import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphInfo;
 import groove.graph.GraphListener;
+import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
 import groove.graph.Node;
-import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
-import groove.io.AspectualViewGps;
 import groove.io.AspectGxl;
+import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
+import groove.io.GrammarViewXml;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutGps;
 import groove.io.LayedOutXml;
 import groove.io.Xml;
-import groove.io.GrammarViewXml;
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -63,7 +63,6 @@ import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.FormatException;
 import groove.view.GrammarView;
-import groove.view.RuleView;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Component;
@@ -80,13 +79,11 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.SortedMap;
 
 import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
@@ -120,7 +117,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class Simulator {
     /**
@@ -507,7 +504,7 @@ public class Simulator {
      */
     void handleEditGraph() {
     	String name = currentStartStateName == null ? GrammarViewXml.DEFAULT_START_GRAPH_NAME: currentStartStateName;
-    	Graph editResult = doEdit(getStatePanel().getJModel(), name);
+    	Graph editResult = doEdit(getStatePanel().getJModel());
         if (editResult != null) {
 			handleSaveGraph(true, editResult, name);
 		}
@@ -520,7 +517,7 @@ public class Simulator {
      */
     void handleEditState() {
     	String stateName = getCurrentState().toString();
-    	Graph editResult = doEdit(getStatePanel().getJModel(), stateName);
+    	Graph editResult = doEdit(getStatePanel().getJModel());
         if (editResult != null) {
 			File saveFile = handleSaveGraph(true, editResult, stateName);
 			if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
@@ -536,18 +533,23 @@ public class Simulator {
 	 * @require <tt>getCurrentRule != null</tt>.
 	 */
     void handleEditRule() {
-    	String ruleName = currentRule.getName().toString();
-    	Graph editResult = doEdit(getRulePanel().getJGraph().getModel(), ruleName);
+    	RuleNameLabel ruleName = currentRule.getName();
+    	Graph editResult = doEdit(getRulePanel().getJGraph().getModel());
         if (editResult != null) {
-            if (confirmReplaceRule(ruleName)) {
-                doReplaceCurrentRule(editResult);
+            if (confirmReplaceRule(ruleName.toString())) {
+    			try {
+					AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(editResult);
+					doAddRule(ruleName, ruleAsAspectGraph);
+    			} catch (FormatException exc) {
+    				showErrorDialog("Error in rule format", exc);
+    			}
             }
         }
     }
     
     void handleEditProperties() {
     	AspectualRuleView rule = getCurrentRule();
-    	SortedMap<String,Object> ruleProperties = GraphInfo.getProperties(rule.getAspectGraph(), true);
+    	GraphProperties ruleProperties = GraphInfo.getProperties(rule.getAspectGraph(), true);
     	PropertiesDialog dialog = new PropertiesDialog(getFrame(), ruleProperties, true);
     	if (dialog.showDialog()) {
     		ruleProperties.putAll(dialog.getProperties());
@@ -564,20 +566,28 @@ public class Simulator {
     		runSimulation(getCurrentGrammar());
     	}
     }
-    
-    private Graph doEdit(JModel jModel, String name) {
+
+    private Graph doEdit(JModel jModel) {
 		Editor editor = new Editor(true);
-		editor.setModel(name, new GraphJModel(jModel.toPlainGraph(), getOptions()));
+		editor.setModel(new GraphJModel(jModel.toPlainGraph(), getOptions()));
 		JDialog editorDialog = Editor.createEditorDialog(getFrame(),
 				true,
 				editor);
-		editor.getRulePreviewAction().setEnabled(jModel instanceof AspectJModel);
+//		editor.getRulePreviewAction().setEnabled(jModel instanceof AspectJModel);
 		editorDialog.setVisible(true);
 		if (editor.isCurrentGraphModified()) {
 			return editor.getModel().toPlainGraph();
 		} else {
 			return null;
 		}
+	}
+
+    /** Inverts the enabledness of the current rule, and stores the result. */
+    private void doEnableRule() {
+    	AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
+    	GraphProperties properties = GraphInfo.getProperties(ruleGraph, true);
+    	properties.setEnabled(!properties.isEnabled());
+    	doAddRule(getCurrentRule().getName(), ruleGraph);
 	}
     
     /**
@@ -716,28 +726,33 @@ public class Simulator {
     }
 
     /**
-	 * Saves a new rule under the name of the currently selected rule.
-	 * @param ruleAsGraph the new rule, given in editor input format
+	 * Saves an aspect graph as a rule under a given name, and puts the rule into the
+	 * current grammar view. 
+     * @param ruleName the name of the new rule
+     * @param ruleAsGraph the new rule, given as an aspect graph
 	 */
-	private void doReplaceCurrentRule(Graph ruleAsGraph) {
-		RuleView currentRule = getCurrentRule();
-		RuleNameLabel currentRuleName = currentRule.getName();
-		int currentRulePriority = currentRule.getPriority();
+	private void doAddRule(RuleNameLabel ruleName, AspectGraph ruleAsGraph) {
 		try {
-			AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(ruleAsGraph);
-			AspectualRuleView newRuleGraph = new AspectualRuleView(
-					ruleAsAspectGraph, currentRuleName, currentRulePriority, getCurrentGrammar()
+			AspectualRuleView ruleView = new AspectualRuleView(
+					ruleAsGraph, ruleName, getCurrentGrammar()
 							.getProperties());
-			AspectualGrammarView newGrammar = new AspectualGrammarView(currentGrammar);
-			newGrammar.addRule(newRuleGraph);
-			currentGrammarLoader.marshalRule(newRuleGraph, currentGrammarFile);
-			RuleNameLabel oldRuleName = currentRuleName;
-			setGrammar(newGrammar);
-			setRule(oldRuleName);
+			currentGrammar.addRule(ruleView);
+			currentGrammarLoader.marshalRule(ruleView, currentGrammarFile);
+			setGrammar(currentGrammar);
+			setRule(ruleName);
 		} catch (IOException exc) {
 			showErrorDialog("Error while saving edited rule", exc);
-		} catch (FormatException exc) {
-			showErrorDialog("Error in rule format", exc);
+		}
+	}
+
+    /**
+	 * Deletes a rule from the grammar and the file system, and resets the grammar view. 
+	 */
+	private void doRemoveRule(RuleNameLabel name) {
+		AspectualRuleView rule = currentGrammar.removeRule(name);
+		if (rule != null) {
+			currentGrammarLoader.deleteRule(name, currentGrammarFile);
+			setGrammar(currentGrammar);
 		}
 	}
 
@@ -1461,6 +1476,15 @@ public class Simulator {
     }
 
     /**
+     * Asks whether the current rule should be removed from the rule system.
+     */
+    private boolean confirmDeleteRule(String ruleName) {
+        int answer = JOptionPane.showConfirmDialog(getFrame(), "Delete rule " + ruleName
+                + "?", null, JOptionPane.OK_CANCEL_OPTION);
+        return answer == JOptionPane.OK_OPTION;
+    }
+
+    /**
      * Asks whether the current start graph should be replaced by the edited version.
      */
     private boolean confirmLoadStartState(String stateName) {
@@ -1992,12 +2016,19 @@ public class Simulator {
     	}
     	
 		public void refresh() {
-			setEnabled(getCurrentRule() != null);
+			boolean ruleSelected = getCurrentRule() != null;
+			setEnabled(ruleSelected);
+			if (ruleSelected && getCurrentRule().isEnabled()) {
+				putValue(NAME, Options.DISABLE_ACTION_NAME);
+			} else {
+				putValue(NAME, Options.ENABLE_ACTION_NAME);
+			}
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			
+			if (confirmAbandon()) {
+				doEnableRule();
+			}
 		}
     }
 
@@ -2011,8 +2042,10 @@ public class Simulator {
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			// TODO Auto-generated method stub
-			
+			RuleNameLabel ruleName = getCurrentRule().getName();
+			if (confirmAbandon() && confirmDeleteRule(ruleName.toString())) {
+				doRemoveRule(ruleName);
+			}
 		}
     }
 
@@ -2418,11 +2451,11 @@ public class Simulator {
          * of the edited graph.
          */
         public void actionPerformed(ActionEvent e) {
-        	Map<String,Object> properties = new HashMap<String,Object>();
+        	GraphProperties properties = new GraphProperties();
         	Properties systemProperties = getCurrentGrammar().getProperties();
         	for (Map.Entry<Object,Object> entry: systemProperties.entrySet()) {
         		if (entry.getKey() instanceof String) {
-        			properties.put((String) entry.getKey(), entry.getValue());
+        			properties.put(entry.getKey(), entry.getValue());
         		}
         	}
             new PropertiesDialog(Simulator.this.getFrame(), properties, false).showDialog();

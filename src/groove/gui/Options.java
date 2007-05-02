@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.10 2007-04-30 19:53:29 rensink Exp $
+ * $Id: Options.java,v 1.11 2007-05-02 08:44:32 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class Options {
     /** Edit menu name */
@@ -78,7 +78,7 @@ public class Options {
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
     /** Edit action name */
-    public static final String DISABLE_ACTION_NAME = "Disable";
+    public static final String DISABLE_ACTION_NAME = "Disable Rule";
     /** Edit graph action name */
     public static final String EDIT_GRAPH_ACTION_NAME = "Edit Graph ...";
     /** Edit properties action name */
@@ -94,7 +94,7 @@ public class Options {
     /** Edit action name */
     public static final String EDIT_ACTION_NAME = "Edit ...";
     /** Edit action name */
-    public static final String ENABLE_ACTION_NAME = "Enable";
+    public static final String ENABLE_ACTION_NAME = "Enable Rule";
     /** Export action name */
     public static final String EXPORT_ACTION_NAME = "Export ...";
     /** Export rule action name */

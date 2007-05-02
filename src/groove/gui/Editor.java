@@ -12,21 +12,24 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.15 2007-04-30 19:53:29 rensink Exp $
+ * $Id: Editor.java,v 1.16 2007-05-02 08:44:32 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.HELP_MENU_NAME;
 import static groove.gui.Options.IS_ATTRIBUTED_OPTION;
 import groove.graph.Graph;
+import groove.graph.GraphProperties;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
+import groove.io.PriorityFileName;
 import groove.io.Xml;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.RuleFactory;
@@ -44,7 +47,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -77,6 +79,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
+import javax.swing.border.BevelBorder;
 import javax.swing.event.UndoableEditEvent;
 
 import org.jgraph.event.GraphModelEvent;
@@ -88,7 +91,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.15 $ $Date: 2007-04-30 19:53:29 $
+ * @version $Revision: 1.16 $ $Date: 2007-05-02 08:44:32 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -108,7 +111,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             // Add an Editor Panel
             final Editor editor = new Editor();
             if (args.length == 0) {
-                editor.setModel(null, null);
+                editor.setModel(new EditorJModel());
             } else {
                 editor.doOpenGraph(new File(args[0]));
             }
@@ -236,7 +239,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             super.actionPerformed(evt);
             if (showAbandonDialog()) {
                 currentFile = null;
-                setModel(null, null);
+                setModel(new EditorJModel());
                 getGraphSaveChooser().setSelectedFile(null);
             }
         }
@@ -275,7 +278,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.15 $
+     * @version $Revision: 1.16 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -355,9 +358,9 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
          * of the edited graph.
          */
         public void actionPerformed(ActionEvent e) {
-            PropertiesDialog dialog = new PropertiesDialog(Editor.this, getModel().getProperties(), true);
+            PropertiesDialog dialog = createPropertiesDialog(true);
             if (dialog.showDialog()) {
-            	getModel().setProperties(dialog.getProperties());
+            	getModel().setProperties(new GraphProperties(dialog.getProperties()));
             	currentGraphModified = true;
             }
         }
@@ -428,19 +431,23 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         currentFile = fromFile;
         currentDir = currentFile.getAbsoluteFile().getParentFile();
         // first create a graph from the gxl file
-        Graph graph = null;
+        final JModel model;
         try {
-            graph = layoutGxl.unmarshalGraph(fromFile);
+            Graph graph = layoutGxl.unmarshalGraph(fromFile);
+            model = new GraphJModel(graph, getOptions());
         } catch (FormatException e) {
             throw new IOException("Can't load graph from " + fromFile.getName() + ": format error");
-        } catch (FileNotFoundException e) {
-            // we create a new model
         }
+//        // use filename to set name and (possibly) priority of the graph
+//        PriorityFileName priorityName = new PriorityFileName(fromFile);
+//        model.setName(priorityName.getActualName());
+//        if (priorityName.hasPriority()) {
+//        	model.getProperties().setPriority(priorityName.getPriority());
+//        }
         // load the model in the event dispatch thread, to avoid concurrency issues
-        final GraphJModel model = graph == null ? null : new GraphJModel(graph, getOptions());
         SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
-		        setModel(fromFile.getName(), model);
+		        setModel(model);
 			}        	
         });
     }
@@ -450,12 +457,9 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * @param toFile the file to save to
      * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
      */
-    public void doSaveGraph(File toFile) throws FormatException, IOException {
-        currentFile = toFile;
-        currentDir = toFile.getParentFile();
+    public void doSaveGraph(File toFile) throws FormatException, IOException { 
         Graph saveGraph = getModel().toPlainGraph();
         layoutGxl.marshalGraph(saveGraph, toFile);
-        setModelName(currentFile.getName());
         setCurrentGraphModified(false);
         notifyGraphSaved();
     }
@@ -486,21 +490,15 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * Changes the graph being edited to a given j-model, with a given name. If the model is
      * <tt>null</tt>, a fresh {@link EditorJModel}is created; otherwise, the given j-model is
      * copied into a new {@link EditorJModel}.
-     * @param name the name of the model; if <tt>null</tt>, the graph has no name
-     * @param model the j-model to be set; if <tt>null</tt>, a fresh {@link EditorJModel}is
-     *        created
+     * @param model the j-model to be set
      * @see EditorJModel#EditorJModel()
-     * @see EditorJModel#EditorJModel(String, GraphJModel)
+     * @see EditorJModel#EditorJModel(GraphJModel)
      */
-    public void setModel(String name, GraphJModel model) {
+    public void setModel(JModel model) {
         // unregister listeners with the model
         getModel().removeUndoableEditListener(getUndoManager());
         getModel().removeGraphModelListener(this);
-        if (model == null) {
-            jgraph.setModel(new EditorJModel(name));
-        } else {
-            jgraph.setModel(new EditorJModel(name, model));
-        }
+        jgraph.setModel(new EditorJModel(model));
         setCurrentGraphModified(false);
         getUndoManager().discardAllEdits();
         getModel().addUndoableEditListener(getUndoManager());
@@ -561,10 +559,22 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             }
         }
         getGraphSaveChooser().setCurrentDirectory(currentDir);
-        getGraphSaveChooser().setSelectedFile(currentFile);
+        String graphName = getModelName();
+        File saveFile = graphName == null ? currentFile : new File(graphName);
+        getGraphSaveChooser().setSelectedFile(saveFile);
         // get the file to write to
         File toFile = ExtensionFilter.showSaveDialog(getGraphSaveChooser(), jGraphPanel);
         if (toFile != null) {
+            // parse the file name to extract any priority info
+        	PriorityFileName priorityName = new PriorityFileName(toFile);
+        	String actualName = priorityName.getActualName();
+            getModel().setName(actualName);
+            if (priorityName.hasPriority()) {
+            	getModel().getProperties().setPriority(priorityName.getPriority());
+            }
+            toFile = new File(toFile.getParentFile(), actualName+ExtensionFilter.getExtension(toFile));
+            currentFile = toFile;
+            currentDir = toFile.getParentFile();
             try {
                 if (getGraphSaveChooser().getFileFilter() == ruleFilter
                         && getConfirmPreviewCheckBox().isSelected()) {
@@ -587,7 +597,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 
     /**
      * Handler method to execute a {@link ExportGraphAction}.
-     * Invokes a file chooser dialog, and calls {@link #doSaveGraph(File)} 
+     * Invokes a file chooser dialog, and calls {@link #doExportGraph(ExtensionFilter, File)} 
      * if a file is selected. 
      */
     protected void handleExportGraph() {
@@ -606,7 +616,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     }
 
     /**
-     * Shows a preview dialog; if confirmed, changes the model to a new layout.
+     * Shows a preview dialog. If confirmed, the model has changed.
      * @return <tt>true</tt> if the dialog was confirmed
      */
 	protected boolean handlePreview() {
@@ -614,14 +624,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	    	RuleNameLabel ruleName = new RuleNameLabel("temp");
             AspectualRuleView ruleGraph = (AspectualRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0, getSystemProperties());
             AspectJModel ruleModel = new AspectJModel(ruleGraph, getOptions());
-            JGraph previewGraph = new JGraph(ruleModel);
-            JOptionPane previewPane = new JOptionPane(new JScrollPane(previewGraph),
-                    JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-            JDialog previewDialog = previewPane.createDialog(jGraphPanel, "Production rule view");
-            previewDialog.setSize(PREVIEW_SIZE);
-            previewGraph.setToolTipEnabled(true);
-            previewDialog.setVisible(true);
-            Integer answer = (Integer) previewPane.getValue();
+            Integer answer = showPreviewDialog(ruleModel);
             if (answer != null && answer.intValue() == JOptionPane.OK_OPTION) {
                 setSelectInsertedCells(false);
                 getModel().replace(new GraphJModel(ruleModel.toPlainGraph(), getOptions()));
@@ -633,10 +636,34 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         }
         return false;
 	}
+	
+	/** 
+	 * Creates a preview of an aspect model, with properties.
+	 * The return value is one of <code>null</code>, {@link JOptionPane#CANCEL_OPTION} 
+	 * or {@link JOptionPane#OK_OPTION}.
+	 */
+	private Integer showPreviewDialog(AspectJModel model) {
+		JGraph jGraph = new JGraph(model);
+		jGraph.setToolTipEnabled(true);
+		JScrollPane jGraphPane = new JScrollPane(jGraph);
+		jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
+		JComponent previewContent = new JPanel();
+		previewContent.setLayout(new BorderLayout());
+		previewContent.add(jGraphPane);
+		if (!model.getProperties().isEmpty()) {
+			previewContent.add(createPropertiesDialog(false).createTablePane(), BorderLayout.NORTH);
+		}
+		JOptionPane previewPane = new JOptionPane(previewContent,
+				JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+		JDialog dialog = previewPane.createDialog(jGraphPanel, "Production rule view");
+		dialog.setSize(PREVIEW_SIZE);
+		dialog.setVisible(true);
+		return (Integer) previewPane.getValue();
+	}
 
     /**
-     * Closes the editor by making the root component invisible.
-     */
+	 * Closes the editor by making the root component invisible.
+	 */
     protected void handleClose() {
         getRootComponent().setVisible(false);
         this.dispose();
@@ -1288,6 +1315,13 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 			selectModeButton.doClick();
 		}
 		return selectModeButton;
+	}
+	
+	/** 
+	 * Callback factory method for a properties dialog for the currently edited model. 
+	 */
+	private PropertiesDialog createPropertiesDialog(boolean editable) {
+		return new PropertiesDialog(Editor.this, getModel().getProperties(), editable);
 	}
 
     /** 

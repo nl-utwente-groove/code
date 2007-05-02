@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.8 2007-04-30 19:53:24 rensink Exp $
+ * $Id: LayedOutXml.java,v 1.9 2007-05-02 08:44:29 rensink Exp $
  */
 package groove.io;
 
@@ -50,7 +50,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class LayedOutXml implements Xml<Graph> {
     /** 
@@ -194,6 +194,12 @@ public class LayedOutXml implements Xml<Graph> {
         }
         return result;
     }
+
+    /** Deletes the file itself as well as he layout file. */
+	public void deleteGraph(File file) {
+		marshaller.deleteGraph(file);
+		toLayoutFile(file).delete();
+	}
 
 	/**
 	 * Inserts vertex layout information in a given layout map, based on a

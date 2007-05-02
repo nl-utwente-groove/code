@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleView.java,v 1.2 2007-04-30 19:53:31 rensink Exp $
+ * $Id: RuleView.java,v 1.3 2007-05-02 08:44:34 rensink Exp $
  */
 package groove.view;
 
@@ -24,7 +24,7 @@ import groove.trans.RuleNameLabel;
  * Currently the only implemented view is the {@link AspectualRuleView}, which provides
  * a monolithic view in which all the elements of the rule are part of one graph.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface RuleView extends View<Rule>, Comparable<RuleView> {
     /**
@@ -47,16 +47,15 @@ public interface RuleView extends View<Rule>, Comparable<RuleView> {
      */
     public int getPriority();
     
+    /** 
+     * Indicates whether the rule is enabled, i.e., will be part of
+     * an actual graph grammar constructed from the rule.
+     */
+    public boolean isEnabled();
     /**
      * Factory method for a rule view of a given rule.
      * @throws FormatException if <code>rule</code> cannot be visualised
      * in the current rule view format
      */
     public RuleView newInstance(Rule rule) throws FormatException;
-//
-//    /**
-//     * Factory method for a rule view of a given graph.
-//     * @throws GraphFormatException if <code>graph</code> does not give rise to a valid rule
-//     */
-//    public RuleView newInstance(GraphShape graph, NameLabel name, int priority) throws GraphFormatException;
 }

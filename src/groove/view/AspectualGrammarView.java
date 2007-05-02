@@ -12,25 +12,25 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGrammarView.java,v 1.2 2007-04-30 19:53:31 rensink Exp $
+ * $Id: AspectualGrammarView.java,v 1.3 2007-05-02 08:44:34 rensink Exp $
  */
 package groove.view;
 
 import groove.graph.Graph;
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
+import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
  * Graph grammar with {@link RuleView} information for each rule.
@@ -93,7 +93,7 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
 		int priority = ruleView.getPriority();
 		Set<RuleView> priorityRules = priorityMap.get(priority);
 		if (priorityRules == null) {
-			priorityMap.put(priority, priorityRules = new HashSet<RuleView>());
+			priorityMap.put(priority, priorityRules = new TreeSet<RuleView>());
 		}
 		priorityRules.add(ruleView);
 		return result;
@@ -179,7 +179,10 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
     	List<String> errors = new ArrayList<String>();
     	for (RuleView ruleView: getRuleMap().values()) {
     		try {
-    			result.add(ruleView.toRule());
+    			// only add the enabled rules
+    			if (ruleView.isEnabled()) {
+    				result.add(ruleView.toRule());
+    			}
     		} catch (FormatException exc) {
     			for (String error: exc.getErrors()) {
     				errors.add(String.format("Format error in %s: %s", ruleView.getName(), error));
@@ -216,7 +219,7 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
     /** Mapping from rule names to views on the corresponding rules. */
     private final Map<RuleNameLabel,AspectualRuleView> ruleMap = new TreeMap<RuleNameLabel,AspectualRuleView>();
 	/** Mapping from priorities to sets of rule names. */
-    private final Map<Integer,Set<RuleView>> priorityMap = new HashMap<Integer,Set<RuleView>>();
+    private final Map<Integer,Set<RuleView>> priorityMap = new TreeMap<Integer,Set<RuleView>>(Rule.PRIORITY_COMPARATOR);
     /** The name of this grammar view. */
     private final String name;
     /** The start gramg of the grammar. */

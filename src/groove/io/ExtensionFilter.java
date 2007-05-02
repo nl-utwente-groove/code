@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: ExtensionFilter.java,v 1.3 2007-04-29 09:22:32 rensink Exp $
+ * $Id: ExtensionFilter.java,v 1.4 2007-05-02 08:44:30 rensink Exp $
  */
 package groove.io;
 
@@ -24,60 +24,10 @@ import javax.swing.JOptionPane;
 /**
  * Implements a file filter based on filename extension.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-04-29 09:22:32 $
+ * @version $Revision: 1.4 $ $Date: 2007-05-02 08:44:30 $
  */
 public class ExtensionFilter extends javax.swing.filechooser.FileFilter 
                              implements java.io.FileFilter {
-
-    /**
-     * Brings up a save dialog based on a given file chooser filter.
-     * The chosen filename is appended with the required extension.
-     * Confirmation is asked if the chosen filename already exists
-     * and does not equal the selected file at the dialog's start.
-     * @return the chosen file, if any; if null, no file has been chosen
-     */
-    public static File showSaveDialog(JFileChooser chooser,
-                                      java.awt.Component parent) {
-        chooser.rescanCurrentDirectory();
-        File originalDir = chooser.getCurrentDirectory();
-        File originalFile = new File(originalDir, chooser.getSelectedFile().getName());
-        // choose a file name to save to,
-        // asking confirmation if an existing file is to be overwritten
-        boolean doSave;   // indicates that the save should be carried through
-        boolean noChoice; // indicates that a definite choice has not been made
-        File res = null;  // the file to save to (if doSave)
-        do { 
-            doSave = (chooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION);
-            if (doSave) {
-                // apparently we're set to save
-                res = chooser.getSelectedFile();
-                // if the file exists, defer definite choice
-                noChoice = res.exists() && ! res.equals(originalFile);
-                if (noChoice) {
-                    // ask for confirmation before overwriting file
-                    int overwrite = JOptionPane.showConfirmDialog
-                        (parent, "Overwrite existing file \""+res.getName()+"\"?");
-                    // any answer but NO is a definite choice
-                    noChoice = (overwrite == JOptionPane.NO_OPTION);
-                    // andy answer but YES means don't save
-                    doSave = (overwrite == JOptionPane.YES_OPTION);
-                }
-                // extend file name if chosen under an extension filter
-                javax.swing.filechooser.FileFilter filter = chooser.getFileFilter();
-                if (filter instanceof ExtensionFilter) {
-                    res = new File
-                        (((ExtensionFilter) filter).addExtension(res.getPath()));
-                }
-            } else
-                // a choice not to save is a definite choice
-                noChoice = false;
-        } while (noChoice);
-        // return the file if the choice is to save, null otherwise
-        if (doSave)
-            return res;
-        else
-            return null;
-    }
 
     /**
      * Constructs a new extension file filter, with empty description.
@@ -194,4 +144,83 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
     private final String extension;
     /** Indicates whether this filter also accepts directories. */
     private boolean acceptDirectories;
+	/**
+	 * Brings up a save dialog based on a given file chooser filter.
+	 * The chosen filename is appended with the required extension.
+	 * Confirmation is asked if the chosen filename already exists
+	 * and does not equal the selected file at the dialog's start.
+	 * @return the chosen file, if any; if null, no file has been chosen
+	 */
+	public static File showSaveDialog(JFileChooser chooser,
+	                                  java.awt.Component parent) {
+	    chooser.rescanCurrentDirectory();
+	    File originalDir = chooser.getCurrentDirectory();
+	    File selectedFile = chooser.getSelectedFile();
+	    File originalFile = selectedFile == null ? null : new File(originalDir, selectedFile.getName());
+	    // choose a file name to save to,
+	    // asking confirmation if an existing file is to be overwritten
+	    boolean doSave;   // indicates that the save should be carried through
+	    boolean noChoice; // indicates that a definite choice has not been made
+	    File res = null;  // the file to save to (if doSave)
+	    do { 
+	        doSave = (chooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION);
+	        if (doSave) {
+	            // apparently we're set to save
+	            res = chooser.getSelectedFile();
+	            // if the file exists, defer definite choice
+	            noChoice = res.exists() && ! res.equals(originalFile);
+	            if (noChoice) {
+	                // ask for confirmation before overwriting file
+	                int overwrite = JOptionPane.showConfirmDialog
+	                    (parent, "Overwrite existing file \""+res.getName()+"\"?");
+	                // any answer but NO is a definite choice
+	                noChoice = (overwrite == JOptionPane.NO_OPTION);
+	                // andy answer but YES means don't save
+	                doSave = (overwrite == JOptionPane.YES_OPTION);
+	            }
+	            // extend file name if chosen under an extension filter
+	            javax.swing.filechooser.FileFilter filter = chooser.getFileFilter();
+	            if (filter instanceof ExtensionFilter) {
+	                res = new File
+	                    (((ExtensionFilter) filter).addExtension(res.getPath()));
+	            }
+	        } else
+	            // a choice not to save is a definite choice
+	            noChoice = false;
+	    } while (noChoice);
+	    // return the file if the choice is to save, null otherwise
+	    if (doSave)
+	        return res;
+	    else
+	        return null;
+	}
+
+	/** 
+	 * Returns the extension part of a file name.
+	 * The extension is taken to be the part from the last #SEPARATOR occurrence (inclusive).
+	 * @param file the file to obtain the name from
+	 * @return the extension part of <code>file.getName()</code>
+	 * @see File#getName()
+	 */
+	static public String getExtension(File file) {
+		String name = file.getName();
+		return name.substring(name.lastIndexOf(SEPARATOR));
+	}
+
+	/** 
+	 * Returns the name part of a file name, without extension.
+	 * The extension is taken to be the part from the last #SEPARATOR occurrence (inclusive).
+	 * @param file the file to obtain the name from
+	 * @return the name part of <code>file.getName()</code>, without the extension
+	 * @see File#getName()
+	 */
+	static public String getPureName(File file) {
+		String name = file.getName();
+		return name.substring(0, name.lastIndexOf(SEPARATOR));
+	}
+
+	/**
+	 * Separator character between filename and extension. 
+	 */
+	static public final char SEPARATOR = '.';
 }

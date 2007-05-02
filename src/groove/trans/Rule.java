@@ -12,11 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.7 2007-04-30 19:53:27 rensink Exp $
- * $Date: 2007-04-30 19:53:27 $
+ * $Id: Rule.java,v 1.8 2007-05-02 08:44:33 rensink Exp $
+ * $Date: 2007-05-02 08:44:33 $
  */
 package groove.trans;
 
+import java.util.Comparator;
 import java.util.List;
 
 import groove.graph.Element;
@@ -34,7 +35,7 @@ import groove.rel.VarNodeEdgeMap;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -42,6 +43,16 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
 	 * explicit priority is given.
 	 */
 	static public final int DEFAULT_PRIORITY = 0;
+	/**
+	 * A comparator for priorities, encoded as {@link Integer} objects.
+	 * This implementation orders priorities from high to low.
+	 */
+	static final public Comparator<Integer> PRIORITY_COMPARATOR = new Comparator<Integer>() {
+	    public int compare(Integer o1, Integer o2) {
+	        return o2.intValue() - o1.intValue();
+	    }
+	    
+	};
 
 	/**
      * Sets the priority of this rule.

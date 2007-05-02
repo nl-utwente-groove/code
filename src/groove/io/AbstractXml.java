@@ -12,20 +12,19 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractXml.java,v 1.6 2007-04-29 09:22:32 rensink Exp $
+ * $Id: AbstractXml.java,v 1.7 2007-05-02 08:44:30 rensink Exp $
  */
 package groove.io;
 
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.graph.Node;
 import groove.util.Pair;
 import groove.view.FormatException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -37,7 +36,7 @@ import java.util.Set;
  * abstract methods: <tt>marshal(Graph)</tt> and <tt>unmarshal(Document,Graph)</tt>.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public abstract class AbstractXml implements Xml<Graph> {
 	AbstractXml(GraphFactory graphFactory) {
@@ -111,5 +110,5 @@ public abstract class AbstractXml implements Xml<Graph> {
      * Set of default property names (which will certainly be included in the allowed
      * graph property names).
      */
-    static public final List<String> DEFAULT_PROPERTY_KEYS = Arrays.asList(new String[] { GraphInfo.GRAPH_NAME, GraphInfo.RULE_PRIORITY });
+    static public final List<String> DEFAULT_PROPERTY_KEYS = GraphProperties.DEFAULT_KEYS;
 }

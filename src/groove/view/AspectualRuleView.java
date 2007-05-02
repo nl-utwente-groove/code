@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.2 2007-04-30 19:53:31 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.3 2007-05-02 08:44:34 rensink Exp $
  */
 
 package groove.view;
@@ -27,6 +27,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
+import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -75,7 +76,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -169,6 +170,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     public AspectualRuleView(Rule rule) throws FormatException {
     	this.name = rule.getName();
         this.priority = rule.getPriority();
+        this.enabled = true;
         this.rule = rule;
         this.properties = rule.getProperties();
         this.graphToRuleMap = new HashMap<AspectNode,Node>();
@@ -183,11 +185,9 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * @param graph the graph to be converted
      * @param name the name of the rule
      * @require <tt>graph != null</tt>
-     * @throws FormatException if <tt>graph</tt> does not have
-     * the required meta-format
      */
-    public AspectualRuleView(AspectGraph graph, RuleNameLabel name) throws FormatException {
-        this(graph, name, Rule.DEFAULT_PRIORITY, null);
+    public AspectualRuleView(AspectGraph graph, RuleNameLabel name) {
+        this(graph, name, null);
     }
 
     /**
@@ -195,18 +195,15 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * Empty labels (after the role prefix) are interpreted as merge labels.
      * @param graph the graph to be converted
      * @param name the name of the rule
-     * @param priority the priority ot the rule
      * @require <tt>graph != null</tt>
-     * @throws FormatException if <tt>graph</tt> does not have
-     * the required meta-format
      */
-    public AspectualRuleView(AspectGraph graph, RuleNameLabel name, int priority, SystemProperties properties) throws FormatException {
+    public AspectualRuleView(AspectGraph graph, RuleNameLabel name, SystemProperties properties) {
         this.name = name;
-        this.priority = priority;
+        this.priority = GraphProperties.getPriority(graph);
+        this.enabled = GraphProperties.isEnabled(graph);
         this.properties = properties;
         this.graph = graph;
         this.graphToRuleMap = new HashMap<AspectNode,Node>();
-        this.rule = computeRule(graph, graphToRuleMap);
     }
     
     /**
@@ -253,15 +250,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	    }
 	    return result;
 	}
-//
-//	/**
-//     * Returns the rule factory.
-//     * @return the rule factory.
-//     */
-//    public RuleFactory getRuleFactory() {
-//    	return properties.getFactory();
-//    }
-
+	
     /** Returns the name of the rule represented by this rule graph, set at construction time. */
 	public RuleNameLabel getName() {
 	    return name;
@@ -270,6 +259,10 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Returns the priority of the rule represented by this rule graph, set at construction time. */
 	public int getPriority() {
 	    return priority;
+	}
+	
+	public boolean isEnabled() {
+		return enabled;
 	}
 
 	public int compareTo(RuleView o) {
@@ -289,13 +282,16 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * Creates and returns the production rule corresponding to this rule graph.
      */
     public Rule toModel() throws FormatException {
-    	return rule;
+    	return toRule();
     }
 
 	/**
      * Creates and returns the production rule corresponding to this rule graph.
      */
     public Rule toRule() throws FormatException {
+    	if (rule == null) {
+            rule = computeRule(graph, graphToRuleMap);
+    	}
     	return rule;
     }
     
@@ -881,11 +877,16 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * The priority of the rule represented by this rule graph.
      */
     protected final int priority;
+
+    /**
+     * The enabledness of the rule view.
+     */
+    protected final boolean enabled;
     
     /** The aspect graph representation of the rule. */
     private final AspectGraph graph;
     /** The rule derived from this graph, once it is computed. */
-    private final Rule rule;
+    private Rule rule;
     /** 
      * Mapping from the elements of the aspect graph representation
      * to the corresponding elements of the rule.

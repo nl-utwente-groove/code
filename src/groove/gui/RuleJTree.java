@@ -12,11 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.7 2007-04-30 19:53:29 rensink Exp $
+ * $Id: RuleJTree.java,v 1.8 2007-05-02 08:44:32 rensink Exp $
  */
 package groove.gui;
 
 import groove.graph.GraphInfo;
+import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -25,6 +26,7 @@ import groove.lts.State;
 import groove.lts.Transition;
 import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
+import groove.util.CollectionOfCollections;
 import groove.util.Groove;
 import groove.view.AspectualGrammarView;
 import groove.view.AspectualRuleView;
@@ -38,10 +40,12 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -54,6 +58,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.ToolTipManager;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
@@ -64,7 +69,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -95,6 +100,8 @@ public class RuleJTree extends JTree implements SimulationListener {
         InputMap im = getInputMap();
         im.put(Options.UNDO_KEY, Options.UNDO_ACTION_NAME);
         im.put(Options.REDO_KEY, Options.REDO_ACTION_NAME);
+        // add tool tips
+        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
     /**
@@ -133,7 +140,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         DefaultMutableTreeNode topNode = topDirectoryNode;
         boolean hasSpecialPriorities = grammar.getPriorityMap().size() > 1;
         // get the rule names
-        for (RuleView rule: grammar.getRuleMap().values()) {
+        for (RuleView rule: new CollectionOfCollections<RuleView>(grammar.getPriorityMap().values())) {
             RuleNameLabel ruleName = rule.getName();
             // create new top node for the rule, if the rule has a different priority then the last
             if (hasSpecialPriorities) {
@@ -271,7 +278,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             setSelectionPath(new TreePath(treeNode.getPath()));
         }
         setEnabled(displayedGrammar != null);
-        setBackground(getCurrentGTS() == null ? null : ENABLED_COLOR);
+        setBackground(getCurrentGTS() == null ? null : TREE_ENABLED_COLOR);
         listenToSelectionChanges = oldListenToSelectionChanges;
     }
     
@@ -375,20 +382,24 @@ public class RuleJTree extends JTree implements SimulationListener {
     protected JPopupMenu createPopupMenu() {
         JPopupMenu res = new JPopupMenu();
         res.add(new JMenuItem(simulator.getApplyTransitionAction()));
-        res.addSeparator();
-        res.add(new AbstractAction(Options.EDIT_RULE_ACTION_NAME) {
-            public void actionPerformed(ActionEvent evt) {
-                simulator.handleEditRule();
-            }
-        });
+        if (simulator.getCurrentRule() != null) {
+			res.addSeparator();
+			res.add(simulator.getEnableRuleAction());
+			res.add(new AbstractAction(Options.EDIT_RULE_ACTION_NAME) {
+				public void actionPerformed(ActionEvent evt) {
+					simulator.handleEditRule();
+				}
+			});
+		}
         return res;
     }
 
     /**
-     * Directory of production rules and their matchings to the current state.
-     * Alias to the underlying model of this <tt>JTree</tt>.
-     * @invariant <tt>ruleDirectory == getModel()</tt>
-     */
+	 * Directory of production rules and their matchings to the current state.
+	 * Alias to the underlying model of this <tt>JTree</tt>.
+	 * 
+	 * @invariant <tt>ruleDirectory == getModel()</tt>
+	 */
     protected final DefaultTreeModel ruleDirectory;
     /**
      * Alias for the top node in <tt>ruleDirectory</tt>.
@@ -431,12 +442,22 @@ public class RuleJTree extends JTree implements SimulationListener {
     /** The currently displayed grammar. */
     private GrammarView displayedGrammar;
     
-    static private final Color ENABLED_COLOR;
+    /** 
+     * Transforms a given rule name into the string that shows this rule is disabled.
+     * This implementation puts brackets around the rule name.
+     * @param name The rule name; non-<code>null</code>
+     * @return a string construced from <code>name</code> that shows the rule to be disabled
+     */
+    static public String showDisabled(String name) {
+    	return "("+name+")";
+    }
+    
+    static private final Color TREE_ENABLED_COLOR;
     
     static {
     	JLabel label = new JLabel();
     	label.setEnabled(true);
-    	ENABLED_COLOR = Color.WHITE;
+    	TREE_ENABLED_COLOR = Color.WHITE;
     }
     
 	/**
@@ -544,11 +565,38 @@ public class RuleJTree extends JTree implements SimulationListener {
 	    }
 	
 	    /**
-	     * To display, show child name only
+	     * To display, show child name only. Also visualise enabledness.
+	     * @see RuleJTree#showDisabled(String)
 	     */
 	    @Override
 	    public String toString() {
-	        return getRule().getName().child();
+	    	String name = getRule().getName().child();
+	    	if (getRule().isEnabled()) {
+	    		return name;
+	    	} else {
+	    		return showDisabled(name);
+	    	}
+	    }
+	    
+	    /** Returns HTML-formatted tool tip text for this rule node. */
+	    public String getToolTipText() {
+	    	String result;
+        	GraphProperties properties = GraphInfo.getProperties(getRule().getAspectGraph(), false);
+        	if (properties == null || properties.isEmpty()) {
+        		result = "No properties";
+        	} else {
+        		List<String> text = new ArrayList<String>();
+        		for (String key: properties.getPropertyKeys()) {
+        			text.add(propertyToString(key, properties.getProperty(key)));
+        		}
+        		result = Groove.toString(text.toArray(), "<html>", "</html>", "<br>");
+        	}
+        	return result;
+	    }
+	    
+	    /** Returns an HTML-formatted string for a given key/value-pair. */
+	    private String propertyToString(String key, String value) {
+	    	return "<b>"+key+"</b> = "+value;
 	    }
 	}
 
@@ -645,10 +693,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	        } else if (value instanceof PriorityTreeNode) {
 	            setIcon(null);
 	        } else if (value instanceof RuleTreeNode) {
-	        	Map properties = GraphInfo.getProperties(((RuleTreeNode) value).getRule().getAspectGraph(), false);
-	        	if (properties != null) {
-	        		setToolTipText(properties.toString());
-	        	}
+	        	setToolTipText(((RuleTreeNode) value).getToolTipText());
 	        }
 	        setOpaque(!sel);
 	        return this;
