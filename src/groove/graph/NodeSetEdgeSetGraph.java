@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeSetEdgeSetGraph.java,v 1.4 2007-04-22 23:32:22 rensink Exp $
+ * $Id: NodeSetEdgeSetGraph.java,v 1.5 2007-05-04 22:51:40 rensink Exp $
  */
 package groove.graph;
 
@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * Graph implementation based on distinct sets of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class NodeSetEdgeSetGraph
     extends AbstractGraph<GraphCache>
@@ -175,7 +175,7 @@ public class NodeSetEdgeSetGraph
     }
 
     @Override
-    public boolean addEdgeSetWithoutCheck(Collection<Edge> edgeSet) {
+    public boolean addEdgeSetWithoutCheck(Collection<? extends Edge> edgeSet) {
         return graphEdgeSet.addAll(edgeSet);
     }
 

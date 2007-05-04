@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: InternalGraph.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: InternalGraph.java,v 1.2 2007-05-04 22:51:39 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import java.util.Collection;
  * avoid some of the consistency checks. Only for package
  * internal uses.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface InternalGraph extends Graph {
     /**
@@ -43,7 +43,7 @@ public interface InternalGraph extends Graph {
      * @require <tt>edge: 2^Edge && containsAll(edge.ends())</tt>
      * @see #addEdgeSet(Collection)
      */
-    boolean addEdgeSetWithoutCheck(Collection<Edge> edgeSet);
+    boolean addEdgeSetWithoutCheck(Collection<? extends Edge> edgeSet);
     
     /**
      * More efficient removal of nodes; for package use only.

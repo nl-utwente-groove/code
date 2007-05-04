@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: UndoHistory.java,v 1.4 2007-04-30 19:53:29 rensink Exp $
+ * $Id: UndoHistory.java,v 1.5 2007-05-04 22:51:26 rensink Exp $
  */
 package groove.gui;
 
@@ -33,7 +33,7 @@ import javax.swing.Action;
 
 /**
  * Manager of the undo history.
- * @version $Revision: 1.4 $ $Date: 2007-04-30 19:53:29 $
+ * @version $Revision: 1.5 $ $Date: 2007-05-04 22:51:26 $
  * @author Arend Rensink
  */
 class UndoHistory implements SimulationListener {
@@ -75,7 +75,7 @@ class UndoHistory implements SimulationListener {
     }
 
     /** Sets the start state. */
-    public synchronized void runSimulationUpdate(GTS gts) {
+    public synchronized void startSimulationUpdate(GTS gts) {
 		history.add(new SetStateAction(gts.startState()));
 		setActionEnablings();
 		ignoreSimulationUpdates = false;

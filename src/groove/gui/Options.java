@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.11 2007-05-02 08:44:32 rensink Exp $
+ * $Id: Options.java,v 1.12 2007-05-04 22:51:26 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class Options {
     /** Edit menu name */
@@ -73,10 +73,14 @@ public class Options {
     public static final String CLOSE_ACTION_NAME = "Close";
     /** Copy action name */
     public static final String COPY_ACTION_NAME = "Copy";
+    /** Copy action name */
+    public static final String COPY_RULE_ACTION_NAME = "Copy Rule";
     /** Cut action name */
     public static final String CUT_ACTION_NAME = "Cut";
     /** Delete action name */
     public static final String DELETE_ACTION_NAME = "Delete";
+    /** Delete action name */
+    public static final String DELETE_RULE_ACTION_NAME = "Delete Rule";
     /** Edit action name */
     public static final String DISABLE_ACTION_NAME = "Disable Rule";
     /** Edit graph action name */
@@ -104,11 +108,11 @@ public class Options {
     /** Export state action name */
     public static final String EXPORT_STATE_ACTION_NAME = "Export State ...";
     /** Goto start state action name */
-    public static final String GOTO_START_STATE_ACTION_NAME = "Go to start state";
+    public static final String GOTO_START_STATE_ACTION_NAME = "Go to Start State";
     /** List atomic propositions action name */
     public static final String LIST_ATOMIC_PROPOSITIONS_ACTION_NAME = "List Atom. Prop.";
     /** Load start state action name */
-    public static final String LOAD_START_STATE_ACTION_NAME = "Load start state ...";
+    public static final String LOAD_START_STATE_ACTION_NAME = "Load Start State ...";
     /** Load grammar action name */
     public static final String LOAD_GRAMMAR_ACTION_NAME = "Load Grammar ...";
     /** Name for the model checking action. */
@@ -116,13 +120,11 @@ public class Options {
     /** New action name */
     public static final String NEW_ACTION_NAME = "New";
     /** New action name */
-    public static final String NEW_RULE_ACTION_NAME = "New rule ...";
+    public static final String NEW_RULE_ACTION_NAME = "New Rule";
     /** Node mode action name */
-    public static final String NODE_MODE_NAME = "Node mode";
+    public static final String NODE_MODE_NAME = "Node Mode";
     /** Open action name */
     public static final String OPEN_ACTION_NAME = "Open ...";
-    /** Pares action name */
-    public static final String PARSE_ACTION_NAME = "Paste";
     /** Paste action name */
     public static final String PASTE_ACTION_NAME = "Paste";
     /**
@@ -147,10 +149,12 @@ public class Options {
     static public final String REMOVE_POINT_ACTION = "Remove Point";
     /** Delete action name */
     public static final String RENAME_ACTION_NAME = "Rename";
+    /** Delete action name */
+    public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
     /**
 	 * Start simulation action name 
 	 */
-	public static final String RUN_ACTION_NAME = "Run simulation";
+	public static final String RUN_ACTION_NAME = "Run Simulation";
 	/**
 	 * Save action name 
 	 */

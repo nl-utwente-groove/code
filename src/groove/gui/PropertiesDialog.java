@@ -1,12 +1,13 @@
-/* $Id: PropertiesDialog.java,v 1.2 2007-05-02 08:44:32 rensink Exp $ */
+/* $Id: PropertiesDialog.java,v 1.3 2007-05-04 22:51:27 rensink Exp $ */
 package groove.gui;
 
-import groove.graph.GraphProperties;
+import groove.util.ListComparator;
 
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -19,8 +20,9 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextField;
-import javax.swing.ListSelectionModel;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.TableCellEditor;
 
@@ -30,27 +32,48 @@ import javax.swing.table.TableCellEditor;
  * @version $Revision $
  */
 public class PropertiesDialog {
-	/** Constructs an instance of the dialog for a given
+	/** 
+	 * Constructs an instance of the dialog for a given
 	 * parent frame, a given (non-<code>null</code>) set of properties,
 	 * and a flag indicating if the properties should be editable.
+	 * A further parameter gives a list of default keys that treated 
+	 * specially: they are added by default during editing, and are
+	 * ordered first in the list.
 	 */
-	public PropertiesDialog(Frame owner, Properties properties, boolean editable) {
+	public PropertiesDialog(Frame owner, Properties properties, List<String> defaultKeys, boolean editable) {
 		this.frame = owner;
-		if (properties instanceof GraphProperties) {
-			this.properties = new TreeMap<String,String>(GraphProperties.getKeyComparator());
-		} else {
+		this.defaultKeys = defaultKeys;
+		this.editable = editable;
+		this.pane = createContentPane();
+		if (defaultKeys == null) {
 			this.properties = new TreeMap<String,String>();
+		} else {
+			this.properties = new TreeMap<String,String>(new ListComparator<String>(defaultKeys));
+			for (String key: defaultKeys) {
+				this.properties.put(key, "");
+			}
 		}
 		for (Map.Entry property: properties.entrySet()) {
 			this.properties.put((String) property.getKey(), (String) property.getValue());
 		}
-		this.editable = editable;
-		pane = createContentPane();
 	}
 	
 	/** 
-	 * Makes the dialog visible, awaits the user's response,
-	 * and returns a value indicating if the properties have changed.
+	 * Constructs an instance of the dialog for a given
+	 * parent frame, a given (non-<code>null</code>) set of properties,
+	 * and a flag indicating if the properties should be editable.
+	 */
+	public PropertiesDialog(Frame owner, Properties properties, boolean editable) {
+		this(owner, properties, null, editable);
+	}
+	
+	/** 
+	 * Makes the dialog visible and awaits the user's response.
+	 * Since the dialog is modal, this method returns only 
+	 * when the user closes the dialog. The return
+	 * value indicates if the properties have changed.
+	 * @return <code>true</code> if the properties have changed during
+	 * the time the dialog was visible.
 	 */
 	public boolean showDialog() {
 		int response;
@@ -63,12 +86,12 @@ public class PropertiesDialog {
 			if (selectedValue instanceof Integer) {
 				response = (Integer) selectedValue;
 			}
-			if (changed && response != JOptionPane.OK_OPTION) {
+			if (isChanged() && response != JOptionPane.OK_OPTION) {
 				response = showAbandonDialog();
 			}
-		} while (changed && response == JOptionPane.CANCEL_OPTION);
+		} while (isChanged() && response == JOptionPane.CANCEL_OPTION);
 		dialog.dispose();
-		return response == JOptionPane.OK_OPTION || response == JOptionPane.YES_OPTION;
+		return isChanged() && (response == JOptionPane.OK_OPTION || response == JOptionPane.YES_OPTION);
 	}
 
     /** Creates and shows a confirmation dialog for abandoning the currently edited graph. */
@@ -83,8 +106,14 @@ public class PropertiesDialog {
 	/**
 	 * Returns the (possibly edited) properties in the dialog.
 	 */
-	public final SortedMap<String, String> getProperties() {
-		return this.properties;
+	public final Map<String, String> getProperties() {
+		Iterator<Map.Entry<String,String>> propertyIter = properties.entrySet().iterator();
+		while (propertyIter.hasNext()) {
+			if (propertyIter.next().getValue().length() == 0) {
+				propertyIter.remove();
+			}
+		}
+		return properties;
 	}
 
 	private String createTitle() {
@@ -106,6 +135,13 @@ public class PropertiesDialog {
 	}
 
 	/**
+	 * Indicates if the editing session has made a change to the properties.
+	 */
+	public boolean isChanged() {
+		return changed;
+	}
+	
+	/**
 	 * Indicates if the properties are editable.
 	 * @return <code>true</code> if the properties are editable
 	 */
@@ -119,15 +155,26 @@ public class PropertiesDialog {
 	 * @see #isEditable()
 	 */
 	public JTable createTable() {
-		final JTable table = new JTable(createTableModel());
-		table.setRowSelectionAllowed(false);
-		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		final JTable table = new JTable(getTableModel());
+//		table.setRowSelectionAllowed(false);
+//		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		table.setPreferredScrollableViewportSize(new Dimension(300, 70));
-		DefaultCellEditor cellEditor = new DefaultCellEditor(new JTextField());
-		cellEditor.setClickCountToStart(1);
-		table.setCellEditor(cellEditor);
+		table.setCellEditor(getValueEditor());
 		table.getColumnModel().getColumn(PROPERTY_COLUMN).setCellEditor(createKeyEditor());
 		return table;
+	}
+	
+	/** Creates an instanceof {@link TableModel}. */
+	private javax.swing.table.TableModel getTableModel() {
+		if (tableModel == null) {
+			tableModel = new TableModel();
+			tableModel.addTableModelListener(new TableModelListener() {
+				public void tableChanged(TableModelEvent e) {
+					changed = true;
+				}
+			});
+		}
+		return tableModel;
 	}
 	
 	/** 
@@ -158,9 +205,12 @@ public class PropertiesDialog {
 		return result;
 	}
 
-	/** Creates an instanceof {@link TableModel}. */
-	private javax.swing.table.TableModel createTableModel() {
-		return new TableModel();
+	private TableCellEditor getValueEditor() {
+		if (valueEditor == null) {
+			valueEditor = new DefaultCellEditor(new JTextField());
+			valueEditor.setClickCountToStart(1);
+		}
+		return valueEditor;
 	}
 	
 	/** The parent fraom of the dialog. */
@@ -169,8 +219,14 @@ public class PropertiesDialog {
 	private final JOptionPane pane;
 	/** Flag indicating that the properties are editable. */
 	private final boolean editable;
-	/** The ectual properties map. */
+	/** A list of default property keys; possibly <code>null</code>. */
+	private final List<String> defaultKeys;
+	/** The actual properties map. */
 	private final SortedMap<String,String> properties;
+	/** Underlying data model for any table created in this dialog. */
+	private TableModel tableModel;
+	/** Returns the cell editor used for cell values. */
+	private DefaultCellEditor valueEditor;
 	/** Flag indicating that the properties have changed. */
 	private boolean changed;
 	/** Title of the dialog. */
@@ -183,6 +239,7 @@ public class PropertiesDialog {
 	private static final int PROPERTY_COLUMN = 0;
 	/** Column number of the value column (in the model). */
 	private static final int VALUE_COLUMN = 1;
+	/** Regular expression for matching property keys. */
 	private static final String IDENTIFIER_REGEXPR = "(\\p{Alpha}\\p{Alnum}*)?";
 	
 	private class TableModel extends AbstractTableModel {
@@ -207,7 +264,13 @@ public class PropertiesDialog {
 
 		@Override
 		public boolean isCellEditable(int rowIndex, int columnIndex) {
-			return editable && (rowIndex < properties.size() || columnIndex == PROPERTY_COLUMN);
+			if (! isEditable()) {
+				return false; 
+			} else if (columnIndex == PROPERTY_COLUMN) {
+				return defaultKeys == null || rowIndex >= defaultKeys.size();
+			} else {
+				return rowIndex < properties.size();
+			}
 		}
 
 		@Override
@@ -255,7 +318,6 @@ public class PropertiesDialog {
 		 * and calls {@link #fireTableDataChanged()}.
 		 */
 		private void refreshPropertyKeys() {
-			changed = true;
 			initPropertyKeys();
 			fireTableDataChanged();
 		}

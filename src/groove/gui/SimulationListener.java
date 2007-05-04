@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SimulationListener.java,v 1.4 2007-04-30 19:53:29 rensink Exp $
+ * $Id: SimulationListener.java,v 1.5 2007-05-04 22:51:26 rensink Exp $
  */
 package groove.gui;
 
@@ -48,7 +48,7 @@ public interface SimulationListener {
      * {@link #setStateUpdate(GraphState)} is guanteed for the start state.
      * @param gts the active graph transition system; non-<code>null</code>
      */
-    void runSimulationUpdate(GTS gts);
+    void startSimulationUpdate(GTS gts);
 
     /**
      * Reports the update of the currently selected state.

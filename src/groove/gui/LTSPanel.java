@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTSPanel.java,v 1.6 2007-04-30 19:53:29 rensink Exp $
+ * $Id: LTSPanel.java,v 1.7 2007-05-04 22:51:27 rensink Exp $
  */
 package groove.gui;
 
@@ -44,7 +44,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-04-30 19:53:29 $
+ * @version $Revision: 1.7 $ $Date: 2007-05-04 22:51:27 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -84,7 +84,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         refreshStatus();
     }
 
-	public synchronized void runSimulationUpdate(GTS gts) {
+	public synchronized void startSimulationUpdate(GTS gts) {
         setGTS(gts);
 		getJGraph().setModel(createJModel(gts));
 		setStateUpdate(gts.startState());
@@ -135,7 +135,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     /**
      * Removes the emphasis from the currently emphasized edge, if any.
      */
-    public void setRuleUpdate(NameLabel name) {
+    public synchronized void setRuleUpdate(NameLabel name) {
         if (isGTSactivated()) {
         	getJModel().setActiveTransition(null);
         }
@@ -252,7 +252,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         public void mousePressed(MouseEvent evt) {
             if (evt.getButton() == MouseEvent.BUTTON1) {
             	if (! isEnabled()) {
-            		simulator.handleRun();
+            		simulator.startSimulation(simulator.getCurrentGrammar());
             	} else if (evt.getClickCount() == 2) {
             		simulator.setGraphPanel(simulator.getStatePanel());
             	} 

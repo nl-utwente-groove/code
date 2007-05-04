@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RulePanel.java,v 1.8 2007-04-30 19:53:29 rensink Exp $
+ * $Id: RulePanel.java,v 1.9 2007-05-04 22:51:26 rensink Exp $
  */
 package groove.gui;
 
@@ -32,7 +32,6 @@ import groove.util.Groove;
 import groove.view.AspectualGrammarView;
 import groove.view.AspectualRuleView;
 import groove.view.FormatException;
-import groove.view.GrammarView;
 import groove.view.RuleView;
 
 import java.util.Map;
@@ -43,7 +42,7 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -70,30 +69,29 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
      * creates and stores a model for each rule in the system.
      */
     public synchronized void setGrammarUpdate(AspectualGrammarView grammar) {
-    	if (setDisplayedGrammar(grammar)) {
-			// create a mapping from rule names to (fresh) rule models
-			ruleJModelMap.clear();
-			if (grammar != null) {
-				for (RuleNameLabel ruleName : grammar.getRuleMap().keySet()) {
-					AspectJModel jModel = computeRuleModel(grammar.getRule(ruleName));
-					ruleJModelMap.put(ruleName, jModel);
-				}
+		// create a mapping from rule names to (fresh) rule models
+		ruleJModelMap.clear();
+		if (grammar != null) {
+			for (RuleNameLabel ruleName : grammar.getRuleMap().keySet()) {
+				AspectJModel jModel = computeRuleModel(grammar.getRule(ruleName));
+				ruleJModelMap.put(ruleName, jModel);
 			}
-    		// reset the display
-			if (displayedRule != null) {
-				if (ruleJModelMap.containsKey(displayedRule)) {
-					setRuleUpdate(displayedRule);
-				} else {
-					jGraph.setModel(AspectJModel.EMPTY_JMODEL);
-					displayedRule = null;
-					refresh();
-				}
+		}
+		// reset the display
+		if (displayedRule != null) {
+			if (ruleJModelMap.containsKey(displayedRule)) {
+				setRuleUpdate(displayedRule);
+			} else {
+				jGraph.setModel(AspectJModel.EMPTY_JMODEL);
+				displayedRule = null;
+				refresh();
 			}
-    	}
+		}
+		// displayedGrammar = grammar;
     }
 
     /** Does nothing (according to contract, the grammar has already been set). */
-    public synchronized void runSimulationUpdate(GTS gts) {
+    public synchronized void startSimulationUpdate(GTS gts) {
     	// empty
 	}
 
@@ -134,18 +132,18 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
     	// nothing happens here
     }
-
-    /**
-     * Sets the value of the {@link #displayedGrammar} field.
-     * The return value indicates if the new value differs from the old.
-     * @param grammar the new displayed grammar
-     * @return <code>true</code> if the new value is different from the old
-     */
-    private boolean setDisplayedGrammar(GrammarView grammar) {
-    	boolean result = this.displayedGrammar != grammar;
-    	this.displayedGrammar = grammar;
-    	return result;
-    }
+//
+//    /**
+//     * Sets the value of the {@link #displayedGrammar} field.
+//     * The return value indicates if the new value differs from the old.
+//     * @param grammar the new displayed grammar
+//     * @return <code>true</code> if the new value is different from the old
+//     */
+//    private boolean setDisplayedGrammar(GrammarView grammar) {
+//    	boolean result = this.displayedGrammar != grammar;
+//    	this.displayedGrammar = grammar;
+//    	return result;
+//    }
     /**
      * Callback factory method to construct a new rule model.
      */
@@ -192,8 +190,8 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
      * @invariant ruleJModels: RuleName --> RuleJModel
      */
     private final Map<NameLabel,AspectJModel> ruleJModelMap = new TreeMap<NameLabel,AspectJModel>();
-    /** The currently displayed grammar, if any. */
-    private GrammarView displayedGrammar;
+//    /** The currently displayed grammar, if any. */
+//    private GrammarView displayedGrammar;
     /** The name of the currently displayed rule, if any. */
     private NameLabel displayedRule;
 }

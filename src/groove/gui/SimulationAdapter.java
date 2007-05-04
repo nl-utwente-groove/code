@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SimulationAdapter.java,v 1.4 2007-04-30 19:53:29 rensink Exp $
+ * $Id: SimulationAdapter.java,v 1.5 2007-05-04 22:51:26 rensink Exp $
  */
 package groove.gui;
 
@@ -25,7 +25,7 @@ import groove.view.AspectualGrammarView;
 /**
  * An adapter for the simulation listener, offering empty stub methods.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class SimulationAdapter implements SimulationListener {
 	/** Provides a default empty implementation. */
@@ -34,7 +34,7 @@ public class SimulationAdapter implements SimulationListener {
     }
 
 	/** Provides a default empty implementation. */
-    public void runSimulationUpdate(GTS gts) {
+    public void startSimulationUpdate(GTS gts) {
     	// does nothing by design
 	}
 
