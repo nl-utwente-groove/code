@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExploreStrategyMenu.java,v 1.5 2007-04-30 19:53:29 rensink Exp $
+ * $Id: ExploreStrategyMenu.java,v 1.6 2007-05-04 22:51:26 rensink Exp $
  */
 package groove.gui;
 
@@ -43,7 +43,7 @@ import javax.swing.JMenu;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     /**
@@ -80,7 +80,7 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
      * @param strategy the new exploration strategy
      */
     public void addExploreStrategy(ExploreStrategy strategy) {
-        Action generateAction = simulator.new GenerateLTSAction(strategy);
+        Action generateAction = simulator.createGenerateLTSAction(strategy);
         strategyActionMap.put(strategy, generateAction);
         add(generateAction);
     }
@@ -96,7 +96,7 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
 		}
 	}
 
-    public void runSimulationUpdate(GTS gts) {
+    public void startSimulationUpdate(GTS gts) {
 		gtsListener.set(gts);
 		// the lts's of the strategies in this menu are changed
 		// moreover, the conditions in condition strategies are reset

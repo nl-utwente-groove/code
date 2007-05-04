@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
+ * $Id: AspectGraph.java,v 1.2 2007-05-04 22:51:39 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -406,5 +406,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 */
 	protected Label createLabel(String text) {
 		return DefaultLabel.createLabel(text);
+	}
+	
+	/**
+	 * Copies this aspect graph to one with the same nodes, edges and graph info.
+	 */
+	@Override
+	public AspectGraph clone() {
+		AspectGraph result = new AspectGraph();
+		result.addNodeSet(nodeSet());
+		result.addEdgeSetWithoutCheck(edgeSet());
+		GraphInfo.transfer(this, result, null);
+		return result;
 	}
 }

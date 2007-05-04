@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.8 2007-05-02 08:44:32 rensink Exp $
+ * $Id: RuleJTree.java,v 1.9 2007-05-04 22:51:26 rensink Exp $
  */
 package groove.gui;
 
@@ -22,7 +22,6 @@ import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.State;
 import groove.lts.Transition;
 import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
@@ -35,7 +34,6 @@ import groove.view.RuleView;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -50,7 +48,6 @@ import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import javax.swing.AbstractAction;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
@@ -69,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -115,7 +112,6 @@ public class RuleJTree extends JTree implements SimulationListener {
 			matchNodeMap.clear();
 			topDirectoryNode.removeAllChildren();
 			ruleDirectory.reload();
-			displayedGrammar = null;
 		} else {
 			loadGrammar(grammar);
 		}
@@ -165,7 +161,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	}
     
 	/** Refreshes the view, to add match nodes. */
-    public synchronized void runSimulationUpdate(GTS gts) {
+    public synchronized void startSimulationUpdate(GTS gts) {
         refresh();
 	}
 
@@ -265,14 +261,14 @@ public class RuleJTree extends JTree implements SimulationListener {
         listenToSelectionChanges = false;
     	if (getCurrentState() == null) {
             refreshMatches(Collections.<GraphTransition>emptySet());
-    	} else if (setDisplayedState(simulator.getCurrentState())) {
+    	} else if (setDisplayedState(getCurrentState())) {
     		refreshMatches(getCurrentGTS().outEdgeSet(getCurrentState()));
     	}
     	DefaultMutableTreeNode treeNode = null;
     	if (getCurrentTransition() != null) {
     		treeNode = matchNodeMap.get(getCurrentTransition());
     	} else if (getCurrentRule() != null) {
-    		treeNode = ruleNodeMap.get(getCurrentRule());
+    		treeNode = ruleNodeMap.get(getCurrentRule().getName());
     	}
         if (treeNode != null) {
             setSelectionPath(new TreePath(treeNode.getPath()));
@@ -335,7 +331,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /** Convenience method to retrieve the currently selected state from the simulator. */
-    private State getCurrentState() {
+    private GraphState getCurrentState() {
     	return simulator.getCurrentState();
     }
 
@@ -385,12 +381,14 @@ public class RuleJTree extends JTree implements SimulationListener {
         if (simulator.getCurrentRule() != null) {
 			res.addSeparator();
 			res.add(simulator.getEnableRuleAction());
-			res.add(new AbstractAction(Options.EDIT_RULE_ACTION_NAME) {
-				public void actionPerformed(ActionEvent evt) {
-					simulator.handleEditRule();
-				}
-			});
+			res.addSeparator();
+			res.add(simulator.getCopyRuleAction());
+			res.add(simulator.getDeleteRuleAction());
+			res.add(simulator.getEditGraphPropertiesAction());
+			res.add(simulator.getEditRuleAction());
+			res.add(simulator.getRenameRuleAction());
 		}
+		res.add(simulator.getNewRuleAction());
         return res;
     }
 
