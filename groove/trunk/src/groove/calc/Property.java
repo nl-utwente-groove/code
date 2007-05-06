@@ -1,4 +1,4 @@
-/* $Id: Property.java,v 1.1 2007-04-27 22:06:59 rensink Exp $ */
+/* $Id: Property.java,v 1.2 2007-05-06 10:47:54 rensink Exp $ */
 package groove.calc;
 
 /**
@@ -8,7 +8,7 @@ package groove.calc;
  */
 abstract public class Property<S> {
 	/** Indicates if this property is satisfied by a given object of type <code>S</code>. */
-	abstract boolean isSatisfied(S graph);
+	abstract public boolean isSatisfied(S value);
 	
 	/** 
 	 * Creates and returns a property that returns <code>true</code> on all 

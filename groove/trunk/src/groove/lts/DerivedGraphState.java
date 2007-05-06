@@ -35,8 +35,10 @@ import java.util.Arrays;
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
+ * @deprecated use {@link DefaultGraphNextState} instead
  */
+@Deprecated
 public class DerivedGraphState extends DefaultGraphState implements GraphNextState, GraphTransitionStub {
     /**
      * Bound above which the suggestion to clear the cache is not taken.

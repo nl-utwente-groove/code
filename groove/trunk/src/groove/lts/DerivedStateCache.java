@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DerivedStateCache.java,v 1.4 2007-04-27 22:06:26 rensink Exp $
+ * $Id: DerivedStateCache.java,v 1.5 2007-05-06 10:47:57 rensink Exp $
  */
 package groove.lts;
 
@@ -20,8 +20,10 @@ import groove.graph.DeltaGraph;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
+ * @deprecated replaced by {@link StateCache}
  */
+@Deprecated
 public class DerivedStateCache extends DefaultStateCache {
 	/** Constructs a new cache for a given derived state graph. */
     public DerivedStateCache(DerivedGraphState graph) {

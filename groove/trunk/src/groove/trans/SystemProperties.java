@@ -1,5 +1,6 @@
 package groove.trans;
 
+import groove.calc.Property;
 import groove.util.Groove;
 
 import java.io.IOException;
@@ -8,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -104,28 +106,28 @@ public class SystemProperties extends java.util.Properties {
     public void setCommonLabels(List<String> commonLabels) {
     	setProperty(COMMON_LABELS, Groove.toString(commonLabels.toArray(), "", "", " "));
     }
-
-    /** 
-     * Returns a list of graph property names, according to the {@link #GRAPH_PROPERTIES}
-     * property of the rule system.
-     * @see #GRAPH_PROPERTIES
-     */
-    public List<String> getGraphProperties() {
-    	String graphProperties = getProperty(GRAPH_PROPERTIES);
-    	if (graphProperties == null) {
-    		return Collections.emptyList();
-    	} else {
-    		return Arrays.asList(graphProperties.split("\\s"));
-    	}
-    }
-
-    /** 
-     * Sets the graph properties property.
-     * @see #GRAPH_PROPERTIES
-     */
-    public void setGraphProperties(List<String> graphProperties) {
-    	setProperty(GRAPH_PROPERTIES, Groove.toString(graphProperties.toArray(), "", "", " "));
-    }
+//
+//    /** 
+//     * Returns a list of graph property names, according to the {@link #GRAPH_PROPERTIES}
+//     * property of the rule system.
+//     * @see #GRAPH_PROPERTIES
+//     */
+//    public List<String> getGraphProperties() {
+//    	String graphProperties = getProperty(GRAPH_PROPERTIES);
+//    	if (graphProperties == null) {
+//    		return Collections.emptyList();
+//    	} else {
+//    		return Arrays.asList(graphProperties.split("\\s"));
+//    	}
+//    }
+//
+//    /** 
+//     * Sets the graph properties property.
+//     * @see #GRAPH_PROPERTIES
+//     */
+//    public void setGraphProperties(List<String> graphProperties) {
+//    	setProperty(GRAPH_PROPERTIES, Groove.toString(graphProperties.toArray(), "", "", " "));
+//    }
 
 	/** 
 	 * Before calling the super method, tests if the properties are fixed
@@ -227,11 +229,7 @@ public class SystemProperties extends java.util.Properties {
      * Flag to indicate that the properties have been frozen.
      */
     private boolean fixed;
-//	/**
-//	 * Comment for <code>ruleSystem</code>
-//	 */
-//	private final RuleSystem ruleSystem;
-	/**
+    /**
 	 * Property name of the list of control labels of a graph grammar.
      * The control labels are those labels which should be matched first
      * for optimal performance, presumably because they occur infrequently
@@ -257,11 +255,33 @@ public class SystemProperties extends java.util.Properties {
 	 * Value of {@link #ATTRIBUTE_SUPPORT} that means attributes are not used.
 	 */
 	static public final String ATTRIBUTES_NO = "0";
-	/** 
-	 * Property that determines the graph properties that can be stored.
-	 */
-	static public final String GRAPH_PROPERTIES = "graphProperties";
+//	/** 
+//	 * Property that determines the graph properties that can be stored.
+//	 */
+//	static public final String GRAPH_PROPERTIES = "graphProperties";
 	
+	/**
+	 * List of system-defined keys, in the order in which they are to appear in a properties editor. 
+	 */
+	static public final Map<String,Property<String>> DEFAULT_KEYS;
+	
+	static {
+		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>();
+		defaultKeys.put(ATTRIBUTE_SUPPORT, new Property<String>() {
+			@Override
+			public boolean isSatisfied(String value) {
+				return value.equals(ATTRIBUTES_YES) || value.equals(ATTRIBUTES_NO);
+			}			
+		});
+		defaultKeys.put(CONTROL_LABELS, null);
+		defaultKeys.put(COMMON_LABELS, null);
+		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
+	}
+	/** 
+	 * One-line regular expression describing the system properties,
+	 * with a parameter position for the name of the rule system.
+	 */ 
+	static public final String DESCRIPTION = "Rule system properties for %s";
 	/** Map storing default property instances. */
 	static private final Map<Boolean,SystemProperties> instances = new HashMap<Boolean,SystemProperties>();
 	

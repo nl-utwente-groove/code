@@ -3,12 +3,12 @@
  */
 package groove.graph;
 
+import groove.calc.Property;
 import groove.trans.Rule;
 import groove.util.ListComparator;
 
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.List;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.SortedSet;
@@ -50,7 +50,7 @@ public class GraphProperties extends Properties {
 	 * The sorting is according to known keys first, then lexicographically.
 	 */
 	public SortedSet<String> getPropertyKeys() {
-		SortedSet<String> result = new TreeSet<String>(new ListComparator<String>(DEFAULT_KEYS));
+		SortedSet<String> result = new TreeSet<String>(new ListComparator<String>(DEFAULT_KEYS.keySet()));
 		for (Object key: keySet()) {
 			result.add((String) key);
 		}
@@ -172,41 +172,28 @@ public class GraphProperties extends Properties {
 	 */
 	static public final String ENABLED_KEY = "enabled";
 	/** Array of keys, in order of display appearance. */
-	static public final List<String> DEFAULT_KEYS = Collections.unmodifiableList(Arrays.asList(PRIORITY_KEY, ENABLED_KEY));
-//	/** Map of keys to display priority, initialised from {@link #DEFAULT_KEYS}. */
-//	static private final Map<String,Integer> knownKeyIndexMap = new HashMap<String,Integer>();
-//	
-//	static {
-//		for (int i = 0; i < DEFAULT_KEYS.size(); i++) {
-//			knownKeyIndexMap.put(DEFAULT_KEYS.get(i), i);
-//		}
-//	}
-//	
-//	/** The fixed comparator. */
-//	static private final KeyComparator keyComparator = new KeyComparator();
-//	
-//	/** 
-//	 * Compares two strings as if they were property keys.
-//	 * The known keys come first, in order of appearance in #kno; if this
-//	 * makes no differe,ce alphabetical ordering is used.
-//	 */
-//	static private class KeyComparator implements Comparator<String> {
-//		/** 
-//		 * First compares the strings as to their position in #known, then 
-//		 * in alphabetical order.
-//		 */
-//		public int compare(String o1, String o2) {
-//			Integer index1Value = knownKeyIndexMap.get(o1);
-//			int index1 = index1Value == null ? Integer.MAX_VALUE : index1Value;
-//			Integer index2Value = knownKeyIndexMap.get(o2);
-//			int index2 = index2Value == null ? Integer.MAX_VALUE : index2Value;
-//			int result = index1 - index2;
-//			if (result == 0) {
-//				result = o1.compareTo(o2);
-//			}
-//			return result;
-//		}
-//	}
+	static public final Map<String,Property<String>> DEFAULT_KEYS;
+	
+	static {
+		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>();
+		defaultKeys.put(PRIORITY_KEY, new Property<String>() {
+			@Override
+			public boolean isSatisfied(String value) {
+				try {
+					return Integer.parseInt(value) >= 0;
+				} catch (NumberFormatException exc) {
+					return false;
+				}
+			}
+		});
+		defaultKeys.put(ENABLED_KEY, new Property<String>() {
+			@Override
+			public boolean isSatisfied(String value) {
+				return value.equals(""+true) || value.equals(""+false);
+			}
+		});
+		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
+	}
 	
 	/** 
 	 * Returns the priority property from a given graph.

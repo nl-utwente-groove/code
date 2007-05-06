@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.3 2007-05-04 22:51:41 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.4 2007-05-06 10:47:53 rensink Exp $
  */
 package groove.io;
 
@@ -53,7 +53,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultGxl extends AbstractXml {
 	/** The name of graphs whose name is not explicitly included in the graph info. */
@@ -303,7 +303,7 @@ public class DefaultGxl extends AbstractXml {
         while (attrEnum.hasMoreElements()) {
             groove.gxl.Attr attr = (groove.gxl.Attr) attrEnum.nextElement();
             String attrName = attr.getName().toLowerCase();
-            if (isKnownPropertyKey(attrName)) {
+//            if (isKnownPropertyKey(attrName)) {
             	groove.gxl.Value attrValue = attr.getValue();
             	Object dataValue;
             	if (attrValue.hasBool()) {
@@ -316,7 +316,7 @@ public class DefaultGxl extends AbstractXml {
             		dataValue = attrValue.getString();
             	}
             	properties.setProperty(attrName, dataValue.toString());
-            }
+//            }
         }
         if (!properties.isEmpty()) {
         	GraphInfo.setProperties(graph, properties);
@@ -370,7 +370,6 @@ public class DefaultGxl extends AbstractXml {
 	 * from one graph to another.
 	 * @param source the source graph
 	 * @param target the target graph
-	 * @see #getPropertyKeys()
 	 */
 	private void transferGraphProperties(GraphShape source, Graph target) {
 		GraphInfo.setProperties(target, GraphInfo.getProperties(source, false));

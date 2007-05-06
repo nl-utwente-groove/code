@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.21 2007-05-04 22:51:26 rensink Exp $
+ * $Id: Simulator.java,v 1.22 2007-05-06 10:47:51 rensink Exp $
  */
 package groove.gui;
 
@@ -53,6 +53,7 @@ import groove.lts.State;
 import groove.lts.StateGenerator;
 import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
+import groove.trans.SystemProperties;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.verify.CTLFormula;
@@ -118,7 +119,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class Simulator {
     /**
@@ -360,7 +361,17 @@ public class Simulator {
 	    return copyRuleAction;
 	}
 
-    /** Lazily creates and returns the graph edit action permanently associated with this simulator. */
+    /** Returns the rule deletion action permanently associated with this simulator. */
+	public DeleteRuleAction getDeleteRuleAction() {
+		// lazily create the action
+		if (deleteRuleAction == null) {
+			deleteRuleAction = new DeleteRuleAction();
+			addRefreshable(deleteRuleAction);
+		}
+	    return deleteRuleAction;
+	}
+
+	/** Lazily creates and returns the graph edit action permanently associated with this simulator. */
 	public EditGraphAction getEditGraphAction() {
 		// lazily create the action
 		if (editGraphAction == null) {
@@ -390,36 +401,17 @@ public class Simulator {
 	    return editGraphPropertiesAction;
 	}
 
-    /** Returns the rule creation action permanently associated with this simulator. */
-	public NewRuleAction getNewRuleAction() {
+    /** Returns the action to show the system properties of the current grammar. */
+	public Action getEditSystemPropertiesAction() {
 		// lazily create the action
-		if (newRuleAction == null) {
-			newRuleAction = new NewRuleAction();
+		if (editSystemPropertiesAction == null) {
+			editSystemPropertiesAction = new EditSystemPropertiesAction();
+			addRefreshable(editSystemPropertiesAction);
 		}
-	    return newRuleAction;
+	    return editSystemPropertiesAction;
 	}
 
-    /** Returns the rule renaming action permanently associated with this simulator. */
-	public RenameRuleAction getRenameRuleAction() {
-		// lazily create the action
-		if (renameRuleAction == null) {
-			renameRuleAction = new RenameRuleAction();
-			addRefreshable(renameRuleAction);
-		}
-	    return renameRuleAction;
-	}
-
-    /** Returns the rule deletion action permanently associated with this simulator. */
-	public DeleteRuleAction getDeleteRuleAction() {
-		// lazily create the action
-		if (deleteRuleAction == null) {
-			deleteRuleAction = new DeleteRuleAction();
-			addRefreshable(deleteRuleAction);
-		}
-	    return deleteRuleAction;
-	}
-
-    /** Returns the rule enabling action permanently associated with this simulator. */
+	/** Returns the rule enabling action permanently associated with this simulator. */
 	public EnableRuleAction getEnableRuleAction() {
 		// lazily create the action
 		if (enableRuleAction == null) {
@@ -471,7 +463,16 @@ public class Simulator {
         return loadGrammarAction;
     }
 
-    /** Returns the quit action permanently associated with this simulator. */
+    /** Returns the rule creation action permanently associated with this simulator. */
+	public NewRuleAction getNewRuleAction() {
+		// lazily create the action
+		if (newRuleAction == null) {
+			newRuleAction = new NewRuleAction();
+		}
+	    return newRuleAction;
+	}
+
+	/** Returns the quit action permanently associated with this simulator. */
 	public Action getQuitAction() {
 		// lazily create the action
 		if (quitAction == null) {
@@ -510,7 +511,17 @@ public class Simulator {
         return refreshGrammarAction;
     }
 
-    /** Lazily creates and returns an instance of {@link RunAction}. */
+    /** Returns the rule renaming action permanently associated with this simulator. */
+	public RenameRuleAction getRenameRuleAction() {
+		// lazily create the action
+		if (renameRuleAction == null) {
+			renameRuleAction = new RenameRuleAction();
+			addRefreshable(renameRuleAction);
+		}
+	    return renameRuleAction;
+	}
+
+	/** Lazily creates and returns an instance of {@link RunAction}. */
 	public Action getRunAction() {
 		// lazily create the action
 		if (runAction == null) {
@@ -528,16 +539,6 @@ public class Simulator {
     		addRefreshable(saveGraphAction);
     	}
         return saveGraphAction;
-    }
-
-    /** Returns the action to show the system properties of the current grammar. */
-    public Action getShowPropertiesAction() {
-    	// lazily create the action
-    	if (showPropertiesAction == null) {
-    		showPropertiesAction = new ShowPropertiesAction();
-    		addRefreshable(showPropertiesAction);
-    	}
-        return showPropertiesAction;
     }
 
     /** Returns the undo action permanently associated with this simulator. */
@@ -738,7 +739,7 @@ public class Simulator {
      * Ends the program.
      */
     private void doQuit() {
-        if (confirmAbandon()) {
+        if (confirmAbandon(false)) {
             if (REPORT) {
                 try {
                     BufferedReader systemIn = new BufferedReader(new InputStreamReader(System.in));
@@ -1192,7 +1193,7 @@ public class Simulator {
 	    result.add(new JMenuItem(getExportGraphAction()));
 	    result.addSeparator();
 	    result.add(getEditItem());
-	    result.add(new JMenuItem(getShowPropertiesAction()));
+	    result.add(new JMenuItem(getEditSystemPropertiesAction()));
 	    result.addSeparator();
 	    result.add(new JMenuItem(getQuitAction()));
 	    return result;
@@ -1483,19 +1484,26 @@ public class Simulator {
     }
     
     /**
-     * If the current grammar is set, asks through a dialog whether it may be abandoned.
+     * If a simulation is active, asks through a dialog whether it may be abandoned.
+     * @param setGrammar flag indicating that {@link #setGrammar(AspectualGrammarView)}
+     * is to be called with the current grammar, in case the simulation is abandoned
      * @return <tt>true</tt> if the current grammar may be abandoned
      */
-    private boolean confirmAbandon() {
+    private boolean confirmAbandon(boolean setGrammar) {
+    	boolean result;
         if (getCurrentGTS() != null) {
-            int res = JOptionPane.showConfirmDialog(getFrame(),
+            int response = JOptionPane.showConfirmDialog(getFrame(),
                 "Abandon current LTS?",
                 null,
                 JOptionPane.OK_CANCEL_OPTION);
-            return res == JOptionPane.OK_OPTION;
+            result = response == JOptionPane.OK_OPTION;
+            if (result && setGrammar) {
+            	setGrammar(getCurrentGrammar());
+            }
         } else {
-            return true;
+            result = true;
         }
+        return result;
     }
 
     /**
@@ -1753,6 +1761,10 @@ public class Simulator {
 	 */
 	private EditGraphPropertiesAction editGraphPropertiesAction;
 	/**
+	 * The action to show the system properties of the currently selected grammar. 
+	 */
+	private EditSystemPropertiesAction editSystemPropertiesAction;
+	/**
 	 * The rule creation action permanently associated with this simulator. 
 	 */
 	private NewRuleAction newRuleAction;
@@ -1801,9 +1813,7 @@ public class Simulator {
 	 */
 	private SaveGraphAction saveGraphAction;
 
-	/** The action to show the system properties of the currently selected grammar. */
-    private ShowPropertiesAction showPropertiesAction;
-    /** The action to start a new simulation. */
+	/** The action to start a new simulation. */
     private RunAction runAction;
     /** The undo action permanently associated with this simulator. */
     private Action undoAction;
@@ -2067,8 +2077,7 @@ public class Simulator {
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			if (confirmAbandon()) {
-				setGrammar(getCurrentGrammar());
+			if (confirmAbandon(true)) {
 				AspectGraph oldRuleGraph = getCurrentRule().getAspectGraph();
 				RuleNameLabel newRuleName = askNewRuleName(getCurrentRule().getName().name());
 				if (newRuleName != null) {
@@ -2089,41 +2098,15 @@ public class Simulator {
 		
 		public void actionPerformed(ActionEvent e) {
 			RuleNameLabel ruleName = getCurrentRule().getName();
-			if (confirmAbandon() && confirmDeleteRule(ruleName.toString())) {
+			if (confirmAbandon(true) && confirmDeleteRule(ruleName.toString())) {
 				doDeleteRule(ruleName);
 			}
 		}
     }
 
-    private class EditGraphPropertiesAction extends AbstractAction implements Refreshable {
-    	EditGraphPropertiesAction() {
-    		super(Options.EDIT_PROPERTIES_ACTION_NAME);
-    	}
-    	
-		public void refresh() {
-			setEnabled(getCurrentRule() != null);
-		}
-		
-		public void actionPerformed(ActionEvent e) {
-			if (confirmAbandon()) {
-				AspectualRuleView rule = getCurrentRule();
-				AspectGraph ruleGraph = rule.getAspectGraph();
-				GraphProperties ruleProperties = GraphInfo.getProperties(ruleGraph,
-						true);
-				PropertiesDialog dialog = new PropertiesDialog(getFrame(),
-						ruleProperties, GraphProperties.DEFAULT_KEYS, true);
-				if (dialog.showDialog()) {
-					ruleProperties.clear();
-					ruleProperties.putAll(dialog.getProperties());
-					doAddRule(rule.getName(), ruleGraph);
-				}
-			}
-		}
-    }
-
     /**
-     * Action for editing the current state or rule.
-     */
+	 * Action for editing the current state or rule.
+	 */
     private class EditGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
         protected EditGraphAction() {
@@ -2159,6 +2142,29 @@ public class Simulator {
         }
     }
 
+    private class EditGraphPropertiesAction extends AbstractAction implements Refreshable {
+    	EditGraphPropertiesAction() {
+    		super(Options.EDIT_PROPERTIES_ACTION_NAME);
+    	}
+    	
+		public void refresh() {
+			setEnabled(getCurrentRule() != null);
+		}
+		
+		public void actionPerformed(ActionEvent e) {
+			AspectualRuleView rule = getCurrentRule();
+			AspectGraph ruleGraph = rule.getAspectGraph();
+			GraphProperties ruleProperties = GraphInfo.getProperties(ruleGraph,
+					true);
+			PropertiesDialog dialog = new PropertiesDialog(ruleProperties,
+					GraphProperties.DEFAULT_KEYS, true);
+			if (dialog.showDialog(frame) && confirmAbandon(true)) {
+				ruleProperties.clear();
+				ruleProperties.putAll(dialog.getProperties());
+				doAddRule(rule.getName(), ruleGraph);
+			}
+		}
+	}
 
     /**
      * Action for editing the current state or rule.
@@ -2203,6 +2209,47 @@ public class Simulator {
         }
     }
 
+    /** Action to show the system properties. */
+    private class EditSystemPropertiesAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        public EditSystemPropertiesAction() {
+            super(Options.SYSTEM_PROPERTIES_ACTION_NAME);
+        }
+        
+        /** 
+         * Displays a {@link PropertiesDialog} for the properties
+         * of the edited graph.
+         */
+        public void actionPerformed(ActionEvent e) {
+        	AspectualGrammarView grammar = getCurrentGrammar();
+        	Properties systemProperties = grammar.getProperties();
+        	PropertiesDialog dialog = new PropertiesDialog(systemProperties, SystemProperties.DEFAULT_KEYS, true);
+        	if (dialog.showDialog(getFrame()) && confirmAbandon(true)) {
+        		SystemProperties newProperties = new SystemProperties();
+        		newProperties.putAll(dialog.getProperties());
+        		try {
+            		String outputFileName = Groove.createPropertyFilter().addExtension(grammar.getName());
+            		File outputFile = new File(currentGrammarFile, outputFileName);
+            		outputFile.createNewFile();
+            		OutputStream writer = new FileOutputStream(outputFile);
+					newProperties.store(writer, String.format(SystemProperties.DESCRIPTION, grammar.getName()));
+					grammar.setProperties(newProperties);
+				} catch (IOException exc) {
+					showErrorDialog("Error while saving edited properties", exc);
+				}
+        	}
+        }
+        
+        /**
+         * Tests if the currently selected grammar has non-<code>null</code>
+         * system properties.
+         */
+        public void refresh() {
+        	GrammarView grammar = getCurrentGrammar();
+        	setEnabled(grammar != null);
+        }
+    }
+    
     /**
      * Action to save the state, as a graph or in some export format.
      * @see Simulator#doExportGraph(JGraph, File)
@@ -2273,7 +2320,7 @@ public class Simulator {
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			if (confirmAbandon()) {
+			if (confirmAbandon(false)) {
 				doEnableRule();
 			}
 		}
@@ -2351,7 +2398,7 @@ public class Simulator {
 //            stateFileChooser.setSelectedFile(currentStartStateFile);
             int result = getStateFileChooser().showOpenDialog(getFrame());
             // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(true)) {
                 doLoadStartGraph(getStateFileChooser().getSelectedFile());
             }
         }
@@ -2376,7 +2423,7 @@ public class Simulator {
         public void actionPerformed(ActionEvent evt) {
             int result = getGrammarFileChooser().showOpenDialog(getFrame());
             // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon()) {
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
                 FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
                 doLoadGrammar(grammarLoaderMap.get(filterUsed), selectedFile, null);
@@ -2390,8 +2437,7 @@ public class Simulator {
     	}
     	
 		public void actionPerformed(ActionEvent e) {
-			if (confirmAbandon()) {
-				setGrammar(getCurrentGrammar());
+			if (confirmAbandon(true)) {
 				RuleNameLabel ruleName = askNewRuleName(NEW_RULE_NAME);
 				if (ruleName != null) {
 					doAddRule(ruleName, new AspectGraph());
@@ -2448,7 +2494,7 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            if (confirmAbandon()) {
+            if (confirmAbandon(false)) {
                 doRefreshGrammar();
             }
         }
@@ -2468,8 +2514,7 @@ public class Simulator {
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			if (confirmAbandon()) {
-				setGrammar(getCurrentGrammar());
+			if (confirmAbandon(true)) {
 				RuleNameLabel oldRuleName = getCurrentRule().getName();
 				AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
 				RuleNameLabel newRuleName = askNewRuleName(oldRuleName.name());
@@ -2489,7 +2534,7 @@ public class Simulator {
         }
 
 		public void actionPerformed(ActionEvent e) {
-			if (confirmAbandon()) {
+			if (confirmAbandon(false)) {
 				startSimulation(getCurrentGrammar());
 			}
 		}
@@ -2574,36 +2619,4 @@ public class Simulator {
         }
     }
 
-    /** Action to show the system properties. */
-    private class ShowPropertiesAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        public ShowPropertiesAction() {
-            super(Options.PROPERTIES_ACTION_NAME);
-        }
-        
-        /** 
-         * Displays a {@link PropertiesDialog} for the properties
-         * of the edited graph.
-         */
-        public void actionPerformed(ActionEvent e) {
-        	GraphProperties properties = new GraphProperties();
-        	Properties systemProperties = getCurrentGrammar().getProperties();
-        	for (Map.Entry<Object,Object> entry: systemProperties.entrySet()) {
-        		if (entry.getKey() instanceof String) {
-        			properties.put(entry.getKey(), entry.getValue());
-        		}
-        	}
-            new PropertiesDialog(Simulator.this.getFrame(), properties, false).showDialog();
-        }
-        
-        /**
-         * Tests if the currently selected grammar has non-<code>null</code>
-         * system properties.
-         */
-        public void refresh() {
-        	GrammarView grammar = getCurrentGrammar();
-        	setEnabled(grammar != null && grammar.getProperties() != null);
-        }
-    }
-    
 }

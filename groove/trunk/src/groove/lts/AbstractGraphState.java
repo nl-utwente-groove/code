@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.3 2007-04-27 22:06:26 rensink Exp $
+ * $Id: AbstractGraphState.java,v 1.4 2007-05-06 10:47:57 rensink Exp $
  */
 package groove.lts;
 
@@ -36,7 +36,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-04-27 22:06:26 $
+ * @version $Revision: 1.4 $ $Date: 2007-05-06 10:47:57 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
@@ -263,7 +263,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     
     @Deprecated
     public State newState() {
-		return new DefaultGraphState();
+		return new StartGraphState(getGraph());
 	}
 
     @Deprecated
