@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphState.java,v 1.8 2007-04-27 22:06:25 rensink Exp $
+ * $Id: DefaultGraphState.java,v 1.9 2007-05-06 10:47:57 rensink Exp $
  */
 package groove.lts;
 
@@ -36,8 +36,10 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-04-27 22:06:25 $
+ * @version $Revision: 1.9 $ $Date: 2007-05-06 10:47:57 $
+ * @deprecated use {@link StartGraphState} or {@link DefaultGraphNextState} instead
  */
+@Deprecated
 public class DefaultGraphState extends DeltaGraph<DefaultStateCache> implements GraphState {
 //	/**
 //	 * Default constant null reference for open states.

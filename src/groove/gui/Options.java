@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.12 2007-05-04 22:51:26 rensink Exp $
+ * $Id: Options.java,v 1.13 2007-05-06 10:47:52 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class Options {
     /** Edit menu name */
@@ -127,12 +127,8 @@ public class Options {
     public static final String OPEN_ACTION_NAME = "Open ...";
     /** Paste action name */
     public static final String PASTE_ACTION_NAME = "Paste";
-    /**
-	 * Edit action name 
-	 */
-	public static final String PROPERTIES_ACTION_NAME = "Properties ...";
-	/** Provide ctl formula action name */
-    public static final String PROVIDE_CTL_FORMULA_ACTION_NAME = "CTL formula ...";
+    /** Provide ctl formula action name */
+    public static final String PROVIDE_CTL_FORMULA_ACTION_NAME = "CTL Formula ...";
     /** Quit action name */
     public static final String QUIT_ACTION_NAME = "Quit";
     /** Redo action name */
@@ -175,6 +171,10 @@ public class Options {
 	 * Scroll to action name 
 	 */
 	static public final String SCROLL_TO_ACTION_NAME = "Scroll To Current";
+	/**
+	 * Edit action name 
+	 */
+	public static final String SYSTEM_PROPERTIES_ACTION_NAME = "System Properties ...";
 	/** View action name */
     public static final String VIEW_ACTION_NAME = "View as rule";
     /** Undo action name */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.8 2007-04-29 09:22:39 rensink Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.9 2007-05-06 10:47:54 rensink Exp $
  */
 package groove.calc;
 
@@ -298,7 +298,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
     /** Property that tests for the maximality of a state, using {@link #isMaximal(GraphState)}. */
     private final Property<GraphState> isMaximal = new Property<GraphState>() {
     	@Override
-		boolean isSatisfied(GraphState state) {
+		public boolean isSatisfied(GraphState state) {
 			return isMaximal(state);
 		}
     };

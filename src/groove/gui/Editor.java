@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.17 2007-05-04 22:51:26 rensink Exp $
+ * $Id: Editor.java,v 1.18 2007-05-06 10:47:52 rensink Exp $
  */
 package groove.gui;
 
@@ -91,7 +91,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.17 $ $Date: 2007-05-04 22:51:26 $
+ * @version $Revision: 1.18 $ $Date: 2007-05-06 10:47:52 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -279,7 +279,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.17 $
+     * @version $Revision: 1.18 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -360,7 +360,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
          */
         public void actionPerformed(ActionEvent e) {
             PropertiesDialog dialog = createPropertiesDialog(true);
-            if (dialog.showDialog() && dialog.isChanged()) {
+            if (dialog.showDialog(Editor.this)) {
             	getModel().setProperties(new GraphProperties(dialog.getProperties()));
             	currentGraphModified = true;
             	refreshTitle();
@@ -1327,7 +1327,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	 * Callback factory method for a properties dialog for the currently edited model. 
 	 */
 	private PropertiesDialog createPropertiesDialog(boolean editable) {
-		return new PropertiesDialog(Editor.this, getModel().getProperties(), GraphProperties.DEFAULT_KEYS, editable);
+		return new PropertiesDialog(getModel().getProperties(), GraphProperties.DEFAULT_KEYS, editable);
 	}
 
     /** 

@@ -12,31 +12,26 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractXml.java,v 1.7 2007-05-02 08:44:30 rensink Exp $
+ * $Id: AbstractXml.java,v 1.8 2007-05-06 10:47:53 rensink Exp $
  */
 package groove.io;
 
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.GraphProperties;
 import groove.graph.Node;
 import groove.util.Pair;
 import groove.view.FormatException;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Convenience class that brings down <tt>Xml</tt>'s methods to just two 
  * abstract methods: <tt>marshal(Graph)</tt> and <tt>unmarshal(Document,Graph)</tt>.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public abstract class AbstractXml implements Xml<Graph> {
 	AbstractXml(GraphFactory graphFactory) {
@@ -58,34 +53,34 @@ public abstract class AbstractXml implements Xml<Graph> {
      * @throws IOException if an error occurred during file input
 	 */
 	abstract protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws FormatException, IOException ;
-
-    /**
-	 * Checks if a given property key is allowed.
-	 * This is the case if either the property keys have not been set,
-	 * or <code>key</code> is within the property keys.
-	 * @see #getPropertyKeys() 
-	 */
-	public final boolean isKnownPropertyKey(String key) {
-		return propertyKeys == null || getPropertyKeys().contains(key);
-	}
-
-    /**
-	 * If the property keys have not been set, takes just the {@link #DEFAULT_PROPERTY_KEYS}.
-	 */
-	public final Set<String> getPropertyKeys() {
-		if (propertyKeys == null) {
-			propertyKeys = new HashSet<String>(DEFAULT_PROPERTY_KEYS);
-		}
-		return this.propertyKeys;
-	}
-
-	/**
-	 * Sets the property keys, after adding the {@link #DEFAULT_PROPERTY_KEYS}.
-	 */
-	public final void setPropertyKeys(Collection<String> propertyKeys) {
-		this.propertyKeys = new HashSet<String>(propertyKeys);
-		this.propertyKeys.addAll(DEFAULT_PROPERTY_KEYS);
-	}
+//
+//    /**
+//	 * Checks if a given property key is allowed.
+//	 * This is the case if either the property keys have not been set,
+//	 * or <code>key</code> is within the property keys.
+//	 * @see #getPropertyKeys() 
+//	 */
+//	public final boolean isKnownPropertyKey(String key) {
+//		return propertyKeys == null || getPropertyKeys().contains(key);
+//	}
+//
+//    /**
+//	 * If the property keys have not been set, takes just the {@link #DEFAULT_PROPERTY_KEYS}.
+//	 */
+//	public final Set<String> getPropertyKeys() {
+//		if (propertyKeys == null) {
+//			propertyKeys = new HashSet<String>(DEFAULT_PROPERTY_KEYS);
+//		}
+//		return this.propertyKeys;
+//	}
+//
+//	/**
+//	 * Sets the property keys, after adding the {@link #DEFAULT_PROPERTY_KEYS}.
+//	 */
+//	public final void setPropertyKeys(Collection<String> propertyKeys) {
+//		this.propertyKeys = new HashSet<String>(propertyKeys);
+//		this.propertyKeys.addAll(DEFAULT_PROPERTY_KEYS);
+//	}
 
     /**
      * Changes the graph factory used for unmarshalling.
@@ -103,12 +98,12 @@ public abstract class AbstractXml implements Xml<Graph> {
 
     /** The graph factory for this marshaller. */
     private GraphFactory graphFactory;
-
-	/** The current set of graph property names recognised by this marshallar. */
-	private Set<String> propertyKeys;
-    /** 
-     * Set of default property names (which will certainly be included in the allowed
-     * graph property names).
-     */
-    static public final List<String> DEFAULT_PROPERTY_KEYS = GraphProperties.DEFAULT_KEYS;
+//
+//	/** The current set of graph property names recognised by this marshallar. */
+//	private Set<String> propertyKeys;
+//    /** 
+//     * Set of default property names (which will certainly be included in the allowed
+//     * graph property names).
+//     */
+//    static public final List<String> DEFAULT_PROPERTY_KEYS = GraphProperties.DEFAULT_KEYS;
 }

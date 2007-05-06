@@ -1,9 +1,8 @@
-/* $Id: RuleNameDialog.java,v 1.1 2007-05-04 22:51:26 rensink Exp $ */
+/* $Id: RuleNameDialog.java,v 1.2 2007-05-06 10:47:51 rensink Exp $ */
 package groove.gui;
 
 import groove.trans.RuleNameLabel;
 
-import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.HashSet;
@@ -12,9 +11,7 @@ import java.util.Set;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -61,11 +58,11 @@ class RuleNameDialog {
 	 */
 	private JOptionPane getOptionPane() {
 		if (optionPane == null) {
-			JPanel editPane = new JPanel();
-			editPane.setLayout(new BorderLayout());
-			editPane.add(new JLabel("Rule name: "), BorderLayout.NORTH);
+//			JPanel editPane = new JPanel();
+//			editPane.setLayout(new BorderLayout());
+//			editPane.add(new JLabel("Rule name: "), BorderLayout.NORTH);
 			JTextField nameField = getNameField();
-			editPane.add(nameField);
+//			editPane.add(nameField);
 			optionPane = new JOptionPane(nameField, JOptionPane.PLAIN_MESSAGE,
 					JOptionPane.OK_CANCEL_OPTION, null, new Object[] {
 							getOkButton(), getCancelButton() });

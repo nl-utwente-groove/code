@@ -1,11 +1,13 @@
-/* $Id: PropertiesDialog.java,v 1.3 2007-05-04 22:51:27 rensink Exp $ */
+/* $Id: PropertiesDialog.java,v 1.4 2007-05-06 10:47:52 rensink Exp $ */
 package groove.gui;
 
+import groove.calc.Property;
 import groove.util.ListComparator;
 
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Frame;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -15,7 +17,9 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import javax.swing.DefaultCellEditor;
+import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -40,16 +44,14 @@ public class PropertiesDialog {
 	 * specially: they are added by default during editing, and are
 	 * ordered first in the list.
 	 */
-	public PropertiesDialog(Frame owner, Properties properties, List<String> defaultKeys, boolean editable) {
-		this.frame = owner;
+	public PropertiesDialog(Properties properties, Map<String, Property<String>> defaultKeys, boolean editable) {
 		this.defaultKeys = defaultKeys;
 		this.editable = editable;
-		this.pane = createContentPane();
 		if (defaultKeys == null) {
 			this.properties = new TreeMap<String,String>();
 		} else {
-			this.properties = new TreeMap<String,String>(new ListComparator<String>(defaultKeys));
-			for (String key: defaultKeys) {
+			this.properties = new TreeMap<String,String>(new ListComparator<String>(defaultKeys.keySet()));
+			for (String key: defaultKeys.keySet()) {
 				this.properties.put(key, "");
 			}
 		}
@@ -63,8 +65,8 @@ public class PropertiesDialog {
 	 * parent frame, a given (non-<code>null</code>) set of properties,
 	 * and a flag indicating if the properties should be editable.
 	 */
-	public PropertiesDialog(Frame owner, Properties properties, boolean editable) {
-		this(owner, properties, null, editable);
+	public PropertiesDialog(Properties properties, boolean editable) {
+		this(properties, null, editable);
 	}
 	
 	/** 
@@ -72,31 +74,40 @@ public class PropertiesDialog {
 	 * Since the dialog is modal, this method returns only 
 	 * when the user closes the dialog. The return
 	 * value indicates if the properties have changed.
+	 * @param frame the frame on which the fialog is to be displayed
 	 * @return <code>true</code> if the properties have changed during
 	 * the time the dialog was visible.
 	 */
-	public boolean showDialog() {
-		int response;
-		JDialog dialog = pane.createDialog(frame, createTitle());
-//		dialog.setLocationRelativeTo(frame);
+	public boolean showDialog(JFrame frame) {
+		boolean result;
+		boolean stopDialog;
 		do {
-			response = JOptionPane.CLOSED_OPTION;
+			getContentPane().setValue(null);
+			getContentPane().setVisible(true);
+			JDialog dialog = getContentPane().createDialog(frame, createTitle());
 			dialog.setVisible(true);
-			Object selectedValue = pane.getValue();
-			if (selectedValue instanceof Integer) {
-				response = (Integer) selectedValue;
+			dialog.dispose();
+			Object selectedValue = getContentPane().getValue();
+			if (isChanged()) {
+				if (selectedValue == getOkButton()) {
+					result = stopDialog = true;
+				} else {
+					int abandon = showAbandonDialog();
+					result = abandon == JOptionPane.YES_OPTION;
+					stopDialog = abandon != JOptionPane.CANCEL_OPTION;
+				}
+			} else {
+				// nothing was changed during editing
+				result = false;
+				stopDialog = true;
 			}
-			if (isChanged() && response != JOptionPane.OK_OPTION) {
-				response = showAbandonDialog();
-			}
-		} while (isChanged() && response == JOptionPane.CANCEL_OPTION);
-		dialog.dispose();
-		return isChanged() && (response == JOptionPane.OK_OPTION || response == JOptionPane.YES_OPTION);
+		} while (!stopDialog);
+		return result;
 	}
 
     /** Creates and shows a confirmation dialog for abandoning the currently edited graph. */
     private int showAbandonDialog() {
-		int response = JOptionPane.showConfirmDialog(frame,
+		int response = JOptionPane.showConfirmDialog(getContentPane(),
 				"Use changed properties?",
 				null,
 				JOptionPane.YES_NO_CANCEL_OPTION);
@@ -120,15 +131,54 @@ public class PropertiesDialog {
 		return DIALOG_TITLE;
 	}
 
-	private JOptionPane createContentPane() {
-		int buttons = editable ? JOptionPane.OK_CANCEL_OPTION : JOptionPane.DEFAULT_OPTION;
-		return new JOptionPane(createTablePane(), JOptionPane.PLAIN_MESSAGE,
-				buttons, null);
+	private JOptionPane getContentPane() {
+		if (pane == null) {
+			int mode;
+			Object[] buttons;
+			if (editable) {
+				mode = JOptionPane.OK_CANCEL_OPTION;
+				buttons = new Object[] { getOkButton(), createCancelButton() };
+			} else {
+				mode = JOptionPane.DEFAULT_OPTION;
+				buttons = new Object[] { createCancelButton() };
+			}
+			pane = new JOptionPane(createTablePane(),
+					JOptionPane.PLAIN_MESSAGE, mode, null, buttons);
+		}
+		return pane;
+	}
+
+	/**
+	 * Lazily creates and returns a button labelled OK that signals the
+	 * editors to stop editing. This makes sure that any partially edited
+	 * result is not lost.
+	 */
+	private JButton getOkButton() {
+		if (okButton == null) {
+			okButton = new JButton("OK");
+			okButton.addActionListener(new CloseListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					TableCellEditor editor = getTable().getCellEditor();// Component();
+					if (editor == null || editor.stopCellEditing()) {
+						super.actionPerformed(e);
+					}
+				}
+			});
+		}
+		return okButton;
+	}
+
+	/** Creates and returns a button labelled Cancel. */
+	private JButton createCancelButton() {
+		JButton result = new JButton("Cancel");
+		result.addActionListener(new CloseListener());
+		return result;
 	}
 	
 	/** Creates the pane for the table model. */
 	public Container createTablePane() {
-		JTable table = createTable();
+		JTable table = getTable();
 		JScrollPane scrollPane = new JScrollPane(table);
 		scrollPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
 		return scrollPane;
@@ -154,23 +204,32 @@ public class PropertiesDialog {
 	 * the ediability of the dialog, set at constuction time.
 	 * @see #isEditable()
 	 */
-	public JTable createTable() {
-		final JTable table = new JTable(getTableModel());
-//		table.setRowSelectionAllowed(false);
-//		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		table.setPreferredScrollableViewportSize(new Dimension(300, 70));
-		table.setCellEditor(getValueEditor());
-		table.getColumnModel().getColumn(PROPERTY_COLUMN).setCellEditor(createKeyEditor());
+	private JTable getTable() {
+		if (table == null) {
+			final TableModel model = getTableModel();
+			table = new JTable(model) {
+				@Override
+				public TableCellEditor getCellEditor(int row, int column) {
+					if (column == PROPERTY_COLUMN) {
+						return getKeyEditor();
+					} else {
+						return getValueEditor(model.getPropertyKey(row));
+					}
+				}
+			};
+			table.setPreferredScrollableViewportSize(new Dimension(300, 70));
+		}
 		return table;
 	}
 	
 	/** Creates an instanceof {@link TableModel}. */
-	private javax.swing.table.TableModel getTableModel() {
+	private TableModel getTableModel() {
 		if (tableModel == null) {
 			tableModel = new TableModel();
 			tableModel.addTableModelListener(new TableModelListener() {
 				public void tableChanged(TableModelEvent e) {
 					changed = true;
+//					changed = e.getColumn() == VALUE_COLUMN || e.getType() == TableModelEvent.DELETE;
 				}
 			});
 		}
@@ -178,55 +237,56 @@ public class PropertiesDialog {
 	}
 	
 	/** 
+	 * Returns a (fixed) editor that tests if the value entered is a well-formed 
+	 * property key. This is the case if and only if it matches {@link #IDENTIFIER_REGEXPR}.
+	 */
+	private CellEditor getKeyEditor() {
+		if (cellEditor == null) {
+			cellEditor = createCellEditor();
+		}
+		cellEditor.setEditingKey();
+		return cellEditor;
+	}
+
+	/** 
+	 * Returns a (fixed) editor for values of a given key.
+	 */
+	private TableCellEditor getValueEditor(String key) {
+		if (cellEditor == null) {
+			cellEditor = new CellEditor();
+		}
+		cellEditor.setEditingValueForKey(key);
+		return cellEditor;
+	}
+
+	
+	/** 
 	 * Creates an editor that tests if the value entered is a well-formed 
 	 * property key. This is the case if and only if it matches {@link #IDENTIFIER_REGEXPR}.
 	 */
-	private TableCellEditor createKeyEditor() {
-		DefaultCellEditor result = new DefaultCellEditor(new JTextField()) {
-			@Override
-			public boolean stopCellEditing() {
-				if (!((String) getCellEditorValue()).matches(IDENTIFIER_REGEXPR)) {
-					return showAbandonDialog() == JOptionPane.YES_OPTION;
-				} else {
-					return super.stopCellEditing();
-				}
-			}
-			
-		    /** Creates and shows a confirmation dialog for abandoning the currently edited graph. */
-		    private int showAbandonDialog() {
-				int response = JOptionPane.showConfirmDialog(frame,
-						"Not a valid property key. Abandon?",
-						null,
-						JOptionPane.YES_NO_OPTION);
-				return response;
-			}
-		};
-		result.setClickCountToStart(1);
-		return result;
+	private CellEditor createCellEditor() {
+		if (cellEditor == null) {
+			cellEditor = new CellEditor();
+		}
+		return cellEditor;
 	}
 
-	private TableCellEditor getValueEditor() {
-		if (valueEditor == null) {
-			valueEditor = new DefaultCellEditor(new JTextField());
-			valueEditor.setClickCountToStart(1);
-		}
-		return valueEditor;
-	}
-	
-	/** The parent fraom of the dialog. */
-	private final Frame frame;
+	/** The table component. */
+	private JTable table;
 	/** The option pane creating the dialog. */
-	private final JOptionPane pane;
+	private JOptionPane pane;
+	/** The OK button on the option pane. */
+	private JButton okButton;
 	/** Flag indicating that the properties are editable. */
 	private final boolean editable;
 	/** A list of default property keys; possibly <code>null</code>. */
-	private final List<String> defaultKeys;
+	private final Map<String,Property<String>> defaultKeys;
 	/** The actual properties map. */
 	private final SortedMap<String,String> properties;
 	/** Underlying data model for any table created in this dialog. */
 	private TableModel tableModel;
 	/** Returns the cell editor used for cell values. */
-	private DefaultCellEditor valueEditor;
+	private CellEditor cellEditor;
 	/** Flag indicating that the properties have changed. */
 	private boolean changed;
 	/** Title of the dialog. */
@@ -241,6 +301,100 @@ public class PropertiesDialog {
 	private static final int VALUE_COLUMN = 1;
 	/** Regular expression for matching property keys. */
 	private static final String IDENTIFIER_REGEXPR = "(\\p{Alpha}\\p{Alnum}*)?";
+
+	/** 
+	 * Action listener that closes the dialog and sets the option pane's
+	 * value to the source of the event.
+	 */
+	private class CloseListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			getContentPane().setValue(e.getSource());
+			getContentPane().setVisible(false);
+		}
+	}
+	
+	/** Editor for the cells of the property table. */
+	private class CellEditor extends DefaultCellEditor {
+		/** Constructs a new property cell editor. */
+		public CellEditor() {
+			super(new JTextField());
+			setClickCountToStart(1);
+		}
+		
+		@Override
+		public JTextField getComponent() {
+			return (JTextField) super.getComponent();
+		}
+
+		@Override
+		public boolean stopCellEditing() {
+			String editedValue = (String) getCellEditorValue();
+			if (editedValue.length() == 0 || isEditedValueCorrect(editedValue)) {
+				return super.stopCellEditing();
+			} else {
+				if (showContinueDialog()) {
+					getComponent().setSelectionStart(0);
+					getComponent().setSelectionEnd(getComponent().getText().length());
+					return false;
+				} else {
+					super.cancelCellEditing();
+					return true;
+				}
+			}
+		}
+		
+		/** 
+		 * Tests if a given non-empty string value is correct.
+		 * The answer depends on what kind of cell the editor is currently editing.
+		 */
+		private boolean isEditedValueCorrect(String value) {
+			if (editingValueForKey == null) {
+				return value.matches(IDENTIFIER_REGEXPR);
+			} else {
+				Property<String> test = defaultKeys.get(editingValueForKey);
+				return test == null || test.isSatisfied(value);
+			}
+		}
+
+		/**
+		 * Creates and shows a confirmation dialog for continuing the current edit.
+		 */
+		private boolean showContinueDialog() {
+			int response = JOptionPane.showConfirmDialog(getContentPane(),
+					getContinueQuestion(),
+					null,
+					JOptionPane.YES_NO_OPTION);
+			return response == JOptionPane.YES_OPTION;
+		}
+		
+		/** Returns the string to display in the abandon dialog. */
+		private String getContinueQuestion() {
+			if (editingValueForKey == null) {
+				// editing a key
+				return "Property keys must be identifiers. Continue?";
+			} else {
+				// editing a value
+				return String.format("Incorrect value for %s. Continue?", editingValueForKey);
+			}
+		}
+		
+		/** Sets the editor to editing a property key. */
+		void setEditingKey() {
+			editingValueForKey = null;
+		}
+		
+		/** Sets the editor to edit the value for a given key. */
+		void setEditingValueForKey(String key) {
+			editingValueForKey = key;
+		}
+
+		/** 
+		 * Field indicating what the editor is currently editing.
+		 * If <code>null</code>, it is editing a property key; otherwise,
+		 * it is editing the value for the key name contained herein.
+		 */
+		private String editingValueForKey;
+	}
 	
 	private class TableModel extends AbstractTableModel {
 		public int getColumnCount() {
@@ -250,6 +404,15 @@ public class PropertiesDialog {
 		public int getRowCount() {
 			int size = properties.size();
 			return editable ? size + 1 : size;
+		}
+
+		@Override
+		public String getColumnName(int column) {
+			if (column == PROPERTY_COLUMN) {
+				return PROPERTY_HEADER;
+			} else {
+				return VALUE_HEADER;
+			}
 		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
@@ -276,31 +439,26 @@ public class PropertiesDialog {
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
 			if (rowIndex == properties.size()) {
+				// key added
 				if (aValue instanceof String && ((String) aValue).length() > 0) {
 					properties.put((String) aValue, "");
 					refreshPropertyKeys();
 				}
 			} else if (columnIndex == VALUE_COLUMN) {
+				// value changed
 				properties.put(getPropertyKey(rowIndex), (String) aValue);
 				fireTableCellUpdated(rowIndex, columnIndex);
 			} else {
+				// key changed
 				String value = properties.remove(getPropertyKey(rowIndex));
 				if (aValue instanceof String && ((String) aValue).length() > 0) {
 					properties.put((String) aValue, value);
 				}
+				fireTableCellUpdated(rowIndex, columnIndex);
 				refreshPropertyKeys();
 			}
 		}
 
-		@Override
-		public String getColumnName(int column) {
-			if (column == PROPERTY_COLUMN) {
-				return PROPERTY_HEADER;
-			} else {
-				return VALUE_HEADER;
-			}
-		}
-		
 		/** 
 		 * Lazily creates and returns a list of property keys,
 		 * in the order they occur in the properties map. 
@@ -331,7 +489,7 @@ public class PropertiesDialog {
 		}
 		
 		/** Retrieves a property key by index. */
-		private String getPropertyKey(int rowIndex) {
+		String getPropertyKey(int rowIndex) {
 			return getPropertyKeyList().get(rowIndex);
 		}
 

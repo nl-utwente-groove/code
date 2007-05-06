@@ -2,7 +2,6 @@ package groove.util;
 
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /** 
@@ -17,9 +16,11 @@ public class ListComparator<T extends Comparable<T>> implements Comparator<T> {
 	 * keys are ordered alphabetically.
 	 * @param defaultKeys
 	 */
-	public ListComparator(List<T> defaultKeys) {
-		for (int i = 0; i < defaultKeys.size(); i++) {
-			knownKeyIndexMap.put(defaultKeys.get(i), i);
+	public ListComparator(Iterable<T> defaultKeys) {
+		int index = 0;
+		for (T key: defaultKeys) {
+			knownKeyIndexMap.put(key, index);
+			index++;
 		}			
 	}
 	
