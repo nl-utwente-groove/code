@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTSPanel.java,v 1.7 2007-05-04 22:51:27 rensink Exp $
+ * $Id: LTSPanel.java,v 1.8 2007-05-06 23:16:23 rensink Exp $
  */
 package groove.gui;
 
@@ -44,7 +44,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-05-04 22:51:27 $
+ * @version $Revision: 1.8 $ $Date: 2007-05-06 23:16:23 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -249,9 +249,9 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
 	 */
 	private class MyMouseListener extends MouseAdapter {
         @Override
-        public void mousePressed(MouseEvent evt) {
+        public void mouseClicked(MouseEvent evt) {
             if (evt.getButton() == MouseEvent.BUTTON1) {
-            	if (! isEnabled()) {
+            	if (! isEnabled() && simulator.getRunAction().isEnabled()) {
             		simulator.startSimulation(simulator.getCurrentGrammar());
             	} else if (evt.getClickCount() == 2) {
             		simulator.setGraphPanel(simulator.getStatePanel());

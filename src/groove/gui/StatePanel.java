@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.10 2007-05-04 22:51:26 rensink Exp $
+ * $Id: StatePanel.java,v 1.11 2007-05-06 23:16:23 rensink Exp $
  */
 package groove.gui;
 
@@ -54,7 +54,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -99,20 +99,13 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         stateJModelMap.clear();
         graphJModelMap.clear();
         selectedTransition = null;
-        if (grammar == null) {
+        if (grammar == null || grammar.getStartGraph() == null) {
             jGraph.setModel(GraphJModel.EMPTY_JMODEL);
             setEnabled(false);
         } else {
         	Graph startGraph = grammar.getStartGraph();
-        	assert startGraph != null;
-            GraphJModel graphJModel = getGraphJModel(startGraph);
-//            // since the GTS states have lost their layout information, we try to
-//            // retrieve it from the grammar start graph
-//            LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(startGraph);
-//            if (layoutMap != null) {
-//                graphJModel.applyLayout(layoutMap);
-//            }
-            jGraph.setModel(graphJModel);
+            jGraph.setModel(getGraphJModel(startGraph));
+            setEnabled(true);
         }
         refreshStatus();
     }
@@ -219,7 +212,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      */
     @Override
     protected String getStatusText() {
-    	String text = getJModel().getName();
+    	String text = null;
     	if (simulator.getCurrentTransition() != null) {
     		GraphTransition trans = simulator.getCurrentTransition();
     		if (getOptions().getValue(SHOW_ANCHORS_OPTION)) {
@@ -227,6 +220,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     		} else {
     			text = String.format("%s (with match of %s)", trans.source(), trans.getEvent().getName());
     		}
+    	} else if (getJModel() != null) {
+    		text = getJModel().getName();
     	}
         if (text == null) {
             return FRAME_NAME;
@@ -243,6 +238,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         GraphJModel result = stateJModelMap.get(state);
         if (result == null) {
             result = computeStateJModel(state);
+            assert result != null;
             stateJModelMap.put(state, result);
         }
         return result;

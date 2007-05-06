@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGrammarView.java,v 1.3 2007-05-02 08:44:34 rensink Exp $
+ * $Id: AspectualGrammarView.java,v 1.4 2007-05-06 23:16:19 rensink Exp $
  */
 package groove.view;
 
@@ -189,10 +189,12 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
     			}
     		}
     	}
-    	SystemProperties properties = getProperties();
-    	result.setProperties(properties);
-    	Graph startGraph = getStartGraph();
-    	result.setStartGraph(startGraph);
+    	result.setProperties(getProperties());
+    	if (getStartGraph() != null) {
+    		result.setStartGraph(getStartGraph());
+    	} else {
+    		errors.add("Grammar has no start graph");
+    	}
     	try {
 			result.setFixed();
 		} catch (FormatException exc) {
@@ -203,7 +205,7 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
 		if (errors.isEmpty()) {
 			return result;
 		} else {
-			throw new FormatException("Format errors in %s", getName(), errors);
+			throw new FormatException("Format errors in %s%n%s", getName(), errors);
 		}
     }
     

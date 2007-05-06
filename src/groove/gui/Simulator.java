@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.22 2007-05-06 10:47:51 rensink Exp $
+ * $Id: Simulator.java,v 1.23 2007-05-06 23:16:23 rensink Exp $
  */
 package groove.gui;
 
@@ -119,7 +119,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public class Simulator {
     /**
@@ -463,6 +463,15 @@ public class Simulator {
         return loadGrammarAction;
     }
 
+    /** Returns the graph creation action permanently associated with this simulator. */
+	public NewGraphAction getNewGraphAction() {
+		// lazily create the action
+		if (newGraphAction == null) {
+			newGraphAction = new NewGraphAction();
+		}
+	    return newGraphAction;
+	}
+
     /** Returns the rule creation action permanently associated with this simulator. */
 	public NewRuleAction getNewRuleAction() {
 		// lazily create the action
@@ -470,6 +479,15 @@ public class Simulator {
 			newRuleAction = new NewRuleAction();
 		}
 	    return newRuleAction;
+	}
+
+    /** Returns the rule system creation action permanently associated with this simulator. */
+	public NewRuleSystemAction getNewRuleSystemAction() {
+		// lazily create the action
+		if (newRuleSystemAction == null) {
+			newRuleSystemAction = new NewRuleSystemAction();
+		}
+	    return newRuleSystemAction;
 	}
 
 	/** Returns the quit action permanently associated with this simulator. */
@@ -683,7 +701,9 @@ public class Simulator {
         try {
         	AspectualGrammarView grammar = grammarLoader.unmarshal(grammarFile, startStateName);
         	setGrammar(grammar);
-        	startSimulation(grammar);
+        	if (grammar.getStartGraph() != null) {
+        		startSimulation(grammar);
+        	}
             // now we know loading succeeded, we can set the current names & files
             currentGrammarFile = grammarFile;
             currentGrammarLoader = grammarLoader;
@@ -699,6 +719,27 @@ public class Simulator {
         } catch (IOException exc) {
             showErrorDialog("Error while loading grammar from " + grammarFile, exc);
         } 
+    }
+
+	/**
+     * Creates an empty grammar and an empty directory, and sets it in the simulator.
+     * @param grammarLoader the loader to be used
+     * @param grammarFile the grammar file to be used
+     */
+    private void doNewGrammar(AspectualViewGps grammarLoader, File grammarFile) {
+//        try {
+        	grammarFile.mkdir();
+        	String grammarName = grammarLoader.getExtensionFilter().stripExtension(grammarFile.getName());
+        	AspectualGrammarView grammar = new AspectualGrammarView(grammarName);
+        	setGrammar(grammar);
+            // now we know loading succeeded, we can set the current names & files
+            currentGrammarFile = grammarFile;
+            currentGrammarLoader = grammarLoader;
+            getStateFileChooser().setCurrentDirectory(currentGrammarFile);
+            getGrammarFileChooser().setSelectedFile(currentGrammarFile);
+//        } catch (IOException exc) {
+//            showErrorDialog("Error while loading grammar from " + grammarFile, exc);
+//        } 
     }
 
     /**
@@ -1185,6 +1226,7 @@ public class Simulator {
 	 */
 	private JMenu createFileMenu() {
 	    JMenu result = new JMenu(Options.FILE_MENU_NAME);
+	    result.add(createNewMenu());
 	    result.add(new JMenuItem(getLoadGrammarAction()));
         result.add(new JMenuItem(getLoadStartGraphAction()));
         result.add(new JMenuItem(getRefreshGrammarAction()));
@@ -1199,6 +1241,14 @@ public class Simulator {
 	    return result;
 	}
 
+	private JMenu createNewMenu() {
+		JMenu result = new JMenu(Options.NEW_ACTION_NAME);
+		result.add(getNewGraphAction());
+		result.add(getNewRuleAction());
+		result.add(getNewRuleSystemAction());
+		return result;
+	}
+	
 	/**
 	 * Returns the menu item in the file menu that specifies
 	 * saving the currently displayed graph (in the currently selected graph panel).
@@ -1747,6 +1797,10 @@ public class Simulator {
 	private CopyRuleAction copyRuleAction;
 
 	/**
+	 * The rule deletion action permanently associated with this simulator. 
+	 */
+	private DeleteRuleAction deleteRuleAction;
+	/**
 	 * The state and rule edit action permanently associated with this simulator. 
 	 */
 	private EditGraphAction editGraphAction;
@@ -1764,18 +1818,6 @@ public class Simulator {
 	 * The action to show the system properties of the currently selected grammar. 
 	 */
 	private EditSystemPropertiesAction editSystemPropertiesAction;
-	/**
-	 * The rule creation action permanently associated with this simulator. 
-	 */
-	private NewRuleAction newRuleAction;
-	/**
-	 * The rule renaming action permanently associated with this simulator. 
-	 */
-	private RenameRuleAction renameRuleAction;
-	/**
-	 * The rule deletion action permanently associated with this simulator. 
-	 */
-	private DeleteRuleAction deleteRuleAction;
 	/**
 	 * The rule enabling action permanently associated with this simulator. 
 	 */
@@ -1796,6 +1838,18 @@ public class Simulator {
     private LoadGrammarAction loadGrammarAction;
 
     /**
+	 * The graph creation action permanently associated with this simulator. 
+	 */
+	private NewGraphAction newGraphAction;
+	/**
+	 * The rule creation action permanently associated with this simulator. 
+	 */
+	private NewRuleAction newRuleAction;
+	/**
+	 * The rule system creation action permanently associated with this simulator. 
+	 */
+	private NewRuleSystemAction newRuleSystemAction;
+	/**
 	 * The quit action permanently associated with this simulator. 
 	 */
 	private QuitAction quitAction;
@@ -1809,6 +1863,10 @@ public class Simulator {
     private RefreshGrammarAction refreshGrammarAction;
 
     /**
+	 * The rule renaming action permanently associated with this simulator. 
+	 */
+	private RenameRuleAction renameRuleAction;
+	/**
 	 * The state save action permanently associated with this simulator. 
 	 */
 	private SaveGraphAction saveGraphAction;
@@ -2431,6 +2489,22 @@ public class Simulator {
         }
     }
 
+    private class NewGraphAction extends AbstractAction {
+    	NewGraphAction() {
+    		super(Options.NEW_GRAPH_ACTION_NAME);
+    	}
+    	
+		public void actionPerformed(ActionEvent e) {
+        	Graph editResult = doEdit(GraphJModel.EMPTY_JMODEL);
+            if (editResult != null) {
+    			File saveFile = handleSaveGraph(true, editResult, GrammarViewXml.DEFAULT_START_GRAPH_NAME);
+    			if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
+    				doLoadStartGraph(saveFile);
+    			}
+    		}
+		}
+    }
+
     private class NewRuleAction extends AbstractAction {
     	NewRuleAction() {
     		super(Options.NEW_RULE_ACTION_NAME);
@@ -2441,6 +2515,32 @@ public class Simulator {
 				RuleNameLabel ruleName = askNewRuleName(NEW_RULE_NAME);
 				if (ruleName != null) {
 					doAddRule(ruleName, new AspectGraph());
+				}
+			}
+		}
+    }
+
+    private class NewRuleSystemAction extends AbstractAction {
+    	NewRuleSystemAction() {
+    		super(Options.NEW_RULE_SYSTEM_ACTION_NAME);
+    	}
+    	
+		public void actionPerformed(ActionEvent e) {
+			if (confirmAbandon(true)) {
+				grammarFileChooser.setSelectedFile(currentGrammarFile);
+				if (grammarFileChooser.showOpenDialog(getFrame()) == JFileChooser.APPROVE_OPTION) {
+					File selectedFile = grammarFileChooser.getSelectedFile();
+					FileFilter filter = grammarFileChooser.getFileFilter();
+					if (filter instanceof ExtensionFilter) {
+						String extendedName = ((ExtensionFilter) filter).addExtension(selectedFile.getPath());
+						selectedFile = new File(extendedName);
+					}
+					if (selectedFile.exists()) {
+						showErrorDialog(String.format("File %s already exists", selectedFile), null);
+					} else {
+		                FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
+						doNewGrammar(grammarLoaderMap.get(filterUsed), selectedFile);
+					}
 				}
 			}
 		}
@@ -2540,7 +2640,7 @@ public class Simulator {
 		}
 
 		public void refresh() {
-			setEnabled(getCurrentGrammar() != null);
+			setEnabled(getCurrentGrammar() != null && getCurrentGrammar().getStartGraph() != null);
 		}
     }
     

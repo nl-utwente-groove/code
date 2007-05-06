@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.10 2007-04-29 09:22:23 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.11 2007-05-06 23:16:24 rensink Exp $
  */
 package groove.trans;
 
@@ -27,7 +27,7 @@ import groove.view.FormatException;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-04-29 09:22:23 $
+ * @version $Revision: 1.11 $ $Date: 2007-05-06 23:16:24 $
  */
 public class GraphGrammar extends RuleSystem {   
 //    /**
@@ -166,8 +166,8 @@ public class GraphGrammar extends RuleSystem {
     /** Fixes the start graph, in addition to calling the <code>super</code> method. */
 	@Override
 	public void setFixed() throws FormatException {
-		super.setFixed();
 		getStartGraph().setFixed();
+		super.setFixed();
 	}
 	
 	/** Combines the consistency errors in the rules and start graph. */
