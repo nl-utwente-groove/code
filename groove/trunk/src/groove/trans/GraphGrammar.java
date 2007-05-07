@@ -12,9 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.11 2007-05-06 23:16:24 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.12 2007-05-07 09:46:36 rensink Exp $
  */
 package groove.trans;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
@@ -27,7 +30,7 @@ import groove.view.FormatException;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-05-06 23:16:24 $
+ * @version $Revision: 1.12 $ $Date: 2007-05-07 09:46:36 $
  */
 public class GraphGrammar extends RuleSystem {   
 //    /**
@@ -173,18 +176,19 @@ public class GraphGrammar extends RuleSystem {
 	/** Combines the consistency errors in the rules and start graph. */
 	@Override
 	public void testConsistent() throws FormatException {
-		FormatException prior = null;
+		List<String> errors = new ArrayList<String>();
 		// collect the exception o fthe super test, if any
 		try {
 			super.testConsistent();
 		} catch (FormatException exc) {
-			prior = exc;
+			errors.addAll(exc.getErrors());
 		}
 		// chain the consistency problems in the start graph
 		if (!getProperties().isAttributed() && ValueNode.hasValueNodes(getStartGraph())) {
-			throw new FormatException(prior, "Consistency error: start graph contains attributes, contrary to  system property");
-		} else if (prior != null) {
-			throw prior;
+			errors.add(String.format("Attributes in start graph inconsistent with \"%s\" property", SystemProperties.ATTRIBUTE_SUPPORT));
+		}
+		if (errors.isEmpty()) {
+			throw new FormatException("Consistency error(s) in grammar", errors);
 		}
 	}
 
