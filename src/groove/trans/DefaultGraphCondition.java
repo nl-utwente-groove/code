@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.12 2007-05-07 09:11:10 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.13 2007-05-07 09:46:36 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import groove.view.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -251,10 +251,10 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	public void testConsistent() throws FormatException {
 		if (getProperties().isAttributed()) {
 			if (hasIsolatedNodes()) {
-				throw new FormatException("Consistency error in %s: Attributed condition has isolated nodes", getName());
+				throw new FormatException("Isolated nodes in %s inconsistent with \"%s\" property", getName(), SystemProperties.ATTRIBUTE_SUPPORT);
 			}
 		} else if (hasAttributes()) {
-			throw new FormatException("Consistency error in %s: Condition uses attributes, contrary to system property", getName());
+			throw new FormatException("Attributes in %s inconsistent with \"%s\" property", getName(), SystemProperties.ATTRIBUTE_SUPPORT);
 		}
 	}
 
