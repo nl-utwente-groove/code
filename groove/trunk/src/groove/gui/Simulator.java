@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.23 2007-05-06 23:16:23 rensink Exp $
+ * $Id: Simulator.java,v 1.24 2007-05-07 09:11:16 rensink Exp $
  */
 package groove.gui;
 
@@ -119,7 +119,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class Simulator {
     /**
@@ -482,12 +482,12 @@ public class Simulator {
 	}
 
     /** Returns the rule system creation action permanently associated with this simulator. */
-	public NewRuleSystemAction getNewRuleSystemAction() {
+	public NewGrammarAction getNewGrammarAction() {
 		// lazily create the action
-		if (newRuleSystemAction == null) {
-			newRuleSystemAction = new NewRuleSystemAction();
+		if (newGrammarAction == null) {
+			newGrammarAction = new NewGrammarAction();
 		}
-	    return newRuleSystemAction;
+	    return newGrammarAction;
 	}
 
 	/** Returns the quit action permanently associated with this simulator. */
@@ -1245,7 +1245,7 @@ public class Simulator {
 		JMenu result = new JMenu(Options.NEW_ACTION_NAME);
 		result.add(getNewGraphAction());
 		result.add(getNewRuleAction());
-		result.add(getNewRuleSystemAction());
+		result.add(getNewGrammarAction());
 		return result;
 	}
 	
@@ -1842,13 +1842,13 @@ public class Simulator {
 	 */
 	private NewGraphAction newGraphAction;
 	/**
+	 * The rule system creation action permanently associated with this simulator. 
+	 */
+	private NewGrammarAction newGrammarAction;
+	/**
 	 * The rule creation action permanently associated with this simulator. 
 	 */
 	private NewRuleAction newRuleAction;
-	/**
-	 * The rule system creation action permanently associated with this simulator. 
-	 */
-	private NewRuleSystemAction newRuleSystemAction;
 	/**
 	 * The quit action permanently associated with this simulator. 
 	 */
@@ -2520,8 +2520,8 @@ public class Simulator {
 		}
     }
 
-    private class NewRuleSystemAction extends AbstractAction {
-    	NewRuleSystemAction() {
+    private class NewGrammarAction extends AbstractAction {
+    	NewGrammarAction() {
     		super(Options.NEW_RULE_SYSTEM_ACTION_NAME);
     	}
     	

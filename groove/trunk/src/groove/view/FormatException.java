@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: FormatException.java,v 1.1 2007-04-29 09:22:35 rensink Exp $
+ * $Id: FormatException.java,v 1.2 2007-05-07 09:11:16 rensink Exp $
  */
 package groove.view;
 
@@ -27,7 +27,7 @@ import java.util.List;
  * conversion between one model to another.
  * The class can build on prior exceptions, creating a list of error messages.
  * @author Arend Rensink
- * @version $Revision: 1.1 $ $Date: 2007-04-29 09:22:35 $
+ * @version $Revision: 1.2 $ $Date: 2007-05-07 09:11:16 $
  */
 public class FormatException extends Exception {
 	/** Text used for an empty format exception message. */
@@ -42,12 +42,10 @@ public class FormatException extends Exception {
      */
     public FormatException(Exception exc, String message, Object... parameters) {
         super(String.format(message, parameters));
-        if (exc == null) {
-        	errors = createMessageList();
-        } else if (exc instanceof FormatException) {
-        	errors = ((FormatException) exc).getErrors();
-        } else {
-        	errors = createMessageList();
+    	errors = createMessageList();
+        if (exc instanceof FormatException) {
+        	errors.addAll(((FormatException) exc).getErrors());
+        } else if (exc != null) {
         	errors.add(exc.getMessage());
         }
     	errors.add(super.getMessage());
