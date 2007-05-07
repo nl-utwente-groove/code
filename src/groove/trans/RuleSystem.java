@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.12 2007-05-02 08:44:33 rensink Exp $
+ * $Id: RuleSystem.java,v 1.13 2007-05-07 09:11:10 rensink Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-05-02 08:44:33 $
+ * @version $Revision: 1.13 $ $Date: 2007-05-07 09:11:10 $
  * @see NameLabel
  * @see SPORule
  */
@@ -275,7 +275,7 @@ public class RuleSystem {
     	// collect the exceptions of the rules
     	for (Rule rule: getRules()) {
     		try {
-    		rule.testConsistent();
+    			rule.testConsistent();
     		} catch (FormatException exc) {
     			exc.insert(result);
     			result = exc;

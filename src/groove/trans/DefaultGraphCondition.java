@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.11 2007-04-29 09:22:23 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.12 2007-05-07 09:11:10 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import groove.view.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -273,15 +273,18 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 
 	/**
 	 * Returns <code>true</code> if the target graph of the condition
-	 * contains nodes without incident edges, or one of the sub-conditions does.
+	 * contains fresh nodes without incident edges, or one of the sub-conditions does.
 	 */
 	protected boolean hasIsolatedNodes() {
 		boolean result = false;
 		// first test if the pattern target has isolated nodes
-		Iterator<? extends Node> nodeIter = getTarget().nodeSet().iterator();
+		Set<Node> freshTargetNodes = new HashSet<Node>(getTarget().nodeSet());
+		freshTargetNodes.removeAll(getPattern().nodeMap().values());
+		Iterator<Node> nodeIter = freshTargetNodes.iterator();
 		while (!result && nodeIter.hasNext()) {
 			result = getTarget().edgeSet(nodeIter.next()).isEmpty();
-		}// now recursively test the sub-conditions
+		}
+		// now recursively test the sub-conditions
 		Iterator<DefaultGraphCondition> subConditionIter = getNegConjunct().getConditions().iterator();
 		while (!result && subConditionIter.hasNext()) {
 			result = subConditionIter.next().hasIsolatedNodes();
@@ -643,7 +646,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     
     /**
      * Callback factory method to create a matching schedule factory.
-     * This implementation returns a {@linkplain IndegreeScheduleFactory}.
+     * This implementation returns a {@linkplain DefaultConditionSearchPlanFactory}.
      */
     protected ConditionSearchPlanFactory createSearchPlanFactory() {
     	return new DefaultConditionSearchPlanFactory();
