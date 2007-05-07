@@ -1,4 +1,4 @@
-/* $Id: AspectualGraphView.java,v 1.2 2007-04-30 19:53:31 rensink Exp $ */
+/* $Id: AspectualGraphView.java,v 1.3 2007-05-07 17:24:36 rensink Exp $ */
 package groove.view;
 
 import groove.algebra.Constant;
@@ -32,11 +32,20 @@ import java.util.Map;
  */
 public class AspectualGraphView implements AspectualView<Graph> {
 	/** Constructs an instance from a given aspect graph view. */
-	public AspectualGraphView(AspectGraph view) throws FormatException {
+	public AspectualGraphView(AspectGraph view) {
 		this.view = view;
-		Pair<Graph,Map<AspectNode,Node>> modelPlusMap = computeModel(view);
-		this.model = modelPlusMap.first();
-		this.viewToModelMap = modelPlusMap.second();
+        Graph model;
+        Map<AspectNode,Node> viewToModelMap;
+		try {
+            Pair<Graph,Map<AspectNode,Node>> modelPlusMap = computeModel(view);
+            model = modelPlusMap.first();
+            viewToModelMap = modelPlusMap.second();
+        } catch (FormatException e) {
+            model = null;
+            viewToModelMap = Collections.emptyMap();            
+        }
+        this.model = model;
+        this.viewToModelMap = viewToModelMap;
 	}
 	
 	/** Constructs an instance from a given graph model. */
@@ -52,11 +61,19 @@ public class AspectualGraphView implements AspectualView<Graph> {
 	}
 	
 	public Graph toModel() throws FormatException {
-		return model;
+        if (model == null) {
+            throw new FormatException(getErrors());
+        } else {
+            return model;
+        }
 	}
 
 	public List<String> getErrors() {
-		return Collections.emptyList();
+        if (model == null) {
+            return view.getErrors();
+        } else {
+            return Collections.emptyList();
+        }
 	}
 
 	public Map<AspectNode, Node> getMap() {

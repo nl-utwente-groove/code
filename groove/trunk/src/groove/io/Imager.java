@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.6 2007-04-30 19:53:24 rensink Exp $
+ * $Id: Imager.java,v 1.7 2007-05-07 17:24:22 rensink Exp $
  */
 package groove.io;
 
@@ -69,7 +69,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class Imager extends CommandLineTool {
     /** Name of the imager application. */
@@ -108,11 +108,8 @@ public class Imager extends CommandLineTool {
             gpsFilter, ruleFilter, stateFilter, gxlFilter };
 
 
+    /** Starts the imager with a list of options and file names. */
     public static void main(String[] args) {
-//        String[] names = ImageIO.getWriterFormatNames();
-//        for (int i = 0; i < names.length; i++) {
-//            out.println(names[i]);
-//        }
         Imager imager;
         if (args.length == 0) {
             new Imager(Collections.<String>emptyList(), true);
@@ -127,11 +124,16 @@ public class Imager extends CommandLineTool {
      * Option to set the output format for the imager.
      */
     static public class FormatOption implements CommandLineOption {
+        /** Abbreviation of the format option. */
         static public final String NAME = "f";
+        /** Short description of the format option. */
         static public final String DESCRIPTION = "Output format extension. Supported formats are:";
+        /** File suffix for the default format. */
         static public final String DEFAULT_SUFFIX = " (default)";
+        /** Option parameter name. */
         static public final String PARAMETER_NAME = "name";
 
+        /** Constructs a command-line format option working on a given imager. */
         public FormatOption(Imager imager) {
             this.imager = imager;
         }
@@ -180,6 +182,7 @@ public class Imager extends CommandLineTool {
      * Frame with fields for selecting input and output files and starting the imager.
      */
     public class ImagerFrame extends JFrame {
+        /** Constructs an instanceof the frame, with GUI components set. */
         public ImagerFrame() {
             super(APPLICATION_NAME);
             setIconImage(Groove.GROOVE_ICON_16x16.getImage());
@@ -205,6 +208,10 @@ public class Imager extends CommandLineTool {
             outFileField.setText(fileName);
         }
 
+        /** 
+         * Images the file named in {@link #inFileField}, and saves the
+         * result to the file named in {@link #outFileField}. 
+         */
         public void handleImageAction() {
             File inFile = new File(inFileField.getText());
             File outFile;
@@ -221,6 +228,7 @@ public class Imager extends CommandLineTool {
             }
         }
 
+        /** Starts a file chooser and sets the selected file name in a given text field. */
         public void handleBrowseAction(JTextField fileField) {
             browseChooser.setSelectedFile(new File(fileField.getText()));
             int answer = browseChooser.showOpenDialog(this);
@@ -355,6 +363,7 @@ public class Imager extends CommandLineTool {
             };
         }
 
+        /** Initialises the GUI components. */
         protected void initComponents() {
             // outFileField.setBorder(BorderFactory.createEtchedBorder());
             setInFile(Groove.WORKING_DIR);
@@ -644,7 +653,6 @@ public class Imager extends CommandLineTool {
     /**
      * Processes a list of arguments (which are <tt>String</tt>s) by setting the attributes of
      * the imager accordingly.
-     * @param argsList the list of arguents
      * @require <tt>argsList instanceof List of String</tt>
      */
     @Override

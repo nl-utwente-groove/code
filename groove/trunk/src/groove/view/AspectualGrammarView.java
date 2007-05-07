@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGrammarView.java,v 1.4 2007-05-06 23:16:19 rensink Exp $
+ * $Id: AspectualGrammarView.java,v 1.5 2007-05-07 17:24:36 rensink Exp $
  */
 package groove.view;
 
@@ -164,7 +164,7 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
     public GraphGrammar toGrammar() throws FormatException {
     	List<String> errors = getErrors();
     	if (! errors.isEmpty()) {
-    		throw new FormatException("Format errors in graph grammar", errors);
+    		throw new FormatException(errors);
     	} else {
     		return computeGrammar();
     	}
