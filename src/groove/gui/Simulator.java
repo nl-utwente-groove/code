@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.24 2007-05-07 09:11:16 rensink Exp $
+ * $Id: Simulator.java,v 1.25 2007-05-07 17:24:36 rensink Exp $
  */
 package groove.gui;
 
@@ -119,7 +119,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class Simulator {
     /**
@@ -853,8 +853,6 @@ public class Simulator {
             graphLoader.marshalGraph(saveGraph, file);
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
-        } catch (FormatException exc) {
-        	showErrorDialog("Graph is incorrectly formatted", exc);
         }
     }
 
@@ -2256,12 +2254,8 @@ public class Simulator {
         	Graph editResult = doEdit(getRulePanel().getJGraph().getModel());
             if (editResult != null) {
                 if (confirmReplaceRule(ruleName.toString())) {
-        			try {
-    					AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(editResult);
-    					doAddRule(ruleName, ruleAsAspectGraph);
-        			} catch (FormatException exc) {
-        				showErrorDialog("Error in rule format", exc);
-        			}
+                    AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(editResult);
+                    doAddRule(ruleName, ruleAsAspectGraph);
                 }
             }
         }

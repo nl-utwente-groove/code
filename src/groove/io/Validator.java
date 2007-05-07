@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Validator.java,v 1.6 2007-04-30 19:53:24 rensink Exp $
+ * $Id: Validator.java,v 1.7 2007-05-07 17:24:22 rensink Exp $
  */
 package groove.io;
 
@@ -31,17 +31,22 @@ import java.util.List;
 /**
  * Application to check graph and rule file formats.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class Validator {
+    /** Prefix for command line options. */
     static public final String OPTION_PREFIX = "-";
-    // options
+    /** Help option abbreviation. */
     static public final String HELP_OPTION = "h";
+    /** Verbose option abbreviation. */
     static public final String VERBOSE_OPTION = "v";
+    /** Quiet option abbreviation. */
     static public final String QUIET_OPTION = "q";
-    // option descriptions
+    /** Short textual description of the help option. */
     static public final String HELP_DESCRIPTION = "Prints this message";
+    /** Short textual description of the verbose option. */
     static public final String VERBOSE_DESCRIPTION = "Run in verbose mode";
+    /** Short textual description of the quiet option. */
     static public final String QUIET_DESCRIPTION = "Run in quiet mode";
     //
     //    static public final int QUIET_MODE = 0;
@@ -118,6 +123,7 @@ public class Validator {
     }
 
     static private class FileValidator extends GraphFileHandler {
+        /** Constructs an instance of the file validator with given verbosity level. */
         public FileValidator(int verbosity) {
             super(verbosity);
         }
@@ -174,7 +180,7 @@ public class Validator {
             String name = verbosity == GraphFileHandler.VERBOSE_MODE ? file.getName() : file.toString();
             if (verbosity > GraphFileHandler.QUIET_MODE)
                 System.out.print("* Validating " + name + " as a production rule: ");
-            new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new RuleNameLabel(file.getName()));
+            new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new RuleNameLabel(file.getName())).toModel();
             if (verbosity > GraphFileHandler.QUIET_MODE)
                 System.out.println("OK");
         } catch (FormatException exc) {
