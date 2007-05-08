@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.13 2007-05-07 17:24:37 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.14 2007-05-08 10:09:31 rensink Exp $
  */
 package groove.trans;
 
@@ -30,7 +30,7 @@ import groove.view.FormatException;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2007-05-07 17:24:37 $
+ * @version $Revision: 1.14 $ $Date: 2007-05-08 10:09:31 $
  */
 public class GraphGrammar extends RuleSystem {   
 //    /**
@@ -187,7 +187,7 @@ public class GraphGrammar extends RuleSystem {
 		if (!getProperties().isAttributed() && ValueNode.hasValueNodes(getStartGraph())) {
 			errors.add(String.format("Attributes in start graph inconsistent with \"%s\" property", SystemProperties.ATTRIBUTE_SUPPORT));
 		}
-		if (errors.isEmpty()) {
+		if (!errors.isEmpty()) {
 			throw new FormatException(errors);
 		}
 	}
