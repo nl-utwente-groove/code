@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.17 2007-05-08 11:41:32 rensink Exp $
+ * $Id: Options.java,v 1.18 2007-05-08 12:31:58 fladder Exp $
  */
 package groove.gui;
 
@@ -26,16 +26,39 @@ import java.util.Map;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.KeyStroke;
+import javax.swing.LookAndFeel;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
 
 import org.jgraph.graph.GraphConstants;
 
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
+import com.jgoodies.looks.plastic.theme.DesertBlue;
+
 /**
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class Options {
-    /** The default font set in the look-and-feel. */
-    public static final Font DEFAULT_FONT = Font.decode("TimesRoman");
+	
+	/** The look and feel used for GUI tools */
+	public static final LookAndFeel LOOK_AND_FEEL = new com.jgoodies.looks.plastic.PlasticLookAndFeel();
+	
+	static {
+		try
+    	{
+			// LAF specific options that should be done before setting the LAF go here
+    		PlasticLookAndFeel.setCurrentTheme(new DesertBlue());
+    		// Set the look and feel
+    		UIManager.setLookAndFeel(LOOK_AND_FEEL);
+    	} catch(UnsupportedLookAndFeelException e)
+    	{
+    		// nothing to do here except not crash on the exception
+    	}
+	}
+	
+	/** The default font set in the look-and-feel. */
+	public static Font DEFAULT_FONT = PlasticLookAndFeel.getCurrentTheme().getUserTextFont();
     /** Edit menu name */
     public static final String EDIT_MENU_NAME = "Edit";
     /** Display menu name */
@@ -395,4 +418,10 @@ public class Options {
      * Map from option names to menu items.
      */
     private Map<String,JCheckBoxMenuItem> itemMap = new LinkedHashMap<String,JCheckBoxMenuItem>();
+    
+    /**
+     * Dummy method to force static initialisation
+     */
+    public static void forceInit() {}
+    
 }
