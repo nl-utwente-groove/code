@@ -13,10 +13,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.16 2007-05-08 10:09:20 rensink Exp $
+ * $Id: Options.java,v 1.17 2007-05-08 11:41:32 rensink Exp $
  */
 package groove.gui;
 
+import java.awt.Font;
 import java.awt.event.KeyEvent;
 import java.util.Collection;
 import java.util.HashMap;
@@ -30,9 +31,11 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class Options {
+    /** The default font set in the look-and-feel. */
+    public static final Font DEFAULT_FONT = Font.decode("TimesRoman");
     /** Edit menu name */
     public static final String EDIT_MENU_NAME = "Edit";
     /** Display menu name */
