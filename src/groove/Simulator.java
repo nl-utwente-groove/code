@@ -12,15 +12,21 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Simulator.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: Simulator.java,v 1.2 2007-05-08 12:31:58 fladder Exp $
  */
 package groove;
+
+import javax.swing.UIManager;
+
+import com.jgoodies.looks.plastic.PlasticLookAndFeel;
+import com.jgoodies.looks.plastic.PlasticXPLookAndFeel;
+import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * Wrapper class for the simulator
  * @see groove.gui.Simulator
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class Simulator {
     /**
@@ -28,6 +34,6 @@ public class Simulator {
      * @param args list of command-line arguments
      */
     static public void main(String[] args) {
-        groove.gui.Simulator.main(args);
+    	groove.gui.Simulator.main(args);
     }
 }

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.26 2007-05-08 10:57:58 rensink Exp $
+ * $Id: Simulator.java,v 1.27 2007-05-08 12:31:58 fladder Exp $
  */
 package groove.gui;
 
@@ -119,7 +119,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  */
 public class Simulator {
     /**
@@ -1001,7 +1001,11 @@ public class Simulator {
      */
     private JFrame getFrame() {
         if (frame == null) {
-            // set up the content pane of the frame as a splt pane,
+
+        	// force the LAF to be set
+        	groove.gui.Options.forceInit();
+        	
+        	// set up the content pane of the frame as a splt pane,
             // with the rule directory to the left and a desktop pane to the right
             JSplitPane contentPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
             contentPane.setLeftComponent(getRuleJTreePanel());
@@ -1018,7 +1022,7 @@ public class Simulator {
         }
         return frame;
     }
-
+    
     //
 //    /**
 //     * Initializes the simulator actions.
