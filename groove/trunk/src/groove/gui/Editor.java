@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.22 2007-05-08 12:31:58 fladder Exp $
+ * $Id: Editor.java,v 1.23 2007-05-08 16:22:29 rensink Exp $
  */
 package groove.gui;
 
@@ -39,11 +39,14 @@ import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
 import groove.view.FormatException;
+import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
@@ -62,6 +65,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -83,6 +87,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
+import javax.swing.filechooser.FileFilter;
 
 import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
@@ -93,13 +98,15 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.22 $ $Date: 2007-05-08 12:31:58 $
+ * @version $Revision: 1.23 $ $Date: 2007-05-08 16:22:29 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
     public static final String EDITOR_NAME = "Groove Editor";
     /** The name displayed in the frame title for a new graph. */
-    public static final String NEW_GRAPH_NAME = "New Graph";
+    public static final String NEW_GRAPH_NAME = "newGraph";
+//    /** The name displayed in the frame title for a new graph. */
+//    public static final String NEW_GRAPH_NAME = "New Graph";
     /** The indication displayed in the frame title for a modified graph. */
     public static final String MODIFIED_INDICATOR = "> ";
     /** Size of the preview dialog window. */
@@ -162,13 +169,9 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     	groove.gui.Options.forceInit();
        
         this.auxiliary = auxiliary;
-        // set file chooser for load, save & exit
-        currentDir = new File(Groove.WORKING_DIR);
         // Construct the main components
         jgraph = new EditorJGraph(this);
         jGraphPanel = new JGraphPanel<EditorJGraph>(jgraph);
-//        jGraphPanel.add(createToolBar(), BorderLayout.NORTH);
-
         initListeners();
         initGUI();
         pack();
@@ -207,7 +210,6 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
     public void doOpenGraph(final File fromFile) throws IOException {
         currentFile = fromFile;
-        currentDir = currentFile.getAbsoluteFile().getParentFile();
         // first create a graph from the gxl file
         final JModel model;
         try {
@@ -307,14 +309,11 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * if a file is selected. 
      */
     protected void handleOpenGraph() {
-        getGraphOpenChooser().setCurrentDirectory(currentDir);
-        getGraphOpenChooser().setSelectedFile(null);
-        int result = getGraphOpenChooser().showOpenDialog(getGraphPanel());
+        int result = getGraphChooser().showOpenDialog(getGraphPanel());
         if (result == JFileChooser.APPROVE_OPTION && showAbandonDialog()) {
             try {
-                doOpenGraph(getGraphOpenChooser().getSelectedFile());
+                doOpenGraph(getGraphChooser().getSelectedFile());
             } catch (IOException exc) {
-                // exc.printStackTrace(System.err);
                 showErrorDialog("Error while loading graph from " + currentFile, exc);
             }
         }
@@ -327,44 +326,19 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * The return value is the save file, or <code>null</code> if nothing was saved.
      */
     protected File handleSaveGraph() {
-        // set filter to the one that accepts the current file (if any)
-        javax.swing.filechooser.FileFilter[] fileFilters = getGraphSaveChooser().getChoosableFileFilters();
-        boolean filterFound = false;
-        for (int i = 0; !filterFound && i < fileFilters.length; i++) {
-            if (currentFile == null || fileFilters[i].accept(currentFile)) {
-                filterFound = true;
-                getGraphSaveChooser().setFileFilter(fileFilters[i]);
-            }
-        }
-        getGraphSaveChooser().setCurrentDirectory(currentDir);
-        String graphName = getModelName();
-        File saveFile = graphName == null ? currentFile : new File(graphName);
-        getGraphSaveChooser().setSelectedFile(saveFile);
-        // get the file to write to
-        File toFile = ExtensionFilter.showSaveDialog(getGraphSaveChooser(), getGraphPanel());
+        File toFile = ExtensionFilter.showSaveDialog(getGraphChooser(), getGraphPanel());
         if (toFile != null) {
-            // parse the file name to extract any priority info
-        	PriorityFileName priorityName = new PriorityFileName(toFile);
-        	String actualName = priorityName.getActualName();
-            getModel().setName(actualName);
-            if (priorityName.hasPriority()) {
-            	getModel().getProperties().setPriority(priorityName.getPriority());
-            }
-            toFile = new File(toFile.getParentFile(), actualName+ExtensionFilter.getExtension(toFile));
-            currentFile = toFile;
-            currentDir = toFile.getParentFile();
             try {
-                if (getGraphSaveChooser().getFileFilter() == ruleFilter
-                        && getConfirmPreviewCheckBox().isSelected()) {
-                    if (handlePreview()) {
-                        doSaveGraph(toFile);
-                    } else {
-                        // the graph was after all not saved
-                        toFile = null;
-                    }
-                } else {
-                    doSaveGraph(toFile);
+                doSaveGraph(toFile);
+                // parse the file name to extract any priority info
+                PriorityFileName priorityName = new PriorityFileName(toFile);
+                String actualName = priorityName.getActualName();
+                setModelName(actualName);
+                if (priorityName.hasPriority()) {
+                    getModel().getProperties().setPriority(priorityName.getPriority());
                 }
+                toFile = new File(toFile.getParentFile(), actualName+ExtensionFilter.getExtension(toFile));
+                currentFile = toFile;
             } catch (Exception exc) {
                 showErrorDialog("Error while saving graph to " + currentFile, exc);
                 toFile = null;
@@ -380,7 +354,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
     protected void handleExportGraph() {
         if (getModelName() != null) {
-            getExportChooser().setSelectedFile(new File(graphFilter.stripExtension(getModelName())));
+            getExportChooser().setSelectedFile(new File(getModelName()));
         }
         File toFile = ExtensionFilter.showSaveDialog(getExportChooser(), getGraphPanel());
         if (toFile != null) {
@@ -398,46 +372,25 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * @return <tt>true</tt> if the dialog was confirmed
      */
 	protected boolean handlePreview() {
-	    try {
+//	    try {
 	    	RuleNameLabel ruleName = new RuleNameLabel("temp");
-            AspectualRuleView ruleGraph = (AspectualRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0, getSystemProperties());
-            AspectJModel ruleModel = new AspectJModel(ruleGraph, getOptions());
+            AspectGraph ruleGraph = AspectGraph.getFactory().fromPlainGraph(getModel().toPlainGraph());
+            AspectualRuleView ruleView = new AspectualRuleView(ruleGraph, ruleName, getSystemProperties());
+            AspectJModel ruleModel = new AspectJModel(ruleView, getOptions());
             if (showPreviewDialog(ruleModel)) {
                 setSelectInsertedCells(false);
                 getModel().replace(new GraphJModel(ruleModel.toPlainGraph(), getOptions()));
                 setSelectInsertedCells(true);
                 return true;
             }
-        } catch (FormatException exc) {
-            showErrorDialog("Error in graph format", exc);
+//        } catch (FormatException exc) {
+//            showErrorDialog("Error in graph format", exc);
+//        }
+        else {
+            return false;
         }
-        return false;
 	}
 	
-	/** 
-	 * Creates a preview of an aspect model, with properties.
-	 * The return value indicates if the user ended the dialog by pressing OK.
-	 */
-	private boolean showPreviewDialog(AspectJModel model) {
-		JGraph jGraph = new JGraph(model);
-		jGraph.setToolTipEnabled(true);
-		JScrollPane jGraphPane = new JScrollPane(jGraph);
-		jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
-		JComponent previewContent = new JPanel();
-		previewContent.setLayout(new BorderLayout());
-		previewContent.add(jGraphPane);
-		if (!model.getProperties().isEmpty()) {
-			previewContent.add(createPropertiesDialog(false).createTablePane(), BorderLayout.NORTH);
-		}
-		JOptionPane previewPane = new JOptionPane(previewContent,
-				JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
-		JDialog dialog = previewPane.createDialog(getGraphPanel(), "Production rule view");
-		dialog.setSize(PREVIEW_SIZE);
-		dialog.setVisible(true);
-        Integer response = (Integer) previewPane.getValue();
-        return response != null && response == JOptionPane.OK_OPTION;
-	}
-
     /**
 	 * Closes the editor by making the root component invisible.
 	 */
@@ -782,46 +735,14 @@ private Action getCloseEditorAction() {
 	/**
 	 * Returns a file chooser for loading graphs, after lazily creating it.
 	 */
-	protected JFileChooser getGraphOpenChooser() {
-		if (graphOpenChooser == null) {
-			graphOpenChooser = new GrooveFileChooser();
-			graphOpenChooser.addChoosableFileFilter(graphFilter);
+	protected JFileChooser getGraphChooser() {
+		if (graphChooser == null) {
+			graphChooser = new MyFileChooser();
+//			graphOpenChooser.addChoosableFileFilter(graphFilter);
 		}
-		return graphOpenChooser;
+		return graphChooser;
 	}
 
-	/**
-	 * Returns a file chooser for saving graphs, after lazily creating it.
-	 */
-	protected JFileChooser getGraphSaveChooser() {
-		if (graphSaveChooser == null) {
-			graphSaveChooser = new GrooveFileChooser();
-			graphSaveChooser.setAcceptAllFileFilterUsed(false);
-			graphSaveChooser.addChoosableFileFilter(stateFilter);
-			graphSaveChooser.addChoosableFileFilter(ruleFilter);
-			graphSaveChooser.addChoosableFileFilter(gxlFilter);
-			graphSaveChooser.setFileFilter(stateFilter);
-			JPanel checkBoxPanel = new JPanel(new BorderLayout());
-			checkBoxPanel.setBorder(new javax.swing.border.EmptyBorder(0, 5, 0,
-					0));
-			checkBoxPanel.add(getConfirmPreviewCheckBox(), BorderLayout.SOUTH);
-			graphSaveChooser.setAccessory(checkBoxPanel);
-		}
-		return graphSaveChooser;
-	}
-
-	/**
-	 * Returns a checkbox forcing a preview dialog before saving a rule.
-	 */
-	protected JCheckBox getConfirmPreviewCheckBox() {
-		if (confirmPreviewCheckBox == null) {
-			confirmPreviewCheckBox = new JCheckBox();
-			confirmPreviewCheckBox.setText("Rule preview");
-			confirmPreviewCheckBox.setSelected(true);
-		}
-		return confirmPreviewCheckBox;
-	}
-    
     /**
 	 * Sets the modified status of the currentle edited graph. Also updates the frame
 	 * title to reflect the new modified status.
@@ -862,19 +783,19 @@ private Action getCloseEditorAction() {
      * Indicates if we are editing a rule or a graph.
      * @return <code>true</code> if we are editing a graph.
      */
-    private boolean isEditingGraph() {
-        return editingGraph;
+    private boolean isGraphType() {
+        return graphType;
     }
 
     /**
      * Sets the edit type to graph or rule.
-     * @param editingGraph if <code>true</code>, the edit type is set to graph
+     * @param graphType if <code>true</code>, the edit type is set to graph
      * @return <code>true</code> if the current edit type was actually changed; <code>false</code> if it 
      * was already equal to <code>editingGraph</code>
      */
-    private boolean setEditingGraph(boolean editingGraph) {
-        boolean result = this.editingGraph != editingGraph;
-        this.editingGraph = editingGraph;
+    private boolean setGraphType(boolean graphType) {
+        boolean result = this.graphType != graphType;
+        this.graphType = graphType;
         return result;
     }
 
@@ -1279,14 +1200,31 @@ private Action getCloseEditorAction() {
             return true;
         }
     }
-//
-//	/**
-//     * Sets the {@link #ruleFactory} with the given object.
-//     * @param ruleFactory the new rule factory
-//     */
-//    protected void setRuleFactory(RuleFactory ruleFactory) {
-//    	this.ruleFactory = ruleFactory;
-//    }
+
+    /** 
+     * Creates a preview of an aspect model, with properties.
+     * The return value indicates if the user ended the dialog by pressing OK.
+     */
+    private boolean showPreviewDialog(AspectJModel model) {
+        JGraph jGraph = new JGraph(model);
+        jGraph.setToolTipEnabled(true);
+        JScrollPane jGraphPane = new JScrollPane(jGraph);
+        jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
+        JComponent previewContent = new JPanel();
+        previewContent.setLayout(new BorderLayout());
+        previewContent.add(jGraphPane);
+        if (!model.getProperties().isEmpty()) {
+            previewContent.add(createPropertiesDialog(false).createTablePane(), BorderLayout.NORTH);
+        }
+        JOptionPane previewPane = new JOptionPane(previewContent,
+                JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+        JDialog dialog = previewPane.createDialog(getGraphPanel(), "Production rule view");
+        dialog.setSize(PREVIEW_SIZE);
+        dialog.setResizable(true);
+        dialog.setVisible(true);
+        Integer response = (Integer) previewPane.getValue();
+        return response != null && response == JOptionPane.OK_OPTION;
+    }
 
     /**
      * Returns the rule factory.
@@ -1354,9 +1292,6 @@ private Action getCloseEditorAction() {
     /** Status bar of the editor. */
     private final JLabel statusBar = new JLabel();
 
-    /** Checkbox to indicate that saving rules should be preceded by a preview. */
-    private JCheckBox confirmPreviewCheckBox;
-
     /** Indicates whether jgraph has been modified since the last save. */
     private boolean currentGraphModified;
 
@@ -1364,7 +1299,7 @@ private Action getCloseEditorAction() {
     private boolean anyGraphSaved;
 
     /** Flag indicating if the editor is editing a graph or a rule. */
-    private boolean editingGraph;
+    private boolean graphType;
     
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
@@ -1372,8 +1307,6 @@ private Action getCloseEditorAction() {
     /** Currently edited file. */
     private File currentFile;
 
-    /** Current directory of file choosers. */
-    private File currentDir = new File(Groove.WORKING_DIR);
     /**
      * The GXL converter used for marshalling and unmarshalling layouted graphs.
      */
@@ -1382,12 +1315,7 @@ private Action getCloseEditorAction() {
     /**
      * File chooser for graph opening.
      */
-    private JFileChooser graphOpenChooser;
-
-    /**
-     * File chooser for graph saving.
-     */
-    private JFileChooser graphSaveChooser;
+    private JFileChooser graphChooser;
 
     /**
      * File chooser for export actions.
@@ -1416,59 +1344,6 @@ private Action getCloseEditorAction() {
      */
     private final ExtensionFilter epsFilter = new ExtensionFilter("EPS files",
             Groove.EPS_EXTENSION);
-
-    /**
-     * Extension filter for state files.
-     */
-    private final ExtensionFilter stateFilter = Groove.createStateFilter();
-
-    /**
-     * Extension filter for rule files.
-     */
-    private final ExtensionFilter ruleFilter = Groove.createRuleFilter();
-
-    /**
-     * Extension filter used for exporting the LTS in jpeg format.
-     */
-    private final ExtensionFilter gxlFilter = Groove.createGxlFilter();
-    
-    /**
-     * Extension filter for all known kinds of graph files.
-     */
-    private final ExtensionFilter graphFilter = new ExtensionFilter("Graph files", "") {
-        @Override
-        public boolean accept(File file) {
-            return isAcceptDirectories() && file.isDirectory()  
-            		|| file.getName().endsWith(Groove.GXL_EXTENSION)
-                    || file.getName().endsWith(Groove.RULE_EXTENSION)
-                    || file.getName().endsWith(Groove.STATE_EXTENSION);
-        }
-
-        @Override
-        public String getDescription() {
-            return "Graph files (*" + Groove.GXL_EXTENSION + ", *" + Groove.RULE_EXTENSION
-                    + ", *" + Groove.STATE_EXTENSION + ")";
-        }
-        
-        @Override
-        public boolean acceptExtension(File file) {
-            return false;
-        }
-        
-        @Override
-        public String stripExtension(String fileName) {
-            File file = new File(fileName);
-            if (gxlFilter.acceptExtension(file)) {
-                return gxlFilter.stripExtension(fileName);
-            } else if (stateFilter.acceptExtension(file)) {
-                return stateFilter.stripExtension(fileName);
-            } else if (ruleFilter.acceptExtension(file)) {
-                return ruleFilter.stripExtension(fileName);
-            } else {
-                return fileName;
-            }
-        }
-    };
 
     /** Action to undo the last edit. */
     private Action undoAction;
@@ -1610,7 +1485,7 @@ private Action getCloseEditorAction() {
             if (showAbandonDialog()) {
                 currentFile = null;
                 setModel(new EditorJModel(NEW_GRAPH_NAME));
-                getGraphSaveChooser().setSelectedFile(null);
+                getGraphChooser().setSelectedFile(null);
             }
         }
     }
@@ -1701,7 +1576,7 @@ private Action getCloseEditorAction() {
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-            if (!setEditingGraph(true)) {
+            if (!setGraphType(true)) {
                 // only do a preview if the type was not changed (on the second click)
                 handlePreview();
             }
@@ -1723,7 +1598,7 @@ private Action getCloseEditorAction() {
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-            if (!setEditingGraph(false)) {
+            if (!setGraphType(false)) {
                 // only do a preview if the type was not changed (on the second click)
                 handlePreview();
             }
@@ -1763,7 +1638,7 @@ private Action getCloseEditorAction() {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.22 $
+     * @version $Revision: 1.23 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */
@@ -1780,5 +1655,203 @@ private Action getCloseEditorAction() {
         public void actionPerformed(ActionEvent evt) {
             jgraph.stopEditing();
         }
+    }
+    
+    private class MyFileChooser extends GrooveFileChooser implements ChangeListener {
+        MyFileChooser() {
+            getGraphTypeButton().addChangeListener(this);
+            getRuleTypeButton().addChangeListener(this);
+        }
+        
+        @Override
+        public int showOpenDialog(Component parent) throws HeadlessException {
+            resetChoosableFileFilters();
+            setAcceptAllFileFilterUsed(true);
+            addChoosableFileFilter(graphFilter);
+            setAccessory(null);
+            getGraphChooser().setCurrentDirectory(getCurrentDir());
+            getGraphChooser().setSelectedFile(null);
+            int result = super.showOpenDialog(parent);
+            return result;
+        }
+
+        @Override
+        public int showSaveDialog(Component parent) throws HeadlessException {
+            resetChoosableFileFilters();
+            setAcceptAllFileFilterUsed(false);
+            setFilters(isGraphType());
+            setAccessory(getEditTypePanel());
+            // set filter to the one that accepts the current file (if any)
+            javax.swing.filechooser.FileFilter[] fileFilters = getChoosableFileFilters();
+            boolean filterFound = false;
+            for (int i = 0; !filterFound && i < fileFilters.length; i++) {
+                if (currentFile == null || fileFilters[i].accept(currentFile)) {
+                    filterFound = true;
+                    setFileFilter(fileFilters[i]);
+                }
+            }
+            setCurrentDirectory(getCurrentDir());
+            String graphName = getModelName();
+            File saveFile = graphName == null ? currentFile : new File(graphName);
+            getGraphChooser().setSelectedFile(saveFile);
+            // get the file to write to
+
+            int result = super.showSaveDialog(parent);
+            lastSaveFilter = getFileFilter();
+            
+            // show preview if required
+            if (result == JFileChooser.APPROVE_OPTION) {
+                if (getGraphChooser().getFileFilter() == ruleFilter
+                        && getConfirmPreviewCheckBox().isSelected() && !handlePreview()) {
+                    result = JFileChooser.CANCEL_OPTION;
+                }
+            }
+
+            return result;
+        }
+        
+        /** Listens to the edit type buttons to determine which file filters should be used. */
+        public void stateChanged(ChangeEvent e) {
+            if (((AbstractButton) e.getSource()).isSelected()) {
+                setFilters(e.getSource() == getGraphTypeButton());
+            }
+        }
+
+        /**
+         * Sets the file filters to either those that accept graphs, or rules.
+         */
+        private void setFilters(boolean graphType) {
+            resetChoosableFileFilters();
+            FileFilter defaultFilter = graphType == isGraphFilter(lastSaveFilter) ? lastSaveFilter : null;
+            for (FileFilter filter: new FileFilter[] { stateFilter, ruleFilter, gxlFilter} ) {
+                boolean suitable = graphType ? isGraphFilter(filter) : isRuleFilter(filter);
+                if (suitable) {
+                    addChoosableFileFilter(filter);
+                    if (defaultFilter == null) {
+                        defaultFilter = filter;
+                    }
+                }
+            }
+            setFileFilter(defaultFilter);
+            getTypeComboBox().setSelectedIndex(graphType ? 0 : 1);
+        }
+        
+        /** Determines if a given file filter is suitable for saving graphs. */
+        private boolean isGraphFilter(FileFilter filter) {
+            return filter == stateFilter || filter == gxlFilter;
+        }
+        
+        /** Determines if a given file filter is suitable for saving rules. */
+        private boolean isRuleFilter(FileFilter filter) {
+            return filter == ruleFilter || filter == gxlFilter;
+        }
+
+        private JPanel getEditTypePanel() {
+            if (editTypePanel == null) {
+                JPanel innerPanel = new JPanel(new BorderLayout());
+//                innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
+                innerPanel.setBorder(new javax.swing.border.EmptyBorder(0, 5, 0, 0));
+                innerPanel.add(getTypeComboBox());
+                innerPanel.add(getConfirmPreviewCheckBox(), BorderLayout.SOUTH);
+                editTypePanel = new JPanel(new BorderLayout());
+                editTypePanel.add(innerPanel, BorderLayout.SOUTH);
+            }
+            return editTypePanel;
+        }
+
+        private JComboBox getTypeComboBox() {
+            if (typeComboBox == null) {
+                typeComboBox = new JComboBox(new String[] {"Graph", "Rule"});
+                typeComboBox.setSelectedIndex(isGraphType() ? 0 : 1);
+                typeComboBox.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent e) {
+                        JToggleButton button = typeComboBox.getSelectedIndex() == 0 ? getGraphTypeButton() : getRuleTypeButton();
+                        if (! button.isSelected()) {
+                            button.doClick();
+                        }
+                    }
+                });
+            }
+            return typeComboBox;
+        }
+        
+        /**
+         * Returns a checkbox forcing a preview dialog before saving a rule.
+         */
+        protected JCheckBox getConfirmPreviewCheckBox() {
+            if (confirmPreviewCheckBox == null) {
+                confirmPreviewCheckBox = new JCheckBox();
+                confirmPreviewCheckBox.setText("Preview");
+                confirmPreviewCheckBox.setSelected(true);
+            }
+            return confirmPreviewCheckBox;
+        }
+        
+        /** Retrieves the directory file from the #currentFile */
+        private File getCurrentDir() {
+            return currentFile == null ? new File(Groove.WORKING_DIR) : currentFile.getAbsoluteFile().getParentFile();
+        }
+        
+        /** The auxiliary component used in the save dialog. */
+        private JPanel editTypePanel;
+        /** Last file filter used in a save dialog. */
+        private FileFilter lastSaveFilter;
+        /** Combo box to choose between graph and rule edit type. */
+        private JComboBox typeComboBox;
+        /** Checkbox to indicate that saving rules should be preceded by a preview. */
+        private JCheckBox confirmPreviewCheckBox;
+
+        /**
+         * Extension filter for state files.
+         */
+        private final ExtensionFilter stateFilter = Groove.createStateFilter();
+
+        /**
+         * Extension filter for rule files.
+         */
+        private final ExtensionFilter ruleFilter = Groove.createRuleFilter();
+
+        /**
+         * Extension filter used for exporting the LTS in jpeg format.
+         */
+        private final ExtensionFilter gxlFilter = Groove.createGxlFilter();
+        
+        /**
+         * Extension filter for all known kinds of graph files.
+         */
+        private final ExtensionFilter graphFilter = new ExtensionFilter("Graph files", "") {
+            @Override
+            public boolean accept(File file) {
+                return isAcceptDirectories() && file.isDirectory()  
+                        || file.getName().endsWith(Groove.GXL_EXTENSION)
+                        || file.getName().endsWith(Groove.RULE_EXTENSION)
+                        || file.getName().endsWith(Groove.STATE_EXTENSION);
+            }
+
+            @Override
+            public String getDescription() {
+                return "Graph files (*" + Groove.GXL_EXTENSION + ", *" + Groove.RULE_EXTENSION
+                        + ", *" + Groove.STATE_EXTENSION + ")";
+            }
+            
+            @Override
+            public boolean acceptExtension(File file) {
+                return false;
+            }
+            
+            @Override
+            public String stripExtension(String fileName) {
+                File file = new File(fileName);
+                if (gxlFilter.acceptExtension(file)) {
+                    return gxlFilter.stripExtension(fileName);
+                } else if (stateFilter.acceptExtension(file)) {
+                    return stateFilter.stripExtension(fileName);
+                } else if (ruleFilter.acceptExtension(file)) {
+                    return ruleFilter.stripExtension(fileName);
+                } else {
+                    return fileName;
+                }
+            }
+        };
     }
 }

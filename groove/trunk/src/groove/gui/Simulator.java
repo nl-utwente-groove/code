@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.27 2007-05-08 12:31:58 fladder Exp $
+ * $Id: Simulator.java,v 1.28 2007-05-08 16:22:29 rensink Exp $
  */
 package groove.gui;
 
@@ -119,7 +119,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  */
 public class Simulator {
     /**
@@ -1022,35 +1022,6 @@ public class Simulator {
         }
         return frame;
     }
-    
-    //
-//    /**
-//     * Initializes the simulator actions.
-//     * @require {@link #initGrammarLoaders()}should be invoked first
-//     */
-//    protected void initActions() {
-//        addAccelerator(getLoadGrammarAction());
-//        addAccelerator(getRefreshGrammarAction());
-////
-////        getLoadStartStateAction().setEnabled(false);
-////        getSaveGraphAction().setEnabled(false);
-////        getExportGraphAction().setEnabled(false);
-//
-//
-//        // We initialize the UndoHistory now, whereas this should
-//        // actually be part of initComponents. However, this causes
-//        // dependency problems, since the undo and redo actions are
-//        // created in the UndoHistory; for the other components they
-//        // are created in the Simulator instead.
-//
-//        // undo action
-//        addAccelerator(getUndoAction());
-//        // redo action
-//        addAccelerator(getRedoAction());
-//        // derivation actions
-//        addAccelerator(getApplyTransitionAction());
-//        
-//    }
 
     /**
      * Lazily creates and returns the panel with the state, rule and LTS views.
