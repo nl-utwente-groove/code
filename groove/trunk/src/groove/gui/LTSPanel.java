@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTSPanel.java,v 1.8 2007-05-06 23:16:23 rensink Exp $
+ * $Id: LTSPanel.java,v 1.9 2007-05-08 23:12:26 rensink Exp $
  */
 package groove.gui;
 
@@ -44,7 +44,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-05-06 23:16:23 $
+ * @version $Revision: 1.9 $ $Date: 2007-05-08 23:12:26 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -55,7 +55,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         simulator.addSimulationListener(this);
-        jGraph.setToolTipEnabled(true);
+        getJGraph().setToolTipEnabled(true);
     }
 
     /**

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.18 2007-05-08 12:31:58 fladder Exp $
+ * $Id: Options.java,v 1.19 2007-05-08 23:12:26 rensink Exp $
  */
 package groove.gui;
 
@@ -25,6 +25,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
@@ -37,7 +38,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class Options {
 	
@@ -150,7 +151,7 @@ public class Options {
     /** New action name */
     public static final String NEW_RULE_ACTION_NAME = "New Rule";
     /** New action name */
-    public static final String NEW_RULE_SYSTEM_ACTION_NAME = "New Rule Syatem";
+    public static final String NEW_RULE_SYSTEM_ACTION_NAME = "New Rule System";
     /** Node mode action name */
     public static final String NODE_MODE_NAME = "Node Mode";
     /** Open action name */
@@ -315,6 +316,16 @@ public class Options {
     static public final String SHOW_REMARKS_OPTION = "Show remarks";
     /** Parse attributed graphs option */
     static public final String IS_ATTRIBUTED_OPTION = "Parse as attributed graph";
+    /** Always start simulation after changes. */
+    static public final String START_SIMULATION_OPTION = "Start simulation?";
+    /** Automatically stop simulation at changes to the rule system. */
+    static public final String STOP_SIMULATION_OPTION = "Stop simulation?";
+    /** Always delete rules without confirmation. */
+    static public final String DELETE_RULE_OPTION = "Delete rule?";
+    /** Always replace edited rules. */
+    static public final String REPLACE_RULE_OPTION = "Replace edited rule?";
+    /** Always replace edited rules. */
+    static public final String REPLACE_START_GRAPH_OPTION = "Replace start graph?";
 
     /**
      * Convenience method to convert line style codes to names.
@@ -354,25 +365,49 @@ public class Options {
         }
     }
 
-    /** Creates an initialised options object. */ 
+    /**
+	 * Dummy method to force static initialisation
+	 */
+	public static void forceInit() {
+		// empty
+	}
+
+	/** Creates an initialised options object. */ 
     public Options() {
-		add(SHOW_NODE_IDS_OPTION);
-		add(SHOW_ANCHORS_OPTION);
-		add(SHOW_ASPECTS_OPTION);
-		add(SHOW_REMARKS_OPTION);
-		add(VERTEX_LABEL_OPTION);
-		add(SHOW_STATE_IDS_OPTION);
-		add(IS_ATTRIBUTED_OPTION);
+		addCheckbox(SHOW_NODE_IDS_OPTION);
+		addCheckbox(SHOW_ANCHORS_OPTION);
+		addCheckbox(SHOW_ASPECTS_OPTION);
+		addCheckbox(SHOW_REMARKS_OPTION);
+		addCheckbox(VERTEX_LABEL_OPTION);
+		addCheckbox(SHOW_STATE_IDS_OPTION);
+		addCheckbox(IS_ATTRIBUTED_OPTION);
+		addBehaviour(STOP_SIMULATION_OPTION, 2);
+		addBehaviour(START_SIMULATION_OPTION, 3);
+		addBehaviour(DELETE_RULE_OPTION, 2);
+		addBehaviour(REPLACE_RULE_OPTION, 3);
+		addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
 	}
 
     /**
-     * Adds an option name to the options, and returns the 
+     * Adds a checkbox item with a given name to the options, and returns the 
      * associated (fresh) menu item.
      * @param name the name of the checkbox menu item to add
      * @return the added {@link javax.swing.JCheckBoxMenuItem}
      */
-    public final JCheckBoxMenuItem add(String name) {
+    private final JCheckBoxMenuItem addCheckbox(String name) {
     	JCheckBoxMenuItem result = new JCheckBoxMenuItem(name); 
+    	itemMap.put(name, result);
+    	return result;
+    }
+
+    /**
+     * Adds abehaviour menu with a given name to the options, and returns the 
+     * associated (fresh) menu item.
+     * @param name the name of the behaviour menu item to add
+     * @return the added {@link javax.swing.JCheckBoxMenuItem}
+     */
+    private final BehaviourOption addBehaviour(String name, int optionCount) {
+    	BehaviourOption result = new BehaviourOption(name, optionCount); 
     	itemMap.put(name, result);
     	return result;
     }
@@ -383,7 +418,7 @@ public class Options {
      * @return the {@link javax.swing.JCheckBoxMenuItem} with the given name
      * if it exists, or <tt>null</tt> otherwise
      */
-    public JCheckBoxMenuItem getItem(String name) {
+    public JMenuItem getItem(String name) {
     	return itemMap.get(name);
     }
     
@@ -391,24 +426,65 @@ public class Options {
      * Returns the set of menu items available.
      * @return the set of menu items available
      */
-    public Collection<JCheckBoxMenuItem> getItemSet() {
+    public Collection<JMenuItem> getItemSet() {
     	return itemMap.values();
     }
-    
+
     /**
-     * Returns the current value of a given options name.
+     * Returns the current selection value of a given options name.
      * @param name the name of the checkbox menu item for which to check its value
      * @return the value of the checkbox item with the given name
      */
-    public boolean getValue(String name) {
+    public boolean isSelected(String name) {
     	return itemMap.get(name).isSelected();
+    }
+
+    /**
+     * Sets the selection of a given option.
+     * @param name the name of the menu item for which to set the value
+     * @param selected the new selection value of the menu item
+     */
+    public void setSelected(String name, boolean selected) {
+    	itemMap.get(name).setSelected(selected);
+    }
+
+    /**
+     * Returns the current value of a given options name.
+     * If the option is a checkbox menu, the value is <code>0</code> for <code>false</code>
+     * and <code>1</code> for <code>true</code>.
+     * @param name the name of the checkbox menu item for which to get the value
+     * @return the current value of the checkbox item with the given name
+     */
+    public int getValue(String name) {
+    	JMenuItem item = itemMap.get(name);
+    	if (item instanceof BehaviourOption) {
+    		return ((BehaviourOption) item).getValue();
+    	} else {
+    		return item.isSelected() ? 1 : 0;
+    	}
+    }
+
+    /**
+     * Sets the value of a given option.
+     * If the option is a checkbox menu item, it is set to <code>true</code> for
+     * any value greater than 0.
+     * @param name the name of the menu item for which to set the value
+     * @param value the new value of the menu item
+     */
+    public void setValue(String name, int value) {
+    	JMenuItem item = itemMap.get(name);
+    	if (item instanceof BehaviourOption) {
+    		((BehaviourOption) item).setValue(value);
+    	} else {
+    		item.setSelected(value > 0);
+    	}
     }
 
     /** Returns a map from option keys to the enabled status of the option. */
     @Override
 	public String toString() {
     	Map<String,Boolean> result = new HashMap<String,Boolean>();
-    	for (Map.Entry<String,JCheckBoxMenuItem> entry: itemMap.entrySet()) {
+    	for (Map.Entry<String,JMenuItem> entry: itemMap.entrySet()) {
     		result.put(entry.getKey(), entry.getValue().isSelected());
     	}
     	return result.toString();
@@ -417,11 +493,5 @@ public class Options {
 	/**
      * Map from option names to menu items.
      */
-    private Map<String,JCheckBoxMenuItem> itemMap = new LinkedHashMap<String,JCheckBoxMenuItem>();
-    
-    /**
-     * Dummy method to force static initialisation
-     */
-    public static void forceInit() {}
-    
+    private Map<String,JMenuItem> itemMap = new LinkedHashMap<String,JMenuItem>();
 }

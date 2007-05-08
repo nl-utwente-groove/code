@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: JGraphPanel.java,v 1.6 2007-04-30 19:53:29 rensink Exp $
+ * $Id: JGraphPanel.java,v 1.7 2007-05-08 23:12:26 rensink Exp $
  */
 package groove.gui;
 
@@ -37,7 +37,7 @@ import javax.swing.JSplitPane;
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
@@ -214,7 +214,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * in at construction time.
      */
     protected void addOptionListener(String option, ItemListener listener) {
-    	JCheckBoxMenuItem optionItem = getOptionsItem(option);
+    	JMenuItem optionItem = getOptionsItem(option);
     	if (optionItem == null) {
     		throw new IllegalArgumentException(String.format("Unknown option: %s", option));
     	}
@@ -290,7 +290,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * Retrieves the options item for a given option name,
      * creating it first if necessary.
      */
-    protected JCheckBoxMenuItem getOptionsItem(String option) {
+    protected JMenuItem getOptionsItem(String option) {
     	Options options = getOptions();
     	return options == null ? null : options.getItem(option);
     }
