@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.25 2007-05-07 17:24:36 rensink Exp $
+ * $Id: Simulator.java,v 1.26 2007-05-08 10:57:58 rensink Exp $
  */
 package groove.gui;
 
@@ -119,7 +119,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  */
 public class Simulator {
     /**
@@ -1054,9 +1054,9 @@ public class Simulator {
     JTabbedPane getGraphViewsPanel() {
         if (graphViewsPanel == null) {
             graphViewsPanel = new JTabbedPane();
-            graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON, getStatePanel(), "");
-            graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(), "");
-            graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, getLtsPanel(), "");
+            graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON, getStatePanel(), "Current graph state");
+            graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(), "Selected rule");
+            graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, getLtsPanel(), "Labelled transition system");
             // add this simulator as a listener so that the actions are updated regularly
             graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {

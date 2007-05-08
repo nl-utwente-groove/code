@@ -12,14 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJGraph.java,v 1.3 2007-04-30 19:53:28 rensink Exp $
+ * $Id: AspectJGraph.java,v 1.4 2007-05-08 10:57:55 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringLayouter;
-import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.RuleAspect;
@@ -85,7 +84,7 @@ public class AspectJGraph extends JGraph {
         addSeparatorUnlessFirst(result);
         result.add(computeSetMenu());
         result.addSeparator();
-        result.add(simulator.getEditGraphAction());
+        result.add(simulator.getEditRuleAction());
         super.fillPopupMenu(result);
     }
 
@@ -98,6 +97,7 @@ public class AspectJGraph extends JGraph {
         JMenu setMenu = new JMenu("Set rule to") {
             @Override
             public void menuSelectionChanged(boolean selected) {
+                super.menuSelectionChanged(selected);
                 if (selected) {
                     removeAll();
                     for (RuleNameLabel ruleName: simulator.getCurrentGrammar().getRuleMap().keySet()) {
