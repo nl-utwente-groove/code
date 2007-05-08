@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.9 2007-05-04 22:51:26 rensink Exp $
+ * $Id: RuleJTree.java,v 1.10 2007-05-08 10:41:30 rensink Exp $
  */
 package groove.gui;
 
@@ -61,12 +61,13 @@ import javax.swing.event.TreeSelectionListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -374,21 +375,25 @@ public class RuleJTree extends JTree implements SimulationListener {
         return new RuleSelectionListener();
     }
 
-    /** Creates a menu for this panel. */
-    protected JPopupMenu createPopupMenu() {
+    /** Creates a menu for this panel. 
+     * @param node TODO*/
+    protected JPopupMenu createPopupMenu(TreeNode node) {
         JPopupMenu res = new JPopupMenu();
-        res.add(new JMenuItem(simulator.getApplyTransitionAction()));
-        if (simulator.getCurrentRule() != null) {
+        res.add(simulator.getNewRuleAction());
+        if (node instanceof RuleTreeNode) {
 			res.addSeparator();
 			res.add(simulator.getEnableRuleAction());
 			res.addSeparator();
 			res.add(simulator.getCopyRuleAction());
 			res.add(simulator.getDeleteRuleAction());
-			res.add(simulator.getEditGraphPropertiesAction());
-			res.add(simulator.getEditRuleAction());
 			res.add(simulator.getRenameRuleAction());
-		}
-		res.add(simulator.getNewRuleAction());
+            res.addSeparator();
+            res.add(simulator.getEditGraphPropertiesAction());
+            res.add(simulator.getEditRuleAction());
+		} else if (node instanceof MatchTreeNode) {
+            res.addSeparator();
+            res.add(simulator.getApplyTransitionAction());
+        }
         return res;
     }
 
@@ -525,7 +530,9 @@ public class RuleJTree extends JTree implements SimulationListener {
 
         private void maybeShowPopup(MouseEvent evt) {
             if (evt.isPopupTrigger()) {
-                createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
+                TreePath selectedPath = getPathForLocation(evt.getX(), evt.getY());
+                TreeNode selectedNode = selectedPath == null ? null : (TreeNode) selectedPath.getLastPathComponent();
+                createPopupMenu(selectedNode).show(evt.getComponent(), evt.getX(), evt.getY());
             }
         }
     }
