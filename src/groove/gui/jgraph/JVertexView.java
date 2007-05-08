@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.5 2007-04-24 10:06:48 rensink Exp $
+ * $Id: JVertexView.java,v 1.6 2007-05-08 11:41:40 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import groove.gui.Options;
 import groove.util.Converter;
 import groove.util.Groove;
 
@@ -50,7 +51,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class JVertexView extends VertexView {
 	/** HTML tag to make text bold. */
@@ -58,7 +59,19 @@ public class JVertexView extends VertexView {
 	/** HTML tag to make text italic. */
     protected static final Converter.HTMLTag italicTag = Converter.createHtmlTag("i");
     /** HTML tag for the text display font. */
-    protected static final Converter.HTMLTag fontTag = Converter.createHtmlTag("font", "face=\"Arial\" size=-1");
+    protected static final Converter.HTMLTag fontTag;
+    
+    static {
+        Font font = Options.DEFAULT_FONT;
+        String face;
+        if (font == null) {
+            face = "Arial";
+        } else {
+            face = font.getFamily();
+        }
+        fontTag = Converter.createHtmlTag("font", "face=\""+face+"\" size=-1");
+    }
+    
     /** HTML tag for the hidden style. */
     protected static final Converter.HTMLTag hiddenTag;
     // initialise the hiddenTag
