@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.14 2007-05-06 23:16:23 rensink Exp $
+ * $Id: Options.java,v 1.15 2007-05-08 06:42:54 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class Options {
     /** Edit menu name */
@@ -109,7 +109,9 @@ public class Options {
     public static final String EXPORT_STATE_ACTION_NAME = "Export State ...";
     /** Goto start state action name */
     public static final String GOTO_START_STATE_ACTION_NAME = "Go to Start State";
-    /** List atomic propositions action name */
+	/** Graph mode action name */
+    public static final String GRAPH_MODE_ACTION_NAME = "Graph editing mode";
+	/** List atomic propositions action name */
     public static final String LIST_ATOMIC_PROPOSITIONS_ACTION_NAME = "List Atom. Prop.";
     /** Load start state action name */
     public static final String LOAD_START_STATE_ACTION_NAME = "Load Start State ...";
@@ -152,6 +154,10 @@ public class Options {
     /** Delete action name */
     public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
     /**
+	 * Rule mode action name 
+	 */
+	public static final String RULE_MODE_ACTION_NAME = "Rule editing mode and preview";
+	/**
 	 * Start simulation action name 
 	 */
 	public static final String RUN_ACTION_NAME = "Run Simulation";
@@ -179,8 +185,6 @@ public class Options {
 	 * Edit action name 
 	 */
 	public static final String SYSTEM_PROPERTIES_ACTION_NAME = "System Properties ...";
-	/** View action name */
-    public static final String VIEW_ACTION_NAME = "View as rule";
     /** Undo action name */
     public static final String UNDO_ACTION_NAME = "Undo";
     /** Select mode action name */

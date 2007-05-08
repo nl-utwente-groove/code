@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.19 2007-05-06 23:16:23 rensink Exp $
+ * $Id: Editor.java,v 1.20 2007-05-08 06:42:54 rensink Exp $
  */
 package groove.gui;
 
@@ -91,7 +91,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.19 $ $Date: 2007-05-06 23:16:23 $
+ * @version $Revision: 1.20 $ $Date: 2007-05-08 06:42:54 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -160,10 +160,29 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /**
      * Action to preview the current jgraph as a transformation rule.
      */
-    protected class RulePreviewAction extends ToolbarAction {
+    protected class RuleEditAction extends ToolbarAction {
     	/** Constructs an instance of the action. */
-        protected RulePreviewAction() {
-            super(Options.VIEW_ACTION_NAME, null, Groove.RULE_SMALL_ICON);
+        protected RuleEditAction() {
+            super(Options.RULE_MODE_ACTION_NAME, null, Groove.RULE_MODE_ICON);
+        }
+    
+        /** (non-Javadoc)
+         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+         */
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            super.actionPerformed(evt);
+            handlePreview();
+        }
+    }
+
+    /**
+     * Action to preview the current jgraph as a transformation rule.
+     */
+    protected class GraphEditAction extends ToolbarAction {
+    	/** Constructs an instance of the action. */
+        protected GraphEditAction() {
+            super(Options.GRAPH_MODE_ACTION_NAME, null, Groove.GRAPH_MODE_ICON);
         }
     
         /** (non-Javadoc)
@@ -279,7 +298,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.19 $
+     * @version $Revision: 1.20 $
      */
     protected abstract class ToolbarAction extends AbstractAction {
     	/** Constructs an action with a given name, key and icon. */
@@ -1244,7 +1263,12 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             toolbar.add(getOpenGraphAction());
             toolbar.add(getSaveGraphAction());
         }
-        toolbar.add(getRulePreviewAction());
+        
+        // Type mode block
+        toolbar.addSeparator();
+        toolbar.add(getGraphEditButton());
+        toolbar.add(getRuleEditButton());
+        getTypeButtonGroup();
 
         // Mode block
         toolbar.addSeparator();
@@ -1272,7 +1296,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     protected SystemProperties getSystemProperties() {
     	return SystemProperties.getInstance(getOptions().getValue(IS_ATTRIBUTED_OPTION));
     }
-    
+
 	/**
 	 * Returns the group of editing mode buttons, lazily creating it first.
 	 */
@@ -1284,6 +1308,18 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 			modeButtonGroup.add(getEdgeModeButton());
 		}
 		return modeButtonGroup;
+	}
+
+	/**
+	 * Returns the group of editing mode buttons, lazily creating it first.
+	 */
+	private ButtonGroup getTypeButtonGroup() {
+		if (typeButtonGroup == null) {
+			typeButtonGroup = new ButtonGroup();
+			typeButtonGroup.add(getGraphEditButton());
+			typeButtonGroup.add(getRuleEditButton());
+		}
+		return typeButtonGroup;
 	}
 
 	/**
@@ -1322,6 +1358,30 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 		}
 		return selectModeButton;
 	}
+
+	/**
+	 * Returns the button for setting node editing mode, lazily creating it first.
+	 */
+	private JToggleButton getGraphEditButton() {
+		if (graphEditButton == null) {
+			graphEditButton = new JToggleButton(getGraphEditAction());
+			graphEditButton.setText(null);
+//			graphEditButton.setToolTipText(Options.GRAPH_MODE_ACTION_NAME);
+		}
+		return graphEditButton;
+	}
+
+	/**
+	 * Returns the button for setting selection mode, lazily creating it first.
+	 */
+	private JToggleButton getRuleEditButton() {
+		if (ruleEditButton == null) {
+			ruleEditButton = new JToggleButton(getRuleEditAction());
+			ruleEditButton.setText(null);
+//			ruleEditButton.setToolTipText(Options.RULE_MODE_ACTION_NAME);
+		}
+		return ruleEditButton;
+	}
 	
 	/** 
 	 * Callback factory method for a properties dialog for the currently edited model. 
@@ -1347,6 +1407,20 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
     protected void updateModeButtons(Action forAction) {
         Enumeration<AbstractButton> modeButtonEnum = getModeButtonGroup().getElements();
+        while (modeButtonEnum.hasMoreElements()) {
+            JToggleButton button = (JToggleButton) modeButtonEnum.nextElement();
+            if (button.getAction() == forAction) {
+                button.setSelected(true);
+            }
+        }
+    }
+
+    /**
+     * Activates the appropriate mode button (select, node or edge), based on a given (mode) action.
+     * @param forAction the mode action for which the corresponding button is to be activated
+     */
+    protected void updateTypeButtons(Action forAction) {
+        Enumeration<AbstractButton> modeButtonEnum = getTypeButtonGroup().getElements();
         while (modeButtonEnum.hasMoreElements()) {
             JToggleButton button = (JToggleButton) modeButtonEnum.nextElement();
             if (button.getAction() == forAction) {
@@ -1438,13 +1512,21 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     	}
     	return ruleFactory;
     }
-    
+
     /** Returns the rule preview action, lazily creating it first. */
-    Action getRulePreviewAction() {
+    Action getRuleEditAction() {
     	if (rulePreviewAction == null) {
-    		rulePreviewAction = new RulePreviewAction();
+    		rulePreviewAction = new RuleEditAction();
     	}
     	return rulePreviewAction;
+    }
+
+    /** Returns the rule preview action, lazily creating it first. */
+    Action getGraphEditAction() {
+    	if (graphPreviewAction == null) {
+    		graphPreviewAction = new GraphEditAction();
+    	}
+    	return graphPreviewAction;
     }
 
     /**
@@ -1613,6 +1695,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     private Action pasteAction;
     /** Action to create a rule preview dialog. */
     private Action rulePreviewAction;
+    /** Action to switch to graph editing. */
+    private Action graphPreviewAction;
     /** Action to save the current graph. */
     private Action saveAction;
     /** Action to export the current graph in an image format. */
@@ -1641,6 +1725,12 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     private transient JToggleButton nodeModeButton;
     /** Button for setting selection mode. */
     private transient JToggleButton selectModeButton;
+    /** Button for setting graph editing mode. */
+    private transient JToggleButton graphEditButton;
+    /** Button for setting rule editing mode. */
+    private transient JToggleButton ruleEditButton;
     /** Collection of editing mode buttons. */
     private ButtonGroup modeButtonGroup;
+    /** Collection of graph editing type buttons. */
+    private ButtonGroup typeButtonGroup;
 }

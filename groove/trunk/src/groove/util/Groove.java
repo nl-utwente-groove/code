@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.11 2007-04-30 19:53:32 rensink Exp $
+ * $Id: Groove.java,v 1.12 2007-05-08 06:42:36 rensink Exp $
  */
 package groove.util;
 
@@ -41,7 +41,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.11 $ 
+ * @version $Revision: 1.12 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -80,8 +80,10 @@ public class Groove {
     public static final String XML_PROPERTIES_FILE = "groove.xml"+PROPERTY_EXTENSION;
     /** Icon for GPS folders. */
     public static final ImageIcon GPS_FOLDER_ICON = new ImageIcon(getResource("gps.gif"));
-    /** Small icon for graphs. */
-    public static final ImageIcon GRAPH_SMALL_ICON = new ImageIcon(getResource("graph-small.gif"));
+    /** Graph editing mode icon. */
+    public static final ImageIcon GRAPH_MODE_ICON = new ImageIcon(getResource("graph-mode.gif"));
+    /** Rule editing mode icon. */
+    public static final ImageIcon RULE_MODE_ICON = new ImageIcon(getResource("rule-mode.gif"));
     /** Icon for graphs. */
     public static final ImageIcon GRAPH_ICON = new ImageIcon(getResource("graph.gif"));
     /** Icon for graph (GXL or GST) files. */
