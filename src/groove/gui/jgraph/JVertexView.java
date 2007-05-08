@@ -12,11 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.6 2007-05-08 11:41:40 rensink Exp $
+ * $Id: JVertexView.java,v 1.7 2007-05-08 23:12:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
-import groove.gui.Options;
 import groove.util.Converter;
 import groove.util.Groove;
 
@@ -32,7 +31,7 @@ import java.awt.geom.Rectangle2D;
 import java.util.Map;
 
 import javax.swing.BorderFactory;
-import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.JTextArea;
 import javax.swing.border.Border;
 
@@ -51,25 +50,27 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class JVertexView extends VertexView {
-	/** HTML tag to make text bold. */
-    protected static final Converter.HTMLTag strongTag = Converter.createHtmlTag("b");
-	/** HTML tag to make text italic. */
-    protected static final Converter.HTMLTag italicTag = Converter.createHtmlTag("i");
+	/** HTML tag to indicate HTML formatting. */
+    private static final Converter.HTMLTag htmlTag = Converter.createHtmlTag("html");
     /** HTML tag for the text display font. */
-    protected static final Converter.HTMLTag fontTag;
+    private static final Converter.HTMLTag fontTag;
     
     static {
-        Font font = Options.DEFAULT_FONT;
+        Font font = GraphConstants.DEFAULTFONT;
         String face;
+        int size;
         if (font == null) {
             face = "Arial";
+            size=-1;
         } else {
             face = font.getFamily();
+            size = font.getSize() - 2;
         }
-        fontTag = Converter.createHtmlTag("font", "face=\""+face+"\" size=-1");
+        String argument = String.format("style=\"font-family:%s; font-size:%dpx\"", face, size);
+        fontTag = Converter.createHtmlTag("span", argument);
     }
     
     /** HTML tag for the hidden style. */
@@ -347,10 +348,10 @@ public class JVertexView extends VertexView {
     }
     
     /**
-     * Milti-line vertex renderer, based on a {@link JEditorPane} with <tt>html</tt>
+     * Multi-line vertex renderer, based on a {@link JLabel} with <tt>html</tt>
      * formatting. 
      */
-    public static class EditorPaneRenderer extends JEditorPane implements CellViewRenderer {
+    public static class EditorPaneRenderer extends JLabel implements CellViewRenderer {
     	/** The underlying <code>JGraph</code>. */
         protected transient org.jgraph.JGraph graph = null;
 
@@ -358,7 +359,7 @@ public class JVertexView extends VertexView {
         transient protected boolean hasFocus, selected, preview;
 
         public EditorPaneRenderer() {
-        	super("text/html", "");
+//        	super("text/html", "");
         	setMinimumSize(JAttr.DEFAULT_NODE_SIZE);
         }
 
@@ -390,7 +391,7 @@ public class JVertexView extends VertexView {
         	if (text.length() == 0) {
         		text = "&nbsp;&nbsp;&nbsp;";
         	}
-        	String displayText = fontTag.on(text);
+        	String displayText = htmlTag.on(fontTag.on(text));
         	super.setText(displayText);
         }
         

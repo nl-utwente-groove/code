@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJGraph.java,v 1.4 2007-04-30 19:53:28 rensink Exp $
+ * $Id: LTSJGraph.java,v 1.5 2007-05-08 23:12:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -58,6 +58,7 @@ public class LTSJGraph extends JGraph {
         addMouseListener(new MyMouseListener());
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setLayoutMenu.selectLayoutAction(createInitialLayouter());
+        setEnabled(false);
     }
 
 	/**

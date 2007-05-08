@@ -13,17 +13,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.28 2007-05-08 16:22:29 rensink Exp $
+ * $Id: Simulator.java,v 1.29 2007-05-08 23:12:26 rensink Exp $
  */
 package groove.gui;
 
-import static groove.gui.Options.HELP_MENU_NAME;
-import static groove.gui.Options.OPTIONS_MENU_NAME;
-import static groove.gui.Options.SHOW_ANCHORS_OPTION;
-import static groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
-import static groove.gui.Options.SHOW_REMARKS_OPTION;
-import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
+import static groove.gui.Options.*;
+
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphInfo;
@@ -119,7 +114,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  */
 public class Simulator {
     /**
@@ -701,9 +696,9 @@ public class Simulator {
         try {
         	AspectualGrammarView grammar = grammarLoader.unmarshal(grammarFile, startStateName);
         	setGrammar(grammar);
-        	if (grammar.getStartGraph() != null) {
-        		startSimulation(grammar);
-        	}
+//        	if (grammar.getStartGraph() != null) {
+//        		startSimulation(grammar);
+//        	}
             // now we know loading succeeded, we can set the current names & files
             currentGrammarFile = grammarFile;
             currentGrammarLoader = grammarLoader;
@@ -869,6 +864,9 @@ public class Simulator {
 		setCurrentGTS(null);
 		fireSetGrammar(grammar);
 		refresh();
+		if (grammar.getStartGraph() != null && confirmBehaviourOption(START_SIMULATION_OPTION)) {
+			startSimulation(grammar);
+		}
 	}
 
     /**
@@ -1266,6 +1264,12 @@ public class Simulator {
     	result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
     	result.add(getOptions().getItem(SHOW_REMARKS_OPTION));
     	result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
+    	result.addSeparator();
+    	result.add(getOptions().getItem(START_SIMULATION_OPTION));
+    	result.add(getOptions().getItem(STOP_SIMULATION_OPTION));
+    	result.add(getOptions().getItem(DELETE_RULE_OPTION));
+    	result.add(getOptions().getItem(REPLACE_RULE_OPTION));
+    	result.add(getOptions().getItem(REPLACE_START_GRAPH_OPTION));
     	return result;
 	}
 
@@ -1515,11 +1519,7 @@ public class Simulator {
     private boolean confirmAbandon(boolean setGrammar) {
     	boolean result;
         if (getCurrentGTS() != null) {
-            int response = JOptionPane.showConfirmDialog(getFrame(),
-                "Abandon current LTS?",
-                null,
-                JOptionPane.OK_CANCEL_OPTION);
-            result = response == JOptionPane.OK_OPTION;
+            result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
             if (result && setGrammar) {
             	setGrammar(getCurrentGrammar());
             }
@@ -1530,33 +1530,12 @@ public class Simulator {
     }
 
     /**
-     * Asks whether the current rule should be replaced by the edited version.
-     */
-    private boolean confirmReplaceRule(String ruleName) {
-        int answer = JOptionPane.showConfirmDialog(getFrame(), "Replace rule " + ruleName
-                + " with edited version?", null, JOptionPane.OK_CANCEL_OPTION);
-        return answer == JOptionPane.OK_OPTION;
-    }
-
-    /**
-     * Asks whether the current rule should be removed from the rule system.
-     */
-    private boolean confirmDeleteRule(String ruleName) {
-        int answer = JOptionPane.showConfirmDialog(getFrame(), "Delete rule " + ruleName
-                + "?", null, JOptionPane.OK_CANCEL_OPTION);
-        return answer == JOptionPane.OK_OPTION;
-    }
-
-    /**
      * Asks whether the current start graph should be replaced by the edited version.
      */
     private boolean confirmLoadStartState(String stateName) {
     	if (getCurrentGTS() != null) {
-			int answer = JOptionPane.showConfirmDialog(getFrame(),
-					"Replace start graph with " + stateName + "?",
-					null,
-					JOptionPane.OK_CANCEL_OPTION);
-			return answer == JOptionPane.OK_OPTION;
+    		String question = String.format("Replace start graph with %s?", stateName);
+			return confirmBehaviour(REPLACE_START_GRAPH_OPTION, question);
 		} else {
 			return true;
 		}
@@ -1569,7 +1548,7 @@ public class Simulator {
     private void showErrorDialog(String message, Exception exc) {
         new ErrorDialog(getFrame(), message, exc).setVisible(true);
     }
-    
+
     /** 
      * Enters a dialog that results in a name label that does not yet
      * occur in the current grammar, or <code>null</code> if the dialog
@@ -1583,7 +1562,23 @@ public class Simulator {
     	ruleNameDialog.showDialog(getFrame(), suggestion);
     	return ruleNameDialog.getName();
     }
-    
+
+    /** 
+     * Checks if a given option is confirmed.
+     * The question can be set explicitly.
+     */
+    private boolean confirmBehaviour(String option, String question) {
+    	BehaviourOption menu = (BehaviourOption) getOptions().getItem(option);
+    	return menu.confirm(getFrame(), question);
+    }
+
+    /** 
+     * Checks if a given option is confirmed.
+     */
+    private boolean confirmBehaviourOption(String option) {
+    	return confirmBehaviour(option, null);
+    }
+
     /**
      * Returns the options object associated with the simulator.
      */
@@ -1591,8 +1586,8 @@ public class Simulator {
     	// lazily creates the options 
     	if (options == null) {
     		options = new Options();
-    		options.getItem(SHOW_REMARKS_OPTION).setState(true);
-            options.getItem(SHOW_STATE_IDS_OPTION).setState(true);
+    		options.getItem(SHOW_REMARKS_OPTION).setSelected(true);
+            options.getItem(SHOW_STATE_IDS_OPTION).setSelected(true);
     	}
     	return options;
     }
@@ -2129,7 +2124,8 @@ public class Simulator {
 		
 		public void actionPerformed(ActionEvent e) {
 			RuleNameLabel ruleName = getCurrentRule().getName();
-			if (confirmAbandon(true) && confirmDeleteRule(ruleName.toString())) {
+	    	String question = String.format("Delete rule %s?", ruleName);
+			if (confirmAbandon(true) && confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
 				doDeleteRule(ruleName);
 			}
 		}
@@ -2151,7 +2147,7 @@ public class Simulator {
         public void refresh() {
         	boolean enabled = getGraphPanel() == getStatePanel();
         	setEnabled(enabled);
-        	if (enabled) {
+        	if (enabled && getGraphPanel() == getStatePanel()) {
         		getEditItem().setAction(this);
         	}
         }
@@ -2213,7 +2209,7 @@ public class Simulator {
         public void refresh() {
         	boolean enabled = getCurrentRule() != null;
         	setEnabled(enabled);
-        	if (enabled) {
+        	if (enabled && getGraphPanel() == getRulePanel()) {
         		getEditItem().setAction(this);
         	}
         }
@@ -2228,10 +2224,16 @@ public class Simulator {
         	RuleNameLabel ruleName = getCurrentRule().getName();
         	Graph editResult = doEdit(getRulePanel().getJGraph().getModel());
             if (editResult != null) {
-                if (confirmReplaceRule(ruleName.toString())) {
-                    AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(editResult);
+                AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(editResult);
+            	String question = String.format("Replace rule %s with edited version?", ruleName);
+                if (confirmBehaviour(REPLACE_RULE_OPTION, question)) {
                     doAddRule(ruleName, ruleAsAspectGraph);
-                }
+                } else {
+					RuleNameLabel newRuleName = askNewRuleName(ruleName.name());
+					if (newRuleName != null) {
+						doAddRule(newRuleName, ruleAsAspectGraph);
+					}
+				}
             }
         }
     }

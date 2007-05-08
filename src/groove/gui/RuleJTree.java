@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.11 2007-05-08 10:57:59 rensink Exp $
+ * $Id: RuleJTree.java,v 1.12 2007-05-08 23:12:26 rensink Exp $
  */
 package groove.gui;
 
@@ -50,8 +50,8 @@ import java.util.TreeSet;
 
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
-import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.ToolTipManager;
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -221,7 +221,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      */
     protected void setShowAnchorsOptionListener() {
     	if (! anchorImageOptionListenerSet) {
-    		JCheckBoxMenuItem showAnchorsOptionItem = simulator.getOptions().getItem(Options.SHOW_ANCHORS_OPTION);
+    		JMenuItem showAnchorsOptionItem = simulator.getOptions().getItem(Options.SHOW_ANCHORS_OPTION);
     		if (showAnchorsOptionItem != null) {
     	        // listen to the option controlling the rule anchor display
     			showAnchorsOptionItem.addItemListener(new ItemListener() {
@@ -667,7 +667,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	     */
 	    @Override
 	    public String toString() {
-	        return simulator.getOptions().getValue(Options.SHOW_ANCHORS_OPTION) ? edge().getEvent().getAnchorImageString() : "Match " + nr;
+	        return simulator.getOptions().isSelected(Options.SHOW_ANCHORS_OPTION) ? edge().getEvent().getAnchorImageString() : "Match " + nr;
 	    }
 	
 	    /** The number of this match, used in <tt>toString()</tt> */
