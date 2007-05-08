@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.15 2007-05-08 06:42:54 rensink Exp $
+ * $Id: Options.java,v 1.16 2007-05-08 10:09:20 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.GraphConstants;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class Options {
     /** Edit menu name */
@@ -109,8 +109,6 @@ public class Options {
     public static final String EXPORT_STATE_ACTION_NAME = "Export State ...";
     /** Goto start state action name */
     public static final String GOTO_START_STATE_ACTION_NAME = "Go to Start State";
-	/** Graph mode action name */
-    public static final String GRAPH_MODE_ACTION_NAME = "Graph editing mode";
 	/** List atomic propositions action name */
     public static final String LIST_ATOMIC_PROPOSITIONS_ACTION_NAME = "List Atom. Prop.";
     /** Load start state action name */
@@ -133,6 +131,10 @@ public class Options {
     public static final String OPEN_ACTION_NAME = "Open ...";
     /** Paste action name */
     public static final String PASTE_ACTION_NAME = "Paste";
+    /**
+     * Preview action name 
+     */
+    public static final String PREVIEW_ACTION_NAME = "Preview ...";
     /** Provide ctl formula action name */
     public static final String PROVIDE_CTL_FORMULA_ACTION_NAME = "CTL Formula ...";
     /** Quit action name */
@@ -154,10 +156,6 @@ public class Options {
     /** Delete action name */
     public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
     /**
-	 * Rule mode action name 
-	 */
-	public static final String RULE_MODE_ACTION_NAME = "Rule editing mode and preview";
-	/**
 	 * Start simulation action name 
 	 */
 	public static final String RUN_ACTION_NAME = "Run Simulation";
@@ -182,6 +180,14 @@ public class Options {
 	 */
 	static public final String SCROLL_TO_ACTION_NAME = "Scroll To Current";
 	/**
+     * Graph mode action name 
+     */
+    public static final String SET_GRAPH_TYPE_ACTION_NAME = "Set graph type editing";
+    /**
+     * Rule mode action name 
+     */
+    public static final String SET_RULE_TYPE_ACTION_NAME = "Set rule type editing";
+    /**
 	 * Edit action name 
 	 */
 	public static final String SYSTEM_PROPERTIES_ACTION_NAME = "System Properties ...";

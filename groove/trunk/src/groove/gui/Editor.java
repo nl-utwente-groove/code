@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.20 2007-05-08 06:42:54 rensink Exp $
+ * $Id: Editor.java,v 1.21 2007-05-08 10:09:20 rensink Exp $
  */
 package groove.gui;
 
@@ -80,6 +80,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.TransferHandler;
 import javax.swing.WindowConstants;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.UndoableEditEvent;
 
 import org.jgraph.event.GraphModelEvent;
@@ -91,7 +93,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.20 $ $Date: 2007-05-08 06:42:54 $
+ * @version $Revision: 1.21 $ $Date: 2007-05-08 10:09:20 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -137,256 +139,6 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         return result;
     }
     
-    /**
-     * Action to set the editing mode (selection, node or edge).
-     */
-    protected class SetEditingModeAction extends ToolbarAction {
-    	/** Constructs an action with a given name, key and icon. */
-        SetEditingModeAction(String text, KeyStroke acceleratorKey, ImageIcon smallIcon) {
-            super(text, acceleratorKey, smallIcon);
-            putValue(SHORT_DESCRIPTION, null);
-        }
-    
-        /** (non-Javadoc)
-         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-         */
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            updateModeButtons(this);
-        }
-    }
-
-    /**
-     * Action to preview the current jgraph as a transformation rule.
-     */
-    protected class RuleEditAction extends ToolbarAction {
-    	/** Constructs an instance of the action. */
-        protected RuleEditAction() {
-            super(Options.RULE_MODE_ACTION_NAME, null, Groove.RULE_MODE_ICON);
-        }
-    
-        /** (non-Javadoc)
-         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-         */
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            handlePreview();
-        }
-    }
-
-    /**
-     * Action to preview the current jgraph as a transformation rule.
-     */
-    protected class GraphEditAction extends ToolbarAction {
-    	/** Constructs an instance of the action. */
-        protected GraphEditAction() {
-            super(Options.GRAPH_MODE_ACTION_NAME, null, Groove.GRAPH_MODE_ICON);
-        }
-    
-        /** (non-Javadoc)
-         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-         */
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            handlePreview();
-        }
-    }
-
-    /**
-     * Action to export the current state of the editor to an image file.
-     */
-    protected class ExportGraphAction extends AbstractAction {
-    	/** Constructs an instance of the action. */
-        protected ExportGraphAction() {
-            super(Options.EXPORT_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
-        }
-    
-        /** (non-Javadoc)
-         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-         */
-        public void actionPerformed(ActionEvent evt) {
-            handleExportGraph();
-        }
-    }
-
-    /**
-     * Action to save the current state of the editor into a file.
-     */
-    protected class SaveGraphAction extends ToolbarAction {
-    	/** Constructs an instance of the action. */
-        protected SaveGraphAction() {
-            super(Options.SAVE_ACTION_NAME, Options.SAVE_KEY, new ImageIcon(Groove.getResource("save.gif")));
-        }
-    
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            handleSaveGraph();
-        }
-    }
-
-    /**
-     * Action to open a graph file into the editor.
-     */
-    protected class OpenGraphAction extends ToolbarAction {
-    	/** Constructs an instance of the action. */
-        protected OpenGraphAction() {
-            super(Options.OPEN_ACTION_NAME, Options.OPEN_KEY, new ImageIcon(Groove.getResource("open.gif")));
-        }
-    
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            handleOpenGraph();
-        }
-    }
-
-    /**
-     * Action to start with a blank graph.
-     */
-    protected class NewGraphAction extends ToolbarAction {
-    	/** Constructs an instance of the action. */
-        NewGraphAction() {
-            super(Options.NEW_ACTION_NAME, Options.NEW_KEY, new ImageIcon(Groove.getResource("new.gif")));
-        }
-    
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            if (showAbandonDialog()) {
-                currentFile = null;
-                setModel(new EditorJModel(NEW_GRAPH_NAME));
-                getGraphSaveChooser().setSelectedFile(null);
-            }
-        }
-    }
-
-    /** This will change the source of the actionevent to graph. */
-    protected class TransferAction extends ToolbarAction {
-        /**
-         * Constructs an action that redirects to another action, while 
-         * seting the source of the event to the editor's j-graph.
-         */
-        public TransferAction(Action action, KeyStroke acceleratorKey, String name) {
-            super(name, acceleratorKey, (ImageIcon) action.getValue(SMALL_ICON));
-            putValue(SHORT_DESCRIPTION, name);
-            setEnabled(false);
-            this.action = action;
-        }
-    
-        /** Redirects the Actionevent. */
-        @Override
-        public void actionPerformed(ActionEvent evt) {
-            super.actionPerformed(evt);
-            evt = new ActionEvent(jgraph, evt.getID(), evt.getActionCommand(), evt.getModifiers());
-            action.actionPerformed(evt);
-            if (this == getCutAction() || this == getCopyAction()) {
-                getPasteAction().setEnabled(true);
-            }
-        }
-        
-        /** The action that this transfer action wraps. */
-        protected Action action;        
-    }
-
-    /**
-     * General class for actions with toolbar buttons. Takes care of image, name and key
-     * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
-     * <tt>stopEditing()</tt>.
-     * @author Arend Rensink
-     * @version $Revision: 1.20 $
-     */
-    protected abstract class ToolbarAction extends AbstractAction {
-    	/** Constructs an action with a given name, key and icon. */
-        ToolbarAction(String name, KeyStroke acceleratorKey, Icon icon) {
-            super(name, icon);
-            putValue(Action.SHORT_DESCRIPTION, name);
-            putValue(ACCELERATOR_KEY, acceleratorKey);
-            getGraphPanel().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
-                    .put(acceleratorKey, name);
-            jgraph.getInputMap().put(acceleratorKey, name);
-            getGraphPanel().getActionMap().put(name, this);
-        }
-    
-        public void actionPerformed(ActionEvent evt) {
-            jgraph.stopEditing();
-        }
-    }
-
-    /**
-     * Action for quitting the editor.
-     * Calls {@link Editor#handleQuit()} to execute the action.
-     */
-    protected class QuitAction extends AbstractAction {
-    	/** Constructs an instance of the action. */
-        public QuitAction() {
-            super(Options.QUIT_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.QUIT_KEY);
-        }
-    
-        /**
-         * Calls {@link Editor#handleQuit()}.
-         */
-        public void actionPerformed(ActionEvent e) {
-            handleQuit();
-        }
-    }
-
-    /**
-     * Action for displaying an about box.
-     */
-    protected class AboutAction extends AbstractAction {
-    	/** Constructs an instance of the action. */
-        protected AboutAction() {
-            super(Options.ABOUT_ACTION_NAME);
-        }
-
-        public void actionPerformed(ActionEvent evt) {
-            new AboutBox(Editor.this);
-        }
-    }
-
-    /**
-     * An action to close the editor, used if the editor is invoked in the
-     * context of some other frame.
-     * Closing is done using {@link Editor#handleClose()}.
-     */
-    protected class CloseEditorAction extends AbstractAction {
-    	/** Constructs an instance of the action. */
-        public CloseEditorAction() {
-            super(Options.CLOSE_ACTION_NAME);
-        }
-        
-        /** Calls {@link Editor#handleClose()}. */
-        public void actionPerformed(ActionEvent e) {
-            handleClose();
-        }
-    }
-
-    private class EditPropertiesAction extends AbstractAction {
-    	/** Constructs an instance of the action. */
-        public EditPropertiesAction() {
-            super(Options.EDIT_ACTION_NAME);
-        }
-        
-        /** 
-         * Displays a {@link PropertiesDialog} for the properties
-         * of the edited graph.
-         */
-        public void actionPerformed(ActionEvent e) {
-            PropertiesDialog dialog = createPropertiesDialog(true);
-            if (dialog.showDialog(Editor.this)) {
-            	getModel().setProperties(new GraphProperties(dialog.getProperties()));
-            	currentGraphModified = true;
-            	refreshTitle();
-            }
-        }
-    }
-
     /** 
      * Constructs an editor frame with an initially empty graph.
      * It is not configured as an auxiliary component.
@@ -483,7 +235,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         Graph saveGraph = getModel().toPlainGraph();
         layoutGxl.marshalGraph(saveGraph, toFile);
         setCurrentGraphModified(false);
-        notifyGraphSaved();
+        setGraphSaved();
     }
 
     /**
@@ -646,8 +398,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	    	RuleNameLabel ruleName = new RuleNameLabel("temp");
             AspectualRuleView ruleGraph = (AspectualRuleView) getRuleFactory().createRuleView(getModel().toPlainGraph(), ruleName, 0, getSystemProperties());
             AspectJModel ruleModel = new AspectJModel(ruleGraph, getOptions());
-            Integer answer = showPreviewDialog(ruleModel);
-            if (answer != null && answer.intValue() == JOptionPane.OK_OPTION) {
+            if (showPreviewDialog(ruleModel)) {
                 setSelectInsertedCells(false);
                 getModel().replace(new GraphJModel(ruleModel.toPlainGraph(), getOptions()));
                 setSelectInsertedCells(true);
@@ -661,10 +412,9 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	
 	/** 
 	 * Creates a preview of an aspect model, with properties.
-	 * The return value is one of <code>null</code>, {@link JOptionPane#CANCEL_OPTION} 
-	 * or {@link JOptionPane#OK_OPTION}.
+	 * The return value indicates if the user ended the dialog by pressing OK.
 	 */
-	private Integer showPreviewDialog(AspectJModel model) {
+	private boolean showPreviewDialog(AspectJModel model) {
 		JGraph jGraph = new JGraph(model);
 		jGraph.setToolTipEnabled(true);
 		JScrollPane jGraphPane = new JScrollPane(jGraph);
@@ -680,7 +430,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 		JDialog dialog = previewPane.createDialog(getGraphPanel(), "Production rule view");
 		dialog.setSize(PREVIEW_SIZE);
 		dialog.setVisible(true);
-		return (Integer) previewPane.getValue();
+        Integer response = (Integer) previewPane.getValue();
+        return response != null && response == JOptionPane.OK_OPTION;
 	}
 
     /**
@@ -773,6 +524,16 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     }
 
     /**
+ * Lazily creates and returns the action to close the editor (in case it is auxiliary).
+ */
+private Action getCloseEditorAction() {
+	if (closeAction == null) {
+		closeAction = new CloseEditorAction();
+	}
+	return closeAction;
+}
+
+    /**
      * Lazily creates and returns the action to cut graph elements in the editor.
      */
     private Action getCutAction() {
@@ -795,18 +556,6 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             copyAction = new TransferAction(action, Options.COPY_KEY, Options.COPY_ACTION_NAME);
         }
         return copyAction;
-    }
-
-    /**
-     * Lazily creates and returns the action to paste graph elements into the editor.
-     */
-    private Action getPasteAction() {
-        if (pasteAction == null) {
-            Action action = TransferHandler.getPasteAction();
-            action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("paste.gif")));
-            pasteAction = new TransferAction(action, Options.PASTE_KEY, Options.PASTE_ACTION_NAME);
-        }
-        return pasteAction;
     }
 
     /**
@@ -833,6 +582,92 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     }
 
     /**
+     * Lazily creates and returns the action to set the editor to edge editing mode.
+     */
+    private Action getEdgeModeAction() {
+        if (edgeModeAction == null) {
+            ImageIcon edgeIcon = new ImageIcon(Groove.getResource("edge.gif"));
+            edgeModeAction = new SetEditingModeAction(Options.EDGE_MODE_NAME,
+                    Options.EDGE_MODE_KEY, edgeIcon);
+        }
+        return edgeModeAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to edit the graph properties.
+     */
+    private Action getEditPropertiesAction() {
+    	if (editPropertiesAction == null) {
+    		editPropertiesAction = new EditPropertiesAction();
+    	}
+    	return editPropertiesAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to export the current graph.
+     */
+    private Action getExportGraphAction() {
+    	if (exportAction == null) {
+    		exportAction = new ExportGraphAction();
+    	}
+    	return exportAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to start editing a fresh graph.
+     */
+    private Action getNewAction() {
+    	if (newAction == null) {
+    		newAction = new NewGraphAction();
+    	}
+    	return newAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to set the editor to node editing mode.
+     */
+    private Action getNodeModeAction() {
+        if (nodeModeAction == null) {
+            ImageIcon nodeIcon = new ImageIcon(Groove.getResource("rectangle.gif"));
+            nodeModeAction = new SetEditingModeAction(Options.NODE_MODE_NAME,
+                    Options.NODE_MODE_KEY, nodeIcon);
+        }
+        return nodeModeAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to open a new graph.
+     */
+    private Action getOpenGraphAction() {
+    	if (openAction == null) {
+    		openAction =  new OpenGraphAction();
+    	}
+    	return openAction;
+    }
+
+    /**
+     * Lazily creates and returns the action to paste graph elements into the editor.
+     */
+    private Action getPasteAction() {
+        if (pasteAction == null) {
+            Action action = TransferHandler.getPasteAction();
+            action.putValue(Action.SMALL_ICON, new ImageIcon(Groove.getResource("paste.gif")));
+            pasteAction = new TransferAction(action, Options.PASTE_KEY, Options.PASTE_ACTION_NAME);
+        }
+        return pasteAction;
+    }
+
+    /**
+	 * Lazily creates and returns the action to quit the editor.
+	 */
+	private Action getQuitAction() {
+		if (quitAction == null) {
+			quitAction = new QuitAction();
+		}
+		return quitAction;
+	}
+
+	/**
      * Lazily creates and returns the action to redo the last editor action.
      */
     private Action getRedoAction() {
@@ -848,6 +683,28 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
             redoAction.setEnabled(false);
         }
         return redoAction;
+    }
+
+    /**
+	 * Lazily creates and returns the action to save the current graph.
+	 */
+	private Action getSaveGraphAction() {
+		if (saveAction == null) {
+			saveAction = new SaveGraphAction();
+		}
+		return saveAction;
+	}
+
+	/**
+     * Lazily creates and returns the action to set the editor to selection mode.
+     */
+    private Action getSelectModeAction() {
+        if (selectModeAction == null) {
+            ImageIcon selectIcon = new ImageIcon(Groove.getResource("select.gif"));
+            selectModeAction = new SetEditingModeAction(Options.SELECT_MODE_NAME,
+                    Options.SELECT_MODE_KEY, selectIcon);
+        }
+        return selectModeAction;
     }
 
     /**
@@ -867,112 +724,6 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         }
         return undoAction;
     }
-
-    /**
-     * Lazily creates and returns the action to set the editor to selection mode.
-     */
-    private Action getSelectModeAction() {
-        if (selectModeAction == null) {
-            ImageIcon selectIcon = new ImageIcon(Groove.getResource("select.gif"));
-            selectModeAction = new SetEditingModeAction(Options.SELECT_MODE_NAME,
-                    Options.SELECT_MODE_KEY, selectIcon);
-        }
-        return selectModeAction;
-    }
-
-    /**
-     * Lazily creates and returns the action to set the editor to node editing mode.
-     */
-    private Action getNodeModeAction() {
-        if (nodeModeAction == null) {
-            ImageIcon nodeIcon = new ImageIcon(Groove.getResource("rectangle.gif"));
-            nodeModeAction = new SetEditingModeAction(Options.NODE_MODE_NAME,
-                    Options.NODE_MODE_KEY, nodeIcon);
-        }
-        return nodeModeAction;
-    }
-
-    /**
-     * Lazily creates and returns the action to set the editor to edge editing mode.
-     */
-    private Action getEdgeModeAction() {
-        if (edgeModeAction == null) {
-            ImageIcon edgeIcon = new ImageIcon(Groove.getResource("edge.gif"));
-            edgeModeAction = new SetEditingModeAction(Options.EDGE_MODE_NAME,
-                    Options.EDGE_MODE_KEY, edgeIcon);
-        }
-        return edgeModeAction;
-    }
-
-    /**
-	 * Lazily creates and returns the action to close the editor (in case it is auxiliary).
-	 */
-	private Action getCloseEditorAction() {
-		if (closeAction == null) {
-			closeAction = new CloseEditorAction();
-		}
-		return closeAction;
-	}
-
-	/**
-	 * Lazily creates and returns the action to quit the editor.
-	 */
-	private Action getQuitAction() {
-		if (quitAction == null) {
-			quitAction = new QuitAction();
-		}
-		return quitAction;
-	}
-
-	/**
-	 * Lazily creates and returns the action to export the current graph.
-	 */
-	private Action getExportGraphAction() {
-		if (exportAction == null) {
-			exportAction = new ExportGraphAction();
-		}
-		return exportAction;
-	}
-
-	/**
-	 * Lazily creates and returns the action to save the current graph.
-	 */
-	private Action getSaveGraphAction() {
-		if (saveAction == null) {
-			saveAction = new SaveGraphAction();
-		}
-		return saveAction;
-	}
-
-	/**
-	 * Lazily creates and returns the action to open a new graph.
-	 */
-	private Action getOpenGraphAction() {
-		if (openAction == null) {
-			openAction =  new OpenGraphAction();
-		}
-		return openAction;
-	}
-
-	/**
-	 * Lazily creates and returns the action to start editing a fresh graph.
-	 */
-	private Action getNewAction() {
-		if (newAction == null) {
-			newAction = new NewGraphAction();
-		}
-		return newAction;
-	}
-	
-	/**
-	 * Lazily creates and returns the action to edit the graph properties.
-	 */
-	private Action getEditPropertiesAction() {
-		if (editPropertiesAction == null) {
-			editPropertiesAction = new EditPropertiesAction();
-		}
-		return editPropertiesAction;
-	}
 
     /** Initialises the GUI. */
     protected void initGUI() {
@@ -1092,7 +843,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	 * Registers that a graph has been saved.
 	 * @see #isAnyGraphSaved()
 	 */
-    protected void notifyGraphSaved() {
+    protected void setGraphSaved() {
     	anyGraphSaved = true;
     }
 
@@ -1101,6 +852,26 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
      */
     protected boolean isAnyGraphSaved() {
         return anyGraphSaved;
+    }
+
+    /**
+     * Indicates if we are editing a rule or a graph.
+     * @return <code>true</code> if we are editing a graph.
+     */
+    private boolean isEditingGraph() {
+        return editingGraph;
+    }
+
+    /**
+     * Sets the edit type to graph or rule.
+     * @param editingGraph if <code>true</code>, the edit type is set to graph
+     * @return <code>true</code> if the current edit type was actually changed; <code>false</code> if it 
+     * was already equal to <code>editingGraph</code>
+     */
+    private boolean setEditingGraph(boolean editingGraph) {
+        boolean result = this.editingGraph != editingGraph;
+        this.editingGraph = editingGraph;
+        return result;
     }
 
     /**
@@ -1266,8 +1037,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         
         // Type mode block
         toolbar.addSeparator();
-        toolbar.add(getGraphEditButton());
-        toolbar.add(getRuleEditButton());
+        toolbar.add(getGraphTypeButton());
+        toolbar.add(getRuleTypeButton());
         getTypeButtonGroup();
 
         // Mode block
@@ -1316,8 +1087,8 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	private ButtonGroup getTypeButtonGroup() {
 		if (typeButtonGroup == null) {
 			typeButtonGroup = new ButtonGroup();
-			typeButtonGroup.add(getGraphEditButton());
-			typeButtonGroup.add(getRuleEditButton());
+			typeButtonGroup.add(getGraphTypeButton());
+			typeButtonGroup.add(getRuleTypeButton());
 		}
 		return typeButtonGroup;
 	}
@@ -1362,25 +1133,36 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
 	/**
 	 * Returns the button for setting node editing mode, lazily creating it first.
 	 */
-	private JToggleButton getGraphEditButton() {
-		if (graphEditButton == null) {
-			graphEditButton = new JToggleButton(getGraphEditAction());
-			graphEditButton.setText(null);
+	private JToggleButton getGraphTypeButton() {
+		if (graphTypeButton == null) {
+			graphTypeButton = new JToggleButton(getSetGraphTypeAction());
+			graphTypeButton.setText(null);
+            graphTypeButton.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    graphTypeButton.setToolTipText(graphTypeButton.isSelected() ? Options.PREVIEW_ACTION_NAME : Options.SET_GRAPH_TYPE_ACTION_NAME);
+                }
+            });
+            graphTypeButton.doClick();
 //			graphEditButton.setToolTipText(Options.GRAPH_MODE_ACTION_NAME);
 		}
-		return graphEditButton;
+		return graphTypeButton;
 	}
 
 	/**
 	 * Returns the button for setting selection mode, lazily creating it first.
 	 */
-	private JToggleButton getRuleEditButton() {
-		if (ruleEditButton == null) {
-			ruleEditButton = new JToggleButton(getRuleEditAction());
-			ruleEditButton.setText(null);
+	private JToggleButton getRuleTypeButton() {
+		if (ruleTypeButton == null) {
+			ruleTypeButton = new JToggleButton(getSetRuleTypeAction());
+			ruleTypeButton.setText(null);
+            ruleTypeButton.addChangeListener(new ChangeListener() {
+                public void stateChanged(ChangeEvent e) {
+                    ruleTypeButton.setToolTipText(ruleTypeButton.isSelected() ? Options.PREVIEW_ACTION_NAME : Options.SET_RULE_TYPE_ACTION_NAME);
+                }
+            });
 //			ruleEditButton.setToolTipText(Options.RULE_MODE_ACTION_NAME);
 		}
-		return ruleEditButton;
+		return ruleTypeButton;
 	}
 	
 	/** 
@@ -1514,17 +1296,17 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     }
 
     /** Returns the rule preview action, lazily creating it first. */
-    Action getRuleEditAction() {
+    Action getSetRuleTypeAction() {
     	if (rulePreviewAction == null) {
-    		rulePreviewAction = new RuleEditAction();
+    		rulePreviewAction = new SetRuleTypeAction();
     	}
     	return rulePreviewAction;
     }
 
     /** Returns the rule preview action, lazily creating it first. */
-    Action getGraphEditAction() {
+    Action getSetGraphTypeAction() {
     	if (graphPreviewAction == null) {
-    		graphPreviewAction = new GraphEditAction();
+    		graphPreviewAction = new SetGraphTypeAction();
     	}
     	return graphPreviewAction;
     }
@@ -1577,6 +1359,9 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** Indicates whether jgraph has been modified since the last save. */
     private boolean anyGraphSaved;
 
+    /** Flag indicating if the editor is editing a graph or a rule. */
+    private boolean editingGraph;
+    
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
 
@@ -1726,11 +1511,270 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** Button for setting selection mode. */
     private transient JToggleButton selectModeButton;
     /** Button for setting graph editing mode. */
-    private transient JToggleButton graphEditButton;
+    private transient JToggleButton graphTypeButton;
     /** Button for setting rule editing mode. */
-    private transient JToggleButton ruleEditButton;
+    private transient JToggleButton ruleTypeButton;
     /** Collection of editing mode buttons. */
     private ButtonGroup modeButtonGroup;
     /** Collection of graph editing type buttons. */
     private ButtonGroup typeButtonGroup;
+    
+
+    /**
+     * Action for displaying an about box.
+     */
+    private class AboutAction extends AbstractAction {
+        /** Constructs an instance of the action. */
+        protected AboutAction() {
+            super(Options.ABOUT_ACTION_NAME);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+            new AboutBox(Editor.this);
+        }
+    }
+
+    /**
+     * An action to close the editor, used if the editor is invoked in the
+     * context of some other frame.
+     * Closing is done using {@link Editor#handleClose()}.
+     */
+    private class CloseEditorAction extends AbstractAction {
+        /** Constructs an instance of the action. */
+        public CloseEditorAction() {
+            super(Options.CLOSE_ACTION_NAME);
+        }
+        
+        /** Calls {@link Editor#handleClose()}. */
+        public void actionPerformed(ActionEvent e) {
+            handleClose();
+        }
+    }
+
+    private class EditPropertiesAction extends AbstractAction {
+        /** Constructs an instance of the action. */
+        public EditPropertiesAction() {
+            super(Options.EDIT_ACTION_NAME);
+        }
+        
+        /** 
+         * Displays a {@link PropertiesDialog} for the properties
+         * of the edited graph.
+         */
+        public void actionPerformed(ActionEvent e) {
+            PropertiesDialog dialog = createPropertiesDialog(true);
+            if (dialog.showDialog(Editor.this)) {
+                getModel().setProperties(new GraphProperties(dialog.getProperties()));
+                currentGraphModified = true;
+                refreshTitle();
+            }
+        }
+    }
+
+
+    /**
+     * Action to export the current state of the editor to an image file.
+     */
+    private class ExportGraphAction extends AbstractAction {
+        /** Constructs an instance of the action. */
+        protected ExportGraphAction() {
+            super(Options.EXPORT_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
+        }
+    
+        /** (non-Javadoc)
+         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+         */
+        public void actionPerformed(ActionEvent evt) {
+            handleExportGraph();
+        }
+    }
+
+
+    /**
+     * Action to start with a blank graph.
+     */
+    private class NewGraphAction extends ToolbarAction {
+        /** Constructs an instance of the action. */
+        NewGraphAction() {
+            super(Options.NEW_ACTION_NAME, Options.NEW_KEY, new ImageIcon(Groove.getResource("new.gif")));
+        }
+    
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            super.actionPerformed(evt);
+            if (showAbandonDialog()) {
+                currentFile = null;
+                setModel(new EditorJModel(NEW_GRAPH_NAME));
+                getGraphSaveChooser().setSelectedFile(null);
+            }
+        }
+    }
+
+    /**
+     * Action to open a graph file into the editor.
+     */
+    private class OpenGraphAction extends ToolbarAction {
+        /** Constructs an instance of the action. */
+        protected OpenGraphAction() {
+            super(Options.OPEN_ACTION_NAME, Options.OPEN_KEY, new ImageIcon(Groove.getResource("open.gif")));
+        }
+    
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            super.actionPerformed(evt);
+            handleOpenGraph();
+        }
+    }
+
+    /**
+     * Action for quitting the editor.
+     * Calls {@link Editor#handleQuit()} to execute the action.
+     */
+    private class QuitAction extends AbstractAction {
+        /** Constructs an instance of the action. */
+        public QuitAction() {
+            super(Options.QUIT_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.QUIT_KEY);
+        }
+    
+        /**
+         * Calls {@link Editor#handleQuit()}.
+         */
+        public void actionPerformed(ActionEvent e) {
+            handleQuit();
+        }
+    }
+    
+    /**
+     * Action to save the current state of the editor into a file.
+     */
+    private class SaveGraphAction extends ToolbarAction {
+        /** Constructs an instance of the action. */
+        protected SaveGraphAction() {
+            super(Options.SAVE_ACTION_NAME, Options.SAVE_KEY, new ImageIcon(Groove.getResource("save.gif")));
+        }
+    
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            super.actionPerformed(evt);
+            handleSaveGraph();
+        }
+    }
+
+    /**
+     * Action to set the editing mode (selection, node or edge).
+     */
+    private class SetEditingModeAction extends ToolbarAction {
+        /** Constructs an action with a given name, key and icon. */
+        SetEditingModeAction(String text, KeyStroke acceleratorKey, ImageIcon smallIcon) {
+            super(text, acceleratorKey, smallIcon);
+            putValue(SHORT_DESCRIPTION, null);
+        }
+    
+        /** (non-Javadoc)
+         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+         */
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            super.actionPerformed(evt);
+            updateModeButtons(this);
+        }
+    }
+
+    /**
+     * Action to preview the current jgraph as a transformation rule.
+     */
+    private class SetGraphTypeAction extends ToolbarAction {
+        /** Constructs an instance of the action. */
+        protected SetGraphTypeAction() {
+            super(Options.SET_GRAPH_TYPE_ACTION_NAME, null, Groove.GRAPH_MODE_ICON);
+        }
+    
+        /** (non-Javadoc)
+         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+         */
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            super.actionPerformed(evt);
+            if (!setEditingGraph(true)) {
+                // only do a preview if the type was not changed (on the second click)
+                handlePreview();
+            }
+        }
+    }
+
+    /**
+     * Action to preview the current jgraph as a transformation rule.
+     */
+    private class SetRuleTypeAction extends ToolbarAction {
+        /** Constructs an instance of the action. */
+        protected SetRuleTypeAction() {
+            super(Options.SET_RULE_TYPE_ACTION_NAME, null, Groove.RULE_MODE_ICON);
+        }
+    
+        /** (non-Javadoc)
+         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
+         */
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            super.actionPerformed(evt);
+            if (!setEditingGraph(false)) {
+                // only do a preview if the type was not changed (on the second click)
+                handlePreview();
+            }
+        }
+    }
+
+    /** This will change the source of the actionevent to graph. */
+    private class TransferAction extends ToolbarAction {
+        /**
+         * Constructs an action that redirects to another action, while 
+         * seting the source of the event to the editor's j-graph.
+         */
+        public TransferAction(Action action, KeyStroke acceleratorKey, String name) {
+            super(name, acceleratorKey, (ImageIcon) action.getValue(SMALL_ICON));
+            putValue(SHORT_DESCRIPTION, name);
+            setEnabled(false);
+            this.action = action;
+        }
+    
+        /** Redirects the Actionevent. */
+        @Override
+        public void actionPerformed(ActionEvent evt) {
+            super.actionPerformed(evt);
+            evt = new ActionEvent(jgraph, evt.getID(), evt.getActionCommand(), evt.getModifiers());
+            action.actionPerformed(evt);
+            if (this == getCutAction() || this == getCopyAction()) {
+                getPasteAction().setEnabled(true);
+            }
+        }
+        
+        /** The action that this transfer action wraps. */
+        protected Action action;        
+    }
+
+    /**
+     * General class for actions with toolbar buttons. Takes care of image, name and key
+     * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
+     * <tt>stopEditing()</tt>.
+     * @author Arend Rensink
+     * @version $Revision: 1.21 $
+     */
+    private abstract class ToolbarAction extends AbstractAction {
+        /** Constructs an action with a given name, key and icon. */
+        ToolbarAction(String name, KeyStroke acceleratorKey, Icon icon) {
+            super(name, icon);
+            putValue(Action.SHORT_DESCRIPTION, name);
+            putValue(ACCELERATOR_KEY, acceleratorKey);
+            getGraphPanel().getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT)
+                    .put(acceleratorKey, name);
+            jgraph.getInputMap().put(acceleratorKey, name);
+            getGraphPanel().getActionMap().put(name, this);
+        }
+    
+        public void actionPerformed(ActionEvent evt) {
+            jgraph.stopEditing();
+        }
+    }
 }
