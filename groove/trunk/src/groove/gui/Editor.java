@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.24 2007-05-08 23:12:26 rensink Exp $
+ * $Id: Editor.java,v 1.25 2007-05-09 08:50:19 fladder Exp $
  */
 package groove.gui;
 
@@ -98,7 +98,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.24 $ $Date: 2007-05-08 23:12:26 $
+ * @version $Revision: 1.25 $ $Date: 2007-05-09 08:50:19 $
  */
 public class Editor extends JFrame implements GraphModelListener, IEditorModes {
     /** The name of the editor application. */
@@ -166,7 +166,7 @@ public class Editor extends JFrame implements GraphModelListener, IEditorModes {
         super(EDITOR_NAME);
         
     	// force the LAF to be set
-    	groove.gui.Options.forceInit();
+    	groove.gui.Options.initLookAndFeel();
        
         this.auxiliary = auxiliary;
         // Construct the main components
@@ -1638,7 +1638,7 @@ private Action getCloseEditorAction() {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.24 $
+     * @version $Revision: 1.25 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

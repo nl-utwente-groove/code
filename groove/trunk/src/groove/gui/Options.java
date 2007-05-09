@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.19 2007-05-08 23:12:26 rensink Exp $
+ * $Id: Options.java,v 1.20 2007-05-09 08:50:19 fladder Exp $
  */
 package groove.gui;
 
@@ -38,28 +38,12 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class Options {
-	
-	/** The look and feel used for GUI tools */
-	public static final LookAndFeel LOOK_AND_FEEL = new com.jgoodies.looks.plastic.PlasticLookAndFeel();
-	
-	static {
-		try
-    	{
-			// LAF specific options that should be done before setting the LAF go here
-    		PlasticLookAndFeel.setCurrentTheme(new DesertBlue());
-    		// Set the look and feel
-    		UIManager.setLookAndFeel(LOOK_AND_FEEL);
-    	} catch(UnsupportedLookAndFeelException e)
-    	{
-    		// nothing to do here except not crash on the exception
-    	}
-	}
-	
+
 	/** The default font set in the look-and-feel. */
-	public static Font DEFAULT_FONT = PlasticLookAndFeel.getCurrentTheme().getUserTextFont();
+	public static Font DEFAULT_FONT = null;
     /** Edit menu name */
     public static final String EDIT_MENU_NAME = "Edit";
     /** Display menu name */
@@ -368,8 +352,19 @@ public class Options {
     /**
 	 * Dummy method to force static initialisation
 	 */
-	public static void forceInit() {
-		// empty
+	public static void initLookAndFeel() {
+		try
+    	{
+			// LAF specific options that should be done before setting the LAF go here
+    		PlasticLookAndFeel.setCurrentTheme(new DesertBlue());
+    		// set default font to LAF font
+    		Options.DEFAULT_FONT = PlasticLookAndFeel.getCurrentTheme().getUserTextFont();
+    		// Set the look and feel
+    		UIManager.setLookAndFeel(new com.jgoodies.looks.plastic.PlasticLookAndFeel());
+    	}
+		catch(UnsupportedLookAndFeelException e) {
+    		// nothing to do here except not crash on the exception
+    	}
 	}
 
 	/** Creates an initialised options object. */ 
