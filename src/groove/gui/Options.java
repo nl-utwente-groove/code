@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.20 2007-05-09 08:50:19 fladder Exp $
+ * $Id: Options.java,v 1.21 2007-05-09 22:53:34 rensink Exp $
  */
 package groove.gui;
 
@@ -38,12 +38,13 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class Options {
 
 	/** The default font set in the look-and-feel. */
 	public static Font DEFAULT_FONT = null;
+	// Menus
     /** Edit menu name */
     public static final String EDIT_MENU_NAME = "Edit";
     /** Display menu name */
@@ -68,10 +69,30 @@ public class Options {
     static public final String SHOW_HIDE_MENU_NAME = "Show/Hide";
     /** Verify menu name */
     public static final String VERIFY_MENU_NAME = "Verify";
+    
+    // Button texts
+    /** Button text to confirm an action. */
+    public static final String OK_BUTTON = "OK";
+    /** Button text to cancel an action. */
+    public static final String CANCEL_BUTTON = "Cancel";
+    /** Button text to repair a syntactically faulty graph. */
+    public static final String USE_BUTTON = "Use";
+    /** Button text to choose in favour of something. */
+    public static final String YES_BUTTON = "Yes";
+    /** Button text to choose against of something. */
+    public static final String NO_BUTTON = "No";
+    /** Button text to always choose in favour. */
+    public static final String ALWAYS_BUTTON = "Always";
+    /** Button text to always choose against. */
+    public static final String NEVER_BUTTON = "Never";
+    /** Button text to ask the user for a decisiton. */
+    public static final String ASK_BUTTON = "Ask";
+    
     // Titles
     /** Label pane title */
     public static final String LABEL_PANE_TITLE = "Labels";
 
+    // Actions
     /**
 	 * About action name 
 	 */
@@ -306,6 +327,10 @@ public class Options {
     static public final String STOP_SIMULATION_OPTION = "Stop simulation?";
     /** Always delete rules without confirmation. */
     static public final String DELETE_RULE_OPTION = "Delete rule?";
+    /** Always repair aspect errors in edited graph. */
+    static public final String REPAIR_ON_SAVE_OPTION = "Repair low-level syntax errors?";
+    /** Always repair aspect errors in edited graph. */
+    static public final String REPLACE_BY_PREVIEW_OPTION = "Replace edited graph by preview?";
     /** Always replace edited rules. */
     static public final String REPLACE_RULE_OPTION = "Replace edited rule?";
     /** Always replace edited rules. */
@@ -379,6 +404,8 @@ public class Options {
 		addBehaviour(STOP_SIMULATION_OPTION, 2);
 		addBehaviour(START_SIMULATION_OPTION, 3);
 		addBehaviour(DELETE_RULE_OPTION, 2);
+		addBehaviour(REPAIR_ON_SAVE_OPTION, 2);
+		addBehaviour(REPLACE_BY_PREVIEW_OPTION, 2);
 		addBehaviour(REPLACE_RULE_OPTION, 3);
 		addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
 	}

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.13 2007-04-30 19:53:27 rensink Exp $
+ * $Id: SPORule.java,v 1.14 2007-05-09 22:53:34 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -123,71 +123,22 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      */
     @Override
     public void testConsistent() throws FormatException {
-    	FormatException prior = null;
-    	try {
-    		super.testConsistent();
-    	} catch (FormatException exc) {
-    		prior = exc;
-    	}
+    	super.testConsistent();
     	if (!getProperties().isAttributed() && ValueNode.hasValueNodes(rhs())) {
-			throw new FormatException(prior, "Consistency error in %s: RHS uses attributes, contrary to system property", getName());
-    	} else if (prior != null) {
-    		throw prior;
+    		String attributeKey = SystemProperties.ATTRIBUTE_SUPPORT;
+    		String attributeProperty = getProperties().getProperty(attributeKey);
+    		if (attributeProperty == null) {
+    			throw new FormatException("Rule uses attributes, but \"%s\" not declared", attributeKey);
+    		} else {
+        		throw new FormatException("Rule uses attributes, violating \"%s=%s\"", attributeKey, attributeProperty);
+    		}
     	}
     }
-//
-//    /**
-//     * Factory method to create an event based on this rule and a given anchor map.
-//     * @ensure <code>result.getRule() == this</code>
-//     */
-//    protected RuleEvent getEvent(VarNodeEdgeMap anchorMap) {
-//    	RuleEvent result;
-//    	reporter.start(GET_EVENT);
-//        if (isModifying()) {
-//            RuleEvent event = createEvent(anchorMap, record);
-//            // look if we have an event with the same characteristics
-//            result = eventMap.get(event);
-//            if (result == null) {
-//                // no, the event is new.
-//                result = event;
-//                eventMap.put(event, result);
-//                eventCount++;
-//            }
-//        } else {
-//            // there can be at most one event
-//            if (unmodifyingEvent == null) {
-//                unmodifyingEvent = createEvent(anchorMap, record);
-//                eventCount++;
-//            }
-//            result = unmodifyingEvent;
-//        }
-//        reporter.stop();
-//        return result;
-//    }
-//    
-//    /**
-//     * Clears all event information from the rule.
-//     * This should be done before a new GTS is developed, so as to
-//     * avoid node number clashes.
-//     */
-//    public void clearEvents() {
-//    	eventMap.clear();
-//    }
     
     public RuleEvent newEvent(VarNodeEdgeMap anchorMap, SystemRecord record) {
         return new SPOEvent(this, anchorMap, record);
     }
     
-    @Deprecated
-    public RuleApplication createApplication(Matching match) {
-    	return newEvent(match.elementMap(), null).newApplication(match.cod());
-    }
-//
-//    @Override
-//    public Matching createMatching(Graph graph) {
-//    	return getRuleFactory().createMatching(this, graph);
-//    }
-
 	/** Creates the search plan using the rule's search plan factory. */
     public List<SearchItem> getAnchorSearchPlan() {
 		if (eventSearchPlan == null) {
@@ -267,16 +218,6 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 
     // ------------------- commands --------------------------
 
-    /** 
-     * This method now delegates to {@link #setAndNot(GraphTest)}.
-     * @see #setAndNot(GraphTest)
-     * @deprecated use {@link #setAndNot(Edge)} instead
-     */
-    @Deprecated
-    public void addNAC(NAC nac) {
-        setAndNot(nac);
-    }
-
     /**
      * Specialises the return type.
      */
@@ -289,11 +230,6 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 		return priority;
 	}
 
-    @Deprecated
-    public void setPriority(int priority) {
-		this.priority = priority;
-	}
-    
     /**
 	 * Indicates if this rule has mergers.
 	 * @invariant <tt>result == ! getMergeMap().isEmpty()</tt>
@@ -335,49 +271,6 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	protected boolean computeModifying() {
 		return this.getEraserEdges().length > 0 || this.getEraserNodes().length > 0 || hasMergers() || hasCreators();
 	}
-
-	/**
-     * This method checks whether the given graph contains the given element.
-     * @see Graph#containsElement(Element)
-     * @param source the graph in which to look for the element
-     * @param element the element to look for
-     * @return <tt>true</tt> if the graph contains the element, <tt>false</tt> otherwise
-     * @deprecated funtionality now in {@link SPOEvent}
-     */
-	@Deprecated
-    protected boolean containsElement(Graph source, Element element) {
-    	return source.containsElement(element);
-    }
-//
-//	/**
-//	 * Overwrites the super method in order to query the {@link GraphGrammar}
-//	 * (as given by {@link #getGrammar()}) for a {@link GraphGrammar#CONTROL_LABELS}
-//	 * property; if that is found, creates a schedule factory using 
-//	 * {@link #createMatchingScheduleFactory(String)}.
-//	 * Uses the <code>super</code> method otherwise.
-//	 */
-//    @Override
-//	protected ConditionSearchPlanFactory computeSearchPlanFactory() {
-//		ConditionSearchPlanFactory result = super.computeSearchPlanFactory();
-//		GraphGrammar grammar = getGrammar();
-//		if (grammar != null) {
-//			List<String> controlLabels = grammar.getControlLabels();
-//			if (controlLabels != null) {
-//				result = createMatchingScheduleFactory(controlLabels);
-//			}
-//		}
-//		return result;
-//	}
-//    
-//    /**
-//     * Callback factory method to create a matching schedule factory from a given hint.
-//     * Returns <code>null</code> if the hint cannot be parsed.
-//     * This implementation turns the hint into a list of labels and creates a 
-//     * {@link HintedIndegreeScheduleFactory}.
-//     */
-//    protected MatchingScheduleFactory createMatchingScheduleFactory(List<String> controlLabels) {
-//    	return new HintedIndegreeScheduleFactory(controlLabels);
-//    }
 
     /** Returns the eraser (i.e., LHS-only) edges. */
     final Edge[] getEraserEdges() {

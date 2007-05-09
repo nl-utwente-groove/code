@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.8 2007-04-29 09:22:22 rensink Exp $
+ * $Id: AspectJModel.java,v 1.9 2007-05-09 22:53:35 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -51,7 +51,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class AspectJModel extends GraphJModel {
     /** Empty instance of the {@link AspectJModel}. */
@@ -96,8 +96,8 @@ public class AspectJModel extends GraphJModel {
             }
             RULE_NODE_ATTR.put(role,nodeAttr);
         }
-        GraphConstants.setSelectable(RULE_EDGE_ATTR.get(RULE), false);
-        GraphConstants.setSelectable(RULE_NODE_ATTR.get(RULE), false);
+//        GraphConstants.setSelectable(RULE_EDGE_ATTR.get(RULE), false);
+//        GraphConstants.setSelectable(RULE_NODE_ATTR.get(RULE), false);
     }
 
     /** Role names (for the tool tips). */
@@ -111,14 +111,14 @@ public class AspectJModel extends GraphJModel {
         ROLE_NAMES.put(CREATOR,"Creator");
         ROLE_NAMES.put(ERASER,"Eraser");
         ROLE_NAMES.put(REMARK,"Remark");
-        ROLE_NAMES.put(RULE,"Rule");
+//        ROLE_NAMES.put(RULE,"Rule");
         
         ROLE_DESCRIPTIONS.put(EMBARGO,"Must be absent from a graph for this rule to apply");
         ROLE_DESCRIPTIONS.put(READER, "Must be present in a graph for this rule to apply");
         ROLE_DESCRIPTIONS.put(CREATOR,"Will be created by applying this rule");
         ROLE_DESCRIPTIONS.put(ERASER,"Will be deleted by applying this rule");
         ROLE_DESCRIPTIONS.put(REMARK,"Has no effect on the execution of the rule");
-        ROLE_DESCRIPTIONS.put(RULE,"Has no effect on the execution of the rule");
+//        ROLE_DESCRIPTIONS.put(RULE,"Has no effect on the execution of the rule");
     }
 
     /** Helper method to return the rule aspect value of an aspect node. */

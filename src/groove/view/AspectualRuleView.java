@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.3 2007-05-02 08:44:34 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.4 2007-05-09 22:53:35 rensink Exp $
  */
 
 package groove.view;
@@ -66,6 +66,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Provides a graph view upon a production rule.
@@ -76,7 +77,7 @@ import java.util.Set;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -296,7 +297,15 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     }
     
 	public List<String> getErrors() {
-		return Collections.emptyList();
+		if (errors == null) {
+			try {
+				toRule();
+				errors = Collections.emptyList();
+			} catch (FormatException exc) {
+				errors = exc.getErrors();
+			}
+		}
+		return errors;
 	}
 
 	public AspectGraph getAspectGraph() {
@@ -312,6 +321,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
      * @param graph the aspect graph to compute the rule from
      */
     protected Rule computeRule(AspectGraph graph, Map<AspectNode, Node> graphToRuleMap) throws FormatException {
+    	Set<String> errors = new TreeSet<String>(graph.getErrors());
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
@@ -333,6 +343,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
         Morphism ruleMorph = createMorphism(lhs, rhs);
         // first add nodes to lhs, rhs, morphism and NAC graph
         for (AspectNode node: graph.nodeSet()) {
+        	try {
         	if (RuleAspect.inRule(node)) {
 				Node nodeImage = computeNodeImage(node, graph);
 				graphToRuleMap.put(node, nodeImage);
@@ -351,6 +362,9 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 					nacNodeSet.add(nodeImage);
 				}
 			}
+        	} catch (FormatException exc) {
+        		errors.addAll(exc.getErrors());
+        	}
         }
         // add merger edges
         for (AspectEdge edge: graph.edgeSet()) {
@@ -366,6 +380,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
         // now add edges to lhs, rhs and morphism
         Set<GraphCondition> embargoes = new HashSet<GraphCondition>();
         for (AspectEdge edge: graph.edgeSet()) {
+        	try {
         	if (RuleAspect.inRule(edge)) {
 				Edge edgeImage = computeEdgeImage(edge, graph, graphToRuleMap);
 //				boolean isEmbargo = false;
@@ -394,23 +409,34 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
 					nacEdgeSet.add(edgeImage);
 				}
 			}
+        	} catch (FormatException exc) {
+        		errors.addAll(exc.getErrors());
+        	}
         }
-        // the resulting rule
-        Rule result = createRule(ruleMorph, name, priority);
-        // add the nacs to the rule
-        for (Pair<Set<Node>,Set<Edge>> nacPair: AbstractGraph.getConnectedSets(nacNodeSet, nacEdgeSet)) {
-            result.setAndNot(computeNac(result.lhs(), nacPair.first(), nacPair.second()));
-        }
-        // add the embargoes
-        for (GraphCondition embargo: embargoes) {
-            result.setAndNot(embargo);
-        }
-        testVariableBinding(graph);
-        result.setFixed();
-        if (TO_RULE_DEBUG) {
-            System.out.println("Constructed rule: "+result);
-        }
-        return result;
+        try {
+			// the resulting rule
+			Rule result = createRule(ruleMorph, name, priority);
+			// add the nacs to the rule
+			for (Pair<Set<Node>, Set<Edge>> nacPair : AbstractGraph.getConnectedSets(nacNodeSet,
+					nacEdgeSet)) {
+				result.setAndNot(computeNac(result.lhs(), nacPair.first(), nacPair.second()));
+			}
+			// add the embargoes
+			for (GraphCondition embargo : embargoes) {
+				result.setAndNot(embargo);
+			}
+			testVariableBinding(graph);
+			result.setFixed();
+			if (TO_RULE_DEBUG) {
+				System.out.println("Constructed rule: " + result);
+			}
+			if (errors.isEmpty()) {
+				return result;
+			}
+		} catch (FormatException e) {
+			errors.addAll(e.getErrors());
+		}
+		throw new FormatException(new ArrayList<String>(errors));
     }
 
     /**
@@ -446,7 +472,9 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     	Node[] ends = new Node[edge.endCount()];
     	for (int i = 0; i < ends.length; i++) {
     		Node endImage = elementMap.get(edge.end(i));
-    		assert endImage != null : String.format("Cannot compute image of %s: node %s does not have image in %s", edge, edge.end(i), elementMap);
+    		if (endImage == null) {
+        		throw new FormatException("Cannot compute image of '%s'-edge: %s node does not have image", edge.label(), i == Edge.SOURCE_INDEX ? "source": "target");
+    		}
     		ends[i] = endImage;
     	}
     	if (edge.getValue(AttributeAspect.getInstance()) == null) {
@@ -801,7 +829,7 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
         		return new AspectEdge(ends, label, role, attributeValue);
     		}
     	} catch (FormatException exc) {
-    		assert false : String.format("Fresh edge cannot have two values for the same aspect");
+    		assert false : String.format("Fresh '%s'-edge cannot have two values for the same aspect", label);
     		return null;
     	}
     }
@@ -885,6 +913,8 @@ public class AspectualRuleView implements RuleView, AspectualView<Rule> {
     
     /** The aspect graph representation of the rule. */
     private final AspectGraph graph;
+    /** Errors found while converting the view to a rule. */
+    private List<String> errors;
     /** The rule derived from this graph, once it is computed. */
     private Rule rule;
     /** 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExpr.java,v 1.5 2007-04-29 09:22:38 rensink Exp $
+ * $Id: RegExpr.java,v 1.6 2007-05-09 22:53:37 rensink Exp $
  */
 package groove.rel;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 abstract public class RegExpr implements VarSetSupport {
     /** 
@@ -134,6 +134,14 @@ abstract public class RegExpr implements VarSetSupport {
      * Right parenthesis character used for grouping regular (sub)expressions. 
      */
     static public final char RIGHT_PARENTHESIS_CHAR = ExprParser.ROUND_BRACKETS[1];
+    /**
+     * Left backet character allowed as atom delimiter
+     */
+    static public final char LEFT_BRACKET_CHAR =  ExprParser.ANGLE_BRACKETS[0];
+    /**
+     * Right bracket character allowed as atom delimiter
+     */
+    static public final char RIGHT_BRACKET_CHAR = ExprParser.ANGLE_BRACKETS[1];
 
     /** The character for single quotes. */
     static public final char SINGLE_QUOTE_CHAR = '\'';
@@ -146,6 +154,12 @@ abstract public class RegExpr implements VarSetSupport {
      * Right parenthesis string used for grouping regular (sub)expressions. 
      */
     static public final String RIGHT_PARENTHESIS = "" + RIGHT_PARENTHESIS_CHAR;
+    /**
+     * The characters allowed in a regular expression atom, apart from letters and digits.
+     * @see #isIdentifier(String)
+     */
+    static public final String ATOM_CHARS = "_$:";
+
     /**
      * The characters allowed in a wildcard identifier, apart from letters and digits.
      * @see #isIdentifier(String)
@@ -722,6 +736,8 @@ abstract public class RegExpr implements VarSetSupport {
         public RegExpr parseOperator(String expr) throws FormatException {
             if (ExprParser.matches(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR)) {
                 return parse(ExprParser.trim(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR));
+            } else if (ExprParser.matches(expr, LEFT_BRACKET_CHAR, RIGHT_BRACKET_CHAR)) {
+                return newInstance(expr.trim());
             } else if (ExprParser.matches(expr, SINGLE_QUOTE_CHAR, SINGLE_QUOTE_CHAR)) {
                 return newInstance(ExprParser.toUnquoted(expr.trim(), SINGLE_QUOTE_CHAR));
             } else {
@@ -881,7 +897,7 @@ abstract public class RegExpr implements VarSetSupport {
 
     /**
      * Parses a given string as a regular expression.
-     * Throws an exception if the pasring does not succeed.
+     * Throws an exception if the parsing does not succeed.
      * @param expr the string to be parsed 
      * @return a regular expression which, when turned back into a string,
      * equals <code>expr</code>
@@ -896,7 +912,7 @@ abstract public class RegExpr implements VarSetSupport {
                 return result;
             }
         }
-        return null;
+        throw new FormatException("Unable to parse expression '%s'");
     }
 
     /** Creates and returns an atomic regular expression with a given atom text. */
@@ -1399,19 +1415,20 @@ abstract public class RegExpr implements VarSetSupport {
     /**
      * Tests whether a given text may be regarded as an atom, according to the rules of regular
      * expressions. (If not, then it should be single-quoted.) This implementation throws an
-     * exception if the text contains any of the operator strings in {@link #operators}
-     * as a sub-string. which is the case if the text does not contain any special characters
+     * exception if the text is empty contains any characters not allowed by {@link #isIdentifierChar(char)}.
      * @param text the text to be tested
      * @throws FormatException if the text contains a special character
      * @see #isAtom(String)
      */
-    protected void assertAtom(String text) throws FormatException {
-        for (int c = 0; c < operators.size(); c++) {
-            if (text.indexOf(operators.get(c)) >= 0) {
-                throw new FormatException("Operator " + operators.get(c) + " in unquoted atom "
-                        + text);
-            }
-        }
+    public void assertAtom(String text) throws FormatException {
+    	boolean correct = true;
+    	int i;
+    	for (i = 0; correct && i < text.length(); i++) {
+    		correct = isAtomChar(text.charAt(i));
+    	}
+    	if (!correct) {
+    		throw new FormatException("Atom '%s' contains invalid character '%c'", text, text.charAt(i-1));
+    	}
     }
 
     /**
@@ -1423,7 +1440,7 @@ abstract public class RegExpr implements VarSetSupport {
      * @return <tt>true</tt> if the text does not contain any special characters
      * @see #assertAtom(String)
      */
-    protected boolean isAtom(String text) {
+    public boolean isAtom(String text) {
         try {
             assertAtom(text);
             return true;
@@ -1441,19 +1458,29 @@ abstract public class RegExpr implements VarSetSupport {
      * @param text the text to be tested
      * @return <tt>true</tt> if the text does not contain any special characters
      */
-    protected boolean isIdentifier(String text) {
+    public boolean isIdentifier(String text) {
         if (text.length() == 0) {
             return false;
         }
         for (int i = 0; i < text.length(); i++) {
             char nextChar = text.charAt(i);
-            if (!(Character.isLetterOrDigit(nextChar) || IDENTIFIER_CHARS.indexOf(nextChar) > 0)) {
+            if (!isIdentifierChar(nextChar)) {
                 return false;
             }
         }
         return true;
     }
 
+    /** Tests if a character may occur in an atom. */
+    public boolean isAtomChar(char c) {
+    	return Character.isLetterOrDigit(c) || ATOM_CHARS.indexOf(c) >= 0;
+    }
+
+    /** Tests if a character may occur in a wildcard identifier. */
+    public boolean isIdentifierChar(char c) {
+    	return Character.isLetterOrDigit(c) || IDENTIFIER_CHARS.indexOf(c) >= 0;
+    }
+    
     /**
      * Tests if a given opject equals the operator of this regular expression class.
      */

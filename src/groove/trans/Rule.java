@@ -12,21 +12,20 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.8 2007-05-02 08:44:33 rensink Exp $
- * $Date: 2007-05-02 08:44:33 $
+ * $Id: Rule.java,v 1.9 2007-05-09 22:53:34 rensink Exp $
+ * $Date: 2007-05-09 22:53:34 $
  */
 package groove.trans;
 
-import java.util.Comparator;
-import java.util.List;
-
 import groove.graph.Element;
-import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.match.SearchItem;
 import groove.rel.VarGraph;
 import groove.rel.VarNodeEdgeMap;
+
+import java.util.Comparator;
+import java.util.List;
 
 /**
  * Interface of a production rule.
@@ -35,7 +34,7 @@ import groove.rel.VarNodeEdgeMap;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -53,15 +52,6 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
 	    }
 	    
 	};
-
-	/**
-     * Sets the priority of this rule.
-     * Should be called at initialization time, before the first application.
-     * @param priority the priority of the rule
-     * @deprecated Priority should be set at construction time
-     */
-	@Deprecated
-	public void setPriority(int priority);
 
 	/** Returns the name of this rule. */
 	public RuleNameLabel getName();
@@ -128,25 +118,4 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * which tries to find the anchor image in a given graph. 
      */
     public List<SearchItem> getAnchorSearchPlan();
-    
-    /**
-     * Factory method to create an application for this rule from a given
-     * matching.
-     * @see RuleEvent#newApplication(Graph)
-     * @deprecated use {@link #newEvent(VarNodeEdgeMap, SystemRecord)} and
-     * {@link RuleEvent#newApplication(Graph)} instead
-     */
-    @Deprecated
-    public RuleApplication createApplication(Matching match);
-
-    /** 
-     * Adds a negative application condition to this rule.
-     * After adding it, the nac may not be modified.
-     * @param nac the negative application condition to be added
-     * @require <tt>nac.source().equals(lhs())</tt>
-     * @ensure <tt>nacSet().contains(nac)</tt>
-     * @deprecated use {@link DefaultGraphCondition#setAndNot(GraphTest)} instead
-     */
-    @Deprecated
-    public void addNAC(NAC nac);
 }

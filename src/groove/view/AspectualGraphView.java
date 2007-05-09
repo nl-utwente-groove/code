@@ -1,7 +1,8 @@
-/* $Id: AspectualGraphView.java,v 1.3 2007-05-07 17:24:36 rensink Exp $ */
+/* $Id: AspectualGraphView.java,v 1.4 2007-05-09 22:53:35 rensink Exp $ */
 package groove.view;
 
 import groove.algebra.Constant;
+import groove.algebra.Variable;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
@@ -12,11 +13,13 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ValueNode;
 import groove.util.Pair;
+import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.RuleAspect;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -24,6 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Aspectual view upon an attributed graph.
@@ -36,16 +41,20 @@ public class AspectualGraphView implements AspectualView<Graph> {
 		this.view = view;
         Graph model;
         Map<AspectNode,Node> viewToModelMap;
+        List<String> errors;
 		try {
             Pair<Graph,Map<AspectNode,Node>> modelPlusMap = computeModel(view);
             model = modelPlusMap.first();
             viewToModelMap = modelPlusMap.second();
+            errors = Collections.emptyList();
         } catch (FormatException e) {
             model = null;
-            viewToModelMap = Collections.emptyMap();            
+            viewToModelMap = Collections.emptyMap();   
+            errors = e.getErrors();
         }
         this.model = model;
         this.viewToModelMap = viewToModelMap;
+        this.errors = errors;
 	}
 	
 	/** Constructs an instance from a given graph model. */
@@ -54,6 +63,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 		Pair<AspectGraph,Map<AspectNode,Node>> viewPlusMap = computeView(model);
 		this.view = viewPlusMap.first();
 		this.viewToModelMap = viewPlusMap.second();
+		this.errors = Collections.emptyList();
 	}
 	
 	public AspectGraph getAspectGraph() {
@@ -69,11 +79,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 	}
 
 	public List<String> getErrors() {
-        if (model == null) {
-            return view.getErrors();
-        } else {
-            return Collections.emptyList();
-        }
+        return errors;
 	}
 
 	public Map<AspectNode, Node> getMap() {
@@ -86,6 +92,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 	 * (fresh) graph nodes. 
 	 */
 	protected Pair<Graph,Map<AspectNode,Node>> computeModel(AspectGraph view) throws FormatException {
+		Set<String> errors = new TreeSet<String>(view.getErrors());
 		Graph model = getGraphFactory().newGraph();
 		// we need to record the view-to-model element map for layout transfer
 		NodeEdgeMap elementMap = new NodeEdgeHashMap();
@@ -94,33 +101,55 @@ public class AspectualGraphView implements AspectualView<Graph> {
 		// we need to record the model-to-view node map for removing isolated value nodes
 		Map<Node,AspectNode> modelToViewMap = new HashMap<Node,AspectNode>();
 		// copy the nodes from view to model
+		Aspect attributeAspect = AttributeAspect.getInstance();
 		for (AspectNode viewNode: view.nodeSet()) {
-			Node nodeImage = AttributeAspect.createAttributeNode(viewNode, view);
-			if (nodeImage == null) {
-				nodeImage = model.addNode();
-			} else if (isAllowedNode(nodeImage)){
-				model.addNode(nodeImage);
-			} else {
-				throw new FormatException("Graph should contain no attribute elements except constants");
+			try {
+				for (AspectValue value : viewNode.getAspectMap().values()) {
+					if (! isAllowedNodeValue(value)) {
+						throw new FormatException("Node aspect value '%s' not allowed in graphs", value);
+					}
+				}
+				Node nodeImage = AttributeAspect.createAttributeNode(viewNode, view);
+				if (nodeImage == null) {
+					nodeImage = model.addNode();
+				} else if (isAllowedNode(nodeImage)) {
+					model.addNode(nodeImage);
+				} else {
+					throw new FormatException("Node aspect value '%s' not allowed in graphs",
+							viewNode.getValue(attributeAspect));
+				}
+				viewToModelMap.put(viewNode, nodeImage);
+				modelToViewMap.put(nodeImage, viewNode);
+			} catch (FormatException exc) {
+				errors.addAll(exc.getErrors());
 			}
-			viewToModelMap.put(viewNode, nodeImage);
-			modelToViewMap.put(nodeImage, viewNode);
 		}
 		elementMap.nodeMap().putAll(viewToModelMap);
 		// copy the edges from view to model
-		for (AspectEdge viewEdge: view.edgeSet()) {
-			Node[] endImages = new Node[viewEdge.endCount()];
-			for (int i = 0; i < endImages.length; i++) {
-				endImages[i] = viewToModelMap.get(viewEdge.end(i));
+		for (AspectEdge viewEdge : view.edgeSet()) {
+			try {
+				for (AspectValue value : viewEdge.getAspectMap().values()) {
+					if (! isAllowedEdgeValue(value)) {
+						throw new FormatException("Edge aspect value '%s' not allowed in graphs",
+								value);
+					}
+				}
+				Node[] endImages = new Node[viewEdge.endCount()];
+				for (int i = 0; i < endImages.length; i++) {
+					endImages[i] = viewToModelMap.get(viewEdge.end(i));
+				}
+				// create an image for the view edge
+				Edge edgeImage = AttributeAspect.createAttributeEdge(viewEdge, view, endImages);
+				if (edgeImage == null) {
+					edgeImage = model.addEdge(endImages, viewEdge.label());
+				} else if (!isAllowedEdge(edgeImage)) {
+					throw new FormatException("Edge aspect value '%s' not allowed in graphs",
+							viewEdge.getValue(attributeAspect));
+				}
+				elementMap.putEdge(viewEdge, edgeImage);
+			} catch (FormatException exc) {
+				errors.addAll(exc.getErrors());
 			}
-			// create an image for the view edge
-			Edge edgeImage = AttributeAspect.createAttributeEdge(viewEdge, view, endImages);
-			if (edgeImage == null) {
-				edgeImage = model.addEdge(endImages, viewEdge.label());
-			} else if (! isAllowedEdge(edgeImage)) {
-				throw new FormatException("Attribute edges %s not allowed in graph", edgeImage);
-			}
-			elementMap.putEdge(viewEdge, edgeImage);
 		}
 		// remove isolated value nodes from the result graph
 		Iterator<Map.Entry<AspectNode,Node>> viewToModelIter = viewToModelMap.entrySet().iterator();
@@ -136,14 +165,18 @@ public class AspectualGraphView implements AspectualView<Graph> {
 		}
 		// transfer graph info such as layout from view to model
 		GraphInfo.transfer(view, model, elementMap);
-		return new Pair<Graph,Map<AspectNode,Node>>(model, viewToModelMap);
+		if (errors.isEmpty()) {
+			return new Pair<Graph,Map<AspectNode,Node>>(model, viewToModelMap);
+		} else {
+			throw new FormatException(new ArrayList<String>(errors));
+		}
 	}
 
 	/**
 	 * Tests if a certain attribute node is of the type allowed in graphs.
 	 */
 	private boolean isAllowedNode(Node node) {
-		return node instanceof ValueNode && ((ValueNode) node).getConstant() != null;
+		return node instanceof ValueNode && !(((ValueNode) node).getConstant() instanceof Variable);
 	}
 
 	/**
@@ -151,6 +184,20 @@ public class AspectualGraphView implements AspectualView<Graph> {
 	 */
 	private boolean isAllowedEdge(Edge edge) {
 		return edge instanceof ProductEdge && ((ProductEdge) edge).getOperation() instanceof Constant;
+	}
+
+	/**
+	 * Tests if a certain aspect value is allowed for nodes in a graph view.
+	 */
+	private boolean isAllowedNodeValue(AspectValue value) {
+		return value == RuleAspect.REMARK || value.getAspect() instanceof AttributeAspect;
+	}
+
+	/**
+	 * Tests if a certain aspect value is allowed for edges in a graph view.
+	 */
+	private boolean isAllowedEdgeValue(AspectValue value) {
+		return value == RuleAspect.REMARK || value.getAspect() instanceof AttributeAspect;
 	}
 
 	/**
@@ -217,6 +264,8 @@ public class AspectualGraphView implements AspectualView<Graph> {
 	private final AspectGraph view;
 	/** The graph model that is being viewed. */
 	private final Graph model;
+	/** List of errors in the view that prevent the model from being constructed. */
+	private final List<String> errors;
 	/** Map from view to model nodes. */
 	private final Map<AspectNode,Node> viewToModelMap;
 	/** The graph factory used by this view, to construct the model. */

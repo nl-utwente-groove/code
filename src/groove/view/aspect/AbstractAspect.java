@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractAspect.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
+ * $Id: AbstractAspect.java,v 1.2 2007-05-09 22:53:33 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -39,7 +39,7 @@ public abstract class AbstractAspect implements Aspect {
     protected AbstractAspect(String name) {
         this.name = name;
     }
-    
+
     /**
      * Adds an {@link AspectValue} to the values of this aspect.
      * @param name the name of the new aspect value
@@ -148,106 +148,7 @@ public abstract class AbstractAspect implements Aspect {
         }
         defaultValue = value;
     }
-//    
-//	/**
-//	 * Adds an inferred aspect value for an edge, given an aspect value for its
-//	 * source node. The values are given as strings.
-//	 * 
-//	 * @param sourceValueName
-//	 *            the (known) aspect value name for the source
-//	 * @param edgeValueName
-//	 *            the inferred edge value name
-//	 * @throws IllegalArgumentException
-//	 *             if <code>sourceValue</code> or <code>edgeValue</code> are
-//	 *             not valid node or edge aspect values
-//	 * @throws IllegalStateException
-//	 *             if <code>sourceValue</code> already has an inferred source
-//	 *             value
-//	 * @see #addTargetInference(AspectValue, AspectValue)
-//	 */
-//    protected void addSourceInference(String sourceValueName, String edgeValueName) {
-//		AspectValue sourceValue = AspectValue.getValue(sourceValueName);
-//		if (sourceValue == null) {
-//			throw new IllegalArgumentException("Non-existent aspect value "+sourceValueName);
-//		}
-//		AspectValue edgeValue = AspectValue.getValue(edgeValueName);
-//		if (edgeValue == null) {
-//			throw new IllegalArgumentException("Non-existent aspect value "+edgeValueName);
-//		}
-//		addSourceInference(sourceValue, edgeValue);
-//	}
-//    
-//
-//	/**
-//	 * Adds an inferred aspect value for an edge, given an aspect value for its
-//	 * target node. The values are given as strings.
-//	 * 
-//	 * @param targetValueName
-//	 *            the (known) aspect value name for the target
-//	 * @param edgeValueName
-//	 *            the inferred edge value name
-//	 * @throws IllegalArgumentException
-//	 *             if <code>targetValue</code> or <code>edgeValue</code> are
-//	 *             not valid node or edge aspect values
-//	 * @throws IllegalStateException
-//	 *             if <code>targetValue</code> already has an inferred source
-//	 *             value
-//	 * @see #addTargetInference(AspectValue, AspectValue)
-//	 */
-//	protected void addTargetInference(String targetValueName, String edgeValueName) {
-//		AspectValue targetValue = AspectValue.getValue(targetValueName);
-//		if (targetValue == null) {
-//			throw new IllegalArgumentException("Non-existent aspect value "+targetValueName);
-//		}
-//		AspectValue edgeValue = AspectValue.getValue(edgeValueName);
-//		if (edgeValue == null) {
-//			throw new IllegalArgumentException("Non-existent aspect value "+edgeValueName);
-//		}
-//		addTargetInference(targetValue, edgeValue);
-//	}
-//    
-//	/**
-//	 * Adds an inferred aspect value for an edge, given an aspect value for its
-//	 * source node.
-//	 * 
-//	 * @param sourceValue
-//	 *            the (known) aspect value for the source
-//	 * @param edgeValue
-//	 *            the inferred edge value
-//	 */
-//	protected void addSourceInference(AspectValue sourceValue,
-//			AspectValue edgeValue) {
-//    	testNodeValue(sourceValue);
-//    	testEdgeValue(edgeValue);
-//		sourceInference.put(sourceValue, edgeValue);
-//	}
-//
-//	/**
-//	 * Adds an inferred aspect value for an edge, given an aspect value for its
-//	 * target node.
-//	 * 
-//	 * @param targetValue
-//	 *            the (known) aspect value for the target
-//	 * @param edgeValue
-//	 *            the inferred edge value
-//	 */
-//	protected void addTargetInference(AspectValue targetValue,
-//			AspectValue edgeValue) {
-//    	testNodeValue(targetValue);
-//    	testEdgeValue(edgeValue);
-//		targetInference.put(targetValue, edgeValue);
-//	}
-//
-//	public AspectValue getSourceToEdge(AspectValue sourceValue) {
-//    	testNodeValue(sourceValue);
-//		return sourceInference.get(sourceValue);
-//	}
-//
-//	public AspectValue getTargetToEdge(AspectValue targetValue) {
-//    	testNodeValue(targetValue);
-//		return targetInference.get(targetValue);
-//	}
-
+    
 	/**
      * Factory method for aspect values.
      * This implementation returns an {@link AspectValue}.
@@ -258,6 +159,18 @@ public abstract class AbstractAspect implements Aspect {
      */
     protected AspectValue createValue(String name) throws FormatException {
         return new AspectValue(this, name);
+    }
+
+	/**
+     * Factory method for aspect values with free text labels.
+     * This implementation returns an {@link AspectValue}.
+     * @param name the name of the new aspect value
+     * @return an aspect value such that <code>result.getAspect().equals(this))</code>
+     * and <code>result.getName().equals(name)</code>
+     * @throws FormatException if <code>name</code> is the name of an already existing aspect value
+     */
+    protected AspectValue createFreeValue(String name) throws FormatException {
+        return new AspectValue(this, name, true);
     }
 
     /**
@@ -283,19 +196,7 @@ public abstract class AbstractAspect implements Aspect {
     		throw new IllegalArgumentException("Aspect value '"+edgeValue+"' may not be used for edges");
     	}
     }
-//    
-//    
-//	public AspectValue getInferredValue(AspectValue sourceValue, AspectValue targetValue, AspectValue edgeValue) throws GraphFormatException {
-//		AspectValue result;
-//		AspectValue sourceInference = sourceValue == null ? null : sourceValue.sourceToEdge();
-//		AspectValue targetInference = targetValue == null ? null : targetValue.targetToEdge();
-//		result = getMax(sourceInference, getMax(targetInference, edgeValue));
-//		if (edgeValue != null && edgeValue != result) {
-//			throw new GraphFormatException("Inferred value '%s' differs from declared value '%s'", result, edgeValue);
-//		}
-//		return result;
-//	}
-	
+    
 	/**
 	 * Compares a number of aspect values and returns the most demanding, i.e.,
 	 * the value that overrules the others. Throws a {@link FormatException}
@@ -334,12 +235,12 @@ public abstract class AbstractAspect implements Aspect {
 		if (value1 == value2 && value1 != null) {
 			return value1;
 		} else {
-			throw new FormatException("Incomparable aspect values '%s' and '%s'", value1, value2);
+			throw new FormatException("Incompatible aspect values '%s' and '%s'", value1, value2);
 		}
 	}
 
 	/**
-	 * This never throws the exception.
+	 * This default implementation never throws the exception.
 	 */
 	public void testLabel(Label label, AspectValue declaredValue, AspectValue inferredValue) throws FormatException {
 		// does nothing

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.2 2007-05-02 08:44:30 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.3 2007-05-09 22:53:36 rensink Exp $
  */
 
 package groove.io;
@@ -46,7 +46,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
     /** Error message if a grammar cannot be loaded. */
@@ -208,12 +208,12 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
 	        }
 	    }
 	    // get the start graph
-	    Graph startGraph = null;
+//	    Graph startGraph = null;
 	    if (startGraphFile != null) {
 	        try {
 	            AspectGraph unmarshalledStartGraph = getGraphMarshaller().unmarshalGraph(startGraphFile);
-	            startGraph = new AspectualGraphView(unmarshalledStartGraph).toModel();
-	            startGraph.setFixed();
+	            AspectualGraphView startGraph = new AspectualGraphView(unmarshalledStartGraph);
+//	            startGraph.setFixed();
 	            result.setStartGraph(startGraph);
 	        } catch (FileNotFoundException exc) {
 	            throw new IOException(LOAD_ERROR + ": start graph " + startGraphFile + " not found");
@@ -286,11 +286,10 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
 	 * a given location, assumed to be a directory.
 	 * @see #DEFAULT_START_GRAPH_NAME
 	 */
-	private void saveStartGraph(Graph startGraph, File location) throws IOException {
+	private void saveStartGraph(AspectualGraphView startGraph, File location) throws IOException {
 		// save start graph
         File startGraphLocation = new File(location, DEFAULT_START_GRAPH_NAME);
-        AspectualGraphView startGraphView = new AspectualGraphView(startGraph);
-        getGraphMarshaller().marshalGraph(startGraphView.getAspectGraph(), startGraphLocation);
+        getGraphMarshaller().marshalGraph(startGraph.getAspectGraph(), startGraphLocation);
 	}
 
 	/**
