@@ -12,11 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGrammarView.java,v 1.5 2007-05-07 17:24:36 rensink Exp $
+ * $Id: AspectualGrammarView.java,v 1.6 2007-05-09 22:53:35 rensink Exp $
  */
 package groove.view;
 
-import groove.graph.Graph;
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
@@ -35,11 +34,11 @@ import java.util.TreeSet;
 /**
  * Graph grammar with {@link RuleView} information for each rule.
  */
-public class AspectualGrammarView implements GrammarView<AspectualRuleView>, View<GraphGrammar> {
+public class AspectualGrammarView implements GrammarView<AspectualGraphView,AspectualRuleView>, View<GraphGrammar> {
     /**
      * Constructs a (non-fixed) copy of an existing rule view grammar.
      */
-    public AspectualGrammarView(GrammarView<AspectualRuleView> oldGrammar) {
+    public AspectualGrammarView(GrammarView<AspectualGraphView,AspectualRuleView> oldGrammar) {
         this(oldGrammar.getName());
         getProperties().putAll(oldGrammar.getProperties());
         for (AspectualRuleView ruleView: oldGrammar.getRuleMap().values()) {
@@ -91,11 +90,12 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
 		AspectualRuleView result = removeRule(ruleView.getName());
 		ruleMap.put(ruleView.getName(), ruleView);
 		int priority = ruleView.getPriority();
-		Set<RuleView> priorityRules = priorityMap.get(priority);
+		Set<AspectualRuleView> priorityRules = priorityMap.get(priority);
 		if (priorityRules == null) {
-			priorityMap.put(priority, priorityRules = new TreeSet<RuleView>());
+			priorityMap.put(priority, priorityRules = new TreeSet<AspectualRuleView>());
 		}
 		priorityRules.add(ruleView);
+		invalidateGrammar();
 		return result;
 	}
 
@@ -108,7 +108,7 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
 		AspectualRuleView result = ruleMap.remove(name);
 		if (result != null) {
 			int priority = result.getPriority();
-			Set<RuleView> priorityRules = priorityMap.get(priority);
+			Set<AspectualRuleView> priorityRules = priorityMap.get(priority);
 			priorityRules.remove(result);
 			if (priorityRules.isEmpty()) {
 				priorityMap.remove(priority);
@@ -127,16 +127,16 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
         return ruleMap.get(name);
     }
     
-    public Map<Integer, Set<RuleView>> getPriorityMap() {
+    public Map<Integer, Set<AspectualRuleView>> getPriorityMap() {
 		return Collections.unmodifiableMap(priorityMap);
 	}
 
-    public Graph getStartGraph() {
+    public AspectualGraphView getStartGraph() {
 		return startGraph;
 	}
 
     /** Sets the start graph to a given graph. */
-    public void setStartGraph(Graph startGraph) {
+    public void setStartGraph(AspectualGraphView startGraph) {
 		this.startGraph = startGraph;
 		invalidateGrammar();
 	}
@@ -148,11 +148,10 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
 
     /** Collects and returns the permanent errors of the rule views. */
 	public List<String> getErrors() {
-		List<String> result = new ArrayList<String>();
-		for (RuleView rule: ruleMap.values()) {
-			result.addAll(rule.getErrors());
-		}
-		return Collections.unmodifiableList(result);
+    	if (errors == null) {
+    		initGrammar();
+    	}
+    	return errors;
 	}
 
 	/** Delegates to {@link #toGrammar()}. */
@@ -162,11 +161,24 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
 
 	/** Converts the grammar view to a real grammar. */
     public GraphGrammar toGrammar() throws FormatException {
-    	List<String> errors = getErrors();
-    	if (! errors.isEmpty()) {
-    		throw new FormatException(errors);
+    	if (errors == null) {
+    		initGrammar();
+    	}
+    	if (errors.isEmpty()) {
+    		return grammar;
     	} else {
-    		return computeGrammar();
+    		throw new FormatException(errors);
+    	}
+    }
+    
+    /** Initialises the {@link #grammar} and {@link #errors} fields. */
+    private void initGrammar() {
+    	try {
+    		grammar = computeGrammar();
+    		errors = Collections.emptyList();
+    	} catch (FormatException exc) {
+    		errors = new ArrayList<String>(exc.getErrors());
+    		Collections.sort(errors);
     	}
     }
     
@@ -190,22 +202,22 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
     		}
     	}
     	result.setProperties(getProperties());
-    	if (getStartGraph() != null) {
-    		result.setStartGraph(getStartGraph());
-    	} else {
-    		errors.add("Grammar has no start graph");
-    	}
-    	try {
-			result.setFixed();
-		} catch (FormatException exc) {
-			for (String error: exc.getErrors()) {
-				errors.add(String.format("Global format error: %s", error));
+    	if (getStartGraph() == null) {
+			errors.add("Grammar has no start graph");
+		} else {
+			try {
+				result.setStartGraph(getStartGraph().toModel());
+				result.setFixed();
+			} catch (FormatException exc) {
+    			for (String error: exc.getErrors()) {
+    				errors.add(String.format("Format error in start graph: %s", error));
+    			}
 			}
-    	}
+		}
 		if (errors.isEmpty()) {
 			return result;
 		} else {
-			throw new FormatException("Format errors in %s%n%s", getName(), errors);
+			throw new FormatException(errors);
 		}
     }
     
@@ -215,20 +227,22 @@ public class AspectualGrammarView implements GrammarView<AspectualRuleView>, Vie
      * This is done in reaction to a change in the rules, start graph or properties. 
      */
     private void invalidateGrammar() {
-    	// empty
+    	grammar = null;
+    	errors = null;
     }
     
     /** Mapping from rule names to views on the corresponding rules. */
     private final Map<RuleNameLabel,AspectualRuleView> ruleMap = new TreeMap<RuleNameLabel,AspectualRuleView>();
 	/** Mapping from priorities to sets of rule names. */
-    private final Map<Integer,Set<RuleView>> priorityMap = new TreeMap<Integer,Set<RuleView>>(Rule.PRIORITY_COMPARATOR);
+    private final Map<Integer,Set<AspectualRuleView>> priorityMap = new TreeMap<Integer,Set<AspectualRuleView>>(Rule.PRIORITY_COMPARATOR);
     /** The name of this grammar view. */
     private final String name;
     /** The start gramg of the grammar. */
-    private Graph startGraph;
+    private AspectualGraphView startGraph;
     /** The rule system properties of this grammar view. */
     private SystemProperties properties;
+    /** Possibly empty list of errors found in the conversion to a grammar. */
     private List<String> errors;
-//	/** The graph grammar derived from the rule views. */
-//    private GraphGrammar grammar;
+	/** The graph grammar derived from the rule views. */
+    private GraphGrammar grammar;
 }

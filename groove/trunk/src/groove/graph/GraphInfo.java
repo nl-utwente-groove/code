@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphInfo.java,v 1.6 2007-05-02 08:44:34 rensink Exp $
+ * $Id: GraphInfo.java,v 1.7 2007-05-09 22:53:36 rensink Exp $
  */
 package groove.graph;
 
@@ -26,7 +26,7 @@ import java.util.Map;
  * A class that provides the keys needed for storing and retrieving data
  * needed for specific features.
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $ $Date: 2007-05-02 08:44:34 $
+ * @version $Revision: 1.7 $ $Date: 2007-05-09 22:53:36 $
  */
 public class GraphInfo {
 	/** 
@@ -112,8 +112,9 @@ public class GraphInfo {
 	 * Convenience method to set the name of a graph.
 	 */
 	public static void setName(GraphShape graph, String name) {
-		if (name != null) {
-            getInfo(graph, true).setName(name);
+		GraphInfo info = getInfo(graph, name != null);
+		if (info != null) {
+            info.setName(name);
 		}
 	}
 	
@@ -228,8 +229,13 @@ public class GraphInfo {
      * @see #getProperties(boolean)
      */
     public void setProperties(GraphProperties properties) {
-    	GraphProperties currentProperties = getProperties(true);
-    	currentProperties.putAll(properties);
+    	GraphProperties currentProperties = getProperties(properties != null);
+    	if (currentProperties != null) {
+    		currentProperties.clear();
+    		if (properties != null) {
+    	    	currentProperties.putAll(properties);
+    		}
+    	}
     }
 
     /** 
@@ -244,10 +250,15 @@ public class GraphInfo {
     /**
      * 
      * Sets the file (key {@link #FILE_KEY}) in this info object to a certain value.
+     * If the value is <code>null</code>, the key is removed altogether.
      * @see #getFile()
      */
     public void setFile(File file) {
-    	data.put(FILE_KEY, file);
+    	if (file == null) {
+    		data.remove(FILE_KEY);
+    	} else {
+    		data.put(FILE_KEY, file);
+    	}
     }
 
     /** 
@@ -262,10 +273,15 @@ public class GraphInfo {
     /**
      * 
      * Sets the name (key {@link #NAME_KEY}) in this info object to a certain value.
+     * If the value is <code>null</code>, the key is removed altogether.
      * @see #getName()
      */
     public void setName(String name) {
-    	data.put(NAME_KEY, name);
+    	if (name == null) {
+    		data.remove(NAME_KEY);
+    	} else {
+    		data.put(NAME_KEY, name);
+    	}
     }
     
     /**

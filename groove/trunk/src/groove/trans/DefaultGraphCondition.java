@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.13 2007-05-07 09:46:36 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.14 2007-05-09 22:53:34 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import groove.view.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -249,12 +249,18 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * @see SystemProperties#isAttributed()
      */
 	public void testConsistent() throws FormatException {
+		String attributeKey = SystemProperties.ATTRIBUTE_SUPPORT;
+		String attributeProperty = getProperties().getProperty(attributeKey);
 		if (getProperties().isAttributed()) {
 			if (hasIsolatedNodes()) {
-				throw new FormatException("Isolated nodes in %s inconsistent with \"%s\" property", getName(), SystemProperties.ATTRIBUTE_SUPPORT);
+				throw new FormatException("Condition tests isolated nodes, conflicting with \"%s=%s\"", attributeKey, attributeProperty);
 			}
 		} else if (hasAttributes()) {
-			throw new FormatException("Attributes in %s inconsistent with \"%s\" property", getName(), SystemProperties.ATTRIBUTE_SUPPORT);
+			if (attributeProperty == null) {
+				throw new FormatException("Condition uses attributes, but \"%s\" not declared", attributeKey);
+			} else {
+				throw new FormatException("Condition uses attributes, violating \"%s=%s\"", attributeKey, attributeProperty);
+			}
 		}
 	}
 

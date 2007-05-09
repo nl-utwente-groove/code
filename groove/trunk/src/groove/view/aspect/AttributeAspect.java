@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.2 2007-05-09 22:53:33 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -44,7 +44,7 @@ import groove.view.FormatException;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class AttributeAspect extends AbstractAspect {
     /**
@@ -308,12 +308,17 @@ public class AttributeAspect extends AbstractAspect {
 		try {
 			Algebra algebra = algebraMap.get(edge.getValue(getInstance()));
 			Operation operator = algebra.getOperation(edge.label().text());
-			ProductNode source = (ProductNode) ends[Edge.SOURCE_INDEX];
-			if (operator.arity() != source.arity()) {
-				throw new FormatException("Arity of source node does not match arity of operation %s", operator);
+			Node source = ends[Edge.SOURCE_INDEX];
+			if (!(source instanceof ProductNode)) {
+				throw new FormatException("Source of '%s'-edge should be a product node", operator);
+			} else if (operator.arity() != ((ProductNode) source).arity()) {
+				throw new FormatException("Source arity of '%s'-edge should be %d", operator, operator.arity());
 			}
-			ValueNode target = (ValueNode) ends[Edge.TARGET_INDEX];
-			return new ProductEdge(source, target, operator);
+			Node target = ends[Edge.TARGET_INDEX];
+			if (!(target instanceof ValueNode)) {
+				throw new FormatException("Target of '%s'-edge should be a value node", operator);
+			}
+			return new ProductEdge((ProductNode) source, (ValueNode) target, operator);
 		} catch (UnknownSymbolException exc) {
 			throw new FormatException(exc.getMessage());
 		}
@@ -325,9 +330,18 @@ public class AttributeAspect extends AbstractAspect {
 	 * @param edge the edge of which the image is to be created
 	 * @param ends the end nodes of the edge to be created
 	 * @return a fresh {@link AlgebraEdge}
+	 * @throws FormatException if one of the ends is <code>null</code>
 	 */
-	private static AlgebraEdge createArgumentEdge(AspectEdge edge, Node[] ends) {
-		return new AlgebraEdge(ends[Edge.SOURCE_INDEX], edge.label(), ends[Edge.TARGET_INDEX]);
+	private static AlgebraEdge createArgumentEdge(AspectEdge edge, Node[] ends) throws FormatException {
+		Node source = ends[Edge.SOURCE_INDEX];
+		if (source == null) {
+			throw new FormatException("Source of '%s'-edge has no image", edge.label());
+		}
+		Node target = ends[Edge.TARGET_INDEX];
+		if (target == null) {
+			throw new FormatException("Target of '%s'-edge has no image", edge.label());
+		}
+		return new AlgebraEdge(source, edge.label(), target);
 	}
 	
 	/**

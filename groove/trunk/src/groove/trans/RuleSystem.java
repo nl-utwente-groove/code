@@ -12,16 +12,18 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.13 2007-05-07 09:11:10 rensink Exp $
+ * $Id: RuleSystem.java,v 1.14 2007-05-09 22:53:34 rensink Exp $
  */
 package groove.trans;
 
 import groove.util.CollectionOfCollections;
 import groove.view.FormatException;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
@@ -36,7 +38,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2007-05-07 09:11:10 $
+ * @version $Revision: 1.14 $ $Date: 2007-05-09 22:53:34 $
  * @see NameLabel
  * @see SPORule
  */
@@ -271,35 +273,23 @@ public class RuleSystem {
      * The reason for the inconsistency can be retrieved using #getInconsistency(Rule)
      */
     public void testConsistent() throws FormatException {
-    	FormatException result = null;
+    	List<String> errors = new ArrayList<String>();
     	// collect the exceptions of the rules
     	for (Rule rule: getRules()) {
     		try {
     			rule.testConsistent();
     		} catch (FormatException exc) {
-    			exc.insert(result);
-    			result = exc;
+    			for (String error: exc.getErrors()) {
+    				errors.add(String.format("System property error in %s: %s", rule.getName(), error));
+    			}
     		}
     	}
     	// if any exception was encountered, throw it
-    	if (result != null) {
-    		throw result;
+    	if (! errors.isEmpty()) {
+    		throw new FormatException(errors);
     	}
     }
-//    
-//    /**
-//	 * Lazily creates and returns the (fixed) rule factory for this rule 
-//	 * system. The factory is used to create all the rules and rule applications.
-//	 * If it is not initialised at construction time, it is set to
-//	 * {@link DefaultRuleFactory#getInstance()}.
-//	 */
-//	public final RuleFactory getRuleFactory() {
-//		if (ruleFactory == null) {
-//			ruleFactory = DefaultRuleFactory.getInstance();
-//		}
-//		return ruleFactory;
-//	}
-
+    
 	/**
      * Callback factory method to create an initially empty {@link SystemProperties} object 
      * for this graph grammar.

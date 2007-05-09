@@ -13,12 +13,22 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.30 2007-05-09 08:50:19 fladder Exp $
+ * $Id: Simulator.java,v 1.31 2007-05-09 22:53:34 rensink Exp $
  */
 package groove.gui;
 
-import static groove.gui.Options.*;
-
+import static groove.gui.Options.DELETE_RULE_OPTION;
+import static groove.gui.Options.HELP_MENU_NAME;
+import static groove.gui.Options.OPTIONS_MENU_NAME;
+import static groove.gui.Options.REPLACE_RULE_OPTION;
+import static groove.gui.Options.REPLACE_START_GRAPH_OPTION;
+import static groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static groove.gui.Options.SHOW_ASPECTS_OPTION;
+import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_REMARKS_OPTION;
+import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
+import static groove.gui.Options.START_SIMULATION_OPTION;
+import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphInfo;
@@ -61,10 +71,13 @@ import groove.view.FormatException;
 import groove.view.GrammarView;
 import groove.view.aspect.AspectGraph;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
@@ -78,6 +91,7 @@ import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -114,7 +128,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  */
 public class Simulator {
     /**
@@ -596,8 +610,8 @@ public class Simulator {
         return selectedFile;
     }
 
-    private Graph doEdit(JModel jModel) {
-		Editor editor = new Editor(true);
+    private Graph doEdit(JModel jModel, boolean isState) {
+		Editor editor = new Editor(isState ? Editor.GRAPH_TYPE : Editor.RULE_TYPE);
 		editor.setModel(new GraphJModel(jModel.toPlainGraph(), getOptions()));
 //		getGraphViewsPanel().addTab("Edit", editor.getGraphPanel());
 		JDialog editorDialog = Editor.createEditorDialog(getFrame(),
@@ -605,7 +619,7 @@ public class Simulator {
 				editor);
 //		editor.getRulePreviewAction().setEnabled(jModel instanceof AspectJModel);
 		editorDialog.setVisible(true);
-		if (editor.isCurrentGraphModified()) {
+		if (editor.isCurrentGraphModified() && ! editor.createAspectGraph().hasErrors()) {
 			return editor.getModel().toPlainGraph();
 		} else {
 			return null;
@@ -743,7 +757,7 @@ public class Simulator {
     private void doLoadStartGraph(File file) {
         try {
             AspectGraph aspectStartGraph = graphLoader.unmarshalGraph(file);
-            Graph startGraph = new AspectualGraphView(aspectStartGraph).toModel();
+            AspectualGraphView startGraph = new AspectualGraphView(aspectStartGraph);
             getCurrentGrammar().setStartGraph(startGraph);
             setGrammar(getCurrentGrammar());
             currentStartStateName = file.getName();
@@ -864,7 +878,10 @@ public class Simulator {
 		setCurrentGTS(null);
 		fireSetGrammar(grammar);
 		refresh();
-		if (grammar.getStartGraph() != null && confirmBehaviourOption(START_SIMULATION_OPTION)) {
+		List<String> grammarErrors = grammar.getErrors();
+		boolean grammarCorrect = grammarErrors.isEmpty();
+		getErrorPanel().setErrors(grammarErrors);
+		if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
 			startSimulation(grammar);
 		}
 	}
@@ -884,10 +901,7 @@ public class Simulator {
     		setCurrentGTS(new GTS(getCurrentGrammar().toGrammar()));
 			getGenerator().explore(getCurrentState());
 			fireStartSimulation(getCurrentGTS());
-			refreshActions();
-			if (getFrame().getContentPane() instanceof JSplitPane) {
-				((JSplitPane) getFrame().getContentPane()).resetToPreferredSizes();
-			}
+			refresh();
 		} catch (FormatException exc) {
 			showErrorDialog("Error while starting simulation", exc);
 		}
@@ -999,24 +1013,28 @@ public class Simulator {
      */
     private JFrame getFrame() {
         if (frame == null) {
-
         	// force the LAF to be set
         	groove.gui.Options.initLookAndFeel();
         	
-        	// set up the content pane of the frame as a splt pane,
-            // with the rule directory to the left and a desktop pane to the right
-            JSplitPane contentPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
-            contentPane.setLeftComponent(getRuleJTreePanel());
-            contentPane.setRightComponent(getGraphViewsPanel());
-
             // set up the frame
             frame = new JFrame(APPLICATION_NAME);
             // small icon doesn't look nice due to shadow
             frame.setIconImage(Groove.GROOVE_ICON_16x16.getImage());
             // frame.setSize(500,300);
             frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            frame.setContentPane(contentPane);
+//            frame.setContentPane(splitPane);
             frame.setJMenuBar(createMenuBar());
+            
+        	// set up the content pane of the frame as a splt pane,
+            // with the rule directory to the left and a desktop pane to the right
+            JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT);
+            splitPane.setLeftComponent(getRuleJTreePanel());
+            splitPane.setRightComponent(getGraphViewsPanel());
+            
+            Container contentPane = frame.getContentPane();
+            contentPane.setLayout(new BorderLayout());
+            contentPane.add(splitPane);
+            contentPane.add(getErrorPanel(), BorderLayout.SOUTH);
         }
         return frame;
     }
@@ -1142,7 +1160,21 @@ public class Simulator {
      * @param enabled the new enabledness status
      */
     void setGraphPanelEnabled(JGraphPanel component, boolean enabled) {
-    	getGraphViewsPanel().setEnabledAt(getGraphViewsPanel().indexOfComponent(component), enabled);
+		int index = getGraphViewsPanel().indexOfComponent(component);
+    	getGraphViewsPanel().setEnabledAt(index, enabled);
+		if (component == getLtsPanel()) {
+			String text;
+			if (enabled) {
+				text = "Labelled transition system";
+			} else if (getCurrentGrammar() == null) {
+				text = "Currently distabled; load grammar";
+			} else if (getCurrentGrammar().getErrors().isEmpty()) {
+				text = String.format("Currently disabled; press %s to start simulation", KeyEvent.getKeyText(((KeyStroke) getRunAction().getValue(Action.ACCELERATOR_KEY)).getKeyCode()));
+			} else {
+				text = "Disabled due to grammar errors";
+			}
+			getGraphViewsPanel().setToolTipTextAt(index, text);
+		}
     }
     
     /** 
@@ -1226,6 +1258,8 @@ public class Simulator {
 	 */
 	private JMenuItem getEditItem() {
 		if (editGraphItem == null) {
+			// load the rule edit action, even though it is not user here
+			getEditRuleAction();
 			editGraphItem = new JMenuItem(getEditGraphAction());
 			editGraphItem.setAccelerator(Options.EDIT_KEY);
 		}
@@ -1340,6 +1374,13 @@ public class Simulator {
         return stateFileChooser;
 	}
 
+	private ErrorListPanel getErrorPanel() {
+		if (errorPanel == null) {
+			errorPanel = new ErrorListPanel();
+		}
+		return errorPanel;
+	}
+	
 	/**
 	 * Returns the file chooser for exporting, lazily creating it first.
 	 */
@@ -1473,6 +1514,7 @@ public class Simulator {
 	private void refresh() {
 		setTitle();
 		refreshActions();
+
 //		if (getFrame().getContentPane() instanceof JSplitPane) {
 //			((JSplitPane) getFrame().getContentPane()).resetToPreferredSizes();
 //		}
@@ -1740,6 +1782,9 @@ public class Simulator {
     /** LTS display panel. */
     private LTSPanel ltsPanel;
 
+    /** Error display. */
+    private ErrorListPanel errorPanel;
+    
     /** Undo history. */
     private UndoHistory undoHistory;
 
@@ -2103,7 +2148,7 @@ public class Simulator {
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			if (confirmAbandon(true)) {
+			if (confirmAbandon(false)) {
 				AspectGraph oldRuleGraph = getCurrentRule().getAspectGraph();
 				RuleNameLabel newRuleName = askNewRuleName(getCurrentRule().getName().name());
 				if (newRuleName != null) {
@@ -2125,7 +2170,7 @@ public class Simulator {
 		public void actionPerformed(ActionEvent e) {
 			RuleNameLabel ruleName = getCurrentRule().getName();
 	    	String question = String.format("Delete rule %s?", ruleName);
-			if (confirmAbandon(true) && confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
+			if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
 				doDeleteRule(ruleName);
 			}
 		}
@@ -2147,8 +2192,9 @@ public class Simulator {
         public void refresh() {
         	boolean enabled = getGraphPanel() == getStatePanel();
         	setEnabled(enabled);
-        	if (enabled && getGraphPanel() == getStatePanel()) {
+        	if (enabled) {
         		getEditItem().setAction(this);
+        		getEditItem().setAccelerator(Options.EDIT_KEY);
         	}
         }
 
@@ -2158,8 +2204,9 @@ public class Simulator {
          * current panel is the state panel.
          */
         public void actionPerformed(ActionEvent e) {
-        	String stateName = getCurrentState().toString();
-        	Graph editResult = doEdit(getStatePanel().getJModel());
+        	JModel stateModel = getStatePanel().getJModel();
+        	String stateName = stateModel.getName();
+        	Graph editResult = doEdit(stateModel, true);
             if (editResult != null) {
     			File saveFile = handleSaveGraph(true, editResult, stateName);
     			if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
@@ -2185,7 +2232,7 @@ public class Simulator {
 					true);
 			PropertiesDialog dialog = new PropertiesDialog(ruleProperties,
 					GraphProperties.DEFAULT_KEYS, true);
-			if (dialog.showDialog(frame) && confirmAbandon(true)) {
+			if (dialog.showDialog(frame) && confirmAbandon(false)) {
 				ruleProperties.clear();
 				ruleProperties.putAll(dialog.getProperties());
 				doAddRule(rule.getName(), ruleGraph);
@@ -2209,8 +2256,9 @@ public class Simulator {
         public void refresh() {
         	boolean enabled = getCurrentRule() != null;
         	setEnabled(enabled);
-        	if (enabled && getGraphPanel() == getRulePanel()) {
+        	if (getGraphPanel() == getRulePanel()) {
         		getEditItem().setAction(this);
+        		getEditItem().setAccelerator(Options.EDIT_KEY);
         	}
         }
 
@@ -2222,7 +2270,7 @@ public class Simulator {
     	 */
         public void actionPerformed(ActionEvent e) {
         	RuleNameLabel ruleName = getCurrentRule().getName();
-        	Graph editResult = doEdit(getRulePanel().getJGraph().getModel());
+        	Graph editResult = doEdit(getRulePanel().getJGraph().getModel(), false);
             if (editResult != null) {
                 AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(editResult);
             	String question = String.format("Replace rule %s with edited version?", ruleName);
@@ -2253,7 +2301,7 @@ public class Simulator {
         	AspectualGrammarView grammar = getCurrentGrammar();
         	Properties systemProperties = grammar.getProperties();
         	PropertiesDialog dialog = new PropertiesDialog(systemProperties, SystemProperties.DEFAULT_KEYS, true);
-        	if (dialog.showDialog(getFrame()) && confirmAbandon(true)) {
+        	if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
         		SystemProperties newProperties = new SystemProperties();
         		newProperties.putAll(dialog.getProperties());
         		try {
@@ -2263,6 +2311,7 @@ public class Simulator {
             		OutputStream writer = new FileOutputStream(outputFile);
 					newProperties.store(writer, String.format(SystemProperties.DESCRIPTION, grammar.getName()));
 					grammar.setProperties(newProperties);
+					setGrammar(grammar);
 				} catch (IOException exc) {
 					showErrorDialog("Error while saving edited properties", exc);
 				}
@@ -2427,7 +2476,7 @@ public class Simulator {
 //            stateFileChooser.setSelectedFile(currentStartStateFile);
             int result = getStateFileChooser().showOpenDialog(getFrame());
             // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(true)) {
+            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
                 doLoadStartGraph(getStateFileChooser().getSelectedFile());
             }
         }
@@ -2466,7 +2515,7 @@ public class Simulator {
     	}
     	
 		public void actionPerformed(ActionEvent e) {
-        	Graph editResult = doEdit(GraphJModel.EMPTY_JMODEL);
+        	Graph editResult = doEdit(GraphJModel.EMPTY_JMODEL, true);
             if (editResult != null) {
     			File saveFile = handleSaveGraph(true, editResult, GrammarViewXml.DEFAULT_START_GRAPH_NAME);
     			if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
@@ -2482,7 +2531,7 @@ public class Simulator {
     	}
     	
 		public void actionPerformed(ActionEvent e) {
-			if (confirmAbandon(true)) {
+			if (confirmAbandon(false)) {
 				RuleNameLabel ruleName = askNewRuleName(NEW_RULE_NAME);
 				if (ruleName != null) {
 					doAddRule(ruleName, new AspectGraph());
@@ -2611,7 +2660,12 @@ public class Simulator {
 		}
 
 		public void refresh() {
-			setEnabled(getCurrentGrammar() != null && getCurrentGrammar().getStartGraph() != null);
+			boolean enabled = getCurrentGrammar() != null && getCurrentGrammar().getErrors().isEmpty();
+			setEnabled(enabled);
+		}
+		
+		String getKeyText() {
+			return KeyEvent.getKeyText(Options.RUN_KEY.getKeyCode());
 		}
     }
     

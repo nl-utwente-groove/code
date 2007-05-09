@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.8 2007-04-29 09:22:22 rensink Exp $
+ * $Id: JAttr.java,v 1.9 2007-05-09 22:53:35 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -42,7 +42,7 @@ import groove.view.aspect.RuleAspect;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class JAttr {
     /**
@@ -342,7 +342,7 @@ public class JAttr {
         RULE_PREFIXES.put(RuleAspect.ERASER, "eraser.");
         RULE_PREFIXES.put(RuleAspect.CREATOR, "creator.");
         RULE_PREFIXES.put(RuleAspect.REMARK, "remark.");
-        RULE_PREFIXES.put(RuleAspect.RULE, "rule.");
+//        RULE_PREFIXES.put(RuleAspect.RULE, "rule.");
 	    for (AspectValue role: RuleAspect.getInstance().getValues()) {
 	        RULE_COLOR.put(role,Colors.findColor(Groove.getGUIProperty(RULE_PREFIXES.get(role) + "color")));
 	        RULE_WIDTH.put(role,Integer.parseInt(Groove.getGUIProperty(RULE_PREFIXES.get(role) + "width")));

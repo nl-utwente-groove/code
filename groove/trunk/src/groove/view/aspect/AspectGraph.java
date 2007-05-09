@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.3 2007-05-07 17:24:35 rensink Exp $
+ * $Id: AspectGraph.java,v 1.4 2007-05-09 22:53:33 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -84,6 +84,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * @return a possubly empty, non-<code>null</code> list of format errors in this aspect graph
      */
     public List<String> getErrors() {
+    	Collections.sort(errors);
         return Collections.unmodifiableList(errors);
     }
 
@@ -132,7 +133,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
         List<String> errors = new ArrayList<String>();
 		assert elementMap != null && elementMap.isEmpty();
 		AspectGraph result = new AspectGraph();
-		Set<Edge> edges = new HashSet<Edge>(graph.edgeSet());
 		// first do the nodes;
 		// map from original graph nodes to aspect graph nodes
 		Map<Node,AspectNode> nodeMap = new HashMap<Node,AspectNode>();
@@ -144,6 +144,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 			elementMap.putNode(node, nodeImage);
 		}
 		// look for node aspect indicators
+		// and put all correct aspect vales in a map
+		Map<Edge,AspectParseData> edgeDataMap = new HashMap<Edge,AspectParseData>();
 		for (Edge edge: graph.edgeSet()) {
 			try {
                 AspectNode sourceImage = nodeMap.get(edge.source());
@@ -155,6 +157,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 	sourceImage.setDeclaredValue(nodeValue);
                 } else {
                 	AspectParseData aspectLabel = parser.getParseData(labelText);
+                	edgeDataMap.put(edge, aspectLabel);
                 	// add inferred aspect values to the source and target
                 	for (AspectValue edgeValue : aspectLabel.getAspectMap().values()) {
                 		AspectValue sourceValue = edgeValue.edgeToSource();
@@ -172,28 +175,25 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
             }
 		}
 		// Now iterate over the remaining edges
-		for (Edge edge: edges) {
+		for (Map.Entry<Edge,AspectParseData> entry : edgeDataMap.entrySet()) {
+			Edge edge = entry.getKey();
 			try {
-                if (getNodeValue(edge) == null) {
-                	AspectParseData parseData = parser.getParseData(edge.label().text());
-                	Edge edgeImage = createAspectEdge(nodeMap.get(edge.source()),
-                			nodeMap.get(edge.opposite()),
-                			parseData);
-                	result.addEdge(edgeImage);
-                	elementMap.putEdge(edge, edgeImage);
-                }
-            } catch (FormatException e) {
-                errors.addAll(e.getErrors());
-            }
+				Edge edgeImage = createAspectEdge(nodeMap.get(edge.source()), nodeMap.get(edge
+						.opposite()), entry.getValue());
+				result.addEdge(edgeImage);
+				elementMap.putEdge(edge, edgeImage);
+			} catch (FormatException e) {
+				errors.addAll(e.getErrors());
+			}
 		}
 		GraphInfo.transfer(graph, result, elementMap);
         result.setErrors(errors);
 		return result;
 	}
 
-	/** 
-	 * Creates a graph where the aspect values are represented 
-	 * as label prefixes for the edges, and as special edges for the nodes.
+	/**
+	 * Creates a graph where the aspect values are represented as label prefixes
+	 * for the edges, and as special edges for the nodes.
 	 */
 	public Graph toPlainGraph() {
 		NodeEdgeMap elementMap = new NodeEdgeHashMap();
@@ -259,7 +259,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * @throws FormatException if <code>edge</code> does ancode a node aspect
 	 * value, but is not a self-edge or contains more than one aspect value
 	 */
-	protected AspectValue getNodeValue(Edge edge) throws FormatException {
+	private AspectValue getNodeValue(Edge edge) throws FormatException {
 		AspectValue result;	
 		String labelText = edge.label().text();
 		AspectParseData parseData = parser.getParseData(labelText);
@@ -268,10 +268,10 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 			// this edge indicates a node aspect
 			if (edge.opposite() != edge.source()) {
 				// Only one aspect per node self-edge
-				throw new FormatException("Node aspect indicator %s only allowed on self-edges",labelText);
+				throw new FormatException("Node aspect indicator '%s' only allowed on self-edges",labelText);
 			} else if (aspectMap.size() != 1) {
 				// Only one aspect per node self-edge
-				throw new FormatException("Multiple node aspect indicator "+labelText);
+				throw new FormatException("Multiple node aspect indicator '%s'", labelText);
 			} else {
 				// add the aspect value found
 				result = aspectMap.values().iterator().next();
@@ -286,7 +286,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * Factory method for a <code>Graph</code>.
 	 * @see #toPlainGraph()
 	 */
-	protected Graph createPlainGraph() {
+	private Graph createPlainGraph() {
 		return new NodeSetEdgeSetGraph();
 	}
 
@@ -302,7 +302,8 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * Factory method for an <code>AspectEdge</code>.
 	 * @throws FormatException if the aspect label is inconsistent with the end node aspect values
 	 */
-	AspectEdge createAspectEdge(AspectNode source, AspectNode target, AspectParseData aspectLabel) throws FormatException {
+	private AspectEdge createAspectEdge(AspectNode source, AspectNode target, AspectParseData aspectLabel) throws FormatException {
+		aspectLabel.addInferences(source.getAspectMap(), target.getAspectMap());
 		return new AspectEdge(source, target, aspectLabel);
 	}
 	
@@ -310,7 +311,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * Creates a label from a string. 
 	 * @see DefaultLabel#parseLabel(String) 
 	 */
-	protected Label createLabel(String text) {
+	private Label createLabel(String text) {
 		return DefaultLabel.createLabel(text);
 	}
 	

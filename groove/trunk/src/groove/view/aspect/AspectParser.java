@@ -12,17 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
+ * $Id: AspectParser.java,v 1.2 2007-05-09 22:53:33 rensink Exp $
  */
 package groove.view.aspect;
 
-import groove.graph.DefaultLabel;
-import groove.graph.Label;
-import groove.rel.RegExpr;
-import groove.rel.RegExprLabel;
+import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
+import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.view.FormatException;
-
-import static groove.view.aspect.Aspect.*;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -32,7 +28,7 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class AspectParser {
     /** The singleton lenient parser instance. */
@@ -53,11 +49,11 @@ public class AspectParser {
     }
 
     /**
-     * Returns a lenient parser instance.
+     * Returns a strict parser instance.
      * @see #getInstance(boolean)
      */
     public static AspectParser getInstance() {
-        return getInstance(true);
+        return getInstance(false);
     }
     
     /**
@@ -140,7 +136,7 @@ public class AspectParser {
      * @return an object containing information about the aspect value,
      * the possible end marker, and the possible actual label text present
      * in <code>plainText</code>
-     * @throws FormatException if <code>prefixedText</code> contains an
+     * @throws FormatException if <code>plainText</code> contains an
      * apparent aspect value that is not recognised by {@link AspectValue#getValue(String)}.
      */
     public AspectParseData getParseData(String plainText) throws FormatException {
@@ -172,7 +168,10 @@ public class AspectParser {
 			nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
 		}
 		String text = plainText.substring(prevIndex);
-		return createParseData(parsedValues, endFound, createLabel(text));
+		if (text.length() == 0 && ! endFound) {
+			text = null;
+		}
+		return createParseData(parsedValues, endFound, text);
     }
 
 	/**
@@ -217,51 +216,20 @@ public class AspectParser {
 		if (oldValue != null) {
 			if (isLenient()) {
 				stopParsing = true;
+			} else if (oldValue == value) {
+				throw new FormatException("Duplicate value '%s'", value);
 			} else {
-				throw new FormatException(
-						String.format("Aspect %s has values '%s' and '%s'",
-								value.getAspect(),
-								oldValue,
-								value));
+				throw new FormatException("Conflicting values '%s' and '%s'", oldValue, value);
 			}
 		}
 		return stopParsing;
 	}
     
     /** Callback factory method for {@link AspectParseData}s. */
-    protected AspectParseData createParseData(AspectMap values, boolean hasEnd, Label label) {
-    	return new AspectParseData(values, hasEnd, label);
+    private AspectParseData createParseData(AspectMap values, boolean hasEnd, String text) {
+    	return new AspectParseData(values, hasEnd, text);
     }
     
-    /**
-     * Factory method to create a label from a string.
-     * This implementation parses the string as a regular expression;
-     * if it yields an atom, a {@link DefaultLabel} is returned, 
-     * otherwise a {@link RegExprLabel} is returned.
-     * Also makes a {@link DefaultLabel} if the text cannot be parsed as a regular expression.
-     */
-    protected Label createLabel(String text) throws FormatException {
-    	if (text == null || text.length() == 0) {
-    		return null;
-    	} else try {
-			RegExpr textAsRegExpr = RegExpr.parse(text);
-			if (textAsRegExpr instanceof RegExpr.Atom) {
-				// to maintain existing quotes, just take the original text
-				return DefaultLabel.createLabel(text);
-			} else {
-				return textAsRegExpr.toLabel();
-			}
-		} catch (FormatException exc) {
-			if (isLenient()) {
-				// if the text cannot be parsed as a regular expression, 
-				// just turns it into a default label
-				return DefaultLabel.createLabel(text);
-			} else {
-				throw new FormatException(exc);
-			}
-		}
-	}
-
     /**
      * The set of registered aspects.
      */

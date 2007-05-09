@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJUserObject.java,v 1.6 2007-04-29 09:22:22 rensink Exp $
+ * $Id: EditableJUserObject.java,v 1.7 2007-05-09 22:53:35 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -94,14 +94,14 @@ public class EditableJUserObject extends JUserObject<String> {
 	 * @see #load(String)
 	 */
 	public Exception isLoadable(String value) {
-	    String[] labels = value.split(WHITESPACE + trim(getEditSeparator()) + WHITESPACE);
-	    for (int i = 0; i < labels.length; i++) {
-	        try {
-	            ExprParser.parseExpr(value);
-	        } catch (FormatException exc) {
-	            return exc;
-	        }
-	    }
+//	    String[] labels = value.split(WHITESPACE + trim(getEditSeparator()) + WHITESPACE);
+//	    for (int i = 0; i < labels.length; i++) {
+//	        try {
+//	            ExprParser.parseExpr(value);
+//	        } catch (FormatException exc) {
+//	            return exc;
+//	        }
+//	    }
 	    return null;
 	}
 
@@ -125,16 +125,17 @@ public class EditableJUserObject extends JUserObject<String> {
 	            String[] labels = value
 	                    .split(WHITESPACE + trim(getEditSeparator()) + WHITESPACE, 0);
 	            for (String label: labels) {
-	            	if (label.length() > 0) {
-						try {
-							Pair<String, List<String>> parseResult = ExprParser.parseExpr(label);
-							add(ExprParser.toString(parseResult.first(),
-									parseResult.second()));
-						} catch (FormatException e) {
-							assert false : "Error in label expression " + value
-									+ ": " + e;
-						}
-					}
+	            	add(label);
+//	            	if (label.length() > 0) {
+//						try {
+//							Pair<String, List<String>> parseResult = ExprParser.parseExpr(label);
+//							add(ExprParser.toString(parseResult.first(),
+//									parseResult.second()));
+//						} catch (FormatException e) {
+//							assert false : "Error in label expression " + value
+//									+ ": " + e;
+//						}
+//					}
 	            }
 	        }
 	    }

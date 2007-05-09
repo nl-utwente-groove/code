@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectEdge.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
+ * $Id: AspectEdge.java,v 1.2 2007-05-09 22:53:33 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -28,7 +28,7 @@ import groove.view.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class AspectEdge extends DefaultEdge implements AspectElement {
 	/**
@@ -41,8 +41,7 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 	 */
 	public AspectEdge(List<AspectNode> ends, Label label, AspectValue... values) throws FormatException {
 		super(ends.get(SOURCE_INDEX), label, ends.get(TARGET_INDEX));
-		this.parseData = createParseData(label, computeDeclaredAspectMap(values));
-		this.aspectMap = computeInferredAspectMap(parseData);
+		this.parseData = createParseData(label, values);
 		testLabel();
 	}
 	
@@ -57,7 +56,6 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
     AspectEdge(AspectNode source, AspectNode target, AspectParseData parseData) throws FormatException {
         super(source, parseData.getLabel(), target);
     	this.parseData = parseData;
-    	this.aspectMap = computeInferredAspectMap(parseData);
 		testLabel();
     }
     
@@ -82,7 +80,7 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
     }
 
     public Collection<AspectValue> getDeclaredValues() {
-		return parseData.getAspectMap().values();
+		return parseData.getDeclaredValues();
 	}
 
     /** 
@@ -90,7 +88,7 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
      * lazily creating it first.
      */
     public AspectMap getAspectMap() {
-    	return aspectMap;
+    	return parseData.getAspectMap();
     }
 
 	/**
@@ -109,8 +107,9 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 		if (source instanceof AspectNode && target instanceof AspectNode) {
 			// we certainly want an aspect edge
 			try {
-				return new AspectEdge((AspectNode) source, (AspectNode) target,
-						AspectParser.getInstance().getParseData(label.text()));
+				AspectParseData declaredData = AspectParser.getInstance().getParseData(label.text());
+				declaredData.addInferences(((AspectNode) source).getAspectMap(), ((AspectNode) target).getAspectMap());
+				return new AspectEdge((AspectNode) source, (AspectNode) target, declaredData);
 			} catch (FormatException exc) {
 				// the edge aspects were incompatible with the node aspects
 				// so the edge has no image
@@ -183,48 +182,55 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 			aspect.testLabel(label(), declaredAspectValue, inferredValue);
 		}
 	}
-	
-	/**
-     * Computes an inferred aspect map by combining the explicitly declared edge
-     * values with the aspect values inferred from the source and target nodes.
-     * @param parseData explicitly declared aspect data
-     */
-    final protected AspectMap computeInferredAspectMap(AspectParseData parseData) throws FormatException {
-    	AspectMap result = new AspectMap();
-    	AspectMap edgeMap = parseData.getAspectMap();
-    	AspectMap sourceMap = source().getAspectMap();
-    	AspectMap targetMap = target().getAspectMap();
-    	for (Aspect aspect: Aspect.allAspects) {
-    		AspectValue inferredValue = getInferredValue(aspect, edgeMap, sourceMap, targetMap);
-    		if (inferredValue != null) {
-				result.add(inferredValue);
-			}
-    	}
+//	
+//	/**
+//     * Computes an inferred aspect map by combining the explicitly declared edge
+//     * values with the aspect values inferred from the source and target nodes.
+//     * @param parseData explicitly declared aspect data
+//     */
+//    final protected AspectMap computeInferredAspectMap(AspectParseData parseData) throws FormatException {
+//    	AspectMap result = new AspectMap();
+//    	AspectMap edgeMap = parseData.getAspectMap();
+//    	AspectMap sourceMap = source().getAspectMap();
+//    	AspectMap targetMap = target().getAspectMap();
+//    	for (Aspect aspect: Aspect.allAspects) {
+//    		AspectValue inferredValue = getInferredValue(aspect, edgeMap, sourceMap, targetMap);
+//    		if (inferredValue != null) {
+//				result.add(inferredValue);
+//			}
+//    	}
+//    	return result;
+//    }
+//
+//    /**
+//     * Returns an inferred edge aspect value.
+//     * @param aspect the aspect for which we want the inferred value
+//     * @param edgeMap the map of explicitly declared aspect values
+//     * @param sourceMap map of aspect values for the source node
+//     * @param targetMap map of aspect values for the target node
+//     * @return the maximum aspect value for <code>aspect</code>, 
+//     * according to {@link Aspect#getMax(AspectValue[])}.
+//     * @throws FormatException if the explicitly declared aspect value is overruled
+//     */
+//    private AspectValue getInferredValue(Aspect aspect, AspectMap edgeMap, AspectMap sourceMap, AspectMap targetMap) throws FormatException {
+//		AspectValue result;
+//		AspectValue edgeValue = edgeMap.get(aspect);
+//		AspectValue sourceValue = sourceMap.get(aspect);
+//		AspectValue sourceInference = sourceValue == null ? null : sourceValue.sourceToEdge();
+//		AspectValue targetValue = targetMap.get(aspect);
+//		AspectValue targetInference = targetValue == null ? null : targetValue.targetToEdge();
+//		result = aspect.getMax(edgeValue, sourceInference, targetInference);
+//		if (edgeValue != null && edgeValue != result) {
+//			throw new FormatException("Inferred %s value '%s' differs from declared value '%s'", aspect, result, edgeValue);
+//		}
+//		return result;
+//    }
+//    
+    /** Callback factory method. */
+    AspectParseData createParseData(Label label, AspectValue[] values) throws FormatException {
+    	AspectParseData result = new AspectParseData(computeDeclaredAspectMap(values), label);
+    	result.addInferences(source().getAspectMap(), target().getAspectMap());
     	return result;
-    }
-
-    /**
-     * Returns an inferred edge aspect value.
-     * @param aspect the aspect for which we want the inferred value
-     * @param edgeMap the map of explicitly declared aspect values
-     * @param sourceMap map of aspect values for the source node
-     * @param targetMap map of aspect values for the target node
-     * @return the maximum aspect value for <code>aspect</code>, 
-     * according to {@link Aspect#getMax(AspectValue[])}.
-     * @throws FormatException if the explicitly declared aspect value is overruled
-     */
-    private AspectValue getInferredValue(Aspect aspect, AspectMap edgeMap, AspectMap sourceMap, AspectMap targetMap) throws FormatException {
-		AspectValue result;
-		AspectValue edgeValue = edgeMap.get(aspect);
-		AspectValue sourceValue = sourceMap.get(aspect);
-		AspectValue sourceInference = sourceValue == null ? null : sourceValue.sourceToEdge();
-		AspectValue targetValue = targetMap.get(aspect);
-		AspectValue targetInference = targetValue == null ? null : targetValue.targetToEdge();
-		result = aspect.getMax(edgeValue, sourceInference, targetInference);
-		if (edgeValue != null && edgeValue != result) {
-			throw new FormatException("Inferred %s value '%s' differs from declared value '%s'", aspect, result, edgeValue);
-		}
-		return result;
     }
     
     /**
@@ -243,18 +249,13 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
     	return result;
     }
 
-    /** Callback factory method. */
-    AspectParseData createParseData(Label label, AspectMap aspectMap) {
-    	return new AspectParseData(aspectMap, label);
-    }
-    
     /**
      * The aspect information of the label, set at construction time.
      */
     private final AspectParseData parseData;
-    /**
-     * The aspect map inferred from the aspect label and the source
-     * and target node aspects.
-     */
-    private final AspectMap aspectMap;
+//    /**
+//     * The aspect map inferred from the aspect label and the source
+//     * and target node aspects.
+//     */
+//    private final AspectMap aspectMap;
 }

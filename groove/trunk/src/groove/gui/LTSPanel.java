@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTSPanel.java,v 1.9 2007-05-08 23:12:26 rensink Exp $
+ * $Id: LTSPanel.java,v 1.10 2007-05-09 22:53:33 rensink Exp $
  */
 package groove.gui;
 
@@ -44,7 +44,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-05-08 23:12:26 $
+ * @version $Revision: 1.10 $ $Date: 2007-05-09 22:53:33 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -80,7 +80,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         setGTS(null);
         getJGraph().setModel(LTSJModel.EMPTY_JMODEL);
         setEnabled(false);
-//        simulator.setGraphPanelEnabled(simulator.getLtsPanel(), false);
         refreshStatus();
     }
 
@@ -89,7 +88,6 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
 		getJGraph().setModel(createJModel(gts));
 		setStateUpdate(gts.startState());
 		setEnabled(true);
-//        simulator.setGraphPanelEnabled(simulator.getLtsPanel(), true);
 		refreshStatus();
 	}
 
@@ -191,7 +189,15 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         return text;
     }
     
-    /**
+    
+    @Override
+	public void setEnabled(boolean enabled) {
+		super.setEnabled(enabled);
+		simulator.setGraphPanelEnabled(this, enabled);
+	}
+
+
+	/**
      * The underlying lts of ltsJModel.
      * 
      * @invariant lts == ltsJModel.graph()

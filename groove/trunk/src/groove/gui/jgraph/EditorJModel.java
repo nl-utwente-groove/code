@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorJModel.java,v 1.5 2007-05-02 08:44:33 rensink Exp $
+ * $Id: EditorJModel.java,v 1.6 2007-05-09 22:53:35 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -33,14 +33,14 @@ import org.jgraph.graph.GraphConstants;
  * Moreover, there is some control as to the possible source and target points
  * of new edges.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class EditorJModel extends JModel {
     /**
-     * Creates an empty model with empty name.
+     * Creates an anonymous model.
      */
     public EditorJModel() {
-        this("");
+        this((String) null);
     }
 
     /**
