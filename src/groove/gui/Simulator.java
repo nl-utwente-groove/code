@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.31 2007-05-09 22:53:34 rensink Exp $
+ * $Id: Simulator.java,v 1.32 2007-05-10 08:34:15 kastenberg Exp $
  */
 package groove.gui;
 
@@ -128,7 +128,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  */
 public class Simulator {
     /**
@@ -514,6 +514,7 @@ public class Simulator {
 	public Action getProvideCTLFormulaAction() {
 		if (provideCTLFormulaAction == null) {
 			provideCTLFormulaAction = new ProvideCTLFormulaAction();
+    		addRefreshable(provideCTLFormulaAction);
 		}
 		return provideCTLFormulaAction;
 	}
@@ -2569,7 +2570,7 @@ public class Simulator {
     /**
      * Action for inputting a CTL formula.
      */
-    private class ProvideCTLFormulaAction extends AbstractAction {
+    private class ProvideCTLFormulaAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
     	protected ProvideCTLFormulaAction() {
     		super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME);
@@ -2583,6 +2584,10 @@ public class Simulator {
     		} else {
     			// do nothing
     		}
+    	}
+
+    	public void refresh() {
+    		setEnabled(getCurrentGrammar() != null);
     	}
     }
 
