@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.4 2007-05-06 10:47:53 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.5 2007-05-11 08:22:01 rensink Exp $
  */
 package groove.io;
 
@@ -53,64 +53,9 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class DefaultGxl extends AbstractXml {
-	/** The name of graphs whose name is not explicitly included in the graph info. */
-	static public final String DEFAULT_GRAPH_NAME = "graph";
-    /** Attribute name for node and edge ids. */
-    static public final String LABEL_ATTR_NAME = "label";
-    static private final IsoChecker isoChecker = new DefaultIsoChecker();
-    static private GraphFactory defaultGraphFactory = GraphFactory.getInstance();
-
-    /**
-     * Returns a default graph factory for the construction of graphs
-     * during unmarshalling.
-     */
-    static public GraphFactory getDefaultGraphFactory() {
-        return defaultGraphFactory;
-    }
-
-    /** Test method: tries loading and saving graphs, and comparing them for isomorphism. */
-    static public void main(String[] args) {
-        System.out.println("Test of groove.io.UntypedGxl");
-        System.out.println("===================");
-        groove.io.DefaultGxl gxl = new groove.io.DefaultGxl();
-        for (int i = 0; i < args.length; i++) {
-            System.out.println("\nTesting: " + args[i]);
-            try {
-                System.out.print("    Creating input file: ");
-                java.io.File file = new java.io.File(args[i]);
-                System.out.println("OK");
-                // Unmarshal graph
-                System.out.print("    Unmarshalling graph: ");
-                Graph graph = gxl.unmarshalGraph(file);
-                System.out.println("OK");
-                System.out.print("    Creating output file: ");
-                file = new java.io.File(args[i] + ".tmp");
-                System.out.println("OK");
-                System.out.print("    Re-marshalling graph: ");
-                gxl.marshalGraph(graph, file);
-                System.out.println("OK");
-                // unmarshal again and test for isomorphism
-                System.out.print("    Testing for isomorphism of original and re-marshalled graph: ");
-                Graph newGraph = gxl.unmarshalGraph(file);
-
-                if (isoChecker.areIsomorphic(newGraph,graph))
-                    System.out.println("OK");
-                else {
-                    System.out.println("ERROR");
-                    System.out.println("Unmarshalled graph");
-                    System.out.println("------------------");
-                    System.out.println(newGraph);
-                }
-            } catch (Exception exc) {
-                System.out.println(exc);
-                exc.printStackTrace();
-            }
-        }
-    }
-
     /**
      * Constructs a Gxl transformer with a given graph factory
      * for the graphs constructed by unmarshalling.
@@ -121,10 +66,10 @@ public class DefaultGxl extends AbstractXml {
 
     /**
      * Constructs a Gxl transformer with a default graph factory.
-     * @see #getDefaultGraphFactory()
+     * @see GraphFactory#getInstance()
      */
     public DefaultGxl() {
-        this(getDefaultGraphFactory());
+        this(GraphFactory.getInstance());
     }
 
     /**
@@ -135,6 +80,7 @@ public class DefaultGxl extends AbstractXml {
 	public void marshalGraph(Graph graph, File file) throws IOException {
 		// create the file, if necessary
 		file.getParentFile().mkdirs();
+        deleteVariants(file);
 		file.createNewFile();
 	    Graph attrGraph = normToAttrGraph(graph);
 	    groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
@@ -168,11 +114,7 @@ public class DefaultGxl extends AbstractXml {
 		}
 		return new Pair<Graph,Map<String,Node>>(result, conversion);
 	}
-
-	public void deleteGraph(File file) {
-		file.delete();
-	}
-
+    
 	/**
      * Converts an attributed graph to an untyped GXL graph.
      * The attributes are encoded in <tt>AttributeLabel</tt>s.
@@ -183,9 +125,9 @@ public class DefaultGxl extends AbstractXml {
         groove.gxl.Graph gxlGraph = new groove.gxl.Graph();
         gxlGraph.setEdgeids(false);
         String name = GraphInfo.getName(graph);
-        name = name == null ? DEFAULT_GRAPH_NAME : name;
-        gxlGraph.setId(name);
-        gxlGraph.setRole("graph");
+        gxlGraph.setId(name == null ? DEFAULT_GRAPH_NAME : name);
+        String role = GraphInfo.getRole(graph);
+        gxlGraph.setRole(role == null ? GRAPH_ROLE : role);
         // add the nodes
         Map<Node,groove.gxl.Node> nodeMap = new HashMap<Node,groove.gxl.Node>();
         for (Node node: graph.nodeSet()) {
@@ -322,6 +264,7 @@ public class DefaultGxl extends AbstractXml {
         	GraphInfo.setProperties(graph, properties);
         }
         GraphInfo.setName(graph, gxlGraph.getId());
+        GraphInfo.setRole(graph, gxlGraph.getRole());
         return new Pair<Graph,Map<String,Node>>(graph, nodeIds);
     }
 
@@ -444,8 +387,58 @@ public class DefaultGxl extends AbstractXml {
             return new AttributeEdge(new Node[] { sourceNode, targetNode }, new AttributeLabel(attributes));            
         }
     }
+    /** Test method: tries loading and saving graphs, and comparing them for isomorphism. */
+    static public void main(String[] args) {
+        System.out.println("Test of groove.io.UntypedGxl");
+        System.out.println("===================");
+        groove.io.DefaultGxl gxl = new groove.io.DefaultGxl();
+        for (int i = 0; i < args.length; i++) {
+            System.out.println("\nTesting: " + args[i]);
+            try {
+                System.out.print("    Creating input file: ");
+                java.io.File file = new java.io.File(args[i]);
+                System.out.println("OK");
+                // Unmarshal graph
+                System.out.print("    Unmarshalling graph: ");
+                Graph graph = gxl.unmarshalGraph(file);
+                System.out.println("OK");
+                System.out.print("    Creating output file: ");
+                file = new java.io.File(args[i] + ".tmp");
+                System.out.println("OK");
+                System.out.print("    Re-marshalling graph: ");
+                gxl.marshalGraph(graph, file);
+                System.out.println("OK");
+                // unmarshal again and test for isomorphism
+                System.out.print("    Testing for isomorphism of original and re-marshalled graph: ");
+                Graph newGraph = gxl.unmarshalGraph(file);
     
-	/**
+                if (isoChecker.areIsomorphic(newGraph,graph))
+                    System.out.println("OK");
+                else {
+                    System.out.println("ERROR");
+                    System.out.println("Unmarshalled graph");
+                    System.out.println("------------------");
+                    System.out.println(newGraph);
+                }
+            } catch (Exception exc) {
+                System.out.println(exc);
+                exc.printStackTrace();
+            }
+        }
+    }
+    
+    /** The name of graphs whose name is not explicitly included in the graph info. */
+    static public final String DEFAULT_GRAPH_NAME = "graph";
+    /** Attribute name for node and edge ids. */
+    static public final String LABEL_ATTR_NAME = "label";
+    /** Role value indicating that a gxl graph represents a graph. */
+    static public final String GRAPH_ROLE = "graph";
+    /** Role value indicating that a gxl graph represents a rule. */
+    static public final String RULE_ROLE = "rule";
+    /** Private siomorphism checker, for testing purposes. */
+    static private final IsoChecker isoChecker = new DefaultIsoChecker();
+
+    /**
 	 * The following implementation of <tt>Label</tt> allows us to
 	 * use graphs to store attribute maps. 
 	 */

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.32 2007-05-10 08:34:15 kastenberg Exp $
+ * $Id: Simulator.java,v 1.33 2007-05-11 08:22:02 rensink Exp $
  */
 package groove.gui;
 
@@ -31,6 +31,7 @@ import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
+import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.GraphListener;
 import groove.graph.GraphProperties;
@@ -39,7 +40,6 @@ import groove.graph.Node;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
 import groove.io.AspectGxl;
@@ -128,7 +128,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.32 $
+ * @version $Revision: 1.33 $
  */
 public class Simulator {
     /**
@@ -472,11 +472,21 @@ public class Simulator {
         return loadGrammarAction;
     }
 
+    /** Returns the rule system creation action permanently associated with this simulator. */
+    public NewGrammarAction getNewGrammarAction() {
+        // lazily create the action
+        if (newGrammarAction == null) {
+            newGrammarAction = new NewGrammarAction();
+        }
+        return newGrammarAction;
+    }
+
     /** Returns the graph creation action permanently associated with this simulator. */
 	public NewGraphAction getNewGraphAction() {
 		// lazily create the action
 		if (newGraphAction == null) {
 			newGraphAction = new NewGraphAction();
+            addRefreshable(newGraphAction);
 		}
 	    return newGraphAction;
 	}
@@ -486,17 +496,9 @@ public class Simulator {
 		// lazily create the action
 		if (newRuleAction == null) {
 			newRuleAction = new NewRuleAction();
+            addRefreshable(newRuleAction);
 		}
 	    return newRuleAction;
-	}
-
-    /** Returns the rule system creation action permanently associated with this simulator. */
-	public NewGrammarAction getNewGrammarAction() {
-		// lazily create the action
-		if (newGrammarAction == null) {
-			newGrammarAction = new NewGrammarAction();
-		}
-	    return newGrammarAction;
 	}
 
 	/** Returns the quit action permanently associated with this simulator. */
@@ -549,14 +551,14 @@ public class Simulator {
 	    return renameRuleAction;
 	}
 
-	/** Lazily creates and returns an instance of {@link RunAction}. */
-	public Action getRunAction() {
+	/** Lazily creates and returns an instance of {@link StartSimulationAction}. */
+	public Action getStartSimulationAction() {
 		// lazily create the action
-		if (runAction == null) {
-			runAction = new RunAction();
-			addRefreshable(runAction);
+		if (startSimulationAction == null) {
+			startSimulationAction = new StartSimulationAction();
+			addRefreshable(startSimulationAction);
 		}
-	    return runAction;    	
+	    return startSimulationAction;    	
 	}
 
 	/** Returns the graph save action permanently associated with this simulator. */
@@ -610,22 +612,35 @@ public class Simulator {
         }
         return selectedFile;
     }
-
-    private Graph doEdit(JModel jModel, boolean isState) {
-		Editor editor = new Editor(isState ? Editor.GRAPH_TYPE : Editor.RULE_TYPE);
-		editor.setModel(new GraphJModel(jModel.toPlainGraph(), getOptions()));
-//		getGraphViewsPanel().addTab("Edit", editor.getGraphPanel());
-		JDialog editorDialog = Editor.createEditorDialog(getFrame(),
-				true,
-				editor);
-//		editor.getRulePreviewAction().setEnabled(jModel instanceof AspectJModel);
-		editorDialog.setVisible(true);
-		if (editor.isCurrentGraphModified() && ! editor.createAspectGraph().hasErrors()) {
-			return editor.getModel().toPlainGraph();
-		} else {
-			return null;
-		}
-	}
+//
+//    /** 
+//     * Invokes the editor on a plain (i.e., not aspect) graph.
+//     * Returns the edited plain graph, or <code>null</code> if the graph was modified or
+//     * the editor exited with a syntactically incorrect graph.
+//     * @param graph the graph to be edited
+//     * @param isState <code>true</code> if <code>graph</code> represents a state, <code>false</code> if
+//     * it represents a rule  
+//     */
+//    private Graph doEdit(Graph graph, boolean isState) {
+//		Editor editor = new Editor(isState ? Editor.GRAPH_TYPE : Editor.RULE_TYPE);
+//        // the editor needs a plain graph, not an aspectual view of it; so convert
+//		editor.setModel(new GraphJModel(graph, getOptions()));
+////		getGraphViewsPanel().addTab("Edit", editor.getGraphPanel());
+//		EditorDialog editorDialog = Editor.showEditorDialog(getFrame(),
+//				graph,
+//                isState ? Editor.GRAPH_TYPE : Editor.RULE_TYPE);
+////		editor.getRulePreviewAction().setEnabled(jModel instanceof AspectJModel);
+////		editorDialog.setVisible(true);
+//		if (editorDialog.isModified() && ! editorDialog.hasErrors()) {
+//			return editorDialog.toPlainGraph();
+//		} else {
+//			return null;
+//		}
+//	}
+//    
+    private EditorDialog showEditorDialog(Graph graph, boolean isState) {
+        return Editor.showEditorDialog(getFrame(), graph, isState ? Editor.GRAPH_TYPE : Editor.RULE_TYPE);
+    }
 
     /** Inverts the enabledness of the current rule, and stores the result. */
     private void doEnableRule() {
@@ -1170,7 +1185,7 @@ public class Simulator {
 			} else if (getCurrentGrammar() == null) {
 				text = "Currently distabled; load grammar";
 			} else if (getCurrentGrammar().getErrors().isEmpty()) {
-				text = String.format("Currently disabled; press %s to start simulation", KeyEvent.getKeyText(((KeyStroke) getRunAction().getValue(Action.ACCELERATOR_KEY)).getKeyCode()));
+				text = String.format("Currently disabled; press %s to start simulation", KeyEvent.getKeyText(((KeyStroke) getStartSimulationAction().getValue(Action.ACCELERATOR_KEY)).getKeyCode()));
 			} else {
 				text = "Disabled due to grammar errors";
 			}
@@ -1247,6 +1262,7 @@ public class Simulator {
 
 	private JMenu createNewMenu() {
 		JMenu result = new JMenu(Options.NEW_ACTION_NAME);
+//        result.setAccelerator(Options.NEW_KEY);
 		result.add(getNewGraphAction());
 		result.add(getNewRuleAction());
 		result.add(getNewGrammarAction());
@@ -1318,7 +1334,7 @@ public class Simulator {
         result.add(new JMenuItem(getUndoAction()));
         result.add(new JMenuItem(getRedoAction()));
         result.addSeparator();
-        result.add(new JMenuItem(getRunAction()));
+        result.add(new JMenuItem(getStartSimulationAction()));
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
         result.addSeparator();
@@ -1886,7 +1902,7 @@ public class Simulator {
 	private SaveGraphAction saveGraphAction;
 
 	/** The action to start a new simulation. */
-    private RunAction runAction;
+    private StartSimulationAction startSimulationAction;
     /** The undo action permanently associated with this simulator. */
     private Action undoAction;
 
@@ -2162,6 +2178,7 @@ public class Simulator {
     private class DeleteRuleAction extends AbstractAction implements Refreshable {
     	DeleteRuleAction() {
     		super(Options.DELETE_RULE_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
     	}
     	
 		public void refresh() {
@@ -2205,11 +2222,13 @@ public class Simulator {
          * current panel is the state panel.
          */
         public void actionPerformed(ActionEvent e) {
-        	JModel stateModel = getStatePanel().getJModel();
+        	GraphJModel stateModel = getStatePanel().getJModel();
         	String stateName = stateModel.getName();
-        	Graph editResult = doEdit(stateModel, true);
-            if (editResult != null) {
-    			File saveFile = handleSaveGraph(true, editResult, stateName);
+            EditorDialog dialog = showEditorDialog(stateModel.toPlainGraph(), true);
+            if (dialog.isOK()) {
+//        	Graph editResult = doEdit(stateModel.toPlainGraph(), true);
+//            if (editResult != null) {
+    			File saveFile = handleSaveGraph(true, dialog.toPlainGraph(), stateName);
     			if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
     				doLoadStartGraph(saveFile);
     			}
@@ -2271,18 +2290,18 @@ public class Simulator {
     	 */
         public void actionPerformed(ActionEvent e) {
         	RuleNameLabel ruleName = getCurrentRule().getName();
-        	Graph editResult = doEdit(getRulePanel().getJGraph().getModel(), false);
-            if (editResult != null) {
-                AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(editResult);
-            	String question = String.format("Replace rule %s with edited version?", ruleName);
+            EditorDialog dialog = showEditorDialog(getRulePanel().getJModel().toPlainGraph(), false);
+            if (dialog.isOK()) {
+                AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(dialog.toPlainGraph());
+                String question = String.format("Replace rule %s with edited version?", ruleName);
                 if (confirmBehaviour(REPLACE_RULE_OPTION, question)) {
                     doAddRule(ruleName, ruleAsAspectGraph);
                 } else {
-					RuleNameLabel newRuleName = askNewRuleName(ruleName.name());
-					if (newRuleName != null) {
-						doAddRule(newRuleName, ruleAsAspectGraph);
-					}
-				}
+                    RuleNameLabel newRuleName = askNewRuleName(ruleName.name());
+                    if (newRuleName != null) {
+                        doAddRule(newRuleName, ruleAsAspectGraph);
+                    }
+                }
             }
         }
     }
@@ -2510,23 +2529,58 @@ public class Simulator {
         }
     }
 
-    private class NewGraphAction extends AbstractAction {
+    private class NewGrammarAction extends AbstractAction {
+        NewGrammarAction() {
+            super(Options.NEW_RULE_SYSTEM_ACTION_NAME);
+        }
+        
+        public void actionPerformed(ActionEvent e) {
+            if (confirmAbandon(true)) {
+                getGrammarFileChooser().setSelectedFile(currentGrammarFile);
+                if (getGrammarFileChooser().showOpenDialog(getFrame()) == JFileChooser.APPROVE_OPTION) {
+                    File selectedFile = getGrammarFileChooser().getSelectedFile();
+                    FileFilter filter = getGrammarFileChooser().getFileFilter();
+                    if (filter instanceof ExtensionFilter) {
+                        String extendedName = ((ExtensionFilter) filter).addExtension(selectedFile.getPath());
+                        selectedFile = new File(extendedName);
+                    }
+                    if (selectedFile.exists()) {
+                        showErrorDialog(String.format("File %s already exists", selectedFile), null);
+                    } else {
+                        FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
+                        doNewGrammar(grammarLoaderMap.get(filterUsed), selectedFile);
+                    }
+                }
+            }
+        }
+    }
+
+    private class NewGraphAction extends AbstractAction implements Refreshable {
     	NewGraphAction() {
     		super(Options.NEW_GRAPH_ACTION_NAME);
     	}
     	
 		public void actionPerformed(ActionEvent e) {
-        	Graph editResult = doEdit(GraphJModel.EMPTY_JMODEL, true);
-            if (editResult != null) {
-    			File saveFile = handleSaveGraph(true, editResult, GrammarViewXml.DEFAULT_START_GRAPH_NAME);
-    			if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
-    				doLoadStartGraph(saveFile);
-    			}
-    		}
-		}
+            Graph newGraph = GraphFactory.getInstance().newGraph();
+            GraphInfo.setName(newGraph, GrammarViewXml.DEFAULT_START_GRAPH_NAME);
+            EditorDialog dialog = showEditorDialog(newGraph, true);
+//        	Graph editResult = doEdit(newGraph, true);
+            if (dialog.isOK()) {
+                newGraph = dialog.toPlainGraph();
+            }
+            File saveFile = handleSaveGraph(true, newGraph, GrammarViewXml.DEFAULT_START_GRAPH_NAME);
+            if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
+                doLoadStartGraph(saveFile);
+            }
+        }
+        
+        /** Enabled if there is a grammar loaded. */
+        public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+        }
     }
 
-    private class NewRuleAction extends AbstractAction {
+    private class NewRuleAction extends AbstractAction implements Refreshable {
     	NewRuleAction() {
     		super(Options.NEW_RULE_ACTION_NAME);
     	}
@@ -2535,36 +2589,20 @@ public class Simulator {
 			if (confirmAbandon(false)) {
 				RuleNameLabel ruleName = askNewRuleName(NEW_RULE_NAME);
 				if (ruleName != null) {
-					doAddRule(ruleName, new AspectGraph());
+                    Graph newRule = GraphFactory.getInstance().newGraph();
+                    GraphInfo.setName(newRule, ruleName.name());
+                    EditorDialog dialog = showEditorDialog(newRule, false);
+                    if (dialog.isOK()) {
+                        doAddRule(ruleName, dialog.toAspectGraph());
+                    }
 				}
 			}
 		}
-    }
 
-    private class NewGrammarAction extends AbstractAction {
-    	NewGrammarAction() {
-    		super(Options.NEW_RULE_SYSTEM_ACTION_NAME);
-    	}
-    	
-		public void actionPerformed(ActionEvent e) {
-			if (confirmAbandon(true)) {
-				grammarFileChooser.setSelectedFile(currentGrammarFile);
-				if (grammarFileChooser.showOpenDialog(getFrame()) == JFileChooser.APPROVE_OPTION) {
-					File selectedFile = grammarFileChooser.getSelectedFile();
-					FileFilter filter = grammarFileChooser.getFileFilter();
-					if (filter instanceof ExtensionFilter) {
-						String extendedName = ((ExtensionFilter) filter).addExtension(selectedFile.getPath());
-						selectedFile = new File(extendedName);
-					}
-					if (selectedFile.exists()) {
-						showErrorDialog(String.format("File %s already exists", selectedFile), null);
-					} else {
-		                FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
-						doNewGrammar(grammarLoaderMap.get(filterUsed), selectedFile);
-					}
-				}
-			}
-		}
+        /** Enabled if there is a grammar loaded. */
+        public void refresh() {
+            setEnabled(getCurrentGrammar() != null);
+        }
     }
 
     /**
@@ -2651,29 +2689,6 @@ public class Simulator {
 		}
     }
 
-    private class RunAction extends AbstractAction implements Refreshable {
-    	/** Constructs an instance of the action. */
-        public RunAction() {
-            super(Options.RUN_ACTION_NAME);
-            putValue(Action.ACCELERATOR_KEY, Options.RUN_KEY);
-        }
-
-		public void actionPerformed(ActionEvent e) {
-			if (confirmAbandon(false)) {
-				startSimulation(getCurrentGrammar());
-			}
-		}
-
-		public void refresh() {
-			boolean enabled = getCurrentGrammar() != null && getCurrentGrammar().getErrors().isEmpty();
-			setEnabled(enabled);
-		}
-		
-		String getKeyText() {
-			return KeyEvent.getKeyText(Options.RUN_KEY.getKeyCode());
-		}
-    }
-    
     /**
      * Action for saving a rule system. Currently not enabled.
      */
@@ -2749,4 +2764,26 @@ public class Simulator {
         }
     }
 
+    private class StartSimulationAction extends AbstractAction implements Refreshable {
+        /** Constructs an instance of the action. */
+        public StartSimulationAction() {
+            super(Options.START_SIMULATION_ACTION_NAME);
+            putValue(Action.ACCELERATOR_KEY, Options.START_SIMULATION_KEY);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (confirmAbandon(false)) {
+                startSimulation(getCurrentGrammar());
+            }
+        }
+
+        public void refresh() {
+            boolean enabled = getCurrentGrammar() != null && getCurrentGrammar().getErrors().isEmpty();
+            setEnabled(enabled);
+        }
+        
+        String getKeyText() {
+            return KeyEvent.getKeyText(Options.START_SIMULATION_KEY.getKeyCode());
+        }
+    }
 }

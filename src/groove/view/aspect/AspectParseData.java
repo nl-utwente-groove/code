@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParseData.java,v 1.2 2007-05-09 22:53:33 rensink Exp $
+ * $Id: AspectParseData.java,v 1.3 2007-05-11 08:22:03 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -152,7 +152,7 @@ class AspectParseData {
 	@Override
 	public String toString() {
 		StringBuffer result = new StringBuffer();
-		for (AspectValue value: allAspectMap.values()) {
+		for (AspectValue value: declaredAspectMap.values()) {
 			result.append(AspectParser.toString(value));
 		}
 		// append the end marking, if any

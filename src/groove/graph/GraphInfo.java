@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphInfo.java,v 1.7 2007-05-09 22:53:36 rensink Exp $
+ * $Id: GraphInfo.java,v 1.8 2007-05-11 08:22:03 rensink Exp $
  */
 package groove.graph;
 
 import groove.gui.layout.LayoutMap;
+import groove.io.DefaultGxl;
 
 import java.io.File;
 import java.util.HashMap;
@@ -26,7 +27,7 @@ import java.util.Map;
  * A class that provides the keys needed for storing and retrieving data
  * needed for specific features.
  * @author Harmen Kastenberg
- * @version $Revision: 1.7 $ $Date: 2007-05-09 22:53:36 $
+ * @version $Revision: 1.8 $ $Date: 2007-05-11 08:22:03 $
  */
 public class GraphInfo {
 	/** 
@@ -96,28 +97,54 @@ public class GraphInfo {
 		}
 	}
 
-	/**
-	 * Convenience method to retrieve the name of a graph.
-	 */
-	public static String getName(GraphShape graph) {
+    /**
+     * Convenience method to retrieve the name of a graph.
+     * @see #getName()
+     */
+    public static String getName(GraphShape graph) {
         GraphInfo graphInfo = graph.getInfo();
         if (graphInfo == null) {
             return null; 
         } else {
             return graphInfo.getName();
         }
-	}
-	
-	/**
-	 * Convenience method to set the name of a graph.
-	 */
-	public static void setName(GraphShape graph, String name) {
-		GraphInfo info = getInfo(graph, name != null);
-		if (info != null) {
+    }
+    
+    /**
+     * Convenience method to set the name of a graph.
+     * @see #setName(String)
+     */
+    public static void setName(GraphShape graph, String name) {
+        GraphInfo info = getInfo(graph, name != null);
+        if (info != null) {
             info.setName(name);
-		}
-	}
-	
+        }
+    }
+
+    /**
+     * Convenience method to retrieve the role of a graph.
+     * @see #getRole()
+     */
+    public static String getRole(GraphShape graph) {
+        GraphInfo graphInfo = graph.getInfo();
+        if (graphInfo == null) {
+            return null; 
+        } else {
+            return graphInfo.getRole();
+        }
+    }
+    
+    /**
+     * Convenience method to set the role of a graph.
+     * @see #setRole(String)
+     */
+    public static void setRole(GraphShape graph, String role) {
+        GraphInfo info = getInfo(graph, role != null);
+        if (info != null) {
+            info.setRole(role);
+        }
+    }
+    
 	/**
 	 * Convenience method to retrieve the properties map from a graph,
 	 * creating it is necessary if any.
@@ -267,7 +294,7 @@ public class GraphInfo {
      * @see #setName(String)
      */
     public String getName() {
-    	return (String) data.get(NAME_KEY);
+        return (String) data.get(NAME_KEY);
     }
     
     /**
@@ -277,11 +304,34 @@ public class GraphInfo {
      * @see #getName()
      */
     public void setName(String name) {
-    	if (name == null) {
-    		data.remove(NAME_KEY);
-    	} else {
-    		data.put(NAME_KEY, name);
-    	}
+        if (name == null) {
+            data.remove(NAME_KEY);
+        } else {
+            data.put(NAME_KEY, name);
+        }
+    }
+
+    /** 
+     * Returns the role of the graph, if any.
+     * @return a role stored in the info object, or <code>null</code> 
+     * @see #setRole(String)
+     */
+    public String getRole() {
+        return (String) data.get(ROLE_KEY);
+    }
+    
+    /**
+     * 
+     * Sets the role (key {@link #ROLE_KEY}) in this info object to a certain value.
+     * If the value is <code>null</code>, the key is removed altogether.
+     * @see #getRole()
+     */
+    public void setRole(String name) {
+        if (name == null) {
+            data.remove(ROLE_KEY);
+        } else {
+            data.put(ROLE_KEY, name);
+        }
     }
     
     /**
@@ -306,10 +356,15 @@ public class GraphInfo {
      * Map for the internally stored data.
      */
     private final Map<String,Object> data;
-	/**
-	 * Key for storage file.
-	 */
-	public static final String NAME_KEY = "name";
+    /**
+     * Key for graph name.
+     */
+    public static final String NAME_KEY = "name";
+    /**
+     * Key for graph role. 
+     * The value should be one of {@link DefaultGxl#GRAPH_ROLE} or {@link DefaultGxl#RULE_ROLE}.
+     */
+    public static final String ROLE_KEY = "type";
 	/**
 	 * Key for storage file.
 	 */

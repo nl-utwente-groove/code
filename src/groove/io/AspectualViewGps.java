@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.3 2007-05-09 22:53:36 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.4 2007-05-11 08:22:01 rensink Exp $
  */
 
 package groove.io;
 
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
+import groove.graph.GraphInfo;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.Rule;
 import groove.trans.RuleFactory;
@@ -46,7 +47,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
     /** Error message if a grammar cannot be loaded. */
@@ -184,6 +185,7 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
 	private AspectualRuleView loadRule(File location, RuleNameLabel ruleName,
 			SystemProperties properties) throws IOException, FormatException {
 		AspectGraph unmarshalledRule = getGraphMarshaller().unmarshalGraph(location);
+        GraphInfo.setRole(unmarshalledRule, DefaultGxl.RULE_ROLE);
 		return createRuleView(unmarshalledRule, ruleName, properties);
 	}
 
@@ -208,12 +210,11 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
 	        }
 	    }
 	    // get the start graph
-//	    Graph startGraph = null;
 	    if (startGraphFile != null) {
 	        try {
 	            AspectGraph unmarshalledStartGraph = getGraphMarshaller().unmarshalGraph(startGraphFile);
+                GraphInfo.setRole(unmarshalledStartGraph, DefaultGxl.GRAPH_ROLE);
 	            AspectualGraphView startGraph = new AspectualGraphView(unmarshalledStartGraph);
-//	            startGraph.setFixed();
 	            result.setStartGraph(startGraph);
 	        } catch (FileNotFoundException exc) {
 	            throw new IOException(LOAD_ERROR + ": start graph " + startGraphFile + " not found");
@@ -375,17 +376,17 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
             throws FormatException {
     	return new AspectualRuleView(graph, ruleName, properties);
     }
-    
-    /**
-     * Callback method to create a rule graph from a rule.
-     * @param rule the rule from which to create a {@link AspectualRuleView}
-     * @return the {@link AspectualRuleView} created from the given rule
-     * @throws FormatException when the given rule does not conform the
-     * requirements for making a {@link AspectualRuleView} from it
-     */
-    protected AspectualRuleView createRuleGraph(Rule rule) throws FormatException {
-        return new AspectualRuleView(rule);
-    }
+//    
+//    /**
+//     * Callback method to create a rule graph from a rule.
+//     * @param rule the rule from which to create a {@link AspectualRuleView}
+//     * @return the {@link AspectualRuleView} created from the given rule
+//     * @throws FormatException when the given rule does not conform the
+//     * requirements for making a {@link AspectualRuleView} from it
+//     */
+//    protected AspectualRuleView createRuleGraph(Rule rule) throws FormatException {
+//        return new AspectualRuleView(rule);
+//    }
 //
 //    /** Returns the rule factory passed in at construction time. */
 //    public RuleFactory getRuleFactory() {

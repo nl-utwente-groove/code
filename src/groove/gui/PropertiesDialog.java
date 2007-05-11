@@ -1,9 +1,10 @@
-/* $Id: PropertiesDialog.java,v 1.4 2007-05-06 10:47:52 rensink Exp $ */
+/* $Id: PropertiesDialog.java,v 1.5 2007-05-11 08:22:02 rensink Exp $ */
 package groove.gui;
 
 import groove.calc.Property;
 import groove.util.ListComparator;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -19,7 +20,6 @@ import java.util.TreeMap;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JButton;
 import javax.swing.JDialog;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -78,7 +78,7 @@ public class PropertiesDialog {
 	 * @return <code>true</code> if the properties have changed during
 	 * the time the dialog was visible.
 	 */
-	public boolean showDialog(JFrame frame) {
+	public boolean showDialog(Component frame) {
 		boolean result;
 		boolean stopDialog;
 		do {
