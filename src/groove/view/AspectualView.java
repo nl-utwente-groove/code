@@ -1,7 +1,10 @@
-/* $Id: AspectualView.java,v 1.1 2007-04-29 09:22:35 rensink Exp $ */
+/* $Id: AspectualView.java,v 1.2 2007-05-11 21:51:30 rensink Exp $ */
 package groove.view;
 
+import groove.graph.GraphInfo;
+import groove.graph.GraphShape;
 import groove.graph.Node;
+import groove.trans.RuleNameLabel;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 
@@ -17,15 +20,31 @@ import java.util.Map;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface AspectualView<Model> extends View<Model> {
+abstract public class AspectualView<Model> implements View<Model> {
 	/**
 	 * Returns the aspect graph representation of this view.
 	 */
-	AspectGraph getAspectGraph();
+	abstract public AspectGraph getAspectGraph();
 	
 	/**
 	 * Returns a mapping from the nodes in the aspect graph view to the
 	 * corresponding nodes in the model that is being viewed.
 	 */
-	Map<AspectNode, Node> getMap();
+	abstract public Map<AspectNode, Node> getMap();
+
+	/** 
+	 * Creates a view from a given aspect graph.
+	 * Depending on the role fo the graph, the result is an {@link AspectualRuleView} or
+	 * an {@link AspectualGraphView}.
+	 * @param aspectGraph the graph to create the view from
+	 * @return a graph or rule view based on <code>aspectGraph</code>
+	 * @see GraphInfo#getRole(GraphShape)
+	 */
+	static public AspectualView<?> createView(AspectGraph aspectGraph) {
+		if (GraphInfo.hasRuleRole(aspectGraph)) {
+			return new AspectualRuleView(aspectGraph, new RuleNameLabel(GraphInfo.getName(aspectGraph)));
+		} else {
+			return new AspectualGraphView(aspectGraph);
+		}
+	}
 }

@@ -1,4 +1,4 @@
-/* $Id: RuleNameDialog.java,v 1.2 2007-05-06 10:47:51 rensink Exp $ */
+/* $Id: RuleNameDialog.java,v 1.3 2007-05-11 21:51:16 rensink Exp $ */
 package groove.gui;
 
 import groove.trans.RuleNameLabel;
@@ -25,26 +25,29 @@ class RuleNameDialog {
 	/**
 	 * Constructs a dialog instance, given a set of existing names (that
 	 * should not be used) as well as a suggested value for the new rule name.
+	 * @param existingNames the set of already existing rule names
+	 * @param suggestion the suggested name to start with
 	 */
-	RuleNameDialog(Set<RuleNameLabel> existingNames) {
+	RuleNameDialog(Set<RuleNameLabel> existingNames, RuleNameLabel suggestion) {
 		this.existingNames = new HashSet<RuleNameLabel>(existingNames);
+		this.suggestion = suggestion;
 	}
 	
 	/** 
 	 * Creates a dialog and makes it visible, so that the user can choose a file name.
 	 * The return value indicates if a valid new rule name was input.
 	 * @param frame the frame on which the dialog is shown.
-	 * @param suggestion the suggested name to start with
+	 * @param title the title for the dialog; if <code>null</code>, a default title is used
 	 * @return <code>true</code> if the user agreed with the outcome of the dialog.
 	 */
-	public boolean showDialog(JFrame frame, RuleNameLabel suggestion) {
+	public boolean showDialog(JFrame frame, String title) {
 		// set the suggested name in the name field
 		JTextField nameField = getNameField();
 		nameField.setText(suggestion.name());
 		nameField.setSelectionStart(0);
 		nameField.setSelectionEnd(nameField.getText().length());
 		getOkButton().setEnabled(isNameFieldValid());
-		JDialog dialog = getOptionPane().createDialog(frame, "Select rule name");
+		JDialog dialog = getOptionPane().createDialog(frame, title == null ? DEFAULT_TITLE : title);
 		dialog.setVisible(true);
 		Object response = getOptionPane().getValue();
 		boolean result = response == getOkButton() || response == getNameField();
@@ -124,13 +127,15 @@ class RuleNameDialog {
 	}
 	
 	/** 
-	 * Tests if a given string is a correct value for the new rule name.
-	 * and if so, assigns it to the chosen name; if not, sets the chosen name to <code>null</code>.
-	 * @return <code>true</code> if <code>chosenName</code> was found to be
-	 * a correct value, and assigned to the chose name field
+	 * Tests if {@link #getChosenName()} is a correct value for the new rule name.
+	 * This is the case if it equals the originally suggested name, or is not in the set of
+	 * existing names.
+	 * @return <code>true</code> if {@link #getChosenName()} was found to be
+	 * a correct value
 	 */
 	private boolean isNameFieldValid() {
-		return ! existingNames.contains(getChosenName());
+		RuleNameLabel label = getChosenName();
+		return suggestion.equals(label) || ! existingNames.contains(label) && label.name().length() != 0;
 	}
 	
 	/** The option pane that is the core of the dialog. */
@@ -147,6 +152,9 @@ class RuleNameDialog {
 	
 	/** Set of existing rule names. */
 	private final Set<RuleNameLabel> existingNames;
+	
+	/** Suggested name. */
+	private RuleNameLabel suggestion;
 
 	/** The rule name selected by the user. */
 	private RuleNameLabel name;
@@ -165,6 +173,9 @@ class RuleNameDialog {
 		}
 	}
 	
+	/** Default dialog title. */
+	
+	static private String DEFAULT_TITLE = "Select rule name";
 	/** 
 	 * Document listener that enables or disables the OK button,
 	 * depending on whether {@link #isNameFieldValid()} returns <code>true</code>.

@@ -1,7 +1,7 @@
 package groove.gui;
 
 import groove.graph.Graph;
-import groove.gui.jgraph.GraphJModel;
+import groove.graph.GraphInfo;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Frame;
@@ -14,6 +14,7 @@ import java.awt.event.WindowEvent;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JToolBar;
@@ -22,36 +23,23 @@ import javax.swing.WindowConstants;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class EditorDialog extends JDialog {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param owner the parent frame for the dialog
      * @param graph the input graph for the editor
-     * @param type edit type (either #GRAPH_TYPE or #RULE_TYPE)
      * @throws HeadlessException
      */
-    public EditorDialog(Frame owner, Graph graph, String type) throws HeadlessException {
+    public EditorDialog(Frame owner, Options options, Graph graph) throws HeadlessException {
         super(owner, true);
-        this.type = type;
+        this.options = options;
         this.editor = new Editor();
-        editor.setEditType(type);
-        this.editor.setModel(new GraphJModel(graph));
+        this.editor.setPlainGraph(graph);
         JFrame editorFrame = editor.getFrame();
-        // set the menu bar from the editor frame
-        JMenuBar menuBar = editorFrame.getJMenuBar();
-        menuBar.remove(0);
-        setJMenuBar(menuBar);
-//        // set the content pane from the editor frame
-//        Container contentPane = editorFrame.getContentPane();
-////        contentPane.remove();
-////        contentPane.add(createToolBar(), BorderLayout.NORTH);
-//        getContentPane().setLayout(new BorderLayout());
-//        getContentPane().add(createToolBar(), BorderLayout.NORTH);
-//        getContentPane().add(editor.getGraphPanel(), BorderLayout.CENTER);
-//        getContentPane().add(editor.getStatusPanel(), BorderLayout.SOUTH);
-        setContentPane(editor.createContentPanel(createToolBar()));
+        setJMenuBar(createMenuBar());
+        setContentPane(editor.createContentPanel(createToolBar(GraphInfo.hasGraphRole(graph))));
         // set the title from the editor frame
         setTitle(editorFrame.getTitle());
         // Set Close Operation to Exit
@@ -68,7 +56,7 @@ public class EditorDialog extends JDialog {
 
     /** Returns the resulting graph of the editor. */
     public Graph toPlainGraph() {
-        return editor.getModel().toPlainGraph();
+        return editor.getPlainGraph();
     }
 
     /** Returns the resulting aspect graph of the editor. */
@@ -95,15 +83,36 @@ public class EditorDialog extends JDialog {
     }
 
     /**
+     * Creates and returns the menu bar. Requires the actions to have been initialized first.
+     */
+    protected JMenuBar createMenuBar() {
+        JMenuBar menuBar = new JMenuBar();
+        menuBar.add(editor.createEditMenu());
+        menuBar.add(editor.createDisplayMenu());
+        menuBar.add(createOptionsMenu());
+        menuBar.add(editor.createHelpMenu());
+        return menuBar;
+    }
+
+	/**
+	 * Creates and returns an options menu for the menu bar.
+	 */
+	private JMenu createOptionsMenu() {
+        JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
+        optionsMenu.add(options.getItem(Options.PREVIEW_ON_CLOSE_OPTION));
+        return optionsMenu;
+	}
+
+    /**
      * Creates and returns the tool bar.
      */
-    private JToolBar createToolBar() {
+    private JToolBar createToolBar(boolean graphRole) {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
         toolbar.add(createOkButton());
         toolbar.add(createCancelButton());
         toolbar.addSeparator();
-        if (Editor.GRAPH_TYPE.equals(type)) {
+        if (graphRole) {
             toolbar.add(editor.getGraphTypeButton());
         } else {
             toolbar.add(editor.getRuleTypeButton());
@@ -137,40 +146,47 @@ public class EditorDialog extends JDialog {
     }
     
     /**
-     * Registers the effect of pressing the OK button.
-     * Sets {@link #ok} to <code>true</code> and hides the dialog.
+     * Implements the effect of pressing the OK button.
+     * Sets {@link #ok} to <code>true</code> and disposes the dialog.
      */
     private void handleOk() {
-        ok = true;
-        setVisible(false);
+    	if (options.isSelected(Options.PREVIEW_ON_CLOSE_OPTION) && !editor.handlePreview(null)) {
+    		return;
+    	} else if (hasErrors()) {
+        	JOptionPane.showMessageDialog(this, "Cannot use graph with syntax errors");
+        } else {
+            ok = true;
+        	dispose();
+        }
     }
     
     /**
-     * Registers the effect of cancelling.
-     * Queries the user if he wants to abandon edits, sets the {@link #ok} field and hides the dialog.
+     * Implements the effect of cancelling.
+     * Queries the user if he wants to abandon edits, 
+     * sets the {@link #ok} field to <code>false</code> and disposes the dialog.
      */
     private void handleCancel() {
         ok = false;
-        if (isModified()) {
+        if (! hasErrors() && isModified()) {
             int confirm = JOptionPane.showConfirmDialog(this,
                 "Use edited graph?",
                 null,
                 JOptionPane.YES_NO_CANCEL_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 ok = true;
-                setVisible(false);
+                dispose();
             } else if (confirm == JOptionPane.NO_OPTION) {
-                setVisible(false);
+                dispose();
             } 
         } else {
-            setVisible(false);
+            dispose();
         }
     }
 
     /** Flag recording the decision of the user on exit. */
     private boolean ok;
-    /** The edit type of the dialog. */
-    private final String type;
+    /** Options of this dialog. */
+    private final Options options;
     /** The dialog wrapped in the editor. */
     private final Editor editor;
 }

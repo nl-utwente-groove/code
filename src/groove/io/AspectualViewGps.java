@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.4 2007-05-11 08:22:01 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.5 2007-05-11 21:51:31 rensink Exp $
  */
 
 package groove.io;
@@ -26,7 +26,7 @@ import groove.trans.RuleFactory;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
-import groove.view.AspectualGrammarView;
+import groove.view.DefaultGrammarView;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.FormatException;
@@ -47,9 +47,9 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
-public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
+public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     /** Error message if a grammar cannot be loaded. */
     static private final String LOAD_ERROR = "Can't load graph grammar";
 
@@ -93,11 +93,11 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
         return GRAMMAR_FILTER;
     }
 
-    public AspectualGrammarView unmarshal(File location) throws IOException {
+    public DefaultGrammarView unmarshal(File location) throws IOException {
         return unmarshal(location, null);
     }
     
-    public AspectualGrammarView unmarshal(File location, String startGraphName) throws IOException {
+    public DefaultGrammarView unmarshal(File location, String startGraphName) throws IOException {
         if (!location.exists()) {
             throw new FileNotFoundException(LOAD_ERROR + ": rule rystem location \"" + location
                     + "\" does not exist");
@@ -108,7 +108,7 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
         }
 
         String grammarName = getExtensionFilter().stripExtension(location.getName());
-        AspectualGrammarView result = createGrammar(grammarName);
+        DefaultGrammarView result = createGrammar(grammarName);
 
         loadProperties(result, location);
         loadRules(result, location);
@@ -120,7 +120,7 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
 	 * Loads the properties file for a given graph grammar
 	 * from a given location.
 	 */
-	private void loadProperties(AspectualGrammarView result, File location) throws IOException, FileNotFoundException {
+	private void loadProperties(DefaultGrammarView result, File location) throws IOException, FileNotFoundException {
 		// search for a properties file
         File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(result.getName()));
         Properties grammarProperties = null;
@@ -134,7 +134,7 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
 	/**
 	 * Loads the rules for a given graph grammar from a given location.
 	 */
-	private void loadRules(AspectualGrammarView result, File location) throws IOException {
+	private void loadRules(DefaultGrammarView result, File location) throws IOException {
         // load the rules from location
         loadRules(result, location, null);
 	}
@@ -149,7 +149,7 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
      * @require <tt>directory.exists() && directory.isDirectory()</tt>
 	 * @throws IOException if <tt>directory</tt> contains duplicate or malformed production rules
 	 */
-	private void loadRules(AspectualGrammarView result, File directory,
+	private void loadRules(DefaultGrammarView result, File directory,
 	        RuleNameLabel rulePath) throws IOException {
 	    File[] files = directory.listFiles(RULE_FILTER);
 	    if (files == null) {
@@ -185,7 +185,7 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
 	private AspectualRuleView loadRule(File location, RuleNameLabel ruleName,
 			SystemProperties properties) throws IOException, FormatException {
 		AspectGraph unmarshalledRule = getGraphMarshaller().unmarshalGraph(location);
-        GraphInfo.setRole(unmarshalledRule, DefaultGxl.RULE_ROLE);
+        GraphInfo.setRole(unmarshalledRule, Groove.RULE_ROLE);
 		return createRuleView(unmarshalledRule, ruleName, properties);
 	}
 
@@ -195,7 +195,7 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
 	 * @param location
 	 * @throws IOException
 	 */
-	private void loadStartGraph(AspectualGrammarView result, String startGraphName, File location) throws IOException {
+	private void loadStartGraph(DefaultGrammarView result, String startGraphName, File location) throws IOException {
 		// determine the start graph file
 	    File startGraphFile;
 	    if (startGraphName == null) {
@@ -213,7 +213,7 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
 	    if (startGraphFile != null) {
 	        try {
 	            AspectGraph unmarshalledStartGraph = getGraphMarshaller().unmarshalGraph(startGraphFile);
-                GraphInfo.setRole(unmarshalledStartGraph, DefaultGxl.GRAPH_ROLE);
+                GraphInfo.setRole(unmarshalledStartGraph, Groove.GRAPH_ROLE);
 	            AspectualGraphView startGraph = new AspectualGraphView(unmarshalledStartGraph);
 	            result.setStartGraph(startGraph);
 	        } catch (FileNotFoundException exc) {
@@ -247,7 +247,7 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
         }
     }
 
-    public void marshal(AspectualGrammarView gg, File location) throws IOException {
+    public void marshal(DefaultGrammarView gg, File location) throws IOException {
         createLocation(location);
 		// iterate over rules and save them
 		for (RuleNameLabel ruleName : gg.getRuleMap().keySet()) {
@@ -356,12 +356,12 @@ public class AspectualViewGps implements GrammarViewXml<AspectualGrammarView> {
     }
     
     /**
-     * Creates a {@link groove.view.AspectualGrammarView} with the given name.
-     * @param name the name of the {@link groove.view.AspectualGrammarView} to be created
-     * @return a new {@link groove.view.AspectualGrammarView} with the given name
+     * Creates a {@link groove.view.DefaultGrammarView} with the given name.
+     * @param name the name of the {@link groove.view.DefaultGrammarView} to be created
+     * @return a new {@link groove.view.DefaultGrammarView} with the given name
      */
-    protected AspectualGrammarView createGrammar(String name) {
-        return new AspectualGrammarView(name);
+    protected DefaultGrammarView createGrammar(String name) {
+        return new DefaultGrammarView(name);
     }
 
     /**

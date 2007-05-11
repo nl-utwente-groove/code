@@ -12,13 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.12 2007-05-08 06:42:36 rensink Exp $
+ * $Id: Groove.java,v 1.13 2007-05-11 21:51:33 rensink Exp $
  */
 package groove.util;
 
 import groove.calc.DefaultGraphCalculator;
 import groove.calc.GraphCalculator;
 import groove.graph.Graph;
+import groove.graph.GraphInfo;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
 import groove.io.DefaultGxl;
@@ -34,6 +35,8 @@ import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
 
@@ -41,7 +44,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.12 $ 
+ * @version $Revision: 1.13 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -53,6 +56,16 @@ public class Groove {
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
     /** The default sample directory. */
     public static final String SAMPLE_DIR = WORKING_DIR + FILE_SEPARATOR + "samples";
+	/** 
+	 * Role value indicating that a graph represents an ordinary graph.
+	 * @see GraphInfo#getRole() 
+	 */
+	static public final String GRAPH_ROLE = "graph";
+	/** 
+	 * Role value indicating that a graph represents a rule. 
+	 * @see GraphInfo#getRole() 
+	 */
+	static public final String RULE_ROLE = "rule";
 
     /** Extension for GXL (Graph eXchange Language) files. */
     public static final String GXL_EXTENSION = ".gxl";
@@ -119,7 +132,7 @@ public class Groove {
      * @see #GXL_EXTENSION
      */
     public static ExtensionFilter createGxlFilter() {
-        return new ExtensionFilter("GXL files", GXL_EXTENSION);
+        return createGxlFilter(true);
     }
 
     /**
@@ -129,9 +142,7 @@ public class Groove {
      * @see #GXL_EXTENSION
      */
     public static ExtensionFilter createGxlFilter(boolean acceptDirectories) {
-        ExtensionFilter res = createGxlFilter();
-        res.setAcceptDirectories(acceptDirectories);
-        return res;
+        return getFilter("GXL files", GXL_EXTENSION, acceptDirectories);
     }
 
     /**
@@ -140,7 +151,7 @@ public class Groove {
      * @see #RULE_EXTENSION
      */
     public static ExtensionFilter createRuleFilter() {
-        return new ExtensionFilter("Groove production rules", RULE_EXTENSION);
+        return createRuleFilter(true);
     }
 
     /**
@@ -150,9 +161,7 @@ public class Groove {
      * @see #RULE_EXTENSION
      */
     public static ExtensionFilter createRuleFilter(boolean acceptDirectories) {
-        ExtensionFilter res = createRuleFilter();
-        res.setAcceptDirectories(acceptDirectories);
-        return res;
+        return getFilter("Groove production rules", RULE_EXTENSION, acceptDirectories);
     }
 
     /**
@@ -161,7 +170,7 @@ public class Groove {
      * @see #RULE_SYSTEM_EXTENSION
      */
     public static ExtensionFilter createRuleSystemFilter() {
-        return new ExtensionFilter("Groove production systems", RULE_SYSTEM_EXTENSION);
+        return createRuleSystemFilter(true);
     }
 
     /**
@@ -171,9 +180,7 @@ public class Groove {
      * @see #RULE_SYSTEM_EXTENSION
      */
     public static ExtensionFilter createRuleSystemFilter(boolean acceptDirectories) {
-        ExtensionFilter res = createRuleSystemFilter();
-        res.setAcceptDirectories(acceptDirectories);
-        return res;
+        return getFilter("Groove production systems", RULE_SYSTEM_EXTENSION, acceptDirectories);
     }
 
     /**
@@ -182,7 +189,7 @@ public class Groove {
      * @see #FSM_EXTENSION
      */
     public static ExtensionFilter createFsmFilter() {
-        return new ExtensionFilter("FSM layout files", FSM_EXTENSION);
+        return getFilter("FSM layout files", FSM_EXTENSION, true);
     }
 
     /**
@@ -191,7 +198,7 @@ public class Groove {
      * @see #STATE_EXTENSION
      */
     public static ExtensionFilter createStateFilter() {
-        return new ExtensionFilter("Groove state graphs", STATE_EXTENSION);
+        return createStateFilter(true);
     }
 
     /**
@@ -210,11 +217,27 @@ public class Groove {
      * @see #STATE_EXTENSION
      */
     public static ExtensionFilter createStateFilter(boolean acceptDirectories) {
-        ExtensionFilter res = createStateFilter();
-        res.setAcceptDirectories(acceptDirectories);
-        return res;
+        return getFilter("Groove state graphs", STATE_EXTENSION, acceptDirectories);
     }
 
+    /**
+     * Returns an extension filter with the required properties.
+     * @param description general description of the filter
+     * @param extension the extension to be filtered
+     * @param acceptDirectories flag controlling whether directories should be accepted by the filter.
+     * @return a filter with the required properties
+     */
+    public static ExtensionFilter getFilter(String description, String extension, boolean acceptDirectories) {
+    	Pair<ExtensionFilter,ExtensionFilter> result = extensionFilterMap.get(extension);
+    	if (result == null) {
+        	ExtensionFilter first = new ExtensionFilter(description, extension, false);
+        	ExtensionFilter second = new ExtensionFilter(description, extension, true);
+        	result = new Pair<ExtensionFilter,ExtensionFilter>(first, second);
+        	extensionFilterMap.put(extension, result);
+    	}
+    	return acceptDirectories ? result.second() : result.first();
+    }
+    
     /**
      * Retrieves a property from the gui properties file
      * @param key the property description
@@ -259,10 +282,25 @@ public class Groove {
      */
     static public Graph loadGraph(File file) throws IOException, FormatException {
         if (file.exists()) {
-            return graphLoader.unmarshalGraph(file);
+            Graph result = graphLoader.unmarshalGraph(file);
+            return result;
         } else {
         	return null;
         }
+    }
+    
+    /**
+     * Indicates if a given file is a rule file as recognized by the GROOVE system.
+     */
+    static public boolean isRuleFile(File file) {
+    	return createRuleFilter().accept(file);
+    }
+    
+    /**
+     * Indicates if a given file is a state file as recognized by the GROOVE system.
+     */
+    static public boolean isStateFile(File file) {
+    	return createStateFilter().accept(file);
     }
     
     /**
@@ -598,6 +636,10 @@ public class Groove {
         loadProperties(xmlProperties, XML_PROPERTIES_FILE);
     }
     
+    /**
+     * Mapping from extensions to pairs of filters recognising/not recognising directories.
+     */
+    static private final Map<String,Pair<ExtensionFilter,ExtensionFilter>> extensionFilterMap = new HashMap<String,Pair<ExtensionFilter,ExtensionFilter>>();
     /**
      * The fixed graph loader.
      */

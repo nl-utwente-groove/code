@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.12 2007-05-08 23:12:26 rensink Exp $
+ * $Id: RuleJTree.java,v 1.13 2007-05-11 21:51:15 rensink Exp $
  */
 package groove.gui;
 
@@ -27,7 +27,7 @@ import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
 import groove.util.CollectionOfCollections;
 import groove.util.Groove;
-import groove.view.AspectualGrammarView;
+import groove.view.DefaultGrammarView;
 import groove.view.AspectualRuleView;
 import groove.view.GrammarView;
 import groove.view.RuleView;
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -105,7 +105,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Fills the rule directory with rule nodes, based on a given rule system.
      * Sets the current LTS to the grammar's LTS.
      */
-    public synchronized void setGrammarUpdate(AspectualGrammarView grammar) {
+    public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
     	displayedGrammar = grammar;
 		if (grammar == null) {
 			ruleNodeMap.clear();
@@ -122,7 +122,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	 * Loads the j-tree with the data of the given (non-<code>null</code>)
 	 * grammar.
 	 */
-	private void loadGrammar(AspectualGrammarView grammar) {
+	private void loadGrammar(DefaultGrammarView grammar) {
 		boolean oldListenToSelectionChanges = listenToSelectionChanges;
         listenToSelectionChanges = false;
         setShowAnchorsOptionListener();
@@ -387,7 +387,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 			res.add(simulator.getDeleteRuleAction());
 			res.add(simulator.getRenameRuleAction());
             res.addSeparator();
-            res.add(simulator.getEditGraphPropertiesAction());
+            res.add(simulator.getEditRulePropertiesAction());
             res.add(simulator.getEditRuleAction());
 		} else if (node instanceof MatchTreeNode) {
             res.addSeparator();

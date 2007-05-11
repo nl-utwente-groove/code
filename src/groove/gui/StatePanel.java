@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.13 2007-05-09 22:53:33 rensink Exp $
+ * $Id: StatePanel.java,v 1.14 2007-05-11 21:51:15 rensink Exp $
  */
 package groove.gui;
 
@@ -36,7 +36,7 @@ import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.trans.NameLabel;
 import groove.util.Groove;
-import groove.view.AspectualGrammarView;
+import groove.view.DefaultGrammarView;
 import groove.view.AspectualGraphView;
 
 import java.awt.Rectangle;
@@ -56,7 +56,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -97,7 +97,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     /**
      * Sets the underlying model of this state frame to the initial graph of the new grammar.
      */
-    public synchronized void setGrammarUpdate(AspectualGrammarView grammar) {
+    public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
         stateJModelMap.clear();
         graphJModelMap.clear();
         selectedTransition = null;

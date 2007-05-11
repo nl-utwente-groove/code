@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.33 2007-05-11 08:22:02 rensink Exp $
+ * $Id: Simulator.java,v 1.34 2007-05-11 21:51:16 rensink Exp $
  */
 package groove.gui;
 
@@ -64,7 +64,7 @@ import groove.util.Groove;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
-import groove.view.AspectualGrammarView;
+import groove.view.DefaultGrammarView;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.FormatException;
@@ -89,7 +89,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -128,63 +127,9 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.34 $
  */
 public class Simulator {
-    /**
-     * Name of the LTS file, when it is isaved or exported.
-     */
-    static private final String LTS_FILE_NAME = "lts";
-    /**
-     * Default name of an empty rule.
-     */
-    static private final String NEW_RULE_NAME = "newRule";
-
-    /** Name of this application. */
-    private static final String APPLICATION_NAME = "Production Simulator";
-
-    /**
-     * Minimum width of the rule tree component.
-     */
-    static private final int RULE_TREE_MINIMUM_WIDTH = 100;
-
-    /**
-     * Preferred width of the graph view.
-     */
-    static private final int GRAPH_VIEW_PREFERRED_WIDTH = 500;
-
-    /**
-	 * Preferred height of the graph view.
-	 */
-	static private final int GRAPH_VIEW_PREFERRED_HEIGHT = 400;
-
-	/**
-	 * Preferred dimension of the graph view.
-	 */
-	static private final Dimension GRAPH_VIEW_PREFERRED_SIZE = new Dimension(GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
-
-	/** Starts a simulator, optionally setting the graph production system and start state. */
-	public static void main(String[] args) {
-	    Simulator simulator;
-	    try {
-	        if (args.length == 0)
-	            simulator = new Simulator();
-	        else if (args.length == 1)
-	            simulator = new Simulator(args[0]);
-	        else if (args.length == 2)
-	            simulator = new Simulator(args[0], args[1]);
-	        else
-	            throw new IOException("Usage: Simulator [<production-system> [<start-state>]]");
-	        simulator.start();
-	    } catch (IOException exc) {
-	        exc.printStackTrace();
-	        System.out.println(exc.getMessage());
-	        // System.exit(0);
-	    }
-	}
-
-    // --------------------- INSTANCE DEFINITIONS -----------------------------
-
     /**
      * Constructs a simulator with an empty graph grammar.
      */
@@ -247,7 +192,7 @@ public class Simulator {
 	/**
      * Returns the currently loaded graph grammar, or <tt>null</tt> if none is loaded.
      */
-    public AspectualGrammarView getCurrentGrammar() {
+    public DefaultGrammarView getCurrentGrammar() {
         return currentGrammar;
     }
 
@@ -255,7 +200,7 @@ public class Simulator {
      * Sets the {@link #currentGrammar} and {@link #currentRule} fields. 
      * @return <code>true</code> if the new grammar is different from the previous
      */
-    private boolean setCurrentGrammar(AspectualGrammarView grammar) {
+    private boolean setCurrentGrammar(DefaultGrammarView grammar) {
     	boolean result = currentGrammar != grammar;
 		this.currentGrammar = grammar;
 		if (currentRule != null && grammar.getRule(currentRule.getName()) == null) {
@@ -401,13 +346,13 @@ public class Simulator {
 	}
 
     /** Returns the properties edit action permanently associated with this simulator. */
-	public EditGraphPropertiesAction getEditGraphPropertiesAction() {
+	public EditRulePropertiesAction getEditRulePropertiesAction() {
 		// lazily create the action
-		if (editGraphPropertiesAction == null) {
-			editGraphPropertiesAction = new EditGraphPropertiesAction();
-			addRefreshable(editGraphPropertiesAction);
+		if (editRulePropertiesAction == null) {
+			editRulePropertiesAction = new EditRulePropertiesAction();
+			addRefreshable(editRulePropertiesAction);
 		}
-	    return editGraphPropertiesAction;
+	    return editRulePropertiesAction;
 	}
 
     /** Returns the action to show the system properties of the current grammar. */
@@ -638,8 +583,15 @@ public class Simulator {
 //		}
 //	}
 //    
-    private EditorDialog showEditorDialog(Graph graph, boolean isState) {
-        return Editor.showEditorDialog(getFrame(), graph, isState ? Editor.GRAPH_TYPE : Editor.RULE_TYPE);
+    /**
+     * Creates and displays a modal dialog wrapping an editor.
+     * @param graph the input graph for the editor
+     * @return the dialog object, which can be queried as to the result of editing
+     */
+    private EditorDialog showEditorDialog(Graph graph) {
+        EditorDialog result = new EditorDialog(getFrame(), getOptions(), graph);
+        result.setVisible(true);
+        return result;
     }
 
     /** Inverts the enabledness of the current rule, and stores the result. */
@@ -724,7 +676,7 @@ public class Simulator {
      */
     private void doLoadGrammar(AspectualViewGps grammarLoader, File grammarFile, String startStateName) {
         try {
-        	AspectualGrammarView grammar = grammarLoader.unmarshal(grammarFile, startStateName);
+        	DefaultGrammarView grammar = grammarLoader.unmarshal(grammarFile, startStateName);
         	setGrammar(grammar);
 //        	if (grammar.getStartGraph() != null) {
 //        		startSimulation(grammar);
@@ -755,7 +707,7 @@ public class Simulator {
 //        try {
         	grammarFile.mkdir();
         	String grammarName = grammarLoader.getExtensionFilter().stripExtension(grammarFile.getName());
-        	AspectualGrammarView grammar = new AspectualGrammarView(grammarName);
+        	DefaultGrammarView grammar = new DefaultGrammarView(grammarName);
         	setGrammar(grammar);
             // now we know loading succeeded, we can set the current names & files
             currentGrammarFile = grammarFile;
@@ -786,19 +738,12 @@ public class Simulator {
     }
     
     private RuleNameLabel generateNewRuleName(String basis) {
-    	String result = null;
-    	for (int i = 1; result == null; i++) {
-    		String name = basis+i;
-    		boolean nameIsNew = true;
-    		Iterator<RuleNameLabel> ruleIter = getCurrentGrammar().getRuleMap().keySet().iterator();
-    		while (nameIsNew && ruleIter.hasNext()) {
-    			nameIsNew = !ruleIter.next().name().equals(name);
-    		}
-    		if (nameIsNew) {
-    			result = name;
-    		}
+    	RuleNameLabel result = new RuleNameLabel(basis);
+    	Set<RuleNameLabel> existingNames = getCurrentGrammar().getRuleMap().keySet();
+    	for (int i = 1; existingNames.contains(result); i++) {
+    		result = new RuleNameLabel(basis+i);
     	}
-    	return new RuleNameLabel(result);
+    	return result;
     }
     
     /**
@@ -883,13 +828,13 @@ public class Simulator {
 
     /**
 	 * Sets a new graph transition system. Invokes
-	 * {@link #fireSetGrammar(AspectualGrammarView)} to notify all observers of the change.
+	 * {@link #fireSetGrammar(DefaultGrammarView)} to notify all observers of the change.
 	 * 
 	 * @param grammar
 	 *            the new graph transition system
-	 * @see #fireSetGrammar(AspectualGrammarView)
+	 * @see #fireSetGrammar(DefaultGrammarView)
 	 */
-    public synchronized void setGrammar(AspectualGrammarView grammar) {
+    public synchronized void setGrammar(DefaultGrammarView grammar) {
 		setCurrentGrammar(grammar);
 		setCurrentGTS(null);
 		fireSetGrammar(grammar);
@@ -909,9 +854,9 @@ public class Simulator {
 	 * 
 	 * @param grammar
 	 *            the new graph transition system
-	 * @see #fireSetGrammar(AspectualGrammarView)
+	 * @see #fireSetGrammar(DefaultGrammarView)
 	 */
-    public synchronized void startSimulation(AspectualGrammarView grammar) {
+    public synchronized void startSimulation(DefaultGrammarView grammar) {
     	try {
     		setCurrentGrammar(grammar);
     		setCurrentGTS(new GTS(getCurrentGrammar().toGrammar()));
@@ -1233,6 +1178,7 @@ public class Simulator {
     private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(createFileMenu());
+        menuBar.add(createEditMenu());
         menuBar.add(createDisplayMenu());
         menuBar.add(createExploreMenu());
         menuBar.add(createVerifyMenu());
@@ -1263,12 +1209,34 @@ public class Simulator {
 	private JMenu createNewMenu() {
 		JMenu result = new JMenu(Options.NEW_ACTION_NAME);
 //        result.setAccelerator(Options.NEW_KEY);
-		result.add(getNewGraphAction());
-		result.add(getNewRuleAction());
-		result.add(getNewGrammarAction());
+		String menuName = result.getText();
+		result.add(createItem(getNewGrammarAction(), menuName));
+		result.add(createItem(getNewGraphAction(), menuName));
+		result.add(createItem(getNewRuleAction(), menuName));
 		return result;
 	}
-	
+
+	/**
+	 * Creates and returns a file menu for the menu bar.
+	 */
+	private JMenu createEditMenu() {
+	    JMenu result = new JMenu(Options.EDIT_MENU_NAME);
+	    result.add(getNewRuleAction());
+		result.addSeparator();
+		result.add(getEnableRuleAction());
+		result.addSeparator();
+		result.add(getCopyRuleAction());
+		result.add(getDeleteRuleAction());
+		result.add(getRenameRuleAction());
+		result.addSeparator();
+		result.add(getEditRuleAction());
+		result.add(getEditGraphAction());
+		result.addSeparator();
+		result.add(getEditRulePropertiesAction());
+		result.add(getEditSystemPropertiesAction());
+	    return result;
+	}
+
 	/**
 	 * Returns the menu item in the file menu that specifies
 	 * saving the currently displayed graph (in the currently selected graph panel).
@@ -1362,6 +1330,20 @@ public class Simulator {
 		return result;
 	}
 
+	/** Creates a menu item from an action, while omitting some of the label text. */ 
+	private JMenuItem createItem(Action action, String omit) {
+		JMenuItem result = new JMenuItem();
+		String text = (String) action.getValue(Action.NAME);
+		if (text != null) {
+			int omitIndex = text.indexOf(omit);
+			if (omitIndex >= 0) {
+				String pre = text.substring(0, omitIndex);
+				String post = text.substring(omitIndex + omit.length()).trim();
+				result.setText((pre + post).trim());
+			}
+		}
+		return result;
+	}
 	/**
 	 * Returns the file chooser for grammar (GPR) files, lazily creating it first.
 	 */
@@ -1428,12 +1410,12 @@ public class Simulator {
 
     /**
      * Notifies all listeners of a new graph grammar. As a result,
-     * {@link SimulationListener#setGrammarUpdate(AspectualGrammarView)}is invoked on all currently
+     * {@link SimulationListener#setGrammarUpdate(DefaultGrammarView)}is invoked on all currently
      * registered listeners. This method should not be called directly: use
-     * {@link #setGrammar(AspectualGrammarView)}instead.
-     * @see SimulationListener#setGrammarUpdate(AspectualGrammarView)
+     * {@link #setGrammar(DefaultGrammarView)}instead.
+     * @see SimulationListener#setGrammarUpdate(DefaultGrammarView)
      */
-    protected synchronized void fireSetGrammar(AspectualGrammarView grammar) {
+    protected synchronized void fireSetGrammar(DefaultGrammarView grammar) {
     	for (SimulationListener listener: listeners) {
     		listener.setGrammarUpdate(grammar);
         }
@@ -1443,7 +1425,7 @@ public class Simulator {
      * Notifies all listeners of the start of a new active simulation. As a result,
      * {@link SimulationListener#startSimulationUpdate(GTS)} is invoked on all currently
      * registered listeners. This method should not be called directly: use
-     * {@link #startSimulation(AspectualGrammarView)}instead.
+     * {@link #startSimulation(DefaultGrammarView)}instead.
      * @see SimulationListener#startSimulationUpdate(GTS)
      */
     protected synchronized void fireStartSimulation(GTS gts) {
@@ -1571,7 +1553,7 @@ public class Simulator {
     
     /**
      * If a simulation is active, asks through a dialog whether it may be abandoned.
-     * @param setGrammar flag indicating that {@link #setGrammar(AspectualGrammarView)}
+     * @param setGrammar flag indicating that {@link #setGrammar(DefaultGrammarView)}
      * is to be called with the current grammar, in case the simulation is abandoned
      * @return <tt>true</tt> if the current grammar may be abandoned
      */
@@ -1592,13 +1574,9 @@ public class Simulator {
      * Asks whether the current start graph should be replaced by the edited version.
      */
     private boolean confirmLoadStartState(String stateName) {
-    	if (getCurrentGTS() != null) {
-    		String question = String.format("Replace start graph with %s?", stateName);
-			return confirmBehaviour(REPLACE_START_GRAPH_OPTION, question);
-		} else {
-			return true;
-		}
-    }
+		String question = String.format("Replace start graph with %s?", stateName);
+		return confirmBehaviour(REPLACE_START_GRAPH_OPTION, question);
+	}
 
     /**
 	 * Creates and shows an {@link ErrorDialog} for a given message and
@@ -1612,13 +1590,16 @@ public class Simulator {
      * Enters a dialog that results in a name label that does not yet
      * occur in the current grammar, or <code>null</code> if the dialog
      * was cancelled.
-     * @param ruleName an initially proposed name
+     * @param title dialog title; if <code>null</code>, a default title is used
+     * @param name an initially proposed name
+     * @param mustBeFresh if <code>true</code>, the returned name is guaranteed to be
+     * distinct from the existing rule names
      * @return a rule name not occurring in the current grammar, or <code>null</code>
      */
-    private RuleNameLabel askNewRuleName(String ruleName) {
-    	RuleNameLabel suggestion = generateNewRuleName(ruleName);
-    	RuleNameDialog ruleNameDialog = new RuleNameDialog(getCurrentGrammar().getRuleMap().keySet());
-    	ruleNameDialog.showDialog(getFrame(), suggestion);
+    private RuleNameLabel askNewRuleName(String title, String name, boolean mustBeFresh) {
+    	RuleNameLabel suggestion = mustBeFresh ? generateNewRuleName(name) : new RuleNameLabel(name);
+    	RuleNameDialog ruleNameDialog = new RuleNameDialog(getCurrentGrammar().getRuleMap().keySet(), suggestion);
+    	ruleNameDialog.showDialog(getFrame(), title);
     	return ruleNameDialog.getName();
     }
 
@@ -1647,6 +1628,7 @@ public class Simulator {
     		options = new Options();
     		options.getItem(SHOW_REMARKS_OPTION).setSelected(true);
             options.getItem(SHOW_STATE_IDS_OPTION).setSelected(true);
+            options.getItem(Options.PREVIEW_ON_CLOSE_OPTION).setSelected(true);
     	}
     	return options;
     }
@@ -1660,7 +1642,7 @@ public class Simulator {
      * The underlying graph grammar of this simulator. If <tt>null</tt>, no grammar has been
      * loaded.
      */
-    private AspectualGrammarView currentGrammar;
+    private DefaultGrammarView currentGrammar;
 
     /**
      * The current graph transition system.
@@ -1843,7 +1825,7 @@ public class Simulator {
 	/**
 	 * The rule properties edit action permanently associated with this simulator. 
 	 */
-	private EditGraphPropertiesAction editGraphPropertiesAction;
+	private EditRulePropertiesAction editRulePropertiesAction;
 	/**
 	 * The action to show the system properties of the currently selected grammar. 
 	 */
@@ -1908,8 +1890,62 @@ public class Simulator {
 
     /** The ctl formula providing action permanently associated with this simulator. */
     private ProvideCTLFormulaAction provideCTLFormulaAction;
+    
+	/** Starts a simulator, optionally setting the graph production system and start state. */
+	public static void main(String[] args) {
+	    Simulator simulator;
+	    try {
+	        if (args.length == 0)
+	            simulator = new Simulator();
+	        else if (args.length == 1)
+	            simulator = new Simulator(args[0]);
+	        else if (args.length == 2)
+	            simulator = new Simulator(args[0], args[1]);
+	        else
+	            throw new IOException("Usage: Simulator [<production-system> [<start-state>]]");
+	        simulator.start();
+	    } catch (IOException exc) {
+	        exc.printStackTrace();
+	        System.out.println(exc.getMessage());
+	        // System.exit(0);
+	    }
+	}
 
-    // ----------------------- DEBUG DEFINITIONS -----------------------
+    // --------------------- INSTANCE DEFINITIONS -----------------------------
+
+
+    /**
+     * Name of the LTS file, when it is isaved or exported.
+     */
+    static private final String LTS_FILE_NAME = "lts";
+    /**
+     * Default name of an empty rule.
+     */
+    static private final String NEW_RULE_NAME = "newRule";
+
+    /** Name of this application. */
+    private static final String APPLICATION_NAME = "Production Simulator";
+
+    /**
+     * Minimum width of the rule tree component.
+     */
+    static private final int RULE_TREE_MINIMUM_WIDTH = 100;
+
+    /**
+     * Preferred width of the graph view.
+     */
+    static private final int GRAPH_VIEW_PREFERRED_WIDTH = 500;
+
+    /**
+	 * Preferred height of the graph view.
+	 */
+	static private final int GRAPH_VIEW_PREFERRED_HEIGHT = 400;
+
+	/**
+	 * Preferred dimension of the graph view.
+	 */
+	static private final Dimension GRAPH_VIEW_PREFERRED_SIZE = new Dimension(GRAPH_VIEW_PREFERRED_WIDTH, GRAPH_VIEW_PREFERRED_HEIGHT);
+
 
     /** Flag controlling if a report should be printed after quitting. */
     private static final boolean REPORT = false;
@@ -2167,7 +2203,7 @@ public class Simulator {
 		public void actionPerformed(ActionEvent e) {
 			if (confirmAbandon(false)) {
 				AspectGraph oldRuleGraph = getCurrentRule().getAspectGraph();
-				RuleNameLabel newRuleName = askNewRuleName(getCurrentRule().getName().name());
+				RuleNameLabel newRuleName = askNewRuleName(null, getCurrentRule().getName().name(), true);
 				if (newRuleName != null) {
 					doAddRule(newRuleName, oldRuleGraph.clone());
 				}
@@ -2179,6 +2215,7 @@ public class Simulator {
     	DeleteRuleAction() {
     		super(Options.DELETE_RULE_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
+            addAccelerator(this);
     	}
     	
 		public void refresh() {
@@ -2224,7 +2261,7 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
         	GraphJModel stateModel = getStatePanel().getJModel();
         	String stateName = stateModel.getName();
-            EditorDialog dialog = showEditorDialog(stateModel.toPlainGraph(), true);
+            EditorDialog dialog = showEditorDialog(stateModel.toPlainGraph());
             if (dialog.isOK()) {
 //        	Graph editResult = doEdit(stateModel.toPlainGraph(), true);
 //            if (editResult != null) {
@@ -2236,9 +2273,9 @@ public class Simulator {
         }
     }
 
-    private class EditGraphPropertiesAction extends AbstractAction implements Refreshable {
-    	EditGraphPropertiesAction() {
-    		super(Options.EDIT_PROPERTIES_ACTION_NAME);
+    private class EditRulePropertiesAction extends AbstractAction implements Refreshable {
+    	EditRulePropertiesAction() {
+    		super(Options.RULE_PROPERTIES_ACTION_NAME);
     	}
     	
 		public void refresh() {
@@ -2290,18 +2327,18 @@ public class Simulator {
     	 */
         public void actionPerformed(ActionEvent e) {
         	RuleNameLabel ruleName = getCurrentRule().getName();
-            EditorDialog dialog = showEditorDialog(getRulePanel().getJModel().toPlainGraph(), false);
+            EditorDialog dialog = showEditorDialog(getRulePanel().getJModel().toPlainGraph());
             if (dialog.isOK()) {
-                AspectGraph ruleAsAspectGraph = AspectGraph.getFactory().fromPlainGraph(dialog.toPlainGraph());
-                String question = String.format("Replace rule %s with edited version?", ruleName);
-                if (confirmBehaviour(REPLACE_RULE_OPTION, question)) {
-                    doAddRule(ruleName, ruleAsAspectGraph);
-                } else {
-                    RuleNameLabel newRuleName = askNewRuleName(ruleName.name());
+                AspectGraph ruleAsAspectGraph = dialog.toAspectGraph();
+//                String question = String.format("Replace rule %s with edited version?", ruleName);
+//                if (confirmBehaviour(REPLACE_RULE_OPTION, question)) {
+//                    doAddRule(ruleName, ruleAsAspectGraph);
+//                } else {
+                    RuleNameLabel newRuleName = askNewRuleName("Name for edited rule", ruleName.name(), false);
                     if (newRuleName != null) {
                         doAddRule(newRuleName, ruleAsAspectGraph);
                     }
-                }
+//                }
             }
         }
     }
@@ -2318,7 +2355,7 @@ public class Simulator {
          * of the edited graph.
          */
         public void actionPerformed(ActionEvent e) {
-        	AspectualGrammarView grammar = getCurrentGrammar();
+        	DefaultGrammarView grammar = getCurrentGrammar();
         	Properties systemProperties = grammar.getProperties();
         	PropertiesDialog dialog = new PropertiesDialog(systemProperties, SystemProperties.DEFAULT_KEYS, true);
         	if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
@@ -2529,9 +2566,10 @@ public class Simulator {
         }
     }
 
+    /** Action to create and load a new, initially empty graph grammar. */
     private class NewGrammarAction extends AbstractAction {
         NewGrammarAction() {
-            super(Options.NEW_RULE_SYSTEM_ACTION_NAME);
+            super(Options.NEW_GRAMMAR_ACTION_NAME);
         }
         
         public void actionPerformed(ActionEvent e) {
@@ -2563,7 +2601,7 @@ public class Simulator {
 		public void actionPerformed(ActionEvent e) {
             Graph newGraph = GraphFactory.getInstance().newGraph();
             GraphInfo.setName(newGraph, GrammarViewXml.DEFAULT_START_GRAPH_NAME);
-            EditorDialog dialog = showEditorDialog(newGraph, true);
+            EditorDialog dialog = showEditorDialog(newGraph);
 //        	Graph editResult = doEdit(newGraph, true);
             if (dialog.isOK()) {
                 newGraph = dialog.toPlainGraph();
@@ -2587,11 +2625,11 @@ public class Simulator {
     	
 		public void actionPerformed(ActionEvent e) {
 			if (confirmAbandon(false)) {
-				RuleNameLabel ruleName = askNewRuleName(NEW_RULE_NAME);
+				RuleNameLabel ruleName = askNewRuleName(null, NEW_RULE_NAME, true);
 				if (ruleName != null) {
                     Graph newRule = GraphFactory.getInstance().newGraph();
                     GraphInfo.setName(newRule, ruleName.name());
-                    EditorDialog dialog = showEditorDialog(newRule, false);
+                    EditorDialog dialog = showEditorDialog(newRule);
                     if (dialog.isOK()) {
                         doAddRule(ruleName, dialog.toAspectGraph());
                     }
@@ -2670,6 +2708,10 @@ public class Simulator {
     private class RenameRuleAction extends AbstractAction implements Refreshable {
     	RenameRuleAction() {
     		super(Options.RENAME_RULE_ACTION_NAME);
+    		/* The F2-accelerator is not working, but I do not know why 
+            putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
+            addAccelerator(this);
+            */
     	}
     	
 		public void refresh() {
@@ -2680,7 +2722,7 @@ public class Simulator {
 			if (confirmAbandon(true)) {
 				RuleNameLabel oldRuleName = getCurrentRule().getName();
 				AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
-				RuleNameLabel newRuleName = askNewRuleName(oldRuleName.name());
+				RuleNameLabel newRuleName = askNewRuleName(null, oldRuleName.name(), true);
 				if (newRuleName != null) {
 					doDeleteRule(oldRuleName);
 					doAddRule(newRuleName, ruleGraph);
@@ -2696,6 +2738,7 @@ public class Simulator {
     	/** Constructs an instance of the action. */
         protected SaveGrammarAction() {
             super(Options.SAVE_GRAMMAR_ACTION_NAME);
+            putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -2733,7 +2776,7 @@ public class Simulator {
     	/** Constructs an instance of the action. */
         protected SaveGraphAction() {
             super(Options.SAVE_ACTION_NAME);
-            putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
+            putValue(ACCELERATOR_KEY, Options.SAVE_GRAPH_KEY);
         }
 
         public void actionPerformed(ActionEvent e) {

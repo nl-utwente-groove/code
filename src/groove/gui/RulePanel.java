@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RulePanel.java,v 1.10 2007-05-08 23:12:26 rensink Exp $
+ * $Id: RulePanel.java,v 1.11 2007-05-11 21:51:16 rensink Exp $
  */
 package groove.gui;
 
@@ -29,7 +29,7 @@ import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
 import groove.util.Groove;
-import groove.view.AspectualGrammarView;
+import groove.view.DefaultGrammarView;
 import groove.view.AspectualRuleView;
 import groove.view.FormatException;
 import groove.view.RuleView;
@@ -42,7 +42,7 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -68,7 +68,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
      * Resets the display, and
      * creates and stores a model for each rule in the system.
      */
-    public synchronized void setGrammarUpdate(AspectualGrammarView grammar) {
+    public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
 		// create a mapping from rule names to (fresh) rule models
 		ruleJModelMap.clear();
 		if (grammar != null) {

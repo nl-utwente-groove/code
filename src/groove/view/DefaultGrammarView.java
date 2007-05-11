@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGrammarView.java,v 1.6 2007-05-09 22:53:35 rensink Exp $
+ * $Id$
  */
 package groove.view;
 
@@ -34,11 +34,11 @@ import java.util.TreeSet;
 /**
  * Graph grammar with {@link RuleView} information for each rule.
  */
-public class AspectualGrammarView implements GrammarView<AspectualGraphView,AspectualRuleView>, View<GraphGrammar> {
+public class DefaultGrammarView implements GrammarView<AspectualGraphView,AspectualRuleView>, View<GraphGrammar> {
     /**
      * Constructs a (non-fixed) copy of an existing rule view grammar.
      */
-    public AspectualGrammarView(GrammarView<AspectualGraphView,AspectualRuleView> oldGrammar) {
+    public DefaultGrammarView(GrammarView<AspectualGraphView,AspectualRuleView> oldGrammar) {
         this(oldGrammar.getName());
         getProperties().putAll(oldGrammar.getProperties());
         for (AspectualRuleView ruleView: oldGrammar.getRuleMap().values()) {
@@ -50,7 +50,7 @@ public class AspectualGrammarView implements GrammarView<AspectualGraphView,Aspe
     /**
      * Constructs a named, empty grammar based on a given rule factory.
      */
-    public AspectualGrammarView(String name) {
+    public DefaultGrammarView(String name) {
         this.name = name;
     }
     
