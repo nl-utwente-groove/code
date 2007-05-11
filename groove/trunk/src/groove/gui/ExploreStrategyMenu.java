@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExploreStrategyMenu.java,v 1.6 2007-05-04 22:51:26 rensink Exp $
+ * $Id: ExploreStrategyMenu.java,v 1.7 2007-05-11 21:51:16 rensink Exp $
  */
 package groove.gui;
 
@@ -32,7 +32,7 @@ import groove.lts.explore.BranchingStrategy;
 import groove.lts.explore.FullStrategy;
 import groove.lts.explore.LinearStrategy;
 import groove.trans.NameLabel;
-import groove.view.AspectualGrammarView;
+import groove.view.DefaultGrammarView;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -43,7 +43,7 @@ import javax.swing.JMenu;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     /**
@@ -86,7 +86,7 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     }
 
     // ----------------------------- simulation listener methods -----------------------
-    public void setGrammarUpdate(AspectualGrammarView grammar) {
+    public void setGrammarUpdate(DefaultGrammarView grammar) {
 		setStateUpdate(null);
 		// the lts's of the strategies in this menu are changed
 		// moreover, the conditions in condition strategies are reset

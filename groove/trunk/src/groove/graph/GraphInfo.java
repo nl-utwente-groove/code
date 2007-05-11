@@ -12,12 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphInfo.java,v 1.8 2007-05-11 08:22:03 rensink Exp $
+ * $Id: GraphInfo.java,v 1.9 2007-05-11 21:51:32 rensink Exp $
  */
 package groove.graph;
 
 import groove.gui.layout.LayoutMap;
-import groove.io.DefaultGxl;
+import groove.util.Groove;
 
 import java.io.File;
 import java.util.HashMap;
@@ -27,7 +27,7 @@ import java.util.Map;
  * A class that provides the keys needed for storing and retrieving data
  * needed for specific features.
  * @author Harmen Kastenberg
- * @version $Revision: 1.8 $ $Date: 2007-05-11 08:22:03 $
+ * @version $Revision: 1.9 $ $Date: 2007-05-11 21:51:32 $
  */
 public class GraphInfo {
 	/** 
@@ -143,6 +143,42 @@ public class GraphInfo {
         if (info != null) {
             info.setRole(role);
         }
+    }
+
+    /**
+     * Convenience method to test whether the role of a graph is <i>rule</i>.
+     * @see #getRole()
+     * @see Groove#RULE_ROLE
+     */
+    public static boolean hasRuleRole(GraphShape graph) {
+        return Groove.RULE_ROLE.equals(getRole(graph));
+    }
+
+    /**
+     * Convenience method to test whether the role of a graph is <i>graph</i>.
+     * @see #getRole()
+     * @see Groove#GRAPH_ROLE
+     */
+    public static boolean hasGraphRole(GraphShape graph) {
+        return Groove.GRAPH_ROLE.equals(getRole(graph));
+    }
+
+    /**
+     * Convenience method to set the role of a graph to <i>rule</i>.
+     * @see #setRole(String)
+     * @see Groove#RULE_ROLE
+     */
+    public static void setRuleRole(GraphShape graph) {
+        setRole(graph, Groove.RULE_ROLE);
+    }
+
+    /**
+     * Convenience method to set the role of a graph to <i>graph</i>.
+     * @see #setRole(String)
+     * @see Groove#GRAPH_ROLE
+     */
+    public static void setGraphRole(GraphShape graph) {
+        setRole(graph, Groove.GRAPH_ROLE);
     }
     
 	/**
@@ -362,7 +398,7 @@ public class GraphInfo {
     public static final String NAME_KEY = "name";
     /**
      * Key for graph role. 
-     * The value should be one of {@link DefaultGxl#GRAPH_ROLE} or {@link DefaultGxl#RULE_ROLE}.
+     * The value should be one of {@link Groove#GRAPH_ROLE} or {@link Groove#RULE_ROLE}.
      */
     public static final String ROLE_KEY = "type";
 	/**

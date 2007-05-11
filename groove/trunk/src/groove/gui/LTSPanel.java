@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTSPanel.java,v 1.11 2007-05-11 08:22:02 rensink Exp $
+ * $Id: LTSPanel.java,v 1.12 2007-05-11 21:51:16 rensink Exp $
  */
 package groove.gui;
 
@@ -33,7 +33,7 @@ import groove.lts.LTSAdapter;
 import groove.lts.LTSListener;
 import groove.lts.State;
 import groove.trans.NameLabel;
-import groove.view.AspectualGrammarView;
+import groove.view.DefaultGrammarView;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -44,7 +44,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-05-11 08:22:02 $
+ * @version $Revision: 1.12 $ $Date: 2007-05-11 21:51:16 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -76,7 +76,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
      * @param grammar
      *                 the new grammar
      */
-    public synchronized void setGrammarUpdate(AspectualGrammarView grammar) {
+    public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
         setGTS(null);
         getJGraph().setModel(LTSJModel.EMPTY_JMODEL);
         setEnabled(false);

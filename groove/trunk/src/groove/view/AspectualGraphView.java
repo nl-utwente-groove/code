@@ -1,4 +1,4 @@
-/* $Id: AspectualGraphView.java,v 1.4 2007-05-09 22:53:35 rensink Exp $ */
+/* $Id: AspectualGraphView.java,v 1.5 2007-05-11 21:51:30 rensink Exp $ */
 package groove.view;
 
 import groove.algebra.Constant;
@@ -35,7 +35,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class AspectualGraphView implements AspectualView<Graph> {
+public class AspectualGraphView extends AspectualView<Graph> {
 	/** Constructs an instance from a given aspect graph view. */
 	public AspectualGraphView(AspectGraph view) {
 		this.view = view;
@@ -66,6 +66,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 		this.errors = Collections.emptyList();
 	}
 	
+	@Override
 	public AspectGraph getAspectGraph() {
 		return view;
 	}
@@ -82,6 +83,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
         return errors;
 	}
 
+	@Override
 	public Map<AspectNode, Node> getMap() {
 		return viewToModelMap;
 	}
@@ -91,7 +93,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 	 * together with a mapping from the aspect graph's node to the
 	 * (fresh) graph nodes. 
 	 */
-	protected Pair<Graph,Map<AspectNode,Node>> computeModel(AspectGraph view) throws FormatException {
+	private Pair<Graph,Map<AspectNode,Node>> computeModel(AspectGraph view) throws FormatException {
 		Set<String> errors = new TreeSet<String>(view.getErrors());
 		Graph model = getGraphFactory().newGraph();
 		// we need to record the view-to-model element map for layout transfer
@@ -104,22 +106,28 @@ public class AspectualGraphView implements AspectualView<Graph> {
 		Aspect attributeAspect = AttributeAspect.getInstance();
 		for (AspectNode viewNode: view.nodeSet()) {
 			try {
+				boolean actualNode = true;
 				for (AspectValue value : viewNode.getAspectMap().values()) {
-					if (! isAllowedNodeValue(value)) {
+					if (isVirtualValue(value)) {
+						actualNode = false;
+					} else if (! isAllowedValue(value)) {
 						throw new FormatException("Node aspect value '%s' not allowed in graphs", value);
 					}
 				}
-				Node nodeImage = AttributeAspect.createAttributeNode(viewNode, view);
-				if (nodeImage == null) {
-					nodeImage = model.addNode();
-				} else if (isAllowedNode(nodeImage)) {
-					model.addNode(nodeImage);
-				} else {
-					throw new FormatException("Node aspect value '%s' not allowed in graphs",
-							viewNode.getValue(attributeAspect));
+				// include the node in the model if it is not virtual
+				if (actualNode) {
+					Node nodeImage = AttributeAspect.createAttributeNode(viewNode, view);
+					if (nodeImage == null) {
+						nodeImage = model.addNode();
+					} else if (isAllowedNode(nodeImage)) {
+						model.addNode(nodeImage);
+					} else {
+						throw new FormatException("Node aspect value '%s' not allowed in graphs",
+								viewNode.getValue(attributeAspect));
+					}
+					viewToModelMap.put(viewNode, nodeImage);
+					modelToViewMap.put(nodeImage, viewNode);
 				}
-				viewToModelMap.put(viewNode, nodeImage);
-				modelToViewMap.put(nodeImage, viewNode);
 			} catch (FormatException exc) {
 				errors.addAll(exc.getErrors());
 			}
@@ -128,25 +136,31 @@ public class AspectualGraphView implements AspectualView<Graph> {
 		// copy the edges from view to model
 		for (AspectEdge viewEdge : view.edgeSet()) {
 			try {
+				boolean actualEdge = true;
 				for (AspectValue value : viewEdge.getAspectMap().values()) {
-					if (! isAllowedEdgeValue(value)) {
+					if (isVirtualValue(value)) {
+						actualEdge = false;
+					} else if (! isAllowedValue(value)) {
 						throw new FormatException("Edge aspect value '%s' not allowed in graphs",
 								value);
 					}
 				}
-				Node[] endImages = new Node[viewEdge.endCount()];
-				for (int i = 0; i < endImages.length; i++) {
-					endImages[i] = viewToModelMap.get(viewEdge.end(i));
+				// include the edge in the model if it is not virtual
+				if (actualEdge) {
+					Node[] endImages = new Node[viewEdge.endCount()];
+					for (int i = 0; i < endImages.length; i++) {
+						endImages[i] = viewToModelMap.get(viewEdge.end(i));
+					}
+					// create an image for the view edge
+					Edge edgeImage = AttributeAspect.createAttributeEdge(viewEdge, view, endImages);
+					if (edgeImage == null) {
+						edgeImage = model.addEdge(endImages, viewEdge.label());
+					} else if (!isAllowedEdge(edgeImage)) {
+						throw new FormatException("Edge aspect value '%s' not allowed in graphs",
+								viewEdge.getValue(attributeAspect));
+					}
+					elementMap.putEdge(viewEdge, edgeImage);
 				}
-				// create an image for the view edge
-				Edge edgeImage = AttributeAspect.createAttributeEdge(viewEdge, view, endImages);
-				if (edgeImage == null) {
-					edgeImage = model.addEdge(endImages, viewEdge.label());
-				} else if (!isAllowedEdge(edgeImage)) {
-					throw new FormatException("Edge aspect value '%s' not allowed in graphs",
-							viewEdge.getValue(attributeAspect));
-				}
-				elementMap.putEdge(viewEdge, edgeImage);
 			} catch (FormatException exc) {
 				errors.addAll(exc.getErrors());
 			}
@@ -187,17 +201,17 @@ public class AspectualGraphView implements AspectualView<Graph> {
 	}
 
 	/**
-	 * Tests if a certain aspect value is allowed for nodes in a graph view.
+	 * Tests if a certain non-virtual aspect value is allowed for nodes in a graph view.
 	 */
-	private boolean isAllowedNodeValue(AspectValue value) {
-		return value == RuleAspect.REMARK || value.getAspect() instanceof AttributeAspect;
+	private boolean isAllowedValue(AspectValue value) {
+		return value.getAspect() instanceof AttributeAspect;
 	}
 
 	/**
-	 * Tests if a certain aspect value is allowed for edges in a graph view.
+	 * Tests if a certain aspect value causes a graph element to be virtual.
 	 */
-	private boolean isAllowedEdgeValue(AspectValue value) {
-		return value == RuleAspect.REMARK || value.getAspect() instanceof AttributeAspect;
+	private boolean isVirtualValue(AspectValue value) {
+		return value == RuleAspect.REMARK;
 	}
 
 	/**
@@ -208,7 +222,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
 	 * @return a pair of aspect graph plus a mapping from that aspect graph
 	 * to <code>model</code>
 	 */
-	protected Pair<AspectGraph,Map<AspectNode,Node>> computeView(Graph model) {
+	private Pair<AspectGraph,Map<AspectNode,Node>> computeView(Graph model) {
 		AspectGraph view = new AspectGraph();
 		// we need to record the view-to-model node map for the return value
 		Map<AspectNode,Node> viewToModelMap = new HashMap<AspectNode,Node>();
@@ -253,7 +267,7 @@ public class AspectualGraphView implements AspectualView<Graph> {
      * Returns the rule factory.
      * @return the rule factory.
      */
-    protected GraphFactory getGraphFactory() {
+    private GraphFactory getGraphFactory() {
     	if (graphFactory == null) {
     		graphFactory = GraphFactory.getInstance();
     	}

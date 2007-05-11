@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.22 2007-05-11 08:22:02 rensink Exp $
+ * $Id: Options.java,v 1.23 2007-05-11 21:51:16 rensink Exp $
  */
 package groove.gui;
 
@@ -27,7 +27,6 @@ import java.util.Map;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
-import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
 
@@ -38,7 +37,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public class Options {
 
@@ -117,8 +116,6 @@ public class Options {
     public static final String DISABLE_ACTION_NAME = "Disable Rule";
     /** Edit graph action name */
     public static final String EDIT_GRAPH_ACTION_NAME = "Edit Graph ...";
-    /** Edit properties action name */
-    public static final String EDIT_PROPERTIES_ACTION_NAME = "Edit Properties ...";
     /** Edge mode action name */
     public static final String EDGE_MODE_NAME = "Edge mode";
     /** Edit label action name */
@@ -154,9 +151,9 @@ public class Options {
     /** New action name */
     public static final String NEW_GRAPH_ACTION_NAME = "New Graph";
     /** New action name */
-    public static final String NEW_RULE_ACTION_NAME = "New Rule";
+    public static final String NEW_GRAMMAR_ACTION_NAME = "New Grammar";
     /** New action name */
-    public static final String NEW_RULE_SYSTEM_ACTION_NAME = "New Rule System";
+    public static final String NEW_RULE_ACTION_NAME = "New Rule";
     /** Node mode action name */
     public static final String NODE_MODE_NAME = "Node Mode";
     /** Open action name */
@@ -187,6 +184,8 @@ public class Options {
     public static final String RENAME_ACTION_NAME = "Rename";
     /** Delete action name */
     public static final String RENAME_RULE_ACTION_NAME = "Rename Rule";
+    /** Edit properties action name */
+    public static final String RULE_PROPERTIES_ACTION_NAME = "Rule Properties ...";
     /**
 	 * Start simulation action name 
 	 */
@@ -214,11 +213,11 @@ public class Options {
 	/**
      * Graph mode action name 
      */
-    public static final String SET_GRAPH_TYPE_ACTION_NAME = "Set graph type editing";
+    public static final String SET_GRAPH_ROLE_ACTION_NAME = "Set to graph editing";
     /**
      * Rule mode action name 
      */
-    public static final String SET_RULE_TYPE_ACTION_NAME = "Set rule type editing";
+    public static final String SET_RULE_ROLE_ACTION_NAME = "Set to rule editing";
     /**
 	 * Edit action name 
 	 */
@@ -251,9 +250,7 @@ public class Options {
 	 * Edit keystroke 
 	 */
 	public static final KeyStroke EDIT_KEY = KeyStroke.getKeyStroke("control E");
-    /** Edit label keystroke */
-    public static final KeyStroke EDIT_LABEL_KEY = KeyStroke.getKeyStroke("F2");
-	/**
+    /**
 	 * Export keystroke 
 	 */
 	public static final KeyStroke EXPORT_KEY = KeyStroke.getKeyStroke("control alt S");
@@ -271,6 +268,8 @@ public class Options {
 	public static final KeyStroke NODE_MODE_KEY = KeyStroke.getKeyStroke("control shift N");
 	/** Open keystroke */
     public static final KeyStroke OPEN_KEY = KeyStroke.getKeyStroke("control O");
+	/** Open keystroke */
+    public static final KeyStroke OPEN_GRAPH_KEY = KeyStroke.getKeyStroke("control shift O");
     /**
 	 * Paste keystroke 
 	 */
@@ -281,10 +280,14 @@ public class Options {
 	public static final KeyStroke REDO_KEY = KeyStroke.getKeyStroke("control Y");
 	/** Refresh keystroke  */
 	public static final KeyStroke REFRESH_KEY = KeyStroke.getKeyStroke("F5");
-	/** Relabel keystroke */
-    public static final KeyStroke RELABEL_KEY = KeyStroke.getKeyStroke("F2");
-    /** Save keystroke */
+    /**
+	 * Edit label keystroke 
+	 */
+	public static final KeyStroke RELABEL_KEY = KeyStroke.getKeyStroke("F2");
+	/** Save keystroke */
 	public static final KeyStroke SAVE_KEY = KeyStroke.getKeyStroke("control S");
+	/** Save keystroke */
+	public static final KeyStroke SAVE_GRAPH_KEY = KeyStroke.getKeyStroke("control shift S");
 	/** Select mode keystroke */
     public static final KeyStroke SELECT_MODE_KEY = KeyStroke.getKeyStroke("control shift S");
     /** Run keystroke */
@@ -323,18 +326,18 @@ public class Options {
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
     /** Show remark nodes and edges. */
     static public final String SHOW_REMARKS_OPTION = "Show remarks";
-    /** Parse attributed graphs option */
-    static public final String IS_ATTRIBUTED_OPTION = "Parse as attributed graph";
+//    /** Parse attributed graphs option */
+//    static public final String IS_ATTRIBUTED_OPTION = "Parse as attributed graph";
     /** Always start simulation after changes. */
     static public final String START_SIMULATION_OPTION = "Start simulation?";
     /** Automatically stop simulation at changes to the rule system. */
     static public final String STOP_SIMULATION_OPTION = "Stop simulation?";
     /** Always delete rules without confirmation. */
     static public final String DELETE_RULE_OPTION = "Delete rule?";
-    /** Always repair aspect errors in edited graph. */
-    static public final String REPAIR_ON_SAVE_OPTION = "Repair low-level syntax errors?";
-    /** Always repair aspect errors in edited graph. */
-    static public final String REPLACE_BY_PREVIEW_OPTION = "Replace edited graph by preview?";
+    /** Show preview before close. */
+    static public final String PREVIEW_ON_CLOSE_OPTION = "Show preview on OK";
+    /** Show preview before save. */
+    static public final String PREVIEW_ON_SAVE_OPTION = "Show preview when saving";
     /** Always replace edited rules. */
     static public final String REPLACE_RULE_OPTION = "Replace edited rule?";
     /** Always replace edited rules. */
@@ -404,12 +407,12 @@ public class Options {
 		addCheckbox(SHOW_REMARKS_OPTION);
 		addCheckbox(VERTEX_LABEL_OPTION);
 		addCheckbox(SHOW_STATE_IDS_OPTION);
-		addCheckbox(IS_ATTRIBUTED_OPTION);
+//		addCheckbox(IS_ATTRIBUTED_OPTION);
+		addCheckbox(PREVIEW_ON_CLOSE_OPTION);
+		addCheckbox(PREVIEW_ON_SAVE_OPTION);
 		addBehaviour(STOP_SIMULATION_OPTION, 2);
-		addBehaviour(START_SIMULATION_OPTION, 3);
+		addBehaviour(START_SIMULATION_OPTION, 3).setValue(BehaviourOption.ALWAYS);
 		addBehaviour(DELETE_RULE_OPTION, 2);
-		addBehaviour(REPAIR_ON_SAVE_OPTION, 2);
-		addBehaviour(REPLACE_BY_PREVIEW_OPTION, 2);
 		addBehaviour(REPLACE_RULE_OPTION, 3);
 		addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
 	}

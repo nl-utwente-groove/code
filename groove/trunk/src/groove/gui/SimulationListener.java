@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SimulationListener.java,v 1.5 2007-05-04 22:51:26 rensink Exp $
+ * $Id: SimulationListener.java,v 1.6 2007-05-11 21:51:16 rensink Exp $
  */
 package groove.gui;
 
@@ -20,7 +20,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
-import groove.view.AspectualGrammarView;
+import groove.view.DefaultGrammarView;
 
 /**
  * Observer (= viewer) interface for production rule simulation.
@@ -35,13 +35,13 @@ public interface SimulationListener {
      * one is misleading. 
      * @param grammar the current graph grammar view; may be <code>null</code>
      */
-    void setGrammarUpdate(AspectualGrammarView grammar);
+    void setGrammarUpdate(DefaultGrammarView grammar);
 
     /**
      * Reports the start of the simulation by setting a graph transition system.
      * The GTS is not <code>null</code>; deactivation is signalled
-     * through {@link #setGrammarUpdate(AspectualGrammarView)}.
-     * This update is always preceded by a {@link #setGrammarUpdate(AspectualGrammarView)}
+     * through {@link #setGrammarUpdate(DefaultGrammarView)}.
+     * This update is always preceded by a {@link #setGrammarUpdate(DefaultGrammarView)}
      * with the relevant grammar view; that is, the GTS' grammar is derived
      * from the view as last passed through a grammar update. 
      * The start state should also be set as part of this action; no separate call of

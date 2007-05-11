@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.5 2007-05-11 08:22:01 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.6 2007-05-11 21:51:31 rensink Exp $
  */
 package groove.io;
 
@@ -28,6 +28,7 @@ import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
+import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.FormatException;
 
@@ -53,7 +54,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -83,6 +84,11 @@ public class DefaultGxl extends AbstractXml {
         deleteVariants(file);
 		file.createNewFile();
 	    Graph attrGraph = normToAttrGraph(graph);
+		if (Groove.isRuleFile(file)) {
+			GraphInfo.setRuleRole(attrGraph);
+		} else if (Groove.isStateFile(file)) {
+			GraphInfo.setGraphRole(attrGraph);
+		}
 	    groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
 	    // now marshal the attribute graph
 	    marshalGxlGraph(gxlGraph, file);
@@ -94,7 +100,7 @@ public class DefaultGxl extends AbstractXml {
 	 * the result to an ordinary graph using <tt>{@link #attrToNormGraph}</tt>.
 	 */
 	@Override
-	public Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws FormatException {
+	protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws FormatException {
 		Graph result;
 		Map<String, Node> conversion;
 		try {
@@ -112,6 +118,11 @@ public class DefaultGxl extends AbstractXml {
 		if (priorityName.hasPriority()) {
 			GraphInfo.getProperties(result, true).setPriority(priorityName.getPriority());
 		}
+		if (Groove.isRuleFile(file)) {
+			GraphInfo.setRuleRole(result);
+		} else if (Groove.isStateFile(file)) {
+			GraphInfo.setGraphRole(result);
+		}
 		return new Pair<Graph,Map<String,Node>>(result, conversion);
 	}
     
@@ -127,7 +138,7 @@ public class DefaultGxl extends AbstractXml {
         String name = GraphInfo.getName(graph);
         gxlGraph.setId(name == null ? DEFAULT_GRAPH_NAME : name);
         String role = GraphInfo.getRole(graph);
-        gxlGraph.setRole(role == null ? GRAPH_ROLE : role);
+        gxlGraph.setRole(role == null ? Groove.GRAPH_ROLE : role);
         // add the nodes
         Map<Node,groove.gxl.Node> nodeMap = new HashMap<Node,groove.gxl.Node>();
         for (Node node: graph.nodeSet()) {
@@ -371,7 +382,7 @@ public class DefaultGxl extends AbstractXml {
 	 * Callback factory method to create an attribute edge with given ends and
 	 * attribute map.
 	 */
-    protected AttributeEdge createEdge(Node[] ends, Map<String, String> attributes) {
+    private AttributeEdge createEdge(Node[] ends, Map<String, String> attributes) {
         return new AttributeEdge(ends, new AttributeLabel(attributes));
     }
 
@@ -380,7 +391,7 @@ public class DefaultGxl extends AbstractXml {
      * source node, and a label based on a given attribute map. The edge will be unary of
      * <code>targetNode == null</code>, binary otherwise.
      */
-    protected AttributeEdge createEdge(Node sourceNode, Map<String, String> attributes, Node targetNode) {
+    private AttributeEdge createEdge(Node sourceNode, Map<String, String> attributes, Node targetNode) {
         if (targetNode == null) {
             return new AttributeEdge(new Node[] { sourceNode }, new AttributeLabel(attributes));
         } else {
@@ -431,10 +442,6 @@ public class DefaultGxl extends AbstractXml {
     static public final String DEFAULT_GRAPH_NAME = "graph";
     /** Attribute name for node and edge ids. */
     static public final String LABEL_ATTR_NAME = "label";
-    /** Role value indicating that a gxl graph represents a graph. */
-    static public final String GRAPH_ROLE = "graph";
-    /** Role value indicating that a gxl graph represents a rule. */
-    static public final String RULE_ROLE = "rule";
     /** Private siomorphism checker, for testing purposes. */
     static private final IsoChecker isoChecker = new DefaultIsoChecker();
 
