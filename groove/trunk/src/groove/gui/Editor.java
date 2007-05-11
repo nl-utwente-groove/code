@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.26 2007-05-09 22:53:33 rensink Exp $
+ * $Id: Editor.java,v 1.27 2007-05-11 08:22:02 rensink Exp $
  */
 package groove.gui;
 
@@ -31,8 +31,6 @@ import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.PriorityFileName;
 import groove.io.Xml;
-import groove.trans.DefaultRuleFactory;
-import groove.trans.RuleFactory;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.util.Converter;
@@ -102,7 +100,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.26 $ $Date: 2007-05-09 22:53:33 $
+ * @version $Revision: 1.27 $ $Date: 2007-05-11 08:22:02 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -110,47 +108,54 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * It is not configured as an auxiliary component.
      */
     public Editor() {
-        this(null);
-    }
-
-    /** 
-     * Constructs an editor frame with an initially empty graph,
-     * possibly for use as an auxiliary component in another frame.
-     * @param fixedType either <code>null</code>, or one of {@link #GRAPH_TYPE} or
-     * {@link #RULE_TYPE}. If non-<code>null</code>, the component is auxiliary and
-     * just to be used for a single editing session of the given type
-     * @ensure <tt>isAuxiliary() == auxiliary</tt>
-     */
-    public Editor(String fixedType) {
-    	// force the LAF to be set
-    	groove.gui.Options.initLookAndFeel();
-       
-        this.fixedType = fixedType;
+        // force the LAF to be set
+        groove.gui.Options.initLookAndFeel();
         // Construct the main components
         frame = new JFrame(EDITOR_NAME);
         jgraph = new EditorJGraph(this);
-        jGraphPanel = new JGraphPanel<EditorJGraph>(jgraph);
         initListeners();
         initGUI();
-        if (fixedType != null) {
-        	setEditType(fixedType);
-        }
         frame.pack();
     }
+//
+//    /** 
+//     * Constructs an editor frame with an initially empty graph,
+//     * possibly for use as an auxiliary component in another frame.
+//     * @param fixedType either <code>null</code>, or one of {@link #GRAPH_TYPE} or
+//     * {@link #RULE_TYPE}. If non-<code>null</code>, the component is auxiliary and
+//     * just to be used for a single editing session of the given type
+//     * @ensure <tt>isAuxiliary() == auxiliary</tt>
+//     */
+//    public Editor(String fixedType) {
+//    	// force the LAF to be set
+//    	groove.gui.Options.initLookAndFeel();
+//       
+//        this.fixedType = fixedType;
+//        // Construct the main components
+//        frame = new JFrame(EDITOR_NAME);
+//        jgraph = new EditorJGraph(this);
+//        jGraphPanel = new JGraphPanel<EditorJGraph>(jgraph);
+//        initListeners();
+//        initGUI();
+//        if (fixedType != null) {
+//        	setEditType(fixedType);
+//        }
+//        frame.pack();
+//    }
 
     /** Returns the frame in which the editor is displayed. */
     public final JFrame getFrame() {
 		return frame;
 	}
 
-    /**
-     * Indicates if this editor is used as an auxiliary component in
-     * some other frame.
-     */
-    public String getFixedEditType() {
-        return fixedType;
-//        return false;
-    }
+//    /**
+//     * Indicates if this editor is used as an auxiliary component in
+//     * some other frame.
+//     */
+//    public String getFixedEditType() {
+//        return fixedType;
+////        return false;
+//    }
 
     /**
      * Indicates whether the editor is in node editing mode.
@@ -393,17 +398,17 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         }
         return undoManager;
     }
-
-    /**
- * Lazily creates and returns the action to close the editor (in case it is auxiliary).
- */
-private Action getCloseEditorAction() {
-	if (closeAction == null) {
-		closeAction = new CloseEditorAction();
-	}
-	return closeAction;
-}
-
+//
+//    /**
+// * Lazily creates and returns the action to close the editor (in case it is auxiliary).
+// */
+//private Action getCloseEditorAction() {
+//	if (closeAction == null) {
+//		closeAction = new CloseEditorAction();
+//	}
+//	return closeAction;
+//}
+//
     /**
      * Lazily creates and returns the action to cut graph elements in the editor.
      */
@@ -578,6 +583,22 @@ private Action getCloseEditorAction() {
         return selectModeAction;
     }
 
+    /** Returns the rule preview action, lazily creating it first. */
+    private Action getSetRuleTypeAction() {
+        if (rulePreviewAction == null) {
+            rulePreviewAction = new SetRuleTypeAction();
+        }
+        return rulePreviewAction;
+    }
+
+    /** Returns the rule preview action, lazily creating it first. */
+    private Action getSetGraphTypeAction() {
+        if (graphPreviewAction == null) {
+            graphPreviewAction = new SetGraphTypeAction();
+        }
+        return graphPreviewAction;
+    }
+
     /**
      * Lazily creates and returns the action to undo the last editor action.
      */
@@ -608,13 +629,13 @@ private Action getCloseEditorAction() {
             }
         });
     	getFrame().setJMenuBar(createMenuBar());
-    	getFrame().setContentPane(createEditor());
+    	getFrame().setContentPane(createContentPanel(createToolBar()));
     }
 
     /**
-     * @return the main editor panel
+     * Creates a panel showing a given toolbar, and the graph and status panels of the editor.
      */
-    public JPanel createEditor() {
+    JPanel createContentPanel(JToolBar toolBar) {
         JPanel result = new JPanel();
         // initialize the main editor panel
         // Use Border Layout
@@ -622,9 +643,9 @@ private Action getCloseEditorAction() {
         // Add the main pane as Center Component
         // initEditorPane(createSplitEditorPane());
         // Add a ToolBar
-        result.add(getToolBar(), BorderLayout.NORTH);
+        result.add(toolBar, BorderLayout.NORTH);
         result.add(getGraphPanel(), BorderLayout.CENTER);
-        result.add(createStatusPanel(), BorderLayout.SOUTH);
+        result.add(getStatusPanel(), BorderLayout.SOUTH);
         return result;
     }
 
@@ -785,6 +806,9 @@ private Action getCloseEditorAction() {
 //    }
 
     JGraphPanel getGraphPanel() {
+        if (jGraphPanel == null) {
+            jGraphPanel = new JGraphPanel<EditorJGraph>(jgraph);
+        }
     	return jGraphPanel;
     }
 
@@ -805,9 +829,9 @@ private Action getCloseEditorAction() {
     protected JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         // file menu, only if the component is not auxiliary
-        if (getFixedEditType() == null) {
+//        if (getFixedEditType() == null) {
         	menuBar.add(createFileMenu());
-        }
+//        }
         menuBar.add(createEditMenu());
         menuBar.add(createPropertiesMenu());
         menuBar.add(createDisplayMenu());
@@ -889,59 +913,95 @@ private Action getCloseEditorAction() {
     	result.add(new JMenuItem(new AboutAction()));
     	return result;
 	}
-
-	/** Lazily creates and returns the tool bar. */
-	private JToolBar getToolBar() {
-		if (editorToolBar == null) {
-			editorToolBar = createToolBar();
-		}
-		return editorToolBar;
-	}
-	
+//
+//	/** Lazily creates and returns the tool bar. */
+//	private JToolBar getToolBar() {
+//		if (editorToolBar == null) {
+//			editorToolBar = createToolBar();
+//		}
+//		return editorToolBar;
+//	}
+//	
     /**
-     * Creates and returns the tool bar. Requires the actions to have been initialized.
+     * Creates and returns the tool bar.
      */
     private JToolBar createToolBar() {
         JToolBar toolbar = new JToolBar();
         toolbar.setFloatable(false);
-        if (getFixedEditType() != null) {
-            toolbar.add(getCloseEditorAction());
-        } else {
+        addFileButtons(toolbar);
+        addTypeButtons(toolbar);
+        addModeButtons(toolbar);
+        addUndoButtons(toolbar);
+        addCopyPasteButtons(toolbar);
+        return toolbar;
+    }
+
+    /**
+     * Adds file buttons to a given toolbar.
+     * @param toolbar the toolbar to be extended
+     */
+    private void addFileButtons(JToolBar toolbar) {
+//        if (getFixedEditType() != null) {
+//            toolbar.add(getCloseEditorAction());
+//        } else {
             toolbar.add(getNewAction());
             toolbar.add(getOpenGraphAction());
             toolbar.add(getSaveGraphAction());
-        }
-        
+//        }
+    }
+
+    /**
+     * Adds a separator and graph type buttons to a given toolbar.
+     * @param toolbar the toolbar to be extended
+     */
+    private void addTypeButtons(JToolBar toolbar) {
         // Type mode block
         toolbar.addSeparator();
-        if (! RULE_TYPE.equals(getFixedEditType())) {
+//        if (! RULE_TYPE.equals(getFixedEditType())) {
         	toolbar.add(getGraphTypeButton());
-        }
-        if (! GRAPH_TYPE.equals(getFixedEditType())) {
+//        }
+//        if (! GRAPH_TYPE.equals(getFixedEditType())) {
         	toolbar.add(getRuleTypeButton());
-        }
+//        }
         getTypeButtonGroup();
 
+    }
+
+    /**
+     * Adds a separator and editing mode buttons to a given toolbar.
+     * @param toolbar the toolbar to be extended
+     */
+    void addModeButtons(JToolBar toolbar) {
         // Mode block
         toolbar.addSeparator();
 
         toolbar.add(getSelectModeButton());        
         toolbar.add(getNodeModeButton());
         toolbar.add(getEdgeModeButton());
+    }
 
-
+    /**
+     * Adds a separator and undo/redo-buttons to a given toolbar.
+     * @param toolbar the toolbar to be extended
+     */
+    void addUndoButtons(JToolBar toolbar) {
         // Undo Block
         toolbar.addSeparator();
         toolbar.add(getUndoAction());
         toolbar.add(getRedoAction());
+    }
 
+    /**
+     * Adds a separator and copy/paste-buttons to a given toolbar.
+     * @param toolbar the toolbar to be extended
+     */
+    void addCopyPasteButtons(JToolBar toolbar) {
         // Edit Block
         toolbar.addSeparator();
         toolbar.add(getCopyAction());
         toolbar.add(getPasteAction());
         toolbar.add(getCutAction());
         toolbar.add(getDeleteAction());
-        return toolbar;
     }
 
     /**
@@ -1009,7 +1069,7 @@ private Action getCloseEditorAction() {
 	/**
 	 * Returns the button for setting node editing mode, lazily creating it first.
 	 */
-	private JToggleButton getGraphTypeButton() {
+	JToggleButton getGraphTypeButton() {
 		if (graphTypeButton == null) {
 			graphTypeButton = new JToggleButton(getSetGraphTypeAction());
 			graphTypeButton.setText(null);
@@ -1027,7 +1087,7 @@ private Action getCloseEditorAction() {
 	/**
 	 * Returns the button for setting selection mode, lazily creating it first.
 	 */
-	private JToggleButton getRuleTypeButton() {
+	JToggleButton getRuleTypeButton() {
 		if (ruleTypeButton == null) {
 			ruleTypeButton = new JToggleButton(getSetRuleTypeAction());
 			ruleTypeButton.setText(null);
@@ -1040,42 +1100,30 @@ private Action getCloseEditorAction() {
 		}
 		return ruleTypeButton;
 	}
-	
-	/** Creates a panel consisting of the error panel and the status bar. */
-	private JPanel createStatusPanel() {
-		JPanel result = new JPanel(new BorderLayout());
-		result.add(getErrorPanel());
-		result.add(statusBar, BorderLayout.SOUTH);
-		return result;
-	}
 
-	/** Lazily creates and returns the error panel. */
-	private ErrorListPanel getErrorPanel() {
-		if (errorPanel == null) {
-			errorPanel = new ErrorListPanel();
-//			errorPanel = new JPanel(new BorderLayout());
-//			errorPanel.add(new JLabel("<html><b>Format errors in graph</b></html>"), BorderLayout.NORTH);
-//			JScrollPane scrollPane = new JScrollPane(getErrorArea());
-//			scrollPane.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED);
-//			scrollPane.setPreferredSize(new Dimension(0, 70));
-//			errorPanel.add(scrollPane);
-//			errorPanel.setVisible(false);
-		}
-		return errorPanel;
-	}
-//
-//	/** Lazily creates and returns the error panel. */
-//	private JTextArea getErrorArea() {
-//		if (errorArea == null) {
-//			errorArea = new JTextArea();
-//			errorArea.setEditable(false);
-//			errorArea.setBackground(SystemColor.text);
-//			errorArea.setForeground(SystemColor.RED);
-////			errorArea.setPreferredSize(new Dimension(0, 70));
-//		}
-//		return errorArea;
-//	}
-//	
+    /** Creates a panel consisting of the error panel and the status bar. */
+    JPanel getStatusPanel() {
+        if (statusPanel == null) {
+            statusPanel = new JPanel(new BorderLayout());
+            statusPanel.add(getErrorPanel());
+            statusPanel.add(getStatusBar(), BorderLayout.SOUTH);
+        }
+        return statusPanel;
+    }
+
+    /** Lazily creates and returns the error panel. */
+    private ErrorListPanel getErrorPanel() {
+        if (errorPanel == null) {
+            errorPanel = new ErrorListPanel();
+        }
+        return errorPanel;
+    }
+    
+    /** Lazily creates and returns the error panel. */
+    private JLabel getStatusBar() {
+        return statusBar;
+    }
+
 	/** 
 	 * Callback factory method for a properties dialog for the currently edited model. 
 	 */
@@ -1125,7 +1173,7 @@ private Action getCloseEditorAction() {
     /** Updates the status bar with information about the currently edited graph. */
     protected void updateStatus() {
         int elementCount = getModel().getRootCount() - getModel().getGrayedOutCount();
-        statusBar.setText(""+elementCount+" visible elements");
+        getStatusBar().setText(""+elementCount+" visible elements");
     	getErrorPanel().setErrors(createView().getErrors());
     }
     
@@ -1224,38 +1272,22 @@ private Action getCloseEditorAction() {
         Object response = previewPane.getValue();
         return okOption.equals(response) ? previewModel : null;
     }
-
-    /**
-     * Returns the rule factory.
-     * @return the {@link #ruleFactory}-value
-     */
-    protected RuleFactory getRuleFactory() {
-    	if (ruleFactory == null) {
-    		ruleFactory = DefaultRuleFactory.getInstance();
-    	}
-    	return ruleFactory;
-    }
-
-    /** Returns the rule preview action, lazily creating it first. */
-    Action getSetRuleTypeAction() {
-    	if (rulePreviewAction == null) {
-    		rulePreviewAction = new SetRuleTypeAction();
-    	}
-    	return rulePreviewAction;
-    }
-
-    /** Returns the rule preview action, lazily creating it first. */
-    Action getSetGraphTypeAction() {
-    	if (graphPreviewAction == null) {
-    		graphPreviewAction = new SetGraphTypeAction();
-    	}
-    	return graphPreviewAction;
-    }
+//
+//    /**
+//     * Returns the rule factory.
+//     * @return the {@link #ruleFactory}-value
+//     */
+//    protected RuleFactory getRuleFactory() {
+//    	if (ruleFactory == null) {
+//    		ruleFactory = DefaultRuleFactory.getInstance();
+//    	}
+//    	return ruleFactory;
+//    }
 
     /**
      * Returns the options object associated with the simulator.
      */
-    Options getOptions() {
+    private Options getOptions() {
     	// lazily creates the options 
     	if (options == null) {
     		options = new Options();
@@ -1274,26 +1306,28 @@ private Action getCloseEditorAction() {
     
     /** The jgraph instance used in this editor. */
     private final EditorJGraph jgraph;
-
-    /**
-     * Rule factory used for previewing the graph as a rule.
-     */
-    private RuleFactory ruleFactory;
-
-    /**
-     * Fixed graph type for the editor, or <code>null</code> if the type is not fixed.
-     */
-    private final String fixedType;
-    
-    /** The tool bar of this editor. */
-    private JToolBar editorToolBar;
+//
+//    /**
+//     * Rule factory used for previewing the graph as a rule.
+//     */
+//    private RuleFactory ruleFactory;
+//
+//    /**
+//     * Fixed graph type for the editor, or <code>null</code> if the type is not fixed.
+//     */
+//    private final String fixedType;
+//    
+//    /** The tool bar of this editor. */
+//    private JToolBar editorToolBar;
     
     /** The jgraph panel used in this editor. */
-    private final JGraphPanel<EditorJGraph> jGraphPanel;
+    private JGraphPanel<EditorJGraph> jGraphPanel;
     
     /** Status bar of the editor. */
     private final JLabel statusBar = new JLabel();
 
+    /** Panel containing the error panel and status par. */
+    private JPanel statusPanel;
     /** Panel displaying format error messages. */
     private ErrorListPanel errorPanel;
 //
@@ -1355,9 +1389,9 @@ private Action getCloseEditorAction() {
     /** Action to start an empty graph for editing. */
     private Action newAction;
 
-    /** Action to close the editor. Only if the editor is auxiliary. */
-    private Action closeAction;
-    /** Action to quit the editor. Only if the editor is not auxiliary. */
+//    /** Action to close the editor. Only if the editor is auxiliary. */
+//    private Action closeAction;
+    /** Action to quit the editor. */
     private Action quitAction;
     /** Action to set the editor to selection mode. */
     private Action selectModeAction;
@@ -1400,19 +1434,15 @@ private Action getCloseEditorAction() {
     }
 
     /**
-     * @param owner
-     * @param modal
-     * @param editor
-     * @return editor dialog
+     * Creates and displays a modal dialog wrapping an editor.
+     * @param owner the parent frame for the dialog
+     * @param graph the input graph for the editor
+     * @param type edit type (either #GRAPH_TYPE or #RULE_TYPE)
+     * @return the dialog object, which can be queried as to the result of editing
      */
-    static public JDialog createEditorDialog(JFrame owner, boolean modal, Editor editor) {
-        JDialog result = new JDialog(owner, modal);
-    	JFrame editorFrame = editor.getFrame();
-        result.setJMenuBar(editorFrame.getJMenuBar());
-        result.setContentPane(editorFrame.getContentPane());
-        result.setTitle(editorFrame.getTitle());
-        result.setLocationRelativeTo(owner);
-        result.pack();
+    static public EditorDialog showEditorDialog(JFrame owner, Graph graph, String type) {
+        EditorDialog result = new EditorDialog(owner, graph, type);
+        result.setVisible(true);
         return result;
     }
     
@@ -1453,28 +1483,28 @@ private Action getCloseEditorAction() {
             new AboutBox(getFrame());
         }
     }
-
-    /**
-     * An action to close the editor, used if the editor is invoked in the
-     * context of some other frame.
-     */
-    private class CloseEditorAction extends AbstractAction {
-        /** Constructs an instance of the action. */
-        public CloseEditorAction() {
-            super(Options.CLOSE_ACTION_NAME);
-        }
-        
-        /** 
-         * Calls up a preview if the edited graph has syntax errors, then
-         * hides and disposes the frame.
-         */
-        public void actionPerformed(ActionEvent e) {
-        	if (! createAspectGraph().hasErrors() || handlePreview(null)) {
-    			getRootComponent().setVisible(false);
-    			getFrame().dispose();
-        	}
-		}
-    }
+//
+//    /**
+//     * An action to close the editor, used if the editor is invoked in the
+//     * context of some other frame.
+//     */
+//    private class CloseEditorAction extends AbstractAction {
+//        /** Constructs an instance of the action. */
+//        public CloseEditorAction() {
+//            super(Options.CLOSE_ACTION_NAME);
+//        }
+//        
+//        /** 
+//         * Calls up a preview if the edited graph has syntax errors, then
+//         * hides and disposes the frame.
+//         */
+//        public void actionPerformed(ActionEvent e) {
+//        	if (! createAspectGraph().hasErrors() || handlePreview(null)) {
+//    			getRootComponent().setVisible(false);
+//    			getFrame().dispose();
+//        	}
+//		}
+//    }
 
     private class EditPropertiesAction extends AbstractAction {
         /** Constructs an instance of the action. */
@@ -1760,7 +1790,7 @@ private Action getCloseEditorAction() {
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.26 $
+     * @version $Revision: 1.27 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

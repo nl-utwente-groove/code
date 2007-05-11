@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.21 2007-05-09 22:53:34 rensink Exp $
+ * $Id: Options.java,v 1.22 2007-05-11 08:22:02 rensink Exp $
  */
 package groove.gui;
 
@@ -38,7 +38,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class Options {
 
@@ -190,7 +190,7 @@ public class Options {
     /**
 	 * Start simulation action name 
 	 */
-	public static final String RUN_ACTION_NAME = "Run Simulation";
+	public static final String START_SIMULATION_ACTION_NAME = "Run Simulation";
 	/**
 	 * Save action name 
 	 */
@@ -251,10 +251,18 @@ public class Options {
 	 * Edit keystroke 
 	 */
 	public static final KeyStroke EDIT_KEY = KeyStroke.getKeyStroke("control E");
+    /** Edit label keystroke */
+    public static final KeyStroke EDIT_LABEL_KEY = KeyStroke.getKeyStroke("F2");
 	/**
 	 * Export keystroke 
 	 */
 	public static final KeyStroke EXPORT_KEY = KeyStroke.getKeyStroke("control alt S");
+    /** Goto start state keystroke */
+    public static final KeyStroke GOTO_START_STATE_KEY = KeyStroke.getKeyStroke("control G");
+    /**
+     * Insert keystroke 
+     */
+    public static final KeyStroke INSERT_KEY = KeyStroke.getKeyStroke("INSERT");
 	/** New keystroke */
     public static final KeyStroke NEW_KEY = KeyStroke.getKeyStroke("control N");
     /**
@@ -275,12 +283,12 @@ public class Options {
 	public static final KeyStroke REFRESH_KEY = KeyStroke.getKeyStroke("F5");
 	/** Relabel keystroke */
     public static final KeyStroke RELABEL_KEY = KeyStroke.getKeyStroke("F2");
-	/** Run keystroke */
-	public static final KeyStroke RUN_KEY = KeyStroke.getKeyStroke("F11");
     /** Save keystroke */
 	public static final KeyStroke SAVE_KEY = KeyStroke.getKeyStroke("control S");
 	/** Select mode keystroke */
     public static final KeyStroke SELECT_MODE_KEY = KeyStroke.getKeyStroke("control shift S");
+    /** Run keystroke */
+    public static final KeyStroke START_SIMULATION_KEY = KeyStroke.getKeyStroke("F11");
     /** Undo keystroke */
     public static final KeyStroke UNDO_KEY = KeyStroke.getKeyStroke("control Z");
     /** Orthogonal line style keystroke */
@@ -289,10 +297,6 @@ public class Options {
     public static final KeyStroke SPLINE_LINE_STYLE_KEY = KeyStroke.getKeyStroke("control 2");
     /** Bezier line style keystroke */
     public static final KeyStroke BEZIER_LINE_STYLE_KEY = KeyStroke.getKeyStroke("control 3");
-    /** Edit label keystroke */
-    public static final KeyStroke EDIT_LABEL_KEY = KeyStroke.getKeyStroke("F2");
-    /** Goto start state keystroke */
-    public static final KeyStroke GOTO_START_STATE_KEY = KeyStroke.getKeyStroke("control G");
 
     /** Indication for an empty label in a list of labels. */
     static public final String EMPTY_LABEL_TEXT = "(empty)";

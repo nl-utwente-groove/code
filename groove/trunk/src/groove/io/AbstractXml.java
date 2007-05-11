@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractXml.java,v 1.8 2007-05-06 10:47:53 rensink Exp $
+ * $Id: AbstractXml.java,v 1.9 2007-05-11 08:22:01 rensink Exp $
  */
 package groove.io;
 
@@ -31,7 +31,7 @@ import java.util.Map;
  * abstract methods: <tt>marshal(Graph)</tt> and <tt>unmarshal(Document,Graph)</tt>.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public abstract class AbstractXml implements Xml<Graph> {
 	AbstractXml(GraphFactory graphFactory) {
@@ -81,6 +81,41 @@ public abstract class AbstractXml implements Xml<Graph> {
 //		this.propertyKeys = new HashSet<String>(propertyKeys);
 //		this.propertyKeys.addAll(DEFAULT_PROPERTY_KEYS);
 //	}
+
+    /** Deletes the graph file, as well as all variants with the same name but different priorities. */
+    public final void deleteGraph(File file) {
+        deleteFile(file);
+        deleteVariants(file);
+    }
+    
+    /** Deletes a given file, storing a graph, and possible auxiliary files. */
+    protected void deleteFile(File file) {
+        file.delete();
+    }
+
+    /** Deletes all variants of a given file with the same name but different (old-style) priorities. */
+    protected void deleteVariants(File file) {
+        File parentFile = file.getParentFile();
+        if (parentFile != null) {
+            // build the actual name with extension
+            PriorityFileName priotityName = new PriorityFileName(file);
+            String fileNameWithoutPriority = priotityName.getActualName()+priotityName.getExtension();
+            // look for all files ending with this name
+            ExtensionFilter filter = new ExtensionFilter(PriorityFileName.SEPARATOR+fileNameWithoutPriority);
+            for (File candidate : parentFile.listFiles(filter)) {
+                // delete the file if it has a valid priority part.
+                String candidateName = candidate.getName();
+                if (!candidate.isDirectory() && !candidateName.equals(file.getName())) {
+                    try {
+                        Integer.parseInt(filter.stripExtension(candidateName));
+                        deleteFile(candidate);
+                    } catch (NumberFormatException e) {
+                        // it was not a priority, so leave be
+                    }
+                }
+            }
+        }
+    }
 
     /**
      * Changes the graph factory used for unmarshalling.
