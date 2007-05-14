@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.36 2007-05-14 18:52:01 rensink Exp $
+ * $Id: Simulator.java,v 1.37 2007-05-14 19:52:23 rensink Exp $
  */
 package groove.gui;
 
@@ -127,7 +127,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.36 $
+ * @version $Revision: 1.37 $
  */
 public class Simulator {
     /**
@@ -665,7 +665,10 @@ public class Simulator {
     private void doSaveGrammar(AspectualViewGps grammarLoader, File grammarFile) {
         try {
         	grammarLoader.marshal(getCurrentGrammar(), grammarFile);
-            // now we know loading succeeded, we can set the current names & files
+        	String grammarName = currentGrammarLoader.getExtensionFilter().stripExtension(grammarFile.getName());
+        	getCurrentGrammar().setName(grammarName);
+        	setTitle();
+            // now we know saving succeeded, we can set the current names & files
             currentGrammarFile = grammarFile;
             currentGrammarLoader = grammarLoader;
         	getStateFileChooser().setCurrentDirectory(currentGrammarFile);
@@ -1128,8 +1131,9 @@ public class Simulator {
      * Also calls {@link Refreshable#refresh()} on the element. 
      */
     private void addRefreshable(Refreshable element) {
-    	element.refresh();
-    	refreshables.add(element);
+    	if (refreshables.add(element)) {
+    		element.refresh();
+    	}
     }
     
     /**
@@ -1181,6 +1185,7 @@ public class Simulator {
         result.add(new JMenuItem(getLoadStartGraphAction()));
         result.add(new JMenuItem(getRefreshGrammarAction()));
 	    result.addSeparator();
+	    result.add(new JMenuItem(getSaveGrammarAction()));
 	    result.add(new JMenuItem(getSaveGraphAction()));
 	    result.add(new JMenuItem(getExportGraphAction()));
 	    result.addSeparator();
@@ -1571,6 +1576,19 @@ public class Simulator {
 			String question = String.format("Replace start graph with %s?",
 					stateName);
 			return confirmBehaviour(REPLACE_START_GRAPH_OPTION, question);
+		}
+	}
+
+    /**
+     * Asks whether a given existing file should be overwritten by a new grammar.
+     */
+    private boolean confirmOverwriteGrammar(File grammarFile) {
+    	if (grammarFile.exists()) {
+    		int response = JOptionPane.showConfirmDialog(getFrame(), "Overwrite existing grammar?", null, JOptionPane.OK_CANCEL_OPTION);
+    		return response == JOptionPane.OK_OPTION;
+
+    	} else {
+    		return true;
 		}
 	}
 
@@ -2264,18 +2282,20 @@ public class Simulator {
          */
         public void refresh() {
         	boolean enabled = getGraphPanel() == getStatePanel();
-        	setEnabled(enabled);
-        	if (enabled) {
-        		getEditItem().setAction(this);
-        		getEditItem().setAccelerator(Options.EDIT_KEY);
-        	}
+        	if (enabled != isEnabled()) {
+				setEnabled(enabled);
+				if (enabled) {
+					getEditItem().setAction(this);
+					getEditItem().setAccelerator(Options.EDIT_KEY);
+				}
+			}
         }
 
         /**
-         * Invokes the editor on the current state.
-         * Handles the execution of an <code>EditGraphAction</code>, if the
-         * current panel is the state panel.
-         */
+		 * Invokes the editor on the current state. Handles the execution of an
+		 * <code>EditGraphAction</code>, if the current panel is the state
+		 * panel.
+		 */
         public void actionPerformed(ActionEvent e) {
         	GraphJModel stateModel = getStatePanel().getJModel();
         	String stateName = stateModel.getName();
@@ -2330,19 +2350,22 @@ public class Simulator {
          */
         public void refresh() {
         	boolean enabled = getCurrentRule() != null;
-        	setEnabled(enabled);
-        	if (getGraphPanel() == getRulePanel()) {
-        		getEditItem().setAction(this);
-        		getEditItem().setAccelerator(Options.EDIT_KEY);
-        	}
+			if (enabled != isEnabled()) {
+				setEnabled(enabled);
+				if (getGraphPanel() == getRulePanel()) {
+					getEditItem().setAction(this);
+					getEditItem().setAccelerator(Options.EDIT_KEY);
+				}
+			}
         }
 
         /**
-    	 * Invokes the editor on the current rule. Handles the execution of an
-    	 * <code>EditGraphAction</code>, if the current panel is the rule panel.
-    	 * 
-    	 * @require <tt>getCurrentRule != null</tt>.
-    	 */
+		 * Invokes the editor on the current rule. Handles the execution of an
+		 * <code>EditGraphAction</code>, if the current panel is the rule
+		 * panel.
+		 * 
+		 * @require <tt>getCurrentRule != null</tt>.
+		 */
         public void actionPerformed(ActionEvent e) {
         	RuleNameLabel ruleName = getCurrentRule().getNameLabel();
             EditorDialog dialog = showEditorDialog(getRulePanel().getJModel().toPlainGraph());
@@ -2787,8 +2810,10 @@ public class Simulator {
             // now save, if so required
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
-                FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
-                doSaveGrammar(grammarLoaderMap.get(filterUsed), selectedFile);
+                if (confirmOverwriteGrammar(selectedFile)) {
+                	FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
+                	doSaveGrammar(grammarLoaderMap.get(filterUsed), selectedFile);
+                }
             }
         }
 

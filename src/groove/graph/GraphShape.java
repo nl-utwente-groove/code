@@ -12,19 +12,18 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphShape.java,v 1.5 2007-04-22 23:32:22 rensink Exp $
+ * $Id: GraphShape.java,v 1.6 2007-05-14 19:52:12 rensink Exp $
  */
 package groove.graph;
 
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Model of a graph shape, consisting of nodes and labelled edges between them..
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-04-22 23:32:22 $
+ * @version $Revision: 1.6 $ $Date: 2007-05-14 19:52:12 $
  */
 public interface GraphShape extends java.io.Serializable {
     /**
@@ -35,17 +34,6 @@ public interface GraphShape extends java.io.Serializable {
      * @ensure <tt>result != null</tt>
      */
     Set<? extends Node> nodeSet();
-
-    /**
-     * Returns an iterator over the nodes in this graph.
-     * Convenience method for <tt>nodeSet().iterator()</tt>.
-     * The iterator does <i>not</i> support <tt>remove()</tt> and is <i>not</i> 
-     * guaranteed to be safe in the face of concurrent modifications to the graph.
-     * @return an iterator over the nodes in this graph
-     * @deprecated use <code>nodeSet().iterator()</code> or foreach instead
-     */
-    @Deprecated
-    Iterator<? extends Node> nodeIterator();
 
     /**
      * Returns the number of nodes in this graph.
@@ -63,18 +51,6 @@ public interface GraphShape extends java.io.Serializable {
      * @ensure <tt>result != null</tt>
      */
     Set<? extends Edge> edgeSet();
-
-    /**
-     * Returns an iterator over the edges in this graph.
-     * Convenience method for <tt>edgeSet().iterator()</tt>.
-     * The iterator does <i>not</i> support <tt>remove()</tt> and is <i>not</i> 
-     * guaranteed to be safe 
-     * in the face of concurrent modifications to the graph.
-     * @return an iterator over the edges in this graph
-     * @deprecated use <code>edgeSet().iterator()</code> or foreach instead
-     */
-    @Deprecated
-    Iterator<? extends Edge> edgeIterator();
 
     /**
      * Returns the number of edges of this graph.
@@ -145,27 +121,6 @@ public interface GraphShape extends java.io.Serializable {
      * @require <tt>1 <= arity <= AbstractEdge.getMaxEndCount()</tt>
      */
     Map<Label, ? extends Set<? extends Edge>> labelEdgeMap(int arity);
-    
-    /**
-     * Returns the set of elements of this graph.
-     * The return value is an unmodifiable view of the underlying element set,
-     * which is <i>not</i> guaranteed to be up-to-date with, or even safe 
-     * in the face of, concurrent modifications to the graph.
-     * @ensure <tt>result != null</tt>
-     * @deprecated Use {@link #nodeSet()} and {@link #edgeSet()}
-     */
-    @Deprecated
-    Collection<? extends Element> elementSet();
-    
-    /**
-     * Returns an iterator over the set of elements of this graph.
-     * The iterator does <i>not</i> support <tt>remove()</tt> and is <i>not</i> 
-     * guaranteed to be safe in the face of concurrent modifications to the graph.
-     * @ensure <tt>result != null</tt>
-     * @deprecated use <code>elementSet().iterator()</code> or foreach instead
-     */
-    @Deprecated
-    Iterator<? extends Element> iterator();
     
     /**
      * Returns the total number of elements (nodes plus edges) in this graph.

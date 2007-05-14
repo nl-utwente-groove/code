@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.7 2007-05-14 10:39:37 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.8 2007-05-14 19:52:22 rensink Exp $
  */
 package groove.io;
 
@@ -54,7 +54,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -81,17 +81,22 @@ public class DefaultGxl extends AbstractXml {
 	public void marshalGraph(Graph graph, File file) throws IOException {
 		// create the file, if necessary
 		file.getParentFile().mkdirs();
-        deleteVariants(file);
-		file.createNewFile();
-	    Graph attrGraph = normToAttrGraph(graph);
-		if (Groove.isRuleFile(file)) {
-			GraphInfo.setRuleRole(attrGraph);
-		} else if (Groove.isStateFile(file)) {
-			GraphInfo.setGraphRole(attrGraph);
+		if (file.getParentFile().exists()) {
+			deleteVariants(file);
+			file.createNewFile();
+			Graph attrGraph = normToAttrGraph(graph);
+			if (Groove.isRuleFile(file)) {
+				GraphInfo.setRuleRole(attrGraph);
+			} else if (Groove.isStateFile(file)) {
+				GraphInfo.setGraphRole(attrGraph);
+			}
+			groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
+			// now marshal the attribute graph
+			marshalGxlGraph(gxlGraph, file);
+		} else {
+			throw new IOException(String.format("Cannot create %s",
+					file.getParentFile()));
 		}
-	    groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
-	    // now marshal the attribute graph
-	    marshalGxlGraph(gxlGraph, file);
 	}
 
 	/**

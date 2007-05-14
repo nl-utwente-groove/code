@@ -30,10 +30,9 @@ import groove.util.Reporter;
 
 /**
  * Implementation of an isomorphism checking algorithm that first tries to
- * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy},
- * and if that fails, attempts to create an {@link groove.graph.InjectiveMorphism}. 
+ * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy}. 
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**

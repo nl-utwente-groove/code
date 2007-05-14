@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaGraph.java,v 1.7 2007-04-27 22:07:04 rensink Exp $
+ * $Id: DeltaGraph.java,v 1.8 2007-05-14 19:52:13 rensink Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,6 @@ import groove.util.Groove;
 
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -30,7 +29,7 @@ import java.util.Set;
  * the changes. This implementation caches the element set so as to avoid too frequent
  * reconstruction.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> implements DeltaApplier {
     /**
@@ -177,12 +176,6 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
 
     public Set<? extends Edge> edgeSet() {
         return Collections.unmodifiableSet(getCachedEdgeSet());
-    }
-
-    @Deprecated
-    @Override
-    public Iterator<? extends Edge> edgeIterator() {
-    	return getCachedEdgeSet().iterator();
     }
 
     public Set<? extends Node> nodeSet() {

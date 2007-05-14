@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphFactory.java,v 1.4 2007-04-29 09:22:27 rensink Exp $
+ * $Id: GraphFactory.java,v 1.5 2007-05-14 19:52:12 rensink Exp $
  */
 package groove.graph;
 
@@ -23,26 +23,28 @@ import groove.view.FormatException;
  * Objects implementing this factory can create instances of
  * <tt>Graph</tt>, <tt>Morphism</tt> and <tt>InjectiveMorphism</tt>.   
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class GraphFactory {
-    static public final Morphism defaultPrototypeMorphism =
+	/** Morphism serving as prototype object in the default graph factory. */
+    static private final Morphism PROTOTYPE_MORPHISM =
         DefaultMorphism.prototype;
-    static public final Graph defaultPrototypeGraph =
+    /** Graph serving as prototype in the default graph factory. */
+    static private final Graph PROTOTYPE_GRAPH =
         NodeSetEdgeSetGraph.getPrototype();
 
     /**
      * Returns a graph factory based on <tt>defaultPrototypeGraph</tt>,
      * <tt>defaultMorphism</tt> and <tt>defaultInjectiveMorphism</tt>
      * for morphisms.
-     * @see #defaultPrototypeGraph
-     * @see #defaultPrototypeMorphism
+     * @see #PROTOTYPE_GRAPH
+     * @see #PROTOTYPE_MORPHISM
      * @see #newGraph()
      */
     static public GraphFactory getInstance() {
         return getInstance(
-            defaultPrototypeGraph,
-            defaultPrototypeMorphism);
+            PROTOTYPE_GRAPH,
+            PROTOTYPE_MORPHISM);
     }
 
     /**
@@ -87,7 +89,7 @@ public abstract class GraphFactory {
      * @param prototypeGraph the source of new graphs in this factory
      */
     static public GraphFactory getInstance(Graph prototypeGraph) {
-        return getInstance(prototypeGraph, defaultPrototypeMorphism);
+        return getInstance(prototypeGraph, PROTOTYPE_MORPHISM);
     }
 
     /**
@@ -95,6 +97,7 @@ public abstract class GraphFactory {
      */
     public abstract Graph newGraph();
 
+    /** Creates a new graph as a copy of an existing one. */
     public abstract Graph newGraph(Graph graph);
 
     /**

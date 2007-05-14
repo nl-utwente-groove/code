@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.7 2007-05-14 18:52:02 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.8 2007-05-14 19:52:22 rensink Exp $
  */
 
 package groove.io;
@@ -44,7 +44,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     /** Error message if a grammar cannot be loaded. */
@@ -243,7 +243,7 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 		// iterate over rules and save them
 		for (RuleNameLabel ruleName : gg.getRuleMap().keySet()) {
 			// turn the rule into a rule graph
-			saveRule(gg.getRule(ruleName), location);
+			marshalRule(gg.getRule(ruleName), location);
 		}
 		saveStartGraph(gg.getStartGraph(), location);
         saveProperties(gg, location);
@@ -255,23 +255,35 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	private void createLocation(File location) throws IOException {
 		// delete existing file, if any
 	    if (location.exists()) {
-	        if (!location.delete()) {
+	        if (!deleteRecursive(location)) {
 	            throw new IOException("Existing location " + location + " cannot be deleted");
 	        }
 	    }
 	    // create location as directory
 	    location.mkdirs();
 	}
-
-	/**
-	 * Saves a rule in a given location.
-	 * The rule is given as a rule view; if it is an {@link AspectualRuleView}
-	 * then use it directly, otherwise construct an {@link AspectualRuleView}
-	 * from the underlying rule.
-	 */
-	private void saveRule(AspectualRuleView ruleView, File location) throws IOException {
-		graphMarshaller.marshalGraph(ruleView.getAspectGraph(), location);
+	
+	/** Recursively traverses all subdirectories and deletes all files and directories. */
+	private boolean deleteRecursive(File location) {
+		if (location.isDirectory()) {
+			for (File file: location.listFiles()) {
+				if (!deleteRecursive(file)) {
+					return false;
+				}
+			}
+		}
+		return location.delete();
 	}
+//
+//	/**
+//	 * Saves a rule in a given location.
+//	 * The rule is given as a rule view; if it is an {@link AspectualRuleView}
+//	 * then use it directly, otherwise construct an {@link AspectualRuleView}
+//	 * from the underlying rule.
+//	 */
+//	private void saveRule(AspectualRuleView ruleView, File location) throws IOException {
+//		graphMarshaller.marshalGraph(ruleView.getAspectGraph(), getFile(location, ruleView.getNameLabel()));
+//	}
 
 	/**
 	 * Saves a graph as start graph (using the default name) in
@@ -281,7 +293,7 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	private void saveStartGraph(AspectualGraphView startGraph, File location) throws IOException {
 		if (startGraph != null) {
 			// save start graph
-			File startGraphLocation = new File(location, DEFAULT_START_GRAPH_NAME);
+			File startGraphLocation = new File(location, STATE_FILTER.addExtension(startGraph.getName()));
 			getGraphMarshaller().marshalGraph(startGraph.getAspectGraph(), startGraphLocation);
 		}
 	}
@@ -306,7 +318,7 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
      * @throws IOException if {@link Xml#marshalGraph(Graph, File)} throws an exception
      */
     public void marshalRule(AspectualRuleView ruleGraph, File location) throws IOException {
-        saveRule(ruleGraph, getFile(location, ruleGraph.getNameLabel()));
+		graphMarshaller.marshalGraph(ruleGraph.getAspectGraph(), getFile(location, ruleGraph.getNameLabel()));
     }
 
 	/**
