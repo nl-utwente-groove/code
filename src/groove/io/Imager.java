@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.7 2007-05-07 17:24:22 rensink Exp $
+ * $Id: Imager.java,v 1.8 2007-05-14 18:52:03 rensink Exp $
  */
 package groove.io;
 
@@ -69,7 +69,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class Imager extends CommandLineTool {
     /** Name of the imager application. */
@@ -561,9 +561,6 @@ public class Imager extends CommandLineTool {
                         }
                     }
                     Thread.yield();
-                } catch (FormatException e1) {
-                    println("Problem in rule format of " + inFile);
-                    return;
                 } catch (FileNotFoundException fnfe){
                     println("File " + outFile + "does not exist.");
                 } catch (IOException e) {

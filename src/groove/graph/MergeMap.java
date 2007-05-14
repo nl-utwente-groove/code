@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MergeMap.java,v 1.2 2007-03-20 19:14:52 rensink Exp $
+ * $Id: MergeMap.java,v 1.3 2007-05-14 18:52:01 rensink Exp $
  */
 package groove.graph;
 
@@ -26,7 +26,7 @@ import java.util.Set;
  * anything not explicitly set to a particular value defaults to identity.
  * This is actually not a map, in that the entries do not reflect the actual mapping.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class MergeMap extends NodeEdgeHashMap {
     /** Internal representation of undefined. */
@@ -123,7 +123,7 @@ public class MergeMap extends NodeEdgeHashMap {
     /**
      * Inserts a value into an entry, according to the rules of the
      * {@link MergeMap}. That is, the proposed value is converted using
-     * {@link #externalToInternal(Object, Object)} with the entry key as first parameter.
+     * {@link #externalToInternal(Node, Node)} with the entry key as first parameter.
      */
     private void setValue(Map.Entry<Node,Node> entry, Node value) {
         entry.setValue(externalToInternal(value, entry.getKey()));

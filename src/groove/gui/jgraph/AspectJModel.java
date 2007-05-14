@@ -12,13 +12,25 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.9 2007-05-09 22:53:35 rensink Exp $
+ * $Id: AspectJModel.java,v 1.10 2007-05-14 18:51:57 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import static groove.gui.jgraph.JAttr.RULE_BACKGROUND;
+import static groove.gui.jgraph.JAttr.RULE_BORDER;
+import static groove.gui.jgraph.JAttr.RULE_COLOR;
+import static groove.gui.jgraph.JAttr.RULE_DASH;
+import static groove.gui.jgraph.JAttr.RULE_WIDTH;
+import static groove.view.aspect.RuleAspect.CREATOR;
+import static groove.view.aspect.RuleAspect.EMBARGO;
+import static groove.view.aspect.RuleAspect.ERASER;
+import static groove.view.aspect.RuleAspect.READER;
+import static groove.view.aspect.RuleAspect.REMARK;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
 import groove.gui.Options;
 import groove.rel.RegExprLabel;
 import groove.trans.NameLabel;
@@ -27,14 +39,12 @@ import groove.util.Pair;
 import groove.view.AspectualView;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
+import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
 import groove.view.aspect.RuleAspect;
-
-import static groove.gui.jgraph.JAttr.*;
-import static groove.view.aspect.RuleAspect.*;
 
 import java.awt.Color;
 import java.awt.Rectangle;
@@ -51,9 +61,186 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class AspectJModel extends GraphJModel {
+
+    // --------------------- INSTANCE DEFINITIONS ------------------------
+
+    /** 
+     * Creates a new aspect model instance on top of a given aspectual view.
+     */
+    public AspectJModel(AspectualView view, Options options) {
+        super(view.getAspectGraph(), options);
+        this.view = view;
+    }
+
+    /** 
+     * Creates a new aspect model instance on top of a given aspectual view.
+     */
+    public AspectJModel(AspectualView view) {
+    	this(view, new Options());
+    }
+    
+    /** Constructor for a dummy model. */
+    protected AspectJModel() {
+    	view = null;
+    }
+
+    /** Specialises the return type. */
+    @Override
+	public AspectGraph graph() {
+		return (AspectGraph) super.graph();
+	}
+
+    /** Returns the view on which this model is based. */
+    public AspectualView<?> getView() {
+    	return view;
+    }
+    
+	/** 
+	 * If <code>edge</code> is an AspectEdge, returns the super value;
+	 * otherwise, assumes that it is a model edge, and returns the image
+	 * of the corresponding view edge. 
+	 */
+	@Override
+	public JCell getJCell(Edge edge) {
+		if (edge instanceof AspectEdge) {
+			return super.getJCell(edge);
+		} else {
+			return super.getJCell(getModelToViewMap().getEdge(edge));
+		}
+	}
+
+	/** 
+	 * If <code>node</code> is an AspectNode, returns the super value;
+	 * otherwise, assumes that it is a model node, and returns the image
+	 * of the corresponding view node. 
+	 */
+	@Override
+	public GraphJVertex getJVertex(Node node) {
+		if (node instanceof AspectNode) {
+			return super.getJVertex(node);
+		} else {
+			return super.getJVertex(getModelToViewMap().getNode(node));
+		}
+	}
+
+	/** Lazily computes and returns a mapping from model elements to view elements. */
+	private NodeEdgeMap getModelToViewMap() {
+		if (modelToViewMap == null) {
+			modelToViewMap = new NodeEdgeHashMap();
+			for (Map.Entry<Node,Node> nodeEntry: view.getMap().nodeMap().entrySet()) {
+				modelToViewMap.putNode(nodeEntry.getValue(), nodeEntry.getKey());
+			}
+			for (Map.Entry<Edge,Edge> edgeEntry: view.getMap().edgeMap().entrySet()) {
+				modelToViewMap.putEdge(edgeEntry.getValue(), edgeEntry.getKey());
+			}
+		}
+		return modelToViewMap;
+	}
+	
+	/** 
+     * This implementation returns <code>false</code> if the node 
+     * represented by the cell has a {@link RuleAspect#RULE_ASPECT_NAME} role.
+     */
+	@Override
+	public boolean isMoveable(JCell jCell) {
+		return jCell instanceof JEdge || isMoveable(((AspectJVertex) jCell).getNode());
+	}
+
+    /** 
+     * Callback method to determine whether a certain node is moveable in
+     * the GUI. Rule-identifying nodes are not moveable.
+     */
+	protected boolean isMoveable(AspectNode node) {
+		return !(role(node) instanceof RuleAspect.RuleAspectValue);
+	}
+
+    /**
+	 * Indicates whether aspect prefixes should be shown for nodes and edges.
+	 */
+	public final boolean isShowRemarks() {
+		return getOptionValue(Options.SHOW_REMARKS_OPTION);
+	}
+
+	@Override
+    protected AttributeMap createJVertexAttr(Node node) {
+		AspectNode aspectNode = (AspectNode) node;
+        AspectValue role = role(aspectNode);
+        AttributeMap result = (AttributeMap) RULE_NODE_ATTR.get(role).clone();
+        if (aspectNode.getValue(AttributeAspect.getInstance()) != null) {
+        	result.applyMap(getJVertexValueAttr());
+        }
+        if (! isMoveable(aspectNode)) {
+        	GraphConstants.setMoveable(result, false);
+        	GraphConstants.setBounds(result, new Rectangle(0,0));
+        }
+        return result;
+    }
+
+    @Override
+    protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
+        assert !edgeSet.isEmpty() : String.format("Underlying edge set should not be empty");
+        Edge ruleEdge = edgeSet.iterator().next();
+        assert ruleEdge instanceof AspectEdge : "Rule model cannot include non-RuleEdge " + ruleEdge;
+        AspectValue role = role((AspectEdge) ruleEdge);
+        AttributeMap result = (AttributeMap) RULE_EDGE_ATTR.get(role).clone();
+        if (RegExprLabel.isEmpty(ruleEdge.label())) {
+            // remove edge arrow 
+            GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
+        }
+        return result;
+    }
+    
+    /** Adds the correct line width emphasis. */
+	@Override
+	protected AttributeMap getJEdgeEmphAttr(JEdge jCell) {
+		AttributeMap result = super.getJEdgeEmphAttr(jCell);
+        AspectEdge ruleEdge = ((AspectJEdge) jCell).getEdge();
+		GraphConstants.setLineWidth(result, JAttr.RULE_EMPH_WIDTH.get(role(ruleEdge)));
+		return result;
+	}
+
+    /** Adds the correct border emphasis. */
+	@Override
+	protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
+		AttributeMap result = super.getJVertexEmphAttr(jCell);
+        AspectNode ruleNode = ((AspectJVertex) jCell).getNode();
+		GraphConstants.setBorder(result, JAttr.RULE_EMPH_BORDER.get(role(ruleNode)));
+		return result;
+	}
+
+	/**
+     * Overwrites the method so as to return a rule vertex.
+     * @require <tt>edge instanceof RuleGraph.RuleNode</tt>
+     */
+    @Override
+    protected GraphJVertex createJVertex(Node node) {
+        return new AspectJVertex(this, (AspectNode) node);
+    }
+    
+    /**
+	 * Overwrites the method so as to return a rule edge.
+	 * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
+	 */
+	@Override
+	protected GraphJEdge createJEdge(BinaryEdge edge) {
+	    return new AspectJEdge((AspectEdge) edge);
+	}
+	
+    /**
+     * The underlying view of this graph model.
+     */
+    private final AspectualView<?> view;
+    /** Mapping from the elements of the model to those of the view. */
+    private NodeEdgeMap modelToViewMap;
+    
+    /** Helper method to return the rule aspect value of an aspect node. */
+	static private AspectValue role(AspectElement node) {
+		return node.getValue(RuleAspect.getInstance());
+	}
+
     /** Empty instance of the {@link AspectJModel}. */
     static public final AspectJModel EMPTY_JMODEL = new AspectJModel();
 
@@ -120,11 +307,6 @@ public class AspectJModel extends GraphJModel {
         ROLE_DESCRIPTIONS.put(REMARK,"Has no effect on the execution of the rule");
 //        ROLE_DESCRIPTIONS.put(RULE,"Has no effect on the execution of the rule");
     }
-
-    /** Helper method to return the rule aspect value of an aspect node. */
-	static private AspectValue role(AspectElement node) {
-		return node.getValue(RuleAspect.getInstance());
-	}
 
     /**
      * Specialized j-vertex for rule graphs, with its own tool tip text.
@@ -223,7 +405,7 @@ public class AspectJModel extends GraphJModel {
 		 */
 		@Override
 		protected String getNodeIdentity() {
-			Node ruleNode = view.getMap().get(getNode());
+			Node ruleNode = view.getMap().getNode(getNode());
 			return ruleNode == null ? null : ruleNode.toString();
 		}
 
@@ -314,7 +496,7 @@ public class AspectJModel extends GraphJModel {
 		 */
 		@Override
 		protected String getSourceIdentity() {
-			return view.getMap().get(getSourceNode()).toString();
+			return view.getMap().getNode(getSourceNode()).toString();
 		}
 
 		/**
@@ -323,7 +505,7 @@ public class AspectJModel extends GraphJModel {
 		 */
 		@Override
 		protected String getTargetIdentity() {
-			return view.getMap().get(getTargetNode()).toString();
+			return view.getMap().getNode(getTargetNode()).toString();
 		}
 
 		/** 
@@ -343,123 +525,7 @@ public class AspectJModel extends GraphJModel {
 		public boolean isListable() {
 			return RuleAspect.inRule(getEdge());
 		}
-
+		
 		private final AspectValue role;
     }
-
-    // --------------------- INSTANCE DEFINITIONS ------------------------
-
-    /** 
-     * Creates a new aspect model instance on top of a given aspectual view.
-     */
-    public AspectJModel(AspectualView view, Options options) {
-        super(view.getAspectGraph(), options);
-        this.view = view;
-    }
-
-    /** 
-     * Creates a new aspect model instance on top of a given aspectual view.
-     */
-    public AspectJModel(AspectualView view) {
-    	this(view, new Options());
-    }
-    
-    /** Constructor for a dummy model. */
-    protected AspectJModel() {
-    	view = null;
-    }
-
-    /** 
-     * This implementation returns <code>false</code> if the node 
-     * represented by the cell has a {@link RuleAspect#RULE} role.
-     */
-	@Override
-	public boolean isMoveable(JCell jCell) {
-		return jCell instanceof JEdge || isMoveable(((AspectJVertex) jCell).getNode());
-	}
-
-    /** 
-     * Callback method to determine whether a certain node is moveable in
-     * the GUI. Rule-identifying nodes are not moveable.
-     */
-	protected boolean isMoveable(AspectNode node) {
-		return !(role(node) instanceof RuleAspect.RuleAspectValue);
-	}
-
-    /**
-	 * Indicates whether aspect prefixes should be shown for nodes and edges.
-	 */
-	public final boolean isShowRemarks() {
-		return getOptionValue(Options.SHOW_REMARKS_OPTION);
-	}
-
-	@Override
-    protected AttributeMap createJVertexAttr(Node node) {
-		AspectNode aspectNode = (AspectNode) node;
-        AspectValue role = role(aspectNode);
-        AttributeMap result = (AttributeMap) RULE_NODE_ATTR.get(role).clone();
-        if (aspectNode.getValue(AttributeAspect.getInstance()) != null) {
-        	result.applyMap(getJVertexValueAttr());
-        }
-        if (! isMoveable(aspectNode)) {
-        	GraphConstants.setMoveable(result, false);
-        	GraphConstants.setBounds(result, new Rectangle(0,0));
-        }
-        return result;
-    }
-
-    @Override
-    protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
-        assert !edgeSet.isEmpty() : String.format("Underlying edge set should not be empty");
-        Edge ruleEdge = edgeSet.iterator().next();
-        assert ruleEdge instanceof AspectEdge : "Rule model cannot include non-RuleEdge " + ruleEdge;
-        AspectValue role = role((AspectEdge) ruleEdge);
-        AttributeMap result = (AttributeMap) RULE_EDGE_ATTR.get(role).clone();
-        if (RegExprLabel.isEmpty(ruleEdge.label())) {
-            // remove edge arrow 
-            GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
-        }
-        return result;
-    }
-    
-    /** Adds the correct line width emphasis. */
-	@Override
-	protected AttributeMap getJEdgeEmphAttr(JEdge jCell) {
-		AttributeMap result = super.getJEdgeEmphAttr(jCell);
-        AspectEdge ruleEdge = ((AspectJEdge) jCell).getEdge();
-		GraphConstants.setLineWidth(result, JAttr.RULE_EMPH_WIDTH.get(role(ruleEdge)));
-		return result;
-	}
-
-    /** Adds the correct border emphasis. */
-	@Override
-	protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
-		AttributeMap result = super.getJVertexEmphAttr(jCell);
-        AspectNode ruleNode = ((AspectJVertex) jCell).getNode();
-		GraphConstants.setBorder(result, JAttr.RULE_EMPH_BORDER.get(role(ruleNode)));
-		return result;
-	}
-
-	/**
-     * Overwrites the method so as to return a rule vertex.
-     * @require <tt>edge instanceof RuleGraph.RuleNode</tt>
-     */
-    @Override
-    protected GraphJVertex createJVertex(Node node) {
-        return new AspectJVertex(this, (AspectNode) node);
-    }
-    
-    /**
-	 * Overwrites the method so as to return a rule edge.
-	 * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
-	 */
-	@Override
-	protected GraphJEdge createJEdge(BinaryEdge edge) {
-	    return new AspectJEdge((AspectEdge) edge);
-	}
-	
-    /**
-     * The underlying view of this graph model.
-     */
-    private final AspectualView<?> view;
 }

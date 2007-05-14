@@ -1,4 +1,4 @@
-/* $Id: AspectualGraphView.java,v 1.6 2007-05-14 10:39:38 rensink Exp $ */
+/* $Id: AspectualGraphView.java,v 1.7 2007-05-14 18:52:03 rensink Exp $ */
 package groove.view;
 
 import groove.algebra.Constant;
@@ -48,16 +48,16 @@ public class AspectualGraphView extends AspectualView<Graph> {
 			throw new IllegalArgumentException("View has no name.");
 		}
         Graph model;
-        Map<AspectNode,Node> viewToModelMap;
+        NodeEdgeMap viewToModelMap;
         List<String> errors;
 		try {
-            Pair<Graph,Map<AspectNode,Node>> modelPlusMap = computeModel(view);
+            Pair<Graph,NodeEdgeMap> modelPlusMap = computeModel(view);
             model = modelPlusMap.first();
             viewToModelMap = modelPlusMap.second();
             errors = Collections.emptyList();
         } catch (FormatException e) {
             model = null;
-            viewToModelMap = Collections.emptyMap();   
+            viewToModelMap = new NodeEdgeHashMap();   
             errors = e.getErrors();
         }
         this.model = model;
@@ -76,7 +76,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 		if (name == null) {
 			throw new IllegalArgumentException("Model has no name.");
 		}
-		Pair<AspectGraph,Map<AspectNode,Node>> viewPlusMap = computeView(model);
+		Pair<AspectGraph,NodeEdgeMap> viewPlusMap = computeView(model);
 		this.view = viewPlusMap.first();
 		this.viewToModelMap = viewPlusMap.second();
 		this.errors = Collections.emptyList();
@@ -104,7 +104,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	}
 
 	@Override
-	public Map<AspectNode, Node> getMap() {
+	public NodeEdgeMap getMap() {
 		return viewToModelMap;
 	}
 	
@@ -113,7 +113,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	 * together with a mapping from the aspect graph's node to the
 	 * (fresh) graph nodes. 
 	 */
-	private Pair<Graph,Map<AspectNode,Node>> computeModel(AspectGraph view) throws FormatException {
+	private Pair<Graph, NodeEdgeMap> computeModel(AspectGraph view) throws FormatException {
 		Set<String> errors = new TreeSet<String>(view.getErrors());
 		Graph model = getGraphFactory().newGraph();
 		// we need to record the view-to-model element map for layout transfer
@@ -200,7 +200,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 		// transfer graph info such as layout from view to model
 		GraphInfo.transfer(view, model, elementMap);
 		if (errors.isEmpty()) {
-			return new Pair<Graph,Map<AspectNode,Node>>(model, viewToModelMap);
+			return new Pair<Graph,NodeEdgeMap>(model, elementMap);
 		} else {
 			throw new FormatException(new ArrayList<String>(errors));
 		}
@@ -242,7 +242,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	 * @return a pair of aspect graph plus a mapping from that aspect graph
 	 * to <code>model</code>
 	 */
-	private Pair<AspectGraph,Map<AspectNode,Node>> computeView(Graph model) {
+	private Pair<AspectGraph, NodeEdgeMap> computeView(Graph model) {
 		AspectGraph view = new AspectGraph();
 		// we need to record the view-to-model node map for the return value
 		Map<AspectNode,Node> viewToModelMap = new HashMap<AspectNode,Node>();
@@ -280,7 +280,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 		}
 		// transfer graph information such as layout from model to view
 		GraphInfo.transfer(model, view, elementMap);
-		return new Pair<AspectGraph,Map<AspectNode,Node>>(view, viewToModelMap);
+		return new Pair<AspectGraph,NodeEdgeMap>(view, elementMap);
 	}
 	
 	/**
@@ -303,7 +303,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	/** List of errors in the view that prevent the model from being constructed. */
 	private final List<String> errors;
 	/** Map from view to model nodes. */
-	private final Map<AspectNode,Node> viewToModelMap;
+	private final NodeEdgeMap viewToModelMap;
 	/** The graph factory used by this view, to construct the model. */
 	private GraphFactory graphFactory;
 //	/** 

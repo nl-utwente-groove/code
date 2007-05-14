@@ -12,12 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Xml.java,v 1.8 2007-05-02 08:44:30 rensink Exp $
+ * $Id: Xml.java,v 1.9 2007-05-14 18:52:03 rensink Exp $
  */
 package groove.io;
 
 import groove.graph.Graph;
-import groove.view.FormatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +26,7 @@ import java.io.IOException;
  * To be implemented for particular XML formats.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public interface Xml<G extends Graph> {
 	/**
@@ -43,10 +42,9 @@ public interface Xml<G extends Graph> {
      * Convenience method for <code>unmarshal(file, null)</code>.
      * @param file the file to be read from
      * @return the unmarshalled graph
-     * @throws FormatException if an error occurred during the conversion
      * @throws IOException if an error occurred during file input
      */
-    public G unmarshalGraph(File file) throws FormatException, IOException ;
+    public G unmarshalGraph(File file) throws IOException ;
     
     /** Deletes a file together with further information (such as layout info). */
     public void deleteGraph(File file);

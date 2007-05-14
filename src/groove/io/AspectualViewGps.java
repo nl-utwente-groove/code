@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.6 2007-05-14 10:39:37 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.7 2007-05-14 18:52:02 rensink Exp $
  */
 
 package groove.io;
@@ -21,14 +21,13 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.trans.DefaultRuleFactory;
-import groove.trans.Rule;
 import groove.trans.RuleFactory;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
-import groove.view.DefaultGrammarView;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
+import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 import groove.view.GrammarView;
 import groove.view.aspect.AspectGraph;
@@ -38,8 +37,6 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Properties;
 
 /**
@@ -47,7 +44,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     /** Error message if a grammar cannot be loaded. */
@@ -218,12 +215,6 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	            result.setStartGraph(startGraph);
 	        } catch (FileNotFoundException exc) {
 	            throw new IOException(LOAD_ERROR + ": start graph " + startGraphFile + " not found");
-	        } catch (FormatException exc) {
-	        	List<String> newErrors = new ArrayList<String>();
-	        	for (String error: exc.getErrors()) {
-	        		newErrors.add(String.format("Format error in %s: %s", startGraphFile, error));
-	        	}
-	        	result.addErrors(newErrors);
 	        }
 	    }
 	}
@@ -288,9 +279,11 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	 * @see #DEFAULT_START_GRAPH_NAME
 	 */
 	private void saveStartGraph(AspectualGraphView startGraph, File location) throws IOException {
-		// save start graph
-        File startGraphLocation = new File(location, DEFAULT_START_GRAPH_NAME);
-        getGraphMarshaller().marshalGraph(startGraph.getAspectGraph(), startGraphLocation);
+		if (startGraph != null) {
+			// save start graph
+			File startGraphLocation = new File(location, DEFAULT_START_GRAPH_NAME);
+			getGraphMarshaller().marshalGraph(startGraph.getAspectGraph(), startGraphLocation);
+		}
 	}
 
 	/**

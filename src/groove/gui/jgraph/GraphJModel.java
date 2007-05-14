@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.10 2007-05-11 21:51:33 rensink Exp $
+ * $Id: GraphJModel.java,v 1.11 2007-05-14 18:51:57 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -52,7 +52,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */
@@ -299,7 +299,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @param elem the graph element for which the jcell is requested
      * @return the jcell associated with <tt>elem</tt>
      */
-    public JCell getJCell(Element elem) {
+    public final JCell getJCell(Element elem) {
         if (elem instanceof Node) {
             return getJVertex((Node) elem);
         } else {

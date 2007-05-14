@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractXml.java,v 1.9 2007-05-11 08:22:01 rensink Exp $
+ * $Id: AbstractXml.java,v 1.10 2007-05-14 18:52:03 rensink Exp $
  */
 package groove.io;
 
@@ -20,7 +20,6 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Node;
 import groove.util.Pair;
-import groove.view.FormatException;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,14 +30,14 @@ import java.util.Map;
  * abstract methods: <tt>marshal(Graph)</tt> and <tt>unmarshal(Document,Graph)</tt>.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public abstract class AbstractXml implements Xml<Graph> {
 	AbstractXml(GraphFactory graphFactory) {
 		this.graphFactory = graphFactory;
 	}
 	
-    public Graph unmarshalGraph(File file) throws FormatException, IOException {
+    public Graph unmarshalGraph(File file) throws IOException {
         return unmarshalGraphMap(file).first();
     }
 	
@@ -49,10 +48,9 @@ public abstract class AbstractXml implements Xml<Graph> {
 	 * @param file the file to be read from
      * @return a pair consisting of the unmarshalled graph and a string-to-node map
      * from node identities in the XML file to nodes in the unmarshalled graph
-	 * @throws FormatException if an error occurred during the conversion
-     * @throws IOException if an error occurred during file input
+	 * @throws IOException if an error occurred during file input
 	 */
-	abstract protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws FormatException, IOException ;
+	abstract protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws IOException ;
 //
 //    /**
 //	 * Checks if a given property key is allowed.

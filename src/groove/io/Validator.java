@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Validator.java,v 1.7 2007-05-07 17:24:22 rensink Exp $
+ * $Id: Validator.java,v 1.8 2007-05-14 18:52:03 rensink Exp $
  */
 package groove.io;
 
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Application to check graph and rule file formats.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class Validator {
     /** Prefix for command line options. */
@@ -158,13 +158,6 @@ public class Validator {
                 System.out.println("ERROR: " + exc.getMessage());
             else
                 System.out.println("Error reading from " + file + ": " + exc.getMessage());
-            return null;
-        } catch (FormatException exc) {
-            errorsFound++;
-            if (verbosity > GraphFileHandler.QUIET_MODE)
-                System.out.println("ERROR: " + exc.getMessage());
-            else
-                System.out.println("Graph format error in " + file + ": " + exc.getMessage());
             return null;
         }
     }
