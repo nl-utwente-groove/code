@@ -23,7 +23,7 @@ import javax.swing.WindowConstants;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class EditorDialog extends JDialog {
     /**
@@ -50,7 +50,6 @@ public class EditorDialog extends JDialog {
                 handleCancel();
             }
         });
-        setLocationRelativeTo(owner);
         pack();
     }
 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.13 2007-05-11 21:51:15 rensink Exp $
+ * $Id: RuleJTree.java,v 1.14 2007-05-14 10:39:34 rensink Exp $
  */
 package groove.gui;
 
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -137,7 +137,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         boolean hasSpecialPriorities = grammar.getPriorityMap().size() > 1;
         // get the rule names
         for (RuleView rule: new CollectionOfCollections<RuleView>(grammar.getPriorityMap().values())) {
-            RuleNameLabel ruleName = rule.getName();
+            RuleNameLabel ruleName = rule.getNameLabel();
             // create new top node for the rule, if the rule has a different priority then the last
             if (hasSpecialPriorities) {
                 int rulePriority = rule.getPriority();
@@ -268,7 +268,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     	if (getCurrentTransition() != null) {
     		treeNode = matchNodeMap.get(getCurrentTransition());
     	} else if (getCurrentRule() != null) {
-    		treeNode = ruleNodeMap.get(getCurrentRule().getName());
+    		treeNode = ruleNodeMap.get(getCurrentRule().getNameLabel());
     	}
         if (treeNode != null) {
             setSelectionPath(new TreePath(treeNode.getPath()));
@@ -476,7 +476,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	            Object selectedNode = evt.getPath().getLastPathComponent();
 	            if (selectedNode instanceof RuleTreeNode) {
 	                // selected tree node is a production rule (level 1 node)
-	                simulator.setRule(((RuleTreeNode) selectedNode).getRule().getName());
+	                simulator.setRule(((RuleTreeNode) selectedNode).getRule().getNameLabel());
 	            } else if (selectedNode instanceof MatchTreeNode) {
 	                // selected tree node is a transition (level 2 node)
 	                simulator.setTransition(((MatchTreeNode) selectedNode).edge());
@@ -574,7 +574,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	     */
 	    @Override
 	    public String toString() {
-	    	String name = getRule().getName().child();
+	    	String name = getRule().getNameLabel().child();
 	    	if (getRule().isEnabled()) {
 	    		return name;
 	    	} else {

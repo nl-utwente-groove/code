@@ -1,4 +1,4 @@
-/* $Id: View.java,v 1.1 2007-04-29 09:22:35 rensink Exp $ */
+/* $Id: View.java,v 1.2 2007-05-14 10:39:38 rensink Exp $ */
 package groove.view;
 
 import java.util.List;
@@ -12,6 +12,11 @@ import java.util.List;
  * @version $Revision $
  */
 public interface View<Model> {
+	/** 
+	 * Returns the (non-<code>null</code>) name of the underlying model.
+	 */
+	String getName();
+	
 	/** 
 	 * Returns the underlying model. 
 	 * This can only be successful if there are no syntax errors reported by 

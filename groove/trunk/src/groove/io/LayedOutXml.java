@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.10 2007-05-11 08:22:01 rensink Exp $
+ * $Id: LayedOutXml.java,v 1.11 2007-05-14 10:39:37 rensink Exp $
  */
 package groove.io;
 
@@ -50,7 +50,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class LayedOutXml extends AbstractXml implements Xml<Graph> {
     /** 
@@ -148,55 +148,63 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
     	// first get the non-layed out result
         Pair<Graph,Map<String,Node>> preliminary = marshaller.unmarshalGraphMap(file);
         Graph result = preliminary.first();
-        Map<String,Node> nodeMap = preliminary.second();
-        // read in layout information, if so required
-        if (nodeMap != null) {
-            LayoutMap<Node,Edge> layoutMap = new LayoutMap<Node,Edge>();
-            File layoutFile = toLayoutFile(file);
-            if (!layoutFile.exists()) {
-                return new Pair<Graph,Map<String,Node>>(result,nodeMap);
-            }
-            BufferedReader layoutReader = new BufferedReader(new FileReader(layoutFile));
-            try {
-				int version = 1;
-				// read in from the layout file until done
-				for (String nextLine = layoutReader.readLine(); nextLine != null; nextLine = layoutReader
-						.readLine()) {
-					String[] parts;
-					try {
-						parts = ExprParser.splitExpr(nextLine, WHITESPACE);
-					} catch (FormatException exc) {
-						throw new FormatException("%s in %s: %s", LAYOUT_FORMAT_ERROR, file, exc
-								.getMessage());
-					}
-					if (parts.length > 0) {
-						String command = parts[0];
-						if (command.equals(NODE_PREFIX)) {
-							putVertexLayout(layoutMap, parts, nodeMap);
-						} else if (command.equals(EDGE_PREFIX)) {
-							Edge edge = putEdgeLayout(layoutMap, parts, nodeMap, version);
-							if (!result.containsElement(edge)) {
-								layoutReader.close();
-								throw new FormatException("%s in %s: unknown edge ",
-										LAYOUT_FORMAT_ERROR, file, edge);
-							}
-						} else if (command.equals(VERSION_PREFIX)) {
-							try {
-								version = Integer.parseInt(parts[1]);
-							} catch (Exception exc) {
-								throw new FormatException("%s in %s: Version number format error",
-										LAYOUT_FORMAT_ERROR, file);
-							}
+        Map<String, Node> nodeMap = preliminary.second();
+		File layoutFile = toLayoutFile(file);
+		if (layoutFile.exists()) {
+			try {
+				BufferedReader layoutReader = new BufferedReader(new FileReader(layoutFile));
+				LayoutMap<Node, Edge> layoutMap = readLayout(result, nodeMap, layoutReader);
+				GraphInfo.setLayoutMap(result, layoutMap);
+			} catch (FormatException exc) {
+				throw new FormatException("%s in %s: %s", LAYOUT_FORMAT_ERROR, file, exc.getMessage());
+			}
+		}
+		return new Pair<Graph, Map<String, Node>>(result, nodeMap);
+    }
+
+	/**
+	 * Reads the layout information for a given graph from a given reader.
+	 * @param graph the graph for which the layout is read
+	 * @param nodeMap mapping from node names in the layout file to graph nodes
+	 * @param layoutReader file containing the layout information
+	 * @return layout map from graph elements to corresponding layout info
+	 * @throws IOException if an error occurred in reading th layout file
+	 * @throws FormatException if the layout file is not correctly formatted
+	 */
+	private LayoutMap<Node, Edge> readLayout(Graph graph, Map<String, Node> nodeMap, BufferedReader layoutReader) throws FormatException, IOException {
+		LayoutMap<Node, Edge> layoutMap = new LayoutMap<Node, Edge>();
+		try {
+			int version = 1;
+			// read in from the layout file until done
+			for (String nextLine = layoutReader.readLine(); nextLine != null; nextLine = layoutReader.readLine()) {
+				String[] parts;
+				parts = ExprParser.splitExpr(nextLine, WHITESPACE);
+				if (parts.length > 0) {
+					String command = parts[0];
+					if (command.equals(NODE_PREFIX)) {
+						putVertexLayout(layoutMap, parts, nodeMap);
+					} else if (command.equals(EDGE_PREFIX)) {
+						Edge edge = putEdgeLayout(layoutMap,
+								parts,
+								nodeMap,
+								version);
+						if (!graph.containsElement(edge)) {
+							throw new FormatException("Unknown edge %s", edge);
+						}
+					} else if (command.equals(VERSION_PREFIX)) {
+						try {
+							version = Integer.parseInt(parts[1]);
+						} catch (NumberFormatException exc) {
+							throw new FormatException("Format error in version number %s", parts[1]);
 						}
 					}
 				}
-			} finally {
-				layoutReader.close();
 			}
-            GraphInfo.setLayoutMap(result, layoutMap);
-        }
-        return new Pair<Graph,Map<String,Node>>(result, nodeMap);
-    }
+		} finally {
+			layoutReader.close();
+		}
+		return layoutMap;
+	}
 
     /** Deletes the file itself as well as he layout file. */
     @Override
@@ -227,17 +235,17 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
      * based on a string array description and node map.
      * @param version for version 2, the layout position info has changed
      */
-    protected Edge putEdgeLayout(LayoutMap<Node, Edge> layoutMap, String[] parts, Map<String, Node> nodeMap, int version) throws IOException {
+    protected Edge putEdgeLayout(LayoutMap<Node, Edge> layoutMap, String[] parts, Map<String, Node> nodeMap, int version) throws FormatException {
         if (parts.length < 7) {
-            throw new IOException(LAYOUT_FORMAT_ERROR + ": incomplete edge layout line");
+            throw new FormatException("Incomplete edge layout line");
         }
         Node source = nodeMap.get(parts[1]);
         if (source == null) {
-            throw new IOException(LAYOUT_FORMAT_ERROR + ": unknown node " + parts[1]);
+            throw new FormatException("Unknown node " + parts[1]);
         }
         Node target = nodeMap.get(parts[2]);
         if (target == null) {
-            throw new IOException(LAYOUT_FORMAT_ERROR + ": unknown node " + parts[2]);
+            throw new FormatException("Unknown node " + parts[2]);
         }
         String labelTextWithQuotes = parts[3];
         String labelText = ExprParser.toUnquoted(labelTextWithQuotes, DOUBLE_QUOTE);
@@ -255,7 +263,7 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
             Point2D labelPosition = calculateLabelPosition(toPoint(parts, 4), points, version, source == target);
             layoutMap.putEdge(edge, new JEdgeLayout(points, labelPosition, lineStyle));
         } catch (NumberFormatException exc) {
-            throw new IOException(LAYOUT_FORMAT_ERROR + ": number format error " + exc.getMessage());
+            throw new FormatException("Number format error " + exc.getMessage());
         }
         return edge;
     }
