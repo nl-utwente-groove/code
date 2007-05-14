@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraph.java,v 1.4 2007-04-22 23:32:23 rensink Exp $
+ * $Id: DefaultGraph.java,v 1.5 2007-05-14 19:52:12 rensink Exp $
  */
 package groove.graph;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * Implementation of Graph based on a set of nodes and a 
  * mapping from nodes to sets of outgoing edges.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-22 23:32:23 $
+ * @version $Revision: 1.5 $ $Date: 2007-05-14 19:52:12 $
  */
 public class DefaultGraph extends AbstractGraph {
     /**
@@ -98,41 +98,6 @@ public class DefaultGraph extends AbstractGraph {
         reporter.stop();
         return result;
     }
-
-    @Deprecated
-    @Override
-    public Iterator<? extends Edge> edgeIterator() {
-        Iterator<? extends Edge> res = new Iterator<Edge>() {
-            public boolean hasNext() {
-                forwardEdgeSetIter();
-                return forwardEdgeSetIter();
-            }
-
-            public Edge next() {
-                forwardEdgeSetIter();
-                return edgeIter.next();
-            }
-
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-
-            private boolean forwardEdgeSetIter() {
-                while (edgeIter == null || !edgeIter.hasNext())
-                    if (edgeSetIter.hasNext())
-                        edgeIter = edgeSetIter.next().iterator();
-                    else
-                        return false;
-                return true;
-            }
-
-            private Iterator<Set<Edge>> edgeSetIter = edgeMap.values().iterator();
-            private Iterator<Edge> edgeIter;
-        };
-        return res;
-    }
-
-    // ------------------------ OBJECT OVERRIDES -----------------------
 
     @Override
     public Graph clone() {

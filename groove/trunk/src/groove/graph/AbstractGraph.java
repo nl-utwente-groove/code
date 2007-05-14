@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.8 2007-05-04 22:51:40 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.9 2007-05-14 19:52:13 rensink Exp $
  */
 
 package groove.graph;
@@ -38,13 +38,12 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     /**
      * The factory used to get morphisms from
      * @see #createMorphism(Graph,Graph)
-     * @see #createInjectiveMorphism(Graph,Graph)
      */
     static private GraphFactory graphFactory = GraphFactory.getInstance();
     
@@ -113,9 +112,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 
     /**
      * Fixed empty graph.
-     * (Note that this initialization has to come <i>after</i> {@link #NULL_REFERENCE},
-     * since else there may be a danger that the cache reference in the resulting
-     * graph is <code>null</code>, violating the invariant.) 
      */
     static public final EmptyGraph EMPTY_GRAPH = new EmptyGraph();
 
@@ -150,15 +146,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         return res;
     }
 
-    @Deprecated
-    public Collection<? extends Morphism> getInjectiveMatchesTo(Graph to) {
-        Collection<? extends Morphism> result;
-        reporter.start(GET_INJECTIVE_MATCHES_TO);
-        result = createInjectiveMorphism(this, to).getTotalExtensions();
-        reporter.stop();
-        return result;
-    }
-
     /**
      * This implementation checks if the other is also an <tt>AbstractGraph</tt>; if so, it first
      * compares the graph certificates at increasing precision to ensure that it is actually worth
@@ -169,25 +156,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         Morphism result = new IsoMatcher(createMorphism(this, to)).getMorphism();
         reporter.stop();
         return result;
-    }
-
-    @Deprecated
-    public boolean hasIsomorphismTo(Graph other) {
-    	return getIsoChecker().areIsomorphic(this, other);
-//    	reporter.start(GET_ISOMORPHISM_TO);
-//    	boolean result = createInjectiveMorphism(this, other).hasIsomorphismExtension();
-//    	reporter.stop();
-//    	return result;
-    }
-
-    @Deprecated
-    public boolean hasMatchesTo(Graph other) {
-        return !getMatchesTo(other).isEmpty();
-    }
-
-    @Deprecated
-    public boolean hasInjectiveMatchesTo(Graph other) {
-        return !getInjectiveMatchesTo(other).isEmpty();
     }
 
     /** 
@@ -268,30 +236,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 //        } else {
             return new DefaultFlag(source, label);
 //        }
-    }
-
-    /**
-     * This implementation delegates to {@link #addNode(Node)} or {@link #addEdge(Edge)}.
-     */
-    @Deprecated
-    public final void addElement(Element elem) {
-        if (elem instanceof Node) {
-            addNode((Node) elem);
-        } else {
-            addEdge((Edge) elem);
-        }
-    }
-
-    /**
-     * This implementation delegates to {@link #removeNode(Node)} or {@link #removeEdge(Edge)}.
-     */
-    @Deprecated
-    public final void removeElement(Element elem) {
-        if (elem instanceof Node) {
-            removeNode((Node) elem);
-        } else {
-            removeEdge((Edge) elem);
-        }
     }
 
     public Node addNode() {
@@ -394,13 +338,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         }
     }
 
-    // ------------------ OBJECT OVERRIDES ---------------------
-
-    @Deprecated
-    public Graph cloneGraph() {
-        return clone();
-    }
-    
     /** This should return a <i>modifiable</i> clone of the graph. */
     @Override
     public abstract Graph clone();
@@ -410,34 +347,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         result.addNodeSet(graph.nodeSet());
         result.addEdgeSet(graph.edgeSet());
         result.setInfo(graph.getInfo());
-        return result;
-    }
-
-    @Deprecated
-    public Morphism cloneTo() {
-        Morphism result = createMorphism(clone(), this);
-        addIdentities(result);
-        return result;
-    }
-
-    @Deprecated
-    public InjectiveMorphism injectiveCloneTo() {
-        InjectiveMorphism result = createInjectiveMorphism(clone(), this);
-        addIdentities(result);
-        return result;
-    }
-
-    @Deprecated
-    public Morphism cloneFrom() {
-        Morphism result = createMorphism(this, clone());
-        addIdentities(result);
-        return result;
-    }
-
-    @Deprecated
-    public InjectiveMorphism injectiveCloneFrom() {
-        InjectiveMorphism result = createInjectiveMorphism(this, clone());
-        addIdentities(result);
         return result;
     }
 
@@ -527,18 +436,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     }
 
     /**
-     * Factory method for an injective morphism.
-     * @param dom  the domain of the injective morphism to be created
-     * @param cod the codomain of the injective morphism to be created
-     * @return the created injective morphism
-     * @deprecated the {@link InjectiveMorphism} class will co away
-     */
-    @Deprecated
-    protected InjectiveMorphism createInjectiveMorphism(Graph dom, Graph cod) {
-        return new DefaultInjectiveMorphism(dom, cod);
-    }
-
-    /**
      * Factory method for a graph cache.
      * This implementation returns a {@link GraphCache}.
      * @return the graph cache
@@ -558,22 +455,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 //        return new CacheReference<GraphCache>(this, (GraphCache) referent);
 //    }
 //    
-    /**
-     * Adds identitiy pairs to a given morphism for all the nodes and edges in this graph.
-     * @param morph the morphism to which to add identities
-     * @require <tt>morph.dom().nodeSet().equals(nodeSet())</tt> and
-     *          <tt>morph.dom().edgeSet().equals(edgeSet())</tt> and
-     *          <tt>morph.cod().nodeSet().equals(nodeSet())</tt> and
-     *          <tt>morph.cod().edgeSet().equals(nodeSet())</tt>
-     */
-    private void addIdentities(Morphism morph) {
-        for (Node node: nodeSet()) {
-            morph.putNode(node, node);
-        }
-        for (Edge edge: edgeSet()) {
-            morph.putEdge(edge, edge);
-        }
-    }
 
     /**
      * Partitions a set of graph elements into its maximal connected subsets.
@@ -641,8 +522,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
 
     /** Handle for profiling the {@link #getMatchesTo(Graph)} method */
     static final int GET_MATCHES_TO = reporter.newMethod("getMatchesTo(Graph)");
-    /** Handle for profiling the {@link #getInjectiveMatchesTo(Graph)} method */
-    static final int GET_INJECTIVE_MATCHES_TO = reporter.newMethod("getInjectiveMatchesTo(Graph)");
     /** Handle for profiling the {@link #getIsomorphismTo(Graph)} method */
     static final int GET_ISOMORPHISM_TO = reporter.newMethod("getIsomorphismTo(Graph)");
     /** Handle for profiling the {@link #clone()} method */

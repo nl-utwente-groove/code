@@ -53,10 +53,15 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     public DefaultGrammarView(String name) {
         this.name = name;
     }
-    
+
     /** Returns the name of this grammar view. */
     public String getName() {
     	return name;
+    }
+
+    /** Changes the name of this grammar view. */
+    public void setName(String name) {
+    	this.name = name;
     }
     
     /** Returns the system properties of this grammar view. */
@@ -236,7 +241,7 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
 	/** Mapping from priorities to sets of rule names. */
     private final Map<Integer,Set<AspectualRuleView>> priorityMap = new TreeMap<Integer,Set<AspectualRuleView>>(Rule.PRIORITY_COMPARATOR);
     /** The name of this grammar view. */
-    private final String name;
+    private String name;
     /** The start gramg of the grammar. */
     private AspectualGraphView startGraph;
     /** The rule system properties of this grammar view. */

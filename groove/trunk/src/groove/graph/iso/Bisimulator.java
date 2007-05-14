@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Bisimulator.java,v 1.4 2007-03-27 14:18:33 rensink Exp $
+ * $Id: Bisimulator.java,v 1.5 2007-05-14 19:52:24 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -38,7 +38,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elemens to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class Bisimulator implements CertificateStrategy {
 	/**
@@ -147,7 +147,7 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.4 $
+     * @version $Revision: 1.5 $
      */
     static private class CertificateNode extends Certificate {
     	/** Initial node value to provide a better spread of hash codes. */
@@ -212,7 +212,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.4 $
+     * @version $Revision: 1.5 $
      */
     static private class CertificateEdge extends Certificate {
 //        /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
@@ -317,7 +317,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.4 $
+     * @version $Revision: 1.5 $
      */
     static private class CertificateFlag extends Certificate {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
@@ -695,15 +695,25 @@ public class Bisimulator implements CertificateStrategy {
     // --------------------------- reporter definitions ---------------------
     /** Reporter instance to profile methods of this class. */
     static public final Reporter reporter = Reporter.register(Bisimulator.class);
+    /** Handle to profile {@link #computeCertificates()}. */
     static public final int COMPUTE_CERTIFICATES = reporter.newMethod("computeCertificates()");
+    /** Handle to profile {@link #initCertificates()}. */
     static protected final int INIT_CERTIFICATES = reporter.newMethod("initCertificates()");
+    /** Handle to profile nested node certification. */
     static protected final int NODE_CERTS = reporter.newMethod("Nested node certs");
+    /** Handle to profile nested edge certification. */
     static protected final int EDGE_CERTS = reporter.newMethod("Nested edge certs");
+    /** Handle to profile {@link #initCertNode(Node)}. */
     static protected final int INIT_CERT_NODE = reporter.newMethod("initCertNode()");
+    /** Handle to profile {@link #initCertEdge(Edge)}. */
     static protected final int INIT_CERT_EDGE = reporter.newMethod("initCertEdge()");
+    /** Handle to profile {@link #iterateCertificates()}. */
     static protected final int ITERATE_CERTIFICATES = reporter.newMethod("iterateCertificates()");
+    /** Handle to profile {@link #getCertificateMap()}. */
     static protected final int GET_CERTIFICATE_MAP = reporter.newMethod("getCertificateMap()");
+    /** Handle to profile {@link #getPartitionMap()}. */
     static protected final int GET_PARTITION_MAP = reporter.newMethod("getPartitionMap()");
+    /** Handle to profile {@link #getGraphCertificate()}. */
     static protected final int GET_GRAPH_CERTIFICATE = reporter.newMethod("getGraphCertificate()");
     
     static private final boolean TIME = false;

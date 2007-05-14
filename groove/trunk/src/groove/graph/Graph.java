@@ -12,13 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Graph.java,v 1.6 2007-04-29 09:22:27 rensink Exp $
+ * $Id: Graph.java,v 1.7 2007-05-14 19:52:13 rensink Exp $
  */
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
-import groove.graph.iso.IsoChecker;
-import groove.graph.iso.IsoMatcher;
 import groove.view.FormatException;
 
 import java.util.Collection;
@@ -32,7 +30,7 @@ import java.util.Set;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.6 $ $Date: 2007-04-29 09:22:27 $
+ * @version $Revision: 1.7 $ $Date: 2007-05-14 19:52:13 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
     /**
@@ -55,38 +53,6 @@ public interface Graph extends GraphShape, DeltaTarget {
     Iterator<? extends Morphism> getMatchesToIter(Graph to);
 
     /**
-     * Indicates if there exists a match to a given graph.
-     * @param to the graph to which this one is to be matched
-     * @return <tt>true</tt> if there is a match from this graph to <tt>to</tt>
-     * @require <tt>to != null</tt>
-     * @ensure <tt>result == !getMatchesTo(to).isEmpty()</tt>
-     * @deprecated not used in practice; scrapped to reduced interface
-     */
-    @Deprecated
-    boolean hasMatchesTo(Graph to);
-
-    /**
-     * Returns the set of all injective matches from this graph to another.
-     * @param to the Graph to which this one is to be injectively matched
-     * @return the set of all total InjectiveMorphisms from this Graph to to
-     * @require <tt>to != null</tt>
-     * @ensure result = { (m: this --> to) \in InjectiveMorphism | m is total }
-     * @deprecated Implementation now very inefficient
-     */
-    @Deprecated
-    Collection<? extends Morphism> getInjectiveMatchesTo(Graph to);
-
-    /**
-     * Tests whether this graph can be injectively embedded in another.
-     * @param other the graph into which this one is to be embedded
-     * @return <tt>true</tt> iff <tt>! getInjectiveMatchesTo(other).isEmpty()</tt>
-     * @require <tt>other != null</tt>
-     * @deprecated not used in practice; scrapped to reduce interface
-     */
-    @Deprecated
-    boolean hasInjectiveMatchesTo(Graph other);
-
-    /**
      * Returns an isomorphism from this graph to another, if one exists.
      * @param to the graph to which this one is to be isomorphically matched
      * @return a total and surjective <tt>InjectiveMorphism</tt> from this graph to <tt>to</tt>;
@@ -94,18 +60,6 @@ public interface Graph extends GraphShape, DeltaTarget {
      */
     Morphism getIsomorphismTo(Graph to);
 
-    /**
-     * Tests whether this Graph is isomorphic to another.
-     * @param other the Graph that is tested for isomorphism
-     * @return <tt>true</tt> iff <tt>! getIsomorphismTo(other).isEmpty()</tt>
-     * @require <tt>other != null</tt>
-     * @see #getCertificate()
-     * @deprecated misleading because not a fast check for isomorphism;
-     * use {@link IsoChecker} instead.
-     */
-    @Deprecated
-    boolean hasIsomorphismTo(Graph other);
-    
     /**
      * Returns the certificate strategy object used for this graph.
      * The certificate strategy is used to decide isomorphism between graphs.
@@ -141,55 +95,6 @@ public interface Graph extends GraphShape, DeltaTarget {
      */
     Graph clone();
     
-    /**
-     * Returns a clone of this Graph as a Graph.
-     * @ensure <tt>resultnodeSet().equals(this.nodeSet()) && result.edgeSet().equals(this.edgeSet()</tt>
-     * @see #clone()
-     * @deprecated as of Java 5, use {@link #clone()} instead
-     */
-    @Deprecated
-    Graph cloneGraph();
-
-    /**
-     * Yields a morphism from an isomorphic copy to this graph.
-     * Note that the result is not an <tt>InjectiveMorphism</tt>, so as
-     * to allow later node mergings.
-     * @ensure <tt>result: clone --> this</tt> such that
-     * <tt>result.isInjective()</tt> && <tt>result.isSurjective()</tt>
-     * @deprecated not used in practice; removed to clean up interface
-     */
-    @Deprecated
-    Morphism cloneTo();
-
-    /**
-     * Yields an injective morphism from an isomorphic copy to this graph.
-     * @ensure <tt>result: clone --> this</tt> such that
-     * <tt>result.isSurjective()</tt>
-     * @deprecated not used in practice; removed to clean up interface
-     */
-    @Deprecated
-    InjectiveMorphism injectiveCloneTo();
-
-    /**
-     * Yields a morphism from this graph to an isomorphic copy of it.
-     * Note that the result is not an <tt>InjectiveMorphism</tt>, so as
-     * to allow later node mergings.
-     * @ensure <tt>result: this --> clone</tt> such that
-     * <tt>result.isInjective()</tt> && <tt>result.isSurjective()</tt>
-     * @deprecated not used in practice; removed to clean up interface
-     */
-    @Deprecated
-    Morphism cloneFrom();
-
-    /**
-     * Yields a morphism from this graph to an isomorphic copy of it.
-     * @ensure <tt>result: this --> clone</tt> such that
-     * <tt>result.isSurjective()</tt>
-     * @deprecated not used in practice; removed to clean up interface
-     */
-    @Deprecated
-    InjectiveMorphism injectiveCloneFrom();
-
     /**
      * Factory method: returns a fresh, empty graph.
      */
@@ -241,13 +146,6 @@ public interface Graph extends GraphShape, DeltaTarget {
      */
     Edge addEdge(Node[] ends, Label label);
     
-    /**
-     * Adds a graph element to the graph.
-     * Convenience method, typically delegating to {@link #addNode(Node)} or {@link #addEdge(Edge)}.
-     */
-    @Deprecated
-    void addElement(Element elem);
-
     /**
      * Adds a node to this graph.
      * This is allowed only if the graph is not fixed.
@@ -315,13 +213,6 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @see #isFixed()
      */
     boolean addEdgeSet(Collection<? extends Edge> edgeSet);
-
-    /**
-     * Removes a graph element from the graph.
-     * Convenience method, typically delegating to {@link #removeNode(Node)} or {@link #removeEdge(Edge)}.
-     */
-    @Deprecated
-    void removeElement(Element elem);
 
     /**
      * Removes a given node from this graph, if it was in the graph to start with.
