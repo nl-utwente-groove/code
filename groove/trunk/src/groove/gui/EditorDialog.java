@@ -23,7 +23,7 @@ import javax.swing.WindowConstants;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class EditorDialog extends JDialog {
     /**
@@ -181,8 +181,16 @@ public class EditorDialog extends JDialog {
             dispose();
         }
     }
+    
+    /** Besides calling the super method, also disposes the editor frame. */
+    @Override
+	public void dispose() {
+		// TODO Auto-generated method stub
+		super.dispose();
+		editor.getFrame().dispose();
+	}
 
-    /** Flag recording the decision of the user on exit. */
+	/** Flag recording the decision of the user on exit. */
     private boolean ok;
     /** Options of this dialog. */
     private final Options options;
