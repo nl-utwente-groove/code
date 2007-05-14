@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.23 2007-05-11 21:51:16 rensink Exp $
+ * $Id: Options.java,v 1.24 2007-05-14 10:39:34 rensink Exp $
  */
 package groove.gui;
 
@@ -37,7 +37,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class Options {
 
@@ -329,9 +329,9 @@ public class Options {
 //    /** Parse attributed graphs option */
 //    static public final String IS_ATTRIBUTED_OPTION = "Parse as attributed graph";
     /** Always start simulation after changes. */
-    static public final String START_SIMULATION_OPTION = "Start simulation?";
+    static public final String START_SIMULATION_OPTION = "Start new simulation?";
     /** Automatically stop simulation at changes to the rule system. */
-    static public final String STOP_SIMULATION_OPTION = "Stop simulation?";
+    static public final String STOP_SIMULATION_OPTION = "Stop current simulation?";
     /** Always delete rules without confirmation. */
     static public final String DELETE_RULE_OPTION = "Delete rule?";
     /** Show preview before close. */

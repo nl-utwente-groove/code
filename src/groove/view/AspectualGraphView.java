@@ -1,4 +1,4 @@
-/* $Id: AspectualGraphView.java,v 1.5 2007-05-11 21:51:30 rensink Exp $ */
+/* $Id: AspectualGraphView.java,v 1.6 2007-05-14 10:39:38 rensink Exp $ */
 package groove.view;
 
 import groove.algebra.Constant;
@@ -36,9 +36,17 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class AspectualGraphView extends AspectualView<Graph> {
-	/** Constructs an instance from a given aspect graph view. */
+	/** 
+	 * Constructs an instance from a given aspect graph view.
+	 * It is required that the aspect graph has a name.
+	 * @see GraphInfo#getName(groove.graph.GraphShape) 
+	 */
 	public AspectualGraphView(AspectGraph view) {
 		this.view = view;
+		this.name = GraphInfo.getName(view);
+		if (name == null) {
+			throw new IllegalArgumentException("View has no name.");
+		}
         Graph model;
         Map<AspectNode,Node> viewToModelMap;
         List<String> errors;
@@ -57,15 +65,27 @@ public class AspectualGraphView extends AspectualView<Graph> {
         this.errors = errors;
 	}
 	
-	/** Constructs an instance from a given graph model. */
+	/** 
+	 * Constructs an instance from a given graph model.
+	 * It is required that the model has a name.
+	 * @see GraphInfo#getName(groove.graph.GraphShape)  
+	 */
 	public AspectualGraphView(Graph model) {
 		this.model = model;
+		this.name = GraphInfo.getName(model);
+		if (name == null) {
+			throw new IllegalArgumentException("Model has no name.");
+		}
 		Pair<AspectGraph,Map<AspectNode,Node>> viewPlusMap = computeView(model);
 		this.view = viewPlusMap.first();
 		this.viewToModelMap = viewPlusMap.second();
 		this.errors = Collections.emptyList();
 	}
 	
+	public String getName() {
+		return name;
+	}
+
 	@Override
 	public AspectGraph getAspectGraph() {
 		return view;
@@ -274,6 +294,8 @@ public class AspectualGraphView extends AspectualView<Graph> {
     	return graphFactory;
     }
 	
+    /** The name of the view. */
+    private final String name;
 	/** The view represented by this object. */
 	private final AspectGraph view;
 	/** The graph model that is being viewed. */
@@ -284,4 +306,9 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	private final Map<AspectNode,Node> viewToModelMap;
 	/** The graph factory used by this view, to construct the model. */
 	private GraphFactory graphFactory;
+//	/** 
+//	 * Name to be used in case the view or model from which this
+//	 * object is created has no explicit name.
+//	 */
+//	static private final String DEFAULT_NAME; 
 }

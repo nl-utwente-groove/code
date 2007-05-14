@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.5 2007-05-11 21:51:30 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.6 2007-05-14 10:39:38 rensink Exp $
  */
 
 package groove.view;
@@ -77,7 +77,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -253,8 +253,13 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	}
 	
     /** Returns the name of the rule represented by this rule graph, set at construction time. */
-	public RuleNameLabel getName() {
+	public RuleNameLabel getNameLabel() {
 	    return name;
+	}
+
+	/** Convenience method for <code>getNameLabel().name()</code>. */
+	public String getName() {
+		return getNameLabel().name();
 	}
 
 	/** Returns the priority of the rule represented by this rule graph, set at construction time. */
@@ -269,7 +274,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	public int compareTo(RuleView o) {
 		int result = getPriority() - o.getPriority();
 		if (result == 0) {
-			result = getName().compareTo(o.getName());
+			result = getNameLabel().compareTo(o.getNameLabel());
 		}
 		return result;
 	}

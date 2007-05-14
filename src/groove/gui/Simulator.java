@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.34 2007-05-11 21:51:16 rensink Exp $
+ * $Id: Simulator.java,v 1.35 2007-05-14 10:39:34 rensink Exp $
  */
 package groove.gui;
 
@@ -127,7 +127,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.34 $
+ * @version $Revision: 1.35 $
  */
 public class Simulator {
     /**
@@ -160,7 +160,7 @@ public class Simulator {
     public Simulator(final String grammarLocation, final String startGraphName) throws IOException {
         this();
         if (grammarLocation != null) {
-            final File location = new File(Groove.createRuleSystemFilter().addExtension(grammarLocation));
+            final File location = new File(Groove.createRuleSystemFilter().addExtension(grammarLocation)).getAbsoluteFile();
             AspectualViewGps grammarLoader = null;
             for (Map.Entry<ExtensionFilter,AspectualViewGps> loaderEntry: grammarLoaderMap.entrySet()) {
                 ExtensionFilter filter = loaderEntry.getKey();
@@ -203,7 +203,7 @@ public class Simulator {
     private boolean setCurrentGrammar(DefaultGrammarView grammar) {
     	boolean result = currentGrammar != grammar;
 		this.currentGrammar = grammar;
-		if (currentRule != null && grammar.getRule(currentRule.getName()) == null) {
+		if (currentRule != null && grammar.getRule(currentRule.getNameLabel()) == null) {
 			this.currentRule = null;
 		}
 		return result;
@@ -557,32 +557,7 @@ public class Simulator {
         }
         return selectedFile;
     }
-//
-//    /** 
-//     * Invokes the editor on a plain (i.e., not aspect) graph.
-//     * Returns the edited plain graph, or <code>null</code> if the graph was modified or
-//     * the editor exited with a syntactically incorrect graph.
-//     * @param graph the graph to be edited
-//     * @param isState <code>true</code> if <code>graph</code> represents a state, <code>false</code> if
-//     * it represents a rule  
-//     */
-//    private Graph doEdit(Graph graph, boolean isState) {
-//		Editor editor = new Editor(isState ? Editor.GRAPH_TYPE : Editor.RULE_TYPE);
-//        // the editor needs a plain graph, not an aspectual view of it; so convert
-//		editor.setModel(new GraphJModel(graph, getOptions()));
-////		getGraphViewsPanel().addTab("Edit", editor.getGraphPanel());
-//		EditorDialog editorDialog = Editor.showEditorDialog(getFrame(),
-//				graph,
-//                isState ? Editor.GRAPH_TYPE : Editor.RULE_TYPE);
-////		editor.getRulePreviewAction().setEnabled(jModel instanceof AspectJModel);
-////		editorDialog.setVisible(true);
-//		if (editorDialog.isModified() && ! editorDialog.hasErrors()) {
-//			return editorDialog.toPlainGraph();
-//		} else {
-//			return null;
-//		}
-//	}
-//    
+    
     /**
      * Creates and displays a modal dialog wrapping an editor.
      * @param graph the input graph for the editor
@@ -599,7 +574,7 @@ public class Simulator {
     	AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
     	GraphProperties properties = GraphInfo.getProperties(ruleGraph, true);
     	properties.setEnabled(!properties.isEnabled());
-    	doAddRule(getCurrentRule().getName(), ruleGraph);
+    	doAddRule(getCurrentRule().getNameLabel(), ruleGraph);
 	}
     
     /**
@@ -678,48 +653,23 @@ public class Simulator {
         try {
         	DefaultGrammarView grammar = grammarLoader.unmarshal(grammarFile, startStateName);
         	setGrammar(grammar);
-//        	if (grammar.getStartGraph() != null) {
-//        		startSimulation(grammar);
-//        	}
             // now we know loading succeeded, we can set the current names & files
             currentGrammarFile = grammarFile;
             currentGrammarLoader = grammarLoader;
-            File startStateFile = startStateName == null ? null : new File(startStateName);
-            if (startStateFile != null && startStateFile.exists()) {
-                getStateFileChooser().setSelectedFile(startStateFile);
-            } else if (currentGrammarFile.isDirectory()) {
-                getStateFileChooser().setCurrentDirectory(currentGrammarFile);
+        	getStateFileChooser().setCurrentDirectory(currentGrammarFile);
+            if (grammar.getStartGraph() != null) {
+            	startStateName = grammar.getStartGraph().getName();
+            	getStateFileChooser().setSelectedFile(new File(startStateName));
             } else {
-                getStateFileChooser().setCurrentDirectory(currentGrammarFile.getParentFile());
+            	getStateFileChooser().setSelectedFile(new File(""));
             }
-            getGrammarFileChooser().setSelectedFile(currentGrammarFile);
+            getGrammarFileChooser().setSelectedFile(grammarFile);
         } catch (IOException exc) {
             showErrorDialog("Error while loading grammar from " + grammarFile, exc);
         } 
     }
 
 	/**
-     * Creates an empty grammar and an empty directory, and sets it in the simulator.
-     * @param grammarLoader the loader to be used
-     * @param grammarFile the grammar file to be used
-     */
-    private void doNewGrammar(AspectualViewGps grammarLoader, File grammarFile) {
-//        try {
-        	grammarFile.mkdir();
-        	String grammarName = grammarLoader.getExtensionFilter().stripExtension(grammarFile.getName());
-        	DefaultGrammarView grammar = new DefaultGrammarView(grammarName);
-        	setGrammar(grammar);
-            // now we know loading succeeded, we can set the current names & files
-            currentGrammarFile = grammarFile;
-            currentGrammarLoader = grammarLoader;
-            getStateFileChooser().setCurrentDirectory(currentGrammarFile);
-            getGrammarFileChooser().setSelectedFile(currentGrammarFile);
-//        } catch (IOException exc) {
-//            showErrorDialog("Error while loading grammar from " + grammarFile, exc);
-//        } 
-    }
-
-    /**
      * Sets the contents of a given file as start state. This results in a reset of the LTS.
      */
     private void doLoadStartGraph(File file) {
@@ -728,7 +678,6 @@ public class Simulator {
             AspectualGraphView startGraph = new AspectualGraphView(aspectStartGraph);
             getCurrentGrammar().setStartGraph(startGraph);
             setGrammar(getCurrentGrammar());
-            currentStartStateName = file.getName();
         } catch (IOException exc) {
             showErrorDialog("Could not load start graph from " + file.getName(),
                 exc);
@@ -737,7 +686,29 @@ public class Simulator {
         }
     }
     
-    private RuleNameLabel generateNewRuleName(String basis) {
+    /**
+	 * Creates an empty grammar and an empty directory, and sets it in the
+	 * simulator.
+	 * 
+	 * @param grammarLoader
+	 *            the loader to be used
+	 * @param grammarFile
+	 *            the grammar file to be used
+	 */
+	private void doNewGrammar(AspectualViewGps grammarLoader, File grammarFile) {
+		grammarFile.mkdir();
+		String grammarName = grammarLoader.getExtensionFilter().stripExtension(grammarFile.getName());
+		DefaultGrammarView grammar = new DefaultGrammarView(grammarName);
+		setGrammar(grammar);
+		// now we know loading succeeded, we can set the current names & files
+		currentGrammarFile = grammarFile;
+		currentGrammarLoader = grammarLoader;
+		getStateFileChooser().setCurrentDirectory(grammarFile);
+		getStateFileChooser().setSelectedFile(new File(""));
+		getGrammarFileChooser().setSelectedFile(grammarFile);
+	}
+
+	private RuleNameLabel generateNewRuleName(String basis) {
     	RuleNameLabel result = new RuleNameLabel(basis);
     	Set<RuleNameLabel> existingNames = getCurrentGrammar().getRuleMap().keySet();
     	for (int i = 1; existingNames.contains(result); i++) {
@@ -806,8 +777,13 @@ public class Simulator {
      */
     private void doRefreshGrammar() {
         if (currentGrammarFile != null) {
+        	AspectualGraphView startGraph = getCurrentGrammar().getStartGraph();
             try {
-                setGrammar(currentGrammarLoader.unmarshal(currentGrammarFile, currentStartStateName)); 
+            	if (startGraph != null) {
+            		setGrammar(currentGrammarLoader.unmarshal(currentGrammarFile, startGraph.getName()));
+            	} else {
+                    setGrammar(currentGrammarLoader.unmarshal(currentGrammarFile));
+            	}
             } catch (IOException exc) {
                 showErrorDialog("Error while loading grammar from " + currentGrammarFile, exc);
             }
@@ -1332,7 +1308,7 @@ public class Simulator {
 
 	/** Creates a menu item from an action, while omitting some of the label text. */ 
 	private JMenuItem createItem(Action action, String omit) {
-		JMenuItem result = new JMenuItem();
+		JMenuItem result = new JMenuItem(action);
 		String text = (String) action.getValue(Action.NAME);
 		if (text != null) {
 			int omitIndex = text.indexOf(omit);
@@ -1344,6 +1320,7 @@ public class Simulator {
 		}
 		return result;
 	}
+	
 	/**
 	 * Returns the file chooser for grammar (GPR) files, lazily creating it first.
 	 */
@@ -1523,13 +1500,18 @@ public class Simulator {
      * Sets the title of the frame to a given title.
      */
     protected void setTitle() {
-    	String title;
-    	if (getCurrentGrammar() == null || getCurrentGrammar().getName() == null) {
-			title = APPLICATION_NAME;
-		} else {
-			title = getCurrentGrammar().getName() + " - " + APPLICATION_NAME;
-		}
-        getFrame().setTitle(title);
+    	StringBuffer title = new StringBuffer();
+    	if (getCurrentGrammar() != null && getCurrentGrammar().getName() != null) {
+    		title.append(getCurrentGrammar().getName());
+    		AspectualGraphView startGraph = getCurrentGrammar().getStartGraph();
+    		if (startGraph != null) {
+    			title.append("/");
+    			title.append(startGraph.getName());
+    		}
+    		title.append(" - ");
+    	}
+    	title.append(APPLICATION_NAME);
+        getFrame().setTitle(title.toString());
     }
 
     /**
@@ -1574,8 +1556,13 @@ public class Simulator {
      * Asks whether the current start graph should be replaced by the edited version.
      */
     private boolean confirmLoadStartState(String stateName) {
-		String question = String.format("Replace start graph with %s?", stateName);
-		return confirmBehaviour(REPLACE_START_GRAPH_OPTION, question);
+    	if (getCurrentGrammar().getStartGraph() == null) {
+    		return true;
+    	} else {
+			String question = String.format("Replace start graph with %s?",
+					stateName);
+			return confirmBehaviour(REPLACE_START_GRAPH_OPTION, question);
+		}
 	}
 
     /**
@@ -1665,12 +1652,12 @@ public class Simulator {
      *            currentTransition.rule().equals(currentRule)
      */
     private GraphTransition currentTransition;
-
-    /**
-     * The name of the current start state.
-     * May be a file name or the name of a graph within the current grammar or <code>null</code>.
-     */
-    private String currentStartStateName;
+//
+//    /**
+//     * The name of the current start state.
+//     * May be a file name or the name of a graph within the current grammar or <code>null</code>.
+//     */
+//    private String currentStartStateName;
 
     /**
      * The file or directory containing the last loaded or saved grammar, or <tt>null</tt> if no
@@ -1921,6 +1908,14 @@ public class Simulator {
     /**
      * Default name of an empty rule.
      */
+    static private final String NEW_GRAMMAR_NAME = "newGrammar";
+    /**
+     * Default name of an empty rule.
+     */
+    static private final String NEW_GRAPH_NAME = "newGraph";
+    /**
+     * Default name of an empty rule.
+     */
     static private final String NEW_RULE_NAME = "newRule";
 
     /** Name of this application. */
@@ -2162,7 +2157,7 @@ public class Simulator {
      */
     private class AboutAction extends AbstractAction {
     	/** Constructs an instance of the action. */
-        protected AboutAction() {
+        AboutAction() {
             super(Options.ABOUT_ACTION_NAME);
         }
 
@@ -2177,7 +2172,7 @@ public class Simulator {
      */
     private class ApplyTransitionAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-        protected ApplyTransitionAction() {
+        ApplyTransitionAction() {
             super(Options.APPLY_TRANSITION_ACTION_NAME);
             putValue(Action.ACCELERATOR_KEY, Options.APPLY_KEY);
         }
@@ -2203,7 +2198,7 @@ public class Simulator {
 		public void actionPerformed(ActionEvent e) {
 			if (confirmAbandon(false)) {
 				AspectGraph oldRuleGraph = getCurrentRule().getAspectGraph();
-				RuleNameLabel newRuleName = askNewRuleName(null, getCurrentRule().getName().name(), true);
+				RuleNameLabel newRuleName = askNewRuleName(null, getCurrentRule().getNameLabel().name(), true);
 				if (newRuleName != null) {
 					doAddRule(newRuleName, oldRuleGraph.clone());
 				}
@@ -2223,7 +2218,7 @@ public class Simulator {
 		}
 		
 		public void actionPerformed(ActionEvent e) {
-			RuleNameLabel ruleName = getCurrentRule().getName();
+			RuleNameLabel ruleName = getCurrentRule().getNameLabel();
 	    	String question = String.format("Delete rule %s?", ruleName);
 			if (confirmBehaviour(Options.DELETE_RULE_OPTION, question)) {
 				doDeleteRule(ruleName);
@@ -2236,7 +2231,7 @@ public class Simulator {
 	 */
     private class EditGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-        protected EditGraphAction() {
+        EditGraphAction() {
             super(Options.EDIT_GRAPH_ACTION_NAME);
         }
 
@@ -2263,8 +2258,6 @@ public class Simulator {
         	String stateName = stateModel.getName();
             EditorDialog dialog = showEditorDialog(stateModel.toPlainGraph());
             if (dialog.isOK()) {
-//        	Graph editResult = doEdit(stateModel.toPlainGraph(), true);
-//            if (editResult != null) {
     			File saveFile = handleSaveGraph(true, dialog.toPlainGraph(), stateName);
     			if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
     				doLoadStartGraph(saveFile);
@@ -2292,7 +2285,7 @@ public class Simulator {
 			if (dialog.showDialog(frame) && confirmAbandon(false)) {
 				ruleProperties.clear();
 				ruleProperties.putAll(dialog.getProperties());
-				doAddRule(rule.getName(), ruleGraph);
+				doAddRule(rule.getNameLabel(), ruleGraph);
 			}
 		}
 	}
@@ -2302,7 +2295,7 @@ public class Simulator {
      */
     private class EditRuleAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-        protected EditRuleAction() {
+        EditRuleAction() {
             super(Options.EDIT_RULE_ACTION_NAME);
         }
 
@@ -2326,7 +2319,7 @@ public class Simulator {
     	 * @require <tt>getCurrentRule != null</tt>.
     	 */
         public void actionPerformed(ActionEvent e) {
-        	RuleNameLabel ruleName = getCurrentRule().getName();
+        	RuleNameLabel ruleName = getCurrentRule().getNameLabel();
             EditorDialog dialog = showEditorDialog(getRulePanel().getJModel().toPlainGraph());
             if (dialog.isOK()) {
                 AspectGraph ruleAsAspectGraph = dialog.toAspectGraph();
@@ -2346,7 +2339,7 @@ public class Simulator {
     /** Action to show the system properties. */
     private class EditSystemPropertiesAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-        public EditSystemPropertiesAction() {
+        EditSystemPropertiesAction() {
             super(Options.SYSTEM_PROPERTIES_ACTION_NAME);
         }
         
@@ -2391,7 +2384,7 @@ public class Simulator {
      */
     private class ExportGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-        protected ExportGraphAction() {
+        ExportGraphAction() {
             super(Options.EXPORT_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         }
@@ -2406,7 +2399,7 @@ public class Simulator {
                 fileName = getCurrentState().toString();
                 jGraph = getStatePanel().getJGraph();
             } else {
-                fileName = getCurrentRule().getName().toString();
+                fileName = getCurrentRule().getNameLabel().toString();
                 jGraph = getRulePanel().getJGraph();
             }
             getExportChooser().setSelectedFile(new File(fileName));
@@ -2469,7 +2462,7 @@ public class Simulator {
          * Constructs a generate action with a given explore strategy.
          * @param strategy the strategy to be used during exploration
          */
-        protected GenerateLTSAction(ExploreStrategy strategy) {
+        GenerateLTSAction(ExploreStrategy strategy) {
             super(strategy.toString());
             this.strategy = strategy;
         }
@@ -2505,7 +2498,7 @@ public class Simulator {
      */
     private class GotoStartStateAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-        protected GotoStartStateAction() {
+        GotoStartStateAction() {
             super(Options.GOTO_START_STATE_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
         }
@@ -2525,7 +2518,7 @@ public class Simulator {
      */
     private class LoadStartGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-        protected LoadStartGraphAction() {
+        LoadStartGraphAction() {
             super(Options.LOAD_START_STATE_ACTION_NAME);
         }
 
@@ -2550,7 +2543,7 @@ public class Simulator {
      */
     private class LoadGrammarAction extends AbstractAction {
     	/** Constructs an instance of the action. */
-        protected LoadGrammarAction() {
+        LoadGrammarAction() {
             super(Options.LOAD_GRAMMAR_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.OPEN_KEY);
         }
@@ -2574,21 +2567,30 @@ public class Simulator {
         
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(true)) {
-                getGrammarFileChooser().setSelectedFile(currentGrammarFile);
+            	File newGrammar = new File(currentGrammarFile.getParentFile(), NEW_GRAMMAR_NAME);
+            	getGrammarFileChooser().setSelectedFile(newGrammar);
+            	boolean ok = false;
+            	while (!ok) {
                 if (getGrammarFileChooser().showOpenDialog(getFrame()) == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = getGrammarFileChooser().getSelectedFile();
                     FileFilter filter = getGrammarFileChooser().getFileFilter();
+                    AspectualViewGps grammarLoader = grammarLoaderMap.get(filter);
                     if (filter instanceof ExtensionFilter) {
                         String extendedName = ((ExtensionFilter) filter).addExtension(selectedFile.getPath());
                         selectedFile = new File(extendedName);
                     }
                     if (selectedFile.exists()) {
-                        showErrorDialog(String.format("File %s already exists", selectedFile), null);
+                    	int response = JOptionPane.showConfirmDialog(getFrame(), String.format("Load existing grammar %s?", selectedFile.getName()));
+                    	if (response == JOptionPane.OK_OPTION) {
+                    		doLoadGrammar(grammarLoader, selectedFile, null);
+                    	}
+                    	ok = response != JOptionPane.NO_OPTION;
                     } else {
-                        FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
-                        doNewGrammar(grammarLoaderMap.get(filterUsed), selectedFile);
+                        doNewGrammar(grammarLoader, selectedFile);
+                        ok = true;
                     }
                 }
+            	}
             }
         }
     }
@@ -2600,13 +2602,14 @@ public class Simulator {
     	
 		public void actionPerformed(ActionEvent e) {
             Graph newGraph = GraphFactory.getInstance().newGraph();
-            GraphInfo.setName(newGraph, GrammarViewXml.DEFAULT_START_GRAPH_NAME);
+            GraphInfo.setName(newGraph, NEW_GRAPH_NAME);
+            GraphInfo.setGraphRole(newGraph);
             EditorDialog dialog = showEditorDialog(newGraph);
 //        	Graph editResult = doEdit(newGraph, true);
             if (dialog.isOK()) {
                 newGraph = dialog.toPlainGraph();
             }
-            File saveFile = handleSaveGraph(true, newGraph, GrammarViewXml.DEFAULT_START_GRAPH_NAME);
+            File saveFile = handleSaveGraph(true, newGraph, NEW_GRAPH_NAME);
             if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
                 doLoadStartGraph(saveFile);
             }
@@ -2629,6 +2632,7 @@ public class Simulator {
 				if (ruleName != null) {
                     Graph newRule = GraphFactory.getInstance().newGraph();
                     GraphInfo.setName(newRule, ruleName.name());
+                    GraphInfo.setRuleRole(newRule);
                     EditorDialog dialog = showEditorDialog(newRule);
                     if (dialog.isOK()) {
                         doAddRule(ruleName, dialog.toAspectGraph());
@@ -2648,7 +2652,7 @@ public class Simulator {
      */
     private class ProvideCTLFormulaAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-    	protected ProvideCTLFormulaAction() {
+    	ProvideCTLFormulaAction() {
     		super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME);
     		setEnabled(true);
     	}
@@ -2673,7 +2677,7 @@ public class Simulator {
      */
     private class QuitAction extends AbstractAction {
     	/** Constructs an instance of the action. */
-        protected QuitAction() {
+        QuitAction() {
             super(Options.QUIT_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.QUIT_KEY);
         }
@@ -2689,7 +2693,7 @@ public class Simulator {
      */
     private class RefreshGrammarAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-        protected RefreshGrammarAction() {
+        RefreshGrammarAction() {
             super(Options.REFRESH_GRAMMAR_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.REFRESH_KEY);
         }
@@ -2720,7 +2724,7 @@ public class Simulator {
 		
 		public void actionPerformed(ActionEvent e) {
 			if (confirmAbandon(true)) {
-				RuleNameLabel oldRuleName = getCurrentRule().getName();
+				RuleNameLabel oldRuleName = getCurrentRule().getNameLabel();
 				AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
 				RuleNameLabel newRuleName = askNewRuleName(null, oldRuleName.name(), true);
 				if (newRuleName != null) {
@@ -2736,7 +2740,7 @@ public class Simulator {
      */
     private class SaveGrammarAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-        protected SaveGrammarAction() {
+        SaveGrammarAction() {
             super(Options.SAVE_GRAMMAR_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
         }
@@ -2774,7 +2778,7 @@ public class Simulator {
      */
     private class SaveGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-        protected SaveGraphAction() {
+        SaveGraphAction() {
             super(Options.SAVE_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.SAVE_GRAPH_KEY);
         }
@@ -2809,7 +2813,7 @@ public class Simulator {
 
     private class StartSimulationAction extends AbstractAction implements Refreshable {
         /** Constructs an instance of the action. */
-        public StartSimulationAction() {
+        StartSimulationAction() {
             super(Options.START_SIMULATION_ACTION_NAME);
             putValue(Action.ACCELERATOR_KEY, Options.START_SIMULATION_KEY);
         }

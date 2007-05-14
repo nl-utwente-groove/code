@@ -87,8 +87,8 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
      * @see #getRule(RuleNameLabel)
      */
     public AspectualRuleView addRule(AspectualRuleView ruleView) throws IllegalStateException {
-		AspectualRuleView result = removeRule(ruleView.getName());
-		ruleMap.put(ruleView.getName(), ruleView);
+		AspectualRuleView result = removeRule(ruleView.getNameLabel());
+		ruleMap.put(ruleView.getNameLabel(), ruleView);
 		int priority = ruleView.getPriority();
 		Set<AspectualRuleView> priorityRules = priorityMap.get(priority);
 		if (priorityRules == null) {
@@ -197,7 +197,7 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     			}
     		} catch (FormatException exc) {
     			for (String error: exc.getErrors()) {
-    				errors.add(String.format("Format error in %s: %s", ruleView.getName(), error));
+    				errors.add(String.format("Format error in %s: %s", ruleView.getNameLabel(), error));
     			}
     		}
     	}
