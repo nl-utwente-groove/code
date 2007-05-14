@@ -1,14 +1,12 @@
-/* $Id: AspectualView.java,v 1.2 2007-05-11 21:51:30 rensink Exp $ */
+/* $Id: AspectualView.java,v 1.3 2007-05-14 18:52:03 rensink Exp $ */
 package groove.view;
 
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
-import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.trans.RuleNameLabel;
 import groove.view.aspect.AspectGraph;
-import groove.view.aspect.AspectNode;
 
-import java.util.Map;
 
 /**
  * View specialisation based on aspect graphs.
@@ -30,7 +28,7 @@ abstract public class AspectualView<Model> implements View<Model> {
 	 * Returns a mapping from the nodes in the aspect graph view to the
 	 * corresponding nodes in the model that is being viewed.
 	 */
-	abstract public Map<AspectNode, Node> getMap();
+	abstract public NodeEdgeMap getMap();
 
 	/** 
 	 * Creates a view from a given aspect graph.

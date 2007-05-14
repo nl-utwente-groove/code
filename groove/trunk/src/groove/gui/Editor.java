@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.28 2007-05-11 21:51:15 rensink Exp $
+ * $Id: Editor.java,v 1.29 2007-05-14 18:52:01 rensink Exp $
  */
 package groove.gui;
 
@@ -95,7 +95,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.28 $ $Date: 2007-05-11 21:51:15 $
+ * @version $Revision: 1.29 $ $Date: 2007-05-14 18:52:01 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -307,20 +307,16 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
      */
     private void doOpenGraph(final File fromFile) throws IOException {
-        try {
-            currentFile = fromFile;
-			// first create a graph from the gxl file
-			final Graph graph = layoutGxl.unmarshalGraph(fromFile);
-			// load the model in the event dispatch thread, to avoid concurrency
-			// issues
-			SwingUtilities.invokeLater(new Runnable() {
-				public void run() {
-					setPlainGraph(graph);
-				}
-			});
-		} catch (FormatException e) {
-            throw new IOException("Can't load graph from " + fromFile.getName() + ": format error");
-        }
+    	currentFile = fromFile;
+    	// first create a graph from the gxl file
+    	final Graph graph = layoutGxl.unmarshalGraph(fromFile);
+    	// load the model in the event dispatch thread, to avoid concurrency
+    	// issues
+    	SwingUtilities.invokeLater(new Runnable() {
+    		public void run() {
+    			setPlainGraph(graph);
+    		}
+    	});
     }
 
     /**
@@ -1198,7 +1194,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             previewContent.add(createPropertiesDialog(false).createTablePane(), BorderLayout.NORTH);
         }
         if (partial) {
-        	JLabel errorLabel = new JLabel(String.format("Preview is partial due to syntax errors in edited %s", getRole(false)));
+        	JLabel errorLabel = new JLabel(String.format("Incomplete preview due to syntax errors in edited %s", getRole(false)));
         	errorLabel.setForeground(SystemColor.RED);
         	previewContent.add(errorLabel, BorderLayout.SOUTH);
         	if (okOption == null) {
@@ -1711,7 +1707,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.28 $
+     * @version $Revision: 1.29 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

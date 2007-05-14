@@ -1,9 +1,8 @@
-/* $Id: AspectGxl.java,v 1.2 2007-05-02 08:44:30 rensink Exp $ */
+/* $Id: AspectGxl.java,v 1.3 2007-05-14 18:52:03 rensink Exp $ */
 package groove.io;
 
 import groove.graph.Graph;
 import groove.graph.GraphShape;
-import groove.view.FormatException;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -39,7 +38,7 @@ public class AspectGxl implements Xml<AspectGraph> {
 	 * and converts the resulting graph to an {@link AspectGraph}.
 	 * @see AspectGraph#fromPlainGraph(GraphShape)
 	 */
-	public AspectGraph unmarshalGraph(File file) throws FormatException, IOException {
+	public AspectGraph unmarshalGraph(File file) throws IOException {
 		return AspectGraph.getFactory().fromPlainGraph(marshaller.unmarshalGraph(file));
 	}
 	

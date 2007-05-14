@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.6 2007-05-14 10:39:38 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.7 2007-05-14 18:52:03 rensink Exp $
  */
 
 package groove.view;
@@ -31,6 +31,8 @@ import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
@@ -77,7 +79,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	/** Label for merges (merger edges and merge embargoes) */
@@ -174,8 +176,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.enabled = true;
         this.rule = rule;
         this.properties = rule.getProperties();
-        this.graphToRuleMap = new HashMap<AspectNode,Node>();
-        this.graph = computeAspectGraph(rule, graphToRuleMap);
+        this.viewToRuleMap = new NodeEdgeHashMap();
+        this.graph = computeAspectGraph(rule, viewToRuleMap);
     }
 
     /**
@@ -204,7 +206,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.enabled = GraphProperties.isEnabled(graph);
         this.properties = properties;
         this.graph = graph;
-        this.graphToRuleMap = new HashMap<AspectNode,Node>();
+        this.viewToRuleMap = new NodeEdgeHashMap();
     }
     
     /**
@@ -296,7 +298,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      */
     public Rule toRule() throws FormatException {
     	if (rule == null) {
-            rule = computeRule(graph, graphToRuleMap);
+            rule = computeRule(graph, viewToRuleMap);
     	}
     	return rule;
     }
@@ -319,15 +321,15 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	}
 	
 	@Override
-	public Map<AspectNode, Node> getMap() {
-		return graphToRuleMap;
+	public NodeEdgeMap getMap() {
+		return viewToRuleMap;
 	}
 
 	/**
      * Callback method to compute a rule from an aspect graph.
      * @param graph the aspect graph to compute the rule from
      */
-    protected Rule computeRule(AspectGraph graph, Map<AspectNode, Node> graphToRuleMap) throws FormatException {
+    protected Rule computeRule(AspectGraph graph, NodeEdgeMap viewToRuleMap) throws FormatException {
     	Set<String> errors = new TreeSet<String>(graph.getErrors());
         if (TO_RULE_DEBUG) {
             System.out.println("");
@@ -353,7 +355,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         	try {
         	if (RuleAspect.inRule(node)) {
 				Node nodeImage = computeNodeImage(node, graph);
-				graphToRuleMap.put(node, nodeImage);
+				viewToRuleMap.putNode(node, nodeImage);
 				if (RuleAspect.inLHS(node)) {
 					left.addNode(nodeImage);
 					lhs.addNode(nodeImage);
@@ -389,19 +391,12 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         for (AspectEdge edge: graph.edgeSet()) {
         	try {
         	if (RuleAspect.inRule(edge)) {
-				Edge edgeImage = computeEdgeImage(edge, graph, graphToRuleMap);
-//				boolean isEmbargo = false;
+				Edge edgeImage = computeEdgeImage(edge, graph, viewToRuleMap.nodeMap());
+				viewToRuleMap.putEdge(edge, edgeImage);
 				if (RuleAspect.inLHS(edge)) {
-//					NAC embargo = computeEmbargoFromNegation(lhs, edgeImage);
-//					isEmbargo = embargo != null;
-//					if (isEmbargo) {
-//						embargoes.add(embargo);
-//					} else {
-						left.addEdge(edgeImage);
-						lhs.addEdge(edgeImage);
-//					}
+					left.addEdge(edgeImage);
+					lhs.addEdge(edgeImage);
 				}
-//				if (!isEmbargo
 				if (RuleAspect.inRHS(edge)
 						&& !(RuleAspect.isCreator(edge) && RegExprLabel.isEmpty(edge.label()))) {
 					// use the toRight map because we may have merged nodes
@@ -475,7 +470,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @throws FormatException if <code>edge</code> does not
      * occur in a correct way in <code>context</code>
      */
-    protected Edge computeEdgeImage(AspectEdge edge, AspectGraph context, Map<AspectNode, Node> elementMap) throws FormatException {
+    protected Edge computeEdgeImage(AspectEdge edge, AspectGraph context, Map<? extends Node, Node> elementMap) throws FormatException {
     	Node[] ends = new Node[edge.endCount()];
     	for (int i = 0; i < ends.length; i++) {
     		Node endImage = elementMap.get(edge.end(i));
@@ -649,7 +644,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Computes an aspect graph representation of the rule
      * stored in this rule view.
      */
-    protected AspectGraph computeAspectGraph(Rule rule, Map<AspectNode, Node> graphToRuleMap) throws FormatException {
+    protected AspectGraph computeAspectGraph(Rule rule, NodeEdgeMap viewToRuleMap) throws FormatException {
     	AspectGraph result = createAspectGraph();
 		// start with lhs
 		Map<Node, AspectNode> lhsNodeMap = new HashMap<Node, AspectNode>();
@@ -660,7 +655,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			AspectNode nodeImage = computeAspectNode(result, nodeRole, lhsNode);
 			result.addNode(nodeImage);
 			lhsNodeMap.put(lhsNode, nodeImage);
-			graphToRuleMap.put(nodeImage, lhsNode);
+			viewToRuleMap.putNode(nodeImage, lhsNode);
 		}
 		// add lhs edges
 		for (Edge lhsEdge : rule.lhs().edgeSet()) {
@@ -669,6 +664,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			AspectEdge edgeImage = computeAspectEdge(images(lhsNodeMap,
 					lhsEdge.ends()), lhsEdge.label(), edgeRole, lhsEdge);
 			result.addEdge(edgeImage);
+			viewToRuleMap.putEdge(edgeImage, lhsEdge);
 		}
 		// now add the rhs
 		Map<Node, AspectNode> rhsNodeMap = new HashMap<Node, AspectNode>();
@@ -697,16 +693,18 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 				AspectNode nodeImage = computeAspectNode(result, CREATOR, rhsNode);
 				result.addNode(nodeImage);
 				rhsNodeMap.put(rhsNode, nodeImage);
-				graphToRuleMap.put(nodeImage, rhsNode);
+				viewToRuleMap.putNode(nodeImage, rhsNode);
 			}
 		}
 		// add rhs edges
 		for (Edge rhsEdge : rule.rhs().edgeSet()) {
 			if (!rule.getMorphism().containsValue(rhsEdge)) {
 				List<AspectNode> endImages = images(rhsNodeMap, rhsEdge.ends());
-				result.addEdge(computeAspectEdge(endImages,
+				Edge edgeImage = (computeAspectEdge(endImages,
 						rhsEdge.label(),
 						CREATOR, rhsEdge));
+				result.addEdge(edgeImage);
+				viewToRuleMap.putEdge(edgeImage, rhsEdge);
 			}
 		}
 		// now add the NACs
@@ -737,13 +735,12 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 					if (!nacNodeMap.containsKey(nacNode)) {
 						AspectNode nacNodeImage = computeAspectNode(result, EMBARGO, nacNode);
 						nacNodeMap.put(nacNode, nacNodeImage);
-						graphToRuleMap.put(nacNodeImage, nacNode);
+						viewToRuleMap.putNode(nacNodeImage, nacNode);
 						result.addNode(nacNodeImage);
 						nacGraph.addNode(nacNodeImage);
 					}
 				}
-				Set<Edge> nacEdgeSet = new HashSet<Edge>(
-						nacMorphism.cod().edgeSet());
+				Set<Edge> nacEdgeSet = new HashSet<Edge>(nacMorphism.cod().edgeSet());
 				nacEdgeSet.removeAll(nacMorphism.elementMap().edgeMap().values());
 				// add this nac's edges
 				for (Edge nacEdge : nacEdgeSet) {
@@ -752,25 +749,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 							nacEdge.label(),
 							EMBARGO, nacEdge);
 					result.addEdge(nacEdgeImage);
+					viewToRuleMap.putEdge(nacEdgeImage, nacEdge);
 					nacGraph.addEdge(nacEdgeImage);
 				}
-//				for (GraphCondition subNac : nac.getNegConjunct().getConditions()) {
-//					AspectEdge subNacEdgeImage;
-//					if (subNac instanceof MergeEmbargo) {
-//						subNacEdgeImage = createInjectionEdge((MergeEmbargo) subNac,
-//								nacNodeMap,
-//								EMBARGO);
-//					} else if (subNac instanceof EdgeEmbargo) {
-//						subNacEdgeImage = createNegationEdge((EdgeEmbargo) subNac,
-//								nacNodeMap,
-//								EMBARGO);
-//					} else {
-//						throw new FormatException(
-//								"Level 2 NACs must be merge or edge embargoes");
-//					}
-//					result.addEdge(subNacEdgeImage);
-//					nacGraph.addEdge(subNacEdgeImage);
-//				}
 				testConnected(nacGraph);
 			}
 		}
@@ -928,7 +909,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Mapping from the elements of the aspect graph representation
      * to the corresponding elements of the rule.
      */
-    private final Map<AspectNode,Node> graphToRuleMap;
+    private final NodeEdgeMap viewToRuleMap;
     /** Rule factory set for this rule. */
     private final SystemProperties properties;
 

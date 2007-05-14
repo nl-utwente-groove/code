@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeEdgeHashMap.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
+ * $Id: NodeEdgeHashMap.java,v 1.3 2007-05-14 18:52:01 rensink Exp $
  */
 package groove.graph;
 
@@ -20,14 +20,16 @@ package groove.graph;
  * Default implementation of a generic node-edge-map.
  * The implementation is based on two internally stored hash maps.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NodeEdgeHashMap extends GenericNodeEdgeHashMap<Node, Node, Edge, Edge> implements NodeEdgeMap {
+	/** Constructs a copy of another node-edge-map. */
 	public NodeEdgeHashMap(NodeEdgeMap other) {
 		nodeMap().putAll(other.nodeMap());
 		edgeMap().putAll(other.edgeMap());
 	}
 	
+	/** Constructs an initially empty node-edge-map. */
 	public NodeEdgeHashMap() {
 		// empty constructor
 	}

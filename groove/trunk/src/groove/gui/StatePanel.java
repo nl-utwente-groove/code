@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.14 2007-05-11 21:51:15 rensink Exp $
+ * $Id: StatePanel.java,v 1.15 2007-05-14 18:52:01 rensink Exp $
  */
 package groove.gui;
 
@@ -56,7 +56,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -99,14 +99,14 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      */
     public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
         stateJModelMap.clear();
-        graphJModelMap.clear();
+//        graphJModelMap.clear();
         selectedTransition = null;
         if (grammar == null || grammar.getStartGraph() == null) {
-            jGraph.setModel(GraphJModel.EMPTY_JMODEL);
+            jGraph.setModel(startGraphJModel = AspectJModel.EMPTY_JMODEL);
             setEnabled(false);
         } else {
         	AspectualGraphView startGraph = grammar.getStartGraph();
-            jGraph.setModel(getGraphJModel(startGraph));
+            jGraph.setModel(startGraphJModel = createGraphJModel(startGraph));
             setEnabled(true);
         }
         refreshStatus();
@@ -238,12 +238,17 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      */
     private GraphJModel getStateJModel(GraphState state) {
         GraphJModel result = stateJModelMap.get(state);
-        if (result == null) {
-            result = computeStateJModel(state);
-            assert result != null;
-            stateJModelMap.put(state, result);
-        }
-        return result;
+    	if (state == simulator.getCurrentGTS().startState()) {
+    		result = startGraphJModel;
+    	} else {
+    		result = stateJModelMap.get(state);
+			if (result == null) {
+				result = computeStateJModel(state);
+				assert result != null;
+				stateJModelMap.put(state, result);
+			}
+		}
+		return result;
     }
 
 	/**
@@ -280,22 +285,22 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 		result.setName(state.toString());
 		return result;
 	}
-
-    /**
-     * Returns a graph model for a given state graph. The graph model is retrieved from
-     * stateJModelMap; if there is no image for the requested state then one is created.
-     */
-    private GraphJModel getGraphJModel(AspectualGraphView graph) {
-        GraphJModel result = graphJModelMap.get(graph);
-        if (result == null) {
-            result = createGraphJModel(graph);
-            graphJModelMap.put(graph, result);
-        }
-        return result;
-    }
+//
+//    /**
+//     * Returns a graph model for a given state graph. The graph model is retrieved from
+//     * stateJModelMap; if there is no image for the requested state then one is created.
+//     */
+//    private GraphJModel getGraphJModel(AspectualGraphView graph) {
+//        GraphJModel result = graphJModelMap.get(graph);
+//        if (result == null) {
+//            result = createGraphJModel(graph);
+//            graphJModelMap.put(graph, result);
+//        }
+//        return result;
+//    }
 
 	/** Creates a j-model for a given graph view. */
-	private GraphJModel createGraphJModel(AspectualGraphView graph) {
+	private AspectJModel createGraphJModel(AspectualGraphView graph) {
 		return new AspectJModel(graph, getOptions());
 	}
 
@@ -314,6 +319,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 	private void copyLayout(GraphJModel oldStateJModel, GraphJModel newStateJModel, NodeEdgeMap derivationMap) {
 	    for (Map.Entry<Node,Node> entry: derivationMap.nodeMap().entrySet()) {
 	        JCell sourceCell = oldStateJModel.getJCell(entry.getKey());
+	        assert sourceCell != null : "Source element "+entry.getKey()+" unknown";
 	        JCell targetCell = newStateJModel.getJCell(entry.getValue());
 	        assert targetCell != null : "Target element "+entry.getValue()+" unknown";
 	        Rectangle2D sourceBounds = GraphConstants.getBounds(sourceCell.getAttributes());
@@ -336,10 +342,15 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      * Mapping from states to the corresponding graph models.
      */
     private final Map<State,GraphJModel> stateJModelMap = new HashMap<State,GraphJModel>();
-    /**
-     * Mapping from graphs to the corresponding graph models.
+//    /**
+//     * Mapping from graphs to the corresponding graph models.
+//     */
+//    private final Map<AspectualGraphView,GraphJModel> graphJModelMap = new HashMap<AspectualGraphView,GraphJModel>();
+    /** 
+     * Model for the start graph, if any.
+     * We make this an {@link AspectJModel} so that remarks can be displayed.
      */
-    private final Map<AspectualGraphView,GraphJModel> graphJModelMap = new HashMap<AspectualGraphView,GraphJModel>();
+    private AspectJModel startGraphJModel;
     /**
      * The currently activated transition.
      * @invariant currentTransition.source() == stateJModel.graph()

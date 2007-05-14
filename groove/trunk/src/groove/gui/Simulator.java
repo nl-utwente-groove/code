@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.35 2007-05-14 10:39:34 rensink Exp $
+ * $Id: Simulator.java,v 1.36 2007-05-14 18:52:01 rensink Exp $
  */
 package groove.gui;
 
@@ -127,7 +127,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.35 $
+ * @version $Revision: 1.36 $
  */
 public class Simulator {
     /**
@@ -299,8 +299,6 @@ public class Simulator {
     public ApplyTransitionAction getApplyTransitionAction() {
     	if (applyTransitionAction == null) {
     		applyTransitionAction = new ApplyTransitionAction();
-    		addRefreshable(applyTransitionAction);
-            addAccelerator(applyTransitionAction);
     	}
         return applyTransitionAction;
     }
@@ -310,7 +308,6 @@ public class Simulator {
 		// lazily create the action
 		if (copyRuleAction == null) {
 			copyRuleAction = new CopyRuleAction();
-			addRefreshable(copyRuleAction);
 		}
 	    return copyRuleAction;
 	}
@@ -320,7 +317,6 @@ public class Simulator {
 		// lazily create the action
 		if (deleteRuleAction == null) {
 			deleteRuleAction = new DeleteRuleAction();
-			addRefreshable(deleteRuleAction);
 		}
 	    return deleteRuleAction;
 	}
@@ -330,7 +326,6 @@ public class Simulator {
 		// lazily create the action
 		if (editGraphAction == null) {
 			editGraphAction = new EditGraphAction();
-			addRefreshable(editGraphAction);
 		}
 	    return editGraphAction;
 	}
@@ -340,7 +335,6 @@ public class Simulator {
 		// lazily create the action
 		if (editRuleAction == null) {
 			editRuleAction = new EditRuleAction();
-			addRefreshable(editRuleAction);
 		}
 	    return editRuleAction;
 	}
@@ -350,7 +344,6 @@ public class Simulator {
 		// lazily create the action
 		if (editRulePropertiesAction == null) {
 			editRulePropertiesAction = new EditRulePropertiesAction();
-			addRefreshable(editRulePropertiesAction);
 		}
 	    return editRulePropertiesAction;
 	}
@@ -360,7 +353,6 @@ public class Simulator {
 		// lazily create the action
 		if (editSystemPropertiesAction == null) {
 			editSystemPropertiesAction = new EditSystemPropertiesAction();
-			addRefreshable(editSystemPropertiesAction);
 		}
 	    return editSystemPropertiesAction;
 	}
@@ -370,7 +362,6 @@ public class Simulator {
 		// lazily create the action
 		if (enableRuleAction == null) {
 			enableRuleAction = new EnableRuleAction();
-			addRefreshable(enableRuleAction);
 		}
 	    return enableRuleAction;
 	}
@@ -380,7 +371,6 @@ public class Simulator {
 		// lazily create the action
 		if (exportGraphAction == null) {
 			exportGraphAction = new ExportGraphAction(); 
-			addRefreshable(exportGraphAction);
 		}
 	    return exportGraphAction;
 	}
@@ -392,7 +382,6 @@ public class Simulator {
     	// lazily create the action
     	if (gotoStartStateAction == null) {
     		gotoStartStateAction = new GotoStartStateAction();
-    		addRefreshable(gotoStartStateAction);
     	}
         return gotoStartStateAction;
     }
@@ -402,7 +391,6 @@ public class Simulator {
     	// lazily create the action
     	if (loadStartGraphAction == null) {
     		loadStartGraphAction = new LoadStartGraphAction();
-    		addRefreshable(loadStartGraphAction);
     	}
         return loadStartGraphAction;
     }
@@ -412,7 +400,6 @@ public class Simulator {
     	// lazily create the action
     	if (loadGrammarAction == null) {
     		loadGrammarAction = new LoadGrammarAction();
-            addAccelerator(loadGrammarAction);
     	}
         return loadGrammarAction;
     }
@@ -431,7 +418,6 @@ public class Simulator {
 		// lazily create the action
 		if (newGraphAction == null) {
 			newGraphAction = new NewGraphAction();
-            addRefreshable(newGraphAction);
 		}
 	    return newGraphAction;
 	}
@@ -441,7 +427,6 @@ public class Simulator {
 		// lazily create the action
 		if (newRuleAction == null) {
 			newRuleAction = new NewRuleAction();
-            addRefreshable(newRuleAction);
 		}
 	    return newRuleAction;
 	}
@@ -461,7 +446,6 @@ public class Simulator {
 	public Action getProvideCTLFormulaAction() {
 		if (provideCTLFormulaAction == null) {
 			provideCTLFormulaAction = new ProvideCTLFormulaAction();
-    		addRefreshable(provideCTLFormulaAction);
 		}
 		return provideCTLFormulaAction;
 	}
@@ -480,8 +464,6 @@ public class Simulator {
     	// lazily create the action
     	if (refreshGrammarAction == null) {
     		refreshGrammarAction = new RefreshGrammarAction();
-            addAccelerator(refreshGrammarAction);
-    		addRefreshable(refreshGrammarAction);
     	}
         return refreshGrammarAction;
     }
@@ -491,7 +473,6 @@ public class Simulator {
 		// lazily create the action
 		if (renameRuleAction == null) {
 			renameRuleAction = new RenameRuleAction();
-			addRefreshable(renameRuleAction);
 		}
 	    return renameRuleAction;
 	}
@@ -501,7 +482,6 @@ public class Simulator {
 		// lazily create the action
 		if (startSimulationAction == null) {
 			startSimulationAction = new StartSimulationAction();
-			addRefreshable(startSimulationAction);
 		}
 	    return startSimulationAction;    	
 	}
@@ -511,9 +491,17 @@ public class Simulator {
     	// lazily create the action
     	if (saveGraphAction == null) {
     		saveGraphAction = new SaveGraphAction();
-    		addRefreshable(saveGraphAction);
     	}
         return saveGraphAction;
+    }
+
+	/** Returns the graph save action permanently associated with this simulator. */
+    public SaveGrammarAction getSaveGrammarAction() {
+    	// lazily create the action
+    	if (saveGrammarAction == null) {
+    		saveGrammarAction = new SaveGrammarAction();
+    	}
+        return saveGrammarAction;
     }
 
     /** Returns the undo action permanently associated with this simulator. */
@@ -670,19 +658,40 @@ public class Simulator {
     }
 
 	/**
+     * Saves the current grammar to a given file.
+     * @param grammarLoader the loader to be used
+     * @param grammarFile the grammar file to be used
+     */
+    private void doSaveGrammar(AspectualViewGps grammarLoader, File grammarFile) {
+        try {
+        	grammarLoader.marshal(getCurrentGrammar(), grammarFile);
+            // now we know loading succeeded, we can set the current names & files
+            currentGrammarFile = grammarFile;
+            currentGrammarLoader = grammarLoader;
+        	getStateFileChooser().setCurrentDirectory(currentGrammarFile);
+        	AspectualGraphView startGraph = getCurrentGrammar().getStartGraph();
+            if (startGraph != null) {
+            	getStateFileChooser().setSelectedFile(new File(startGraph.getName()));
+            } else {
+            	getStateFileChooser().setSelectedFile(new File(""));
+            }
+            getGrammarFileChooser().setSelectedFile(grammarFile);
+        } catch (IOException exc) {
+            showErrorDialog("Error while saving grammar to " + grammarFile, exc);
+        } 
+    }
+
+	/**
      * Sets the contents of a given file as start state. This results in a reset of the LTS.
      */
     private void doLoadStartGraph(File file) {
-        try {
+    	try {
             AspectGraph aspectStartGraph = graphLoader.unmarshalGraph(file);
             AspectualGraphView startGraph = new AspectualGraphView(aspectStartGraph);
             getCurrentGrammar().setStartGraph(startGraph);
             setGrammar(getCurrentGrammar());
         } catch (IOException exc) {
-            showErrorDialog("Could not load start graph from " + file.getName(),
-                exc);
-        } catch (FormatException exc) {
-        	showErrorDialog("Graph format error in "+file.getName(), exc);
+            showErrorDialog("Could not load start graph from " + file.getName(), exc);
         }
     }
     
@@ -1499,13 +1508,13 @@ public class Simulator {
     /**
      * Sets the title of the frame to a given title.
      */
-    protected void setTitle() {
+    private void setTitle() {
     	StringBuffer title = new StringBuffer();
     	if (getCurrentGrammar() != null && getCurrentGrammar().getName() != null) {
     		title.append(getCurrentGrammar().getName());
     		AspectualGraphView startGraph = getCurrentGrammar().getStartGraph();
     		if (startGraph != null) {
-    			title.append("/");
+    			title.append(TITLE_NAME_SEPARATOR);
     			title.append(startGraph.getName());
     		}
     		title.append(" - ");
@@ -1869,6 +1878,10 @@ public class Simulator {
 	 * The state save action permanently associated with this simulator. 
 	 */
 	private SaveGraphAction saveGraphAction;
+	/**
+	 * The grammar save action permanently associated with this simulator. 
+	 */
+	private SaveGrammarAction saveGrammarAction;
 
 	/** The action to start a new simulation. */
     private StartSimulationAction startSimulationAction;
@@ -1918,6 +1931,11 @@ public class Simulator {
      */
     static private final String NEW_RULE_NAME = "newRule";
 
+    /**
+     * Separator between grammar name and start graph name in the frame title.
+     */
+    private static final String TITLE_NAME_SEPARATOR = "@";
+    
     /** Name of this application. */
     private static final String APPLICATION_NAME = "Production Simulator";
 
@@ -2175,6 +2193,8 @@ public class Simulator {
         ApplyTransitionAction() {
             super(Options.APPLY_TRANSITION_ACTION_NAME);
             putValue(Action.ACCELERATOR_KEY, Options.APPLY_KEY);
+    		addRefreshable(this);
+            addAccelerator(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -2189,6 +2209,7 @@ public class Simulator {
     private class CopyRuleAction extends AbstractAction implements Refreshable {
     	CopyRuleAction() {
     		super(Options.COPY_RULE_ACTION_NAME);
+    		addRefreshable(this);
     	}
     	
 		public void refresh() {
@@ -2211,6 +2232,7 @@ public class Simulator {
     		super(Options.DELETE_RULE_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.DELETE_KEY);
             addAccelerator(this);
+            addRefreshable(this);
     	}
     	
 		public void refresh() {
@@ -2233,6 +2255,7 @@ public class Simulator {
     	/** Constructs an instance of the action. */
         EditGraphAction() {
             super(Options.EDIT_GRAPH_ACTION_NAME);
+            addRefreshable(this);
         }
 
         /**
@@ -2269,6 +2292,7 @@ public class Simulator {
     private class EditRulePropertiesAction extends AbstractAction implements Refreshable {
     	EditRulePropertiesAction() {
     		super(Options.RULE_PROPERTIES_ACTION_NAME);
+    		addRefreshable(this);
     	}
     	
 		public void refresh() {
@@ -2297,6 +2321,7 @@ public class Simulator {
     	/** Constructs an instance of the action. */
         EditRuleAction() {
             super(Options.EDIT_RULE_ACTION_NAME);
+            addRefreshable(this);
         }
 
         /**
@@ -2341,6 +2366,7 @@ public class Simulator {
     	/** Constructs an instance of the action. */
         EditSystemPropertiesAction() {
             super(Options.SYSTEM_PROPERTIES_ACTION_NAME);
+            addRefreshable(this);
         }
         
         /** 
@@ -2387,6 +2413,7 @@ public class Simulator {
         ExportGraphAction() {
             super(Options.EXPORT_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
+            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -2435,6 +2462,7 @@ public class Simulator {
     private class EnableRuleAction extends AbstractAction implements Refreshable {
     	EnableRuleAction() {
     		super(Options.DISABLE_ACTION_NAME);
+    		addRefreshable(this);
     	}
     	
 		public void refresh() {
@@ -2501,6 +2529,7 @@ public class Simulator {
         GotoStartStateAction() {
             super(Options.GOTO_START_STATE_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
+            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -2520,6 +2549,7 @@ public class Simulator {
     	/** Constructs an instance of the action. */
         LoadStartGraphAction() {
             super(Options.LOAD_START_STATE_ACTION_NAME);
+            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -2546,6 +2576,7 @@ public class Simulator {
         LoadGrammarAction() {
             super(Options.LOAD_GRAMMAR_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.OPEN_KEY);
+            addAccelerator(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -2598,6 +2629,7 @@ public class Simulator {
     private class NewGraphAction extends AbstractAction implements Refreshable {
     	NewGraphAction() {
     		super(Options.NEW_GRAPH_ACTION_NAME);
+    		addRefreshable(this);
     	}
     	
 		public void actionPerformed(ActionEvent e) {
@@ -2605,7 +2637,6 @@ public class Simulator {
             GraphInfo.setName(newGraph, NEW_GRAPH_NAME);
             GraphInfo.setGraphRole(newGraph);
             EditorDialog dialog = showEditorDialog(newGraph);
-//        	Graph editResult = doEdit(newGraph, true);
             if (dialog.isOK()) {
                 newGraph = dialog.toPlainGraph();
             }
@@ -2624,6 +2655,7 @@ public class Simulator {
     private class NewRuleAction extends AbstractAction implements Refreshable {
     	NewRuleAction() {
     		super(Options.NEW_RULE_ACTION_NAME);
+    		addRefreshable(this);
     	}
     	
 		public void actionPerformed(ActionEvent e) {
@@ -2655,6 +2687,7 @@ public class Simulator {
     	ProvideCTLFormulaAction() {
     		super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME);
     		setEnabled(true);
+    		addRefreshable(this);
     	}
 
     	public void actionPerformed(ActionEvent evt) {
@@ -2696,6 +2729,8 @@ public class Simulator {
         RefreshGrammarAction() {
             super(Options.REFRESH_GRAMMAR_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.REFRESH_KEY);
+            addAccelerator(this);
+            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
@@ -2712,6 +2747,7 @@ public class Simulator {
     private class RenameRuleAction extends AbstractAction implements Refreshable {
     	RenameRuleAction() {
     		super(Options.RENAME_RULE_ACTION_NAME);
+    		addRefreshable(this);
     		/* The F2-accelerator is not working, but I do not know why 
             putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
             addAccelerator(this);
@@ -2743,26 +2779,16 @@ public class Simulator {
         SaveGrammarAction() {
             super(Options.SAVE_GRAMMAR_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.SAVE_KEY);
+            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent evt) {
-            // initialize current directory if necessary
-            getGrammarFileChooser().rescanCurrentDirectory();
-
-            int result = getGrammarFileChooser().showOpenDialog(getFrame());
-            // now load, if so required
+            int result = getGrammarFileChooser().showSaveDialog(getFrame());
+            // now save, if so required
             if (result == JFileChooser.APPROVE_OPTION) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
-                // currentDirectory = selectedFile.getAbsoluteFile().getParentFile();
-                try {
-                    javax.swing.filechooser.FileFilter filterUsed = getGrammarFileChooser()
-                            .getFileFilter();
-                    AspectualViewGps saver = grammarLoaderMap.get(filterUsed);
-                    saver.marshal(getCurrentGrammar(), selectedFile);
-                    currentGrammarFile = selectedFile;
-                } catch (IOException exc) {
-                    showErrorDialog("Error while exporting to " + selectedFile, exc);
-                }
+                FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
+                doSaveGrammar(grammarLoaderMap.get(filterUsed), selectedFile);
             }
         }
 
@@ -2781,6 +2807,7 @@ public class Simulator {
         SaveGraphAction() {
             super(Options.SAVE_ACTION_NAME);
             putValue(ACCELERATOR_KEY, Options.SAVE_GRAPH_KEY);
+            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent e) {
@@ -2816,6 +2843,7 @@ public class Simulator {
         StartSimulationAction() {
             super(Options.START_SIMULATION_ACTION_NAME);
             putValue(Action.ACCELERATOR_KEY, Options.START_SIMULATION_KEY);
+            addRefreshable(this);
         }
 
         public void actionPerformed(ActionEvent e) {
