@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.10 2007-05-14 18:51:57 rensink Exp $
+ * $Id: AspectJModel.java,v 1.11 2007-05-15 16:46:44 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -61,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -333,9 +333,13 @@ public class AspectJModel extends GraphJModel {
             Collection<String> labels = getLabelSet();
             StringBuffer res = new StringBuffer(ROLE_NAMES.get(role));
             res.append(" node ");
-            res.append(strongTag.on(getNodeIdentity()));
+            String nodeIdentity = getNodeIdentity();
+            if (nodeIdentity != null) {
+                res.append(strongTag.on(getNodeIdentity()));
+            	res.append(" ");
+            }
             if (!labels.isEmpty()) {
-                res.append(labels.size() == 1 ? " with self-edge " : " with self-edges ");
+                res.append(labels.size() == 1 ? "with self-edge " : "with self-edges ");
                 res.append(Groove.toString(strongTag.on(labels.toArray(), true), "", "", ", ", " and "));
             }
             res.append("<br>"+ROLE_DESCRIPTIONS.get(role));

@@ -1,4 +1,4 @@
-/* $Id: AspectualGraphView.java,v 1.7 2007-05-14 18:52:03 rensink Exp $ */
+/* $Id: AspectualGraphView.java,v 1.8 2007-05-15 16:46:49 rensink Exp $ */
 package groove.view;
 
 import groove.algebra.Constant;
@@ -43,10 +43,8 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	 */
 	public AspectualGraphView(AspectGraph view) {
 		this.view = view;
-		this.name = GraphInfo.getName(view);
-		if (name == null) {
-			throw new IllegalArgumentException("View has no name.");
-		}
+		String name = GraphInfo.getName(view);
+		this.name = name == null ? "" : name;
         Graph model;
         NodeEdgeMap viewToModelMap;
         List<String> errors;
