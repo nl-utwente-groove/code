@@ -23,7 +23,7 @@ import javax.swing.WindowConstants;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class EditorDialog extends JDialog {
     /**
@@ -152,7 +152,7 @@ public class EditorDialog extends JDialog {
     	if (options.isSelected(Options.PREVIEW_ON_CLOSE_OPTION) && !editor.handlePreview(null)) {
     		return;
     	} else if (hasErrors()) {
-        	JOptionPane.showMessageDialog(this, "Cannot use graph with syntax errors");
+        	JOptionPane.showMessageDialog(this, String.format("Cannot use %s with syntax errors", editor.getRole(false)));
         } else {
             ok = true;
         	dispose();
@@ -168,7 +168,7 @@ public class EditorDialog extends JDialog {
         ok = false;
         if (! hasErrors() && isModified()) {
             int confirm = JOptionPane.showConfirmDialog(this,
-                "Use edited graph?",
+                String.format("Use edited %s?", editor.getRole(false)),
                 null,
                 JOptionPane.YES_NO_CANCEL_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {

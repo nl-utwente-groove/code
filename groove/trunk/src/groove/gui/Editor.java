@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.29 2007-05-14 18:52:01 rensink Exp $
+ * $Id: Editor.java,v 1.30 2007-05-15 11:22:23 rensink Exp $
  */
 package groove.gui;
 
@@ -95,7 +95,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.29 $ $Date: 2007-05-14 18:52:01 $
+ * @version $Revision: 1.30 $ $Date: 2007-05-15 11:22:23 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -674,7 +674,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * with the first letter capitalised on demand.
      * @param upper if <code>true</code>, the first letter is capitalised
      */
-    private String getRole(boolean upper) {
+    String getRole(boolean upper) {
     	if (role == null) {
     		role = Groove.GRAPH_ROLE;
     	}
@@ -1707,7 +1707,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.29 $
+     * @version $Revision: 1.30 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */
