@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.11 2007-05-15 16:46:44 rensink Exp $
+ * $Id: AspectJModel.java,v 1.12 2007-05-18 08:55:00 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,6 +28,7 @@ import static groove.view.aspect.RuleAspect.READER;
 import static groove.view.aspect.RuleAspect.REMARK;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
+import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
@@ -61,7 +62,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -92,6 +93,14 @@ public class AspectJModel extends GraphJModel {
 	public AspectGraph graph() {
 		return (AspectGraph) super.graph();
 	}
+
+    /** 
+     * This implementation retrieves the role from the graph itself.
+     */
+    @Override
+    public String getRole() {
+    	return GraphInfo.getRole(graph());
+    }
 
     /** Returns the view on which this model is based. */
     public AspectualView<?> getView() {
@@ -183,7 +192,7 @@ public class AspectJModel extends GraphJModel {
     protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
         assert !edgeSet.isEmpty() : String.format("Underlying edge set should not be empty");
         Edge ruleEdge = edgeSet.iterator().next();
-        assert ruleEdge instanceof AspectEdge : "Rule model cannot include non-RuleEdge " + ruleEdge;
+        assert ruleEdge instanceof AspectEdge : "Rule model cannot include non-aspect edge " + ruleEdge;
         AspectValue role = role((AspectEdge) ruleEdge);
         AttributeMap result = (AttributeMap) RULE_EDGE_ATTR.get(role).clone();
         if (RegExprLabel.isEmpty(ruleEdge.label())) {

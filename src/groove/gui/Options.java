@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.24 2007-05-14 10:39:34 rensink Exp $
+ * $Id: Options.java,v 1.25 2007-05-18 08:55:26 rensink Exp $
  */
 package groove.gui;
 
@@ -37,7 +37,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class Options {
 
@@ -326,6 +326,8 @@ public class Options {
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
     /** Show remark nodes and edges. */
     static public final String SHOW_REMARKS_OPTION = "Show remarks";
+    /** Show background colour for nodes. */
+    static public final String SHOW_BACKGROUND_OPTION = "Show node background colour";
 //    /** Parse attributed graphs option */
 //    static public final String IS_ATTRIBUTED_OPTION = "Parse as attributed graph";
     /** Always start simulation after changes. */
@@ -405,6 +407,7 @@ public class Options {
 		addCheckbox(SHOW_ANCHORS_OPTION);
 		addCheckbox(SHOW_ASPECTS_OPTION);
 		addCheckbox(SHOW_REMARKS_OPTION);
+		addCheckbox(SHOW_BACKGROUND_OPTION);
 		addCheckbox(VERTEX_LABEL_OPTION);
 		addCheckbox(SHOW_STATE_IDS_OPTION);
 //		addCheckbox(IS_ATTRIBUTED_OPTION);

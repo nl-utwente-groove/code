@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.6 2007-05-11 21:51:33 rensink Exp $
+ * $Id: JGraph.java,v 1.7 2007-05-18 08:55:00 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -35,11 +35,15 @@ import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -61,7 +65,9 @@ import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
+import org.jgraph.graph.DefaultGraphModel;
 import org.jgraph.graph.DefaultGraphSelectionModel;
+import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.GraphModel;
@@ -72,7 +78,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-05-11 21:51:33 $
+ * @version $Revision: 1.7 $ $Date: 2007-05-18 08:55:00 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
@@ -254,19 +260,35 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     private class MyGraphLayoutCache extends GraphLayoutCache {   
     	/** Constructs an instance of the cache. */
         public MyGraphLayoutCache() {
-            super(JGraph.this.getModel(), new JCellViewFactory(JGraph.this));
+            super(JGraph.this.getModel(), new JCellViewFactory(JGraph.this), true);
+            setSelectsLocalInsertedCells(false);
         }
-//        
-//        /** 
-//         * After calling the super method, sets all roots to visible.
-//         * This is necessary because the cache is partial.
-//         */
-//        @Override
-//		public void setModel(GraphModel model) {
-//        	initializing = true;
-//			super.setModel(model);
-//			initializing = false;
-//		}
+        
+        /** 
+         * After calling the super method, sets all roots to visible.
+         * This is necessary because the cache is partial.
+         */
+        @Override
+		public void setModel(GraphModel model) {
+			super.setModel(model);				
+			Object[] cells = DefaultGraphModel.getRoots(getModel());
+			CellView[] cellViews = getMapping(cells, true);
+			insertViews(cellViews);
+			// Update PortView Cache and Notify Observers
+			updatePorts();
+			cellViewsChanged(getRoots());
+		}
+
+		@Override
+		public boolean isVisible(Object cell) {
+			if (cell instanceof JCell) {
+				return ((JCell) cell).isVisible();
+			} else if (cell instanceof DefaultPort) {
+				return isVisible(((DefaultPort) cell).getParent());
+			} else {
+				return super.isVisible(cell);
+			}
+		}
 
 		/**
          * Overrides the method so {@link JModel.RefreshEdit}s are not
@@ -277,19 +299,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             if (!(change instanceof JModel.RefreshEdit)) {
                 super.graphChanged(change);
             }
+//            Object[] inserted = change.getInserted();
+//            if (inserted != null) {
+//            	setVisible(inserted, true);
+//            }
         }
-//
-//        /** Also returns <code>true</code> if a new model is being loaded. */
-//		@Override
-//		public boolean isPartial() {
-//			return !initializing && super.isPartial();
-//		}
-//        
-//		/** 
-//		 * Flag indicating that a new model is being loaded,
-//		 * so that for the moment the cache should not be partial.
-//		 */
-//        private boolean initializing;
     }
     
     /**
@@ -507,6 +521,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     public void graphChanged(GraphModelEvent evt) {
         if (evt.getSource() == getModel() && evt.getChange() instanceof JModel.RefreshEdit) {
             Collection<JCell> refreshedJCells = ((JModel.RefreshEdit) evt.getChange()).getRefreshedJCells();
+            Collection<JCell> visibleCells = new ArrayList<JCell>();
+            Collection<JCell> invisibleCells = new ArrayList<JCell>();
             for (JCell jCell: refreshedJCells) {
             	AttributeMap transientAttributes = getModel().createTransientJAttr(jCell);
                 CellView jView = getGraphLayoutCache().getMapping(jCell, false);
@@ -516,7 +532,14 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 if (getModel().isGrayedOut(jCell)) {
                     getSelectionModel().removeSelectionCell(jCell);
                 }
+            	if (jCell.isVisible()) {
+            		visibleCells.add(jCell);
+            	} else {
+            		invisibleCells.add(jCell);
+            	}
             }
+        	getGraphLayoutCache().setVisible(visibleCells.toArray(), invisibleCells.toArray());
+
         }
     }
 

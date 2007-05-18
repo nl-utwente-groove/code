@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.11 2007-05-14 18:51:57 rensink Exp $
+ * $Id: GraphJModel.java,v 1.12 2007-05-18 08:55:00 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -35,6 +35,7 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
+import groove.util.Groove;
 
 import java.awt.Rectangle;
 import java.util.Collection;
@@ -52,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
 	/** Dummy LTS model. */
@@ -147,6 +148,14 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 		}
     	return result;
 	}
+    
+    /** 
+     * Returns the role of the underlying graph. 
+     * This implementation retrieves the role from the graph itself.
+     */
+    public String getRole() {
+    	return Groove.GRAPH_ROLE;
+    }
 
 	/**
      * Returns the underlying Graph of this GraphModel.
@@ -350,7 +359,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 		// set the show-aspect value locally, to make sure of correct dispay
 		setShowLocalAspects(true);
 		Graph result = super.toPlainGraph();
-		GraphInfo.setRole(result, GraphInfo.getRole(graph()));
+		GraphInfo.setRole(result, getRole());
 		setShowLocalAspects(false);
 		return result;
 	}
@@ -558,21 +567,19 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	/**
 	 * If the edge is visible, tries to create the attributes based on the set of edges contained in the j-edge.
 	 * Calls the super method only if this fails, i.e., if #createJEdge.
-	 * If the edge is invisible, reteurns {@link JAttr#INVISIBLE_ATTR}.
-	 * @see #createJEdgeAttr(Set)
 	 * @see GraphJVertex#isVisible()
 	 */
 	@Override
 	final protected AttributeMap createJEdgeAttr(JEdge jEdge) {
 		AttributeMap result;
-		if (jEdge.isVisible()) {
+//		if (jEdge.isVisible()) {
 			result = createJEdgeAttr(((GraphJEdge) jEdge).getEdgeSet());
 			if (result == null) {
 				result = super.createJEdgeAttr(jEdge);
 			}
-		} else {
-			result = JAttr.INVISIBLE_ATTR;
-		}
+//		} else {
+//			result = JAttr.INVISIBLE_ATTR;
+//		}
 		return result;
 	}
 	
@@ -588,21 +595,21 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	/**
 	 * If the vertex is visible, tries to create the attributes based on the node contained in the j-vertex.
 	 * Calls the super method only if this fails.
-	 * If the vertex is invisible, reteurns {@link JAttr#INVISIBLE_ATTR}.
-	 * @see GraphJVertex#isVisible()
 	 * @see #createJVertexAttr(JVertex)
 	 */
 	@Override
 	final protected AttributeMap createJVertexAttr(JVertex jVertex) {
 		AttributeMap result;
-		if (jVertex.isVisible()) {
+//		if (jVertex.isVisible()) {
 			result = createJVertexAttr(((GraphJVertex) jVertex).getNode());
 			if (result == null) {
 				result = super.createJVertexAttr(jVertex);
+			} else {
+				maybeResetBackground(result);
 			}
-		} else {
-			result = JAttr.INVISIBLE_ATTR;
-		}
+//		} else {
+//			result = JAttr.INVISIBLE_ATTR;
+//		}
 		return result;
 	}
 
@@ -617,16 +624,16 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 		} 
         return result;
 	}
-
-	/** Returns an empty map if the cell is not visible. */
-	@Override
-	protected AttributeMap createTransientJAttr(JCell jCell) {
-		if (jCell.isVisible()) {
-			return super.createTransientJAttr(jCell);
-		} else {
-			return JAttr.INVISIBLE_ATTR;
-		}
-	}
+//
+//	/** Returns an empty map if the cell is not visible. */
+//	@Override
+//	protected AttributeMap createTransientJAttr(JCell jCell) {
+//		if (jCell.isVisible()) {
+//			return super.createTransientJAttr(jCell);
+//		} else {
+//			return JAttr.INVISIBLE_ATTR;
+//		}
+//	}
 
 	/**
      * Sets the transient variables (cells, attributes and connections) to fresh (empty) initial

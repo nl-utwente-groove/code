@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.9 2007-05-09 22:53:35 rensink Exp $
+ * $Id: JAttr.java,v 1.10 2007-05-18 08:55:00 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -42,9 +42,33 @@ import groove.view.aspect.RuleAspect;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class JAttr {
+	/** Percentage of white in the background colour. */
+	static private final int BACKGROUND_WHITEWASH = 90;
+	/** Maximum value of the colour dimensions. */
+	static private final int MAX_VALUE = 255;
+	/** 
+	 * Converts a colour dimension to a value that is whitewashed by {@link #BACKGROUND_WHITEWASH}
+	 * degrees.
+	 */
+	static private int whitewash(int value) {
+		int distance = MAX_VALUE - value;
+		return value + (distance * BACKGROUND_WHITEWASH / 100);
+	}
+	/** 
+	 * Converts a colour dimension to a value that is whitewashed by {@link #BACKGROUND_WHITEWASH}
+	 * degrees.
+	 */
+	static private Color whitewash(Color color) {
+    	int red = whitewash(color.getRed());
+    	int green = whitewash(color.getGreen());
+    	int blue = whitewash(color.getBlue());
+    	int alpha = whitewash(color.getAlpha());
+    	return new Color(red, green, blue, alpha);
+	}
+	
     /**
      * The linewidth used for edges and node borders.
      */
@@ -110,18 +134,18 @@ public class JAttr {
      * The standard jgraph attributes used for graying out nodes and edges.
      */
     static public final AttributeMap GRAYED_OUT_ATTR;
-
-    /** The color used for invisible cells. */
-    static public final Color INVISIBLE_COLOR = Colors.findColor("255 255 255 0");
-    /** The border used for invisible cells. */
-    static public final Border INVISIBLE_BORDER =
-        JAttr.createNodeBorder(new LineBorder(JAttr.INVISIBLE_COLOR, JAttr.DEFAULT_LINE_WIDTH), false);
-
-    /**
-     * The standard jgraph attributes used for nodes and edges that are 
-     * completely invisible (i.e., hidden).
-     */
-    static public final AttributeMap INVISIBLE_ATTR;
+//
+//    /** The color used for invisible cells. */
+//    static public final Color INVISIBLE_COLOR = Colors.findColor("255 255 255 0");
+//    /** The border used for invisible cells. */
+//    static public final Border INVISIBLE_BORDER =
+//        JAttr.createNodeBorder(new LineBorder(JAttr.INVISIBLE_COLOR, JAttr.DEFAULT_LINE_WIDTH), false);
+//
+//    /**
+//     * The standard jgraph attributes used for nodes and edges that are 
+//     * completely invisible (i.e., hidden).
+//     */
+//    static public final AttributeMap INVISIBLE_ATTR;
 
     /**
      * The standard jgraph attributes used for representing nodes.
@@ -156,7 +180,7 @@ public class JAttr {
         GraphConstants.setEndFill(defaultEdgeAttr, true);
         GraphConstants.setBeginFill(defaultEdgeAttr, true);
         GraphConstants.setBendable(defaultEdgeAttr, true);
-        GraphConstants.setBackground(defaultEdgeAttr, JAttr.DEFAULT_BACKGROUND);
+        GraphConstants.setBackground(defaultEdgeAttr, Color.WHITE);
         GraphConstants.setOpaque(defaultEdgeAttr, true);
         // GraphConstants.setLineStyle(EDGE_ATTR, GraphConstants.BEZIER);
         GraphConstants.setConnectable(defaultEdgeAttr, true);
@@ -187,17 +211,18 @@ public class JAttr {
 //        GraphConstants.setBounds(defaultNodeAttr, DEFAULT_NODE_BOUNDS);
         GraphConstants.setSizeable(defaultNodeAttr, false);
         GraphConstants.setBorder(defaultNodeAttr, JAttr.DEFAULT_BORDER);
+        GraphConstants.setBackground(defaultNodeAttr, JAttr.DEFAULT_BACKGROUND);
         DEFAULT_NODE_ATTR = defaultNodeAttr;
-
-        // invisibility
-        AttributeMap invisibleAttr = (AttributeMap) defaultNodeAttr.clone();
-        GraphConstants.setLineColor(invisibleAttr, JAttr.INVISIBLE_COLOR);
-        GraphConstants.setForeground(invisibleAttr, JAttr.INVISIBLE_COLOR);
-        GraphConstants.setBorder(invisibleAttr, JAttr.INVISIBLE_BORDER);
-        GraphConstants.setSelectable(invisibleAttr, false);
-//        GraphConstants.setMoveable(invisibleAttr, false);
-        GraphConstants.setOpaque(invisibleAttr, false);
-        INVISIBLE_ATTR = invisibleAttr;
+//
+//        // invisibility
+//        AttributeMap invisibleAttr = (AttributeMap) defaultNodeAttr.clone();
+//        GraphConstants.setLineColor(invisibleAttr, JAttr.INVISIBLE_COLOR);
+//        GraphConstants.setForeground(invisibleAttr, JAttr.INVISIBLE_COLOR);
+//        GraphConstants.setBorder(invisibleAttr, JAttr.INVISIBLE_BORDER);
+//        GraphConstants.setSelectable(invisibleAttr, false);
+////        GraphConstants.setMoveable(invisibleAttr, false);
+//        GraphConstants.setOpaque(invisibleAttr, false);
+//        INVISIBLE_ATTR = invisibleAttr;
     }
 
     /** Line width used for emphasized cells. */
@@ -350,6 +375,8 @@ public class JAttr {
 	        String background = Groove.getGUIProperty(RULE_PREFIXES.get(role) + "background");
 	        if (background != null) {
 	        	RULE_BACKGROUND.put(role, Colors.findColor(background));
+	        } else {
+	        	RULE_BACKGROUND.put(role, whitewash(RULE_COLOR.get(role)));
 	        }
 	        RULE_DASH.put(role,dash == null ? JAttr.NO_DASH : dash);
 	        RULE_BORDER.put(role,createNodeBorder(createRuleBorder(RULE_COLOR.get(role), RULE_WIDTH.get(role), RULE_DASH.get(role)), false));
