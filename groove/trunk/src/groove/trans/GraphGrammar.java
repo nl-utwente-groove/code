@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.15 2007-05-09 22:53:34 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.16 2007-05-18 08:55:28 rensink Exp $
  */
 package groove.trans;
 
@@ -30,26 +30,9 @@ import groove.view.FormatException;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2007-05-09 22:53:34 $
+ * @version $Revision: 1.16 $ $Date: 2007-05-18 08:55:28 $
  */
 public class GraphGrammar extends RuleSystem {   
-//    /**
-//     * Constructs a graph grammar on the basis of a given rule system,
-//     * start graph and name.
-//     * @param ruleSystem the underlying rule system
-//     * @param startGraph the start graph; if <code>null</code>, an empty graph is used
-//     * @param name the name of this grammar; may be <tt>null</tt> if the grammar is anonymous
-//     * @require ruleSystem != null
-//     * @ensure ruleSystem()==ruleSystem, 
-//     *         gts().nodeSet().size() == 1, gts().edgeSet().size() == 0,
-//     *         getStartGraph().equals(startGraph),
-//     *         <tt>getName().equals(name)</tt>
-//     */
-//    public GraphGrammar(RuleSystem ruleSystem, Graph startGraph) {
-//        super(ruleSystem);
-//        this.startGraph = startGraph;
-//    }
-//    
     /**
      * Constructs an anonymous graph grammar on the basis of a given rule system and
      * start graph.

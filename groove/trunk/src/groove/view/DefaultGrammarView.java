@@ -212,11 +212,15 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
 		} else {
 			try {
 				result.setStartGraph(getStartGraph().toModel());
-				result.setFixed();
 			} catch (FormatException exc) {
     			for (String error: exc.getErrors()) {
     				errors.add(String.format("Format error in start graph: %s", error));
     			}
+			}
+			try {
+				result.setFixed();
+			} catch (FormatException exc) {
+				errors.addAll(exc.getErrors()); 
 			}
 		}
 		if (errors.isEmpty()) {

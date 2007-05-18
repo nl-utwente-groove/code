@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.10 2007-05-08 23:12:29 rensink Exp $
+ * $Id: JModel.java,v 1.11 2007-05-18 08:55:00 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,6 +28,7 @@ import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
 
+import java.awt.Color;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,7 +60,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -67,7 +68,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.10 $
+     * @version $Revision: 1.11 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -86,7 +87,15 @@ abstract public class JModel extends DefaultGraphModel {
             return refreshedJCells;
         }
         
-        /** The set of cells that this event reports on refreshing. */
+        @Override
+		public Object[] getChanged() {
+        	if (changed == null) {
+        		changed = refreshedJCells.toArray();
+        	}
+        	return changed;
+		}
+
+		/** The set of cells that this event reports on refreshing. */
         private final Collection<JCell> refreshedJCells;
     }
     
@@ -489,14 +498,14 @@ abstract public class JModel extends DefaultGraphModel {
     protected AttributeMap getGrayedOutAttr() {
         return JAttr.GRAYED_OUT_ATTR;
     }
-
-    /**
-     * Returns the map of attribute changes needed to hide a jcell. 
-     * This implementation returns {@link JAttr#INVISIBLE_ATTR}. 
-     */
-    protected AttributeMap getInvisibleAttr() {
-        return JAttr.INVISIBLE_ATTR;
-    }
+//
+//    /**
+//     * Returns the map of attribute changes needed to hide a jcell. 
+//     * This implementation returns {@link JAttr#INVISIBLE_ATTR}. 
+//     */
+//    protected AttributeMap getInvisibleAttr() {
+//        return JAttr.INVISIBLE_ATTR;
+//    }
 
     /**
      * Collects the labels of a given j-vertex.
@@ -523,9 +532,20 @@ abstract public class JModel extends DefaultGraphModel {
      */
     protected AttributeMap createJVertexAttr(JVertex jVertex) {
         AttributeMap result = (AttributeMap) defaultNodeAttr.clone();
+        maybeResetBackground(result);
         return result;
     }
 
+    /** 
+     * Resets the background colour in a certain attribute to {@link Color#WHITE}
+     * if the options demand this.
+     */
+    protected void maybeResetBackground(AttributeMap attributes) {
+    	if (! options.isSelected(Options.SHOW_BACKGROUND_OPTION)) {
+    		GraphConstants.setBackground(attributes, Color.WHITE);
+    	}
+    }
+    
     /**
      * Returns a freshly cloned attribute map for a given jgraph edge. This implementation returns
      * the default attributes set at construction time.

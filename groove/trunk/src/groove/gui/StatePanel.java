@@ -12,12 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.15 2007-05-14 18:52:01 rensink Exp $
+ * $Id: StatePanel.java,v 1.16 2007-05-18 08:55:26 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
+import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -56,7 +57,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -74,6 +75,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_ASPECTS_OPTION);
         addRefreshListener(SHOW_ANCHORS_OPTION);
+        addRefreshListener(SHOW_REMARKS_OPTION);
         getJGraph().setToolTipEnabled(true);
         // make sure that emphasis due to selections in the label list
         // cause any selected transition to be deselected first
@@ -116,6 +118,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     	stateJModelMap.clear();
     	// take either the GTS start state or the grammar start graph as model
     	GraphJModel jModel = getStateJModel(gts.startState());
+    	assert jModel != null;
     	if (getJModel() != jModel) {
     		jGraph.setModel(jModel);
     	}

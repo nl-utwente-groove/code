@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: JGraphPanel.java,v 1.7 2007-05-08 23:12:26 rensink Exp $
+ * $Id: JGraphPanel.java,v 1.8 2007-05-18 08:55:26 rensink Exp $
  */
 package groove.gui;
 
@@ -37,7 +37,7 @@ import javax.swing.JSplitPane;
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
@@ -80,6 +80,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         if (statusBar != null) {
             add(statusBar, BorderLayout.SOUTH);
         }
+        addRefreshListener(Options.SHOW_BACKGROUND_OPTION);
     }
 
     /**

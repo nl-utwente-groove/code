@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.37 2007-05-14 19:52:23 rensink Exp $
+ * $Id: Simulator.java,v 1.38 2007-05-18 08:55:26 rensink Exp $
  */
 package groove.gui;
 
@@ -26,6 +26,7 @@ import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
+import static groove.gui.Options.SHOW_BACKGROUND_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
@@ -127,7 +128,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.37 $
+ * @version $Revision: 1.38 $
  */
 public class Simulator {
     /**
@@ -1233,9 +1234,10 @@ public class Simulator {
 	 */
 	private JMenuItem getEditItem() {
 		if (editGraphItem == null) {
+			editGraphItem = new JMenuItem();
 			// load the rule edit action, even though it is not user here
 			getEditRuleAction();
-			editGraphItem = new JMenuItem(getEditGraphAction());
+			getEditGraphAction();
 			editGraphItem.setAccelerator(Options.EDIT_KEY);
 		}
 		return editGraphItem;
@@ -1272,6 +1274,7 @@ public class Simulator {
         result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
     	result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
     	result.add(getOptions().getItem(SHOW_REMARKS_OPTION));
+    	result.add(getOptions().getItem(SHOW_BACKGROUND_OPTION));
     	result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
     	result.addSeparator();
     	result.add(getOptions().getItem(START_SIMULATION_OPTION));
@@ -1642,6 +1645,7 @@ public class Simulator {
     		options = new Options();
     		options.getItem(SHOW_REMARKS_OPTION).setSelected(true);
             options.getItem(SHOW_STATE_IDS_OPTION).setSelected(true);
+            options.getItem(SHOW_BACKGROUND_OPTION).setSelected(true);
             options.getItem(Options.PREVIEW_ON_CLOSE_OPTION).setSelected(true);
     	}
     	return options;
@@ -2284,10 +2288,10 @@ public class Simulator {
         	boolean enabled = getGraphPanel() == getStatePanel();
         	if (enabled != isEnabled()) {
 				setEnabled(enabled);
-				if (enabled) {
-					getEditItem().setAction(this);
-					getEditItem().setAccelerator(Options.EDIT_KEY);
-				}
+        	}
+        	if (enabled) {
+        		getEditItem().setAction(this);
+        		getEditItem().setAccelerator(Options.EDIT_KEY);
 			}
         }
 
@@ -2352,10 +2356,10 @@ public class Simulator {
         	boolean enabled = getCurrentRule() != null;
 			if (enabled != isEnabled()) {
 				setEnabled(enabled);
-				if (getGraphPanel() == getRulePanel()) {
-					getEditItem().setAction(this);
-					getEditItem().setAccelerator(Options.EDIT_KEY);
-				}
+			}
+			if (getGraphPanel() == getRulePanel()) {
+				getEditItem().setAction(this);
+				getEditItem().setAccelerator(Options.EDIT_KEY);
 			}
         }
 

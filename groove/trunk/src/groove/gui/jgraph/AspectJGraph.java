@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJGraph.java,v 1.4 2007-05-08 10:57:55 rensink Exp $
+ * $Id: AspectJGraph.java,v 1.5 2007-05-18 08:55:00 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -51,33 +51,30 @@ public class AspectJGraph extends JGraph {
 	public AspectJModel getModel() {
     	return (AspectJModel) super.getModel();
 	}
-
-    /**
-     * Propagates some types of changes from model to view. Reacts in particular to
-     * {@link JModel.RefreshEdit}-events: every refreshed cell with an empty attribute set gets its
-     * view attributes refreshed by a call to {@link JModel#createTransientJAttr(JCell)}; moreover, hidden cells
-     * are deselected. by a call to {@link JModel#createTransientJAttr(JCell)}.
-     * @see JModel.RefreshEdit#getRefreshedJCells()
-     */
-    @Override
-    public void graphChanged(GraphModelEvent evt) {
-    	super.graphChanged(evt);
-        if (evt.getSource() == getModel() && evt.getChange() instanceof JModel.RefreshEdit) {
-        	Set<JCell> remarkCells = new HashSet<JCell>();
-            for (JCell jCell: ((JModel.RefreshEdit) evt.getChange()).getRefreshedJCells()) {
-            	AspectElement elem = null;
-            	if (jCell instanceof AspectJModel.AspectJVertex) {
-            		elem = ((AspectJModel.AspectJVertex) jCell).getNode();
-            	} else if (jCell instanceof AspectJModel.AspectJEdge) {
-            		elem = ((AspectJModel.AspectJEdge) jCell).getEdge();
-            	}
-            	if (RuleAspect.isRemark(elem)) {
-            		remarkCells.add(jCell);
-            	}
-            }
-        	getGraphLayoutCache().setVisible(remarkCells.toArray(), simulator.getOptions().getItem(Options.SHOW_REMARKS_OPTION).isSelected());
-        }
-    }
+//
+//    /**
+//     * Propagates some types of changes from model to view. Reacts in particular to
+//     * {@link JModel.RefreshEdit}-events: every refreshed cell with an empty attribute set gets its
+//     * view attributes refreshed by a call to {@link JModel#createTransientJAttr(JCell)}; moreover, hidden cells
+//     * are deselected. by a call to {@link JModel#createTransientJAttr(JCell)}.
+//     * @see JModel.RefreshEdit#getRefreshedJCells()
+//     */
+//    @Override
+//    public void graphChanged(GraphModelEvent evt) {
+//    	super.graphChanged(evt);
+//        if (evt.getSource() == getModel() && evt.getChange() instanceof JModel.RefreshEdit) {
+//        	Set<JCell> visibleCells = new HashSet<JCell>();
+//        	Set<JCell> invisibleCells = new HashSet<JCell>();        	
+//            for (JCell jCell: ((JModel.RefreshEdit) evt.getChange()).getRefreshedJCells()) {
+//            	if (jCell.isVisible()) {
+//            		visibleCells.add(jCell);
+//            	} else {
+//            		invisibleCells.add(jCell);
+//            	}
+//            }
+//        	getGraphLayoutCache().setVisible(visibleCells.toArray(), invisibleCells.toArray());
+//        }
+//    }
 
     @Override
 	protected void fillPopupMenu(JPopupMenu result) {

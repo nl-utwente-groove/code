@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForestLayouter.java,v 1.3 2007-04-12 16:14:52 rensink Exp $
+ * $Id: ForestLayouter.java,v 1.4 2007-05-18 08:55:35 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -42,7 +42,7 @@ import org.jgraph.graph.EdgeView;
  * Layout action for JGraphs that creates a top-to-bottom
  * forest layout.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ForestLayouter extends AbstractLayouter {
 	/** Name of the layouter. */
@@ -128,7 +128,7 @@ public class ForestLayouter extends AbstractLayouter {
         	if (!(key instanceof JCell) || jmodel.isMoveable((JCell) key)) {
         		branchMap.put(cellLayoutable, branchSet);
         	}
-            if (key instanceof JCell) {
+            if (key instanceof JCell && ((JCell) key).isVisible()) {
                 // initialize the incoming edge count
                 int inEdgeCount = 0;
                 // calculate the incoming edge count and outgoing edge map
