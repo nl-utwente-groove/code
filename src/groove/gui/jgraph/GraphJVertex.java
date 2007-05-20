@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.8 2007-05-08 23:12:29 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.9 2007-05-20 07:17:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -27,6 +27,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Extends DefaultGraphCell to use a Node as user object but
@@ -36,8 +37,6 @@ import java.util.Set;
  * and a convenience method to retrieve it.
  */
 public class GraphJVertex extends JVertex {
-	/** HTML tag to make text italic. */
-    protected static Converter.HTMLTag italicTag = Converter.createHtmlTag("i");
     /**
      * Constructs a jnode on top of a graph node.
      * @param jModel the model in which this vertex exists
@@ -46,7 +45,7 @@ public class GraphJVertex extends JVertex {
      * If not, then labels can be used to represent self-edges
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    protected GraphJVertex(GraphJModel jModel, Node node, boolean vertexLabelled) {
+    GraphJVertex(GraphJModel jModel, Node node, boolean vertexLabelled) {
         this.jModel = jModel;
         this.node = node;
         this.vertexLabelled = vertexLabelled;
@@ -59,7 +58,7 @@ public class GraphJVertex extends JVertex {
      * Note that this may be null.
      * @ensure getUserObject() == node, labels().isEmpty()
      */
-    protected GraphJVertex(GraphJModel jModel, Node node) {
+    GraphJVertex(GraphJModel jModel, Node node) {
         this(jModel, node, false);
     }
 
@@ -72,7 +71,21 @@ public class GraphJVertex extends JVertex {
         return node;
     }
     
-    /**
+    /** 
+     * This method returns the actual graph node <i>modelled</i> by the vertex'
+     * internal node.
+     * For this implementation this is the same as {@link #getNode()}.
+     */
+    Node getActualNode() {
+    	return getNode();
+    }
+    
+    @Override
+	public boolean isVisible() {
+		return !isConstant() || jModel.isShowValueNodes();
+	}
+
+	/**
      * This implementation returns the node identity (set italic) if
      * required according to {@link #isShowNodeIdentity()}, followed by
      * the user object.
@@ -100,23 +113,14 @@ public class GraphJVertex extends JVertex {
     	return result.toString();
     }
 
-    /** 
-     * Callback mathod to yield a string description of the underlying 
-     * node, used for the node inscription in case node identities 
-     * are to be shown.
-     * The result may be <code>null</code>, if the node has no proper identity.
-     * This implementation delegates to <code>getNode().toString()</code>.
-     * @return A node descriptor, or <code>null</code> if the node has no proper identity
-     */
-    protected String getNodeIdentity() {
-    	return node.toString();
-    }
-    
     /**
      * Indicates if the text of this vertex should include the identity
      * of the underlying node.
+     * This implementation returns <code>true</code> if 
+     * the model indicates that node identities are to be shown.
+     * @see GraphJModel#isShowNodeIdentities()
      */
-    protected boolean isShowNodeIdentity() {
+    boolean isShowNodeIdentity() {
     	// delegate the question to the j-model
     	return jModel.isShowNodeIdentities();
     }
@@ -132,30 +136,63 @@ public class GraphJVertex extends JVertex {
 
 	/**
 	 * This implementation adds a constant identifier to the labels in
-	 * case the node is a non-variable ValueNode.
+	 * case the node is a non-variable ValueNode,
+	 * and adds attribute labels if so required.
 	 */
     @Override
 	public Collection<String> getLabelSet() {
-    	String valueLabel = null;
-    	if (getNode() instanceof ValueNode) {
-    		Constant value = ((ValueNode) getNode()).getConstant();
-    		if (value != null) {
-    			valueLabel = value.toString();
-    			if (jModel.isShowAspects()) {
-    				String prefix = AttributeAspect.getValue(value.algebra()).getPrefix();
-    				valueLabel = prefix+valueLabel;
-    			}
-    		}
-    	}
-    	if (valueLabel == null) {
-    		return super.getLabelSet();
-    	} else {
-    		// add the value label in front of the existing labels
-    		Collection<String> result = new ArrayList<String>();
-    		result.add(valueLabel);
+    	Collection<String> result;
+    	String constantLabel = getConstantLabel();
+		if (constantLabel == null) {
+    		result = super.getLabelSet();
+		} else {
+    		// add the constant label in front of the existing labels
+			result = new ArrayList<String>();
+    		result.add(constantLabel);
     		result.addAll(super.getLabelSet());
-    		return result;
     	}
+		// add value attributes, if the model specifies this
+		if (!jModel.isShowValueNodes()) {
+			result.addAll(getDataLabels());
+		}
+		return result;
+	}
+
+	/** 
+     * Returns a label derived from the constant represented by the actual node,
+     * or <code>null</code> if the actual node does not represent a constant. 
+     * Callback method used in {@link #getLabelSet()}.
+     */
+    String getConstantLabel() {
+    	if (isConstant()) {
+    		Constant constant = getConstant();
+    		StringBuffer valueLabel = new StringBuffer();
+			if (jModel.isShowAspects()) {
+				String prefix = AttributeAspect.getValue(constant.algebra()).getPrefix();
+				valueLabel.append(prefix);
+			}
+			valueLabel.append(constant);
+    		// add the value label in front of the existing labels
+    		return valueLabel.toString();
+    	} else {
+    		return null;
+    	}
+    }
+
+	/**
+	 * Returns an ordered set of labels derived from outgoing edges going to constants.
+	 */
+	Set<String> getDataLabels() {
+		Set<String> dataLabels = new TreeSet<String>();
+		for (Object edgeObject: getPort().getEdges()) {
+			GraphJEdge jEdge = (GraphJEdge) edgeObject;
+			if (jEdge.getSourceVertex() == this && jEdge.getTargetVertex().isConstant()) {
+				for (Edge edge: jEdge.getEdgeSet()) {
+					dataLabels.add(edge.label() + " = " + jEdge.getTargetVertex().getConstant());						
+				}
+			}
+		}
+		return dataLabels;
 	}
 
 	/** 
@@ -164,10 +201,16 @@ public class GraphJVertex extends JVertex {
      */
 	@Override
 	public String getLabel(Object object) {
-		return ((Edge) object).label().text();
+		Edge edge = (Edge) object;
+		String text = edge.label().text();
+		if (edge.opposite() == getNode()) {
+			return text;
+		} else {
+			GraphJVertex oppositeVertex = jModel.getJVertex(edge.opposite());
+			return text + " = " + oppositeVertex.getNodeIdentity();
+		}
 	}
 	
-
     /**
      * This implementation does nothing: setting the user object directly is
      * not the right way to go about it.
@@ -211,9 +254,52 @@ public class GraphJVertex extends JVertex {
         }
     }
 
+    /**
+     * Callback method to determine whether the underlying graph node 
+     * stores a constant value.
+     * @return <code>true</code> if {@link #getActualNode()} is a {@link ValueNode}
+     * storing a constant value.
+     * @see #getConstant()
+     */
+    boolean isConstant() {
+    	return (getActualNode() instanceof ValueNode) && ((ValueNode) getActualNode()).hasValue();
+    }
+    
+    /** 
+     * Callback method to retrieve the constant stored in the underlying graph
+     * node, in case the graph node is a constant value node.
+     * @see ValueNode#getConstant()
+     */
+    Constant getConstant() {
+    	if (getActualNode() instanceof ValueNode) {
+    		return ((ValueNode) getActualNode()).getConstant();
+    	} else {
+    		return null;
+    	}
+    }
+
+    /** 
+     * Callback method yielding a string description of the underlying 
+     * node, used for the node inscription in case node identities 
+     * are to be shown.
+     * If the node is a constant (see {@link #isConstant()}) the constant value
+     * is returned; otherwise this implementation delegates to <code>getNode().toString()</code>.
+     * The result may be <code>null</code>, if the node has no proper identity.
+     * @return A node descriptor, or <code>null</code> if the node has no proper identity
+     */
+    String getNodeIdentity() {
+    	if (isConstant()) {
+    		return getConstant().toString();
+    	} else if (getActualNode() == null) {
+    		return null;
+    	} else {
+    		return getActualNode().toString();
+    	}
+    }
+    
     /** This implementation includes the node number of the underlying node. */
     @Override
-	protected String getNodeDescription() {
+	String getNodeDescription() {
     	StringBuffer result = new StringBuffer("Node");
     	String id = getNodeIdentity();
     	if (id != null) {
@@ -238,4 +324,6 @@ public class GraphJVertex extends JVertex {
     private final boolean vertexLabelled;
     /** The graph node modelled by this jgraph node. */
     private final Node node;
+	/** HTML tag to make text italic. */
+    private static Converter.HTMLTag italicTag = Converter.createHtmlTag("i");
 }

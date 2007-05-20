@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SpringLayouter.java,v 1.3 2007-04-12 16:14:52 rensink Exp $
+ * $Id: SpringLayouter.java,v 1.4 2007-05-20 07:17:56 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -37,7 +37,7 @@ import org.jgraph.graph.PortView;
  * Action to set up the standard touchgraph layout algorithm on a given MyJGraph. Adapted from
  * <tt>jgraph.com.pad.Touch</tt>
  * @author Gaudenz Alder and Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class SpringLayouter extends AbstractLayouter {
 	/** Name of this layouter. */
@@ -296,7 +296,7 @@ public class SpringLayouter extends AbstractLayouter {
         List<Layoutable> edgeFragmentTargetList = new LinkedList<Layoutable>();
         for (int i = 0; i < jmodel.getRootCount(); i++) {
             JCell jCell = (JCell) jmodel.getRootAt(i);
-            if (jCell instanceof JEdge && !jmodel.isGrayedOut(jCell)) {
+            if (jCell instanceof JEdge && jCell.isVisible() && !jmodel.isGrayedOut(jCell)) {
                 EdgeView edgeView = (EdgeView) layoutCache.getMapping(jCell, false);
                 List<?> edgePoints = edgeView.getPoints();
                 for (int j = 0; j < edgePoints.size() - 1; j++) {

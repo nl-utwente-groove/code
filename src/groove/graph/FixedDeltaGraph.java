@@ -1,4 +1,4 @@
-/* $Id: FixedDeltaGraph.java,v 1.3 2007-04-29 09:22:27 rensink Exp $ */
+/* $Id: FixedDeltaGraph.java,v 1.4 2007-05-20 07:17:56 rensink Exp $ */
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
@@ -342,7 +342,7 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 			assert result;
 			if (nodeEdgeMap != null) {
 				Set<Edge> edges = nodeEdgeMap.put(elem, new HashSet<Edge>());
-				assert edges == null;
+				assert edges == null : String.format("Node %s already has incident edges %s", elem, edges);
 				freshNodeKeys.add(elem);
 			}
 			return result;

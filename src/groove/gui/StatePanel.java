@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.16 2007-05-18 08:55:26 rensink Exp $
+ * $Id: StatePanel.java,v 1.17 2007-05-20 07:17:54 rensink Exp $
  */
 package groove.gui;
 
@@ -20,6 +20,7 @@ import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -57,7 +58,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -76,6 +77,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         addRefreshListener(SHOW_ASPECTS_OPTION);
         addRefreshListener(SHOW_ANCHORS_OPTION);
         addRefreshListener(SHOW_REMARKS_OPTION);
+        addRefreshListener(SHOW_VALUE_NODES_OPTION);
         getJGraph().setToolTipEnabled(true);
         // make sure that emphasis due to selections in the label list
         // cause any selected transition to be deselected first
@@ -104,7 +106,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 //        graphJModelMap.clear();
         selectedTransition = null;
         if (grammar == null || grammar.getStartGraph() == null) {
-            jGraph.setModel(startGraphJModel = AspectJModel.EMPTY_JMODEL);
+            jGraph.setModel(startGraphJModel = AspectJModel.EMPTY_ASPECT_JMODEL);
             setEnabled(false);
         } else {
         	AspectualGraphView startGraph = grammar.getStartGraph();
@@ -169,7 +171,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
             selectedTransition = trans;
             Graph sourceGraph = trans.source().getGraph();
             // check if we're in the right state to display the derivation
-            if (!getJModel().graph().equals(sourceGraph)) {
+            if (!getJModel().getGraph().equals(sourceGraph)) {
                 // get a model for the new graph and set it
                 jGraph.setModel(getStateJModel(trans.source()));
             }
@@ -304,12 +306,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 
 	/** Creates a j-model for a given graph view. */
 	private AspectJModel createGraphJModel(AspectualGraphView graph) {
-		return new AspectJModel(graph, getOptions());
+		return AspectJModel.newInstance(graph, getOptions());
 	}
 
 	/** Creates a j-model for a given graph. */
 	private GraphJModel createGraphJModel(Graph graph) {
-		return new GraphJModel(graph, getOptions());
+		return GraphJModel.newInstance(graph, getOptions());
 	}
 
     /**

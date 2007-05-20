@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.12 2007-05-18 08:55:00 rensink Exp $
+ * $Id: GraphJModel.java,v 1.13 2007-05-20 07:17:49 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -53,13 +53,9 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
-	/** Dummy LTS model. */
-	static public final GraphJModel EMPTY_JMODEL = new GraphJModel();
-	/** Fixed empty attribute map. */
-
     /** 
      * Creates a new GraphJModel instance on top of a given Graph, with given
      * node and edge attributes, and an indication whether self-edges should be 
@@ -72,7 +68,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * If false, node labels are used to display self edges.
      * @require graph != null, nodeAttr != null, edgeAttr != null;
      */
-    public GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, Options options) {
+    GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, Options options) {
         // the model is to store attributes
         super(defaultNodeAttr, defaultEdgeAttr, options);
         // set the transient variables (cells, attributes and connections)
@@ -80,19 +76,15 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         this.graph = graph;
         LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(graph);
         this.layoutMap = layoutMap == null ? new LayoutMap<Node,Edge>() : layoutMap;
-        initializeTransients();
-        addNodeSet(graph.nodeSet());
-        addEdgeSet(graph.edgeSet());
-        doInsert();
-        GraphProperties graphProperties = GraphInfo.getProperties(graph, false);
-        if (graphProperties != null) {
-        	setProperties(graphProperties);
-        }
-        String name = GraphInfo.getName(graph);
-        if (name != null) {
-        	setName(name);
-        }
-        graph.addGraphListener(this);
+//        GraphProperties graphProperties = GraphInfo.getProperties(graph, false);
+//        if (graphProperties != null) {
+//        	setProperties(graphProperties);
+//        }
+//        String name = GraphInfo.getName(graph);
+//        if (name != null) {
+//        	setName(name);
+//        }
+//        graph.addGraphListener(this);
     }
 //
 //    /** 
@@ -116,27 +108,40 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @param graph the underlying Graph
      * @require graph != null;
      */
-    public GraphJModel(GraphShape graph, Options options) {
+    GraphJModel(GraphShape graph, Options options) {
         this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
     }
-
-    /** 
-     * Creates a new GraphJModel instance on top of a given Graph.
-     * @param graph the underlying Graph
-     * @require graph != null;
-     */
-    public GraphJModel(GraphShape graph) {
-        this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, new Options());
-    }
+//
+//    /** 
+//     * Creates a new GraphJModel instance on top of a given Graph.
+//     * @param graph the underlying Graph
+//     * @require graph != null;
+//     */
+//    public GraphJModel(GraphShape graph) {
+//        this(graph, new Options());
+//    }
 
     /**
      * Constructor for a dummy (empty) model. 
      */
-    protected GraphJModel() {
+    GraphJModel() {
     	this(AbstractGraph.EMPTY_GRAPH, null);
     }
-    
-    /** 
+//    
+//    /** 
+//	 * Initialises the graph j-model.
+//	 * This method should be called once, directly after the constructor.
+//	 */
+//	void init() {
+//        LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(graph);
+//        this.layoutMap = layoutMap == null ? new LayoutMap<Node,Edge>() : layoutMap;
+//        initializeTransients();
+//        addNodeSet(graph.nodeSet());
+//        addEdgeSet(graph.edgeSet());
+//        doInsert();
+//	}
+
+	/** 
      * If the name is not explicitly set, obtains the name of the underlying graph
      * as set in the graph properties.
      */
@@ -144,7 +149,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	public String getName() {
     	String result = super.getName();
     	if (result == null) {
-			result = GraphInfo.getName(graph());
+			result = GraphInfo.getName(getGraph());
 		}
     	return result;
 	}
@@ -158,15 +163,23 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
 
 	/**
+	 * Returns the underlying Graph of this GraphModel.
+	 * @ensure result != null
+	 * @deprecated Use {@link #getGraph()} instead
+	 */
+    @Deprecated
+	public GraphShape graph() {
+		return getGraph();
+	}
+
+	/**
      * Returns the underlying Graph of this GraphModel.
      * @ensure result != null
      */
-    public GraphShape graph() {
+    public GraphShape getGraph() {
         return graph;
     }
-
-    // ------------------------ COMMANDS -------------------------
-
+    
     /**
      * Loads in the underlying graph,
      * adding any nodes and edges not yet in this model.
@@ -175,6 +188,8 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * for instance for the sake of efficiency.
      */
     public void reload() {
+        // add the model as a graph listener
+        graph.removeGraphListener(this);
         // add nodes from Graph to GraphModel
         initializeTransients();
         Set<Node> addedNodeSet = new HashSet<Node>(graph.nodeSet());
@@ -357,10 +372,10 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	@Override
 	public Graph toPlainGraph() {
 		// set the show-aspect value locally, to make sure of correct dispay
-		setShowLocalAspects(true);
+		setLocalOptions(true);
 		Graph result = super.toPlainGraph();
 		GraphInfo.setRole(result, getRole());
-		setShowLocalAspects(false);
+		setLocalOptions(false);
 		return result;
 	}
 
@@ -382,33 +397,40 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * or an existing j-edge, if the edge can be represented by it.
      * Otherwise, it will be a new j-edge.
      */
-    protected JCell addEdge(Edge hyperEdge) {
+    protected JCell addEdge(Edge edge) {
         // for now we just support binary edges
-        if (hyperEdge.endCount() != 2) {
-            throw new IllegalArgumentException("Non-binary edge "+hyperEdge+" not supported");
+        if (edge.endCount() > 2) {
+            throw new IllegalArgumentException("Non-binary edge "+edge+" not supported");
         }
-        BinaryEdge edge = (BinaryEdge) hyperEdge;
-        Node source = edge.end(Edge.SOURCE_INDEX);
-        Node target = edge.end(Edge.TARGET_INDEX);
-        // self-edges are treated differently
-        if (target == source && !isVertexLabelled()) {
-            GraphJVertex jVertex = getJVertex(source);
-            // see if the edge is appropriate to the node
-            if (isLayoutCompatible(jVertex, edge) && jVertex.addSelfEdge(edge)) {
-                // yes, the edge could be added here; we're done
-                toJCellMap.putEdge(edge, jVertex);
-                return jVertex;
-            }
-        }
-        // maybe a j-edge between this source and target is already in the graph
-        for (Edge edgeBetween: graph().outEdgeSet(edge.source())) {
+		// see if the edge is appropriate to the node
+		if (isSourceCompatible(edge)) {
+			GraphJVertex jVertex = getJVertex(edge.source());
+			if (jVertex.addSelfEdge(edge)) {
+				// yes, the edge could be added here; we're done
+				toJCellMap.putEdge(edge, jVertex);
+				return jVertex;
+			}
+		}
+		return addBinaryEdge((BinaryEdge) edge);
+    }
+    
+	/**
+     * Creates a j-edge corresponding to a given binary graph edge.
+     * This may be an existing j-edge, if the edge can be represented by it.
+     * Otherwise, it will be a new j-edge.
+	 */
+	private GraphJEdge addBinaryEdge(BinaryEdge edge) {
+        Node source = edge.source();
+        Node target = edge.opposite();
+		// maybe a j-edge between this source and target is already in the graph
+        for (Edge edgeBetween: getGraph().outEdgeSet(source)) {
         	if (edgeBetween.opposite().equals(target)) {
 				// see if this edge is appropriate
 				JCell jEdge = getJCell(edgeBetween);
 				if (jEdge instanceof GraphJEdge && isLayoutCompatible((GraphJEdge) jEdge, edge) && ((GraphJEdge) jEdge).addEdge(edge)) {
 					// yes, the edge could be added here; we're done
 					toJCellMap.putEdge(edge, jEdge);
-					return jEdge;
+					return (GraphJEdge) jEdge;
 				}
 			}
         }
@@ -423,8 +445,28 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         assert targetPort != null : "No vertex for target node of "+edge;
         connections.connect(jEdge, sourceNode.getPort(), targetPort.getPort());
         return jEdge;
-    }
+	}
 
+    /**
+     * Tests if a given edge may be added to its source vertex.
+     */
+    protected boolean isSourceCompatible(Edge edge) {
+    	Node source = edge.source();
+    	Node target = edge.opposite();
+//    	if (!getOptions().isSelected(Options.SHOW_VALUE_NODES_OPTION) && getJVertex(target).isConstant()) {
+//    		return true;
+//    	}
+    	if (edge.endCount() == 1) {
+			return isLayoutCompatible(getJVertex(source), edge);
+		} 
+    	if (source == edge.opposite() && !isVertexLabelled()) {
+    		// see if the edge does not have explicit layout information
+    		return isLayoutCompatible(getJVertex(source), edge);
+    	}
+        // in all other cases, the edge is not source compatible
+    	return false;
+    }
+    
     /**
      * Tests if a given edge may be added to an existing jvertex,
      * as far as the available layout information is concerned.
@@ -664,7 +706,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     /**
 	 * Indicates whether aspect prefixes should be shown for nodes and edges.
 	 */
-	public boolean isShowNodeIdentities() {
+	boolean isShowNodeIdentities() {
 		return getOptionValue(Options.SHOW_NODE_IDS_OPTION);
 	}
 //
@@ -678,30 +720,38 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     /**
 	 * Indicates whether aspect prefixes should be shown for nodes and edges.
 	 */
-	public final boolean isShowAspects() {
+	final boolean isShowAspects() {
 		return getOptionValue(Options.SHOW_ASPECTS_OPTION) || showLocalAspects;
 	}
 
 	/**
 	 * Changes the value of the show-aspects property.
 	 */
-	private final void setShowLocalAspects(boolean showAspects) {
-		this.showLocalAspects = showAspects;
+	private final void setLocalOptions(boolean show) {
+		this.showLocalAspects = show;
+		this.showLocalValueNodes = show;
 	}
 
 	/**
 	 * Indicates whether vertices can have their own labels. If false, j-vertex
 	 * inscriptions are (possibly empty) sets of self-edge labels.
 	 */
-	public boolean isVertexLabelled() {
+	private boolean isVertexLabelled() {
 	    return getOptionValue(Options.VERTEX_LABEL_OPTION);
 	}
-	
+
 	/** 
 	 * Indicates whether anchors should be shown in the rule and lts views. 
 	 */
-	public boolean isShowAnchors() {
+	boolean isShowAnchors() {
 		return getOptionValue(Options.SHOW_ANCHORS_OPTION);
+	}
+
+	/** 
+	 * Indicates whether anchors should be shown in the rule and lts views. 
+	 */
+	boolean isShowValueNodes() {
+		return getOptionValue(Options.SHOW_VALUE_NODES_OPTION) || showLocalValueNodes;
 	}
 
 	/**
@@ -731,8 +781,16 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Set in the constructor.
      */
     protected AttributeMap vertexValueAttr;
-	/** Flag indicating that aspect prefixes should be included for nodes and edges. */
+	/** 
+	 * Flag indicating that aspect prefixes should be included for nodes and edges.
+	 * This overrides the value of {@link Options#SHOW_ASPECTS_OPTION}.
+	 */
     private boolean showLocalAspects;
+	/** 
+	 * Flag indicating that value nodes should be included in the graph. 
+	 * This overrides the value of {@link Options#SHOW_VALUE_NODES_OPTION}.
+	 */
+    private boolean showLocalValueNodes;
 
     /**
      * Set of GraphModel connections. Used in the process of constructing a GraphJModel.
@@ -747,4 +805,47 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Counter to provide the y-coordinate of fresh nodes with fresh values
      */
     private transient int nodeY;
+	/** Dummy j-model. */
+	static public final GraphJModel EMPTY_JMODEL = new GraphJModel();
+//
+//    /** 
+//     * Creates a new GraphJModel instance on top of a given Graph, with given
+//     * node and edge attributes, and an indication whether self-edges should be 
+//     * displayed as node labels.
+//     * The node and adge attribute maps are cloned.
+//     * @param graph the underlying Graph
+//     * @param defaultNodeAttr the attributes for displaying nodes
+//     * @param defaultEdgeAttr the attributes for displaying edges
+//     * @param options specifies options for the visual display
+//     * If false, node labels are used to display self edges.
+//     * @require graph != null, nodeAttr != null, edgeAttr != null;
+//     */
+//    static public GraphJModel newInstance(GraphShape graph, AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, Options options) {
+//        GraphJModel result = new GraphJModel(graph, defaultNodeAttr, defaultEdgeAttr, options);
+//        result.reload();
+//        return result;
+//    }
+//    
+    /** 
+     * Creates a new GraphJModel instance on top of a given Graph.
+     * Node attributes are given by {@link JAttr#DEFAULT_NODE_ATTR} 
+     * and edge attributes by {@link JAttr#DEFAULT_EDGE_ATTR}.
+     * Self-edges will be displayed as node labels.
+     * @param graph the underlying Graph
+     * @param options display options
+     */
+    static public GraphJModel newInstance(GraphShape graph, Options options) {
+        GraphJModel result = new GraphJModel(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
+        result.reload();
+        return result;
+    }
+//
+//    /** 
+//     * Creates a new GraphJModel instance on top of a given Graph, with a 
+//     * fresh display options object.
+//     * @param graph the underlying Graph
+//     */
+//    static public GraphJModel newInstance(GraphShape graph) {
+//    	return newInstance(graph, new Options());
+//    }
 }

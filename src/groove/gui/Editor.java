@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.30 2007-05-15 11:22:23 rensink Exp $
+ * $Id: Editor.java,v 1.31 2007-05-20 07:17:54 rensink Exp $
  */
 package groove.gui;
 
@@ -95,22 +95,32 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.30 $ $Date: 2007-05-15 11:22:23 $
+ * @version $Revision: 1.31 $ $Date: 2007-05-20 07:17:54 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
+    /** 
+     * Constructs an editor frame with an initially empty graph
+     * and a given display options setting.
+     * @param options the display options object; may be <code>null</code>
+     */
+    Editor(Options options) {
+        // force the LAF to be set
+        groove.gui.Options.initLookAndFeel();
+        // Construct the main components
+        this.options = options;
+        this.frame = new JFrame(EDITOR_NAME);
+        this.jgraph = new EditorJGraph(this);
+        initListeners();
+        initGUI();
+        this.frame.pack();
+    }
+
     /** 
      * Constructs an editor frame with an initially empty graph.
      * It is not configured as an auxiliary component.
      */
     public Editor() {
-        // force the LAF to be set
-        groove.gui.Options.initLookAndFeel();
-        // Construct the main components
-        frame = new JFrame(EDITOR_NAME);
-        jgraph = new EditorJGraph(this);
-        initListeners();
-        initGUI();
-        frame.pack();
+        this(null);
     }
 
     /** Returns the frame in which the editor is displayed. */
@@ -140,9 +150,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      */
     public void setPlainGraph(Graph graph) {
         if (graph == null) {
-        	setModel(new EditorJModel());
+        	setModel(new EditorJModel(getOptions()));
         } else {
-			setModel(new EditorJModel(new GraphJModel(graph, getOptions())));
+			setModel(new EditorJModel(GraphJModel.newInstance(graph, getOptions())));
 			setRole(GraphInfo.getRole(graph));
 		}
     }
@@ -159,7 +169,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * <tt>null</tt>, a fresh {@link EditorJModel}is created; otherwise, the given j-model is
      * copied into a new {@link EditorJModel}.
      * @param model the j-model to be set
-     * @see EditorJModel#EditorJModel()
+     * @see EditorJModel#EditorJModel(Options)
      * @see EditorJModel#EditorJModel(GraphJModel)
      */
     private void setModel(EditorJModel model) {
@@ -281,7 +291,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 		AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
 		if (previewedModel != null) {
 			setSelectInsertedCells(false);
-			getModel().replace(new GraphJModel(previewedModel.toPlainGraph(), getOptions()));
+			getModel().replace(GraphJModel.newInstance(previewedModel.toPlainGraph(), getOptions()));
 			setSelectInsertedCells(true);
 			return true;
 		} else {
@@ -775,7 +785,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     
     JGraphPanel getGraphPanel() {
         if (jGraphPanel == null) {
-            jGraphPanel = new JGraphPanel<EditorJGraph>(jgraph);
+            jGraphPanel = new JGraphPanel<EditorJGraph>(jgraph, false, getOptions());
         }
     	return jGraphPanel;
     }
@@ -838,6 +848,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	JMenu createOptionsMenu() {
         JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
         optionsMenu.add(getOptions().getItem(Options.PREVIEW_ON_SAVE_OPTION));
+        optionsMenu.add(getOptions().getItem(Options.SHOW_VALUE_NODES_OPTION));
         return optionsMenu;
 	}
 
@@ -1182,7 +1193,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      */
     private AspectJModel showPreviewDialog(AspectualView<?> view, String okOption) {
     	boolean partial = view.getAspectGraph().hasErrors();
-    	AspectJModel previewModel = new AspectJModel(view, getOptions());
+    	AspectJModel previewModel = AspectJModel.newInstance(view, getOptions());
         JGraph jGraph = new JGraph(previewModel);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
@@ -1216,10 +1227,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     /**
      * Returns the options object associated with the simulator.
      */
-    private Options getOptions() {
+    public final Options getOptions() {
     	// lazily creates the options 
     	if (options == null) {
     		options = new Options();
+        	options.getItem(Options.SHOW_BACKGROUND_OPTION).setSelected(true);
         	options.getItem(Options.SHOW_REMARKS_OPTION).setSelected(true);
         	options.getItem(Options.PREVIEW_ON_SAVE_OPTION).setSelected(true);
     	}
@@ -1707,7 +1719,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.30 $
+     * @version $Revision: 1.31 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

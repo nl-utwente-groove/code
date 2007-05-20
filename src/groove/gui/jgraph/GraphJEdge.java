@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.3 2007-04-12 16:14:50 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.4 2007-05-20 07:17:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -30,22 +30,17 @@ import java.util.Set;
  */
 public class GraphJEdge extends JEdge {
     /**
-     * HTML formatting tag for the tool tip text
-     */
-    static protected final Converter.HTMLTag italicTag = Converter.createHtmlTag("i");
-
-    /**
      * Constructs a model edge based on a graph edge.
      * The graph edge is required to have at least arity two; yet we cannot
      * rely on it being a {@link groove.graph.BinaryEdge}, it might be regular with some
-     * pseudo-ends or it might be a {@link groove.trans.view.RuleEdge}. 
+     * pseudo-ends or it might be a {@link groove.view.aspect.AspectEdge}. 
      * @param edge the underlying graph edge of this model edge.
      * @require <tt>edge != null && edge.endCount() >= 0</tt> 
      * @ensure labels().size()==1, labels().contains(edge.label)
      *         source() == edge.source(), target() == edge.target()
      * @throws IllegalArgumentException if <code>edge.endCount() < 2</code> 
      */
-    protected GraphJEdge(BinaryEdge edge) {
+    GraphJEdge(BinaryEdge edge) {
         this.source = edge.end(BinaryEdge.SOURCE_INDEX);
         this.target = edge.end(BinaryEdge.TARGET_INDEX);
         getUserObject().add(edge);
@@ -69,18 +64,34 @@ public class GraphJEdge extends JEdge {
     /**
      * Callback method to yield a string description of the source node.
      */
-    protected String getSourceIdentity() {
+    String getSourceIdentity() {
         return source.toString();
     }
 
     /**
      * Callback method to yield a string description of the target node.
      */
-    protected String getTargetIdentity() {
+    String getTargetIdentity() {
         return target.toString();
     }
 
     /**
+     * Specialises the return type.
+     */
+    @Override
+    public GraphJVertex getSourceVertex() {
+        return (GraphJVertex) super.getSourceVertex();
+    }
+
+    /**
+     * Specialises the return type.
+     */
+    @Override
+    public GraphJVertex getTargetVertex() {
+        return (GraphJVertex) super.getTargetVertex();
+    }
+
+	/**
      * Returns an unmodifiable view upon the set of underlying graph edges.
      */
     public Set<? extends Edge> getEdgeSet() {
@@ -165,7 +176,7 @@ public class GraphJEdge extends JEdge {
     }
 
     @Override
-	protected String getEdgeDescription() {
+	String getEdgeDescription() {
     	StringBuffer result = new StringBuffer(super.getEdgeDescription());
     	result.append(" from "+italicTag.on(getSourceIdentity()));
     	result.append(" to "+italicTag.on(getTargetIdentity()));
@@ -176,4 +187,9 @@ public class GraphJEdge extends JEdge {
     private final Node source;
     /** Target node of the underlying graph edges. */
     private final Node target;
+    
+    /**
+     * HTML formatting tag for the tool tip text
+     */
+    static protected final Converter.HTMLTag italicTag = Converter.createHtmlTag("i");
 }

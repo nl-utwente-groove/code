@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RulePanel.java,v 1.12 2007-05-14 10:39:34 rensink Exp $
+ * $Id: RulePanel.java,v 1.13 2007-05-20 07:17:54 rensink Exp $
  */
 package groove.gui;
 
@@ -20,6 +20,7 @@ import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
+import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JModel;
@@ -30,7 +31,6 @@ import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
-import groove.view.AspectualRuleView;
 import groove.view.FormatException;
 import groove.view.RuleView;
 
@@ -42,7 +42,7 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -59,6 +59,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
         addRefreshListener(SHOW_ASPECTS_OPTION);
         addRefreshListener(SHOW_NODE_IDS_OPTION);
         addRefreshListener(SHOW_REMARKS_OPTION);
+        addRefreshListener(SHOW_VALUE_NODES_OPTION);
         simulator.addSimulationListener(this);
         jGraph.setToolTipEnabled(true);
     }
@@ -73,7 +74,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
 		ruleJModelMap.clear();
 		if (grammar != null) {
 			for (RuleNameLabel ruleName : grammar.getRuleMap().keySet()) {
-				AspectJModel jModel = computeRuleModel(grammar.getRule(ruleName));
+				AspectJModel jModel = AspectJModel.newInstance(grammar.getRule(ruleName), getOptions());
 				ruleJModelMap.put(ruleName, jModel);
 			}
 		}
@@ -82,7 +83,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
 			if (ruleJModelMap.containsKey(displayedRule)) {
 				setRuleUpdate(displayedRule);
 			} else {
-				jGraph.setModel(AspectJModel.EMPTY_JMODEL);
+				jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
 				displayedRule = null;
 				refresh();
 			}
@@ -144,13 +145,13 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
 //    	this.displayedGrammar = grammar;
 //    	return result;
 //    }
-    /**
-     * Callback factory method to construct a new rule model.
-     */
-    protected AspectJModel computeRuleModel(AspectualRuleView ruleGraph) {
-        AspectJModel result = ruleGraph == null ? AspectJModel.EMPTY_JMODEL : new AspectJModel(ruleGraph, getOptions());
-        return result;
-    }
+//    /**
+//     * Callback factory method to construct a new rule model.
+//     */
+//    protected AspectJModel computeRuleModel(AspectualRuleView ruleGraph) {
+//        AspectJModel result = AspectJModel.newInstance(ruleGraph, getOptions());
+//        return result;
+//    }
     
     @Override
 	protected void refresh() {

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.6 2007-04-12 16:14:52 rensink Exp $
+ * $Id: LabelList.java,v 1.7 2007-05-20 07:17:54 rensink Exp $
  */
 package groove.gui;
 
@@ -44,7 +44,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /** Pseudo-label maintained in this list for cells with an empty label set. */
@@ -323,14 +323,16 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      */
     protected boolean addToLabels(JCell cell) {
     	boolean result = false;
-    	Collection<String> labelSet = cell.getLabelSet();
-    	if (labelSet.isEmpty()) {
-    		result |= addToLabels(cell, NO_LABEL);
-    	} else {
-    		for (String label: labelSet) {
-    			result |= addToLabels(cell, label);
-    		}
-    	}
+    	if (cell.isVisible()) {
+			Collection<String> labelSet = cell.getLabelSet();
+			if (labelSet.isEmpty()) {
+				result |= addToLabels(cell, NO_LABEL);
+			} else {
+				for (String label : labelSet) {
+					result |= addToLabels(cell, label);
+				}
+			}
+		}
     	return result;
     }
     
@@ -377,11 +379,15 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      */
     protected boolean modifyLabels(JCell cell) {
     	boolean result = false;
-    	// create the set of all labels for which cell should appear in the label map
-    	Set<String> newLabelSet = new HashSet<String>(cell.getLabelSet());
-    	if (newLabelSet.isEmpty()) {
-    		newLabelSet.add(NO_LABEL);
-    	}
+    	Set<String> newLabelSet = new HashSet<String>();
+		if (cell.isVisible()) {
+			// create the set of all labels for which cell should appear in the
+			// label map
+			newLabelSet.addAll(cell.getLabelSet());
+			if (newLabelSet.isEmpty()) {
+				newLabelSet.add(NO_LABEL);
+			}
+		}
     	// go over the existing label map
     	Iterator<Map.Entry<String,Set<JCell>>> labelIter = labels.entrySet().iterator();
     	while (labelIter.hasNext()) {

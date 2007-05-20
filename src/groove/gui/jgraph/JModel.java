@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.11 2007-05-18 08:55:00 rensink Exp $
+ * $Id: JModel.java,v 1.12 2007-05-20 07:17:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -60,7 +60,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -68,7 +68,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.11 $
+     * @version $Revision: 1.12 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -115,9 +115,10 @@ abstract public class JModel extends DefaultGraphModel {
      * The default node and edge identities are set through 
      * {@link JAttr#DEFAULT_NODE_ATTR} and {@link JAttr#DEFAULT_EDGE_ATTR}.
      * @ensure !isLayedOut(), !isShowNodeIdentities()
+     * @param options the options for the new model
      */
-    public JModel() {
-        this(JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, null);
+    public JModel(Options options) {
+        this(JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
     }
 
     /** Returns a (possibly <code>null</code>) name of this model. */
@@ -126,6 +127,13 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
+	 * Returns the options associated with this object.
+	 */
+	public final Options getOptions() {
+		return this.options;
+	}
+
+	/**
      * Sets the name of this j-model to a given name.
      * The name may be <tt>null</tt> if the model is anonymous.
      * @see #getName()
