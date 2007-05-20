@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJGraph.java,v 1.5 2007-05-18 08:55:00 rensink Exp $
+ * $Id: AspectJGraph.java,v 1.6 2007-05-20 07:17:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -40,7 +40,7 @@ import org.jgraph.event.GraphModelEvent;
 public class AspectJGraph extends JGraph {
 	/** Creates a j-graph for a given simulator, with an initially empty j-model. */
     public AspectJGraph(Simulator simulator) {
-    	super(AspectJModel.EMPTY_JMODEL);
+    	super(AspectJModel.EMPTY_ASPECT_JMODEL);
         this.simulator = simulator;
         setLayouter(new SpringLayouter());
         doGraphLayout();

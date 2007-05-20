@@ -12,13 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: LTSPanel.java,v 1.12 2007-05-11 21:51:16 rensink Exp $
+ * $Id: LTSPanel.java,v 1.13 2007-05-20 07:17:54 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
-import static groove.gui.jgraph.LTSJModel.EMPTY_JMODEL;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
@@ -44,7 +43,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-05-11 21:51:16 $
+ * @version $Revision: 1.13 $ $Date: 2007-05-20 07:17:54 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -78,26 +77,26 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
      */
     public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
         setGTS(null);
-        getJGraph().setModel(LTSJModel.EMPTY_JMODEL);
+        getJGraph().setModel(LTSJModel.EMPTY_LTS_JMODEL);
         setEnabled(false);
         refreshStatus();
     }
 
 	public synchronized void startSimulationUpdate(GTS gts) {
         setGTS(gts);
-		getJGraph().setModel(createJModel(gts));
+		getJGraph().setModel(LTSJModel.newInstance(gts, getOptions()));
 		setStateUpdate(gts.startState());
 		setEnabled(true);
 		refreshStatus();
 	}
-
-	/**
-	 * Callback method to create a fresh JModel for a given lts. If the lts is
-	 * <code>null</code>, returns {@link #EMPTY_JMODEL}.
-	 */
-	protected LTSJModel createJModel(LTS lts) {
-		return lts == null ? EMPTY_JMODEL : new LTSJModel(lts, getOptions());
-	}
+//
+//	/**
+//	 * Callback method to create a fresh JModel for a given lts. If the lts is
+//	 * <code>null</code>, returns {@link #EMPTY_JMODEL}.
+//	 */
+//	protected LTSJModel createJModel(LTS lts) {
+//		return lts == null ? EMPTY_JMODEL : LTSJModel.newInstance(lts, getOptions());
+//	}
 
     /**
      * Sets the LTS emphasis attributes for the LTS node curresponding to the

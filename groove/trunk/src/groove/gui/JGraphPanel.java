@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: JGraphPanel.java,v 1.8 2007-05-18 08:55:26 rensink Exp $
+ * $Id: JGraphPanel.java,v 1.9 2007-05-20 07:17:54 rensink Exp $
  */
 package groove.gui;
 
@@ -37,7 +37,7 @@ import javax.swing.JSplitPane;
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
@@ -45,17 +45,17 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * preferred width is set to the minimum width.
      */
     public final static int MINIMUM_LABEL_PANE_WIDTH = 75;
-
-    /**
-     * Constructs a view upon a given jgraph without a statusbar.
-     * 
-     * @param jGraph
-     *            the jgraph on which this panel is a view
-     * @ensure <tt>getJGraph() == jGraph</tt>
-     */
-    public JGraphPanel(JG jGraph) {
-        this(jGraph, false, null);
-    }
+//
+//    /**
+//     * Constructs a view upon a given jgraph without a statusbar.
+//     * 
+//     * @param jGraph
+//     *            the jgraph on which this panel is a view
+//     * @ensure <tt>getJGraph() == jGraph</tt>
+//     */
+//    public JGraphPanel(JG jGraph) {
+//        this(jGraph, false, null);
+//    }
 
     /**
      * Constructs a view upon a given jgraph, possibly with a status bar.

@@ -12,9 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorJModel.java,v 1.6 2007-05-09 22:53:35 rensink Exp $
+ * $Id: EditorJModel.java,v 1.7 2007-05-20 07:17:49 rensink Exp $
  */
 package groove.gui.jgraph;
+
+import groove.gui.Options;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -33,23 +35,15 @@ import org.jgraph.graph.GraphConstants;
  * Moreover, there is some control as to the possible source and target points
  * of new edges.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class EditorJModel extends JModel {
     /**
      * Creates an anonymous model.
+     * @param options the options object for the new j-model.
      */
-    public EditorJModel() {
-        this((String) null);
-    }
-
-    /**
-     * Creates an empty model with a given name.
-     * The name may be <tt>null</tt>, in which case the model is anonymous.
-     * @ensure <tt>getName().equals(name)</tt>
-     */
-    public EditorJModel(String name) {
-        setName(name);
+    public EditorJModel(Options options) {
+    	super(options);
     }
 
     /**
@@ -57,6 +51,7 @@ public class EditorJModel extends JModel {
      * @param jModel the model to be copied.
      */
     public EditorJModel(JModel jModel) {
+    	super(jModel.getOptions());
         // map from the cells of jModel to their copies created for this model
         Map<JCell,JCell> toResultCellMap = new HashMap<JCell,JCell>();
         // list of new jcells kept to make sure nodes go in front

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.8 2007-05-14 18:52:03 rensink Exp $
+ * $Id: Imager.java,v 1.9 2007-05-20 07:17:55 rensink Exp $
  */
 package groove.io;
 
@@ -69,7 +69,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class Imager extends CommandLineTool {
     /** Name of the imager application. */
@@ -532,9 +532,9 @@ public class Imager extends CommandLineTool {
                     if (acceptingFilter == ruleFilter) {
                         String ruleName = ruleFilter.stripExtension(inFile.getName());
                         AspectualRuleView rule = new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new RuleNameLabel(ruleName));
-                        model = new AspectJModel(rule);
+                        model = AspectJModel.newInstance(rule, new Options());
                     } else {
-                        model = new GraphJModel(graph);
+                        model = GraphJModel.newInstance(graph, new Options());
                     }
                     JGraph jGraph = new JGraph(model);
                     jGraph.setModel(model);

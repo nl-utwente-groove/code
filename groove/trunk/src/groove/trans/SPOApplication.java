@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.12 2007-04-27 22:07:01 rensink Exp $
+ * $Id: SPOApplication.java,v 1.13 2007-05-20 07:17:55 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-04-27 22:07:01 $
+ * @version $Revision: 1.13 $ $Date: 2007-05-20 07:17:55 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -521,20 +521,21 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 * if the target is an {@link InternalGraph}.
 	 */
 	protected void addEdge(DeltaTarget target, Edge edge) {
+		Node targetNode = edge.opposite();
+		if (targetNode instanceof ValueNode && (!source.containsElement(targetNode) && !getAddedValueNodes().contains(targetNode)) || removedValueNodes != null && removedValueNodes.contains(targetNode)) {
+			target.addNode(targetNode);
+			boolean nodeAdded = getAddedValueNodes().add((ValueNode) targetNode);
+			assert nodeAdded : String.format("%s already contained %s", getAddedValueNodes(), targetNode);
+			if (removedValueNodes != null && removedValueNodes.contains(targetNode)) {
+				removedValueNodes.remove(targetNode);
+			}
+		}
 		if (target instanceof InternalGraph) {
 			((InternalGraph) target).addEdgeWithoutCheck(edge);
 		} else {
 			// apparently the target wasn't an InternalGraph
 			// so we can't do efficient edge addition
 			target.addEdge(edge);
-		}
-		Node targetNode = edge.opposite();
-		if (targetNode instanceof ValueNode && (!source.containsElement(targetNode) && !getAddedValueNodes().contains(targetNode)) || removedValueNodes != null && removedValueNodes.contains(targetNode)) {
-			target.addNode(targetNode);
-			getAddedValueNodes().add((ValueNode) targetNode);
-			if (removedValueNodes != null && removedValueNodes.contains(targetNode)) {
-				removedValueNodes.remove(targetNode);
-			}
 		}
 	}
 

@@ -13,23 +13,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.38 2007-05-18 08:55:26 rensink Exp $
+ * $Id: Simulator.java,v 1.39 2007-05-20 07:17:54 rensink Exp $
  */
 package groove.gui;
 
-import static groove.gui.Options.DELETE_RULE_OPTION;
-import static groove.gui.Options.HELP_MENU_NAME;
-import static groove.gui.Options.OPTIONS_MENU_NAME;
-import static groove.gui.Options.REPLACE_RULE_OPTION;
-import static groove.gui.Options.REPLACE_START_GRAPH_OPTION;
-import static groove.gui.Options.SHOW_ANCHORS_OPTION;
-import static groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
-import static groove.gui.Options.SHOW_REMARKS_OPTION;
-import static groove.gui.Options.SHOW_BACKGROUND_OPTION;
-import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
-import static groove.gui.Options.START_SIMULATION_OPTION;
-import static groove.gui.Options.STOP_SIMULATION_OPTION;
+import static groove.gui.Options.*;
+
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphFactory;
@@ -128,7 +117,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.38 $
+ * @version $Revision: 1.39 $
  */
 public class Simulator {
     /**
@@ -1275,6 +1264,7 @@ public class Simulator {
     	result.add(getOptions().getItem(SHOW_ASPECTS_OPTION));
     	result.add(getOptions().getItem(SHOW_REMARKS_OPTION));
     	result.add(getOptions().getItem(SHOW_BACKGROUND_OPTION));
+    	result.add(getOptions().getItem(SHOW_VALUE_NODES_OPTION));
     	result.add(getOptions().getItem(SHOW_STATE_IDS_OPTION));
     	result.addSeparator();
     	result.add(getOptions().getItem(START_SIMULATION_OPTION));

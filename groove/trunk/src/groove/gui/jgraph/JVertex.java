@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertex.java,v 1.5 2007-05-08 23:12:29 rensink Exp $
+ * $Id: JVertex.java,v 1.6 2007-05-20 07:17:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -30,18 +30,13 @@ import org.jgraph.graph.DefaultPort;
  * JGraph vertex with a single port, and a fixed set of labels as a user object (through
  * {@link groove.gui.jgraph.JUserObject}).
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 abstract public class JVertex extends DefaultGraphCell implements JCell {
-	/** HTML tag to make text bold. */
-    protected static Converter.HTMLTag strongTag = Converter.createHtmlTag("strong");
-	/** HTML tag to indicate HTML formatting. */
-    protected static Converter.HTMLTag htmlTag = Converter.createHtmlTag("html");
-
     /**
      * Creates a vertex with a {@link JUserObject}as its user object.
      */
-    public JVertex() {
+    JVertex() {
     	// empty constructor
         add(new DefaultPort());
     }
@@ -138,7 +133,7 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
      * Callback factory method to create a user object.
      * Called lazily in {@link #getUserObject()}.
      */
-    protected JUserObject<?> createUserObject() {
+    JUserObject<?> createUserObject() {
     	return new JUserObject(this, JUserObject.NEWLINE, true);
     }
 
@@ -162,7 +157,7 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
     /**
      * Hook to allow subclasses to give a more precise description of the node.
      */
-    protected String getNodeDescription() {
+    String getNodeDescription() {
     	return "Graph node";
     }
 
@@ -179,4 +174,9 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
 
     /** Flag indicating that the user object has been initialised. */
     private boolean userObjectSet;
+    
+	/** HTML tag to make text bold. */
+    static Converter.HTMLTag strongTag = Converter.createHtmlTag("strong");
+	/** HTML tag to indicate HTML formatting. */
+    static Converter.HTMLTag htmlTag = Converter.createHtmlTag("html");
 }

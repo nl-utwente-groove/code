@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.7 2007-05-14 18:52:03 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.8 2007-05-20 07:17:57 rensink Exp $
  */
 
 package groove.view;
@@ -79,90 +79,9 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
-	/** Label for merges (merger edges and merge embargoes) */
-    static public final Label MERGE_LABEL = RegExpr.empty().toLabel();
-//    /** Label for injection constraints */
-//    static public final Label NEGATIVE_MERGE_LABEL = RegExpr.empty().neg().toLabel();
-
-    /** Isomorphism checker (used for testing purposes). */
-    static private final IsoChecker isoChecker = new DefaultIsoChecker();
-    /** Graph factory used for building a graph view of this rule graph.*/
-    static protected GraphFactory graphFactory = GraphFactory.getInstance();
-
-    /**
-     * This main is provided for testing purposes only.
-     * @param args names of XML files to be used as test input
-     */
-    static public void main(String[] args) {
-        System.out.printf("Test of %s%n", AspectualRuleView.class);
-        System.out.println("=================");
-        for (int i = 0; i < args.length; i++) {
-        	try {
-        		testFile(new File(args[i]));
-            } catch (Exception exc) {
-                exc.printStackTrace();
-            }
-        }
-    }
-
-	/**
-	 * Loads a graph from a file and tests its conversion from aspect graph to rule
-	 * and back, using {@link #testTranslation(String,AspectGraph)}. 
-	 * Recursively descends into directories.
-	 */
-	private static void testFile(File file) {
-        AspectGraph factory = AspectGraph.getFactory();
-		if (file.isDirectory()) {
-			for (File nestedFile: file.listFiles()) {
-				testFile(nestedFile);
-			}
-		} else try {
-			Graph plainGraph = Groove.loadGraph(file);
-			if (plainGraph != null) {
-				System.out.printf("Testing %s%n", file);
-				testTranslation(file.getName(), factory.fromPlainGraph(plainGraph));
-				System.out.println(" - OK");
-			}
-		} catch (FormatException exc) {
-			// do nothing (skip)
-		} catch (IOException exc) {
-			// do nothing (skip)
-		}
-	}
-	
-	/** Tests the translation from an aspect graph to a rule and back. */
-	private static void testTranslation(String name, AspectGraph graph) throws FormatException, FormatException {
-        RuleNameLabel ruleName = new RuleNameLabel(name);
-        // construct rule graph
-        AspectualRuleView ruleGraph = new AspectualRuleView(graph, ruleName);
-        // convert rule graph into rule
-        System.out.print("    Constructing rule from rule graph: ");
-        Rule rule = ruleGraph.toRule();
-        System.out.println("OK");
-        // convert rule back into rule graph and test for isomorphism
-        System.out.print("    Reconstructing rule graph from rule: ");
-        AspectualRuleView newRuleGraph = new AspectualRuleView(rule);
-        System.out.println("OK");
-        System.out.print("    Testing for isomorphism of original and reconstructed rule graph: ");
-        if (isoChecker.areIsomorphic(newRuleGraph.getAspectGraph(),ruleGraph.getAspectGraph())) {
-            System.out.println("OK");
-        } else {
-            System.out.println("ERROR");
-            System.out.println("Resulting rule:");
-            System.out.println("--------------");
-            System.out.println(rule);
-            System.out.println("Original rule graph");
-            System.out.println("-----------------");
-            System.out.println(ruleGraph.getAspectGraph());
-            System.out.println("Reconstructed rule graph");
-            System.out.println("------------------------");
-            System.out.println(newRuleGraph.getAspectGraph());
-        }
-    }
-    
     /**
      * Constructs a new rule graph on the basis of a given production rule.
      * @param rule the production rule for which a rule graph is to be constructed
@@ -206,7 +125,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.enabled = GraphProperties.isEnabled(graph);
         this.properties = properties;
         this.graph = graph;
-        this.viewToRuleMap = new NodeEdgeHashMap();
     }
     
     /**
@@ -298,7 +216,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      */
     public Rule toRule() throws FormatException {
     	if (rule == null) {
-            rule = computeRule(graph, viewToRuleMap);
+    		Pair<Rule,NodeEdgeMap> ruleMapPair = computeRule(graph);
+            rule = ruleMapPair.first();
+            viewToRuleMap = ruleMapPair.second();
     	}
     	return rule;
     }
@@ -322,6 +242,15 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	
 	@Override
 	public NodeEdgeMap getMap() {
+		if (viewToRuleMap == null) {
+    		try {
+				Pair<Rule,NodeEdgeMap> ruleMapPair = computeRule(graph);
+				rule = ruleMapPair.first();
+				viewToRuleMap = ruleMapPair.second();
+			} catch (FormatException exc) {
+				// do nothing; the map will be empty
+			}
+		}
 		return viewToRuleMap;
 	}
 
@@ -329,7 +258,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Callback method to compute a rule from an aspect graph.
      * @param graph the aspect graph to compute the rule from
      */
-    protected Rule computeRule(AspectGraph graph, NodeEdgeMap viewToRuleMap) throws FormatException {
+    protected Pair<Rule, NodeEdgeMap> computeRule(AspectGraph graph) throws FormatException {
+    	NodeEdgeMap viewToRuleMap = new NodeEdgeHashMap();
     	Set<String> errors = new TreeSet<String>(graph.getErrors());
         if (TO_RULE_DEBUG) {
             System.out.println("");
@@ -433,7 +363,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 				System.out.println("Constructed rule: " + result);
 			}
 			if (errors.isEmpty()) {
-				return result;
+				return new Pair<Rule,NodeEdgeMap>(result,viewToRuleMap);
 			}
 		} catch (FormatException e) {
 			errors.addAll(e.getErrors());
@@ -909,10 +839,86 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Mapping from the elements of the aspect graph representation
      * to the corresponding elements of the rule.
      */
-    private final NodeEdgeMap viewToRuleMap;
+    private NodeEdgeMap viewToRuleMap;
     /** Rule factory set for this rule. */
     private final SystemProperties properties;
 
+    /**
+     * This main is provided for testing purposes only.
+     * @param args names of XML files to be used as test input
+     */
+    static public void main(String[] args) {
+        System.out.printf("Test of %s%n", AspectualRuleView.class);
+        System.out.println("=================");
+        for (int i = 0; i < args.length; i++) {
+        	try {
+        		testFile(new File(args[i]));
+            } catch (Exception exc) {
+                exc.printStackTrace();
+            }
+        }
+    }
+
+	/**
+	 * Loads a graph from a file and tests its conversion from aspect graph to rule
+	 * and back, using {@link #testTranslation(String,AspectGraph)}. 
+	 * Recursively descends into directories.
+	 */
+	private static void testFile(File file) {
+        AspectGraph factory = AspectGraph.getFactory();
+		if (file.isDirectory()) {
+			for (File nestedFile: file.listFiles()) {
+				testFile(nestedFile);
+			}
+		} else try {
+			Graph plainGraph = Groove.loadGraph(file);
+			if (plainGraph != null) {
+				System.out.printf("Testing %s%n", file);
+				testTranslation(file.getName(), factory.fromPlainGraph(plainGraph));
+				System.out.println(" - OK");
+			}
+		} catch (FormatException exc) {
+			// do nothing (skip)
+		} catch (IOException exc) {
+			// do nothing (skip)
+		}
+	}
+	
+	/** Tests the translation from an aspect graph to a rule and back. */
+	private static void testTranslation(String name, AspectGraph graph) throws FormatException, FormatException {
+        RuleNameLabel ruleName = new RuleNameLabel(name);
+        // construct rule graph
+        AspectualRuleView ruleGraph = new AspectualRuleView(graph, ruleName);
+        // convert rule graph into rule
+        System.out.print("    Constructing rule from rule graph: ");
+        Rule rule = ruleGraph.toRule();
+        System.out.println("OK");
+        // convert rule back into rule graph and test for isomorphism
+        System.out.print("    Reconstructing rule graph from rule: ");
+        AspectualRuleView newRuleGraph = new AspectualRuleView(rule);
+        System.out.println("OK");
+        System.out.print("    Testing for isomorphism of original and reconstructed rule graph: ");
+        if (isoChecker.areIsomorphic(newRuleGraph.getAspectGraph(),ruleGraph.getAspectGraph())) {
+            System.out.println("OK");
+        } else {
+            System.out.println("ERROR");
+            System.out.println("Resulting rule:");
+            System.out.println("--------------");
+            System.out.println(rule);
+            System.out.println("Original rule graph");
+            System.out.println("-----------------");
+            System.out.println(ruleGraph.getAspectGraph());
+            System.out.println("Reconstructed rule graph");
+            System.out.println("------------------------");
+            System.out.println(newRuleGraph.getAspectGraph());
+        }
+    }
+	/** Label for merges (merger edges and merge embargoes) */
+    static public final Label MERGE_LABEL = RegExpr.empty().toLabel();
+    /** Isomorphism checker (used for testing purposes). */
+    static private final IsoChecker isoChecker = new DefaultIsoChecker();
+    /** Graph factory used for building a graph view of this rule graph.*/
+    static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */
     static private final boolean TO_RULE_DEBUG = false;
 }

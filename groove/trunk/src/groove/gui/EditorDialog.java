@@ -23,7 +23,7 @@ import javax.swing.WindowConstants;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class EditorDialog extends JDialog {
     /**
@@ -35,7 +35,7 @@ public class EditorDialog extends JDialog {
     public EditorDialog(Frame owner, Options options, Graph graph) throws HeadlessException {
         super(owner, true);
         this.options = options;
-        this.editor = new Editor();
+        this.editor = new Editor(options);
         this.editor.setPlainGraph(graph);
         JFrame editorFrame = editor.getFrame();
         setJMenuBar(createMenuBar());
@@ -99,6 +99,7 @@ public class EditorDialog extends JDialog {
 	private JMenu createOptionsMenu() {
         JMenu optionsMenu = new JMenu(Options.OPTIONS_MENU_NAME);
         optionsMenu.add(options.getItem(Options.PREVIEW_ON_CLOSE_OPTION));
+        optionsMenu.add(options.getItem(Options.SHOW_VALUE_NODES_OPTION));
         return optionsMenu;
 	}
 

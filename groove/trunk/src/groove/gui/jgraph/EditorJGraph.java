@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorJGraph.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
+ * $Id: EditorJGraph.java,v 1.3 2007-05-20 07:17:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -22,6 +22,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 
+import groove.gui.Editor;
 import groove.gui.IEditorModes;
 import groove.gui.SetLayoutMenu;
 import groove.gui.layout.ForestLayouter;
@@ -45,7 +46,7 @@ import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
  * In particular, provides a method to add and remove points
  * from edges.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
   */
 public class EditorJGraph extends JGraph {           
     /**
@@ -53,8 +54,8 @@ public class EditorJGraph extends JGraph {
      * @param editor the {@link IEditorModes} to which this j-graph is associated
      * @since june2005 
      */
-    public EditorJGraph(IEditorModes editor) {
-        super(new EditorJModel());
+    public EditorJGraph(Editor editor) {
+        super(new EditorJModel(editor.getOptions()));
         this.editor = editor;
            
     }    

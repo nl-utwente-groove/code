@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.4 2007-04-12 16:14:49 rensink Exp $
+ * $Id: JEdge.java,v 1.5 2007-05-20 07:17:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -24,6 +24,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.jgraph.graph.DefaultEdge;
+import org.jgraph.graph.DefaultPort;
 
 /**
  * JGraph edge with a set of string labels as its user object,
@@ -32,30 +33,13 @@ import org.jgraph.graph.DefaultEdge;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
-     * The character used to separate graph labels.
-     */
-    static public final String EDIT_SEPARATOR = JUserObject.NEWLINE;
-    /**
-     * The string used to separate arguments when preparing for editing.
-     */
-    static public final String PRINT_SEPARATOR = ", ";
-    /**
-     * HTML formatting tag for the tool tip text
-     */
-    static protected final Converter.HTMLTag strongTag = Converter.createHtmlTag("strong");
-    /**
-     * HTML formatting tag for the tool tip text
-     */
-    static protected final Converter.HTMLTag htmlTag = Converter.createHtmlTag("html");
-
-    /**
      * Creates an edge with a {@link JUserObject} as its user object.
      */
-    public JEdge() {
+    JEdge() {
         getUserObject().setAllowEmptyLabelSet(false);
     }
 //    
@@ -73,12 +57,20 @@ abstract public class JEdge extends DefaultEdge implements JCell {
         return getUserObject().toString();
     }
 
-    /** 
-     * This implementation always returns <code>true</code>.
-     */
-    public boolean isVisible() {
-    	return true;
+    /** Returns the j-vertex that is the parent of the source port of this j-edge. */
+    JVertex getSourceVertex() {
+		return (JVertex) ((DefaultPort) getSource()).getParent();
     }
+
+    /** Returns the j-vertex that is the parent of the target port of this j-edge. */
+    JVertex getTargetVertex() {
+		return (JVertex) ((DefaultPort) getTarget()).getParent();
+    }
+    
+    /** A j-edge is visible if its source and target nodes are visible. */
+	public boolean isVisible() {
+		return getSourceVertex().isVisible() && getTargetVertex().isVisible();
+	}
 
     /** 
      * This implementation always returns <code>true</code>.
@@ -135,7 +127,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * Callback factory method to create a user object.
      * Called lazily in {@link #getUserObject()}.
      */
-    protected JUserObject<?> createUserObject() {
+    JUserObject<?> createUserObject() {
     	return new JUserObject(this, PRINT_SEPARATOR, false);
     }
 
@@ -150,7 +142,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * Callback method from {@link #getToolTipText()} to describe the
      * edge: kind of edge, singular or multiple.
      */
-    protected String getEdgeDescription() {
+    String getEdgeDescription() {
         String result;
         if (getLabelSet().size() <= 1) {
         	result = "Singular "+getEdgeKindDescription();
@@ -164,7 +156,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * Callback method from {@link #getEdgeDescription()} to describe the
      * kind of edge.
      */
-    protected String getEdgeKindDescription() {
+    String getEdgeKindDescription() {
         return getTarget() == null ? "self-edge" : "edge";
     }
     
@@ -172,7 +164,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * Callback method from {@link #getToolTipText()} to describe the labels
      * on this edge.
      */
-    protected String getLabelDescription() {
+    String getLabelDescription() {
     	StringBuffer result = new StringBuffer();
     	String[] displayedLabels = new String[getLabelSet().size()];
     	int labelIndex = 0;
@@ -202,4 +194,21 @@ abstract public class JEdge extends DefaultEdge implements JCell {
 
     /** Flag indicating that the user object has been initialised. */
     private boolean userObjectSet;
+    
+    /**
+     * The character used to separate graph labels.
+     */
+    static public final String EDIT_SEPARATOR = JUserObject.NEWLINE;
+    /**
+     * The string used to separate arguments when preparing for editing.
+     */
+    static public final String PRINT_SEPARATOR = ", ";
+    /**
+     * HTML formatting tag for the tool tip text
+     */
+    static final Converter.HTMLTag strongTag = Converter.createHtmlTag("strong");
+    /**
+     * HTML formatting tag for the tool tip text
+     */
+    static final Converter.HTMLTag htmlTag = Converter.createHtmlTag("html");
 }

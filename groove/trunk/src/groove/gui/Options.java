@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.25 2007-05-18 08:55:26 rensink Exp $
+ * $Id: Options.java,v 1.26 2007-05-20 07:17:54 rensink Exp $
  */
 package groove.gui;
 
@@ -37,7 +37,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  */
 public class Options {
 
@@ -321,13 +321,15 @@ public class Options {
     /** Show state ids option */
     static public final String SHOW_STATE_IDS_OPTION = "Show state identities";
     /** Vertices are labels options */
-    static public final String VERTEX_LABEL_OPTION = "Allow node labels";
+    static public final String VERTEX_LABEL_OPTION = "Show self-edges as node labels";
     /** Show aspects in graphs and rules option */
     static public final String SHOW_ASPECTS_OPTION = "Show aspect prefixes";
     /** Show remark nodes and edges. */
     static public final String SHOW_REMARKS_OPTION = "Show remarks";
     /** Show background colour for nodes. */
     static public final String SHOW_BACKGROUND_OPTION = "Show node background colour";
+    /** Show data values as nodes rather than assignments. */
+    static public final String SHOW_VALUE_NODES_OPTION = "Show data values as nodes";
 //    /** Parse attributed graphs option */
 //    static public final String IS_ATTRIBUTED_OPTION = "Parse as attributed graph";
     /** Always start simulation after changes. */
@@ -408,7 +410,9 @@ public class Options {
 		addCheckbox(SHOW_ASPECTS_OPTION);
 		addCheckbox(SHOW_REMARKS_OPTION);
 		addCheckbox(SHOW_BACKGROUND_OPTION);
+		addCheckbox(SHOW_VALUE_NODES_OPTION);
 		addCheckbox(VERTEX_LABEL_OPTION);
+		addCheckbox(SHOW_STATE_IDS_OPTION);
 		addCheckbox(SHOW_STATE_IDS_OPTION);
 //		addCheckbox(IS_ATTRIBUTED_OPTION);
 		addCheckbox(PREVIEW_ON_CLOSE_OPTION);
