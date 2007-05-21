@@ -1,8 +1,7 @@
-/* $Id: AspectualGraphView.java,v 1.8 2007-05-15 16:46:49 rensink Exp $ */
+/* $Id: AspectualGraphView.java,v 1.9 2007-05-21 22:19:36 rensink Exp $ */
 package groove.view;
 
 import groove.algebra.Constant;
-import groove.algebra.Variable;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
@@ -140,8 +139,8 @@ public class AspectualGraphView extends AspectualView<Graph> {
 					} else if (isAllowedNode(nodeImage)) {
 						model.addNode(nodeImage);
 					} else {
-						throw new FormatException("Node aspect value '%s' not allowed in graphs",
-								viewNode.getValue(attributeAspect));
+						errors.add(String.format("Node aspect value '%s' not allowed in graphs",
+								viewNode.getValue(attributeAspect)));
 					}
 					viewToModelMap.put(viewNode, nodeImage);
 					modelToViewMap.put(nodeImage, viewNode);
@@ -153,34 +152,39 @@ public class AspectualGraphView extends AspectualView<Graph> {
 		elementMap.nodeMap().putAll(viewToModelMap);
 		// copy the edges from view to model
 		for (AspectEdge viewEdge : view.edgeSet()) {
-			try {
-				boolean actualEdge = true;
-				for (AspectValue value : viewEdge.getAspectMap().values()) {
-					if (isVirtualValue(value)) {
-						actualEdge = false;
-					} else if (! isAllowedValue(value)) {
-						throw new FormatException("Edge aspect value '%s' not allowed in graphs",
-								value);
-					}
+			boolean edgeInModel = true;
+			for (AspectValue value : viewEdge.getAspectMap().values()) {
+				if (isVirtualValue(value)) {
+					edgeInModel = false;
+				} else if (!isAllowedValue(value)) {
+					throw new FormatException(
+							"Edge aspect value '%s' not allowed in graphs",
+							value);
 				}
-				// include the edge in the model if it is not virtual
-				if (actualEdge) {
-					Node[] endImages = new Node[viewEdge.endCount()];
-					for (int i = 0; i < endImages.length; i++) {
-						endImages[i] = viewToModelMap.get(viewEdge.end(i));
-					}
+			}
+			// include the edge in the model if it is not virtual
+			Node[] endImages = new Node[viewEdge.endCount()];
+			for (int i = 0; edgeInModel && i < endImages.length; i++) {
+				endImages[i] = viewToModelMap.get(viewEdge.end(i));
+				edgeInModel = endImages[i] != null;
+			}
+			if (edgeInModel) {
+				try {
 					// create an image for the view edge
-					Edge edgeImage = AttributeAspect.createAttributeEdge(viewEdge, view, endImages);
+					Edge edgeImage = AttributeAspect.createAttributeEdge(viewEdge,
+							view,
+							endImages);
 					if (edgeImage == null) {
 						edgeImage = model.addEdge(endImages, viewEdge.label());
 					} else if (!isAllowedEdge(edgeImage)) {
-						throw new FormatException("Edge aspect value '%s' not allowed in graphs",
+						throw new FormatException(
+								"Edge aspect value '%s' not allowed in graphs",
 								viewEdge.getValue(attributeAspect));
 					}
 					elementMap.putEdge(viewEdge, edgeImage);
+				} catch (FormatException exc) {
+					errors.addAll(exc.getErrors());
 				}
-			} catch (FormatException exc) {
-				errors.addAll(exc.getErrors());
 			}
 		}
 		// remove isolated value nodes from the result graph
@@ -208,7 +212,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	 * Tests if a certain attribute node is of the type allowed in graphs.
 	 */
 	private boolean isAllowedNode(Node node) {
-		return node instanceof ValueNode && !(((ValueNode) node).getConstant() instanceof Variable);
+		return node instanceof ValueNode && ((ValueNode) node).hasValue();
 	}
 
 	/**
@@ -282,13 +286,9 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	}
 	
 	/**
-     * Returns the rule factory.
-     * @return the rule factory.
+     * Returns the graph factory used to construct the model.
      */
     private GraphFactory getGraphFactory() {
-    	if (graphFactory == null) {
-    		graphFactory = GraphFactory.getInstance();
-    	}
     	return graphFactory;
     }
 	
@@ -303,10 +303,5 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	/** Map from view to model nodes. */
 	private final NodeEdgeMap viewToModelMap;
 	/** The graph factory used by this view, to construct the model. */
-	private GraphFactory graphFactory;
-//	/** 
-//	 * Name to be used in case the view or model from which this
-//	 * object is created has no explicit name.
-//	 */
-//	static private final String DEFAULT_NAME; 
+	private static final GraphFactory graphFactory = GraphFactory.getInstance();
 }

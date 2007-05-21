@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MultiLinedEditor.java,v 1.2 2007-03-28 15:12:26 rensink Exp $
+ * $Id: MultiLinedEditor.java,v 1.3 2007-05-21 22:19:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -30,6 +30,7 @@ import java.util.EventObject;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractCellEditor;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
@@ -46,30 +47,66 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Multiline jcell editor, essentially taken from <code>org.jgraph.cellview.JGraphMultilineView</code>.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class MultiLinedEditor extends DefaultGraphCellEditor {
-    public class RealCellEditor extends AbstractCellEditor implements GraphCellEditor {
-        /** The component actually doing the editing. */
-        protected final JTextArea editorComponent = new JTextArea();
+    /**
+     * Overriding this in order to set the size of an editor to that of an edited view.
+     */
+    @Override
+    public Component getGraphCellEditorComponent(JGraph graph, Object cell, boolean isSelected) {
 
+        Component component = super.getGraphCellEditorComponent(graph, cell, isSelected);
+
+        // set the size of an editor to that of a view
+        CellView view = graph.getGraphLayoutCache().getMapping(cell, false);
+        Rectangle2D tmp = view.getBounds();
+        editingComponent.setBounds((int) tmp.getX(),
+            (int) tmp.getY(),
+            (int) tmp.getWidth(),
+            (int) tmp.getHeight());
+
+        // I have to set a font here instead of in the
+        // RealCellEditor.getGraphCellEditorComponent() because
+        // I don't know what cell is being edited when in the
+        // RealCellEditor.getGraphCellEditorComponent().
+        Font font = GraphConstants.getFont(view.getAllAttributes());
+        editingComponent.setFont((font != null) ? font : graph.getFont());
+        ((RealCellEditor) realEditor).setUserObject(((EditableJCell) cell).getUserObject());
+        return component;
+    }
+
+    @Override
+    protected GraphCellEditor createGraphCellEditor() {
+        return new RealCellEditor();
+    }
+
+    /**
+     * Overriting this so that I could modify an eiditor container. see
+     * http://sourceforge.net/forum/forum.php?thread_id=781479&forum_id=140880
+     */
+    @Override
+    protected Container createContainer() {
+        return new ModifiedEditorContainer();
+    }
+    
+	/** Internal editor implementation. */
+    private class RealCellEditor extends AbstractCellEditor implements GraphCellEditor {
+        /** Constructs a new instance of the editor. */
         public RealCellEditor() {
             editorComponent.setBorder(UIManager.getBorder("Tree.editorBorder"));
             // editorComponent.setLineWrap(true);
             editorComponent.setWrapStyleWord(true);
 
             // substitute a JTextArea's VK_ENTER action with our own that will stop an edit.
-            editorComponent.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke
-                    .getKeyStroke(KeyEvent.VK_ENTER, 0),
+            InputMap focusedInputMap = editorComponent.getInputMap(JComponent.WHEN_FOCUSED);
+            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
                 "enter");
-            editorComponent.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke
-                    .getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.SHIFT_DOWN_MASK),
+            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.SHIFT_DOWN_MASK),
                 "shiftEnter");
-            editorComponent.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke
-                    .getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK),
+            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, KeyEvent.CTRL_DOWN_MASK),
                 "metaEnter");
-            editorComponent.getInputMap(JComponent.WHEN_FOCUSED).put(KeyStroke
-                    .getKeyStroke(KeyEvent.VK_ENTER, 0),
+            focusedInputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0),
                 "enter");
             editorComponent.getActionMap().put("enter", new AbstractAction() {
                 public void actionPerformed(ActionEvent e) {
@@ -130,20 +167,24 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             return super.stopCellEditing();
         }
 
+        /** Sets the user object, used to check formatting of the edited label. */
         public void setUserObject(EditableJUserObject userObject) {
             this.userObject = userObject;
         }
 
+        /** The user objct, used to check formatting of the edited label. */
         private EditableJUserObject userObject;
+        /** The component actually doing the editing. */
+        protected final JTextArea editorComponent = new JTextArea();
     }
 
+    /** Specialisation of the editor container that adapts the size. */
     private class ModifiedEditorContainer extends EditorContainer {
         @Override
         public void doLayout() {
             super.doLayout();
             // substract 2 pixels that were added to the preferred size of the container for the
             // border.
-            // Dimension cSize = getSize();
             Dimension dim = editingComponent.getSize();
             editingComponent.setSize(dim.width - 2, dim.height);
 
@@ -151,46 +192,5 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             // editor.
             setSize(getPreferredSize().width, getPreferredSize().height);
         }
-    }
-
-    /**
-     * Overriding this in order to set the size of an editor to that of an edited view,
-     * 
-     */
-    @Override
-    public Component getGraphCellEditorComponent(JGraph graph, Object cell, boolean isSelected) {
-
-        Component component = super.getGraphCellEditorComponent(graph, cell, isSelected);
-
-        // set the size of an editor to that of a view
-        CellView view = graph.getGraphLayoutCache().getMapping(cell, false);
-        Rectangle2D tmp = view.getBounds();
-        editingComponent.setBounds((int) tmp.getX(),
-            (int) tmp.getY(),
-            (int) tmp.getWidth(),
-            (int) tmp.getHeight());
-
-        // I have to set a font here instead of in the
-        // RealCellEditor.getGraphCellEditorComponent() because
-        // I don't know what cell is being edited when in the
-        // RealCellEditor.getGraphCellEditorComponent().
-        Font font = GraphConstants.getFont(view.getAllAttributes());
-        editingComponent.setFont((font != null) ? font : graph.getFont());
-        ((RealCellEditor) realEditor).setUserObject(((EditableJCell) cell).getUserObject());
-        return component;
-    }
-
-    @Override
-    protected GraphCellEditor createGraphCellEditor() {
-        return new MultiLinedEditor.RealCellEditor();
-    }
-
-    /**
-     * Overriting this so that I could modify an eiditor container. see
-     * http://sourceforge.net/forum/forum.php?thread_id=781479&forum_id=140880
-     */
-    @Override
-    protected Container createContainer() {
-        return new MultiLinedEditor.ModifiedEditorContainer();
     }
 }

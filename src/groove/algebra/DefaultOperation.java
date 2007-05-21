@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultOperation.java,v 1.3 2007-04-04 20:45:16 rensink Exp $
+ * $Id: DefaultOperation.java,v 1.4 2007-05-21 22:19:28 rensink Exp $
  */
 package groove.algebra;
 
@@ -23,19 +23,9 @@ import java.util.List;
  * Class implementing the <tt>Operation</tt> interface.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-04-04 20:45:16 $
+ * @version $Revision: 1.4 $ $Date: 2007-05-21 22:19:28 $
  */
-public class DefaultOperation implements Operation {
-
-	/** the algebra to which this operation belongs */
-    protected Algebra algebra;
-	/** the algebra-type to which this operation belongs */
-	protected int type;
-	/** the symbol of the operand */
-	protected String symbol;
-	/** the arity of the operand */
-	protected int arity;
-
+abstract public class DefaultOperation implements Operation {
 	/**
 	 * Constructor.
 	 * @param algebra the algebra for this operation
@@ -79,18 +69,9 @@ public class DefaultOperation implements Operation {
 		return algebra;
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.algebra.Operation#type()
-	 */
+	@Deprecated
 	public int type() {
 	    return type;
-	}
-
-	/* (non-Javadoc)
-	 * @see groove.algebra.Operation#prefix()
-	 */
-	public String prefix() {
-		return algebra.prefix();
 	}
 
 	/* (non-Javadoc)
@@ -134,22 +115,25 @@ public class DefaultOperation implements Operation {
 	@Override
 	public int hashCode() {
 		int hash = 7;
-		hash = 31 * hash + type;
 		hash = 31 * hash + arity;
 		hash = 31 * hash + symbol.hashCode();
 		return hash;
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.util.Operation#apply(java.util.List)
-	 */
-	public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-		return new DefaultConstant();
-	}
+	abstract public Constant apply(List<Constant> operands) throws IllegalArgumentException;
 
 	/** Returns the operator's symbol. */
 	@Override
 	public String toString() {
-		return symbol;
+		return symbol();
 	}
+
+	/** the algebra to which this operation belongs */
+    protected Algebra algebra;
+	/** the algebra-type to which this operation belongs */
+	protected int type;
+	/** the symbol of the operand */
+	protected String symbol;
+	/** the arity of the operand */
+	protected int arity;
 }

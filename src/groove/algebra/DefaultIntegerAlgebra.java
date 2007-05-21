@@ -13,13 +13,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIntegerAlgebra.java,v 1.3 2007-04-04 20:45:16 rensink Exp $
+ * $Id: DefaultIntegerAlgebra.java,v 1.4 2007-05-21 22:19:28 rensink Exp $
  */
 
 package groove.algebra;
 
-import groove.graph.algebra.AlgebraConstants;
-import groove.graph.algebra.AlgebraGraph;
 import groove.util.Groove;
 
 import java.util.List;
@@ -28,151 +26,175 @@ import java.util.List;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-04-04 20:45:16 $
+ * @version $Revision: 1.4 $ $Date: 2007-05-21 22:19:28 $
  */
 public class DefaultIntegerAlgebra extends Algebra {
-
-    /** Singleton instance */
-    private static DefaultIntegerAlgebra instance = null;
-    /** separator between prefix and rest */
-    public final String SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
-    /** algebra prefix */
-    public final String PREFIX = Groove.getXMLProperty("label.integer.prefix");
-    /** integer addition */
-	public static final String ADD = "add";
-	/** integer substraction */
-	public static final String SUB = "sub";
-	/** integer multiplication */
-	public static final String MUL = "mul";
-	/** integer division */
-	public static final String DIV = "div";
-	/** integer modulus */
-	public static final String MOD = "mod";
-	/** integer less than */
-	public static final String LT = "lt";
-	/** integer less equal */
-	public static final String LE = "le";
-	/** integer greater than */
-	public static final String GT = "gt";
-	/** integer greater equal */
-	public static final String GE = "ge";
-	/** integer equals */
-	public static final String EQ = "eq";
-
-	/** integer addition operation */
-	private Operation operAdd;
-	/** integer substraction operation */
-	private Operation operSub;
-	/** integer multiplication operation */
-	private Operation operMul;
-	/** integer division operation */
-	private Operation operDiv;
-	/** integer modulo operation */
-	private Operation operMod;
-	/** integer less than operation */
-	private Operation operLessThan;
-	/** integer less equal operation */
-	private Operation operLessEqual;
-	/** integer greater than operation */
-	private Operation operGreaterThan;
-	/** integer greater equal operation */
-	private Operation operGreaterEqual;
-	/** integer equals operation */
-	private Operation operEquals;
-
 	/**
-     * Method facilitating the singleton-pattern.
+	 * Constructs the (singleton) instance of this class.
+	 */
+	private DefaultIntegerAlgebra() {
+		super(NAME, DESCRIPTION);
+	}
+
+	@Override
+	public Constant getConstant(String symbol) {
+		Constant result;
+		try {
+			int value = Integer.parseInt(symbol);
+			result = new IntegerConstant(value);
+		} catch (NumberFormatException nfe) {
+			result = null;
+		}
+		return result;
+	}	
+	
+	/** Returns the {@link Constant} corresponding to a given integer value. */
+	static public IntegerConstant getInteger(int value) {
+		return new IntegerConstant(value);
+	}
+
+//
+//	/**
+//	 * integer addition operation 
+//	 */
+//	private Operation operAdd;
+//	/**
+//	 * integer substraction operation 
+//	 */
+//	private Operation operSub;
+//	/**
+//	 * integer multiplication operation 
+//	 */
+//	private Operation operMul;
+//	/**
+//	 * integer division operation 
+//	 */
+//	private Operation operDiv;
+//	/**
+//	 * integer modulo operation 
+//	 */
+//	private Operation operMod;
+//	/**
+//	 * integer less than operation 
+//	 */
+//	private Operation operLessThan;
+//	/**
+//	 * integer less equal operation 
+//	 */
+//	private Operation operLessEqual;
+//	/**
+//	 * integer greater than operation 
+//	 */
+//	private Operation operGreaterThan;
+//	/**
+//	 * integer greater equal operation 
+//	 */
+//	private Operation operGreaterEqual;
+//	/**
+//	 * integer equals operation 
+//	 */
+//	private Operation operEquals;
+	/**
+	 * Method facilitating the singleton-pattern.
 	 * @return the single <tt>IntegerAlgebra</tt>-instance.
 	 */
 	public static DefaultIntegerAlgebra getInstance() {
-	    if (instance == null)
-	        instance = new DefaultIntegerAlgebra();
 	    return instance;
 	}
 
-	@Override
-	public String prefix() {
-		return PREFIX + SEPARATOR;
-	}
+	/**
+	 * Short name of this signature.
+	 */
+	public static final String NAME = Groove.getXMLProperty("label.integer.prefix");
+	/** Long description of this algebra. */
+	public static final String DESCRIPTION = "Default integer algebra";
+	/**
+	 * integer addition 
+	 */
+	public static final String ADD = "add";
+	/**
+	 * integer substraction 
+	 */
+	public static final String SUB = "sub";
+	/**
+	 * integer multiplication 
+	 */
+	public static final String MUL = "mul";
+	/**
+	 * integer division 
+	 */
+	public static final String DIV = "div";
+	/**
+	 * integer modulus 
+	 */
+	public static final String MOD = "mod";
+	/**
+	 * integer less than 
+	 */
+	public static final String LT = "lt";
+	/**
+	 * integer less equal 
+	 */
+	public static final String LE = "le";
+	/**
+	 * integer greater than 
+	 */
+	public static final String GT = "gt";
+	/**
+	 * integer greater equal 
+	 */
+	public static final String GE = "ge";
+	/**
+	 * integer equals 
+	 */
+	public static final String EQ = "eq";
 
 	/**
-	 * Constructor creating the singleton-instance.
-	 * @param name the name of this boolean algebra
+	 * Singleton instance 
 	 */
-	private DefaultIntegerAlgebra(String name) {
-		super(name);
+	private static final DefaultIntegerAlgebra instance;
+	
+	static {
+		instance = new DefaultIntegerAlgebra();
+//		operAdd = AddOperation.getInstance();
+//		operSub = SubOperation.getInstance();
+//		operMul = MulOperation.getInstance();
+//		operDiv = DivOperation.getInstance();
+//		operMod = ModOperation.getInstance();
+//		operLessThan = LessThanOperation.getInstance();
+//		operLessEqual = LessEqualOperation.getInstance();
+//		operGreaterThan = GreaterThanOperation.getInstance();
+//		operGreaterEqual = GreaterEqualOperation.getInstance();
+//		operEquals = EqualsOperation.getInstance();
+		instance.addOperation(AddOperation.getInstance());
+		instance.addOperation(SubOperation.getInstance());
+		instance.addOperation(MulOperation.getInstance());
+		instance.addOperation(DivOperation.getInstance());
+		instance.addOperation(ModOperation.getInstance());
+		instance.addOperation(LessThanOperation.getInstance());
+		instance.addOperation(LessEqualOperation.getInstance());
+		instance.addOperation(GreaterThanOperation.getInstance());
+		instance.addOperation(GreaterEqualOperation.getInstance());
+		instance.addOperation(EqualsOperation.getInstance());
 	}
-
-	/**
-	 * Constructor.
-	 */
-	private DefaultIntegerAlgebra() {
-		this("Integer Algebra");
-
-		operAdd = AddOperation.getInstance();
-		operSub = SubOperation.getInstance();
-		operMul = MulOperation.getInstance();
-		operDiv = DivOperation.getInstance();
-		operMod = ModOperation.getInstance();
-		operLessThan = LessThanOperation.getInstance();
-		operLessEqual = LessEqualOperation.getInstance();
-		operGreaterThan = GreaterThanOperation.getInstance();
-		operGreaterEqual = GreaterEqualOperation.getInstance();
-		operEquals = EqualsOperation.getInstance();
-		operAdd.set(this, null, -1);
-		operSub.set(this, null, -1);
-		operMul.set(this, null, -1);
-		operDiv.set(this, null, -1);
-		operMod.set(this, null, -1);
-		operLessThan.set(this, null, -1);
-		operLessEqual.set(this, null, -1);
-		operGreaterThan.set(this, null, -1);
-		operGreaterEqual.set(this, null, -1);
-		operEquals.set(this, null, -1);
-		this.addOperation(operAdd);
-		this.addOperation(operSub);
-		this.addOperation(operMul);
-		this.addOperation(operDiv);
-		this.addOperation(operMod);
-		this.addOperation(operLessThan);
-		this.addOperation(operLessEqual);
-		this.addOperation(operGreaterThan);
-		this.addOperation(operGreaterEqual);
-		this.addOperation(operEquals);
-	}
-
-	@Override
-	public Operation getOperation(String symbol) throws UnknownSymbolException {
-		Operation operation;
-		if (getOperationSymbols().contains(symbol))
-		    operation = super.getOperation(symbol);
-		else {
-			try {
-				int value = Integer.parseInt(symbol);
-				operation = new IntegerConstant(this, "" + value);
-				addOperation(operation);
-			}
-			catch (NumberFormatException nfe) {
-		        throw new UnknownSymbolException(getName() + " does not contain the operation represented by " + symbol);
-			}
-		}
-		return operation;
-	}
-
 	/**
 	 * Integer constant.
-	 * @author Harmen Kastenberg
 	 */
-	private static class IntegerConstant extends DefaultConstant {
-
+	public static class IntegerConstant extends DefaultConstant {
 		/**
-		 * Constructor.
-		 * @param algebra the algebra this operation is in
-		 * @param symbol the symbol representing this operation
+		 * Constructs an integer constant with a given value.
 		 */
-		public IntegerConstant(Algebra algebra, String symbol) {
-			set(algebra, symbol, -1);
+		public IntegerConstant(int value) {
+			super(DefaultIntegerAlgebra.getInstance(), ""+value);
+			this.value = value;
 		}
+		
+		/** Returns the value of this constant. */
+		public int getValue() {
+			return value;
+		}
+		
+		private final int value;
 	}
 
 	/**
@@ -180,31 +202,17 @@ public class DefaultIntegerAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	private static class AddOperation extends DefaultOperation {
-
-		/** The singleton instance of this operation. */
-		private static AddOperation instance = null;
-
 		/**
 		 * Constructor.
 		 */
 		private AddOperation() {
-			super(ADD, 2);
-		}
-
-		/**
-		 * @return the singleton instance of this operation
-		 */
-		public static Operation getInstance() {
-			if (instance == null)
-				instance = new AddOperation();
-			return instance;
+			super(DefaultIntegerAlgebra.getInstance(), ADD, 2);
 		}
 
 		@Override
 		public Constant apply(List<Constant> operands)
 				throws IllegalArgumentException {
 			try {
-				Constant result = null;
 				Constant oper1 = operands.get(0);
 				Constant oper2 = operands.get(1);
 
@@ -212,17 +220,21 @@ public class DefaultIntegerAlgebra extends Algebra {
 				int value1 = Integer.parseInt(oper1.symbol());
 				int value2 = Integer.parseInt(oper2.symbol());
 				int sum = value1 + value2;
-
-				try {
-					result = (Constant) algebra().getOperation("" + sum);
-				} catch (UnknownSymbolException use) {
-					System.err.println(use.toString());
-				}
-				return result;
+				return getInteger(sum);
 			} catch (NumberFormatException exc) {
 				throw new IllegalArgumentException(exc);
 			}
 		}
+
+		/**
+		 * Returns the singleton instance of this operation class.
+		 */
+		public static Operation getInstance() {
+			return INSTANCE;
+		}
+		
+		/** The singleton instance of this operation class. */
+		static private final AddOperation INSTANCE = new AddOperation();
 	}
 
 	/**
@@ -230,49 +242,38 @@ public class DefaultIntegerAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	private static class SubOperation extends DefaultOperation {
-
-		/** The singleton instance of this operation. */
-		private static SubOperation instance = null;
-
 		/**
 		 * Constructor.
 		 */
 		private SubOperation() {
-			super(SUB, 2);
+			super(DefaultBooleanAlgebra.getInstance(), SUB, 2);
+		}
+
+		@Override
+		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
+			try {
+				Constant oper1 = operands.get(0);
+				Constant oper2 = operands.get(1);
+				// return the value obtained by subtracting the
+				// second operand from the first operand
+				int value1 = Integer.parseInt(oper1.symbol());
+				int value2 = Integer.parseInt(oper2.symbol());
+				int sub = value1 - value2;
+				return getInteger(sub);
+			} catch (NumberFormatException exc) {
+				throw new IllegalArgumentException(exc);
+			}
 		}
 
 		/**
 		 * @return the singleton instance of this operation
 		 */
 		public static Operation getInstance() {
-			if (instance == null)
-				instance = new SubOperation();
 			return instance;
 		}
 
-		@Override
-		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-			try {
-				Constant result = null;
-				Constant oper1 = operands.get(0);
-				Constant oper2 = operands.get(1);
-
-				// return the value obtained by subtracting the
-				// second operand from the first operand
-				int value1 = Integer.parseInt(oper1.symbol());
-				int value2 = Integer.parseInt(oper2.symbol());
-				int sub = value1 - value2;
-
-				try {
-					result = (Constant) algebra().getOperation("" + sub);
-				} catch (UnknownSymbolException use) {
-					System.err.println(use.toString());
-				}
-				return result;
-			} catch (NumberFormatException exc) {
-				throw new IllegalArgumentException(exc);
-			}
-		}
+		/** The singleton instance of this operation. */
+		private static final SubOperation instance = new SubOperation();
 	}
 
 	/**
@@ -280,31 +281,17 @@ public class DefaultIntegerAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	private static class MulOperation extends DefaultOperation {
-
-		/** The singleton instance of this operation. */
-		private static MulOperation instance = null;
-
 		/**
 		 * Constructor.
 		 */
 		private MulOperation() {
-			super(MUL, 2);
-		}
-
-		/**
-		 * @return the singleton instance of this operation
-		 */
-		public static Operation getInstance() {
-			if (instance == null)
-				instance = new MulOperation();
-			return instance;
+			super(DefaultBooleanAlgebra.getInstance(), MUL, 2);
 		}
 
 		@Override
 		public Constant apply(List<Constant> operands)
 				throws IllegalArgumentException {
 			try {
-				Constant result = null;
 				Constant oper1 = operands.get(0);
 				Constant oper2 = operands.get(1);
 
@@ -313,17 +300,21 @@ public class DefaultIntegerAlgebra extends Algebra {
 				int value1 = Integer.parseInt(oper1.symbol());
 				int value2 = Integer.parseInt(oper2.symbol());
 				int mul = value1 * value2;
-
-				try {
-					result = (Constant) algebra().getOperation("" + mul);
-				} catch (UnknownSymbolException use) {
-					System.err.println(use.toString());
-				}
-				return result;
+				return getInteger(mul);
 			} catch (NumberFormatException exc) {
 				throw new IllegalArgumentException(exc);
 			}
 		}
+
+		/**
+		 * Returns the singleton instance of this operation.
+		 */
+		public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance of this operation. */
+		private static final MulOperation instance = new MulOperation();
 	}
 
 	/**
@@ -331,31 +322,17 @@ public class DefaultIntegerAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	private static class DivOperation extends DefaultOperation {
-
-		/** The singleton instance of this operation. */
-		private static DivOperation instance = null;
-
 		/**
 		 * Constructor.
 		 */
 		private DivOperation() {
-			super(DIV, 2);
-		}
-
-		/**
-		 * @return the singleton instance of this operation
-		 */
-		public static Operation getInstance() {
-			if (instance == null)
-				instance = new DivOperation();
-			return instance;
+			super(DefaultBooleanAlgebra.getInstance(), DIV, 2);
 		}
 
 		@Override
 		public Constant apply(List<Constant> operands)
 				throws IllegalArgumentException {
 			try {
-				Constant result = null;
 				Constant oper1 = operands.get(0);
 				Constant oper2 = operands.get(1);
 
@@ -364,19 +341,23 @@ public class DefaultIntegerAlgebra extends Algebra {
 				int value1 = Integer.parseInt(oper1.symbol());
 				int value2 = Integer.parseInt(oper2.symbol());
 				int div = value1 / value2;
-
-				try {
-					result = (Constant) algebra().getOperation("" + div);
-				} catch (UnknownSymbolException use) {
-					System.err.println(use.toString());
-				}
-				return result;
+				return getInteger(div);
 			} catch (NumberFormatException exc) {
 				throw new IllegalArgumentException(exc);
 			} catch (ArithmeticException exc) {
 				throw new IllegalArgumentException(exc);
 			}
 		}
+
+		/**
+		 * Returns the singleton instance of this operation.
+		 */
+		public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance of this operation. */
+		private static final DivOperation instance = new DivOperation();
 	}
 
 	/**
@@ -384,30 +365,16 @@ public class DefaultIntegerAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	private static class ModOperation extends DefaultOperation {
-
-		/** The singleton instance of this operation. */
-		private static ModOperation instance = null;
-
 		/**
 		 * Constructor.
 		 */
 		private ModOperation() {
-			super(MOD, 2);
-		}
-
-		/**
-		 * @return the singleton instance of this operation
-		 */
-		public static Operation getInstance() {
-			if (instance == null)
-				instance = new ModOperation();
-			return instance;
+			super(DefaultBooleanAlgebra.getInstance(), MOD, 2);
 		}
 
 		@Override
 		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-				Constant result = null;
 				Constant oper1 = operands.get(0);
 				Constant oper2 = operands.get(1);
 
@@ -416,19 +383,23 @@ public class DefaultIntegerAlgebra extends Algebra {
 				int value1 = Integer.parseInt(oper1.symbol());
 				int value2 = Integer.parseInt(oper2.symbol());
 				int mod = value1 % value2;
-
-				try {
-					result = (Constant) algebra().getOperation("" + mod);
-				} catch (UnknownSymbolException use) {
-					System.err.println(use.toString());
-				}
-				return result;
+				return getInteger(mod);
 			} catch (NumberFormatException exc) {
 				throw new IllegalArgumentException(exc);
 			} catch (ArithmeticException exc) {
 				throw new IllegalArgumentException(exc);
 			}
 		}
+
+		/**
+		 * Returns the singleton instance of this operation.
+		 */
+		public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance of this operation. */
+		private static final ModOperation instance = new ModOperation();
 	}
 
 	/**
@@ -436,30 +407,16 @@ public class DefaultIntegerAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	private static class LessThanOperation extends DefaultOperation {
-
-		/** The singleton instance of this operation. */
-		private static LessThanOperation instance = null;
-
 		/**
 		 * Constructor.
 		 */
 	    private LessThanOperation() {
-	        super(LT, 2);
+	        super(DefaultBooleanAlgebra.getInstance(), LT, 2);
 	    }
-
-		/**
-		 * @return the singleton instance of this operation
-		 */
-	    public static Operation getInstance() {
-			if (instance == null)
-				instance = new LessThanOperation();
-			return instance;
-		}
 
 		@Override
 		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-				Constant result = null;
 				Constant oper1 = operands.get(0);
 				Constant oper2 = operands.get(1);
 
@@ -468,22 +425,22 @@ public class DefaultIntegerAlgebra extends Algebra {
 				int value1 = Integer.parseInt(oper1.symbol());
 				int value2 = Integer.parseInt(oper2.symbol());
 				boolean lessThan = value1 < value2;
-
-				try {
-					AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-					Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-					if (lessThan)
-						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
-					else
-						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
-				} catch (UnknownSymbolException use) {
-					System.err.println(use.toString());
-				}
-				return result;
+				return DefaultBooleanAlgebra.getBoolean(lessThan);
 			} catch (NumberFormatException exc) {
 				throw new IllegalArgumentException(exc);
 			}
 		}
+		
+		/**
+		 * @return the singleton instance of this operation
+		 */
+	    public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance of this operation. */
+		private static final LessThanOperation instance = new LessThanOperation();
+
 	}
 
 	/**
@@ -491,30 +448,16 @@ public class DefaultIntegerAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	private static class LessEqualOperation extends DefaultOperation {
-
-		/** The singleton instance of this operation. */
-		private static LessEqualOperation instance = null;
-
 		/**
 		 * Constructor.
 		 */
 	    private LessEqualOperation() {
-	        super(LE, 2);
+	        super(DefaultBooleanAlgebra.getInstance(), LE, 2);
 	    }
-
-		/**
-		 * @return the singleton instance of this operation
-		 */
-	    public static Operation getInstance() {
-			if (instance == null)
-				instance = new LessEqualOperation();
-			return instance;
-		}
 
 		@Override
 		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-				Constant result = null;
 				Constant oper1 = operands.get(0);
 				Constant oper2 = operands.get(1);
 
@@ -523,22 +466,21 @@ public class DefaultIntegerAlgebra extends Algebra {
 				int value1 = Integer.parseInt(oper1.symbol());
 				int value2 = Integer.parseInt(oper2.symbol());
 				boolean lessEqual = value1 <= value2;
-
-				try {
-					AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-					Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-					if (lessEqual)
-						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
-					else
-						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
-				} catch (UnknownSymbolException use) {
-					System.err.println(use.toString());
-				}
-				return result;
+				return DefaultBooleanAlgebra.getBoolean(lessEqual);
 			} catch (NumberFormatException exc) {
 				throw new IllegalArgumentException(exc);
 			}
 		}
+
+		/**
+		 * Returns the singleton instance of this operation.
+		 */
+	    public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance of this operation. */
+		private static final LessEqualOperation instance = new LessEqualOperation();
 	}
 
 	/**
@@ -546,31 +488,17 @@ public class DefaultIntegerAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	private static class GreaterThanOperation extends DefaultOperation {
-
-		/** The singleton instance of this operation. */
-		private static GreaterThanOperation instance = null;
-
 		/**
 		 * Constructor.
 		 */
 	    private GreaterThanOperation() {
-	        super(null, GT, 2);
+	        super(DefaultBooleanAlgebra.getInstance(), GT, 2);
 	    }
-
-		/**
-		 * @return the singleton instance of this operation
-		 */
-	    public static Operation getInstance() {
-			if (instance == null)
-				instance = new GreaterThanOperation();
-			return instance;
-		}
 
 		@Override
 		public Constant apply(List<Constant> operands)
 				throws IllegalArgumentException {
 			try {
-				Constant result = null;
 				Constant oper1 = operands.get(0);
 				Constant oper2 = operands.get(1);
 
@@ -579,22 +507,21 @@ public class DefaultIntegerAlgebra extends Algebra {
 				int value1 = Integer.parseInt(oper1.symbol());
 				int value2 = Integer.parseInt(oper2.symbol());
 				boolean greaterThan = value1 > value2;
-
-				try {
-					AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-					Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-					if (greaterThan)
-						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
-					else
-						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
-				} catch (UnknownSymbolException use) {
-					System.err.println(use.toString());
-				}
-				return result;
+				return DefaultBooleanAlgebra.getBoolean(greaterThan);
 			} catch (NumberFormatException exc) {
 				throw new IllegalArgumentException(exc);
 			}
 		}
+
+		/**
+		 * Returns the singleton instance of this operation.
+		 */
+	    public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance of this operation. */
+		private static final GreaterThanOperation instance = new GreaterThanOperation();
 	}
 
 	/**
@@ -602,30 +529,16 @@ public class DefaultIntegerAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	private static class GreaterEqualOperation extends DefaultOperation {
-
-		/** The singleton instance of this operation. */
-		private static GreaterEqualOperation instance = null;
-
 		/**
 		 * Constructor.
 		 */
 	    private GreaterEqualOperation() {
-	        super(null, GE, 2);
+	        super(DefaultBooleanAlgebra.getInstance(), GE, 2);
 	    }
-
-		/**
-		 * @return the singleton instance of this operation
-		 */
-	    public static Operation getInstance() {
-			if (instance == null)
-				instance = new GreaterEqualOperation();
-			return instance;
-		}
 
 		@Override
 		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-				Constant result = null;
 				Constant oper1 = operands.get(0);
 				Constant oper2 = operands.get(1);
 
@@ -634,22 +547,21 @@ public class DefaultIntegerAlgebra extends Algebra {
 				int value1 = Integer.parseInt(oper1.symbol());
 				int value2 = Integer.parseInt(oper2.symbol());
 				boolean greaterEqual = value1 >= value2;
-
-				try {
-					AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-					Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-					if (greaterEqual)
-						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
-					else
-						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
-				} catch (UnknownSymbolException use) {
-					System.err.println(use.toString());
-				}
-				return result;
+				return DefaultBooleanAlgebra.getBoolean(greaterEqual);
 			} catch (NumberFormatException exc) {
 				throw new IllegalArgumentException(exc);
 			}
 		}
+
+		/**
+		 * @return the singleton instance of this operation
+		 */
+	    public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance of this operation. */
+		private static final GreaterEqualOperation instance = new GreaterEqualOperation();
 	}
 
 	/**
@@ -657,30 +569,16 @@ public class DefaultIntegerAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	private static class EqualsOperation extends DefaultOperation {
-
-		/** The singleton instance of this operation. */
-		private static EqualsOperation instance = null;
-
 		/**
 		 * Constructor.
 		 */
 	    private EqualsOperation() {
-	        super(EQ, 2);
+	        super(DefaultBooleanAlgebra.getInstance(), EQ, 2);
 	    }
-
-		/**
-		 * @return the singleton instance of this operation
-		 */
-	    public static Operation getInstance() {
-			if (instance == null)
-				instance = new EqualsOperation();
-			return instance;
-		}
 
 		@Override
 		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
 			try {
-				Constant result = null;
 				Constant oper1 = operands.get(0);
 				Constant oper2 = operands.get(1);
 
@@ -689,21 +587,20 @@ public class DefaultIntegerAlgebra extends Algebra {
 				int value1 = Integer.parseInt(oper1.symbol());
 				int value2 = Integer.parseInt(oper2.symbol());
 				boolean equals = (value1 == value2);
-
-				try {
-					AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-					Algebra booleanAlgebra = algebraGraph.getAlgebra(AlgebraConstants.BOOLEAN);
-					if (equals)
-						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
-					else
-						result = (Constant) booleanAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
-				} catch (UnknownSymbolException use) {
-					System.err.println(use.toString());
-				}
-				return result;
+				return DefaultBooleanAlgebra.getBoolean(equals);
 			} catch (NumberFormatException exc) {
 				throw new IllegalArgumentException(exc);
 			}
 		}
+
+		/**
+		 * Returns the singleton instance of this operation.
+		 */
+	    public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance of this operation. */
+		private static final EqualsOperation instance = new EqualsOperation();
 	}
 }

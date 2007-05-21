@@ -12,17 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJUserObject.java,v 1.7 2007-05-09 22:53:35 rensink Exp $
+ * $Id: EditableJUserObject.java,v 1.8 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.util.ExprParser;
 import groove.util.Groove;
-import groove.util.Pair;
-import groove.view.FormatException;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * J-user object that is a collection of strings, and can be reloaded 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.3 2007-05-09 22:53:33 rensink Exp $
+ * $Id: RuleAspect.java,v 1.4 2007-05-21 22:19:29 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -29,7 +29,7 @@ import groove.view.FormatException;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class RuleAspect extends AbstractAspect {
     /**
@@ -73,9 +73,10 @@ public class RuleAspect extends AbstractAspect {
 			CREATOR = instance.addValue(CREATOR_NAME);
 			EMBARGO = instance.addValue(EMBARGO_NAME);
 			READER = instance.addValue(READER_NAME);
-			REMARK = instance.createFreeValue(REMARK_NAME);
-			instance.addNodeValue(REMARK);
-			instance.addEdgeValue(REMARK);
+			REMARK = instance.addValue(REMARK_NAME);
+			REMARK.setLabelParser(getFreeLabelParser());
+//			instance.addNodeValue(REMARK);
+//			instance.addEdgeValue(REMARK);
 //			RULE = null; //new RuleAspectValue(); // currently not added to values!
 			instance.setDefaultValue(READER);
 			CREATOR.setSourceToEdge(CREATOR);

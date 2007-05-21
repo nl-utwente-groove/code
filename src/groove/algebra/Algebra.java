@@ -12,39 +12,31 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Algebra.java,v 1.2 2007-03-30 15:50:31 rensink Exp $
+ * $Id: Algebra.java,v 1.3 2007-05-21 22:19:28 rensink Exp $
  */
 package groove.algebra;
 
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
  
 /**
  * Generic class defining the structure of all implemented algebras.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:31 $
+ * @version $Revision: 1.3 $ $Date: 2007-05-21 22:19:28 $
  */
 public abstract class Algebra {
-
 	/**
-	 * The name of the algebra.
+	 * Creates a signature with the specified name.
+	 * @param name the short name for this signature
+	 * @param description the long name for this signature
 	 */
-	private String name;
-
-	/**
-	 * A mapping from a string-representation of each operation in this algebra to the actual {@link groove.algebra.Operation}.
-	 */
-	private HashMap<String,Operation> operations = new HashMap<String,Operation>();
-
-	/**
-	 * Creates an algebra with the specified name.
-	 * @param name the name for this algebra
-	 */
-	protected Algebra(String name) {
+	protected Algebra(String name, String description) {
 		this.name = name;
+		this.description = description;
 	}
 
 	/**
@@ -56,7 +48,7 @@ public abstract class Algebra {
 	 */
 	public boolean addOperation(Operation operation) {
 		Object result = operations.put(operation.symbol(), operation);
-		return (result != null);
+		return (result == null);
 	}
 
 	/**
@@ -74,12 +66,24 @@ public abstract class Algebra {
 	 * @return the operations represented by the given symbol
 	 */
 	public Operation getOperation(String symbol) throws UnknownSymbolException {
-	    if (operations.containsKey(symbol))
-	        return operations.get(symbol);
-	    else
-	        throw new UnknownSymbolException(getName() + " does not contain the operation represented by " + symbol);
+		Operation result = operations.get(symbol);
+		if (result == null) {
+			result = getConstant(symbol);
+		}
+		if (result == null) {
+			throw new UnknownSymbolException(String.format("'%s' is not an operation or constant of signature '%s'", symbol, getName()));
+		}
+		return result;
 	}
 
+	/**
+	 * Attempts to turn a string into a constant of this signature.
+	 * @param text the string to be turned into a constant
+	 * @return the constant obtained from <code>text</code>, or <code>null</code>
+	 * if <code>text</code> does not constitute a correct constant of this signature
+	 */
+	abstract public Constant getConstant(String text);
+	
 	/**
 	 * Method returning the set of all operations of this algebra.
 	 * @return the set of operations in this algebra
@@ -117,18 +121,18 @@ public abstract class Algebra {
 	}
 
 	/**
-	 * Returns the name of this algebra.
-	 * @return the name of this algebra
+	 * Returns a human-understandable description of this signature.
+	 */
+	public String getDescription() {
+		return description;
+	}
+
+	/**
+	 * Returns the (brief) name of this signature.
 	 */
 	public String getName() {
 		return name;
 	}
-
-	/**
-	 * Returns the prefix of this algebra.
-	 * @return the prefix of this algebra
-	 */
-	public abstract String prefix();
 
 	/**
 	 * Checks whether two algebras are equal.
@@ -157,6 +161,19 @@ public abstract class Algebra {
 
 	@Override
 	public String toString() {
-	    return name + " with the following operations:\n" + operations.values().toString();
+	    return getDescription() + " with operators " + operations.values();
 	}
+
+	/**
+	 * The long, human-readable description of this signature.
+	 */
+	private final String description;
+
+	/** The short name of this signature. */
+	private final String name;
+	
+	/**
+	 * A mapping from a string-representation of each operation in this algebra to the actual  {@link groove.algebra.Operation} .
+	 */
+	private final Map<String, Operation> operations = new HashMap<String, Operation>();
 }

@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.9 2007-05-20 07:17:49 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.10 2007-05-21 22:19:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.algebra.Constant;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.util.Converter;
 import groove.view.aspect.AttributeAspect;
@@ -72,9 +73,10 @@ public class GraphJVertex extends JVertex {
     }
     
     /** 
-     * This method returns the actual graph node <i>modelled</i> by the vertex'
-     * internal node.
+     * Returns the actual graph node <i>modelled</i> by the vertex'
+     * underlying node.
      * For this implementation this is the same as {@link #getNode()}.
+     * @see #getNode()
      */
     Node getActualNode() {
     	return getNode();
@@ -82,7 +84,7 @@ public class GraphJVertex extends JVertex {
     
     @Override
 	public boolean isVisible() {
-		return !isConstant() || jModel.isShowValueNodes();
+		return getActualNode() != null && (!isConstant() || jModel.isShowValueNodes());
 	}
 
 	/**
@@ -254,6 +256,14 @@ public class GraphJVertex extends JVertex {
         }
     }
 
+    /** 
+     * Callback method to determine whether the underlying graph node is
+     * data attribute-related.
+     */
+    boolean isDataNode() {
+    	return getActualNode() instanceof ValueNode || getActualNode() instanceof ProductNode;
+    }
+    
     /**
      * Callback method to determine whether the underlying graph node 
      * stores a constant value.
@@ -299,14 +309,29 @@ public class GraphJVertex extends JVertex {
     
     /** This implementation includes the node number of the underlying node. */
     @Override
-	String getNodeDescription() {
-    	StringBuffer result = new StringBuffer("Node");
+	StringBuilder getNodeDescription() {
+    	StringBuilder result = new StringBuilder();
+    	Node node = getActualNode();
+    	if (node instanceof ValueNode) {
+    		if (((ValueNode) node).hasValue()) {
+    			result.append("Constant");
+    		} else {
+    			result.append("Variable");
+    		}
+    	} else if (node instanceof ProductNode) {
+    		result.append("Product");
+    	}
+    	if (result.length() == 0) {
+    		result.append("Node");
+    	} else {
+    		result.append(" node");
+    	}
     	String id = getNodeIdentity();
     	if (id != null) {
     		result.append(" ");
-    		result.append(italicTag.on(getNodeIdentity()));
+    		result.append(italicTag.on(id));
     	}
-		return result.toString();
+		return result;
 	}
 
 	/**
@@ -325,5 +350,5 @@ public class GraphJVertex extends JVertex {
     /** The graph node modelled by this jgraph node. */
     private final Node node;
 	/** HTML tag to make text italic. */
-    private static Converter.HTMLTag italicTag = Converter.createHtmlTag("i");
+    static Converter.HTMLTag italicTag = Converter.createHtmlTag("i");
 }

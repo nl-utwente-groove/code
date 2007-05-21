@@ -12,13 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.4 2007-05-20 07:17:49 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.5 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Node;
+import groove.graph.algebra.AlgebraEdge;
+import groove.graph.algebra.ProductEdge;
 import groove.util.Converter;
 
 import java.util.Collections;
@@ -106,6 +108,15 @@ public class GraphJEdge extends JEdge {
     }
     
     /** 
+     * Returns the actual graph edge <i>modelled</i> by this j-edge.
+     * For this implementation this is the same as {@link #getEdge()}.
+     * @see #getEdge()
+     */
+    Edge getActualEdge() {
+    	return getEdge();
+    }
+    
+    /** 
      * This implementation returns the label text of the object
      * (which is known to be an edge).
      */
@@ -176,11 +187,25 @@ public class GraphJEdge extends JEdge {
     }
 
     @Override
-	String getEdgeDescription() {
-    	StringBuffer result = new StringBuffer(super.getEdgeDescription());
-    	result.append(" from "+italicTag.on(getSourceIdentity()));
-    	result.append(" to "+italicTag.on(getTargetIdentity()));
-    	return result.toString();
+	StringBuilder getEdgeDescription() {
+    	StringBuilder result = super.getEdgeDescription();
+    	result.append(" from ");
+    	result.append(italicTag.on(getSourceIdentity()));
+    	result.append(" to ");
+    	result.append(italicTag.on(getTargetIdentity()));
+    	return result;
+	}
+    
+    /** This implementation recognises argument and operation edges. */
+	@Override
+	StringBuilder getEdgeKindDescription() {
+		if (getActualEdge() instanceof AlgebraEdge) {
+			return new StringBuilder("Argument edge");
+		} else if (getActualEdge() instanceof ProductEdge) {
+			return new StringBuilder("Operation edge");
+		} else {
+			return new StringBuilder("Edge");
+		}
 	}
 
 	/** Source node of the underlying graph edges. */

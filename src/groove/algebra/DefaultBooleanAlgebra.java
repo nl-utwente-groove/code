@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultBooleanAlgebra.java,v 1.4 2007-04-04 20:45:16 rensink Exp $
+ * $Id: DefaultBooleanAlgebra.java,v 1.5 2007-05-21 22:19:28 rensink Exp $
  */
 package groove.algebra;
 
@@ -24,17 +24,58 @@ import java.util.List;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-04-04 20:45:16 $
+ * @version $Revision: 1.5 $ $Date: 2007-05-21 22:19:28 $
  */
 public class DefaultBooleanAlgebra extends Algebra {
+    /**
+	 * Constructor.
+	 */
+	private DefaultBooleanAlgebra() {
+		super(NAME, DESCRIPTION);
+	}
 
-    private static DefaultBooleanAlgebra booleanAlgebra = null;
+	/** 
+	 * Since all boolean constants can be recognised as operators,
+	 * this method always returns <code>null</code>.
+	 */
+	@Override
+	public Constant getConstant(String text) {
+		return null;
+	}
+	
+	/** Returns the {@link Constant} corresponding to a given boolean value. */
+	static public Constant getBoolean(boolean value) {
+		if (value) {
+			return True.getInstance();
+		} else {
+			return False.getInstance();
+		}
+	}
+//
+//	private Operation operTrue;
+//
+//	private Operation operFalse;
+//
+//	private Operation operAnd;
+//
+//	private Operation operOr;
+//
+//	private Operation operNot;
+	/**
+	 * Method facilitating the singleton-pattern.
+	 * @return the single <tt>BooleanAlgebra</tt>-instance.
+	 */
+	public static DefaultBooleanAlgebra getInstance() {
+	    return instance;
+	}
 
-    /** separator between prefix and rest */
-    public final String SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
-    /** algebra prefix */
-    public final String PREFIX = Groove.getXMLProperty("label.boolean.prefix");
-
+	//
+//    /** separator between prefix and rest */
+//    public final String SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
+    /** Name of the boolean signature. */
+    public static final String NAME = Groove.getXMLProperty("label.boolean.prefix");
+    /** Description of the default boolean algebra. */
+    public static final String DESCRIPTION = "Default Boolean Algebra";
     /** boolean AND-operator */
 	public static final String AND = "and";
 	/** boolean OR-operator */
@@ -46,92 +87,47 @@ public class DefaultBooleanAlgebra extends Algebra {
 	public static final String TRUE = "true";
 	/** representing the boolean value <tt>false</tt> */
 	public static final String FALSE = "false";
-
-	private Operation operTrue, operFalse, operAnd, operOr, operNot;
-
-    /**
-     * Method facilitating the singleton-pattern.
-     * @return the single <tt>BooleanAlgebra</tt>-instance.
-     */
-	public static DefaultBooleanAlgebra getInstance() {
-	    if (booleanAlgebra == null)
-	        booleanAlgebra = new DefaultBooleanAlgebra();
-	    return booleanAlgebra;
-	}
-
-	@Override
-	public String prefix() {
-		return PREFIX + SEPARATOR;
-	}
-
+	/** Singleton instance of this algebra. */
+    private static final DefaultBooleanAlgebra instance;
+    
+    static {
+    	instance = new DefaultBooleanAlgebra();
+    	instance.addOperation(True.getInstance());
+    	instance.addOperation(False.getInstance());
+    	instance.addOperation(BooleanAndOperation.getInstance());
+    	instance.addOperation(BooleanOrOperation.getInstance());
+    	instance.addOperation(BooleanNotOperation.getInstance());
+    }
 	/**
-	 * Constructor creating the singleton-instance.
-	 * @param name the name of this boolean algebra
-	 */
-	private DefaultBooleanAlgebra(String name) {
-		super(name);
-	}
-
-	/**
-     * Constructor.
-     */
-    private DefaultBooleanAlgebra() {
-    	this("Default Boolean Algebra");
-		operTrue = True.getInstance();
-		operFalse = False.getInstance();
-		operAnd = BooleanAndOperation.getInstance();
-		operOr = BooleanOrOperation.getInstance();
-		operNot = BooleanNotOperation.getInstance();
-		operTrue.set(this, null, -1);
-		operFalse.set(this, null, -1);
-		operAnd.set(this, null, -1);
-		operOr.set(this, null, -1);
-		operNot.set(this, null, -1);
-		this.addOperation(operTrue);
-		this.addOperation(operFalse);
-		this.addOperation(operAnd);
-		this.addOperation(operOr);
-		this.addOperation(operNot);
-	}
-
-	/**
-	 * Boolean AND-operation.
+	 * Boolean AND-operator.
 	 * @author Harmen Kastenberg
 	 */
 	protected static class BooleanAndOperation extends DefaultOperation {
-		/** The singleton instance. */
-		private static BooleanAndOperation instance = null;
-
 		private BooleanAndOperation() {
-			super(AND, 2);
-		}
-
-		/**
-		 * @return the singleton instance
-		 */
-		public static Operation getInstance() {
-			if (instance == null)
-				instance = new BooleanAndOperation();
-			return instance;
+			super(DefaultBooleanAlgebra.getInstance(), AND, 2);
 		}
 
 		@Override
 		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-			Constant result = null;
 			Constant oper1 = operands.get(0);
 			Constant oper2 = operands.get(1);
 
 			// return the true-constant only if both operands are true
 			// and the false-constant otherwise
-			if (oper1.symbol().equals(True.getInstance().symbol()) &&
-				oper2.symbol().equals(True.getInstance().symbol())) {
-				result = True.getInstance();
-			}
-			else
-				result = False.getInstance();
-
-			return result;
+			boolean answer = (oper1.equals(True.getInstance()) &&
+				oper2.equals(True.getInstance()));
+			return getBoolean(answer);
 		}
+
+		/**
+		 * Returns the singleton instance of this operator.
+		 */
+		public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance. */
+		private final static BooleanAndOperation instance = new BooleanAndOperation();
 	}
 
 	/**
@@ -139,39 +135,32 @@ public class DefaultBooleanAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	protected static class BooleanOrOperation extends DefaultOperation {
-		/** The singleton instance. */
-		private static BooleanOrOperation instance = null;
-
+		/** Constructor for the singleton instance of this class. */
 		private BooleanOrOperation() {
-			super(OR, 2);
-		}
-
-		/**
-		 * @return the singleton instance
-		 */
-		public static Operation getInstance() {
-			if (instance == null)
-				instance = new BooleanOrOperation();
-			return instance;
+			super(DefaultBooleanAlgebra.getInstance(), OR, 2);
 		}
 
 		@Override
 		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-			Constant result = null;
 			Constant oper1 = operands.get(0);
 			Constant oper2 = operands.get(1);
 
 			// return the true-constant if one of the operands is true
 			// and the false-constant otherwise
-			if (oper1.symbol().equals(True.getInstance().symbol()) ||
-				oper2.symbol().equals(True.getInstance().symbol())) {
-				result = True.getInstance();
-			}
-			else
-				result = False.getInstance();
-
-			return result;
+			boolean answer = (oper1.equals(True.getInstance()) ||
+				oper2.equals(True.getInstance()));
+			return getBoolean(answer);
 		}
+
+		/**
+		 * Returns the singleton instance of this operation.
+		 */
+		public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance. */
+		static final private BooleanOrOperation instance = new BooleanOrOperation();
 	}
 
 	/**
@@ -179,76 +168,73 @@ public class DefaultBooleanAlgebra extends Algebra {
 	 * @author Harmen Kastenberg
 	 */
 	protected static class BooleanNotOperation extends DefaultOperation {
-		/** The singleton instance. */
-		private static BooleanNotOperation instance = null;
-
+		/** Constructor for the singleton instance of this class. */
 		private BooleanNotOperation() {
-			super(NOT, 1);
-		}
-
-		/**
-		 * @return the singleton instance
-		 */
-		public static Operation getInstance() {
-			if (instance == null)
-				instance = new BooleanNotOperation();
-			return instance;
+			super(DefaultBooleanAlgebra.getInstance(), NOT, 1);
 		}
 
 		@Override
 		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-			Constant result = null;
 			Constant oper1 = operands.get(0);
-
 			// return the true-constant if the operand is false
 			// and the false-constant if the operand is true
-			if (oper1.symbol().equals(True.getInstance().symbol())) {
-				result = False.getInstance();
-			}
-			else
-				result = True.getInstance();
-
-			return result;
+			boolean answer = ! oper1.equals(True.getInstance());
+			return getBoolean(answer);
 		}
+
+		/**
+		 * Returns the singleton instance of this operation.
+		 */
+		public static Operation getInstance() {
+			return instance;
+		}
+
+		/** The singleton instance. */
+		static private final BooleanNotOperation instance = new BooleanNotOperation();
 	}
 
 	/**
 	 * Boolean FALSE-constant.
 	 * @author Harmen Kastenberg
 	 */
-	protected static class False extends DefaultConstant {
-		/** The singleton instance. */
-		private static Constant instance = null;
-
+	public static class False extends DefaultConstant {
+		/** Constructor for the singleton instance of this class. */
 		private False() {
-			set(null, FALSE, -1);
+			super(DefaultBooleanAlgebra.getInstance(), FALSE);
+		}
+		
+		/** Returns the <code>false</code> value. */
+		public boolean getValue() {
+			return false;
 		}
 
 		/**
 		 * @return the singleton instance
 		 */
 		public static Constant getInstance() {
-			if (instance == null)
-				instance = new False();
 			return instance;
 		}
 
-		@Override
-		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-			return getInstance();
-		}
+		/** The singleton instance. */
+		static private final Constant instance = new False();
 	}
 
 	/**
 	 * Boolean TRUE-constant.
 	 * @author Harmen Kastenberg
 	 */
-	protected static class True extends DefaultConstant {
+	public static class True extends DefaultConstant {
 		/** The singleton instance. */
 		private static Constant instance = null;
 
+		/** Constructor for the singleton instance of this class. */
 		private True() {
-			set(null, TRUE, -1);
+			super(DefaultBooleanAlgebra.getInstance(), TRUE);
+		}
+		
+		/** Returns the <code>true</code> value. */
+		public boolean getValue() {
+			return true;
 		}
 
 		/**
@@ -258,11 +244,6 @@ public class DefaultBooleanAlgebra extends Algebra {
 			if (instance == null)
 				instance = new True();
 			return instance;
-		}
-
-		@Override
-		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-			return getInstance();
 		}
 	}
 }

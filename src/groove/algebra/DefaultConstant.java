@@ -12,9 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultConstant.java,v 1.2 2007-04-01 12:50:28 rensink Exp $
+ * $Id: DefaultConstant.java,v 1.3 2007-05-21 22:19:28 rensink Exp $
  */
 package groove.algebra;
+
+import java.util.List;
 
 
 /**
@@ -22,10 +24,16 @@ package groove.algebra;
  * class {@link groove.algebra.DefaultOperation}. 
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-04-01 12:50:28 $
+ * @version $Revision: 1.3 $ $Date: 2007-05-21 22:19:28 $
  */
-public class DefaultConstant extends DefaultOperation implements Constant {
-	public DefaultConstant() {
-		super(null, 0);
+abstract public class DefaultConstant extends DefaultOperation implements Constant {
+	/** Constructs a constant with a given algebra and string description. */
+	public DefaultConstant(Algebra algebra, String symbol) {
+		super(algebra, symbol, 0);
+	}
+
+	@Override
+	public Constant apply(List<Constant> operands) throws IllegalArgumentException {
+		return this;
 	}
 }

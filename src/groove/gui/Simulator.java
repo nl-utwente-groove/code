@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.39 2007-05-20 07:17:54 rensink Exp $
+ * $Id: Simulator.java,v 1.40 2007-05-21 22:19:32 rensink Exp $
  */
 package groove.gui;
 
@@ -117,7 +117,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.39 $
+ * @version $Revision: 1.40 $
  */
 public class Simulator {
     /**
@@ -1400,9 +1400,13 @@ public class Simulator {
      * @see SimulationListener#setGrammarUpdate(DefaultGrammarView)
      */
     protected synchronized void fireSetGrammar(DefaultGrammarView grammar) {
-    	for (SimulationListener listener: listeners) {
-    		listener.setGrammarUpdate(grammar);
-        }
+    	if (!updating) {
+			updating = true;
+			for (SimulationListener listener : listeners) {
+				listener.setGrammarUpdate(grammar);
+			}
+			updating = false;
+    	}
     }
 
     /**
@@ -1413,9 +1417,13 @@ public class Simulator {
      * @see SimulationListener#startSimulationUpdate(GTS)
      */
     protected synchronized void fireStartSimulation(GTS gts) {
-    	for (SimulationListener listener: listeners) {
-    		listener.startSimulationUpdate(gts);
-        }
+    	if (!updating) {
+			updating = true;
+			for (SimulationListener listener : listeners) {
+				listener.startSimulationUpdate(gts);
+			}
+			updating = false;
+		}
     }
 
     /**
@@ -1426,36 +1434,51 @@ public class Simulator {
      * @see #setState(GraphState)
      */
     protected synchronized void fireSetState(GraphState state) {
-    	for (SimulationListener listener: listeners) {
-        	listener.setStateUpdate(state);
-        }
+    	if (!updating) {
+			updating = true;
+			for (SimulationListener listener : listeners) {
+				listener.setStateUpdate(state);
+			}
+			updating = false;
+		}
     }
 
     /**
-     * Notifies all listeners of a new rule. As a result,
-     * {@link SimulationListener#setRuleUpdate(NameLabel)}is invoked on all currently registered
-     * listeners. This method should not be called directly: use {@link #setRule(RuleNameLabel)}instead.
-     * @see SimulationListener#setRuleUpdate(NameLabel)
-     * @see #setRule(RuleNameLabel)
-     */
+	 * Notifies all listeners of a new rule. As a result,
+	 * {@link SimulationListener#setRuleUpdate(NameLabel)}is invoked on all
+	 * currently registered listeners. This method should not be called
+	 * directly: use {@link #setRule(RuleNameLabel)}instead.
+	 * 
+	 * @see SimulationListener#setRuleUpdate(NameLabel)
+	 * @see #setRule(RuleNameLabel)
+	 */
     protected synchronized void fireSetRule(NameLabel name) {
-    	for (SimulationListener listener: listeners) {
-        	listener.setRuleUpdate(name);
-        }
+    	if (!updating) {
+			updating = true;
+			for (SimulationListener listener : listeners) {
+				listener.setRuleUpdate(name);
+			}
+			updating = false;
+		}
     }
 
     /**
-     * Notifies all listeners of a new detivation. As a result,
-     * {@link SimulationListener#setTransitionUpdate(GraphTransition)}is invoked on all currently
-     * registered listeners. This method should not be called directly: use
-     * {@link #setTransition(GraphTransition)}instead.
-     * @see SimulationListener#setTransitionUpdate(GraphTransition)
-     * @see #setTransition(GraphTransition)
-     */
+	 * Notifies all listeners of a new detivation. As a result,
+	 * {@link SimulationListener#setTransitionUpdate(GraphTransition)}is
+	 * invoked on all currently registered listeners. This method should not be
+	 * called directly: use {@link #setTransition(GraphTransition)}instead.
+	 * 
+	 * @see SimulationListener#setTransitionUpdate(GraphTransition)
+	 * @see #setTransition(GraphTransition)
+	 */
     protected synchronized void fireSetTransition(GraphTransition transition) {
-    	for (SimulationListener listener: listeners) {
-        	listener.setTransitionUpdate(transition);
-        }
+    	if (!updating) {
+			updating = true;
+			for (SimulationListener listener : listeners) {
+				listener.setTransitionUpdate(transition);
+			}
+			updating = false;
+    	}
     }
 
     /**
@@ -1468,18 +1491,24 @@ public class Simulator {
      * @see #applyTransition()
      */
     protected synchronized void fireApplyTransition(GraphTransition transition) {
-    	for (SimulationListener listener: listeners) {
-            listener.applyTransitionUpdate(transition);
-        }
+    	if (!updating) {
+			updating = true;
+			for (SimulationListener listener : listeners) {
+				listener.applyTransitionUpdate(transition);
+			}
+			updating = false;
+		}
     }
 
     /**
-     * Notifies all listeners of the verification of the current generated transistion
-     * system. This method should not be called directly: use {@link #verifyProperty(String)}
-     * instead.
-     * @param counterExamples the collection of states that do not satisfy the
-     * property verfied
-     */
+	 * Notifies all listeners of the verification of the current generated
+	 * transistion system. This method should not be called directly: use
+	 * {@link #verifyProperty(String)} instead.
+	 * 
+	 * @param counterExamples
+	 *            the collection of states that do not satisfy the property
+	 *            verfied
+	 */
     protected synchronized void notifyVerifyProperty(Set<State> counterExamples) {
         // reset lts display visibility
         setGraphPanel(getLtsPanel());
@@ -1695,6 +1724,8 @@ public class Simulator {
     /** The state generator strategy for the current GTS. */
     private StateGenerator stateGenerator;
 
+    /** Flag to indicate that one of the simulation events is underway. */
+    private boolean updating;
     /**
      * The loader used for unmarshalling gps-formatted graph grammars.
      */

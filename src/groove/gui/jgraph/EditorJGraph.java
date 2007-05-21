@@ -12,9 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorJGraph.java,v 1.3 2007-05-20 07:17:49 rensink Exp $
+ * $Id: EditorJGraph.java,v 1.4 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
+
+import groove.gui.Editor;
+import groove.gui.IEditorModes;
+import groove.gui.SetLayoutMenu;
+import groove.gui.layout.ForestLayouter;
+import groove.gui.layout.SpringLayouter;
 
 import java.awt.Dimension;
 import java.awt.event.MouseEvent;
@@ -22,17 +28,9 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 
-import groove.gui.Editor;
-import groove.gui.IEditorModes;
-import groove.gui.SetLayoutMenu;
-import groove.gui.layout.ForestLayouter;
-//import groove.gui.layout.JGraphLayoutWrapper;
-import groove.gui.layout.SpringLayouter;
-
 import javax.swing.JPopupMenu;
 
 import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultGraphCell;
@@ -46,7 +44,7 @@ import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
  * In particular, provides a method to add and remove points
  * from edges.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
   */
 public class EditorJGraph extends JGraph {           
     /**
@@ -99,7 +97,7 @@ public class EditorJGraph extends JGraph {
      * @see groove.gui.jgraph.JGraph#createMarqueeHandler()
      */
     @Override
-    protected BasicMarqueeHandler createMarqueeHandler() {
+    protected EditorMarqueeHandler createMarqueeHandler() {
         return new EditorMarqueeHandler(this);
     }
     

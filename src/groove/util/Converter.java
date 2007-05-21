@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Converter.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: Converter.java,v 1.2 2007-05-21 22:19:36 rensink Exp $
  */
 package groove.util;
 
@@ -28,9 +28,10 @@ import java.util.Map;
 /**
  * Performs conversions to and from groove.graph.Graph.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class Converter {
+	/** Writes a graph in FSM format to a print writer. */
     static public void graphToFsm(GraphShape graph, PrintWriter writer) {
         // mapping from nodes of grapg to integers
         Map<Node,Integer> nodeMap = new HashMap<Node,Integer>();
@@ -50,26 +51,28 @@ public class Converter {
     }
 
     // html defs
-
-    static public String HTML_TAG_NAME = "html";
-    static public String LINEBREAK_TAG_NAME = "br";
-    static public String HORIZONTAL_LINE_TAG_NAME = "hr";
-
-    /** The <code>html</code> tag to insert a line break. */
-    static public String HTML_LINEBREAK = createHtmlTag(LINEBREAK_TAG_NAME).tagBegin;
-    /** The <code>html</code> tag to insert a horizontal line. */
-    static public String HTML_HORIZONTAL_LINE = createHtmlTag(HORIZONTAL_LINE_TAG_NAME).tagBegin;
-
     /**
      * Converts a piece of text to HTML by replacing special characters
      * to their HTML encodings.
      */
     static public String toHtml(Object text) {
-    	String res = ""+text;
-        res = res.replaceAll("<", "&lt;");
-        res = res.replaceAll(">", "&gt;");
-    	res = res.replaceAll("\n", HTML_LINEBREAK);
-        return res;
+        return toHtml(new StringBuilder(text.toString())).toString();
+    }
+
+    /**
+     * Converts a piece of text to HTML by replacing special characters
+     * to their HTML encodings.
+     */
+    static public StringBuilder toHtml(StringBuilder text) {
+    	for (int i = 0; i < text.length(); i++) {
+    		char c = text.charAt(i);
+    		switch (c) {
+    		case '<': text.replace(i, i+1, "&lt;"); i += 3; break;
+    		case '>': text.replace(i, i+1, "&gt;"); i += 3; break;
+    		case '\n': text.replace(i, i+1, HTML_LINEBREAK); i += HTML_LINEBREAK.length()-1; break;
+    		}
+    	}
+        return text;
     }
 
     /**
@@ -97,7 +100,18 @@ public class Converter {
          * @param text the object from which the description is to be abstracted
          */
         public String on(Object text) {
-            return tagBegin + text + tagEnd;
+            return on(new StringBuilder(text.toString()));
+        }
+
+        /**
+         * Puts the tag around a given string builder, and returns the result.
+         * The description is assumed to be in HTML format.
+         * @param text the string builder from which the description is to be abstracted
+         */
+        public String on(StringBuilder text) {
+            text.insert(0, tagBegin);
+            text.append(tagEnd);
+            return text.toString();
         }
 
         /**
@@ -108,7 +122,7 @@ public class Converter {
          */
         public String on(Object text, boolean convert) {
             if (convert)
-                return on(toHtml(text));
+                return on(toHtml(new StringBuilder(text.toString())));
             else
                 return on(text);
         }
@@ -154,11 +168,42 @@ public class Converter {
         return new HTMLTag(tag, arguments);
     }
 
+    /** Creates a font colour tag for a given colour. */
     static public HTMLTag createColorTag(Color color) {
         String colorString =
             toHex(color.getRed()) + toHex(color.getGreen()) + toHex(color.getBlue()) ;
         return new HTMLTag("font", "color", colorString);
     }
+
+    /** Converts the first letter of a given string to upper- or lowercase. */
+    static public String toUppercase(String text, boolean upper) {
+    	return toUppercase(new StringBuilder(text), upper).toString();
+    }
+
+    /** Converts the first letter of a given string to upper- or lowercase. */
+    static public StringBuilder toUppercase(StringBuilder text, boolean upper) {
+    	Character firstChar = text.charAt(0);
+    	if (upper) {
+    		firstChar = Character.toUpperCase(firstChar);
+    	} else {
+    		firstChar = Character.toLowerCase(firstChar);
+    	}
+    	text.replace(0, 1, firstChar.toString());
+    	return text;
+    }
+    
+    /** Name of the HTML tag (<code>html</code>). */
+    static public String HTML_TAG_NAME = "html";
+    /** Name of the linebreak tag (<code>br</code>). */
+    static public String LINEBREAK_TAG_NAME = "br";
+    /** Name of the horizontal rule tag (<code>hr</code>). */
+    static public String HORIZONTAL_LINE_TAG_NAME = "hr";
+
+    /** The <code>html</code> tag to insert a line break. */
+    static public String HTML_LINEBREAK = createHtmlTag(LINEBREAK_TAG_NAME).tagBegin;
+    /** The <code>html</code> tag to insert a horizontal line. */
+    static public String HTML_HORIZONTAL_LINE = createHtmlTag(HORIZONTAL_LINE_TAG_NAME).tagBegin;
+
 
     static private int HEX = 16;
     
@@ -166,6 +211,7 @@ public class Converter {
         return "" + Character.forDigit((number / HEX)%HEX, HEX) + Character.forDigit(number % HEX, HEX);
     }
     
+    /** Main method to test this class. */
     static public void main(String[] args) {
         HTMLTag blue = createColorTag(Color.blue);
         HTMLTag green = createColorTag(Color.green);
