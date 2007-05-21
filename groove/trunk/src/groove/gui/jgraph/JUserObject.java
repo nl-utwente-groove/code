@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JUserObject.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: JUserObject.java,v 1.3 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -29,7 +29,7 @@ import java.util.TreeSet;
  * be loaded from a {@link String}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class JUserObject<T> extends TreeSet<T> {
     /** The default label separator. */
@@ -142,9 +142,8 @@ public class JUserObject<T> extends TreeSet<T> {
     /**
      * Returns a string description that is based on <tt>getLabel(object)</tt> but
      * is quoted (with {@link #QUOTE}) if the print separator occurs in the label. 
-     * @param object the object for which the description is required
+     * @param label the object for which the description is required
      * @return the label, quoted if necessary
-     * @see #getLabel(Object)
      */
     protected String getPrintLabel(String label) {
         if (label.indexOf(trimmedPrintSeparator) >= 0) {

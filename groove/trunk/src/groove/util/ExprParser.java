@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExprParser.java,v 1.4 2007-04-29 09:22:29 rensink Exp $
+ * $Id: ExprParser.java,v 1.5 2007-05-21 22:19:36 rensink Exp $
  */
 package groove.util;
 
@@ -32,7 +32,7 @@ import java.util.Stack;
  * A class that helps parse an expression.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ExprParser {
     /** The single quote character, to control parsing. */
@@ -66,11 +66,21 @@ public class ExprParser {
      */
     static public final int POSTFIX_POSITION = 2;
 
-    static protected final char[] DEFAULT_QUOTE_CHARS = { DOUBLE_QUOTE, SINGLE_QUOTE };
-    static protected final char[][] DEFAULT_BRACKETS =
+    /** 
+     * Array of default quote characters, containing
+     * the single and double quotes ({@link #DOUBLE_QUOTE} and {@link #SINGLE_QUOTE}).
+     */
+    static private final char[] DEFAULT_QUOTE_CHARS = { DOUBLE_QUOTE, SINGLE_QUOTE };
+    /**
+     * Array of default bracket pairs: {@link #ROUND_BRACKETS},
+     * {@link #CURLY_BRACKETS} and {@link #SQUARE_BRACKETS}.
+     * (Note that the {@link #ANGLE_BRACKETS} are not included, as they are per default
+     * considered to be a way to surround atoms.)
+     */
+    static private final char[][] DEFAULT_BRACKETS =
         { ROUND_BRACKETS, CURLY_BRACKETS, SQUARE_BRACKETS };
     /** The default character to use as a placeholder in the parse result. */
-    static protected final char PLACEHOLDER = '\uFFFF';
+    static private final char PLACEHOLDER = '\uFFFF';
 
     /**
      * Parses a given string by recognizing quoted and bracketed substrings.
@@ -200,7 +210,7 @@ public class ExprParser {
     /**
      * Converts a regular expression to a non-regular expression, by
      * stripping away all characters with special meanings (essentially, all
-     * escaped word charateds and all non-escaped non-word characters).
+     * escaped word charaters and all non-escaped non-word characters).
      */
     static public String toNormExpr(String regExpr) {
         String result = regExpr.replaceAll("\\\\\\\\", "" + "\\\\" + PLACEHOLDER);
@@ -219,30 +229,56 @@ public class ExprParser {
      * @return the quoted string
      */
     static public String toQuoted(String string, char quote) {
-        string = string.replaceAll(toRegExpr("" + ESCAPE), toRegExpr("" + ESCAPE + ESCAPE));
-        string = string.replaceAll(toRegExpr("" + quote), toRegExpr("" + ESCAPE + quote));
-        return "" + quote + string + quote;
+    	StringBuffer result = new StringBuffer();
+    	result.append(quote);
+    	for (char c: string.toCharArray()) {
+    		// insert an ESCAPE in front of quotes or ESCAPES
+    		if (c == quote || c == ESCAPE) {
+    			result.append(ESCAPE);
+    		}
+    		result.append(c);
+    	}
+    	result.append(quote);
+    	return result.toString();
     }
 
     /**
-     * Transforms a string by removing quote characters around it, if there are any
-     * and unescaping all quote characters within the string, as well as the escape character.
+     * Transforms a string by removing quote characters around it, if there are any,
+     * and unescaping all characters within the string.
      * @param string the original string
      * @param quote the quote character to be used
-     * @return the quoted string
+     * @return the unquoted string, or the original string if there were no
+     * (unescaped) quotes around the original string
      */
     static public String toUnquoted(String string, char quote) {
         if (string.charAt(0) == quote && string.charAt(string.length() - 1) == quote) {
-            string = string.substring(1, string.length() - 1);
-            string = string.replaceAll(toRegExpr("" + ESCAPE + ESCAPE), "" + PLACEHOLDER);
-            string = string.replaceAll(toRegExpr("" + ESCAPE + quote), toRegExpr("" + quote));
-            string = string.replace(PLACEHOLDER, ESCAPE);
-            return string;
+        	char[] content = string.substring(1, string.length() - 1).toCharArray();
+        	StringBuffer result = new StringBuffer();
+        	// flag indicating that the previous character was an ESCAPE
+        	boolean escaped = false;
+        	for (char c: content) {
+        		if (escaped) {
+        			result.append(c);
+        			escaped = false;
+        		} else {
+        			escaped = c == ESCAPE;
+        			if (!escaped) {
+            			result.append(c);
+        			}
+        		}
+        	}
+        	if (escaped) {
+        		// the string ended on an escape character
+        		return string;
+        	} else {
+        		return result.toString();
+        	}
         } else {
             return string;
         }
     }
 
+    /** Main method used to test the class. Call without parameters. */
     static public void main(String[] args) {
         System.out.println("Empty string: "+"".substring(0,0));
         if (args.length == 0) {

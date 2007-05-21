@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.13 2007-05-20 07:17:49 rensink Exp $
+ * $Id: AspectJModel.java,v 1.14 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -35,6 +35,7 @@ import groove.graph.NodeEdgeMap;
 import groove.gui.Options;
 import groove.rel.RegExprLabel;
 import groove.trans.NameLabel;
+import groove.util.Converter;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.AspectualView;
@@ -62,7 +63,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -231,9 +232,16 @@ public class AspectJModel extends GraphJModel {
 	    return new AspectJEdge((AspectEdge) edge);
 	}
 
-	/** Retrieves the node's image according to the view. */
+	/** Retrieves a node's image according to the view. */
 	private Node getModelNode(AspectNode node) {
-		return view.getMap().getNode(node);
+		NodeEdgeMap viewMap = view.getMap();
+		return viewMap == null ? null : viewMap.getNode(node);
+	}
+
+	/** Retrieves an edge's image according to the view. */
+	private Edge getModelEdge(AspectEdge edge) {
+		NodeEdgeMap viewMap = view.getMap();
+		return viewMap == null ? null : viewMap.getEdge(edge);
 	}
 
     /**
@@ -322,7 +330,7 @@ public class AspectJModel extends GraphJModel {
 //        ROLE_NAMES.put(RULE,"Rule");
         
         ROLE_DESCRIPTIONS.put(EMBARGO,"Must be absent from a graph for this rule to apply");
-        ROLE_DESCRIPTIONS.put(READER, "Must be present in a graph for this rule to apply");
+        ROLE_DESCRIPTIONS.put(READER, "Must be matched for this rule to apply");
         ROLE_DESCRIPTIONS.put(CREATOR,"Will be created by applying this rule");
         ROLE_DESCRIPTIONS.put(ERASER,"Will be deleted by applying this rule");
         ROLE_DESCRIPTIONS.put(REMARK,"Has no effect on the execution of the rule");
@@ -353,30 +361,44 @@ public class AspectJModel extends GraphJModel {
 		Node getActualNode() {
 			return getModelNode(getNode());
 		}
-
-		/**
-         * Overwrites the method in <code>GraphJNode</code> to provide production rule specific
-         * tool tips for nodes.
+//
+//		/**
+//         * Overwrites the method in <code>GraphJNode</code> to provide production rule specific
+//         * tool tips for nodes.
+//         */
+//        @Override
+//        public String getToolTipText() {
+//        	StringBuilder
+//            Collection<String> labels = getLabelSet();
+//            if (!labels.isEmpty()) {
+//                res.append(labels.size() == 1 ? " with label " : " with labels ");
+//                res.append(Groove.toString(strongTag.on(labels.toArray(), true), "", "", ", ", " and "));
+//            }
+//            if (getRole().equals(Groove.RULE_ROLE) && getNode().getAspectMap().containsKey(RuleAspect.getInstance())) {
+//            	res.append("<br>"+ROLE_DESCRIPTIONS.get(role));
+//            }
+//            return htmlTag.on(res);
+//        }
+        
+        /** 
+         * This implementation prefixes the node description with
+         * an indication of the role, if the model is a rule.
          */
         @Override
-        public String getToolTipText() {
-            Collection<String> labels = getLabelSet();
-            StringBuffer res = new StringBuffer(ROLE_NAMES.get(role));
-            res.append(" node ");
-            String nodeIdentity = getNodeIdentity();
-            if (nodeIdentity != null) {
-                res.append(strongTag.on(getNodeIdentity()));
-            	res.append(" ");
+		StringBuilder getNodeDescription() {
+            StringBuilder res = super.getNodeDescription();
+            if (getNode().getDeclaredValues().contains(role)) {
+            	Converter.toUppercase(res, false);
+            	res.insert(0, " ");
+            	res.insert(0, ROLE_NAMES.get(role));
+                if (getNode().getDeclaredValues().contains(role)) {
+                	res.append("<br>"+ROLE_DESCRIPTIONS.get(role));
+                }
             }
-            if (!labels.isEmpty()) {
-                res.append(labels.size() == 1 ? "with self-edge " : "with self-edges ");
-                res.append(Groove.toString(strongTag.on(labels.toArray(), true), "", "", ", ", " and "));
-            }
-            res.append("<br>"+ROLE_DESCRIPTIONS.get(role));
-            return htmlTag.on(res);
-        }
-        
-        /**
+            return res;
+		}
+
+		/**
          * Returns <tt>true</tt> only if the role of the edge to be added
          * equals the role of this j-vertex, and the superclass is also willing.
          * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
@@ -480,36 +502,72 @@ public class AspectJModel extends GraphJModel {
             this.role = role(edge);
         }
 
-        /** Specialises the return type. */
+        @Override
+		StringBuilder getEdgeDescription() {
+			StringBuilder result = super.getEdgeDescription();
+			if (getEdge().getDeclaredValues().contains(role)) {
+				result.append("<br>"+ROLE_DESCRIPTIONS.get(role));
+			}
+			return result;
+		}
+
+        @Override
+		StringBuilder getEdgeKindDescription() {
+			StringBuilder result = super.getEdgeKindDescription();
+			if (Groove.RULE_ROLE.equals(getRole())) {
+				Converter.toUppercase(result, false);
+				result.insert(0, " ");
+            	result.insert(0, ROLE_NAMES.get(role));
+			}
+			return result;
+		}
+
+		/** Specialises the return type. */
         @Override
 		public AspectEdge getEdge() {
 			return (AspectEdge) super.getEdge();
 		}
+        
+        
+//
+//		/**
+//         * Overwrites the method to provide production rule specific
+//         * tool tips for edges.
+//         */
+//        @Override
+//        public String getToolTipText() {
+//            StringBuffer res = new StringBuffer();
+//            if (Groove.RULE_ROLE.equals(getRole())) {
+//            	AspectValue role = role((AspectEdge) getEdgeSet().iterator().next());
+//            	res.append(ROLE_NAMES.get(role));
+//            }
+//            if (res.length() == 0) {
+//            	res.append("Edge");
+//            } else {
+//            	res.append(" edge");
+//            }
+//            Collection<String> labels = getLabelSet();
+//            res.append(labels.size() == 1 ? " edge with label " : " edges with labels ");
+//            res.append(Groove.toString(strongTag.on(labels.toArray(), true), "", "", ", ", " and "));
+//            if (Groove.RULE_ROLE.equals(getRole())) {
+//            	res.append("<br>"+ROLE_DESCRIPTIONS.get(role));
+//            }
+//            return htmlTag.on(res);
+//        }
+        
+        @Override
+		Edge getActualEdge() {
+			return getModelEdge(getEdge());
+		}
 
 		/**
-         * Overwrites the method to provide production rule specific
-         * tool tips for edges.
-         */
-        @Override
-        public String getToolTipText() {
-            Collection<String> labels = getLabelSet();
-            StringBuffer res = new StringBuffer();
-            AspectValue role = role((AspectEdge) getEdgeSet().iterator().next());
-            res.append(ROLE_NAMES.get(role));
-            res.append(labels.size() == 1 ? " edge with label " : " edges with labels ");
-            res.append(Groove.toString(strongTag.on(labels.toArray(), true), "", "", ", ", " and "));
-            res.append("<br>"+ROLE_DESCRIPTIONS.get(role));
-            return htmlTag.on(res);
-        }
-        
-        /**
-         * Returns <tt>true</tt> only if the role of the edge to be added
-         * equals the role of this j-edge, and the superclass is also willing.
+         * Returns <tt>true</tt> only if the aspect values of the edge to be added
+         * equal those of this j-edge, and the superclass is also willing.
          * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
          */
         @Override
         public boolean addEdge(BinaryEdge edge) {
-            if (role((AspectEdge) edge) == role) {
+            if (((AspectEdge) edge).getAspectMap().equals(getEdge().getAspectMap())) {
                 return super.addEdge(edge);
             } else {
                 return false;

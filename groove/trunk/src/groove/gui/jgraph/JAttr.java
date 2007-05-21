@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.10 2007-05-18 08:55:00 rensink Exp $
+ * $Id: JAttr.java,v 1.11 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -42,7 +42,7 @@ import groove.view.aspect.RuleAspect;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class JAttr {
 	/** Percentage of white in the background colour. */
@@ -87,8 +87,17 @@ public class JAttr {
     /**
      * Background colour for value nodes.
      */
-    public static final Color VALUE_BACKGROUND = Colors.findColor(Groove.getGUIProperty("attribute.background"));
+    public static final Color VALUE_BACKGROUND;
 
+    static {
+    	String valueBackgroundProperty = Groove.getGUIProperty("attribute.background");
+    	if (valueBackgroundProperty == null) {
+    		VALUE_BACKGROUND = DEFAULT_BACKGROUND;
+    	} else {
+    		VALUE_BACKGROUND = Colors.findColor(valueBackgroundProperty);
+    	}
+    }
+    
     /**
      * Border insets for default nodes.
      */
@@ -228,7 +237,7 @@ public class JAttr {
     /** Line width used for emphasized cells. */
     public static final int EMPH_WIDTH = Integer.parseInt(Groove.getGUIProperty("state.emphasis.width"));
     /** Difference in line width between emphasized and non-emphasized. */
-    private static final int EMPH_INCREMENT = EMPH_WIDTH - DEFAULT_LINE_WIDTH;
+    public static final int EMPH_INCREMENT = EMPH_WIDTH - DEFAULT_LINE_WIDTH;
     /**
 	 * Border insets for emphasised nodes.
 	 */
@@ -260,6 +269,7 @@ public class JAttr {
         // edges
         GraphConstants.setLineWidth(EMPH_EDGE_CHANGE, EMPH_WIDTH);
         // nodes
+//        GraphConstants.setLineWidth(EMPH_NODE_CHANGE, EMPH_WIDTH);
         GraphConstants.setBorder(EMPH_NODE_CHANGE, EMPH_BORDER);
     }
 

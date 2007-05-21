@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertex.java,v 1.6 2007-05-20 07:17:49 rensink Exp $
+ * $Id: JVertex.java,v 1.7 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -30,7 +30,7 @@ import org.jgraph.graph.DefaultPort;
  * JGraph vertex with a single port, and a fixed set of labels as a user object (through
  * {@link groove.gui.jgraph.JUserObject}).
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 abstract public class JVertex extends DefaultGraphCell implements JCell {
     /**
@@ -141,24 +141,24 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
      * Returns the tool tip text for this vertex.
      */
     public String getToolTipText() {
-        StringBuffer res = new StringBuffer();
-        Collection<String> labelSet = getLabelSet();
-        res.append(getNodeDescription());
-        if (labelSet.size() == 1) {
-            // cell has a non-empty label set; this indicates self-edges
-            res.append(" with a self-edge labelled ");
-        } else if (labelSet.size() > 1) {
-            res.append(" with self-edges, labelled ");
-        }
-        res.append(Groove.toString(strongTag.on(labelSet.toArray(), true), "", "", ", ", " and "));
-        return htmlTag.on(res);
+//        StringBuilder res = new StringBuilder();
+//        res.append(getNodeDescription());
+//        Collection<String> labelSet = getLabelSet();
+//        if (labelSet.size() == 1) {
+//            // cell has a non-empty label set; this indicates self-edges
+//            res.append(" with label ");
+//        } else if (labelSet.size() > 1) {
+//            res.append(" with labels ");
+//        }
+//        res.append(Groove.toString(strongTag.on(labelSet.toArray(), true), "", "", ", ", " and "));
+        return htmlTag.on(getNodeDescription());
     }
     
     /**
      * Hook to allow subclasses to give a more precise description of the node.
      */
-    String getNodeDescription() {
-    	return "Graph node";
+    StringBuilder getNodeDescription() {
+    	return new StringBuilder("Graph node");
     }
 
     /**

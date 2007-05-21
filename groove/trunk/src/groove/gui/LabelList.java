@@ -12,13 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.7 2007-05-20 07:17:54 rensink Exp $
+ * $Id: LabelList.java,v 1.8 2007-05-21 22:19:34 rensink Exp $
  */
 package groove.gui;
 
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -30,6 +31,8 @@ import java.util.TreeMap;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
+import groove.util.ExprParser;
+import groove.view.FormatException;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -44,7 +47,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /** Pseudo-label maintained in this list for cells with an empty label set. */
@@ -162,9 +165,8 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
             Object jCell = jmodel.getRootAt(i);
             assert jCell instanceof JCell : "Model cell " + jCell + " of type " + jCell.getClass();
             if (jCell instanceof JCell) {
-                Collection<String> jCellLabelSet = ((JCell) jCell).getLabelSet();
-                if (label.equals(NO_LABEL) && jCellLabelSet.isEmpty()
-                        || jCellLabelSet.contains(label)) {
+                Collection<String> jCellLabelSet = getLabelSet((JCell) jCell);
+                if (jCellLabelSet.contains(label)) {
                     result.add((JCell) jCell);
                 }
             }
@@ -324,13 +326,8 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     protected boolean addToLabels(JCell cell) {
     	boolean result = false;
     	if (cell.isVisible()) {
-			Collection<String> labelSet = cell.getLabelSet();
-			if (labelSet.isEmpty()) {
-				result |= addToLabels(cell, NO_LABEL);
-			} else {
-				for (String label : labelSet) {
-					result |= addToLabels(cell, label);
-				}
+			for (String label : getLabelSet(cell)) {
+				result |= addToLabels(cell, label);
 			}
 		}
     	return result;
@@ -379,14 +376,13 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      */
     protected boolean modifyLabels(JCell cell) {
     	boolean result = false;
-    	Set<String> newLabelSet = new HashSet<String>();
+    	Set<String> newLabelSet;
 		if (cell.isVisible()) {
 			// create the set of all labels for which cell should appear in the
 			// label map
-			newLabelSet.addAll(cell.getLabelSet());
-			if (newLabelSet.isEmpty()) {
-				newLabelSet.add(NO_LABEL);
-			}
+			newLabelSet = getLabelSet(cell);
+		} else {
+			newLabelSet = new HashSet<String>();
 		}
     	// go over the existing label map
     	Iterator<Map.Entry<String,Set<JCell>>> labelIter = labels.entrySet().iterator();
@@ -411,6 +407,29 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     		labels.put(label, newCells);
     		result = true;
     	}
+    	return result;
+    }
+    
+    /** 
+     * Extracts the labels from a j-cell.
+     * This method should always be used instead of invoking {@link JCell#getLabelSet()}
+     * directly, so as to allow some processing in between.
+     */
+    private Set<String> getLabelSet(JCell cell) {
+    	Set<String> result = new HashSet<String>();
+		if (cell.isVisible()) {
+			for (String label : cell.getLabelSet()) {
+				try {
+					String[] fragments = ExprParser.splitExpr(label, " ");
+					result.addAll(Arrays.asList(fragments));
+				} catch (FormatException exc) {
+					result.add(label);
+				}
+			}
+			if (result.isEmpty()) {
+				result.add(NO_LABEL);
+			}
+		}
     	return result;
     }
     

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.2 2007-05-09 22:53:33 rensink Exp $
+ * $Id: AspectParser.java,v 1.3 2007-05-21 22:19:29 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -28,71 +28,9 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AspectParser {
-    /** The singleton lenient parser instance. */
-    private static AspectParser lenientParser = new AspectParser(true);
-    /** The singleton strict parser instance. */
-    private static AspectParser strictParser = new AspectParser(false);
-    
-    /**
-     * Returns a strict or lenient parser instance.
-     * @see #isLenient()
-     */
-    public static AspectParser getInstance(boolean lenient) {
-        if (lenient) {
-        	return lenientParser;
-        } else {
-        	return strictParser;
-        }
-    }
-
-    /**
-     * Returns a strict parser instance.
-     * @see #getInstance(boolean)
-     */
-    public static AspectParser getInstance() {
-        return getInstance(false);
-    }
-    
-    /**
-     * Normalises a would-be label, by parsing it as if it were label text,
-     * and returning a string description of the parsed result.
-     * @param plainText the string to be normalised
-     * @return the parsed <code>plainText</code>, turned back into a string
-     * @throws FormatException if <code>plainText</code> is not formatted
-     * correctly according to the rules of the parser.
-     * @see #getParseData(String)
-     */
-    public static String normalize(String plainText) throws FormatException {
-    	return getInstance().getParseData(plainText).toString();
-    }
-
-    /**
-	 * Turns an aspect value into a string that can be read
-	 * by {@link #getParseData(String)}.
-	 */
-	static public String toString(AspectValue value) {
-		return value.toString()+VALUE_SEPARATOR;
-	}
-
-	/**
-	 * Converts a collection of aspect values plus an actual
-	 * label text into a string that can be parsed back.
-	 */
-	static public String toString(Collection<AspectValue> values, String labelText) {
-		StringBuffer result = new StringBuffer();
-		for (AspectValue value: values) {
-			result.append(AspectParser.toString(value));
-		}
-		if (values.size() > 0 && (labelText.length() == 0 || labelText.contains(VALUE_SEPARATOR))) {
-			result.append(VALUE_SEPARATOR);
-		}
-		result.append(labelText);
-		return result.toString();
-	}
-
 	/** 
      * Creates a lenient parser. 
      * #see {@link #AspectParser(boolean)} 	
@@ -231,6 +169,63 @@ public class AspectParser {
     }
     
     /**
+     * Returns a strict or lenient parser instance.
+     * @see #isLenient()
+     */
+    public static AspectParser getInstance(boolean lenient) {
+        if (lenient) {
+        	return lenientParser;
+        } else {
+        	return strictParser;
+        }
+    }
+
+    /**
+     * Returns a strict parser instance.
+     * @see #getInstance(boolean)
+     */
+    public static AspectParser getInstance() {
+        return getInstance(false);
+    }
+    
+    /**
+     * Normalises a would-be label, by parsing it as if it were label text,
+     * and returning a string description of the parsed result.
+     * @param plainText the string to be normalised
+     * @return the parsed <code>plainText</code>, turned back into a string
+     * @throws FormatException if <code>plainText</code> is not formatted
+     * correctly according to the rules of the parser.
+     * @see #getParseData(String)
+     */
+    public static String normalize(String plainText) throws FormatException {
+    	return getInstance().getParseData(plainText).toString();
+    }
+
+    /**
+	 * Turns an aspect value into a string that can be read
+	 * by {@link #getParseData(String)}.
+	 */
+	static public String toString(AspectValue value) {
+		return value.toString()+VALUE_SEPARATOR;
+	}
+
+	/**
+	 * Converts a collection of aspect values plus an actual
+	 * label text into a string that can be parsed back.
+	 */
+	static public String toString(Collection<AspectValue> values, String labelText) {
+		StringBuffer result = new StringBuffer();
+		for (AspectValue value: values) {
+			result.append(AspectParser.toString(value));
+		}
+		if (values.size() > 0 && (labelText.length() == 0 || labelText.contains(VALUE_SEPARATOR))) {
+			result.append(VALUE_SEPARATOR);
+		}
+		result.append(labelText);
+		return result.toString();
+	}
+
+    /**
      * The set of registered aspects.
      */
     private final Set<Aspect> aspects = new HashSet<Aspect>();
@@ -239,4 +234,8 @@ public class AspectParser {
      * i.e., some errors are glossed over.
      */
     private final boolean lenient;
+    /** The singleton lenient parser instance. */
+    private static AspectParser lenientParser = new AspectParser(true);
+    /** The singleton strict parser instance. */
+    private static AspectParser strictParser = new AspectParser(false);
 }

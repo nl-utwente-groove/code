@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Operation.java,v 1.3 2007-04-04 20:45:16 rensink Exp $
+ * $Id: Operation.java,v 1.4 2007-05-21 22:19:28 rensink Exp $
  */
 package groove.algebra;
 
@@ -22,7 +22,7 @@ import java.util.List;
  * Interface specifying what methods each Operation needs to implement.
  * AREND: Shouldn't the types of the arguments be included somehow?
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-04-04 20:45:16 $
+ * @version $Revision: 1.4 $ $Date: 2007-05-21 22:19:28 $
  */
 public interface Operation {
 	/**
@@ -53,14 +53,10 @@ public interface Operation {
 
 	/**
 	 * @return the type of this operation
+	 * @deprecated this is not used for anything
 	 */
+	@Deprecated
 	public int type();
-
-	/**
-	 * AREND: what is the prefix of an operation? Is it the name?
-	 * @return the prefix of this operation
-	 */
-	public String prefix();
 
 	/**
 	 * @param algebra

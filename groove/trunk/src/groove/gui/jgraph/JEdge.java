@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.5 2007-05-20 07:17:49 rensink Exp $
+ * $Id: JEdge.java,v 1.6 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -33,7 +33,7 @@ import org.jgraph.graph.DefaultPort;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
@@ -59,17 +59,27 @@ abstract public class JEdge extends DefaultEdge implements JCell {
 
     /** Returns the j-vertex that is the parent of the source port of this j-edge. */
     JVertex getSourceVertex() {
-		return (JVertex) ((DefaultPort) getSource()).getParent();
+    	DefaultPort source = (DefaultPort) getSource();
+		return source == null ? null : (JVertex) source.getParent();
     }
 
     /** Returns the j-vertex that is the parent of the target port of this j-edge. */
     JVertex getTargetVertex() {
-		return (JVertex) ((DefaultPort) getTarget()).getParent();
+    	DefaultPort target = (DefaultPort) getTarget();
+		return target == null ? null : (JVertex) target.getParent();
     }
     
     /** A j-edge is visible if its source and target nodes are visible. */
 	public boolean isVisible() {
-		return getSourceVertex().isVisible() && getTargetVertex().isVisible();
+		JVertex sourceVertex = getSourceVertex();
+		if (sourceVertex == null) {
+			return false;
+		}
+		JVertex targetVertex = getTargetVertex();
+		if (targetVertex == null) {
+			return false;
+		}
+		return sourceVertex.isVisible() && targetVertex.isVisible();
 	}
 
     /** 
@@ -135,20 +145,21 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * Returns the tool tip text for this edge.
      */
     public String getToolTipText() {
-    	return htmlTag.on(getEdgeDescription() + getLabelDescription());
+		return htmlTag.on(getEdgeDescription()); // + getLabelDescription());
     }
     
     /**
      * Callback method from {@link #getToolTipText()} to describe the
      * edge: kind of edge, singular or multiple.
+     * The resulting string is interpreted as HTML formatted
      */
-    String getEdgeDescription() {
-        String result;
-        if (getLabelSet().size() <= 1) {
-        	result = "Singular "+getEdgeKindDescription();
-        } else {
-            result = "Multiple "+getEdgeKindDescription()+"s";
-        }
+    StringBuilder getEdgeDescription() {
+    	StringBuilder result = getEdgeKindDescription();
+    	if (getLabelSet().size() > 1) {
+    		Converter.toUppercase(result, false);
+    		result.insert(0, "Multiple ");
+    		result.append("s");
+    	}
     	return result;
     }
     
@@ -156,8 +167,8 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * Callback method from {@link #getEdgeDescription()} to describe the
      * kind of edge.
      */
-    String getEdgeKindDescription() {
-        return getTarget() == null ? "self-edge" : "edge";
+    StringBuilder getEdgeKindDescription() {
+        return new StringBuilder("Graph edge");
     }
     
     /**

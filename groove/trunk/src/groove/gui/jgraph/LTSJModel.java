@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.7 2007-05-20 07:17:49 rensink Exp $
+ * $Id: LTSJModel.java,v 1.8 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -39,7 +39,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -368,8 +368,8 @@ public class LTSJModel extends GraphJModel {
 		}
 
 		@Override
-		String getEdgeKindDescription() {
-			return "transition";
+		StringBuilder getEdgeKindDescription() {
+			return new StringBuilder("transition");
 		}
 
 		@Override
@@ -446,8 +446,10 @@ public class LTSJModel extends GraphJModel {
 		}
 
 		@Override
-		String getNodeDescription() {
-			return "State "+getNode();
+		StringBuilder getNodeDescription() {
+			StringBuilder result = new StringBuilder("State ");
+			result.append(italicTag.on(getNode()));
+			return result;
 		}
 
 		@Override

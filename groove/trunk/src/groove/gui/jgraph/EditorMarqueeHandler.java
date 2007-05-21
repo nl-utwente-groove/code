@@ -1,5 +1,5 @@
 /*
- * $Id: EditorMarqueeHandler.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
+ * $Id: EditorMarqueeHandler.java,v 1.3 2007-05-21 22:19:17 rensink Exp $
  *
  * Derived from: @(#)GPGraph.java	1.0 1/1/02
  *
@@ -36,9 +36,9 @@ import org.jgraph.graph.VertexView;
  * different implementations of those actions. Lobotomized from jgrappad.
  * 
  * @author Gaudenz Alder; adapted by Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:27 $
+ * @version $Revision: 1.3 $ $Date: 2007-05-21 22:19:17 $
  */
-public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
+public class EditorMarqueeHandler extends JGraphMarqueeHandler<EditorJGraph> {
     static private final Color ADDING_EDGE_COLOR = Color.black;
     
     /**
@@ -70,12 +70,12 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      */
     @Override
     public void mousePressed(MouseEvent evt) {
-        assert evt.getSource() == jGraph() : "Marquee handler can only deal with " + jGraph()
+        assert evt.getSource() == getJGraph() : "Marquee handler can only deal with " + getJGraph()
                 + ", not with " + evt.getSource();
         if (!evt.isConsumed() && isMyMarqueeEvent(evt)) {
-            if (jGraph().isNodeMode(evt)) {
-                jGraph().addVertex(evt.getPoint());
-            } else if (jGraph().isEdgeMode(evt)) {
+            if (getJGraph().isNodeMode(evt)) {
+                getJGraph().addVertex(evt.getPoint());
+            } else if (getJGraph().isEdgeMode(evt)) {
                 if (currentVertex != null) {
                     setAddingEdge(currentVertex);
                     setAddingEdgeEndPoint(evt.getPoint());
@@ -97,7 +97,7 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      */
     @Override
     public void mouseDragged(MouseEvent evt) {
-        assert evt.getSource() == jGraph() : "Marquee handler can only deal with " + jGraph()
+        assert evt.getSource() == getJGraph() : "Marquee handler can only deal with " + getJGraph()
                 + ", not with " + evt.getSource();
         if (!evt.isConsumed() && isMyMarqueeEvent(evt) && isAddingEdge()) {
             currentVertex = vertexAt(evt.getX(), evt.getY());
@@ -119,12 +119,12 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      */
     @Override
     public void mouseReleased(MouseEvent evt) {
-        assert evt.getSource() == jGraph() : "Marquee handler can only deal with " + jGraph()
+        assert evt.getSource() == getJGraph() : "Marquee handler can only deal with " + getJGraph()
                 + ", not with " + evt.getSource();
         if (!evt.isConsumed() && isMyMarqueeEvent(evt)) {
             if (isAddingEdge() && currentVertex != startVertex) {
                 Point2D endPoint = currentVertex == null ? addingEdgeEndPoint : VertexView.getCenterPoint(currentVertex);
-                jGraph().addEdge(addingEdgeStartPoint, endPoint);
+                getJGraph().addEdge(addingEdgeStartPoint, endPoint);
             }
             setAddingEdge(null);
             setEmphVertex(null);
@@ -144,14 +144,14 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      */
     @Override
     public void mouseMoved(MouseEvent evt) {
-        assert evt.getSource() == jGraph() : "Marquee handler can only deal with " + jGraph()
+        assert evt.getSource() == getJGraph() : "Marquee handler can only deal with " + getJGraph()
                 + ", not with " + evt.getSource();
         // better make sure we're not still adding an edge
         setAddingEdge(null);
         if (!evt.isConsumed() && isMyMarqueeEvent(evt)) {
-            jGraph().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
+            getJGraph().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
             evt.consume();
-            if (jGraph().isEdgeMode(evt)) {
+            if (getJGraph().isEdgeMode(evt)) {
                 currentVertex = vertexAt(evt.getX(), evt.getY());
                 setEmphVertex(currentVertex);
                 redrawOverlay();
@@ -170,7 +170,7 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      * @see #drawAddingEdge(Graphics)
      */
     public void overlay(Graphics g) {
-        super.overlay(jGraph(), g, false);
+        super.overlay(getJGraph(), g, false);
         drawEmphVertex(g);
         drawAddingEdge(g);
     }
@@ -182,9 +182,9 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      * values for the new overlay; at the end the {@link #overlayDone()} is called. 
      */
     public void redrawOverlay() {
-        Graphics g = jGraph().getGraphics();
-        g.setColor(jGraph().getForeground());
-        g.setXORMode(jGraph().getBackground());
+        Graphics g = getJGraph().getGraphics();
+        g.setColor(getJGraph().getForeground());
+        g.setXORMode(getJGraph().getBackground());
         overlay(g);      
         changeOverlayState();
         overlay(g);
@@ -255,7 +255,7 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      * @return <tt>jGraph().isNodeMode(evt) || jGraph().isEdgeMode(evt)</tt>
      */
     protected boolean isMyMarqueeEvent(MouseEvent evt) {
-        return isAddingEdge() || jGraph().isNodeMode(evt) || jGraph().isEdgeMode(evt);
+        return isAddingEdge() || getJGraph().isNodeMode(evt) || getJGraph().isEdgeMode(evt);
     }
 
     /**
@@ -317,19 +317,12 @@ public class EditorMarqueeHandler extends JGraph.MyMarqueeHandler {
      * or <tt>null</tt> if there is no vertex there.
      */
     private VertexView vertexAt(double x, double y) {
-        JCell jCell = (JCell) jGraph().getFirstCellForLocation(x, y);
+        JCell jCell = (JCell) getJGraph().getFirstCellForLocation(x, y);
         if (jCell instanceof JVertex) {
-            return (VertexView) jGraph().getGraphLayoutCache().getMapping(jCell, false);
+            return (VertexView) getJGraph().getGraphLayoutCache().getMapping(jCell, false);
         } else {
             return null;
         }
-    }
-    
-    /**
-     * Convenience method for <tt>(EditorJGraph) jGraph</tt>.
-     */
-    private EditorJGraph jGraph() {
-        return ((EditorJGraph) jGraph);
     }
     
     /** 

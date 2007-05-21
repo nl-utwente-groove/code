@@ -12,27 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJGraph.java,v 1.6 2007-05-20 07:17:49 rensink Exp $
+ * $Id: AspectJGraph.java,v 1.7 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
-import groove.gui.Options;
 import groove.gui.Simulator;
 import groove.gui.layout.SpringLayouter;
 import groove.trans.RuleNameLabel;
-import groove.view.aspect.AspectElement;
-import groove.view.aspect.RuleAspect;
 
 import java.awt.event.ActionEvent;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
-
-import org.jgraph.event.GraphModelEvent;
 
 /**
  * Extension of {@link JGraph} that provides the proper popup menu.

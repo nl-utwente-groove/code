@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.2 2007-05-09 22:53:33 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.3 2007-05-21 22:19:29 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -29,8 +29,10 @@ import groove.algebra.DefaultIntegerAlgebra;
 import groove.algebra.DefaultStringAlgebra;
 import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.AlgebraGraph;
@@ -44,96 +46,13 @@ import groove.view.FormatException;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AttributeAspect extends AbstractAspect {
-    /**
-     * The name of the attribute aspect.
-     */
-    public static final String ATTRIBUTE_ASPECT_NAME = "attribute";
-
-    /**
-     * The singleton instance of this class.
-     */
-    private static final AttributeAspect instance = new AttributeAspect();
-
-    /** Name of the argument aspect value. */
-    public static final String ARGUMENT_NAME = Groove.getXMLProperty("label.argument.prefix");
-    /** The argument aspect value. */
-    public static final AspectValue ARGUMENT;
-    /** Name of the attribute aspect value. */
-    public static final String VALUE_NAME = Groove.getXMLProperty("label.attribute.prefix");
-    /** The attribute aspect value. */
-    public static final AspectValue VALUE;
-    /** Name of the product aspect value. */
-    public static final String PRODUCT_NAME = Groove.getXMLProperty("label.product.prefix");
-    /** The product aspect value. */
-    public static final AspectValue PRODUCT;
-    /** Name of the integer aspect value. */
-    public static final String INTEGER_NAME = Groove.getXMLProperty("label.integer.prefix");
-    /** The integer aspect value. */
-    public static final AspectValue INTEGER;
-    /** Name of the boolean aspect value. */
-    public static final String BOOLEAN_NAME = Groove.getXMLProperty("label.boolean.prefix");
-    /** The boolean aspect value. */
-    public static final AspectValue BOOLEAN;
-    /** Name of the string aspect value. */
-    public static final String STRING_NAME = Groove.getXMLProperty("label.string.prefix");
-    /** The string aspect value. */
-    public static final AspectValue STRING;
-
-    /** 
-     * Map from aspect values to those algebras that they represent. 
-     * TODO there should be a better way to look up this relation
-     */
-    private static final Map<AspectValue, Algebra> algebraMap = new HashMap<AspectValue, Algebra>();
-    /** 
-     * Map from algebras to aspect values that represent them. 
-     * TODO there should be a better way to look up this relation
-     */
-    private static final Map<Algebra, AspectValue> aspectValueMap = new HashMap<Algebra, AspectValue>();
-    
-    /** 
-     * Adds a pair of algebra and aspect value to the internal maps
-     * {@link #algebraMap} and {@link #aspectValueMap}.
-     */
-    private static void addAlgebra(Algebra algebra, AspectValue value) {
-    	Algebra oldAlgebra = algebraMap.put(value, algebra);
-    	AspectValue oldValue = aspectValueMap.put(algebra, value);
-    	if (oldAlgebra != null || oldValue != null) {
-    		throw new IllegalStateException(String.format("Duplicate algebra %s", algebra));
-    	}
+    /** Private constructor to create the singleton instance. */
+    private AttributeAspect() {
+        super(ATTRIBUTE_ASPECT_NAME);
     }
-    
-	static {
-		try {
-		    ARGUMENT = instance.addEdgeValue(ARGUMENT_NAME);
-		    VALUE = instance.addNodeValue(VALUE_NAME);
-		    PRODUCT = instance.addNodeValue(PRODUCT_NAME);
-		    INTEGER = instance.addEdgeValue(INTEGER_NAME);
-		    BOOLEAN = instance.addEdgeValue(BOOLEAN_NAME);
-		    STRING = instance.addEdgeValue(STRING_NAME);
-		    ARGUMENT.setEdgeToSource(PRODUCT);
-		    ARGUMENT.setEdgeToTarget(VALUE);
-		    INTEGER.setEdgeToTarget(VALUE);
-		    BOOLEAN.setEdgeToTarget(VALUE);
-		    STRING.setEdgeToTarget(VALUE);
-		    // no AttributeAspect values can be combined with creators or erasers
-		    for (AspectValue value: instance.getValues()) {
-		    	value.setIncompatible(RuleAspect.CREATOR);
-		    	value.setIncompatible(RuleAspect.ERASER);
-		    	value.setIncompatible(RuleAspect.EMBARGO);
-		    }
-		    // initialise the algebra map
-		    addAlgebra(DefaultIntegerAlgebra.getInstance(), INTEGER);
-		    addAlgebra(DefaultBooleanAlgebra.getInstance(), BOOLEAN);
-		    addAlgebra(DefaultStringAlgebra.getInstance(), STRING);
-		} catch (FormatException exc) {
-			throw new Error("Aspect '" + ATTRIBUTE_ASPECT_NAME
-					+ "' cannot be initialised due to name conflict", exc);
-		}
-    }
-	
     /**
      * Returns the singleton instance of this aspect.
      */
@@ -340,6 +259,8 @@ public class AttributeAspect extends AbstractAspect {
 		Node target = ends[Edge.TARGET_INDEX];
 		if (target == null) {
 			throw new FormatException("Target of '%s'-edge has no image", edge.label());
+		} else if (! (target instanceof ValueNode)) {
+			throw new FormatException("Target of '%s'-edge should be value node", edge.label());
 		}
 		return new AlgebraEdge(source, edge.label(), target);
 	}
@@ -373,9 +294,115 @@ public class AttributeAspect extends AbstractAspect {
 			return null;
 		}
 	}
-    
-    /** Private constructor to create the singleton instance. */
-    private AttributeAspect() {
-        super(ATTRIBUTE_ASPECT_NAME);
+
+    /** 
+     * Adds a pair of algebra and aspect value to the internal maps
+     * {@link #algebraMap} and {@link #aspectValueMap}.
+     */
+    private static void addAlgebra(Algebra algebra, AspectValue value) {
+    	Algebra oldAlgebra = algebraMap.put(value, algebra);
+    	AspectValue oldValue = aspectValueMap.put(algebra, value);
+    	if (oldAlgebra != null || oldValue != null) {
+    		throw new IllegalStateException(String.format("Duplicate algebra %s", algebra));
+    	}
+    	value.setLabelParser(new OperationLabelParser(algebra));
     }
+
+    /**
+     * The name of the attribute aspect.
+     */
+    public static final String ATTRIBUTE_ASPECT_NAME = "attribute";
+
+    /**
+     * The singleton instance of this class.
+     */
+    private static final AttributeAspect instance = new AttributeAspect();
+
+    /** Name of the argument aspect value. */
+    public static final String ARGUMENT_NAME = Groove.getXMLProperty("label.argument.prefix");
+    /** The argument aspect value. */
+    public static final AspectValue ARGUMENT;
+    /** Name of the attribute aspect value. */
+    public static final String VALUE_NAME = Groove.getXMLProperty("label.attribute.prefix");
+    /** The attribute aspect value. */
+    public static final AspectValue VALUE;
+    /** Name of the product aspect value. */
+    public static final String PRODUCT_NAME = Groove.getXMLProperty("label.product.prefix");
+    /** The product aspect value. */
+    public static final AspectValue PRODUCT;
+    /** Name of the integer aspect value. */
+    public static final String INTEGER_NAME = Groove.getXMLProperty("label.integer.prefix");
+    /** The integer aspect value. */
+    public static final AspectValue INTEGER;
+    /** Name of the boolean aspect value. */
+    public static final String BOOLEAN_NAME = Groove.getXMLProperty("label.boolean.prefix");
+    /** The boolean aspect value. */
+    public static final AspectValue BOOLEAN;
+    /** Name of the string aspect value. */
+    public static final String STRING_NAME = Groove.getXMLProperty("label.string.prefix");
+    /** The string aspect value. */
+    public static final AspectValue STRING;
+
+    /** 
+     * Map from aspect values to those algebras that they represent. 
+     */
+    private static final Map<AspectValue, Algebra> algebraMap = new HashMap<AspectValue, Algebra>();
+    /** 
+     * Map from algebras to aspect values that represent them. 
+     */
+    private static final Map<Algebra, AspectValue> aspectValueMap = new HashMap<Algebra, AspectValue>();
+//    /** Map from algebras to label parsers for those algebras. */
+//    private static final Map<Algebra,LabelParser> parserMap = new HashMap<Algebra,LabelParser>();
+    
+	static {
+		try {
+		    ARGUMENT = instance.addEdgeValue(ARGUMENT_NAME);
+		    VALUE = instance.addNodeValue(VALUE_NAME);
+		    PRODUCT = instance.addNodeValue(PRODUCT_NAME);
+		    INTEGER = instance.addEdgeValue(INTEGER_NAME);
+		    BOOLEAN = instance.addEdgeValue(BOOLEAN_NAME);
+		    STRING = instance.addEdgeValue(STRING_NAME);
+		    ARGUMENT.setEdgeToSource(PRODUCT);
+		    ARGUMENT.setEdgeToTarget(VALUE);
+		    INTEGER.setEdgeToTarget(VALUE);
+		    BOOLEAN.setEdgeToTarget(VALUE);
+		    STRING.setEdgeToTarget(VALUE);
+		    // no AttributeAspect values can be combined with creators or erasers
+		    for (AspectValue value: instance.getValues()) {
+		    	value.setIncompatible(RuleAspect.CREATOR);
+		    	value.setIncompatible(RuleAspect.ERASER);
+		    	value.setIncompatible(RuleAspect.EMBARGO);
+		    }
+		    // initialise the algebra map
+		    addAlgebra(DefaultIntegerAlgebra.getInstance(), INTEGER);
+		    addAlgebra(DefaultBooleanAlgebra.getInstance(), BOOLEAN);
+		    addAlgebra(DefaultStringAlgebra.getInstance(), STRING);
+		} catch (FormatException exc) {
+			throw new Error("Aspect '" + ATTRIBUTE_ASPECT_NAME
+					+ "' cannot be initialised due to name conflict", exc);
+		}
+    }
+	
+	/** 
+	 * Class that attempts to parse a string as the operation of a given
+	 * algebra, and returns the result as a DefaultLabel if successful.
+	 */
+	private static class OperationLabelParser implements LabelParser {
+		/** Constructs an instance of this parser class for a given algebra. */
+		OperationLabelParser(Algebra algebra) {
+			this.algebra = algebra;
+		}
+		
+		public Label parse(String text) throws FormatException {
+			try {
+				algebra.getOperation(text);
+				return DefaultLabel.createLabel(text);
+			} catch (UnknownSymbolException exc) {
+				throw new FormatException(exc.getMessage());
+			}
+		}
+		
+		/** The algebra that should understand the operation. */
+		private final Algebra algebra;
+	}
 }

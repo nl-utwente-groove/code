@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.12 2007-05-20 07:17:49 rensink Exp $
+ * $Id: JModel.java,v 1.13 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -60,45 +60,9 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 abstract public class JModel extends DefaultGraphModel {
-    /**
-     * Special graph model edit that does not signal any actual change
-     * but merely passes along a set of cells whose views need to be refreshed
-     * due to some hiding or emphasis action.
-     * @author Arend Rensink
-     * @version $Revision: 1.12 $
-     */
-    public class RefreshEdit extends GraphModelEdit {
-        /**
-         * Constructs a new edit based on a given set of jcells.
-         * @param refreshedJCells the set of jcells to be refreshed
-         */
-        public RefreshEdit(Collection<JCell> refreshedJCells) {
-            super(null, null, null, null, null);
-            this.refreshedJCells = refreshedJCells;
-        }
-        
-        /**
-         * Returns the set of jcells to be refreshed.
-         */
-        public Collection<JCell> getRefreshedJCells() {
-            return refreshedJCells;
-        }
-        
-        @Override
-		public Object[] getChanged() {
-        	if (changed == null) {
-        		changed = refreshedJCells.toArray();
-        	}
-        	return changed;
-		}
-
-		/** The set of cells that this event reports on refreshing. */
-        private final Collection<JCell> refreshedJCells;
-    }
-    
     /**
      * Constructs a new JModel with given default node and edge attributes, possibly showing node identities.
      * @param defaultNodeAttr the default node attributes for this model
@@ -619,4 +583,40 @@ abstract public class JModel extends DefaultGraphModel {
      * The name of this model.
      */
     private String name;
+    
+    /**
+     * Special graph model edit that does not signal any actual change
+     * but merely passes along a set of cells whose views need to be refreshed
+     * due to some hiding or emphasis action.
+     * @author Arend Rensink
+     * @version $Revision: 1.13 $
+     */
+    public class RefreshEdit extends GraphModelEdit {
+        /**
+         * Constructs a new edit based on a given set of jcells.
+         * @param refreshedJCells the set of jcells to be refreshed
+         */
+        public RefreshEdit(Collection<JCell> refreshedJCells) {
+            super(null, null, null, null, null);
+            this.refreshedJCells = refreshedJCells;
+        }
+        
+        /**
+         * Returns the set of jcells to be refreshed.
+         */
+        public Collection<JCell> getRefreshedJCells() {
+            return refreshedJCells;
+        }
+        
+        @Override
+		public Object[] getChanged() {
+        	if (changed == null) {
+        		changed = refreshedJCells.toArray();
+        	}
+        	return changed;
+		}
+
+		/** The set of cells that this event reports on refreshing. */
+        private final Collection<JCell> refreshedJCells;
+    }
 }

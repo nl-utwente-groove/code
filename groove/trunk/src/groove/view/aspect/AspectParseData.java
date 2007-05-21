@@ -12,19 +12,19 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParseData.java,v 1.3 2007-05-11 08:22:03 rensink Exp $
+ * $Id: AspectParseData.java,v 1.4 2007-05-21 22:19:29 rensink Exp $
  */
 package groove.view.aspect;
 
-import java.util.Collection;
-import java.util.Iterator;
-
+import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.view.FormatException;
-import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
+
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Combination of declared aspect values and actual label text, as derived from a plain 
@@ -51,7 +51,7 @@ class AspectParseData {
 	AspectParseData(AspectMap values, boolean hasEnd, String text) {
 		this.declaredAspectMap = values;
 		this.allAspectMap = new AspectMap();
-		allAspectMap.putAll(values);
+		this.allAspectMap.putAll(values);
 		this.hasEnd = hasEnd;
 		this.text = text;
 	}
@@ -119,19 +119,20 @@ class AspectParseData {
      */
 	public Label getLabel() throws FormatException {
 		if (label == null && hasText()) {
-			boolean freeText = false;
 			Iterator<AspectValue> valueIter = getAspectMap().values().iterator();
-			while (!freeText && valueIter.hasNext()) {
-				freeText |= valueIter.next().isFreeText();
-			}
-			if (!freeText) {
-				RegExpr textAsRegExpr = RegExpr.parse(text);
-				if (!(textAsRegExpr instanceof RegExpr.Atom)) {
-					label = textAsRegExpr.toLabel();
+			while (valueIter.hasNext()) {
+				Aspect.LabelParser parser = valueIter.next().getLabelParser();
+				if (parser != null) {
+					Label newLabel = parser.parse(text);
+					if (label == null) {
+						label = newLabel;
+					} else if (!label.equals(newLabel)) {
+						throw new FormatException("label '%s' cannot be parsed unambiguously", text);
+					}
 				}
 			}
 			if (label == null) {
-				label = DefaultLabel.createLabel(text);
+				label = AbstractAspect.getRegExprLabelParser().parse(text);
 			}
 		}
 		return label;

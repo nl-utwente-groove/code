@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectValue.java,v 1.2 2007-05-09 22:53:33 rensink Exp $
+ * $Id: AspectValue.java,v 1.3 2007-05-21 22:19:29 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -71,23 +71,23 @@ public class AspectValue {
      * @throws groove.view.FormatException if the value name is already used
      */
     public AspectValue(Aspect aspect, String name) throws FormatException {
-    	this(aspect, name, false, new HashSet<AspectValue>());
+    	this(aspect, name, new HashSet<AspectValue>());
         registerValue(this);
     }
-
-    /**
-     * Creates a new aspect value, for a given aspect and with a given name.
-     * A further flag indicates if labels with this value can be freely formatted.
-     * Throws an exception if an aspect value with the same name exists already.
-     * @param aspect the aspect for which this is a value
-     * @param name the name of the aspect value.
-     * @boolean freeText if <code>true</code>, labels can be freely formatted
-     * @throws groove.view.FormatException if the value name is already used
-     */
-    public AspectValue(Aspect aspect, String name, boolean freeText) throws FormatException {
-    	this(aspect, name, freeText, new HashSet<AspectValue>());
-        registerValue(this);
-    }
+//
+//    /**
+//     * Creates a new aspect value, for a given aspect and with a given name.
+//     * A further flag indicates if labels with this value can be freely formatted.
+//     * Throws an exception if an aspect value with the same name exists already.
+//     * @param aspect the aspect for which this is a value
+//     * @param name the name of the aspect value.
+//     * @boolean freeText if <code>true</code>, labels can be freely formatted
+//     * @throws groove.view.FormatException if the value name is already used
+//     */
+//    public AspectValue(Aspect aspect, String name) throws FormatException {
+//    	this(aspect, name, new HashSet<AspectValue>());
+//        registerValue(this);
+//    }
     
     /**
      * Creates a new aspect value, for a given aspect and with a given name
@@ -95,14 +95,13 @@ public class AspectValue {
      * invoked directly.
      * @param aspect the aspect for which this is a value
      * @param name the name of the aspect value
-     * @param freeText freeText if <code>true</code>, labels can be freely formatted
      * @param incompatibles the set of aspect values that are incompatible with this one
      */
-    AspectValue(Aspect aspect, String name, boolean freeText, Set<AspectValue> incompatibles) {
+    AspectValue(Aspect aspect, String name, Set<AspectValue> incompatibles) {
         this.aspect = aspect;
         this.name = name;
         this.incompatibles = incompatibles;
-        this.freeText = freeText;
+//        this.freeText = freeText;
     }
     
     /**
@@ -119,14 +118,14 @@ public class AspectValue {
     public String getName() {
         return name;
     }
-
-    /** 
-     * Indicates if labels under this aspect value can be freely formatted.
-     * If <code>false</code>, labels are parsed as regular expressions. 
-     */
-    public final boolean isFreeText() {
-		return freeText;
-	}
+//
+//    /** 
+//     * Indicates if labels under this aspect value can be freely formatted.
+//     * If <code>false</code>, labels are parsed as regular expressions. 
+//     */
+//    public final boolean isFreeText() {
+//		return freeText;
+//	}
 
 	/**
      * Returns the prefix of the aspect value.
@@ -138,7 +137,21 @@ public class AspectValue {
         return name + VALUE_SEPARATOR;
     }
 
-    /** 
+    /**
+	 * Returns the label parser of this aspect value, if any.
+	 */
+	public final Aspect.LabelParser getLabelParser() {
+		return this.labelParser;
+	}
+
+	/**
+	 * Assigns a label parser to this aspect value.
+	 */
+	final void setLabelParser(Aspect.LabelParser labelParser) {
+		this.labelParser = labelParser;
+	}
+
+	/** 
      * Returns the inferred edge value for an {@link AspectEdge}
      * in case the source node has this value.
      */
@@ -265,8 +278,8 @@ public class AspectValue {
      * The name of this value.
      */
     private final String name;
-    /** Flag indicating if this aspect value can have free text as label. */
-    private final boolean freeText;
+//    /** Flag indicating if this aspect value can have free text as label. */
+//    private final boolean freeText;
     /** Inferred edge aspect value (of the same aspect) if this value is in the source node. */
     private AspectValue sourceToEdge;
     /** Inferred edge aspect value (of the same aspect) if this value is in the target node. */
@@ -277,4 +290,6 @@ public class AspectValue {
     private AspectValue edgeToTarget;
     /** Set of aspect values, possibly of other aspects, that are incompatible with this one. */
     private final Set<AspectValue> incompatibles;
+    /** Optional label parser of this aspect value. */
+    private Aspect.LabelParser labelParser;
 }

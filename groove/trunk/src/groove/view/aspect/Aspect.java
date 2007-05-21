@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Aspect.java,v 1.1 2007-04-29 09:22:24 rensink Exp $
+ * $Id: Aspect.java,v 1.2 2007-05-21 22:19:29 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,29 +27,9 @@ import java.util.Set;
  * Examples of aspects are: the roles in a rule, typing information, or
  * graph condition information.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface Aspect {
-	/** 
-	 * String used to separate the textual representation of aspect values
-	 * in a label. 
-	 * When the separator occurs twice in direct succession, this denotes the
-	 * end of the aspect prefix.
-	 */
-    public static final String VALUE_SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
-	/** 
-	 * String used to separate the name and content of aspect values.
-	 */
-    public static final String CONTENT_ASSIGN = Groove.getXMLProperty("label.content.assign");
-	/** 
-	 * String used to separate substrings within the content of an aspect value.
-	 */
-    public static final String CONTENT_SEPARATOR = Groove.getXMLProperty("label.content.separator");
-    
-
-	/** Array of all known aspects. */
-	public Aspect[] allAspects = { AttributeAspect.getInstance(), RuleAspect.getInstance() };
-
 	/**
      * Returns the set of all possible aspect values (for either nodes or edges), 
      * as a set of <code>AspectValue</code>s.
@@ -98,4 +78,32 @@ public interface Aspect {
      * @throws FormatException if the label is not correct, given the aspect values
      */
     void testLabel(Label label, AspectValue declaredValue, AspectValue inferredValue) throws FormatException;
+
+	/**
+	 * String used to separate the textual representation of aspect values in a label.  When the separator occurs twice in direct succession, this denotes the end of the aspect prefix.
+	 */
+	public static final String VALUE_SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
+	/**
+	 * String used to separate the name and content of aspect values.
+	 */
+	public static final String CONTENT_ASSIGN = Groove.getXMLProperty("label.content.assign");
+	/**
+	 * String used to separate substrings within the content of an aspect value.
+	 */
+	public static final String CONTENT_SEPARATOR = Groove.getXMLProperty("label.content.separator");
+	/**
+	 * Array of all known aspects. 
+	 */
+	public Aspect[] allAspects = { AttributeAspect.getInstance(), RuleAspect.getInstance() };
+	/** Interface for parsers from strings to labels. */
+	static interface LabelParser {
+		/** 
+		 * Method turning a string into a label.
+		 * @param text the string to be parsed into a label
+		 * @return the label constructed from <code>text</code>
+		 * @throws FormatException if <code>text</code> is not correctly formatted
+		 * according to this parser. 
+		 */
+		Label parse(String text) throws FormatException;
+	}
 }

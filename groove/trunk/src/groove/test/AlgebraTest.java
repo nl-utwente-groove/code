@@ -58,28 +58,11 @@ public class AlgebraTest extends TestCase {
 		}
 	}
 
-	final public void testAddOperation() {
-		iOneConst = new DefaultConstant();
-		iOneConst.set(iAlgebra, "1", -1);
-		assertEquals(bAlgebra.addOperation(bTrueConst), false);
-		assertEquals(iAlgebra.addOperation(iOneConst), true);
-	}
-
 	final public void testIsValidOpration() {
 		assertTrue(bAlgebra.isValidOperation(bFalseConst));
 //		bOper = new Operation("TRUE", 0);
 //		bOper.setAlgebra(bAlgebra);
 //		assertTrue(bAlgebra.isValidOperation(bOper));
-	}
-
-	final public void testGetOperation() {
-//		aOper = bAlgebra.getOperation(BooleanAlgebra.FALSE);
-		Constant constant = new DefaultConstant();
-		constant.set(bAlgebra, "FALSE", 0);
-		assertEquals(bFalseConst, constant);
-//		Operation operation = new DefaultOperation();
-//		operation.set(bAlgebra, "OR", 2);
-//		assertNotSame(constant, operation);
 	}
 
 	final public void testGetOperations() {

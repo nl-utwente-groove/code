@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.7 2007-05-18 08:55:00 rensink Exp $
+ * $Id: JGraph.java,v 1.8 2007-05-21 22:19:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -36,14 +36,11 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -63,7 +60,6 @@ import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultGraphModel;
 import org.jgraph.graph.DefaultGraphSelectionModel;
@@ -78,319 +74,9 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-05-18 08:55:00 $
+ * @version $Revision: 1.8 $ $Date: 2007-05-21 22:19:16 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
-    /**
-     * Abstract class for j-cell edit actions.
-     */
-    protected abstract class JCellEditAction extends AbstractAction implements GraphSelectionListener {
-        /**
-         * Constructs an edit action that is enabled for all j-cells.
-         * @param name the name of the action
-         */
-        protected JCellEditAction(String name) {
-            super(name);
-            this.allCells = true;
-            this.vertexOnly = true;
-            valueChanged(null);
-            JGraph.this.addGraphSelectionListener(this);
-        }
-        
-        /**
-         * Constructs an edit action that is enabled for only j-vertices or j-edges.
-         * @param name the name of the action
-         * @param vertexOnly <tt>true</tt> if the action is for j-vertices only
-         */
-        protected JCellEditAction(String name, boolean vertexOnly) {
-            super(name);
-            this.allCells = false;
-            this.vertexOnly = vertexOnly;
-            valueChanged(null);
-            JGraph.this.addGraphSelectionListener(this);
-        }
-        
-        /**
-         * Sets the j-cell to the first selected cell.
-         * Disables the action if the type of the cell disagrees with the expected type.
-         */
-        public void valueChanged(GraphSelectionEvent e) {
-            jCell = (JCell) JGraph.this.getSelectionCell();
-            if (jCell != null) {
-                setEnabled(allCells || vertexOnly == (jCell instanceof JVertex));
-            } else {
-                setEnabled(false);
-            }
-        }
-        
-        /**
-         * Sets the location attribute of this action.
-         */
-        public void setLocation(Point2D location) {
-            this.location = location;
-        }
-        
-        /** Switch indication that the action is enabled for all types of j-cells. */
-        protected final boolean allCells;
-        /** Switch indication that the action is enabled for all j-vertices. */
-        protected final boolean vertexOnly;
-        /** The currently selected j-cell. */
-        protected JCell jCell;
-        /** The currently set point location. */
-        protected Point2D location;
-    }
-    
-    /**
-     * Action to add a point to the currently selected j-edge.
-     */
-    protected class AddPointAction extends JCellEditAction {
-    	/** Constructs an instance of the action. */
-        public AddPointAction() {
-            super(Options.ADD_POINT_ACTION, false);
-        }
-        
-        public void actionPerformed(ActionEvent evt) {
-        	addPoint((JEdge) jCell, location);
-        }
-    }
-
-    /**
-     * Action to remove a point from the currently selected j-edge.
-     */
-    protected class RemovePointAction extends JCellEditAction {
-    	/** Constructs an instance of the action. */
-        public RemovePointAction() {
-            super(Options.REMOVE_POINT_ACTION, false);
-        }
-        
-        public void actionPerformed(ActionEvent evt) {
-        	removePoint((JEdge) jCell, location);
-        }
-    }
-
-    /**
-     * Action to edit the label of the currently selected j-cell.
-     */
-    protected class EditLabelAction extends JCellEditAction {
-    	/** Constructs an instance of the action. */
-        public EditLabelAction() {
-            super(Options.EDIT_LABEL_ACTION);
-            putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
-        }
-        
-        public void actionPerformed(ActionEvent evt) {
-            startEditingAtCell(jCell);
-        }
-    }
-
-    /**
-     * Action set the label of the currently selected j-cell to its default position.
-     */
-    protected class ResetLabelPositionAction extends JCellEditAction {
-    	/** Constructs an instance of the action. */
-        public ResetLabelPositionAction() {
-            super(Options.RESET_LABEL_POSITION_ACTION, false);
-        }
-        
-        public void actionPerformed(ActionEvent evt) {
-            resetLabelPosition((JEdge) jCell);
-        }
-    }
-    
-    /**
-     * Action to set the line style of the currently selected j-edge.
-     */
-    protected class SetLineStyleAction extends JCellEditAction {
-    	/** Constructs an instance of the action, for a given line style. */
-        public SetLineStyleAction(int lineStyle) {
-            super(Options.getLineStyleName(lineStyle));
-            putValue(ACCELERATOR_KEY, Options.getLineStyleKey(lineStyle));
-            this.lineStyle = lineStyle;
-        }
-        
-        public void actionPerformed(ActionEvent evt) {
-            setLineStyle((JEdge) jCell, lineStyle);
-        }
-        
-        /** The line style set by this action instance. */
-        protected final int lineStyle;
-    }
-    
-    /**
-     * Menu offering a choice of line style setting actions.
-     */
-    protected class SetLineStyleMenu extends JMenu implements GraphSelectionListener {
-    	/** Constructs an instance of the action. */
-        public SetLineStyleMenu() {
-            super(Options.SET_LINE_STYLE_MENU);
-            valueChanged(null);
-            JGraph.this.addGraphSelectionListener(this);
-        }
-        
-        public void valueChanged(GraphSelectionEvent e) {
-            setEnabled(getSelectionCell() instanceof JEdge);
-        }
-    }
-    
-    /**
-     * A menu item, initialized to an action, that hides itself whenever it is disabled.
-     */
-    protected class DisappearingJMenuItem extends JMenuItem {
-    	/**
-    	 * Constructs a menu item for a given action.
-    	 * @param action the Action for which to create a menu item
-    	 */
-        public DisappearingJMenuItem(Action action) {
-            super(action);
-        }
-        
-        @Override
-        public void setEnabled(boolean enabled) {
-            super.setEnabled(enabled);
-            setVisible(enabled);
-        }
-    }
-    
-    /**
-     * A layout cache that, for efficiency, does not pass on all change events,
-     * and sets a {@link JCellViewFactory}.
-     * It should be possible to use the partiality of the cache to 
-     * hide elements, but this seems unnecessarily complicated.
-     */
-    private class MyGraphLayoutCache extends GraphLayoutCache {   
-    	/** Constructs an instance of the cache. */
-        public MyGraphLayoutCache() {
-            super(JGraph.this.getModel(), new JCellViewFactory(JGraph.this), true);
-            setSelectsLocalInsertedCells(false);
-        }
-        
-        /** 
-         * After calling the super method, sets all roots to visible.
-         * This is necessary because the cache is partial.
-         */
-        @Override
-		public void setModel(GraphModel model) {
-			super.setModel(model);				
-			Object[] cells = DefaultGraphModel.getRoots(getModel());
-			CellView[] cellViews = getMapping(cells, true);
-			insertViews(cellViews);
-			// Update PortView Cache and Notify Observers
-			updatePorts();
-			cellViewsChanged(getRoots());
-		}
-
-		@Override
-		public boolean isVisible(Object cell) {
-			if (cell instanceof JCell) {
-				return ((JCell) cell).isVisible();
-			} else if (cell instanceof DefaultPort) {
-				return isVisible(((DefaultPort) cell).getParent());
-			} else {
-				return super.isVisible(cell);
-			}
-		}
-
-		/**
-         * Overrides the method so {@link JModel.RefreshEdit}s are not
-         * passed on.
-         */
-        @Override
-        public void graphChanged(GraphModelChange change) {
-            if (!(change instanceof JModel.RefreshEdit)) {
-                super.graphChanged(change);
-            }
-//            Object[] inserted = change.getInserted();
-//            if (inserted != null) {
-//            	setVisible(inserted, true);
-//            }
-        }
-    }
-    
-    /**
-     * Marquee handler that activates and shows the popup menu and adds and 
-     * removes edge points.
-     * @see JGraph#isPopupMenuEvent(MouseEvent)
-     * @see JGraph#activatePopupMenu(Point)
-     * @see JGraph#addPoint(JEdge, Point2D)
-     * @see JGraph#removePoint(JEdge, Point2D)
-     */
-    static protected class MyMarqueeHandler extends BasicMarqueeHandler {
-    	/**
-    	 * Constructs a marquee handler for a given j-graph.
-    	 * @param jGraph the JGraph for which to create a marquee handler
-    	 */
-        MyMarqueeHandler(JGraph jGraph) {
-            this.jGraph = jGraph;
-        }
-        
-        @Override
-        public boolean isForceMarqueeEvent(MouseEvent evt) {
-            return jGraph.isPopupMenuEvent(evt) || super.isForceMarqueeEvent(evt);
-        }
-
-        /**
-         * If the mouse event is a popup menu event, create the popup. 
-         * If it is an add or remove event and the graph selection is appropriate,
-         * add or remove j-edge points.
-         * Pass on the event to <tt>super</tt> if it is not for us.
-         * @param evt the event that happened
-         */
-        @Override
-        public void mousePressed(MouseEvent evt) {
-            if (!evt.isConsumed() && jGraph.isPopupMenuEvent(evt)) {
-                Point atPoint = evt.getPoint();
-                jGraph.getPopupMenu(atPoint).show(jGraph, atPoint.x, atPoint.y);
-                evt.consume();
-            } else if (jGraph.isAddPointEvent(evt)) {
-                JCell jCell = (JCell) jGraph.getSelectionCell();
-                if (jCell instanceof JEdge) {
-                    jGraph.addPoint((JEdge) jCell, evt.getPoint());
-                }
-            } else if (jGraph.isRemovePointEvent(evt)) {
-                JCell jCell = (JCell) jGraph.getSelectionCell();
-                if (jCell instanceof JEdge) {
-                    jGraph.removePoint((JEdge) jCell, evt.getPoint());
-                }
-            } else {
-                super.mousePressed(evt);
-            }
-        }
-        /** The j-graph upon which this marquee handler works. */
-        protected final JGraph jGraph;
-    }
-
-    /**
-     * Selection model that makes sure hidden cells cannot be selected.
-     */
-    private class MyGraphSelectionModel extends DefaultGraphSelectionModel {
-    	/** Constructs an instance of the selection model. */
-        public MyGraphSelectionModel() {
-            super(JGraph.this);
-        }
-        
-        @Override
-        public void addSelectionCells(Object[] cells) {
-            List<Object> visibleCells = new LinkedList<Object>();
-            for (int i = 0; i < cells.length; i++) {
-                if (!getModel().isGrayedOut((JCell) cells[i])) {
-                    visibleCells.add(cells[i]);
-                }
-            }
-            super.addSelectionCells(visibleCells.toArray());
-        }
-
-        @Override
-        public void setSelectionCells(Object[] cells) {
-            List<Object> visibleCells = new LinkedList<Object>();
-            for (int i = 0; i < cells.length; i++) {
-                if (!getModel().isGrayedOut((JCell) cells[i])) {
-                    visibleCells.add(cells[i]);
-                }
-            }
-            super.setSelectionCells(visibleCells.toArray());
-        }
-    }
-
     /**
      * Constructs a JGraph on the basis of a given j-model. 
      * @param model the JModel for which to create a JGraph
@@ -1024,10 +710,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /**
      * Factory method for the marquee handler.
-     * This implementation returns a {@link MyMarqueeHandler}.
+     * This implementation returns a {@link JGraphMarqueeHandler}.
      */
-    protected BasicMarqueeHandler createMarqueeHandler() {
-        return new MyMarqueeHandler(this);
+    protected JGraphMarqueeHandler createMarqueeHandler() {
+        return new JGraphMarqueeHandler<JGraph>(this);
     }
 
     /**
@@ -1210,4 +896,259 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * that this is the last (non-static) variable declared in the class.
      */
     private boolean initialized = true;
+    /**
+     * Abstract class for j-cell edit actions.
+     */
+    private abstract class JCellEditAction extends AbstractAction implements GraphSelectionListener {
+        /**
+         * Constructs an edit action that is enabled for all j-cells.
+         * @param name the name of the action
+         */
+        protected JCellEditAction(String name) {
+            super(name);
+            this.allCells = true;
+            this.vertexOnly = true;
+            valueChanged(null);
+            JGraph.this.addGraphSelectionListener(this);
+        }
+        
+        /**
+         * Constructs an edit action that is enabled for only j-vertices or j-edges.
+         * @param name the name of the action
+         * @param vertexOnly <tt>true</tt> if the action is for j-vertices only
+         */
+        protected JCellEditAction(String name, boolean vertexOnly) {
+            super(name);
+            this.allCells = false;
+            this.vertexOnly = vertexOnly;
+            valueChanged(null);
+            JGraph.this.addGraphSelectionListener(this);
+        }
+        
+        /**
+         * Sets the j-cell to the first selected cell.
+         * Disables the action if the type of the cell disagrees with the expected type.
+         */
+        public void valueChanged(GraphSelectionEvent e) {
+            jCell = (JCell) JGraph.this.getSelectionCell();
+            if (jCell != null) {
+                setEnabled(allCells || vertexOnly == (jCell instanceof JVertex));
+            } else {
+                setEnabled(false);
+            }
+        }
+        
+        /**
+         * Sets the location attribute of this action.
+         */
+        public void setLocation(Point2D location) {
+            this.location = location;
+        }
+        
+        /** Switch indication that the action is enabled for all types of j-cells. */
+        protected final boolean allCells;
+        /** Switch indication that the action is enabled for all j-vertices. */
+        protected final boolean vertexOnly;
+        /** The currently selected j-cell. */
+        protected JCell jCell;
+        /** The currently set point location. */
+        protected Point2D location;
+    }
+    
+    /**
+     * Action to add a point to the currently selected j-edge.
+     */
+    private class AddPointAction extends JCellEditAction {
+    	/** Constructs an instance of the action. */
+        AddPointAction() {
+            super(Options.ADD_POINT_ACTION, false);
+        }
+        
+        public void actionPerformed(ActionEvent evt) {
+        	addPoint((JEdge) jCell, location);
+        }
+    }
+
+    /**
+     * Action to edit the label of the currently selected j-cell.
+     */
+    private class EditLabelAction extends JCellEditAction {
+    	/** Constructs an instance of the action. */
+        EditLabelAction() {
+            super(Options.EDIT_LABEL_ACTION);
+            putValue(ACCELERATOR_KEY, Options.RELABEL_KEY);
+        }
+        
+        public void actionPerformed(ActionEvent evt) {
+            startEditingAtCell(jCell);
+        }
+    }
+
+    /**
+     * Action to remove a point from the currently selected j-edge.
+     */
+    private class RemovePointAction extends JCellEditAction {
+    	/** Constructs an instance of the action. */
+        RemovePointAction() {
+            super(Options.REMOVE_POINT_ACTION, false);
+        }
+        
+        public void actionPerformed(ActionEvent evt) {
+        	removePoint((JEdge) jCell, location);
+        }
+    }
+
+    /**
+     * Action set the label of the currently selected j-cell to its default position.
+     */
+    private class ResetLabelPositionAction extends JCellEditAction {
+    	/** Constructs an instance of the action. */
+        ResetLabelPositionAction() {
+            super(Options.RESET_LABEL_POSITION_ACTION, false);
+        }
+        
+        public void actionPerformed(ActionEvent evt) {
+            resetLabelPosition((JEdge) jCell);
+        }
+    }
+
+    /**
+     * Action to set the line style of the currently selected j-edge.
+     */
+    private class SetLineStyleAction extends JCellEditAction {
+    	/** Constructs an instance of the action, for a given line style. */
+        SetLineStyleAction(int lineStyle) {
+            super(Options.getLineStyleName(lineStyle));
+            putValue(ACCELERATOR_KEY, Options.getLineStyleKey(lineStyle));
+            this.lineStyle = lineStyle;
+        }
+        
+        public void actionPerformed(ActionEvent evt) {
+            setLineStyle((JEdge) jCell, lineStyle);
+        }
+        
+        /** The line style set by this action instance. */
+        protected final int lineStyle;
+    }
+
+    /**
+     * Menu offering a choice of line style setting actions.
+     */
+    private class SetLineStyleMenu extends JMenu implements GraphSelectionListener {
+    	/** Constructs an instance of the action. */
+        SetLineStyleMenu() {
+            super(Options.SET_LINE_STYLE_MENU);
+            valueChanged(null);
+            JGraph.this.addGraphSelectionListener(this);
+        }
+        
+        public void valueChanged(GraphSelectionEvent e) {
+            setEnabled(getSelectionCell() instanceof JEdge);
+        }
+    }
+    
+    /**
+     * A menu item, initialized to an action, that hides itself whenever it is disabled.
+     */
+    private class DisappearingJMenuItem extends JMenuItem {
+    	/**
+    	 * Constructs a menu item for a given action.
+    	 * @param action the Action for which to create a menu item
+    	 */
+        DisappearingJMenuItem(Action action) {
+            super(action);
+        }
+        
+        @Override
+        public void setEnabled(boolean enabled) {
+            super.setEnabled(enabled);
+            setVisible(enabled);
+        }
+    }
+    /**
+     * A layout cache that, for efficiency, does not pass on all change events,
+     * and sets a {@link JCellViewFactory}.
+     * It should be possible to use the partiality of the cache to 
+     * hide elements, but this seems unnecessarily complicated.
+     */
+    private class MyGraphLayoutCache extends GraphLayoutCache {   
+    	/** Constructs an instance of the cache. */
+        MyGraphLayoutCache() {
+            super(JGraph.this.getModel(), new JCellViewFactory(JGraph.this), true);
+            setSelectsLocalInsertedCells(false);
+        }
+        
+        /** 
+         * After calling the super method, sets all roots to visible.
+         * This is necessary because the cache is partial.
+         */
+        @Override
+		public void setModel(GraphModel model) {
+			super.setModel(model);				
+			Object[] cells = DefaultGraphModel.getRoots(getModel());
+			CellView[] cellViews = getMapping(cells, true);
+			insertViews(cellViews);
+			// Update PortView Cache and Notify Observers
+			updatePorts();
+			cellViewsChanged(getRoots());
+		}
+
+		@Override
+		public boolean isVisible(Object cell) {
+			if (cell instanceof JCell) {
+				return ((JCell) cell).isVisible();
+			} else if (cell instanceof DefaultPort) {
+				return isVisible(((DefaultPort) cell).getParent());
+			} else {
+				return super.isVisible(cell);
+			}
+		}
+
+		/**
+         * Overrides the method so {@link JModel.RefreshEdit}s are not
+         * passed on.
+         */
+        @Override
+        public void graphChanged(GraphModelChange change) {
+            if (!(change instanceof JModel.RefreshEdit)) {
+                super.graphChanged(change);
+            }
+//            Object[] inserted = change.getInserted();
+//            if (inserted != null) {
+//            	setVisible(inserted, true);
+//            }
+        }
+    }
+    
+    /**
+     * Selection model that makes sure hidden cells cannot be selected.
+     */
+    private class MyGraphSelectionModel extends DefaultGraphSelectionModel {
+    	/** Constructs an instance of the selection model. */
+        MyGraphSelectionModel() {
+            super(JGraph.this);
+        }
+        
+        @Override
+        public void addSelectionCells(Object[] cells) {
+            List<Object> visibleCells = new LinkedList<Object>();
+            for (int i = 0; i < cells.length; i++) {
+                if (!getModel().isGrayedOut((JCell) cells[i])) {
+                    visibleCells.add(cells[i]);
+                }
+            }
+            super.addSelectionCells(visibleCells.toArray());
+        }
+
+        @Override
+        public void setSelectionCells(Object[] cells) {
+            List<Object> visibleCells = new LinkedList<Object>();
+            for (int i = 0; i < cells.length; i++) {
+                if (!getModel().isGrayedOut((JCell) cells[i])) {
+                    visibleCells.add(cells[i]);
+                }
+            }
+            super.setSelectionCells(visibleCells.toArray());
+        }
+    }
 }
