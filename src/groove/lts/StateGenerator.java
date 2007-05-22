@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.10 2007-04-27 22:06:26 rensink Exp $
+ * $Id: StateGenerator.java,v 1.11 2007-05-22 14:51:45 rensink Exp $
  */
 package groove.lts;
 
@@ -42,7 +42,7 @@ public class StateGenerator {
 	/**
 	 * Returns the underlying GTS.
 	 */
-	public final GTS getGTS() {
+	public GTS getGTS() {
 		return this.gts;
 	}
 
