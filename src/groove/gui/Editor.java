@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.31 2007-05-20 07:17:54 rensink Exp $
+ * $Id: Editor.java,v 1.32 2007-05-22 11:46:17 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,6 @@ import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.PriorityFileName;
 import groove.io.Xml;
-import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualView;
 import groove.view.FormatException;
@@ -48,14 +47,9 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.util.Enumeration;
-import java.util.Iterator;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageWriter;
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
 import javax.swing.Action;
@@ -95,7 +89,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.31 $ $Date: 2007-05-20 07:17:54 $
+ * @version $Revision: 1.32 $ $Date: 2007-05-22 11:46:17 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -1470,85 +1464,86 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
          */
         public void actionPerformed(ActionEvent evt) {
 			if (getModelName() != null) {
-				getExportChooser().setSelectedFile(new File(getModelName()));
+                exporter.getFileChooser().setSelectedFile(new File(getModelName()));
 			}
-			File toFile = ExtensionFilter.showSaveDialog(getExportChooser(), getFrame());
+			File toFile = ExtensionFilter.showSaveDialog(exporter.getFileChooser(), getFrame());
 			if (toFile != null) {
-				ExtensionFilter filter = (ExtensionFilter) getExportChooser().getFileFilter();
 				try {
-					doExportGraph(filter, toFile);
+					exporter.export(jgraph, toFile);
 				} catch (IOException exc) {
 					showErrorDialog("Error while saving to " + toFile, exc);
 				}
 			}
         }
-
-        /**
-         * Exports the currently edited model, including hidden and emphasis, to an image file.
-         * @param filter the filter that determines the format to export to
-         * @param toFile the file to save to
-         * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
-         */
-        private void doExportGraph(ExtensionFilter filter, File toFile) throws IOException {
-            if (filter == fsmFilter) {
-                PrintWriter writer = new PrintWriter(new FileWriter(toFile));
-                Converter.graphToFsm(getPlainGraph(), writer);
-                writer.close();
-            } else {
-                String formatName = filter.getExtension().substring(1);
-                Iterator<ImageWriter> writerIter = ImageIO.getImageWritersBySuffix(formatName);
-                if (writerIter.hasNext()) {
-                    ImageIO.write(jgraph.toImage(), formatName, toFile);
-                } else {
-                    showErrorDialog("No image writer found for " + filter.getDescription(), null);
-                }
-            }
-        }
-
-    	/**
-    	 * Returns a file chooser for exporting graphs, after lazily creating it.
-    	 */
-    	private JFileChooser getExportChooser() {
-    		if (exportChooser == null) {
-    			exportChooser = new GrooveFileChooser();
-    			exportChooser.setAcceptAllFileFilterUsed(false);
-    			exportChooser.addChoosableFileFilter(fsmFilter);
-    			exportChooser.addChoosableFileFilter(jpgFilter);
-    			exportChooser.addChoosableFileFilter(pngFilter);
-    			exportChooser.addChoosableFileFilter(epsFilter);
-    			exportChooser.setFileFilter(pngFilter);
-    			exportChooser.setCurrentDirectory(new File(Groove.WORKING_DIR));
-    		}
-    		return exportChooser;
-    	}
-
-        /**
-         * File chooser for export actions.
-         */
-        private JFileChooser exportChooser;
-
-        /**
-         * Extension filter used for exporting the graph in fsm format.
-         */
-        private final ExtensionFilter fsmFilter = Groove.createFsmFilter();
-
-        /**
-         * Extension filter used for exporting the graph in jpeg format.
-         */
-        private final ExtensionFilter jpgFilter = new ExtensionFilter("JPEG image files",
-                Groove.JPG_EXTENSION);
-
-        /**
-         * Extension filter used for exporting the graph in PNG format.
-         */
-        private final ExtensionFilter pngFilter = new ExtensionFilter("PNG files",
-                Groove.PNG_EXTENSION);
-
-        /**
-         * Extension filter used for exporting the graph in EPS format.
-         */
-        private final ExtensionFilter epsFilter = new ExtensionFilter("EPS files",
-                Groove.EPS_EXTENSION);
+//
+//        /**
+//         * Exports the currently edited model, including hidden and emphasis, to an image file.
+//         * @param filter the filter that determines the format to export to
+//         * @param toFile the file to save to
+//         * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
+//         */
+//        private void doExportGraph(ExtensionFilter filter, File toFile) throws IOException {
+//            if (filter == fsmFilter) {
+//                PrintWriter writer = new PrintWriter(new FileWriter(toFile));
+//                Converter.graphToFsm(getPlainGraph(), writer);
+//                writer.close();
+//            } else {
+//                String formatName = filter.getExtension().substring(1);
+//                Iterator<ImageWriter> writerIter = ImageIO.getImageWritersBySuffix(formatName);
+//                if (writerIter.hasNext()) {
+//                    ImageIO.write(jgraph.toImage(), formatName, toFile);
+//                } else {
+//                    showErrorDialog("No image writer found for " + filter.getDescription(), null);
+//                }
+//            }
+//        }
+//        
+        private final Exporter exporter = new Exporter();
+//
+//    	/**
+//    	 * Returns a file chooser for exporting graphs, after lazily creating it.
+//    	 */
+//    	private JFileChooser getExportChooser() {
+//    		if (exportChooser == null) {
+//    			exportChooser = new GrooveFileChooser();
+//    			exportChooser.setAcceptAllFileFilterUsed(false);
+//    			exportChooser.addChoosableFileFilter(fsmFilter);
+//    			exportChooser.addChoosableFileFilter(jpgFilter);
+//    			exportChooser.addChoosableFileFilter(pngFilter);
+//    			exportChooser.addChoosableFileFilter(epsFilter);
+//    			exportChooser.setFileFilter(pngFilter);
+//    			exportChooser.setCurrentDirectory(new File(Groove.WORKING_DIR));
+//    		}
+//    		return exportChooser;
+//    	}
+//
+//        /**
+//         * File chooser for export actions.
+//         */
+//        private JFileChooser exportChooser;
+//
+//        /**
+//         * Extension filter used for exporting the graph in fsm format.
+//         */
+//        private final ExtensionFilter fsmFilter = Groove.createFsmFilter();
+//
+//        /**
+//         * Extension filter used for exporting the graph in jpeg format.
+//         */
+//        private final ExtensionFilter jpgFilter = new ExtensionFilter("JPEG image files",
+//                Groove.JPG_EXTENSION);
+//
+//        /**
+//         * Extension filter used for exporting the graph in PNG format.
+//         */
+//        private final ExtensionFilter pngFilter = new ExtensionFilter("PNG files",
+//                Groove.PNG_EXTENSION);
+//
+//        /**
+//         * Extension filter used for exporting the graph in EPS format.
+//         */
+//        private final ExtensionFilter epsFilter = new ExtensionFilter("EPS files",
+//                Groove.EPS_EXTENSION);
     }
 
 
@@ -1719,7 +1714,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.31 $
+     * @version $Revision: 1.32 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

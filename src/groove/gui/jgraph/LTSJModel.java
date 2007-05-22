@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.8 2007-05-21 22:19:16 rensink Exp $
+ * $Id: LTSJModel.java,v 1.9 2007-05-22 11:46:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -39,7 +39,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -337,7 +337,7 @@ public class LTSJModel extends GraphJModel {
 
         // LTS nodes
         LTS_NODE_ATTR = (AttributeMap) JAttr.DEFAULT_NODE_ATTR.clone();
-        GraphConstants.setFont(LTS_NODE_ATTR, italicFont);
+//        GraphConstants.setFont(LTS_NODE_ATTR, italicFont);
         // LTS start node
         LTS_START_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
         GraphConstants.setBackground(LTS_START_NODE_ATTR, JAttr.LTS_START_BACKGROUND);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.14 2007-05-21 22:19:16 rensink Exp $
+ * $Id: AspectJModel.java,v 1.15 2007-05-22 11:46:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -63,7 +63,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -199,19 +199,15 @@ public class AspectJModel extends GraphJModel {
     /** Adds the correct line width emphasis. */
 	@Override
 	protected AttributeMap getJEdgeEmphAttr(JEdge jCell) {
-		AttributeMap result = super.getJEdgeEmphAttr(jCell);
         AspectEdge ruleEdge = ((AspectJEdge) jCell).getEdge();
-		GraphConstants.setLineWidth(result, JAttr.RULE_EMPH_WIDTH.get(role(ruleEdge)));
-		return result;
+		return RULE_EDGE_EMPH_CHANGE.get(role(ruleEdge));
 	}
 
     /** Adds the correct border emphasis. */
 	@Override
 	protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
-		AttributeMap result = super.getJVertexEmphAttr(jCell);
         AspectNode ruleNode = ((AspectJVertex) jCell).getNode();
-		GraphConstants.setBorder(result, JAttr.RULE_EMPH_BORDER.get(role(ruleNode)));
-		return result;
+		return RULE_NODE_EMPH_CHANGE.get(role(ruleNode));
 	}
 
 	/**
@@ -275,8 +271,12 @@ public class AspectJModel extends GraphJModel {
 
     /** Collection of attributes for rule nodes. */
     static private final Map<AspectValue,AttributeMap> RULE_NODE_ATTR = new HashMap<AspectValue,AttributeMap>();
+    /** Collection of attribute changes for emphasized rule nodes. */
+    static private final Map<AspectValue,AttributeMap> RULE_NODE_EMPH_CHANGE = new HashMap<AspectValue,AttributeMap>();
     /** Collection of attributes for rule edges. */
     static private final Map<AspectValue,AttributeMap> RULE_EDGE_ATTR = new HashMap<AspectValue,AttributeMap>();
+    /** Collection of attribute changes for emphasized rule edges. */
+    static private final Map<AspectValue,AttributeMap> RULE_EDGE_EMPH_CHANGE = new HashMap<AspectValue,AttributeMap>();
 
     static {
         for (AspectValue role: RuleAspect.getInstance().getValues()) {
@@ -301,7 +301,6 @@ public class AspectJModel extends GraphJModel {
             AttributeMap nodeAttr = (AttributeMap) JAttr.DEFAULT_NODE_ATTR.clone();
             nodeAttr.applyMap(edgeAttr);
             GraphConstants.setBorderColor(nodeAttr, RULE_COLOR.get(role));
-            GraphConstants.setBorderColor(nodeAttr, RULE_COLOR.get(role));
             GraphConstants.setAutoSize(nodeAttr, true);
             GraphConstants.setSizeable(nodeAttr, false);
             GraphConstants.setBorder(nodeAttr, RULE_BORDER.get(role));
@@ -311,6 +310,17 @@ public class AspectJModel extends GraphJModel {
             	GraphConstants.setBackground(nodeAttr, background);
             }
             RULE_NODE_ATTR.put(role,nodeAttr);
+
+            // edge emphasis
+            AttributeMap edgeEmphChange = (AttributeMap) JAttr.EMPH_EDGE_CHANGE.clone();
+            GraphConstants.setLineWidth(edgeEmphChange, JAttr.RULE_EMPH_WIDTH.get(role));
+            RULE_EDGE_EMPH_CHANGE.put(role, edgeEmphChange);
+            
+            // node emphasis
+            AttributeMap nodeEmphChange = (AttributeMap) JAttr.EMPH_NODE_CHANGE.clone();
+            GraphConstants.setLineWidth(nodeEmphChange, JAttr.RULE_EMPH_WIDTH.get(role));
+            GraphConstants.setBorder(nodeEmphChange, JAttr.RULE_EMPH_BORDER.get(role));
+            RULE_NODE_EMPH_CHANGE.put(role, nodeEmphChange);
         }
 //        GraphConstants.setSelectable(RULE_EDGE_ATTR.get(RULE), false);
 //        GraphConstants.setSelectable(RULE_NODE_ATTR.get(RULE), false);
