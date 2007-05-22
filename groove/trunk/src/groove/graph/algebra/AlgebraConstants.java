@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AlgebraConstants.java,v 1.4 2007-04-29 09:22:38 rensink Exp $
+ * $Id: AlgebraConstants.java,v 1.5 2007-05-22 11:28:54 kastenberg Exp $
  */
 package groove.graph.algebra;
 
@@ -36,11 +36,9 @@ import java.util.Iterator;
 /**
  * Class containing all the constant values used for dealing with attributed graphs.
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-04-29 09:22:38 $
+ * @version $Revision: 1.5 $ $Date: 2007-05-22 11:28:54 $
  */
 public class AlgebraConstants {
-	/** Number of attribute types AREND not used; may be removed? */
-	static public final int NR_OF_TYPES = 3;
 	/** Code for attributes of type integer. */
 	static public final int INTEGER = 0;
 	/** Code for attributes of type string. */
@@ -80,23 +78,12 @@ public class AlgebraConstants {
     static private AlgebraGraph algebraGraph;
 
     /**
-     * AREND Only called locally; make private?
      * @return the singleton {@link groove.graph.algebra.AlgebraGraph}-instance
      */
-    static public AlgebraGraph getAlgebraGraph() {
+    static private AlgebraGraph getAlgebraGraph() {
     	if (algebraGraph == null)
     		algebraGraph = AlgebraGraph.getInstance();
     	return algebraGraph;
-    }
-
-    /**
-     * Checks whether the given edge is a so called algebra-edge or not.
-     * AREND Never called; may be removed?
-     * @param edge the edge to be checked
-     * @return <tt>true</tt> if the given edge is an algebra-edge, <tt>false</tt> otherwise
-     */
-    static public boolean isAlgebraEdge(Edge edge) {
-    	return (isAttributeLabel(edge.label()) || isProductLabel(edge.label()) || (isArgumentLabel(edge.label()) == -1));
     }
 
     /**
@@ -111,7 +98,6 @@ public class AlgebraConstants {
 
     /**
      * Checks whether the given label is a special product-label.
-     * AREND never called; may be removed?
      * @param label the label to check
      * @return <tt>true</tt> if the label is a special product-label, <tt>false</tt> otherwise
      */
@@ -147,12 +133,11 @@ public class AlgebraConstants {
 
     /**
      * Returns the role of a given label text.
-     * AREND only called locally; make private?
      * @param text the label text from which we want to determine the role
      * @return the role as indicated by <tt>text</tt>
      * @ensure <tt>isValidRole(result) || result == NO_ROLE</tt>
      */
-    static public int labelType(String text) {
+    static private int labelType(String text) {
         for (int i = 0; i < TYPE_PREFIX.length; i++) {
             if (text.startsWith(TYPE_PREFIX[i]))
                 return i;
@@ -163,11 +148,10 @@ public class AlgebraConstants {
     
     /**
      * Returns the text of a label as minus its role prefix.
-     * AREND only called locally; make private?
      * @param label the label whose text prefix is to be cut off
      * @return label text without its role prefix 
      */
-    static public String labelText(Label label) {
+    static private String labelText(Label label) {
         int type = labelType(label);
         if (type == AlgebraConstants.NO_TYPE)
             return label.text();
@@ -178,7 +162,6 @@ public class AlgebraConstants {
     /**
      * Returns the type as indicated by an ordinary edge.
      * An edge indicates a type if it is a self-edge labelled only with the type prefix.
-     * AREND only called locally; make private?
      * @param edge the label whose type indication is to be investigated
      * @return the type as indicated by <tt>edge</tt>
      * @ensure <tt>isValidType(result) || result == NO_TYPE</tt>
@@ -192,54 +175,6 @@ public class AlgebraConstants {
                 type = AlgebraConstants.NO_TYPE;
             return type;
         }
-    }
-
-    /**
-     * Tests whether a given type is legal, i.e., one of
-     * <tt>INTEGER</tt>, <tt>STRING</tt> or <tt>BOOLEAN</tt>.
-     * AREND never called; may be removed?
-     * @param type the type to be tested
-     * @return <tt>true</tt> iff <tt>type<tt> is one of
-     * <tt>INTEGER</tt>, <tt>STRING</tt> or <tt>BOOLEAN</tt>
-     * @see #INTEGER
-     * @see #STRING
-     * @see #BOOLEAN
-     */
-    static public boolean isValidType(int type) {
-        switch (type) {
-            case AlgebraConstants.INTEGER :
-            case AlgebraConstants.STRING :
-            case AlgebraConstants.BOOLEAN :
-                return true;
-            default :
-                return false;
-        }
-    }
-
-    /**
-     * Determines the algebra type of a node in a graph.
-     * AREND never called; may be removed?
-     * @param node the node for which to determine the algebra type
-     * @param graph the graph in which this node occurs
-     * @return the algebra type of this node, otherwise {@link groove.graph.algebra.AlgebraConstants#NO_TYPE}
-     */
-    static public int nodeType(Node node, Graph graph) {
-    	int type = -1;
-    	int selfEdgeType;
-    	Iterator<? extends Edge> selfEdgeIter = graph.edgeSet(node).iterator();
-    	while (selfEdgeIter.hasNext()) {
-    		Edge nextSelfEdge = selfEdgeIter.next();
-    		selfEdgeType = labelType(nextSelfEdge.label());
-    		if (selfEdgeType != NO_TYPE) {
-    			if (type == NO_TYPE)
-    				type = selfEdgeType;
-    			else {
-    				// node-type not unique
-    				// we could throw an exception
-    			}
-    		}
-    	}
-    	return type;
     }
 
     /**
@@ -315,14 +250,13 @@ public class AlgebraConstants {
      * represents a product node (i.e. an ordered tuple of data values). If so,
      * it returns a fresh instance of {@link groove.graph.algebra.ProductNode}.
      * If not, it returns <tt>null</tt>.
-     * AREND only called locally; make private?
      * @param node the node for which to check whether it represents a product
      * @param graph the graph containing this node and, more importantly, its
      * adjacent edges
      * @return a fresh instance of {@link groove.graph.algebra.ProductNode} if
      * this nodes represents an product, <tt>null</tt> otherwise
      */
-    public static Node getProductNode(Graph graph, Node node) {
+    static private Node getProductNode(Graph graph, Node node) {
     	Iterator<? extends Edge> selfEdgeIter = graph.edgeSet(node).iterator();
     	while (selfEdgeIter.hasNext()) {
     		Edge nextEdge = selfEdgeIter.next();
@@ -338,7 +272,6 @@ public class AlgebraConstants {
      * represents an algebraic data value. If so, it returns the only
      * {@link groove.graph.algebra.ValueNode} for this data value, otherwise
      * <tt>null</tt>.
-     * AREND only called locally; make private?
      * @param node the node for which to check whether it represents an algebraic
      * data value
      * @param graph the graph containing this node and, more importantly, its
@@ -346,7 +279,7 @@ public class AlgebraConstants {
      * @return the {@link groove.graph.algebra.ValueNode} if the given node
      * represents an algebraic data value, <tt>null</tt> otherwise
      */
-    public static Node getValueNode(Graph graph, Node node) {
+    static private Node getValueNode(Graph graph, Node node) {
     	Constant constant = getNodeValue(graph, node);
     	if (constant != null)
         	return AlgebraGraph.getInstance().getValueNode(constant);
