@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.10 2007-05-21 22:19:17 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.11 2007-05-22 11:46:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -110,7 +110,6 @@ public class GraphJVertex extends JVertex {
                 result.append(Converter.HTML_LINEBREAK); //HORIZONTAL_LINE;
     		}
     		result.append(Converter.toHtml(labels));
-//    		result.append(strongTag.on(labels, true));
     	}
     	return result.toString();
     }

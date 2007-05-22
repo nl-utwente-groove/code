@@ -13,12 +13,24 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.40 2007-05-21 22:19:32 rensink Exp $
+ * $Id: Simulator.java,v 1.41 2007-05-22 11:46:17 rensink Exp $
  */
 package groove.gui;
 
-import static groove.gui.Options.*;
-
+import static groove.gui.Options.DELETE_RULE_OPTION;
+import static groove.gui.Options.HELP_MENU_NAME;
+import static groove.gui.Options.OPTIONS_MENU_NAME;
+import static groove.gui.Options.REPLACE_RULE_OPTION;
+import static groove.gui.Options.REPLACE_START_GRAPH_OPTION;
+import static groove.gui.Options.SHOW_ANCHORS_OPTION;
+import static groove.gui.Options.SHOW_ASPECTS_OPTION;
+import static groove.gui.Options.SHOW_BACKGROUND_OPTION;
+import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_REMARKS_OPTION;
+import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
+import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import static groove.gui.Options.START_SIMULATION_OPTION;
+import static groove.gui.Options.STOP_SIMULATION_OPTION;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphFactory;
@@ -49,14 +61,13 @@ import groove.lts.StateGenerator;
 import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
-import groove.util.Converter;
 import groove.util.Groove;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
-import groove.view.DefaultGrammarView;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
+import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 import groove.view.GrammarView;
 import groove.view.aspect.AspectGraph;
@@ -68,8 +79,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
-import java.awt.geom.AffineTransform;
-import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -85,7 +94,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
@@ -111,13 +119,10 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
 
-import net.sf.epsgraphics.ColorMode;
-import net.sf.epsgraphics.EpsGraphics;
-
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.40 $
+ * @version $Revision: 1.41 $
  */
 public class Simulator {
     /**
@@ -555,38 +560,6 @@ public class Simulator {
     	doAddRule(getCurrentRule().getNameLabel(), ruleGraph);
 	}
     
-    /**
-     * Exports the current state to a given format. The format is deduced from the file name, using
-     * known file filters.
-     */
-    private void doExportGraph(JGraph jGraph, File file) {
-        try {
-            if (fsmFilter.accept(file)) {
-                PrintWriter writer = new PrintWriter(new FileWriter(file));
-                Converter.graphToFsm(jGraph.getModel().toPlainGraph(), writer);
-                writer.close();
-                getStateFileChooser().setSelectedFile(new File(""));
-            } else if (jpgFilter.accept(file)) {
-                ImageIO.write(jGraph.toImage(), jpgFilter.getExtension().substring(1), file);
-                getStateFileChooser().setSelectedFile(new File(""));
-            } else if (pngFilter.accept(file)) {
-                ImageIO.write(jGraph.toImage(), pngFilter.getExtension().substring(1), file);
-                getStateFileChooser().setSelectedFile(new File(""));
-            } else if (epsFilter.accept(file)) {
-                // Create a graphics contents on the buffered image
-            	BufferedImage image = jGraph.toImage();
-                // Create an output stream
-                OutputStream out = new FileOutputStream(file);
-                // minX,minY,maxX,maxY
-                EpsGraphics g2d = new EpsGraphics("Title", out, 0, 0, image.getWidth(), image.getHeight(), ColorMode.COLOR_RGB);
-                g2d.drawImage(jGraph.toImage(), new AffineTransform(), null);
-                g2d.close();
-            }
-        } catch (IOException exc) {
-            new ErrorDialog(getFrame(), "Error while saving to " + file, exc);
-        }
-    }
-
     /**
 	 * Applies a given exploration strategy to the current GTS.
 	 * The application is done concurrently, and can be cancelled from the GUI.
@@ -1363,22 +1336,23 @@ public class Simulator {
 		}
 		return errorPanel;
 	}
-	
-	/**
-	 * Returns the file chooser for exporting, lazily creating it first.
-	 */
-	private JFileChooser getExportChooser() {
-		if (exportChooser == null) {
-			exportChooser = new GrooveFileChooser();
-			exportChooser.setAcceptAllFileFilterUsed(false);
-			exportChooser.addChoosableFileFilter(fsmFilter);
-			exportChooser.addChoosableFileFilter(jpgFilter);
-			exportChooser.addChoosableFileFilter(pngFilter);
-			exportChooser.addChoosableFileFilter(epsFilter);
-			exportChooser.setFileFilter(pngFilter);
-		} 
-		return exportChooser;
-	}
+//	
+//	/**
+//	 * Returns the file chooser for exporting, lazily creating it first.
+//	 */
+//	private JFileChooser getExportChooser() {
+//		if (exportChooser == null) {
+//			exportChooser = new GrooveFileChooser();
+//			exportChooser.setAcceptAllFileFilterUsed(false);
+//            exportChooser.addChoosableFileFilter(lispFilter);
+//            exportChooser.addChoosableFileFilter(fsmFilter);
+//			exportChooser.addChoosableFileFilter(jpgFilter);
+//			exportChooser.addChoosableFileFilter(pngFilter);
+//			exportChooser.addChoosableFileFilter(epsFilter);
+//			exportChooser.setFileFilter(pngFilter);
+//		} 
+//		return exportChooser;
+//	}
 
 	/**
      * Adds all implemented grammar loaders to the menu.
@@ -1753,37 +1727,14 @@ public class Simulator {
     protected JFileChooser stateFileChooser;
 
     /**
-     * File chooser for state and LTS export actions.
+     * Graph exporter.
      */
-    protected JFileChooser exportChooser;
+    private final Exporter exporter = new Exporter();
 
     /**
      * File chooser for state and LTS export actions.
      */
-    protected final JFileChooser formulaProvider = new GrooveFileChooser();
-
-    /**
-     * Extension filter used for exporting graphs in fsm format.
-     */
-    protected final ExtensionFilter fsmFilter = Groove.createFsmFilter();
-
-    /**
-     * Extension filter used for exporting graphs in jpeg format.
-     */
-    protected final ExtensionFilter jpgFilter = new ExtensionFilter("JPEG image files",
-            Groove.JPG_EXTENSION);
-
-    /**
-     * Extension filter used for exporting graphs in png format.
-     */
-    protected final ExtensionFilter pngFilter = new ExtensionFilter("PNG image files",
-            Groove.PNG_EXTENSION);
-
-    /**
-     * Extension filter used for exporting graphs in png format.
-     */
-    protected final ExtensionFilter epsFilter = new ExtensionFilter("EPS image files",
-            Groove.EPS_EXTENSION);
+    private final JFileChooser formulaProvider = new GrooveFileChooser();
 
     /**
      * Extension filter for state files.
@@ -2454,7 +2405,7 @@ public class Simulator {
     
     /**
      * Action to save the state, as a graph or in some export format.
-     * @see Simulator#doExportGraph(JGraph, File)
+     * @see Exporter#export(JGraph, File)
      */
     private class ExportGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -2477,11 +2428,16 @@ public class Simulator {
                 fileName = getCurrentRule().getNameLabel().toString();
                 jGraph = getRulePanel().getJGraph();
             }
-            getExportChooser().setSelectedFile(new File(fileName));
-            File selectedFile = ExtensionFilter.showSaveDialog(getExportChooser(), getFrame());
+            exporter.getFileChooser().setSelectedFile(new File(fileName));
+            File selectedFile = ExtensionFilter.showSaveDialog(exporter.getFileChooser(), getFrame());
             // now save, if so required
             if (selectedFile != null) {
-                doExportGraph(jGraph, selectedFile);
+                try {
+                    exporter.export(jGraph, selectedFile); 
+                } catch (IOException exc) {
+                    new ErrorDialog(getFrame(), "Error while exporting to " + selectedFile, exc);
+                }
+
             }
         }
 
@@ -2911,4 +2867,263 @@ public class Simulator {
             return KeyEvent.getKeyText(Options.START_SIMULATION_KEY.getKeyCode());
         }
     }
+//    
+//    /**
+//     * Class providing functionality to export a {@link JGraph} to a file in different formats.
+//     * @author Arend Rensink
+//     * @version $Revision: 1.41 $
+//     */
+//    static public class Exporter {
+//        /**
+//         * Returns a file chooser for exporting, lazily creating it first.
+//         */
+//        public JFileChooser getFileChooser() {
+//            if (fileChooser== null) {
+//                fileChooser = new GrooveFileChooser();
+//                fileChooser.setAcceptAllFileFilterUsed(false);
+//                for (Format format: getFormats()) {
+//                    fileChooser.addChoosableFileFilter(format.getFilter());
+//                }
+//                fileChooser.setFileFilter(PngFormat.getInstance().getFilter());
+//            }
+//            return fileChooser;
+//        }
+//        
+//        /**
+//         * Exports the current state to a given format. The format is deduced from the file name, using
+//         * known file filters.
+//         */
+//        public void export(JGraph jGraph, File file) throws IOException {
+//            for (Format format: getFormats()) {
+//                if (format.getFilter().accept(file)) {
+//                    format.export(jGraph, file);
+//                    return;
+//                }
+//            }
+//        }
+//        
+//        private List<Format> getFormats() {
+//            if (formats == null) {
+//                formats = new ArrayList<Format>();
+//                formats.add(LispFormat.getInstance());
+//                formats.add(FsmFormat.getInstance());
+//                formats.add(JpgFormat.getInstance());
+//                formats.add(PngFormat.getInstance());
+//                formats.add(EpsFormat.getInstance());
+//            }
+//            return formats;
+//        }
+//        
+//        /** The file chooser of this exporter. */
+//        private GrooveFileChooser fileChooser;
+//        /** List of the supported export formats. */
+//        private List<Format> formats;
+//        
+//        /** Singleton class implementing the FSM export format. */
+//        private static class FsmFormat implements Format {
+//            /** Empty constructor to ensure singleton usage of the class. */
+//            private FsmFormat() {
+//                // empty
+//            }
+//            
+//            public ExtensionFilter getFilter() {
+//                return fsmFilter;
+//            }
+//
+//            public void export(JGraph jGraph, File file) throws IOException {
+//                PrintWriter writer = new PrintWriter(new FileWriter(file));
+//                Converter.graphToFsm(jGraph.getModel().toPlainGraph(), writer);
+//                writer.close();
+//            }
+//
+//            /**
+//             * Extension filter used for exporting graphs in fsm format.
+//             */
+//            private final ExtensionFilter fsmFilter = Groove.createFsmFilter();
+//            
+//            /** Returns the singleton instance of this class. */
+//            public static Format getInstance() {
+//                return instance;
+//            }
+//            
+//            /** The singleton instance of this class. */
+//            private static final Format instance = new FsmFormat();
+//        }
+//
+//        
+//        /** Singleton class implementing the Lisp export format. */
+//        private static class LispFormat implements Format {
+//            /** Empty constructor to ensure singleton usage of the class. */
+//            private LispFormat() {
+//                // empty
+//            }
+//
+//            public ExtensionFilter getFilter() {
+//                return lispFilter;
+//            }
+//
+//            public void export(JGraph jGraph, File file) throws IOException {
+//                PrintWriter writer = new PrintWriter(new FileWriter(file));
+//                convert(jGraph.getModel().toPlainGraph(), writer);
+//                writer.close();
+//            }
+//            
+//            /** Writes a graph to a writer in the requried format. */
+//            private void convert(GraphShape graph, PrintWriter writer) {
+//                this.writer = writer;
+//                this.indent = 0;
+//                println("(%s", GRAPH_KEYWORD);
+//                println(")");
+//                assert this.indent == 0 : String.format("Conversion ended at indentation level %d", indent);
+//            }
+//            
+//            /** Prints a line to a writer, taking care of indentation. */
+//            private void println(String line, Object... args) {
+//                char[] spaces = new char[INDENT_COUNT * indent];
+//                Arrays.fill(spaces, ' ');
+//                writer.print(spaces);
+//                String text = String.format(line, args);
+//                writer.println(text);
+//                int opens = 0;
+//                int closes = 0;
+//                for (char c: text.toCharArray()) {
+//                    if (c=='(') opens++;
+//                    if (c==')') closes++;
+//                }
+//                indent += opens - closes;
+//            }
+//
+//            /** The writer used in the current {@link #convert(GraphShape, PrintWriter)} invocation. */
+//            private PrintWriter writer;
+//            /** The indentation level of the current {@link #convert(GraphShape, PrintWriter)} invocation. */
+//            private int indent;
+//            /**
+//             * Extension filter used for exporting graphs in lisp format.
+//             */
+//            private final ExtensionFilter lispFilter = Groove.getFilter("Lisp layout files", Groove.LISP_EXTENSION, true);
+//
+//            /** Returns the singleton instance of this class. */
+//            public static Format getInstance() {
+//                return instance;
+//            }
+//            
+//            /** The singleton instance of this class. */
+//            private static final Format instance = new LispFormat();
+//            
+//            /** Number of indentation positions per indent level. */
+//            private static int INDENT_COUNT = 4;
+//            /** Lisp function for graphs. */
+//            private static final String GRAPH_KEYWORD = "graph";
+//        }
+//
+//        
+//        /** Class implementing the JPG export format. */
+//        private static class JpgFormat implements Format {
+//            /** Empty constructor to ensure singleton usage of the class. */
+//            private JpgFormat() {
+//                // empty
+//            }
+//            
+//            public ExtensionFilter getFilter() {
+//                return jpgFilter;
+//            }
+//
+//            public void export(JGraph jGraph, File file) throws IOException {
+//                ImageIO.write(jGraph.toImage(), jpgFilter.getExtension().substring(1), file);
+//            }
+//
+//            /**
+//             * Extension filter used for exporting graphs in jpeg format.
+//             */
+//            private final ExtensionFilter jpgFilter = new ExtensionFilter("JPEG image files", Groove.JPG_EXTENSION);
+//
+//            /** Returns the singleton instance of this class. */
+//            public static Format getInstance() {
+//                return instance;
+//            }
+//            
+//            /** The singleton instance of this class. */
+//            private static final Format instance = new JpgFormat();
+//        }
+//
+//        
+//        /** Class implementing the PNG export format. */
+//        private static class PngFormat implements Format {
+//            /** Empty constructor to ensure singleton usage of the class. */
+//            private PngFormat() {
+//                // empty
+//            }
+//            
+//            public ExtensionFilter getFilter() {
+//                return pngFilter;
+//            }
+//
+//            public void export(JGraph jGraph, File file) throws IOException {
+//                ImageIO.write(jGraph.toImage(), pngFilter.getExtension().substring(1), file);
+//            }
+//
+//            /**
+//             * Extension filter used for exporting graphs in png format.
+//             */
+//            private final ExtensionFilter pngFilter = new ExtensionFilter("PNG image files",
+//                    Groove.PNG_EXTENSION);
+//
+//            /** Returns the singleton instance of this class. */
+//            public static Format getInstance() {
+//                return instance;
+//            }
+//            
+//            /** The singleton instance of this class. */
+//            private static final Format instance = new PngFormat();
+//        }
+//
+//        
+//        /** Class implementing the EPS export format. */
+//        private static class EpsFormat implements Format {
+//            /** Empty constructor to ensure singleton usage of the class. */
+//            private EpsFormat() {
+//                // empty
+//            }
+//
+//            public ExtensionFilter getFilter() {
+//                return epsFilter;
+//            }
+//
+//            public void export(JGraph jGraph, File file) throws IOException {
+//                // Create a graphics contents on the buffered image
+//                BufferedImage image = jGraph.toImage();
+//                // Create an output stream
+//                OutputStream out = new FileOutputStream(file);
+//                // minX,minY,maxX,maxY
+//                EpsGraphics g2d = new EpsGraphics("Title", out, 0, 0, image.getWidth(), image
+//                        .getHeight(), ColorMode.COLOR_RGB);
+//                g2d.drawImage(jGraph.toImage(), new AffineTransform(), null);
+//                g2d.close();
+//            }
+//
+//            /**
+//             * Extension filter used for exporting graphs in png format.
+//             */
+//            private final ExtensionFilter epsFilter = new ExtensionFilter("EPS image files",
+//                    Groove.EPS_EXTENSION);
+//
+//            /** Returns the singleton instance of this class. */
+//            public static Format getInstance() {
+//                return instance;
+//            }
+//            
+//            /** The singleton instance of this class. */
+//            private static final Format instance = new EpsFormat();
+//        }
+//
+//        /**
+//         * Interface for export formats.
+//         */
+//        private static interface Format {
+//            /** Returns the extension filter for this format. */
+//            ExtensionFilter getFilter();
+//            /** Exports a JGraph into this format. */
+//            void export(JGraph jGraph, File file) throws IOException;
+//        }
+//    }
 }

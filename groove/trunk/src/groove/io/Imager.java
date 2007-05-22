@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.9 2007-05-20 07:17:55 rensink Exp $
+ * $Id: Imager.java,v 1.10 2007-05-22 11:46:18 rensink Exp $
  */
 package groove.io;
 
+import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
@@ -26,7 +27,6 @@ import groove.util.CommandLineOption;
 import groove.util.CommandLineTool;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
-import groove.view.FormatException;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.Dimension;
@@ -36,18 +36,14 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
-import java.awt.geom.AffineTransform;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
-import javax.imageio.ImageIO;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
@@ -63,28 +59,318 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import net.sf.epsgraphics.ColorMode;
-import net.sf.epsgraphics.EpsGraphics;
-
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class Imager extends CommandLineTool {
+    /**
+     * Constructs a new, command-line Imager.
+     */
+    public Imager(List<String> args) {
+        this(args, false);
+    }
+
+    /**
+     * Constructs a new imager, which may be GUI-based or command-line.
+     * @param gui <tt>true</tt> if the imager should be GUI-based.
+     */
+    public Imager(List<String> args, boolean gui) {
+        super(args);
+        // force the LAF to be set
+        groove.gui.Options.initLookAndFeel();
+        if (gui) {
+            imagerFrame = new ImagerFrame();
+            imagerFrame.pack();
+            imagerFrame.setVisible(true);
+        } else {
+            imagerFrame = null;
+            addOption(new FormatOption(this));
+        }
+    }
+
+    /**
+     * Does the actual conversion work.
+     * @require <tt>getLocation() != null</tt>
+     */
+    public void start() {
+        File inFile = getInFile();
+        File outFile = getOutFile();
+        if (!inFile.exists()) {
+            println("Input file " + inFile + " does not exist");
+        } else if (outFile == null) {
+            makeImage(inFile, inFile);
+        } else {
+            makeImage(inFile, outFile);
+        }
+//        jframe.dispose();
+    }
+
+    /**
+     * Makes an image file from the specified input file. If the input file is a directory, the
+     * method descends recursively. The types of input files recognized are: gxl, gps and gst
+     * @param inFile the input file to be converted
+     * @param outFile the intended output file
+     */
+    public void makeImage(File inFile, File outFile) {
+        // if the given input-file is a directory, call this method recursively for each file it contains
+        // but ensure:
+        // --> output-file exists or can be created
+        if (inFile.isDirectory()) {
+            if (outFile.exists() || outFile.mkdir()) {
+                File[] files = inFile.listFiles();
+                for (int i = 0; i < files.length; i++) {
+                    makeImage(files[i], new File(outFile, files[i].getName()));
+                }
+            } else {
+                println("Directory " + outFile + " could not be created");
+            }
+        }
+        // or the input-file is an ordinary Groove-file (state or rule)
+        // here ensure:
+        // --> output-file exists and will be overwritten or the directory in which
+        //     it will be placed exists or can be created
+        else {
+            if (!outFile.getParentFile().exists() && !outFile.getParentFile().mkdir()) {
+                JOptionPane.showMessageDialog(null, "Output file does not exist and directory can not be created.");
+                return;
+            }
+
+            ExtensionFilter acceptingFilter = accept(inFile);
+            if (acceptingFilter != null) {
+                try {
+                    String outFileName = acceptingFilter.stripExtension(outFile.getPath());
+                    outFile = new File(new ExtensionFilter(imageFormat).addExtension(outFileName));
+                    groove.graph.Graph graph = graphLoader.unmarshalGraph(inFile);
+                    JModel model;
+                    if (acceptingFilter == ruleFilter) {
+                        String ruleName = ruleFilter.stripExtension(inFile.getName());
+                        AspectualRuleView rule = new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new RuleNameLabel(ruleName));
+                        model = AspectJModel.newInstance(rule, new Options());
+                    } else {
+                        model = GraphJModel.newInstance(graph, new Options());
+                    }
+                    JGraph jGraph = new JGraph(model);
+                    jGraph.setModel(model);
+                    jGraph.setSize(jGraph.getPreferredSize());
+//                    jframe.pack();
+                    printlnMedium("Imaging "+inFile+" as "+outFile);
+                    exporter.export(jGraph, outFile);
+//                    if (imageFormat == EPS_FORMAT) {
+//                        // Create a graphics contents on the buffered image
+//                        int x_max = jGraph.toImage().getWidth();
+//                        int y_max = jGraph.toImage().getHeight();
+//
+//                        // Create an output stream
+//                        OutputStream out = new FileOutputStream(outFile);
+//
+//                        // minX,minY,maxX,maxY
+//                        EpsGraphics g2d = new EpsGraphics("Title", out, 0, 0, x_max, y_max, ColorMode.COLOR_RGB);
+//
+//                        g2d.drawImage(jGraph.toImage(), new AffineTransform(), null);
+//                        g2d.close();
+//                    } else {
+//                        if (! ImageIO.write(jGraph.toImage(), imageFormat, outFile)) {
+//                            println("No writer found for "+outFile);
+//                            outFile.delete();
+//                        }
+//                    }
+                    Thread.yield();
+                } catch (FileNotFoundException fnfe){
+                    println("File " + outFile + "does not exist.");
+                } catch (IOException e) {
+                    println("Problem reading " + inFile);
+                    return;
+                }
+            }
+        }
+    }
+
+    /**
+     * Determines if a given file is recognized by any of the filters regocnized by this
+     * <tt>Imager</tt>. In this implementation, these are the {@link Groove}gxl filter, state filter
+     * or rule filter.
+     * @param file the file to be tested for acceptance
+     * @return a filter that accepts <tt>file</tt>, or <tt>null</tt>.
+     * @see Groove#createGxlFilter()
+     * @see Groove#createStateFilter()
+     * @see Groove#createRuleFilter()
+     */
+    public ExtensionFilter accept(File file) {
+        for (int i = 0; i < acceptFilters.length; i++) {
+            if (acceptFilters[i].accept(file)) {
+                return acceptFilters[i];
+            }
+        }
+        return null;
+    }
+//
+//    /**
+//     * Logs a line of text, either to the standard output
+//     * or (if the invocation is gui-based) to the {@link ImagerFrame}.
+//     */
+//    public void log(String text) {
+//        if (imagerFrame == null) {
+//            System.out.println(text);
+//        } else {
+//            imagerFrame.println(text);
+//        }
+//    }
+
+    /** Returns the location of the file(s) to be imaged. */
+    public File getInFile() {
+		return inFile;
+    }
+
+    /**
+     * Returns the intended location for the image file(s).
+     */
+    public File getOutFile() {
+		return outFile;
+    }
+
+    /**
+     * Sets the location where to look for the files to be imaged. No check is done if the location
+     * actually exists.
+     * @param fileName the name of the files to be imaged
+     * @ensure <tt>getOutFile().getName().equals(fileName)</tt>
+     */
+    public void setInFile(String fileName) {
+        inFile = new File(fileName);
+    }
+
+    /**
+     * Sets the location where to store the image file. No check is done if the location actually
+     * exists.
+     * @param outFileName The name of the outFile to set
+     */
+    public void setOutFile(String outFileName) {
+        this.outFile = new File(outFileName);
+    }
+
+    /**
+     * Returns the image format to which the graphs will be converted.
+     */
+    public String getImageFormat() {
+        return imageFormat;
+    }
+
+    /**
+     * Sets the image format to which the graphs will be converted.
+     */
+    public void setImageFormat(String imageFormat) {
+        this.imageFormat = imageFormat;
+    }
+
+    /**
+     * Processes a list of arguments (which are <tt>String</tt>s) by setting the attributes of
+     * the imager accordingly.
+     * @require <tt>argsList instanceof List of String</tt>
+     */
+    @Override
+    protected void processArguments() {
+        super.processArguments();
+        List<String> argsList = getArgs();
+        if (argsList.size() > 0) {
+            setInFile(argsList.get(0));
+            argsList.remove(0);
+        }
+        if (argsList.size() > 0) {
+            setOutFile(argsList.get(0));
+            argsList.remove(0);
+        }
+        if (argsList.size() > 0) {
+            printError("Invalid number of arguments");
+        }
+    }
+
+    @Override
+    protected String getUsageMessage() {
+        return "Usage: Imager [options] filename [outlocation]";
+    }
+
+    /**
+     * This tool does not support logging.
+     */
+    @Override
+    protected boolean supportsLogOption() {
+        return false;
+    }
+
+    /**
+     * This tool does not support output file specification through an option.
+     */
+    @Override
+    protected boolean supportsOutputOption() {
+        return false;
+    }
+
+    /** Overwrites the method to write to the system output or to the GUI. */
+    @Override
+    protected void print(String text) {
+        if (imagerFrame == null) {
+            super.print(text);
+        } else {
+            imagerFrame.print(text);
+        }
+    }
+
+    /** Overwrites the method to write to the system output or to the GUI. */
+    @Override
+    protected void println() {
+        if (imagerFrame == null) {
+            super.println();
+        } else {
+            imagerFrame.println("");
+        }
+    }
+
+    /** Overwrites the method to write to the system output or to the GUI. */
+    @Override
+    protected void println(String text) {
+        if (imagerFrame == null) {
+            super.println(text);
+        } else {
+            imagerFrame.println(text);
+        }
+    }
+
+    /** The image exporter used. */
+    private final Exporter exporter = new Exporter();
+    /** Name of the image format to which the imager converts. */
+    private String imageFormat = exporter.getDefaultFormat().getFilter().getExtension();
+    /** The imager frame if the invocation is gui-based; <tt>null</tt> if it is command-line based. */
+    private final ImagerFrame imagerFrame;
+    /** The location of the file(s) to be imaged. */
+    private File inFile;
+    /** The intended location of the image file(s). */
+    private File outFile;
+    /** Starts the imager with a list of options and file names. */
+    public static void main(String[] args) {
+        Imager imager;
+        if (args.length == 0) {
+            new Imager(Collections.<String>emptyList(), true);
+        } else {
+            imager = new Imager(new LinkedList<String>(Arrays.asList(args)));
+            imager.processArguments();
+            imager.start();
+        }
+    }
+
     /** Name of the imager application. */
     static public final String APPLICATION_NAME = "Imager";
-    /** Name of the png (Portable Network Graphic) image format. */
-    static public final String PNG_FORMAT = "png";
-    /** Name of the jpeg image format. */
-    static public final String JPG_FORMAT = "jpg";
-    /** Name of the eps image format. */
-    static public final String EPS_FORMAT = "eps";
-
-    /** The default format of the imager. */
-    static public final String DEFAULT_FORMAT = PNG_FORMAT;
-    /** List of all supported image formats. */
-    static public final String[] FORMATS = new String[] { JPG_FORMAT, PNG_FORMAT, EPS_FORMAT} ;
+//    /** Name of the png (Portable Network Graphic) image format. */
+//    static public final String PNG_FORMAT = "png";
+//    /** Name of the jpeg image format. */
+//    static public final String JPG_FORMAT = "jpg";
+//    /** Name of the eps image format. */
+//    static public final String EPS_FORMAT = "eps";
+//
+//    /** The default format of the imager. */
+//    static public final String DEFAULT_FORMAT = PNG_FORMAT;
+//    /** List of all supported image formats. */
+//    static public final String[] FORMATS = new String[] { JPG_FORMAT, PNG_FORMAT, EPS_FORMAT} ;
     /** Label for the browse buttons. */
     static public final String BROWSE_LABEL = "Browse...";
 
@@ -108,18 +394,6 @@ public class Imager extends CommandLineTool {
             gpsFilter, ruleFilter, stateFilter, gxlFilter };
 
 
-    /** Starts the imager with a list of options and file names. */
-    public static void main(String[] args) {
-        Imager imager;
-        if (args.length == 0) {
-            new Imager(Collections.<String>emptyList(), true);
-        } else {
-            imager = new Imager(new LinkedList<String>(Arrays.asList(args)));
-            imager.processArguments();
-            imager.start();
-        }
-    }
-
     /**
      * Option to set the output format for the imager.
      */
@@ -136,6 +410,7 @@ public class Imager extends CommandLineTool {
         /** Constructs a command-line format option working on a given imager. */
         public FormatOption(Imager imager) {
             this.imager = imager;
+            this.exporter = imager.exporter;
         }
 
         public String getName() {
@@ -145,9 +420,9 @@ public class Imager extends CommandLineTool {
         public String[] getDescription() {
             List<String> result = new LinkedList<String>();
             result.add(DESCRIPTION);
-            for (int i = 0; i < FORMATS.length; i++) {
-                String format = "* "+FORMATS[i];
-                if (format.equals(DEFAULT_FORMAT)) {
+            for (String formatName: exporter.getExtensions()) {
+                String format = "* "+formatName;
+                if (format.equals(exporter.getDefaultFormat().getFilter().getExtension())) {
                     format += DEFAULT_SUFFIX;
                 }
                 result.add(format);
@@ -165,17 +440,20 @@ public class Imager extends CommandLineTool {
 
         /**
          * Changes the current output format of the imager, if the
-         * parameter is a valid vormat name.
+         * parameter is a valid format name.
          */
         public void parse(String parameter) {
+            String extension = ExtensionFilter.SEPARATOR+parameter;
             // first check if parameter is a valid format name
-            if (!ImageIO.getImageWritersByFormatName(parameter).hasNext()) {
+            if (!exporter.getExtensions().contains(extension)) {
                 throw new IllegalArgumentException("Unknown format: "+parameter);
             }
-            imager.setImageFormat(parameter);
+            imager.setImageFormat(extension);
         }
 
         private final Imager imager;
+        /** The exporter used by {@link #imager}. */
+        private final Exporter exporter;
     }
 
     /**
@@ -359,6 +637,12 @@ public class Imager extends CommandLineTool {
             return new AbstractAction(BROWSE_LABEL) {
                 public void actionPerformed(ActionEvent evt) {
                     handleBrowseAction(fileField);
+                    // set the out dir to the in file if it is not explciitly enabled
+                    if (evt.getSource() == inFileBrowseButton && !outFileEnabler.isSelected()) {
+                        File file = new File(inFileField.getText());
+                        File dir = file.isDirectory() ? file : file.getParentFile();
+                        outFileField.setText(dir.getPath());
+                    }
                 }
             };
         }
@@ -449,283 +733,6 @@ public class Imager extends CommandLineTool {
         private final JTextArea logArea = new JTextArea();
 
         /** Combo box for the available image formats. */
-        private final JComboBox formatBox = new JComboBox(FORMATS);
+        private final JComboBox formatBox = new JComboBox(exporter.getExtensions().toArray());
     }
-
-    /**
-     * Constructs a new, command-line Imager.
-     */
-    public Imager(List<String> args) {
-        this(args, false);
-    }
-
-    /**
-     * Constructs a new imager, which may be GUI-based or command-line.
-     * @param gui <tt>true</tt> if the imager should be GUI-based.
-     */
-    public Imager(List<String> args, boolean gui) {
-        super(args);
-        if (gui) {
-            imagerFrame = new ImagerFrame();
-            imagerFrame.pack();
-            imagerFrame.setVisible(true);
-        } else {
-            imagerFrame = null;
-            addOption(new FormatOption(this));
-        }
-    }
-
-    /**
-     * Does the actual conversion work.
-     * @require <tt>getLocation() != null</tt>
-     */
-    public void start() {
-        File inFile = getInFile();
-        File outFile = getOutFile();
-        if (!inFile.exists()) {
-            println("Input file " + inFile + " does not exist");
-        } else if (outFile == null) {
-            makeImage(inFile, inFile);
-        } else {
-            makeImage(inFile, outFile);
-        }
-//        jframe.dispose();
-    }
-
-    /**
-     * Makes an image file from the specified input file. If the input file is a directory, the
-     * method descends recursively. The types of input files recognized are: gxl, gps and gst
-     * @param inFile the input file to be converted
-     * @param outFile the intended output file
-     */
-    public void makeImage(File inFile, File outFile) {
-        // if the given input-file is a directory, call this method recursively for each file it contains
-        // but ensure:
-        // --> output-file exists or can be created
-        if (inFile.isDirectory()) {
-            if (outFile.exists() || outFile.mkdir()) {
-                File[] files = inFile.listFiles();
-                for (int i = 0; i < files.length; i++) {
-                    makeImage(files[i], new File(outFile, files[i].getName()));
-                }
-            } else {
-                println("Directory " + outFile + " could not be created");
-            }
-        }
-        // or the input-file is an ordinary Groove-file (state or rule)
-        // here ensure:
-        // --> output-file exists and will be overwritten or the directory in which
-        //     it will be placed exists or can be created
-        else {
-            if (!outFile.getParentFile().exists() && !outFile.getParentFile().mkdir()) {
-                JOptionPane.showMessageDialog(null, "Output file does not exist and directory can not be created.");
-                return;
-            }
-
-            ExtensionFilter acceptingFilter = accept(inFile);
-            if (acceptingFilter != null) {
-                try {
-                    String outFileName = acceptingFilter.stripExtension(outFile.getPath());
-                    outFile = new File(new ExtensionFilter("."+imageFormat).addExtension(outFileName));
-                    groove.graph.Graph graph = graphLoader.unmarshalGraph(inFile);
-                    JModel model;
-                    if (acceptingFilter == ruleFilter) {
-                        String ruleName = ruleFilter.stripExtension(inFile.getName());
-                        AspectualRuleView rule = new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), new RuleNameLabel(ruleName));
-                        model = AspectJModel.newInstance(rule, new Options());
-                    } else {
-                        model = GraphJModel.newInstance(graph, new Options());
-                    }
-                    JGraph jGraph = new JGraph(model);
-                    jGraph.setModel(model);
-                    jGraph.setSize(jGraph.getPreferredSize());
-//                    jframe.pack();
-                    printlnMedium("Imaging "+inFile+" as "+outFile);
-                    if (imageFormat == EPS_FORMAT) {
-                        // Create a graphics contents on the buffered image
-                        int x_max = jGraph.toImage().getWidth();
-                        int y_max = jGraph.toImage().getHeight();
-
-                        // Create an output stream
-                        OutputStream out = new FileOutputStream(outFile);
-
-                        // minX,minY,maxX,maxY
-                        EpsGraphics g2d = new EpsGraphics("Title", out, 0, 0, x_max, y_max, ColorMode.COLOR_RGB);
-
-                        g2d.drawImage(jGraph.toImage(), new AffineTransform(), null);
-                        g2d.close();
-                    } else {
-                        if (! ImageIO.write(jGraph.toImage(), imageFormat, outFile)) {
-                            println("No writer found for "+outFile);
-                            outFile.delete();
-                        }
-                    }
-                    Thread.yield();
-                } catch (FileNotFoundException fnfe){
-                    println("File " + outFile + "does not exist.");
-                } catch (IOException e) {
-                    println("Problem reading " + inFile);
-                    return;
-                }
-            }
-        }
-    }
-
-    /**
-     * Determines if a given file is recognized by any of the filters regocnized by this
-     * <tt>Imager</tt>. In this implementation, these are the {@link Groove}gxl filter, state filter
-     * or rule filter.
-     * @param file the file to be tested for acceptance
-     * @return a filter that accepts <tt>file</tt>, or <tt>null</tt>.
-     * @see Groove#createGxlFilter()
-     * @see Groove#createStateFilter()
-     * @see Groove#createRuleFilter()
-     */
-    public ExtensionFilter accept(File file) {
-        for (int i = 0; i < acceptFilters.length; i++) {
-            if (acceptFilters[i].accept(file)) {
-                return acceptFilters[i];
-            }
-        }
-        return null;
-    }
-//
-//    /**
-//     * Logs a line of text, either to the standard output
-//     * or (if the invocation is gui-based) to the {@link ImagerFrame}.
-//     */
-//    public void log(String text) {
-//        if (imagerFrame == null) {
-//            System.out.println(text);
-//        } else {
-//            imagerFrame.println(text);
-//        }
-//    }
-
-    /** Returns the location of the file(s) to be imaged. */
-    public File getInFile() {
-		return inFile;
-    }
-
-    /**
-     * Returns the intended location for the image file(s).
-     */
-    public File getOutFile() {
-		return outFile;
-    }
-
-    /**
-     * Sets the location where to look for the files to be imaged. No check is done if the location
-     * actually exists.
-     * @param fileName the name of the files to be imaged
-     * @ensure <tt>getOutFile().getName().equals(fileName)</tt>
-     */
-    public void setInFile(String fileName) {
-        inFile = new File(fileName);
-    }
-
-    /**
-     * Sets the location where to store the image file. No check is done if the location actually
-     * exists.
-     * @param outFileName The name of the outFile to set
-     */
-    public void setOutFile(String outFileName) {
-        this.outFile = new File(outFileName);
-    }
-
-    /**
-     * Returns the image format to which the graphs will be converted.
-     */
-    public String getImageFormat() {
-        return imageFormat;
-    }
-
-    /**
-     * Sets the image format to which the graphs will be converted.
-     */
-    public void setImageFormat(String imageFormat) {
-        this.imageFormat = imageFormat;
-    }
-
-    /**
-     * Processes a list of arguments (which are <tt>String</tt>s) by setting the attributes of
-     * the imager accordingly.
-     * @require <tt>argsList instanceof List of String</tt>
-     */
-    @Override
-    protected void processArguments() {
-        super.processArguments();
-        List<String> argsList = getArgs();
-        if (argsList.size() > 0) {
-            setInFile(argsList.get(0));
-            argsList.remove(0);
-        }
-        if (argsList.size() > 0) {
-            setOutFile(argsList.get(0));
-            argsList.remove(0);
-        }
-        if (argsList.size() > 0) {
-            printError("Invalid number of arguments");
-        }
-    }
-
-    @Override
-    protected String getUsageMessage() {
-        return "Usage: Imager [options] filename [outlocation]";
-    }
-
-    /**
-     * This tool does not support logging.
-     */
-    @Override
-    protected boolean supportsLogOption() {
-        return false;
-    }
-
-    /**
-     * This tool does not support output file specification through an option.
-     */
-    @Override
-    protected boolean supportsOutputOption() {
-        return false;
-    }
-
-    /** Overwrites the method to write to the system output or to the GUI. */
-    @Override
-    protected void print(String text) {
-        if (imagerFrame == null) {
-            super.print(text);
-        } else {
-            imagerFrame.print(text);
-        }
-    }
-
-    /** Overwrites the method to write to the system output or to the GUI. */
-    @Override
-    protected void println() {
-        if (imagerFrame == null) {
-            super.println();
-        } else {
-            imagerFrame.println("");
-        }
-    }
-
-    /** Overwrites the method to write to the system output or to the GUI. */
-    @Override
-    protected void println(String text) {
-        if (imagerFrame == null) {
-            super.println(text);
-        } else {
-            imagerFrame.println(text);
-        }
-    }
-
-    /** Name of the image format to which the imager converts. */
-    private String imageFormat = DEFAULT_FORMAT;
-    /** The imager frame if the invocation is gui-based; <tt>null</tt> if it is command-line based. */
-    private final ImagerFrame imagerFrame;
-    /** The location of the file(s) to be imaged. */
-    private File inFile;
-    /** The intended location of the image file(s). */
-    private File outFile;
 }
