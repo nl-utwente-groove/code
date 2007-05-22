@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Operation.java,v 1.4 2007-05-21 22:19:28 rensink Exp $
+ * $Id: Operation.java,v 1.5 2007-05-22 11:29:16 kastenberg Exp $
  */
 package groove.algebra;
 
@@ -21,8 +21,10 @@ import java.util.List;
 /**
  * Interface specifying what methods each Operation needs to implement.
  * AREND: Shouldn't the types of the arguments be included somehow?
+ * HARMEN: I think it should. Let's include this when refactoring the
+ * signature/algebra core.
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-05-21 22:19:28 $
+ * @version $Revision: 1.5 $ $Date: 2007-05-22 11:29:16 $
  */
 public interface Operation {
 	/**
