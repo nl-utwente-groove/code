@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Converter.java,v 1.2 2007-05-21 22:19:36 rensink Exp $
+ * $Id: Converter.java,v 1.3 2007-05-23 11:36:21 rensink Exp $
  */
 package groove.util;
 
@@ -28,9 +28,26 @@ import java.util.Map;
 /**
  * Performs conversions to and from groove.graph.Graph.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Converter {
+	/** Main method to test this class. */
+	static public void main(String[] args) {
+	    HTMLTag blue = createColorTag(Color.blue);
+	    HTMLTag green = createColorTag(Color.green);
+	    HTMLTag red = createColorTag(Color.red);
+	    System.out.println(blue.on("Text"));
+	    System.out.println(red.on("Text"));
+	    System.out.println(green.on("Text"));
+	}
+	
+	/** Converts the last byte of a number fo hexadecimal representation. */
+    static private String toHex(int number) {
+	    return "" + Character.forDigit((number / HEX)%HEX, HEX) + Character.forDigit(number % HEX, HEX);
+	}
+    
+	static private int HEX = 16;
+
 	/** Writes a graph in FSM format to a print writer. */
     static public void graphToFsm(GraphShape graph, PrintWriter writer) {
         // mapping from nodes of grapg to integers
@@ -76,22 +93,87 @@ public class Converter {
     }
 
     /**
+     * Returns an HTML tag embedder.
+     */
+    static public HTMLTag createHtmlTag(String tag) {
+        return new HTMLTag(tag);
+    }
+
+    /**
+     * Returns an HTML tag embedder with an argument string.
+     */
+    static public HTMLTag createHtmlTag(String tag, String arguments) {
+        return new HTMLTag(tag, arguments);
+    }
+
+    /** Creates a font colour tag for a given colour. */
+    static public HTMLTag createColorTag(Color color) {
+        String colorString =
+            toHex(color.getRed()) + toHex(color.getGreen()) + toHex(color.getBlue()) ;
+        return new HTMLTag("font", "color", colorString);
+    }
+
+    /** Converts the first letter of a given string to upper- or lowercase. */
+    static public String toUppercase(String text, boolean upper) {
+    	return toUppercase(new StringBuilder(text), upper).toString();
+    }
+
+    /** Converts the first letter of a given string to upper- or lowercase. */
+    static public StringBuilder toUppercase(StringBuilder text, boolean upper) {
+    	Character firstChar = text.charAt(0);
+    	if (upper) {
+    		firstChar = Character.toUpperCase(firstChar);
+    	} else {
+    		firstChar = Character.toLowerCase(firstChar);
+    	}
+    	text.replace(0, 1, firstChar.toString());
+    	return text;
+    }
+    
+    /** Name of the HTML tag (<code>html</code>). */
+    static public String HTML_TAG_NAME = "html";
+    /** HTML tag. */
+    static public HTMLTag HTML_TAG = new HTMLTag(HTML_TAG_NAME);
+    /** Name of the linebreak tag (<code>br</code>). */
+    static public String LINEBREAK_TAG_NAME = "br";
+    /** Name of the horizontal rule tag (<code>hr</code>). */
+    static public String HORIZONTAL_LINE_TAG_NAME = "hr";
+    /** Name of the font underline tag (<code>u</code>). */
+    static public String UNDERLINE_TAG_NAME = "u";
+    /** Font underline tag. */
+    static public HTMLTag UNDERLINE_TAG = new HTMLTag(UNDERLINE_TAG_NAME);
+    /** Name of the italic font tag (<code>i</code>). */
+    static public String ITALIC_TAG_NAME = "i";
+    /** Italic font tag. */
+    static public HTMLTag ITALIC_TAG = new HTMLTag(ITALIC_TAG_NAME);
+    /** Name of the strong font tag (<code>strong</code>). */
+    static public String STRONG_TAG_NAME = "strong";
+    /** Strong font tag. */
+    static public HTMLTag STRONG_TAG = new HTMLTag(STRONG_TAG_NAME);
+
+    /** The <code>html</code> tag to insert a line break. */
+    static public String HTML_LINEBREAK = createHtmlTag(LINEBREAK_TAG_NAME).tagBegin;
+    /** The <code>html</code> tag to insert a horizontal line. */
+    static public String HTML_HORIZONTAL_LINE = createHtmlTag(HORIZONTAL_LINE_TAG_NAME).tagBegin;
+
+
+    /**
      * Class that allows some handling of HTML text.
      */
     static public class HTMLTag {
         private HTMLTag(String tag) {
-            this.tagBegin = "<" + tag + ">";
-            this.tagEnd = "</" + tag + ">";
+            this.tagBegin = String.format("<%s>", tag);
+            this.tagEnd = String.format("</%s>", tag);
         }
 
         private HTMLTag(String tag, String arguments) {
             this.tagBegin = String.format("<%s %s>", tag, arguments);
-            this.tagEnd = "</" + tag + ">";
+            this.tagEnd = String.format("</%s>", tag);
         }
 
         private HTMLTag(String tag, String attrName, String attrValue) {
-            this.tagBegin = "<" + tag + " " + attrName + "=\"" + toHtml(attrValue) + "\">";
-            this.tagEnd = "</" + tag + ">";
+            this.tagBegin = String.format("<%s %s=\"%s\">", tag, attrName, toHtml(attrValue));
+            this.tagEnd = String.format("</%s>", tag);
         }
 
         /**
@@ -105,8 +187,9 @@ public class Converter {
 
         /**
          * Puts the tag around a given string builder, and returns the result.
+         * The changes are implemented in the string builder itself, i.e., the parameter is modified.
          * The description is assumed to be in HTML format.
-         * @param text the string builder from which the description is to be abstracted
+         * @param text the string builder that is to be augmented with this tag
          */
         public String on(StringBuilder text) {
             text.insert(0, tagBegin);
@@ -150,74 +233,9 @@ public class Converter {
         	return result;
         }
 
+        /** Start text of this tag. */
         private final String tagBegin;
+        /** End text of this tag. */
         private final String tagEnd;
-    }
-
-    /**
-     * Returns an HTML tag embedder.
-     */
-    static public HTMLTag createHtmlTag(String tag) {
-        return new HTMLTag(tag);
-    }
-
-    /**
-     * Returns an HTML tag embedder with an argument string.
-     */
-    static public HTMLTag createHtmlTag(String tag, String arguments) {
-        return new HTMLTag(tag, arguments);
-    }
-
-    /** Creates a font colour tag for a given colour. */
-    static public HTMLTag createColorTag(Color color) {
-        String colorString =
-            toHex(color.getRed()) + toHex(color.getGreen()) + toHex(color.getBlue()) ;
-        return new HTMLTag("font", "color", colorString);
-    }
-
-    /** Converts the first letter of a given string to upper- or lowercase. */
-    static public String toUppercase(String text, boolean upper) {
-    	return toUppercase(new StringBuilder(text), upper).toString();
-    }
-
-    /** Converts the first letter of a given string to upper- or lowercase. */
-    static public StringBuilder toUppercase(StringBuilder text, boolean upper) {
-    	Character firstChar = text.charAt(0);
-    	if (upper) {
-    		firstChar = Character.toUpperCase(firstChar);
-    	} else {
-    		firstChar = Character.toLowerCase(firstChar);
-    	}
-    	text.replace(0, 1, firstChar.toString());
-    	return text;
-    }
-    
-    /** Name of the HTML tag (<code>html</code>). */
-    static public String HTML_TAG_NAME = "html";
-    /** Name of the linebreak tag (<code>br</code>). */
-    static public String LINEBREAK_TAG_NAME = "br";
-    /** Name of the horizontal rule tag (<code>hr</code>). */
-    static public String HORIZONTAL_LINE_TAG_NAME = "hr";
-
-    /** The <code>html</code> tag to insert a line break. */
-    static public String HTML_LINEBREAK = createHtmlTag(LINEBREAK_TAG_NAME).tagBegin;
-    /** The <code>html</code> tag to insert a horizontal line. */
-    static public String HTML_HORIZONTAL_LINE = createHtmlTag(HORIZONTAL_LINE_TAG_NAME).tagBegin;
-
-
-    static private int HEX = 16;
-    
-    static String toHex(int number) {
-        return "" + Character.forDigit((number / HEX)%HEX, HEX) + Character.forDigit(number % HEX, HEX);
-    }
-    
-    /** Main method to test this class. */
-    static public void main(String[] args) {
-        HTMLTag blue = createColorTag(Color.blue);
-        HTMLTag green = createColorTag(Color.green);
-        HTMLTag red = createColorTag(Color.red);
-        System.out.println(blue.on("Text"));
-        System.out.println(red.on("Text"));
-        System.out.println(green.on("Text"));
     }
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.15 2007-05-22 11:46:16 rensink Exp $
+ * $Id: AspectJModel.java,v 1.16 2007-05-23 11:36:18 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -63,7 +63,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -173,7 +173,7 @@ public class AspectJModel extends GraphJModel {
         AspectValue role = role(aspectNode);
         AttributeMap result = (AttributeMap) RULE_NODE_ATTR.get(role).clone();
         if (aspectNode.getValue(AttributeAspect.getInstance()) != null) {
-        	result.applyMap(getJVertexValueAttr());
+        	result.applyMap(getJVertexDataAttr());
         }
         if (! isMoveable(aspectNode)) {
         	GraphConstants.setMoveable(result, false);
@@ -318,7 +318,6 @@ public class AspectJModel extends GraphJModel {
             
             // node emphasis
             AttributeMap nodeEmphChange = (AttributeMap) JAttr.EMPH_NODE_CHANGE.clone();
-            GraphConstants.setLineWidth(nodeEmphChange, JAttr.RULE_EMPH_WIDTH.get(role));
             GraphConstants.setBorder(nodeEmphChange, JAttr.RULE_EMPH_BORDER.get(role));
             RULE_NODE_EMPH_CHANGE.put(role, nodeEmphChange);
         }

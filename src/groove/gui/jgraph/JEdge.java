@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.6 2007-05-21 22:19:16 rensink Exp $
+ * $Id: JEdge.java,v 1.7 2007-05-23 11:36:18 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.util.Converter;
+import static groove.util.Converter.*;
 import groove.util.Groove;
 
 import java.util.Collection;
@@ -33,7 +34,7 @@ import org.jgraph.graph.DefaultPort;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
@@ -145,7 +146,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * Returns the tool tip text for this edge.
      */
     public String getToolTipText() {
-		return htmlTag.on(getEdgeDescription()); // + getLabelDescription());
+		return HTML_TAG.on(getEdgeDescription()); // + getLabelDescription());
     }
     
     /**
@@ -180,7 +181,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     	String[] displayedLabels = new String[getLabelSet().size()];
     	int labelIndex = 0;
     	for (Object label: getLabelSet()) {
-    		displayedLabels[labelIndex] = strongTag.on(label.toString(), true);
+    		displayedLabels[labelIndex] = STRONG_TAG.on(label.toString(), true);
     		labelIndex++;
     	}
         if (displayedLabels.length == 0) {
@@ -214,12 +215,12 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * The string used to separate arguments when preparing for editing.
      */
     static public final String PRINT_SEPARATOR = ", ";
-    /**
-     * HTML formatting tag for the tool tip text
-     */
-    static final Converter.HTMLTag strongTag = Converter.createHtmlTag("strong");
-    /**
-     * HTML formatting tag for the tool tip text
-     */
-    static final Converter.HTMLTag htmlTag = Converter.createHtmlTag("html");
+//    /**
+//     * HTML formatting tag for the tool tip text
+//     */
+//    static final Converter.HTMLTag strongTag = Converter.createHtmlTag("strong");
+//    /**
+//     * HTML formatting tag for the tool tip text
+//     */
+//    static final Converter.HTMLTag htmlTag = Converter.createHtmlTag("html");
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.8 2007-05-21 22:19:16 rensink Exp $
+ * $Id: JVertexView.java,v 1.9 2007-05-23 11:36:18 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,6 +28,7 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -54,7 +55,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class JVertexView extends VertexView {
     /**
@@ -342,9 +343,9 @@ public class JVertexView extends VertexView {
 			// taken into account
 			// so try again after the width has been set
 			setSize(dimension);
-			dimension = super.getPreferredSize();
-			double width = dimension.getWidth();
-			double height = Math.max(dimension.getHeight(), JAttr.DEFAULT_NODE_SIZE.getHeight());
+			return super.getPreferredSize();
+//			double width = dimension.getWidth();
+//			double height = Math.max(dimension.getHeight(), JAttr.DEFAULT_NODE_SIZE.getHeight());
 			// // correct if the shape of the vertex is oval
 			// if (dataShape) {
 			// ovalExtraWidth = (int) width/6;
@@ -352,7 +353,7 @@ public class JVertexView extends VertexView {
 			// ovalExtraHeight = (int) height/6;
 			// height += ovalExtraHeight;
 			// }
-			return new Dimension((int) width, (int) height);
+//			return new Dimension((int) width, (int) height);
 		}
 
 		/**
@@ -375,6 +376,7 @@ public class JVertexView extends VertexView {
 			if (view.isEmphasized()) {
 				linewidth += JAttr.EMPH_INCREMENT;
 			}
+			dash = GraphConstants.getDashPattern(attributes);
 			// borderWidth = Math.max(1,
 			// Math.round(GraphConstants.getLineWidth(attributes)));
 			// borderColor = GraphConstants.getBorderColor(attributes);
@@ -419,12 +421,12 @@ public class JVertexView extends VertexView {
         private void paintOval(Graphics2D g) {
         	Shape shape = getShape(0,0);
 			boolean tmp = selected;
-			if (super.isOpaque()) {
-				g.setColor(super.getBackground());
+			if (isOpaque()) {
+				g.setColor(getBackground());
 				g.fill(shape);
 			}
-			g.setColor(super.getForeground());
-			g.setStroke(new BasicStroke(linewidth));
+			g.setColor(getForeground());
+			g.setStroke(JAttr.createStroke(linewidth, dash));
 			g.draw(shape);
 			try {
 				// just paint the text
@@ -507,5 +509,7 @@ public class JVertexView extends VertexView {
         private boolean selected;
         /** Linewidth for the border, in case the shape is oval. */
         private float linewidth;
+        /** Deash pattern for the border, in case the shape is oval. */
+        private float[] dash;
     }
 }
