@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.11 2007-05-22 11:46:16 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.12 2007-05-23 11:36:18 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -21,7 +21,7 @@ import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
-import groove.util.Converter;
+import static groove.util.Converter.*;
 import groove.view.aspect.AttributeAspect;
 
 import java.util.ArrayList;
@@ -99,7 +99,7 @@ public class GraphJVertex extends JVertex {
     	if (isShowNodeIdentity()) {
     		String id = getNodeIdentity();
     		if (id != null) {
-    			result.append(italicTag.on(id));
+    			result.append(UNDERLINE_TAG.on(id));
     		}
     	}
     	String labels = getUserObject().toString();
@@ -107,9 +107,9 @@ public class GraphJVertex extends JVertex {
     	if (labels.length() > 0) {
     		// add a separator between node identity and label
     		if (result.length() > 0) {
-                result.append(Converter.HTML_LINEBREAK); //HORIZONTAL_LINE;
+                result.append(HTML_LINEBREAK); //HORIZONTAL_LINE;
     		}
-    		result.append(Converter.toHtml(labels));
+    		result.append(toHtml(labels));
     	}
     	return result.toString();
     }
@@ -328,7 +328,7 @@ public class GraphJVertex extends JVertex {
     	String id = getNodeIdentity();
     	if (id != null) {
     		result.append(" ");
-    		result.append(italicTag.on(id));
+    		result.append(ITALIC_TAG.on(id));
     	}
 		return result;
 	}
@@ -348,6 +348,4 @@ public class GraphJVertex extends JVertex {
     private final boolean vertexLabelled;
     /** The graph node modelled by this jgraph node. */
     private final Node node;
-	/** HTML tag to make text italic. */
-    static Converter.HTMLTag italicTag = Converter.createHtmlTag("i");
 }

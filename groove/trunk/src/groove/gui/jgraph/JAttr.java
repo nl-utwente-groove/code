@@ -12,15 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.11 2007-05-21 22:19:16 rensink Exp $
+ * $Id: JAttr.java,v 1.12 2007-05-23 11:36:18 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.Font;
 import java.awt.Insets;
 import java.awt.Rectangle;
+import java.awt.Stroke;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,9 +44,11 @@ import groove.view.aspect.RuleAspect;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class JAttr {
+    /** Constant defining an italic font, for displaying state identities. */
+    static public final Font ITALIC_FONT = GraphConstants.DEFAULTFONT.deriveFont(Font.ITALIC);
 	/** Percentage of white in the background colour. */
 	static private final int BACKGROUND_WHITEWASH = 90;
 	/** Maximum value of the colour dimensions. */
@@ -85,16 +89,20 @@ public class JAttr {
     public static final Color DEFAULT_BACKGROUND = Colors.findColor(Groove.getGUIProperty("default.background"));
 
     /**
-     * Background colour for value nodes.
+     * Background colour for data nodes; is <code>null</code> if no special background is set.
      */
-    public static final Color VALUE_BACKGROUND;
+    public static final Color DATA_BACKGROUND;
+    /**
+     * Font for data nodes and edges; is <code>null</code> if no special font is set.
+     */
+    public static final Font DATA_FONT = ITALIC_FONT;
 
     static {
     	String valueBackgroundProperty = Groove.getGUIProperty("attribute.background");
     	if (valueBackgroundProperty == null) {
-    		VALUE_BACKGROUND = DEFAULT_BACKGROUND;
+    		DATA_BACKGROUND = null;
     	} else {
-    		VALUE_BACKGROUND = Colors.findColor(valueBackgroundProperty);
+    		DATA_BACKGROUND = Colors.findColor(valueBackgroundProperty);
     	}
     }
     
@@ -395,23 +403,25 @@ public class JAttr {
 	    }
 	}
 
-	/** Method creating a rule border with given color, dash pattern, and width. */
-	private static Border createRuleBorder(Color color, int width, float[] dash) {
-		Border BORDER;
+    /** Creates a stroke with a given line width and dash pattern. */
+    public static Stroke createStroke(float width, float[] dash) {
+    	Stroke result;
+    	if (dash == null) {
+    		result = new BasicStroke(width);
+    	} else {
+    		result = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f, dash, 1.0f);
+    	}
+    	return result;
+	}
+    
+	/** Creates a rule border with given color, dash pattern, and width. */
+	public static Border createRuleBorder(Color color, float width, float[] dash) {
+		Border result;
 	    if (dash == NO_DASH) {
-	        BORDER = new LineBorder(color, width);
+	        result = new LineBorder(color, (int) width);
 	    } else {
-	        BORDER =
-	            new StrokedLineBorder(
-	                color,
-	                new BasicStroke(
-	                    width,
-	                    BasicStroke.CAP_BUTT,
-	                    BasicStroke.JOIN_ROUND,
-	                    10.0f,
-	                    dash,
-	                    1.0f));
-	    }
-	    return BORDER;
+			result = new StrokedLineBorder(color, createStroke(width, dash));
+		}
+	    return result;
 	}
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.14 2007-05-21 22:19:16 rensink Exp $
+ * $Id: GraphJModel.java,v 1.15 2007-05-23 11:36:18 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -53,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
     /** 
@@ -76,30 +76,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         this.graph = graph;
         LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(graph);
         this.layoutMap = layoutMap == null ? new LayoutMap<Node,Edge>() : layoutMap;
-//        GraphProperties graphProperties = GraphInfo.getProperties(graph, false);
-//        if (graphProperties != null) {
-//        	setProperties(graphProperties);
-//        }
-//        String name = GraphInfo.getName(graph);
-//        if (name != null) {
-//        	setName(name);
-//        }
-//        graph.addGraphListener(this);
     }
-//
-//    /** 
-//     * Creates a new GraphJModel instance on top of a given Graph, with given
-//     * node and edge attributes.
-//     * Self-edges will be displayed as node labels.
-//     * The node and adge attribute maps are cloned.
-//     * @param graph the underlying Graph
-//     * @param defaultNodeAttr the attributes for displaying nodes
-//     * @param defaultEdgeAttr the attributes for displaying edges
-//     * @require graph != null, nodeAttr != null, edgeAttr != null;.
-//     */
-//    public GraphJModel(GraphShape graph, AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr) {
-//        this(graph, defaultNodeAttr, defaultEdgeAttr, null);
-//    }
 
     /** 
      * Creates a new GraphJModel instance on top of a given Graph.
@@ -111,15 +88,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     GraphJModel(GraphShape graph, Options options) {
         this(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
     }
-//
-//    /** 
-//     * Creates a new GraphJModel instance on top of a given Graph.
-//     * @param graph the underlying Graph
-//     * @require graph != null;
-//     */
-//    public GraphJModel(GraphShape graph) {
-//        this(graph, new Options());
-//    }
 
     /**
      * Constructor for a dummy (empty) model. 
@@ -127,19 +95,6 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     GraphJModel() {
     	this(AbstractGraph.EMPTY_GRAPH, null);
     }
-//    
-//    /** 
-//	 * Initialises the graph j-model.
-//	 * This method should be called once, directly after the constructor.
-//	 */
-//	void init() {
-//        LayoutMap<Node,Edge> layoutMap = GraphInfo.getLayoutMap(graph);
-//        this.layoutMap = layoutMap == null ? new LayoutMap<Node,Edge>() : layoutMap;
-//        initializeTransients();
-//        addNodeSet(graph.nodeSet());
-//        addEdgeSet(graph.edgeSet());
-//        doInsert();
-//	}
 
 	/** 
      * If the name is not explicitly set, obtains the name of the underlying graph
@@ -594,12 +549,8 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Returns the attribute change required to mark a vertex as 
      * a value (i.e., attribute-related) vertex.
      */
-    protected AttributeMap getJVertexValueAttr() {
-    	if (vertexValueAttr == null) {
-    		this.vertexValueAttr = new AttributeMap();
-    		GraphConstants.setBackground(vertexValueAttr, JAttr.VALUE_BACKGROUND);
-    	}
-    	return vertexValueAttr;	
+    protected AttributeMap getJVertexDataAttr() {
+    	return DATA_NODE_ATTR;	
     }
     
 	/**
@@ -658,7 +609,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	protected AttributeMap createJVertexAttr(Node node) {
         AttributeMap result = (AttributeMap) defaultNodeAttr.clone();
 		if (node instanceof ValueNode) {
-			result.applyMap(getJVertexValueAttr());
+			result.applyMap(getJVertexDataAttr());
 		} 
         return result;
 	}
@@ -754,29 +705,24 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * The underlying Graph of this GraphModel.
      * @invariant graph != null
      */
-    protected final GraphShape graph;
+	private final GraphShape graph;
     /**
      * The layout map for the underlying graph.
      * It maps {@link Element}s to {@link JCellLayout}s.
      * This is set to an empty map if the graph is not a layed out graph.
      */
-    protected final LayoutMap<Node,Edge> layoutMap;
+    private final LayoutMap<Node,Edge> layoutMap;
     /**
      * Map from graph elements to JGraph cells.
      */
-    protected final GenericNodeEdgeMap<Node,GraphJVertex,Edge,JCell> toJCellMap = new GenericNodeEdgeHashMap<Node,GraphJVertex,Edge,JCell>();
+    private final GenericNodeEdgeMap<Node,GraphJVertex,Edge,JCell> toJCellMap = new GenericNodeEdgeHashMap<Node,GraphJVertex,Edge,JCell>();
 
     /**
      * Set of GraphModel cells. Used in the process of constructing a GraphJModel.
      * @invariant addedCells \subseteq org.jgraph.graph.DefaultGraphCell
      */
-    protected final List<JCell> addedJCells = new LinkedList<JCell>();
+    private final List<JCell> addedJCells = new LinkedList<JCell>();
 
-    /**
-     * Value node attributes used in this graph model.
-     * Set in the constructor.
-     */
-    protected AttributeMap vertexValueAttr;
 	/** 
 	 * Flag indicating that aspect prefixes should be included for nodes and edges.
 	 * This overrides the value of {@link Options#SHOW_ASPECTS_OPTION}.
@@ -791,7 +737,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     /**
      * Set of GraphModel connections. Used in the process of constructing a GraphJModel.
      */
-    protected ConnectionSet connections;
+    private ConnectionSet connections;
 
     /**
      * Counter to provide the x-coordinate of fresh nodes with fresh values
@@ -801,47 +747,46 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * Counter to provide the y-coordinate of fresh nodes with fresh values
      */
     private transient int nodeY;
-	/** Dummy j-model. */
+
+	/**
+	 * Creates a new GraphJModel instance on top of a given Graph. Node
+	 * attributes are given by {@link JAttr#DEFAULT_NODE_ATTR} and edge
+	 * attributes by {@link JAttr#DEFAULT_EDGE_ATTR}. Self-edges will be
+	 * displayed as node labels.
+	 * 
+	 * @param graph
+	 *            the underlying Graph
+	 * @param options
+	 *            display options
+	 */
+	static public GraphJModel newInstance(GraphShape graph, Options options) {
+		GraphJModel result = new GraphJModel(graph, JAttr.DEFAULT_NODE_ATTR,
+				JAttr.DEFAULT_EDGE_ATTR, options);
+		result.reload();
+		return result;
+	}
+
+	/** Dummy (empty) j-model. */
 	static public final GraphJModel EMPTY_JMODEL = new GraphJModel();
-//
-//    /** 
-//     * Creates a new GraphJModel instance on top of a given Graph, with given
-//     * node and edge attributes, and an indication whether self-edges should be 
-//     * displayed as node labels.
-//     * The node and adge attribute maps are cloned.
-//     * @param graph the underlying Graph
-//     * @param defaultNodeAttr the attributes for displaying nodes
-//     * @param defaultEdgeAttr the attributes for displaying edges
-//     * @param options specifies options for the visual display
-//     * If false, node labels are used to display self edges.
-//     * @require graph != null, nodeAttr != null, edgeAttr != null;
-//     */
-//    static public GraphJModel newInstance(GraphShape graph, AttributeMap defaultNodeAttr, AttributeMap defaultEdgeAttr, Options options) {
-//        GraphJModel result = new GraphJModel(graph, defaultNodeAttr, defaultEdgeAttr, options);
-//        result.reload();
-//        return result;
-//    }
-//    
-    /** 
-     * Creates a new GraphJModel instance on top of a given Graph.
-     * Node attributes are given by {@link JAttr#DEFAULT_NODE_ATTR} 
-     * and edge attributes by {@link JAttr#DEFAULT_EDGE_ATTR}.
-     * Self-edges will be displayed as node labels.
-     * @param graph the underlying Graph
-     * @param options display options
-     */
-    static public GraphJModel newInstance(GraphShape graph, Options options) {
-        GraphJModel result = new GraphJModel(graph, JAttr.DEFAULT_NODE_ATTR, JAttr.DEFAULT_EDGE_ATTR, options);
-        result.reload();
-        return result;
-    }
-//
-//    /** 
-//     * Creates a new GraphJModel instance on top of a given Graph, with a 
-//     * fresh display options object.
-//     * @param graph the underlying Graph
-//     */
-//    static public GraphJModel newInstance(GraphShape graph) {
-//    	return newInstance(graph, new Options());
-//    }
+
+	/** Constant map containing the special data vertex attributes. */
+	static private final AttributeMap DATA_NODE_ATTR;
+
+	/** Constant map containing the special data edge attributes. */
+	static private final AttributeMap DATA_EDGE_ATTR;
+	
+	static {
+		DATA_NODE_ATTR = new AttributeMap();
+		if (JAttr.DATA_BACKGROUND != null) {
+			GraphConstants.setBackground(DATA_NODE_ATTR, JAttr.DATA_BACKGROUND);
+		}
+		if (JAttr.DATA_FONT != null) {
+			GraphConstants.setFont(DATA_NODE_ATTR, JAttr.DATA_FONT);
+		}
+		// the data edge attributes
+		DATA_EDGE_ATTR = new AttributeMap();
+		if (JAttr.DATA_FONT != null) {
+			GraphConstants.setFont(DATA_EDGE_ATTR, JAttr.DATA_FONT);
+		}
+	}
 }

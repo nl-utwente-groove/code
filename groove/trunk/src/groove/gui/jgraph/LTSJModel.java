@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.9 2007-05-22 11:46:16 rensink Exp $
+ * $Id: LTSJModel.java,v 1.10 2007-05-23 11:36:18 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -25,9 +25,9 @@ import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.State;
 import groove.lts.Transition;
+import groove.util.Converter;
 import groove.util.Groove;
 
-import java.awt.Font;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,7 +39,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -302,8 +302,6 @@ public class LTSJModel extends GraphJModel {
     
 	/** Dummy LTS model. */
 	static public final LTSJModel EMPTY_LTS_JMODEL = new LTSJModel();
-    /** Constant defining an italic font, for displaying state identities. */
-    private static final Font italicFont = GraphConstants.DEFAULTFONT.deriveFont(Font.ITALIC);
     /** The default node attributes of the LTS */
     private static final AttributeMap LTS_NODE_ATTR;
     /** The start node attributes of the LTS */
@@ -385,7 +383,7 @@ public class LTSJModel extends GraphJModel {
 	    		} else {
 	    			description = trans.getEvent().getName().toString();
 	    		}
-	    		displayedLabels[labelIndex] = strongTag.on(description, true);
+	    		displayedLabels[labelIndex] = Converter.STRONG_TAG.on(description, true);
 	    		labelIndex++;
 	    	}
 	    	if (displayedLabels.length == 1) {
@@ -448,7 +446,7 @@ public class LTSJModel extends GraphJModel {
 		@Override
 		StringBuilder getNodeDescription() {
 			StringBuilder result = new StringBuilder("State ");
-			result.append(italicTag.on(getNode()));
+			result.append(Converter.UNDERLINE_TAG.on(getNode()));
 			return result;
 		}
 

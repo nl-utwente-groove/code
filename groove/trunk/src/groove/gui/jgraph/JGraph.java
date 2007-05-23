@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.8 2007-05-21 22:19:16 rensink Exp $
+ * $Id: JGraph.java,v 1.9 2007-05-23 11:36:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -74,7 +74,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-05-21 22:19:16 $
+ * @version $Revision: 1.9 $ $Date: 2007-05-23 11:36:16 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
@@ -392,15 +392,13 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 							result = super.getPreferredSize(graph, vertexView);
 						}
 						// normalize for linewidth of the border
-						int linewidth = (int) GraphConstants.getLineWidth(vertexView.getAllAttributes());
-						int lineDiff = linewidth - JAttr.DEFAULT_LINE_WIDTH;
-						result = new Dimension((int) result.getWidth()-lineDiff, (int) result.getHeight()-lineDiff);
+						float linewidth = GraphConstants.getLineWidth(vertexView.getAllAttributes());
+						result.setSize(result.getWidth()-linewidth, result.getHeight()-linewidth);
 						sizeMap.put(text, result);
 					}
 					// adjust for linewidth of the border
-					int linewidth = (int) GraphConstants.getLineWidth(vertexView.getAllAttributes());
-					int lineDiff = linewidth - JAttr.DEFAULT_LINE_WIDTH;
-					result = new Dimension((int) result.getWidth()+lineDiff, (int) result.getHeight()+lineDiff);
+					float linewidth = GraphConstants.getLineWidth(vertexView.getAllAttributes());
+					result = new Dimension((int) Math.round(result.getWidth()+linewidth), (int) Math.round(result.getHeight()+linewidth));
 				} else {
 					result = super.getPreferredSize(graph, view);
 				}
