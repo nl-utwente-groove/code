@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.12 2007-05-23 11:36:18 rensink Exp $
+ * $Id: JAttr.java,v 1.13 2007-05-23 21:37:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -44,7 +44,7 @@ import groove.view.aspect.RuleAspect;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class JAttr {
     /** Constant defining an italic font, for displaying state identities. */
@@ -409,7 +409,7 @@ public class JAttr {
     	if (dash == null) {
     		result = new BasicStroke(width);
     	} else {
-    		result = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_ROUND, 10.0f, dash, 1.0f);
+    		result = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 1.0f);
     	}
     	return result;
 	}

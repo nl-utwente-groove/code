@@ -5,7 +5,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/castor-0_9_5_2.jar"/>
 	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/jgraph-5_9_2.jar" sourcepath="C:/Program Files/Java/jgraph-5_9_2/src">
+	<classpathentry kind="lib" path="lib/jgraph-5_9_2.jar" sourcepath="C:/Program Files/Java/jgraph_5-10-1/src">
 		<attributes>
 			<attribute name="javadoc_location" value="file:/C:/Program Files/Java/jgraph-5_9_2/doc/api/"/>
 		</attributes>

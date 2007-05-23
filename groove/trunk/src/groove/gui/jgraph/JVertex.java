@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertex.java,v 1.7 2007-05-21 22:19:16 rensink Exp $
+ * $Id: JVertex.java,v 1.8 2007-05-23 21:37:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.util.Converter;
-import groove.util.Groove;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
@@ -30,7 +29,7 @@ import org.jgraph.graph.DefaultPort;
  * JGraph vertex with a single port, and a fixed set of labels as a user object (through
  * {@link groove.gui.jgraph.JUserObject}).
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 abstract public class JVertex extends DefaultGraphCell implements JCell {
     /**
@@ -151,7 +150,7 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
 //            res.append(" with labels ");
 //        }
 //        res.append(Groove.toString(strongTag.on(labelSet.toArray(), true), "", "", ", ", " and "));
-        return htmlTag.on(getNodeDescription());
+        return htmlTag.on(getNodeDescription()).toString();
     }
     
     /**

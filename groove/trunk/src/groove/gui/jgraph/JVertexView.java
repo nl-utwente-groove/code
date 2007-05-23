@@ -12,13 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.9 2007-05-23 11:36:18 rensink Exp $
+ * $Id: JVertexView.java,v 1.10 2007-05-23 21:37:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
-import groove.util.Converter;
+import static groove.util.Converter.HTML_TAG;
+import static groove.util.Converter.createColorTag;
+import static groove.util.Converter.createSpanTag;
+import groove.util.Converter.HTMLTag;
 
-import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -28,7 +30,6 @@ import java.awt.Graphics2D;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Shape;
-import java.awt.Stroke;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
@@ -55,7 +56,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class JVertexView extends VertexView {
     /**
@@ -82,7 +83,7 @@ public class JVertexView extends VertexView {
      * This implementation returns the (static) {@link MyRenderer}.
      */
 	@Override
-    public CellViewRenderer getRenderer() {
+    public MyRenderer getRenderer() {
         return renderer;
     }
 
@@ -97,29 +98,51 @@ public class JVertexView extends VertexView {
 	@Override
 	public void refresh(GraphModel model, CellMapper mapper, boolean createDependentViews) {
 		super.refresh(model, mapper, createDependentViews);
-		// modify the bounds and border, in case the vertex is an oval
-		oval = isDataVertex();
-		if (oval) {
-			Rectangle2D b = getCachedBounds();
-			extraX = (int) b.getWidth()/8;
-			extraY = (int) b.getHeight()/8;
-			b.setFrame(b.getX()-extraX, b.getY()-extraY, b.getWidth()+2*extraX, b.getHeight()+2*extraY);
-		} else {
-			extraX = extraY = 0;
-		}
+		// modify the bounds to make room for the border
+		text = computeText();
+		insets = computeInsets(text.length() == 0);
+		adjustBounds(insets);
 	}
 
 	/**
-	 * Callback method idicating that a certain vertex is a data vertex
-	 * (and so should be rendered differently).
+	 * Adjusts the cached bounds for this vertex by a given inset.
 	 */
-	private boolean isDataVertex() {
-		return getCell() instanceof GraphJVertex && ((GraphJVertex) getCell()).isDataNode();
+	private void adjustBounds(Insets i) {
+		Rectangle2D b = getCachedBounds();
+		b.setFrame(b.getX(), b.getY(), b.getWidth()+i.left+i.right, b.getHeight()+i.top+i.bottom);
 	}
 	
-	/** Indicates if the underlying cell is currently emphasized in the model. */
-	private boolean isEmphasized() {
-		return jGraph.getModel().isEmphasized(getCell());
+	/** 
+	 * Computes insets for this view, using the view border and 
+	 * taking into account the shape of the vertex.
+	 */
+	private Insets computeInsets(boolean empty) {
+		// calculate the insets of the border
+//		Border b = GraphConstants.getBorder(getAllAttributes());
+//		if (b == null) {
+//			top = left = bottom = right = 0;
+//		} else {
+		Insets result;
+		if (empty) {
+			result = (Insets) EMPTY_INSETS.clone();
+		} else {
+			result = (Insets) DEFAULT_INSETS.clone();//b.getBorderInsets(getRenderer());
+		}
+		int line = (int) GraphConstants.getLineWidth(getAllAttributes());
+		result.top += line;
+		result.left += line;
+		result.bottom += line;
+		result.right += line;
+// }
+		// add space needed for an oval border
+		if (isOval()) {
+			Rectangle2D bounds = getCachedBounds();
+			result.left += (int) bounds.getWidth()/8;
+			result.right += (int) bounds.getWidth()/8;
+			result.top += (int) bounds.getHeight()/8;
+			result.bottom += (int) bounds.getHeight()/8;
+		}
+		return result;
 	}
 
 	/** 
@@ -128,56 +151,106 @@ public class JVertexView extends VertexView {
 	 * black.
 	 * @see JVertex#getHtmlText()
 	 */
-	public String getHtmlText() {
-		String result = getCell().getHtmlText();
+	private String computeText() {
+		StringBuilder result = new StringBuilder(getCell().getHtmlText());
 		if (result.length() > 0) {
 			Color lineColor = GraphConstants.getLineColor(getAllAttributes());
 			if (lineColor != null && ! lineColor.equals(Color.BLACK)) {
-				result = getColoredText(result, lineColor);
+				createColorTag(lineColor).on(result);
 			}
+			return HTML_TAG.on(fontTag.on(result)).toString();
+		} else {
+			return "";
 		}
-		return result;
 	}
 
 	/**
-	 * Returns a given HTML-formatted text, surrounded by a HTML tag to 
-	 * set it in a given colour.
+	 * Callback method idicating that a certain vertex is a data vertex
+	 * (and so should be rendered differently).
 	 */
-	private String getColoredText(String innerText, Color lineColor) {
-		StringBuffer result = new StringBuffer();
-		int red = lineColor.getRed();
-		int blue = lineColor.getBlue();
-		int green = lineColor.getGreen();
-		int alpha = lineColor.getAlpha();
-		result.append("<span style=\"color: rgb(");
-		result.append(red);
-		result.append(",");
-		result.append(green);
-		result.append(",");
-		result.append(blue);
-		result.append(");");
-		if (alpha != MAX_ALPHA) {
-			// the following is taken from the internet; it is to make
-			// sure that all html interpretations set the opacity correctly.
-			double alphaFraction = ((double) alpha) / MAX_ALPHA;
-			result.append("float:left;filter:alpha(opacity=");
-			result.append((int) (100 * alphaFraction));
-			result.append(");opacity:");
-			result.append(alphaFraction);
-			result.append(";");
-		}
-		result.append("\">");
-		result.append(innerText);
-		result.append("</span>");
-		return result.toString();
+	private boolean isOval() {
+		return getCell() instanceof GraphJVertex && ((GraphJVertex) getCell()).isDataNode();
 	}
+	
+	/** Returns the insets computed for this vertex view. */
+	private final Insets getInsets() {
+		return insets;
+	}
+
+	/** Returns the (html formatted) text to be displayed in this vertex view. */
+	private final String getText() {
+		return text;
+	}
+
+	/** Indicates if the underlying cell is currently emphasized in the model. */
+	private boolean isEmphasized() {
+		return jGraph.getModel().isEmphasized(getCell());
+	}
+
+	/** 
+	 * Returns the line width of the vertex view.
+	 * This is the line width stored in the attributes, augmented by
+	 * {@link JAttr#EMPH_INCREMENT} if the view is emphasized.
+	 * @see #isEmphasized() 
+	 */
+	public float getLinewidth() {
+		float result = GraphConstants.getLineWidth(getAllAttributes());
+		if (isEmphasized()) {
+			result += JAttr.EMPH_INCREMENT;
+		}
+		return result;
+	}
+	
+	/** Returns the shape of the vertex view. */
+	public Shape getShape(Dimension size) {
+		float line = getLinewidth();
+    	if (isOval()) {
+        	return new Ellipse2D.Float(line/2, line/2, size.width-line, size.height-line);
+    	} else {
+    		return new Rectangle2D.Float(line/2, line/2, size.width-line, size.height-line).getFrame();
+    	}
+	}
+//
+//	/**
+//	 * Returns a HTML span tag that imposes a given color on a text.
+//	 */
+//	static private HTMLTag getColorTag(Color color) {
+//		HTMLTag result = colorTagMap.get(color);
+//		if (result == null) {
+//			StringBuffer arg = new StringBuffer();
+//			int red = color.getRed();
+//			int blue = color.getBlue();
+//			int green = color.getGreen();
+//			int alpha = color.getAlpha();
+//			arg.append("color: rgb(");
+//			arg.append(red);
+//			arg.append(",");
+//			arg.append(green);
+//			arg.append(",");
+//			arg.append(blue);
+//			arg.append(");");
+//			if (alpha != MAX_ALPHA) {
+//				// the following is taken from the internet; it is to make
+//				// sure that all html interpretations set the opacity correctly.
+//				double alphaFraction = ((double) alpha) / MAX_ALPHA;
+//				arg.append("float:left;filter:alpha(opacity=");
+//				arg.append((int) (100 * alphaFraction));
+//				arg.append(");opacity:");
+//				arg.append(alphaFraction);
+//				arg.append(";");
+//			}
+//			result = Converter.createSpanTag(arg.toString());
+//			colorTagMap.put(color, result);
+//		}
+//		return result;
+//	}
 
 	/**
 	 * Overwrites the super method because we have a different renderer.
 	 */
 	@Override
 	public Point2D getPerimeterPoint(EdgeView edge, Point2D source, Point2D p) {
-		if (oval) {
+		if (isOval()) {
 			return getEllipsePerimeterPoint(getBounds(), p);
 		} else {
 			return getRectanglePerimeterPoint(getBounds(), p);
@@ -260,62 +333,49 @@ public class JVertexView extends VertexView {
         int width = (int) bounds.getWidth();
         int height = (int) bounds.getHeight();
         g.setColor(GraphConstants.getLineColor(getAttributes()));
-        Border emphBorder = JAttr.EMPH_BORDER;
         // repaint the standard border to erase it 
         JAttr.DEFAULT_BORDER.paintBorder(jGraph, g, x, y, width, height);
-        emphBorder.paintBorder(jGraph, g, x, y, width, height);
+        JAttr.EMPH_BORDER.paintBorder(jGraph, g, x, y, width, height);
         g.setColor(previousColor);
     }
 
     /** Underlying graph model, used to construct the autosize. */
     private final JGraph jGraph;
-    /** Flag indicating that the view should be drawn as an oval. */
-    private boolean oval;
-    /** Additional horizontal space to left and right to keep text visible in oval. */
-    private int extraX;
-    /** Additional vertical space to top and bottom to keep text visible in oval. */
-    private int extraY;
+    /** Flag indicating that the vertex is empty, i.e., there is no text inside. */
+    /** The text on this vertex. */
+    private String text;
+    /** Additional space to add to view bounds to make . */
+    private Insets insets;
     
-	/** HTML tag to indicate HTML formatting. */
-    private static final Converter.HTMLTag htmlTag = Converter.createHtmlTag("html");
     /** HTML tag for the text display font. */
-    private static final Converter.HTMLTag fontTag;
-//    /** HTML tag for the hidden style. */
-//    private static final Converter.HTMLTag hiddenTag;
-    
+    private static final HTMLTag fontTag;
+
     static {
         Font font = GraphConstants.DEFAULTFONT;
         String face;
         int size;
         if (font == null) {
             face = "Arial";
-            size=-1;
+            size= -1;
         } else {
             face = font.getFamily();
             size = font.getSize() - 2;
         }
-        String argument = String.format("style=\"font-family:%s; font-size:%dpx\"", face, size);
-        fontTag = Converter.createHtmlTag("span", argument);
-//        // initialise the hiddenTag
-//        Color colour = JAttr.GRAYED_OUT_COLOR;
-//        int opacity =  (100 * colour.getAlpha())/255;
-//        String arguments = String.format("style=\"color: rgb(%s,%s,%s); opacity:%s; filter: alpha(opacity=%s);\"",
-//            colour.getRed(),
-//            colour.getBlue(),
-//            colour.getGreen(),
-//            opacity/100.,
-//            opacity);
-//        hiddenTag = Converter.createHtmlTag("span", arguments);
+        String argument = String.format("font-family:%s; font-size:%dpx", face, size);
+        fontTag = createSpanTag(argument);
     }
+    
+    /** Insets for vertices that contain text. */
+    static private final Insets DEFAULT_INSETS = new Insets(2,4,2,4);
+    /** Insets for empty vertices. */
+    static private final Insets EMPTY_INSETS = new Insets(0,0,0,0);
+    
     /** The renderer for all instances of <tt>JVertexView</tt>. */
-    static private final CellViewRenderer renderer = new MyRenderer();
+    static private final MyRenderer renderer = new MyRenderer();
 
     /** The editor for all instances of <tt>JVertexView</tt>. */
     static private final MultiLinedEditor editor = new MultiLinedEditor();
     
-    /** The maximum alpha value according to {@link Color#getAlpha()}. */
-    private static final int MAX_ALPHA = 255;
-
     /**
      * Multi-line vertex renderer, based on a {@link JLabel} with <tt>html</tt>
      * formatting. 
@@ -331,38 +391,10 @@ public class JVertexView extends VertexView {
         	assert view instanceof JVertexView : String.format("This renderer is only meant for %s", JVertexView.class);
         	this.view = (JVertexView) view;
             this.selected = sel;
-            setText(this.view.getHtmlText());
-            installAttributes(graph, view.getAllAttributes());
-            return this;
-        }
-
-        @Override
-		public synchronized Dimension getPreferredSize() {
-			Dimension dimension = super.getPreferredSize();
-			// the preferred size may be too high because line breaks are
-			// taken into account
-			// so try again after the width has been set
-			setSize(dimension);
-			return super.getPreferredSize();
-//			double width = dimension.getWidth();
-//			double height = Math.max(dimension.getHeight(), JAttr.DEFAULT_NODE_SIZE.getHeight());
-			// // correct if the shape of the vertex is oval
-			// if (dataShape) {
-			// ovalExtraWidth = (int) width/6;
-			// width += ovalExtraWidth;
-			// ovalExtraHeight = (int) height/6;
-			// height += ovalExtraHeight;
-			// }
-//			return new Dimension((int) width, (int) height);
-		}
-
-		/**
-		 * Sets the attributes for this renderer from a given j-graph and
-		 * attribute map.
-		 */
-		private void installAttributes(org.jgraph.JGraph graph,
-				AttributeMap attributes) {
-			selectionColor = graph.getHighlightColor();
+            this.selectionColor = graph.getHighlightColor();
+            AttributeMap attributes = view.getAllAttributes();
+            this.dash = GraphConstants.getDashPattern(attributes);
+            this.lineColor = GraphConstants.getLineColor(attributes);
 			setOpaque(GraphConstants.isOpaque(attributes));
 			Color foreground = GraphConstants.getForeground(attributes);
 			setForeground((foreground != null) ? foreground : graph.getForeground());
@@ -370,36 +402,35 @@ public class JVertexView extends VertexView {
 			setBackground((background != null) ? background : graph.getBackground());
 			Font font = GraphConstants.getFont(attributes);
 			setFont((font != null) ? font : graph.getFont());
-			setBorder(GraphConstants.getBorder(attributes));
-			assert getBorder() != null;
-			linewidth = GraphConstants.getLineWidth(attributes);
-			if (view.isEmphasized()) {
-				linewidth += JAttr.EMPH_INCREMENT;
-			}
-			dash = GraphConstants.getDashPattern(attributes);
-			// borderWidth = Math.max(1,
-			// Math.round(GraphConstants.getLineWidth(attributes)));
-			// borderColor = GraphConstants.getBorderColor(attributes);
-			// if (getBorder() == null && borderColor != null) {
-			// borderWidth = Math.max(1,
-			// Math.round(GraphConstants.getLineWidth(attributes)));
-			// setBorder(BorderFactory.createLineBorder(borderColor,
-			// borderWidth));
-			// }
-			// Rectangle2D r = GraphConstants.getBounds(attributes);
-			// if (r != null) {
-			// setBounds(Groove.toRectangle(r));
-			// }
+            setText(this.view.getText());
+            return this;
+        }
+
+        /** This method calculates the preferred size without the border. */
+        @Override
+		public synchronized Dimension getPreferredSize() {
+        	// unset the border
+        	Border border = getBorder();
+        	setBorder(null);
+			Dimension dimension = super.getPreferredSize();
+			// the preferred size may be too high because line breaks are
+			// taken into account, so try again after the width has been set
+			setSize(dimension);
+			Dimension result = super.getPreferredSize();
+			// reset the border
+			setBorder(border);
+			return result;
 		}
 
-		@Override
-		public void setText(String text) {
-			if (text.length() == 0) {
-				text = "&nbsp;&nbsp;&nbsp;";
-			}
-			String displayText = htmlTag.on(fontTag.on(text));
-			super.setText(displayText);
-		}
+//        
+//		@Override
+//		public void setText(String text) {
+////			if (text.length() == 0) {
+////				text = "";//"&nbsp;&nbsp;&nbsp;";
+////			}
+//			String displayText = Converter.HTML_TAG.on(fontTag.on(text));
+//			super.setText(displayText);
+//		}
 
 		/**
          * In addition to called <code>super.paint()</code>, also draws
@@ -407,33 +438,26 @@ public class JVertexView extends VertexView {
          */
         @Override
         public void paint(Graphics g) {
-        	if (view.oval) {
-        		paintOval((Graphics2D) g);
-        	} else {
-        		super.paint(g);
+        	Graphics2D g2 = (Graphics2D) g;
+        	Shape shape = view.getShape(getSize());
+        	if (isOpaque()) {
+        		paintBackground(g2, shape);
         	}
+        	paintText(g2);
+        	paintForeground(g2, shape);
         	if (selected) {
-        		paintSelectionBorder((Graphics2D) g);
+        		paintSelectionBorder(g2, shape);
         	}
         }
         
 		/** Paints this vertex with an oval border. */
-        private void paintOval(Graphics2D g) {
-        	Shape shape = getShape(0,0);
+        private void paintText(Graphics2D g) {
 			boolean tmp = selected;
-			if (isOpaque()) {
-				g.setColor(getBackground());
-				g.fill(shape);
-			}
-			g.setColor(getForeground());
-			g.setStroke(JAttr.createStroke(linewidth, dash));
-			g.draw(shape);
 			try {
-				// just paint the text
-				Border emptyOvalBorder = getOvalBorder();
-				setBorder(emptyOvalBorder);
+				setBorder(createEmptyBorder());
 				setOpaque(false);
 				selected = false;
+				g.setColor(getForeground());
 				super.paint(g);
 			} finally {
 				selected = tmp;
@@ -441,42 +465,40 @@ public class JVertexView extends VertexView {
         }
 
 		/**
+		 * Paints the border, with a given shape.
+		 */
+		private void paintForeground(Graphics2D g, Shape shape) {
+			g.setColor(lineColor);
+			g.setStroke(JAttr.createStroke(view.getLinewidth(), dash));
+			g.draw(shape);
+		}
+
+		/**
+		 * Paints the background, with a given shape.
+		 */
+		private void paintBackground(Graphics2D g, Shape shape) {
+			g.setColor(getBackground());
+			g.fill(shape);
+		}
+
+		/**
 		 * Creates and returns an empty border with the right insets
 		 * to position text in an oval vertex correctly.
 		 */
-		private Border getOvalBorder() {
-			Insets i = getBorder().getBorderInsets(this);
-			i.left += view.extraX;
-			i.right += view.extraX;
-			i.top += view.extraY;
-			i.bottom += view.extraY;
+		private Border createEmptyBorder() {
+			Insets i = view.getInsets();
 			return BorderFactory.createEmptyBorder(i.top, i.left, i.bottom, i.right);
 		}
 
         /**
-         * Provided for subclassers to paint a selection border.
+         * Paint a selection border, witha a given shape.
          */
-        private void paintSelectionBorder(Graphics2D g) {
+        private void paintSelectionBorder(Graphics2D g, Shape shape) {
 			g.setStroke(GraphConstants.SELECTION_STROKE);
 			g.setColor(selectionColor);
-			g.draw(getShape(0,0));
+			g.draw(shape);
 		}
 
-        /** 
-         * Sets the shape of the vertex to oval or rectangular.
-         * Also sets the extra inset to make room for text in an oval vertex. 
-         */
-        private Shape getShape(float x, float y) {
-			Dimension d = getSize();
-			float width = linewidth;
-			float half = width/2;
-        	if (view.oval) {
-            	return new Ellipse2D.Float(x+half, y+half, d.width-width, d.height-width);
-        	} else {
-        		return new Rectangle2D.Float(x+half, y+half, d.width-width, d.height-width);
-        	}
-        }
-        
         /** Overridden for performance reasons. Copied from {@link org.jgraph.graph.VertexRenderer}. */
         @Override
         public void validate() {
@@ -507,9 +529,9 @@ public class JVertexView extends VertexView {
         private Color selectionColor;
         /** Flag indicating that the vertex has been selected. */
         private boolean selected;
-        /** Linewidth for the border, in case the shape is oval. */
-        private float linewidth;
-        /** Deash pattern for the border, in case the shape is oval. */
+        /** Color of the border (which could be different from the text color). */
+        private Color lineColor;
+        /** Dash pattern for the border. */
         private float[] dash;
     }
 }

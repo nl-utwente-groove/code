@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.7 2007-05-23 11:36:18 rensink Exp $
+ * $Id: JEdge.java,v 1.8 2007-05-23 21:37:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -34,7 +34,7 @@ import org.jgraph.graph.DefaultPort;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
@@ -146,7 +146,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * Returns the tool tip text for this edge.
      */
     public String getToolTipText() {
-		return HTML_TAG.on(getEdgeDescription()); // + getLabelDescription());
+		return HTML_TAG.on(getEdgeDescription()).toString(); // + getLabelDescription());
     }
     
     /**

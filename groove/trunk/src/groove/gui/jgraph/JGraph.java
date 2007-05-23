@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.9 2007-05-23 11:36:16 rensink Exp $
+ * $Id: JGraph.java,v 1.10 2007-05-23 21:37:16 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -25,7 +25,6 @@ import groove.gui.layout.JCellLayout;
 import groove.gui.layout.Layouter;
 
 import java.awt.Color;
-import java.awt.Dimension;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
@@ -74,7 +73,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-05-23 11:36:16 $
+ * @version $Revision: 1.10 $ $Date: 2007-05-23 21:37:16 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
@@ -374,7 +373,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
 	/**
 	 * Creates a graph UI that speeds up preferred size checking
-	 * by cachking previous values.
+	 * by caching previously computed values.
 	 */
 	protected BasicGraphUI createGraphUI() {
 		return new org.jgraph.plaf.basic.BasicGraphUI() {
@@ -383,7 +382,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 				Dimension2D result = null;
 				if (view instanceof JVertexView) {
 					JVertexView vertexView = (JVertexView) view;
-					String text = convertDigits(vertexView.getHtmlText());
+					String text = convertDigits(vertexView.getCell().getHtmlText());
 					result = sizeMap.get(text);
 					if (result == null) {
 						if (text.length() == 0) {
@@ -391,14 +390,14 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 						} else {
 							result = super.getPreferredSize(graph, vertexView);
 						}
-						// normalize for linewidth of the border
-						float linewidth = GraphConstants.getLineWidth(vertexView.getAllAttributes());
-						result.setSize(result.getWidth()-linewidth, result.getHeight()-linewidth);
+//						// normalize for linewidth of the border
+//						float linewidth = GraphConstants.getLineWidth(vertexView.getAllAttributes());
+//						result.setSize(result.getWidth()-linewidth, result.getHeight()-linewidth);
 						sizeMap.put(text, result);
 					}
-					// adjust for linewidth of the border
-					float linewidth = GraphConstants.getLineWidth(vertexView.getAllAttributes());
-					result = new Dimension((int) Math.round(result.getWidth()+linewidth), (int) Math.round(result.getHeight()+linewidth));
+//					// adjust for linewidth of the border
+//					float linewidth = GraphConstants.getLineWidth(vertexView.getAllAttributes());
+//					result = new Dimension((int) Math.round(result.getWidth()+linewidth), (int) Math.round(result.getHeight()+linewidth));
 				} else {
 					result = super.getPreferredSize(graph, view);
 				}

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Converter.java,v 1.3 2007-05-23 11:36:21 rensink Exp $
+ * $Id: Converter.java,v 1.4 2007-05-23 21:37:18 rensink Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Performs conversions to and from groove.graph.Graph.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Converter {
 	/** Main method to test this class. */
@@ -40,13 +40,13 @@ public class Converter {
 	    System.out.println(red.on("Text"));
 	    System.out.println(green.on("Text"));
 	}
-	
-	/** Converts the last byte of a number fo hexadecimal representation. */
-    static private String toHex(int number) {
-	    return "" + Character.forDigit((number / HEX)%HEX, HEX) + Character.forDigit(number % HEX, HEX);
-	}
-    
-	static private int HEX = 16;
+//	
+//	/** Converts the last byte of a number fo hexadecimal representation. */
+//    static private String toHex(int number) {
+//	    return "" + Character.forDigit((number / HEX)%HEX, HEX) + Character.forDigit(number % HEX, HEX);
+//	}
+//    
+//	static private int HEX = 16;
 
 	/** Writes a graph in FSM format to a print writer. */
     static public void graphToFsm(GraphShape graph, PrintWriter writer) {
@@ -102,16 +102,57 @@ public class Converter {
     /**
      * Returns an HTML tag embedder with an argument string.
      */
-    static public HTMLTag createHtmlTag(String tag, String arguments) {
-        return new HTMLTag(tag, arguments);
+    static public HTMLTag createHtmlTag(String tag, String attribute, String arguments) {
+        return new HTMLTag(tag, attribute, arguments);
     }
 
-    /** Creates a font colour tag for a given colour. */
-    static public HTMLTag createColorTag(Color color) {
-        String colorString =
-            toHex(color.getRed()) + toHex(color.getGreen()) + toHex(color.getBlue()) ;
-        return new HTMLTag("font", "color", colorString);
+    /**
+     * Returns a span tag with a style argument.
+     */
+    static public HTMLTag createSpanTag(String arguments) {
+        return new HTMLTag(SPAN_TAG_NAME, STYLE_ATTR_NAME, arguments);
     }
+
+	/**
+	 * Returns a HTML span tag that imposes a given color on a text.
+	 */
+	static public HTMLTag createColorTag(Color color) {
+		HTMLTag result = colorTagMap.get(color);
+		if (result == null) {
+			StringBuffer arg = new StringBuffer();
+			int red = color.getRed();
+			int blue = color.getBlue();
+			int green = color.getGreen();
+			int alpha = color.getAlpha();
+			arg.append("color: rgb(");
+			arg.append(red);
+			arg.append(",");
+			arg.append(green);
+			arg.append(",");
+			arg.append(blue);
+			arg.append(");");
+			if (alpha != MAX_ALPHA) {
+				// the following is taken from the internet; it is to make
+				// sure that all html interpretations set the opacity correctly.
+				double alphaFraction = ((double) alpha) / MAX_ALPHA;
+				arg.append("float:left;filter:alpha(opacity=");
+				arg.append((int) (100 * alphaFraction));
+				arg.append(");opacity:");
+				arg.append(alphaFraction);
+				arg.append(";");
+			}
+			result = Converter.createSpanTag(arg.toString());
+			colorTagMap.put(color, result);
+		}
+		return result;
+	}
+//
+//    /** Creates a font colour tag for a given colour. */
+//    static public HTMLTag createColorTag(Color color) {
+//        String colorString =
+//            toHex(color.getRed()) + toHex(color.getGreen()) + toHex(color.getBlue()) ;
+//        return new HTMLTag("font", "color", colorString);
+//    }
 
     /** Converts the first letter of a given string to upper- or lowercase. */
     static public String toUppercase(String text, boolean upper) {
@@ -134,6 +175,10 @@ public class Converter {
     static public String HTML_TAG_NAME = "html";
     /** HTML tag. */
     static public HTMLTag HTML_TAG = new HTMLTag(HTML_TAG_NAME);
+    /** Name of the span tag (<code>span</code>). */
+    static public String SPAN_TAG_NAME = "span";
+    /** Name of the span style attribute. */
+    static public String STYLE_ATTR_NAME = "style";
     /** Name of the linebreak tag (<code>br</code>). */
     static public String LINEBREAK_TAG_NAME = "br";
     /** Name of the horizontal rule tag (<code>hr</code>). */
@@ -156,6 +201,10 @@ public class Converter {
     /** The <code>html</code> tag to insert a horizontal line. */
     static public String HTML_HORIZONTAL_LINE = createHtmlTag(HORIZONTAL_LINE_TAG_NAME).tagBegin;
 
+    /** Map from colours to HTML tags imposing the colour on a text. */
+    private static final Map<Color,HTMLTag> colorTagMap = new HashMap<Color,HTMLTag>();
+    /** The maximum alpha value according to {@link Color#getAlpha()}. */
+    private static final int MAX_ALPHA = 255;
 
     /**
      * Class that allows some handling of HTML text.
@@ -163,11 +212,6 @@ public class Converter {
     static public class HTMLTag {
         private HTMLTag(String tag) {
             this.tagBegin = String.format("<%s>", tag);
-            this.tagEnd = String.format("</%s>", tag);
-        }
-
-        private HTMLTag(String tag, String arguments) {
-            this.tagBegin = String.format("<%s %s>", tag, arguments);
             this.tagEnd = String.format("</%s>", tag);
         }
 
@@ -182,7 +226,7 @@ public class Converter {
          * @param text the object from which the description is to be abstracted
          */
         public String on(Object text) {
-            return on(new StringBuilder(text.toString()));
+            return on(new StringBuilder(text.toString())).toString();
         }
 
         /**
@@ -191,10 +235,10 @@ public class Converter {
          * The description is assumed to be in HTML format.
          * @param text the string builder that is to be augmented with this tag
          */
-        public String on(StringBuilder text) {
+        public StringBuilder on(StringBuilder text) {
             text.insert(0, tagBegin);
             text.append(tagEnd);
-            return text.toString();
+            return text;
         }
 
         /**
@@ -205,7 +249,7 @@ public class Converter {
          */
         public String on(Object text, boolean convert) {
             if (convert)
-                return on(toHtml(new StringBuilder(text.toString())));
+                return on(toHtml(new StringBuilder(text.toString()))).toString();
             else
                 return on(text);
         }
