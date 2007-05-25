@@ -1,11 +1,13 @@
-/* $Id: FixedDeltaGraph.java,v 1.4 2007-05-20 07:17:56 rensink Exp $ */
+/* $Id: FixedDeltaGraph.java,v 1.5 2007-05-25 22:16:46 rensink Exp $ */
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
+import groove.util.CollectionOfCollections;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -115,7 +117,7 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		if (edgeSet == null) {
 			initData();
 		}
-		return edgeSet;
+		return Collections.unmodifiableSet(edgeSet);
 	}
 	
 	@Override
@@ -172,6 +174,7 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 				nodeEdgeMap = computeNodeEdgeMap();
 			}
 		}
+		testNodeEdgeMap();
 		return nodeEdgeMap;
 	}
 	
@@ -197,6 +200,10 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		return nodeEdgeMap != null;
 	}
 
+	private void testNodeEdgeMap() {
+		assert edgeSet == null || nodeEdgeMap == null || edgeSet.equals(new HashSet<Edge>(new CollectionOfCollections<Edge>(nodeEdgeMap.values()))) : "Map not correct: \nEdges "+edgeSet+" not compatible with \nnode/edge map"+nodeEdgeMap;
+	}
+	
 	/** 
 	 * Computes all the data structures that are available from
 	 * the basis graph.
@@ -361,11 +368,13 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 				for (int i = 0; i < arity; i++) {
 					Node end = elem.end(i);
 					Set<Edge> edgeSet = nodeEdgeMap.get(end);
+					if (edgeSet != null) {
 					if (! freshNodeKeys.contains(end)) {
 						nodeEdgeMap.put(end, edgeSet = createEdgeSet(edgeSet));
 						freshNodeKeys.add(end);
 					}
 					edgeSet.remove(elem);
+					}
 				}
 			}
 			// adapt label-edge map

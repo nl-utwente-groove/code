@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaGraphCache.java,v 1.3 2007-04-22 23:32:22 rensink Exp $
+ * $Id: DeltaGraphCache.java,v 1.4 2007-05-25 22:16:46 rensink Exp $
  */
 package groove.graph;
 
@@ -30,14 +30,14 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DeltaGraphCache extends GraphCache {
     /**
      * Constructs a cache for a given graph.  
      */
     protected DeltaGraphCache(DeltaGraph graph) {
-        super(graph);
+        super(graph, false);
     }
     
     /**

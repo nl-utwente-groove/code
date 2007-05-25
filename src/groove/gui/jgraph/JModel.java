@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.13 2007-05-21 22:19:16 rensink Exp $
+ * $Id: JModel.java,v 1.14 2007-05-25 22:16:47 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -60,7 +60,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -306,7 +306,7 @@ abstract public class JModel extends DefaultGraphModel {
      * Tests the grayed-out status of a given jgraph cell.
      * @param cell the cell that is to be tested
      * @return <tt>true</tt> if the cell is currently grayed-out
-     * @see #setGrayedOut(Set,boolean)
+     * @see #changeGrayedOut(Set,boolean)
      */
     public boolean isGrayedOut(JCell cell) {
         return grayedOutJCells.contains(cell);
@@ -318,29 +318,28 @@ abstract public class JModel extends DefaultGraphModel {
      * using {@link #isGrayedOut(JCell)}.
      * @param cell the cell whose grayed-out status is to be changed
      * @param hidden the new grayed-out status of the cell
-     * @see #setGrayedOut(JCell, boolean)
+     * @see #changeGrayedOut(JCell, boolean)
      * @see #isGrayedOut(JCell)
      */
-    public void setGrayedOut(JCell cell, boolean hidden) {
-        setGrayedOut(Collections.singleton(cell), hidden);
+    public void changeGrayedOut(JCell cell, boolean hidden) {
+        changeGrayedOut(Collections.singleton(cell), hidden);
     }
 
     /**
      * Changes the grayed-out status of a given set of jgraph cells.
      * @param jCells the cells whose hiding status is to be changed
      * @param grayedOut the new grayed-out status of the cell
-     * @see #setGrayedOut(JCell,boolean)
+     * @see #changeGrayedOut(JCell,boolean)
      * @see #isGrayedOut(JCell)
      */
-    public void setGrayedOut(Set<JCell> jCells, boolean grayedOut) {
+    public void changeGrayedOut(Set<JCell> jCells, boolean grayedOut) {
         Set<JCell> changedJCells = new HashSet<JCell>();
         for (JCell jCell: jCells) {
             if (grayedOut != isGrayedOut(jCell)) {
                 if (grayedOut) {
                     grayedOutJCells.add(jCell);
                     changedJCells.add(jCell);
-                    // change.put(cell, createJAttr(cell));
-                    // removeSelectionCell(cell);
+                    // also gray out incident edges
                     if (!isEdge(jCell)) {
                         Iterator<?> jEdgeIter = ((JVertex) jCell).getPort().edges();
                         while (jEdgeIter.hasNext()) {
@@ -353,14 +352,13 @@ abstract public class JModel extends DefaultGraphModel {
                 } else {
                     grayedOutJCells.remove(jCell);
                     changedJCells.add(jCell);
+                    // also revive end nodes
                     if (isEdge(jCell)) {
-                        JCell sourceJVertex = (JCell) ((DefaultPort) ((org.jgraph.graph.DefaultEdge) jCell).getSource())
-                                .getParent();
+                        JCell sourceJVertex = ((JEdge) jCell).getSourceVertex();
                         if (grayedOutJCells.remove(sourceJVertex)) {
                             changedJCells.add(sourceJVertex);
                         }
-                        JCell targetJVertex = (JCell) ((DefaultPort) ((org.jgraph.graph.DefaultEdge) jCell).getTarget())
-                                .getParent();
+                        JCell targetJVertex = ((JEdge) jCell).getTargetVertex();
                         if (grayedOutJCells.remove(targetJVertex)) {
                             changedJCells.add(targetJVertex);
                         }
@@ -369,23 +367,59 @@ abstract public class JModel extends DefaultGraphModel {
             }
         }
         refresh(changedJCells);
-		createLayerEdit(grayedOutJCells.toArray(),
-			GraphModelLayerEdit.BACK).execute();
-    }
-    
-    /**
-     * Returns the number of grayed-out cells.
-     */
-    public int getGrayedOutCount() {
-        return grayedOutJCells.size();
+		createLayerEdit(grayedOutJCells.toArray(), GraphModelLayerEdit.BACK).execute();
     }
 
     /**
-     * Tests if a given jcell is currently emphasized. Note that emphasis may also exist for hidden
-     * cells, even if this is not visible.
-     * @param jCell the jcell that is tested for emphasis
-     * @return <tt>true</tt> if <tt>jcell</tt> is currently emphasized
+     * Sets the grayed-out cells to a given set.
+     * @param jCells the cells to be grayed out
+     * @see #changeGrayedOut(JCell,boolean)
+     * @see #isGrayedOut(JCell)
      */
+    public void setGrayedOut(Set<JCell> jCells) {
+    	// copy the old set of grayed-out cells
+        Set<JCell> changedJCells = new HashSet<JCell>(grayedOutJCells);
+		grayedOutJCells.clear();
+		for (JCell jCell : jCells) {
+			if (grayedOutJCells.add(jCell)) {
+				// the cell should be either added or removed from the changed cells
+				if (!changedJCells.add(jCell)) {
+					changedJCells.remove(jCell);
+				}
+				// also gray out incident edges
+				if (jCell instanceof JVertex) {
+					Iterator<?> jEdgeIter = ((JVertex) jCell).getPort().edges();
+					while (jEdgeIter.hasNext()) {
+						JEdge jEdge = (JEdge) jEdgeIter.next();
+						if (grayedOutJCells.add(jEdge)) {
+							// the cell should be either added or removed from the changed cells
+							if (!changedJCells.add(jEdge)) {
+								changedJCells.remove(jEdge);
+							}
+						}
+					}
+				}
+			}
+		}
+		refresh(changedJCells);
+		createLayerEdit(grayedOutJCells.toArray(), GraphModelLayerEdit.BACK).execute();
+    }
+    
+    /**
+	 * Returns the number of grayed-out cells.
+	 */
+    public Set<JCell> getGrayedOut() {
+        return grayedOutJCells;
+    }
+
+    /**
+	 * Tests if a given jcell is currently emphasized. Note that emphasis may
+	 * also exist for hidden cells, even if this is not visible.
+	 * 
+	 * @param jCell
+	 *            the jcell that is tested for emphasis
+	 * @return <tt>true</tt> if <tt>jcell</tt> is currently emphasized
+	 */
     public boolean isEmphasized(JCell jCell) {
         return emphJCells.contains(jCell);
     }
@@ -589,7 +623,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.13 $
+     * @version $Revision: 1.14 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
