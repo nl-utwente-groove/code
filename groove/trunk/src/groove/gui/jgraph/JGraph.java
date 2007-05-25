@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.10 2007-05-23 21:37:16 rensink Exp $
+ * $Id: JGraph.java,v 1.11 2007-05-25 07:42:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -29,6 +29,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Dimension2D;
 import java.awt.geom.Point2D;
@@ -50,7 +51,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.event.GraphModelEvent;
@@ -73,7 +73,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-05-23 21:37:16 $
+ * @version $Revision: 1.11 $ $Date: 2007-05-25 07:42:51 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
@@ -83,7 +83,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     public JGraph(JModel model) {
         super(model);
         setGraphLayoutCache(createGraphLayoutCache());
-        setMarqueeHandler(createMarqueeHandler());
+//        setMarqueeHandler(createMarqueeHandler());
         setSelectionModel(createSelectionModel());
         setModel(model);
 //        // for efficiency, set a graph layout cache that does not react
@@ -95,6 +95,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         setInvokesStopCellEditing(true);
         // Turn off double buffering for speed
         // setDoubleBuffered(false);
+        addMouseListener(new MyMouseListener());
     }
     
     /**
@@ -308,8 +309,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         getLabelList().updateModel();
         model.addGraphModelListener(this);
         if (initialized) {
-        	// invalidate the popup menu
-            popupMenu = null;
             if (layouter != null && !jModel.isLayedOut()) {
                 if (jModel.freeze()) {
                 	layouter.start(false);
@@ -517,19 +516,34 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
      * Adds all known j-edge editing actions to a given popup menu.
      * @param menu the menu to which to add some actions
+     * @param always flag to indicate if disabled actions should be added
      */
-    public void fillOutEditMenu(JPopupMenu menu) {
-        addSeparatorUnlessFirst(menu);
-        menu.add(new DisappearingJMenuItem(getAddPointAction()));
-        menu.add(new DisappearingJMenuItem(getRemovePointAction()));
-        menu.add(new DisappearingJMenuItem(getResetLabelPositionAction()));
-        menu.add(createLineStyleMenu());
+    public void fillOutEditMenu(JPopupMenu menu, boolean always) {
+    	List<JMenuItem> items = new ArrayList<JMenuItem>();
+    	items.add(new JMenuItem(getAddPointAction()));
+    	items.add(new JMenuItem(getRemovePointAction()));
+    	items.add(new JMenuItem(getResetLabelPositionAction()));
+    	items.add(createLineStyleMenu());
+    	boolean add = always;
+    	if (! add) {
+    		for (JMenuItem item: items) {
+    			add |= item.isEnabled();
+    		}
+    	}
+    	if (add) {
+			addSeparatorUnlessFirst(menu);
+			for (JMenuItem item : items) {
+				menu.add(item);
+			}
+		}
     }
 
     /**
-     * Adds all the display menu items of this jgraph to a given popup menu.
-     * @param menu the popup menu to receive the items
-     */
+	 * Adds all the display menu items of this jgraph to a given popup menu.
+	 * 
+	 * @param menu
+	 *            the popup menu to receive the items
+	 */
     public void fillOutDisplayMenu(JPopupMenu menu) {
         addSeparatorUnlessFirst(menu);
         menu.add(createShowHideMenu());
@@ -713,6 +727,14 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         return new JGraphMarqueeHandler<JGraph>(this);
     }
 
+    /** Shows a popup menu if the event is a popup trigger. */
+    protected void maybeShowPopup(MouseEvent evt) {
+    	if (isPopupMenuEvent(evt)) {
+            Point atPoint = evt.getPoint();
+            getPopupMenu(atPoint).show(this, atPoint.x, atPoint.y);
+    	}
+    }
+    
     /**
      * Callback method to determine whether a given event is a menu popup event. This implementation
      * checks for the right hand mouse button. To be overridden by subclasses.
@@ -720,7 +742,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
      */
     protected boolean isPopupMenuEvent(MouseEvent evt) {
-        return SwingUtilities.isRightMouseButton(evt) && !evt.isControlDown();
+        return evt.isPopupTrigger() && !evt.isControlDown();
     }
 
     /**
@@ -730,7 +752,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
      */
     protected boolean isAddPointEvent(MouseEvent evt) {
-        return evt.isAltDown() && ! isRemovePointEvent(evt);
+        return Options.isPointEditEvent(evt) && !isRemovePointEvent(evt);
     }
 
     /**
@@ -740,7 +762,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @return <tt>true</tt> if <tt>e</tt> is a popup menu event
      */
     protected boolean isRemovePointEvent(MouseEvent evt) {
-        if (evt.isAltDown()) {
+        if (Options.isPointEditEvent(evt)) {
             Object jCell = getSelectionCell();
             if (jCell instanceof JEdge) {
                 // check if an intermediate point is in the neighbourhood of evt
@@ -763,12 +785,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @param atPoint the point at which the menu is to be activated
 	 */
 	protected final JPopupMenu getPopupMenu(Point atPoint) {
-		if (popupMenu == null) {
-			popupMenu = new JPopupMenu();
-			fillPopupMenu(popupMenu);
-		}
+		JPopupMenu popupMenu = new JPopupMenu();
+		fillPopupMenu(popupMenu);
 		activatePopupMenu(atPoint);
-		return this.popupMenu;
+		return popupMenu;
 	}
 
 	/**
@@ -779,7 +799,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	 * @see #activatePopupMenu(Point)
 	 */
 	protected void fillPopupMenu(JPopupMenu result) {
-	    fillOutEditMenu(result);
+	    fillOutEditMenu(result, false);
 	    fillOutDisplayMenu(result);
 	    fillOutLayoutMenu(result);
 	}
@@ -831,6 +851,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         result.add(getSetLineStyleAction(GraphConstants.STYLE_ORTHOGONAL));
         result.add(getSetLineStyleAction(GraphConstants.STYLE_SPLINE));
         result.add(getSetLineStyleAction(GraphConstants.STYLE_BEZIER));
+        result.add(getSetLineStyleAction(JAttr.STYLE_PERPENDICULAR));
         return result;
     }
     
@@ -846,11 +867,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         InputMap im = getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT);
         im.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY), action.getValue(Action.NAME));
     }
-
-    /**
-     * The popup menu for the jgraph.
-     */
-    protected JPopupMenu popupMenu;
 
     /**
      * A standard layouter setting menu over this jgraph.
@@ -959,6 +975,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     	/** Constructs an instance of the action. */
         AddPointAction() {
             super(Options.ADD_POINT_ACTION, false);
+            putValue(ACCELERATOR_KEY, Options.ADD_POINT_KEY);
         }
         
         public void actionPerformed(ActionEvent evt) {
@@ -988,6 +1005,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     	/** Constructs an instance of the action. */
         RemovePointAction() {
             super(Options.REMOVE_POINT_ACTION, false);
+            putValue(ACCELERATOR_KEY, Options.REMOVE_POINT_KEY);
         }
         
         public void actionPerformed(ActionEvent evt) {
@@ -1022,6 +1040,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         
         public void actionPerformed(ActionEvent evt) {
             setLineStyle((JEdge) jCell, lineStyle);
+            List points = GraphConstants.getPoints(jCell.getAttributes());
+            if (points == null || points.size() == 2) {
+            	addPoint((JEdge) jCell, location);
+            }
         }
         
         /** The line style set by this action instance. */
@@ -1043,25 +1065,25 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             setEnabled(getSelectionCell() instanceof JEdge);
         }
     }
-    
-    /**
-     * A menu item, initialized to an action, that hides itself whenever it is disabled.
-     */
-    private class DisappearingJMenuItem extends JMenuItem {
-    	/**
-    	 * Constructs a menu item for a given action.
-    	 * @param action the Action for which to create a menu item
-    	 */
-        DisappearingJMenuItem(Action action) {
-            super(action);
-        }
-        
-        @Override
-        public void setEnabled(boolean enabled) {
-            super.setEnabled(enabled);
-            setVisible(enabled);
-        }
-    }
+//    
+//    /**
+//     * A menu item, initialized to an action, that hides itself whenever it is disabled.
+//     */
+//    private class DisappearingJMenuItem extends JMenuItem {
+//    	/**
+//    	 * Constructs a menu item for a given action.
+//    	 * @param action the Action for which to create a menu item
+//    	 */
+//        DisappearingJMenuItem(Action action) {
+//            super(action);
+//        }
+//        
+//        @Override
+//        public void setEnabled(boolean enabled) {
+//            super.setEnabled(enabled);
+//            setVisible(enabled);
+//        }
+//    }
     /**
      * A layout cache that, for efficiency, does not pass on all change events,
      * and sets a {@link JCellViewFactory}.
@@ -1146,6 +1168,42 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 }
             }
             super.setSelectionCells(visibleCells.toArray());
+        }
+
+		@Override
+		public void removeSelectionCells(Object[] cells) {
+			// TODO Auto-generated method stub
+			super.removeSelectionCells(cells);
+		}
+        
+        
+    }
+    
+
+	/** 
+	 * Mouse listener that creates the popup menu and switches the view to 
+	 * the rule panel on double-clicks.
+	 */
+	private class MyMouseListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent evt) {
+            if (isAddPointEvent(evt)) {
+                JCell jCell = (JCell) getSelectionCell();
+                if (jCell instanceof JEdge) {
+                    addPoint((JEdge) jCell, evt.getPoint());
+                }
+            } else if (isRemovePointEvent(evt)) {
+                JCell jCell = (JCell) getSelectionCell();
+                if (jCell instanceof JEdge) {
+                    removePoint((JEdge) jCell, evt.getPoint());
+                }
+            }
+            maybeShowPopup(evt);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent evt) {
+            maybeShowPopup(evt);
         }
     }
 }

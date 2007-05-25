@@ -13,12 +13,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.26 2007-05-20 07:17:54 rensink Exp $
+ * $Id: Options.java,v 1.27 2007-05-25 07:42:52 rensink Exp $
  */
 package groove.gui;
 
+import groove.gui.jgraph.JAttr;
+
 import java.awt.Font;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -37,10 +40,17 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  */
 public class Options {
-
+    /** 
+     * Callback method to determine whether a mouse event could be intended
+     * to edit edge points. 
+     */
+    static public boolean isPointEditEvent(MouseEvent evt) {
+    	return evt.getButton() == MouseEvent.BUTTON1 && evt.isAltDown();
+    }
+    
 	/** The default font set in the look-and-feel. */
 	public static Font DEFAULT_FONT = null;
 	// Menus
@@ -226,6 +236,9 @@ public class Options {
     public static final String UNDO_ACTION_NAME = "Undo";
     /** Select mode action name */
     public static final String SELECT_MODE_NAME = "Selection mode";
+
+    /** Add point keystroke. */
+    public static final KeyStroke ADD_POINT_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_INSERT, KeyEvent.ALT_MASK);
     /**
 	 * Apply keystroke 
 	 */
@@ -245,7 +258,7 @@ public class Options {
 	/**
 	 * Edge mode keystroke 
 	 */
-	public static final KeyStroke EDGE_MODE_KEY = KeyStroke.getKeyStroke("control shift E");
+	public static final KeyStroke EDGE_MODE_KEY = KeyStroke.getKeyStroke("alt E");
 	/**
 	 * Edit keystroke 
 	 */
@@ -265,7 +278,7 @@ public class Options {
     /**
 	 * Node mode keystroke 
 	 */
-	public static final KeyStroke NODE_MODE_KEY = KeyStroke.getKeyStroke("control shift N");
+	public static final KeyStroke NODE_MODE_KEY = KeyStroke.getKeyStroke("alt N");
 	/** Open keystroke */
     public static final KeyStroke OPEN_KEY = KeyStroke.getKeyStroke("control O");
 	/** Open keystroke */
@@ -284,22 +297,26 @@ public class Options {
 	 * Edit label keystroke 
 	 */
 	public static final KeyStroke RELABEL_KEY = KeyStroke.getKeyStroke("F2");
+    /** Remove point keystroke. */
+    public static final KeyStroke REMOVE_POINT_KEY = KeyStroke.getKeyStroke(KeyEvent.VK_DELETE, KeyEvent.ALT_MASK);
 	/** Save keystroke */
 	public static final KeyStroke SAVE_KEY = KeyStroke.getKeyStroke("control S");
 	/** Save keystroke */
 	public static final KeyStroke SAVE_GRAPH_KEY = KeyStroke.getKeyStroke("control shift S");
 	/** Select mode keystroke */
-    public static final KeyStroke SELECT_MODE_KEY = KeyStroke.getKeyStroke("control shift S");
+    public static final KeyStroke SELECT_MODE_KEY = KeyStroke.getKeyStroke("alt S");
     /** Run keystroke */
     public static final KeyStroke START_SIMULATION_KEY = KeyStroke.getKeyStroke("F11");
     /** Undo keystroke */
     public static final KeyStroke UNDO_KEY = KeyStroke.getKeyStroke("control Z");
     /** Orthogonal line style keystroke */
-    public static final KeyStroke ORTHOGONAL_LINE_STYLE_KEY = KeyStroke.getKeyStroke("control 1");
+    public static final KeyStroke ORTHOGONAL_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 1");
     /** Spline line style keystroke */
-    public static final KeyStroke SPLINE_LINE_STYLE_KEY = KeyStroke.getKeyStroke("control 2");
+    public static final KeyStroke SPLINE_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 2");
     /** Bezier line style keystroke */
-    public static final KeyStroke BEZIER_LINE_STYLE_KEY = KeyStroke.getKeyStroke("control 3");
+    public static final KeyStroke BEZIER_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 3");
+    /** Perpendicular line style keystroke */
+    public static final KeyStroke PERPENDICULAR_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 4");
 
     /** Indication for an empty label in a list of labels. */
     static public final String EMPTY_LABEL_TEXT = "(empty)";
@@ -311,6 +328,8 @@ public class Options {
     static public final String SPLINE_LINE_STYLE_NAME = "Spline";
     /** The name of the Orthogonal line style. */
     static public final String ORTHOGONAL_LINE_STYLE_NAME = "Orthogonal";
+    /** The name of the Perpendicular line style. */
+    static public final String PERPENDICULAR_LINE_STYLE_NAME = "Perpendicular";
     /** Name for the imaging action. */
     static public final String IMAGE_ACTION_NAME = "Image";
 
@@ -362,6 +381,7 @@ public class Options {
         case GraphConstants.STYLE_BEZIER : return BEZIER_LINE_STYLE_NAME;
         case GraphConstants.STYLE_SPLINE : return SPLINE_LINE_STYLE_NAME;
         case GraphConstants.STYLE_ORTHOGONAL : return ORTHOGONAL_LINE_STYLE_NAME;
+        case JAttr.STYLE_PERPENDICULAR : return PERPENDICULAR_LINE_STYLE_NAME;
         default : throw new IllegalArgumentException(""+lineStyle+" is not a recognized line style");
         }
     }
@@ -381,6 +401,7 @@ public class Options {
         case GraphConstants.STYLE_BEZIER : return BEZIER_LINE_STYLE_KEY;
         case GraphConstants.STYLE_SPLINE : return SPLINE_LINE_STYLE_KEY;
         case GraphConstants.STYLE_ORTHOGONAL : return ORTHOGONAL_LINE_STYLE_KEY;
+        case JAttr.STYLE_PERPENDICULAR : return PERPENDICULAR_LINE_STYLE_KEY;
         default : throw new IllegalArgumentException(""+lineStyle+" is not a recognized line style");
         }
     }

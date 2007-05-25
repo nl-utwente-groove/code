@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.12 2007-05-14 18:52:03 rensink Exp $
+ * $Id: LayedOutXml.java,v 1.13 2007-05-25 07:42:45 rensink Exp $
  */
 package groove.io;
 
@@ -22,6 +22,7 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.Node;
+import groove.gui.jgraph.JAttr;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
@@ -51,7 +52,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class LayedOutXml extends AbstractXml implements Xml<Graph> {
     /** 
@@ -67,10 +68,21 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
     static public final String INFO_PREFIX = "i";
     /** The layout prefix of a layout comment. */
     static public final String COMMENT_PREFIX = "#";
+    /** 
+     * Symbolic name for first layout version.
+     */
+    static private final int VERSION1 = 1;
+    /** 
+     * Symbolic name for second layout version.
+     * The difference with the first version is that the label position 
+     * is calculated differently.
+     */
+    static private final int VERSION2 = 2;
+    
     /** The current version number. */
-    static public final int VERSION_NUMBER = 2;
+    static public final int CURRENT_VERSION_NUMBER = VERSION2;
     /** Line for the layoutfile with the version information. */
-    static private final String VERSION_LINE = String.format("%s %d", VERSION_PREFIX, VERSION_NUMBER);
+    static private final String VERSION_LINE = String.format("%s %d", VERSION_PREFIX, CURRENT_VERSION_NUMBER);
     /** Error message in case an error is detected in the layout file. */
     static private final String LAYOUT_FORMAT_ERROR = "Format error in layout file";
     /** Double quote character. */
@@ -260,10 +272,13 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
             int lineStyle;
             if (parts.length == 5) {
             	points = null;
-            	lineStyle = JEdgeLayout.defaultLineStyle;
+            	lineStyle = JAttr.DEFAULT_LINE_STYLE;
             } else {
                 points = toPoints(parts, 6);
                 lineStyle = Integer.parseInt(parts[parts.length - 1]);
+                if (!JAttr.isLineStyle(lineStyle)) {
+                	lineStyle = JAttr.DEFAULT_LINE_STYLE;
+                }
             }
             Point2D labelPosition = calculateLabelPosition(toPoint(parts, 4), points, version, source == target);
             layoutMap.putEdge(edge, new JEdgeLayout(points, labelPosition, lineStyle));
@@ -279,7 +294,7 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
      */
     protected Point2D calculateLabelPosition(Point2D label, List<Point2D> points, int version, boolean isLoop) {
     	Point2D result;
-    	if (version != 2) {
+    	if (version == VERSION1) {
     		// the y is now an offset rather than a percentile
     		if (points != null && points.size() > 0) {
     			Point2D relativePos = version1RelativePos(label, points);

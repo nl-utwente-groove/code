@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorJGraph.java,v 1.4 2007-05-21 22:19:16 rensink Exp $
+ * $Id: EditorJGraph.java,v 1.5 2007-05-25 07:42:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,6 +28,7 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
 import java.util.ArrayList;
 
+import javax.swing.Action;
 import javax.swing.JPopupMenu;
 
 import org.jgraph.graph.AttributeMap;
@@ -44,7 +45,7 @@ import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
  * In particular, provides a method to add and remove points
  * from edges.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
   */
 public class EditorJGraph extends JGraph {           
     /**
@@ -55,7 +56,8 @@ public class EditorJGraph extends JGraph {
     public EditorJGraph(Editor editor) {
         super(new EditorJModel(editor.getOptions()));
         this.editor = editor;
-           
+        setMarqueeHandler(createMarqueeHandler());
+        getGraphLayoutCache().setSelectsLocalInsertedCells(true);
     }    
     
     @Override
@@ -68,14 +70,18 @@ public class EditorJGraph extends JGraph {
     /**
      * Adds all known general j-cell editing actions to a given popup menu.
      * (non-Javadoc)
-     * @param menu
-     * @see groove.gui.jgraph.JGraph#fillOutEditMenu(javax.swing.JPopupMenu)
+     * @param menu the menu to which actions should be added
+     * @param always if <code>false</code>, only enabled actions should be added
+     * @see groove.gui.jgraph.JGraph#fillOutEditMenu(javax.swing.JPopupMenu, boolean)
      */
     @Override
-    public void fillOutEditMenu(JPopupMenu menu) {
-        super.fillOutEditMenu(menu);
-        menu.addSeparator();
-        menu.add(getEditLabelAction());
+    public void fillOutEditMenu(JPopupMenu menu, boolean always) {
+        super.fillOutEditMenu(menu, always);
+        Action editAction = getEditLabelAction();
+        if (always || editAction.isEnabled()) {
+			addSeparatorUnlessFirst(menu);
+			menu.add(editAction);
+		}
     }
     
     /** Specialises the return type to {@link EditorJModel}. */
