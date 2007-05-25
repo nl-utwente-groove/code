@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.9 2007-05-14 19:52:13 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.10 2007-05-25 22:16:46 rensink Exp $
  */
 
 package groove.graph;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     /**
@@ -153,7 +153,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
      */
     public Morphism getIsomorphismTo(Graph to) {
         reporter.start(GET_ISOMORPHISM_TO);
-        Morphism result = new IsoMatcher(createMorphism(this, to)).getMorphism();
+        Morphism result = new IsoMatcher(createMorphism(this, to)).getMorphism().getTotalExtension();
         reporter.stop();
         return result;
     }
