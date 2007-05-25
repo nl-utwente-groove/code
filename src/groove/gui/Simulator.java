@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.41 2007-05-22 11:46:17 rensink Exp $
+ * $Id: Simulator.java,v 1.42 2007-05-25 07:42:52 rensink Exp $
  */
 package groove.gui;
 
@@ -122,7 +122,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.41 $
+ * @version $Revision: 1.42 $
  */
 public class Simulator {
     /**
@@ -1217,7 +1217,7 @@ public class Simulator {
 	            removeAll();
 	            JGraph jgraph = getGraphPanel().getJGraph();
 	            JPopupMenu popupMenu = getPopupMenu();
-	            jgraph.fillOutEditMenu(popupMenu);
+	            jgraph.fillOutEditMenu(popupMenu, true);
 	            jgraph.fillOutDisplayMenu(popupMenu);
 	            popupMenu.addSeparator();
 	            popupMenu.add(createOptionsMenu());
@@ -2871,7 +2871,7 @@ public class Simulator {
 //    /**
 //     * Class providing functionality to export a {@link JGraph} to a file in different formats.
 //     * @author Arend Rensink
-//     * @version $Revision: 1.41 $
+//     * @version $Revision: 1.42 $
 //     */
 //    static public class Exporter {
 //        /**

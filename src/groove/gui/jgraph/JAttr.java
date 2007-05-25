@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.13 2007-05-23 21:37:16 rensink Exp $
+ * $Id: JAttr.java,v 1.14 2007-05-25 07:42:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -44,9 +44,22 @@ import groove.view.aspect.RuleAspect;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class JAttr {
+	/** Tests if a given code is a recognised line style. */
+	public static boolean isLineStyle(int style) {
+		return style >= GraphConstants.STYLE_ORTHOGONAL && style <= STYLE_PERPENDICULAR; 
+	}
+	
+	/** Line style that always makes right edges. */
+	public static final int STYLE_PERPENDICULAR = 14;
+
+	/**
+	 * The default line style.
+	 */
+	public static final int DEFAULT_LINE_STYLE = GraphConstants.STYLE_ORTHOGONAL;
+	
     /** Constant defining an italic font, for displaying state identities. */
     static public final Font ITALIC_FONT = GraphConstants.DEFAULTFONT.deriveFont(Font.ITALIC);
 	/** Percentage of white in the background colour. */
@@ -199,7 +212,7 @@ public class JAttr {
         GraphConstants.setBendable(defaultEdgeAttr, true);
         GraphConstants.setBackground(defaultEdgeAttr, Color.WHITE);
         GraphConstants.setOpaque(defaultEdgeAttr, true);
-        // GraphConstants.setLineStyle(EDGE_ATTR, GraphConstants.BEZIER);
+//        GraphConstants.setLineStyle(defaultEdgeAttr, STYLE_PERPENDICULAR);
         GraphConstants.setConnectable(defaultEdgeAttr, true);
         GraphConstants.setDisconnectable(defaultEdgeAttr, true);
         // no routing installed, because this is implemented
@@ -407,7 +420,7 @@ public class JAttr {
     public static Stroke createStroke(float width, float[] dash) {
     	Stroke result;
     	if (dash == null) {
-    		result = new BasicStroke(width);
+    		result = new BasicStroke(width, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
     	} else {
     		result = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 1.0f);
     	}
@@ -424,4 +437,5 @@ public class JAttr {
 		}
 	    return result;
 	}
+
 }

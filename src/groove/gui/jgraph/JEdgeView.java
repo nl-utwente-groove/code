@@ -12,12 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeView.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: JEdgeView.java,v 1.3 2007-05-25 07:42:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import groove.gui.Options;
+
 import java.awt.Graphics;
 import java.awt.Point;
+import java.awt.Shape;
+import java.awt.event.MouseEvent;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Iterator;
@@ -27,8 +32,10 @@ import java.util.List;
 import org.jgraph.graph.CellHandle;
 import org.jgraph.graph.CellMapper;
 import org.jgraph.graph.CellView;
+import org.jgraph.graph.CellViewRenderer;
 import org.jgraph.graph.ConnectionSet;
 import org.jgraph.graph.DefaultPort;
+import org.jgraph.graph.EdgeRenderer;
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphCellEditor;
 import org.jgraph.graph.GraphConstants;
@@ -40,7 +47,7 @@ import org.jgraph.graph.PortView;
  * An edge view that uses the <tt>toString</tt> of the underlying edge as a label. Moreover, new
  * views take care to bend to avoid overlap, and offer functionality to add and remove points.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class JEdgeView extends EdgeView {
 
@@ -66,7 +73,13 @@ public class JEdgeView extends EdgeView {
         return cell.toString();
     }
 
-    /**
+    @Override
+	public CellViewRenderer getRenderer() {
+		// TODO Auto-generated method stub
+		return super.getRenderer();
+	}
+
+	/**
      * This implementation returns the (static) {@link MultiLinedEditor}.
      */
     @Override
@@ -82,55 +95,6 @@ public class JEdgeView extends EdgeView {
 		return (JEdge) super.getCell();
 	}
 
-//    /** 
-//     * Overridden for performance reasons.
-//     * Since view attributes are aliased from the model
-//     * attributes, nothing happens here.
-//     */ 
-//	protected void mergeAttributes() {
-//		// does nothing
-//	}
-//
-//    /** 
-//     * We should change, rather than set, the attributes.
-//     * @see #changeAttributes(Map)
-//     */ 
-//	@Deprecated
-//	public void setAttributes(AttributeMap attributes) {
-//		throw new UnsupportedOperationException();
-//	}
-//	
-//    /**
-//     * Overridden to return the cell attributes.
-//	 */
-//	@Override
-//	public AttributeMap getAttributes() {
-//		return getCell().getAttributes();
-//	}
-//
-//	/**
-//	 * Overridden to alias, rather than clone, the cell attrributes in the model.
-//	 */
-//	@Override
-//	protected AttributeMap getCellAttributes(GraphModel model) {
-//		return model.getAttributes(cell);	
-//	}
-//
-//	/** 
-//     * Overridden for performance reasons.
-//     * Since view attributes are aliased from the model
-//     * attributes, it is the latter that are changed.
-//     */ 
-//	public Map changeAttributes(Map change) {
-//		if (change != null) {
-//			Map undo = getAttributes().applyMap(change);
-//			update();
-//			return undo;
-//		}
-//		return null;
-//	}
-
-
     /**
      * Does some routing of self-edges and overlapping edges.
      */
@@ -144,16 +108,7 @@ public class JEdgeView extends EdgeView {
         	routeParallelEdge(mapper);
         }
     }
-//
-//    /**
-//     * Stores the internally kept points back into the model
-//	 */
-//	@Override
-//	public void update() {
-//		super.update();
-//		GraphConstants.setPoints(getAttributes(), points);
-//	}
-
+    
 	/**
      * Adds a point between the first and second points of the underlying j-edge. The point is
      * offset from the straight edge between the current first and second points. Does not update
@@ -261,7 +216,35 @@ public class JEdgeView extends EdgeView {
     	return points;
     }
 
+    /** 
+     * If we're doing this for the target point and the nearest point is the 
+     * source, take the corrected source point.
+     */
+    @Override
+	protected Point2D getNearestPoint(boolean source) {
+		if (getPointCount() == 2) {
+			if (!source
+					&& this.source instanceof PortView) {
+				JVertexView sourceCellView = (JVertexView) ((PortView) this.source).getParentView();
+				return sourceCellView.getPerimeterPoint(this, null, getCenterPoint(target));
+			}
+		}
+		return super.getNearestPoint(source);
+	}
+
     /**
+     * The vector is from the first to the second point.
+     */
+	@Override
+	public Point2D getLabelVector() {
+		Point2D p0 = getPoint(0);
+		Point2D p1 = getPoint(1);
+		double dx = p1.getX()-p0.getX();
+		double dy = p1.getY()-p0.getY();
+		return new Point2D.Double(dx, dy);
+	}
+
+	/**
      * Adds points to the view and sets the line style so that the edge makes a nice curve.
      * The points are created perpendicular to the line between the first and
      * second point when the method is invoked, also taking the vertex bound
@@ -404,6 +387,10 @@ public class JEdgeView extends EdgeView {
     /** The j-model underlying this edge view. */
     private final JModel jModel;
 
+    static {
+    	renderer = new MyEdgeRenderer();
+    }
+    
     /**
      * This class is overridden to get the same port emphasis.
      */
@@ -413,7 +400,31 @@ public class JEdgeView extends EdgeView {
             super(edge, ctx);
         }
 
-        /**
+        @Override
+		public void mousePressed(MouseEvent evt) {
+			if (!Options.isPointEditEvent(evt)) {
+				super.mousePressed(evt);
+			}
+		}
+
+		@Override
+		public void mouseReleased(MouseEvent evt) {
+			if (!Options.isPointEditEvent(evt)) {
+				super.mouseReleased(evt);
+			}
+		}
+
+		@Override
+		public boolean isAddPointEvent(MouseEvent event) {
+			return Options.isPointEditEvent(event) && super.isAddPointEvent(event);
+		}
+
+		@Override
+		public boolean isRemovePointEvent(MouseEvent event) {
+			return Options.isPointEditEvent(event) && super.isRemovePointEvent(event);
+		}
+
+		/**
          * Sets the target port of the view to the source port if the target port is
          * currently <tt>null</tt>, and then invokes the super method.
          */
@@ -439,5 +450,96 @@ public class JEdgeView extends EdgeView {
                 super.paintPort(g, p);
             }
         }
+    }
+    
+    /** Renderer subclass to enable our special line style. */
+    static public class MyEdgeRenderer extends EdgeRenderer {
+    	/** Overrides the method to take {@link JAttr#STYLE_PERPENDICULAR} into account. */
+		@Override
+		protected Shape createShape() {
+			if (GraphConstants.getLineStyle(view.getAllAttributes()) == JAttr.STYLE_PERPENDICULAR && view.getPointCount() > 2) {
+				return createPerpendicularShape();
+			} else {
+				return super.createShape();
+			}
+		}
+    	
+		/** Creates a shape for the {@link JAttr#STYLE_PERPENDICULAR} line style. */
+		protected Shape createPerpendicularShape() {
+			int n = view.getPointCount();
+			if (n > 1) {
+				// Following block may modify static vars as side effect (Flyweight
+				// Design)
+				EdgeView tmp = view;
+				Point2D[] p = null;
+				p = new Point2D[n];
+				for (int i = 0; i < n; i++) {
+					Point2D pt = tmp.getPoint(i);
+					if (pt == null)
+						return null; // exit
+					p[i] = new Point2D.Double(pt.getX(), pt.getY());
+				}
+
+				// End of Side-Effect Block
+				// Undo Possible MT-Side Effects
+				if (view != tmp) {
+					view = tmp;
+					installAttributes(view);
+				}
+				// End of Undo
+				if (view.sharedPath == null) {
+					view.sharedPath = new GeneralPath(GeneralPath.WIND_NON_ZERO, n);
+				} else {
+					view.sharedPath.reset();
+				}
+				view.beginShape = view.lineShape = view.endShape = null;
+				// first point
+				Point2D p0 = p[0];
+				// last point
+				Point2D pe = p0;
+				// second point
+				Point2D p1 = null;
+				// last point but one
+				Point2D p2 = null;
+				view.sharedPath.moveTo((float) p0.getX(), (float) p0.getY());
+				for (int i = 1; i < n; i++) {
+					// first move horizontally, 
+					float x = (float) p[i].getX();
+					float y = (float) p[i-1].getY();
+					view.sharedPath.lineTo(x, y);
+					p2 = pe;
+					pe =  new Point2D.Float(x,y);
+					if (p1 == null) {
+						p1 = pe;
+					}
+					// then move vertically, if needed
+					if (p[i].getY() != y) {
+						y = (float) p[i].getY();
+						view.sharedPath.lineTo(x, y);
+						p2 = pe;
+						pe =  new Point2D.Float(x,y);
+					}
+				}
+				if (beginDeco != GraphConstants.ARROW_NONE) {
+					view.beginShape = createLineEnd(beginSize, beginDeco, p1, p0);
+				}
+				if (endDeco != GraphConstants.ARROW_NONE) {
+					view.endShape = createLineEnd(endSize, endDeco, p2, pe);
+				}
+				if (view.endShape == null && view.beginShape == null) {
+					// With no end decorations the line shape is the same as the
+					// shared path and memory
+					view.lineShape = view.sharedPath;
+				} else {
+					view.lineShape = (GeneralPath) view.sharedPath.clone();
+					if (view.endShape != null)
+						view.sharedPath.append(view.endShape, true);
+					if (view.beginShape != null)
+						view.sharedPath.append(view.beginShape, true);
+				}
+				return view.sharedPath;
+			}
+			return null;
+		}
     }
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JCellLayout.java,v 1.1.1.2 2007-03-20 10:42:47 kastenberg Exp $
+ * $Id: JCellLayout.java,v 1.2 2007-05-25 07:42:53 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -41,11 +41,6 @@ public interface JCellLayout {
      */
     public static final Point defaultNodeLocation = new Point(0, 0);
 
-    /**
-     * The default line style.
-     */
-    public static final int defaultLineStyle = GraphConstants.STYLE_ORTHOGONAL;
-        
     /**
      * Converts the layout information to a <tt>jgraph</tt>
      * attribute map.

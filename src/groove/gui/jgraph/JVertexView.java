@@ -12,13 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.10 2007-05-23 21:37:16 rensink Exp $
+ * $Id: JVertexView.java,v 1.11 2007-05-25 07:42:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import static groove.util.Converter.HTML_TAG;
 import static groove.util.Converter.createColorTag;
 import static groove.util.Converter.createSpanTag;
+import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.ValueNode;
 import groove.util.Converter.HTMLTag;
 
 import java.awt.Color;
@@ -31,6 +33,7 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.geom.Ellipse2D;
+import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.Map;
@@ -47,6 +50,7 @@ import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphCellEditor;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphModel;
+import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexRenderer;
 import org.jgraph.graph.VertexView;
 
@@ -56,7 +60,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class JVertexView extends VertexView {
     /**
@@ -135,12 +139,21 @@ public class JVertexView extends VertexView {
 		result.right += line;
 // }
 		// add space needed for an oval border
-		if (isOval()) {
+		switch (getVertexShape()) {
+		case ELLIPSE_SHAPE:
 			Rectangle2D bounds = getCachedBounds();
 			result.left += (int) bounds.getWidth()/8;
 			result.right += (int) bounds.getWidth()/8;
 			result.top += (int) bounds.getHeight()/8;
 			result.bottom += (int) bounds.getHeight()/8;
+			break;
+		case DIAMOND_SHAPE:
+			bounds = getCachedBounds();
+			result.left += (int) bounds.getWidth()/3;
+			result.right += (int) bounds.getWidth()/3;
+			result.top += (int) bounds.getHeight()/3;
+			result.bottom += (int) bounds.getHeight()/3;
+			break;
 		}
 		return result;
 	}
@@ -168,8 +181,16 @@ public class JVertexView extends VertexView {
 	 * Callback method idicating that a certain vertex is a data vertex
 	 * (and so should be rendered differently).
 	 */
-	private boolean isOval() {
-		return getCell() instanceof GraphJVertex && ((GraphJVertex) getCell()).isDataNode();
+	private int getVertexShape() {
+		if (getCell() instanceof GraphJVertex){
+			GraphJVertex cell = (GraphJVertex) getCell();
+			if (cell.getActualNode() instanceof ValueNode) {
+				return ELLIPSE_SHAPE;
+			} else if (cell.getActualNode() instanceof ProductNode) {
+				return DIAMOND_SHAPE;
+			}
+		}
+		return RECTANGLE_SHAPE;
 	}
 	
 	/** Returns the insets computed for this vertex view. */
@@ -204,61 +225,82 @@ public class JVertexView extends VertexView {
 	/** Returns the shape of the vertex view. */
 	public Shape getShape(Dimension size) {
 		float line = getLinewidth();
-    	if (isOval()) {
-        	return new Ellipse2D.Float(line/2, line/2, size.width-line, size.height-line);
-    	} else {
-    		return new Rectangle2D.Float(line/2, line/2, size.width-line, size.height-line).getFrame();
+		float x = line/2;
+		float y = line/2;
+		float width = size.width-line;
+		float height = size.height-line;
+    	switch (getVertexShape()) {
+    	case ELLIPSE_SHAPE:
+        	return new Ellipse2D.Float(x, y, width, height);
+    	case DIAMOND_SHAPE:
+    		return createDiamondShape(x, y, width, height);
+    	default:
+    		return createRectangleShape(x, y, width, height);
     	}
 	}
-//
-//	/**
-//	 * Returns a HTML span tag that imposes a given color on a text.
-//	 */
-//	static private HTMLTag getColorTag(Color color) {
-//		HTMLTag result = colorTagMap.get(color);
-//		if (result == null) {
-//			StringBuffer arg = new StringBuffer();
-//			int red = color.getRed();
-//			int blue = color.getBlue();
-//			int green = color.getGreen();
-//			int alpha = color.getAlpha();
-//			arg.append("color: rgb(");
-//			arg.append(red);
-//			arg.append(",");
-//			arg.append(green);
-//			arg.append(",");
-//			arg.append(blue);
-//			arg.append(");");
-//			if (alpha != MAX_ALPHA) {
-//				// the following is taken from the internet; it is to make
-//				// sure that all html interpretations set the opacity correctly.
-//				double alphaFraction = ((double) alpha) / MAX_ALPHA;
-//				arg.append("float:left;filter:alpha(opacity=");
-//				arg.append((int) (100 * alphaFraction));
-//				arg.append(");opacity:");
-//				arg.append(alphaFraction);
-//				arg.append(";");
-//			}
-//			result = Converter.createSpanTag(arg.toString());
-//			colorTagMap.put(color, result);
-//		}
-//		return result;
-//	}
-
+	
+	/** Creates a shape tracing the bounds given in the parameters. */
+	private Shape createRectangleShape(float x, float y, float width, float height) {
+		GeneralPath result = new GeneralPath(GeneralPath.WIND_NON_ZERO, 5);
+		result.moveTo(x, y);
+		result.lineTo(x+width, y);
+		result.lineTo(x+width, y+height);
+		result.lineTo(x, y+height);
+		result.closePath();
+		return result;
+	}
+	
+	/** Creates a diamond shape inscibed in the bounds given in the parameters. */
+	private Shape createDiamondShape(float x, float y, float width, float height) {
+		GeneralPath result = new GeneralPath(GeneralPath.WIND_NON_ZERO, 5);
+		result.moveTo(x+width/2, y);
+		result.lineTo(x+width, y+height/2);
+		result.lineTo(x+width/2, y+height);
+		result.lineTo(x, y+height/2);
+		result.closePath();
+		return result;
+	}
 	/**
 	 * Overwrites the super method because we have a different renderer.
 	 */
 	@Override
 	public Point2D getPerimeterPoint(EdgeView edge, Point2D source, Point2D p) {
-		if (isOval()) {
-			return getEllipsePerimeterPoint(getBounds(), p);
-		} else {
-			return getRectanglePerimeterPoint(getBounds(), p);
+		if (source == null) {
+			// be smart about positioning the perimeter point if p is within
+			// the limits of the vertex itself, in either x or y coordinate
+			Rectangle2D bounds = getBounds();
+			double xDrop = bounds.getWidth() / DROP_FRACTION;
+			double yDrop = bounds.getHeight() / DROP_FRACTION;
+			double minX = bounds.getMinX() + xDrop;
+			double maxX = bounds.getMaxX() - xDrop;
+			double minY = bounds.getMinY() + yDrop;
+			double maxY = bounds.getMaxY() - yDrop;
+			boolean xAdjust = p.getX() > minX && p.getX() < maxX;
+			boolean yAdjust = p.getY() > minY && p.getY() < maxY;
+			if (xAdjust || yAdjust) {
+				double x = xAdjust ? p.getX() : bounds.getCenterX();
+				double y = yAdjust ? p.getY() : bounds.getCenterY();
+				switch (getVertexShape()) {
+				case DIAMOND_SHAPE:
+					return getDiamondPerimeterPoint(bounds, x, y, p);
+				case RECTANGLE_SHAPE:
+					return getRectanglePerimeterPoint(bounds, x, y, p);
+				}
+			}
+		}
+		switch (getVertexShape()) {
+		case ELLIPSE_SHAPE:
+			return getEllipsePerimeterPoint(bounds, p);
+		case DIAMOND_SHAPE:
+			return getDiamondPerimeterPoint(bounds, p);
+		default:
+			return getRectanglePerimeterPoint(bounds, p);
 		}
 	}
 
 	/**
-	 * Computes the perimeter point on a rectangle closest to a given point.
+	 * Computes the perimeter point on a rectangle, lying on the line from the center 
+	 * in the direction of a given point.
 	 * This implementation is in fact taken from {@link VertexRenderer#getPerimeterPoint(VertexView, Point2D, Point2D)}.
 	 */
 	private Point2D getRectanglePerimeterPoint(Rectangle2D bounds, Point2D p) {
@@ -287,9 +329,37 @@ public class JVertexView extends VertexView {
 		}
 		return new Point2D.Double(outX, outY);
 	}
-	
+
+	/**
+	 * Computes the perimeter point on a rectangle, lying on the line from a given point
+	 * in the direction of another point.
+	 * The <code>from</code> point is guaranteed to be either horizontally or
+	 * vertically aligned with the <code>to</code> point.
+	 * This implementation is in fact taken from {@link VertexRenderer#getPerimeterPoint(VertexView, Point2D, Point2D)}.
+	 */
+	private Point2D getRectanglePerimeterPoint(Rectangle2D bounds, double fromX, double fromY, Point2D to) {
+		double dx = to.getX() - fromX; // Compute Angle
+		double dy = to.getY() - fromY;
+		double outX, outY;
+		if (dx < 0) { // Left edge
+			outX = bounds.getMinX();
+			outY = fromY;
+		} else if (dy < 0) { // Top Edge
+			outX = fromX;
+			outY = bounds.getMinY();
+		} else if (dx > 0) { // Right Edge
+			outX = bounds.getMaxX();
+			outY = fromY;
+		} else { // Bottom Edge
+			outX = fromX;
+			outY = bounds.getMaxY();
+		}
+		return new Point2D.Double(outX, outY);
+	}
+
 	/** 
-	 * Computes the perimeter point on an ellipse closes to a given point.
+	 * Computes the perimeter point on an ellipse lying on the line from the center 
+	 * in the direction of a given point.
 	 * The ellipse is given by its bounds. 
 	 */
 	private Point2D getEllipsePerimeterPoint(Rectangle2D bounds, Point2D p) {
@@ -305,6 +375,106 @@ public class JVertexView extends VertexView {
 		return new Point2D.Double(outX, outY);
 	}
 
+	/** 
+	 * Computes the perimeter point on a diamond lying on the line from the center 
+	 * in the direction of a given point.
+	 * The diamond is given by its outer bounds. 
+	 */
+	private Point2D getDiamondPerimeterPoint(Rectangle2D bounds, Point2D to) {
+		double centerX = bounds.getCenterX();
+		double centerY = bounds.getCenterY();
+		double dx = to.getX() - centerX; // Compute Angle
+		double dy = to.getY() - centerY;
+		double startX, startY, endX, endY;
+		if (dx <= 0 && dy <= 0) { // top left edge
+			startX = bounds.getMinX();
+			startY = centerY;
+			endX = centerX;
+			endY = bounds.getMinY();
+		} else if (dy <= 0) { // top right edge
+			startX = centerX;
+			startY = bounds.getMinY();
+			endX = bounds.getMaxX();
+			endY = centerY;
+		} else if (dx <= 0) { // bottom left edge
+			startX = bounds.getMinX();
+			startY = centerY;
+			endX = centerX;
+			endY = bounds.getMaxY();
+		} else { // Bottom right edge
+			startX = centerX;
+			startY = bounds.getMaxY();
+			endX = bounds.getMaxX();
+			endY = centerY;
+		}
+		return lineIntersection(centerX, centerY, dx, dy, startX, startY, endX-startX, endY-startY);
+	}
+
+	/** 
+	 * Computes the perimeter point on a diamond lying on the line from a given point
+	 * in the direction of another point.
+	 * The <code>from</code> point is guaranteed to be either horizontally or
+	 * vertically aligned with the <code>to</code> point.
+	 * The diamond is given by its outer bounds. 
+	 */
+	private Point2D getDiamondPerimeterPoint(Rectangle2D bounds, double fromX, double fromY, Point2D to) {
+		double centerX = bounds.getCenterX();
+		double centerY = bounds.getCenterY();
+		double toX = to.getX();
+		double toY = to.getY();
+		double dx = toX - fromX; // Compute direction
+		double dy = toY - fromY;
+		double startX, startY, endX, endY;
+		if (toX <= centerX && toY <= centerY) { // top left edge
+			startX = bounds.getMinX();
+			startY = centerY;
+			endX = centerX;
+			endY = bounds.getMinY();
+		} else if (toY <= centerY) { // top right edge
+			startX = centerX;
+			startY = bounds.getMinY();
+			endX = bounds.getMaxX();
+			endY = centerY;
+		} else if (toX <= centerX) { // bottom left edge
+			startX = bounds.getMinX();
+			startY = centerY;
+			endX = centerX;
+			endY = bounds.getMaxY();
+		} else { // Bottom right edge
+			startX = centerX;
+			startY = bounds.getMaxY();
+			endX = bounds.getMaxX();
+			endY = centerY;
+		}
+		return lineIntersection(fromX, fromY, dx, dy, startX, startY, endX-startX, endY-startY);
+	}
+	
+	/**
+	 * Computes the intersection of two lines.
+	 * @param x1 Start point of the first line (x-coordinate)
+	 * @param y1 Start point of the first line (y-coordinate)
+	 * @param dx1 vector of the first line (x-direction)
+	 * @param dy1 vector of the first line (y-direction)
+	 * @param x2 Start point of the second line (x-coordinate)
+	 * @param y2 Start point of the second line (y-coordinate)
+	 * @param dx2 vector of the second line (x-direction)
+	 * @param dy2 vector of the second line (y-direction)
+	 * @return Intersection point of the two lines, of <code>null</code> if they are parallel
+	 */
+	private Point2D lineIntersection(double x1, double y1, double dx1, double dy1, double x2, double y2, double dx2, double dy2) {
+		double above = dx1*(y2-y1) - dy1*(x2-x1);
+		double below = dx2*dy1 - dx1*dy2;
+		if (below == 0) {
+			// the lines are parallel
+			return null;
+		} else {
+			double c2 = above/below;
+			double x = x2+dx2*c2;
+			double y = y2+dy2*c2;
+			return new Point2D.Double(x,y);
+		}
+	}
+
 	@Override
     public String toString() {
     	return String.format("Vertex view for %s", getCell());
@@ -317,6 +487,7 @@ public class JVertexView extends VertexView {
 	@Override
 	public Map changeAttributes(Map change) {
 		Map result = super.changeAttributes(change);
+		text = computeText();
 		jGraph.updateAutoSize(this);
 		return result;
 	}
@@ -347,6 +518,19 @@ public class JVertexView extends VertexView {
     /** Additional space to add to view bounds to make . */
     private Insets insets;
     
+    // switch off port magic
+    
+    static {
+    	PortView.allowPortMagic = false;
+    }
+    
+    /** Constant indicating a rectangular vertex. */
+    static public final int RECTANGLE_SHAPE = 0;
+    /** Constant indicating an ellise-shaped vertex. */
+    static public final int ELLIPSE_SHAPE = 1;
+    /** Constant indicating a diamond-shaped vertex. */
+    static public final int DIAMOND_SHAPE = 2;
+    
     /** HTML tag for the text display font. */
     private static final HTMLTag fontTag;
 
@@ -365,11 +549,13 @@ public class JVertexView extends VertexView {
         fontTag = createSpanTag(argument);
     }
     
+    /** Fraction of the width or height that is the minimum for special perimeter point placement. */
+    static private final double DROP_FRACTION = 10;
     /** Insets for vertices that contain text. */
     static private final Insets DEFAULT_INSETS = new Insets(2,4,2,4);
     /** Insets for empty vertices. */
     static private final Insets EMPTY_INSETS = new Insets(0,0,0,0);
-    
+
     /** The renderer for all instances of <tt>JVertexView</tt>. */
     static private final MyRenderer renderer = new MyRenderer();
 
@@ -421,16 +607,6 @@ public class JVertexView extends VertexView {
 			setBorder(border);
 			return result;
 		}
-
-//        
-//		@Override
-//		public void setText(String text) {
-////			if (text.length() == 0) {
-////				text = "";//"&nbsp;&nbsp;&nbsp;";
-////			}
-//			String displayText = Converter.HTML_TAG.on(fontTag.on(text));
-//			super.setText(displayText);
-//		}
 
 		/**
          * In addition to called <code>super.paint()</code>, also draws

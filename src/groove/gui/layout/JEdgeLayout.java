@@ -12,9 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeLayout.java,v 1.2 2007-03-30 15:50:28 rensink Exp $
+ * $Id: JEdgeLayout.java,v 1.3 2007-05-25 07:42:53 rensink Exp $
  */
 package groove.gui.layout;
+
+import groove.gui.jgraph.JAttr;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
@@ -61,7 +63,7 @@ public class JEdgeLayout implements JCellLayout {
      * @return <code>true</code> if <code>lineStyle</code> is the default line style
      */
     static public boolean isDefaultLineStyle(int lineStyle) {
-        return lineStyle == defaultLineStyle;
+        return lineStyle == JAttr.DEFAULT_LINE_STYLE;
     }
 
     /**
@@ -101,7 +103,7 @@ public class JEdgeLayout implements JCellLayout {
      * <code>isDefaultLineStyle(getLineStyle())</code>
      */
     public JEdgeLayout(List<Point2D> points, Point labelPosition) {
-        this(points, labelPosition, defaultLineStyle);
+        this(points, labelPosition, JAttr.DEFAULT_LINE_STYLE);
     }
 
     /**

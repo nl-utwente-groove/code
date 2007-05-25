@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorJModel.java,v 1.7 2007-05-20 07:17:49 rensink Exp $
+ * $Id: EditorJModel.java,v 1.8 2007-05-25 07:42:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -35,7 +35,7 @@ import org.jgraph.graph.GraphConstants;
  * Moreover, there is some control as to the possible source and target points
  * of new edges.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class EditorJModel extends JModel {
     /**
@@ -51,7 +51,7 @@ public class EditorJModel extends JModel {
      * @param jModel the model to be copied.
      */
     public EditorJModel(JModel jModel) {
-    	super(jModel.getOptions());
+    	this(jModel.getOptions());
         // map from the cells of jModel to their copies created for this model
         Map<JCell,JCell> toResultCellMap = new HashMap<JCell,JCell>();
         // list of new jcells kept to make sure nodes go in front
