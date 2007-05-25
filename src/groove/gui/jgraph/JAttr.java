@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.14 2007-05-25 07:42:51 rensink Exp $
+ * $Id: JAttr.java,v 1.15 2007-05-25 09:25:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -44,7 +44,7 @@ import groove.view.aspect.RuleAspect;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class JAttr {
 	/** Tests if a given code is a recognised line style. */
@@ -52,6 +52,19 @@ public class JAttr {
 		return style >= GraphConstants.STYLE_ORTHOGONAL && style <= STYLE_PERPENDICULAR; 
 	}
 	
+    /** 
+     * Tests if a set of attributes specifies an effective perpendicular line style.
+     * The perpendicular line style is effective if the edge has more than two points. 
+     */
+    public static boolean isPerpendicularStyle(AttributeMap attributes) {
+        if (GraphConstants.getLineStyle(attributes) == STYLE_PERPENDICULAR) {
+            List points = GraphConstants.getPoints(attributes);
+            return points != null && points.size() > 2;
+        } else {
+            return false;
+        }
+    }
+    
 	/** Line style that always makes right edges. */
 	public static final int STYLE_PERPENDICULAR = 14;
 

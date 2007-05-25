@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeView.java,v 1.3 2007-05-25 07:42:51 rensink Exp $
+ * $Id: JEdgeView.java,v 1.4 2007-05-25 09:25:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -47,7 +47,7 @@ import org.jgraph.graph.PortView;
  * An edge view that uses the <tt>toString</tt> of the underlying edge as a label. Moreover, new
  * views take care to bend to avoid overlap, and offer functionality to add and remove points.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class JEdgeView extends EdgeView {
 
@@ -238,7 +238,10 @@ public class JEdgeView extends EdgeView {
 	@Override
 	public Point2D getLabelVector() {
 		Point2D p0 = getPoint(0);
-		Point2D p1 = getPoint(1);
+        Point2D p1 = getPoint(1);
+        if (JAttr.isPerpendicularStyle(getAllAttributes()) && p1.getX() != p0.getX()) {
+            p1 = new Point2D.Double(p1.getX(), p0.getY());
+        }
 		double dx = p1.getX()-p0.getX();
 		double dy = p1.getY()-p0.getY();
 		return new Point2D.Double(dx, dy);
@@ -457,7 +460,7 @@ public class JEdgeView extends EdgeView {
     	/** Overrides the method to take {@link JAttr#STYLE_PERPENDICULAR} into account. */
 		@Override
 		protected Shape createShape() {
-			if (GraphConstants.getLineStyle(view.getAllAttributes()) == JAttr.STYLE_PERPENDICULAR && view.getPointCount() > 2) {
+			if (JAttr.isPerpendicularStyle(view.getAllAttributes())) {
 				return createPerpendicularShape();
 			} else {
 				return super.createShape();
