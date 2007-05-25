@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.11 2007-05-25 07:42:51 rensink Exp $
+ * $Id: JGraph.java,v 1.12 2007-05-25 15:29:39 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -59,6 +59,7 @@ import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
 import org.jgraph.event.GraphModelEvent.GraphModelChange;
 import org.jgraph.graph.AttributeMap;
+import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.CellView;
 import org.jgraph.graph.DefaultGraphModel;
 import org.jgraph.graph.DefaultGraphSelectionModel;
@@ -73,7 +74,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-05-25 07:42:51 $
+ * @version $Revision: 1.12 $ $Date: 2007-05-25 15:29:39 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
@@ -83,12 +84,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     public JGraph(JModel model) {
         super(model);
         setGraphLayoutCache(createGraphLayoutCache());
-//        setMarqueeHandler(createMarqueeHandler());
+        setMarqueeHandler(createMarqueeHandler());
         setSelectionModel(createSelectionModel());
         setModel(model);
-//        // for efficiency, set a graph layout cache that does not react
-//        // to all change events
-//        setGraphLayoutCache(createGraphLayoutCache());
         // Make Ports invisible by Default
         setPortsVisible(false);
         // Save edits to a cell whenever something else happens
@@ -721,10 +719,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /**
      * Factory method for the marquee handler.
-     * This implementation returns a {@link JGraphMarqueeHandler}.
      */
-    protected JGraphMarqueeHandler createMarqueeHandler() {
-        return new JGraphMarqueeHandler<JGraph>(this);
+    protected BasicMarqueeHandler createMarqueeHandler() {
+        return new BasicMarqueeHandler();
     }
 
     /** Shows a popup menu if the event is a popup trigger. */
@@ -1169,14 +1166,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             }
             super.setSelectionCells(visibleCells.toArray());
         }
-
-		@Override
-		public void removeSelectionCells(Object[] cells) {
-			// TODO Auto-generated method stub
-			super.removeSelectionCells(cells);
-		}
-        
-        
     }
     
 

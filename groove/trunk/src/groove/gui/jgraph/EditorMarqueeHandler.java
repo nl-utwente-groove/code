@@ -1,5 +1,5 @@
 /*
- * $Id: EditorMarqueeHandler.java,v 1.3 2007-05-21 22:19:17 rensink Exp $
+ * $Id: EditorMarqueeHandler.java,v 1.4 2007-05-25 15:29:39 rensink Exp $
  *
  * Derived from: @(#)GPGraph.java	1.0 1/1/02
  *
@@ -28,6 +28,7 @@ import java.awt.Graphics;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 
+import org.jgraph.graph.BasicMarqueeHandler;
 import org.jgraph.graph.VertexView;
 
 /**
@@ -36,16 +37,16 @@ import org.jgraph.graph.VertexView;
  * different implementations of those actions. Lobotomized from jgrappad.
  * 
  * @author Gaudenz Alder; adapted by Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-05-21 22:19:17 $
+ * @version $Revision: 1.4 $ $Date: 2007-05-25 15:29:39 $
  */
-public class EditorMarqueeHandler extends JGraphMarqueeHandler<EditorJGraph> {
+public class EditorMarqueeHandler extends BasicMarqueeHandler {
     static private final Color ADDING_EDGE_COLOR = Color.black;
     
     /**
      * Creates a marquee handler for a given <tt>JGraph</tt>.
      */
     public EditorMarqueeHandler(EditorJGraph jGraph) {
-        super(jGraph);
+        this.jGraph = jGraph;
     }
 
     /**
@@ -324,7 +325,16 @@ public class EditorMarqueeHandler extends JGraphMarqueeHandler<EditorJGraph> {
             return null;
         }
     }
-    
+
+    /**
+     * Returns the j-graph upon which this marquee handler works.
+     */
+    final EditorJGraph getJGraph() {
+        return this.jGraph;
+    }
+
+    /** The j-graph upon which this marquee handler works. */
+    private final EditorJGraph jGraph;
     /** 
      * While adding an edge, the vertex at which edge drawing started.
      * A value of <tt>null</tt> indicates no edge is being added.
