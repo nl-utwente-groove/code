@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.11 2007-05-25 07:42:51 rensink Exp $
+ * $Id: JVertexView.java,v 1.12 2007-05-25 09:25:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -60,7 +60,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class JVertexView extends VertexView {
     /**
@@ -294,41 +294,70 @@ public class JVertexView extends VertexView {
 		case DIAMOND_SHAPE:
 			return getDiamondPerimeterPoint(bounds, p);
 		default:
-			return getRectanglePerimeterPoint(bounds, p);
+            if (JAttr.isPerpendicularStyle(edge.getAllAttributes())) {
+                return getRectanglePerimeterPoint(bounds, p, this == edge.getSource().getParentView());
+            } else {
+                return getRectanglePerimeterPoint(bounds, p);
+            }
 		}
 	}
 
-	/**
-	 * Computes the perimeter point on a rectangle, lying on the line from the center 
-	 * in the direction of a given point.
-	 * This implementation is in fact taken from {@link VertexRenderer#getPerimeterPoint(VertexView, Point2D, Point2D)}.
-	 */
-	private Point2D getRectanglePerimeterPoint(Rectangle2D bounds, Point2D p) {
-		double xRadius = bounds.getWidth()/2;
-		double yRadius = bounds.getHeight()/2;
-		double centerX = bounds.getCenterX();
-		double centerY = bounds.getCenterY();
-		double dx = p.getX() - centerX; // Compute Angle
-		double dy = p.getY() - centerY;
-		double alpha = Math.atan2(dy, dx);
-		double pi = Math.PI;
-		double t = Math.atan2(yRadius, xRadius);
-		double outX, outY;
-		if (alpha < -pi + t || alpha > pi - t) { // Left edge
-			outX = centerX - xRadius;
-			outY = centerY - xRadius * Math.tan(alpha);
-		} else if (alpha < -t) { // Top Edge
-			outY = centerY - yRadius;
-			outX = centerX - yRadius * Math.tan(pi/2 - alpha);
-		} else if (alpha < t) { // Right Edge
-			outX = centerX + xRadius;
-			outY = centerY + xRadius * Math.tan(alpha);
-		} else { // Bottom Edge
-			outY = centerY + yRadius;
-			outX = centerX + yRadius * Math.tan(pi/2 - alpha);
-		}
-		return new Point2D.Double(outX, outY);
-	}
+    /**
+     * Computes the perimeter point on a rectangle, lying on the line from the center 
+     * in the direction of a given point.
+     * This implementation is in fact taken from {@link VertexRenderer#getPerimeterPoint(VertexView, Point2D, Point2D)}.
+     */
+    private Point2D getRectanglePerimeterPoint(Rectangle2D bounds, Point2D p) {
+        double xRadius = bounds.getWidth()/2;
+        double yRadius = bounds.getHeight()/2;
+        double centerX = bounds.getCenterX();
+        double centerY = bounds.getCenterY();
+        double dx = p.getX() - centerX; // Compute Angle
+        double dy = p.getY() - centerY;
+        double alpha = Math.atan2(dy, dx);
+        double pi = Math.PI;
+        double t = Math.atan2(yRadius, xRadius);
+        double outX, outY;
+        if (alpha < -pi + t || alpha > pi - t) { // Left edge
+            outX = centerX - xRadius;
+            outY = centerY - xRadius * Math.tan(alpha);
+        } else if (alpha < -t) { // Top Edge
+            outY = centerY - yRadius;
+            outX = centerX - yRadius * Math.tan(pi/2 - alpha);
+        } else if (alpha < t) { // Right Edge
+            outX = centerX + xRadius;
+            outY = centerY + xRadius * Math.tan(alpha);
+        } else { // Bottom Edge
+            outY = centerY + yRadius;
+            outX = centerX + yRadius * Math.tan(pi/2 - alpha);
+        }
+        return new Point2D.Double(outX, outY);
+    }
+
+    /**
+     * Computes a perimeter point on a rectangle, for a perpendicular line
+     * entering horizontally or vertically.
+     * @param bounds the bounds of the rectangle
+     * @param p the reference point for the perimeter point
+     * @param horizontal if <code>true</code>, the line will enter horizontally; look for a point on one of the sides
+     */
+    private Point2D getRectanglePerimeterPoint(Rectangle2D bounds, Point2D p, boolean horizontal) {
+        double centerX = bounds.getCenterX();
+        double centerY = bounds.getCenterY();
+        double dx = p.getX() - centerX;
+        double dy = p.getY() - centerY;
+        double outX, outY;
+        if (horizontal) { // left or right side
+            outX = dx < 0 ? bounds.getMinX() : bounds.getMaxX();
+            double room = bounds.getHeight()*(1-2/DROP_FRACTION)*0.5;
+            outY = centerY + room * Math.signum(dy) * Math.min(Math.abs(dy)/MAX_RATIO_DISTANCE, 1); 
+        } else { //top or bottom
+            outY = dy < 0 ? bounds.getMinY() : bounds.getMaxY();
+            double room = bounds.getWidth()*(1-2/DROP_FRACTION)*0.5;
+            outX = centerX + room * Math.signum(dx) * Math.min(Math.abs(dx)/MAX_RATIO_DISTANCE, 1);
+        }
+        return new Point2D.Double(outX, outY);
+    }
 
 	/**
 	 * Computes the perimeter point on a rectangle, lying on the line from a given point
@@ -551,6 +580,8 @@ public class JVertexView extends VertexView {
     
     /** Fraction of the width or height that is the minimum for special perimeter point placement. */
     static private final double DROP_FRACTION = 10;
+    /** Maximal distance (horizontal or vertical) for perpendicular perimeter points to be placed in ratio. */
+    static private final double MAX_RATIO_DISTANCE = 250;
     /** Insets for vertices that contain text. */
     static private final Insets DEFAULT_INSETS = new Insets(2,4,2,4);
     /** Insets for empty vertices. */
