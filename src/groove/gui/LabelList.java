@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.8 2007-05-21 22:19:34 rensink Exp $
+ * $Id: LabelList.java,v 1.9 2007-05-25 15:29:40 rensink Exp $
  */
 package groove.gui;
 
@@ -25,6 +25,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 import java.util.TreeMap;
 
@@ -32,6 +34,7 @@ import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.util.ExprParser;
+import groove.util.ObservableSet;
 import groove.view.FormatException;
 
 import javax.swing.DefaultListCellRenderer;
@@ -47,41 +50,30 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /** Pseudo-label maintained in this list for cells with an empty label set. */
     static public final String NO_LABEL = "\u0000";
 
     /**
-     * Constructs a label list associated with a given jgraph. Gets the labels from the model and
-     * adds them to this label list.
+     * Constructs a label list associated with a given jgraph and set of filtered labels. 
      * @param jgraph the jgraph with which this list is to be associated
      */
-    public LabelList(JGraph jgraph) {
+    public LabelList(JGraph jgraph, final ObservableSet<String> filteredLabels) {
+        this.filteredLabels = filteredLabels;
+        if (this.filteredLabels != null) {
+            this.filteredLabels.addObserver(new Observer() {
+                public void update(Observable o, Object arg) {
+                    LabelList.this.repaint();
+                }
+            });
+        }
         // initialize the list model
         this.listModel = new DefaultListModel();
         setModel(listModel);
         // change the cell renderer so it adds a space in front of the labels
-        setCellRenderer(new DefaultListCellRenderer() {
-        	@Override
-            public void setText(String text) {
-                if (text.equals(NO_LABEL)) {
-                    setForeground(specialForeground);
-                    super.setText(" " + Options.NO_LABEL_TEXT + " ");
-                } else if (text.length() == 0) {
-                    super.setText(" " + Options.EMPTY_LABEL_TEXT + " ");
-                    setForeground(specialForeground);
-                } else {
-                    super.setText(" " + text + " ");
-                    setForeground(standardForeground);
-                }
-            }
-
-            private final Color standardForeground = getForeground();
-
-            private final Color specialForeground = Color.LIGHT_GRAY;
-        });
+        setCellRenderer(new MyCellRenderer());
 
         this.jgraph = jgraph;
         this.jmodel = jgraph.getModel();
@@ -89,23 +81,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 
         // take care of the popup menu
         popupMenu = createPopupMenu();
-        addMouseListener(new MouseAdapter() {
-        	@Override
-            public void mousePressed(MouseEvent evt) {
-                maybeShowPopup(evt);
-            }
-
-        	@Override
-            public void mouseReleased(MouseEvent evt) {
-                maybeShowPopup(evt);
-            }
-
-            private void maybeShowPopup(MouseEvent evt) {
-                if (evt.isPopupTrigger()) {
-                    popupMenu.show(evt.getComponent(), evt.getX(), evt.getY());
-                }
-            }
-        });
+        addMouseListener(new MyMouseListener());
         // add a mouse listener to the jgraph to clear the selction of this list
         // as soon as the mouse is pressed in the jgraph
         jgraph.addMouseListener(new MouseAdapter() {
@@ -117,6 +93,11 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
             }
         });
         setEnabled(false);
+    }
+    
+    /** Constructs a list from a given JGraph, with no filtered labels. */
+    public LabelList(JGraph jGraph) {
+        this(jGraph, null);
     }
 
     /**
@@ -459,8 +440,72 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      */
     protected final Map<String,Set<JCell>> labels = new TreeMap<String,Set<JCell>>();
 
+    /** Set of filtered labels. */
+    private final ObservableSet<String> filteredLabels;
+    
     /**
      * The background color of this component when it is enabled.
      */
     private Color enabledBackground;
+    
+    /**
+     * Special cell renderer that visualises the NO_LABEL label as well as 
+     * filtered labels.
+     */
+    private class MyCellRenderer extends DefaultListCellRenderer {
+        @Override
+        public void setText(String text) {
+            if (text.equals(NO_LABEL)) {
+                setForeground(specialForeground);
+                super.setText(" " + Options.NO_LABEL_TEXT + " ");
+            } else if (text.length() == 0) {
+                super.setText(" " + Options.EMPTY_LABEL_TEXT + " ");
+                setForeground(specialForeground);
+            } else if (filteredLabels != null && filteredLabels.contains(text)) {
+                super.setText(" >> " + text + " ");
+                setForeground(standardForeground);
+            } else {
+                super.setText(" " + text + " ");
+                setForeground(standardForeground);
+            }
+        }
+
+        private final Color standardForeground = getForeground();
+
+        private final Color specialForeground = Color.LIGHT_GRAY;
+    }
+    
+    /** Class to deal with mouse events over the label list. */
+    private class MyMouseListener extends MouseAdapter {
+        @Override
+        public void mousePressed(MouseEvent evt) {
+            maybeShowPopup(evt);
+        }
+
+        @Override
+        public void mouseReleased(MouseEvent evt) {
+            maybeShowPopup(evt);
+        }
+        
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            if (filteredLabels != null && e.getClickCount() == 2) {
+                int index = locationToIndex(e.getPoint());
+                if (index != -1) {
+                    String label = (String) listModel.get(index);
+                    if (!filteredLabels.add(label)) {
+                        filteredLabels.remove(label);
+                    }
+                }
+            }
+        }
+
+        private void maybeShowPopup(MouseEvent evt) {
+            if (evt.isPopupTrigger()) {
+                createPopupMenu().show(evt.getComponent(), evt.getX(), evt.getY());
+            }
+        }
+    }
+    
+    
 }
