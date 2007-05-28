@@ -12,12 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MultiLinedEditor.java,v 1.3 2007-05-21 22:19:17 rensink Exp $
+ * $Id: MultiLinedEditor.java,v 1.4 2007-05-28 21:32:44 rensink Exp $
  */
 package groove.gui.jgraph;
-
-import groove.gui.ErrorDialog;
-import groove.util.ExprParser;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -47,7 +44,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Multiline jcell editor, essentially taken from <code>org.jgraph.cellview.JGraphMultilineView</code>.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class MultiLinedEditor extends DefaultGraphCellEditor {
     /**
@@ -72,7 +69,6 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
         // RealCellEditor.getGraphCellEditorComponent().
         Font font = GraphConstants.getFont(view.getAllAttributes());
         editingComponent.setFont((font != null) ? font : graph.getFont());
-        ((RealCellEditor) realEditor).setUserObject(((EditableJCell) cell).getUserObject());
         return component;
     }
 
@@ -150,30 +146,7 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
             editorComponent.requestFocus();
             return super.shouldSelectCell(event);
         }
-
-        /**
-         * This implementation returns <tt>false</tt> if {@link ExprParser#isParsable(String)}
-         * does so, and otherwise delegates to <tt>super.stopCellEditing()</tt>.
-         */
-        @Override
-        public boolean stopCellEditing() {
-            if (userObject != null) {
-                Exception formatException = userObject.isLoadable((String) getCellEditorValue()); 
-                if (formatException != null) {
-                    new ErrorDialog(editorComponent, "Format error in label", formatException).setVisible(true);
-                    return false;
-                }
-            }
-            return super.stopCellEditing();
-        }
-
-        /** Sets the user object, used to check formatting of the edited label. */
-        public void setUserObject(EditableJUserObject userObject) {
-            this.userObject = userObject;
-        }
-
-        /** The user objct, used to check formatting of the edited label. */
-        private EditableJUserObject userObject;
+        
         /** The component actually doing the editing. */
         protected final JTextArea editorComponent = new JTextArea();
     }

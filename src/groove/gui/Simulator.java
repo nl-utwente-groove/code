@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.42 2007-05-25 07:42:52 rensink Exp $
+ * $Id: Simulator.java,v 1.43 2007-05-28 21:32:50 rensink Exp $
  */
 package groove.gui;
 
@@ -122,7 +122,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.42 $
+ * @version $Revision: 1.43 $
  */
 public class Simulator {
     /**
@@ -771,7 +771,11 @@ public class Simulator {
     private void doSaveGraph(Graph graph, File file) {
         try {
         	AspectGraph saveGraph = AspectGraph.getFactory().fromPlainGraph(graph);
-            graphLoader.marshalGraph(saveGraph, file);
+        	if (saveGraph.hasErrors()) {
+                showErrorDialog("Errors in graph", new FormatException(saveGraph.getErrors()));
+        	} else { 
+        		graphLoader.marshalGraph(saveGraph, file);
+        	}
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
         }
@@ -1703,28 +1707,28 @@ public class Simulator {
     /**
      * The loader used for unmarshalling gps-formatted graph grammars.
      */
-    protected LayedOutGps gpsLoader;
+    private LayedOutGps gpsLoader;
 
     /**
      * A mapping from extension filters (recognizing the file formats from the names) to the
      * corresponding grammar loaders.
      */
-    protected final Map<ExtensionFilter,AspectualViewGps> grammarLoaderMap = new LinkedHashMap<ExtensionFilter,AspectualViewGps>();
+    private final Map<ExtensionFilter,AspectualViewGps> grammarLoaderMap = new LinkedHashMap<ExtensionFilter,AspectualViewGps>();
 
     /**
      * The graph loader used for saving graphs (states and LTS).
      */
-    protected final Xml<AspectGraph> graphLoader = new AspectGxl(new LayedOutXml());
+    private final Xml<AspectGraph> graphLoader = new AspectGxl(new LayedOutXml());
 
     /**
      * File chooser for grammar files.
      */
-    protected JFileChooser grammarFileChooser;
+    private JFileChooser grammarFileChooser;
 
     /**
      * File chooser for state files and LTS.
      */
-    protected JFileChooser stateFileChooser;
+    private JFileChooser stateFileChooser;
 
     /**
      * Graph exporter.
@@ -1739,18 +1743,18 @@ public class Simulator {
     /**
      * Extension filter for state files.
      */
-    protected final ExtensionFilter stateFilter = Groove.createStateFilter();
+    private final ExtensionFilter stateFilter = Groove.createStateFilter();
 
     /**
      * Extension filter used for exporting the LTS in jpeg format.
      */
-    protected final ExtensionFilter gxlFilter = Groove.createGxlFilter();
+    private final ExtensionFilter gxlFilter = Groove.createGxlFilter();
 
     /**
      * Set of registered simulation listeners.
      * @invariant <tt>listeners \subseteq SimulationListener</tt>
      */
-    protected final Set<SimulationListener> listeners = new HashSet<SimulationListener>();
+    private final Set<SimulationListener> listeners = new HashSet<SimulationListener>();
 
     /** Current set of refreshables of this simulator. */
     private final Set<Refreshable> refreshables = new HashSet<Refreshable>();
@@ -2871,7 +2875,7 @@ public class Simulator {
 //    /**
 //     * Class providing functionality to export a {@link JGraph} to a file in different formats.
 //     * @author Arend Rensink
-//     * @version $Revision: 1.42 $
+//     * @version $Revision: 1.43 $
 //     */
 //    static public class Exporter {
 //        /**

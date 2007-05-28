@@ -12,15 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJEdge.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: EditableJEdge.java,v 1.3 2007-05-28 21:32:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * J-Graph edge for the editor.
- * This has a {@link EditableJUserObject} as user object,
+ * This has a {@link EditableContent} as user object,
  * which can be loaded from a string or set of strings.
  * @author Arend Rensink
  * @version $Revision $
@@ -34,15 +36,35 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     /** Constructs a j-edge by cloning another one. */
     public EditableJEdge(JEdge other) {
         getAttributes().applyMap(other.getAttributes());
-        setUserObject(other.getLabelSet());
+        setUserObject(other.getListLabels());
     }
-    /** 
+    
+    /** This implementation just returns the user object. */
+    public Collection<StringBuilder> getLines() {
+    	List<StringBuilder> result = new ArrayList<StringBuilder>();
+    	for (String label: getUserObject()) {
+    		result.add(new StringBuilder(label));
+    	}
+		return result;
+	}
+
+    /** This implementation just returns the user object. */
+	public Collection<String> getListLabels() {
+		return getUserObject();
+	}
+
+    /** This implementation just returns the user object. */
+	public Collection<String> getPlainLabels() {
+		return getUserObject();
+	}
+
+	/** 
      * If the value is a collection or a string, loads the
      * user object from it.
      */
     @Override
     public void setUserObject(Object value) {
-    	EditableJUserObject newObject = createUserObject();
+    	EditableContent newObject = createUserObject();
     	super.setUserObject(newObject);
         if (value instanceof Collection) {
         	newObject.load((Collection) value);
@@ -53,8 +75,8 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     
     /** Specialises the return type. */
     @Override
-	public EditableJUserObject getUserObject() {
-		return (EditableJUserObject) super.getUserObject();
+	public EditableContent getUserObject() {
+		return (EditableContent) super.getUserObject();
 	}
 
 	/**
@@ -62,7 +84,7 @@ public class EditableJEdge extends JEdge implements EditableJCell {
      * Called lazily in {@link #getUserObject()}.
      */
     @Override
-    protected EditableJUserObject createUserObject() {
-    	return new EditableJUserObject(this, PRINT_SEPARATOR, EDIT_SEPARATOR, false);
+    protected EditableContent createUserObject() {
+    	return new EditableContent(false);
     }
 }

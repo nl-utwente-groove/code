@@ -12,53 +12,66 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.8 2007-05-23 21:37:16 rensink Exp $
+ * $Id: JEdge.java,v 1.9 2007-05-28 21:32:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import static groove.util.Converter.HTML_TAG;
+import static groove.util.Converter.STRONG_TAG;
 import groove.util.Converter;
-import static groove.util.Converter.*;
 import groove.util.Groove;
-
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultPort;
 
 /**
  * JGraph edge with a set of string labels as its user object,
- * in the form of a fixed {@link groove.gui.jgraph.JUserObject}.
+ * in the form of a fixed {@link groove.gui.jgraph.JCellContent}.
  * The labels are edited as multiline text but printed as a
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
-     * Creates an edge with a {@link JUserObject} as its user object.
-     */
-    JEdge() {
-        getUserObject().setAllowEmptyLabelSet(false);
-    }
-//    
-//    /** Initializes a j-edge with a given user object. */
-//    protected JEdge(JUserObject userObject) {
-//    	this();
-//    	setUserObject(userObject);
-//    }
-
-    /**
      * This implementation delegates the method to the user object.
      */
-    @Override
-    public String toString() {
-        return getUserObject().toString();
+    public String getText() {
+    	StringBuilder result = new StringBuilder();
+    	for (StringBuilder line: getLines()) {
+    		if (result.length() > 0) {
+    			result.append(PRINT_SEPARATOR);
+    		}
+    		result.append(line);
+    	}
+    	return result.toString();
     }
+//
+//    /** 
+//	 * Callback method to return the individual lines for the display text.
+//	 * These are constructed by calling #getLine(String) on the labels.
+//	 * @see #getText()
+//	 */
+//	public Collection<String> getLines() {
+//		List<String> result = new ArrayList<String>();
+//		for (Object label: getUserObject()) {
+//			result.add(getLine(label));
+//		}
+//		return result;
+//	}
+//
+//	/** 
+//	 * Callback method to get the text that is to be printed in the 
+//	 * j-vertex for a given object in the label set.
+//	 * @param object an object from the user object (hence of the type
+//	 * of the user object's elements)
+//	 */
+//	public String getLine(Object object) {
+//		return object.toString();
+//	}
 
-    /** Returns the j-vertex that is the parent of the source port of this j-edge. */
+	/** Returns the j-vertex that is the parent of the source port of this j-edge. */
     JVertex getSourceVertex() {
     	DefaultPort source = (DefaultPort) getSource();
 		return source == null ? null : (JVertex) source.getParent();
@@ -89,45 +102,35 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     public boolean isListable() {
     	return true;
     }
-
-	/**
-     * Returns the collection of elements of the user object, converted to strings
-     * using {@link #getLabel(Object)}
-     */
-    public Collection<String> getLabelSet() {
-        Set<String> result = new LinkedHashSet<String>();
-        for (Object obj: getUserObject()) {
-        	result.add(getLabel(obj));
-        }
-        return result;
-    }
-
-    /** 
-     * Callback method to get the text that is to be printed in the 
-     * j-vertex for a given object in the label set.
-     * @param object an object from the user object (hence of the type
-     * of the user object's elements)
-     */
-    public String getLabel(Object object) {
-    	return object.toString();
-    }
+//
+//	/**
+//     * Returns the collection of elements of the user object, converted to strings
+//     * using {@link #getLine(Object)}
+//     */
+//    public Collection<String> getListLabels() {
+//        Set<String> result = new LinkedHashSet<String>();
+//        for (Object obj: getUserObject()) {
+//        	result.add(getLine(obj));
+//        }
+//        return result;
+//    }
 
     @Override
-    public JUserObject<?> getUserObject() {
+    public JCellContent<?> getUserObject() {
     	if (! userObjectSet) {
     		userObjectSet = true;
     		super.setUserObject(createUserObject());
     	}
-    	return (JUserObject) super.getUserObject();
+    	return (JCellContent) super.getUserObject();
     }
 
     /** 
      * Overrides the super method to test for the type of the parameter 
-     * (which should be {@link JUserObject}) and records that the object has been set. 
+     * (which should be {@link JCellContent}) and records that the object has been set. 
      */
 	@Override
 	public void setUserObject(Object userObject) {
-		if (!(userObject instanceof JUserObject)) {
+		if (!(userObject instanceof JCellContent)) {
 			throw new IllegalArgumentException(String.format("Cannot set user object %s: incorrect type %s", userObject, userObject.getClass()));
 		}
 		super.setUserObject(userObject);
@@ -138,9 +141,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      * Callback factory method to create a user object.
      * Called lazily in {@link #getUserObject()}.
      */
-    JUserObject<?> createUserObject() {
-    	return new JUserObject(this, PRINT_SEPARATOR, false);
-    }
+    abstract JCellContent<?> createUserObject();
 
     /**
      * Returns the tool tip text for this edge.
@@ -156,7 +157,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      */
     StringBuilder getEdgeDescription() {
     	StringBuilder result = getEdgeKindDescription();
-    	if (getLabelSet().size() > 1) {
+    	if (getListLabels().size() > 1) {
     		Converter.toUppercase(result, false);
     		result.insert(0, "Multiple ");
     		result.append("s");
@@ -178,9 +179,9 @@ abstract public class JEdge extends DefaultEdge implements JCell {
      */
     String getLabelDescription() {
     	StringBuffer result = new StringBuffer();
-    	String[] displayedLabels = new String[getLabelSet().size()];
+    	String[] displayedLabels = new String[getListLabels().size()];
     	int labelIndex = 0;
-    	for (Object label: getLabelSet()) {
+    	for (Object label: getListLabels()) {
     		displayedLabels[labelIndex] = STRONG_TAG.on(label.toString(), true);
     		labelIndex++;
     	}
@@ -207,10 +208,10 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     /** Flag indicating that the user object has been initialised. */
     private boolean userObjectSet;
     
-    /**
-     * The character used to separate graph labels.
-     */
-    static public final String EDIT_SEPARATOR = JUserObject.NEWLINE;
+//    /**
+//     * The character used to separate graph labels.
+//     */
+//    static public final String EDIT_SEPARATOR = JCellContent.NEWLINE;
     /**
      * The string used to separate arguments when preparing for editing.
      */

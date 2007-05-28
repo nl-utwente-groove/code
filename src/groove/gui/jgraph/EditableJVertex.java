@@ -12,15 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJVertex.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: EditableJVertex.java,v 1.3 2007-05-28 21:32:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * J-Graph vertex for the editor.
- * This has a {@link EditableJUserObject} as user object,
+ * This has a {@link EditableContent} as user object,
  * which can be loaded from a string or set of strings.
  * @author Arend Rensink
  * @version $Revision $
@@ -34,8 +37,34 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     /** Constructs a jvertex by cloning another one. */
     public EditableJVertex(JVertex other) {
         getAttributes().applyMap(other.getAttributes());
-        setUserObject(other.getLabelSet());
+        setUserObject(other.getPlainLabels());
     }
+    
+    /** This implementation just returns the user object. */
+    public Collection<StringBuilder> getLines() {
+    	List<StringBuilder> result = new ArrayList<StringBuilder>();
+    	for (String label: getUserObject()) {
+    		result.add(new StringBuilder(label));
+    	}
+		return result;
+	}
+
+    /** 
+     * This implementation just returns the user object,
+     * or a singleton containing {@link JVertex#NO_LABEL} if the user object is empty.
+     */
+	public Collection<String> getListLabels() {
+		Collection<String> result = getUserObject();
+		if (result.isEmpty()) {
+			result = Collections.singleton(NO_LABEL);
+		}
+		return result;
+	}
+
+    /** This implementation just returns the user object. */
+	public Collection<String> getPlainLabels() {
+		return getUserObject();
+	}
 
     /** 
      * If the value is a collection or a string, loads the
@@ -43,7 +72,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      */
     @Override
     public void setUserObject(Object value) {
-    	EditableJUserObject newObject = createUserObject();
+    	EditableContent newObject = createUserObject();
     	super.setUserObject(newObject);
         if (value instanceof Collection) {
         	newObject.load((Collection) value);
@@ -54,8 +83,8 @@ public class EditableJVertex extends JVertex implements EditableJCell {
 
     /** Specialises the return type. */
     @Override
-	public EditableJUserObject getUserObject() {
-		return (EditableJUserObject) super.getUserObject();
+	public EditableContent getUserObject() {
+		return (EditableContent) super.getUserObject();
 	}
 
 	/**
@@ -63,7 +92,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
      * Called lazily in {@link #getUserObject()}.
      */
     @Override
-    protected EditableJUserObject createUserObject() {
-    	return new EditableJUserObject(this, JUserObject.NEWLINE, JUserObject.NEWLINE, true);
+    protected EditableContent createUserObject() {
+    	return new EditableContent(true);
     }
 }

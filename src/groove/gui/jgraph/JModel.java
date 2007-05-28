@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.14 2007-05-25 22:16:47 rensink Exp $
+ * $Id: JModel.java,v 1.15 2007-05-28 21:32:44 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -27,6 +27,7 @@ import groove.graph.Node;
 import groove.gui.Options;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.LayoutMap;
+import groove.util.ObservableSet;
 
 import java.awt.Color;
 import java.util.Collection;
@@ -37,6 +38,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.SwingUtilities;
@@ -60,7 +63,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -210,34 +213,32 @@ abstract public class JModel extends DefaultGraphModel {
         groove.graph.Graph result = new DefaultGraph();
         LayoutMap<Node,Edge> layoutMap = new LayoutMap<Node,Edge>();
         Map<JVertex,Node> nodeMap = new HashMap<JVertex,Node>();
-        int rootCount = getRootCount();
-
+        
         // Create nodes
-        for (int i = 0; i < rootCount; i++) {
-            Object root = getRootAt(i);
+        for (Object root: getRoots()) {
             if (root instanceof JVertex) {
                 Node node = result.addNode();
                 nodeMap.put((JVertex) root, node);
                 layoutMap.putNode(node, ((JVertex) root).getAttributes());
-                for (String label: getLabels((JVertex) root)) {
+                for (String label: ((JVertex) root).getPlainLabels()) {
                     result.addEdge(node, DefaultLabel.createLabel(label), node);
                 }
             }
         }
 
         // Create Edges
-        for (int i = 0; i < rootCount; i++) {
-            Object root = getRootAt(i);
+        for (Object root: getRoots()) {
             if (root instanceof JEdge) {
-                Node source = nodeMap.get(getParent(getSource(root)));
-                Node target = nodeMap.get(getParent(getTarget(root)));
+            	JEdge jEdge = (JEdge) root;
+                Node source = nodeMap.get(jEdge.getSourceVertex());
+                Node target = nodeMap.get(jEdge.getTargetVertex());
                 assert target != null : "Edge with empty target: "+root;
                 assert source != null : "Edge with empty source: "+root;
-                AttributeMap edgeAttr = ((JEdge) root).getAttributes();
+                AttributeMap edgeAttr = jEdge.getAttributes();
                 // test if the edge attributes are default
                 boolean attrIsDefault = JEdgeLayout.newInstance(edgeAttr).isDefault();
                 // parse edge text into label set
-                for (String label: getLabels((JEdge) root)) {
+                for (String label: jEdge.getPlainLabels()) {
                     Edge edge = result.addEdge(source, DefaultLabel.createLabel(label), target);
                     // add layout information if there is anything to be noted about the edge
                     if (! attrIsDefault) {
@@ -303,6 +304,33 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
+	 * Returns the set of labels that is currently filtered from view.
+	 * If <code>null</code>, no filtering is going on.
+	 */
+	public final ObservableSet<String> getFilteredLabels() {
+		return this.filteredLabels;
+	}
+
+	/**
+	 * Sets filtering on a given set of labels.
+	 * Filtered labels will be set to invisible in the {@link JGraph}.
+	 */
+	public final void setFilteredLabels(ObservableSet<String> filteredLabels) {
+		if (this.filteredLabels != null) {
+			this.filteredLabels.deleteObserver(getRefreshListener());
+		}
+		this.filteredLabels = filteredLabels;
+		if (filteredLabels != null) {
+			filteredLabels.addObserver(getRefreshListener());
+		}
+	}
+
+	/** Returns the refresh listener permanantly associated with this {@link JModel}. */
+	private Observer getRefreshListener() {
+		return refreshListener;
+	}
+	
+	/**
      * Tests the grayed-out status of a given jgraph cell.
      * @param cell the cell that is to be tested
      * @return <tt>true</tt> if the cell is currently grayed-out
@@ -460,14 +488,14 @@ abstract public class JModel extends DefaultGraphModel {
     }
     
     /**
-     * Invokes {@link JUserObject#clone()} to do the job.
+     * Invokes {@link JCellContent#clone()} to do the job.
 	 */
 	@Override
 	protected Object cloneUserObject(Object userObject) {
         if (userObject == null) {
             return null;
         } else {
-            return ((JUserObject) userObject).clone();
+            return ((JCellContent) userObject).clone();
         }
 	}
 	
@@ -512,30 +540,51 @@ abstract public class JModel extends DefaultGraphModel {
 //    protected AttributeMap getInvisibleAttr() {
 //        return JAttr.INVISIBLE_ATTR;
 //    }
+//
+//    /**
+//     * Collects the labels of a given j-vertex.
+//     * Callback method from {@link #toPlainGraph()}.
+//     * This implementation just returns the label set.
+//     */
+//    protected Collection<String> getLabels(JVertex jCell) {
+//        return jCell.getPlainLabels();
+//    }
+//
+//    /**
+//     * Collects the labels of a given j-edge.
+//     * Callback method from {@link #toPlainGraph()}.
+//     * This implementation just returns the label set.
+//     */
+//    protected Collection<String> getLabels(JEdge jEdge) {
+//        return jEdge.getPlainLabels();
+//    }
 
-    /**
-     * Collects the labels of a given j-vertex.
-     * Callback method from {@link #toPlainGraph()}.
-     * This implementation just returns the label set.
-     */
-    protected Collection<String> getLabels(JVertex jCell) {
-        return jCell.getLabelSet();
-    }
+    @Override
+	public AttributeMap getAttributes(Object node) {
+    	AttributeMap result;
+		if (node instanceof JCell) {
+			result = ((JCell) node).getAttributes();
+			if (result == null) {
+				if (node instanceof JVertex) {
+					result = createJVertexAttr((JVertex) node);
+				} else {
+					result = createJEdgeAttr((JEdge) node);
+				}
+			}
+		} else {
+			result = super.getAttributes(node);
+		}
+		assert result != null;
+		return result;
+	}
 
-    /**
-     * Collects the labels of a given j-edge.
-     * Callback method from {@link #toPlainGraph()}.
-     * This implementation just returns the label set.
-     */
-    protected Collection<String> getLabels(JEdge jEdge) {
-        return jEdge.getLabelSet();
-    }
-
-    /**
-     * Returns a freshly cloned attribute map for a given vertex. This implementation returns
-     * the default attributes, set at construction time.
-     * @param jVertex the j-vertex for which the attributes are to be created
-     */
+	/**
+	 * Returns a freshly cloned attribute map for a given vertex. This
+	 * implementation returns the default attributes, set at construction time.
+	 * 
+	 * @param jVertex
+	 *            the j-vertex for which the attributes are to be created
+	 */
     protected AttributeMap createJVertexAttr(JVertex jVertex) {
         AttributeMap result = (AttributeMap) defaultNodeAttr.clone();
         maybeResetBackground(result);
@@ -611,19 +660,23 @@ abstract public class JModel extends DefaultGraphModel {
     protected final Set<JCell> layoutableJCells = new HashSet<JCell>();
 	/** Set of options values to control the display. May be <code>null</code>. */
 	private final Options options;
+	/** Set of labels that is currently filtered from view. */
+	private ObservableSet<String> filteredLabels;
 	/** Properties map of the graph being displayed or edited. */
 	private GraphProperties properties;
 	/**
      * The name of this model.
      */
     private String name;
+    /** The fixed refresh listener of this {@link JModel}. */
+    private final RefreshListener refreshListener = new RefreshListener();
     
     /**
      * Special graph model edit that does not signal any actual change
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.14 $
+     * @version $Revision: 1.15 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -652,5 +705,13 @@ abstract public class JModel extends DefaultGraphModel {
 
 		/** The set of cells that this event reports on refreshing. */
         private final Collection<JCell> refreshedJCells;
+    }
+    
+    /** Observer that calls {@link #refresh()} whenever it receives an update event. */
+    private class RefreshListener implements Observer {
+    	/** The method is called when a filtered set is changed. */
+		public void update(Observable o, Object arg) {
+			refresh();
+		}
     }
 }

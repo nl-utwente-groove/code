@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.9 2007-05-25 15:29:40 rensink Exp $
+ * $Id: LabelList.java,v 1.10 2007-05-28 21:32:50 rensink Exp $
  */
 package groove.gui;
 
@@ -33,6 +33,7 @@ import java.util.TreeMap;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
+import groove.gui.jgraph.JVertex;
 import groove.util.ExprParser;
 import groove.util.ObservableSet;
 import groove.view.FormatException;
@@ -50,14 +51,12 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
-    /** Pseudo-label maintained in this list for cells with an empty label set. */
-    static public final String NO_LABEL = "\u0000";
-
     /**
-     * Constructs a label list associated with a given jgraph and set of filtered labels. 
+     * Constructs a label list associated with a given jgraph and set of filtered labels.
+     * {@link #updateModel()} should be called before the list can be used. 
      * @param jgraph the jgraph with which this list is to be associated
      */
     public LabelList(JGraph jgraph, final ObservableSet<String> filteredLabels) {
@@ -76,9 +75,6 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         setCellRenderer(new MyCellRenderer());
 
         this.jgraph = jgraph;
-        this.jmodel = jgraph.getModel();
-        this.jmodel.addGraphModelListener(this);
-
         // take care of the popup menu
         popupMenu = createPopupMenu();
         addMouseListener(new MyMouseListener());
@@ -119,7 +115,9 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      * associated jgraph. Gets the labels from the model and adds them to this label list.
      */
     public void updateModel() {
-        jmodel.removeGraphModelListener(this);
+    	if (jmodel != null) {
+    		jmodel.removeGraphModelListener(this);
+    	}
         jmodel = jgraph.getModel();
         labels.clear();
         jmodel.addGraphModelListener(this);
@@ -132,28 +130,28 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         updateList();
         setEnabled(true);
     }
-
-    /**
-     * Returns the set of jcells whose label sets contain a given label.
-     * @param label the label looked for; may equal {@link #NO_LABEL}.
-     * @return the set of {@link JCell}s for which {@link  JCell#getLabelSet()}contains
-     *         <tt>label</tt>, or for which it is empty if <tt>label</tt> equals
-     *         {@link #NO_LABEL}.
-     */
-    public Set<JCell> getJCellsForLabel(Object label) {
-        Set<JCell> result = new HashSet<JCell>();
-        for (int i = 0; i < jmodel.getRootCount(); i++) {
-            Object jCell = jmodel.getRootAt(i);
-            assert jCell instanceof JCell : "Model cell " + jCell + " of type " + jCell.getClass();
-            if (jCell instanceof JCell) {
-                Collection<String> jCellLabelSet = getLabelSet((JCell) jCell);
-                if (jCellLabelSet.contains(label)) {
-                    result.add((JCell) jCell);
-                }
-            }
-        }
-        return result;
-    }
+//
+//    /**
+//     * Returns the set of jcells whose label sets contain a given label.
+//     * @param label the label looked for; may equal {@link #NO_LABEL}.
+//     * @return the set of {@link JCell}s for which {@link  JCell#getListLabels()}contains
+//     *         <tt>label</tt>, or for which it is empty if <tt>label</tt> equals
+//     *         {@link #NO_LABEL}.
+//     */
+//    public Set<JCell> getJCellsForLabel(Object label) {
+//        Set<JCell> result = new HashSet<JCell>();
+//        for (int i = 0; i < jmodel.getRootCount(); i++) {
+//            Object jCell = jmodel.getRootAt(i);
+//            assert jCell instanceof JCell : "Model cell " + jCell + " of type " + jCell.getClass();
+//            if (jCell instanceof JCell) {
+//                Collection<String> jCellLabelSet = getLabelSet((JCell) jCell);
+//                if (jCellLabelSet.contains(label)) {
+//                    result.add((JCell) jCell);
+//                }
+//            }
+//        }
+//        return result;
+//    }
 
     /**
      * In addition to delegating the method to <tt>super</tt>, sets the background color to
@@ -393,22 +391,19 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     
     /** 
      * Extracts the labels from a j-cell.
-     * This method should always be used instead of invoking {@link JCell#getLabelSet()}
+     * This method should always be used instead of invoking {@link JCell#getListLabels()}
      * directly, so as to allow some processing in between.
      */
     private Set<String> getLabelSet(JCell cell) {
     	Set<String> result = new HashSet<String>();
 		if (cell.isVisible()) {
-			for (String label : cell.getLabelSet()) {
+			for (String label : cell.getListLabels()) {
 				try {
 					String[] fragments = ExprParser.splitExpr(label, " ");
 					result.addAll(Arrays.asList(fragments));
 				} catch (FormatException exc) {
 					result.add(label);
 				}
-			}
-			if (result.isEmpty()) {
-				result.add(NO_LABEL);
 			}
 		}
     	return result;
@@ -455,7 +450,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     private class MyCellRenderer extends DefaultListCellRenderer {
         @Override
         public void setText(String text) {
-            if (text.equals(NO_LABEL)) {
+            if (text.equals(JVertex.NO_LABEL)) {
                 setForeground(specialForeground);
                 super.setText(" " + Options.NO_LABEL_TEXT + " ");
             } else if (text.length() == 0) {

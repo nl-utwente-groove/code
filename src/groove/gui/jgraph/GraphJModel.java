@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.15 2007-05-23 11:36:18 rensink Exp $
+ * $Id: GraphJModel.java,v 1.16 2007-05-28 21:32:44 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -53,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
     /** 
@@ -221,7 +221,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 			// jedge
 			((GraphJEdge) jEdge).removeEdge(edge);
 			// but was it the only edge modelled by this jedge?
-			if (((GraphJEdge) jEdge).getEdgeSet().isEmpty()) {
+			if (((GraphJEdge) jEdge).getEdges().isEmpty()) {
 				// delete the edge and its source/target port (if any)
 				// from the GraphModel
 				remove(new Object[] { jEdge });
@@ -327,10 +327,10 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	@Override
 	public Graph toPlainGraph() {
 		// set the show-aspect value locally, to make sure of correct dispay
-		setLocalOptions(true);
+//		setLocalOptions(true);
 		Graph result = super.toPlainGraph();
 		GraphInfo.setRole(result, getRole());
-		setLocalOptions(false);
+//		setLocalOptions(false);
 		return result;
 	}
 
@@ -562,7 +562,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	final protected AttributeMap createJEdgeAttr(JEdge jEdge) {
 		AttributeMap result;
 //		if (jEdge.isVisible()) {
-			result = createJEdgeAttr(((GraphJEdge) jEdge).getEdgeSet());
+			result = createJEdgeAttr(((GraphJEdge) jEdge).getEdges());
 			if (result == null) {
 				result = super.createJEdgeAttr(jEdge);
 			}
@@ -668,16 +668,16 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	 * Indicates whether aspect prefixes should be shown for nodes and edges.
 	 */
 	final boolean isShowAspects() {
-		return getOptionValue(Options.SHOW_ASPECTS_OPTION) || showLocalAspects;
+		return getOptionValue(Options.SHOW_ASPECTS_OPTION);
 	}
-
-	/**
-	 * Changes the value of the show-aspects property.
-	 */
-	private final void setLocalOptions(boolean show) {
-		this.showLocalAspects = show;
-		this.showLocalValueNodes = show;
-	}
+//
+//	/**
+//	 * Changes the value of the show-aspects property.
+//	 */
+//	private final void setLocalOptions(boolean show) {
+//		this.showLocalAspects = show;
+//		this.showLocalValueNodes = show;
+//	}
 
 	/**
 	 * Indicates whether vertices can have their own labels. If false, j-vertex
@@ -698,7 +698,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	 * Indicates whether anchors should be shown in the rule and lts views. 
 	 */
 	boolean isShowValueNodes() {
-		return getOptionValue(Options.SHOW_VALUE_NODES_OPTION) || showLocalValueNodes;
+		return getOptionValue(Options.SHOW_VALUE_NODES_OPTION);
 	}
 
 	/**
@@ -722,17 +722,17 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      * @invariant addedCells \subseteq org.jgraph.graph.DefaultGraphCell
      */
     private final List<JCell> addedJCells = new LinkedList<JCell>();
-
-	/** 
-	 * Flag indicating that aspect prefixes should be included for nodes and edges.
-	 * This overrides the value of {@link Options#SHOW_ASPECTS_OPTION}.
-	 */
-    private boolean showLocalAspects;
-	/** 
-	 * Flag indicating that value nodes should be included in the graph. 
-	 * This overrides the value of {@link Options#SHOW_VALUE_NODES_OPTION}.
-	 */
-    private boolean showLocalValueNodes;
+//
+//	/** 
+//	 * Flag indicating that aspect prefixes should be included for nodes and edges.
+//	 * This overrides the value of {@link Options#SHOW_ASPECTS_OPTION}.
+//	 */
+//    private boolean showLocalAspects;
+//	/** 
+//	 * Flag indicating that value nodes should be included in the graph. 
+//	 * This overrides the value of {@link Options#SHOW_VALUE_NODES_OPTION}.
+//	 */
+//    private boolean showLocalValueNodes;
 
     /**
      * Set of GraphModel connections. Used in the process of constructing a GraphJModel.

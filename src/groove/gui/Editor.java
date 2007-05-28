@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.34 2007-05-25 22:16:31 rensink Exp $
+ * $Id: Editor.java,v 1.35 2007-05-28 21:32:50 rensink Exp $
  */
 package groove.gui;
 
@@ -56,7 +56,6 @@ import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -89,7 +88,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.34 $ $Date: 2007-05-25 22:16:31 $
+ * @version $Revision: 1.35 $ $Date: 2007-05-28 21:32:50 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -248,7 +247,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     	if (getOptions().isSelected(Options.PREVIEW_ON_SAVE_OPTION) && !handlePreview(null)) {
     		return null;
     	} else if (toAspectGraph().hasErrors()) {
-    		JOptionPane.showMessageDialog(getFrame(), "Cannot save graph with syntax errors");
+    		JOptionPane.showMessageDialog(getFrame(), "Cannot save graph with syntax errors", null, JOptionPane.WARNING_MESSAGE);
     		return null;
     	} else {
 			File toFile = ExtensionFilter.showSaveDialog(getGraphChooser(), getGraphPanel());
@@ -693,11 +692,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     
     /**
      * Sets the edit role to {@link Groove#GRAPH_ROLE} or {@link Groove#RULE_ROLE}.
-     * @param role if <code>true</code>, the edit type is set to graph
+     * @param role the edit role to be set; if <code>null</code>, it is set to {@link Groove#GRAPH_ROLE}.
      * @return <code>true</code> if the edit type was actually changed; <code>false</code> if it 
      * was already equal to <code>type</code>
      */
     private boolean setRole(String role) {
+    	if (role == null) {
+    		role = Groove.GRAPH_ROLE;
+    	}
     	if (! (Groove.GRAPH_ROLE.equals(role) || Groove.RULE_ROLE.equals(role))) {
     		throw new IllegalArgumentException(String.format("Illegal role %s", role));
     	}
@@ -1714,7 +1716,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.34 $
+     * @version $Revision: 1.35 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */
@@ -1749,34 +1751,24 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 
         @Override
         public int showSaveDialog(Component parent) throws HeadlessException {
-            resetChoosableFileFilters();
-            setAcceptAllFileFilterUsed(false);
-            setFilters(hasGraphRole());
-            setAccessory(getRolePanel());
-            setCurrentDirectory(getCurrentDir());
-            setSelectedFile(getSaveFile());
-            // get the file to write to
-            listenToFilterChanges = true;
-            int result = super.showSaveDialog(parent);
-            lastSaveFilter = getFileFilter();
-            listenToFilterChanges = false;
-            if (result == JFileChooser.APPROVE_OPTION) {
-                if (getPreviewCheckBox().isSelected() || toAspectGraph().hasErrors()) {
-                	boolean previewOK = handlePreview("Save");
-                	if (! previewOK) {
-                        result = JFileChooser.CANCEL_OPTION;
-                	} else if (toAspectGraph().hasErrors()) {
-                		JOptionPane.showMessageDialog(getFrame(), String.format("%s contains syntax errors; not saved", getRole(true)));
-                        result = JFileChooser.CANCEL_OPTION;
-                	}
-                }
-            }
-            return result;
-        }
+        	int result;
+			resetChoosableFileFilters();
+			setAcceptAllFileFilterUsed(false);
+			setFilters(hasGraphRole());
+			// setAccessory(getRolePanel());
+			setCurrentDirectory(getCurrentDir());
+			setSelectedFile(getSaveFile());
+			// get the file to write to
+			listenToFilterChanges = true;
+			result = super.showSaveDialog(parent);
+			lastSaveFilter = getFileFilter();
+			listenToFilterChanges = false;
+			return result;
+		}
 
 		/**
-		 * Returns the name of the file to be saved.
-		 * This is derived from the model name.
+		 * Returns the name of the file to be saved. This is derived from the
+		 * model name.
 		 */
 		private File getSaveFile() {
             String graphName = getModelName();
@@ -1822,29 +1814,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             return filter == getRuleFilter();
         }
 
-        private JPanel getRolePanel() {
-            if (rolePanel == null) {
-                JPanel innerPanel = new JPanel(new BorderLayout());
-                innerPanel.setBorder(new javax.swing.border.EmptyBorder(0, 5, 0, 0));
-                innerPanel.add(getPreviewCheckBox(), BorderLayout.SOUTH);
-                rolePanel = new JPanel(new BorderLayout());
-                rolePanel.add(innerPanel, BorderLayout.SOUTH);
-            }
-            return rolePanel;
-        }
-
-        /**
-         * Returns a checkbox forcing a preview dialog before saving a rule.
-         */
-        private JCheckBox getPreviewCheckBox() {
-            if (previewCheckBox == null) {
-                previewCheckBox = new JCheckBox();
-                previewCheckBox.setText("Preview");
-                previewCheckBox.setSelected(true);
-            }
-            return previewCheckBox;
-        }
-        
         /** Retrieves the directory file from the #currentFile */
         private File getCurrentDir() {
             return currentFile == null ? new File(Groove.WORKING_DIR) : currentFile.getAbsoluteFile().getParentFile();
@@ -1915,14 +1884,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         	return graphFilter;
         }
         
-        /** The auxiliary component used in the save dialog. */
-        private JPanel rolePanel;
         /** Last file filter used in a save dialog. */
         private FileFilter lastSaveFilter;
-//        /** Combo box to choose between graph and rule edit type. */
-//        private JComboBox typeComboBox;
-        /** Checkbox to indicate that saving rules should be preceded by a preview. */
-        private JCheckBox previewCheckBox;
 
         /** Flag indicating that filter changes may change the edit type. */
         private boolean listenToFilterChanges;

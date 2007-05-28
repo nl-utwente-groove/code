@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeView.java,v 1.4 2007-05-25 09:25:29 rensink Exp $
+ * $Id: JEdgeView.java,v 1.5 2007-05-28 21:32:44 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -44,10 +44,10 @@ import org.jgraph.graph.GraphModel;
 import org.jgraph.graph.PortView;
 
 /**
- * An edge view that uses the <tt>toString</tt> of the underlying edge as a label. Moreover, new
+ * An edge view that uses the <tt>getText()</tt> of the underlying edge as a label. Moreover, new
  * views take care to bend to avoid overlap, and offer functionality to add and remove points.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class JEdgeView extends EdgeView {
 
@@ -239,7 +239,7 @@ public class JEdgeView extends EdgeView {
 	public Point2D getLabelVector() {
 		Point2D p0 = getPoint(0);
         Point2D p1 = getPoint(1);
-        if (JAttr.isPerpendicularStyle(getAllAttributes()) && p1.getX() != p0.getX()) {
+        if (JAttr.isManhattanStyle(getAllAttributes()) && p1.getX() != p0.getX()) {
             p1 = new Point2D.Double(p1.getX(), p0.getY());
         }
 		double dx = p1.getX()-p0.getX();
@@ -457,17 +457,17 @@ public class JEdgeView extends EdgeView {
     
     /** Renderer subclass to enable our special line style. */
     static public class MyEdgeRenderer extends EdgeRenderer {
-    	/** Overrides the method to take {@link JAttr#STYLE_PERPENDICULAR} into account. */
+    	/** Overrides the method to take {@link JAttr#STYLE_MANHATTAN} into account. */
 		@Override
 		protected Shape createShape() {
-			if (JAttr.isPerpendicularStyle(view.getAllAttributes())) {
+			if (JAttr.isManhattanStyle(view.getAllAttributes())) {
 				return createPerpendicularShape();
 			} else {
 				return super.createShape();
 			}
 		}
     	
-		/** Creates a shape for the {@link JAttr#STYLE_PERPENDICULAR} line style. */
+		/** Creates a shape for the {@link JAttr#STYLE_MANHATTAN} line style. */
 		protected Shape createPerpendicularShape() {
 			int n = view.getPointCount();
 			if (n > 1) {
