@@ -1,5 +1,5 @@
 /*
- * $Id: EditorMarqueeHandler.java,v 1.4 2007-05-25 15:29:39 rensink Exp $
+ * $Id: EditorMarqueeHandler.java,v 1.5 2007-05-28 21:32:44 rensink Exp $
  *
  * Derived from: @(#)GPGraph.java	1.0 1/1/02
  *
@@ -37,7 +37,7 @@ import org.jgraph.graph.VertexView;
  * different implementations of those actions. Lobotomized from jgrappad.
  * 
  * @author Gaudenz Alder; adapted by Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-05-25 15:29:39 $
+ * @version $Revision: 1.5 $ $Date: 2007-05-28 21:32:44 $
  */
 public class EditorMarqueeHandler extends BasicMarqueeHandler {
     static private final Color ADDING_EDGE_COLOR = Color.black;
@@ -85,8 +85,9 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
                 }
             }
             evt.consume();
-        } 
-        super.mousePressed(evt);
+        } else {
+        	super.mousePressed(evt);
+        }
     }
 
     /**

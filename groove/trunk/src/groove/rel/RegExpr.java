@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExpr.java,v 1.6 2007-05-09 22:53:37 rensink Exp $
+ * $Id: RegExpr.java,v 1.7 2007-05-28 21:32:50 rensink Exp $
  */
 package groove.rel;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 abstract public class RegExpr implements VarSetSupport {
     /** 
@@ -740,9 +740,10 @@ abstract public class RegExpr implements VarSetSupport {
                 return newInstance(expr.trim());
             } else if (ExprParser.matches(expr, SINGLE_QUOTE_CHAR, SINGLE_QUOTE_CHAR)) {
                 return newInstance(ExprParser.toUnquoted(expr.trim(), SINGLE_QUOTE_CHAR));
+            } else if (isAtom(expr)) {
+            	return newInstance(expr.trim());
             } else {
-                assertAtom(expr);
-                return newInstance(expr.trim());
+            	return null;
             }
         }
 
@@ -977,12 +978,11 @@ abstract public class RegExpr implements VarSetSupport {
      * An array of propotype regular expressions, in order of increasing priority. In particular,
      * atoms that have special meaning should come before the {@link Atom}.
      */
-    static private final RegExpr[] prototypes = new RegExpr[] { new Choice(),
+    static private final RegExpr[] prototypes = new RegExpr[] { new Atom(), new Choice(),
         new Seq(),
         new Neg(),
             new Star(), new Plus(), new Wildcard(), new Empty(), 
-            new Inv(),
-            new Atom()};
+            new Inv()};
 
     /**
      * The list of operators into which a regular expression will be parsed, in order of increasing

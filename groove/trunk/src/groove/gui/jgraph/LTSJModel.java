@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.10 2007-05-23 11:36:18 rensink Exp $
+ * $Id: LTSJModel.java,v 1.11 2007-05-28 21:32:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,6 +28,7 @@ import groove.lts.Transition;
 import groove.util.Converter;
 import groove.util.Groove;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -39,7 +40,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -236,29 +237,29 @@ public class LTSJModel extends GraphJModel {
 	    return specialLabels != null && specialLabels.contains(label);
 	}
 
-	/**
-     * This implementation adds a label to the set if
-     * the j-vertex is the start state, an open state or a final state.
-     * @see LTS#START_LABEL_TEXT
-     * @see LTS#OPEN_LABEL_TEXT
-     * @see LTS#FINAL_LABEL_TEXT
-     */
-    @Override
-    protected Collection<String> getLabels(JVertex jCell) {
-        LTS lts = getGraph();
-        State state = (GraphState) ((GraphJVertex) jCell).getNode();
-        Set<String> result = new HashSet<String>();
-        if (lts.startState().equals(state)) {
-            result.add(LTS.START_LABEL_TEXT);
-        } 
-        if (!state.isClosed()) {
-            result.add(LTS.OPEN_LABEL_TEXT);
-        }
-        if (lts.isFinal(state)) {
-            result.add(LTS.FINAL_LABEL_TEXT);
-        }
-        return result;
-    }
+//	/**
+//     * This implementation adds a label to the set if
+//     * the j-vertex is the start state, an open state or a final state.
+//     * @see LTS#START_LABEL_TEXT
+//     * @see LTS#OPEN_LABEL_TEXT
+//     * @see LTS#FINAL_LABEL_TEXT
+//     */
+//    @Override
+//    protected Collection<String> getLabels(JVertex jCell) {
+//        LTS lts = getGraph();
+//        State state = (GraphState) ((GraphJVertex) jCell).getNode();
+//        Set<String> result = new HashSet<String>();
+//        if (lts.startState().equals(state)) {
+//            result.add(LTS.START_LABEL_TEXT);
+//        } 
+//        if (!state.isClosed()) {
+//            result.add(LTS.OPEN_LABEL_TEXT);
+//        }
+//        if (lts.isFinal(state)) {
+//            result.add(LTS.FINAL_LABEL_TEXT);
+//        }
+//        return result;
+//    }
 
     /**
      * The active state of the LTS.
@@ -395,29 +396,29 @@ public class LTSJModel extends GraphJModel {
 		}
 
 		@Override
-		public String getLabel(Object object) {
-			assert object instanceof GraphTransition : "Edge set contains "
-					+ object;
-			if (isShowAnchors()) {
-				return ((GraphTransition) object).label().text();
-			} else {
-				return ((GraphTransition) object).getEvent().getName().text();
+		public Collection<String> getListLabels() {
+	    	Collection<String> result = new ArrayList<String>();
+			for (Edge edge : getEdges()) {
+				result.add(getLabel(edge).toString());
 			}
+			return result;
 		}
-        
-		/** 
-		 * Returns a user object that lets its label display depend on 
-		 * the value of {@link Options#SHOW_ANCHORS_OPTION}.
-		 */
+
+		StringBuilder getLabel(Edge edge) {
+			StringBuilder result = new StringBuilder();
+			assert edge instanceof GraphTransition : "Edge set contains "
+					+ edge;
+			if (isShowAnchors()) {
+				result.append(((GraphTransition) edge).label().text());
+			} else {
+				result.append(((GraphTransition) edge).getEvent().getName().text());
+			}
+			return result;
+		}
+
 		@Override
-		JUserObject<Edge> createUserObject() {
-			return new JUserObject<Edge>(this, PRINT_SEPARATOR, false) {
-				/** Don't put quotes around the labels. */
-                @Override
-                protected String getPrintLabel(String label) {
-                    return label;
-                }
-			};
+		StringBuilder getLine(Edge edge) {
+			return getLabel(edge);
 		}
 	}
 
@@ -450,15 +451,53 @@ public class LTSJModel extends GraphJModel {
 			return result;
 		}
 
+		/**
+	     * This implementation adds a label to the set if
+	     * the j-vertex is the start state, an open state or a final state.
+	     * @see LTS#START_LABEL_TEXT
+	     * @see LTS#OPEN_LABEL_TEXT
+	     * @see LTS#FINAL_LABEL_TEXT
+	     */
 		@Override
-		public String getLabel(Object object) {
-			assert object instanceof GraphTransition : "Edge set contains "
-					+ object;
-			if (isShowAnchors()) {
-				return ((GraphTransition) object).label().text();
-			} else {
-				return ((GraphTransition) object).getEvent().getName().text();
+		public Collection<String> getPlainLabels() {
+			LTS lts = getGraph();
+			Set<String> result = new HashSet<String>();
+			if (lts.startState().equals(getNode())) {
+				result.add(LTS.START_LABEL_TEXT);
 			}
+			if (!getNode().isClosed()) {
+				result.add(LTS.OPEN_LABEL_TEXT);
+			}
+			if (lts.isFinal(getNode())) {
+				result.add(LTS.FINAL_LABEL_TEXT);
+			}
+			return result;
+		}
+
+		@Override
+		public Collection<String> getListLabels() {
+	    	Collection<String> result = new ArrayList<String>();
+			for (Edge edge : getSelfEdges()) {
+				result.add(getLabel(edge).toString());
+			}
+			return result;
+		}
+
+		StringBuilder getLabel(Edge edge) {
+			StringBuilder result = new StringBuilder();
+			assert edge instanceof GraphTransition : "Edge set contains "
+					+ edge;
+			if (isShowAnchors()) {
+				result.append(((GraphTransition) edge).label().text());
+			} else {
+				result.append(((GraphTransition) edge).getEvent().getName().text());
+			}
+			return result;
+		}
+
+		@Override
+		StringBuilder getLine(Edge edge) {
+			return Converter.toHtml(getLabel(edge));
 		}
 	}
 }

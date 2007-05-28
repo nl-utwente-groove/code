@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.5 2007-05-21 22:19:29 rensink Exp $
+ * $Id: AspectGraph.java,v 1.6 2007-05-28 21:32:51 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -265,11 +265,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 		AspectParseData parseData = parser.getParseData(labelText);
 		if (!parseData.hasText()) {
 			AspectMap aspectMap = parseData.getAspectMap();
-			// this edge indicates a node aspect
-			if (edge.opposite() != edge.source()) {
+			// this edge is empty or indicates a node aspect
+			if (aspectMap.isEmpty()) {
+				throw new FormatException("Empty label not allowed; prefix with ':'");
+			} else if (edge.opposite() != edge.source()) {
 				// Node aspect values only on self-edges
 				throw new FormatException("Label '%s' only allowed on self-edges",labelText);
-			} else if (aspectMap.size() != 1) {
+			} else if (aspectMap.size() > 1) {
 				// Only one aspect value per node self-edge
 				throw new FormatException("Multiple node aspect values in '%s'", labelText);
 			} else {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.3 2007-05-21 22:19:29 rensink Exp $
+ * $Id: AspectParser.java,v 1.4 2007-05-28 21:32:51 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class AspectParser {
 	/** 
@@ -213,16 +213,16 @@ public class AspectParser {
 	 * Converts a collection of aspect values plus an actual
 	 * label text into a string that can be parsed back.
 	 */
-	static public String toString(Collection<AspectValue> values, String labelText) {
-		StringBuffer result = new StringBuffer();
+	static public StringBuilder toString(Collection<AspectValue> values, StringBuilder labelText) {
+		StringBuilder result = new StringBuilder();
 		for (AspectValue value: values) {
 			result.append(AspectParser.toString(value));
 		}
-		if (values.size() > 0 && (labelText.length() == 0 || labelText.contains(VALUE_SEPARATOR))) {
+		if (values.size() > 0 && (labelText.length() == 0 || labelText.indexOf(VALUE_SEPARATOR) >= 0)) {
 			result.append(VALUE_SEPARATOR);
 		}
 		result.append(labelText);
-		return result.toString();
+		return result;
 	}
 
     /**

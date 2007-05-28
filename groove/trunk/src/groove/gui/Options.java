@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.27 2007-05-25 07:42:52 rensink Exp $
+ * $Id: Options.java,v 1.28 2007-05-28 21:32:50 rensink Exp $
  */
 package groove.gui;
 
@@ -40,7 +40,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  */
 public class Options {
     /** 
@@ -316,7 +316,7 @@ public class Options {
     /** Bezier line style keystroke */
     public static final KeyStroke BEZIER_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 3");
     /** Perpendicular line style keystroke */
-    public static final KeyStroke PERPENDICULAR_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 4");
+    public static final KeyStroke MANHATTAN_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 4");
 
     /** Indication for an empty label in a list of labels. */
     static public final String EMPTY_LABEL_TEXT = "(empty)";
@@ -329,7 +329,7 @@ public class Options {
     /** The name of the Orthogonal line style. */
     static public final String ORTHOGONAL_LINE_STYLE_NAME = "Orthogonal";
     /** The name of the Perpendicular line style. */
-    static public final String PERPENDICULAR_LINE_STYLE_NAME = "Perpendicular";
+    static public final String MANHATTAN_LINE_STYLE_NAME = "Perpendicular";
     /** Name for the imaging action. */
     static public final String IMAGE_ACTION_NAME = "Image";
 
@@ -381,7 +381,7 @@ public class Options {
         case GraphConstants.STYLE_BEZIER : return BEZIER_LINE_STYLE_NAME;
         case GraphConstants.STYLE_SPLINE : return SPLINE_LINE_STYLE_NAME;
         case GraphConstants.STYLE_ORTHOGONAL : return ORTHOGONAL_LINE_STYLE_NAME;
-        case JAttr.STYLE_PERPENDICULAR : return PERPENDICULAR_LINE_STYLE_NAME;
+        case JAttr.STYLE_MANHATTAN : return MANHATTAN_LINE_STYLE_NAME;
         default : throw new IllegalArgumentException(""+lineStyle+" is not a recognized line style");
         }
     }
@@ -401,7 +401,7 @@ public class Options {
         case GraphConstants.STYLE_BEZIER : return BEZIER_LINE_STYLE_KEY;
         case GraphConstants.STYLE_SPLINE : return SPLINE_LINE_STYLE_KEY;
         case GraphConstants.STYLE_ORTHOGONAL : return ORTHOGONAL_LINE_STYLE_KEY;
-        case JAttr.STYLE_PERPENDICULAR : return PERPENDICULAR_LINE_STYLE_KEY;
+        case JAttr.STYLE_MANHATTAN : return MANHATTAN_LINE_STYLE_KEY;
         default : throw new IllegalArgumentException(""+lineStyle+" is not a recognized line style");
         }
     }

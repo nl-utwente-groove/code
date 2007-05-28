@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.16 2007-05-23 11:36:18 rensink Exp $
+ * $Id: AspectJModel.java,v 1.17 2007-05-28 21:32:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -34,10 +34,8 @@ import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.gui.Options;
 import groove.rel.RegExprLabel;
-import groove.trans.NameLabel;
 import groove.util.Converter;
 import groove.util.Groove;
-import groove.util.Pair;
 import groove.view.AspectualView;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
@@ -63,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -420,29 +418,29 @@ public class AspectJModel extends GraphJModel {
                 return false;
             }
         }
-        
-        /**
-         * Takes care of rule node display.
-         */
-        @Override
-		public String getHtmlText() {
-    		Pair<NameLabel,Integer> ruleContent = RuleAspect.getRuleContent(getNode());
-        	if (ruleContent != null) {
-        		String name = ruleContent.first().name();
-        		int priority = ruleContent.second();
-        		return "Rule "+name + (priority >= 0 ? ", priority "+priority : "");
-        	} else {
-        		return super.getHtmlText();
-        	}
-		}
-        
+//        
+//        /**
+//         * Takes care of rule node display.
+//         */
+//        @Override
+//		public String getText() {
+//    		Pair<NameLabel,Integer> ruleContent = RuleAspect.getRuleContent(getNode());
+//        	if (ruleContent != null) {
+//        		String name = ruleContent.first().name();
+//        		int priority = ruleContent.second();
+//        		return "Rule "+name + (priority >= 0 ? ", priority "+priority : "");
+//        	} else {
+//        		return super.getText();
+//        	}
+//		}
+//        
 		/**
 		 * On demand prefixes the label with the edge's aspect values.
 		 */
 		@Override
-		public String getLabel(Object object) {
+		StringBuilder getLine(Edge object) {
 			assert object instanceof AspectEdge;
-			String result = super.getLabel(object);
+			StringBuilder result = super.getLine(object);
 			if (isShowAspects()) {
 				result = AspectParser.toString(((AspectEdge) object).getDeclaredValues(), result);
 			}
@@ -453,26 +451,34 @@ public class AspectJModel extends GraphJModel {
 		 * On demand adds the node aspects to the label set.
 		 */
 		@Override
-		public Collection<String> getLabelSet() {
+		public Collection<String> getListLabels() {
 			if (isShowAspects()) {
 				Collection<String> result = new ArrayList<String>();
 				for (AspectValue value : getNode().getDeclaredValues()) {
 					result.add(AspectParser.toString(value));
 				}
-				result.addAll(super.getLabelSet());
+				result.addAll(super.getListLabels());
 				return result;
 			} else {
-				return super.getLabelSet();
+				return super.getListLabels();
 			}
 		}
 
-		/** 
-		 * Always returns <code>null</code>, since there is already an aspect edge
-		 * indicating the constant value.
+	    /**
+		 * This implementation adds node and edge aspects.
 		 */
 		@Override
-		String getConstantLabel() {
-			return null;
+		public Collection<String> getPlainLabels() {
+			Collection<String> result = new ArrayList<String>();
+			for (AspectValue value : getNode().getDeclaredValues()) {
+				result.add(AspectParser.toString(value));
+			}
+			for (Edge edge : getSelfEdges()) {
+				StringBuilder text = new StringBuilder(edge.label().text());
+				result.add(AspectParser.toString(((AspectEdge) edge).getDeclaredValues(),
+						text).toString());
+			}
+			return result;
 		}
 
 		/** 
@@ -587,11 +593,23 @@ public class AspectJModel extends GraphJModel {
 		 * On demand prefixes the label with the edge's aspect values.
 		 */
 		@Override
-		public String getLabel(Object object) {
+		StringBuilder getLine(Edge object) {
 			assert object instanceof AspectEdge;
-			String result = super.getLabel(object);
+			StringBuilder result = super.getLine(object);
 			if (isShowAspects()) {
 				result = AspectParser.toString(((AspectEdge) object).getDeclaredValues(), result);
+			}
+			return result;
+		}
+	    /**
+		 * This implementation adds node and edge aspects.
+		 */
+		@Override
+		public Collection<String> getPlainLabels() {
+			Collection<String> result = new ArrayList<String>();
+			for (Edge edge : getEdges()) {
+				StringBuilder text = new StringBuilder(edge.label().text());
+				result.add(AspectParser.toString(((AspectEdge) edge).getDeclaredValues(), text).toString());
 			}
 			return result;
 		}

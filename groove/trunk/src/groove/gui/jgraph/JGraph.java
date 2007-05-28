@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.13 2007-05-25 22:16:47 rensink Exp $
+ * $Id: JGraph.java,v 1.14 2007-05-28 21:32:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -74,7 +74,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2007-05-25 22:16:47 $
+ * @version $Revision: 1.14 $ $Date: 2007-05-28 21:32:43 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     /**
@@ -82,8 +82,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @param model the JModel for which to create a JGraph
      */
     public JGraph(JModel model) {
-        super(model);
-        setGraphLayoutCache(createGraphLayoutCache());
+        super((JModel) null);
+        // make sure the layout cache has been created
+        getGraphLayoutCache();
         setMarqueeHandler(createMarqueeHandler());
         setSelectionModel(createSelectionModel());
         setModel(model);
@@ -97,22 +98,20 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
     
     /**
-     * Constructs a JGraph with an initially empty model and initially disabled. The initial model
-     * is a <tt>JModel</tt> showing node identities.
-     */
-    public JGraph() {
-        this(null);
-        setEnabled(false);
-    }
-
-    /**
-     * Overrides <tt>JGraph</tt>'s method so a <tt>DefaultGraphCell</tt> is not automatically
-     * bypassed in favour of its user object. This implementation simply invokes <tt>toString()</tt>
-     * upon <tt>value</tt>.
+     * Overrides the method to call {@link JCell#getText()} whenever <code>object</code>
+     * is recognised as a {@link JVertexView}, {@link JEdgeView} or {@link JCell}.
      */
     @Override
     public String convertValueToString(Object value) {
-        return value.toString();
+    	if (value instanceof JVertexView) {
+    		return ((JVertexView) value).getCell().getText();
+    	} else if (value instanceof JEdgeView) {
+    		return ((JEdgeView) value).getCell().getText();
+    	} else if (value instanceof JCell) {
+    		return ((JCell) value).getText();
+    	} else {
+    		return value.toString();
+    	}
     }
 
     /**
@@ -211,16 +210,24 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             	AttributeMap transientAttributes = getModel().createTransientJAttr(jCell);
                 CellView jView = getGraphLayoutCache().getMapping(jCell, false);
                 if (jView != null) {
-                    jView.changeAttributes(transientAttributes);
+                	if (!jCell.isVisible()) {
+                		invisibleCells.add(jCell);
+                	} else {
+                        jView.changeAttributes(transientAttributes);
+                	}
+                } else {
+                	if (jCell.isVisible()) {
+                		visibleCells.add(jCell);
+                	}
                 }
                 if (getModel().isGrayedOut(jCell)) {
                     getSelectionModel().removeSelectionCell(jCell);
                 }
-            	if (jCell.isVisible()) {
-            		visibleCells.add(jCell);
-            	} else {
-            		invisibleCells.add(jCell);
-            	}
+//            	if (jCell.isVisible()) {
+//            		visibleCells.add(jCell);
+//            	} else {
+//            		invisibleCells.add(jCell);
+//            	}
             }
         	getGraphLayoutCache().setVisible(visibleCells.toArray(), invisibleCells.toArray());
 
@@ -294,26 +301,28 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     @Override
     public void setModel(GraphModel model) {
-        JModel jModel = (JModel) model;
-        if (initialized) {
-            setEnabled(true);
-            clearSelection();
-            if (layouter != null) {
-                layouter.stop();
-            }
-            getModel().removeGraphModelListener(this);
-        }
-        super.setModel(jModel);
-        getLabelList().updateModel();
-        model.addGraphModelListener(this);
-        jModel.refresh();
-        if (initialized) {
-            if (layouter != null && !jModel.isLayedOut()) {
-                if (jModel.freeze()) {
-                	layouter.start(false);
-                }
-            }
-        }
+    	if (model instanceof JModel) {
+			JModel jModel = (JModel) model;
+			if (getModel() != null) {
+				clearSelection();
+				if (layouter != null) {
+					layouter.stop();
+				}
+				getModel().removeGraphModelListener(this);
+			}
+			super.setModel(jModel);
+			getLabelList().updateModel();
+			jModel.addGraphModelListener(this);
+			jModel.refresh();
+			if (initialized) {
+				if (layouter != null && !jModel.isLayedOut()) {
+					if (jModel.freeze()) {
+						layouter.start(false);
+					}
+				}
+				setEnabled(true);
+			}
+		}
     }
     
     /** Specialises the return type to a {@link JModel}. */
@@ -380,7 +389,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 				Dimension2D result = null;
 				if (view instanceof JVertexView) {
 					JVertexView vertexView = (JVertexView) view;
-					String text = convertDigits(vertexView.getCell().getHtmlText());
+					String text = convertDigits(vertexView.getCell().getText());
 					result = sizeMap.get(text);
 					if (result == null) {
 						if (text.length() == 0) {
@@ -399,6 +408,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 				} else {
 					result = super.getPreferredSize(graph, view);
 				}
+				assert result != null;
 				return result;
 			}
 			
@@ -577,6 +587,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     public LabelList getLabelList() {
     	if (labelList == null) {
     		labelList = new LabelList(this);
+    		labelList.updateModel();
     	}
         return labelList;
     }
@@ -709,7 +720,18 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         return new MyGraphSelectionModel();
     }
 
-    /**
+    @Override
+	public GraphLayoutCache getGraphLayoutCache() {
+    	GraphLayoutCache result = super.getGraphLayoutCache();
+		if (!(result instanceof MyGraphLayoutCache)) {
+			result = createGraphLayoutCache();
+			setGraphLayoutCache(result);
+			result.setModel(getModel());
+		}
+		return result;
+	}
+
+	/**
      * Factory method for the graph layout cache.
      * This implementation returns a {@link groove.gui.jgraph.JGraph.MyGraphLayoutCache}.
      * @return the new graph layout cache
@@ -849,7 +871,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         result.add(getSetLineStyleAction(GraphConstants.STYLE_ORTHOGONAL));
         result.add(getSetLineStyleAction(GraphConstants.STYLE_SPLINE));
         result.add(getSetLineStyleAction(GraphConstants.STYLE_BEZIER));
-        result.add(getSetLineStyleAction(JAttr.STYLE_PERPENDICULAR));
+        result.add(getSetLineStyleAction(JAttr.STYLE_MANHATTAN));
         return result;
     }
     
@@ -907,6 +929,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * that this is the last (non-static) variable declared in the class.
      */
     private boolean initialized = true;
+    
     /**
      * Abstract class for j-cell edit actions.
      */
@@ -919,7 +942,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             super(name);
             this.allCells = true;
             this.vertexOnly = true;
-            valueChanged(null);
+            jCells = new ArrayList<JCell>();
+            setEnabled(false);
             JGraph.this.addGraphSelectionListener(this);
         }
         
@@ -932,7 +956,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             super(name);
             this.allCells = false;
             this.vertexOnly = vertexOnly;
-            valueChanged(null);
+            this.jCells = new ArrayList<JCell>();
+            setEnabled(false);
             JGraph.this.addGraphSelectionListener(this);
         }
         
@@ -941,12 +966,16 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
          * Disables the action if the type of the cell disagrees with the expected type.
          */
         public void valueChanged(GraphSelectionEvent e) {
-            jCell = (JCell) JGraph.this.getSelectionCell();
-            if (jCell != null) {
-                setEnabled(allCells || vertexOnly == (jCell instanceof JVertex));
-            } else {
-                setEnabled(false);
-            }
+        	jCell = null;
+        	jCells.clear();
+        	for (Object cell: JGraph.this.getSelectionCells()) {
+        		JCell jCell = (JCell) cell;
+        		if (allCells || vertexOnly == (jCell instanceof JVertex)) {
+        			this.jCell = jCell;
+        			this.jCells.add(jCell);
+        		}
+        	}
+        	setEnabled(jCell != null);
         }
         
         /**
@@ -960,8 +989,10 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         protected final boolean allCells;
         /** Switch indication that the action is enabled for all j-vertices. */
         protected final boolean vertexOnly;
-        /** The currently selected j-cell. */
+        /** The first currently selected j-cell of the right tyope. */
         protected JCell jCell;
+        /** List list of currently selected j-cells of the right type. */
+        protected final List<JCell> jCells;
         /** The currently set point location. */
         protected Point2D location;
     }
@@ -1021,7 +1052,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
         
         public void actionPerformed(ActionEvent evt) {
-            resetLabelPosition((JEdge) jCell);
+        	for (JCell jCell: jCells) {
+        		resetLabelPosition((JEdge) jCell);
+        	}
         }
     }
 
@@ -1031,17 +1064,19 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     private class SetLineStyleAction extends JCellEditAction {
     	/** Constructs an instance of the action, for a given line style. */
         SetLineStyleAction(int lineStyle) {
-            super(Options.getLineStyleName(lineStyle));
+            super(Options.getLineStyleName(lineStyle), false);
             putValue(ACCELERATOR_KEY, Options.getLineStyleKey(lineStyle));
             this.lineStyle = lineStyle;
         }
         
         public void actionPerformed(ActionEvent evt) {
-            setLineStyle((JEdge) jCell, lineStyle);
-            List points = GraphConstants.getPoints(jCell.getAttributes());
-            if (points == null || points.size() == 2) {
-            	addPoint((JEdge) jCell, location);
-            }
+        	for (JCell jCell : jCells) {
+				setLineStyle((JEdge) jCell, lineStyle);
+				List points = GraphConstants.getPoints(jCell.getAttributes());
+				if (points == null || points.size() == 2) {
+					addPoint((JEdge) jCell, location);
+				}
+			}
         }
         
         /** The line style set by this action instance. */
@@ -1091,7 +1126,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     private class MyGraphLayoutCache extends GraphLayoutCache {   
     	/** Constructs an instance of the cache. */
         MyGraphLayoutCache() {
-            super(JGraph.this.getModel(), new JCellViewFactory(JGraph.this), true);
+            super(null, new JCellViewFactory(JGraph.this), true);
             setSelectsLocalInsertedCells(false);
         }
         

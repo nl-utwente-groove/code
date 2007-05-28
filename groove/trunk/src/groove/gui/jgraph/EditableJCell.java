@@ -12,16 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJCell.java,v 1.1.1.2 2007-03-20 10:42:45 kastenberg Exp $
+ * $Id: EditableJCell.java,v 1.2 2007-05-28 21:32:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
 /**
- * Instantiation of a {@link JCell} with an {@link EditableJUserObject}.
+ * Instantiation of a {@link JCell} with an {@link EditableContent}.
  * @author Arend Rensink
  * @version $Revision $
  */
 public interface EditableJCell extends JCell {
 	// does not add any functionality.
-	EditableJUserObject getUserObject();
+	EditableContent getUserObject();
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.15 2007-05-25 09:25:29 rensink Exp $
+ * $Id: JAttr.java,v 1.16 2007-05-28 21:32:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -44,20 +44,42 @@ import groove.view.aspect.RuleAspect;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class JAttr {
+    /** Creates a stroke with a given line width and dash pattern. */
+    public static Stroke createStroke(float width, float[] dash) {
+    	Stroke result;
+    	if (dash == null) {
+    		result = new BasicStroke(width, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
+    	} else {
+    		result = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 1.0f);
+    	}
+    	return result;
+	}
+    
+	/** Creates a rule border with given color, dash pattern, and width. */
+	public static Border createRuleBorder(Color color, float width, float[] dash) {
+		Border result;
+	    if (dash == NO_DASH) {
+	        result = new LineBorder(color, (int) width);
+	    } else {
+			result = new StrokedLineBorder(color, createStroke(width, dash));
+		}
+	    return result;
+	}
+
 	/** Tests if a given code is a recognised line style. */
 	public static boolean isLineStyle(int style) {
-		return style >= GraphConstants.STYLE_ORTHOGONAL && style <= STYLE_PERPENDICULAR; 
+		return style >= GraphConstants.STYLE_ORTHOGONAL && style <= STYLE_MANHATTAN; 
 	}
 	
     /** 
      * Tests if a set of attributes specifies an effective perpendicular line style.
      * The perpendicular line style is effective if the edge has more than two points. 
      */
-    public static boolean isPerpendicularStyle(AttributeMap attributes) {
-        if (GraphConstants.getLineStyle(attributes) == STYLE_PERPENDICULAR) {
+    public static boolean isManhattanStyle(AttributeMap attributes) {
+        if (GraphConstants.getLineStyle(attributes) == STYLE_MANHATTAN) {
             List points = GraphConstants.getPoints(attributes);
             return points != null && points.size() > 2;
         } else {
@@ -66,15 +88,17 @@ public class JAttr {
     }
     
 	/** Line style that always makes right edges. */
-	public static final int STYLE_PERPENDICULAR = 14;
+	public static final int STYLE_MANHATTAN = 14;
 
 	/**
 	 * The default line style.
 	 */
 	public static final int DEFAULT_LINE_STYLE = GraphConstants.STYLE_ORTHOGONAL;
 	
+	/** The default font used in the j-graphs. */
+	static public final Font DEFAULT_FONT = GraphConstants.DEFAULTFONT;
     /** Constant defining an italic font, for displaying state identities. */
-    static public final Font ITALIC_FONT = GraphConstants.DEFAULTFONT.deriveFont(Font.ITALIC);
+    static public final Font ITALIC_FONT = DEFAULT_FONT.deriveFont(Font.ITALIC);
 	/** Percentage of white in the background colour. */
 	static private final int BACKGROUND_WHITEWASH = 90;
 	/** Maximum value of the colour dimensions. */
@@ -121,7 +145,7 @@ public class JAttr {
     /**
      * Font for data nodes and edges; is <code>null</code> if no special font is set.
      */
-    public static final Font DATA_FONT = ITALIC_FONT;
+    public static final Font DATA_FONT = DEFAULT_FONT;
 
     static {
     	String valueBackgroundProperty = Groove.getGUIProperty("attribute.background");
@@ -428,27 +452,4 @@ public class JAttr {
 	        RULE_EMPH_BORDER.put(role,createNodeBorder(createRuleBorder(RULE_COLOR.get(role), RULE_EMPH_WIDTH.get(role), RULE_DASH.get(role)), true));
 	    }
 	}
-
-    /** Creates a stroke with a given line width and dash pattern. */
-    public static Stroke createStroke(float width, float[] dash) {
-    	Stroke result;
-    	if (dash == null) {
-    		result = new BasicStroke(width, BasicStroke.CAP_SQUARE, BasicStroke.JOIN_MITER);
-    	} else {
-    		result = new BasicStroke(width, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER, 10.0f, dash, 1.0f);
-    	}
-    	return result;
-	}
-    
-	/** Creates a rule border with given color, dash pattern, and width. */
-	public static Border createRuleBorder(Color color, float width, float[] dash) {
-		Border result;
-	    if (dash == NO_DASH) {
-	        result = new LineBorder(color, (int) width);
-	    } else {
-			result = new StrokedLineBorder(color, createStroke(width, dash));
-		}
-	    return result;
-	}
-
 }

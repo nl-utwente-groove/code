@@ -12,28 +12,24 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertex.java,v 1.8 2007-05-23 21:37:16 rensink Exp $
+ * $Id: JVertex.java,v 1.9 2007-05-28 21:32:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.util.Converter;
-
-import java.util.Collection;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultPort;
 
 /**
  * JGraph vertex with a single port, and a fixed set of labels as a user object (through
- * {@link groove.gui.jgraph.JUserObject}).
+ * {@link groove.gui.jgraph.JCellContent}).
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 abstract public class JVertex extends DefaultGraphCell implements JCell {
     /**
-     * Creates a vertex with a {@link JUserObject}as its user object.
+     * Creates a vertex with a {@link JCellContent}as its user object.
      */
     JVertex() {
     	// empty constructor
@@ -48,20 +44,29 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
     }
 
     /**
-     * Returns the text to be displayed on the vertex, in <code>html</code> format.
-     * This implementation returns a string description of the
-     * user object.
+     * Returns HTML-formatted text, without a surrounding HTML tag.
      */
-    public String getHtmlText() {
-    	String userObjectString = getUserObject().toString();
-    	return Converter.toHtml(userObjectString);
-//    	if (userObjectString.length() > 0) {
-//    		return strongTag.on(userObjectString, true);
-//    	} else {
-//    		return userObjectString;
-//    	}
-    }
+    public String getText() {
+		StringBuilder result = new StringBuilder();
+		for (StringBuilder line : getLines()) {
+			if (result.length() > 0) {
+				result.append(Converter.HTML_LINEBREAK);
+			}
+			result.append(line);
+		}
+		return result.toString();
+	}
 
+//
+//    /** In this implementation, the lines are converted from the user object. */
+//    public Collection<String> getLines() {
+//    	List<String> result = new ArrayList<String>();
+//    	for (Object object: getUserObject()) {
+//    		result.add(getLine(object));
+//    	}
+//    	return getListLabels();
+//    }
+    
     /** 
      * This implementation always returns <code>true</code>.
      */
@@ -76,52 +81,46 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
     	return true;
     }
 
-    /**
-     * This implementation delegates the query to the user object.
-     */
     @Override
     public String toString() {
-        return getUserObject().toString();
+        return "JVertex with labels "+getListLabels();
     }
-
-	/**
-     * Returns the collection of elements of the user object, converted to strings
-     * using {@link #getLabel(Object)}
-     */
-    public Collection<String> getLabelSet() {
-        Set<String> result = new LinkedHashSet<String>();
-        for (Object obj: getUserObject()) {
-        	result.add(getLabel(obj));
-        }
-        return result;
-    }
-
-    /** 
-     * Callback method to get the text that is to be printed in the 
-     * j-vertex for a given object in the label set.
-     * @param object an object from the user object (hence of the type
-     * of the user object's elements)
-     */
-    public String getLabel(Object object) {
-    	return object.toString();
-    }
+//
+//	/**
+//     * Returns the collection of elements of the user object, converted to strings
+//     * using {@link #getLine(Object)}
+//     */
+//    public Collection<String> getListLabels() {
+//        return getUserObject().getLabelSet();
+//    }
+//
+//    /** 
+//     * Callback method to get the text that is to be printed in the 
+//     * j-vertex for a given object in the label set.
+//     * @param object an object from the user object (hence of the type
+//     * of the user object's elements)
+//     * @return a HTML-formatted string
+//     */
+//    public String getLine(Object object) {
+//    	return object.toString();
+//    }
 
     @Override
-    public JUserObject<?> getUserObject() {
+    public JCellContent<?> getUserObject() {
     	if (! userObjectSet) {
     		userObjectSet = true;
     		super.setUserObject(createUserObject());
     	}
-    	return (JUserObject) super.getUserObject();
+    	return (JCellContent) super.getUserObject();
     }
 
     /** 
      * Overrides the super method to test for the type of the parameter 
-     * (which should be {@link JUserObject}) and records that the object has been set. 
+     * (which should be {@link JCellContent}) and records that the object has been set. 
      */
 	@Override
 	public void setUserObject(Object userObject) {
-		if (!(userObject instanceof JUserObject)) {
+		if (!(userObject instanceof JCellContent)) {
 			throw new IllegalArgumentException(String.format("Cannot set user object %s: incorrect type %s", userObject, userObject.getClass()));
 		}
 		super.setUserObject(userObject);
@@ -132,25 +131,13 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
      * Callback factory method to create a user object.
      * Called lazily in {@link #getUserObject()}.
      */
-    JUserObject<?> createUserObject() {
-    	return new JUserObject(this, JUserObject.NEWLINE, true);
-    }
+    abstract JCellContent<?> createUserObject();
 
     /**
      * Returns the tool tip text for this vertex.
      */
     public String getToolTipText() {
-//        StringBuilder res = new StringBuilder();
-//        res.append(getNodeDescription());
-//        Collection<String> labelSet = getLabelSet();
-//        if (labelSet.size() == 1) {
-//            // cell has a non-empty label set; this indicates self-edges
-//            res.append(" with label ");
-//        } else if (labelSet.size() > 1) {
-//            res.append(" with labels ");
-//        }
-//        res.append(Groove.toString(strongTag.on(labelSet.toArray(), true), "", "", ", ", " and "));
-        return htmlTag.on(getNodeDescription()).toString();
+        return Converter.HTML_TAG.on(getNodeDescription()).toString();
     }
     
     /**
@@ -173,9 +160,7 @@ abstract public class JVertex extends DefaultGraphCell implements JCell {
 
     /** Flag indicating that the user object has been initialised. */
     private boolean userObjectSet;
-    
-	/** HTML tag to make text bold. */
-    static Converter.HTMLTag strongTag = Converter.createHtmlTag("strong");
-	/** HTML tag to indicate HTML formatting. */
-    static Converter.HTMLTag htmlTag = Converter.createHtmlTag("html");
+
+    /** Pseudo-label for cells with an empty list label set. */
+    static public final String NO_LABEL = "\u0000";
 }

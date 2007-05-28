@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.5 2007-05-21 22:19:16 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.6 2007-05-28 21:32:44 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -23,7 +23,10 @@ import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.ProductEdge;
 import groove.util.Converter;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -46,7 +49,6 @@ public class GraphJEdge extends JEdge {
         this.source = edge.end(BinaryEdge.SOURCE_INDEX);
         this.target = edge.end(BinaryEdge.TARGET_INDEX);
         getUserObject().add(edge);
-        getUserObject().setAllowEmptyLabelSet(false);
     }
 
     /**
@@ -96,14 +98,14 @@ public class GraphJEdge extends JEdge {
 	/**
      * Returns an unmodifiable view upon the set of underlying graph edges.
      */
-    public Set<? extends Edge> getEdgeSet() {
+    public Set<? extends Edge> getEdges() {
         return Collections.unmodifiableSet(getUserObject());
     }
 
     /**
      * Returns an arbitrary edge from the set of underlying edges.
      */
-    public BinaryEdge getEdge() {
+    public Edge getEdge() {
         return getUserObject().iterator().next();
     }
     
@@ -116,20 +118,42 @@ public class GraphJEdge extends JEdge {
     	return getEdge();
     }
     
-    /** 
-     * This implementation returns the label text of the object
-     * (which is known to be an edge).
+    public Collection<StringBuilder> getLines() {
+    	List<StringBuilder> result = new ArrayList<StringBuilder>();
+		for (Edge edge: getUserObject()) {
+			result.add(getLine(edge));
+		}
+		return result;
+	}
+
+	/** 
+     * Converts an edge to a line describing that edge as part of the
+     * j-edge text.
+     * Callback method from {@link #getLines()}.
+     * @see #getLines()
      */
-	@Override
-	public String getLabel(Object object) {
-		return ((Edge) object).label().text();
+	StringBuilder getLine(Edge edge) {
+		return new StringBuilder(edge.label().text());
+	}
+
+	public Collection<String> getListLabels() {
+		List<String> result = new ArrayList<String>();
+		for (Edge edge: getUserObject()) {
+			result.add(edge.label().text());
+		}
+		return result;
+	}
+
+	public Collection<String> getPlainLabels() {
+		return getListLabels();
 	}
 
 	/** Specialises the return type of the method. */
     @Override
-	public JUserObject<BinaryEdge> getUserObject() {
-		return (JUserObject<BinaryEdge>) super.getUserObject();
+	public EdgeContent getUserObject() {
+		return (EdgeContent) super.getUserObject();
 	}
+    
 //
 //    @Override
 //	protected JUserObject<Edge> createUserObject() {
@@ -154,7 +178,12 @@ public class GraphJEdge extends JEdge {
 //        };
 //    }
     
-    /**
+    @Override
+    EdgeContent createUserObject() {
+		return new EdgeContent();
+	}
+
+	/**
      * This implementation does nothing: setting the user object directly is
      * not the right way to go about it.
      * Instead use <code>{@link #addEdge}</code> and <code>{@link #removeEdge}</code>.

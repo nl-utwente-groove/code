@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.12 2007-05-25 09:25:29 rensink Exp $
+ * $Id: JVertexView.java,v 1.13 2007-05-28 21:32:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -60,7 +60,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class JVertexView extends VertexView {
     /**
@@ -71,8 +71,6 @@ public class JVertexView extends VertexView {
     public JVertexView(JVertex jNode, JGraph jGraph) {
         super(jNode);
         this.jGraph = jGraph;
-		refresh(jGraph.getModel(), jGraph.getGraphLayoutCache(), false);
-        jGraph.updateAutoSize(this);
     }
     
     /**
@@ -162,10 +160,10 @@ public class JVertexView extends VertexView {
 	 * Retrieves the HTML text for the vertex,
 	 * and adapts the text colour to the line colour if the line colour is not
 	 * black.
-	 * @see JVertex#getHtmlText()
+	 * @see JVertex#getText()
 	 */
 	private String computeText() {
-		StringBuilder result = new StringBuilder(getCell().getHtmlText());
+		StringBuilder result = new StringBuilder(getCell().getText());
 		if (result.length() > 0) {
 			Color lineColor = GraphConstants.getLineColor(getAllAttributes());
 			if (lineColor != null && ! lineColor.equals(Color.BLACK)) {
@@ -294,7 +292,7 @@ public class JVertexView extends VertexView {
 		case DIAMOND_SHAPE:
 			return getDiamondPerimeterPoint(bounds, p);
 		default:
-            if (JAttr.isPerpendicularStyle(edge.getAllAttributes())) {
+            if (JAttr.isManhattanStyle(edge.getAllAttributes())) {
                 return getRectanglePerimeterPoint(bounds, p, this == edge.getSource().getParentView());
             } else {
                 return getRectanglePerimeterPoint(bounds, p);
@@ -729,6 +727,98 @@ public class JVertexView extends VertexView {
         public void repaint(Rectangle r) {
             // empty
         }
+
+    	/**
+    	 * Overridden for performance reasons. See the <a
+    	 * href="#override">Implementation Note </a> for more information.
+    	 */
+        @Override
+    	protected void firePropertyChange(String propertyName, Object oldValue,
+    			Object newValue) {
+    		// Strings get interned...
+    		if (propertyName == "text")
+    			super.firePropertyChange(propertyName, oldValue, newValue);
+    	}
+
+    	/**
+    	 * Overridden for performance reasons. See the <a
+    	 * href="#override">Implementation Note </a> for more information.
+    	 */
+        @Override
+    	public void firePropertyChange(String propertyName, byte oldValue,
+    			byte newValue) {
+        	// empty
+    	}
+
+    	/**
+    	 * Overridden for performance reasons. See the <a
+    	 * href="#override">Implementation Note </a> for more information.
+    	 */
+        @Override
+    	public void firePropertyChange(String propertyName, char oldValue,
+    			char newValue) {
+        	// empty
+    	}
+
+    	/**
+    	 * Overridden for performance reasons. See the <a
+    	 * href="#override">Implementation Note </a> for more information.
+    	 */
+        @Override
+    	public void firePropertyChange(String propertyName, short oldValue,
+    			short newValue) {
+        	// empty
+    	}
+
+    	/**
+    	 * Overridden for performance reasons. See the <a
+    	 * href="#override">Implementation Note </a> for more information.
+    	 */
+        @Override
+    	public void firePropertyChange(String propertyName, int oldValue,
+    			int newValue) {
+        	// empty
+    	}
+
+    	/**
+    	 * Overridden for performance reasons. See the <a
+    	 * href="#override">Implementation Note </a> for more information.
+    	 */
+        @Override
+    	public void firePropertyChange(String propertyName, long oldValue,
+    			long newValue) {
+        	// empty
+    	}
+
+    	/**
+    	 * Overridden for performance reasons. See the <a
+    	 * href="#override">Implementation Note </a> for more information.
+    	 */
+        @Override
+    	public void firePropertyChange(String propertyName, float oldValue,
+    			float newValue) {
+        	// empty
+    	}
+
+    	/**
+    	 * Overridden for performance reasons. See the <a
+    	 * href="#override">Implementation Note </a> for more information.
+    	 */
+        @Override
+    	public void firePropertyChange(String propertyName, double oldValue,
+    			double newValue) {
+        	// empty
+    	}
+
+    	/**
+    	 * Overridden for performance reasons. See the <a
+    	 * href="#override">Implementation Note </a> for more information.
+    	 */
+        @Override
+    	public void firePropertyChange(String propertyName, boolean oldValue,
+    			boolean newValue) {
+        	// empty
+    	}
 
         /** The vertex view that is currently installed. */
         private JVertexView view;
