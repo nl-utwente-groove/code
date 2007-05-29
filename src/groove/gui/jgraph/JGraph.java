@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.15 2007-05-29 06:52:36 rensink Exp $
+ * $Id: JGraph.java,v 1.16 2007-05-29 15:31:37 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -75,7 +75,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2007-05-29 06:52:36 $
+ * @version $Revision: 1.16 $ $Date: 2007-05-29 15:31:37 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -221,11 +221,12 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             	AttributeMap transientAttributes = getModel().createTransientJAttr(jCell);
                 CellView jView = getGraphLayoutCache().getMapping(jCell, false);
                 if (jView != null) {
+                    jView.changeAttributes(transientAttributes);
                 	if (!jCell.isVisible()) {
-                		invisibleCells.add(jCell);
+                	    invisibleCells.add(jCell);
                 	} else {
-                        jView.changeAttributes(transientAttributes);
-                	}
+                	    visibleCells.add(jCell);
+                    }
                 } else {
                 	if (jCell.isVisible()) {
                 		visibleCells.add(jCell);
@@ -234,14 +235,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 if (getModel().isGrayedOut(jCell)) {
                     getSelectionModel().removeSelectionCell(jCell);
                 }
-//            	if (jCell.isVisible()) {
-//            		visibleCells.add(jCell);
-//            	} else {
-//            		invisibleCells.add(jCell);
-//            	}
             }
         	getGraphLayoutCache().setVisible(visibleCells.toArray(), invisibleCells.toArray());
-
         }
     }
 
@@ -1142,6 +1137,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         MyGraphLayoutCache() {
             super(null, new JCellViewFactory(JGraph.this), true);
             setSelectsLocalInsertedCells(false);
+            setShowsExistingConnections(false);
+            setShowsChangedConnections(false);
+            setShowsInsertedConnections(false);
+            setHidesExistingConnections(false);
+            setHidesDanglingConnections(false);
         }
         
         /** 

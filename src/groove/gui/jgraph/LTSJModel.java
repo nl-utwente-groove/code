@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.12 2007-05-29 06:52:36 rensink Exp $
+ * $Id: LTSJModel.java,v 1.13 2007-05-29 15:31:37 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -39,7 +39,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -426,8 +426,21 @@ public class LTSJModel extends GraphJModel {
 		StateJVertex(LTSJModel jModel, Node node) {
 			super(jModel, node, false);
 		}
-		
-		/**
+
+        /** A state is also visible if it is open, final, or the start state. */
+        @Override
+        public boolean isVisible() {
+            return isSpecialNode() || super.isVisible();
+        }
+
+        /** Tests if the state is the start state, a final state, or not yet closed. */
+        private boolean isSpecialNode() {
+            LTS lts = getGraph();
+            State state = getNode();
+            return lts.startState().equals(state) || !state.isClosed() || lts.isFinal(state);
+        }
+
+        /**
 		 * Specialises the return type to {@link GraphState}.
 		 */
 		@Override

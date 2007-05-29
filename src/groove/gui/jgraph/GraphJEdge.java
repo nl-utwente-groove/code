@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.7 2007-05-29 06:52:36 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.8 2007-05-29 15:31:37 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -26,6 +26,7 @@ import groove.util.Converter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -50,6 +51,25 @@ public class GraphJEdge extends JEdge {
         this.source = edge.end(BinaryEdge.SOURCE_INDEX);
         this.target = edge.end(BinaryEdge.TARGET_INDEX);
         getUserObject().add(edge);
+    }
+
+    /** 
+     * Returns <code>true</code> if the super method does so, and the edge has
+     * at least one non-filtered list label.
+     */
+    @Override
+    public boolean isVisible() {
+        return super.isVisible() && !isFiltered();
+    }
+    
+    /** Indicates if this edge is filtered (and therefore invisible). */
+    boolean isFiltered() {
+        boolean result = true;
+        Iterator<String> listLabelIter = getListLabels().iterator();
+        while (result && listLabelIter.hasNext()) {
+            result = jModel.isFiltering(listLabelIter.next());
+        }
+        return result;
     }
 
     /**

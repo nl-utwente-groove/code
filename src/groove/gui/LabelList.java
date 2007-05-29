@@ -12,14 +12,19 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.11 2007-05-29 06:52:39 rensink Exp $
+ * $Id: LabelList.java,v 1.12 2007-05-29 15:31:39 rensink Exp $
  */
 package groove.gui;
+
+import groove.gui.jgraph.JCell;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JModel;
+import groove.gui.jgraph.JVertex;
+import groove.util.ObservableSet;
 
 import java.awt.Color;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,14 +34,6 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 import java.util.TreeMap;
-
-import groove.gui.jgraph.JCell;
-import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.JModel;
-import groove.gui.jgraph.JVertex;
-import groove.util.ExprParser;
-import groove.util.ObservableSet;
-import groove.view.FormatException;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -51,7 +48,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /**
@@ -299,12 +296,10 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      */
     protected boolean addToLabels(JCell cell) {
     	boolean result = false;
-    	if (cell.isVisible()) {
-			for (String label : getLabelSet(cell)) {
-				result |= addToLabels(cell, label);
-			}
-		}
-    	return result;
+        for (String label : cell.getListLabels()) {
+            result |= addToLabels(cell, label);
+        }
+        return result;
     }
     
     /**
@@ -351,13 +346,13 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     protected boolean modifyLabels(JCell cell) {
     	boolean result = false;
     	Set<String> newLabelSet;
-		if (cell.isVisible()) {
-			// create the set of all labels for which cell should appear in the
-			// label map
-			newLabelSet = getLabelSet(cell);
-		} else {
-			newLabelSet = new HashSet<String>();
-		}
+//		if (cell.isVisible()) {
+//			// create the set of all labels for which cell should appear in the
+//			// label map
+			newLabelSet = new HashSet<String>(cell.getListLabels());
+//		} else {
+//			newLabelSet = new HashSet<String>();
+//		}
     	// go over the existing label map
     	Iterator<Map.Entry<String,Set<JCell>>> labelIter = labels.entrySet().iterator();
     	while (labelIter.hasNext()) {
@@ -383,27 +378,27 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     	}
     	return result;
     }
-    
-    /** 
-     * Extracts the labels from a j-cell.
-     * This method should always be used instead of invoking {@link JCell#getListLabels()}
-     * directly, so as to allow some processing in between.
-     */
-    private Set<String> getLabelSet(JCell cell) {
-    	Set<String> result = new HashSet<String>();
-		if (cell.isVisible()) {
-			for (String label : cell.getListLabels()) {
-				try {
-					String[] fragments = ExprParser.splitExpr(label, " ");
-					result.addAll(Arrays.asList(fragments));
-				} catch (FormatException exc) {
-					result.add(label);
-				}
-			}
-		}
-    	return result;
-    }
-    
+//    
+//    /** 
+//     * Extracts the labels from a j-cell.
+//     * This method should always be used instead of invoking {@link JCell#getListLabels()}
+//     * directly, so as to allow some processing in between.
+//     */
+//    private Set<String> getLabelSet(JCell cell) {
+//    	Set<String> result = new HashSet<String>();
+//		if (cell.isVisible()) {
+//			for (String label : cell.getListLabels()) {
+//				try {
+//					String[] fragments = ExprParser.splitExpr(label, " ");
+//					result.addAll(Arrays.asList(fragments));
+//				} catch (FormatException exc) {
+//					result.add(label);
+//				}
+//			}
+//		}
+//    	return result;
+//    }
+//    
     /**
      * The list model used for the JList.
      * @require <tt>listModel == listComponent.getModel()</tt>

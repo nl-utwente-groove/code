@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForestLayouter.java,v 1.4 2007-05-18 08:55:35 rensink Exp $
+ * $Id: ForestLayouter.java,v 1.5 2007-05-29 15:31:40 rensink Exp $
  */
 package groove.gui.layout;
 
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JEdge;
 import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.JVertex;
 import groove.util.CollectionOfCollections;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
@@ -34,15 +35,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import org.jgraph.graph.DefaultGraphCell;
-import org.jgraph.graph.DefaultPort;
 import org.jgraph.graph.EdgeView;
 
 /**
  * Layout action for JGraphs that creates a top-to-bottom
  * forest layout.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ForestLayouter extends AbstractLayouter {
 	/** Name of the layouter. */
@@ -128,31 +127,31 @@ public class ForestLayouter extends AbstractLayouter {
         	if (!(key instanceof JCell) || jmodel.isMoveable((JCell) key)) {
         		branchMap.put(cellLayoutable, branchSet);
         	}
-            if (key instanceof JCell && ((JCell) key).isVisible()) {
+            if (key instanceof JVertex && ((JVertex) key).isVisible()) {
                 // initialize the incoming edge count
                 int inEdgeCount = 0;
                 // calculate the incoming edge count and outgoing edge map
                 // iterate over the incident edges
-                Iterator<?> edgeIter = ((DefaultPort) ((DefaultGraphCell) key).getChildAt(0)).edges();
+                Iterator<?> edgeIter = ((JVertex) key).getPort().edges();
                 while (edgeIter.hasNext()) {
                     JEdge edge = (JEdge) edgeIter.next();
-                    if (! jmodel.isGrayedOut(edge)) {
+                    if (edge.isVisible() && ! jmodel.isGrayedOut(edge)) {
                     // the edge source is a node for sure
-                    Object sourceNode = ((DefaultPort) edge.getSource()).getParent();
+                    JVertex sourceVertex = edge.getSourceVertex();
                     // the edge target may be a point only
-                    if (sourceNode.equals(key)) {
+                    if (sourceVertex.equals(key)) {
                         // add all the points on the edge to the branches of the source node
                         // as well as its end node (if any)
                         List<?> points = ((EdgeView) jgraph.getGraphLayoutCache().getMapping(edge, false)).getPoints();
-                        DefaultPort targetPort = (DefaultPort) edge.getTarget();
+                        JVertex targetVertex = edge.getTargetVertex();
                         Iterator<?> pointsIter = points.iterator();
                         // the first point is the (port of the) source node itself; skip it
                         pointsIter.next();
                         while (pointsIter.hasNext()) {
                             Object nextPoint = pointsIter.next();
-                            if (!pointsIter.hasNext() && targetPort != null) {
+                            if (!pointsIter.hasNext() && targetVertex != null) {
                                 // this (last) point is the target node
-                                branchSet.add(toLayoutableMap.get(targetPort.getParent()));
+                                branchSet.add(toLayoutableMap.get(targetVertex));
                             } else {
                                 branchSet.add(toLayoutableMap.get(nextPoint));
                             }
