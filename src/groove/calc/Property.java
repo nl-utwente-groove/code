@@ -1,4 +1,4 @@
-/* $Id: Property.java,v 1.2 2007-05-06 10:47:54 rensink Exp $ */
+/* $Id: Property.java,v 1.3 2007-05-29 21:36:09 rensink Exp $ */
 package groove.calc;
 
 /**
@@ -11,15 +11,35 @@ abstract public class Property<S> {
 	abstract public boolean isSatisfied(S value);
 	
 	/** 
+	 * Provides a description of the value(s) that satisfy this property.
+	 * This implementation returns <code>null</code>. 
+	 */
+	public String getDescription() {
+		return null;
+	}
+	
+	/** 
+	 * Provides a comment on this property.
+	 * This can be a description of the thing the property is testing.
+	 * This implementation returns <code>null</code>. 
+	 */
+	public String getComment() {
+		return null;
+	}
+	
+	/** 
 	 * Creates and returns a property that returns <code>true</code> on all 
 	 * objects of a generic type.
 	 */
 	static public <T> Property<T> createTrue() {
-		return new Property<T>() {
-			@Override
-			public boolean isSatisfied(T state) {
-				return true;
-			}
-		};
+		return new True<T>();
+	}
+	
+	/** Property subclass that always returns true. */
+	static public class True<S> extends Property<S> {
+		@Override
+		public boolean isSatisfied(S state) {
+			return true;
+		}
 	}
 }

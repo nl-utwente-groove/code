@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Converter.java,v 1.4 2007-05-23 21:37:18 rensink Exp $
+ * $Id: Converter.java,v 1.5 2007-05-29 21:36:03 rensink Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Performs conversions to and from groove.graph.Graph.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class Converter {
 	/** Main method to test this class. */
@@ -187,6 +187,10 @@ public class Converter {
     static public String UNDERLINE_TAG_NAME = "u";
     /** Font underline tag. */
     static public HTMLTag UNDERLINE_TAG = new HTMLTag(UNDERLINE_TAG_NAME);
+    /** Name of the font strikethrough tag (<code>s</code>). */
+    static public String STRIKETHROUGH_TAG_NAME = "s";
+    /** Font strikethrough tag. */
+    static public HTMLTag STRIKETHROUGH_TAG = new HTMLTag(STRIKETHROUGH_TAG_NAME);
     /** Name of the italic font tag (<code>i</code>). */
     static public String ITALIC_TAG_NAME = "i";
     /** Italic font tag. */

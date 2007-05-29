@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.14 2007-05-14 10:39:34 rensink Exp $
+ * $Id: RuleJTree.java,v 1.15 2007-05-29 21:36:08 rensink Exp $
  */
 package groove.gui;
 
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -374,8 +374,10 @@ public class RuleJTree extends JTree implements SimulationListener {
         return new RuleSelectionListener();
     }
 
-    /** Creates a menu for this panel. 
-     * @param node TODO*/
+    /** 
+     * Creates a popup menu for this panel. 
+     * @param node the node for which the menu is created
+     */
     protected JPopupMenu createPopupMenu(TreeNode node) {
         JPopupMenu res = new JPopupMenu();
         res.add(simulator.getNewRuleAction());

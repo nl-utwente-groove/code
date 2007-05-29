@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractLayouter.java,v 1.3 2007-04-12 16:14:52 rensink Exp $
+ * $Id: AbstractLayouter.java,v 1.4 2007-05-29 21:36:08 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -42,7 +42,7 @@ import org.jgraph.graph.VertexView;
 /**
  * An abstract class for layout actions.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 abstract public class AbstractLayouter implements Layouter {
     /**
@@ -219,10 +219,9 @@ abstract public class AbstractLayouter implements Layouter {
         immovableSet.clear();
         // iterate over the cell views
         CellView[] cellViews = jgraph.getGraphLayoutCache().getRoots();
-        for (int i = 0; i < cellViews.length; i++) {
-            CellView cellView = cellViews[i];
-            JCell jCell = (JCell) cellView.getCell();
-            if (!jmodel.isGrayedOut(jCell)) {
+        for (CellView cellView : cellViews) {
+            if (cellView.getCell() instanceof JCell && !jmodel.isGrayedOut((JCell) cellView.getCell())) {
+                JCell jCell = (JCell) cellView.getCell();
 				boolean immovable = !GraphConstants.isMoveable(jCell.getAttributes());
 				if (cellView instanceof JEdgeView) {
 					// all true points (i.e., that are not PortViews) are
