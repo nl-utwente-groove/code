@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.10 2007-05-22 11:46:18 rensink Exp $
+ * $Id: Imager.java,v 1.11 2007-05-29 06:52:39 rensink Exp $
  */
 package groove.io;
 
@@ -62,7 +62,7 @@ import javax.swing.JTextField;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class Imager extends CommandLineTool {
     /**
@@ -151,7 +151,7 @@ public class Imager extends CommandLineTool {
                     } else {
                         model = GraphJModel.newInstance(graph, new Options());
                     }
-                    JGraph jGraph = new JGraph(model);
+                    JGraph jGraph = new JGraph(model, false);
                     jGraph.setModel(model);
                     jGraph.setSize(jGraph.getPreferredSize());
 //                    jframe.pack();

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.14 2007-05-28 21:32:43 rensink Exp $
+ * $Id: JGraph.java,v 1.15 2007-05-29 06:52:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -23,6 +23,7 @@ import groove.gui.ShowHideMenu;
 import groove.gui.ZoomMenu;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.Layouter;
+import groove.util.ObservableSet;
 
 import java.awt.Color;
 import java.awt.Graphics2D;
@@ -74,15 +75,17 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2007-05-28 21:32:43 $
+ * @version $Revision: 1.15 $ $Date: 2007-05-29 06:52:36 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
-    /**
+	/**
      * Constructs a JGraph on the basis of a given j-model. 
      * @param model the JModel for which to create a JGraph
+     * @param hasFilters indicates if this JGraph is to use label filtering.
      */
-    public JGraph(JModel model) {
+    public JGraph(JModel model, boolean hasFilters) {
         super((JModel) null);
+        this.filteredLabels = hasFilters ? new ObservableSet<String>() : null;
         // make sure the layout cache has been created
         getGraphLayoutCache();
         setMarqueeHandler(createMarqueeHandler());
@@ -96,7 +99,15 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         // setDoubleBuffered(false);
         addMouseListener(new MyMouseListener());
     }
-    
+
+    /**
+	 * Returns the (possibly <code>null</code>) set of filtered labels of 
+	 * this {@link JGraph}.
+	 */
+	public final ObservableSet<String> getFilteredLabels() {
+		return this.filteredLabels;
+	}
+
     /**
      * Overrides the method to call {@link JCell#getText()} whenever <code>object</code>
      * is recognised as a {@link JVertexView}, {@link JEdgeView} or {@link JCell}.
@@ -311,6 +322,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 				getModel().removeGraphModelListener(this);
 			}
 			super.setModel(jModel);
+			jModel.setFilteredLabels(getFilteredLabels());
 			getLabelList().updateModel();
 			jModel.addGraphModelListener(this);
 			jModel.refresh();
@@ -888,6 +900,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         im.put((KeyStroke) action.getValue(Action.ACCELERATOR_KEY), action.getValue(Action.NAME));
     }
 
+    /** The set of labels currently filtered from view. */
+    private final ObservableSet<String> filteredLabels;
     /**
      * A standard layouter setting menu over this jgraph.
      */

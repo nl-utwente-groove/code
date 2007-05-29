@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJGraph.java,v 1.6 2007-05-20 07:17:49 rensink Exp $
+ * $Id: LTSJGraph.java,v 1.7 2007-05-29 06:52:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -52,7 +52,7 @@ import org.jgraph.graph.DefaultGraphCell;
 public class LTSJGraph extends JGraph {
     /** Constructs an instance of tje j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
-    	super(LTSJModel.EMPTY_LTS_JMODEL);
+    	super(LTSJModel.EMPTY_LTS_JMODEL, true);
         this.simulator = simulator;
         this.exploreMenu = new ExploreStrategyMenu(simulator);
         addMouseListener(new MyMouseListener());

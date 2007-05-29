@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.35 2007-05-28 21:32:50 rensink Exp $
+ * $Id: Editor.java,v 1.36 2007-05-29 06:52:39 rensink Exp $
  */
 package groove.gui;
 
@@ -88,7 +88,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.35 $ $Date: 2007-05-28 21:32:50 $
+ * @version $Revision: 1.36 $ $Date: 2007-05-29 06:52:39 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -1190,7 +1190,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private AspectJModel showPreviewDialog(AspectualView<?> view, String okOption) {
     	boolean partial = view.getAspectGraph().hasErrors();
     	AspectJModel previewModel = AspectJModel.newInstance(view, getOptions());
-        JGraph jGraph = new JGraph(previewModel);
+        JGraph jGraph = new JGraph(previewModel, false);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
         jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -1716,7 +1716,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.35 $
+     * @version $Revision: 1.36 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

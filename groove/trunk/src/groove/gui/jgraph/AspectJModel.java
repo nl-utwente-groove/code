@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.17 2007-05-28 21:32:43 rensink Exp $
+ * $Id: AspectJModel.java,v 1.18 2007-05-29 06:52:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -61,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -513,7 +513,7 @@ public class AspectJModel extends GraphJModel {
     private class AspectJEdge extends GraphJEdge {
     	/** Creates a j-edge on the basis of a given (aspectual) edge. */
         public AspectJEdge(AspectEdge edge) {
-            super(edge);
+            super(AspectJModel.this, edge);
             this.role = role(edge);
         }
 
