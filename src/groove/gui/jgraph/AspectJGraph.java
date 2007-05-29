@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJGraph.java,v 1.7 2007-05-21 22:19:16 rensink Exp $
+ * $Id: AspectJGraph.java,v 1.8 2007-05-29 06:52:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -33,7 +33,7 @@ import javax.swing.JPopupMenu;
 public class AspectJGraph extends JGraph {
 	/** Creates a j-graph for a given simulator, with an initially empty j-model. */
     public AspectJGraph(Simulator simulator) {
-    	super(AspectJModel.EMPTY_ASPECT_JMODEL);
+    	super(AspectJModel.EMPTY_ASPECT_JMODEL, false);
         this.simulator = simulator;
         setLayouter(new SpringLayouter());
         doGraphLayout();

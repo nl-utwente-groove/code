@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.15 2007-05-28 21:32:44 rensink Exp $
+ * $Id: JModel.java,v 1.16 2007-05-29 06:52:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -63,7 +63,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -325,6 +325,14 @@ abstract public class JModel extends DefaultGraphModel {
 		}
 	}
 
+	/** 
+	 * Indicates if a given label is currently being filtered from view.
+	 * This is the case if it is in the set of filtered labels.
+	 */
+	public boolean isFiltering(String label) {
+		return filteredLabels != null && filteredLabels.contains(label);
+	}
+	
 	/** Returns the refresh listener permanantly associated with this {@link JModel}. */
 	private Observer getRefreshListener() {
 		return refreshListener;
@@ -676,7 +684,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.15 $
+     * @version $Revision: 1.16 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**

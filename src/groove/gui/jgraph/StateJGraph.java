@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateJGraph.java,v 1.5 2007-04-29 09:22:22 rensink Exp $
+ * $Id: StateJGraph.java,v 1.6 2007-05-29 06:52:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -37,7 +37,7 @@ public class StateJGraph extends JGraph {
      * @param simulator the simulator to which this j-graph is associated
      */
     public StateJGraph(Simulator simulator) {
-        super(new GraphJModel(new DefaultGraph(), simulator.getOptions()));
+        super(new GraphJModel(new DefaultGraph(), simulator.getOptions()), true);
         setConnectable(false);
         setDisconnectable(false);
         setEnabled(false);

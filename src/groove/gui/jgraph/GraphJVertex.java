@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.13 2007-05-28 21:32:44 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.14 2007-05-29 06:52:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -101,10 +101,14 @@ public class GraphJVertex extends JVertex {
     		}
     	}
     	for (Edge edge: getSelfEdges()) {
-    		result.add(getLine(edge));
+    		if (! jModel.isFiltering(getListLabel(edge))) {
+    			result.add(getLine(edge));
+    		}
     	}
     	for (Edge edge: getDataEdges()) {
-    		result.add(getLine(edge));
+    		if (! jModel.isFiltering(getListLabel(edge))) {
+    			result.add(getLine(edge));
+    		}
     	}
     	return result;
 	}
@@ -147,10 +151,10 @@ public class GraphJVertex extends JVertex {
 			result.add(getConstant().toString());
     	}
 		for (Edge edge : getSelfEdges()) {
-			result.add(edge.label().text());
+			result.add(getListLabel(edge));
 		}
 		for (Edge edge : getDataEdges()) {
-			result.add(edge.label().text());
+			result.add(getListLabel(edge));
 		}
 		if (result.isEmpty()) {
 			result.add(NO_LABEL);
@@ -158,6 +162,14 @@ public class GraphJVertex extends JVertex {
 		return result;
 	}
 
+	/** 
+	 * Returns the label of the edge as to be displayed in the label list.
+	 * Callback method from {@link #getListLabels()}.
+	 */
+	String getListLabel(Edge edge) {
+		return edge.label().text();
+	}
+	
     /**
 	 * This implementation adds a constant identifier to the labels in
 	 * case the node is a non-variable ValueNode.

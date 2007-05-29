@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.6 2007-05-28 21:32:44 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.7 2007-05-29 06:52:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -45,7 +45,8 @@ public class GraphJEdge extends JEdge {
      *         source() == edge.source(), target() == edge.target()
      * @throws IllegalArgumentException if <code>edge.endCount() < 2</code> 
      */
-    GraphJEdge(BinaryEdge edge) {
+    GraphJEdge(GraphJModel jModel, BinaryEdge edge) {
+    	this.jModel = jModel;
         this.source = edge.end(BinaryEdge.SOURCE_INDEX);
         this.target = edge.end(BinaryEdge.TARGET_INDEX);
         getUserObject().add(edge);
@@ -121,7 +122,9 @@ public class GraphJEdge extends JEdge {
     public Collection<StringBuilder> getLines() {
     	List<StringBuilder> result = new ArrayList<StringBuilder>();
 		for (Edge edge: getUserObject()) {
-			result.add(getLine(edge));
+			if (! jModel.isFiltering(getListLabel(edge))) {
+				result.add(getLine(edge));
+			}
 		}
 		return result;
 	}
@@ -139,11 +142,19 @@ public class GraphJEdge extends JEdge {
 	public Collection<String> getListLabels() {
 		List<String> result = new ArrayList<String>();
 		for (Edge edge: getUserObject()) {
-			result.add(edge.label().text());
+			result.add(getListLabel(edge));
 		}
 		return result;
 	}
 
+	/** 
+	 * Returns the label of the edge as to be displayed in the label list.
+	 * Callback method from {@link #getListLabels()}.
+	 */
+	String getListLabel(Edge edge) {
+		return edge.label().text();
+	}
+	
 	public Collection<String> getPlainLabels() {
 		return getListLabels();
 	}
@@ -219,9 +230,9 @@ public class GraphJEdge extends JEdge {
 	StringBuilder getEdgeDescription() {
     	StringBuilder result = super.getEdgeDescription();
     	result.append(" from ");
-    	result.append(italicTag.on(getSourceIdentity()));
+    	result.append(Converter.ITALIC_TAG.on(getSourceIdentity()));
     	result.append(" to ");
-    	result.append(italicTag.on(getTargetIdentity()));
+    	result.append(Converter.ITALIC_TAG.on(getTargetIdentity()));
     	return result;
 	}
     
@@ -237,13 +248,10 @@ public class GraphJEdge extends JEdge {
 		}
 	}
 
+	/** Underlying {@link JModel} of this edge. */
+	private final GraphJModel jModel;
 	/** Source node of the underlying graph edges. */
     private final Node source;
     /** Target node of the underlying graph edges. */
     private final Node target;
-    
-    /**
-     * HTML formatting tag for the tool tip text
-     */
-    static protected final Converter.HTMLTag italicTag = Converter.createHtmlTag("i");
 }

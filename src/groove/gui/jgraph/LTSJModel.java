@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.11 2007-05-28 21:32:43 rensink Exp $
+ * $Id: LTSJModel.java,v 1.12 2007-05-29 06:52:36 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,7 +28,6 @@ import groove.lts.Transition;
 import groove.util.Converter;
 import groove.util.Groove;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -40,7 +39,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -363,7 +362,7 @@ public class LTSJModel extends GraphJModel {
     private class TransitionJEdge extends GraphJEdge {
     	/** Creates a new instance from a given edge (required to be a {@link GraphTransition}). */
 		TransitionJEdge(BinaryEdge edge) {
-			super(edge);
+			super(LTSJModel.this, edge);
 		}
 
 		@Override
@@ -396,29 +395,21 @@ public class LTSJModel extends GraphJModel {
 		}
 
 		@Override
-		public Collection<String> getListLabels() {
-	    	Collection<String> result = new ArrayList<String>();
-			for (Edge edge : getEdges()) {
-				result.add(getLabel(edge).toString());
-			}
-			return result;
-		}
-
-		StringBuilder getLabel(Edge edge) {
-			StringBuilder result = new StringBuilder();
+		String getListLabel(Edge edge) {
+			String result;
 			assert edge instanceof GraphTransition : "Edge set contains "
 					+ edge;
 			if (isShowAnchors()) {
-				result.append(((GraphTransition) edge).label().text());
+				result = ((GraphTransition) edge).label().text();
 			} else {
-				result.append(((GraphTransition) edge).getEvent().getName().text());
+				result = ((GraphTransition) edge).getEvent().getName().text();
 			}
 			return result;
 		}
 
 		@Override
 		StringBuilder getLine(Edge edge) {
-			return getLabel(edge);
+			return new StringBuilder(getListLabel(edge));
 		}
 	}
 
@@ -475,29 +466,21 @@ public class LTSJModel extends GraphJModel {
 		}
 
 		@Override
-		public Collection<String> getListLabels() {
-	    	Collection<String> result = new ArrayList<String>();
-			for (Edge edge : getSelfEdges()) {
-				result.add(getLabel(edge).toString());
-			}
-			return result;
-		}
-
-		StringBuilder getLabel(Edge edge) {
-			StringBuilder result = new StringBuilder();
+		String getListLabel(Edge edge) {
+			String result;
 			assert edge instanceof GraphTransition : "Edge set contains "
 					+ edge;
 			if (isShowAnchors()) {
-				result.append(((GraphTransition) edge).label().text());
+				result = ((GraphTransition) edge).label().text();
 			} else {
-				result.append(((GraphTransition) edge).getEvent().getName().text());
+				result = ((GraphTransition) edge).getEvent().getName().text();
 			}
 			return result;
 		}
 
 		@Override
 		StringBuilder getLine(Edge edge) {
-			return Converter.toHtml(getLabel(edge));
+			return Converter.toHtml(new StringBuilder(getListLabel(edge)));
 		}
 	}
 }

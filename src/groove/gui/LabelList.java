@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.10 2007-05-28 21:32:50 rensink Exp $
+ * $Id: LabelList.java,v 1.11 2007-05-29 06:52:39 rensink Exp $
  */
 package groove.gui;
 
@@ -51,7 +51,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /**
@@ -59,8 +59,8 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      * {@link #updateModel()} should be called before the list can be used. 
      * @param jgraph the jgraph with which this list is to be associated
      */
-    public LabelList(JGraph jgraph, final ObservableSet<String> filteredLabels) {
-        this.filteredLabels = filteredLabels;
+    public LabelList(JGraph jgraph) {
+        this.filteredLabels = jgraph.getFilteredLabels();
         if (this.filteredLabels != null) {
             this.filteredLabels.addObserver(new Observer() {
                 public void update(Observable o, Object arg) {
@@ -91,11 +91,6 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         setEnabled(false);
     }
     
-    /** Constructs a list from a given JGraph, with no filtered labels. */
-    public LabelList(JGraph jGraph) {
-        this(jGraph, null);
-    }
-
     /**
      * Returns the jgraph with which this label list is associated.
      */
