@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.9 2007-05-28 21:32:43 rensink Exp $
+ * $Id: JEdge.java,v 1.10 2007-05-29 15:31:37 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -31,7 +31,7 @@ import org.jgraph.graph.DefaultPort;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
@@ -72,13 +72,13 @@ abstract public class JEdge extends DefaultEdge implements JCell {
 //	}
 
 	/** Returns the j-vertex that is the parent of the source port of this j-edge. */
-    JVertex getSourceVertex() {
+    public JVertex getSourceVertex() {
     	DefaultPort source = (DefaultPort) getSource();
 		return source == null ? null : (JVertex) source.getParent();
     }
 
     /** Returns the j-vertex that is the parent of the target port of this j-edge. */
-    JVertex getTargetVertex() {
+    public JVertex getTargetVertex() {
     	DefaultPort target = (DefaultPort) getTarget();
 		return target == null ? null : (JVertex) target.getParent();
     }

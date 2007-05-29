@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.14 2007-05-29 06:52:36 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.15 2007-05-29 15:31:37 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,6 +28,7 @@ import groove.view.aspect.AttributeAspect;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -85,10 +86,28 @@ public class GraphJVertex extends JVertex {
     }
     
     @Override
-	public boolean isVisible() {
-		// return getActualNode() != null && (!isConstant() || jModel.isShowValueNodes());
-		return !isConstant() || jModel.isShowValueNodes();
-	}
+    public boolean isVisible() {
+        if (!isConstant() || jModel.isShowValueNodes()) {
+            boolean result = false;
+            Iterator<String> listLabelIter = getListLabels().iterator();
+            while (!result && listLabelIter.hasNext()) {
+                result = !jModel.isFiltering(listLabelIter.next());
+            }
+            Iterator jEdgeIter = getPort().edges();
+            while (!result && jEdgeIter.hasNext()) {
+                result = !((GraphJEdge) jEdgeIter.next()).isFiltered();
+            }
+            return result;
+        } else {
+            return false;
+        }
+    }
+    
+    /** Constant nodes are only listable when data nodes are shown. */
+    @Override
+    public boolean isListable() {
+        return !isConstant() || jModel.isShowValueNodes();
+    }
 
     /** This implementation adds the data edges to the super result. */
 	public Collection<StringBuilder> getLines() {
