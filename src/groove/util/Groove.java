@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.14 2007-05-22 11:46:17 rensink Exp $
+ * $Id: Groove.java,v 1.15 2007-05-29 22:32:57 rensink Exp $
  */
 package groove.util;
 
@@ -44,7 +44,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.14 $ 
+ * @version $Revision: 1.15 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -80,7 +80,7 @@ public class Groove {
     /** Extension for JPG image files. */
     public static final String JPG_EXTENSION = ".jpg";
     /** Extension for Lisp layout files. */
-    public static final String LISP_EXTENSION = ".lisp";
+    public static final String LISP_EXTENSION = ".lsp";
     /** Extension for PNG (Portable Network Graphics) files. */
     public static final String PNG_EXTENSION = ".png";
     /** Extension for EPS (Embedded PostScript) files. */
