@@ -1,11 +1,17 @@
 package groove.gui;
 
-import groove.graph.GraphShape;
+import groove.graph.DefaultNode;
+import groove.graph.Edge;
+import groove.graph.Node;
 import groove.gui.jgraph.JGraph;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.util.Converter;
+import groove.util.ExprParser;
 import groove.util.Groove;
+import groove.view.aspect.AspectEdge;
+import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectValue;
 
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -18,7 +24,9 @@ import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
@@ -29,7 +37,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Class providing functionality to export a {@link JGraph} to a file in different formats.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class Exporter {
     /**
@@ -142,17 +150,79 @@ public class Exporter {
 
         public void export(JGraph jGraph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
-            convert(jGraph.getModel().toPlainGraph(), writer);
+            convert(AspectGraph.getFactory().fromPlainGraph(jGraph.getModel().toPlainGraph()), writer);
             writer.close();
         }
         
         /** Writes a graph to a writer in the requried format. */
-        private void convert(GraphShape graph, PrintWriter writer) {
+        private void convert(AspectGraph graph, PrintWriter writer) {
             this.writer = writer;
             this.indent = 0;
+            nodeMap = new HashMap<Node,Integer>();
+            edgeMap = new HashMap<Edge,Integer>();
             println("(%s", GRAPH_KEYWORD);
-            println(")");
+            println("(%s", SUBGRAPH_KEYWORD);
+            println("(%s (", LET_KEYWORD);
+            int max = 0;
+            for (Node node: graph.nodeSet()) {
+            	if (node instanceof DefaultNode) {
+            		int nr = ((DefaultNode) node).getNumber();
+            		max = Math.max(max, nr+1);
+            		nodeMap.put(node, nr);
+            		println("(%s (%s %d))", nodeId(node), CREATE_NODE_KEYWORD, nr);
+            	}
+            }
+            for (Node node: graph.nodeSet()) {
+            	if (!(node instanceof DefaultNode)) {
+            		int nr = max++;
+            		nodeMap.put(node, nr);
+            		println("(%s (%s %d))", nodeId(node), CREATE_NODE_KEYWORD, nr);
+            	}
+            }
+            int edgeCount = 0;
+            for (Edge edge: graph.edgeSet()) {
+            	if (!isNodeLabel(edge)) {
+					int nr = edgeCount;
+					edgeCount++;
+					edgeMap.put(edge, nr);
+					println("(%s (%s %s %s))",
+							edgeId(edge),
+							CREATE_EDGE_KEYWORD,
+							nodeId(edge.source()),
+							nodeId(edge.opposite()));
+				}
+            }
+            println("))");
+            // definitions are done; now add labels
+            for (AspectEdge edge: graph.edgeSet()) {
+            	String id = isNodeLabel(edge) ? nodeId(edge.source()) : edgeId(edge);
+            	println("(%s (%s %s) %s)", ADD_LABEL_KEYWORD, LIST_KEYWORD, id, label(edge));
+            	for (AspectValue value: edge.getAspectMap().values()) {
+            		println("(%s-%s (%s %s) (%s))", SET_PREFIX, value.getAspect(), LIST_KEYWORD, id, value.getName());
+            	}
+            }
+            // add roles if we have an aspect graph
+            println("))");
             assert this.indent == 0 : String.format("Conversion ended at indentation level %d", indent);
+        }
+
+        /** Returns an identifier for a node, using the underlying {@link #nodeMap}. */
+        private String nodeId(Node node) {
+        	return "n"+nodeMap.get(node);
+        }
+
+        /** Returns an identifier for an edge, using the underlying {@link #edgeMap}. */
+        private String edgeId(Edge edge) {
+        	return "e"+edgeMap.get(edge);
+        }
+
+        /** Retrieves the edge label in a form readable by LISP. */
+        private String label(Edge edge) {
+        	return ExprParser.toQuoted(edge.label().text(), ExprParser.DOUBLE_QUOTE);
+        }
+        /** Indicates if an edge should be regarded as a node label. */
+        private boolean isNodeLabel(Edge edge) {
+        	return edge.source() == edge.opposite();
         }
         
         /** Prints a line to a writer, taking care of indentation. */
@@ -171,15 +241,19 @@ public class Exporter {
             indent += opens - closes;
         }
 
-        /** The writer used in the current {@link #convert(GraphShape, PrintWriter)} invocation. */
+        /** The writer used in the current {@link #convert(AspectGraph, PrintWriter)} invocation. */
         private PrintWriter writer;
-        /** The indentation level of the current {@link #convert(GraphShape, PrintWriter)} invocation. */
+        /** The indentation level of the current {@link #convert(AspectGraph, PrintWriter)} invocation. */
         private int indent;
         /**
          * Extension filter used for exporting graphs in lisp format.
          */
         private final ExtensionFilter lispFilter = Groove.getFilter("Lisp layout files", Groove.LISP_EXTENSION, true);
 
+        /** Map from nodes to numbers built up during {@link #convert(AspectGraph, PrintWriter)}. */
+        private Map<Node,Integer> nodeMap;
+        /** Map from edges to numbers built up during {@link #convert(AspectGraph, PrintWriter)}. */
+        private Map<Edge,Integer> edgeMap;
         /** Returns the singleton instance of this class. */
         public static Format getInstance() {
             return instance;
@@ -192,6 +266,24 @@ public class Exporter {
         private static int INDENT_COUNT = 4;
         /** Lisp function for graphs. */
         private static final String GRAPH_KEYWORD = "graph";
+        /** Lisp function for subgraphs. */
+        private static final String SUBGRAPH_KEYWORD = "sub-graph";
+        /** Lisp let function. */
+        private static final String LET_KEYWORD = "let*";
+        /** Lisp function for node creation. */
+        private static final String CREATE_NODE_KEYWORD = "create-node";
+        /** Lisp function for edge creation. */
+        private static final String CREATE_EDGE_KEYWORD = "create-edge";
+        /** Lisp function for creating lists. */
+        private static final String LIST_KEYWORD = "list";
+        /** Lisp function for adding labels. */
+        private static final String ADD_LABEL_KEYWORD = "add-label";
+        /** Lisp function for setting rule roles. */
+        private static final String SET_PREFIX = "set";
+        /** Lisp function for adding positions for nodes. */
+        private static final String ADD_POSITION = "add-position";
+        /** Lisp function for setting rule roles. */
+        private static final String SET_LINE_STYPE = "set-line-style";
     }
 
     
