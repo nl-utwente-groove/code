@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.11 2007-05-22 14:51:45 rensink Exp $
+ * $Id: StateGenerator.java,v 1.12 2007-05-29 13:32:19 rensink Exp $
  */
 package groove.lts;
 
@@ -136,7 +136,7 @@ public class StateGenerator {
             };
         }
     }
-
+    
     /**
      * Adds a transition to the GTS, constructed from a given rule application.
      * The application's target graph is compared to the existing states for symmetry;
@@ -151,29 +151,30 @@ public class StateGenerator {
         reporter.start(ADD_TRANSITION);
         GraphTransition result;
         if (!appl.getRule().isModifying()) {
-        	result = createTransition(appl, source, source, false);
+            result = createTransition(appl, source, source, false);
         } else {
             // check for confluent diamond
             GraphState confluentTarget = getConfluentTarget(source, appl);
-        	if (confluentTarget == null) {
-				GraphNextState freshTarget = createState(source, appl);
-				GraphState isoTarget = getGTS().addState(freshTarget);
-				if (isoTarget == null) {
-					result = freshTarget;
-				} else {
-					// the following line is to ensure the cache is cleared
-					// even if the state is still used as the basis of another
-					// result.dispose();
-					result = createTransition(appl, source, isoTarget, true);
-				}
-			} else {
-            	result = createTransition(appl, source, confluentTarget, false);
+            if (confluentTarget == null) {
+                GraphNextState freshTarget = createState(appl, source);
+                GraphState isoTarget = getGTS().addState(freshTarget);
+                if (isoTarget == null) {
+                    result = freshTarget;
+                } else {
+                    // the following line is to ensure the cache is cleared
+                    // even if the state is still used as the basis of another
+                    // result.dispose();
+                    result = createTransition(appl, source, isoTarget, true);
+                }
+            } else {
+                result = createTransition(appl, source, confluentTarget, false);
             }
         }
         getGTS().addTransition(result);
         reporter.stop();
         return result.target();
     }
+    
 //
 //	/**
 //	 * Computes the target state of a rule application.
@@ -236,37 +237,34 @@ public class StateGenerator {
         }
         return result;
     }
-//
-//	/**
-//	 * @return Returns the deriver, lazily creating it using 
-//	 * {@link #createDeriver(GraphState)} if it has not been initialised at construction time.
-//	 */
-//	protected Deriver getDeriver() {
-//		if (deriver == null) {
-//			deriver = createDeriver(state);
-//		}
-//		return deriver;
-//	}
 
 	/**
-	 * Creates a fresh graph state, based on a given source state and rule application.
+	 * Creates a fresh graph state, based on a given rule application and source state.
 	 */
-	private GraphNextState createState(GraphState source, RuleApplication appl) {
-//		DerivedGraphState result = new DerivedGraphState(source, appl.getEvent(), appl.getCoanchorImage());
-//		result.setFixed();
-//		return result;
+	protected GraphNextState createState(RuleApplication appl, GraphState source) {
 		return new DefaultGraphNextState((AbstractGraphState) source, appl.getEvent(), appl.getCoanchorImage());
 	}
 
-	private GraphTransition createTransition(RuleApplication appl, GraphState source, GraphState target, boolean symmetry) {
-		return new DefaultGraphTransition(appl.getEvent(), appl.getCoanchorImage(), source, target, symmetry);
-	}
-	
+    /**
+     * Creates a fresh graph transition, based on a given rule application and source state.
+     */
+    protected GraphTransition createTransition(RuleApplication appl, GraphState source) {
+        return createTransition(appl, source, createState(appl, source), false);
+    }
+    
+    /**
+     * Creates a fresh graph transition, based on a given rule application and source and target state.
+     * A final parameter determines if the target state is directly derived from the source, or modulo a symmetry.
+     */
+    protected GraphTransition createTransition(RuleApplication appl, GraphState source, GraphState target, boolean symmetry) {
+        return new DefaultGraphTransition(appl.getEvent(), appl.getCoanchorImage(), source, target, symmetry);
+    }
+    
 	/**
 	 * Callback method to obtain a rule applier for this generator's rule set.
 	 * This implementation uses flyweight, so discard the result before calling the method again.
 	 */
-	private RuleApplier getApplier(GraphState state) {
+	protected RuleApplier getApplier(GraphState state) {
 		if (applier == null) {
 			applier = new AliasRuleApplier(getRecord(), state);
 		} else {
