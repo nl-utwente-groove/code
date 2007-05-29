@@ -185,11 +185,31 @@ public class GraphProperties extends Properties {
 					return false;
 				}
 			}
+			
+			@Override
+			public String getDescription() {
+				return "a non-negative rule priority";
+			}
+			
+			@Override
+			public String getComment() {
+				return "Higher-priority rules are evaluated first";
+			}
 		});
 		defaultKeys.put(ENABLED_KEY, new Property<String>() {
 			@Override
 			public boolean isSatisfied(String value) {
 				return value.equals(""+true) || value.equals(""+false);
+			}
+			
+			@Override
+			public String getDescription() {
+				return "a boolean indicating rule enabledness";
+			}
+			
+			@Override
+			public String getComment() {
+				return "Disabled rules are never evaluated";
 			}
 		});
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);

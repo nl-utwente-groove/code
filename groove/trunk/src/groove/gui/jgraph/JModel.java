@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.16 2007-05-29 06:52:36 rensink Exp $
+ * $Id: JModel.java,v 1.17 2007-05-29 21:36:07 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -38,8 +38,6 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
 import java.util.Set;
 
 import javax.swing.SwingUtilities;
@@ -63,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -316,13 +314,13 @@ abstract public class JModel extends DefaultGraphModel {
 	 * Filtered labels will be set to invisible in the {@link JGraph}.
 	 */
 	public final void setFilteredLabels(ObservableSet<String> filteredLabels) {
-		if (this.filteredLabels != null) {
-			this.filteredLabels.deleteObserver(getRefreshListener());
-		}
+//		if (this.filteredLabels != null) {
+//			this.filteredLabels.deleteObserver(getRefreshListener());
+//		}
 		this.filteredLabels = filteredLabels;
-		if (filteredLabels != null) {
-			filteredLabels.addObserver(getRefreshListener());
-		}
+//		if (filteredLabels != null) {
+//			filteredLabels.addObserver(getRefreshListener());
+//		}
 	}
 
 	/** 
@@ -332,12 +330,12 @@ abstract public class JModel extends DefaultGraphModel {
 	public boolean isFiltering(String label) {
 		return filteredLabels != null && filteredLabels.contains(label);
 	}
-	
-	/** Returns the refresh listener permanantly associated with this {@link JModel}. */
-	private Observer getRefreshListener() {
-		return refreshListener;
-	}
-	
+//	
+//	/** Returns the refresh listener permanantly associated with this {@link JModel}. */
+//	private Observer getRefreshListener() {
+//		return refreshListener;
+//	}
+//	
 	/**
      * Tests the grayed-out status of a given jgraph cell.
      * @param cell the cell that is to be tested
@@ -582,7 +580,7 @@ abstract public class JModel extends DefaultGraphModel {
 		} else {
 			result = super.getAttributes(node);
 		}
-		assert result != null;
+		assert result != null : String.format("Cell %s has no attributes", node);
 		return result;
 	}
 
@@ -676,15 +674,13 @@ abstract public class JModel extends DefaultGraphModel {
      * The name of this model.
      */
     private String name;
-    /** The fixed refresh listener of this {@link JModel}. */
-    private final RefreshListener refreshListener = new RefreshListener();
     
     /**
      * Special graph model edit that does not signal any actual change
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.16 $
+     * @version $Revision: 1.17 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
@@ -713,13 +709,5 @@ abstract public class JModel extends DefaultGraphModel {
 
 		/** The set of cells that this event reports on refreshing. */
         private final Collection<JCell> refreshedJCells;
-    }
-    
-    /** Observer that calls {@link #refresh()} whenever it receives an update event. */
-    private class RefreshListener implements Observer {
-    	/** The method is called when a filtered set is changed. */
-		public void update(Observable o, Object arg) {
-			refresh();
-		}
     }
 }

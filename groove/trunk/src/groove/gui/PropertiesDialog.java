@@ -1,4 +1,4 @@
-/* $Id: PropertiesDialog.java,v 1.5 2007-05-11 08:22:02 rensink Exp $ */
+/* $Id: PropertiesDialog.java,v 1.6 2007-05-29 21:36:09 rensink Exp $ */
 package groove.gui;
 
 import groove.calc.Property;
@@ -28,6 +28,7 @@ import javax.swing.border.BevelBorder;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellEditor;
 
 /**
@@ -218,6 +219,7 @@ public class PropertiesDialog {
 				}
 			};
 			table.setPreferredScrollableViewportSize(new Dimension(300, 70));
+			table.setDefaultRenderer(table.getColumnClass(PROPERTY_COLUMN), new CellRenderer());
 		}
 		return table;
 	}
@@ -323,7 +325,12 @@ public class PropertiesDialog {
 		
 		@Override
 		public JTextField getComponent() {
-			return (JTextField) super.getComponent();
+			JTextField result = (JTextField) super.getComponent();
+			if (editingValueForKey != null) {
+				Property<String> test = defaultKeys.get(editingValueForKey);
+				result.setToolTipText(test.toString());
+			}
+			return result;
 		}
 
 		@Override
@@ -374,7 +381,13 @@ public class PropertiesDialog {
 				return "Property keys must be identifiers. Continue?";
 			} else {
 				// editing a value
-				return String.format("Incorrect value for %s. Continue?", editingValueForKey);
+				Property<String> test = defaultKeys.get(editingValueForKey);
+				String description = test == null ? null : test.getDescription();
+				if (description == null) {
+					return String.format("Incorrect value for key '%s'. Continue?", editingValueForKey);
+				} else {
+					return String.format("Key '%s' expects %s. Continue?", editingValueForKey, description);
+				}
 			}
 		}
 		
@@ -396,6 +409,27 @@ public class PropertiesDialog {
 		private String editingValueForKey;
 	}
 	
+	/** Renderer class that returns appropriate tool tips. */
+	private class CellRenderer extends DefaultTableCellRenderer {
+		@Override
+		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+			if (defaultKeys != null && column == PROPERTY_COLUMN && row < table.getRowCount()) {
+				String key = (String) table.getValueAt(row, column);
+				if (key != null && defaultKeys.get(key) != null) {
+					setToolTipText(defaultKeys.get(key).getComment());
+				}
+			}
+			return super.getTableCellRendererComponent(table,
+					value,
+					isSelected,
+					hasFocus,
+					row,
+					column);
+		}
+		
+	}
+	
+	/** Table model with key and value columns. */
 	private class TableModel extends AbstractTableModel {
 		public int getColumnCount() {
 			return 2;

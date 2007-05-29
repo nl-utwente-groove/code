@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LabelList.java,v 1.12 2007-05-29 15:31:39 rensink Exp $
+ * $Id: LabelList.java,v 1.13 2007-05-29 21:36:08 rensink Exp $
  */
 package groove.gui;
 
@@ -20,11 +20,14 @@ import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
 import groove.gui.jgraph.JVertex;
+import groove.util.Converter;
 import groove.util.ObservableSet;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,10 +38,14 @@ import java.util.Observer;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.swing.AbstractAction;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
 import javax.swing.JPopupMenu;
+import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
@@ -48,7 +55,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /**
@@ -122,28 +129,16 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         updateList();
         setEnabled(true);
     }
-//
-//    /**
-//     * Returns the set of jcells whose label sets contain a given label.
-//     * @param label the label looked for; may equal {@link #NO_LABEL}.
-//     * @return the set of {@link JCell}s for which {@link  JCell#getListLabels()}contains
-//     *         <tt>label</tt>, or for which it is empty if <tt>label</tt> equals
-//     *         {@link #NO_LABEL}.
-//     */
-//    public Set<JCell> getJCellsForLabel(Object label) {
-//        Set<JCell> result = new HashSet<JCell>();
-//        for (int i = 0; i < jmodel.getRootCount(); i++) {
-//            Object jCell = jmodel.getRootAt(i);
-//            assert jCell instanceof JCell : "Model cell " + jCell + " of type " + jCell.getClass();
-//            if (jCell instanceof JCell) {
-//                Collection<String> jCellLabelSet = getLabelSet((JCell) jCell);
-//                if (jCellLabelSet.contains(label)) {
-//                    result.add((JCell) jCell);
-//                }
-//            }
-//        }
-//        return result;
-//    }
+
+    /**
+     * Returns the set of jcells whose label sets contain a given label.
+     * @param label the label looked for
+     * @return the set of {@link JCell}s for which {@link  JCell#getListLabels()} contains
+     *         <tt>label</tt>
+     */
+    public Set<JCell> getJCells(Object label) {
+        return labels.get(label);
+    }
 
     /**
      * In addition to delegating the method to <tt>super</tt>, sets the background color to
@@ -285,7 +280,19 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      * Creates a popup menu, consisting of show and hide actions.
      */
     protected JPopupMenu createPopupMenu() {
-        return new ShowHideMenu(jgraph).getPopupMenu();
+    	JPopupMenu result = new JPopupMenu();
+    	Object[] selectedValues = getSelectedValues();
+    	if (filteredLabels != null && selectedValues.length > 0) {
+    		result.add(new FilterAction(selectedValues, true));
+    		result.add(new FilterAction(selectedValues, false));
+    		result.addSeparator();
+    	}
+    	// add the show/hide menu
+    	JPopupMenu restMenu = new ShowHideMenu(jgraph).getPopupMenu();
+    	for (int i = 0; i < restMenu.getComponentCount(); ) {
+    		result.add(restMenu.getComponent(i));
+    	}
+    	return result;
     }
 
     /**
@@ -438,32 +445,46 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      * filtered labels.
      */
     private class MyCellRenderer extends DefaultListCellRenderer {
-        @Override
-        public void setText(String text) {
-            if (text.equals(JVertex.NO_LABEL)) {
-                setForeground(specialForeground);
-                super.setText(" " + Options.NO_LABEL_TEXT + " ");
-            } else if (text.length() == 0) {
-                super.setText(" " + Options.EMPTY_LABEL_TEXT + " ");
-                setForeground(specialForeground);
-            } else if (filteredLabels != null && filteredLabels.contains(text)) {
-                super.setText(" >> " + text + " ");
-                setForeground(standardForeground);
+		@Override
+        public void setText(String label) {
+        	StringBuilder text = new StringBuilder();
+        	Color foreground = getForeground();
+            if (label.equals(JVertex.NO_LABEL)) {
+                text.append(Options.NO_LABEL_TEXT);
+                foreground = SPECIAL_COLOR;
+            } else if (label.length() == 0) {
+            	text.append(Options.EMPTY_LABEL_TEXT );
+                foreground = SPECIAL_COLOR;
             } else {
-                super.setText(" " + text + " ");
-                setForeground(standardForeground);
+            	text.append(label);
             }
+            Converter.toHtml(text);
+            if (filteredLabels != null && filteredLabels.contains(label)) {
+            	Converter.STRIKETHROUGH_TAG.on(text);
+                setToolTipText("Filtered label; doubleclick to show");
+            } else {
+                setToolTipText("Visible label; doubleclick to filter");   	
+            }
+            Converter.createColorTag(foreground).on(text);
+            super.setText(Converter.HTML_TAG.on(text).toString());
         }
 
-        private final Color standardForeground = getForeground();
-
-        private final Color specialForeground = Color.LIGHT_GRAY;
+		@Override
+		public void setBorder(Border border) {
+			super.setBorder(new CompoundBorder(border, INSET_BORDER));
+		}
     }
     
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
         @Override
         public void mousePressed(MouseEvent evt) {
+        	if (evt.getButton() == MouseEvent.BUTTON3) {
+                int index = locationToIndex(evt.getPoint());
+        		if (index >= 0) {
+        			setSelectedIndex(index);
+        		}
+        	}
             maybeShowPopup(evt);
         }
 
@@ -492,5 +513,30 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         }
     }
     
-    
+    private class FilterAction extends AbstractAction {
+    	FilterAction(Object[] cells, boolean filter) {
+    		super(filter ? Options.FILTER_ACTION_NAME : Options.UNFILTER_ACTION_NAME);
+    		this.filter = filter;
+    		this.labels = new ArrayList<String>();
+    		for (Object cell: cells) {
+    			labels.add(cell.toString());
+    		}
+    	}
+
+		public void actionPerformed(ActionEvent e) {
+			if (filter) {
+				filteredLabels.addAll(labels);
+			} else {
+				filteredLabels.removeAll(labels);
+			}
+		}
+		
+		private final boolean filter; 
+		private final Collection<String> labels;
+    }
+
+    /** Border to put some space to the left and right of the labels inside the list. */
+    static private final Border INSET_BORDER = new EmptyBorder(0,3,0,3);
+    /** Color HTML tag for the foreground color of special labels. */
+    static private final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
 }

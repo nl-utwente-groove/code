@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.16 2007-05-29 15:31:37 rensink Exp $
+ * $Id: JGraph.java,v 1.17 2007-05-29 21:36:07 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -39,9 +39,13 @@ import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
+import java.util.Set;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -75,7 +79,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2007-05-29 15:31:37 $
+ * @version $Revision: 1.17 $ $Date: 2007-05-29 21:36:07 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -85,7 +89,12 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      */
     public JGraph(JModel model, boolean hasFilters) {
         super((JModel) null);
-        this.filteredLabels = hasFilters ? new ObservableSet<String>() : null;
+        if (hasFilters) {
+        	this.filteredLabels = new ObservableSet<String>();
+        	this.filteredLabels.addObserver(refreshListener);
+        } else {
+            this.filteredLabels = null;
+        }
         // make sure the layout cache has been created
         getGraphLayoutCache();
         setMarqueeHandler(createMarqueeHandler());
@@ -221,12 +230,13 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             	AttributeMap transientAttributes = getModel().createTransientJAttr(jCell);
                 CellView jView = getGraphLayoutCache().getMapping(jCell, false);
                 if (jView != null) {
-                    jView.changeAttributes(transientAttributes);
                 	if (!jCell.isVisible()) {
                 	    invisibleCells.add(jCell);
+                        getSelectionModel().removeSelectionCell(jCell);
                 	} else {
                 	    visibleCells.add(jCell);
                     }
+                    jView.changeAttributes(transientAttributes);
                 } else {
                 	if (jCell.isVisible()) {
                 		visibleCells.add(jCell);
@@ -562,6 +572,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	 */
     public void fillOutDisplayMenu(JPopupMenu menu) {
         addSeparatorUnlessFirst(menu);
+        Object[] cells = getSelectionCells();
+        if (filteredLabels != null && cells.length > 0) {
+        	menu.add(new FilterAction(cells));
+        	menu.addSeparator();
+        }
         menu.add(createShowHideMenu());
         menu.add(createZoomMenu());
     }
@@ -897,6 +912,8 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /** The set of labels currently filtered from view. */
     private final ObservableSet<String> filteredLabels;
+    /** The fixed refresh listener of this {@link JModel}. */
+    private final RefreshListener refreshListener = new RefreshListener();
     /**
      * A standard layouter setting menu over this jgraph.
      */
@@ -1036,6 +1053,25 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
     }
 
+    /** Action to turn filtering on for a set of selected cells. */
+    private class FilterAction extends AbstractAction {
+    	FilterAction(Object[] cells) {
+    		super(Options.FILTER_ACTION_NAME);
+    		this.cells = cells;
+    	}
+    	
+    	public void actionPerformed(ActionEvent e) {
+			Set<String> labels = new HashSet<String>();
+			for (Object cell: cells) {
+				labels.addAll(((JCell) cell).getListLabels());
+			}
+			filteredLabels.addAll(labels);
+		}
+
+		/** The array of cells upon which this action works. */
+    	private final Object[] cells;
+    }
+    
     /**
      * Action to remove a point from the currently selected j-edge.
      */
@@ -1209,16 +1245,15 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         @Override
         public void setSelectionCells(Object[] cells) {
             List<Object> visibleCells = new LinkedList<Object>();
-            for (int i = 0; i < cells.length; i++) {
-                if (!getModel().isGrayedOut((JCell) cells[i])) {
-                    visibleCells.add(cells[i]);
+            for (Object cell: cells) {
+                if (!getModel().isGrayedOut((JCell) cell)) {
+                    visibleCells.add(cell);
                 }
             }
             super.setSelectionCells(visibleCells.toArray());
         }
     }
     
-
 	/** 
 	 * Mouse listener that creates the popup menu and switches the view to 
 	 * the rule panel on double-clicks.
@@ -1244,5 +1279,28 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         public void mouseReleased(MouseEvent evt) {
             maybeShowPopup(evt);
         }
+    }
+    /** Observer that calls {@link JModel#refresh()} whenever it receives an update event. */
+    private class RefreshListener implements Observer {
+    	/** The method is called when a filtered set is changed. */
+		public void update(Observable o, Object arg) {
+			Set<String> changedLabelSet = null;
+			if (arg instanceof ObservableSet.AddUpdate) {
+				changedLabelSet = ((ObservableSet<String>.AddUpdate) arg).getAddedSet();
+			} else {
+				changedLabelSet = ((ObservableSet<String>.RemoveUpdate) arg).getRemovedSet();
+			}
+			Set<JCell> changedCellSet = new HashSet<JCell>();
+			for (String label : changedLabelSet) {
+				for (JCell cell: getLabelList().getJCells(label)) {
+					changedCellSet.add(cell);
+					if (cell instanceof JEdge) {
+						changedCellSet.add(((JEdge) cell).getSourceVertex());
+						changedCellSet.add(((JEdge) cell).getTargetVertex());
+					}
+				}
+			}
+			getModel().refresh(changedCellSet);
+		}
     }
 }

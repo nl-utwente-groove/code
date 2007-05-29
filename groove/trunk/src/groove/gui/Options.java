@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.28 2007-05-28 21:32:50 rensink Exp $
+ * $Id: Options.java,v 1.29 2007-05-29 21:36:09 rensink Exp $
  */
 package groove.gui;
 
@@ -40,7 +40,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  */
 public class Options {
     /** 
@@ -146,6 +146,8 @@ public class Options {
     public static final String EXPORT_LTS_ACTION_NAME = "Export LTS ...";
     /** Export state action name */
     public static final String EXPORT_STATE_ACTION_NAME = "Export State ...";
+    /** Export state action name */
+    public static final String FILTER_ACTION_NAME = "Filter labels";
     /** Goto start state action name */
     public static final String GOTO_START_STATE_ACTION_NAME = "Go to Start State";
 	/** List atomic propositions action name */
@@ -234,6 +236,8 @@ public class Options {
 	public static final String SYSTEM_PROPERTIES_ACTION_NAME = "System Properties ...";
     /** Undo action name */
     public static final String UNDO_ACTION_NAME = "Undo";
+    /** Unfilter action name */
+    public static final String UNFILTER_ACTION_NAME = "Reset label filter";
     /** Select mode action name */
     public static final String SELECT_MODE_NAME = "Selection mode";
 

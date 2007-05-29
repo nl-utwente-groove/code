@@ -1,6 +1,7 @@
 package groove.trans;
 
 import groove.calc.Property;
+import groove.util.Converter;
 import groove.util.Groove;
 
 import java.io.IOException;
@@ -271,12 +272,37 @@ public class SystemProperties extends java.util.Properties {
 			@Override
 			public boolean isSatisfied(String value) {
 				return value.equals(ATTRIBUTES_YES) || value.equals(ATTRIBUTES_NO);
-			}			
+			}
+			
+			@Override
+			public String getDescription() {
+				return String.format("'%s' for default attributes", ATTRIBUTES_YES);
+			}
+			
+			@Override
+			public String getComment() {
+				StringBuilder result = new StringBuilder();
+				result.append("Indicates whether the graphs and rules are attributed\n");
+				result.append(String.format("Use '%s' for default attributes, '%s' or empty for no attributes",
+				ATTRIBUTES_YES, ATTRIBUTES_NO));
+				return Converter.HTML_TAG.on(Converter.toHtml(result)).toString();
+			}
 		});
-		defaultKeys.put(CONTROL_LABELS, null);
-		defaultKeys.put(COMMON_LABELS, null);
+		defaultKeys.put(CONTROL_LABELS, new Property.True<String>() {
+			@Override
+			public String getComment() {
+				return "A list of rare labels, used to optimise rule matching";
+			}
+		});
+		defaultKeys.put(COMMON_LABELS, new Property.True<String>() {
+			@Override
+			public String getComment() {
+				return "A list of frequent labels, used to optimise rule matching";
+			}
+		});
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
 	}
+	
 	/** 
 	 * One-line regular expression describing the system properties,
 	 * with a parameter position for the name of the rule system.
