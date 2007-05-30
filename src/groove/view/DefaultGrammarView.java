@@ -145,11 +145,11 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
 		this.startGraph = startGraph;
 		invalidateGrammar();
 	}
-
-    /** Collects and returns the permanent errors of the rule views. */
-	public void addErrors(List<String> errors) {
-		this.errors.addAll(errors);
-	}
+//
+//    /** Collects and returns the permanent errors of the rule views. */
+//	public void addErrors(List<String> errors) {
+//		this.errors.addAll(errors);
+//	}
 
     /** Collects and returns the permanent errors of the rule views. */
 	public List<String> getErrors() {

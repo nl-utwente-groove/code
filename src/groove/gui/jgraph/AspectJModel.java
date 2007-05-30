@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.18 2007-05-29 06:52:36 rensink Exp $
+ * $Id: AspectJModel.java,v 1.19 2007-05-30 21:30:11 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -61,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -612,24 +612,6 @@ public class AspectJModel extends GraphJModel {
 				result.add(AspectParser.toString(((AspectEdge) edge).getDeclaredValues(), text).toString());
 			}
 			return result;
-		}
-
-		/**
-		 * This implementation retrieves the source node's image in the
-		 * model and uses that one's identity.
-		 */
-		@Override
-		String getSourceIdentity() {
-			return getModelNode((AspectNode) getSourceNode()).toString();
-		}
-
-		/**
-		 * This implementation retrieves the target node's image in the
-		 * model and uses that one's identity.
-		 */
-		@Override
-		String getTargetIdentity() {
-			return getModelNode((AspectNode) getTargetNode()).toString();
 		}
 
 		/** 

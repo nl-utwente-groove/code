@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.8 2007-05-29 15:31:37 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.9 2007-05-30 21:30:11 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -84,20 +84,6 @@ public class GraphJEdge extends JEdge {
      */
     public Node getTargetNode() {
         return target;
-    }
-
-    /**
-     * Callback method to yield a string description of the source node.
-     */
-    String getSourceIdentity() {
-        return source.toString();
-    }
-
-    /**
-     * Callback method to yield a string description of the target node.
-     */
-    String getTargetIdentity() {
-        return target.toString();
     }
 
     /**
@@ -249,10 +235,16 @@ public class GraphJEdge extends JEdge {
     @Override
 	StringBuilder getEdgeDescription() {
     	StringBuilder result = super.getEdgeDescription();
-    	result.append(" from ");
-    	result.append(Converter.ITALIC_TAG.on(getSourceIdentity()));
-    	result.append(" to ");
-    	result.append(Converter.ITALIC_TAG.on(getTargetIdentity()));
+    	String sourceIdentity = getSourceVertex().getNodeIdentity();
+    	if (sourceIdentity != null) {
+    		result.append(" from ");
+    		result.append(Converter.ITALIC_TAG.on(sourceIdentity));
+    	}
+    	String targetIdentity = getTargetVertex().getNodeIdentity();
+    	if (targetIdentity != null) {
+    		result.append(" to ");
+    		result.append(Converter.ITALIC_TAG.on(targetIdentity));
+    	}
     	return result;
 	}
     

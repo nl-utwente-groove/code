@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.6 2007-05-28 21:32:51 rensink Exp $
+ * $Id: AspectGraph.java,v 1.7 2007-05-30 21:30:25 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -131,6 +131,9 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 */
 	private AspectGraph fromPlainGraph(GraphShape graph, NodeEdgeMap elementMap) {
         List<String> errors = new ArrayList<String>();
+        if (GraphInfo.hasErrors(graph)) {
+        	errors.addAll(GraphInfo.getErrors(graph));
+        }
 		assert elementMap != null && elementMap.isEmpty();
 		AspectGraph result = new AspectGraph();
 		// first do the nodes;

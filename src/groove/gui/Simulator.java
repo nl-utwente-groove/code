@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.43 2007-05-28 21:32:50 rensink Exp $
+ * $Id: Simulator.java,v 1.44 2007-05-30 21:30:26 rensink Exp $
  */
 package groove.gui;
 
@@ -122,7 +122,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.43 $
+ * @version $Revision: 1.44 $
  */
 public class Simulator {
     /**
@@ -616,7 +616,7 @@ public class Simulator {
             }
             getGrammarFileChooser().setSelectedFile(grammarFile);
         } catch (IOException exc) {
-            showErrorDialog("Error while loading grammar from " + grammarFile, exc);
+            showErrorDialog(exc.getMessage(), exc.getCause());
         } 
     }
 
@@ -1596,7 +1596,7 @@ public class Simulator {
 	 * Creates and shows an {@link ErrorDialog} for a given message and
 	 * exception.
 	 */
-    private void showErrorDialog(String message, Exception exc) {
+    private void showErrorDialog(String message, Throwable exc) {
         new ErrorDialog(getFrame(), message, exc).setVisible(true);
     }
 
@@ -2875,7 +2875,7 @@ public class Simulator {
 //    /**
 //     * Class providing functionality to export a {@link JGraph} to a file in different formats.
 //     * @author Arend Rensink
-//     * @version $Revision: 1.43 $
+//     * @version $Revision: 1.44 $
 //     */
 //    static public class Exporter {
 //        /**

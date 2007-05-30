@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.36 2007-05-29 06:52:39 rensink Exp $
+ * $Id: Editor.java,v 1.37 2007-05-30 21:30:26 rensink Exp $
  */
 package groove.gui;
 
@@ -48,7 +48,10 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -88,7 +91,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.36 $ $Date: 2007-05-29 06:52:39 $
+ * @version $Revision: 1.37 $ $Date: 2007-05-30 21:30:26 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -143,8 +146,10 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      */
     public void setPlainGraph(Graph graph) {
         if (graph == null) {
+        	setErrors(null);
         	setModel(new EditorJModel(getOptions()));
         } else {
+			setErrors(GraphInfo.getErrors(graph));
 			setModel(new EditorJModel(GraphJModel.newInstance(graph, getOptions())));
 			setRole(GraphInfo.getRole(graph));
 		}
@@ -207,6 +212,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * Refreshes the statur bar.
      */
     public void graphChanged(GraphModelEvent e) {
+    	setErrors(null);
         updateStatus();
     }
     
@@ -283,9 +289,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	protected boolean handlePreview(String okOption) {
 		AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
 		if (previewedModel != null) {
-			setSelectInsertedCells(false);
-			getModel().replace(GraphJModel.newInstance(previewedModel.toPlainGraph(), getOptions()));
-			setSelectInsertedCells(true);
+//			setSelectInsertedCells(false);
+			Graph plainGraph = previewedModel.toPlainGraph();
+			setErrors(GraphInfo.getErrors(plainGraph));
+			getModel().replace(GraphJModel.newInstance(plainGraph, getOptions()));
+//			setSelectInsertedCells(true);
 			return true;
 		} else {
 			return false;
@@ -664,15 +672,30 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         return anyGraphSaved;
     }
 
-    /**
-     * Indicates if we are editing a rule or a graph.
-     * @return <code>true</code> if we are editing a graph.
-     */
-    private boolean hasGraphRole() {
-        return Groove.GRAPH_ROLE.equals(role);
+    /** Indicates if the current graph has any load errors. */
+    private boolean hasErrors() {
+    	return errors != null;
+    }
+    
+    /** Returns the collection of load errors in the current graph. */
+    private Collection<String> getErrors() {
+    	return this.errors;
+    }
+    
+    /** Sets the load errors in the current graph to a given collection. */
+    private void setErrors(Collection<String> errors) {
+    	this.errors = errors;
     }
 
     /**
+	 * Indicates if we are editing a rule or a graph.
+	 * @return <code>true</code> if we are editing a graph.
+	 */
+	private boolean hasGraphRole() {
+	    return Groove.GRAPH_ROLE.equals(role);
+	}
+
+	/**
      * Returns a textual representation of the graph type,
      * with the first letter capitalised on demand.
      * @param upper if <code>true</code>, the first letter is capitalised
@@ -1121,7 +1144,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     protected void updateStatus() {
         int elementCount = getModel().getRootCount() - getModel().getGrayedOut().size();
         getStatusBar().setText(""+elementCount+" visible elements");
-    	getErrorPanel().setErrors(toView().getErrors());
+        List<String> errors = new ArrayList<String>();
+        if (hasErrors()) {
+        	errors.addAll(getErrors());
+        }
+        errors.addAll(toView().getErrors());
+    	getErrorPanel().setErrors(errors);
     }
     
     /** Sets the property whether all inserted cells are automatically selected. */
@@ -1280,6 +1308,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 
     /** Flag indicating if the editor is editing a graph or a rule. */
     private String role;
+    
+    /** Collection of errors in the currently loaded graph; <code>null</code> if there are none. */
+    private Collection<String> errors;
     
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
@@ -1716,7 +1747,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.36 $
+     * @version $Revision: 1.37 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

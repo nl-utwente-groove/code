@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.8 2007-05-14 19:52:22 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.9 2007-05-30 21:30:26 rensink Exp $
  */
 package groove.io;
 
@@ -54,7 +54,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -107,16 +107,10 @@ public class DefaultGxl extends AbstractXml {
 	@Override
 	protected Pair<Graph,Map<String,Node>> unmarshalGraphMap(File file) throws IOException {
 		Graph result;
-		Map<String, Node> conversion;
-//		try {
-			groove.gxl.Graph gxlGraph = unmarshalGxlGraph(file);
-			Pair<Graph, Map<String, Node>> attrGraph = gxlToAttrGraph(gxlGraph);
-			result = attrToNormGraph(attrGraph.first());
-			conversion = attrGraph.second();
-//		} catch (FileNotFoundException exc) {
-//			result = getGraphFactory().newGraph();
-//			conversion = new HashMap<String,Node>();
-//		}
+		groove.gxl.Graph gxlGraph = unmarshalGxlGraph(file);
+		Pair<Graph, Map<String, Node>> attrGraph = gxlToAttrGraph(gxlGraph);
+		result = attrToNormGraph(attrGraph.first());
+		Map<String, Node> conversion = attrGraph.second();
 		GraphInfo.setFile(result, file);
 		PriorityFileName priorityName = new PriorityFileName(file);
 		GraphInfo.setName(result, priorityName.getActualName());
@@ -371,9 +365,9 @@ public class DefaultGxl extends AbstractXml {
             Reader reader = new FileReader(file);
             unmarshaller.unmarshal(reader);
         } catch (MarshalException e) {
-            throw new IOException(String.format("Error while unmarshalling %s: %s", file, e.getMessage()));
+            throw new IOException(String.format("Error in %s: %s", file, e.getMessage()));
         } catch (ValidationException e) {
-            throw new IOException(String.format("Error while unmarshalling %s: %s", file, e.getMessage()));
+            throw new IOException(String.format("Error in %s: %s", file, e.getMessage()));
         }
 
         // now convert the gxl to an attribute graph        

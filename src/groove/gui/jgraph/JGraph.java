@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.17 2007-05-29 21:36:07 rensink Exp $
+ * $Id: JGraph.java,v 1.18 2007-05-30 21:30:11 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -79,7 +79,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.17 $ $Date: 2007-05-29 21:36:07 $
+ * @version $Revision: 1.18 $ $Date: 2007-05-30 21:30:11 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -725,7 +725,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * @return an action to set the line style of the currently selected j-edge.
      */
     public JCellEditAction getSetLineStyleAction(int lineStyle) {
-        JCellEditAction result = setLineStyleActionMap.get(Options.getLineStyleKey(lineStyle));
+        JCellEditAction result = setLineStyleActionMap.get(Options.getLineStyleName(lineStyle));
         if (result == null) {
             setLineStyleActionMap.put(Options.getLineStyleName(lineStyle), result = new SetLineStyleAction(lineStyle));
             addAccelerator(result);

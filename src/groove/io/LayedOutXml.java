@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.13 2007-05-25 07:42:45 rensink Exp $
+ * $Id: LayedOutXml.java,v 1.14 2007-05-30 21:30:26 rensink Exp $
  */
 package groove.io;
 
@@ -26,6 +26,7 @@ import groove.gui.jgraph.JAttr;
 import groove.gui.layout.JEdgeLayout;
 import groove.gui.layout.JVertexLayout;
 import groove.gui.layout.LayoutMap;
+import groove.util.Converter;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
@@ -52,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class LayedOutXml extends AbstractXml implements Xml<Graph> {
     /** 
@@ -84,7 +85,7 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
     /** Line for the layoutfile with the version information. */
     static private final String VERSION_LINE = String.format("%s %d", VERSION_PREFIX, CURRENT_VERSION_NUMBER);
     /** Error message in case an error is detected in the layout file. */
-    static private final String LAYOUT_FORMAT_ERROR = "Format error in layout file";
+    static private final String LAYOUT_FORMAT_ERROR = String.format("Error in %s file", Groove.LAYOUT_EXTENSION);
     /** Double quote character. */
     static private final char DOUBLE_QUOTE = '\"';
     /** Splitting expression for non-empty white space. */
@@ -234,15 +235,15 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
 	 * Inserts vertex layout information in a given layout map, based on a
 	 * string array description and node map.
 	 */
-    protected void putVertexLayout(LayoutMap<Node, Edge> layoutMap, String[] parts, Map<String, Node> nodeMap) throws IOException {
+    protected void putVertexLayout(LayoutMap<Node, Edge> layoutMap, String[] parts, Map<String, Node> nodeMap) throws FormatException {
         Node node = nodeMap.get(parts[1]);
         if (node == null) {
-            throw new IOException(LAYOUT_FORMAT_ERROR + ": unknown node " + parts[1]);
+            throw new FormatException("Unknown node " + parts[1]);
         }
         Rectangle bounds = toBounds(parts, 2);
 //        bounds.setSize(JAttr.DEFAULT_NODE_SIZE);
         if (bounds == null) {
-            throw new IOException(LAYOUT_FORMAT_ERROR + ": bounds for " + parts[1] + " cannot be parsed");
+            throw new FormatException("Bounds for " + parts[1] + " cannot be parsed");
         }
         layoutMap.putNode(node, new JVertexLayout(bounds));
     }
@@ -283,7 +284,7 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
             Point2D labelPosition = calculateLabelPosition(toPoint(parts, 4), points, version, source == target);
             layoutMap.putEdge(edge, new JEdgeLayout(points, labelPosition, lineStyle));
         } catch (NumberFormatException exc) {
-            throw new FormatException("Number format error " + exc.getMessage());
+            throw new FormatException("Number format error " + Converter.toUppercase(exc.getMessage(), false));
         }
         return edge;
     }
