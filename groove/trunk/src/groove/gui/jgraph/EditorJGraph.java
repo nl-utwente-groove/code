@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorJGraph.java,v 1.6 2007-05-29 06:52:36 rensink Exp $
+ * $Id: EditorJGraph.java,v 1.7 2007-05-30 21:30:11 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -45,7 +45,7 @@ import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
  * In particular, provides a method to add and remove points
  * from edges.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
   */
 public class EditorJGraph extends JGraph {           
     /**
@@ -57,7 +57,7 @@ public class EditorJGraph extends JGraph {
         super(new EditorJModel(editor.getOptions()), false);
         this.editor = editor;
         setMarqueeHandler(createMarqueeHandler());
-        getGraphLayoutCache().setSelectsLocalInsertedCells(true);
+//        getGraphLayoutCache().setSelectsLocalInsertedCells(true);
     }    
     
     @Override

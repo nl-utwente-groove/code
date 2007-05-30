@@ -17,7 +17,7 @@ import javax.swing.ScrollPaneConstants;
  * Panel showing a list of error messages.
  * The panel hides itself when the error list is empty.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ErrorListPanel extends JPanel {
 	/**
@@ -39,14 +39,18 @@ public class ErrorListPanel extends JPanel {
 	 */
 	public void setErrors(List<String> errors) {
 		if (errors.isEmpty()) {
-			setVisible(false);
-			getErrorArea().setText("");
+			if (isVisible()) {
+				setVisible(false);
+				getErrorArea().setText("");
+			}
 		} else {
 			StringBuffer text = new StringBuffer();
 			text.append(Groove.toString(errors.toArray(), "", "", "\n"));
 			getErrorArea().setText(text.toString());
 			getErrorArea().setSelectionStart(0);
-			setVisible(true);
+			if (! isVisible()) {
+				setVisible(true);
+			}
 		}
 	}
 

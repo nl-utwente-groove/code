@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphInfo.java,v 1.10 2007-05-14 18:52:01 rensink Exp $
+ * $Id: GraphInfo.java,v 1.11 2007-05-30 21:30:27 rensink Exp $
  */
 package groove.graph;
 
@@ -29,7 +29,7 @@ import java.util.Map;
  * A class that provides the keys needed for storing and retrieving data
  * needed for specific features.
  * @author Harmen Kastenberg
- * @version $Revision: 1.10 $ $Date: 2007-05-14 18:52:01 $
+ * @version $Revision: 1.11 $ $Date: 2007-05-30 21:30:27 $
  */
 public class GraphInfo {
 	/** 
@@ -46,6 +46,15 @@ public class GraphInfo {
 			result = graph.setInfo(new GraphInfo());
 		}
 		return result;
+	}
+	
+	/**
+	 * Convenience method to indicate if  a graph has a non-empty set of errors.
+	 * @see #getErrors()
+	 */
+	public static boolean hasErrors(GraphShape graph) {
+	    GraphInfo graphInfo = graph.getInfo();
+	    return graphInfo != null && graphInfo.getErrors() != null;
 	}
 	
 	/**

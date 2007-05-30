@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.13 2007-05-28 21:32:43 rensink Exp $
+ * $Id: JVertexView.java,v 1.14 2007-05-30 21:30:11 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -60,7 +60,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class JVertexView extends VertexView {
     /**
@@ -333,7 +333,7 @@ public class JVertexView extends VertexView {
     }
 
     /**
-     * Computes a perimeter point on a rectangle, for a perpendicular line
+     * Computes a perimeter point on a rectangle, for a manhattan-style line
      * entering horizontally or vertically.
      * @param bounds the bounds of the rectangle
      * @param p the reference point for the perimeter point

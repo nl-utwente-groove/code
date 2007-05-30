@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeView.java,v 1.5 2007-05-28 21:32:44 rensink Exp $
+ * $Id: JEdgeView.java,v 1.6 2007-05-30 21:30:11 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -47,7 +47,7 @@ import org.jgraph.graph.PortView;
  * An edge view that uses the <tt>getText()</tt> of the underlying edge as a label. Moreover, new
  * views take care to bend to avoid overlap, and offer functionality to add and remove points.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class JEdgeView extends EdgeView {
 
@@ -255,7 +255,9 @@ public class JEdgeView extends EdgeView {
      * Should only be called if <code>getSource() == getTarget()</code>.
      */
     protected void routeSelfEdge() {
-        if (getPointCount() <= 3) {
+    	int lineStyle = GraphConstants.getLineStyle(getAllAttributes());
+    	boolean isManhattan = lineStyle == JAttr.STYLE_MANHATTAN;
+        if (isManhattan ? getPointCount() == 2 : getPointCount() <= 3) {
             List<Object> points = getViewPoints();
             Point2D startPoint = toPoint(points.get(0));
             Point2D endPoint = toPoint(points.get(1));
@@ -268,8 +270,10 @@ public class JEdgeView extends EdgeView {
                         .getY());
             }
             points.add(1,createPointPerpendicular(startPoint, endPoint, true));
-            points.add(1,createPointPerpendicular(startPoint, endPoint, false));
-            setLineStyle(getPreferredLinestyle());
+            if (!isManhattan) {
+				points.add(1, createPointPerpendicular(startPoint, endPoint, false));
+				setLineStyle(getPreferredLinestyle());
+			}
             GraphConstants.setPoints(getCell().getAttributes(), points);
         }
     }

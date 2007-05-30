@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ErrorDialog.java,v 1.2 2007-04-19 06:39:26 rensink Exp $
+ * $Id: ErrorDialog.java,v 1.3 2007-05-30 21:30:26 rensink Exp $
  */
 package groove.gui;
 
@@ -38,7 +38,7 @@ import javax.swing.border.EmptyBorder;
 /**
  * Implements a dialog with the ability to show details about the error.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ErrorDialog extends JDialog {
 	/** Dialog title. */
@@ -80,7 +80,7 @@ public class ErrorDialog extends JDialog {
      * given component, a simple error message, and an exception giving more
      * detail about the error. The dialog is not yet shown.
      */
-    public ErrorDialog(Component component, String message, Exception exc) {
+    public ErrorDialog(Component component, String message, Throwable exc) {
         super(getParentFrame(component), ERROR_MESSAGE_TEXT, true);
         setLocationRelativeTo(component);
         this.exc = exc;
@@ -196,7 +196,7 @@ public class ErrorDialog extends JDialog {
     /** The panel upon which <tt>detailsArea</tt> is shown */
     protected final JScrollPane detailsTextPane;
     /** The exception reported by this dialog. */
-    protected final Exception exc;
+    protected final Throwable exc;
 
     /** The level of details in the error dialog. */
     protected int detailsLevel = NO_DETAILS;
