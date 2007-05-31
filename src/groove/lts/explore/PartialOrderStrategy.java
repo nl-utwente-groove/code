@@ -13,12 +13,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PartialOrderStrategy.java,v 1.1 2007-05-30 08:22:33 kastenberg Exp $
+ * $Id: PartialOrderStrategy.java,v 1.2 2007-05-31 11:25:28 kastenberg Exp $
  */
 
 package groove.lts.explore;
 
-import groove.gui.DependencyDialog;
 import groove.gui.Simulator;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
@@ -50,7 +49,7 @@ import javax.swing.JFileChooser;
  * <i>maximal</i> state is found; that is, a state that only loops back to already explored states.
  * The maximum depth of the search can be set; a depth of 0 means unbounded depth.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class PartialOrderStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
