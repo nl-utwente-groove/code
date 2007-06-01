@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.16 2007-04-30 19:53:27 rensink Exp $
+ * $Id: SPOEvent.java,v 1.17 2007-06-01 18:04:18 rensink Exp $
  */
 package groove.trans;
 
@@ -50,7 +50,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2007-04-30 19:53:27 $
+ * @version $Revision: 1.17 $ $Date: 2007-06-01 18:04:18 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -405,7 +405,7 @@ public class SPOEvent implements RuleEvent {
 	 * Creates a matcher for this event in a given host graph, based on the rule and anchor map.
 	 */
 	private Matching createMatcher(Graph host) {
-		DefaultMatching result = new DefaultMatching(getRule(), host) {
+		DefaultMatching result = new DefaultMatching(getRule(), host, rule.getProperties().isInjective()) {
 			@Override
 			protected VarNodeEdgeMap createElementMap() {
 				return getAnchorMap();

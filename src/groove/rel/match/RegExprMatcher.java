@@ -1,9 +1,10 @@
 /*
- * $Id: RegExprMatcher.java,v 1.2 2007-03-27 14:18:34 rensink Exp $
+ * $Id: RegExprMatcher.java,v 1.3 2007-06-01 18:04:19 rensink Exp $
  */
 package groove.rel.match;
 
 import groove.graph.Label;
+import groove.graph.Node;
 import groove.graph.match.DefaultMatcher;
 import groove.graph.match.SearchPlanFactory;
 import groove.rel.VarMorphism;
@@ -15,15 +16,16 @@ import java.util.Map;
 /**
  * Simulation from a {@link groove.rel.VarGraph} in a {@link groove.graph.Graph}. 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class RegExprMatcher extends DefaultMatcher {
 	static private final SearchPlanFactory searchPlanFactory = new RegExprSearchPlanFactory();
 	/**
      * Creates a simulation on the basis of a given regular expression morphism.
+	 * @param injective flag indicating that the mething should be injective
      */
-    public RegExprMatcher(VarMorphism mapping) {
-        super(mapping);
+    public RegExprMatcher(VarMorphism mapping, boolean injective) {
+        super(mapping, injective);
         putAllVar(mapping.getValuation());
     }
 
@@ -81,7 +83,18 @@ public class RegExprMatcher extends DefaultMatcher {
 	 */
     @Override
     protected VarNodeEdgeMap createSingularMap() {
-        return new VarNodeEdgeHashMap();
+    	if (isInjective()) {
+    		// returns a hash map that maintains the usedNodes
+    		// when nodes are added or removed.
+    		return new VarNodeEdgeHashMap() {
+				@Override
+				protected Map<Node, Node> createNodeMap() {
+					return createUsedNodeSensitiveNodeMap();
+				}
+    		};
+    	} else {
+    		return new VarNodeEdgeHashMap();
+    	}
     }
     
     /** This implementation returns a {@link RegExprSearchPlanFactory}. */

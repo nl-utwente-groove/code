@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.14 2007-05-09 22:53:34 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.15 2007-06-01 18:04:18 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import groove.view.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -249,7 +249,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * @see SystemProperties#isAttributed()
      */
 	public void testConsistent() throws FormatException {
-		String attributeKey = SystemProperties.ATTRIBUTE_SUPPORT;
+		String attributeKey = SystemProperties.ATTRIBUTES_KEY;
 		String attributeProperty = getProperties().getProperty(attributeKey);
 		if (getProperties().isAttributed()) {
 			if (hasIsolatedNodes()) {
@@ -510,7 +510,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * @see #newMatcher(VarMorphism)
      */
     public Matching newMatcher(Graph graph) {
-    	return new DefaultMatching(this, graph);
+    	return new DefaultMatching(this, graph, getProperties().isInjective());
     }
     
     /**

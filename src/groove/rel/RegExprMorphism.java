@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExprMorphism.java,v 1.4 2007-04-19 11:33:55 rensink Exp $
+ * $Id: RegExprMorphism.java,v 1.5 2007-06-01 18:04:13 rensink Exp $
  */
 package groove.rel;
 
@@ -31,7 +31,7 @@ import java.util.Map;
  * Implementation of the {@link groove.rel.VarMorphism} interface that
  * implements the required variable by putting it into the element map.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
     /**
@@ -86,7 +86,7 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
 
     /**
      * This implementation returns a {@link RegExprMorphism}.
-     * The simulation is required to be a {@link RegExprSimulation};
+     * The simulation is required to be a {@link RegExprMatcher};
      * the variable map is taken from the simulation.
      */
     @Override
@@ -105,7 +105,7 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
      */
     @Override
     protected Matcher createMatcher() {
-        return new RegExprMatcher(this);
+        return new RegExprMatcher(this, false);
     }
     
     /**

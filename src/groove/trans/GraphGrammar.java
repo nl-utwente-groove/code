@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.16 2007-05-18 08:55:28 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.17 2007-06-01 18:04:18 rensink Exp $
  */
 package groove.trans;
 
@@ -30,7 +30,7 @@ import groove.view.FormatException;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2007-05-18 08:55:28 $
+ * @version $Revision: 1.17 $ $Date: 2007-06-01 18:04:18 $
  */
 public class GraphGrammar extends RuleSystem {   
     /**
@@ -168,7 +168,7 @@ public class GraphGrammar extends RuleSystem {
 		}
 		// chain the consistency problems in the start graph
 		if (!getProperties().isAttributed() && ValueNode.hasValueNodes(getStartGraph())) {
-			String attributeKey = SystemProperties.ATTRIBUTE_SUPPORT;
+			String attributeKey = SystemProperties.ATTRIBUTES_KEY;
 			String attributeProperty = getProperties().getProperty(attributeKey);
 			if (attributeProperty == null) {
 				errors.add(String.format("Start graph uses attributes, but \"%s\" not declared", attributeKey));

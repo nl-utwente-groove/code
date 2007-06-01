@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.2 2007-03-27 14:18:35 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.3 2007-06-01 18:04:14 rensink Exp $
  */
 package groove.graph.match;
 
@@ -51,7 +51,7 @@ public class NodeSearchItem implements SearchItem {
 				undo();
 			}
 			if (preMatched) {
-				result = findCalled ? false : select(getUniqueImage());
+				result = findCalled ? false : select(getSingular());
 			} else {
 				result = false;
 				Iterator<? extends Node> imageIter = getImageIter();
@@ -73,7 +73,7 @@ public class NodeSearchItem implements SearchItem {
 		 */
 		public boolean select(Node image) {
 //			Node currentImage = matcher.getSingularMap().getNode(node);
-			boolean result = !preMatched || getUniqueImage().equals(image);
+			boolean result = !preMatched || getSingular().equals(image);
 			if (result) {
 				setSelected(image);
 			}
@@ -124,7 +124,7 @@ public class NodeSearchItem implements SearchItem {
 		 */
 		protected void setSelected(Node image) {
 			assert !isSelected() : String.format("Image %s already selected for node %s", image, node);
-			assert preMatched == (getUniqueImage() != null);
+			assert preMatched == (getSingular() != null);
 			if (! preMatched) {
 				matcher.getSingularMap().putNode(node, image);
 			}
@@ -144,7 +144,13 @@ public class NodeSearchItem implements SearchItem {
 			selected = null;
 		}
 
-		protected Node getUniqueImage() {
+		/** 
+		 * Returns the singular image of the searched edge,
+		 * if indeed the image is singular.
+		 * Returns <code>null</code> if there are either fewer or more than
+		 * one image.
+		 */
+		protected Node getSingular() {
 			return matcher.getSingularMap().getNode(node);
 		}
 		
@@ -198,6 +204,7 @@ public class NodeSearchItem implements SearchItem {
 		private final boolean preMatched;
 	}
 
+	/** Constructs a new search item, for a given node. */
 	public NodeSearchItem(Node node) {
 		this.node = node;
 	}

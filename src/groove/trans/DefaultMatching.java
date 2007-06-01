@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultMatching.java,v 1.6 2007-04-19 11:33:50 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.7 2007-06-01 18:04:18 rensink Exp $
  */
 package groove.trans;
 
@@ -37,7 +37,7 @@ import groove.util.FilterIterator;
  * Expecially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
@@ -45,19 +45,13 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * The pattern morphism of the graph condition is disregarded.
      * @param condition the graph condition for which this is a matching
      * @param graph the graph to be matched
+     * @param injective TODO
      */
-    public DefaultMatching(DefaultGraphCondition condition, Graph graph) {
+    public DefaultMatching(DefaultGraphCondition condition, Graph graph, boolean injective) {
         super(condition.getTarget(), graph);
-//        this.ruleFactory = ruleFactory;
         this.condition = condition;
+        this.injective = injective;
     }
-//
-//    /**
-//     * Returns the rule factory instance of this mathing.
-//     */
-//    public RuleFactory getRuleFactory() {
-//    	return ruleFactory;
-//    }
 
     public DefaultGraphCondition getCondition() {
         return condition;
@@ -160,7 +154,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      */
     @Override
     protected Matcher createMatcher() {
-        return new MatchingMatcher(this);
+        return new MatchingMatcher(this, injective);
     }
 //
 //    /**
@@ -175,14 +169,13 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
 
     @Override
     protected DefaultMatching createMorphism(final NodeEdgeMap sim) {
-    	DefaultMatching result = new DefaultMatching(getCondition(), cod()) {
+    	DefaultMatching result = new DefaultMatching(getCondition(), cod(), injective) {
             @Override
             protected VarNodeEdgeMap createElementMap() {
                 return (VarNodeEdgeMap) sim;
             }
         };
         return result;
-//    	return (DefaultMatching) getRuleFactory().createMatching(getCondition(), (VarNodeEdgeMap) sim, cod());
     }
 
     /**
@@ -215,6 +208,8 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * The graph condition for which this is a matching.
      */
     private final DefaultGraphCondition condition;
+    /** Flag indicating that matching should be injective. */
+    private final boolean injective;
 //
 //    /**
 //     * Factory instance for creating the correct simulation.
