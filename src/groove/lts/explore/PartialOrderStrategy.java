@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PartialOrderStrategy.java,v 1.2 2007-05-31 11:25:28 kastenberg Exp $
+ * $Id: PartialOrderStrategy.java,v 1.3 2007-06-01 12:31:08 kastenberg Exp $
  */
 
 package groove.lts.explore;
@@ -49,7 +49,7 @@ import javax.swing.JFileChooser;
  * <i>maximal</i> state is found; that is, a state that only loops back to already explored states.
  * The maximum depth of the search can be set; a depth of 0 means unbounded depth.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class PartialOrderStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
@@ -90,7 +90,6 @@ public class PartialOrderStrategy extends AbstractStrategy {
             	addTransition(atState, application);
             }
         }
-        getGTS().setFixed();
         return result;
     }
 
@@ -142,8 +141,6 @@ public class PartialOrderStrategy extends AbstractStrategy {
     					ruleName = line.substring(0,endMark);
     				}
     				addDependency(keyRuleName, ruleName);
-//    				line = line.substring(nextSeparator+1);
-//    				line = line.trim();
     			} while (nextSeparator != -1);
     			line = in.readLine();
     		}
@@ -169,24 +166,6 @@ public class PartialOrderStrategy extends AbstractStrategy {
     		result = dependenciesRuleNames.get(rule1).add(rule2);
     	}
     	return result;
-/*
-    	boolean result = false;
-    	Rule key = null;
-    	Rule value = null;
-    	for (Rule rule: rules) {
-    		String ruleName = rule.getName().name();
-    		if (ruleName.equals(rule1)) {
-    			key = rule;
-    		}
-    		if (ruleName.equals(rule2)) {
-    			value = rule;
-    		}
-    	}
-    	if (key != null && value != null) {
-    		result = addDependency(key, value);
-    	}
-    	return result;
-*/
     }
 
     /**
