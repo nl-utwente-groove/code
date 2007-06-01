@@ -48,11 +48,11 @@ public class SystemProperties extends java.util.Properties {
     /** 
      * Indicates if the rule system is attributed, according to the
      * properties. 
-     * @see #ATTRIBUTE_SUPPORT
+     * @see #ATTRIBUTES_KEY
      * @see #ATTRIBUTES_YES
      */
     public boolean isAttributed() {
-    	String attributed = getProperty(SystemProperties.ATTRIBUTE_SUPPORT);
+    	String attributed = getProperty(SystemProperties.ATTRIBUTES_KEY);
     	return attributed != null && attributed.equals(SystemProperties.ATTRIBUTES_YES);
     }
     
@@ -61,16 +61,16 @@ public class SystemProperties extends java.util.Properties {
      * @param attributed <code>true</code> if the rules have attributes
      */
     public void setAttributed(boolean attributed) {
-    	setProperty(ATTRIBUTE_SUPPORT, attributed ? ATTRIBUTES_YES : ATTRIBUTES_NO);
+    	setProperty(ATTRIBUTES_KEY, attributed ? ATTRIBUTES_YES : ATTRIBUTES_NO);
     }
 
     /** 
-     * Returns a list of control labels, according to the {@link #CONTROL_LABELS}
+     * Returns a list of control labels, according to the {@link #CONTROL_LABELS_KEY}
      * property of the rule system.
-     * @see #CONTROL_LABELS
+     * @see #CONTROL_LABELS_KEY
      */
     public List<String> getControlLabels() {
-    	String controlLabels = getProperty(SystemProperties.CONTROL_LABELS);
+    	String controlLabels = getProperty(SystemProperties.CONTROL_LABELS_KEY);
     	if (controlLabels == null) {
     		return Collections.emptyList();
     	} else {
@@ -80,19 +80,19 @@ public class SystemProperties extends java.util.Properties {
 
     /** 
      * Sets the control labels property.
-     * @see #CONTROL_LABELS
+     * @see #CONTROL_LABELS_KEY
      */
     public void setControlLabels(List<String> controlLabels) {
-    	setProperty(CONTROL_LABELS, Groove.toString(controlLabels.toArray(), "", "", " "));
+    	setProperty(CONTROL_LABELS_KEY, Groove.toString(controlLabels.toArray(), "", "", " "));
     }
 
     /** 
-     * Returns a list of common labels, according to the {@link #COMMON_LABELS}
+     * Returns a list of common labels, according to the {@link #COMMON_LABELS_KEY}
      * property of the rule system.
-     * @see #COMMON_LABELS
+     * @see #COMMON_LABELS_KEY
      */
     public List<String> getCommonLabels() {
-    	String commonLabels = getProperty(SystemProperties.COMMON_LABELS);
+    	String commonLabels = getProperty(SystemProperties.COMMON_LABELS_KEY);
     	if (commonLabels == null) {
     		return Collections.emptyList();
     	} else {
@@ -102,11 +102,46 @@ public class SystemProperties extends java.util.Properties {
 
     /** 
      * Sets the common labels property.
-     * @see #COMMON_LABELS
+     * @see #COMMON_LABELS_KEY
      */
     public void setCommonLabels(List<String> commonLabels) {
-    	setProperty(COMMON_LABELS, Groove.toString(commonLabels.toArray(), "", "", " "));
+    	setProperty(COMMON_LABELS_KEY, Groove.toString(commonLabels.toArray(), "", "", " "));
     }
+    
+    /** 
+     * Sets the injectivity property to a certain value.
+     * @param injective if <code>true</code>, non-injective matches are disallowed
+     */
+    public void setInjective(boolean injective) {
+    	setProperty(INJECTIVE_KEY, ""+injective);
+    }
+    
+    /**
+     * Returns the value of the injectivity property.
+     * @return if <code>true</code>, non-injective matches are disallowed
+     */
+    public boolean isInjective() {
+    	String result = getProperty(INJECTIVE_KEY);
+    	return result != null && new Boolean(result);
+    }
+    
+    /** 
+     * Sets the dangling edge check to a certain value.
+     * @param dangling if <code>true</code>, matches with dangling edges are disallowed
+     */
+    public void setCheckDangling(boolean dangling) {
+    	setProperty(DANGLING_KEY, ""+dangling);
+    }
+    
+    /**
+     * Returns the value of the dangling edge property.
+     * @return if <code>true</code>, matches with dangling edges are disallowed.
+     */
+    public boolean isCheckDangling() {
+    	String result = getProperty(DANGLING_KEY);
+    	return result != null && new Boolean(result);
+    }
+    
 //
 //    /** 
 //     * Returns a list of graph property names, according to the {@link #GRAPH_PROPERTIES}
@@ -236,26 +271,38 @@ public class SystemProperties extends java.util.Properties {
      * for optimal performance, presumably because they occur infrequently
      * or indicate a place where rules are likely to be applicable.
    	 */
-	static public final String CONTROL_LABELS = "controlLabels";
+	static public final String CONTROL_LABELS_KEY = "controlLabels";
 	/**
 	 * Property name of the list of common labels of a graph grammar.
      * The control labels are those labels which should be matched last
      * for optimal performance, presumably because they occur frequently.
 	 */
-	static public final String COMMON_LABELS = "commonLabels";
+	static public final String COMMON_LABELS_KEY = "commonLabels";
 	/** 
 	 * Property that determines if the graph grammar uses attributes.
 	 * @see #ATTRIBUTES_YES
 	 */
-	static public final String ATTRIBUTE_SUPPORT = "attributeSupport";
+	static public final String ATTRIBUTES_KEY = "attributeSupport";
 	/**
-	 * Value of {@link #ATTRIBUTE_SUPPORT} that means attributes are used.
+	 * Value of {@link #ATTRIBUTES_KEY} that means attributes are used.
 	 */
 	static public final String ATTRIBUTES_YES = "1";
 	/**
-	 * Value of {@link #ATTRIBUTE_SUPPORT} that means attributes are not used.
+	 * Value of {@link #ATTRIBUTES_KEY} that means attributes are not used.
 	 */
 	static public final String ATTRIBUTES_NO = "0";
+	/** 
+	 * Property name of the injectivity of the rule system.
+	 * If <code>true</code>, all rules should be matched injectively.
+	 * Default is <code>false</code>.
+	 */
+	static public final String INJECTIVE_KEY = "matchInjective";
+	/** 
+	 * Property name of the dankling edge check.
+	 * If <code>true</code>, all matches that leave dangling edges are invalid.
+	 * Default is <code>false</code>.
+	 */
+	static public final String DANGLING_KEY = "checkDangling";
 //	/** 
 //	 * Property that determines the graph properties that can be stored.
 //	 */
@@ -267,39 +314,22 @@ public class SystemProperties extends java.util.Properties {
 	static public final Map<String,Property<String>> DEFAULT_KEYS;
 	
 	static {
+		String attributesDescription = String.format("'%s' for default attributes", ATTRIBUTES_YES);
+		StringBuilder attributesCommentBuilder = new StringBuilder();
+		attributesCommentBuilder.append("Indicates whether the graphs and rules are attributed\n");
+		attributesCommentBuilder.append(String.format("Use '%s' for default attributes, '%s' or empty for no attributes",
+		ATTRIBUTES_YES, ATTRIBUTES_NO));
+		String attributesComment = Converter.HTML_TAG.on(Converter.toHtml(attributesCommentBuilder)).toString();
 		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>();
-		defaultKeys.put(ATTRIBUTE_SUPPORT, new Property<String>() {
+		defaultKeys.put(ATTRIBUTES_KEY, new Property<String>(attributesDescription, attributesComment) {
 			@Override
 			public boolean isSatisfied(String value) {
 				return value.equals(ATTRIBUTES_YES) || value.equals(ATTRIBUTES_NO);
 			}
-			
-			@Override
-			public String getDescription() {
-				return String.format("'%s' for default attributes", ATTRIBUTES_YES);
-			}
-			
-			@Override
-			public String getComment() {
-				StringBuilder result = new StringBuilder();
-				result.append("Indicates whether the graphs and rules are attributed\n");
-				result.append(String.format("Use '%s' for default attributes, '%s' or empty for no attributes",
-				ATTRIBUTES_YES, ATTRIBUTES_NO));
-				return Converter.HTML_TAG.on(Converter.toHtml(result)).toString();
-			}
 		});
-		defaultKeys.put(CONTROL_LABELS, new Property.True<String>() {
-			@Override
-			public String getComment() {
-				return "A list of rare labels, used to optimise rule matching";
-			}
-		});
-		defaultKeys.put(COMMON_LABELS, new Property.True<String>() {
-			@Override
-			public String getComment() {
-				return "A list of frequent labels, used to optimise rule matching";
-			}
-		});
+		defaultKeys.put(CONTROL_LABELS_KEY, new Property.True<String>("A list of rare labels, used to optimise rule matching"));
+		defaultKeys.put(COMMON_LABELS_KEY, new Property.True<String>("A list of frequent labels, used to optimise rule matching"));
+		defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean("Flag controlling if matches should be injective", true));
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
 	}
 	

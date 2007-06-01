@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.14 2007-05-09 22:53:34 rensink Exp $
+ * $Id: SPORule.java,v 1.15 2007-06-01 18:04:18 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -125,7 +125,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     public void testConsistent() throws FormatException {
     	super.testConsistent();
     	if (!getProperties().isAttributed() && ValueNode.hasValueNodes(rhs())) {
-    		String attributeKey = SystemProperties.ATTRIBUTE_SUPPORT;
+    		String attributeKey = SystemProperties.ATTRIBUTES_KEY;
     		String attributeProperty = getProperties().getProperty(attributeKey);
     		if (attributeProperty == null) {
     			throw new FormatException("Rule uses attributes, but \"%s\" not declared", attributeKey);

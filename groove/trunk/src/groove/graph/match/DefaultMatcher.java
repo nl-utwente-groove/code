@@ -12,28 +12,33 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatcher.java,v 1.5 2007-04-19 11:33:55 rensink Exp $
+ * $Id: DefaultMatcher.java,v 1.6 2007-06-01 18:04:17 rensink Exp $
  */
 package groove.graph.match;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
+import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.util.Reporter;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * This matcher walks through a search tree built up according to
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultMatcher implements Matcher {
 	/** 
@@ -45,12 +50,26 @@ public class DefaultMatcher implements Matcher {
 
 	/**
      * Constructs a matcher as an extension of a given morphism.
-     * The images of the morphism are not checked for consistency.
+     * A flag controls if matching should be injective.
+     * The pre-existing images of the morphism are not checked for consistency.
      * @param morphism the intended basis of the simulation
      * @ensure <tt>getMorphism() == morph</tt>
      */
     public DefaultMatcher(Morphism morphism) {
+        this(morphism, false);
+    }
+
+	/**
+     * Constructs a matcher as an extension of a given morphism.
+     * A flag controls if matching should be injective.
+     * The pre-existing images of the morphism are not checked for consistency.
+     * @param morphism the intended basis of the simulation
+     * @param injective flag to indicate that the matching should be injective
+     * @ensure <tt>getMorphism() == morph</tt>
+     */
+    public DefaultMatcher(Morphism morphism, boolean injective) {
         this.morphism = morphism;
+        this.injective = injective;
     }
 
     /**
@@ -86,7 +105,42 @@ public class DefaultMatcher implements Matcher {
      * final result of the simulation.
      */
     protected NodeEdgeMap createSingularMap() {
-    	return new NodeEdgeHashMap();
+    	if (injective) {
+    		// returns a hash map that maintains the usedNodes
+    		// when nodes are added or removed.
+    		return new NodeEdgeHashMap() {
+				@Override
+				protected Map<Node, Node> createNodeMap() {
+					return createUsedNodeSensitiveNodeMap();
+				}
+    		};
+    	} else {
+    		return new NodeEdgeHashMap();
+    	}
+    }
+    
+    /** 
+     * Callback mathod to create the node map part of the singular map.
+     * This implementation returns a map that maintains the {@link #usedNodes}
+     * whenever an entry is inserted into or removed from the map.
+     */
+    protected Map<Node,Node> createUsedNodeSensitiveNodeMap() {
+		return new HashMap<Node,Node>() {
+			@Override
+			public Node put(Node key, Node value) {
+				// also adds the node to the used nodes
+				getUsedNodes().add(value);
+				return super.put(key, value);
+			}
+
+			@Override
+			public Node remove(Object key) {
+				Node result = super.remove(key);
+				// also remove the node from the used nodes
+				getUsedNodes().remove(result);
+				return result;
+			}
+		};
     }
     
 	public Morphism getMorphism() {
@@ -179,6 +233,13 @@ public class DefaultMatcher implements Matcher {
 	}
     
     /**
+	 * Indicates if this matching is (to be) injective.
+	 */
+	protected final boolean isInjective() {
+		return this.injective;
+	}
+
+	/**
      * We choose object identity as the notion of equality. 
      */
     @Override
@@ -254,6 +315,22 @@ public class DefaultMatcher implements Matcher {
     protected SearchPlanFactory getSearchPlanFactory() {
     	return searchPlanFactory;
     }
+    
+    /** Indicates if a given node of the codomain is available for use
+     * as an image of the match under construction.
+     * This yields <code>true</code> if the match is not injective, or 
+     * the node has not yet been used as image.
+     */
+    boolean isAvailable(Node node) {
+    	return !(injective && getUsedNodes().contains(node));
+    }
+    
+    private Set<Node> getUsedNodes() {
+    	if (usedNodes == null) {
+    		usedNodes = new HashSet<Node>();
+    	}
+    	return usedNodes;
+    }
     /**
      * The underlying morphism of this matcher.
      */
@@ -274,7 +351,12 @@ public class DefaultMatcher implements Matcher {
 	private int keyIndex;
 	/** Flag indicating that the last call of #find() yielded a solution. */
 	private boolean found;
-    
+    /** Flag indicating that the matching should be injective. */
+	private final boolean injective;
+	/** 
+	 * The set of nodes already used as images, used for the injectivity test.
+	 */
+	private Set<Node> usedNodes;
 	/** Reporter instance to profile matcher methods. */
     static protected final Reporter reporter = Matcher.reporter;
     /** Handle for profiling {@link #getRefinement()} */

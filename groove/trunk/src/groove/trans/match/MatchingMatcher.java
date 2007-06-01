@@ -1,5 +1,5 @@
 /*
- * $Id: MatchingMatcher.java,v 1.5 2007-04-19 11:33:54 rensink Exp $
+ * $Id: MatchingMatcher.java,v 1.6 2007-06-01 18:04:03 rensink Exp $
  */
 package groove.trans.match;
 
@@ -15,12 +15,15 @@ import java.util.List;
 /**
  * Matcher that takes conditions into account.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class MatchingMatcher extends RegExprMatcher {
-	/** Constructs a matcher on the basis of a pre-existing mapping. */
-	public MatchingMatcher(Matching mapping) {
-        super(mapping);
+	/** 
+	 * Constructs a matcher on the basis of a pre-existing mapping. 
+	 * @param injective flag indicating that the matching should be injective
+	 */
+	public MatchingMatcher(Matching mapping, boolean injective) {
+        super(mapping, injective);
     }
     
     /** Specialises the return type. */

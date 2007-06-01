@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.4 2007-04-04 07:04:28 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.5 2007-06-01 18:04:17 rensink Exp $
  */
 package groove.graph.match;
 
@@ -36,7 +36,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
-	protected class EdgeRecord<M extends Matcher> implements Record {
+	protected class EdgeRecord<M extends DefaultMatcher> implements Record {
 		/**
 		 * Creates a record based on a given underlying matcher.
 		 */
@@ -136,9 +136,11 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 						result = imageEnd == image.end(duplicates[endIndex]);
 					} else if (isPreMatched(endIndex)) {
 						result = elementMap.getNode(keyEnd) == imageEnd;
-					} else {
+					} else if (matcher.isAvailable(imageEnd)) {
 						Node endImage = elementMap.putNode(keyEnd, imageEnd);
 						assert endImage == null : String.format("Node %s already has image %s in map %s", keyEnd, endImage, matcher.getSingularMap());
+					} else {
+						result = false;
 					}
 				}
 				if (! result) {
@@ -185,6 +187,12 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 			return singular;
 		}
 		
+		/** 
+		 * Returns the singular image of the searched edge,
+		 * if indeed the image is singular according to {@link #isSingular()}.
+		 * Returns <code>null</code> if there are either fewer or more than
+		 * one image.
+		 */
 		protected Edge getSingular() {
 			if (!imagesInitialised) {
 				initImages();
@@ -193,6 +201,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 			return potentialImage;
 		}
 		
+		/** Returns an iterator over the potential images. */
 		protected Iterator<? extends Edge> getPotentialImageIter() {
 			if (potentialImageIter == null) {
 				initImages();
@@ -227,11 +236,21 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 			}
 		}
 		
+		/** 
+		 * Callback method from {@link #initImages()} to indicate
+		 * that there is at most one image of the edge.
+		 * @param image the single image; if <code>null</code>, the
+		 * edge cannot be matched at all
+		 */
 		final protected void setSingular(Edge image) {
 			this.singular = true;
 			this.potentialImage = image;
 		}
 		
+		/**
+		 * Callback method from {@link #initImages()} to pass through
+		 * the set of potential images of the edge.
+		 */
 		final protected void setMultiple(Collection<? extends Edge> imageSet) {
 			this.singular = false;
 			this.potentialImageSet = imageSet;
@@ -363,6 +382,10 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 			return true;
 		}
 
+		/** 
+		 * Returns the singular image of the searched edge.
+		 * Returns <code>null</code> if the edge has no image at all.
+		 */
 		protected Edge getSingular() {
 			if (!imageInitialised) {
 				potentialImage = computeSingular();
@@ -403,14 +426,13 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 
 		/**
 		 * Flag indicating that {@link #computeSingular()} has been called (so
-		 * {@link #singular} and {@link #potentialImage} have valid values).
+		 * {@link #potentialImage} has a valid value).
 		 */
 		private boolean imageInitialised;
 
 		/**
-		 * The single image of {@link EdgeSearchItem#edge}, provided
-		 * {@link #singular} holds. May be <code>null</code> if there is no
-		 * image at all.
+		 * The single image of {@link EdgeSearchItem#edge}. 
+		 * May be <code>null</code> if there is no image at all.
 		 */
 		private Edge potentialImage;
 		/**
@@ -441,11 +463,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	}
 	
 	public Record get(Matcher matcher) {
-//		if (isAllEndsPreMatched()) {
-//			return new SingularEdgeRecord<Matcher>(matcher);
-//		} else {
-			return new EdgeRecord<Matcher>(matcher);
-//		}
+		return new EdgeRecord<DefaultMatcher>((DefaultMatcher) matcher);
 	}
 	
 	/**
