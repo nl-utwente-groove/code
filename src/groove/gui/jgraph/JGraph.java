@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.18 2007-05-30 21:30:11 rensink Exp $
+ * $Id: JGraph.java,v 1.19 2007-06-04 19:46:50 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -79,7 +79,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.18 $ $Date: 2007-05-30 21:30:11 $
+ * @version $Revision: 1.19 $ $Date: 2007-06-04 19:46:50 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -1286,9 +1286,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 		public void update(Observable o, Object arg) {
 			Set<String> changedLabelSet = null;
 			if (arg instanceof ObservableSet.AddUpdate) {
-				changedLabelSet = ((ObservableSet<String>.AddUpdate) arg).getAddedSet();
+				changedLabelSet = ((ObservableSet.AddUpdate) arg).getAddedSet();
 			} else {
-				changedLabelSet = ((ObservableSet<String>.RemoveUpdate) arg).getRemovedSet();
+				changedLabelSet = ((ObservableSet.RemoveUpdate) arg).getRemovedSet();
 			}
 			Set<JCell> changedCellSet = new HashSet<JCell>();
 			for (String label : changedLabelSet) {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractLayouter.java,v 1.4 2007-05-29 21:36:08 rensink Exp $
+ * $Id: AbstractLayouter.java,v 1.5 2007-06-04 19:47:18 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -42,7 +42,7 @@ import org.jgraph.graph.VertexView;
 /**
  * An abstract class for layout actions.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 abstract public class AbstractLayouter implements Layouter {
     /**
@@ -269,19 +269,20 @@ abstract public class AbstractLayouter implements Layouter {
         reporter.start(FINISH);
         final Map<JCell,AttributeMap> change = new HashMap<JCell,AttributeMap>();
         CellView[] cellViews = jgraph.getGraphLayoutCache().getRoots();
-        for (int i = 0; i < cellViews.length; i++) {
-            JCell cell = (JCell) cellViews[i].getCell();
-            GraphConstants.setMoveable(cell.getAttributes(), jmodel.isMoveable(cell));
-            AttributeMap modelAttr = new AttributeMap();
-            if (cellViews[i] instanceof VertexView) {
-                // store the bounds back into the model
-                VertexView vertexView = (VertexView) cellViews[i];
-                GraphConstants.setBounds(modelAttr, vertexView.getCachedBounds());
-            } else {
-                // store the points back into the model
-                GraphConstants.setPoints(modelAttr, ((EdgeView) cellViews[i]).getPoints());
+        for (CellView view: cellViews) {
+            if (view instanceof VertexView || view instanceof EdgeView) {
+                JCell cell = (JCell) view.getCell();
+                GraphConstants.setMoveable(cell.getAttributes(), jmodel.isMoveable(cell));
+                AttributeMap modelAttr = new AttributeMap();
+                if (view instanceof VertexView) {
+                    // store the bounds back into the model
+                    GraphConstants.setBounds(modelAttr, ((VertexView) view).getCachedBounds());
+                } else {
+                    // store the points back into the model
+                    GraphConstants.setPoints(modelAttr, ((EdgeView) view).getPoints());
+                }
+                change.put(cell, modelAttr);
             }
-            change.put(cell, modelAttr);
         }
         // do the following in the event dispatch thread
         SwingUtilities.invokeLater(new Runnable() {
