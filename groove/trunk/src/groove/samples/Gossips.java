@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.12 2007-04-30 19:53:28 rensink Exp $
+ * $Id: Gossips.java,v 1.13 2007-06-04 19:47:18 rensink Exp $
  */
 package groove.samples;
 
@@ -26,12 +26,11 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.lts.AliasRuleApplier;
 import groove.lts.DefaultGraphTransition;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.AliasRuleApplier;
 import groove.rel.VarNodeEdgeMap;
-import groove.trans.SystemRecord;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
@@ -40,8 +39,10 @@ import groove.trans.SPOApplication;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
+import groove.trans.SystemRecord;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
+import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 
 import java.io.IOException;
@@ -53,7 +54,7 @@ import java.util.List;
  * Sample class for a universal rule.
  * The example is based on the <i>gossiping girl</i> case.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";
@@ -120,7 +121,8 @@ public class Gossips {
 //            calc.addGTSListener(new GenerateProgressMonitor());
 //            GraphResult result = calc.getFirst(READY_CONDITION_NAME);
 //            report(result);
-            GraphGrammar atomic = Groove.loadGrammar(ATOMIC_GOSSIP_GPS_NAME, startGraphName).toGrammar();
+            GraphGrammar original = Groove.loadGrammar(ATOMIC_GOSSIP_GPS_NAME, startGraphName).toGrammar();
+            GraphGrammar atomic = new GraphGrammar(original, original.getStartGraph());
             atomic.add(new GossipRule(Groove.loadRuleGraph(BASIC_GOSSIP_RULE_NAME).toRule(), atomic.getProperties()));
             atomic.setFixed();
             GraphCalculator calc2 = Groove.createCalculator(atomic);

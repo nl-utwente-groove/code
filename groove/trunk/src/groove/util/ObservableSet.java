@@ -14,7 +14,7 @@ import java.util.Set;
  * Provides a view upon a given set that sends notifications of
  * additions and removals.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ObservableSet<T> extends Observable implements Set<T> {
     /** 
@@ -222,7 +222,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     private final Set<T> set;
 
     /** Class wrapping an update that has added one or more elements. */
-    public class AddUpdate {
+    static public class AddUpdate<T> {
         /** Constructs an instance for a given set of added elements. */
         private AddUpdate(Set<T> addedSet) {
             this.addedSet = Collections.unmodifiableSet(addedSet);
@@ -243,7 +243,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     }
     
     /** Class wrapping an update that has removed one or more elements. */
-    public class RemoveUpdate {
+    static public class RemoveUpdate<T> {
         /** Constructs an instance for a given set of removed elements. */
         private RemoveUpdate(Set<T> removedSet) {
             this.removedSet = Collections.unmodifiableSet(removedSet);

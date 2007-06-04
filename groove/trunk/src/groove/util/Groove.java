@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.15 2007-05-29 22:32:57 rensink Exp $
+ * $Id: Groove.java,v 1.16 2007-06-04 19:47:17 rensink Exp $
  */
 package groove.util;
 
@@ -27,6 +27,7 @@ import groove.io.Xml;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemProperties;
 import groove.view.AspectualRuleView;
+import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 import groove.view.GrammarView;
 
@@ -44,7 +45,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.15 $ 
+ * @version $Revision: 1.16 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -393,7 +394,7 @@ public class Groove {
      * @return the graph grammar made up by <code>dirname</code> and <code>startfilename</code>
      * @throws IOException if <code>dirname</code> or <code>startfilename</code> do not exist or are wrongly formatted
      */
-    static public GrammarView loadGrammar(String dirname, String startfilename) throws IOException, FormatException {
+    static public DefaultGrammarView loadGrammar(String dirname, String startfilename) throws IOException, FormatException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
         return gpsLoader.unmarshal(dir, startfilename);
     }
