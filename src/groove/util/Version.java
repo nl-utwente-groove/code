@@ -26,7 +26,7 @@ public class Version {
 	 * <li>z = bug fix version
 	 * </ul>
 	 */
-	public static final String NUMBER = "1.4.2";
+	public static final String NUMBER = "1.6.0";
 
 	/** Minimum Java JRE version required. */
 	static public final String NUMBER_JAVAMIN = "1.5";
