@@ -1,4 +1,4 @@
-// GROOVE: GRaphs for Object Oriented VErification
+/** GROOVE: GRaphs for Object Oriented VErification
 // Copyright 2003--2007 University of Twente
  
 // Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -11,8 +11,10 @@
 // "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
+ * */
+ */
 /*
- * $Id: DefaultStateCache.java,v 1.5 2007-05-06 10:47:57 rensink Exp $
+ * $Id: DefaultStateCache.java,v 1.6 2007-06-05 08:07:25 iovka Exp $
  */
 package groove.lts;
 
@@ -27,7 +29,7 @@ import java.util.Map;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @deprecated replaced by {@link StateCache}
  */
 @Deprecated
