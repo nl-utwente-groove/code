@@ -13,7 +13,7 @@ import javax.swing.JOptionPane;
  */
 public class Version {
 	/** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-	public static final long BUILD = 20070418; //eventually automatically set during Ant compilation!
+	public static final String BUILD = "2007"; //eventually automatically set during Ant compilation!
 
 	/** Release date of this version (date format dd.MM.yyyy). */
 	public static final String DATE = "18.04.2007"; //eventually automatically set during Ant compilation!
