@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.8 2007-04-30 19:53:31 rensink Exp $
+ * $Id: NACTest.java,v 1.9 2007-06-05 10:31:45 kastenberg Exp $
  */
 package groove.test;
 
@@ -56,7 +56,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -149,6 +149,7 @@ public class NACTest extends TestCase {
     }
 
     public void testRule() {
+    	rule.setFixed();
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
         assertEquals(1, derivSet.size());
         Iterator<RuleApplication> derivIter = derivSet.iterator();
@@ -167,6 +168,7 @@ public class NACTest extends TestCase {
 
     public void testNAC0() {
         rule.setAndNot(NACs[0]);
+        rule.setFixed();
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
         assertEquals(1, derivSet.size());
@@ -210,6 +212,7 @@ public class NACTest extends TestCase {
 
     public void testNAC3() {
         rule.setAndNot(NACs[3]);
+        rule.setFixed();
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
         assertEquals(0, derivSet.size());
@@ -224,6 +227,7 @@ public class NACTest extends TestCase {
     public void testNAC03() {
         rule.setAndNot(NACs[0]);
         rule.setAndNot(NACs[3]);
+        rule.setFixed();
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
         assertEquals(0, derivSet.size());
