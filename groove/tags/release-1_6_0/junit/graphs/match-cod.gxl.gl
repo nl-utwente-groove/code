@@ -1,0 +1,14 @@
+# Layout information for .\test\graph\.new\match-cod.gxl
+# Each line contains layout information about a node or edge
+# Node Format: n <node id> <bounds>
+# Edge Format: e <source id> <target id> <edge label> <relative label position> [<points list> <line style>]
+e n108 n109 "a" 120 375 248 267 180 168 266 81 11
+e n108 n107 "b" 500 500 248 267 102 213 11
+e n110 n107 "b" 500 500 136 75 102 213 11
+e n110 n109 "c" 500 500 136 75 266 81 11
+e n109 n108 "a" 882 485 266 81 306 198 248 267 11
+n n109 258 72 18 18 
+n n107 90 204 18 18 
+e n108 n109 "b" 120 375 248 267 180 168 266 81 11
+n n108 240 258 18 18 
+n n110 132 66 18 18 
