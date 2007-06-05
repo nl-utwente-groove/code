@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExploreStrategyMenu.java,v 1.8 2007-05-15 11:22:23 rensink Exp $
+ * $Id: ExploreStrategyMenu.java,v 1.9 2007-06-05 08:52:00 kastenberg Exp $
  */
 package groove.gui;
 
@@ -31,6 +31,7 @@ import groove.lts.explore.BoundedStrategy;
 import groove.lts.explore.BranchingStrategy;
 import groove.lts.explore.FullStrategy;
 import groove.lts.explore.LinearStrategy;
+import groove.lts.explore.PartialOrderStrategy;
 import groove.trans.NameLabel;
 import groove.view.DefaultGrammarView;
 
@@ -43,7 +44,7 @@ import javax.swing.JMenu;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     /**
@@ -73,6 +74,7 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
         addExploreStrategy(new LinearStrategy());
         addExploreStrategy(new BoundedStrategy());
         addExploreStrategy(new BoundedStrategy(true));
+//       	addExploreStrategy(new PartialOrderStrategy(simulator));
     }
 
     /**
