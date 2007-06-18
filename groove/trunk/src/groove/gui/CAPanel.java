@@ -10,14 +10,55 @@ import groove.trans.GraphGrammar;
 import java.util.Collection;
 import java.util.Collections;
 
-public class CAPanel extends JGraphPanel<JGraph> {
+import javax.swing.JSplitPane;
+import javax.swing.JTextPane;
 
+public class CAPanel extends JSplitPane {
 	private Options options;
 	private ControlAutomaton control; 
-	private Layouter layouter;
+	private Simulator simulator;
+
+	AutomatonPanel autPanel;
+	JTextPane textPanel;
 	
 	public CAPanel(Simulator simulator)
 	{
+		super(JSplitPane.VERTICAL_SPLIT);
+		
+		this.add(autPanel = new AutomatonPanel(simulator));
+		this.add(textPanel = new JTextPane());
+		
+		
+	}
+	
+	public JGraphPanel getJGraphPanel()
+	{
+		return autPanel;
+	}
+	
+	public void setGrammar(GraphGrammar grammar) {
+		autPanel.setGrammar(grammar);
+		
+		if( grammar.getControl() == null ) {
+			textPanel.setText("");
+			textPanel.setEnabled(false);
+			textPanel.setEditable(false);
+		} else
+		{
+			textPanel.setText(grammar.getControl().getProgram());
+			textPanel.setEnabled(true);
+			textPanel.setEditable(true);
+		}
+	}
+	
+}
+	
+class AutomatonPanel extends JGraphPanel<JGraph> 
+{	
+	private Layouter layouter;
+	private ControlAutomaton control;
+	
+	public AutomatonPanel(Simulator simulator){
 		super(new JGraph(new ControlJModel(),false), true , simulator.getOptions());
 		this.getJGraph().setConnectable(false);
 		this.getJGraph().setDisconnectable(false);
@@ -45,7 +86,6 @@ public class CAPanel extends JGraphPanel<JGraph> {
 			this.refreshStatus();
 			
 			layouter.start(true);
-			
 		}
 	}
 	

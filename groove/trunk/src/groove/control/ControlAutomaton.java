@@ -15,6 +15,8 @@ import java.util.Set;
 
 public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	
+	private String program;
+	
 	public static final String LAMBDA = "_";
 	public static final String ELSE = "_e";
 	
@@ -24,6 +26,14 @@ public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implem
 	private Set<State> finalStates = new HashSet<State>();
 	
 	private RuleSystem ruleSystem;
+	
+	public void clear()
+	{
+		this.nodeSet.clear();
+		this.edgeSet.clear();
+		this.startState = null;
+		this.finalStates.clear();
+	}
 	
 	public ControlAutomaton(RuleSystem ruleSystem)
 	{
@@ -100,13 +110,13 @@ public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implem
 	public void addRuleTransition(ControlState source, ControlState target, String rulename)
 	{
 		Rule rule = ruleSystem.getRule(rulename);
-		
+
 		/*
 		if( rule == null )
 			throw new FormatException("Rule " + rulename + " not found in current rulesystem.");
 		
 		*/
-		
+
 		RuleControlTransition rct = new RuleControlTransition(source, target, rule);
 		this.addTransition(rct);
 		source.add(rct);
@@ -124,33 +134,12 @@ public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implem
 		source.add(ct);
 		this.addTransition(ct);
 	}
-	
-	public void initTestAutomaton() throws FormatException
-	{
-		ControlState cs1 = this.newState();
-		ControlState cs2 = this.newState();
-		ControlState cs3 = this.newState();
-		/*
 
-		ControlState cs4 = this.newState();
-		ControlState cs5 = this.newState();
-		ControlState cs6 = this.newState();
-		
-		this.setStartState(cs1);
-		this.addFinalState(cs5);
-		this.addFinalState(cs6);
-		
-		this.addLambdaTransition(cs1, cs2);
-		this.addLambdaTransition(cs1, cs3);
-		this.addRuleTransition(cs3, cs4, "b");
-		this.addRuleTransition(cs4, cs5, "a");
-		this.addRuleTransition(cs2, cs6, "c");
-		*/
-		this.setStartState(cs1);
-		this.addFinalState(cs3);
-		
-		this.addRuleTransition(cs1, cs1, "b");
-		this.addElseTransition(cs1,cs2);
-		this.addRuleTransition(cs2, cs3, "a");
+	public void setProgram(String program) {
+		this.program = program;
+	}
+	
+	public String getProgram() {
+		return program;
 	}
 }
