@@ -22,25 +22,30 @@ public class CAPanel extends JGraphPanel<JGraph> {
 		this.getJGraph().setConnectable(false);
 		this.getJGraph().setDisconnectable(false);
 		this.getJGraph().setEnabled(false);
-		layouter = new MyForestLayouter();
+		layouter = new MyForestLayouter().newInstance(getJGraph());
 	}
 
 	public void setGrammar(GraphGrammar grammar)
 	{
 		if( grammar.getControl() == null ) {
-			this.getJGraph().setModel(ControlJModel.EMPTY_JMODEL);
+			this.getJGraph().setModel(GraphJModel.EMPTY_JMODEL);
 			this.setEnabled(false);
 		}
 		else
 		{
+			this.setEnabled(true);
+
 			control = grammar.getControl();
 			GraphJModel model = GraphJModel.newInstance(control, getOptions());
-			//new ControlJModel(grammar.getControl(), options);
-			//System.out.println("Nodes: " + grammar.getControl().nodeCount() + " / Edges: " + grammar.getControl().edgeCount());
-			this.getJGraph().setModel(model);
-			this.getJGraph().setEnabled(true);
-			layouter.newInstance(getJGraph()).start(true);
+			
+			JGraph jGraph = this.getJGraph();
+			jGraph.setEnabled(true);
+			jGraph.setModel(model);
+			
 			this.refreshStatus();
+			
+			layouter.start(true);
+			
 		}
 	}
 	
