@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLStarFormula.java,v 1.4 2007-04-29 09:22:36 rensink Exp $
+ * $Id: CTLStarFormula.java,v 1.5 2007-06-18 07:25:47 fladder Exp $
  */
 
 package groove.verify;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Class parsing CTL* formulae.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-04-29 09:22:36 $
+ * @version $Revision: 1.5 $ $Date: 2007-06-18 07:25:47 $
  */
 public class CTLStarFormula {
     /** 
@@ -832,7 +832,7 @@ public class CTLStarFormula {
         Set<State> result = new HashSet<State>();
         // for the time being, we look for predecessor-states by
         // checking all transitions having the current state as target
-        Iterator<? extends GraphTransition> transitionIter = gts.edgeSet().iterator();
+        Iterator<? extends GraphTransition> transitionIter = gts.gtEdgeSet().iterator();
         while (transitionIter.hasNext()) {
             GraphTransition nextTransition = transitionIter.next();
             Node target = nextTransition.target();

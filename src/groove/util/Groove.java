@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.16 2007-06-04 19:47:17 rensink Exp $
+ * $Id: Groove.java,v 1.17 2007-06-18 07:25:46 fladder Exp $
  */
 package groove.util;
 
@@ -45,7 +45,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.16 $ 
+ * @version $Revision: 1.17 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -106,6 +106,9 @@ public class Groove {
     public static final ImageIcon GRAPH_FILE_ICON = new ImageIcon(getResource("graph-file.gif"));
     /** Icon for the state panel of the simulator. */
     public static final ImageIcon GRAPH_FRAME_ICON = new ImageIcon(getResource("graph-frame.gif"));
+    /** Icon for the state panel of the simulator. */
+    // Tom Staijen : CONTROL
+    public static final ImageIcon CONTROL_FRAME_ICON = new ImageIcon(getResource("graph-frame.gif"));
     /** Icon for graph with emphasised match. */
     public static final ImageIcon GRAPH_MATCH_ICON = new ImageIcon(getResource("graph-match.gif"));
     /** Small icon for production rules. */

@@ -3,17 +3,14 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/castor-0_9_5_2.jar"/>
+	<classpathentry kind="lib" path="lib/antlr.jar"/>
 	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/jgraph-5_9_2.jar" sourcepath="C:/Program Files/Java/jgraph-5_9_2/src">
-		<attributes>
-			<attribute name="javadoc_location" value="file:/C:/Program Files/Java/jgraph-5_9_2/doc/api/"/>
-		</attributes>
-	</classpathentry>
+	<classpathentry kind="lib" path="lib/jgraph-5_9_2.jar"/>
 	<classpathentry kind="lib" path="lib/jgraphaddons-1_0_4.jar"/>
-	<classpathentry kind="lib" path="lib/junit-3_8_1.jar"/>
 	<classpathentry kind="lib" path="lib/xerces-2_6_0-xercesImpl.jar"/>
-	<classpathentry kind="lib" path="lib/groove-gxl-1_0.jar"/>
+	<classpathentry kind="lib" path="lib/castor-0_9_5_2.jar"/>
 	<classpathentry kind="lib" path="lib/looks-2.1.4.jar"/>
+	<classpathentry kind="lib" path="lib/junit-3_8_1.jar"/>
+	<classpathentry kind="lib" path="lib/groove-gxl-1_0.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

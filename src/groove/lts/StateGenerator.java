@@ -12,10 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.12 2007-05-29 13:32:19 rensink Exp $
+ * $Id: StateGenerator.java,v 1.13 2007-06-18 07:25:45 fladder Exp $
  */
 package groove.lts;
 
+import groove.control.ControlState;
+import groove.control.ElseControlTransition;
+import groove.control.LambdaControlTransition;
+import groove.control.Location;
+import groove.control.LocationTransition;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.trans.RuleApplication;
@@ -77,9 +82,14 @@ public class StateGenerator {
                     addTransition(state, application);
 				}
         	});
+        	
+        	applySecondaryTransitions(state);
             if (! collector.isTransitionsAdded()) {
-                getGTS().setFinal(state);
+                // test voor lamba of else hier? of in applier...
+            	
+            	getGTS().setFinal(state);
             }
+            
             getGTS().setClosed(state);
         }
         reporter.stop();
@@ -98,6 +108,95 @@ public class StateGenerator {
         return state.getNextStateSet();
     }
 
+    private boolean applySecondaryTransitions(GraphState state)
+    {
+    	if( state.getControl() == null )
+    		return false;
+    	
+    	// prevent this from being done twice
+    	if( state.isClosed())
+    		return false;
+    	// apply lambda transitions first
+    	if( !applyLambdaTransitions(state )) {
+    		// if no transitions are done by this time, apply else transitions
+    		if( state.getNextStateSet().size() == 0 ) {
+    			return applyElseTransitions(state);
+    		}
+    		else {
+    			return false;
+    		}
+       	} else {
+       		return true;
+       	}
+    }
+    
+    private boolean applyElseTransitions(GraphState state)
+    {
+    	ControlState source = (ControlState) state.getControl();
+    	ElseControlTransition lct = null;
+    	
+    	int addCount = 0;
+    	
+    	Location target;
+    	for( Iterator<ElseControlTransition> it = source.getElseTransitions().iterator(); it.hasNext();  ) {
+    		lct = it.next();
+    		
+    		target = (Location) lct.target();
+    		
+    		//new DefaultGraphNextState()
+    		
+    		GraphState targetState = new StartGraphState(state.getGraph(), target);
+    		GraphState addedState = gts.addState(targetState);
+    		
+    		
+    		if( addedState != null )
+    			targetState = addedState;
+
+    		
+    		System.out.println("Creating (else)lamda from " + state + " to " + targetState);
+    		// elses become lambda's in the LTS
+    		gts.addTransition(new LocationTransition(state, targetState));
+    		addCount++;
+    	}
+    	
+    	return (addCount > 0);
+    }
+    
+    /**
+     * @param state is the state to which any applicable lambda transitions are added
+     * @return true if any transitions are added
+     */
+    private boolean applyLambdaTransitions(GraphState state)
+    {
+    	ControlState source = (ControlState) state.getControl();
+    	LambdaControlTransition lct = null;
+    	
+    	int addCount = 0;
+    	
+    	Location target;
+    	for( Iterator<LambdaControlTransition> it = source.getLambdaTransitions().iterator(); it.hasNext();  ) {
+    		lct = it.next();
+    		
+    		target = (Location) lct.target();
+    		
+    		//new DefaultGraphNextState()
+    		
+    		GraphState targetState = new StartGraphState(state.getGraph(), target);
+    		GraphState addedState = gts.addState(targetState);
+    		
+    		
+    		if( addedState != null )
+    			targetState = addedState;
+
+    		System.out.println("Creating lamda from " + state + "to " + targetState);
+
+    		gts.addTransition(new LocationTransition(state, targetState));
+    		addCount++;
+    	}
+    	
+    	return (addCount > 0);
+    }
+    
 	/**
 	 * Returns an iterator over all successor states of a given state,
 	 * generating the states and adding them to the GTS if necessary.
@@ -112,6 +211,7 @@ public class StateGenerator {
         } else {
             final Iterator<RuleApplication> derivationIter = getApplier(state).getApplicationIter();
             if (!derivationIter.hasNext()) {
+            	applySecondaryTransitions(state);
             	getGTS().setFinal(state);
             }
             // get the next states by adding transitions for the derivations
@@ -149,14 +249,31 @@ public class StateGenerator {
      */
     public GraphState addTransition(GraphState source, RuleApplication appl) {
         reporter.start(ADD_TRANSITION);
+        
+        //System.out.println("Adding to transition to state with control location: " + source.getControl());
+        
+        boolean haveControl = (null != source.getControl());
+        Location targetLocation = null;
+        if( haveControl ) {
+        	// test if rule is allowed..
+        	boolean isAllowed = source.getControl().isAllowed(appl.getRule());
+        	if( !isAllowed ) {
+        		System.err.println("Applying rule " + appl.getRule() + " in state " + source.getControl() + " is not allowed ");
+        	} else {
+        		targetLocation = source.getControl().getTarget(appl.getRule());
+        	}
+        }
+        
         GraphTransition result;
         if (!appl.getRule().isModifying()) {
-            result = createTransition(appl, source, source, false);
+            	result = createTransition(appl, source, source, false);
         } else {
             // check for confluent diamond
             GraphState confluentTarget = getConfluentTarget(source, appl);
             if (confluentTarget == null) {
-                GraphNextState freshTarget = createState(appl, source);
+                
+            	// graph part is not confluent
+            	GraphNextState freshTarget = createState(appl, source, targetLocation);
                 GraphState isoTarget = getGTS().addState(freshTarget);
                 if (isoTarget == null) {
                     result = freshTarget;
@@ -167,7 +284,11 @@ public class StateGenerator {
                     result = createTransition(appl, source, isoTarget, true);
                 }
             } else {
-                result = createTransition(appl, source, confluentTarget, false);
+                
+            	// graph part is confluent
+            	
+            	
+            	result = createTransition(appl, source, confluentTarget, false);
             }
         }
         getGTS().addTransition(result);
@@ -241,15 +362,16 @@ public class StateGenerator {
 	/**
 	 * Creates a fresh graph state, based on a given rule application and source state.
 	 */
-	protected GraphNextState createState(RuleApplication appl, GraphState source) {
-		return new DefaultGraphNextState((AbstractGraphState) source, appl.getEvent(), appl.getCoanchorImage());
+	protected GraphNextState createState(RuleApplication appl, GraphState source, Location location) {
+		return new DefaultGraphNextState((AbstractGraphState) source, appl.getEvent(), appl.getCoanchorImage(), location);
 	}
 
     /**
      * Creates a fresh graph transition, based on a given rule application and source state.
      */
     protected GraphTransition createTransition(RuleApplication appl, GraphState source) {
-        return createTransition(appl, source, createState(appl, source), false);
+    	// TODO: fix for control
+    	return createTransition(appl, source, createState(appl, source, null), false);
     }
     
     /**

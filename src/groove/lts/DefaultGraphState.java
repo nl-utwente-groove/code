@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphState.java,v 1.9 2007-05-06 10:47:57 rensink Exp $
+ * $Id: DefaultGraphState.java,v 1.10 2007-06-18 07:25:45 fladder Exp $
  */
 package groove.lts;
 
+import groove.control.Location;
 import groove.graph.DeltaGraph;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -36,7 +37,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-05-06 10:47:57 $
+ * @version $Revision: 1.10 $ $Date: 2007-06-18 07:25:45 $
  * @deprecated use {@link StartGraphState} or {@link DefaultGraphNextState} instead
  */
 @Deprecated
@@ -112,7 +113,7 @@ public class DefaultGraphState extends DeltaGraph<DefaultStateCache> implements 
     }
     
     /** This state type always returns <code>null</code> as control location. */
-    public Object getControl() {
+    public Location getControl() {
     	return null;
     }
 

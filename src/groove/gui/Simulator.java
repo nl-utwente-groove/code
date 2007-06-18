@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.44 2007-05-30 21:30:26 rensink Exp $
+ * $Id: Simulator.java,v 1.45 2007-06-18 07:25:44 fladder Exp $
  */
 package groove.gui;
 
@@ -122,7 +122,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.44 $
+ * @version $Revision: 1.45 $
  */
 public class Simulator {
     /**
@@ -800,7 +800,16 @@ public class Simulator {
 		if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
 			startSimulation(grammar);
 		}
-	}
+		
+		// TODO: Tom: Move this somewhere else...
+		try
+		{
+			controlPanel.setGrammar(grammar.toGrammar());
+		} catch( FormatException fe )
+		{
+			fe.printStackTrace();
+		}
+    }
 
     /**
 	 * Sets a new graph transition system. Invokes
@@ -964,6 +973,9 @@ public class Simulator {
             graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON, getStatePanel(), "Current graph state");
             graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(), "Selected rule");
             graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, getLtsPanel(), "Labelled transition system");
+            graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON , getControlPanel(), "Current Control Specification" );
+            // Tom Staijen : Control
+            //graphViewsPanel.addTab(null, Groove.CONTROL_FRAME_ICON, getControlPanel(), "Current Control Machine");
             // add this simulator as a listener so that the actions are updated regularly
             graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
@@ -1008,6 +1020,15 @@ public class Simulator {
         return statePanel;
     }
 
+    
+    CAPanel getControlPanel() {
+    	if( controlPanel == null ) {
+    		controlPanel = new CAPanel(this);
+    		controlPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
+    	}
+    	return controlPanel;
+    }
+    
     /**
      * Returns the simulator panel on which the currently selected production rule is displayed.
      * Note that this panel may currently not be visible.
@@ -1772,6 +1793,9 @@ public class Simulator {
     /** State display panel. */
     private StatePanel statePanel;
 
+    /** Control display panel. */
+    private CAPanel controlPanel;
+    
     /** LTS display panel. */
     private LTSPanel ltsPanel;
 
@@ -2875,7 +2899,7 @@ public class Simulator {
 //    /**
 //     * Class providing functionality to export a {@link JGraph} to a file in different formats.
 //     * @author Arend Rensink
-//     * @version $Revision: 1.44 $
+//     * @version $Revision: 1.45 $
 //     */
 //    static public class Exporter {
 //        /**

@@ -17,6 +17,7 @@
 package groove.trans;
 
 import groove.graph.Graph;
+import groove.lts.GraphState;
 import groove.util.AbstractNestedIterator;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
@@ -45,7 +46,11 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 		Iterator<RuleApplication> result = null;
         reporter.start(GET_DERIVATIONS);
         // find the first batch of rules that has any derivations
-        Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
+        
+        //Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
+        // optionaly return only for current control state
+        Iterator<Set<Rule>> ruleSetIter = getRuleSetIter();
+        
         while (result == null && ruleSetIter.hasNext()) {
         	Set<Rule> rules = ruleSetIter.next();
         	Iterator<RuleApplication> iter = getDerivationIter(rules);
@@ -104,7 +109,10 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	public Set<RuleApplication> getApplications() {
         reporter.start(GET_DERIVATIONS);
 		Set<RuleApplication> result = createApplicationSet();
-		Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
+		//Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
+		
+		Iterator<Set<Rule>> ruleSetIter = getRuleSetIter();
+		
 		while (result.isEmpty() && ruleSetIter.hasNext()) {
 			collectApplications(ruleSetIter.next(), result);
 		}
@@ -141,10 +149,23 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	    }
 	}
 
+	/**
+	 *  Returns the currently possible rules. Possible means either all rules in the rulesystem
+	 *  or all rules associated to outgoing transitions of the current controlstate.
+	 */
+	protected Iterator<Set<Rule>> getRuleSetIter()
+	{
+		// default implementation
+		return record.getRuleSystem().getRuleMap().values().iterator();
+	}
+	
 	public void doApplications(Action action) {
 		reporter.start(GET_DERIVATIONS);
 		boolean done = false;
-		Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
+		
+		//Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
+		Iterator<Set<Rule>> ruleSetIter = getRuleSetIter();
+		
 		while (!done && ruleSetIter.hasNext()) {
 			done = doApplications(ruleSetIter.next(), action);
 		}
@@ -208,6 +229,9 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 
     /** Callback method to provide the graph on which the applier works. */
     abstract protected Graph getGraph();
+    
+    /** Callback method to provide the graphstate on which the applier works. */
+    abstract protected GraphState getState();
     
     /**
 	 * The (fixed) derivation data used by this deriver.

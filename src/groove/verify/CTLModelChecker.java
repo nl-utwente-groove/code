@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLModelChecker.java,v 1.9 2007-04-30 19:53:31 rensink Exp $
+ * $Id: CTLModelChecker.java,v 1.10 2007-06-18 07:25:47 fladder Exp $
  */
 package groove.verify;
 
@@ -53,7 +53,7 @@ import java.util.Set;
  * Command-line tool directing the model checking process.
  *  
  * @author Harmen Kastenberg
- * @version $Revision: 1.9 $ $Date: 2007-04-30 19:53:31 $
+ * @version $Revision: 1.10 $ $Date: 2007-06-18 07:25:47 $
  */
 public class CTLModelChecker extends CommandLineTool {
 
@@ -287,7 +287,7 @@ public class CTLModelChecker extends CommandLineTool {
     		predecessorMap.put(nextState, new ArrayList<GraphState>());
     	}
     	// now fill the predecessor-collection for every state
-    	Iterator<? extends GraphTransition> transitionIter = gts.edgeSet().iterator();
+    	Iterator<? extends GraphTransition> transitionIter = gts.gtEdgeSet().iterator();
     	while (transitionIter.hasNext()) {
     		GraphTransition nextTransition= transitionIter.next();
     		if(nextTransition.getEvent().getRule().isModifying()) {

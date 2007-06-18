@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.10 2007-05-25 22:16:46 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.11 2007-06-18 07:25:41 fladder Exp $
  */
 
 package groove.graph;
 
+import groove.control.Location;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
@@ -38,7 +39,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     /**
@@ -109,7 +110,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
             throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
         }
     }
-
+    
     /**
      * Fixed empty graph.
      */

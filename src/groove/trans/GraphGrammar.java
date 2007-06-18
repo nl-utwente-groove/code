@@ -12,17 +12,22 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.17 2007-06-01 18:04:18 rensink Exp $
+ * $Id: GraphGrammar.java,v 1.18 2007-06-18 07:25:46 fladder Exp $
  */
 package groove.trans;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import groove.control.ControlAutomaton;
+import groove.control.ControlState;
+import groove.control.ControlTransition;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.algebra.ValueNode;
 import groove.view.FormatException;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * Default model of a graph grammar, consisting of a production rule system
@@ -30,7 +35,7 @@ import groove.view.FormatException;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.17 $ $Date: 2007-06-01 18:04:18 $
+ * @version $Revision: 1.18 $ $Date: 2007-06-18 07:25:46 $
  */
 public class GraphGrammar extends RuleSystem {   
     /**
@@ -206,6 +211,18 @@ public class GraphGrammar extends RuleSystem {
      * @invariant <tt>startGraph != null</tt>
      */
     private Graph startGraph;
+    
+    private ControlAutomaton control;
+    
+    public void setControl(ControlAutomaton control)
+    {
+    	this.control = control;
+    }
+    
+    public ControlAutomaton getControl()
+    {
+    	return this.control;
+    }
 //    /**
 //     * The name of this grammar;
 //     * <tt>null</tt> if the grammar is anonymous.

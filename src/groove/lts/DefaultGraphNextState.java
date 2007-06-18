@@ -14,6 +14,7 @@
  * */
 package groove.lts;
 
+import groove.control.Location;
 import groove.graph.AbstractGraph;
 import groove.graph.DeltaApplier;
 import groove.graph.DeltaTarget;
@@ -30,14 +31,14 @@ import groove.trans.RuleEvent;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
 	 * Constructs a successor state on the basis of a given parent state and 
 	 * rule application, and a given control location.
 	 */
-	public DefaultGraphNextState(AbstractGraphState source, RuleEvent event, Node[] addedNodes, Object control) {
+	public DefaultGraphNextState(AbstractGraphState source, RuleEvent event, Node[] addedNodes, Location control) {
 		super(control);
 		this.source = source;
 		this.event = event;
