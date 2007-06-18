@@ -15,8 +15,8 @@ import java.util.Set;
 
 public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	
-	public static final String LAMBDA = "____LAMBDA";
-	public static final String ELSE = "____ELSE";
+	public static final String LAMBDA = "_";
+	public static final String ELSE = "_e";
 	
 	private State startState;
 	private Set nodeSet = new HashSet<State>();

@@ -289,9 +289,6 @@ public GCLParser(ParserSharedInputState state) {
 			match(LPAREN);
 			seq();
 			astFactory.addASTChild(currentAST, returnAST);
-			AST tmp18_AST = null;
-			tmp18_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp18_AST);
 			match(RPAREN);
 			atom_AST = (AST)currentAST.root;
 			break;

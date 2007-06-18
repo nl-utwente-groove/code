@@ -21,7 +21,7 @@ public class LocationTransition implements Transition {
 	{
 		this.source = source;
 		this.target = target; 
-		this.label = new NameLabel("LAMBDA");
+		this.label = new NameLabel("_");
 	}
 	
 	public GraphState source() {
