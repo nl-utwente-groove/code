@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.13 2007-06-18 07:25:45 fladder Exp $
+ * $Id: StateGenerator.java,v 1.14 2007-06-18 10:36:13 fladder Exp $
  */
 package groove.lts;
 
@@ -108,6 +108,13 @@ public class StateGenerator {
         return state.getNextStateSet();
     }
 
+    /**
+     * Applies secondary transitions to a state. 
+     * Secondary transitions are lambda control transitions
+     * and - if applicable - else control transitions. 
+     * @param state the state to apply secondary trantitions on
+     * @return <code>true</code> if any transitions are added, <code>false</code> otherwise
+     */
     private boolean applySecondaryTransitions(GraphState state)
     {
     	if( state.getControl() == null )
@@ -152,8 +159,6 @@ public class StateGenerator {
     		if( addedState != null )
     			targetState = addedState;
 
-    		
-    		System.out.println("Creating (else)lamda from " + state + " to " + targetState);
     		// elses become lambda's in the LTS
     		gts.addTransition(new LocationTransition(state, targetState));
     		addCount++;
@@ -187,8 +192,6 @@ public class StateGenerator {
     		
     		if( addedState != null )
     			targetState = addedState;
-
-    		System.out.println("Creating lamda from " + state + "to " + targetState);
 
     		gts.addTransition(new LocationTransition(state, targetState));
     		addCount++;
@@ -253,7 +256,9 @@ public class StateGenerator {
         //System.out.println("Adding to transition to state with control location: " + source.getControl());
         
         boolean haveControl = (null != source.getControl());
+        Location sourceLocation = source.getControl();
         Location targetLocation = null;
+        
         if( haveControl ) {
         	// test if rule is allowed..
         	boolean isAllowed = source.getControl().isAllowed(appl.getRule());
@@ -266,7 +271,17 @@ public class StateGenerator {
         
         GraphTransition result;
         if (!appl.getRule().isModifying()) {
-            	result = createTransition(appl, source, source, false);
+        	if( targetLocation != sourceLocation )
+           	{
+           		GraphNextState freshTarget = createState(appl, source, targetLocation);
+           		GraphState isoTarget = getGTS().addState(freshTarget);
+           		if( isoTarget == null )
+           			result = freshTarget;
+           		else	
+           			result = createTransition(appl, source, isoTarget, false);
+           	} else {
+           		result = createTransition(appl, source, source, false);
+            }
         } else {
             // check for confluent diamond
             GraphState confluentTarget = getConfluentTarget(source, appl);
@@ -284,11 +299,18 @@ public class StateGenerator {
                     result = createTransition(appl, source, isoTarget, true);
                 }
             } else {
-                
-            	// graph part is confluent
-            	
-            	
-            	result = createTransition(appl, source, confluentTarget, false);
+            	// graph part and control part is confluent
+            	if( confluentTarget.getControl() == targetLocation ) {
+            		result = createTransition(appl, source, confluentTarget, false);
+            	}
+            	else {
+            		GraphNextState freshTarget = createState(appl, source, targetLocation);
+            		GraphState isoTarget = getGTS().addState(freshTarget);
+            		if( isoTarget == null )
+            			result = freshTarget;
+            		else
+            			result = createTransition(appl, source, isoTarget, false);
+            	}
             }
         }
         getGTS().addTransition(result);

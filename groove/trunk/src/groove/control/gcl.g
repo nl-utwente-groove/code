@@ -50,7 +50,7 @@ complex
 
 atom
 	: IDENTIFIER
-	| LPAREN! seq RPAREN;
+	| LPAREN! seq RPAREN!;
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -88,9 +88,25 @@ expression returns [ControlState[] states] { states = new ControlState[2]; Contr
 		aut.addLambdaTransition(first[1],second[0]);
 	}
 	
-	| #(OR expression expression)
-	| #(ALAP expression)
-	| #(DO body:expression test:expression)
+	| #(OR first=expression second=expression)
+	{
+		states = first;
+		aut.addLambdaTransition(states[0],second[0]);
+		aut.addLambdaTransition(second[1],states[1]);		
+	}	
+	| #(ALAP first=expression)
+	{
+		states[0] = first[0];
+		states[1] = aut.newState();
+		aut.addElseTransition(states[0],states[1]);
+		aut.addLambdaTransition(first[1], first[0]);
+	}	
+	| #(DO first=expression second=expression)
+	{
+		states = second;
+		aut.addElseTransition(states[0], first[0]);
+		aut.addLambdaTransition(first[1], states[0]);
+	}
 	| rule:IDENTIFIER
 	{
 		states[0] = aut.newState();

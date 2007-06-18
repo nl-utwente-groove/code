@@ -218,6 +218,8 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     		}
     	}
     	
+    	result.setControl(control);
+    	
     	result.setProperties(getProperties());
     	if (getStartGraph() == null) {
 			errors.add("Grammar has no start graph");

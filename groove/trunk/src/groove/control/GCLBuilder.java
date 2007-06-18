@@ -57,8 +57,6 @@ public GCLBuilder() {
 		ControlState[] states;
 		
 		AST expression_AST_in = (_t == ASTNULL) ? null : (AST)_t;
-		AST body = null;
-		AST test = null;
 		AST rule = null;
 		states = new ControlState[2]; ControlState[] first; ControlState[] second;
 		
@@ -90,12 +88,17 @@ public GCLBuilder() {
 				AST tmp3_AST_in = (AST)_t;
 				match(_t,OR);
 				_t = _t.getFirstChild();
-				expression(_t);
+				first=expression(_t);
 				_t = _retTree;
-				expression(_t);
+				second=expression(_t);
 				_t = _retTree;
 				_t = __t16;
 				_t = _t.getNextSibling();
+				
+						states = first;
+						aut.addLambdaTransition(states[0],second[0]);
+						aut.addLambdaTransition(second[1],states[1]);		
+					
 				break;
 			}
 			case ALAP:
@@ -104,10 +107,16 @@ public GCLBuilder() {
 				AST tmp4_AST_in = (AST)_t;
 				match(_t,ALAP);
 				_t = _t.getFirstChild();
-				expression(_t);
+				first=expression(_t);
 				_t = _retTree;
 				_t = __t17;
 				_t = _t.getNextSibling();
+				
+						states[0] = first[0];
+						states[1] = aut.newState();
+						aut.addElseTransition(states[0],states[1]);
+						aut.addLambdaTransition(first[1], first[0]);
+					
 				break;
 			}
 			case DO:
@@ -116,14 +125,17 @@ public GCLBuilder() {
 				AST tmp5_AST_in = (AST)_t;
 				match(_t,DO);
 				_t = _t.getFirstChild();
-				body = _t==ASTNULL ? null : (AST)_t;
-				expression(_t);
+				first=expression(_t);
 				_t = _retTree;
-				test = _t==ASTNULL ? null : (AST)_t;
-				expression(_t);
+				second=expression(_t);
 				_t = _retTree;
 				_t = __t18;
 				_t = _t.getNextSibling();
+				
+						states = second;
+						aut.addElseTransition(states[0], first[0]);
+						aut.addLambdaTransition(first[1], states[0]);
+					
 				break;
 			}
 			case IDENTIFIER:
