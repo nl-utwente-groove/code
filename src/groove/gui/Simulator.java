@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.47 2007-06-18 12:13:29 fladder Exp $
+ * $Id: Simulator.java,v 1.48 2007-06-18 21:20:24 fladder Exp $
  */
 package groove.gui;
 
@@ -123,7 +123,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.47 $
+ * @version $Revision: 1.48 $
  */
 public class Simulator {
     /**
@@ -1077,7 +1077,11 @@ public class Simulator {
 	 * @see #setGraphPanel(JGraphPanel)
 	 */
     JGraphPanel<?> getGraphPanel() {
-	    return (JGraphPanel) getGraphViewsPanel().getSelectedComponent();
+	    // hack om splitpane te supporten
+    	Component c = getGraphViewsPanel().getSelectedComponent();
+	    if( c instanceof CAPanel )
+	    	c = ((CAPanel)c).getJGraphPanel();
+    	return (JGraphPanel) c; 
 	}
 
 	/**
@@ -2861,7 +2865,7 @@ public class Simulator {
          * 
          */
         public void refresh() {
-            if (getGraphPanel() == getLtsPanel()) {
+        	if (getGraphPanel() == getLtsPanel()) {
                 setEnabled(getCurrentGTS() != null);
                 putValue(NAME, Options.SAVE_LTS_ACTION_NAME);
             } else if (getGraphPanel() == getStatePanel()) {
@@ -2901,7 +2905,7 @@ public class Simulator {
 //    /**
 //     * Class providing functionality to export a {@link JGraph} to a file in different formats.
 //     * @author Arend Rensink
-//     * @version $Revision: 1.47 $
+//     * @version $Revision: 1.48 $
 //     */
 //    static public class Exporter {
 //        /**

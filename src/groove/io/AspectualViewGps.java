@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.10 2007-06-18 07:25:45 fladder Exp $
+ * $Id: AspectualViewGps.java,v 1.11 2007-06-18 21:20:25 fladder Exp $
  */
 
 package groove.io;
@@ -45,7 +45,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     /** Error message if a grammar cannot be loaded. */
@@ -149,6 +149,7 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 			{
 				ControlAutomaton ca = new ControlAutomaton(result.toGrammar());
 				GCPLoader.loadFile(controlProgram, ca);
+				GCPLoader.loadProgram(ca);
 				result.setControl(ca);
 			} catch(Exception e)
 			{
