@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.14 2007-06-18 10:36:13 fladder Exp $
+ * $Id: StateGenerator.java,v 1.15 2007-06-18 12:13:30 fladder Exp $
  */
 package groove.lts;
 
@@ -252,8 +252,6 @@ public class StateGenerator {
      */
     public GraphState addTransition(GraphState source, RuleApplication appl) {
         reporter.start(ADD_TRANSITION);
-        
-        //System.out.println("Adding to transition to state with control location: " + source.getControl());
         
         boolean haveControl = (null != source.getControl());
         Location sourceLocation = source.getControl();

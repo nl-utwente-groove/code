@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: JGraphPanel.java,v 1.11 2007-06-18 07:25:41 fladder Exp $
+ * $Id: JGraphPanel.java,v 1.12 2007-06-18 12:13:29 fladder Exp $
  */
 package groove.gui;
 
@@ -37,7 +37,7 @@ import javax.swing.JSplitPane;
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
@@ -94,7 +94,6 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     	if (isEnabled()) {
     		return jGraph.getModel();
     	} else {
-    		System.out.println("getJModel(): " + this + " not enabled, returning null");
     		return null;
     	}
     }
