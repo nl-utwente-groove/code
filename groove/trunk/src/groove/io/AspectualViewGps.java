@@ -12,11 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.9 2007-05-30 21:30:26 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.10 2007-06-18 07:25:45 fladder Exp $
  */
 
 package groove.io;
 
+import groove.control.ControlAutomaton;
+import groove.control.GCPLoader;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
@@ -43,7 +45,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     /** Error message if a grammar cannot be loaded. */
@@ -109,6 +111,7 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
         loadProperties(result, location);
         loadRules(result, location);
         loadStartGraph(result, startGraphName, location);
+        loadControl(result, location);
         return result;
     }
 
@@ -118,8 +121,9 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	 */
 	private void loadProperties(DefaultGrammarView result, File location) throws IOException, FileNotFoundException {
 		// search for a properties file
-        File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(result.getName()));
-        Properties grammarProperties = null;
+        
+		File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(result.getName()));
+		Properties grammarProperties = null;
         if (propertiesFile.exists()) {
             grammarProperties = new Properties();
             grammarProperties.load(new FileInputStream(propertiesFile));
@@ -127,6 +131,34 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
         }
 	}
 
+	/**
+	 * Loads the control program from the location set in the properties of the grammar.
+	 * Can only be done after rules and properties are loaded.
+	 * TODO: put this somewhere else?
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 */
+	private void loadControl(DefaultGrammarView result, File location) throws IOException, FileNotFoundException {
+		String controlFileName = result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY);
+		if( controlFileName == null)
+			return;
+		File controlProgram = new File(location, result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY));
+		//System.out.println(controlProgram.getAbsolutePath());
+		if( controlProgram.exists() ) {
+			try
+			{
+				ControlAutomaton ca = new ControlAutomaton(result.toGrammar());
+				GCPLoader.loadFile(controlProgram, ca);
+				result.setControl(ca);
+			} catch(Exception e)
+			{
+				
+				System.err.println("Conversion problem from grammarview to grammar while loading control program.");
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	/**
 	 * Loads the rules for a given graph grammar from a given location.
 	 */

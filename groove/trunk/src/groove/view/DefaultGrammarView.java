@@ -16,6 +16,7 @@
  */
 package groove.view;
 
+import groove.control.ControlAutomaton;
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
@@ -159,6 +160,16 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     	return errors;
 	}
 
+	/** setter method for the control automaton **/
+	public void setControl(ControlAutomaton control) {
+		this.control = control;
+		// need to add it to grammar if a grammar already exists
+		if( this.grammar != null )
+		{
+			grammar.setControl(control);
+		}
+	}
+	
 	/** Delegates to {@link #toGrammar()}. */
 	public GraphGrammar toModel() throws FormatException {
 		return toGrammar();
@@ -206,6 +217,7 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     			}
     		}
     	}
+    	
     	result.setProperties(getProperties());
     	if (getStartGraph() == null) {
 			errors.add("Grammar has no start graph");
@@ -246,6 +258,8 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     private final Map<Integer,Set<AspectualRuleView>> priorityMap = new TreeMap<Integer,Set<AspectualRuleView>>(Rule.PRIORITY_COMPARATOR);
     /** The name of this grammar view. */
     private String name;
+    /** The control automaton **/
+    private ControlAutomaton control;
     /** The start gramg of the grammar. */
     private AspectualGraphView startGraph;
     /** The rule system properties of this grammar view. */

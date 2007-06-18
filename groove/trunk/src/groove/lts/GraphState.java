@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphState.java,v 1.4 2007-04-27 22:06:26 rensink Exp $
+ * $Id: GraphState.java,v 1.5 2007-06-18 07:25:45 fladder Exp $
  */
 package groove.lts;
 
+import groove.control.Location;
 import groove.graph.Graph;
 import groove.trans.RuleEvent;
 
@@ -28,7 +29,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-04-27 22:06:26 $
+ * @version $Revision: 1.5 $ $Date: 2007-06-18 07:25:45 $
  */
 public interface GraphState extends State {
 	/** Returns the graph contained in this state. */
@@ -40,7 +41,7 @@ public interface GraphState extends State {
 	 * For flexibility, the type of the control location is undetermined.
 	 * @return the control location; may be <code>null</code>.
 	 */
-	public Object getControl();
+	public Location getControl();
 	
     /**
      * Retrieves an outgoing transition with a given event, if it exists.

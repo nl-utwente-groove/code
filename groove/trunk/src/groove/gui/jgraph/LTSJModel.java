@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.13 2007-05-29 15:31:37 rensink Exp $
+ * $Id: LTSJModel.java,v 1.14 2007-06-18 07:25:45 fladder Exp $
  */
 package groove.gui.jgraph;
 
+import groove.control.LocationTransition;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Node;
@@ -39,7 +40,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -399,8 +400,9 @@ public class LTSJModel extends GraphJModel {
 			String result;
 			assert edge instanceof GraphTransition : "Edge set contains "
 					+ edge;
-			if (isShowAnchors()) {
-				result = ((GraphTransition) edge).label().text();
+			// fix for locationtransition (Tom Staijen: Control)
+			if (isShowAnchors() || edge instanceof LocationTransition) {
+				result = ((Transition) edge).label().text();
 			} else {
 				result = ((GraphTransition) edge).getEvent().getName().text();
 			}
@@ -483,8 +485,9 @@ public class LTSJModel extends GraphJModel {
 			String result;
 			assert edge instanceof GraphTransition : "Edge set contains "
 					+ edge;
-			if (isShowAnchors()) {
-				result = ((GraphTransition) edge).label().text();
+			// fix for locationtransitions (Tom Staijen: Control)
+			if (isShowAnchors() || edge instanceof LocationTransition) {
+				result = ((Transition) edge).label().text();
 			} else {
 				result = ((GraphTransition) edge).getEvent().getName().text();
 			}

@@ -265,6 +265,14 @@ public class SystemProperties extends java.util.Properties {
      * Flag to indicate that the properties have been frozen.
      */
     private boolean fixed;
+    
+    
+    /**
+     * Name of the file containing the used control program. 
+     * Will only be loaded when the file exists in the grammar directory.
+     */
+    static public final String CONTROL_PROGRAM_KEY = "controlProgram";
+    
     /**
 	 * Property name of the list of control labels of a graph grammar.
      * The control labels are those labels which should be matched first
@@ -272,11 +280,13 @@ public class SystemProperties extends java.util.Properties {
      * or indicate a place where rules are likely to be applicable.
    	 */
 	static public final String CONTROL_LABELS_KEY = "controlLabels";
+	
 	/**
 	 * Property name of the list of common labels of a graph grammar.
      * The control labels are those labels which should be matched last
      * for optimal performance, presumably because they occur frequently.
 	 */
+	
 	static public final String COMMON_LABELS_KEY = "commonLabels";
 	/** 
 	 * Property that determines if the graph grammar uses attributes.
