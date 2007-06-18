@@ -2,8 +2,11 @@ package groove.gui;
 
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.GraphInfo;
 import groove.graph.Node;
 import groove.gui.jgraph.JGraph;
+import groove.gui.layout.JVertexLayout;
+import groove.gui.layout.LayoutMap;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.util.Converter;
@@ -11,9 +14,11 @@ import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectValue;
 
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,7 +27,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -37,7 +41,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Class providing functionality to export a {@link JGraph} to a file in different formats.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Exporter {
     /**
@@ -179,6 +183,7 @@ public class Exporter {
             		println("(%s (%s %d))", nodeId(node), CREATE_NODE_KEYWORD, nr);
             	}
             }
+            
             int edgeCount = 0;
             for (Edge edge: graph.edgeSet()) {
             	if (!isNodeLabel(edge)) {
@@ -192,17 +197,44 @@ public class Exporter {
 							nodeId(edge.opposite()));
 				}
             }
-            println("))");
+            println(")");
+            
             // definitions are done; now add labels
             for (AspectEdge edge: graph.edgeSet()) {
             	String id = isNodeLabel(edge) ? nodeId(edge.source()) : edgeId(edge);
             	println("(%s (%s %s) %s)", ADD_LABEL_KEYWORD, LIST_KEYWORD, id, label(edge));
+            }
+            
+            // add edge roles 
+            // chr: the loops are redundant, which is inefficient but better for readability
+            for (AspectEdge edge: graph.edgeSet()) {
+            	String id = isNodeLabel(edge) ? nodeId(edge.source()) : edgeId(edge);
             	for (AspectValue value: edge.getAspectMap().values()) {
-            		println("(%s-%s (%s %s) (%s))", SET_PREFIX, value.getAspect(), LIST_KEYWORD, id, value.getName());
+            		println("(%s-%s (%s %s) (%s-%s))", SET_PREFIX, value.getAspect(), LIST_KEYWORD, id, value.getAspect(), value.getName());
             	}
             }
-            // add roles if we have an aspect graph
-            println("))");
+            
+            // add node roles 
+            for (AspectNode node: graph.nodeSet()) {
+            	for (AspectValue value: node.getAspectMap().values()) {
+            		println("(%s-%s (%s %s) (%s-%s))", SET_PREFIX, value.getAspect(), LIST_KEYWORD, nodeId(node), value.getAspect(), value.getName());
+            	}
+            }
+            
+            // if we have layout information, export it 
+            if (GraphInfo.hasLayoutMap(graph)) 
+        	{
+        		LayoutMap<Node, Edge> layoutMap = GraphInfo.getLayoutMap(graph);
+        		
+        		for ( Node  node: graph.nodeSet() )
+        		{	
+            		JVertexLayout layout = layoutMap.nodeMap().get(node);
+            		Rectangle2D r = layout.getBounds();
+            		println("(%s %s (%s %s %s))", ADD_POSITION, nodeId(node), LIST_KEYWORD, r.getCenterX(), r.getCenterY()); 
+            	}
+            }
+           
+            println(")))");
             assert this.indent == 0 : String.format("Conversion ended at indentation level %d", indent);
         }
 
@@ -227,21 +259,53 @@ public class Exporter {
         
         /** Prints a line to a writer, taking care of indentation. */
         private void println(String line, Object... args) {
-            char[] spaces = new char[INDENT_COUNT * indent];
-            Arrays.fill(spaces, ' ');
-            writer.print(spaces);
+        	// chr: The following code will break if we get 
+        	//      wrong indentation counts (closes > opens).
+            //char[] spaces = new char[INDENT_COUNT * indent];
+            //Arrays.fill(spaces, ' ');
+            
+        	// wrong indentation is acceptable, therefore use
+        	// a loop that simply terminates if i < 0
+        	for( int i=0; i < indent * INDENT_COUNT; i++)
+            	writer.print(' ');
+            
+        	// chr: take care of escape characters
+        	//      and quotes to handle labels like:
+        	//      String s = "\"(\""; 
             String text = String.format(line, args);
             writer.println(text);
             int opens = 0;
             int closes = 0;
-            for (char c: text.toCharArray()) {
-                if (c=='(') opens++;
-                if (c==')') closes++;
-            }
+            int escape = 0;
+            boolean ignore = false;
+            for (char c : text.toCharArray()) {
+				if (escape > 0) {
+					escape++;
+				}
+				if (escape == 3) {
+					escape = 0;
+				}
+				if (c == '\\') {
+					escape++;
+				}
+				if (c == '\"' && (escape == 0)) {
+					ignore = !ignore;
+				}
+				if (!ignore && (escape == 0)) {
+					if (c == '(') {
+						opens++;
+					} else if (c == ')') {
+						closes++;
+					}
+				}
+			}
             indent += opens - closes;
         }
 
-        /** The writer used in the current {@link #convert(AspectGraph, PrintWriter)} invocation. */
+        /**
+		 * The writer used in the current
+		 * {@link #convert(AspectGraph, PrintWriter)} invocation.
+		 */
         private PrintWriter writer;
         /** The indentation level of the current {@link #convert(AspectGraph, PrintWriter)} invocation. */
         private int indent;
@@ -282,8 +346,6 @@ public class Exporter {
         private static final String SET_PREFIX = "set";
         /** Lisp function for adding positions for nodes. */
         private static final String ADD_POSITION = "add-position";
-        /** Lisp function for setting rule roles. */
-        private static final String SET_LINE_STYPE = "set-line-style";
     }
 
     
