@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.11 2007-05-29 06:52:39 rensink Exp $
+ * $Id: Imager.java,v 1.12 2007-06-19 08:25:39 rensink Exp $
  */
 package groove.io;
 
@@ -62,7 +62,7 @@ import javax.swing.JTextField;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class Imager extends CommandLineTool {
     /**
@@ -154,28 +154,8 @@ public class Imager extends CommandLineTool {
                     JGraph jGraph = new JGraph(model, false);
                     jGraph.setModel(model);
                     jGraph.setSize(jGraph.getPreferredSize());
-//                    jframe.pack();
                     printlnMedium("Imaging "+inFile+" as "+outFile);
                     exporter.export(jGraph, outFile);
-//                    if (imageFormat == EPS_FORMAT) {
-//                        // Create a graphics contents on the buffered image
-//                        int x_max = jGraph.toImage().getWidth();
-//                        int y_max = jGraph.toImage().getHeight();
-//
-//                        // Create an output stream
-//                        OutputStream out = new FileOutputStream(outFile);
-//
-//                        // minX,minY,maxX,maxY
-//                        EpsGraphics g2d = new EpsGraphics("Title", out, 0, 0, x_max, y_max, ColorMode.COLOR_RGB);
-//
-//                        g2d.drawImage(jGraph.toImage(), new AffineTransform(), null);
-//                        g2d.close();
-//                    } else {
-//                        if (! ImageIO.write(jGraph.toImage(), imageFormat, outFile)) {
-//                            println("No writer found for "+outFile);
-//                            outFile.delete();
-//                        }
-//                    }
                     Thread.yield();
                 } catch (FileNotFoundException fnfe){
                     println("File " + outFile + "does not exist.");
