@@ -41,7 +41,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Class providing functionality to export a {@link JGraph} to a file in different formats.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class Exporter {
     /**
@@ -221,19 +221,55 @@ public class Exporter {
             	}
             }
             
-            // if we have layout information, export it 
-            if (GraphInfo.hasLayoutMap(graph)) 
-        	{
-        		LayoutMap<Node, Edge> layoutMap = GraphInfo.getLayoutMap(graph);
-        		
-        		for ( Node  node: graph.nodeSet() )
-        		{	
-            		JVertexLayout layout = layoutMap.nodeMap().get(node);
-            		Rectangle2D r = layout.getBounds();
-            		println("(%s %s (%s %s %s))", ADD_POSITION, nodeId(node), LIST_KEYWORD, r.getCenterX(), r.getCenterY()); 
-            	}
+            // if we have layout information, export it
+            if (GraphInfo.hasLayoutMap(graph)) {
+                LayoutMap<Node, Edge> layoutMap = GraphInfo.getLayoutMap(graph);
+
+                // lists of coordinates seen so far
+                ArrayList<Double> xlist = new ArrayList<Double>();
+                ArrayList<Double> ylist = new ArrayList<Double>();
+
+                double epsilon = 10; // grid size
+
+                Double x, y;
+
+                for (Node node : graph.nodeSet()) {
+                    JVertexLayout layout = layoutMap.nodeMap().get(node);
+                    Rectangle2D r = layout.getBounds();
+
+                    x = new Double(r.getCenterX());
+                    y = new Double(r.getCenterY());
+
+                    // check whether current node is
+                    // aligned on the grid with the ones seen so far
+                    for (Double val : xlist) {
+                        if (Math.abs((val.doubleValue() - x.doubleValue())) < epsilon) {
+                            x = val;
+                            break;
+                        }
+                    }
+
+                    for (Double val : ylist) {
+                        if (Math.abs((val.doubleValue() - y.doubleValue())) < epsilon) {
+                            y = val;
+                            break;
+                        }
+                    }
+
+                    // if the coordinate differs more than grid-size
+                    // from the ones seen so far add it as a new coordinate to
+                    // the list
+                    if (!xlist.contains(x)) {
+                        xlist.add(x);
+                    }
+                    if (!ylist.contains(y)) {
+                        ylist.add(y);
+                    }
+
+                    // output coordinates of the current node
+                    println("(%s %s (%s %s %s))", ADD_POSITION, nodeId(node), LIST_KEYWORD, x.toString(), y.toString());
+                }
             }
-           
             println(")))");
             assert this.indent == 0 : String.format("Conversion ended at indentation level %d", indent);
         }
