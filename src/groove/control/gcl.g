@@ -148,7 +148,7 @@ protected NEWLINE       : (("\r\n") => "\r\n"           //DOS
 WS                      : (NEWLINE) => NEWLINE { /*newline();*/ $setType(Token.SKIP);}
                           | (' ' | '\t' | '\f') { $setType(Token.SKIP); } ;
 
-protected SPECIAL       : '_';
+protected SPECIAL       : '_' | '-';
     
 IDENTIFIER options {testLiterals=true;}
 	: (LETTER | SPECIAL) (LETTER | DIGIT | SPECIAL)*;
