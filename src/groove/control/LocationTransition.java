@@ -9,6 +9,8 @@ import groove.lts.GraphState;
 import groove.lts.Transition;
 import groove.trans.NameLabel;
 
+/*
+
 public class LocationTransition implements Transition {
 
 	private NameLabel label;
@@ -80,3 +82,4 @@ public class LocationTransition implements Transition {
 	}
 
 }
+*/

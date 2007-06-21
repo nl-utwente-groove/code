@@ -85,33 +85,33 @@ expression returns [ControlState[] states] { states = new ControlState[2]; Contr
 	{
 		states[0] = first[0];
 		states[1] = second[1];
-		aut.addLambdaTransition(first[1],second[0]);
+		aut.addTransition(first[1],second[0], Control.LAMBDA_LABEL);
 	}
 	
 	| #(OR first=expression second=expression)
 	{
 		states = first;
-		aut.addLambdaTransition(states[0],second[0]);
-		aut.addLambdaTransition(second[1],states[1]);		
+		aut.addTransition(states[0],second[0], Control.LAMBDA_LABEL);
+		aut.addTransition(second[1],states[1], Control.LAMBDA_LABEL);		
 	}	
 	| #(ALAP first=expression)
 	{
 		states[0] = first[0];
 		states[1] = aut.newState();
-		aut.addElseTransition(states[0],states[1]);
-		aut.addLambdaTransition(first[1], first[0]);
+		aut.addTransition(states[0],states[1], Control.ELSE_LABEL);
+		aut.addTransition(first[1], first[0], Control.LAMBDA_LABEL);
 	}	
 	| #(DO first=expression second=expression)
 	{
 		states = second;
-		aut.addElseTransition(states[0], first[0]);
-		aut.addLambdaTransition(first[1], states[0]);
+		aut.addTransition(states[0], first[0], Control.ELSE_LABEL);
+		aut.addTransition(first[1], states[0], Control.LAMBDA_LABEL);
 	}
 	| rule:IDENTIFIER
 	{
 		states[0] = aut.newState();
 		states[1] = aut.newState();
-		aut.addRuleTransition(states[0],states[1], rule.toString() );
+		aut.addTransition(states[0],states[1], rule.toString() );
 	}
 	;
 
