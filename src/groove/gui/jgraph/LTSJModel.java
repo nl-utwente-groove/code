@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.16 2007-06-21 12:47:48 fladder Exp $
+ * $Id: LTSJModel.java,v 1.17 2007-06-21 14:34:38 fladder Exp $
  */
 package groove.gui.jgraph;
 
@@ -39,7 +39,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -354,7 +354,8 @@ public class LTSJModel extends GraphJModel {
         GraphConstants.setDisconnectable(LTS_EDGE_ATTR, false);
         GraphConstants.setLineEnd(LTS_EDGE_ATTR, GraphConstants.ARROW_SIMPLE);
     }
-	/**
+
+    /**
 	 * JEdge class that describes the underlying edge as a graph transition.
 	 * @author Arend Rensink
 	 * @version $Revision $

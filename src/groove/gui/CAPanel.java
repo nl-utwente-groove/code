@@ -1,6 +1,8 @@
 package groove.gui;
 
 import groove.control.ControlAutomaton;
+import groove.control.ControlState;
+import groove.control.ControlTransition;
 import groove.control.ControlView;
 import groove.gui.jgraph.ControlJModel;
 import groove.gui.jgraph.GraphJModel;
@@ -85,13 +87,16 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	}
 
 	public void applyTransitionUpdate(GraphTransition transition) {
-		//
+		//autPanel.getJModel().setActiveState(transition.source());
+        //autPanel.getJModel().setActiveTransition(transition);
+        //autPanel.getJGraph().scrollTo(getJModel().getActiveTransition());
 	}
 
 	public void setGrammarUpdate(DefaultGrammarView grammar) {
 		this.grammar = grammar;
 		
-		autPanel.getJGraph().setModel(GraphJModel.EMPTY_JMODEL);
+		autPanel.getJGraph().setModel(ControlJModel.EMPTY_CONTROL_JMODEL);
+		autPanel.getJGraph().setEnabled(false);
 		autPanel.setEnabled(false);
 		textPanel.setText("");
 
@@ -104,9 +109,13 @@ public class CAPanel extends JPanel  implements SimulationListener {
 			JGraph jGraph = autPanel.getJGraph();
 
 			jGraph.setEnabled(true);
-			GraphJModel model = GraphJModel.newInstance(cv.getAutomaton(), autPanel.getOptions());
+			//GraphJModel model = GraphJModel.newInstance(cv.getAutomaton(), autPanel.getOptions());
+			
+			GraphJModel model = new ControlJModel(cv.getAutomaton(), autPanel.getOptions());
+			
+			int i = model.getRootCount();
 			jGraph.setModel(model);
-			autPanel.layoutGraph(cv.getAutomaton());
+
 			autPanel.refreshStatus();
 		}
 	}
@@ -116,11 +125,30 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	}
 
 	public void setStateUpdate(GraphState state) {
-		// TODO Auto-generated method stub
+		autPanel.getJModel().setActiveTransition(null);
+        // emphasize state if it isn't already done
+        autPanel.getJModel().setActiveState((ControlState)state.getControl());
+        // we do layouting here because it's too expensive to do it
+        // every time a new state is added
+        if (autPanel.getJGraph().getLayouter() != null) {
+        	autPanel.getJModel().freeze();
+        	autPanel.getJGraph().getLayouter().start(false);
+        }
+        // addUpdate(lts, state);
+        //autPanel.getJGraph().scrollTo(state);
 	}
 
 	public void setTransitionUpdate(GraphTransition transition) {
-		// TODO Auto-generated method stub
+    	
+		ControlState source = (ControlState) transition.source().getControl();
+		autPanel.getJModel().setActiveState(source);
+		
+		ControlTransition ct = source.getTransitions(transition.getEvent().getRule()).iterator().next();
+    	
+    	
+    	autPanel.getJModel().setActiveTransition(ct);
+        
+        //autPanel.getJGraph().scrollTo(autPanel.getJModel().getActiveTransition());
 	}
 
 	public void startSimulationUpdate(GTS gts) {
@@ -135,17 +163,18 @@ class AutomatonPanel extends JGraphPanel<JGraph>
 	private ControlAutomaton control;
 	
 	public AutomatonPanel(Simulator simulator){
-		super(new JGraph(new ControlJModel(),false), true , simulator.getOptions());
+		super(new JGraph(ControlJModel.EMPTY_CONTROL_JMODEL,false), true , simulator.getOptions());
 		this.getJGraph().setConnectable(false);
 		this.getJGraph().setDisconnectable(false);
 		this.getJGraph().setEnabled(false);
 		layouter = new MyForestLayouter().newInstance(getJGraph());
+		this.getJGraph().setLayouter(layouter);
 	}
 
-	public void layoutGraph(ControlAutomaton aut)
+	@Override
+	public ControlJModel getJModel()
 	{
-		control = aut;
-		layouter.start(true);
+		return (ControlJModel) super.getJModel();
 	}
 	
 	/**
@@ -172,9 +201,8 @@ class AutomatonPanel extends JGraphPanel<JGraph>
 	     */
 	    @Override
 	    protected Collection<?> getSuggestedRoots() {
-	        GraphJModel jModel = (GraphJModel) getJModel();
-	        
-	        return Collections.singleton(jModel.getJVertex(control.startState()));
+	        ControlJModel jModel = getJModel();
+	        return Collections.singleton(jModel.getJCell(jModel.getGraph().startState()));
 	    }
 	
 	    /**
