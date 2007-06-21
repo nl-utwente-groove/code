@@ -50,17 +50,16 @@ public class CAPanel extends JPanel  implements SimulationListener {
 				String program = CAPanel.this.textPanel.getText();
 				if( program == null )
 					return;
+				
 				if( cv == null ) {
 					cv = new ControlView();
 					cv.initScope(grammar);
-					cv.setProgram(CAPanel.this.textPanel.getText());
-					cv.loadProgram();
-					grammar.setControl(cv);
-				} else {
-					cv.setProgram(CAPanel.this.textPanel.getText());
-					cv.loadProgram();
 				}
-				CAPanel.this.simulator.start();
+
+				cv.setProgram(CAPanel.this.textPanel.getText());
+				cv.loadProgram();
+				CAPanel.this.simulator.getCurrentGrammar().setControl(cv);
+				CAPanel.this.simulator.setGrammar(CAPanel.this.simulator.getCurrentGrammar());
 			}
 		}
 		);
@@ -95,15 +94,11 @@ public class CAPanel extends JPanel  implements SimulationListener {
 		autPanel.getJGraph().setModel(GraphJModel.EMPTY_JMODEL);
 		autPanel.setEnabled(false);
 		textPanel.setText("");
-		textPanel.setEnabled(false);
-		textPanel.setEditable(false);
 
 		if( grammar.getControl() != null )
 		{
 			ControlView cv = grammar.getControl();
 			textPanel.setText(cv.program());
-			textPanel.setEnabled(true);
-			textPanel.setEditable(true);
 			
 			autPanel.setEnabled(true);
 			JGraph jGraph = autPanel.getJGraph();
