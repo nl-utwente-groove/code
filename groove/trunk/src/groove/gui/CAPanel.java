@@ -1,19 +1,31 @@
 package groove.gui;
 
 import groove.control.ControlAutomaton;
+import groove.control.ControlView;
 import groove.gui.jgraph.ControlJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
 import groove.gui.layout.Layouter;
-import groove.trans.GraphGrammar;
+import groove.lts.GTS;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
+import groove.trans.NameLabel;
+import groove.view.DefaultGrammarView;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Collections;
 
+import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.JSplitPane;
 import javax.swing.JTextPane;
+import javax.swing.JToolBar;
 
-public class CAPanel extends JSplitPane {
+public class CAPanel extends JPanel  implements SimulationListener {
+
 	private Options options;
 	private ControlAutomaton control; 
 	private Simulator simulator;
@@ -21,34 +33,103 @@ public class CAPanel extends JSplitPane {
 	AutomatonPanel autPanel;
 	JTextPane textPanel;
 	
+	private DefaultGrammarView grammar;
+	
+	
 	public CAPanel(Simulator simulator)
 	{
-		super(JSplitPane.VERTICAL_SPLIT);
+		super();
+		this.setLayout(new BorderLayout());
+		JToolBar toolBar = new JToolBar();
+		JButton parseButton = new JButton("parse");
+		toolBar.add(parseButton, BorderLayout.SOUTH);
+		parseButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e)
+			{
+				ControlView cv = CAPanel.this.grammar.getControl();
+				String program = CAPanel.this.textPanel.getText();
+				if( program == null )
+					return;
+				if( cv == null ) {
+					cv = new ControlView();
+					cv.initScope(grammar);
+					cv.setProgram(CAPanel.this.textPanel.getText());
+					cv.loadProgram();
+					grammar.setControl(cv);
+				} else {
+					cv.setProgram(CAPanel.this.textPanel.getText());
+					cv.loadProgram();
+				}
+				CAPanel.this.simulator.start();
+			}
+		}
+		);
 		
-		this.add(autPanel = new AutomatonPanel(simulator));
-		this.add(textPanel = new JTextPane());
+		this.add(toolBar, BorderLayout.NORTH);
 		
+		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		splitPane.setDividerLocation(300);
+		splitPane.add(autPanel = new AutomatonPanel(simulator));
+		splitPane.add(textPanel = new JTextPane());
+		this.add(splitPane, BorderLayout.CENTER);
 		
+		simulator.addSimulationListener(this);
+		this.simulator = simulator;
 	}
 	
-	public JGraphPanel getJGraphPanel()
-	{
+	/** 
+	 * Needed by Simulator because this is not a JGraphPanel
+	 * @return the JGraphPanel in the JSplitPane
+	 */
+	public JGraphPanel getJGraphPanel() {
 		return autPanel;
 	}
-	
-	public void setGrammar(GraphGrammar grammar) {
-		autPanel.setGrammar(grammar);
+
+	public void applyTransitionUpdate(GraphTransition transition) {
+		//
+	}
+
+	public void setGrammarUpdate(DefaultGrammarView grammar) {
+		this.grammar = grammar;
 		
-		if( grammar.getControl() == null ) {
-			textPanel.setText("");
-			textPanel.setEnabled(false);
-			textPanel.setEditable(false);
-		} else
+		autPanel.getJGraph().setModel(GraphJModel.EMPTY_JMODEL);
+		autPanel.setEnabled(false);
+		textPanel.setText("");
+		textPanel.setEnabled(false);
+		textPanel.setEditable(false);
+
+		if( grammar.getControl() != null )
 		{
-			textPanel.setText(grammar.getControl().getProgram());
+			ControlView cv = grammar.getControl();
+			textPanel.setText(cv.program());
 			textPanel.setEnabled(true);
 			textPanel.setEditable(true);
+			
+			autPanel.setEnabled(true);
+			JGraph jGraph = autPanel.getJGraph();
+
+			jGraph.setEnabled(true);
+			GraphJModel model = GraphJModel.newInstance(cv.getAutomaton(), autPanel.getOptions());
+			jGraph.setModel(model);
+			autPanel.layoutGraph(cv.getAutomaton());
+			autPanel.refreshStatus();
 		}
+	}
+
+	public void setRuleUpdate(NameLabel name) {
+		// TODO Auto-generated method stub
+	}
+
+	public void setStateUpdate(GraphState state) {
+		// TODO Auto-generated method stub
+	}
+
+	public void setTransitionUpdate(GraphTransition transition) {
+		// TODO Auto-generated method stub
+	}
+
+	public void startSimulationUpdate(GTS gts) {
+		// TODO Auto-generated method stub
 	}
 	
 }
@@ -66,27 +147,10 @@ class AutomatonPanel extends JGraphPanel<JGraph>
 		layouter = new MyForestLayouter().newInstance(getJGraph());
 	}
 
-	public void setGrammar(GraphGrammar grammar)
+	public void layoutGraph(ControlAutomaton aut)
 	{
-		if( grammar.getControl() == null ) {
-			this.getJGraph().setModel(GraphJModel.EMPTY_JMODEL);
-			this.setEnabled(false);
-		}
-		else
-		{
-			this.setEnabled(true);
-
-			control = grammar.getControl();
-			GraphJModel model = GraphJModel.newInstance(control, getOptions());
-			
-			JGraph jGraph = this.getJGraph();
-			jGraph.setEnabled(true);
-			jGraph.setModel(model);
-			
-			this.refreshStatus();
-			
-			layouter.start(true);
-		}
+		control = aut;
+		layouter.start(true);
 	}
 	
 	/**
@@ -114,6 +178,7 @@ class AutomatonPanel extends JGraphPanel<JGraph>
 	    @Override
 	    protected Collection<?> getSuggestedRoots() {
 	        GraphJModel jModel = (GraphJModel) getJModel();
+	        
 	        return Collections.singleton(jModel.getJVertex(control.startState()));
 	    }
 	

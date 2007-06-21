@@ -12,12 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.13 2007-06-18 07:25:45 fladder Exp $
+ * $Id: GTS.java,v 1.14 2007-06-21 12:47:49 fladder Exp $
  */
 package groove.lts;
 
 import groove.control.Location;
-import groove.control.LocationTransition;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
@@ -27,7 +26,6 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
-import groove.util.CollectionOfCollections;
 import groove.util.FilterIterator;
 import groove.util.NestedIterator;
 import groove.util.SetView;
@@ -46,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2007-06-18 07:25:45 $
+ * @version $Revision: 1.14 $ $Date: 2007-06-21 12:47:49 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -297,16 +295,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         return Collections.unmodifiableSet(stateSet);
     }
 
-    
-    private Set<LocationTransition> locationTransSet = new HashSet<LocationTransition>();
-    
-    
-    /**
-     * Original edgeSet method that only returns transitions of type GraphTransition
-     * LocationTransitions (or rather lambda transitions) are omitted.
-     * @return
-     */
-    public Set<? extends GraphTransition> gtEdgeSet()
+    public Set<? extends GraphTransition> edgeSet()
     {
         if (isStoreTransitions()) {
         	return new TransitionSet();
@@ -315,19 +304,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         }   	
     }
     
-    public Set<? extends Transition> edgeSet() {
-        if (isStoreTransitions()) {
-            
-        	HashSet<Transition> retVal = new HashSet<Transition>();
-        	retVal.addAll(new TransitionSet());
-        	retVal.addAll(locationTransSet);
-        	return retVal;
-        	//return new TransitionSet();
-        } else {
-            return Collections.emptySet();
-        }
-    }
-
 	@Override
     protected GraphShapeCache createCache() {
         return new GraphShapeCache(this, false);
@@ -366,21 +342,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             reporter.stop();
         }
 	}
-	
-	public void addTransition(LocationTransition transition) {
-		if( isStoreTransitions()) {
-			reporter.start(ADD_TRANSITION_STOP);
-			
-			// we dont store it in the source, just in the GTS
-			
-			this.locationTransSet.add(transition);
-			transitionCount++;
-			fireAddEdge(transition);
-			
-			reporter.stop();
-		}
-	}
-	
 	
     /**
      * Adds a state to the GTS, if it is not isomorphic to an existing state.

@@ -16,6 +16,7 @@
  */
 package groove.trans;
 
+import groove.control.ControlView;
 import groove.graph.Graph;
 import groove.lts.GraphState;
 import groove.util.AbstractNestedIterator;
@@ -185,9 +186,11 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	protected boolean doApplications(Set<Rule> rules, Action action) {
 		boolean result = false;
 		reporter.start(COLLECT_APPLICATIONS);
+		int priority = 0;
 		for (Rule rule : rules) {
 			if (doApplications(rule, action)) {
 				result = true;
+				priority = rule.getPriority();
 			}
 		}
 		reporter.stop();
@@ -215,6 +218,7 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 			reporter.restart(GET_DERIVATIONS);
 			result = true;
 		}
+		
 		return result;
 	}
 

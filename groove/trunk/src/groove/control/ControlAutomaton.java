@@ -1,30 +1,37 @@
 package groove.control;
 
 import groove.graph.AbstractGraphShape;
+import groove.graph.DefaultMorphism;
 import groove.graph.GraphShapeCache;
+import groove.graph.Morphism;
 import groove.lts.LTS;
 import groove.lts.State;
 import groove.lts.Transition;
+import groove.rel.RegExprGraph;
 import groove.trans.Rule;
+import groove.trans.RuleNameLabel;
 import groove.trans.RuleSystem;
+import groove.trans.SPORule;
+import groove.trans.SystemProperties;
 import groove.view.FormatException;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	
-	private String program;
-	
-	public static final String LAMBDA = "_";
-	public static final String ELSE = "_e";
-	
+	/** holds the (and and only) startState of the graphshape **/ 
 	private State startState;
+	
 	private Set nodeSet = new HashSet<State>();
 	private Set edgeSet = new HashSet<Transition>();
-	private Set<State> finalStates = new HashSet<State>();
+	private Set<ControlState> finalStates = new HashSet<ControlState>();
 	
+	/** the current rulesystem, needed to fetch Rule's given a rulename **/
+	private List<String> ruleNames;
 	private RuleSystem ruleSystem;
 	
 	public void clear()
@@ -35,15 +42,21 @@ public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implem
 		this.finalStates.clear();
 	}
 	
-	public ControlAutomaton(RuleSystem ruleSystem)
-	{
-		this.ruleSystem = ruleSystem;
+	public ControlAutomaton(List<String> ruleNames) {
+		this.ruleNames = ruleNames;
 	}
 	
-	public Set<? extends Transition> edgeSet() {
+	/**
+	 * Return all edges in this graphshape 
+	 */
+	public Set<ControlTransition> edgeSet() {
 		return edgeSet;
 	}
 
+	/**
+	 * Set the startState of the automaton
+	 * @param cs 
+	 */
 	public void setStartState(ControlState cs)
 	{
 		this.startState = cs;
@@ -54,11 +67,11 @@ public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implem
 		this.finalStates.add(cs);
 	}
 	
-	public Set<? extends State> nodeSet() {
+	public Set<ControlState> nodeSet() {
 		return nodeSet;
 	}
 	
-	public Collection<? extends State> getFinalStates() {
+	public Collection<ControlState> getFinalStates() {
 		return finalStates;
 	}
 
@@ -91,6 +104,11 @@ public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implem
 		return addState(new ControlState(nodeSet().size()));
 	}
 	
+	/**
+	 * Stores a state and returns is.
+	 * @param state
+	 * @return
+	 */
 	public ControlState addState(ControlState state)
 	{
 		this.nodeSet.add(state);
@@ -102,44 +120,11 @@ public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implem
 		return this.ruleSystem.getRule(name);
 	}
 	
-	public void addTransition(ControlTransition transition)
+	public void addTransition(ControlState source, ControlState target, String rulename)
 	{
-		this.edgeSet.add(transition);
-	}
-	
-	public void addRuleTransition(ControlState source, ControlState target, String rulename)
-	{
-		Rule rule = ruleSystem.getRule(rulename);
+		ControlTransition ct = new ControlTransition(source, target, rulename);
+		this.edgeSet.add(ct);
 
-		/*
-		if( rule == null )
-			throw new FormatException("Rule " + rulename + " not found in current rulesystem.");
-		
-		*/
-
-		RuleControlTransition rct = new RuleControlTransition(source, target, rule);
-		this.addTransition(rct);
-		source.add(rct);
-	}
-	
-	public void addLambdaTransition(ControlState source, ControlState target)
-	{
-		ControlTransition ct = new LambdaControlTransition(source, target);
-		source.add(ct);
-		this.addTransition(ct);
-	}
-	
-	public void addElseTransition(ControlState source, ControlState target) {
-		ControlTransition ct = new ElseControlTransition(source, target);
-		source.add(ct);
-		this.addTransition(ct);
-	}
-
-	public void setProgram(String program) {
-		this.program = program;
-	}
-	
-	public String getProgram() {
-		return program;
+		//source.add(ct);
 	}
 }

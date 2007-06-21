@@ -17,7 +17,7 @@
 package groove.lts;
 
 import groove.control.ControlState;
-import groove.control.Location;
+import groove.control.ControlView;
 import groove.graph.Graph;
 import groove.trans.AbstractRuleApplier;
 import groove.trans.Rule;
@@ -97,7 +97,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	protected void collectApplications(Set<Rule> rules, Set<RuleApplication> result) {
     	if (state != null) {
     		int rulesPriority = rules.iterator().next().getPriority();
-			if (rulesPriority == priority) {
+			if (rulesPriority == priority || rulesPriority == ControlView.ANY_RULE_PRORITY) {
 				collectAliases(result);
 			}
     	}
@@ -138,9 +138,9 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	protected boolean doApplications(Set<Rule> rules, final Action action) {
 		boolean result = false;
 		Action myAction = action;
-    	if (state != null) {
+    	if (state != null && control == null) {
     		int rulesPriority = rules.iterator().next().getPriority();
-			if (rulesPriority == priority) {
+			if (rulesPriority == priority ) {
 				final Set<RuleApplication> aliases = createApplicationSet();
 				collectAliases(aliases);
 				for (RuleApplication alias : aliases) {
@@ -180,12 +180,10 @@ public class AliasRuleApplier extends AbstractRuleApplier {
     @Override
     protected Iterator<Set<Rule>> getRuleSetIter()
     {
-    	if( control != null  )
-    	{
+    	if( control != null  ) {
     		return control.getRuleMap().values().iterator();
     	}
-    	else
-    	{
+    	else {
     		return super.getRuleSetIter();
     	}
     }

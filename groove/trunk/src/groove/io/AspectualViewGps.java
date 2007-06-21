@@ -12,13 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.11 2007-06-18 21:20:25 fladder Exp $
+ * $Id: AspectualViewGps.java,v 1.12 2007-06-21 12:47:48 fladder Exp $
  */
 
 package groove.io;
 
-import groove.control.ControlAutomaton;
-import groove.control.GCPLoader;
+import groove.control.ControlView;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
@@ -30,6 +29,7 @@ import groove.util.Groove;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
+import groove.view.FormatException;
 import groove.view.GrammarView;
 import groove.view.aspect.AspectGraph;
 
@@ -45,7 +45,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     /** Error message if a grammar cannot be loaded. */
@@ -142,20 +142,23 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 		String controlFileName = result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY);
 		if( controlFileName == null)
 			return;
-		File controlProgram = new File(location, result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY));
+		File controlProgramFile = new File(location, result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY));
 		//System.out.println(controlProgram.getAbsolutePath());
-		if( controlProgram.exists() ) {
+		if( controlProgramFile.exists() ) {
 			try
 			{
-				ControlAutomaton ca = new ControlAutomaton(result.toGrammar());
-				GCPLoader.loadFile(controlProgram, ca);
-				GCPLoader.loadProgram(ca);
-				result.setControl(ca);
-			} catch(Exception e)
-			{
+
+				ControlView cv = new ControlView();
 				
-				System.err.println("Conversion problem from grammarview to grammar while loading control program.");
-				e.printStackTrace();
+				cv.initScope(result);
+				cv.loadFile(controlProgramFile);
+				cv.loadProgram();
+
+				result.setControl(cv);
+				
+			}
+			catch(IOException e) {
+				System.err.println("Error: unable to open control program " + controlProgramFile.getName());
 			}
 		}
 	}

@@ -17,6 +17,7 @@
 package groove.view;
 
 import groove.control.ControlAutomaton;
+import groove.control.ControlView;
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
@@ -160,14 +161,15 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     	return errors;
 	}
 
-	/** setter method for the control automaton **/
-	public void setControl(ControlAutomaton control) {
+	/** setter method for the control view **/
+	public void setControl(ControlView control) {
 		this.control = control;
-		// need to add it to grammar if a grammar already exists
-		if( this.grammar != null )
-		{
-			grammar.setControl(control);
-		}
+		invalidateGrammar();
+	}
+	
+	/** getter method for control view **/
+	public ControlView getControl() {
+		return this.control;
 	}
 	
 	/** Delegates to {@link #toGrammar()}. */
@@ -205,6 +207,7 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     private GraphGrammar computeGrammar() throws FormatException {
     	GraphGrammar result = new GraphGrammar(getName());
     	List<String> errors = new ArrayList<String>();
+    	
     	for (RuleView ruleView: getRuleMap().values()) {
     		try {
     			// only add the enabled rules
@@ -218,7 +221,17 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     		}
     	}
     	
-    	result.setControl(control);
+    	if( control != null ) {
+    		try
+    		{
+    			ControlAutomaton ca = control.toAutomaton(result);
+    			result.setControl(ca);
+    		}
+    		catch(FormatException e)
+    		{
+    			errors.addAll(e.getErrors());
+    		}
+    	}
     	
     	result.setProperties(getProperties());
     	if (getStartGraph() == null) {
@@ -261,7 +274,7 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     /** The name of this grammar view. */
     private String name;
     /** The control automaton **/
-    private ControlAutomaton control;
+    private ControlView control;
     /** The start gramg of the grammar. */
     private AspectualGraphView startGraph;
     /** The rule system properties of this grammar view. */
