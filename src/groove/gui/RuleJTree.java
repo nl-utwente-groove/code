@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.16 2007-05-30 21:30:26 rensink Exp $
+ * $Id: RuleJTree.java,v 1.17 2007-06-22 13:02:18 fladder Exp $
  */
 package groove.gui;
 
+import groove.control.ControlView;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
@@ -65,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -555,7 +556,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	     * The node can (and will) have children.
 	     */
 	    public PriorityTreeNode(int priority) {
-	        super("Priority "+priority, true);
+	        super((priority==ControlView.ANY_RULE_PRORITY)?"Priority ANY":"Priority "+priority, true);
 	    }
 	}
 
