@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.16 2007-06-21 12:47:49 fladder Exp $
+ * $Id: StateGenerator.java,v 1.17 2007-06-25 08:58:45 fladder Exp $
  */
 package groove.lts;
 
@@ -81,11 +81,17 @@ public class StateGenerator {
 				}
         	});
         	
-            if (! collector.isTransitionsAdded()) {
-                // test voor lamba of else hier? of in applier...
-            	
-            	getGTS().setFinal(state);
-            }
+        	
+            //if (! collector.isTransitionsAdded()) {
+            // this test was not enough in case a linear exploration had already happened and one tried
+        	// to explore a state that didn't have more then the already existing outgoing application 
+        	// getGTS().setFinal(state);
+            //}
+        	
+        	// new test, just look if there are any transitions stored for this state
+        	if( state.getTransitionSet().size() == 0 ) {
+        		getGTS().setFinal(state);
+        	}
             
             getGTS().setClosed(state);
         }

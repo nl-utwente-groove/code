@@ -87,9 +87,7 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	}
 
 	public void applyTransitionUpdate(GraphTransition transition) {
-		//autPanel.getJModel().setActiveState(transition.source());
-        //autPanel.getJModel().setActiveTransition(transition);
-        //autPanel.getJGraph().scrollTo(getJModel().getActiveTransition());
+		// nothing to do here, we dont care about new transitions
 	}
 
 	public void setGrammarUpdate(DefaultGrammarView grammar) {
@@ -125,30 +123,32 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	}
 
 	public void setStateUpdate(GraphState state) {
-		autPanel.getJModel().setActiveTransition(null);
-        // emphasize state if it isn't already done
-        autPanel.getJModel().setActiveState((ControlState)state.getControl());
-        // we do layouting here because it's too expensive to do it
-        // every time a new state is added
-        if (autPanel.getJGraph().getLayouter() != null) {
-        	autPanel.getJModel().freeze();
-        	autPanel.getJGraph().getLayouter().start(false);
-        }
-        // addUpdate(lts, state);
-        //autPanel.getJGraph().scrollTo(state);
+		if( state.getControl() != null ) {
+			autPanel.getJModel().setActiveTransition(null);
+			// emphasize state if it isn't already done
+			autPanel.getJModel().setActiveState((ControlState)state.getControl());
+			// we do layouting here because it's too expensive to do it
+			// every time a new state is added
+			if (autPanel.getJGraph().getLayouter() != null) {
+				autPanel.getJModel().freeze();
+				autPanel.getJGraph().getLayouter().start(false);
+			}
+			// addUpdate(lts, state);
+			//autPanel.getJGraph().scrollTo(state);
+
+		}
 	}
 
 	public void setTransitionUpdate(GraphTransition transition) {
     	
 		ControlState source = (ControlState) transition.source().getControl();
-		autPanel.getJModel().setActiveState(source);
 		
-		ControlTransition ct = source.getTransitions(transition.getEvent().getRule()).iterator().next();
-    	
-    	
-    	autPanel.getJModel().setActiveTransition(ct);
-        
-        //autPanel.getJGraph().scrollTo(autPanel.getJModel().getActiveTransition());
+		if( source != null ) {
+			autPanel.getJModel().setActiveState(source);
+			ControlTransition ct = source.getTransitions(transition.getEvent().getRule()).iterator().next();
+			autPanel.getJModel().setActiveTransition(ct);
+
+		}
 	}
 
 	public void startSimulationUpdate(GTS gts) {
