@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +27,9 @@ import java.util.List;
  * Loads a control program into a given ControlAutomaton
  */
 public class ControlView {
+	
+	/** currently used file **/
+	private File controlFile;
 	
 	/** priority for a lamba Rule , that can be applied anytime **/
 	public static final int ANY_RULE_PRORITY = Integer.MAX_VALUE-1;
@@ -91,6 +95,8 @@ public class ControlView {
 	
 	/** loads the program from a File **/
 	public void loadFile(File controlFile) throws IOException, FileNotFoundException {
+		this.controlFile = controlFile;
+		
 		StringBuilder contents = new StringBuilder();
 		try
 		{
@@ -131,7 +137,7 @@ public class ControlView {
 			AspectualRuleView elseRV = new AspectualRuleView(ControlView.ELSE_RULE);
 			grammar.addRule(lambdaRV);
 			grammar.addRule(elseRV);
-		}catch(FormatException e) {
+		} catch(FormatException e) {
 			// will not happen
 		}
 		
@@ -149,6 +155,10 @@ public class ControlView {
 	
 	public String program() {
 		return this.controlProgram;
+	}
+	
+	public File getFile() {
+		return this.controlFile;
 	}
 	
 	public ControlAutomaton toAutomaton(GraphGrammar grammar) throws FormatException
@@ -171,4 +181,18 @@ public class ControlView {
 		
 		return automaton;
 	}
+	
+	/**
+	 * Saves the program to the given file.
+	 * 
+	 * @param controlProgram
+	 * @param file
+	 * @throws IOException
+	 */
+	public static void saveFile(String controlProgram, File file) throws IOException {
+		PrintWriter pw = new PrintWriter(file);
+		pw.write(controlProgram);
+		pw.close();
+	}
+	
 }
