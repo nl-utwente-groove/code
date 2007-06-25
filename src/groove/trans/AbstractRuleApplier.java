@@ -45,7 +45,8 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	
 	public Iterator<RuleApplication> getApplicationIter() {
 		Iterator<RuleApplication> result = null;
-        reporter.start(GET_DERIVATIONS);
+
+		reporter.start(GET_DERIVATIONS);
         // find the first batch of rules that has any derivations
         
         //Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
@@ -54,10 +55,23 @@ abstract public class AbstractRuleApplier implements RuleApplier {
         
         while (result == null && ruleSetIter.hasNext()) {
         	Set<Rule> rules = ruleSetIter.next();
-        	Iterator<RuleApplication> iter = getDerivationIter(rules);
+        	// if i'm dealing with lambdas i have to use getApplications, cant be done lazy
+        	int priority = rules.iterator().next().getPriority();
+
+        	Iterator<RuleApplication> iter;
+        	
+        	if( priority == ControlView.ANY_RULE_PRORITY)
+        		iter = this.getApplications().iterator();
+        	else
+            	iter = getDerivationIter(rules);
+        	
+
         	if (iter.hasNext()) {
         		result = iter;
         	}
+        	
+        	// make sure it continues when the current result yields only lambda transitions
+        	// except for else transitions
         }
         reporter.stop();
         return result == null ? Collections.<RuleApplication>emptySet().iterator() : result;
@@ -114,8 +128,24 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 		
 		Iterator<Set<Rule>> ruleSetIter = getRuleSetIter();
 		
-		while (result.isEmpty() && ruleSetIter.hasNext()) {
-			collectApplications(ruleSetIter.next(), result);
+		Set<Rule> rules = null;
+		
+		boolean done = false;
+		
+		while (!done && ruleSetIter.hasNext()) {
+			
+			int size = result.size();
+			rules = ruleSetIter.next();
+			
+			int priority = rules.iterator().next().getPriority();
+			
+			// dont collect when i have results and i'm dealing with ELSE
+			if( priority > ControlView.ELSE_RULE_PRIORITY || size == 0)
+				collectApplications(rules, result);
+
+			// if i didnt collect for LAMBDA and i have results i'm done
+			if( priority < ControlView.ANY_RULE_PRORITY && size > 0 )
+				done = true;
 		}
 		reporter.stop();
         return result;
@@ -163,12 +193,27 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	public void doApplications(Action action) {
 		reporter.start(GET_DERIVATIONS);
 		boolean done = false;
+		boolean lambdas = false;
 		
 		//Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
 		Iterator<Set<Rule>> ruleSetIter = getRuleSetIter();
 		
+		Set<Rule> rules = null;
+
+		int priority;
+		
 		while (!done && ruleSetIter.hasNext()) {
-			done = doApplications(ruleSetIter.next(), action);
+			rules = ruleSetIter.next();
+			
+			priority = rules.iterator().next().getPriority();
+			if( priority == ControlView.ANY_RULE_PRORITY )
+				lambdas = doApplications(rules, action);
+			else if( lambdas && priority == ControlView.ELSE_RULE_PRIORITY )
+				done = true;
+			else if( !lambdas && priority == ControlView.ELSE_RULE_PRIORITY )
+				done = doApplications(rules, action);
+			else
+				done = doApplications(rules, action);
 		}
 		reporter.stop();
 	}
