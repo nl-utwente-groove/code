@@ -62,6 +62,7 @@ public class CAPanel extends JPanel  implements SimulationListener {
 				cv.loadProgram();
 				CAPanel.this.simulator.getCurrentGrammar().setControl(cv);
 				CAPanel.this.simulator.setGrammar(CAPanel.this.simulator.getCurrentGrammar());
+				CAPanel.this.simulator.handleSaveControl(cv.program());
 			}
 		}
 		);

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.49 2007-06-21 12:47:47 fladder Exp $
+ * $Id: Simulator.java,v 1.50 2007-06-25 09:31:56 fladder Exp $
  */
 package groove.gui;
 
@@ -31,6 +31,7 @@ import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
+import groove.control.ControlView;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphFactory;
@@ -58,7 +59,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.StateGenerator;
-import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
@@ -123,7 +123,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.49 $
+ * @version $Revision: 1.50 $
  */
 public class Simulator {
     /**
@@ -542,6 +542,20 @@ public class Simulator {
         return selectedFile;
     }
     
+    File handleSaveControl(String controlProgram) {
+    	// check if we had a control program
+    	File selectedFile = getCurrentGrammar().getControl().getFile();
+    	if( selectedFile == null ) {
+    		// need to implement a filechooser here.
+    	}
+
+    	if( selectedFile != null ) {
+    		doSaveControl(controlProgram, selectedFile);
+    	}
+    	
+    	return selectedFile;
+    }
+    
     /**
      * Creates and displays a modal dialog wrapping an editor.
      * @param graph the input graph for the editor
@@ -782,6 +796,19 @@ public class Simulator {
         }
     }
 
+    private void doSaveControl(String controlProgram, File file) {
+    	try {
+    		
+    		ControlView.saveFile(controlProgram, file);
+    		
+    	} catch( IOException exc) {
+    		showErrorDialog("Error while saving to " + file, exc);
+    	}
+    	
+    	
+    }
+    
+    
     /**
 	 * Sets a new graph transition system. Invokes
 	 * {@link #fireSetGrammar(DefaultGrammarView)} to notify all observers of the change.
@@ -2895,7 +2922,7 @@ public class Simulator {
 //    /**
 //     * Class providing functionality to export a {@link JGraph} to a file in different formats.
 //     * @author Arend Rensink
-//     * @version $Revision: 1.49 $
+//     * @version $Revision: 1.50 $
 //     */
 //    static public class Exporter {
 //        /**
