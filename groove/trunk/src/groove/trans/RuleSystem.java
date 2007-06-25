@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.14 2007-05-09 22:53:34 rensink Exp $
+ * $Id: RuleSystem.java,v 1.15 2007-06-25 10:35:16 fladder Exp $
  */
 package groove.trans;
 
@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -38,7 +39,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2007-05-09 22:53:34 $
+ * @version $Revision: 1.15 $ $Date: 2007-06-25 10:35:16 $
  * @see NameLabel
  * @see SPORule
  */
@@ -107,6 +108,26 @@ public class RuleSystem {
         return Collections.unmodifiableSet(nameRuleMap.keySet());
     }
 
+    /**
+     * 
+     */
+    public Set<Rule> getChildRules(String parent) {
+    	Set<Rule> result = new HashSet<Rule>();
+    	
+    	//TODO: optimize
+    	
+    	for( Rule rule : this.getRules() ) {
+    		RuleNameLabel label = rule.getName().parent();
+    		while( label != null ) {
+    			if( label.name().compareTo(parent) == 0 )
+    				result.add(rule);
+    			label = label.parent();
+    		}
+    	}
+    	
+    	return result;
+    }
+    
     /**
      * Returns an unmodifiable view upon the map from available priorities to 
      * rules with that priority. The map is sorted from high to low priority.

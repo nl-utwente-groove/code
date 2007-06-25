@@ -31,7 +31,7 @@ public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implem
 	private Set<ControlState> finalStates = new HashSet<ControlState>();
 	
 	/** the current rulesystem, needed to fetch Rule's given a rulename **/
-	private List<String> ruleNames;
+	private Set<String> ruleNames;
 	private RuleSystem ruleSystem;
 	
 	public void clear()
@@ -42,7 +42,7 @@ public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implem
 		this.finalStates.clear();
 	}
 	
-	public ControlAutomaton(List<String> ruleNames) {
+	public ControlAutomaton(Set<String> ruleNames) {
 		this.ruleNames = ruleNames;
 	}
 	
@@ -118,6 +118,14 @@ public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implem
 	public Rule getRule(String name)
 	{
 		return this.ruleSystem.getRule(name);
+	}
+	
+	public void removeTransition(ControlTransition trans) {
+		this.edgeSet.remove(trans);
+	}
+	
+	public void addTransition(ControlTransition transition) {
+		this.edgeSet.add(transition);
 	}
 	
 	public void addTransition(ControlState source, ControlState target, String rulename)

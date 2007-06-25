@@ -147,8 +147,12 @@ public class CAPanel extends JPanel  implements SimulationListener {
 		if( source != null ) {
 			autPanel.getJModel().setActiveState(source);
 			ControlTransition ct = source.getTransitions(transition.getEvent().getRule()).iterator().next();
+			
+			ControlTransition parent = ct.getVisibleParent();
+			if( parent != null )
+				ct = parent;
+			
 			autPanel.getJModel().setActiveTransition(ct);
-
 		}
 	}
 

@@ -20,7 +20,11 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * @author Staijen
@@ -57,7 +61,7 @@ public class ControlView {
 	}
 	
 	
-	private List<String> scope = new ArrayList();
+	private Map<String, RuleNameLabel> scope = new HashMap<String, RuleNameLabel>();
 	
 	private String controlProgram;
 	
@@ -141,11 +145,10 @@ public class ControlView {
 			// will not happen
 		}
 		
-		for( RuleNameLabel label : grammar.getRuleMap().keySet() )
-		{
-			this.scope.add(label.text());
+		for( RuleNameLabel rule : grammar.getRuleMap().keySet() ) {
+			this.scope.put(rule.text(), rule);
 		}
-		automaton = new ControlAutomaton(this.scope);
+		automaton = new ControlAutomaton(this.scope.keySet());
 	}
 	
 	public ControlAutomaton getAutomaton() 
@@ -164,6 +167,7 @@ public class ControlView {
 	public ControlAutomaton toAutomaton(GraphGrammar grammar) throws FormatException
 	{
 		List<String> errors = new ArrayList<String>();
+		
 		for( ControlTransition transition : automaton.edgeSet() )
 		{
 			Rule rule = grammar.getRule(transition.ruleName());
@@ -172,8 +176,23 @@ public class ControlView {
 				transition.source().add(transition);
 			}
 			else
-				errors.add("Format error in control program: unable to find rule for label \"" +  transition.ruleName() + "\"");
-			
+			{
+				Set<Rule> rules = grammar.getChildRules(transition.ruleName());
+				if( !rules.isEmpty() ) {
+					ControlTransition childTrans;
+					for( Rule childRule : rules) {
+						//automaton.removeTransition(transition);
+						childTrans = new ControlTransition(transition.source(), transition.target(), childRule.getName().name());
+						childTrans.setRule(childRule);
+						transition.source().add(childTrans);
+						// this is for viewing purposes only
+						childTrans.setVisibleParent(transition);
+					}
+					// remove the original transition;
+				}
+				else
+					errors.add("Format error in control program: unable to find rule for label \"" +  transition.ruleName() + "\"");
+			}
 		}
 		
 		if( errors.size() > 0 )

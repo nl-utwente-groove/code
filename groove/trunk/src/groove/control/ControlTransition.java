@@ -22,6 +22,8 @@ public class ControlTransition implements Transition {
 	private ControlState target;
 	private String ruleName;
 	
+	private ControlTransition visibleParent;
+	
 	/**
 	 * @param source
 	 * @param target
@@ -138,4 +140,13 @@ public class ControlTransition implements Transition {
             return 0;
         }
 	}
+	
+	public void setVisibleParent(ControlTransition parent) {
+		this.visibleParent = parent;
+	}
+	
+	public ControlTransition getVisibleParent() {
+		return this.visibleParent;
+	}
+		
 }
