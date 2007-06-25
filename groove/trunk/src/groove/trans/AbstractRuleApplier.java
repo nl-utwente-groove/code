@@ -56,14 +56,17 @@ abstract public class AbstractRuleApplier implements RuleApplier {
         while (result == null && ruleSetIter.hasNext()) {
         	Set<Rule> rules = ruleSetIter.next();
         	// if i'm dealing with lambdas i have to use getApplications, cant be done lazy
-        	int priority = rules.iterator().next().getPriority();
-
-        	Iterator<RuleApplication> iter;
         	
-        	if( priority == ControlView.ANY_RULE_PRORITY)
-        		iter = this.getApplications().iterator();
-        	else
-            	iter = getDerivationIter(rules);
+        	
+        	// this would implement the stuff considering an iterator over all applications
+        	// but it doesnt matter yet for linear exploration since it would only do the
+        	// highest priority anyway. Maybe add later for e.g. barbed?
+        	// TODO: should this be inhere?
+        	//int priority = rules.iterator().next().getPriority();
+        	//if( priority == ControlView.ANY_RULE_PRORITY)
+        		//iter = this.getApplications().iterator();
+        	// else
+            	Iterator<RuleApplication> iter = getDerivationIter(rules);
         	
 
         	if (iter.hasNext()) {
@@ -129,23 +132,29 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 		Iterator<Set<Rule>> ruleSetIter = getRuleSetIter();
 		
 		Set<Rule> rules = null;
+
+		// the commented lines would be a fix for collecting all possible applications 
+		// when we have lambda transitions also. not needed for full or linear (where in
+		// linear it would only do a lambda transition anyway)
+		// TODO: should this be added?
 		
-		boolean done = false;
+		//boolean done = false;
 		
-		while (!done && ruleSetIter.hasNext()) {
+		// need done here instead of isEmpty if the commented lines are uncommented
+		while (!result.isEmpty() && ruleSetIter.hasNext()) {
 			
-			int size = result.size();
+			//int size = result.size();
 			rules = ruleSetIter.next();
 			
-			int priority = rules.iterator().next().getPriority();
+			//int priority = rules.iterator().next().getPriority();
 			
 			// dont collect when i have results and i'm dealing with ELSE
-			if( priority > ControlView.ELSE_RULE_PRIORITY || size == 0)
-				collectApplications(rules, result);
+			//if( priority > ControlView.ELSE_RULE_PRIORITY || size == 0)
+			collectApplications(rules, result);
 
 			// if i didnt collect for LAMBDA and i have results i'm done
-			if( priority < ControlView.ANY_RULE_PRORITY && size > 0 )
-				done = true;
+			//if( priority < ControlView.ANY_RULE_PRORITY && size > 0 )
+			//	done = true;
 		}
 		reporter.stop();
         return result;
