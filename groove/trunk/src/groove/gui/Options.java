@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.29 2007-05-29 21:36:09 rensink Exp $
+ * $Id: Options.java,v 1.30 2007-06-26 15:50:23 rensink Exp $
  */
 package groove.gui;
 
@@ -40,7 +40,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  */
 public class Options {
     /** 
@@ -411,7 +411,7 @@ public class Options {
     }
 
     /**
-	 * Dummy method to force static initialisation
+	 * Sets the look-and-feel to default (i.e., {@link PlasticLookAndFeel}).
 	 */
 	public static void initLookAndFeel() {
 		try
