@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExpr.java,v 1.8 2007-06-12 12:19:16 kastenberg Exp $
+ * $Id: RegExpr.java,v 1.9 2007-06-26 15:50:19 rensink Exp $
  */
 package groove.rel;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 abstract public class RegExpr implements VarSetSupport {
     /** 
@@ -145,6 +145,9 @@ abstract public class RegExpr implements VarSetSupport {
 
     /** The character for single quotes. */
     static public final char SINGLE_QUOTE_CHAR = '\'';
+
+    /** The character for single quotes. */
+    static public final char DOUBLE_QUOTE_CHAR = '"';
 
     /**
      * Left parenthesis string used for grouping regular (sub)expressions. 
@@ -740,6 +743,8 @@ abstract public class RegExpr implements VarSetSupport {
                 return newInstance(expr.trim());
             } else if (ExprParser.matches(expr, SINGLE_QUOTE_CHAR, SINGLE_QUOTE_CHAR)) {
                 return newInstance(ExprParser.toUnquoted(expr.trim(), SINGLE_QUOTE_CHAR));
+            } else if (ExprParser.matches(expr, DOUBLE_QUOTE_CHAR, DOUBLE_QUOTE_CHAR)) {
+                return newInstance(expr.trim());
             } else if (isAtom(expr)) {
             	return newInstance(expr.trim());
             } else {

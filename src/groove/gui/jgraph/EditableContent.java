@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableContent.java,v 1.1 2007-05-28 21:32:44 rensink Exp $
+ * $Id: EditableContent.java,v 1.2 2007-06-26 15:50:20 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -23,27 +23,12 @@ import java.util.Collection;
 import java.util.Collections;
 
 /**
- * J-user object that is a collection of strings, and can be reloaded 
+ * Content object that is a collection of strings, and can be reloaded 
  * from an object of collection.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class EditableContent extends JCellContent<String> {
-//    /**
-//     * Constructs an object whose string description uses a given string as a separator between
-//     * labels (in {@link #toString()}, and which uses another separator when editing the object and
-//     * loading the object from a string (in {@link #load(String)}.
-//     * @param jCell the cell for which this is the user object
-//     * @param printSeparator the intended label print separator
-//     * @param editSeparator the intended label edit separator
-//     * @see #getEditSeparator()
-//     * @ensure <tt>getPrintSeparator().equals(printSeparator) && getEditSeparator().equals(editSeparator)</tt>
-//     */
-//    public EditableContent(EditableJCell jCell, String printSeparator, String editSeparator) {
-//    	this(jCell, printSeparator, editSeparator, true);
-//        this.allowEmptyLabelSet = true;
-//    }
-
     /**
      * Constructs an object whose string description uses a given string as a separator between
      * labels (in {@link #toString()}, and which uses another separator when editing the object and
@@ -55,8 +40,6 @@ public class EditableContent extends JCellContent<String> {
      */
     public EditableContent(boolean allowEmptyLabelSet) {
         super();
-//        this.editSeparator = editSeparator;
-//        this.loadSeparator = WHITESPACE + editSeparator.trim() + WHITESPACE;
         this.allowEmptyLabelSet = allowEmptyLabelSet;
     }
 

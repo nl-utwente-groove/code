@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExprParser.java,v 1.5 2007-05-21 22:19:36 rensink Exp $
+ * $Id: ExprParser.java,v 1.6 2007-06-26 15:50:22 rensink Exp $
  */
 package groove.util;
 
@@ -32,7 +32,7 @@ import java.util.Stack;
  * A class that helps parse an expression.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ExprParser {
     /** The single quote character, to control parsing. */
@@ -192,11 +192,29 @@ public class ExprParser {
      * @param open the opening bracket
      * @param close the closing bracket
      * @return <tt>true</tt> if <tt>expr</tt> is has <tt>open</tt>-<tt>close</tt>
-     * as an outermost bracket pair
+     * as an outermost bracket pair, and the enclosed string has no (unescaped) 
+     * occurrence of <code>close</code>
      */
     static public boolean matches(String expr, char open, char close) {
         expr = expr.trim();
-        return expr.indexOf(open) == 0 && expr.lastIndexOf(close) == expr.length()-1;
+        if (expr.indexOf(open) == 0) {
+            // look for an unescaped occurrence of the close character
+            boolean found = false;
+            int i = 1;
+            while (!found && i < expr.length()) {
+                char c = expr.charAt(i);
+                if (c == ESCAPE) {
+                    // the next char is escaped; it is certainly no match
+                    i += 2;
+                } else {
+                    found = c == close;
+                    i += 1;
+                }
+            }
+            return found && i == expr.length();
+        } else {
+            return false;
+        }
     }
 
     /**

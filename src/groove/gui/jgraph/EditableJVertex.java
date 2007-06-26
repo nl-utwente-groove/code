@@ -12,9 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJVertex.java,v 1.3 2007-05-28 21:32:43 rensink Exp $
+ * $Id: EditableJVertex.java,v 1.4 2007-06-26 15:50:20 rensink Exp $
  */
 package groove.gui.jgraph;
+
+import groove.util.Converter;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -44,7 +46,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     public Collection<StringBuilder> getLines() {
     	List<StringBuilder> result = new ArrayList<StringBuilder>();
     	for (String label: getUserObject()) {
-    		result.add(new StringBuilder(label));
+    		result.add(Converter.toHtml(new StringBuilder(label)));
     	}
 		return result;
 	}
