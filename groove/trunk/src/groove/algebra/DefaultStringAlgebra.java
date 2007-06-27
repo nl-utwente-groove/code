@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultStringAlgebra.java,v 1.5 2007-05-21 22:19:28 rensink Exp $
+ * $Id: DefaultStringAlgebra.java,v 1.6 2007-06-27 11:55:25 rensink Exp $
  */
 package groove.algebra;
 
@@ -26,7 +26,7 @@ import java.util.List;
  * on strings.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-05-21 22:19:28 $
+ * @version $Revision: 1.6 $ $Date: 2007-06-27 11:55:25 $
  */
 public class DefaultStringAlgebra extends Algebra {	/**
 	 * Constructor.
@@ -37,8 +37,8 @@ public class DefaultStringAlgebra extends Algebra {	/**
 
 	@Override
 	public Constant getConstant(String text) {
-		String unquotedText = ExprParser.toUnquoted(text, ExprParser.DOUBLE_QUOTE);
-		if (unquotedText.length() == text.length()) {
+		String unquotedText = ExprParser.toUnquoted(text, ExprParser.DOUBLE_QUOTE_CHAR);
+		if (unquotedText == null) {
 			return null;
 		} else {
 			return new StringConstant(unquotedText);
@@ -69,7 +69,7 @@ public class DefaultStringAlgebra extends Algebra {	/**
     /** Description of the default string algebra. */
     static public final String DESCRIPTION = "Default String Algebra";
     /** The quote character used for strings. */
-    static public final char QUOTE = ExprParser.DOUBLE_QUOTE;
+    static public final char QUOTE = ExprParser.DOUBLE_QUOTE_CHAR;
     /** Name of the string concatenation operation */
     public static final String CONCAT = "concat";
     /** Name of the string equals operation */

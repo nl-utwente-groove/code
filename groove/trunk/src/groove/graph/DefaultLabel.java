@@ -12,10 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultLabel.java,v 1.4 2007-04-29 09:22:27 rensink Exp $
+ * $Id: DefaultLabel.java,v 1.5 2007-06-27 11:55:16 rensink Exp $
  */
 package groove.graph;
 
+import groove.rel.RegExpr;
+import groove.util.ExprParser;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -28,7 +30,7 @@ import java.util.Map;
  * Provides a standard implementation of the Label interface.
  * An instance contains just an index into a global list.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ 
+ * @version $Revision: 1.5 $ 
  */
 public final class DefaultLabel extends AbstractLabel {
     /**
@@ -222,7 +224,23 @@ public final class DefaultLabel extends AbstractLabel {
         return getText(index);
     }
 
-    @Deprecated
+    /** 
+     * This implementation puts quotes around the {@link #text()} if
+     * the label is not recognizable as atom by {@link RegExpr#isAtom(String)}
+     */
+    @Override
+	public String plainText() {
+    	if (plainText == null) {
+    		if (RegExpr.isAtom(text())) {
+    			plainText = text();
+    		} else {
+    			plainText = ExprParser.toQuoted(text(), ExprParser.SINGLE_QUOTE_CHAR);
+    		}
+    	}
+    	return plainText;
+	}
+
+	@Deprecated
     public Label parse(String text) throws FormatException {
         return parseLabel(text);
     }
@@ -258,5 +276,10 @@ public final class DefaultLabel extends AbstractLabel {
      * Index of the text making up this label.
      * @invariant <tt>text != null</tt>
      */
-    protected final char index;
+    private final char index;
+    /** 
+     * The plain text of the label. When initialized, this either equals
+     * {@link #text()} or has single quotes around it.
+     */
+    private String plainText;
 }

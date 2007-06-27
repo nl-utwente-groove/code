@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractAspect.java,v 1.3 2007-05-21 22:19:29 rensink Exp $
+ * $Id: AbstractAspect.java,v 1.4 2007-06-27 11:55:26 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -306,7 +306,9 @@ public abstract class AbstractAspect implements Aspect {
 		public Label parse(String text) throws FormatException {
 			RegExpr expr = RegExpr.parse(text);
 			if (expr.isAtom()) {
-				return DefaultLabel.createLabel(text);
+				// TODO this is the place to get rid of single quotes,
+				// by using expr.getAtomText()
+				return DefaultLabel.createLabel(expr.getAtomText());
 			} else {
 				return expr.toLabel();
 			}

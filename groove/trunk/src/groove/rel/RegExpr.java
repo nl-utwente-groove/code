@@ -12,11 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExpr.java,v 1.9 2007-06-26 15:50:19 rensink Exp $
+ * $Id: RegExpr.java,v 1.10 2007-06-27 11:55:20 rensink Exp $
  */
 package groove.rel;
 
+import static groove.util.ExprParser.*;
 import groove.util.ExprParser;
+import groove.util.Pair;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -31,7 +33,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 abstract public class RegExpr implements VarSetSupport {
     /** 
@@ -125,38 +127,6 @@ abstract public class RegExpr implements VarSetSupport {
      */
     static public final String ATOM_SYMBOLIC_NAME = "Atom";
 
-    // our regular expression parentheses
-    /**
-     * Left parenthesis character used for grouping regular (sub)expressions. 
-     */
-    static public final char LEFT_PARENTHESIS_CHAR =  ExprParser.ROUND_BRACKETS[0];
-    /**
-     * Right parenthesis character used for grouping regular (sub)expressions. 
-     */
-    static public final char RIGHT_PARENTHESIS_CHAR = ExprParser.ROUND_BRACKETS[1];
-    /**
-     * Left backet character allowed as atom delimiter
-     */
-    static public final char LEFT_BRACKET_CHAR =  ExprParser.ANGLE_BRACKETS[0];
-    /**
-     * Right bracket character allowed as atom delimiter
-     */
-    static public final char RIGHT_BRACKET_CHAR = ExprParser.ANGLE_BRACKETS[1];
-
-    /** The character for single quotes. */
-    static public final char SINGLE_QUOTE_CHAR = '\'';
-
-    /** The character for single quotes. */
-    static public final char DOUBLE_QUOTE_CHAR = '"';
-
-    /**
-     * Left parenthesis string used for grouping regular (sub)expressions. 
-     */
-    static public final String LEFT_PARENTHESIS = "" + LEFT_PARENTHESIS_CHAR;
-    /**
-     * Right parenthesis string used for grouping regular (sub)expressions. 
-     */
-    static public final String RIGHT_PARENTHESIS = "" + RIGHT_PARENTHESIS_CHAR;
     /**
      * The characters allowed in a regular expression atom, apart from letters and digits.
      * @see #isIdentifier(String)
@@ -231,7 +201,7 @@ abstract public class RegExpr implements VarSetSupport {
             while (operandIter.hasNext()) {
                 RegExpr operand = operandIter.next();
                 if (bindsWeaker(operand, this)) {
-                    result.append("" + LEFT_PARENTHESIS + operand + RIGHT_PARENTHESIS);
+                    result.append("" + LPAR_CHAR + operand + RPAR_CHAR);
                 } else {
                     result.append(operand);
                 }
@@ -309,7 +279,7 @@ abstract public class RegExpr implements VarSetSupport {
         @Override
         public String toString() {
             if (bindsWeaker(operand, this)) {
-                return "" + LEFT_PARENTHESIS_CHAR + getOperand() + RIGHT_PARENTHESIS_CHAR
+                return "" + LPAR_CHAR + getOperand() + RPAR_CHAR
                         + getOperator();
             } else {
                 return "" + getOperand() + getOperator();
@@ -397,7 +367,7 @@ abstract public class RegExpr implements VarSetSupport {
         @Override
         public String toString() {
             if (bindsWeaker(operand, this)) {
-                return "" + getOperator() + LEFT_PARENTHESIS_CHAR + getOperand() + RIGHT_PARENTHESIS_CHAR;
+                return "" + getOperator() + LPAR_CHAR + getOperand() + RPAR_CHAR;
             } else {
                 return "" + getOperator() + getOperand();
             }
@@ -737,19 +707,31 @@ abstract public class RegExpr implements VarSetSupport {
          */
         @Override
         public RegExpr parseOperator(String expr) throws FormatException {
-            if (ExprParser.matches(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR)) {
-                return parse(ExprParser.trim(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR));
-            } else if (ExprParser.matches(expr, LEFT_BRACKET_CHAR, RIGHT_BRACKET_CHAR)) {
-                return newInstance(expr.trim());
-            } else if (ExprParser.matches(expr, SINGLE_QUOTE_CHAR, SINGLE_QUOTE_CHAR)) {
-                return newInstance(ExprParser.toUnquoted(expr.trim(), SINGLE_QUOTE_CHAR));
-            } else if (ExprParser.matches(expr, DOUBLE_QUOTE_CHAR, DOUBLE_QUOTE_CHAR)) {
-                return newInstance(expr.trim());
-            } else if (isAtom(expr)) {
-            	return newInstance(expr.trim());
+        	expr = expr.trim();
+        	if (expr.length() == 0) {
+        		throw new FormatException("Empty label is not allowed");
+        	}
+        	// the only hope is that the expression is quoted or bracketed
+        	Pair<String,List<String>> parseResult = ExprParser.parseExpr(expr);
+        	if (parseResult.first().length() == 1 && parseResult.first().charAt(0) == PLACEHOLDER) {
+        		String parsedExpr = parseResult.second().get(0);
+        		switch (parsedExpr.charAt(0)) {
+				case LPAR_CHAR:
+					return parse(parsedExpr.substring(1, expr.length()-1));
+				case SINGLE_QUOTE_CHAR:
+					return newInstance(ExprParser.toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
+				case LANGLE_CHAR:
+				case DOUBLE_QUOTE_CHAR:
+					return newInstance(parsedExpr);
+				default:
+					return null;
+				}
+        	} else if (isAtom(expr)) {
+            	return newInstance(expr);
             } else {
-            	return null;
-            }
+        		// the expression is not atomic when parsed
+        		return null;
+        	}
         }
 
         /**
@@ -910,9 +892,11 @@ abstract public class RegExpr implements VarSetSupport {
      * @throws FormatException if <code>expr</code> cannot be parsed
      */
     static public RegExpr parse(String expr) throws FormatException {
+    	// first test if the quoting and bracketing is correct
+    	ExprParser.parseExpr(expr);
         // try to parse the expression using each of the available operators in turn
-        for (int op = 0; op < prototypes.length; op++) {
-            RegExpr result = prototypes[op].parseOperator(expr);
+        for (RegExpr prototype: prototypes) {
+            RegExpr result = prototype.parseOperator(expr);
             // if the result is non-null, we are done
             if (result != null) {
                 return result;
@@ -1409,7 +1393,8 @@ abstract public class RegExpr implements VarSetSupport {
      * right kind, the function should return <tt>null</tt>; if it looks correct but is malformed
      * (e.g., the correct operator is there but the operands are missing) the function should raise
      * an exception.
-     * @param expr the expression to be parsed
+     * @param expr the expression to be parsed; this is guaranteed to have correct bracketing 
+     * and quoting (according to {@link ExprParser#parseExpr(String)}).
      * @return a valid regular expression, or <tt>null</tt> if <tt>expr</tt> does not appear to
      *         be a regular expression of the kind implemented by this class
      * @throws FormatException if <tt>expr</tt> appears to be an expression (of the kind
@@ -1425,15 +1410,18 @@ abstract public class RegExpr implements VarSetSupport {
      * @throws FormatException if the text contains a special character
      * @see #isAtom(String)
      */
-    public void assertAtom(String text) throws FormatException {
-    	boolean correct = true;
-    	int i;
-    	for (i = 0; correct && i < text.length(); i++) {
-    		correct = isAtomChar(text.charAt(i));
-    	}
-    	if (!correct) {
-    		throw new FormatException("Atom '%s' contains invalid character '%c'", text, text.charAt(i-1));
-    	}
+    static public void assertAtom(String text) throws FormatException {
+    	if (ExprParser.toUnquoted(text, SINGLE_QUOTE_CHAR) == null) {
+    		boolean correct = true;
+			int i;
+			for (i = 0; correct && i < text.length(); i++) {
+				correct = isAtomChar(text.charAt(i));
+			}
+			if (!correct) {
+				throw new FormatException("Atom '%s' contains invalid character '%c'", text, text
+						.charAt(i - 1));
+			}
+		}
     }
 
     /**
@@ -1445,7 +1433,7 @@ abstract public class RegExpr implements VarSetSupport {
      * @return <tt>true</tt> if the text does not contain any special characters
      * @see #assertAtom(String)
      */
-    public boolean isAtom(String text) {
+    static public boolean isAtom(String text) {
         try {
             assertAtom(text);
             return true;
@@ -1463,7 +1451,7 @@ abstract public class RegExpr implements VarSetSupport {
      * @param text the text to be tested
      * @return <tt>true</tt> if the text does not contain any special characters
      */
-    public boolean isIdentifier(String text) {
+    static public boolean isIdentifier(String text) {
         if (text.length() == 0) {
             return false;
         }
@@ -1477,12 +1465,12 @@ abstract public class RegExpr implements VarSetSupport {
     }
 
     /** Tests if a character may occur in an atom. */
-    public boolean isAtomChar(char c) {
+    static public boolean isAtomChar(char c) {
     	return Character.isLetterOrDigit(c) || ATOM_CHARS.indexOf(c) >= 0;
     }
 
     /** Tests if a character may occur in a wildcard identifier. */
-    public boolean isIdentifierChar(char c) {
+    static public boolean isIdentifierChar(char c) {
     	return Character.isLetterOrDigit(c) || IDENTIFIER_CHARS.indexOf(c) >= 0;
     }
     

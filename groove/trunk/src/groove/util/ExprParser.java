@@ -12,15 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExprParser.java,v 1.6 2007-06-26 15:50:22 rensink Exp $
+ * $Id: ExprParser.java,v 1.7 2007-06-27 11:54:59 rensink Exp $
  */
 package groove.util;
 
 import groove.view.FormatException;
 
-import java.io.IOException;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -32,23 +29,40 @@ import java.util.Stack;
  * A class that helps parse an expression.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ExprParser {
     /** The single quote character, to control parsing. */
-    static public final char SINGLE_QUOTE = '\'';
+    static public final char SINGLE_QUOTE_CHAR = '\'';
     /** The double quote character, to control parsing. */
-    static public final char DOUBLE_QUOTE = '"';
+    static public final char DOUBLE_QUOTE_CHAR = '"';
     /** The escape character commonly used. */
-    static public final char ESCAPE = '\\';
+    static public final char ESCAPE_CHAR = '\\';
+    /**
+     * Left parenthesis character used for grouping regular (sub)expressions. 
+     */
+    static public final char LPAR_CHAR = '(';
+    /**
+     * Right parenthesis character used for grouping regular (sub)expressions. 
+     */
+    static public final char RPAR_CHAR = ')';
+    /**
+     * Left backet character allowed as atom delimiter
+     */
+    static public final char LANGLE_CHAR = '<';
+    /**
+     * Right bracket character allowed as atom delimiter
+     */
+    static public final char RANGLE_CHAR = '>';
+
     /** Pair of round brackets, to control parsing. */
-    static public final char[] ROUND_BRACKETS = { '(', ')' };
+    static public final char[] ROUND_BRACKETS = { LPAR_CHAR, RPAR_CHAR };
     /** Pair of curly brackets, to control parsing. */
     static public final char[] CURLY_BRACKETS = { '{', '}' };
     /** Pair of square brackets, to control parsing. */
     static public final char[] SQUARE_BRACKETS = { '[', ']' };
     /** Pair of angle brackets, to control parsing. */
-    static public final char[] ANGLE_BRACKETS = { '<', '>' };
+    static public final char[] ANGLE_BRACKETS = { LANGLE_CHAR, RANGLE_CHAR };
 
     /**
      * Positioning value for an infix operator.
@@ -68,19 +82,17 @@ public class ExprParser {
 
     /** 
      * Array of default quote characters, containing
-     * the single and double quotes ({@link #DOUBLE_QUOTE} and {@link #SINGLE_QUOTE}).
+     * the single and double quotes ({@link #DOUBLE_QUOTE_CHAR} and {@link #SINGLE_QUOTE_CHAR}).
      */
-    static private final char[] DEFAULT_QUOTE_CHARS = { DOUBLE_QUOTE, SINGLE_QUOTE };
+    static private final char[] DEFAULT_QUOTE_CHARS = { DOUBLE_QUOTE_CHAR, SINGLE_QUOTE_CHAR };
     /**
-     * Array of default bracket pairs: {@link #ROUND_BRACKETS},
+     * Array of default bracket pairs: {@link #ROUND_BRACKETS}, {@link #ANGLE_BRACKETS},
      * {@link #CURLY_BRACKETS} and {@link #SQUARE_BRACKETS}.
-     * (Note that the {@link #ANGLE_BRACKETS} are not included, as they are per default
-     * considered to be a way to surround atoms.)
      */
     static private final char[][] DEFAULT_BRACKETS =
-        { ROUND_BRACKETS, CURLY_BRACKETS, SQUARE_BRACKETS };
+        { ROUND_BRACKETS, ANGLE_BRACKETS, CURLY_BRACKETS, SQUARE_BRACKETS };
     /** The default character to use as a placeholder in the parse result. */
-    static private final char PLACEHOLDER = '\uFFFF';
+    static public final char PLACEHOLDER = '\uFFFF';
 
     /**
      * Parses a given string by recognizing quoted and bracketed substrings.
@@ -101,6 +113,16 @@ public class ExprParser {
         return prototype.parse(expr);
     }
 
+    /** 
+     * Puts together a string from a base string, which may contain
+     * {@link #PLACEHOLDER} characters, and a list of replacements for the
+     * {@link #PLACEHOLDER}s.
+     * This is the inverse operaiton of {@link #parseExpr(String)}.
+     */
+    static public String unparseExpr(String basis, List<String> replacements) {
+    	return prototype.unparse(basis, replacements.iterator());
+    }
+    
     /**
      * Tests if {@link #parseExpr(String)} does not throw an exception.
      * @param expr the expression to be tested
@@ -168,6 +190,39 @@ public class ExprParser {
 
     /**
      * Removes a given outermost bracket pair from a given expression,
+     * if the bracket pair is in fact there. 
+     * Returns <code>null</code> if the expression was not bracketed in the first place,
+     * or if brackets are improperly balanced.
+     * This is tested by calling {@link #parseExpr(String)} on the expression.
+     * @param expr the expression to be trimmed 
+     * @param open the opening bracket
+     * @param close the closing bracket
+     * @return the trimmed string, or <code>null</code> if the string could not be correctly parsed
+     */
+    static public String toTrimmed(String expr, char open, char close) {
+    	// first test if we have the required surrounding brackets in the first place
+    	if (expr.length() == 0 || expr.charAt(0) != open || expr.charAt(expr.length()-1) != close) {
+    		return null;
+    	}
+    	// now test if the expression can be parsed
+        try {
+        	Pair<String,List<String>> parsedExpr = parseExpr(expr);
+        	// yes, it can be parsed; but into how many pieces?
+        	if (parsedExpr.first().length() == 1) {
+        		// so strip the brackets
+        		return expr.substring(1, expr.length()-1);
+        	} else {
+        		// we have more pieces, so all is not well
+        		return null;
+        	}
+        } catch (FormatException exc) {
+        	// prsing failed
+        	return null;
+        }
+    }
+
+    /**
+     * Removes a given outermost bracket pair from a given expression,
      * if the bracket pair is in fact there. Also trims whitespace outside the brackets.
      * Returns the string unchanged if it was not bracketed in the first place.
      * Does not test for well-formedness or proper bracket nesting.
@@ -175,7 +230,9 @@ public class ExprParser {
      * @param open the opening bracket
      * @param close the closing bracket
      * @return the trimmed string
+     * @deprecated use {@link #toTrimmed(String, char, char)} instead
      */
+    @Deprecated
     static public String trim(String expr, char open, char close) {
         expr = expr.trim();
         if (matches(expr, open, close)) {
@@ -195,23 +252,26 @@ public class ExprParser {
      * as an outermost bracket pair, and the enclosed string has no (unescaped) 
      * occurrence of <code>close</code>
      */
+    @Deprecated
     static public boolean matches(String expr, char open, char close) {
         expr = expr.trim();
         if (expr.indexOf(open) == 0) {
-            // look for an unescaped occurrence of the close character
-            boolean found = false;
+            // count the difference between open and close characters
+            int opens = 1;
             int i = 1;
-            while (!found && i < expr.length()) {
+            while (opens > 0 && i < expr.length()) {
                 char c = expr.charAt(i);
-                if (c == ESCAPE) {
+                if (c == ESCAPE_CHAR) {
                     // the next char is escaped; it is certainly no match
-                    i += 2;
-                } else {
-                    found = c == close;
-                    i += 1;
+                    i ++;
+                } else if (c == close) {
+                    opens--;
+                } else if (c == open) {
+                	opens++;
                 }
+                i ++;
             }
-            return found && i == expr.length();
+            return opens == 0 && i == expr.length();
         } else {
             return false;
         }
@@ -251,8 +311,8 @@ public class ExprParser {
     	result.append(quote);
     	for (char c: string.toCharArray()) {
     		// insert an ESCAPE in front of quotes or ESCAPES
-    		if (c == quote || c == ESCAPE) {
-    			result.append(ESCAPE);
+    		if (c == quote || c == ESCAPE_CHAR) {
+    			result.append(ESCAPE_CHAR);
     		}
     		result.append(c);
     	}
@@ -265,11 +325,11 @@ public class ExprParser {
      * and unescaping all characters within the string.
      * @param string the original string
      * @param quote the quote character to be used
-     * @return the unquoted string, or the original string if there were no
+     * @return the unquoted string, or <code>null</code> if there were no
      * (unescaped) quotes around the original string
      */
     static public String toUnquoted(String string, char quote) {
-        if (string.charAt(0) == quote && string.charAt(string.length() - 1) == quote) {
+        if (string.length() > 1 && string.charAt(0) == quote && string.charAt(string.length() - 1) == quote) {
         	char[] content = string.substring(1, string.length() - 1).toCharArray();
         	StringBuffer result = new StringBuffer();
         	// flag indicating that the previous character was an ESCAPE
@@ -279,20 +339,20 @@ public class ExprParser {
         			result.append(c);
         			escaped = false;
         		} else {
-        			escaped = c == ESCAPE;
+        			escaped = c == ESCAPE_CHAR;
         			if (!escaped) {
             			result.append(c);
         			}
         		}
         	}
         	if (escaped) {
-        		// the string ended on an escape character
-        		return string;
+        		// the string ended on an escaped quote
+        		return null;
         	} else {
         		return result.toString();
         	}
         } else {
-            return string;
+            return null;
         }
     }
 
@@ -318,6 +378,12 @@ public class ExprParser {
             System.out.println("------- -----");
             testParse("");
             testParse("()");
+            testParse("(<)");
+            testParse("(\\<)");
+            testParse("()')");
+            testParse("()\\)");
+            testParse("(\\')");
+            testParse("()')'");
             testParse("a'b+c");
             testParse("a()b<(c)>");
             testParse("{a()b<(c)>}");
@@ -327,6 +393,7 @@ public class ExprParser {
             testParse("\"");
             testParse("(");
             testParse(")");
+            testParse("\\'");
             testParse("{a()b<(c)}");
             System.out.println();
 
@@ -364,9 +431,9 @@ public class ExprParser {
 
     static private void testQuoteString(String string) {
         System.out.print("String " + string);
-        string = toQuoted(string, DOUBLE_QUOTE);
+        string = toQuoted(string, DOUBLE_QUOTE_CHAR);
         System.out.print(". To quoted: " + string);
-        string = toUnquoted(string, DOUBLE_QUOTE);
+        string = toUnquoted(string, DOUBLE_QUOTE_CHAR);
         System.out.println(". To unquoted: " + string);
     }
 
@@ -430,7 +497,7 @@ public class ExprParser {
 
     static private void testTrim(String expr, char open, char close) {
         System.out.println("Trimming bracket pair '" + open + "', '" + close + "' from \"" + expr + "\"");
-        String result = trim(expr, open, close);
+        String result = toTrimmed(expr.trim(), open, close);
         System.out.println("Result: \"" + result + "\"");
         System.out.println();
     }
@@ -441,7 +508,15 @@ public class ExprParser {
      * square and angle brackets. 
      */
     public ExprParser() {
-        this(DEFAULT_QUOTE_CHARS, DEFAULT_BRACKETS, PLACEHOLDER);
+        this(DEFAULT_BRACKETS);
+    }
+
+    /**
+     * Constructs a parser based on given bracketing settings and the
+     * standard quote characters (single and double quotes).
+     */
+    public ExprParser(char[][] brackets) {
+    	this(DEFAULT_QUOTE_CHARS, brackets, PLACEHOLDER);
     }
 
     /**
@@ -466,90 +541,96 @@ public class ExprParser {
      * @see #parseExpr
      */
     public Pair<String, List<String>> parse(String expr) throws FormatException {
-        StreamTokenizer tokenizer = new StreamTokenizer(new StringReader(expr));
-        tokenizer.resetSyntax();
-        for (Character quoteChar: quoteChars) {
-            tokenizer.quoteChar(quoteChar.charValue());
-        }
-        StringBuffer strippedExpr = new StringBuffer();
+    	// flag showing that the previous character was an escape
+    	boolean escaped = false;
+    	// flag showing that we are inside a quoted string
+    	boolean quoted = false;
+    	// quote character if quoted is true
+    	char quoteChar = 0;
+    	// current stack of brackets
+        Stack<Character> bracketStack = new Stack<Character>();
+        // the resulting stripped expression (with PLACEHOLDER chars)
+        StringBuilder strippedExpr = new StringBuilder();
+        // the list of replacements so far
         List<String> replacements = new LinkedList<String>();
-        try {
-            StringBuffer replacement = new StringBuffer();
-            Stack<Character> bracketStack = new Stack<Character>();
-            int nextToken = tokenizer.nextToken();
-            while (nextToken != StreamTokenizer.TT_EOF) {
-                Character nextTokenChar = new Character((char) nextToken);
-                if (openBrackets.contains(nextTokenChar)) {
-                    // we have an opening bracket
-                    bracketStack.push(nextTokenChar);
-                    replacement.append(nextTokenChar);
-                } else if (closeBrackets.contains(nextTokenChar)) {
-                    // we have a closing bracket; see if it is expected
-                    if (bracketStack.isEmpty()) {
-                        throw new FormatException(
-                            "Unbalanced brackets in expression \""
-                                + expr
-                                + "\": '"
-                                + nextTokenChar
-                                + "' is not opened");
-                    }
-                    int openBracketIndex = openBrackets.indexOf(bracketStack.peek());
-                    int closeBracketIndex = closeBrackets.indexOf(nextTokenChar);
-                    if (openBracketIndex != closeBracketIndex) {
-                        throw new FormatException(
-                            "Unbalanced brackets in expression \""
-                                + expr
-                                + "\": '"
-                                + bracketStack.peek()
-                                + "' closed by '"
-                                + nextTokenChar
-                                + "'");
-                    }
-                    bracketStack.pop();
-                    replacement.append(nextTokenChar);
-                    if (bracketStack.isEmpty()) {
-                        // this closes the replacement substring
-                        strippedExpr.append(placeholder);
-                        replacements.add(replacement.toString());
-                        replacement.setLength(0);
-                    }
-                } else if (quoteChars.contains(nextTokenChar)) {
-                    // we have a quoted string; get it
-                    String quotedString = toQuoted(tokenizer.sval, (char) nextToken);
-                    // append it to the expression or the replacement
-                    if (bracketStack.isEmpty()) {
-                        strippedExpr.append(placeholder);
-                        replacements.add(quotedString);
-                    } else {
-                        replacement.append(quotedString);
-                    }
-                } else {
-                    // we have an ordinary character
-                    if (bracketStack.isEmpty()) {
-                        strippedExpr.append(nextTokenChar);
-                    } else {
-                        replacement.append(nextTokenChar);
-                    }
-                }
-                nextToken = tokenizer.nextToken();
-            }
-            if (replacement.length() != 0) {
-                throw new FormatException(
-                    "Unbalanced brackets in expression \"" + expr + "\": '" + bracketStack.peek() + "' is not closed");
-            }
-        } catch (IOException e) {
-            // since we're reading from a string buffer, we should never be here
-            throw new IllegalStateException();
-        }
-        return new Pair<String,List<String>>(strippedExpr.toString(), Collections.unmodifiableList(replacements));
+        // the string currently being built
+		StringBuilder current = strippedExpr;
+		for (int i = 0; i < expr.length(); i++) {
+			char nextChar = expr.charAt(i);
+			Character nextTokenChar = nextChar;
+			if (escaped) {
+				current.append(nextChar);
+				escaped = false;
+			} else if (nextChar == ESCAPE_CHAR) {
+				current.append(nextChar);
+				escaped = true;
+			} else if (quoted) {
+				current.append(nextChar);
+				quoted = nextChar != quoteChar;
+				if (!quoted && bracketStack.isEmpty()) {
+					strippedExpr.append(placeholder);
+					replacements.add(current.toString());
+					current = strippedExpr;
+				}
+			} else if (quoteChars.contains(nextTokenChar)) {
+				if (bracketStack.isEmpty()) {
+					current = new StringBuilder();
+				}
+				current.append(nextChar);
+				quoted = true;
+				quoteChar = nextChar;
+			} else if (openBrackets.contains(nextTokenChar)) {
+				// we have an opening bracket
+				if (bracketStack.isEmpty()) {
+					current = new StringBuilder();
+				}
+				current.append(nextTokenChar);
+				bracketStack.push(nextTokenChar);
+			} else if (closeBrackets.contains(nextTokenChar)) {
+				// we have a closing bracket; see if it is expected
+				if (bracketStack.isEmpty()) {
+					throw new FormatException(
+							"Unbalanced brackets in expression \"%s\": \'%c\' is not opened", expr,
+							nextTokenChar);
+				}
+				Character openBracket = bracketStack.pop();
+				int openBracketIndex = openBrackets.indexOf(openBracket);
+				int closeBracketIndex = closeBrackets.indexOf(nextTokenChar);
+				if (openBracketIndex != closeBracketIndex) {
+					throw new FormatException(
+							"Unbalanced brackets in expression \"%s\": '%c' closed by '%c'", expr,
+							openBracket, nextTokenChar);
+				}
+				current.append(nextTokenChar);
+				if (bracketStack.isEmpty()) {
+					// this closes the replacement substring
+					strippedExpr.append(placeholder);
+					replacements.add(current.toString());
+					current = strippedExpr;
+				}
+			} else {
+				// we have an ordinary character
+				current.append(nextTokenChar);
+			}
+		}
+		if (escaped) {
+			throw new FormatException("Expression \"%s\" ends on escape character", expr);
+		} else if (quoted) {
+			throw new FormatException("Unbalanced quotes in expression \"%s\": '%c' is not closed", expr, quoteChar);
+		} else if (!bracketStack.isEmpty()) {
+			throw new FormatException("Unbalanced brackets in expression \"%s\": '%c' is not closed", expr, bracketStack.pop());
+		}
+		return new Pair<String, List<String>>(strippedExpr.toString(), Collections
+				.unmodifiableList(replacements));
     }
     
     /**
-     * Reverse operation of {@link #parse(String)}.
-     * Given a basis string (corresponding to element 0 of the output array of {@link #parse(String)}
-     * and an iterator (over the list at element 1 of the output array of {@link #parse(String)},
-     * returns a string from which {@link #parse(String)} would have constructed that array.
-     */
+	 * Reverse operation of {@link #parse(String)}. Given a basis string
+	 * (corresponding to element 0 of the output array of {@link #parse(String)}
+	 * and an iterator (over the list at element 1 of the output array of
+	 * {@link #parse(String)}, returns a string from which
+	 * {@link #parse(String)} would have constructed that array.
+	 */
     public String unparse(String basis, Iterator<String> replacements) {
         StringBuffer result = new StringBuffer();
         int previousPlace = 0;
@@ -685,23 +766,23 @@ public class ExprParser {
     /**
      * A vector of quote characters, encoded as a list of <tt>Character</tt>.
      */
-    protected final List<Character> quoteChars = new LinkedList<Character>();
+    private final List<Character> quoteChars = new LinkedList<Character>();
     /**
      * An list of opening bracket characters.
      * The corresponding closing bracket character is at the same index of <tt>closeBrackets</tt>.
      * This is encoded as a list of <tt>Character</tt>.
      * @invariant <tt>openBrackets.size() == closeBrachets.size()</tt>
      */
-    protected final List<Character> openBrackets = new LinkedList<Character>();
+    private final List<Character> openBrackets = new LinkedList<Character>();
     /**
      * An list of closing bracket characters,
      * The corresponding opening bracket character is at the same index of <tt>openBrackets</tt>.
      * This is encoded as a list of <tt>Character</tt>.
      * @invariant <tt>openBrackets.size() == closeBrachets.size()</tt>
      */
-    protected final List<Character> closeBrackets = new LinkedList<Character>();
+    private final List<Character> closeBrackets = new LinkedList<Character>();
     /** The character to use as a placeholder in the parse result of this parser. */
-    protected final char placeholder;
+    private final char placeholder;
 
     /** Prototype parser, used to evaluate the static methods on. */
     static private final ExprParser prototype = new ExprParser();
