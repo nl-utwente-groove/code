@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectValue.java,v 1.3 2007-05-21 22:19:29 rensink Exp $
+ * $Id: AspectValue.java,v 1.4 2007-06-27 16:00:28 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import groove.view.FormatException;
+import groove.view.LabelParser;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 
 /**
@@ -140,14 +141,14 @@ public class AspectValue {
     /**
 	 * Returns the label parser of this aspect value, if any.
 	 */
-	public final Aspect.LabelParser getLabelParser() {
+	public final LabelParser getLabelParser() {
 		return this.labelParser;
 	}
 
 	/**
 	 * Assigns a label parser to this aspect value.
 	 */
-	final void setLabelParser(Aspect.LabelParser labelParser) {
+	final void setLabelParser(LabelParser labelParser) {
 		this.labelParser = labelParser;
 	}
 
@@ -291,5 +292,5 @@ public class AspectValue {
     /** Set of aspect values, possibly of other aspects, that are incompatible with this one. */
     private final Set<AspectValue> incompatibles;
     /** Optional label parser of this aspect value. */
-    private Aspect.LabelParser labelParser;
+    private LabelParser labelParser;
 }

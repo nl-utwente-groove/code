@@ -12,15 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.3 2007-05-21 22:19:29 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.4 2007-06-27 16:00:28 rensink Exp $
  */
 package groove.view.aspect;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import groove.algebra.Algebra;
 import groove.algebra.Constant;
@@ -29,10 +23,8 @@ import groove.algebra.DefaultIntegerAlgebra;
 import groove.algebra.DefaultStringAlgebra;
 import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.AlgebraGraph;
@@ -40,13 +32,20 @@ import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.util.Groove;
+import groove.view.DefaultLabelParser;
 import groove.view.FormatException;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -387,16 +386,17 @@ public class AttributeAspect extends AbstractAspect {
 	 * Class that attempts to parse a string as the operation of a given
 	 * algebra, and returns the result as a DefaultLabel if successful.
 	 */
-	private static class OperationLabelParser implements LabelParser {
+	private static class OperationLabelParser extends DefaultLabelParser {
 		/** Constructs an instance of this parser class for a given algebra. */
 		OperationLabelParser(Algebra algebra) {
 			this.algebra = algebra;
 		}
-		
-		public Label parse(String text) throws FormatException {
+
+        /** This implementation tests if the text corresponds to an operation of the associated algebra. */
+        @Override
+		protected void testFormat(String text) throws FormatException {
 			try {
 				algebra.getOperation(text);
-				return DefaultLabel.createLabel(text);
 			} catch (UnknownSymbolException exc) {
 				throw new FormatException(exc.getMessage());
 			}

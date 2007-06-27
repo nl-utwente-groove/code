@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.10 2007-06-27 11:55:18 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.11 2007-06-27 16:00:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -22,6 +22,8 @@ import groove.graph.Node;
 import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.ProductEdge;
 import groove.util.Converter;
+import groove.view.DefaultLabelParser;
+import groove.view.LabelParser;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -164,49 +166,33 @@ public class GraphJEdge extends JEdge {
 	public Collection<String> getPlainLabels() {
 		List<String> result = new ArrayList<String>();
 		for (Edge edge: getUserObject()) {
-			result.add(getPlainLabel(edge));
+			result.add(getLabelParser().unparse(edge.label()));
 		}
 		return result;
 	}
-
-	/** 
-	 * Returns the label of the edge as to be displayed in the editor.
-	 * Callback method from {@link #getListLabels()}.
-	 */
-	String getPlainLabel(Edge edge) {
-		return edge.label().plainText();
-	}
+    
+    /** 
+     * Returns a label parser for this jnode.
+     * The label parser is used to obtain the plain labels. 
+     */
+    LabelParser getLabelParser() {
+        if (labelParser == null) {
+            labelParser = createLabelParser();
+        }
+        return labelParser;
+    }
+    
+    /** Callback factory method to create a label parser for this jnode. */
+    LabelParser createLabelParser() {
+        return new DefaultLabelParser();
+    }
 
 	/** Specialises the return type of the method. */
     @Override
 	public EdgeContent getUserObject() {
 		return (EdgeContent) super.getUserObject();
 	}
-    
-//
-//    @Override
-//	protected JUserObject<Edge> createUserObject() {
-//    	return new JUserObject<Edge>(this, PRINT_SEPARATOR, false) {
-//    	    /**
-//    	     * Returns a collection of strings describing the objects contained in this user object.
-//    	     * @return the string descriptions of the objects contained in this collection
-//    	     * @ensure all elements of <tt>result</tt> are instances of <tt>String</tt>.
-//    	     */
-//    	    public Collection<String> getLabelSet() {
-//    	        Set<String> result = new LinkedHashSet<String>();
-//    	        for (T label: this) {
-//    	        	result.add(getLabel(label));
-//    	        }
-//    	        return result;
-//    	    }
-//
-//    	    @Override
-//            public String getLabel(Edge edge) {
-//            	return GraphJEdge.this.getLabel(edge);
-//            }
-//        };
-//    }
-    
+   
     @Override
     EdgeContent createUserObject() {
 		return new EdgeContent();
@@ -272,7 +258,9 @@ public class GraphJEdge extends JEdge {
 		}
 	}
 
-	/** Underlying {@link JModel} of this edge. */
+    /** The label parser for this edge, used to get plain labels. */
+    private LabelParser labelParser;
+    /** Underlying {@link JModel} of this edge. */
 	private final GraphJModel jModel;
 	/** Source node of the underlying graph edges. */
     private final Node source;

@@ -12,15 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractAspect.java,v 1.4 2007-06-27 11:55:26 rensink Exp $
+ * $Id: AbstractAspect.java,v 1.5 2007-06-27 16:00:28 rensink Exp $
  */
 package groove.view.aspect;
 
-import groove.graph.DefaultLabel;
 import groove.graph.Label;
-import groove.rel.RegExpr;
-import groove.rel.RegExprLabel;
+import groove.view.DefaultLabelParser;
 import groove.view.FormatException;
+import groove.view.LabelParser;
+import groove.view.RegExprLabelParser;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -295,48 +295,4 @@ public abstract class AbstractAspect implements Aspect {
 	 * Instance of the default label parser. 
 	 */
 	static private final LabelParser FREE_PARSER = new DefaultLabelParser();
-
-	/** Parser that attempts to turn the string into a regular expression label. */
-	static private class RegExprLabelParser implements LabelParser {
-		/**
-		 * This implementation attempts to turn <code>text</code> into a 
-		 * regular expression, and if successful, turns the expression into
-		 * a {@link RegExprLabel}.
-		 */
-		public Label parse(String text) throws FormatException {
-			RegExpr expr = RegExpr.parse(text);
-			if (expr.isAtom()) {
-				// TODO this is the place to get rid of single quotes,
-				// by using expr.getAtomText()
-				return DefaultLabel.createLabel(expr.getAtomText());
-			} else {
-				return expr.toLabel();
-			}
-		}
-	}
-
-	/** 
-	 * Parser that turns a string into a default label,
-	 * after testing the string for correct formatting using a 
-	 * callback method that can be overridden by subclasses. 
-	 */
-	static class DefaultLabelParser implements LabelParser {
-		public Label parse(String text) throws FormatException {
-			testFormat(text);
-			return DefaultLabel.createLabel(text);
-		}
-	
-		/** 
-		 * Callback method to test if a given text adheres to the formatting
-		 * standards of this class.
-		 * To be overridden by subclasses; this implementation is empty.
-		 * @param text the string to be tested
-		 * @throws FormatException if <code>text</code> is not correctly
-		 * formatted. The message of the exception should make clear what the
-		 * mismatch is.
-		 */
-		void testFormat(String text) throws FormatException {
-			// empty
-		}
-	}
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Aspect.java,v 1.2 2007-05-21 22:19:29 rensink Exp $
+ * $Id: Aspect.java,v 1.3 2007-06-27 16:00:28 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * Examples of aspects are: the roles in a rule, typing information, or
  * graph condition information.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface Aspect {
 	/**
@@ -95,15 +95,4 @@ public interface Aspect {
 	 * Array of all known aspects. 
 	 */
 	public Aspect[] allAspects = { AttributeAspect.getInstance(), RuleAspect.getInstance() };
-	/** Interface for parsers from strings to labels. */
-	static interface LabelParser {
-		/** 
-		 * Method turning a string into a label.
-		 * @param text the string to be parsed into a label
-		 * @return the label constructed from <code>text</code>
-		 * @throws FormatException if <code>text</code> is not correctly formatted
-		 * according to this parser. 
-		 */
-		Label parse(String text) throws FormatException;
-	}
 }

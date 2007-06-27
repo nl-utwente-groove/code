@@ -12,23 +12,26 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.4 2007-05-28 21:32:51 rensink Exp $
+ * $Id: AspectParser.java,v 1.5 2007-06-27 16:00:28 rensink Exp $
  */
 package groove.view.aspect;
 
 import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
+import groove.view.ComposedLabelParser;
 import groove.view.FormatException;
+import groove.view.LabelParser;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class AspectParser {
 	/** 
@@ -224,6 +227,22 @@ public class AspectParser {
 		result.append(labelText);
 		return result;
 	}
+    
+    /** Returns the label parsers induced by a set of aspect values. */
+    static public LabelParser getLabelParser(Collection<AspectValue> values) {
+        Collection<LabelParser> parsers = new LinkedHashSet<LabelParser>();
+        for (AspectValue value: values) {
+            LabelParser parser = value.getLabelParser();
+            if (parser != null) {
+                parsers.add(parser);
+            }
+        }
+        // if none was induced, get the default parser
+        if (parsers.isEmpty()) {
+            parsers.add(AbstractAspect.getRegExprLabelParser());
+        }
+        return new ComposedLabelParser(parsers);
+    }
 
     /**
      * The set of registered aspects.

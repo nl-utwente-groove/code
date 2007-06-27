@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.16 2007-06-27 11:55:18 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.17 2007-06-27 16:00:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -23,6 +23,8 @@ import groove.graph.Node;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.util.Converter;
+import groove.view.DefaultLabelParser;
+import groove.view.LabelParser;
 import groove.view.aspect.AttributeAspect;
 
 import java.util.ArrayList;
@@ -201,18 +203,26 @@ public class GraphJVertex extends JVertex {
     		result.add(prefix+constant);    		
     	}
 		for (Edge edge : getSelfEdges()) {
-			result.add(getPlainLabel(edge));
+			result.add(getLabelParser().unparse(edge.label()));
 		}
 		return result;
 	}
 
-	/** 
-	 * Returns the label of the edge as to be displayed in the editor.
-	 * Callback method from {@link #getListLabels()}.
-	 */
-	String getPlainLabel(Edge edge) {
-		return edge.label().plainText();
-	}
+    /** 
+     * Returns a label parser for this jnode.
+     * The label parser is used to obtain the plain labels. 
+     */
+    LabelParser getLabelParser() {
+        if (labelParser == null) {
+            labelParser = createLabelParser();
+        }
+        return labelParser;
+    }
+    
+    /** Callback factory method to create a label parser for this jnode. */
+    LabelParser createLabelParser() {
+        return new DefaultLabelParser();
+    }
 
 	/**
 	 * Returns an ordered set of outgoing edges going to constants.
@@ -377,6 +387,8 @@ public class GraphJVertex extends JVertex {
         getUserObject().remove(edge);
     }
 
+    /** The label parser for this edge, used to get plain labels. */
+    private LabelParser labelParser;
     /** The model in which this vertex exists. */
     private final GraphJModel jModel;
     /** An indicator whether the vertex can be labelled (otherwise labels are self-edges). */
