@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.20 2007-06-27 11:55:18 rensink Exp $
+ * $Id: AspectJModel.java,v 1.21 2007-06-27 16:00:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -37,6 +37,7 @@ import groove.rel.RegExprLabel;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualView;
+import groove.view.LabelParser;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.AspectGraph;
@@ -61,7 +62,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -368,24 +369,6 @@ public class AspectJModel extends GraphJModel {
 		Node getActualNode() {
 			return getModelNode(getNode());
 		}
-//
-//		/**
-//         * Overwrites the method in <code>GraphJNode</code> to provide production rule specific
-//         * tool tips for nodes.
-//         */
-//        @Override
-//        public String getToolTipText() {
-//        	StringBuilder
-//            Collection<String> labels = getLabelSet();
-//            if (!labels.isEmpty()) {
-//                res.append(labels.size() == 1 ? " with label " : " with labels ");
-//                res.append(Groove.toString(strongTag.on(labels.toArray(), true), "", "", ", ", " and "));
-//            }
-//            if (getRole().equals(Groove.RULE_ROLE) && getNode().getAspectMap().containsKey(RuleAspect.getInstance())) {
-//            	res.append("<br>"+ROLE_DESCRIPTIONS.get(role));
-//            }
-//            return htmlTag.on(res);
-//        }
         
         /** 
          * This implementation prefixes the node description with
@@ -418,22 +401,7 @@ public class AspectJModel extends GraphJModel {
                 return false;
             }
         }
-//        
-//        /**
-//         * Takes care of rule node display.
-//         */
-//        @Override
-//		public String getText() {
-//    		Pair<NameLabel,Integer> ruleContent = RuleAspect.getRuleContent(getNode());
-//        	if (ruleContent != null) {
-//        		String name = ruleContent.first().name();
-//        		int priority = ruleContent.second();
-//        		return "Rule "+name + (priority >= 0 ? ", priority "+priority : "");
-//        	} else {
-//        		return super.getText();
-//        	}
-//		}
-//        
+
 		/**
 		 * On demand prefixes the label with the edge's aspect values.
 		 */
@@ -474,12 +442,17 @@ public class AspectJModel extends GraphJModel {
 				result.add(AspectParser.toString(value));
 			}
 			for (Edge edge : getSelfEdges()) {
-				StringBuilder text = new StringBuilder(getPlainLabel(edge));
+				StringBuilder text = new StringBuilder(getLabelParser().unparse(edge.label()));
 				result.add(AspectParser.toString(((AspectEdge) edge).getDeclaredValues(),
 						text).toString());
 			}
 			return result;
 		}
+
+        @Override
+        LabelParser createLabelParser() {
+            return AspectParser.getLabelParser(getNode().getAspectMap().values());
+        }
 
 		/** 
 		 * This implementation makes remark edges invisible as demanded 
@@ -543,33 +516,6 @@ public class AspectJModel extends GraphJModel {
 			return (AspectEdge) super.getEdge();
 		}
         
-        
-//
-//		/**
-//         * Overwrites the method to provide production rule specific
-//         * tool tips for edges.
-//         */
-//        @Override
-//        public String getToolTipText() {
-//            StringBuffer res = new StringBuffer();
-//            if (Groove.RULE_ROLE.equals(getRole())) {
-//            	AspectValue role = role((AspectEdge) getEdgeSet().iterator().next());
-//            	res.append(ROLE_NAMES.get(role));
-//            }
-//            if (res.length() == 0) {
-//            	res.append("Edge");
-//            } else {
-//            	res.append(" edge");
-//            }
-//            Collection<String> labels = getLabelSet();
-//            res.append(labels.size() == 1 ? " edge with label " : " edges with labels ");
-//            res.append(Groove.toString(strongTag.on(labels.toArray(), true), "", "", ", ", " and "));
-//            if (Groove.RULE_ROLE.equals(getRole())) {
-//            	res.append("<br>"+ROLE_DESCRIPTIONS.get(role));
-//            }
-//            return htmlTag.on(res);
-//        }
-        
         @Override
 		Edge getActualEdge() {
 			return getModelEdge(getEdge());
@@ -608,11 +554,16 @@ public class AspectJModel extends GraphJModel {
 		public Collection<String> getPlainLabels() {
 			Collection<String> result = new ArrayList<String>();
 			for (Edge edge : getEdges()) {
-				StringBuilder text = new StringBuilder(getPlainLabel(edge));
+				StringBuilder text = new StringBuilder(getLabelParser().unparse(edge.label()));
 				result.add(AspectParser.toString(((AspectEdge) edge).getDeclaredValues(), text).toString());
 			}
 			return result;
 		}
+        
+		@Override
+        LabelParser createLabelParser() {
+            return AspectParser.getLabelParser(getEdge().getAspectMap().values());
+        }
 
 		/** 
 		 * This implementation makes remark edges invisible as demanded 

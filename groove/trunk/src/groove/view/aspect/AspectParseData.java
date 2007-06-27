@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParseData.java,v 1.4 2007-05-21 22:19:29 rensink Exp $
+ * $Id: AspectParseData.java,v 1.5 2007-06-27 16:00:28 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -24,7 +24,6 @@ import groove.rel.RegExprLabel;
 import groove.view.FormatException;
 
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
  * Combination of declared aspect values and actual label text, as derived from a plain 
@@ -119,22 +118,8 @@ class AspectParseData {
      */
 	public Label getLabel() throws FormatException {
 		if (label == null && hasText()) {
-			Iterator<AspectValue> valueIter = getAspectMap().values().iterator();
-			while (valueIter.hasNext()) {
-				Aspect.LabelParser parser = valueIter.next().getLabelParser();
-				if (parser != null) {
-					Label newLabel = parser.parse(text);
-					if (label == null) {
-						label = newLabel;
-					} else if (!label.equals(newLabel)) {
-						throw new FormatException("label '%s' cannot be parsed unambiguously", text);
-					}
-				}
-			}
-			if (label == null) {
-				label = AbstractAspect.getRegExprLabelParser().parse(text);
-			}
-		}
+            label = AspectParser.getLabelParser(getAspectMap().values()).parse(getText());
+        }
 		return label;
 	}
 	

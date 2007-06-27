@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.10 2007-05-29 15:31:37 rensink Exp $
+ * $Id: JEdge.java,v 1.11 2007-06-27 16:00:22 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -20,6 +20,8 @@ import static groove.util.Converter.HTML_TAG;
 import static groove.util.Converter.STRONG_TAG;
 import groove.util.Converter;
 import groove.util.Groove;
+import groove.view.DefaultLabelParser;
+import groove.view.LabelParser;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultPort;
@@ -31,7 +33,7 @@ import org.jgraph.graph.DefaultPort;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
@@ -102,19 +104,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     public boolean isListable() {
     	return true;
     }
-//
-//	/**
-//     * Returns the collection of elements of the user object, converted to strings
-//     * using {@link #getLine(Object)}
-//     */
-//    public Collection<String> getListLabels() {
-//        Set<String> result = new LinkedHashSet<String>();
-//        for (Object obj: getUserObject()) {
-//        	result.add(getLine(obj));
-//        }
-//        return result;
-//    }
-
+    
     @Override
     public JCellContent<?> getUserObject() {
     	if (! userObjectSet) {
@@ -208,20 +198,8 @@ abstract public class JEdge extends DefaultEdge implements JCell {
     /** Flag indicating that the user object has been initialised. */
     private boolean userObjectSet;
     
-//    /**
-//     * The character used to separate graph labels.
-//     */
-//    static public final String EDIT_SEPARATOR = JCellContent.NEWLINE;
     /**
      * The string used to separate arguments when preparing for editing.
      */
     static public final String PRINT_SEPARATOR = ", ";
-//    /**
-//     * HTML formatting tag for the tool tip text
-//     */
-//    static final Converter.HTMLTag strongTag = Converter.createHtmlTag("strong");
-//    /**
-//     * HTML formatting tag for the tool tip text
-//     */
-//    static final Converter.HTMLTag htmlTag = Converter.createHtmlTag("html");
 }
