@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.17 2007-06-01 18:04:18 rensink Exp $
+ * $Id: SPOEvent.java,v 1.18 2007-06-27 11:55:11 rensink Exp $
  */
 package groove.trans;
 
@@ -50,7 +50,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.17 $ $Date: 2007-06-01 18:04:18 $
+ * @version $Revision: 1.18 $ $Date: 2007-06-27 11:55:11 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -149,6 +149,7 @@ public class SPOEvent implements RuleEvent {
             	// store the endpoints and the variable valuations for the edges
                 Edge edgeKey = (Edge) key;
             	Edge edgeImage = anchorMap.getEdge(edgeKey);
+            	assert edgeImage != null : String.format("Edge %s has no image in anchor map %s", edgeKey, anchorMap);
                 int arity = edgeKey.endCount();
                 for (int end = 0; end < arity; end++) {
                     result.putNode(edgeKey.end(end), edgeImage.end(end));

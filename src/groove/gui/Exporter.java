@@ -41,7 +41,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Class providing functionality to export a {@link JGraph} to a file in different formats.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class Exporter {
     /**
@@ -286,7 +286,7 @@ public class Exporter {
 
         /** Retrieves the edge label in a form readable by LISP. */
         private String label(Edge edge) {
-        	return ExprParser.toQuoted(edge.label().text(), ExprParser.DOUBLE_QUOTE);
+        	return ExprParser.toQuoted(edge.label().text(), ExprParser.DOUBLE_QUOTE_CHAR);
         }
         /** Indicates if an edge should be regarded as a node label. */
         private boolean isNodeLabel(Edge edge) {

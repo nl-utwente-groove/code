@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.9 2007-05-30 21:30:26 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.10 2007-06-27 11:55:19 rensink Exp $
  */
 package groove.io;
 
+import groove.graph.AbstractLabel;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -54,7 +55,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -448,7 +449,7 @@ public class DefaultGxl extends AbstractXml {
 	 * The following implementation of <tt>Label</tt> allows us to
 	 * use graphs to store attribute maps. 
 	 */
-	static private class AttributeLabel implements Label {
+	static private class AttributeLabel extends AbstractLabel {
 		/** Constructs an instance, based on a given attribute map. */
 	    public AttributeLabel(Map<String, String> attributes) {
 	        this.attributes = new HashMap<String,String>(attributes);
@@ -467,7 +468,7 @@ public class DefaultGxl extends AbstractXml {
 	        return attributes.toString();
 	    }
 	
-	    @Override
+		@Override
 	    public String toString() {
 	        return attributes.toString();
 	    }
@@ -478,14 +479,6 @@ public class DefaultGxl extends AbstractXml {
 	    }
 	
 	    private final Map<String,String> attributes;
-	
-	    /**
-	     * This implementation compares the string descriptions (as given by
-	     * <tt>toString</tt>).
-	     */
-	    public int compareTo(Label o) {
-	        return toString().compareTo(o.toString());
-	    }
 	}
 
 	/** Edge carrying an attribute map on its label, with an unknown end count. */ 

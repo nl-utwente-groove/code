@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.15 2007-05-29 15:31:37 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.16 2007-06-27 11:55:18 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -201,9 +201,17 @@ public class GraphJVertex extends JVertex {
     		result.add(prefix+constant);    		
     	}
 		for (Edge edge : getSelfEdges()) {
-			result.add(edge.label().text());
+			result.add(getPlainLabel(edge));
 		}
 		return result;
+	}
+
+	/** 
+	 * Returns the label of the edge as to be displayed in the editor.
+	 * Callback method from {@link #getListLabels()}.
+	 */
+	String getPlainLabel(Edge edge) {
+		return edge.label().plainText();
 	}
 
 	/**

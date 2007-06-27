@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLStarFormula.java,v 1.6 2007-06-21 12:47:51 fladder Exp $
+ * $Id: CTLStarFormula.java,v 1.7 2007-06-27 11:55:28 rensink Exp $
  */
 
 package groove.verify;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Class parsing CTL* formulae.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $ $Date: 2007-06-21 12:47:51 $
+ * @version $Revision: 1.7 $ $Date: 2007-06-27 11:55:28 $
  */
 public class CTLStarFormula {
     /** 
@@ -675,17 +675,17 @@ public class CTLStarFormula {
 
         @Override
         protected TemporalFormula parseOperator(String expr) throws FormatException {
-            if (ExprParser.matches(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR)) {
-                return getFactory().parse(ExprParser.trim(expr, LEFT_PARENTHESIS_CHAR, RIGHT_PARENTHESIS_CHAR));
+        	expr = expr.trim();
+        	if (expr.charAt(0) == LEFT_PARENTHESIS_CHAR) {
+                return getFactory().parse(expr.substring(1, expr.length()-1));
             } else {
                 assertAtom(expr);
-                String trimmed = expr.trim();
-                if (trimmed.equals(TRUE))
+                if (expr.equals(TRUE))
                     return new True();
-                else if (trimmed.equals(FALSE))
+                else if (expr.equals(FALSE))
                     return new False();
                 else
-                    return newInstance(expr.trim());
+                    return newInstance(expr);
             }
         }
 
@@ -810,6 +810,7 @@ public class CTLStarFormula {
     }
 
     protected TemporalFormula parse(String expr) throws FormatException {
+    	ExprParser.parseExpr(expr);
         // try to parse the expression using each of the available operators in turn
         for (int op = 0; op < prototypes.length; op++) {
             TemporalFormula result = prototypes[op].parseOperator(expr);

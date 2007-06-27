@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.9 2007-05-30 21:30:11 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.10 2007-06-27 11:55:18 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -162,7 +162,19 @@ public class GraphJEdge extends JEdge {
 	}
 	
 	public Collection<String> getPlainLabels() {
-		return getListLabels();
+		List<String> result = new ArrayList<String>();
+		for (Edge edge: getUserObject()) {
+			result.add(getPlainLabel(edge));
+		}
+		return result;
+	}
+
+	/** 
+	 * Returns the label of the edge as to be displayed in the editor.
+	 * Callback method from {@link #getListLabels()}.
+	 */
+	String getPlainLabel(Edge edge) {
+		return edge.label().plainText();
 	}
 
 	/** Specialises the return type of the method. */
