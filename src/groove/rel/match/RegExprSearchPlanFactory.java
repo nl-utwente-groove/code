@@ -1,5 +1,5 @@
 /*
- * $Id: RegExprSearchPlanFactory.java,v 1.3 2007-04-18 08:36:08 rensink Exp $
+ * $Id: RegExprSearchPlanFactory.java,v 1.4 2007-06-27 13:18:56 rensink Exp $
  */
 package groove.rel.match;
 
@@ -25,7 +25,7 @@ import groove.rel.match.VarEdgeSearchItem;
  * their source nodes.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class RegExprSearchPlanFactory extends DefaultSearchPlanFactory {
 	/**
@@ -96,14 +96,14 @@ public class RegExprSearchPlanFactory extends DefaultSearchPlanFactory {
     	} else if (negOperand != null) {
     		Edge negatedEdge = DefaultEdge.createEdge(edge.source(), negOperand.toLabel(), edge.opposite());
     		return createNegatedSearchItem(createEdgeSearchItem(negatedEdge, matched));
-//    	} else if (RegExprLabel.isEmpty(label)) {
-//    		return createInjectionSearchItem(Arrays.asList(edge.ends()));
     	} else if (RegExprLabel.getWildcardId(label) != null) {
     		return new VarEdgeSearchItem(edge, matched);
-    	} else if (RegExprLabel.isAtom(label)) {
-    		Edge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
-    		return super.createEdgeSearchItem(defaultEdge, matched);
-    	} else if (label instanceof RegExprLabel) {
+    	} else if (RegExprLabel.isWildcard(label)) {
+            return new WildcardEdgeSearchItem(edge, matched);
+        } else if (RegExprLabel.isAtom(label)) {
+            Edge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
+            return super.createEdgeSearchItem(defaultEdge, matched);
+        } else if (label instanceof RegExprLabel) {
     		return new RegExprEdgeSearchItem(edge, matched);
     	} else {
         	return super.createEdgeSearchItem(edge, matched);
