@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.30 2007-06-26 15:50:23 rensink Exp $
+ * $Id: Options.java,v 1.31 2007-06-27 13:24:27 rensink Exp $
  */
 package groove.gui;
 
@@ -40,7 +40,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  */
 public class Options {
     /** 
@@ -319,7 +319,7 @@ public class Options {
     public static final KeyStroke SPLINE_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 2");
     /** Bezier line style keystroke */
     public static final KeyStroke BEZIER_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 3");
-    /** Perpendicular line style keystroke */
+    /** Manhattan line style keystroke */
     public static final KeyStroke MANHATTAN_LINE_STYLE_KEY = KeyStroke.getKeyStroke("alt 4");
 
     /** Indication for an empty label in a list of labels. */
@@ -332,8 +332,8 @@ public class Options {
     static public final String SPLINE_LINE_STYLE_NAME = "Spline";
     /** The name of the Orthogonal line style. */
     static public final String ORTHOGONAL_LINE_STYLE_NAME = "Orthogonal";
-    /** The name of the Perpendicular line style. */
-    static public final String MANHATTAN_LINE_STYLE_NAME = "Perpendicular";
+    /** The name of the Manhattan line style. */
+    static public final String MANHATTAN_LINE_STYLE_NAME = "Manhattan";
     /** Name for the imaging action. */
     static public final String IMAGE_ACTION_NAME = "Image";
 

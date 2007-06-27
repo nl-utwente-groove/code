@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeView.java,v 1.6 2007-05-30 21:30:11 rensink Exp $
+ * $Id: JEdgeView.java,v 1.7 2007-06-27 13:24:26 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -47,7 +47,7 @@ import org.jgraph.graph.PortView;
  * An edge view that uses the <tt>getText()</tt> of the underlying edge as a label. Moreover, new
  * views take care to bend to avoid overlap, and offer functionality to add and remove points.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class JEdgeView extends EdgeView {
 
@@ -465,14 +465,14 @@ public class JEdgeView extends EdgeView {
 		@Override
 		protected Shape createShape() {
 			if (JAttr.isManhattanStyle(view.getAllAttributes())) {
-				return createPerpendicularShape();
+				return createManhattanShape();
 			} else {
 				return super.createShape();
 			}
 		}
     	
 		/** Creates a shape for the {@link JAttr#STYLE_MANHATTAN} line style. */
-		protected Shape createPerpendicularShape() {
+		protected Shape createManhattanShape() {
 			int n = view.getPointCount();
 			if (n > 1) {
 				// Following block may modify static vars as side effect (Flyweight

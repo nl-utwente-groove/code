@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.16 2007-05-28 21:32:43 rensink Exp $
+ * $Id: JAttr.java,v 1.17 2007-06-27 13:24:26 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -44,7 +44,7 @@ import groove.view.aspect.RuleAspect;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class JAttr {
     /** Creates a stroke with a given line width and dash pattern. */
@@ -75,8 +75,8 @@ public class JAttr {
 	}
 	
     /** 
-     * Tests if a set of attributes specifies an effective perpendicular line style.
-     * The perpendicular line style is effective if the edge has more than two points. 
+     * Tests if a set of attributes specifies an effective Manhattan line style.
+     * The Manhattan line style is effective if the edge has more than two points. 
      */
     public static boolean isManhattanStyle(AttributeMap attributes) {
         if (GraphConstants.getLineStyle(attributes) == STYLE_MANHATTAN) {
@@ -249,7 +249,6 @@ public class JAttr {
         GraphConstants.setBendable(defaultEdgeAttr, true);
         GraphConstants.setBackground(defaultEdgeAttr, Color.WHITE);
         GraphConstants.setOpaque(defaultEdgeAttr, true);
-//        GraphConstants.setLineStyle(defaultEdgeAttr, STYLE_PERPENDICULAR);
         GraphConstants.setConnectable(defaultEdgeAttr, true);
         GraphConstants.setDisconnectable(defaultEdgeAttr, true);
         // no routing installed, because this is implemented
