@@ -6,8 +6,10 @@ import groove.control.ControlTransition;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.Options;
+import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.State;
 import groove.lts.Transition;
@@ -283,25 +285,6 @@ public class ControlJModel extends GraphJModel {
 	    	}
 			return result.toString();
 		}
-
-		@Override
-		String getListLabel(Edge edge) {
-			String result;
-			assert edge instanceof ControlTransition : "Edge set contains "
-					+ edge;
-			// fix for locationtransition (Tom Staijen: Control)
-			if (isShowAnchors() ) {
-				result = ((Transition) edge).label().text();
-			} else {
-				result = ((ControlTransition) edge).label().text();
-			}
-			return result;
-		}
-
-		@Override
-		StringBuilder getLine(Edge edge) {
-			return new StringBuilder(getListLabel(edge));
-		}
 	}
 
 	/**
@@ -311,7 +294,7 @@ public class ControlJModel extends GraphJModel {
 	 */
     private class StateJVertex extends GraphJVertex {
     	/** 
-    	 * Creates a new instance for a given node (required to be a {@link GraphState})
+    	 * Creates a new instance for a given node (required to be a {@link ControlState})
     	 * in an LTS model.
     	 */
 		StateJVertex(ControlJModel jModel, Node node) {
@@ -332,7 +315,7 @@ public class ControlJModel extends GraphJModel {
         }
 
         /**
-		 * Specialises the return type to {@link GraphState}.
+		 * Specialises the return type to {@link ControlState}.
 		 */
 		@Override
 		public ControlState getNode() {
@@ -367,21 +350,7 @@ public class ControlJModel extends GraphJModel {
 		}
 
 		@Override
-		String getListLabel(Edge edge) {
-			String result;
-			assert edge instanceof ControlTransition : "Edge set contains "
-					+ edge;
-			// fix for locationtransitions (Tom Staijen: Control)
-			if (isShowAnchors() ) {
-				result = ((Transition) edge).label().text();
-			} else {
-				result = ((ControlTransition) edge).label().text();
-			}
-			return result;
-		}
-
-		@Override
-		StringBuilder getLine(Edge edge) {
+		public StringBuilder getLine(Edge edge) {
 			return Converter.toHtml(new StringBuilder(getListLabel(edge)));
 		}
 	}

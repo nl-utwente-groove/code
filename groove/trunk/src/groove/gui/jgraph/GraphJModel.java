@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.17 2007-05-29 06:52:36 rensink Exp $
+ * $Id: GraphJModel.java,v 1.18 2007-06-28 12:05:24 rensink Exp $
  */
 
 package groove.gui.jgraph;
@@ -53,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
     /** 
@@ -326,11 +326,8 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
 	@Override
 	public Graph toPlainGraph() {
-		// set the show-aspect value locally, to make sure of correct dispay
-//		setLocalOptions(true);
 		Graph result = super.toPlainGraph();
 		GraphInfo.setRole(result, getRole());
-//		setLocalOptions(false);
 		return result;
 	}
 

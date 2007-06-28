@@ -12,19 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.17 2007-06-27 16:00:22 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.18 2007-06-28 12:05:24 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
 import groove.algebra.Constant;
 import groove.graph.Edge;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.util.Converter;
-import groove.view.DefaultLabelParser;
 import groove.view.LabelParser;
+import groove.view.RegExprLabelParser;
 import groove.view.aspect.AttributeAspect;
 
 import java.util.ArrayList;
@@ -42,7 +43,7 @@ import java.util.TreeSet;
  * Also provides a single default port for the graph cell,
  * and a convenience method to retrieve it.
  */
-public class GraphJVertex extends JVertex {
+public class GraphJVertex extends JVertex implements GraphJCell {
     /**
      * Constructs a jnode on top of a graph node.
      * @param jModel the model in which this vertex exists
@@ -135,12 +136,12 @@ public class GraphJVertex extends JVertex {
 	}
 
 	/** 
-	 * This implementation returns the label text of the object
-	 * (which is known to be an edge).
+	 * This implementation returns the label text of the edge; moreover,
+     * if the opposite end is not also this vertex, the line is turned into an attribute-style assigment.
 	 */
-	StringBuilder getLine(Edge edge) {
+	public StringBuilder getLine(Edge edge) {
 		StringBuilder result = new StringBuilder();
-		result.append(edge.label().text());
+		result.append(getListLabel(edge));
 		if (edge.opposite() != getNode()) {
 			GraphJVertex oppositeVertex = jModel.getJVertex(edge.opposite());
 			result.append(ASSIGN_TEXT);
@@ -148,19 +149,7 @@ public class GraphJVertex extends JVertex {
 		}
 		return Converter.toHtml(result);
 	}
-//
-//	/**
-//	 * Indicates if the text of this vertex should include the identity of the
-//	 * underlying node. This implementation returns <code>true</code> if the
-//	 * model indicates that node identities are to be shown.
-//	 * 
-//	 * @see GraphJModel#isShowNodeIdentities()
-//	 */
-//    boolean isShowNodeIdentity() {
-//    	// delegate the question to the j-model
-//    	return jModel.isShowNodeIdentities();
-//    }
-
+    
     /**
 	 * This implementation returns a special constant label in case
 	 * the node is a constant, followed by the self-edge labels and data-edge
@@ -187,8 +176,8 @@ public class GraphJVertex extends JVertex {
 	 * Returns the label of the edge as to be displayed in the label list.
 	 * Callback method from {@link #getListLabels()}.
 	 */
-	String getListLabel(Edge edge) {
-		return edge.label().text();
+	public String getListLabel(Edge edge) {
+		return getLabel(edge).text();
 	}
 	
     /**
@@ -203,16 +192,30 @@ public class GraphJVertex extends JVertex {
     		result.add(prefix+constant);    		
     	}
 		for (Edge edge : getSelfEdges()) {
-			result.add(getLabelParser().unparse(edge.label()));
+			result.add(getPlainLabel(edge));
 		}
 		return result;
 	}
 
+    /** This implementation delegates to {@link Edge#label()}. */
+    public Label getLabel(Edge edge) {
+        return edge.label();
+    }
+    
+    /**
+     * This implementation calls {@link LabelParser#unparse(Label)} on the 
+     * parser returned by {@link #getLabelParser()}, with the label returned by
+     * {@link #getLabel(Edge)}.
+     */
+    public String getPlainLabel(Edge edge) {
+        return getLabelParser().unparse(getLabel(edge));
+    }
+    
     /** 
      * Returns a label parser for this jnode.
      * The label parser is used to obtain the plain labels. 
      */
-    LabelParser getLabelParser() {
+    public LabelParser getLabelParser() {
         if (labelParser == null) {
             labelParser = createLabelParser();
         }
@@ -221,7 +224,7 @@ public class GraphJVertex extends JVertex {
     
     /** Callback factory method to create a label parser for this jnode. */
     LabelParser createLabelParser() {
-        return new DefaultLabelParser();
+        return new RegExprLabelParser();
     }
 
 	/**

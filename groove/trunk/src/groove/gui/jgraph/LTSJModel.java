@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.17 2007-06-21 14:34:38 fladder Exp $
+ * $Id: LTSJModel.java,v 1.18 2007-06-28 12:05:24 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.lts.GraphState;
@@ -39,7 +40,7 @@ import org.jgraph.graph.GraphConstants;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -395,24 +396,14 @@ public class LTSJModel extends GraphJModel {
 			return result.toString();
 		}
 
-		@Override
-		String getListLabel(Edge edge) {
-			String result;
-			assert edge instanceof GraphTransition : "Edge set contains "
-					+ edge;
-			// fix for locationtransition (Tom Staijen: Control)
-			if (isShowAnchors() ) {
-				result = ((Transition) edge).label().text();
-			} else {
-				result = ((GraphTransition) edge).getEvent().getName().text();
-			}
-			return result;
-		}
-
-		@Override
-		StringBuilder getLine(Edge edge) {
-			return new StringBuilder(getListLabel(edge));
-		}
+        /** 
+         * This implementation returns either the transition label, or the event label, depending on #isShowAnchors().
+         */
+        @Override
+        public Label getLabel(Edge edge) {
+            assert edge instanceof GraphTransition : "Edge set contains " + edge;
+            return isShowAnchors() ? super.getLabel(edge) : ((GraphTransition) edge).getEvent().getName();
+        }
 	}
 
 	/**
@@ -477,25 +468,21 @@ public class LTSJModel extends GraphJModel {
 			if (lts.isFinal(getNode())) {
 				result.add(LTS.FINAL_LABEL_TEXT);
 			}
+            result.addAll(super.getPlainLabels());
 			return result;
 		}
 
-		@Override
-		String getListLabel(Edge edge) {
-			String result;
-			assert edge instanceof GraphTransition : "Edge set contains "
-					+ edge;
-			// fix for locationtransitions (Tom Staijen: Control)
-			if (isShowAnchors() ) {
-				result = ((Transition) edge).label().text();
-			} else {
-				result = ((GraphTransition) edge).getEvent().getName().text();
-			}
-			return result;
-		}
-
-		@Override
-		StringBuilder getLine(Edge edge) {
+        /** 
+         * This implementation returns either the transition label, or the event label, depending on #isShowAnchors().
+         */
+        @Override
+        public Label getLabel(Edge edge) {
+            assert edge instanceof GraphTransition : "Edge set contains " + edge;
+            return isShowAnchors() ? super.getLabel(edge) : ((GraphTransition) edge).getEvent().getName();
+        }
+        
+        @Override
+		public StringBuilder getLine(Edge edge) {
 			return Converter.toHtml(new StringBuilder(getListLabel(edge)));
 		}
 	}
