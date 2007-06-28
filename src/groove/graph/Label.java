@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Label.java,v 1.4 2007-06-27 11:55:16 rensink Exp $
+ * $Id: Label.java,v 1.5 2007-06-28 06:38:33 rensink Exp $
  */
 package groove.graph;
 
@@ -21,7 +21,7 @@ import groove.view.FormatException;
 /**
  * Interface for edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-06-27 11:55:16 $
+ * @version $Revision: 1.5 $ $Date: 2007-06-28 06:38:33 $
  */
 public interface Label extends Comparable<Label>, java.io.Serializable {
     /**
@@ -38,12 +38,4 @@ public interface Label extends Comparable<Label>, java.io.Serializable {
      * @ensure result != null
      */
     String text();
-
-    /**
-     * Returns a view on the label text that can be edited, and 
-     * from which the label can be reconstructed.
-     * This is based on {@link #text()}, but may involve quotes and escapes.
-     * @ensure result != null
-     */
-    String plainText();
 }
