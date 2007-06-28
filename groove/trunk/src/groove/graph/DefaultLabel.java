@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultLabel.java,v 1.5 2007-06-27 11:55:16 rensink Exp $
+ * $Id: DefaultLabel.java,v 1.6 2007-06-28 06:38:33 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Map;
  * Provides a standard implementation of the Label interface.
  * An instance contains just an index into a global list.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ 
+ * @version $Revision: 1.6 $ 
  */
 public final class DefaultLabel extends AbstractLabel {
     /**
@@ -223,22 +223,6 @@ public final class DefaultLabel extends AbstractLabel {
     public String text() {
         return getText(index);
     }
-
-    /** 
-     * This implementation puts quotes around the {@link #text()} if
-     * the label is not recognizable as atom by {@link RegExpr#isAtom(String)}
-     */
-    @Override
-	public String plainText() {
-    	if (plainText == null) {
-    		if (RegExpr.isAtom(text())) {
-    			plainText = text();
-    		} else {
-    			plainText = ExprParser.toQuoted(text(), ExprParser.SINGLE_QUOTE_CHAR);
-    		}
-    	}
-    	return plainText;
-	}
 
 	@Deprecated
     public Label parse(String text) throws FormatException {
