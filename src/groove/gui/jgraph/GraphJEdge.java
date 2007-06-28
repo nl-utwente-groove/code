@@ -12,18 +12,19 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.11 2007-06-27 16:00:22 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.12 2007-06-28 12:05:24 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.ProductEdge;
 import groove.util.Converter;
-import groove.view.DefaultLabelParser;
 import groove.view.LabelParser;
+import groove.view.RegExprLabelParser;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -36,7 +37,7 @@ import java.util.Set;
  * Extends DefaultEdge to store a collection of graph Edges. The graph edges are stored as a Set in
  * the user object. In the latter case, toString() the user object is the empty string.
  */
-public class GraphJEdge extends JEdge {
+public class GraphJEdge extends JEdge implements GraphJCell {
     /**
      * Constructs a model edge based on a graph edge.
      * The graph edge is required to have at least arity two; yet we cannot
@@ -127,6 +128,16 @@ public class GraphJEdge extends JEdge {
     	return getEdge();
     }
     
+    /** This implementation delegates to {@link Edge#label()}. */
+    public Label getLabel(Edge edge) {
+        return edge.label();
+    }
+
+    /**
+     * This implementation calls {@link #getLine(Edge)} on all edges in 
+     * {@link #getUserObject()} that are not being filtered by the model
+     * according to {@link JModel#isFiltering(String)}.
+     */
     public Collection<StringBuilder> getLines() {
     	List<StringBuilder> result = new ArrayList<StringBuilder>();
 		for (Edge edge: getUserObject()) {
@@ -138,15 +149,16 @@ public class GraphJEdge extends JEdge {
 	}
 
 	/** 
-     * Converts an edge to a line describing that edge as part of the
-     * j-edge text.
-     * Callback method from {@link #getLines()}.
-     * @see #getLines()
+     * This implementation returns the text from {@link #getLabel(Edge)} wrapped in a StringBuilder.
      */
-	StringBuilder getLine(Edge edge) {
-		return new StringBuilder(edge.label().text());
+	public StringBuilder getLine(Edge edge) {
+		return new StringBuilder(getListLabel(edge));
 	}
 
+    /**
+     * This implementation calls {@link #getListLabel(Edge)} on all edges in 
+     * {@link #getUserObject()}.
+     */
 	public Collection<String> getListLabels() {
 		List<String> result = new ArrayList<String>();
 		for (Edge edge: getUserObject()) {
@@ -156,26 +168,38 @@ public class GraphJEdge extends JEdge {
 	}
 
 	/** 
-	 * Returns the label of the edge as to be displayed in the label list.
-	 * Callback method from {@link #getListLabels()}.
+	 * This implementation returns the text of the label returned by {@link #getLabel(Edge)}.
 	 */
-	String getListLabel(Edge edge) {
-		return edge.label().text();
+	public String getListLabel(Edge edge) {
+		return getLabel(edge).text();
 	}
 	
+    /**
+     * This implementation calls {@link #getPlainLabel(Edge)} on all edges in 
+     * {@link #getUserObject()}.
+     */
 	public Collection<String> getPlainLabels() {
 		List<String> result = new ArrayList<String>();
 		for (Edge edge: getUserObject()) {
-			result.add(getLabelParser().unparse(edge.label()));
+			result.add(getPlainLabel(edge));
 		}
 		return result;
 	}
     
+    /**
+     * This implementation calls {@link LabelParser#unparse(Label)} on the 
+     * parser returned by {@link #getLabelParser()}, with the label returned by
+     * {@link #getLabel(Edge)}.
+     */
+    public String getPlainLabel(Edge edge) {
+        return getLabelParser().unparse(getLabel(edge));
+    }
+
     /** 
      * Returns a label parser for this jnode.
      * The label parser is used to obtain the plain labels. 
      */
-    LabelParser getLabelParser() {
+    public LabelParser getLabelParser() {
         if (labelParser == null) {
             labelParser = createLabelParser();
         }
@@ -184,7 +208,7 @@ public class GraphJEdge extends JEdge {
     
     /** Callback factory method to create a label parser for this jnode. */
     LabelParser createLabelParser() {
-        return new DefaultLabelParser();
+        return new RegExprLabelParser();
     }
 
 	/** Specialises the return type of the method. */

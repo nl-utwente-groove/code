@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJEdge.java,v 1.4 2007-06-27 16:00:22 rensink Exp $
+ * $Id: EditableJEdge.java,v 1.5 2007-06-28 12:05:24 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -36,7 +36,7 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     /** Constructs a j-edge by cloning another one. */
     public EditableJEdge(JEdge other) {
         getAttributes().applyMap(other.getAttributes());
-        setUserObject(other.getPlainLabels());
+        setUserObject(other.getUserObject().getLabelSet());
     }
     
     /** This implementation just returns the user object. */

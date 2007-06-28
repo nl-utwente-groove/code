@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExpr.java,v 1.10 2007-06-27 11:55:20 rensink Exp $
+ * $Id: RegExpr.java,v 1.11 2007-06-28 12:05:39 rensink Exp $
  */
 package groove.rel;
 
@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 abstract public class RegExpr implements VarSetSupport {
     /** 
@@ -709,7 +709,7 @@ abstract public class RegExpr implements VarSetSupport {
         public RegExpr parseOperator(String expr) throws FormatException {
         	expr = expr.trim();
         	if (expr.length() == 0) {
-        		throw new FormatException("Empty label is not allowed");
+        		throw new FormatException("Empty string not allowed in expression");
         	}
         	// the only hope is that the expression is quoted or bracketed
         	Pair<String,List<String>> parseResult = ExprParser.parseExpr(expr);

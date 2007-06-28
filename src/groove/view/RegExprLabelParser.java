@@ -15,8 +15,6 @@ public class RegExprLabelParser implements LabelParser {
 	public Label parse(String text) throws FormatException {
 		RegExpr expr = RegExpr.parse(text);
 		if (expr.isAtom()) {
-			// TODO this is the place to get rid of single quotes,
-			// by using expr.getAtomText()
 			return DefaultLabel.createLabel(expr.getAtomText());
 		} else {
 			return expr.toLabel();
@@ -29,7 +27,7 @@ public class RegExprLabelParser implements LabelParser {
      */
     public String unparse(Label label) {
         String result = label.text();
-        if (label instanceof DefaultLabel && !RegExpr.isAtom(result)) {
+        if (!(label instanceof RegExprLabel) && !RegExpr.isAtom(result)) {
             result = RegExpr.atom(result).toString();
         }
         return result;

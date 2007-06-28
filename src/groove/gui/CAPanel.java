@@ -88,7 +88,7 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	}
 
 	public void applyTransitionUpdate(GraphTransition transition) {
-		// nothing to do here, we dont care about new transitions
+        setStateUpdate(transition.target());
 	}
 
 	public void setGrammarUpdate(DefaultGrammarView grammar) {
@@ -120,7 +120,7 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	}
 
 	public void setRuleUpdate(NameLabel name) {
-		// TODO Auto-generated method stub
+		// noting happens
 	}
 
 	public void setStateUpdate(GraphState state) {

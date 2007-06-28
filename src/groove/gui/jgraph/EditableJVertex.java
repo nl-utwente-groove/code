@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJVertex.java,v 1.4 2007-06-26 15:50:20 rensink Exp $
+ * $Id: EditableJVertex.java,v 1.5 2007-06-28 12:05:24 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -39,7 +39,7 @@ public class EditableJVertex extends JVertex implements EditableJCell {
     /** Constructs a jvertex by cloning another one. */
     public EditableJVertex(JVertex other) {
         getAttributes().applyMap(other.getAttributes());
-        setUserObject(other.getPlainLabels());
+        setUserObject(other.getUserObject().getLabelSet());
     }
     
     /** This implementation just returns the user object. */

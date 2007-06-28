@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.21 2007-06-27 16:00:22 rensink Exp $
+ * $Id: AspectJModel.java,v 1.22 2007-06-28 12:05:24 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -62,7 +62,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -406,7 +406,7 @@ public class AspectJModel extends GraphJModel {
 		 * On demand prefixes the label with the edge's aspect values.
 		 */
 		@Override
-		StringBuilder getLine(Edge object) {
+		public StringBuilder getLine(Edge object) {
 			assert object instanceof AspectEdge;
 			StringBuilder result = super.getLine(object);
 			if (isShowAspects()) {
@@ -441,13 +441,18 @@ public class AspectJModel extends GraphJModel {
 			for (AspectValue value : getNode().getDeclaredValues()) {
 				result.add(AspectParser.toString(value));
 			}
-			for (Edge edge : getSelfEdges()) {
-				StringBuilder text = new StringBuilder(getLabelParser().unparse(edge.label()));
-				result.add(AspectParser.toString(((AspectEdge) edge).getDeclaredValues(),
-						text).toString());
-			}
+			result.addAll(super.getPlainLabels());
 			return result;
 		}
+        
+        /**
+         * This implementation adds an edge aspect prefix.
+         */
+        @Override
+        public String getPlainLabel(Edge edge) {
+            StringBuilder text = new StringBuilder(super.getPlainLabel(edge));
+            return AspectParser.toString(((AspectEdge) edge).getDeclaredValues(), text).toString();
+        }
 
         @Override
         LabelParser createLabelParser() {
@@ -539,7 +544,7 @@ public class AspectJModel extends GraphJModel {
 		 * On demand prefixes the label with the edge's aspect values.
 		 */
 		@Override
-		StringBuilder getLine(Edge object) {
+		public StringBuilder getLine(Edge object) {
 			assert object instanceof AspectEdge;
 			StringBuilder result = super.getLine(object);
 			if (isShowAspects()) {
@@ -551,13 +556,9 @@ public class AspectJModel extends GraphJModel {
 		 * This implementation adds node and edge aspects.
 		 */
 		@Override
-		public Collection<String> getPlainLabels() {
-			Collection<String> result = new ArrayList<String>();
-			for (Edge edge : getEdges()) {
-				StringBuilder text = new StringBuilder(getLabelParser().unparse(edge.label()));
-				result.add(AspectParser.toString(((AspectEdge) edge).getDeclaredValues(), text).toString());
-			}
-			return result;
+		public String getPlainLabel(Edge edge) {
+		    StringBuilder text = new StringBuilder(super.getPlainLabel(edge));
+			return AspectParser.toString(((AspectEdge) edge).getDeclaredValues(), text).toString();
 		}
         
 		@Override
