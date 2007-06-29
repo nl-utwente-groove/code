@@ -13,11 +13,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLStarFormula.java,v 1.7 2007-06-27 11:55:28 rensink Exp $
+ * $Id: CTLStarFormula.java,v 1.8 2007-06-29 07:15:57 kastenberg Exp $
  */
 
 package groove.verify;
 
+import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphTransition;
@@ -38,7 +39,7 @@ import java.util.Set;
  * Class parsing CTL* formulae.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.7 $ $Date: 2007-06-27 11:55:28 $
+ * @version $Revision: 1.8 $ $Date: 2007-06-29 07:15:57 $
  */
 public class CTLStarFormula {
     /** 
@@ -678,6 +679,8 @@ public class CTLStarFormula {
         	expr = expr.trim();
         	if (expr.charAt(0) == LEFT_PARENTHESIS_CHAR) {
                 return getFactory().parse(expr.substring(1, expr.length()-1));
+        	} else if (expr.charAt(0) == SINGLE_QUOTE_CHAR) {
+        		return newInstance(ExprParser.toUnquoted(expr, SINGLE_QUOTE_CHAR));
             } else {
                 assertAtom(expr);
                 if (expr.equals(TRUE))
