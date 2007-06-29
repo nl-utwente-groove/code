@@ -1,5 +1,9 @@
 package groove.view;
 
+import java.io.IOException;
+import java.io.StreamTokenizer;
+import java.io.StringReader;
+
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
 
@@ -10,6 +14,14 @@ import groove.graph.Label;
  */
 public class DefaultLabelParser implements LabelParser {
 	public Label parse(String text) throws FormatException {
+        StreamTokenizer tokenizer = new StreamTokenizer(new StringReader(QUOTE_CHAR+text));
+        tokenizer.quoteChar(QUOTE_CHAR);
+        try {
+            tokenizer.nextToken();
+        } catch (IOException exc) {
+            assert false;
+        }
+        text = tokenizer.sval;
 		testFormat(text);
 		return DefaultLabel.createLabel(text);
 	}
@@ -31,4 +43,7 @@ public class DefaultLabelParser implements LabelParser {
     public String unparse(Label label) {
         return label.text();
     }
+
+    /** Dummy quote character for parsing the string. */
+    static private final char QUOTE_CHAR = '\u0000';
 }
