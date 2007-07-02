@@ -1,4 +1,4 @@
-/* $Id: SwingDeltaGraph.java,v 1.1 2007-04-27 22:07:04 rensink Exp $ */
+/* $Id: SwingDeltaGraph.java,v 1.2 2007-07-02 07:21:32 rensink Exp $ */
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
@@ -29,7 +29,11 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	public SwingDeltaGraph(final SwingDeltaGraph basis, final DeltaApplier delta) {
 		assert delta != null;
 		this.basis = basis;
-		this.delta = delta;
+		if (delta == null || delta instanceof DeltaStore) {
+			this.delta = (DeltaStore) delta;
+		} else {
+			this.delta = new DeltaStore(delta);
+		}
 	}
 	
 	@Override
@@ -202,50 +206,37 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	 * the basis graph.
 	 */
 	private void initData() {
-//		System.out.printf("Initialising %s%n", System.identityHashCode(this));
-//		if (delta == null) {
-//			System.out.printf(" - Error in %s%n", System.identityHashCode(this));
-//		}
-		// initialise the node set from the basis
+		reporter.start(INIT_DATA);
 		assert nodeSet == null;
+		assert edgeSet == null;
+		assert nodeEdgeMap == null;
+		assert labelEdgeMaps == null;
 		if (basis == null) {
 			nodeSet = createNodeSet();
+			edgeSet = createEdgeSet();
+			// apply the delta to fill the structures
+			delta.applyDelta(new Target(nodeSet, edgeSet, null, null));
+			delta = null;
 		} else {
 			nodeSet = basis.nodeSet();
-		}
-		// initialise the edge set from the basis
-		assert edgeSet == null;
-		if (basis == null) {
-			edgeSet = createEdgeSet();
-		} else {
 			edgeSet = basis.edgeSet();
+			// initialise the node-edge map from the basis, if it is set in the basis
+			if (basis.isNodeEdgeMapSet()) {
+				nodeEdgeMap = basis.nodeEdgeMap();
+			}
+			if (basis.isLabelEdgeMapSet()) {
+				labelEdgeMaps = basis.getLabelEdgeMaps();
+			}
+			// apply the delta to fill the structures
+			delta.applyDelta(new Target(nodeSet, edgeSet, nodeEdgeMap, labelEdgeMaps));
+			basis.releaseData(this, delta);
+			basis = null;
+			delta = null;
 		}
-		// initialise the node-edge map from the basis, if it is set in the basis
-		assert nodeEdgeMap == null;
-		if (basis != null && basis.isNodeEdgeMapSet()) {
-			nodeEdgeMap = basis.nodeEdgeMap();
-		}
-		// initialise the label-edge map list from the basis, if it is set in the basis
-		assert labelEdgeMaps == null;
-		if (basis != null && basis.isLabelEdgeMapSet()) {
-			labelEdgeMaps = basis.getLabelEdgeMaps();
-		}
-		DeltaStore newDelta = null;
-		if (! (delta instanceof DeltaStore)) {
-			newDelta = new DeltaStore();
-		}
-		// apply the delta to fill the structures
-		delta.applyDelta(new Target(nodeSet, edgeSet, nodeEdgeMap, labelEdgeMaps, newDelta));
-		if (basis != null) {
-			basis.releaseData(this, delta instanceof DeltaStore ? (DeltaStore) delta : newDelta);
-		}
-		basis = null;
-		delta = null;
-//		System.out.printf(" - Done initialising %s%n", System.identityHashCode(this));
+		reporter.stop();
 	}
 
 	private void releaseData(SwingDeltaGraph basis, DeltaStore basisDelta) {
-//		System.out.printf("Releasing %s%n", System.identityHashCode(this));
 		this.nodeSet = null;
 		this.edgeSet = null;
 		this.nodeEdgeMap = null;
@@ -253,7 +244,6 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		this.certifier = null;
 		this.basis = basis;
 		this.delta = basisDelta.invert();
-//		System.out.printf(" - Done releasing %s%n", System.identityHashCode(this));
 	}
 	
 	private Set<Edge> createEdgeSet() {
@@ -275,7 +265,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	/** The fixed (possibly <code>null</code> basis of this graph. */
 	private SwingDeltaGraph basis;
 	/** The fixed delta of this graph. */
-	private DeltaApplier delta;
+	private DeltaStore delta;
 	
 	/** The (initially null) edge set of this graph. */
 	private Set<Edge> edgeSet;
@@ -289,7 +279,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	private Reference<CertificateStrategy> certifier;
 
 	/** Factory instance of this class. */
-	static private final DeltaGraphFactory instance = new FixedDeltaGraph(null,null);
+	static private final DeltaGraphFactory instance = new SwingDeltaGraph(null,null);
 	/** Returns a fixed factory instance of the {@link FixedDeltaGraph} class. */
 	static public DeltaGraphFactory getInstance() {
 		return instance;
@@ -298,12 +288,11 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	/** Delta target to initialise the data structures. */
 	static private class Target implements DeltaTarget {
 		/** Constructs and instance for a given node and edge set. */
-		public Target(final Set<Node> nodeSet, final Set<Edge> edgeSet, Map<Node,Set<Edge>> nodeEdgeMap, List<Map<Label,Set<Edge>>> labelEdgeMaps, DeltaStore store) {
+		public Target(final Set<Node> nodeSet, final Set<Edge> edgeSet, Map<Node,Set<Edge>> nodeEdgeMap, List<Map<Label,Set<Edge>>> labelEdgeMaps) {
 			this.nodeSet = nodeSet;
 			this.edgeSet = edgeSet;
 			this.nodeEdgeMap = nodeEdgeMap;
 			this.labelEdgeMaps = labelEdgeMaps;
-			this.store = store;
 		}
 
 		/** 
@@ -335,9 +324,6 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 				}
 				edgeSet.add(elem);
 			}
-			if (store != null) {
-				store.addEdge(elem);
-			}
 			return result;
 		}
 
@@ -348,9 +334,6 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 			if (nodeEdgeMap != null) {
 				Set<Edge> edges = nodeEdgeMap.put(elem, new HashSet<Edge>());
 				assert edges == null;
-			}
-			if (store != null) {
-				store.addNode(elem);
 			}
 			return result;
 		}
@@ -378,9 +361,6 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 				Set<Edge> edgeSet = arityLabelEdgeMap.get(label);
 				edgeSet.remove(elem);
 			}
-			if (store != null) {
-				store.removeEdge(elem);
-			}
 			return result;
 		}
 
@@ -391,9 +371,6 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 			if (nodeEdgeMap != null) {
 				Set<Edge> edges = nodeEdgeMap.remove(elem);
 				assert edges.isEmpty();
-			}
-			if (store != null) {
-				store.removeNode(elem);
 			}
 			return result;
 		}
@@ -418,7 +395,5 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		private final Map<Node,Set<Edge>> nodeEdgeMap;
 		/** Label/edge map to be filled by this target. */
 		private final List<Map<Label,Set<Edge>>> labelEdgeMaps;
-		/** Delta store to be filled; may be <code>null</code>. */
-		private final DeltaStore store;
 	}
 }

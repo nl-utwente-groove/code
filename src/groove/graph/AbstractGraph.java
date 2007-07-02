@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.11 2007-06-18 07:25:41 fladder Exp $
+ * $Id: AbstractGraph.java,v 1.12 2007-07-02 07:21:32 rensink Exp $
  */
 
 package groove.graph;
@@ -22,6 +22,7 @@ import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.graph.iso.IsoMatcher;
+import groove.graph.match.Matcher;
 import groove.util.Dispenser;
 import groove.util.Pair;
 import groove.view.FormatException;
@@ -39,7 +40,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     /**
@@ -154,7 +155,13 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
      */
     public Morphism getIsomorphismTo(Graph to) {
         reporter.start(GET_ISOMORPHISM_TO);
-        Morphism result = new IsoMatcher(createMorphism(this, to)).getMorphism().getTotalExtension();
+        Morphism isoMorphism = new DefaultMorphism(this, to) {
+			@Override
+			protected Matcher createMatcher() {
+				return new IsoMatcher(this);
+			}
+        };
+        Morphism result = isoMorphism.getTotalExtension();
         reporter.stop();
         return result;
     }
@@ -537,4 +544,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     static final int REMOVE_NODE = reporter.newMethod("removeNode(Node)");
     /** Handle for profiling the {@link #removeEdge(Edge)} method */
     static final int REMOVE_EDGE = reporter.newMethod("removeEdge(Edge)");
+    /** Handle for profiling the initDelta method of the delta implementations */
+    static protected final int INIT_DATA = reporter.newMethod("initDelta()");
 }

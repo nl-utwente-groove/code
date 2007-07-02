@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.18 2007-05-25 22:16:31 rensink Exp $
+ * $Id: StatePanel.java,v 1.19 2007-07-02 07:21:43 rensink Exp $
  */
 package groove.gui;
 
@@ -42,6 +42,7 @@ import groove.view.DefaultGrammarView;
 import groove.view.AspectualGraphView;
 
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -59,7 +60,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -210,8 +211,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         // get a graph model for the target state
         GraphState newState = transition.target();
         GraphJModel newModel = getStateJModel(newState);
-        GraphState oldState = selectedTransition.source();
-        Morphism morphism = selectedTransition.morphism();
+        GraphState oldState = transition.source();
+        Morphism morphism = transition.morphism();
         copyLayout(getStateJModel(oldState), newModel, morphism);
         // set the graph model to the new state
         jGraph.setModel(newModel);
@@ -269,11 +270,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 		GraphJModel result = createGraphJModel(state.getGraph());
 		result.setName(state.toString());
 		// try to find layout information for the model
-		GraphState oldState;
-		Morphism morphism;
 		if (state instanceof GraphNextState) {
-			oldState = ((GraphNextState) state).source();
-			morphism = ((GraphNextState) state).morphism();
+			GraphState oldState = ((GraphNextState) state).source();
+			Morphism morphism = ((GraphNextState) state).morphism();
 			// walk back along the derivation chain to find one for
 			// which we have a state model (and hence layout information)
 			while (!stateJModelMap.containsKey(oldState)
@@ -281,11 +280,6 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 		        morphism = ((GraphNextState) oldState).morphism().then(morphism);
 				oldState = ((GraphNextState) oldState).source();
 			}
-		} else {
-			oldState = null;
-			morphism = null;
-		}
-		if (oldState != null) {
 			GraphJModel oldJModel = getStateJModel(oldState);
 			copyLayout(oldJModel, result, morphism);
 		}
@@ -326,12 +320,16 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 	    for (Map.Entry<Edge,Edge> entry: derivationMap.edgeMap().entrySet()) {
 	        JCell sourceCell = oldStateJModel.getJCell(entry.getKey());
 	        AttributeMap sourceAttributes = sourceCell.getAttributes();
-	        List<?> sourcePoints = GraphConstants.getPoints(sourceAttributes);
 	        JCell targetCell = newStateJModel.getJCell(entry.getValue());
 	        assert targetCell != null : "Target element "+entry.getValue()+" unknown";
 	        AttributeMap targetAttributes = targetCell.getAttributes();
+	        List<?> sourcePoints = GraphConstants.getPoints(sourceAttributes);
 	        if (sourcePoints != null) {
 	        	GraphConstants.setPoints(targetAttributes, new LinkedList<Object>(sourcePoints));
+	        }
+	        Point2D labelPosition = GraphConstants.getLabelPosition(sourceAttributes);
+	        if (labelPosition != null) {
+	        	GraphConstants.setLabelPosition(targetAttributes, labelPosition);
 	        }
         	GraphConstants.setLineStyle(targetAttributes, GraphConstants.getLineStyle(sourceAttributes));
 	        newStateJModel.removeLayoutable(targetCell);
