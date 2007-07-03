@@ -12,10 +12,12 @@ import groove.io.GrooveFileChooser;
 import groove.util.Converter;
 import groove.util.ExprParser;
 import groove.util.Groove;
+import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectValue;
+import groove.view.aspect.RuleAspect;
 
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
@@ -41,7 +43,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Class providing functionality to export a {@link JGraph} to a file in different formats.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class Exporter {
     /**
@@ -200,18 +202,34 @@ public class Exporter {
             println(")");
             
             // definitions are done; now add labels
-            for (AspectEdge edge: graph.edgeSet()) {
-            	String id = isNodeLabel(edge) ? nodeId(edge.source()) : edgeId(edge);
-            	println("(%s (%s %s) %s)", ADD_LABEL_KEYWORD, LIST_KEYWORD, id, label(edge));
-            }
+            //for (AspectEdge edge: graph.edgeSet()) {
+            //	String id = isNodeLabel(edge) ? nodeId(edge.source()) : edgeId(edge);
+            //	println("(%s (%s %s) %s)", ADD_LABEL_KEYWORD, LIST_KEYWORD, id, label(edge));
+            //}
             
             // add edge roles 
             // chr: the loops are redundant, which is inefficient but better for readability
+            Aspect currentAspect;
+            StringBuffer currentLabel;
             for (AspectEdge edge: graph.edgeSet()) {
             	String id = isNodeLabel(edge) ? nodeId(edge.source()) : edgeId(edge);
+            	currentLabel = new StringBuffer();
             	for (AspectValue value: edge.getAspectMap().values()) {
-            		println("(%s-%s (%s %s) (%s-%s))", SET_PREFIX, value.getAspect(), LIST_KEYWORD, id, value.getAspect(), value.getName());
+            		currentAspect = value.getAspect();
+            		// only rule aspects can be outputted for now
+            		// this will very soon change to something like (defun set-aspect (list-of-ids aspect aspect-name) ...)
+            		if( currentAspect instanceof RuleAspect )
+            			println("(%s-%s (%s %s) (%s-%s))", SET_PREFIX, value.getAspect(), LIST_KEYWORD, id, value.getAspect(), value.getName());
+            		else
+            			currentLabel.append( value.getName() );
             	}
+            	
+            	if( currentLabel.length() > 0)
+            		currentLabel.append(":");
+            	
+            	currentLabel.append( label(edge) );
+            	
+            	println("(%s (%s %s) %s)", ADD_LABEL_KEYWORD, LIST_KEYWORD, id, quote( currentLabel.toString() ));
             }
             
             // add node roles 
@@ -284,10 +302,16 @@ public class Exporter {
         	return "e"+edgeMap.get(edge);
         }
 
-        /** Retrieves the edge label in a form readable by LISP. */
+        /** Retrieves the edge label. */
         private String label(Edge edge) {
-        	return ExprParser.toQuoted(edge.label().text(), ExprParser.DOUBLE_QUOTE_CHAR);
+        	return edge.label().text();
         }
+        
+        private String quote(String aString)
+        {
+        	return ExprParser.toQuoted( aString, ExprParser.DOUBLE_QUOTE_CHAR );
+        }
+        
         /** Indicates if an edge should be regarded as a node label. */
         private boolean isNodeLabel(Edge edge) {
         	return edge.source() == edge.opposite();
