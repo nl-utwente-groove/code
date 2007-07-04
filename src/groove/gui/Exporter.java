@@ -43,7 +43,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Class providing functionality to export a {@link JGraph} to a file in different formats.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class Exporter {
     /**
@@ -216,10 +216,10 @@ public class Exporter {
             	currentLabel = new StringBuffer();
             	for (AspectValue value: edge.getAspectMap().values()) {
             		currentAspect = value.getAspect();
-            		// only rule aspects can be outputted for now
-            		// this will very soon change to something like (defun set-aspect (list-of-ids aspect aspect-name) ...)
-            		if( currentAspect instanceof RuleAspect )
-            			println("(%s-%s (%s %s) (%s-%s))", SET_PREFIX, value.getAspect(), LIST_KEYWORD, id, value.getAspect(), value.getName());
+            		// only rule aspects can be outputted for now.
+            		// this will very soon change to something like (defun set-aspect (list-of-ids aspect aspect-name) ...). 
+            		if( currentAspect instanceof RuleAspect ) 
+            			println("(%s-%s (%s %s) (%s-%s))", SET_PREFIX, currentAspect, LIST_KEYWORD, id, currentAspect, value.getName());
             		else
             			currentLabel.append( value.getName() );
             	}
@@ -235,7 +235,10 @@ public class Exporter {
             // add node roles 
             for (AspectNode node: graph.nodeSet()) {
             	for (AspectValue value: node.getAspectMap().values()) {
-            		println("(%s-%s (%s %s) (%s-%s))", SET_PREFIX, value.getAspect(), LIST_KEYWORD, nodeId(node), value.getAspect(), value.getName());
+            		currentAspect = value.getAspect();
+            	
+            		if( currentAspect instanceof RuleAspect )
+            			println("(%s-%s (%s %s) (%s-%s))", SET_PREFIX, currentAspect, LIST_KEYWORD, nodeId(node), currentAspect, value.getName());
             	}
             }
             
