@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.3 2007-06-01 18:04:14 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.4 2007-07-18 09:20:40 iovka Exp $
  */
 package groove.graph.match;
 
@@ -59,8 +59,9 @@ public class NodeSearchItem implements SearchItem {
 					result = select(imageIter.next());
 				}
 			}
+			findCalled = !findReturnedFalse; // if findReturnedFalse before the actual call, then reset() done, so findCalled should false after. If ! findReturnedFalse before the actual call, so no reset in this call, so findCalled should be true after.
 			findReturnedFalse = !result;
-			findCalled = !result;
+			//findCalled = !result; 
 			return result;
 		}
 		
