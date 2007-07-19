@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.4 2007-06-27 16:00:28 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.5 2007-07-19 11:33:00 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -45,7 +45,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -370,7 +370,7 @@ public class AttributeAspect extends AbstractAspect {
 		    for (AspectValue value: instance.getValues()) {
 		    	value.setIncompatible(RuleAspect.CREATOR);
 		    	value.setIncompatible(RuleAspect.ERASER);
-		    	value.setIncompatible(RuleAspect.EMBARGO);
+//		    	value.setIncompatible(RuleAspect.EMBARGO);
 		    }
 		    // initialise the algebra map
 		    addAlgebra(DefaultIntegerAlgebra.getInstance(), INTEGER);
