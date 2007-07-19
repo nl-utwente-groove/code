@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.22 2007-06-28 12:05:24 rensink Exp $
+ * $Id: AspectJModel.java,v 1.23 2007-07-19 11:27:37 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -62,7 +62,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -414,23 +414,23 @@ public class AspectJModel extends GraphJModel {
 			}
 			return result;
 		}
-
-		/**
-		 * On demand adds the node aspects to the label set.
-		 */
-		@Override
-		public Collection<String> getListLabels() {
-			if (isShowAspects()) {
-				Collection<String> result = new ArrayList<String>();
-				for (AspectValue value : getNode().getDeclaredValues()) {
-					result.add(AspectParser.toString(value));
-				}
-				result.addAll(super.getListLabels());
-				return result;
-			} else {
-				return super.getListLabels();
-			}
-		}
+//
+//		/**
+//		 * On demand adds the node aspects to the label set.
+//		 */
+//		@Override
+//		public Collection<String> getListLabels() {
+//			if (isShowAspects()) {
+//				Collection<String> result = new ArrayList<String>();
+//				for (AspectValue value : getNode().getDeclaredValues()) {
+//					result.add(AspectParser.toString(value));
+//				}
+//				result.addAll(super.getListLabels());
+//				return result;
+//			} else {
+//				return super.getListLabels();
+//			}
+//		}
 
 	    /**
 		 * This implementation adds node and edge aspects.
@@ -441,7 +441,12 @@ public class AspectJModel extends GraphJModel {
 			for (AspectValue value : getNode().getDeclaredValues()) {
 				result.add(AspectParser.toString(value));
 			}
-			result.addAll(super.getPlainLabels());
+            // we do not do a super call, for that adds the value of the actual node
+            // which we have here anyway
+            for (Edge edge : getSelfEdges()) {
+                result.add(getPlainLabel(edge));
+            }
+//			result.addAll(super.getPlainLabels());
 			return result;
 		}
         
