@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RegExpr.java,v 1.11 2007-06-28 12:05:39 rensink Exp $
+ * $Id: RegExpr.java,v 1.12 2007-07-19 11:27:31 rensink Exp $
  */
 package groove.rel;
 
@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 abstract public class RegExpr implements VarSetSupport {
     /** 
@@ -710,28 +710,27 @@ abstract public class RegExpr implements VarSetSupport {
         	expr = expr.trim();
         	if (expr.length() == 0) {
         		throw new FormatException("Empty string not allowed in expression");
-        	}
-        	// the only hope is that the expression is quoted or bracketed
-        	Pair<String,List<String>> parseResult = ExprParser.parseExpr(expr);
-        	if (parseResult.first().length() == 1 && parseResult.first().charAt(0) == PLACEHOLDER) {
-        		String parsedExpr = parseResult.second().get(0);
-        		switch (parsedExpr.charAt(0)) {
-				case LPAR_CHAR:
-					return parse(parsedExpr.substring(1, expr.length()-1));
-				case SINGLE_QUOTE_CHAR:
-					return newInstance(ExprParser.toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
-				case LANGLE_CHAR:
-				case DOUBLE_QUOTE_CHAR:
-					return newInstance(parsedExpr);
-				default:
-					return null;
-				}
         	} else if (isAtom(expr)) {
-            	return newInstance(expr);
+                return newInstance(expr);
             } else {
-        		// the expression is not atomic when parsed
-        		return null;
-        	}
+                // the only hope is that the expression is quoted or bracketed
+                Pair<String, List<String>> parseResult = ExprParser.parseExpr(expr);
+                if (parseResult.first().length() == 1
+                        && parseResult.first().charAt(0) == PLACEHOLDER) {
+                    String parsedExpr = parseResult.second().get(0);
+                    switch (parsedExpr.charAt(0)) {
+                    case LPAR_CHAR:
+                        return parse(parsedExpr.substring(1, expr.length() - 1));
+                    case SINGLE_QUOTE_CHAR:
+                        return newInstance(ExprParser.toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
+                    default:
+                        return null;
+                    }
+                } else {
+                    // the expression is not atomic when parsed
+                    return null;
+                }
+            }
         }
 
         /**
@@ -1411,17 +1410,36 @@ abstract public class RegExpr implements VarSetSupport {
      * @see #isAtom(String)
      */
     static public void assertAtom(String text) throws FormatException {
-    	if (ExprParser.toUnquoted(text, SINGLE_QUOTE_CHAR) == null) {
-    		boolean correct = true;
-			int i;
-			for (i = 0; correct && i < text.length(); i++) {
-				correct = isAtomChar(text.charAt(i));
-			}
-			if (!correct) {
-				throw new FormatException("Atom '%s' contains invalid character '%c'", text, text
-						.charAt(i - 1));
-			}
-		}
+        if (text.length() == 0) {
+            throw new FormatException("Empty atom");
+        } else switch (text.charAt(0)) {
+        case DOUBLE_QUOTE_CHAR:
+        case LANGLE_CHAR:
+            // quoted/bracketed atoms
+            Pair<String,List<String>> parseResult = ExprParser.parseExpr(text);
+            if (parseResult.first().length() != 1) {
+                String error;
+                if (text.charAt(0) == DOUBLE_QUOTE_CHAR) {
+                    error = String.format("Atom '%s' has unbalanced quotes", text);
+                } else {
+                    error = String.format("Atom '%s' has unbalanced brackets", text);
+                }
+                throw new FormatException(error);
+            } else {
+                break;
+            }
+        default:
+            // default atoms
+            boolean correct = true;
+            int i;
+            for (i = 0; correct && i < text.length(); i++) {
+                correct = isAtomChar(text.charAt(i));
+            }
+            if (!correct) {
+                throw new FormatException("Atom '%s' contains invalid character '%c'", text, text
+                        .charAt(i - 1));
+            }
+        }
     }
 
     /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectNode.java,v 1.2 2007-05-14 18:52:00 rensink Exp $
+ * $Id: AspectNode.java,v 1.3 2007-07-19 11:27:37 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -26,7 +26,7 @@ import groove.view.FormatException;
 /**
  * Graph node implementation that supports aspects.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AspectNode extends DefaultNode implements AspectElement {
 	/** Constructs an aspect node with a given number. */
@@ -45,7 +45,7 @@ public class AspectNode extends DefaultNode implements AspectElement {
     	Aspect aspect = value.getAspect();
     	AspectValue oldValue = getAspectMap().get(value.getAspect());
     	AspectValue newValue = aspect.getMax(value, oldValue);
-    	getAspectMap().put(aspect, newValue);
+    	getAspectMap().add(newValue);
     }
 
     /**
