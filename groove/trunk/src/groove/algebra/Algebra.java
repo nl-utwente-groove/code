@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Algebra.java,v 1.3 2007-05-21 22:19:28 rensink Exp $
+ * $Id: Algebra.java,v 1.4 2007-07-21 20:07:43 rensink Exp $
  */
 package groove.algebra;
 
@@ -26,7 +26,7 @@ import java.util.Set;
  * Generic class defining the structure of all implemented algebras.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-05-21 22:19:28 $
+ * @version $Revision: 1.4 $ $Date: 2007-07-21 20:07:43 $
  */
 public abstract class Algebra {
 	/**
@@ -46,7 +46,7 @@ public abstract class Algebra {
 	 * @param operation the operation to be added
 	 * @return <tt>true</tt> if the set did not already contain the specified element, false otherwise
 	 */
-	public boolean addOperation(Operation operation) {
+	boolean addOperation(Operation operation) {
 		Object result = operations.put(operation.symbol(), operation);
 		return (result == null);
 	}
@@ -133,7 +133,14 @@ public abstract class Algebra {
 	public String getName() {
 		return name;
 	}
-
+    
+    /**
+     * Attempts to turn an object, presumably a value of this algebra, into a 
+     * unique string description.
+     * @throws IllegalArgumentException if <code>value</code> is not a value of this algebra.
+     */
+	abstract public String getSymbol(Object value);
+    
 	/**
 	 * Checks whether two algebras are equal.
 	 * Equality is decided on the basis of the algebra name.

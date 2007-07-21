@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.11 2007-06-27 16:00:22 rensink Exp $
+ * $Id: JEdge.java,v 1.12 2007-07-21 20:07:53 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -20,8 +20,6 @@ import static groove.util.Converter.HTML_TAG;
 import static groove.util.Converter.STRONG_TAG;
 import groove.util.Converter;
 import groove.util.Groove;
-import groove.view.DefaultLabelParser;
-import groove.view.LabelParser;
 
 import org.jgraph.graph.DefaultEdge;
 import org.jgraph.graph.DefaultPort;
@@ -33,7 +31,7 @@ import org.jgraph.graph.DefaultPort;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**

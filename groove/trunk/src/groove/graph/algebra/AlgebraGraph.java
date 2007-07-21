@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AlgebraGraph.java,v 1.2 2007-03-30 15:50:45 rensink Exp $
+ * $Id: AlgebraGraph.java,v 1.3 2007-07-21 20:07:52 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -32,7 +32,7 @@ import java.util.Map;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:45 $
+ * @version $Revision: 1.3 $ $Date: 2007-07-21 20:07:52 $
  */
 public class AlgebraGraph extends DefaultGraph {
 	/** The first legal node number for algebra nodes. */
@@ -49,9 +49,9 @@ public class AlgebraGraph extends DefaultGraph {
 	}
 
 	/**
-	 * mapping from {@link groove.algebra.Constant}-instances to the node representing that specific constant
+	 * mapping from objects standing for algebra values to the node representing that specific value.
 	 */
-	private Map<Constant,ValueNode> constantToNodeMap = new HashMap<Constant,ValueNode>();
+	private Map<Object,ValueNode> constantToNodeMap = new HashMap<Object,ValueNode>();
 
 	/**
 	 * variable holding the singleton {@link groove.graph.algebra.AlgebraGraph}-instance
@@ -77,25 +77,36 @@ public class AlgebraGraph extends DefaultGraph {
 	}
 
     /**
-     * Gets the {@link ValueNode} representing the given {@link Constant}.
-     * 
+     * Gets the {@link ValueNode} representing a given {@link Constant}, creating it if necessary.
      * @param constant the <code>Constant</code> for which to get the <code>ValueNode</code>
-     * @return the only <code>ValueNode</code>
+     * @return the unique <code>ValueNode</code> for the given constant.
      */
     public ValueNode getValueNode(Constant constant) {
+        return getValueNode(constant.algebra(), constant.getValue());
+    }
+
+    /**
+     * Gets the {@link ValueNode} representing a given algebra value, creating it if necessary.
+     * @param algebra the algebra in which the value occurs.
+     * @param value the <code>Constant</code> for which to get the <code>ValueNode</code>
+     * 
+     * @return the only <code>ValueNode</code>
+     */
+    public ValueNode getValueNode(Algebra algebra, Object value) {
         ValueNode result;
-        if (constantToNodeMap.containsKey(constant)) {
-            result = constantToNodeMap.get(constant);
+        if (constantToNodeMap.containsKey(value)) {
+            result = constantToNodeMap.get(value);
         }
         else {
-            result = createValueNode(constant);
-            constantToNodeMap.put(constant, result);
+            result = createValueNode(algebra, value);
+            constantToNodeMap.put(value, result);
         }
         return result;
     }
 
-    protected ValueNode createValueNode(Constant constant) {
-    	return new ValueNode(constant);
+    /** Creates a value node for a given value of a given algebra. */
+    protected ValueNode createValueNode(Algebra algebra, Object value) {
+    	return new ValueNode(algebra, value);
     }
 
 	/**

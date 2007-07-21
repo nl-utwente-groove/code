@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIntegerAlgebra.java,v 1.5 2007-07-20 09:42:39 rensink Exp $
+ * $Id: DefaultIntegerAlgebra.java,v 1.6 2007-07-21 20:07:43 rensink Exp $
  */
 
 package groove.algebra;
@@ -26,7 +26,7 @@ import java.util.List;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-07-20 09:42:39 $
+ * @version $Revision: 1.6 $ $Date: 2007-07-21 20:07:43 $
  */
 public class DefaultIntegerAlgebra extends Algebra {
 	/**
@@ -47,7 +47,15 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 		return result;
 	}	
-	
+    
+    @Override
+    public String getSymbol(Object value) {
+        if (!(value instanceof Integer)) {
+            throw new IllegalArgumentException(String.format("Value is of class %s rather than Boolean", value.getClass()));
+        }
+        return value.toString();
+    }
+
 	/** Returns the {@link Constant} corresponding to a given integer value. */
 	static public IntegerConstant getInteger(int value) {
 		return new IntegerConstant(value);
@@ -108,6 +116,12 @@ public class DefaultIntegerAlgebra extends Algebra {
 	public static final String NAME = Groove.getXMLProperty("label.integer.prefix");
 	/** Long description of this algebra. */
 	public static final String DESCRIPTION = "Default integer algebra";
+	// initialize after NAME and DESCRIPTION but before the operations
+    /**
+     * Singleton instance.
+     */
+    private static final DefaultIntegerAlgebra instance = new DefaultIntegerAlgebra();
+
     /**
      * Integer addition operation symbol.
      */
@@ -239,13 +253,7 @@ public class DefaultIntegerAlgebra extends Algebra {
         }
     };
 
-	/**
-	 * Singleton instance 
-	 */
-	private static final DefaultIntegerAlgebra instance;
-	
 	static {
-		instance = new DefaultIntegerAlgebra();
 		instance.addOperation(ADD_OPERATION);
 		instance.addOperation(SUB_OPERATION);
 		instance.addOperation(MUL_OPERATION);
@@ -257,6 +265,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 		instance.addOperation(GE_OPERATION);
 		instance.addOperation(EQ_OPERATION);
 	}
+    
 	/**
 	 * Integer constant.
 	 */
@@ -270,7 +279,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 		}
 		
 		/** Returns the value of this constant. */
-		public int getValue() {
+		public Integer getValue() {
 			return value;
 		}
 		
@@ -288,13 +297,11 @@ public class DefaultIntegerAlgebra extends Algebra {
          * Performs a binary operation of type <code>int, int -> int</code>. 
          * @throws IllegalArgumentException if the number or types of operands are incorrect.
          */
-        @Override
-        public Constant apply(List<Constant> args) {
+        public Object apply(List<Object> args) {
             try {
-                IntegerConstant oper1 = (IntegerConstant) args.get(0);
-                IntegerConstant oper2 = (IntegerConstant) args.get(1);
-                int result = apply(oper1.getValue(), oper2.getValue());
-                return getInteger(result);
+                Integer arg0 = (Integer) args.get(0);
+                Integer arg1 = (Integer) args.get(1);
+                return apply(arg0, arg1);
             } catch (ClassCastException exc) {
                 throw new IllegalArgumentException(exc);
             }
@@ -308,20 +315,18 @@ public class DefaultIntegerAlgebra extends Algebra {
     private static abstract class IntInt2BoolOperation extends DefaultOperation {
         /** Constructs an operation in the current algebra, with arity 2 and a given symbol. */
         protected IntInt2BoolOperation(String symbol) {
-            super(getInstance(), symbol, 2);
+            super(getInstance(), symbol, 2, DefaultBooleanAlgebra.getInstance());
         }
 
         /** 
          * Performs a binary operation of type <code>int, int -> bool</code>. 
          * @throws IllegalArgumentException if the number or types of operands are incorrect.
          */
-        @Override
-        public Constant apply(List<Constant> args) {
+        public Object apply(List<Object> args) {
             try {
-                IntegerConstant oper1 = (IntegerConstant) args.get(0);
-                IntegerConstant oper2 = (IntegerConstant) args.get(1);
-                boolean result = apply(oper1.getValue(), oper2.getValue());
-                return DefaultBooleanAlgebra.getBoolean(result);
+                Integer arg0 = (Integer) args.get(0);
+                Integer arg1 = (Integer) args.get(1);
+                return apply(arg0, arg1);
             } catch (ClassCastException exc) {
                 throw new IllegalArgumentException(exc);
             }

@@ -12,67 +12,72 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultOperation.java,v 1.4 2007-05-21 22:19:28 rensink Exp $
+ * $Id: DefaultOperation.java,v 1.5 2007-07-21 20:07:43 rensink Exp $
  */
 package groove.algebra;
-
-import java.util.List;
-
 
 /**
  * Class implementing the <tt>Operation</tt> interface.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-05-21 22:19:28 $
+ * @version $Revision: 1.5 $ $Date: 2007-07-21 20:07:43 $
  */
 abstract public class DefaultOperation implements Operation {
-	/**
-	 * Constructor.
-	 * @param algebra the algebra for this operation
-	 * @param symbol the symbol representing this operation
-	 * @param arity the arity of this operation
-	 */
-	public DefaultOperation(Algebra algebra, String symbol, int arity) {
-		this.algebra = algebra;
-		this.symbol = symbol;
-		this.arity = arity;
-	}
+    /**
+     * Constructor.
+     * @param algebra the algebra for this operation
+     * @param symbol the symbol representing this operation
+     * @param arity the arity of this operation
+     */
+    public DefaultOperation(Algebra algebra, String symbol, int arity) {
+        this(algebra, symbol, arity, algebra);
+    }
+    
+    /**
+     * Constructor for an operation whose result type differs from the algebra in which it is defined.
+     * @param algebra the algebra for this operation
+     * @param symbol the symbol representing this operation
+     * @param arity the arity of this operation
+     */
+    public DefaultOperation(Algebra algebra, String symbol, int arity, Algebra resultType) {
+        this.algebra = algebra;
+        this.symbol = symbol;
+        this.arity = arity;
+        this.resultType = resultType;
+        assert algebra != null;
+    }
+//
+//	/**
+//	 * Constructor.
+//	 * @param symbol the symbol of this operation
+//	 * @param arity the arity of this operation
+//	 */
+//	protected DefaultOperation(String symbol, int arity) {
+//		this(null, symbol, arity);
+//	}
+//
+//	/**
+//	 * Method setting the different fields.
+//	 * @param algebra the new algebra
+//	 * @param symbol the new symbol
+//	 * @param arity the new arity
+//	 */
+//	public void set(Algebra algebra, String symbol, int arity) {
+//		if (algebra != null)
+//			this.algebra = algebra;
+//		if (symbol != null)
+//			this.symbol = symbol;
+//		if (arity != -1)
+//			this.arity = arity;
+//	}
 
-	/**
-	 * Constructor.
-	 * @param symbol the symbol of this operation
-	 * @param arity the arity of this operation
-	 */
-	protected DefaultOperation(String symbol, int arity) {
-		this(null, symbol, arity);
-	}
-
-	/**
-	 * Method setting the different fields.
-	 * @param algebra the new algebra
-	 * @param symbol the new symbol
-	 * @param arity the new arity
-	 */
-	public void set(Algebra algebra, String symbol, int arity) {
-		if (algebra != null)
-			this.algebra = algebra;
-		if (symbol != null)
-			this.symbol = symbol;
-		if (arity != -1)
-			this.arity = arity;
-	}
-
-	/* (non-Javadoc)
-	 * @see groove.algebra.Operation#algebra()
-	 */
 	public Algebra algebra() {
 		return algebra;
 	}
-
-	@Deprecated
-	public int type() {
-	    return type;
-	}
+    
+    public Algebra getResultType() {
+        return resultType;
+    }
 
 	/* (non-Javadoc)
 	 * @see groove.algebra.Operation#symbol()
@@ -120,8 +125,6 @@ abstract public class DefaultOperation implements Operation {
 		return hash;
 	}
 
-	abstract public Constant apply(List<Constant> operands) throws IllegalArgumentException;
-
 	/** Returns the operator's symbol. */
 	@Override
 	public String toString() {
@@ -129,11 +132,11 @@ abstract public class DefaultOperation implements Operation {
 	}
 
 	/** the algebra to which this operation belongs */
-    protected Algebra algebra;
-	/** the algebra-type to which this operation belongs */
-	protected int type;
-	/** the symbol of the operand */
-	protected String symbol;
-	/** the arity of the operand */
-	protected int arity;
+    private final Algebra algebra;
+	/** the symbol of the operation. */
+	private final String symbol;
+	/** the arity of the operation. */
+	private final int arity;
+    /** The result algebra of the operation. */
+    private final Algebra resultType;
 }

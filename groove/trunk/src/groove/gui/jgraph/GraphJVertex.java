@@ -12,12 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.18 2007-06-28 12:05:24 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.19 2007-07-21 20:07:53 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
-import groove.algebra.Constant;
+import groove.algebra.Algebra;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -90,7 +90,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     
     @Override
     public boolean isVisible() {
-        if (!isConstant() || jModel.isShowValueNodes()) {
+        if (!hasValue() || jModel.isShowValueNodes()) {
             boolean result = false;
             Iterator<String> listLabelIter = getListLabels().iterator();
             while (!result && listLabelIter.hasNext()) {
@@ -109,7 +109,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     /** Constant nodes are only listable when data nodes are shown. */
     @Override
     public boolean isListable() {
-        return !isConstant() || jModel.isShowValueNodes();
+        return !hasValue() || jModel.isShowValueNodes();
     }
 
     /** This implementation adds the data edges to the super result. */
@@ -132,6 +132,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     			result.add(getLine(edge));
     		}
     	}
+        if (result.size() == 0 && hasValue()) {
+            result.add(new StringBuilder(getValueSymbol()));
+        }
     	return result;
 	}
 
@@ -145,7 +148,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 		if (edge.opposite() != getNode()) {
 			GraphJVertex oppositeVertex = jModel.getJVertex(edge.opposite());
 			result.append(ASSIGN_TEXT);
-			result.append(oppositeVertex.getConstant());
+			result.append(oppositeVertex.getValueSymbol());
 		}
 		return Converter.toHtml(result);
 	}
@@ -157,8 +160,8 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 	 */
 	public Collection<String> getListLabels() {
     	Collection<String> result = new ArrayList<String>();
-    	if (isConstant()) {
-			result.add(getConstant().toString());
+    	if (hasValue()) {
+			result.add(getValueSymbol());
     	}
 		for (Edge edge : getSelfEdges()) {
 			result.add(getListLabel(edge));
@@ -186,10 +189,10 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 	 */
 	public Collection<String> getPlainLabels() {
     	Collection<String> result = new ArrayList<String>();
-    	if (isConstant()) {
-    		Constant constant = getConstant();
-			String prefix = AttributeAspect.getValue(constant.algebra()).getPrefix();
-    		result.add(prefix+constant);    		
+    	if (hasValue()) {
+    		String symbol = getValueSymbol();
+			String prefix = AttributeAspect.getValue(getAlgebra()).getPrefix();
+    		result.add(prefix+symbol);    		
     	}
 		for (Edge edge : getSelfEdges()) {
 			result.add(getPlainLabel(edge));
@@ -235,7 +238,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 		if (!jModel.isShowValueNodes()) {
 			for (Object edgeObject : getPort().getEdges()) {
 				GraphJEdge jEdge = (GraphJEdge) edgeObject;
-				if (jEdge.getSourceVertex() == this && jEdge.getTargetVertex().isConstant()) {
+				if (jEdge.getSourceVertex() == this && jEdge.getTargetVertex().hasValue()) {
 					for (Edge edge : jEdge.getEdges()) {
 						result.add(edge);
 					}
@@ -315,30 +318,43 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * stores a constant value.
      * @return <code>true</code> if {@link #getActualNode()} is a {@link ValueNode}
      * storing a constant value.
-     * @see #getConstant()
+     * @see #getValueSymbol()
      */
-    boolean isConstant() {
+    boolean hasValue() {
     	return (getActualNode() instanceof ValueNode) && ((ValueNode) getActualNode()).hasValue();
     }
-    
+
     /** 
-     * Callback method to retrieve the constant stored in the underlying graph
+     * Callback method to return the value stored in the underlying graph
      * node, in case the graph node is a constant value node.
-     * @see ValueNode#getConstant()
+     * @see ValueNode#getValue()
      */
-    Constant getConstant() {
-    	if (getActualNode() instanceof ValueNode) {
-    		return ((ValueNode) getActualNode()).getConstant();
-    	} else {
-    		return null;
-    	}
+    String getValueSymbol() {
+        if (getActualNode() instanceof ValueNode) {
+            return ((ValueNode) getActualNode()).getSymbol();
+        } else {
+            return null;
+        }
+    }
+
+    /** 
+     * Callback method to return the algebra to which the underlying value node
+     * belongs, or <code>null</code> if the underlying node is not a value node.
+     * This method returns <code>null</code> if and only if {@link #hasValue()} holds.
+     */
+    Algebra getAlgebra() {
+        if (getActualNode() instanceof ValueNode) {
+            return ((ValueNode) getActualNode()).getAlgebra();
+        } else {
+            return null;
+        }
     }
 
     /** 
      * Callback method yielding a string description of the underlying 
      * node, used for the node inscription in case node identities 
      * are to be shown.
-     * If the node is a constant (see {@link #isConstant()}) the constant value
+     * If the node is a constant (see {@link #hasValue()}) the constant value
      * is returned; otherwise this implementation delegates to <code>getNode().toString()</code>.
      * The result may be <code>null</code>, if the node has no proper identity.
      * @return A node descriptor, or <code>null</code> if the node has no proper identity

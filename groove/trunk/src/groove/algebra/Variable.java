@@ -12,28 +12,36 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Variable.java,v 1.3 2007-05-21 22:19:28 rensink Exp $
+ * $Id: Variable.java,v 1.4 2007-07-21 20:07:43 rensink Exp $
  */
 package groove.algebra;
 
-import groove.graph.algebra.AlgebraConstants;
+import groove.graph.algebra.ValueNode;
 
 /**
  * Class representing a variable that can be used when specifing a rule
  * for attributed graphs.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2007-05-21 22:19:28 $
+ * @version $Revision: 1.4 $ $Date: 2007-07-21 20:07:43 $
+ * @deprecated Only used in {@link ValueNode}, but there <code>null</code> will do as well
  */
+@Deprecated
 public class Variable extends DefaultConstant {
 	/** Constructs a fresh variable. */
     public Variable() {
     	super(null, "");
-        type = AlgebraConstants.NO_TYPE;
     }
 
     @Override
     public String toString() {
         return "empty";
+    }
+
+    /**
+     * This implementation returns <code>null</code>.
+     */
+    public Object getValue() {
+        return null;
     }
 }

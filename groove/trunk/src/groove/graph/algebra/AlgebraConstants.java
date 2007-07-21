@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AlgebraConstants.java,v 1.5 2007-05-22 11:28:54 kastenberg Exp $
+ * $Id: AlgebraConstants.java,v 1.6 2007-07-21 20:07:52 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -20,7 +20,6 @@ import groove.algebra.Algebra;
 import groove.algebra.Constant;
 import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
-import groove.algebra.Variable;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -36,7 +35,7 @@ import java.util.Iterator;
 /**
  * Class containing all the constant values used for dealing with attributed graphs.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-05-22 11:28:54 $
+ * @version $Revision: 1.6 $ $Date: 2007-07-21 20:07:52 $
  */
 public class AlgebraConstants {
 	/** Code for attributes of type integer. */
@@ -166,6 +165,7 @@ public class AlgebraConstants {
      * @return the type as indicated by <tt>edge</tt>
      * @ensure <tt>isValidType(result) || result == NO_TYPE</tt>
      */
+    @Deprecated
     static public int selfEdgeType(Edge edge) {
         if (edge instanceof BinaryEdge && edge.source() != ((BinaryEdge) edge).target())
             return AlgebraConstants.NO_TYPE;
@@ -184,6 +184,7 @@ public class AlgebraConstants {
      * to determine that algebraic value
      * @return the algebraic value the node represents
      */
+    @Deprecated
     static public Constant getNodeValue(Graph graph, Node node) {
     	Constant result = null;
 
@@ -279,6 +280,7 @@ public class AlgebraConstants {
      * @return the {@link groove.graph.algebra.ValueNode} if the given node
      * represents an algebraic data value, <tt>null</tt> otherwise
      */
+    @Deprecated
     static private Node getValueNode(Graph graph, Node node) {
     	Constant constant = getNodeValue(graph, node);
     	if (constant != null)
@@ -303,7 +305,7 @@ public class AlgebraConstants {
 		while (selfEdgeIter.hasNext()) {
 			Edge nextEdge = selfEdgeIter.next();
 			if (isAttributeLabel(nextEdge.label())) {
-				return new ValueNode(new Variable());
+				return new ValueNode();
 			}
 		}
 		return null;

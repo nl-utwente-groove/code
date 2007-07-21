@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Operation.java,v 1.5 2007-05-22 11:29:16 kastenberg Exp $
+ * $Id: Operation.java,v 1.6 2007-07-21 20:07:43 rensink Exp $
  */
 package groove.algebra;
 
@@ -24,19 +24,19 @@ import java.util.List;
  * HARMEN: I think it should. Let's include this when refactoring the
  * signature/algebra core.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-05-22 11:29:16 $
+ * @version $Revision: 1.6 $ $Date: 2007-07-21 20:07:43 $
  */
 public interface Operation {
 	/**
 	 * Apply this operation on the list of operands and return the
 	 * result.
-	 * @param operands the operands on which this operation operates
+	 * @param args the operands on which this operation operates
 	 * @return the resulting {@link groove.algebra.Operation} when applying this
 	 * operation on its <tt>operands</tt>
 	 * @throws IllegalArgumentException if the operation cannot be performed,
 	 * due to typing errors of the operands or zero division
 	 */
-	public Constant apply(List<Constant> operands) throws IllegalArgumentException;
+	public Object apply(List<Object> args) throws IllegalArgumentException;
 
 	/**
 	 * @return the String representation of this operation
@@ -53,15 +53,9 @@ public interface Operation {
 	 */
 	public Algebra algebra();
 
-	/**
-	 * @return the type of this operation
-	 * @deprecated this is not used for anything
-	 */
-	@Deprecated
-	public int type();
-
-	/**
-	 * @param algebra
-	 */
-	public void set(Algebra algebra, String symbol, int arity);
+    /**
+     * Returns the algebra to which the result of the operation belongs.
+     * Note that this may differ from the algebra in which the operation is defined!
+     */
+    public Algebra getResultType();
 }

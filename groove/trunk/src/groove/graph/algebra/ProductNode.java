@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ProductNode.java,v 1.5 2007-04-01 12:49:50 rensink Exp $
+ * $Id: ProductNode.java,v 1.6 2007-07-21 20:07:52 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -30,7 +30,7 @@ import java.util.List;
  * attached to it through {@link AlgebraEdge}s, and <i>operands</i>, which
  * are the corresponding {@link Constant}s on those nodes.
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-04-01 12:49:50 $
+ * @version $Revision 1.0$ $Date: 2007-07-21 20:07:52 $
  */
 public class ProductNode extends DefaultNode {
 	// AREND I think the operands of a product node should be fixed at
@@ -92,7 +92,7 @@ public class ProductNode extends DefaultNode {
      * Returns the list of operands.
      * @return the list of operands.
      */
-    public List<Constant> getOperands() {
+    public List<Object> getOperands() {
     	if (operands == null) {
     		operands = computeOperands();
     	}
@@ -104,13 +104,13 @@ public class ProductNode extends DefaultNode {
      * @return a list of constant operand values
      * @throws IllegalStateException if there are operands which do not carry values
      */
-    protected List<Constant> computeOperands() {
+    protected List<Object> computeOperands() {
     	if (argCount < arity()) {
 			throw new IllegalStateException(String.format("Arguments %s have not all been set", arguments));
     	}
-    	List<Constant> result = new ArrayList<Constant>(arguments.size());
+    	List<Object> result = new ArrayList<Object>(arguments.size());
     	for (ValueNode arg: arguments) {
-    		Constant value = arg.getConstant();
+    		Object value = arg.getValue();
     		if (value == null) {
     			throw new IllegalStateException(String.format("Argument %s does not have value", arg));
     		}
@@ -125,7 +125,7 @@ public class ProductNode extends DefaultNode {
      * @param index the index of the operand to be returned
      * @return the OperationInstance at <code>index</code>
      */
-    public Constant getOperand(int index) {
+    public Object getOperand(int index) {
         return getOperands().get(index);
     }
 
@@ -188,5 +188,5 @@ public class ProductNode extends DefaultNode {
      */
     private int argCount;
     /** the list of operands contained in this <code>ProductNode</code> */
-    private List<Constant> operands;
+    private List<Object> operands;
 }
