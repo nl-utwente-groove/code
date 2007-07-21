@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultStringAlgebra.java,v 1.7 2007-07-20 09:42:39 rensink Exp $
+ * $Id: DefaultStringAlgebra.java,v 1.8 2007-07-21 20:07:43 rensink Exp $
  */
 package groove.algebra;
 
@@ -26,7 +26,7 @@ import java.util.List;
  * on strings.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.7 $ $Date: 2007-07-20 09:42:39 $
+ * @version $Revision: 1.8 $ $Date: 2007-07-21 20:07:43 $
  */
 public class DefaultStringAlgebra extends Algebra {	/**
 	 * Constructor.
@@ -44,6 +44,14 @@ public class DefaultStringAlgebra extends Algebra {	/**
 			return new StringConstant(unquotedText);
 		}
 	}
+    
+    @Override
+    public String getSymbol(Object value) {
+        if (!(value instanceof String)) {
+            throw new IllegalArgumentException(String.format("Value is of class %s rather than Boolean", value.getClass()));
+        }
+        return ExprParser.toQuoted((String) value, ExprParser.DOUBLE_QUOTE_CHAR);
+    }
 
 	/** Returns the {@link Constant} corresponding to a given string value. */
 	static public Constant getString(String value) {
@@ -139,7 +147,7 @@ public class DefaultStringAlgebra extends Algebra {	/**
 		private static ConcatOperation operation = null;
 
 		private ConcatOperation() {
-			super(DefaultBooleanAlgebra.getInstance(), CONCAT, 2);
+			super(DefaultStringAlgebra.getInstance(), CONCAT, 2);
 		}
 
 		/**
@@ -151,14 +159,11 @@ public class DefaultStringAlgebra extends Algebra {	/**
 			return operation;
 		}
 
-		@Override
-		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
+		public Object apply(List<Object> args) throws IllegalArgumentException {
             try {
-                StringConstant oper1 = (StringConstant) operands.get(0);
-                StringConstant oper2 = (StringConstant) operands.get(1);
-
-                String concat = oper1.getValue() + oper2.getValue();
-                return getString(concat);
+                String arg0 = (String) args.get(0);
+                String arg1 = (String) args.get(1);
+                return arg0+arg1;
             } catch (ClassCastException exc) {
                 throw new IllegalArgumentException(exc);
             }
@@ -171,7 +176,7 @@ public class DefaultStringAlgebra extends Algebra {	/**
 		private static EqualsOperation operation = null;
 
 		private EqualsOperation() {
-			super(DefaultBooleanAlgebra.getInstance(), EQUALS, 2);
+			super(DefaultStringAlgebra.getInstance(), EQUALS, 2, DefaultBooleanAlgebra.getInstance());
 		}
 
 		/**
@@ -183,12 +188,14 @@ public class DefaultStringAlgebra extends Algebra {	/**
 			return operation;
 		}
 
-		@Override
-		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-			boolean equals = oper1.equals(oper2);
-			return DefaultBooleanAlgebra.getBoolean(equals);
+		public Object apply(List<Object> args) throws IllegalArgumentException {
+            try {
+                String arg0 = (String) args.get(0);
+                String arg1 = (String) args.get(1);
+                return arg0.equals(arg1);
+            } catch (ClassCastException exc) {
+                throw new IllegalArgumentException(exc);
+            }
 		}
 	}
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultBooleanAlgebra.java,v 1.5 2007-05-21 22:19:28 rensink Exp $
+ * $Id: DefaultBooleanAlgebra.java,v 1.6 2007-07-21 20:07:43 rensink Exp $
  */
 package groove.algebra;
 
@@ -24,7 +24,7 @@ import java.util.List;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-05-21 22:19:28 $
+ * @version $Revision: 1.6 $ $Date: 2007-07-21 20:07:43 $
  */
 public class DefaultBooleanAlgebra extends Algebra {
     /**
@@ -43,7 +43,15 @@ public class DefaultBooleanAlgebra extends Algebra {
 		return null;
 	}
 	
-	/** Returns the {@link Constant} corresponding to a given boolean value. */
+    @Override
+    public String getSymbol(Object value) {
+        if (!(value instanceof Boolean)) {
+            throw new IllegalArgumentException(String.format("Value is of class %s rather than Boolean", value.getClass()));
+        }
+        return value.toString();
+    }
+
+    /** Returns the {@link Constant} corresponding to a given boolean value. */
 	static public Constant getBoolean(boolean value) {
 		if (value) {
 			return True.getInstance();
@@ -98,58 +106,72 @@ public class DefaultBooleanAlgebra extends Algebra {
     	instance.addOperation(BooleanOrOperation.getInstance());
     	instance.addOperation(BooleanNotOperation.getInstance());
     }
-	/**
-	 * Boolean AND-operator.
-	 * @author Harmen Kastenberg
-	 */
-	protected static class BooleanAndOperation extends DefaultOperation {
-		private BooleanAndOperation() {
-			super(DefaultBooleanAlgebra.getInstance(), AND, 2);
-		}
+    
+    /**
+     * Abstract operator of type <code>bool, bool -> bool</code>
+     * @author Harmen Kastenberg
+     */
+    abstract private static class BoolBool2BoolOperation extends DefaultOperation {
+        /** 
+         * Constructs a binary operation in the {@link DefaultBooleanAlgebra}, 
+         * of type <code>Boolean, Boolean -> Object</code>
+         */
+        protected BoolBool2BoolOperation(String symbol) {
+            super(DefaultBooleanAlgebra.getInstance(), symbol, 2);
+        }
 
-		@Override
-		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
+        public Object apply(List<Object> args) throws IllegalArgumentException {
+            try {
+                return apply((Boolean) args.get(0), (Boolean) args.get(1));
+            } catch (ClassCastException exc) {
+                throw new IllegalArgumentException(exc);
+            } catch (ArrayIndexOutOfBoundsException exc) {
+                throw new IllegalArgumentException(exc);
+            }
+        }
+        
+        /** Callback method to apply the operation. */
+        abstract protected Boolean apply(Boolean arg0, Boolean arg1); 
+    }
 
-			// return the true-constant only if both operands are true
-			// and the false-constant otherwise
-			boolean answer = (oper1.equals(True.getInstance()) &&
-				oper2.equals(True.getInstance()));
-			return getBoolean(answer);
-		}
+    /**
+     * Boolean AND-operator.
+     * @author Harmen Kastenberg
+     */
+    protected static class BooleanAndOperation extends BoolBool2BoolOperation {
+        private BooleanAndOperation() {
+            super(AND);
+        }
 
-		/**
-		 * Returns the singleton instance of this operator.
-		 */
-		public static Operation getInstance() {
-			return instance;
-		}
+        @Override
+        public Boolean apply(Boolean arg0, Boolean arg1) throws IllegalArgumentException {
+            return arg0 && arg1;
+        }
 
-		/** The singleton instance. */
-		private final static BooleanAndOperation instance = new BooleanAndOperation();
-	}
+        /**
+         * Returns the singleton instance of this operator.
+         */
+        public static Operation getInstance() {
+            return instance;
+        }
+
+        /** The singleton instance. */
+        private final static BooleanAndOperation instance = new BooleanAndOperation();
+    }
 
 	/**
 	 * Boolean OR-operation.
 	 * @author Harmen Kastenberg
 	 */
-	protected static class BooleanOrOperation extends DefaultOperation {
+	protected static class BooleanOrOperation extends BoolBool2BoolOperation {
 		/** Constructor for the singleton instance of this class. */
 		private BooleanOrOperation() {
-			super(DefaultBooleanAlgebra.getInstance(), OR, 2);
+			super(OR);
 		}
 
-		@Override
-		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-			Constant oper1 = operands.get(0);
-			Constant oper2 = operands.get(1);
-
-			// return the true-constant if one of the operands is true
-			// and the false-constant otherwise
-			boolean answer = (oper1.equals(True.getInstance()) ||
-				oper2.equals(True.getInstance()));
-			return getBoolean(answer);
+        @Override
+		public Boolean apply(Boolean arg0, Boolean arg1) throws IllegalArgumentException {
+			return arg0 || arg1;
 		}
 
 		/**
@@ -173,13 +195,9 @@ public class DefaultBooleanAlgebra extends Algebra {
 			super(DefaultBooleanAlgebra.getInstance(), NOT, 1);
 		}
 
-		@Override
-		public Constant apply(List<Constant> operands) throws IllegalArgumentException {
-			Constant oper1 = operands.get(0);
-			// return the true-constant if the operand is false
-			// and the false-constant if the operand is true
-			boolean answer = ! oper1.equals(True.getInstance());
-			return getBoolean(answer);
+		public Object apply(List<Object> args) throws IllegalArgumentException {
+			Boolean arg = (Boolean) args.get(0);
+			return !arg;
 		}
 
 		/**
@@ -204,7 +222,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 		}
 		
 		/** Returns the <code>false</code> value. */
-		public boolean getValue() {
+		public Boolean getValue() {
 			return false;
 		}
 
@@ -233,7 +251,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 		}
 		
 		/** Returns the <code>true</code> value. */
-		public boolean getValue() {
+		public Boolean getValue() {
 			return true;
 		}
 

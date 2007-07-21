@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Constant.java,v 1.1.1.2 2007-03-20 10:42:39 kastenberg Exp $
+ * $Id: Constant.java,v 1.2 2007-07-21 20:07:43 rensink Exp $
  */
 package groove.algebra;
 
@@ -22,8 +22,12 @@ package groove.algebra;
  * without adding more functionality.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:39 $
+ * @version $Revision: 1.2 $ $Date: 2007-07-21 20:07:43 $
  */
 public interface Constant extends Operation {
-	// sub-interface adds no functionality
+    /** 
+     * Returns the value of this constant.
+     * @return the value of this constaint; may be <code>null</code> if the constant is a {@link Variable}. 
+     */
+	public Object getValue();
 }

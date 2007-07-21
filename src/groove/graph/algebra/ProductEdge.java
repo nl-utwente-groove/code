@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ProductEdge.java,v 1.2 2007-03-27 14:18:30 rensink Exp $
+ * $Id: ProductEdge.java,v 1.3 2007-07-21 20:07:52 rensink Exp $
  */
 
 package groove.graph.algebra;
@@ -20,8 +20,6 @@ package groove.graph.algebra;
 import groove.algebra.Constant;
 import groove.algebra.Operation;
 import groove.graph.DefaultEdge;
-import groove.graph.Edge;
-import groove.graph.Node;
 
 /**
  * This class represents the edges in attributed graphs which support the
@@ -30,7 +28,7 @@ import groove.graph.Node;
  * and the target-node should be an instance of {@link groove.graph.algebra.ValueNode}.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 // AREND I would call this OperatorEdge and unify it with ValueEdge
 public class ProductEdge extends DefaultEdge {
@@ -41,10 +39,6 @@ public class ProductEdge extends DefaultEdge {
     public ProductEdge(ProductNode source, ValueNode target, Operation operation) {
         super(source, operation.symbol(), target);
         this.operation = operation;
-    }
-
-    public ProductEdge(Node[] ends, Operation operation) {
-        this((ProductNode) ends[Edge.SOURCE_INDEX], (ValueNode) ends[Edge.TARGET_INDEX], operation);
     }
 
     /**
@@ -59,9 +53,8 @@ public class ProductEdge extends DefaultEdge {
      * Returns the result of applying the operations on its operands.
      * @return the result of applying the operations on its operands
      */
-    public Constant getResult() {
-        Constant result = operation.apply(source().getOperands());
-        return result;
+    public Object getResult() {
+        return operation.apply(source().getOperands());
     }
 
     @Override
@@ -93,6 +86,6 @@ public class ProductEdge extends DefaultEdge {
 		return (ProductNode) source;
 	}
 
-
-	protected Operation operation;
+	/** The operation represented by this edge. */
+	private final Operation operation;
 }

@@ -12,61 +12,43 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ValueNode.java,v 1.6 2007-04-29 09:22:38 rensink Exp $
+ * $Id: ValueNode.java,v 1.7 2007-07-21 20:07:52 rensink Exp $
  */
 package groove.graph.algebra;
 
-import java.util.Iterator;
-
 import static groove.view.aspect.Aspect.CONTENT_SEPARATOR;
-
 import groove.algebra.Algebra;
-import groove.algebra.Constant;
-import groove.algebra.Variable;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.view.aspect.AttributeAspect;
+
+import java.util.Iterator;
 
 /**
  * Implementation of graph elements that represent algebraic data values.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $ $Date: 2007-04-29 09:22:38 $
+ * @version $Revision: 1.7 $ $Date: 2007-07-21 20:07:52 $
  */
 public class ValueNode extends ProductNode {
-	/** Tests if a given graph contains value nodes. */
-	static public boolean hasValueNodes(Graph graph) {
-		boolean result = false;
-		Iterator<? extends Node> nodeIter = graph.nodeSet().iterator();
-		while (!result && nodeIter.hasNext()) {
-			result = (nodeIter.next() instanceof ValueNode);
-		}
-		return result;
-	}
-	
-// AREND made the superclass a ProductNode to unify the 
-// treatment of constants and other operators
-	/** the algebra to which this operation belongs */
-	private Algebra algebra;
-	/** the operation represented by this node */
-	private Constant constant;
-
 	/**
 	 * Constructs a node for a given {@link groove.algebra.Constant}.
-	 * Preferred construction through {@link AlgebraGraph#getValueNode(Constant)}.
-	 * @param constant the constant to create a graph node for
+	 * Preferred construction through {@link AlgebraGraph#getValueNode(Algebra, Object)}.
+	 * @param algebra the algebra that the value belongs to
+	 * @param value the value to create a graph node for
 	 */
-	ValueNode(Constant constant) {
+	ValueNode(Algebra algebra, Object value) {
 		super(0);
-		this.algebra = constant.algebra();
-		this.constant = constant;
+		this.algebra = algebra;
+		this.value = value;
+        assert value == null || algebra != null;
 	}
 	
 	/** 
-	 * Constructs a value node for a fresh variable.
+	 * Constructs a value node for a variable.
 	 */
 	public ValueNode() {
-		this(new Variable());
+		this(null,null);
 	}
 //
 //    /**
@@ -100,39 +82,51 @@ public class ValueNode extends ProductNode {
 	public Algebra getAlgebra() {
 		return algebra;
 	}
-
-	/**
-	 * Method returning the operand of the attribute node.
-	 * @return the operand of the attribute node
-	 */
-	public Constant getOperation() {
-		return constant;
-	}
+//
+//	/**
+//	 * Method returning the operand of the attribute node.
+//	 * @return the operand of the attribute node
+//	 */
+//	public Constant getOperation() {
+//		return constant;
+//	}
 
     /**
      * Returns the <code>Constant</code> this <code>ValueNode</code> is representing.
      * @return the <code>Constant</code> this <code>ValueNode</code> is representing
      */
-    public Constant getConstant() {
-        return constant;
+    public Object getValue() {
+        return value;
+    }
+    
+    /**
+     * Returns a symbolic description of the value,
+     * which uniquely identifies the value in the algebra.
+     */
+    public String getSymbol() {
+        if (hasValue()) {
+            return getAlgebra().getSymbol(getValue());
+        } else {
+            return null;
+        }
     }
 
     /**
      * Indicates if the constant has a definite value, i.e., is not a variable.
-     * Convenience method for <code>!(getConstant() instanceof Variable)</code>.
-     * @return <code>true</code> if this node's constant is not a variable
+     * Convenience method for <code>getConstant() != null</code>.
+     * @return <code>true</code> if this node's value is not a variable
      */
     public boolean hasValue() {
-    	return !(constant == null || constant instanceof Variable);
+    	return value != null;
     }
-    
-    /**
-     * Sets the <code>constant</code>-field of this <code>ValueNode</code>
-     * @param constant the new value for the <code>constant</code>-field
-     */
-    public void setConstant(Constant constant) {
-        this.constant = constant;
-    }
+//    
+//    /**
+//     * Sets the <code>constant</code>-field of this <code>ValueNode</code>
+//     * @param constant the new value for the <code>constant</code>-field
+//     */
+//    public void setConstant(Constant constant) {
+//        this.constant = constant;
+//    }
 
 	/**
 	 * This methods returns an indication of the variable if there is
@@ -140,11 +134,26 @@ public class ValueNode extends ProductNode {
 	 */
     @Override
 	public String toString() {
-		if (getAlgebra() == null) {
+		if (! hasValue()) {
 			return "x"+(getNumber()-AlgebraGraph.START_NODE_NR);
 		} else {
 			String algebraName = AttributeAspect.getValue(getAlgebra()).getName();
-			return algebraName + CONTENT_SEPARATOR + constant.symbol();
+			return algebraName + CONTENT_SEPARATOR + value;
 		}
 	}
+    
+    /** the algebra to which this value belongs; <code>null</code> if the node stands for a variable. */
+    private final Algebra algebra;
+    /** the operation represented by this value node; <code>null</code> if the node stands for a variable. */
+    private final Object value;
+    
+    /** Tests if a given graph contains value nodes. */
+    static public boolean hasValueNodes(Graph graph) {
+        boolean result = false;
+        Iterator<? extends Node> nodeIter = graph.nodeSet().iterator();
+        while (!result && nodeIter.hasNext()) {
+            result = (nodeIter.next() instanceof ValueNode);
+        }
+        return result;
+    }
 }

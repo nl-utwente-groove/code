@@ -12,14 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductEdgeSearchItem.java,v 1.3 2007-04-04 20:45:20 rensink Exp $
+ * $Id: ProductEdgeSearchItem.java,v 1.4 2007-07-21 20:07:53 rensink Exp $
  */
 package groove.graph.match;
 
 import java.util.Arrays;
 import java.util.List;
 
-import groove.algebra.Constant;
 import groove.algebra.Operation;
 import groove.graph.Edge;
 import groove.graph.Node;
@@ -77,7 +76,7 @@ public class ProductEdgeSearchItem implements SearchItem {
 		 * Computes the result of the product edge's operation
 		 */
 		public boolean select() {
-			Constant outcome = calculateResult();
+			Object outcome = calculateResult();
 			if (outcome == null) {
 				return false;
 			} else if (targetPreMatched) {
@@ -88,9 +87,9 @@ public class ProductEdgeSearchItem implements SearchItem {
 					currentTargetImage = (ValueNode) matcher.getSingularMap().getNode(target);
 				}
 				assert currentTargetImage != null: String.format("Target image of %s null in %s", edge, matcher.getSingularMap());
-				return currentTargetImage.getConstant().equals(outcome);
+				return currentTargetImage.getValue().equals(outcome);
 			} else {
-				ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(outcome);
+				ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(operation.getResultType(), outcome);
 				matcher.getSingularMap().putNode(target, targetImage);
 				return true;
 			}
@@ -117,8 +116,8 @@ public class ProductEdgeSearchItem implements SearchItem {
 		 * be calculated due to the fact that one of the arguments was bound to
 		 * a non-value.
 		 */
-		private Constant calculateResult() throws IllegalArgumentException {
-			Constant[] operands = new Constant[arguments.size()];
+		private Object calculateResult() throws IllegalArgumentException {
+			Object[] operands = new Object[arguments.size()];
 			for (int i = 0; i < arguments.size(); i++) {
 				Node operandImage = matcher.getSingularMap().getNode(arguments.get(i));
 				if (! (operandImage instanceof ValueNode)) {
@@ -126,12 +125,12 @@ public class ProductEdgeSearchItem implements SearchItem {
 					// (probably due to some typing error in another rule)
 					// and so we cannot match the edge
 					return null;
-				}
-				operands[i] = ((ValueNode) operandImage).getConstant();
+				} 
+                assert ((ValueNode) operandImage).hasValue() : String.format("Graph node %s has no value", operandImage);
+				operands[i] = ((ValueNode) operandImage).getValue();
 			}
 			try {
-				Constant outcome = operation.apply(Arrays.asList(operands));
-				return outcome;
+				return operation.apply(Arrays.asList(operands));
 			} catch (IllegalArgumentException exc) {
 				return null;
 			}
