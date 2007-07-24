@@ -1,19 +1,12 @@
-/**
- * 
- */
+/* $Id: RealAlgebra.java,v 1.1 2007-07-24 06:16:29 rensink Exp $ */
 package groove.algebra;
 
 /**
- * Integer algebra based on the java type {@link Integer}.
+ * Interface for underlying algebras.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision $
  */
-public class JavaIntAlgebra implements IntSignature<Integer> {
-    /** This implementation applies the java operator <code>+</code> to the arguments. */
-    public Integer add(Integer arg0, Integer arg1) {
-        return arg0+arg1;
-    }
-    
+public interface RealAlgebra<T> {
     /**
      * Turns a given string symbol into a value of this algebra.
      * Returns <code>null</code> if the symbol is not recognized as a value
@@ -24,13 +17,7 @@ public class JavaIntAlgebra implements IntSignature<Integer> {
      * @return the value corresponding to <code>symbol</code>, or <code>null</code>
      * if <code>symbol does not represent a value of this algebra</code>
      */
-    public Integer getValue(String symbol) {
-    	try {
-    		return Integer.parseInt(symbol);
-    	} catch (NumberFormatException exc) {
-    		return null;
-    	}
-    }
+    public T getValue(String symbol);
     
     /**
      * Converts a value of this algebra into a symbolic string representation
@@ -41,10 +28,5 @@ public class JavaIntAlgebra implements IntSignature<Integer> {
      * @return a string representation of <code>value</code>, or <code>null</code> if
      * <code>value</code> is not a value of this algebra.
      */
-    public String getSymbol(Integer value) {
-    	return value.toString();
-    }
-
-    /** Name of the algebra. */
-    public static final String NAME = "jint";
+    public String getSymbol(T value);
 }

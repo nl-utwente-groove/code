@@ -10,14 +10,14 @@ import java.util.List;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class ReflectedAlgebra extends Algebra {
+public class ReflectedAlgebra<T> extends Algebra {
     /**
      * @param sig Signature of the algebra to be reflected
      * @param alg The algebra to be reflected.
      */
-    public <S extends IntSignature> ReflectedAlgebra(Class<S> sig, S alg) {
+    public <S extends IntSignature, A extends RealAlgebra<T>> ReflectedAlgebra(Class<S> sig, A alg) {
         super(getName(sig), "Algebra generated from "+alg.getClass());
         for (Method method: sig.getMethods()) {
             addOperation(createOperation(method));
@@ -31,16 +31,12 @@ public class ReflectedAlgebra extends Algebra {
         return null;
     }
     
-    /* (non-Javadoc)
-     * @see groove.algebra.Algebra#getSymbol(java.lang.Object)
-     */
     @Override
     public String getSymbol(Object value) {
-        // TODO Auto-generated method stub
-        return null;
+        return alg.getSymbol(value);
     }
     
-    private final Object alg;
+    private final RealAlgebra alg;
 
     static private Operation createOperation(Method method) {
         final Class[] parameterTypes = method.getParameterTypes();
@@ -107,6 +103,9 @@ public class ReflectedAlgebra extends Algebra {
     /** Name of the (static) name field of a signature class object. */
     static public final String NAME_FIELD = "NAME";
     
+    /**
+     * Class that wraps a reflected Java method into an algebra operation.
+     */
     private class MethodOperation implements Operation {
         MethodOperation(Method method) {
             this.method = method;
