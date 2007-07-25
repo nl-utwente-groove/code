@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.51 2007-07-25 08:53:04 kastenberg Exp $
+ * $Id: Simulator.java,v 1.52 2007-07-25 12:49:48 kastenberg Exp $
  */
 package groove.gui;
 
@@ -124,7 +124,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.51 $
+ * @version $Revision: 1.52 $
  */
 public class Simulator {
     /**
@@ -2783,12 +2783,21 @@ public class Simulator {
     	}
 
     	public void actionPerformed(ActionEvent evt) {
-    		String property = JOptionPane.showInputDialog(null, "Enter the temporal formula to be verified by GROOVE.");
-    		if (property != null) {
-    			verifyProperty(property);
-    		} else {
-    			// do nothing
-    		}
+    		int goOn = 0;
+    		// if there are still open states the result might be different as expected
+    		// ask the user whether really to continue
+        	if (getCurrentGTS().hasOpenStates()) {
+        		String message = "The transition system still contains open states. Do you want to contiue verifying it?";
+        		goOn = JOptionPane.showConfirmDialog(getFrame(), message, "Open states", JOptionPane.YES_NO_OPTION);
+        	}
+        	if (goOn == JOptionPane.YES_OPTION) {
+        		String property = JOptionPane.showInputDialog(null, "Enter the temporal formula to be verified by GROOVE.");
+        		if (property != null) {
+        			verifyProperty(property);
+        		} else {
+        			// do nothing
+        		}
+        	}
     	}
 
     	public void refresh() {
@@ -2959,7 +2968,7 @@ public class Simulator {
 //    /**
 //     * Class providing functionality to export a {@link JGraph} to a file in different formats.
 //     * @author Arend Rensink
-//     * @version $Revision: 1.51 $
+//     * @version $Revision: 1.52 $
 //     */
 //    static public class Exporter {
 //        /**
