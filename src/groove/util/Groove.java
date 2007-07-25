@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.19 2007-06-18 10:47:12 fladder Exp $
+ * $Id: Groove.java,v 1.20 2007-07-25 08:44:41 kastenberg Exp $
  */
 package groove.util;
 
@@ -45,7 +45,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.19 $ 
+ * @version $Revision: 1.20 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -124,6 +124,8 @@ public class Groove {
     public static final ImageIcon GROOVE_ICON_16x16 = new ImageIcon(getResource("groove-g-16x16.gif"));
     /** GROOVE project icon in 32x32 format. */
     public static final ImageIcon GROOVE_ICON_32x32 = new ImageIcon(getResource("groove-g-32x32.gif"));
+    /** GROOVE project icon in blue colour - 32x32 format. */
+    public static final ImageIcon GROOVE_BLUE_ICON_32x32 = new ImageIcon(getResource("groove-blue-g-32x32.gif"));
 
     /**
      * Flag to indicate if variaous types of statistics should be computed.
