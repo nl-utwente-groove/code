@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.50 2007-06-25 09:31:56 fladder Exp $
+ * $Id: Simulator.java,v 1.51 2007-07-25 08:53:04 kastenberg Exp $
  */
 package groove.gui;
 
@@ -94,6 +94,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Stack;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -123,7 +124,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.50 $
+ * @version $Revision: 1.51 $
  */
 public class Simulator {
     /**
@@ -196,7 +197,7 @@ public class Simulator {
      * Sets the {@link #currentGrammar} and {@link #currentRule} fields. 
      * @return <code>true</code> if the new grammar is different from the previous
      */
-    private boolean setCurrentGrammar(DefaultGrammarView grammar) {
+    public boolean setCurrentGrammar(DefaultGrammarView grammar) {
     	boolean result = currentGrammar != grammar;
 		this.currentGrammar = grammar;
 		if (currentRule != null && grammar.getRule(currentRule.getNameLabel()) == null) {
@@ -213,13 +214,13 @@ public class Simulator {
     }
     
     /**
-     * Sets the current GTS to a given GTS, pussibly <code>null</code>.
+     * Sets the current GTS to a given GTS, possibly <code>null</code>.
      * If the new GTS is not <code>null</code>, also sets the current state to
      * the GTS' start state.
      * In any case, sets the current transition to <code>null</code>.
      * @return <code>true</code> if the new GTS is different from the previous
      */
-    private boolean setCurrentGTS(GTS gts) {
+    public boolean setCurrentGTS(GTS gts) {
     	boolean result = currentGTS == gts;
     	currentGTS = gts;
     	currentState = gts == null ? null : gts.startState();
@@ -850,7 +851,24 @@ public class Simulator {
 			showErrorDialog("Error while starting simulation", exc);
 		}
     }
-    
+
+    /**
+     *  HARMEN: possibly merge this method with the above one.
+     */
+    public synchronized void startSimulation(DefaultGrammarView grammar, boolean findMatchings) {
+    	try {
+    		setCurrentGrammar(grammar);
+    		setCurrentGTS(new GTS(getCurrentGrammar().toGrammar()));
+    		if (findMatchings) {
+        		getGenerator().explore(getCurrentState());
+    		}
+			fireStartSimulation(getCurrentGTS());
+			refresh();
+		} catch (FormatException exc) {
+			showErrorDialog("Error while starting simulation", exc);
+		}
+    }
+
     /**
 	 * Sets the current state graph to a given state. Adds the previous state or
 	 * active derivation to the history. Invokes <tt>notifySetState(state)</tt>
@@ -1532,16 +1550,35 @@ public class Simulator {
 	 *            verfied
 	 */
     protected synchronized void notifyVerifyProperty(Set<State> counterExamples) {
+    	if (counterExamples.isEmpty()) {
+    		JOptionPane.showMessageDialog(getFrame(), "There were no counter-examples.", "Verification results", JOptionPane.INFORMATION_MESSAGE, Groove.GROOVE_ICON_32x32);
+    	} else {
+    		if (counterExamples.size() == 1) {
+        		JOptionPane.showMessageDialog(getFrame(), "There was 1 counter-example.", "Verification results", JOptionPane.INFORMATION_MESSAGE, Groove.GROOVE_BLUE_ICON_32x32);
+    		} else {
+        		JOptionPane.showMessageDialog(getFrame(), "There were " + counterExamples.size() + " counter-examples.", "Verification results", JOptionPane.INFORMATION_MESSAGE, Groove.GROOVE_BLUE_ICON_32x32);
+    		}
+    		// reset lts display visibility
+    		setGraphPanel(getLtsPanel());
+    		LTSJModel jModel = getLtsPanel().getJModel();
+    		Set<JCell> jCells = new HashSet<JCell>();
+    		for(State counterExample: counterExamples) {
+    			jCells.add(jModel.getJCell(counterExample));
+    		}
+    		jModel.setEmphasized(jCells);
+    	}
+    }
+
+    public synchronized void notifyCounterExample(Stack<GraphState> counterExample) {
         // reset lts display visibility
         setGraphPanel(getLtsPanel());
         LTSJModel jModel = getLtsPanel().getJModel();
         Set<JCell> jCells = new HashSet<JCell>();
-        for(State counterExample: counterExamples) {
-        	jCells.add(jModel.getJCell(counterExample));
+        while (!counterExample.isEmpty()) {
+        	jCells.add(jModel.getJCell(counterExample.pop()));
         }
         jModel.setEmphasized(jCells);
-    }
-
+	}
 	/**
 	 * Refreshes the title bar, layout and actions.
 	 */
@@ -2922,7 +2959,7 @@ public class Simulator {
 //    /**
 //     * Class providing functionality to export a {@link JGraph} to a file in different formats.
 //     * @author Arend Rensink
-//     * @version $Revision: 1.50 $
+//     * @version $Revision: 1.51 $
 //     */
 //    static public class Exporter {
 //        /**
