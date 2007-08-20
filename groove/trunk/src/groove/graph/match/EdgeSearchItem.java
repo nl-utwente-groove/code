@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.5 2007-06-01 18:04:17 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.6 2007-08-20 08:59:26 iovka Exp $
  */
 package groove.graph.match;
 
@@ -120,6 +120,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		 * @param image the image to be selected
 		 * @return <code>true</code> if <code>image</code> was indeed selected
 		 */
+		// IOVKA this method fails on an assertion 
 		public boolean select(Edge image) {
 			assert image != null : "Selected image should not be null";
 			assert selected == null : String.format("Edge %s already has image %s in map %s", edge, selected, matcher.getSingularMap());
@@ -138,6 +139,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 						result = elementMap.getNode(keyEnd) == imageEnd;
 					} else if (matcher.isAvailable(imageEnd)) {
 						Node endImage = elementMap.putNode(keyEnd, imageEnd);
+						// IOVKA this assertion fails, while a correct result is returned	
 						assert endImage == null : String.format("Node %s already has image %s in map %s", keyEnd, endImage, matcher.getSingularMap());
 					} else {
 						result = false;
