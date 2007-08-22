@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.9 2007-08-22 09:19:52 kastenberg Exp $
+ * $Id: AspectualRuleView.java,v 1.10 2007-08-22 15:04:59 rensink Exp $
  */
 
 package groove.view;
@@ -79,7 +79,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -841,7 +841,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      */
     private NodeEdgeMap viewToRuleMap;
     /** Rule factory set for this rule. */
-    protected final SystemProperties properties;
+    private final SystemProperties properties;
 
     /**
      * This main is provided for testing purposes only.

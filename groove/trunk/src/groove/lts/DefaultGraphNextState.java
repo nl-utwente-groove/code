@@ -14,11 +14,11 @@
  * */
 package groove.lts;
 
+import groove.control.Location;
 import groove.graph.AbstractGraph;
 import groove.graph.DeltaApplier;
 import groove.graph.DeltaTarget;
 import groove.graph.Element;
-import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
@@ -31,14 +31,14 @@ import groove.trans.RuleEvent;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
 	 * Constructs a successor state on the basis of a given parent state and 
 	 * rule application, and a given control location.
 	 */
-	public DefaultGraphNextState(AbstractGraphState source, RuleEvent event, Node[] addedNodes, Object control) {
+	public DefaultGraphNextState(AbstractGraphState source, RuleEvent event, Node[] addedNodes, Location control) {
 		super(control);
 		this.source = source;
 		this.event = event;
@@ -299,7 +299,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     }
 
     @Override
-	public NextState imageFor(GenericNodeEdgeMap elementMap) {
+	public NextState imageFor(NodeEdgeMap elementMap) {
 		throw new UnsupportedOperationException();
 	}
 //

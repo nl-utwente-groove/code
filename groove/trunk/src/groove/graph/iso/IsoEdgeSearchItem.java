@@ -1,11 +1,9 @@
-/* $Id: IsoEdgeSearchItem.java,v 1.2 2007-03-27 14:18:33 rensink Exp $ */
+/* $Id: IsoEdgeSearchItem.java,v 1.3 2007-08-22 15:05:00 rensink Exp $ */
 package groove.graph.iso;
 
 import groove.graph.Edge;
-import groove.graph.Node;
 import groove.graph.match.EdgeSearchItem;
 import groove.graph.match.Matcher;
-import groove.graph.match.NodeSearchItem;
 
 /**
  * A search item that searches an image for an edge.
@@ -14,6 +12,7 @@ import groove.graph.match.NodeSearchItem;
  */
 public class IsoEdgeSearchItem extends EdgeSearchItem<Edge> {
 	private class IsoEdgeRecord extends EdgeRecord<IsoMatcher> {
+        /** Creates a record for a given matcher. */
 		protected IsoEdgeRecord(IsoMatcher matcher) {
 			super(matcher);
 		}
@@ -41,10 +40,4 @@ public class IsoEdgeSearchItem extends EdgeSearchItem<Edge> {
 	public Record get(Matcher matcher) {
 		return new IsoEdgeRecord((IsoMatcher) matcher);
 	}
-
-	/** This implementation returns an {@link IsoNodeSearchItem}. */
-	@Override
-	protected NodeSearchItem createNodeSearchItem(Node node) {
-		return new IsoNodeSearchItem(node);
-	}	
 }

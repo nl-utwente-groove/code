@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.15 2007-08-22 09:19:43 kastenberg Exp $
+ * $Id: GTS.java,v 1.16 2007-08-22 15:04:51 rensink Exp $
  */
 package groove.lts;
 
+import groove.control.Location;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
@@ -23,9 +24,6 @@ import groove.graph.GraphShapeListener;
 import groove.graph.Node;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
-import groove.gui.Editor;
-import groove.rel.RegExprGraph;
-import groove.rel.VarGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
 import groove.util.FilterIterator;
@@ -46,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2007-08-22 09:19:43 $
+ * @version $Revision: 1.16 $ $Date: 2007-08-22 15:04:51 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -126,7 +124,15 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * on the basis of a given graph.
      */
     protected GraphState createStartState(Graph startGraph) {
-        return new StartGraphState(startGraph);
+        // init the startstate with a control element if possible
+    	if( this.ruleSystem.getControl() != null )
+        {
+        	return new StartGraphState(startGraph, (Location) this.ruleSystem.getControl().startState() );
+        }
+        else
+        {
+        	return new StartGraphState(startGraph);
+        }
     }
 
     /** This implementation specialises the return type to {@link GraphState}. */
@@ -289,14 +295,15 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         return Collections.unmodifiableSet(stateSet);
     }
 
-    public Set<? extends GraphTransition> edgeSet() {
+    public Set<? extends GraphTransition> edgeSet()
+    {
         if (isStoreTransitions()) {
-            return new TransitionSet();
+        	return new TransitionSet();
         } else {
             return Collections.emptySet();
-        }
+        }   	
     }
-
+    
 	@Override
     protected GraphShapeCache createCache() {
         return new GraphShapeCache(this, false);
@@ -329,9 +336,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             if (transition.source().addTransition(transition)) {
                 transitionCount++;
                 fireAddEdge(transition);
-                //System.out.println("Flap");
             } else {
-            	System.out.println("Paniek");
                 spuriousTransitionCount++;
             }
             reporter.stop();
@@ -350,7 +355,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         reporter.start(ADD_STATE);
         // see if isomorphic graph is already in the LTS
         ((AbstractGraphState) newState).setStateNumber(nodeCount());
-        //Editor.previewGraph(new RegExprGraph(newState.getGraph()), "");
         GraphState result = (GraphState) stateSet.put(newState);
         if (result == null) {
             fireAddNode(newState);

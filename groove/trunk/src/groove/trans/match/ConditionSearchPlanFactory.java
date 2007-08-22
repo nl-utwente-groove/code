@@ -1,5 +1,5 @@
 /*
- * $Id: ConditionSearchPlanFactory.java,v 1.2 2007-04-04 07:04:07 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.3 2007-08-22 15:05:03 rensink Exp $
  */
 package groove.trans.match;
 
@@ -18,7 +18,7 @@ import groove.trans.GraphCondition;
  * graph elements for a given graph, in the order in which they should be
  * matched to minimized backtracking.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface ConditionSearchPlanFactory extends SearchPlanFactory {
     /** 
@@ -37,7 +37,7 @@ public interface ConditionSearchPlanFactory extends SearchPlanFactory {
      * @param subject the condition for which a search plan is to be constructed
      * @param boundNodes the nodes of the condition that have been matched already
      * @param boundEdges the edges of the condition that have been matched already
-     * @see #createSearchPlan(Graph)
+     * @see #createSearchPlan(GraphCondition, Collection, Collection)
      */
     public List<SearchItem> createSearchPlan(GraphCondition subject, Collection<? extends Node> boundNodes, Collection<? extends Edge> boundEdges);
 }

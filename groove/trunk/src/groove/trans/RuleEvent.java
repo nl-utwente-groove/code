@@ -12,16 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.9 2007-08-22 09:19:44 kastenberg Exp $
+ * $Id: RuleEvent.java,v 1.10 2007-08-22 15:04:48 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
-import groove.nesting.VarNodeEdgeMultiMap;
-import groove.rel.VarMap;
 import groove.rel.VarNodeEdgeMap;
 
 /**
@@ -29,7 +26,7 @@ import groove.rel.VarNodeEdgeMap;
  * Together with the source and target state, the event uniquely defines the transition.
  * Typically, the event stores the anchor images of the particular rule application in the host graph.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-08-22 09:19:44 $
+ * @version $Revision: 1.10 $ $Date: 2007-08-22 15:04:48 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -53,8 +50,7 @@ public interface RuleEvent extends Comparable<RuleEvent> {
 	/**
      * Returns the mapping from the anchors in the rule's LHS to the source graph.
      */
-    // JHK: Generalizing returntype
-    public VarNodeEdgeMultiMap getAnchorMap();
+    public VarNodeEdgeMap getAnchorMap();
     
     /**
      * Returns a string representation of the anchor image.
@@ -67,8 +63,7 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      * The mapping is only guaranteed to provide images
      * for the endpoints and variables of the creator edges.
      */
-    // JHK: Generalizing returntype
-    public VarNodeEdgeMultiMap getCoanchorMap();
+    public VarNodeEdgeMap getCoanchorMap();
 
     /**
 	 * Indicates if a matching of the rule exists based on the mapping in this event.
@@ -80,9 +75,6 @@ public interface RuleEvent extends Comparable<RuleEvent> {
 	 * Returns <code>null</code> otherwise.
 	 */
 	public Morphism getMatching(Graph source);
-	
-	// JHK: OUtcome..
-	public GraphConditionOutcome getOutcome(Graph source);
 
     /** 
      * Tests if this event conflicts with another,

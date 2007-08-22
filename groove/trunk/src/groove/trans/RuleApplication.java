@@ -12,17 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleApplication.java,v 1.4 2007-08-22 09:19:44 kastenberg Exp $
+ * $Id: RuleApplication.java,v 1.5 2007-08-22 15:04:48 rensink Exp $
  */
 package groove.trans;
 
 
 import groove.graph.DeltaApplier;
-import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.DeltaTarget;
 import groove.graph.Node;
-import groove.rel.VarMap;
 import groove.rel.VarNodeEdgeMap;
 
 /**
@@ -31,7 +29,7 @@ import groove.rel.VarNodeEdgeMap;
  * derivation, and to reconstruct the matching and the target graph after they
  * have been minimized, if the cached representation has been discarded.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface RuleApplication extends Derivation, DeltaApplier {
     /**
@@ -65,14 +63,14 @@ public interface RuleApplication extends Derivation, DeltaApplier {
     /**
      * Returns the mapping from the rule's LHS to the source graph.
      */
-    public GenericNodeEdgeMap getAnchorMap();
+    public VarNodeEdgeMap getAnchorMap();
     
     /**
      * Returns the mapping from the rule's coanchor to the target graph.
      * The mapping is only guaranteed to provide images for the creator nodes and
      * for the endpoints and variables of the creator edges.
      */
-    public GenericNodeEdgeMap getCoanchorMap();
+    public VarNodeEdgeMap getCoanchorMap();
     
     /**
      * Sets the image of the rule's coanchor in the target graph.

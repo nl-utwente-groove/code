@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.53 2007-08-22 09:19:55 kastenberg Exp $
+ * $Id: Simulator.java,v 1.54 2007-08-22 15:04:58 rensink Exp $
  */
 package groove.gui;
 
@@ -31,6 +31,7 @@ import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
+import groove.control.ControlView;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphFactory;
@@ -58,9 +59,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.StateGenerator;
-import groove.nesting.rule.NestedAspectualRuleView;
-import groove.nesting.rule.NestedRule;
-import groove.rel.RegExprGraph;
 import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
@@ -96,6 +94,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.Stack;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -125,7 +124,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.53 $
+ * @version $Revision: 1.54 $
  */
 public class Simulator {
     /**
@@ -198,7 +197,7 @@ public class Simulator {
      * Sets the {@link #currentGrammar} and {@link #currentRule} fields. 
      * @return <code>true</code> if the new grammar is different from the previous
      */
-    private boolean setCurrentGrammar(DefaultGrammarView grammar) {
+    public boolean setCurrentGrammar(DefaultGrammarView grammar) {
     	boolean result = currentGrammar != grammar;
 		this.currentGrammar = grammar;
 		if (currentRule != null && grammar.getRule(currentRule.getNameLabel()) == null) {
@@ -215,13 +214,13 @@ public class Simulator {
     }
     
     /**
-     * Sets the current GTS to a given GTS, pussibly <code>null</code>.
+     * Sets the current GTS to a given GTS, possibly <code>null</code>.
      * If the new GTS is not <code>null</code>, also sets the current state to
      * the GTS' start state.
      * In any case, sets the current transition to <code>null</code>.
      * @return <code>true</code> if the new GTS is different from the previous
      */
-    private boolean setCurrentGTS(GTS gts) {
+    public boolean setCurrentGTS(GTS gts) {
     	boolean result = currentGTS == gts;
     	currentGTS = gts;
     	currentState = gts == null ? null : gts.startState();
@@ -544,6 +543,20 @@ public class Simulator {
         return selectedFile;
     }
     
+    File handleSaveControl(String controlProgram) {
+    	// check if we had a control program
+    	File selectedFile = getCurrentGrammar().getControl().getFile();
+    	if( selectedFile == null ) {
+    		// need to implement a filechooser here.
+    	}
+
+    	if( selectedFile != null ) {
+    		doSaveControl(controlProgram, selectedFile);
+    	}
+    	
+    	return selectedFile;
+    }
+    
     /**
      * Creates and displays a modal dialog wrapping an editor.
      * @param graph the input graph for the editor
@@ -619,7 +632,7 @@ public class Simulator {
             }
             getGrammarFileChooser().setSelectedFile(grammarFile);
         } catch (IOException exc) {
-            showErrorDialog("Error while loading grammar from " + grammarFile, exc);
+            showErrorDialog(exc.getMessage(), exc.getCause());
         } 
     }
 
@@ -726,7 +739,7 @@ public class Simulator {
 	 */
 	private void doAddRule(RuleNameLabel ruleName, AspectGraph ruleAsGraph) {
 		try {
-			NestedAspectualRuleView ruleView = new NestedAspectualRuleView(
+			AspectualRuleView ruleView = new AspectualRuleView(
 					ruleAsGraph, ruleName, getCurrentGrammar()
 							.getProperties());
 			getCurrentGrammar().addRule(ruleView);
@@ -774,12 +787,29 @@ public class Simulator {
     private void doSaveGraph(Graph graph, File file) {
         try {
         	AspectGraph saveGraph = AspectGraph.getFactory().fromPlainGraph(graph);
-            graphLoader.marshalGraph(saveGraph, file);
+        	if (saveGraph.hasErrors()) {
+                showErrorDialog("Errors in graph", new FormatException(saveGraph.getErrors()));
+        	} else { 
+        		graphLoader.marshalGraph(saveGraph, file);
+        	}
         } catch (IOException exc) {
             showErrorDialog("Error while saving to " + file, exc);
         }
     }
 
+    private void doSaveControl(String controlProgram, File file) {
+    	try {
+    		
+    		ControlView.saveFile(controlProgram, file);
+    		
+    	} catch( IOException exc) {
+    		showErrorDialog("Error while saving to " + file, exc);
+    	}
+    	
+    	
+    }
+    
+    
     /**
 	 * Sets a new graph transition system. Invokes
 	 * {@link #fireSetGrammar(DefaultGrammarView)} to notify all observers of the change.
@@ -799,7 +829,7 @@ public class Simulator {
 		if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
 			startSimulation(grammar);
 		}
-	}
+    }
 
     /**
 	 * Sets a new graph transition system. Invokes
@@ -821,7 +851,24 @@ public class Simulator {
 			showErrorDialog("Error while starting simulation", exc);
 		}
     }
-    
+
+    /**
+     *  HARMEN: possibly merge this method with the above one.
+     */
+    public synchronized void startSimulation(DefaultGrammarView grammar, boolean findMatchings) {
+    	try {
+    		setCurrentGrammar(grammar);
+    		setCurrentGTS(new GTS(getCurrentGrammar().toGrammar()));
+    		if (findMatchings) {
+        		getGenerator().explore(getCurrentState());
+    		}
+			fireStartSimulation(getCurrentGTS());
+			refresh();
+		} catch (FormatException exc) {
+			showErrorDialog("Error while starting simulation", exc);
+		}
+    }
+
     /**
 	 * Sets the current state graph to a given state. Adds the previous state or
 	 * active derivation to the history. Invokes <tt>notifySetState(state)</tt>
@@ -877,14 +924,9 @@ public class Simulator {
     public synchronized void applyTransition() {
         GraphTransition appliedTransition = getCurrentTransition();
         setCurrentState(appliedTransition.target());
-        //JHK: Generator limitation
-        //System.out.println(appliedTransition.getEvent().getCoanchorMap());
-        //if(false) {
         getGenerator().explore(getCurrentState());
-        //}
         fireApplyTransition(appliedTransition);
         refreshActions();
-        
     }
 
     /**
@@ -968,6 +1010,9 @@ public class Simulator {
             graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON, getStatePanel(), "Current graph state");
             graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(), "Selected rule");
             graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, getLtsPanel(), "Labelled transition system");
+            graphViewsPanel.addTab(null, Groove.CTRL_FRAME_ICON , getControlPanel(), "Current Control Specification" );
+            // Tom Staijen : Control
+            //graphViewsPanel.addTab(null, Groove.CONTROL_FRAME_ICON, getControlPanel(), "Current Control Machine");
             // add this simulator as a listener so that the actions are updated regularly
             graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
@@ -1012,6 +1057,15 @@ public class Simulator {
         return statePanel;
     }
 
+    
+    CAPanel getControlPanel() {
+    	if( controlPanel == null ) {
+    		controlPanel = new CAPanel(this);
+    		controlPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
+    	}
+    	return controlPanel;
+    }
+    
     /**
      * Returns the simulator panel on which the currently selected production rule is displayed.
      * Note that this panel may currently not be visible.
@@ -1058,7 +1112,11 @@ public class Simulator {
 	 * @see #setGraphPanel(JGraphPanel)
 	 */
     JGraphPanel<?> getGraphPanel() {
-	    return (JGraphPanel) getGraphViewsPanel().getSelectedComponent();
+	    // hack om splitpane te supporten
+    	Component c = getGraphViewsPanel().getSelectedComponent();
+	    if( c instanceof CAPanel )
+	    	c = ((CAPanel)c).getJGraphPanel();
+    	return (JGraphPanel) c; 
 	}
 
 	/**
@@ -1492,16 +1550,35 @@ public class Simulator {
 	 *            verfied
 	 */
     protected synchronized void notifyVerifyProperty(Set<State> counterExamples) {
+    	if (counterExamples.isEmpty()) {
+    		JOptionPane.showMessageDialog(getFrame(), "There were no counter-examples.", "Verification results", JOptionPane.INFORMATION_MESSAGE, Groove.GROOVE_ICON_32x32);
+    	} else {
+    		if (counterExamples.size() == 1) {
+        		JOptionPane.showMessageDialog(getFrame(), "There was 1 counter-example.", "Verification results", JOptionPane.INFORMATION_MESSAGE, Groove.GROOVE_BLUE_ICON_32x32);
+    		} else {
+        		JOptionPane.showMessageDialog(getFrame(), "There were " + counterExamples.size() + " counter-examples.", "Verification results", JOptionPane.INFORMATION_MESSAGE, Groove.GROOVE_BLUE_ICON_32x32);
+    		}
+    		// reset lts display visibility
+    		setGraphPanel(getLtsPanel());
+    		LTSJModel jModel = getLtsPanel().getJModel();
+    		Set<JCell> jCells = new HashSet<JCell>();
+    		for(State counterExample: counterExamples) {
+    			jCells.add(jModel.getJCell(counterExample));
+    		}
+    		jModel.setEmphasized(jCells);
+    	}
+    }
+
+    public synchronized void notifyCounterExample(Stack<GraphState> counterExample) {
         // reset lts display visibility
         setGraphPanel(getLtsPanel());
         LTSJModel jModel = getLtsPanel().getJModel();
         Set<JCell> jCells = new HashSet<JCell>();
-        for(State counterExample: counterExamples) {
-        	jCells.add(jModel.getJCell(counterExample));
+        while (!counterExample.isEmpty()) {
+        	jCells.add(jModel.getJCell(counterExample.pop()));
         }
         jModel.setEmphasized(jCells);
-    }
-
+	}
 	/**
 	 * Refreshes the title bar, layout and actions.
 	 */
@@ -1600,7 +1677,7 @@ public class Simulator {
 	 * Creates and shows an {@link ErrorDialog} for a given message and
 	 * exception.
 	 */
-    private void showErrorDialog(String message, Exception exc) {
+    private void showErrorDialog(String message, Throwable exc) {
         new ErrorDialog(getFrame(), message, exc).setVisible(true);
     }
 
@@ -1711,28 +1788,28 @@ public class Simulator {
     /**
      * The loader used for unmarshalling gps-formatted graph grammars.
      */
-    protected LayedOutGps gpsLoader;
+    private LayedOutGps gpsLoader;
 
     /**
      * A mapping from extension filters (recognizing the file formats from the names) to the
      * corresponding grammar loaders.
      */
-    protected final Map<ExtensionFilter,AspectualViewGps> grammarLoaderMap = new LinkedHashMap<ExtensionFilter,AspectualViewGps>();
+    private final Map<ExtensionFilter,AspectualViewGps> grammarLoaderMap = new LinkedHashMap<ExtensionFilter,AspectualViewGps>();
 
     /**
      * The graph loader used for saving graphs (states and LTS).
      */
-    protected final Xml<AspectGraph> graphLoader = new AspectGxl(new LayedOutXml());
+    private final Xml<AspectGraph> graphLoader = new AspectGxl(new LayedOutXml());
 
     /**
      * File chooser for grammar files.
      */
-    protected JFileChooser grammarFileChooser;
+    private JFileChooser grammarFileChooser;
 
     /**
      * File chooser for state files and LTS.
      */
-    protected JFileChooser stateFileChooser;
+    private JFileChooser stateFileChooser;
 
     /**
      * Graph exporter.
@@ -1747,18 +1824,18 @@ public class Simulator {
     /**
      * Extension filter for state files.
      */
-    protected final ExtensionFilter stateFilter = Groove.createStateFilter();
+    private final ExtensionFilter stateFilter = Groove.createStateFilter();
 
     /**
      * Extension filter used for exporting the LTS in jpeg format.
      */
-    protected final ExtensionFilter gxlFilter = Groove.createGxlFilter();
+    private final ExtensionFilter gxlFilter = Groove.createGxlFilter();
 
     /**
      * Set of registered simulation listeners.
      * @invariant <tt>listeners \subseteq SimulationListener</tt>
      */
-    protected final Set<SimulationListener> listeners = new HashSet<SimulationListener>();
+    private final Set<SimulationListener> listeners = new HashSet<SimulationListener>();
 
     /** Current set of refreshables of this simulator. */
     private final Set<Refreshable> refreshables = new HashSet<Refreshable>();
@@ -1776,6 +1853,9 @@ public class Simulator {
     /** State display panel. */
     private StatePanel statePanel;
 
+    /** Control display panel. */
+    private CAPanel controlPanel;
+    
     /** LTS display panel. */
     private LTSPanel ltsPanel;
 
@@ -1944,8 +2024,7 @@ public class Simulator {
     /**
      * Minimum width of the rule tree component.
      */
-    //JHK: die 100 is vervelend, ik wil de matchings ook goed zien...
-    static private final int RULE_TREE_MINIMUM_WIDTH = 200;
+    static private final int RULE_TREE_MINIMUM_WIDTH = 100;
 
     /**
      * Preferred width of the graph view.
@@ -2611,11 +2690,7 @@ public class Simulator {
         
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(true)) {
-            	//JHK: NullPointer Fix
-            	File newGrammar = new File( (currentGrammarFile != null) ? 
-            			currentGrammarFile.getParentFile()
-            			: new File(Groove.WORKING_DIR)
-            			, NEW_GRAMMAR_NAME);
+            	File newGrammar = new File(currentGrammarFile.getParentFile(), NEW_GRAMMAR_NAME);
             	getGrammarFileChooser().setSelectedFile(newGrammar);
             	boolean ok = false;
             	while (!ok) {
@@ -2708,12 +2783,21 @@ public class Simulator {
     	}
 
     	public void actionPerformed(ActionEvent evt) {
-    		String property = JOptionPane.showInputDialog(null, "Enter the temporal formula to be verified by GROOVE.");
-    		if (property != null) {
-    			verifyProperty(property);
-    		} else {
-    			// do nothing
-    		}
+    		int goOn = 0;
+    		// if there are still open states the result might be different as expected
+    		// ask the user whether really to continue
+        	if (getCurrentGTS().hasOpenStates()) {
+        		String message = "The transition system still contains open states. Do you want to contiue verifying it?";
+        		goOn = JOptionPane.showConfirmDialog(getFrame(), message, "Open states", JOptionPane.YES_NO_OPTION);
+        	}
+        	if (goOn == JOptionPane.YES_OPTION) {
+        		String property = JOptionPane.showInputDialog(null, "Enter the temporal formula to be verified by GROOVE.");
+        		if (property != null) {
+        			verifyProperty(property);
+        		} else {
+        			// do nothing
+        		}
+        	}
     	}
 
     	public void refresh() {
@@ -2844,7 +2928,7 @@ public class Simulator {
          * 
          */
         public void refresh() {
-            if (getGraphPanel() == getLtsPanel()) {
+        	if (getGraphPanel() == getLtsPanel()) {
                 setEnabled(getCurrentGTS() != null);
                 putValue(NAME, Options.SAVE_LTS_ACTION_NAME);
             } else if (getGraphPanel() == getStatePanel()) {
@@ -2884,7 +2968,7 @@ public class Simulator {
 //    /**
 //     * Class providing functionality to export a {@link JGraph} to a file in different formats.
 //     * @author Arend Rensink
-//     * @version $Revision: 1.53 $
+//     * @version $Revision: 1.54 $
 //     */
 //    static public class Exporter {
 //        /**

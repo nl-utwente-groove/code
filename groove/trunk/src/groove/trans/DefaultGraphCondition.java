@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.16 2007-08-22 09:19:44 kastenberg Exp $
+ * $Id: DefaultGraphCondition.java,v 1.17 2007-08-22 15:04:48 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import groove.view.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -249,7 +249,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * @see SystemProperties#isAttributed()
      */
 	public void testConsistent() throws FormatException {
-		String attributeKey = SystemProperties.ATTRIBUTE_SUPPORT;
+		String attributeKey = SystemProperties.ATTRIBUTES_KEY;
 		String attributeProperty = getProperties().getProperty(attributeKey);
 		if (getProperties().isAttributed()) {
 			if (hasIsolatedNodes()) {
@@ -444,21 +444,10 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	 * @see Morphism#getTotalExtension()
 	 */
     public GraphConditionOutcome getOutcome(VarMorphism subject) {
-    	//if(true)throw new RuntimeException();
         Matching partialMatch = newMatcher(subject);
         Map<Matching,GraphPredicateOutcome> matchMap = partialMatch == null ? Collections.<Matching,GraphPredicateOutcome>emptyMap() : partialMatch.getTotalExtensionMap();
         return createOutcome(subject, matchMap);
     }
-    
-	/**
-	 * @see DefaultGraphCondition#getOutcome(groove.rel.VarMorphism)
-	 */
-	public GraphConditionOutcome getOutcome(Graph subject) {
-		VarMorphism morph = new DefaultMatching(this, subject);
-
-		return getOutcome(morph);
-	}
-
     
     /**
      * Two conditions are equivalent if they have the same structure up to isomorphism.
@@ -521,7 +510,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * @see #newMatcher(VarMorphism)
      */
     public Matching newMatcher(Graph graph) {
-    	return new DefaultMatching(this, graph);
+    	return new DefaultMatching(this, graph, getProperties().isInjective());
     }
     
     /**

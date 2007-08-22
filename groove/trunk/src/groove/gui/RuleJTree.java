@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleJTree.java,v 1.18 2007-08-22 09:19:54 kastenberg Exp $
+ * $Id: RuleJTree.java,v 1.19 2007-08-22 15:04:58 rensink Exp $
  */
 package groove.gui;
 
+import groove.control.ControlView;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
@@ -26,9 +27,10 @@ import groove.lts.Transition;
 import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
 import groove.util.CollectionOfCollections;
+import groove.util.Converter;
 import groove.util.Groove;
-import groove.view.DefaultGrammarView;
 import groove.view.AspectualRuleView;
+import groove.view.DefaultGrammarView;
 import groove.view.GrammarView;
 import groove.view.RuleView;
 
@@ -38,12 +40,10 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -108,6 +108,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
     	displayedGrammar = grammar;
 		if (grammar == null) {
+			dirNodeMap.clear();
 			ruleNodeMap.clear();
 			matchNodeMap.clear();
 			topDirectoryNode.removeAllChildren();
@@ -126,6 +127,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 		boolean oldListenToSelectionChanges = listenToSelectionChanges;
         listenToSelectionChanges = false;
         setShowAnchorsOptionListener();
+        dirNodeMap.clear();
         ruleNodeMap.clear();
         matchNodeMap.clear();
         topDirectoryNode.removeAllChildren();
@@ -242,7 +244,7 @@ public class RuleJTree extends JTree implements SimulationListener {
             return topNode;
         else {
             // there is a proper parent rule; look it up in the node map
-            DirectoryTreeNode result = (DirectoryTreeNode) ruleNodeMap.get(parent);
+            DirectoryTreeNode result = dirNodeMap.get(parent);
             if (result == null) {
                 // the parent node did not yet exist in the tree
                 // check recursively for the grandparent
@@ -250,7 +252,7 @@ public class RuleJTree extends JTree implements SimulationListener {
                 // make the parent node and register it
                 result = new DirectoryTreeNode(parent);
                 grandParentNode.add(result);
-                ruleNodeMap.put(parent, result);
+                dirNodeMap.put(parent, result);
             }
             return result;
         }
@@ -289,10 +291,6 @@ public class RuleJTree extends JTree implements SimulationListener {
         }
         // clean up current match node map
         matchNodeMap.clear();
-        //for( GraphTransition gt : derivations ) {
-        	//System.out.println(gt.toString());
-        	//System.out.println(gt.getEvent().getAnchorMap());
-        //}
         // expand all rule nodes and subsequently collapse all directory nodes
         for (DefaultMutableTreeNode nextNode: ruleNodeMap.values()) {
             if (!(nextNode instanceof DirectoryTreeNode)) {
@@ -307,7 +305,6 @@ public class RuleJTree extends JTree implements SimulationListener {
         // recollect the derivations so that they are ordered according to the rule events
         SortedSet<GraphTransition> orderedDerivations = new TreeSet<GraphTransition>(new Comparator<GraphTransition>() {
 			public int compare(GraphTransition o1, GraphTransition o2) {
-				System.out.println("" + o1.getEvent().hashCode() + ":" + o2.getEvent().hashCode());
 				return o1.getEvent().compareTo(o2.getEvent());
 			}
         });
@@ -315,7 +312,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         // insert new matches
         for (GraphTransition edge: orderedDerivations) {
             Label ruleName = edge.getEvent().getName();
-            RuleTreeNode ruleNode = (RuleTreeNode) ruleNodeMap.get(ruleName);
+            RuleTreeNode ruleNode = ruleNodeMap.get(ruleName);
             assert ruleNode != null : String.format("Rule %s has no image in map %s", ruleName, ruleNodeMap);
             int nrOfMatches = ruleNode.getChildCount();
             MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, edge);
@@ -379,8 +376,10 @@ public class RuleJTree extends JTree implements SimulationListener {
         return new RuleSelectionListener();
     }
 
-    /** Creates a menu for this panel. 
-     * @param node TODO*/
+    /** 
+     * Creates a popup menu for this panel. 
+     * @param node the node for which the menu is created
+     */
     protected JPopupMenu createPopupMenu(TreeNode node) {
         JPopupMenu res = new JPopupMenu();
         res.add(simulator.getNewRuleAction());
@@ -424,7 +423,14 @@ public class RuleJTree extends JTree implements SimulationListener {
      * @invariant <tt>ruleNodeMap: StructuredRuleName --> DirectoryTreeNode
      *                                               \cup RuleTreeNode</tt>
      */
-    protected final Map<NameLabel,DefaultMutableTreeNode> ruleNodeMap = new HashMap<NameLabel,DefaultMutableTreeNode>();
+    protected final Map<NameLabel,RuleTreeNode> ruleNodeMap = new HashMap<NameLabel,RuleTreeNode>();
+    /** 
+     * Mapping from rule names in the current grammar to rule nodes in
+     * the current rule directory.
+     * @invariant <tt>ruleNodeMap: StructuredRuleName --> DirectoryTreeNode
+     *                                               \cup RuleTreeNode</tt>
+     */
+    protected final Map<NameLabel,DirectoryTreeNode> dirNodeMap = new HashMap<NameLabel,DirectoryTreeNode>();
     /** 
      * Mapping from derivation edges in the current LTS to match nodes in
      * the current rule directory.
@@ -550,7 +556,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	     * The node can (and will) have children.
 	     */
 	    public PriorityTreeNode(int priority) {
-	        super("Priority "+priority, true);
+	        super((priority==ControlView.ANY_RULE_PRORITY)?"Priority ANY":"Priority "+priority, true);
 	    }
 	}
 
@@ -589,18 +595,19 @@ public class RuleJTree extends JTree implements SimulationListener {
 	    
 	    /** Returns HTML-formatted tool tip text for this rule node. */
 	    public String getToolTipText() {
-	    	String result;
+	    	StringBuilder result = new StringBuilder();
         	GraphProperties properties = GraphInfo.getProperties(getRule().getAspectGraph(), false);
         	if (properties == null || properties.isEmpty()) {
-        		result = "No properties";
+        		result.append("Rule without special properties");
         	} else {
-        		List<String> text = new ArrayList<String>();
+        		result.append("Rule properties:");
         		for (String key: properties.getPropertyKeys()) {
-        			text.add(propertyToString(key, properties.getProperty(key)));
+        			result.append(Converter.HTML_LINEBREAK);
+        			result.append(propertyToString(key, properties.getProperty(key)));
         		}
-        		result = Groove.toString(text.toArray(), "<html>", "</html>", "<br>");
+        		Converter.HTML_TAG.on(result);
         	}
-        	return result;
+        	return result.toString();
 	    }
 	    
 	    /** Returns an HTML-formatted string for a given key/value-pair. */
@@ -692,17 +699,17 @@ public class RuleJTree extends JTree implements SimulationListener {
 	        boolean leaf,
 	        int row,
 	        boolean hasFocus) {
-	        // failed attempt to get rid of root handles for childless nodes 
-	        // expanded = expanded ||
-	        //            ((DefaultMutableTreeNode) value).getChildCount()==0;
 	        super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 	
 	        if (value instanceof DirectoryTreeNode) {
 	            setIcon(Groove.GPS_FOLDER_ICON);
 	        } else if (value instanceof PriorityTreeNode) {
 	            setIcon(null);
-	        } else if (value instanceof RuleTreeNode) {
+	        }
+	        if (value instanceof RuleTreeNode) {
 	        	setToolTipText(((RuleTreeNode) value).getToolTipText());
+	        } else {
+	        	setToolTipText(null);
 	        }
 	        setOpaque(!sel);
 	        return this;

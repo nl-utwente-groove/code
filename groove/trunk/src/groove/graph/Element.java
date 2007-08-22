@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Element.java,v 1.2 2007-08-22 09:19:39 kastenberg Exp $
+ * $Id: Element.java,v 1.3 2007-08-22 15:04:56 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ package groove.graph;
  * {@link Edge}s are essentially labelled hyper-edges
  * consisting of a number of <i>end points</i> (at least one), which are {@link Node}s.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface Element extends Comparable<Element>, java.io.Serializable {
     /**
@@ -43,7 +43,7 @@ public interface Element extends Comparable<Element>, java.io.Serializable {
      * <tt>! elementMap.keySet().containsAll(ends())</tt>; otherwise
      * <tt>result.end(i).equals(elementMap.get(end(i)))</tt> for all valid <tt>i</tt>. 
      */
-    public Element imageFor(GenericNodeEdgeMap elementMap);
+    public Element imageFor(NodeEdgeMap elementMap);
 
     /**
      * The rules for ordering {@link Element}s are as follows:

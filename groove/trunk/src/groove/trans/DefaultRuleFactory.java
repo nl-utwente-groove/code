@@ -12,13 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.14 2007-08-22 09:19:44 kastenberg Exp $
+ * $Id: DefaultRuleFactory.java,v 1.15 2007-08-22 15:04:48 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.nesting.rule.NestedAspectualRuleView;
 //import groove.trans.view.RuleGraph;
 import groove.view.AspectualRuleView;
 import groove.view.FormatException;
@@ -34,7 +33,7 @@ import groove.view.aspect.AspectGraph;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class DefaultRuleFactory implements RuleFactory {
 	/** The singleton instance of {@link DefaultRuleFactory}. */
@@ -113,8 +112,7 @@ public class DefaultRuleFactory implements RuleFactory {
 	 * This implementation returns an {@link AspectualRuleView}.
 	 */
 	public AspectualRuleView createRuleView(Graph graph, RuleNameLabel name, int priority, SystemProperties properties) throws FormatException {
-		// JHK: NestedAspectualRuleView
-		return new NestedAspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), name, properties);
+		return new AspectualRuleView(AspectGraph.getFactory().fromPlainGraph(graph), name, properties);
 	}
 //
 //	/**

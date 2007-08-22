@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: StatePanel.java,v 1.20 2007-08-22 09:19:55 kastenberg Exp $
+ * $Id: StatePanel.java,v 1.21 2007-08-22 15:04:58 rensink Exp $
  */
 package groove.gui;
 
@@ -36,13 +36,13 @@ import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
-import groove.nesting.VarNodeEdgeMultiMap;
 import groove.trans.NameLabel;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
 import groove.view.AspectualGraphView;
 
 import java.awt.Rectangle;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -54,12 +54,13 @@ import java.util.Set;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
 
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -177,17 +178,15 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
                 jGraph.setModel(getStateJModel(trans.source()));
             }
             // now emphasize at will
-            //Morphism match = selectedTransition.matching();
-            VarNodeEdgeMultiMap match = selectedTransition.getEvent().getAnchorMap();
-            //System.out.println("Matching used in StatePanel : " + match);
+            Morphism match = selectedTransition.matching();
             assert match != null: "Transition "+selectedTransition+" should have valid matching";
             assert match.nodeMap() != null : "Matching "+match+" has no node map";
-            for (Set<Node> matchedNode: match.nodeMap().values()) {
-                emphElems.addAll(matchedNode);
+            for (Node matchedNode: match.nodeMap().values()) {
+                emphElems.add(matchedNode);
             }
             assert match.edgeMap() != null : "Matching "+match+" has no edge map";
-            for (Set<Edge> matchedEdge: match.edgeMap().values()) {
-                emphElems.addAll(matchedEdge);
+            for (Edge matchedEdge: match.edgeMap().values()) {
+                emphElems.add(matchedEdge);
             }
             if (!emphElems.isEmpty()) {
             	Rectangle scope = Groove.toRectangle(getJGraph().getElementBounds(emphElems));
@@ -211,9 +210,13 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     	getJModel().clearEmphasized();
         // get a graph model for the target state
         GraphState newState = transition.target();
-        selectedTransition = null;
+        GraphJModel newModel = getStateJModel(newState);
+        GraphState oldState = transition.source();
+        Morphism morphism = transition.morphism();
+        copyLayout(getStateJModel(oldState), newModel, morphism);
         // set the graph model to the new state
-        jGraph.setModel(getStateJModel(newState));
+        jGraph.setModel(newModel);
+        selectedTransition = null;
         refreshStatus();
     }
     
@@ -263,13 +266,13 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 	 * Computes a fresh GraphJModel for a given graph state.
 	 */
 	private GraphJModel computeStateJModel(GraphState state) {
-		GraphJModel result;
-		// try to find layout information for the state
-		GraphState oldState;
-		Morphism morphism;
+		// create a fresh model
+		GraphJModel result = createGraphJModel(state.getGraph());
+		result.setName(state.toString());
+		// try to find layout information for the model
 		if (state instanceof GraphNextState) {
-			oldState = ((GraphNextState) state).source();
-			morphism = ((GraphNextState) state).morphism();
+			GraphState oldState = ((GraphNextState) state).source();
+			Morphism morphism = ((GraphNextState) state).morphism();
 			// walk back along the derivation chain to find one for
 			// which we have a state model (and hence layout information)
 			while (!stateJModelMap.containsKey(oldState)
@@ -277,35 +280,11 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 		        morphism = ((GraphNextState) oldState).morphism().then(morphism);
 				oldState = ((GraphNextState) oldState).source();
 			}
-		} else if (selectedTransition != null && selectedTransition.target() == state) {
-			oldState = selectedTransition.source();
-			morphism = selectedTransition.morphism();
-		} else {
-			oldState = null;
-			morphism = null;
-		}
-		// create a fresh model and copy the layout
-		result = createGraphJModel(state.getGraph());
-		if (oldState != null) {
 			GraphJModel oldJModel = getStateJModel(oldState);
 			copyLayout(oldJModel, result, morphism);
 		}
-		result.setName(state.toString());
 		return result;
 	}
-//
-//    /**
-//     * Returns a graph model for a given state graph. The graph model is retrieved from
-//     * stateJModelMap; if there is no image for the requested state then one is created.
-//     */
-//    private GraphJModel getGraphJModel(AspectualGraphView graph) {
-//        GraphJModel result = graphJModelMap.get(graph);
-//        if (result == null) {
-//            result = createGraphJModel(graph);
-//            graphJModelMap.put(graph, result);
-//        }
-//        return result;
-//    }
 
 	/** Creates a j-model for a given graph view. */
 	private AspectJModel createGraphJModel(AspectualGraphView graph) {
@@ -325,6 +304,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 	 * @param derivationMap mapping from the nodes and edges of the old to the new j-model
 	 */
 	private void copyLayout(GraphJModel oldStateJModel, GraphJModel newStateJModel, NodeEdgeMap derivationMap) {
+		Set<JCell> newGrayedOut = new HashSet<JCell>();
 	    for (Map.Entry<Node,Node> entry: derivationMap.nodeMap().entrySet()) {
 	        JCell sourceCell = oldStateJModel.getJCell(entry.getKey());
 	        assert sourceCell != null : "Source element "+entry.getKey()+" unknown";
@@ -333,17 +313,31 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 	        Rectangle2D sourceBounds = GraphConstants.getBounds(sourceCell.getAttributes());
 	        GraphConstants.setBounds(targetCell.getAttributes(), sourceBounds);
 	        newStateJModel.removeLayoutable(targetCell);
+	        if (oldStateJModel.isGrayedOut(sourceCell)) {
+	        	newGrayedOut.add(targetCell);
+	        }
 	    }
 	    for (Map.Entry<Edge,Edge> entry: derivationMap.edgeMap().entrySet()) {
 	        JCell sourceCell = oldStateJModel.getJCell(entry.getKey());
+	        AttributeMap sourceAttributes = sourceCell.getAttributes();
 	        JCell targetCell = newStateJModel.getJCell(entry.getValue());
 	        assert targetCell != null : "Target element "+entry.getValue()+" unknown";
-	        List<?> sourcePoints = GraphConstants.getPoints(sourceCell.getAttributes());
+	        AttributeMap targetAttributes = targetCell.getAttributes();
+	        List<?> sourcePoints = GraphConstants.getPoints(sourceAttributes);
 	        if (sourcePoints != null) {
-	        	GraphConstants.setPoints(targetCell.getAttributes(), new LinkedList<Object>(sourcePoints));
+	        	GraphConstants.setPoints(targetAttributes, new LinkedList<Object>(sourcePoints));
 	        }
+	        Point2D labelPosition = GraphConstants.getLabelPosition(sourceAttributes);
+	        if (labelPosition != null) {
+	        	GraphConstants.setLabelPosition(targetAttributes, labelPosition);
+	        }
+        	GraphConstants.setLineStyle(targetAttributes, GraphConstants.getLineStyle(sourceAttributes));
 	        newStateJModel.removeLayoutable(targetCell);
+	        if (oldStateJModel.isGrayedOut(sourceCell)) {
+	        	newGrayedOut.add(targetCell);
+	        }
 	    }
+	    newStateJModel.setGrayedOut(newGrayedOut);
 	}
 	
     /**
