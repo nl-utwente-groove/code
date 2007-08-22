@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphPredicate.java,v 1.2 2007-04-19 06:39:23 rensink Exp $
+ * $Id: GraphPredicate.java,v 1.3 2007-08-22 09:19:44 kastenberg Exp $
  */
 package groove.trans;
 
+import groove.graph.Graph;
 import groove.rel.VarMorphism;
 
 import java.util.Set;
@@ -23,7 +24,7 @@ import java.util.Set;
 /**
  * Interface for predicates over graphs.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface GraphPredicate extends GraphTest {    
     /**
@@ -49,4 +50,9 @@ public interface GraphPredicate extends GraphTest {
      * Specialises the return type.
      */
     public GraphPredicateOutcome getOutcome(VarMorphism subject);
+    
+    /**
+     * Specialises the return type.
+     */
+    public GraphPredicateOutcome getOutcome(Graph subject);
 }

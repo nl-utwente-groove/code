@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Aspect.java,v 1.3 2007-06-27 16:00:28 rensink Exp $
+ * $Id: Aspect.java,v 1.4 2007-08-22 09:19:46 kastenberg Exp $
  */
 package groove.view.aspect;
 
 import groove.graph.Label;
+import groove.nesting.NestingAspect;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -27,9 +28,10 @@ import java.util.Set;
  * Examples of aspects are: the roles in a rule, typing information, or
  * graph condition information.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface Aspect {
+
 	/**
      * Returns the set of all possible aspect values (for either nodes or edges), 
      * as a set of <code>AspectValue</code>s.
@@ -94,5 +96,16 @@ public interface Aspect {
 	/**
 	 * Array of all known aspects. 
 	 */
-	public Aspect[] allAspects = { AttributeAspect.getInstance(), RuleAspect.getInstance() };
+	public Aspect[] allAspects = { AttributeAspect.getInstance(), RuleAspect.getInstance(), NestingAspect.getInstance() };
+	/** Interface for parsers from strings to labels. */
+	static interface LabelParser {
+		/** 
+		 * Method turning a string into a label.
+		 * @param text the string to be parsed into a label
+		 * @return the label constructed from <code>text</code>
+		 * @throws FormatException if <code>text</code> is not correctly formatted
+		 * according to this parser. 
+		 */
+		Label parse(String text) throws FormatException;
+	}
 }

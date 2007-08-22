@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.18 2007-06-27 11:55:11 rensink Exp $
+ * $Id: SPOEvent.java,v 1.19 2007-08-22 09:19:44 kastenberg Exp $
  */
 package groove.trans;
 
@@ -39,6 +39,8 @@ import groove.graph.Node;
 import groove.graph.NodeSet;
 import groove.graph.WrapperLabel;
 import groove.graph.algebra.ValueNode;
+import groove.nesting.VarNodeEdgeMultiHashMap;
+import groove.nesting.VarNodeEdgeMultiMap;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
@@ -50,7 +52,7 @@ import groove.util.TreeHashSet3;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.18 $ $Date: 2007-06-27 11:55:11 $
+ * @version $Revision: 1.19 $ $Date: 2007-08-22 09:19:44 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -77,7 +79,9 @@ public class SPOEvent implements RuleEvent {
     public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap) {
     	rule.testFixed(true);
         this.rule = rule;
-        this.anchorMap = anchorMap;
+        this.anchorMap = new VarNodeEdgeMultiHashMap();
+        this.anchorMap.putAll(anchorMap);
+        this.flattenedAnchorMap = anchorMap;
 //		this.ruleFactory = rule.getRuleFactory();
         this.freshNodeList = createFreshNodeList();
     }
@@ -128,12 +132,21 @@ public class SPOEvent implements RuleEvent {
 		return getRule().getName();
 	}
 
-	public VarNodeEdgeMap getAnchorMap() {
+	public VarNodeEdgeMultiMap getAnchorMap() {
+		/** TODO: Do we have to normalize?
 		if (!anchorMapNormalised) {
 			anchorMap = computeNormalisedAnchorMap();
 			anchorMapNormalised = true;
-		}
+		}*/
 	    return anchorMap;
+	}
+	
+	/**
+	 * 
+	 * @return
+	 */
+	public VarNodeEdgeMap getFlattenedAnchorMap() {
+		return flattenedAnchorMap;
 	}
 
 	/**
@@ -141,15 +154,14 @@ public class SPOEvent implements RuleEvent {
 	 * The resulting map contains images for the anchor and eraser edges 
 	 * and any variables on them.
 	 */
-    protected VarNodeEdgeMap computeNormalisedAnchorMap() {
-    	NodeEdgeMap anchorMap = this.anchorMap;
-    	VarNodeEdgeMap result = createVarMap();
+    protected VarNodeEdgeMultiMap computeNormalisedAnchorMap() {
+    	NodeEdgeMap anchorMap = this.flattenedAnchorMap;
+    	VarNodeEdgeMultiMap result = createVarMap();
     	for (Element key: getRule().anchor()) {
             if (key instanceof Edge) {
             	// store the endpoints and the variable valuations for the edges
                 Edge edgeKey = (Edge) key;
             	Edge edgeImage = anchorMap.getEdge(edgeKey);
-            	assert edgeImage != null : String.format("Edge %s has no image in anchor map %s", edgeKey, anchorMap);
                 int arity = edgeKey.endCount();
                 for (int end = 0; end < arity; end++) {
                     result.putNode(edgeKey.end(end), edgeImage.end(end));
@@ -179,7 +191,7 @@ public class SPOEvent implements RuleEvent {
     	return Groove.toString(getAnchorImage(), ANCHOR_START, ANCHOR_END, ANCHOR_SEPARATOR);
 	}
 
-	public VarNodeEdgeMap getCoanchorMap() {
+	public VarNodeEdgeMultiMap getCoanchorMap() {
         if (coanchorMap == null) {
             coanchorMap = computeCoanchorMap();
         }
@@ -190,9 +202,9 @@ public class SPOEvent implements RuleEvent {
 	 * Constructs a map from the reader nodes of the RHS that are endpoints of
 	 * creator edges, to the target graph nodes.
 	 */
-	protected VarNodeEdgeMap computeCoanchorMap() {
-		final VarNodeEdgeMap result = createVarMap();
-		VarNodeEdgeMap anchorMap = getAnchorMap();
+	protected VarNodeEdgeMultiMap computeCoanchorMap() {
+		final VarNodeEdgeMultiMap result = createVarMap();
+		VarNodeEdgeMap anchorMap = getFlattenedAnchorMap();
 		NodeEdgeMap mergeMap = getRule().hasMergers() ? getMergeMap() : null;
 		// add reader node images
 		for (Map.Entry<Node,Node> creatorEntry: getRule().getCreatorMap().entrySet()) {
@@ -237,7 +249,7 @@ public class SPOEvent implements RuleEvent {
         // just created to look up a stored event; then we shouldn't spend too
         // much time on this one
         Element[] anchors = getRule().anchor();
-        NodeEdgeMap anchorMap = getAnchorMap();
+        NodeEdgeMap anchorMap = getFlattenedAnchorMap();
         int MAX_HASHED_ANCHOR_COUNT = 10;
         int hashedAnchorCount = Math.min(anchors.length, MAX_HASHED_ANCHOR_COUNT);
         for (int i = 0; i < hashedAnchorCount; i++) {
@@ -345,14 +357,15 @@ public class SPOEvent implements RuleEvent {
 			} else {
 				// construct anchor image of the other event
 				Element[] anchor = getRule().anchor();
-				VarNodeEdgeMap otherAnchorMap = other.getAnchorMap();
+				VarNodeEdgeMultiMap otherAnchorMap = other.getAnchorMap();
 				otherAnchorImage = new Element[anchor.length];
 				for (int i = 0; i < anchor.length; i++) {
 					Element anchorElement = anchor[i];
 					if (anchorElement instanceof Node) {
-						otherAnchorImage[i] = otherAnchorMap.getNode((Node) anchorElement);
+						// TODO: get(0) ? It's not a nestedrule, so probably only single elements...
+						otherAnchorImage[i] = otherAnchorMap.getNode((Node) anchorElement).toArray(new Node[0])[0];
 					} else {
-						otherAnchorImage[i] = otherAnchorMap.getEdge((Edge) anchorElement);
+						otherAnchorImage[i] = otherAnchorMap.getEdge((Edge) anchorElement).toArray(new Edge[0])[0];
 					}
 				}
 			}
@@ -385,7 +398,7 @@ public class SPOEvent implements RuleEvent {
 	protected Matching computeMatcher(Graph host) {
 		reporter.start(GET_PARTIAL_MATCH);
 	    Matching result;
-	    VarNodeEdgeMap anchorMap = getAnchorMap();
+	    VarNodeEdgeMap anchorMap = getFlattenedAnchorMap();
 	    boolean correct = true;
 	    Iterator<Edge> edgeImageIter = anchorMap.edgeMap().values().iterator();
 	    while (correct && edgeImageIter.hasNext()) {
@@ -406,10 +419,10 @@ public class SPOEvent implements RuleEvent {
 	 * Creates a matcher for this event in a given host graph, based on the rule and anchor map.
 	 */
 	private Matching createMatcher(Graph host) {
-		DefaultMatching result = new DefaultMatching(getRule(), host, rule.getProperties().isInjective()) {
+		DefaultMatching result = new DefaultMatching(getRule(), host) {
 			@Override
 			protected VarNodeEdgeMap createElementMap() {
-				return getAnchorMap();
+				return getFlattenedAnchorMap();
 			}
 		};
 		result.setFixed();
@@ -447,9 +460,9 @@ public class SPOEvent implements RuleEvent {
         Element[] result = new Element[anchor.length];
         for (int i = 0; i < anchorSize; i++) {
         	if (anchor[i] instanceof Node) {
-        		result[i] = anchorMap.getNode((Node) anchor[i]);
+        		result[i] = flattenedAnchorMap.getNode((Node) anchor[i]);
         	} else {
-        		result[i] = anchorMap.getEdge((Edge) anchor[i]);
+        		result[i] = flattenedAnchorMap.getEdge((Edge) anchor[i]);
         	}
         }
         reporter.stop();
@@ -461,9 +474,14 @@ public class SPOEvent implements RuleEvent {
      */
     protected Set<Element> getAnchorImageSet() {
         if (anchorImageSet == null) {
-        	NodeEdgeMap anchorMap = getAnchorMap();
-            anchorImageSet = new HashSet<Element>(anchorMap.nodeMap().values());
-            anchorImageSet.addAll(anchorMap.edgeMap().values());
+        	VarNodeEdgeMultiMap anchorMap = getAnchorMap();
+        	anchorImageSet = new HashSet<Element> ();
+        	for( Set<Node> nodes : anchorMap.nodeMap().values() ) {
+        		anchorImageSet.add(nodes.toArray(new Node[0])[0]);
+        	}
+        	for( Set<Edge> edges : anchorMap.edgeMap().values() ) {
+        		anchorImageSet.add(edges.toArray(new Edge[0])[0]);
+        	}
         }
         return anchorImageSet;
     }
@@ -532,12 +550,12 @@ public class SPOEvent implements RuleEvent {
 	 * Callback method from {@link #getErasedNodes()}.
 	 */
 	protected Set<Node> computeErasedNodes() {
-		NodeEdgeMap anchorMap = getAnchorMap();
+		VarNodeEdgeMultiMap anchorMap = getAnchorMap();
 		Node[] eraserNodes = getRule().getEraserNodes();
 	    Set<Node> erasedNodes = createNodeSet();
 	    // register the node erasures
 	    for (int i = 0; i < eraserNodes.length; i++) {
-	        Node nodeMatch = anchorMap.getNode(eraserNodes[i]);
+	        Node nodeMatch = anchorMap.getNode(eraserNodes[i]).toArray(new Node[0])[0];
 	        erasedNodes.add(nodeMatch);
 	    }
 	    return erasedNodes;
@@ -561,11 +579,11 @@ public class SPOEvent implements RuleEvent {
      */
     protected Set<Edge> computeErasedEdges() {
         Set<Edge> result = createEdgeSet();
-        VarNodeEdgeMap anchorMap = getAnchorMap();
+        VarNodeEdgeMultiMap anchorMap = getAnchorMap();
         Edge[] eraserEdges = getRule().getEraserEdges();
         for (int i = 0; i < eraserEdges.length; i++) {
             Edge edge = eraserEdges[i];
-            Edge edgeImage = anchorMap.getEdge(edge);
+            Edge edgeImage = anchorMap.getEdge(edge).toArray(new Edge[0])[0];
             if (edgeImage == null) {
                 edgeImage = edge.imageFor(anchorMap);
                 assert edgeImage != null : "Image of "+edge+" cannot be deduced from "+anchorMap;
@@ -593,7 +611,7 @@ public class SPOEvent implements RuleEvent {
      */
     private Set<Edge> computeSimpleCreatedEdges() {
         Set<Edge> result = createEdgeSet();
-        VarNodeEdgeMap coAnchorMap = getCoanchorMap();
+        VarNodeEdgeMultiMap coAnchorMap = getCoanchorMap();
         for (Edge edge: getRule().getSimpleCreatorEdges()) {
             Edge edgeImage = edge.imageFor(coAnchorMap);
             if (edgeImage != null) {
@@ -623,15 +641,15 @@ public class SPOEvent implements RuleEvent {
      * {@link MergeMap} to improve performance.
      */
     protected MergeMap computeMergeMap() {
-    	VarNodeEdgeMap anchorMap = getAnchorMap();
+    	VarNodeEdgeMultiMap anchorMap = getAnchorMap();
         MergeMap mergeMap = createMergeMap();
         // integrate the mergings
         // the pre-morphism should be "flat" in the sense that any non-null value of an entry
         // should itself be a fixpoint of the pre-morphism
 //        boolean mergersStable = true;
         for (Map.Entry<Node,Node> ruleMergeEntry: getRule().getMergeMap().entrySet()) {
-            Node mergeKey = anchorMap.getNode(ruleMergeEntry.getKey());
-            Node mergeImage = anchorMap.getNode(ruleMergeEntry.getValue());
+            Node mergeKey = anchorMap.getNode(ruleMergeEntry.getKey()).toArray(new Node[0])[0];
+            Node mergeImage = anchorMap.getNode(ruleMergeEntry.getValue()).toArray(new Node[0])[0];
             mergeMap.putNode(mergeKey, mergeImage);
 //            assert mergeKey != null && mergeImage != null : "Images should be non-null in matching";
 //            // the key-image pair should be put in the merge map,
@@ -701,16 +719,16 @@ public class SPOEvent implements RuleEvent {
      * {@link #computeCoanchorMap()}.
      * @return a fresh instance of {@link VarNodeEdgeHashMap}
      */
-    protected VarNodeEdgeMap createVarMap() {
-    	return new VarNodeEdgeHashMap();
+    protected VarNodeEdgeMultiMap createVarMap() {
+    	return new VarNodeEdgeMultiHashMap();
     }
 
     /** 
-     * Returns a coanhor image suitable for a given graph.
+     * Returns a coanchor image suitable for a given graph.
      * This is delegate to the event, which can indeed keep a map of such 
      * images, and so save memory. 
      */
-    Node[] getCoanchorImage(Graph host) {
+    protected Node[] getCoanchorImage(Graph host) {
 		int coanchorSize = getRule().coanchor().length;
 		Node[] result = new Node[coanchorSize];
 		for (int i = 0; i < coanchorSize; i++) {
@@ -788,7 +806,8 @@ public class SPOEvent implements RuleEvent {
     /**
      * Matching from the rule's lhs to the source graph.
      */
-    private VarNodeEdgeMap anchorMap;
+    private VarNodeEdgeMultiMap anchorMap;
+    private VarNodeEdgeMap flattenedAnchorMap;
     /**
      * Flag that indicates if {@linkplain #computeNormalisedAnchorMap()} has been invoked.
      */
@@ -797,7 +816,7 @@ public class SPOEvent implements RuleEvent {
      * Mapping from selected RHS elements to target graph. 
      * The comatch is constructed in the course of rule application.
      */
-    private VarNodeEdgeMap coanchorMap;
+    private VarNodeEdgeMultiMap coanchorMap;
     /**
      * Minimal mapping from the source graph to target graph to reconstruct the underlying morphism. 
      * The merge map is constructed in the course of rule application.
@@ -868,4 +887,10 @@ public class SPOEvent implements RuleEvent {
 	static private int EQUALS = reporter.newMethod("equals()");
 	static private int GET_PARTIAL_MATCH = reporter.newMethod("getPartialMatch()");
 	static private int GET_ANCHOR_IMAGE = reporter.newMethod("getAnchorImage()");
+	/* (non-Javadoc)
+	 * @see groove.trans.RuleEvent#getOutcome(groove.graph.Graph)
+	 */
+	public GraphConditionOutcome getOutcome(Graph source) {
+		return getRule().getOutcome(source);
+	}
 }

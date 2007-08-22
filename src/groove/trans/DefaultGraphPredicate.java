@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphPredicate.java,v 1.6 2007-04-19 11:33:50 rensink Exp $
+ * $Id: DefaultGraphPredicate.java,v 1.7 2007-08-22 09:19:44 kastenberg Exp $
  */
 package groove.trans;
 
@@ -36,7 +36,7 @@ import groove.util.TransformIterator;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implements GraphPredicate {
 	/** Empty graph, to be used in the standard construction of an initial morphism. */
@@ -46,7 +46,7 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
      * Constructs a graph condition with given context and empty name,
      * and initially empty pattern and target graph.
      */
-    protected DefaultGraphPredicate(VarGraph context, NameLabel name) {
+    public DefaultGraphPredicate(VarGraph context, NameLabel name) {
         this.context = context;
         this.name = name;
     }
@@ -55,7 +55,8 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
      * Constructs a graph condition with given context and name,
      * and initially empty pattern and target graph.
      */
-    protected DefaultGraphPredicate(VarGraph context) {
+    // JHK:Waarom zijn deze constructors protected ??
+    public DefaultGraphPredicate(VarGraph context) {
         this(context, null);
     }
 
@@ -221,6 +222,12 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
             conditionMap.put(condition, condition.getOutcome(subject));
         }
         return createOutcome(subject, conditionMap);
+    }
+    
+    public GraphPredicateOutcome getOutcome(Graph subject) {
+    	// TODO: ...
+    	throw new RuntimeException("I don't want to be here!");
+    	//return null;
     }
 
     /**

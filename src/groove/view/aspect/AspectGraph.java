@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.7 2007-05-30 21:30:25 rensink Exp $
+ * $Id: AspectGraph.java,v 1.8 2007-08-22 09:19:46 kastenberg Exp $
  */
 package groove.view.aspect;
 
@@ -60,6 +60,22 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	@Override
 	public Set<AspectEdge> edgeSet() {
 		return (Set<AspectEdge>) super.edgeSet();
+	}
+	
+	/**
+	 * Specialises the return type.
+	 */
+	@Override
+	public Set<AspectEdge> edgeSet(Node node) {
+		return (Set<AspectEdge>) super.edgeSet(node);
+	}
+
+	/**
+	 * Specialises the return type.
+	 */
+	@Override
+	public Set<AspectEdge> edgeSet(Node node, int end) {
+		return (Set<AspectEdge>) super.edgeSet(node, end);
 	}
 
 	/**
@@ -131,9 +147,6 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 */
 	private AspectGraph fromPlainGraph(GraphShape graph, NodeEdgeMap elementMap) {
         List<String> errors = new ArrayList<String>();
-        if (GraphInfo.hasErrors(graph)) {
-        	errors.addAll(GraphInfo.getErrors(graph));
-        }
 		assert elementMap != null && elementMap.isEmpty();
 		AspectGraph result = new AspectGraph();
 		// first do the nodes;
@@ -268,13 +281,11 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 		AspectParseData parseData = parser.getParseData(labelText);
 		if (!parseData.hasText()) {
 			AspectMap aspectMap = parseData.getAspectMap();
-			// this edge is empty or indicates a node aspect
-			if (aspectMap.isEmpty()) {
-				throw new FormatException("Empty label not allowed; prefix with ':'");
-			} else if (edge.opposite() != edge.source()) {
+			// this edge indicates a node aspect
+			if (edge.opposite() != edge.source()) {
 				// Node aspect values only on self-edges
 				throw new FormatException("Label '%s' only allowed on self-edges",labelText);
-			} else if (aspectMap.size() > 1) {
+			} else if (aspectMap.size() != 1) {
 				// Only one aspect value per node self-edge
 				throw new FormatException("Multiple node aspect values in '%s'", labelText);
 			} else {

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.15 2007-06-01 18:04:18 rensink Exp $
+ * $Id: SPORule.java,v 1.16 2007-08-22 09:19:44 kastenberg Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -125,7 +125,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     public void testConsistent() throws FormatException {
     	super.testConsistent();
     	if (!getProperties().isAttributed() && ValueNode.hasValueNodes(rhs())) {
-    		String attributeKey = SystemProperties.ATTRIBUTES_KEY;
+    		String attributeKey = SystemProperties.ATTRIBUTE_SUPPORT;
     		String attributeProperty = getProperties().getProperty(attributeKey);
     		if (attributeProperty == null) {
     			throw new FormatException("Rule uses attributes, but \"%s\" not declared", attributeKey);
@@ -264,16 +264,23 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 		}
 	    return modifying;
 	}
+	
+	protected void setModifying(boolean value) {
+		modifying = value; modifyingSet = true;
+	}
 
 	/**
 	 * Computes if the rule is modifying or not.
 	 */
 	protected boolean computeModifying() {
-		return this.getEraserEdges().length > 0 || this.getEraserNodes().length > 0 || hasMergers() || hasCreators();
+		// JHK: hasCreators var gebruikt...
+		//return this.getEraserEdges().length > 0 || this.getEraserNodes().length > 0 || hasMergers() || hasCreators();
+		return this.getEraserEdges().length > 0 || this.getEraserNodes().length > 0 || hasMergers() || hasCreators;
 	}
 
     /** Returns the eraser (i.e., LHS-only) edges. */
-    final Edge[] getEraserEdges() {
+	// JHK: public
+    final public Edge[] getEraserEdges() {
     	if (eraserEdges == null) {
     		eraserEdges = computeEraserEdges();
     	}
@@ -313,7 +320,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	/**
 	 * Returns the LHS nodes that are not mapped to the RHS.
 	 */
-	final Node[] getEraserNodes() {
+	// JHK: public
+	final public Node[] getEraserNodes() {
 		if (eraserNodes == null) {
 			eraserNodes = computeEraserNodes();
 		}
@@ -333,14 +341,16 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	/**
 	 * Indicates if the rule creates any nodes or edges.
 	 */
-	protected boolean hasCreators() {
+	// JHK: public
+	public boolean hasCreators() {
 		return hasCreators;
 	}
 
     /**
      * Returns the creator edges between reader nodes.
      */
-    final Edge[] getSimpleCreatorEdges() {
+	// JHK: public
+    final public Edge[] getSimpleCreatorEdges() {
         if (simpleCreatorEdges == null) {
             simpleCreatorEdges = computeSimpleCreatorEdges();
         }
@@ -350,7 +360,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /**
      * Computes the creator edges between reader nodes.
      */
-    private Edge[] computeSimpleCreatorEdges() {
+    // JHK:protected
+    protected Edge[] computeSimpleCreatorEdges() {
         List<Edge> result = new ArrayList<Edge>();
         // iterate over all creator edges
         for (Edge creatorEdge: getCreatorEdges()) {
@@ -370,7 +381,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /**
      * Returns the creator edges that have at least one creator end.
      */
-    final Edge[] getComplexCreatorEdges() {
+    // JHK: public
+    final public Edge[] getComplexCreatorEdges() {
         if (complexCreatorEdges == null) {
             complexCreatorEdges = computeComplexCreatorEdges();
         }
@@ -380,7 +392,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /**
      * Computes the creator edges that have at least one creator end.
      */
-    private Edge[] computeComplexCreatorEdges() {
+    // JHK: protected
+    protected Edge[] computeComplexCreatorEdges() {
         List<Edge> result = new ArrayList<Edge>();
         // iterate over all creator edges
         for (Edge creatorEdge: getCreatorEdges()) {
@@ -400,7 +413,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /**
      * Returns the RHS edges that are not images of an LHS edge.
      */
-    final Edge[] getCreatorEdges() {
+    // JHK: public
+    final public Edge[] getCreatorEdges() {
         if (creatorEdges == null) {
             creatorEdges = computeCreatorEdges();
         }
@@ -410,7 +424,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /**
      * Computes the creator (i.e., RHS-only) edges.
      */
-    private Edge[] computeCreatorEdges() {
+    // JHK: private -> protected
+    protected Edge[] computeCreatorEdges() {
         Set<Edge> result = new HashSet<Edge>(rhs.edgeSet());
         result.removeAll(getMorphism().edgeMap().values());
         return result.toArray(new Edge[0]);
@@ -439,7 +454,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * Returns the variables that occur in creator edges.
 	 * @see #getCreatorEdges()
 	 */
-	final String[] getCreatorVars() {
+	final public String[] getCreatorVars() {
 		if (creatorVars == null) {
 			creatorVars = computeCreatorVars();
 		}
@@ -465,7 +480,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * Returns a sub-graph of the RHS concisting of the creator nodes and
 	 * the creator edges with their endpoints.
 	 */
-	final Graph getCreatorGraph() {
+	// JHK: public
+	final public Graph getCreatorGraph() {
 		if (creatorGraph == null) {
 			creatorGraph = computeCreatorGraph();
 		}
@@ -491,7 +507,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * that are not themselves creator nodes but are the ends of creator edges, to the
 	 * corresponding nodes of the LHS.
 	 */
-	final Map<Node,Node> getCreatorMap() {
+	final public Map<Node,Node> getCreatorMap() {
 		if (creatorMap == null) {
 			creatorMap = computeCreatorMap();
 		}
@@ -519,7 +535,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * Returns a map from LHS nodes that are merged to those LHS nodes
 	 * they are merged with.
 	 */
-	final Map<Node, Node> getMergeMap() {
+	final public Map<Node, Node> getMergeMap() {
 		if (mergeMap == null) {
 			mergeMap = computeMergeMap();
 		}
@@ -552,7 +568,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	/**
 	 * Array of LHS edges that bind variables.
 	 */
-	final Edge[] getVarEdges() {
+	//JHK: publc
+	final public Edge[] getVarEdges() {
 		if (varEdges == null) {
 			varEdges = computeVarEdges();
 		}
@@ -583,7 +600,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * Computes the anchor graph of this rule.
 	 * @see #getAnchorGraph()
 	 */
-	Graph computeAnchorGraph() {
+	protected Graph computeAnchorGraph() {
 		Graph result = lhs().newGraph();
 		for (Element elem: anchor()) {
 			if (elem instanceof Node) {

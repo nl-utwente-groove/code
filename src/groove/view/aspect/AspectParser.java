@@ -12,26 +12,23 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.5 2007-06-27 16:00:28 rensink Exp $
+ * $Id: AspectParser.java,v 1.6 2007-08-22 09:19:46 kastenberg Exp $
  */
 package groove.view.aspect;
 
 import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
-import groove.view.ComposedLabelParser;
 import groove.view.FormatException;
-import groove.view.LabelParser;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class AspectParser {
 	/** 
@@ -82,6 +79,11 @@ public class AspectParser {
      */
     public AspectParseData getParseData(String plainText) throws FormatException {
     	AspectMap parsedValues = new AspectMap();
+    	/*if( plainText == null && false ) {
+        	// JHK: the calling method (AspectGraph.getNodeValue) can handle empty aspects, but this method cannot
+        	// JHK: this if creates the data AspectGraph expects when there is no aspect-material
+    		return createParseData(parsedValues, false, null);
+    	}*/
 		boolean stopParsing = false;
 		boolean endFound = false;
 		int prevIndex = 0;
@@ -216,33 +218,17 @@ public class AspectParser {
 	 * Converts a collection of aspect values plus an actual
 	 * label text into a string that can be parsed back.
 	 */
-	static public StringBuilder toString(Collection<AspectValue> values, StringBuilder labelText) {
-		StringBuilder result = new StringBuilder();
+	static public String toString(Collection<AspectValue> values, String labelText) {
+		StringBuffer result = new StringBuffer();
 		for (AspectValue value: values) {
 			result.append(AspectParser.toString(value));
 		}
-		if (values.size() > 0 && (labelText.length() == 0 || labelText.indexOf(VALUE_SEPARATOR) >= 0)) {
+		if (values.size() > 0 && (labelText.length() == 0 || labelText.contains(VALUE_SEPARATOR))) {
 			result.append(VALUE_SEPARATOR);
 		}
 		result.append(labelText);
-		return result;
+		return result.toString();
 	}
-    
-    /** Returns the label parsers induced by a set of aspect values. */
-    static public LabelParser getLabelParser(Collection<AspectValue> values) {
-        Collection<LabelParser> parsers = new LinkedHashSet<LabelParser>();
-        for (AspectValue value: values) {
-            LabelParser parser = value.getLabelParser();
-            if (parser != null) {
-                parsers.add(parser);
-            }
-        }
-        // if none was induced, get the default parser
-        if (parsers.isEmpty()) {
-            parsers.add(AbstractAspect.getRegExprLabelParser());
-        }
-        return new ComposedLabelParser(parsers);
-    }
 
     /**
      * The set of registered aspects.

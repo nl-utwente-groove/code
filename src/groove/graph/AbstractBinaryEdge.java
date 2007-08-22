@@ -12,9 +12,16 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AbstractBinaryEdge.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
+ * $Id: AbstractBinaryEdge.java,v 1.3 2007-08-22 09:19:38 kastenberg Exp $
  */
 package groove.graph;
+
+import java.util.List;
+import java.util.Set;
+
+import groove.nesting.VarNodeEdgeMultiHashMap;
+import groove.nesting.VarNodeEdgeMultiMap;
+import groove.rel.VarNodeEdgeHashMap;
 
 
 
@@ -22,7 +29,7 @@ package groove.graph;
  * Abstract implementation of an (immutable) binary graph edge, as a tuple consisting of source and
  * target nodes.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:32 $
+ * @version $Revision: 1.3 $ $Date: 2007-08-22 09:19:38 $
  */
 abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryEdge {
     static {
@@ -45,7 +52,40 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
 
     // ----------------- Element methods ----------------------------
 
-    public Edge imageFor(NodeEdgeMap elementMap) {
+    public Edge imageFor(GenericNodeEdgeMap elementMap) {
+    	if( elementMap instanceof NodeEdgeMap ) {
+    		return imageFor((NodeEdgeMap)elementMap);
+    	} else if( elementMap instanceof VarNodeEdgeMultiMap ) {
+    		return imageFor((VarNodeEdgeMultiMap)elementMap);
+    	} return null;
+    }
+    
+    private Edge imageFor(VarNodeEdgeMultiMap elementMap) {
+        // if this edge has an explicit image in the map, use that
+        Set<Edge> image = elementMap.getEdge(this);
+        if (image != null) {
+        	// TODO: This can't be right
+            return image.toArray(new Edge[0])[0];
+        }
+        Set<Node> sourceImage = elementMap.getNode(source());
+        if (sourceImage == null) {
+            return null;
+        }
+        Set<Node> targetImage = elementMap.getNode(target());
+        if (targetImage == null) {
+            return null;
+        }
+        Label labelImage = elementMap.getLabel(label());
+        Node imgSource = sourceImage.toArray(new Node[0])[0];
+        Node imgTarget = targetImage.toArray(new Node[0])[0];
+        if (source() == imgSource && target() == imgTarget && label() == labelImage) {
+            return this;
+        } else {
+            return newEdge(imgSource, labelImage, imgTarget);
+        }
+    }
+    
+    private Edge imageFor(NodeEdgeMap elementMap) {
         // if this edge has an explicit image in the map, use that
         Edge image = elementMap.getEdge(this);
         if (image != null) {

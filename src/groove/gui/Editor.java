@@ -12,14 +12,16 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Editor.java,v 1.39 2007-06-28 12:05:34 rensink Exp $
+ * $Id: Editor.java,v 1.40 2007-08-22 09:19:55 kastenberg Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.HELP_MENU_NAME;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
+import groove.graph.Node;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
@@ -30,10 +32,18 @@ import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.PriorityFileName;
 import groove.io.Xml;
+import groove.rel.VarGraph;
+import groove.trans.SPORule;
+import groove.util.Converter;
 import groove.util.Groove;
+import groove.view.AspectualGraphView;
+import groove.view.AspectualRuleView;
 import groove.view.AspectualView;
 import groove.view.FormatException;
+import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectNode;
+import groove.view.aspect.AspectValue;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -49,9 +59,10 @@ import java.beans.PropertyChangeSupport;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -59,6 +70,7 @@ import javax.swing.Action;
 import javax.swing.ButtonGroup;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -91,7 +103,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.39 $ $Date: 2007-06-28 12:05:34 $
+ * @version $Revision: 1.40 $ $Date: 2007-08-22 09:19:55 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -146,10 +158,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      */
     public void setPlainGraph(Graph graph) {
         if (graph == null) {
-        	setErrors(null);
         	setModel(new EditorJModel(getOptions()));
         } else {
-			setErrors(GraphInfo.getErrors(graph));
 			setModel(new EditorJModel(GraphJModel.newInstance(graph, getOptions())));
 			setRole(GraphInfo.getRole(graph));
 		}
@@ -212,7 +222,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * Refreshes the statur bar.
      */
     public void graphChanged(GraphModelEvent e) {
-    	setErrors(null);
         updateStatus();
     }
     
@@ -253,7 +262,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     	if (getOptions().isSelected(Options.PREVIEW_ON_SAVE_OPTION) && !handlePreview(null)) {
     		return null;
     	} else if (toAspectGraph().hasErrors()) {
-    		JOptionPane.showMessageDialog(getFrame(), "Cannot save graph with syntax errors", null, JOptionPane.WARNING_MESSAGE);
+    		JOptionPane.showMessageDialog(getFrame(), "Cannot save graph with syntax errors");
     		return null;
     	} else {
 			File toFile = ExtensionFilter.showSaveDialog(getGraphChooser(), getGraphPanel());
@@ -289,11 +298,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	protected boolean handlePreview(String okOption) {
 		AspectJModel previewedModel = showPreviewDialog(toView(), okOption);
 		if (previewedModel != null) {
-//			setSelectInsertedCells(false);
-			Graph plainGraph = previewedModel.toPlainGraph();
-			setErrors(GraphInfo.getErrors(plainGraph));
-			getModel().replace(GraphJModel.newInstance(plainGraph, getOptions()));
-//			setSelectInsertedCells(true);
+			setSelectInsertedCells(false);
+			getModel().replace(GraphJModel.newInstance(previewedModel.toPlainGraph(), getOptions()));
+			setSelectInsertedCells(true);
 			return true;
 		} else {
 			return false;
@@ -672,30 +679,15 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         return anyGraphSaved;
     }
 
-    /** Indicates if the current graph has any load errors. */
-    private boolean hasErrors() {
-    	return errors != null;
-    }
-    
-    /** Returns the collection of load errors in the current graph. */
-    private Collection<String> getErrors() {
-    	return this.errors;
-    }
-    
-    /** Sets the load errors in the current graph to a given collection. */
-    private void setErrors(Collection<String> errors) {
-    	this.errors = errors;
+    /**
+     * Indicates if we are editing a rule or a graph.
+     * @return <code>true</code> if we are editing a graph.
+     */
+    private boolean hasGraphRole() {
+        return Groove.GRAPH_ROLE.equals(role);
     }
 
     /**
-	 * Indicates if we are editing a rule or a graph.
-	 * @return <code>true</code> if we are editing a graph.
-	 */
-	private boolean hasGraphRole() {
-	    return Groove.GRAPH_ROLE.equals(role);
-	}
-
-	/**
      * Returns a textual representation of the graph type,
      * with the first letter capitalised on demand.
      * @param upper if <code>true</code>, the first letter is capitalised
@@ -715,14 +707,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     
     /**
      * Sets the edit role to {@link Groove#GRAPH_ROLE} or {@link Groove#RULE_ROLE}.
-     * @param role the edit role to be set; if <code>null</code>, it is set to {@link Groove#GRAPH_ROLE}.
+     * @param role if <code>true</code>, the edit type is set to graph
      * @return <code>true</code> if the edit type was actually changed; <code>false</code> if it 
      * was already equal to <code>type</code>
      */
     private boolean setRole(String role) {
-    	if (role == null) {
-    		role = Groove.GRAPH_ROLE;
-    	}
     	if (! (Groove.GRAPH_ROLE.equals(role) || Groove.RULE_ROLE.equals(role))) {
     		throw new IllegalArgumentException(String.format("Illegal role %s", role));
     	}
@@ -1142,14 +1131,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     
     /** Updates the status bar with information about the currently edited graph. */
     protected void updateStatus() {
-        int elementCount = getModel().getRootCount() - getModel().getGrayedOut().size();
+        int elementCount = getModel().getRootCount() - getModel().getGrayedOutCount();
         getStatusBar().setText(""+elementCount+" visible elements");
-        List<String> errors = new ArrayList<String>();
-        if (hasErrors()) {
-        	errors.addAll(getErrors());
-        }
-        errors.addAll(toView().getErrors());
-    	getErrorPanel().setErrors(errors);
+    	getErrorPanel().setErrors(toView().getErrors());
     }
     
     /** Sets the property whether all inserted cells are automatically selected. */
@@ -1210,6 +1194,59 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             return true;
         }
     }
+    
+    //JHK
+    public static void previewRule(final SPORule blip, final String level) {
+    	Runnable runLater = new Runnable() {
+    		public void run() {
+    	    	Editor e = new Editor();
+    	    	
+    	    	try {
+    	    	AspectualRuleView view = new AspectualRuleView(blip);
+    	    	e.showPreviewDialog(view, level);
+    	    	} catch( FormatException exc ) {
+    	    		System.out.println("bah");
+    	    	}
+    		}
+    	};
+    	Thread t = new Thread(runLater);
+    	t.start();
+    }
+    
+    //JHK
+    public static void previewGraph(final VarGraph blip, final String name) {
+    	Runnable runLater = new Runnable() {
+    		public void run() {
+    			Editor e = new Editor();
+    			
+    			AspectGraph tmp = new AspectGraph();
+    			Map<Node, AspectNode> toNew = new HashMap<Node, AspectNode> ();
+    			for( Node node : blip.nodeSet() ) {
+    				AspectNode image = tmp.createNode();
+    				tmp.addNode(image);
+    				toNew.put(node, image);
+    			}
+    			for( Edge edge : blip.edgeSet() ) {
+    				List<AspectNode> ends = new ArrayList<AspectNode> ();
+    				ends.add(toNew.get(edge.end(Edge.SOURCE_INDEX)));
+    				ends.add(toNew.get(edge.end(Edge.TARGET_INDEX)));
+    				AspectEdge image;
+					try {
+						image = new AspectEdge(ends, edge.label(), new AspectValue[0]);
+	    				tmp.addEdge(image);
+					} catch (FormatException e1) {
+						// TODO Auto-generated catch block
+						System.out.println("AARGH");
+					}
+    			}
+    			
+				AspectualGraphView view = new AspectualGraphView(tmp);
+				e.showPreviewDialog(view, name);
+    		}
+    	};
+    	Thread t = new Thread(runLater);
+    	t.start();
+    }
 
     /** 
      * Creates a preview of an aspect model, with properties.
@@ -1218,7 +1255,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private AspectJModel showPreviewDialog(AspectualView<?> view, String okOption) {
     	boolean partial = view.getAspectGraph().hasErrors();
     	AspectJModel previewModel = AspectJModel.newInstance(view, getOptions());
-        JGraph jGraph = new JGraph(previewModel, false);
+        JGraph jGraph = new JGraph(previewModel);
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
         jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
@@ -1308,9 +1345,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 
     /** Flag indicating if the editor is editing a graph or a rule. */
     private String role;
-    
-    /** Collection of errors in the currently loaded graph; <code>null</code> if there are none. */
-    private Collection<String> errors;
     
     /** The undo manager of the editor. */
     private transient GraphUndoManager undoManager;
@@ -1747,7 +1781,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.39 $
+     * @version $Revision: 1.40 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */
@@ -1782,24 +1816,34 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 
         @Override
         public int showSaveDialog(Component parent) throws HeadlessException {
-        	int result;
-			resetChoosableFileFilters();
-			setAcceptAllFileFilterUsed(false);
-			setFilters(hasGraphRole());
-			// setAccessory(getRolePanel());
-			setCurrentDirectory(getCurrentDir());
-			setSelectedFile(getSaveFile());
-			// get the file to write to
-			listenToFilterChanges = true;
-			result = super.showSaveDialog(parent);
-			lastSaveFilter = getFileFilter();
-			listenToFilterChanges = false;
-			return result;
-		}
+            resetChoosableFileFilters();
+            setAcceptAllFileFilterUsed(false);
+            setFilters(hasGraphRole());
+            setAccessory(getRolePanel());
+            setCurrentDirectory(getCurrentDir());
+            setSelectedFile(getSaveFile());
+            // get the file to write to
+            listenToFilterChanges = true;
+            int result = super.showSaveDialog(parent);
+            lastSaveFilter = getFileFilter();
+            listenToFilterChanges = false;
+            if (result == JFileChooser.APPROVE_OPTION) {
+                if (getPreviewCheckBox().isSelected() || toAspectGraph().hasErrors()) {
+                	boolean previewOK = handlePreview("Save");
+                	if (! previewOK) {
+                        result = JFileChooser.CANCEL_OPTION;
+                	} else if (toAspectGraph().hasErrors()) {
+                		JOptionPane.showMessageDialog(getFrame(), String.format("%s contains syntax errors; not saved", getRole(true)));
+                        result = JFileChooser.CANCEL_OPTION;
+                	}
+                }
+            }
+            return result;
+        }
 
 		/**
-		 * Returns the name of the file to be saved. This is derived from the
-		 * model name.
+		 * Returns the name of the file to be saved.
+		 * This is derived from the model name.
 		 */
 		private File getSaveFile() {
             String graphName = getModelName();
@@ -1845,6 +1889,29 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             return filter == getRuleFilter();
         }
 
+        private JPanel getRolePanel() {
+            if (rolePanel == null) {
+                JPanel innerPanel = new JPanel(new BorderLayout());
+                innerPanel.setBorder(new javax.swing.border.EmptyBorder(0, 5, 0, 0));
+                innerPanel.add(getPreviewCheckBox(), BorderLayout.SOUTH);
+                rolePanel = new JPanel(new BorderLayout());
+                rolePanel.add(innerPanel, BorderLayout.SOUTH);
+            }
+            return rolePanel;
+        }
+
+        /**
+         * Returns a checkbox forcing a preview dialog before saving a rule.
+         */
+        private JCheckBox getPreviewCheckBox() {
+            if (previewCheckBox == null) {
+                previewCheckBox = new JCheckBox();
+                previewCheckBox.setText("Preview");
+                previewCheckBox.setSelected(true);
+            }
+            return previewCheckBox;
+        }
+        
         /** Retrieves the directory file from the #currentFile */
         private File getCurrentDir() {
             return currentFile == null ? new File(Groove.WORKING_DIR) : currentFile.getAbsoluteFile().getParentFile();
@@ -1915,8 +1982,14 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         	return graphFilter;
         }
         
+        /** The auxiliary component used in the save dialog. */
+        private JPanel rolePanel;
         /** Last file filter used in a save dialog. */
         private FileFilter lastSaveFilter;
+//        /** Combo box to choose between graph and rule edit type. */
+//        private JComboBox typeComboBox;
+        /** Checkbox to indicate that saving rules should be preceded by a preview. */
+        private JCheckBox previewCheckBox;
 
         /** Flag indicating that filter changes may change the edit type. */
         private boolean listenToFilterChanges;
