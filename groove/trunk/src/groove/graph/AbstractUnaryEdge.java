@@ -12,15 +12,17 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: AbstractUnaryEdge.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
+ * $Id: AbstractUnaryEdge.java,v 1.3 2007-08-22 09:19:39 kastenberg Exp $
  */
 package groove.graph;
+
+import groove.nesting.VarNodeEdgeMultiMap;
 
 
 /**
  * Abstract implementation of an (immutable) unary graph edge, consisting of one source node only.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-27 14:18:32 $
+ * @version $Revision: 1.3 $ $Date: 2007-08-22 09:19:39 $
  */
 abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdge {
     static {
@@ -41,7 +43,28 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
 
     // ----------------- Element methods ----------------------------
 
-    public UnaryEdge imageFor(NodeEdgeMap elementMap) {
+    public UnaryEdge imageFor(GenericNodeEdgeMap elementMap) {
+    	if( elementMap instanceof NodeEdgeMap ) {
+    		return imageFor((NodeEdgeMap)elementMap);
+    	} else if( elementMap instanceof VarNodeEdgeMultiMap ) {
+    		return imageFor((VarNodeEdgeMultiMap)elementMap);
+    	} return null;
+    }
+    
+    protected UnaryEdge imageFor(VarNodeEdgeMultiMap elementMap) {
+        Node sourceImage = elementMap.getNode(source()).toArray(new Node[0])[0];
+        if (sourceImage == null) {
+            return null;
+        }
+        Label labelImage = elementMap.getLabel(label());
+        if (source() == sourceImage && label() == labelImage) {
+            return this;
+        } else {
+            return newEdge(sourceImage, labelImage);
+        }
+    }
+    
+    protected UnaryEdge imageFor(NodeEdgeMap elementMap) {
         Node sourceImage = elementMap.getNode(source());
         if (sourceImage == null) {
             return null;

@@ -1,9 +1,10 @@
-/* $Id: AspectualView.java,v 1.3 2007-05-14 18:52:03 rensink Exp $ */
+/* $Id: AspectualView.java,v 1.4 2007-08-22 09:19:52 kastenberg Exp $ */
 package groove.view;
 
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
 import groove.graph.NodeEdgeMap;
+import groove.nesting.rule.NestedAspectualRuleView;
 import groove.trans.RuleNameLabel;
 import groove.view.aspect.AspectGraph;
 
@@ -40,7 +41,8 @@ abstract public class AspectualView<Model> implements View<Model> {
 	 */
 	static public AspectualView<?> createView(AspectGraph aspectGraph) {
 		if (GraphInfo.hasRuleRole(aspectGraph)) {
-			return new AspectualRuleView(aspectGraph, new RuleNameLabel(GraphInfo.getName(aspectGraph)));
+			// JHK: NestedAspectualRuleView
+			return new NestedAspectualRuleView(aspectGraph, new RuleNameLabel(GraphInfo.getName(aspectGraph)));
 		} else {
 			return new AspectualGraphView(aspectGraph);
 		}

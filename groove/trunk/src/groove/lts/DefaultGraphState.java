@@ -12,13 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphState.java,v 1.10 2007-06-18 07:25:45 fladder Exp $
+ * $Id: DefaultGraphState.java,v 1.11 2007-08-22 09:19:43 kastenberg Exp $
  */
 package groove.lts;
 
-import groove.control.Location;
 import groove.graph.DeltaGraph;
 import groove.graph.Element;
+import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -37,7 +37,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-06-18 07:25:45 $
+ * @version $Revision: 1.11 $ $Date: 2007-08-22 09:19:43 $
  * @deprecated use {@link StartGraphState} or {@link DefaultGraphNextState} instead
  */
 @Deprecated
@@ -113,7 +113,7 @@ public class DefaultGraphState extends DeltaGraph<DefaultStateCache> implements 
     }
     
     /** This state type always returns <code>null</code> as control location. */
-    public Location getControl() {
+    public Object getControl() {
     	return null;
     }
 
@@ -339,7 +339,7 @@ public class DefaultGraphState extends DeltaGraph<DefaultStateCache> implements 
 //        clearCache();
 //    }
 
-    public Element imageFor(NodeEdgeMap elementMap) {
+    public Element imageFor(GenericNodeEdgeMap elementMap) {
         throw new UnsupportedOperationException(
                 "Mappings between transition systems are currently not supported");
     }

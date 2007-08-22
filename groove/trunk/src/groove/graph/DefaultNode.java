@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultNode.java,v 1.2 2007-03-30 15:50:24 rensink Exp $
+ * $Id: DefaultNode.java,v 1.3 2007-08-22 09:19:39 kastenberg Exp $
  */
 package groove.graph;
 
+import groove.nesting.VarNodeEdgeMultiMap;
 import groove.util.Dispenser;
 
 /**
@@ -23,7 +24,7 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:24 $
+ * @version $Revision: 1.3 $ $Date: 2007-08-22 09:19:39 $
  */
 public class DefaultNode implements Node {
     /**
@@ -131,7 +132,19 @@ public class DefaultNode implements Node {
 
     // ---------------- Element and related methods ----------------------
 
-    public Node imageFor(NodeEdgeMap elementMap) {
+    public Node imageFor(GenericNodeEdgeMap elementMap) {
+    	if( elementMap instanceof NodeEdgeMap ) {
+    		return imageFor((NodeEdgeMap)elementMap);
+    	} else if( elementMap instanceof VarNodeEdgeMultiMap ) {
+    		return imageFor((VarNodeEdgeMultiMap)elementMap);
+    	} return null;
+    }
+    
+    private Node imageFor(VarNodeEdgeMultiMap elementMap) {
+        return elementMap.getNode(this).toArray(new Node[0])[0];
+    }
+
+    private Node imageFor(NodeEdgeMap elementMap) {
         return elementMap.getNode(this);
     }
 

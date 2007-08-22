@@ -13,12 +13,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.5 2007-06-18 07:25:45 fladder Exp $
+ * $Id: AbstractGraphState.java,v 1.6 2007-08-22 09:19:43 kastenberg Exp $
  */
 package groove.lts;
 
-import groove.control.Location;
 import groove.graph.Element;
+import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -37,14 +37,14 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-06-18 07:25:45 $
+ * @version $Revision: 1.6 $ $Date: 2007-08-22 09:19:43 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
      * Constructs a an abstract graph state, with a given control location.
      * @param location the control location; may be <code>null</code>.
      */
-    public AbstractGraphState(Location location) {
+    public AbstractGraphState(Object location) {
     	this.location = location;
         stateCount++;
     }
@@ -58,7 +58,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     
     abstract public Graph getGraph();
 
-	public final Location getControl() {
+	public final Object getControl() {
 		return this.location;
 	}
 
@@ -280,7 +280,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 //    	getCacheReference().clear();
 //    }
 
-    public Element imageFor(NodeEdgeMap elementMap) {
+    public Element imageFor(GenericNodeEdgeMap elementMap) {
         throw new UnsupportedOperationException(
                 "Mappings between transition systems are currently not supported");
     }
@@ -387,7 +387,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
     
     /** The internally stored (optional) control location. */
-    private final Location location;
+    private final Object location;
 
     /** Global constant empty stub array. */
     private GraphTransitionStub[] transitionStubs = EMPTY_TRANSITION_STUBS;

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Pair.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: Pair.java,v 1.2 2007-08-22 09:19:50 kastenberg Exp $
  */
 package groove.util;
 
@@ -76,6 +76,18 @@ public class Pair<T,U> {
 	@Override
 	public String toString() {
 		return String.format("<%s,%s>", first, second);
+	}
+	
+	/**
+	 * Factory method for generically creating typed pairs.
+	 * @param <TT> type capture of the first parameter
+	 * @param <UU> type capture of the second parameter
+	 * @param first first element of the new pair
+	 * @param second second element of the new pair
+	 * @return a new typed pair for with the given values
+	 */
+	public static <TT, UU> Pair<TT, UU> createPair(TT first, UU second) {
+		return new Pair<TT, UU> (first, second);
 	}
 
 	/** The first value of the pair. */

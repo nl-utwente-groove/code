@@ -25,8 +25,9 @@ import groove.trans.RuleEvent;
  * These objects typically do not store the source of the transition;
  * instead they are stored inside by the source state.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
+// JHK: public!
 public interface GraphTransitionStub extends Element {
 	/** 
 	 * Returns the event that underlies the transition from a given source

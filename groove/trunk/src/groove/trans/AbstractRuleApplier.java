@@ -16,18 +16,22 @@
  */
 package groove.trans;
 
-import groove.control.ControlView;
 import groove.graph.Graph;
-import groove.lts.GraphState;
+import groove.nesting.rule.NestedRule;
+import groove.rel.VarMorphism;
 import groove.util.AbstractNestedIterator;
+import groove.util.NestedIterator;
+import groove.util.Pair;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
  * Rule applier that works for an ordinary rule system.
@@ -45,37 +49,19 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	
 	public Iterator<RuleApplication> getApplicationIter() {
 		Iterator<RuleApplication> result = null;
-
-		reporter.start(GET_DERIVATIONS);
+        reporter.start(GET_DERIVATIONS);
         // find the first batch of rules that has any derivations
-        
-        //Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
-        // optionaly return only for current control state
-        Iterator<Set<Rule>> ruleSetIter = getRuleSetIter();
-        
+        Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
+        int i =0;
         while (result == null && ruleSetIter.hasNext()) {
         	Set<Rule> rules = ruleSetIter.next();
-        	// if i'm dealing with lambdas i have to use getApplications, cant be done lazy
-        	
-        	
-        	// this would implement the stuff considering an iterator over all applications
-        	// but it doesnt matter yet for linear exploration since it would only do the
-        	// highest priority anyway. Maybe add later for e.g. barbed?
-        	// TODO: should this be inhere?
-        	//int priority = rules.iterator().next().getPriority();
-        	//if( priority == ControlView.ANY_RULE_PRORITY)
-        		//iter = this.getApplications().iterator();
-        	// else
-            	Iterator<RuleApplication> iter = getDerivationIter(rules);
-        	
-
+        	Iterator<RuleApplication> iter = getDerivationIter(rules);
         	if (iter.hasNext()) {
         		result = iter;
         	}
-        	
-        	// make sure it continues when the current result yields only lambda transitions
-        	// except for else transitions
+        	i++;
         }
+        //System.out.println("Number of applications iterated: " + i);
         reporter.stop();
         return result == null ? Collections.<RuleApplication>emptySet().iterator() : result;
 	}
@@ -86,16 +72,17 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	 * The set of rules is guaranteed to be non-empty and to have a uniform priority.
 	 */
 	Iterator<RuleApplication> getDerivationIter(final Set<Rule> rules) {
-        Iterator<RuleApplication> result = new AbstractNestedIterator<RuleApplication>() {
+        Iterator<Iterator<RuleApplication>> result = new AbstractNestedIterator<Iterator<RuleApplication>>() {
         	@Override
             protected boolean hasNextIterator() {
                 while (!atEnd && nextIter == null && ruleIter.hasNext()) {
                     final Rule nextRule = ruleIter.next();
-					nextIter = new TransformIterator<Matching, RuleApplication>(nextRule
-							.getMatchingIter(getGraph())) {
+                    // JHK: Outcome hier in geklust
+                    final GraphConditionOutcome outcome = nextRule.getOutcome(getGraph());
+					nextIter = new TransformIterator<Matching, Iterator<RuleApplication>> (outcome.getSuccessKeys().iterator()) {
 						@Override
-						public RuleApplication toOuter(Matching from) {
-							return record.getApplication(nextRule, from);
+						public Iterator<RuleApplication> toOuter(Matching from) {
+							return record.getApplications(nextRule, from, outcome.get(from)).iterator();
 						}
 					};
                 }
@@ -104,9 +91,9 @@ abstract public class AbstractRuleApplier implements RuleApplier {
             }
 
         	@Override
-            protected Iterator<RuleApplication> nextIterator() {
+            protected Iterator<Iterator<RuleApplication>> nextIterator() {
             	if (hasNextIterator()) {
-            		Iterator<RuleApplication> result = nextIter;
+            		Iterator<Iterator<RuleApplication>> result = nextIter;
             		nextIter = null;
             		return result;
             	} else {
@@ -117,44 +104,20 @@ abstract public class AbstractRuleApplier implements RuleApplier {
             /** An iterator over the priority rule sets of the rule system. */
             private final Iterator<Rule> ruleIter = rules.iterator();
             /** The next iterator to be returned by {@link #nextIterator()} */
-            private Iterator<RuleApplication> nextIter;
+            private Iterator<Iterator<RuleApplication>> nextIter;
             /** A flag indicating if we have reached the end of applicable rules. */
             private boolean atEnd = false;
         };
-        return result;
+        
+        return new NestedIterator<RuleApplication> (result);
 	}
 
 	public Set<RuleApplication> getApplications() {
         reporter.start(GET_DERIVATIONS);
 		Set<RuleApplication> result = createApplicationSet();
-		//Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
-		
-		Iterator<Set<Rule>> ruleSetIter = getRuleSetIter();
-		
-		Set<Rule> rules = null;
-
-		// the commented lines would be a fix for collecting all possible applications 
-		// when we have lambda transitions also. not needed for full or linear (where in
-		// linear it would only do a lambda transition anyway)
-		// TODO: should this be added?
-		
-		//boolean done = false;
-		
-		// need done here instead of isEmpty if the commented lines are uncommented
-		while (!result.isEmpty() && ruleSetIter.hasNext()) {
-			
-			//int size = result.size();
-			rules = ruleSetIter.next();
-			
-			//int priority = rules.iterator().next().getPriority();
-			
-			// dont collect when i have results and i'm dealing with ELSE
-			//if( priority > ControlView.ELSE_RULE_PRIORITY || size == 0)
-			collectApplications(rules, result);
-
-			// if i didnt collect for LAMBDA and i have results i'm done
-			//if( priority < ControlView.ANY_RULE_PRORITY && size > 0 )
-			//	done = true;
+		Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
+		while (result.isEmpty() && ruleSetIter.hasNext()) {
+			collectApplications(ruleSetIter.next(), result);
 		}
 		reporter.stop();
         return result;
@@ -184,45 +147,23 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	 */
 	protected void collectApplications(Rule rule, Set<RuleApplication> result) {
 	    // compute applications of this production rule to graph
-	    for (Matching match: rule.getMatchingSet(getGraph())) {
-	        result.add(record.getApplication(rule, match));
+	    //for (Matching match: rule.getMatchingSet(getGraph())) {
+		// TODO:
+		//System.out.println("Collection Applications...");
+		GraphConditionOutcome outcome = rule.getOutcome(getGraph()); 
+		for( Matching match : outcome.getSuccessKeys() ) {
+			//System.out.println("Collected Applications");
+	        result.addAll(record.getApplications(rule, match, outcome.get(match)));
+	        //System.out.println("# Applications: " + result.size());
 	    }
 	}
 
-	/**
-	 *  Returns the currently possible rules. Possible means either all rules in the rulesystem
-	 *  or all rules associated to outgoing transitions of the current controlstate.
-	 */
-	protected Iterator<Set<Rule>> getRuleSetIter()
-	{
-		// default implementation
-		return record.getRuleSystem().getRuleMap().values().iterator();
-	}
-	
 	public void doApplications(Action action) {
 		reporter.start(GET_DERIVATIONS);
 		boolean done = false;
-		boolean lambdas = false;
-		
-		//Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
-		Iterator<Set<Rule>> ruleSetIter = getRuleSetIter();
-		
-		Set<Rule> rules = null;
-
-		int priority;
-		
+		Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
 		while (!done && ruleSetIter.hasNext()) {
-			rules = ruleSetIter.next();
-			
-			priority = rules.iterator().next().getPriority();
-			if( priority == ControlView.ANY_RULE_PRORITY )
-				lambdas = doApplications(rules, action);
-			else if( lambdas && priority == ControlView.ELSE_RULE_PRIORITY )
-				done = true;
-			else if( !lambdas && priority == ControlView.ELSE_RULE_PRIORITY )
-				done = doApplications(rules, action);
-			else
-				done = doApplications(rules, action);
+			done = doApplications(ruleSetIter.next(), action);
 		}
 		reporter.stop();
 	}
@@ -240,11 +181,9 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	protected boolean doApplications(Set<Rule> rules, Action action) {
 		boolean result = false;
 		reporter.start(COLLECT_APPLICATIONS);
-		int priority = 0;
 		for (Rule rule : rules) {
 			if (doApplications(rule, action)) {
 				result = true;
-				priority = rule.getPriority();
 			}
 		}
 		reporter.stop();
@@ -263,6 +202,32 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	 */
 	protected boolean doApplications(Rule rule, Action action) {
 		boolean result = false;
+
+		GraphConditionOutcome outcome = rule.getOutcome(getGraph());
+		//System.out.println("ARA:Graph used:" + getGraph().hashCode() + ", Rule used:" + rule.hashCode() + ", Successkeys:"+ outcome.getSuccessKeys().size());
+		//System.exit(0);
+
+		//System.out.println("_____OUTCOME______\n" + outcome + "\n_____END_OUTCOME_____");
+		//System.exit(0);
+		for( Matching m : outcome.getSuccessKeys() ) {
+			//System.out.println("Successkey!");
+			//Matching match = new DefaultMatching(outcome.get(m));
+			//NestedRule.buildTotalMatching(match, outcome.get(m));
+			//System.out.println("Domain of matching: \n" + match.cod() + "--- End of Domain");
+			//System.out.println("Hey... een matching: " + match);
+			Set<RuleApplication> applications = record.getApplications(rule, m, outcome.get(m));
+			//System.out.println("# of applications: " + applications.size());
+			for( RuleApplication application : applications ) {
+				reporter.stop();
+				reporter.stop();
+				action.perform(application);
+				reporter.restart(COLLECT_APPLICATIONS);
+				reporter.restart(GET_DERIVATIONS);
+			}
+			result = true;
+		}
+		
+		/**
 		for (Matching match : rule.getMatchingSet(getGraph())) {
 			RuleApplication application = record.getApplication(rule, match);
 			reporter.stop();
@@ -271,8 +236,7 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 			reporter.restart(COLLECT_APPLICATIONS);
 			reporter.restart(GET_DERIVATIONS);
 			result = true;
-		}
-		
+		}**/
 		return result;
 	}
 
@@ -287,9 +251,6 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 
     /** Callback method to provide the graph on which the applier works. */
     abstract protected Graph getGraph();
-    
-    /** Callback method to provide the graphstate on which the applier works. */
-    abstract protected GraphState getState();
     
     /**
 	 * The (fixed) derivation data used by this deriver.
