@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultMatching.java,v 1.8 2007-08-22 09:19:44 kastenberg Exp $
+ * $Id: DefaultMatching.java,v 1.9 2007-08-22 15:04:48 rensink Exp $
  */
 package groove.trans;
 
@@ -25,7 +25,6 @@ import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.NodeEdgeMap;
 import groove.graph.match.Matcher;
-import groove.nesting.rule.ExistentialLevel;
 import groove.rel.RegExprMorphism;
 import groove.rel.VarMorphism;
 import groove.rel.VarNodeEdgeMap;
@@ -38,7 +37,7 @@ import groove.util.FilterIterator;
  * Expecially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
@@ -46,11 +45,12 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * The pattern morphism of the graph condition is disregarded.
      * @param condition the graph condition for which this is a matching
      * @param graph the graph to be matched
+     * @param injective TODO
      */
-	// JHK: condition was of *concrete* type DefaultGraphCondition??
-    public DefaultMatching(GraphCondition condition, Graph graph) {
+    public DefaultMatching(DefaultGraphCondition condition, Graph graph, boolean injective) {
         super(condition.getTarget(), graph);
-        this.condition = (DefaultGraphCondition)condition;
+        this.condition = condition;
+        this.injective = injective;
     }
 
     public DefaultGraphCondition getCondition() {
@@ -140,24 +140,12 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
 
     public Map<Matching, GraphPredicateOutcome> getTotalExtensionMap() {
         Iterator<Matching> matchIter = (Iterator<Matching>) super.getTotalExtensionsIter();
-        
         Map<Matching,GraphPredicateOutcome> matchMap = new HashMap<Matching,GraphPredicateOutcome>();
         while (matchIter.hasNext()) {
             Matching match = matchIter.next();
-
             GraphPredicateOutcome negResultSet = condition.getNegConjunct().getOutcome(match);
-            //System.out.println(this);
-            //if( negResultSet.isSuccess() ) {
-            //System.out.println("Matching after one total extension: " + match);
-            //System.out.println("Outcome: " + negResultSet.isSuccess() + ":" + negResultSet);
-            //System.exit(0);
-            //}
             matchMap.put(match, negResultSet);
         }
-    	//System.out.println("Leaving getTotalExtensionMap for: " + this.condition.getName() + " : " + (this.condition instanceof ExistentialLevel));
-    	//if( this.condition instanceof ExistentialLevel ) {
-    		//System.out.println("Matchings here: " + matchMap);
-    	//}
         return matchMap;
     }
 
@@ -166,7 +154,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      */
     @Override
     protected Matcher createMatcher() {
-        return new MatchingMatcher(this);
+        return new MatchingMatcher(this, injective);
     }
 //
 //    /**
@@ -181,14 +169,13 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
 
     @Override
     protected DefaultMatching createMorphism(final NodeEdgeMap sim) {
-    	DefaultMatching result = new DefaultMatching(getCondition(), cod()) {
+    	DefaultMatching result = new DefaultMatching(getCondition(), cod(), injective) {
             @Override
             protected VarNodeEdgeMap createElementMap() {
                 return (VarNodeEdgeMap) sim;
             }
         };
         return result;
-//    	return (DefaultMatching) getRuleFactory().createMatching(getCondition(), (VarNodeEdgeMap) sim, cod());
     }
 
     /**
@@ -221,19 +208,11 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * The graph condition for which this is a matching.
      */
     private final DefaultGraphCondition condition;
+    /** Flag indicating that matching should be injective. */
+    private final boolean injective;
 //
 //    /**
 //     * Factory instance for creating the correct simulation.
 //     */
 //    private final RuleFactory ruleFactory;
-
-	/* (non-Javadoc)
-	 * @see groove.rel.RegExprMorphism#clone()
-	 */
-	@Override
-	public Morphism clone() {
-		DefaultMatching matching = new DefaultMatching(this.condition, super.cod());
-		matching.putAll(this);
-		return matching;
-	}
 }

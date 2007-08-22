@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.6 2007-08-20 08:59:26 iovka Exp $
+ * $Id: EdgeSearchItem.java,v 1.7 2007-08-22 15:04:57 rensink Exp $
  */
 package groove.graph.match;
 
@@ -516,13 +516,13 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		}
 		return result;
 	}
-	
-	/**
-	 * Callback factory method for a node search item.
-	 */
-	protected NodeSearchItem createNodeSearchItem(Node node) {
-		return new NodeSearchItem(node);
-	}
+//	
+//	/**
+//	 * Callback factory method for a node search item.
+//	 */
+//	protected NodeSearchItem createNodeSearchItem(Node node) {
+//		return new NodeSearchItem(node);
+//	}
 	
 	@Override
 	public String toString() {

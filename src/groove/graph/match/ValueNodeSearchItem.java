@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.2 2007-04-04 07:04:28 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.3 2007-08-22 15:04:57 rensink Exp $
  */
 package groove.graph.match;
 
@@ -25,8 +25,7 @@ import groove.graph.algebra.ValueNode;
  */
 public class ValueNodeSearchItem implements SearchItem {
 	/**
-	 * Record of an edge seach item, storing an iterator over the
-	 * candidate images.
+	 * Record of a value node search item.
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */

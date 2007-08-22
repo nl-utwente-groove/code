@@ -12,15 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.13 2007-08-22 09:19:53 kastenberg Exp $
+ * $Id: AspectualViewGps.java,v 1.14 2007-08-22 15:05:02 rensink Exp $
  */
 
 package groove.io;
 
+import groove.control.ControlView;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
-import groove.nesting.rule.NestedAspectualRuleView;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.RuleFactory;
 import groove.trans.RuleNameLabel;
@@ -45,7 +45,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     /** Error message if a grammar cannot be loaded. */
@@ -111,6 +111,7 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
         loadProperties(result, location);
         loadRules(result, location);
         loadStartGraph(result, startGraphName, location);
+        loadControl(result, location);
         return result;
     }
 
@@ -120,8 +121,9 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	 */
 	private void loadProperties(DefaultGrammarView result, File location) throws IOException, FileNotFoundException {
 		// search for a properties file
-        File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(result.getName()));
-        Properties grammarProperties = null;
+        
+		File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(result.getName()));
+		Properties grammarProperties = null;
         if (propertiesFile.exists()) {
             grammarProperties = new Properties();
             grammarProperties.load(new FileInputStream(propertiesFile));
@@ -129,6 +131,38 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
         }
 	}
 
+	/**
+	 * Loads the control program from the location set in the properties of the grammar.
+	 * Can only be done after rules and properties are loaded.
+	 * TODO: put this somewhere else?
+	 * @throws IOException
+	 * @throws FileNotFoundException
+	 */
+	private void loadControl(DefaultGrammarView result, File location) throws IOException, FileNotFoundException {
+		String controlFileName = result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY);
+		if( controlFileName == null)
+			return;
+		File controlProgramFile = new File(location, result.getProperties().getProperty(SystemProperties.CONTROL_PROGRAM_KEY));
+		//System.out.println(controlProgram.getAbsolutePath());
+		if( controlProgramFile.exists() ) {
+			try
+			{
+
+				ControlView cv = new ControlView();
+				
+				cv.initScope(result);
+				cv.loadFile(controlProgramFile);
+				cv.loadProgram();
+
+				result.setControl(cv);
+				
+			}
+			catch(IOException e) {
+				System.err.println("Error: unable to open control program " + controlProgramFile.getName());
+			}
+		}
+	}
+	
 	/**
 	 * Loads the rules for a given graph grammar from a given location.
 	 */
@@ -151,7 +185,7 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	        RuleNameLabel rulePath) throws IOException {
 	    File[] files = directory.listFiles(RULE_FILTER);
 	    if (files == null) {
-	        throw new IOException(LOAD_ERROR+": exception when reading rules from location "+directory);
+	        throw new IOException(LOAD_ERROR+": no files found at "+directory);
 	    } else {
 	        // read in production rules
 	        for (File file: files) {
@@ -161,15 +195,15 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	                    priorityFileName.getActualName());
 	            // check for overlapping rule and directory names
 	            if (result.getRule(ruleName) != null) {
-	                throw new IOException(LOAD_ERROR + ": duplicate rule name \"" + ruleName+"\"");
+	    	        throw new IOException(LOAD_ERROR + ": duplicate rule name \"" + ruleName+"\"");
 	            }
 	            if (file.isDirectory()) {
 	                loadRules(result, file, ruleName);
 	            } else {
 					try {
 						result.addRule(loadRule(file, ruleName, result.getProperties()));
-					} catch (FormatException exc) {
-						result.addErrors(exc.getErrors());
+					} catch (IOException exc) {
+						throw new IOException(exc.getMessage());
 					}
 				}
 	        }
@@ -181,7 +215,7 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	 * giving it a given name and priority.
 	 */
 	private AspectualRuleView loadRule(File location, RuleNameLabel ruleName,
-			SystemProperties properties) throws IOException, FormatException {
+			SystemProperties properties) throws IOException {
 		AspectGraph unmarshalledRule = getGraphMarshaller().unmarshalGraph(location);
         GraphInfo.setRole(unmarshalledRule, Groove.RULE_ROLE);
 		return createRuleView(unmarshalledRule, ruleName, properties);
@@ -229,14 +263,10 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
      * @throws IOException
      */
     public AspectualRuleView unmarshalRule(File location, SystemProperties properties) throws IOException {
-        try {
-            String filename = Groove.createRuleFilter().stripExtension(location.getName());
-            PriorityFileName priorityFileName = new PriorityFileName(filename);
-            RuleNameLabel ruleName = new RuleNameLabel(priorityFileName.getActualName());
-            return createRuleView(getGraphMarshaller().unmarshalGraph(location), ruleName, properties);
-        } catch (FormatException exc) {
-            throw new IOException("Error in graph format: "+exc.getMessage());
-        }
+    	String filename = Groove.createRuleFilter().stripExtension(location.getName());
+    	PriorityFileName priorityFileName = new PriorityFileName(filename);
+    	RuleNameLabel ruleName = new RuleNameLabel(priorityFileName.getActualName());
+    	return createRuleView(getGraphMarshaller().unmarshalGraph(location), ruleName, properties);
     }
 
     public void marshal(DefaultGrammarView gg, File location) throws IOException {
@@ -375,50 +405,12 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
      * @param graph the graph from which to create the rule-graph
      * @param ruleName the name of the rule to be created
      * @return the {@link AspectualRuleView} created from the given graph
-     * @throws FormatException when the given graph does not conform to
-     * the requirements for making a rule-graph out of it
      */
-    protected AspectualRuleView createRuleView(AspectGraph graph, RuleNameLabel ruleName, SystemProperties properties)
-            throws FormatException {
-    	// JHK: Nested!
-    	return new NestedAspectualRuleView(graph, ruleName, properties);
+    protected AspectualRuleView createRuleView(AspectGraph graph, RuleNameLabel ruleName, SystemProperties properties) {
+    	return new AspectualRuleView(graph, ruleName, properties);
     }
-//    
-//    /**
-//     * Callback method to create a rule graph from a rule.
-//     * @param rule the rule from which to create a {@link AspectualRuleView}
-//     * @return the {@link AspectualRuleView} created from the given rule
-//     * @throws FormatException when the given rule does not conform the
-//     * requirements for making a {@link AspectualRuleView} from it
-//     */
-//    protected AspectualRuleView createRuleGraph(Rule rule) throws FormatException {
-//        return new AspectualRuleView(rule);
-//    }
-//
-//    /** Returns the rule factory passed in at construction time. */
-//    public RuleFactory getRuleFactory() {
-//    	return ruleFactory;
-//    }
-//    
-//    /**
-//	 * Tests if a graph grammar contains attributed graphs.
-//	 * @param grammar the grammar for which to check whether it should be able
-//	 * to transform attributed graphs
-//	 * @return <tt>true</tt> if the given grammar should support the transformation
-//	 * of attributed graphs, <tt>false</tt> otherwise
-//	 */
-//	protected boolean isAttributed(Properties grammarProperties) {
-//		String attributes = grammarProperties.getProperty(SystemProperties.ATTRIBUTE_SUPPORT);
-//		return attributes != null && attributes.equals(SystemProperties.ATTRIBUTES_YES);
-//	}
-
 	/**
      * The xml reader used to unmarshal graphs.
      */
     private final Xml<AspectGraph> graphMarshaller;
-//
-//    /**
-//     * The production rule factory used to unmarshal graphs.
-//     */
-//    private final RuleFactory ruleFactory;
 }

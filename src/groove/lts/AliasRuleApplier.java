@@ -16,8 +16,9 @@
  */
 package groove.lts;
 
+import groove.control.ControlState;
+import groove.control.ControlView;
 import groove.graph.Graph;
-import groove.nesting.rule.AliasNestedApplication;
 import groove.trans.AbstractRuleApplier;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
@@ -78,6 +79,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	/** Sets this applier to work on a given state. */
 	public final void setState(GraphState state) {
 		this.graph = state.getGraph();
+		this.control = (ControlState) state.getControl();
 		if (state instanceof GraphNextState && ((GraphNextState) state).source().isClosed()) {
 			this.state = (GraphNextState) state;
 			this.rule = this.state.getEvent().getRule();
@@ -95,7 +97,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	protected void collectApplications(Set<Rule> rules, Set<RuleApplication> result) {
     	if (state != null) {
     		int rulesPriority = rules.iterator().next().getPriority();
-			if (rulesPriority == priority) {
+			if (rulesPriority == priority || rulesPriority == ControlView.ANY_RULE_PRORITY) {
 				collectAliases(result);
 			}
     	}
@@ -125,8 +127,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
         while (iter.hasNext()) {
         	GraphTransitionStub stub = iter.next();
             RuleEvent event = stub.getEvent(state.source());
-            // JHK: ... optimalisatie??
-            if (isUseDependencies() && (!disabledRules.contains(event.getRule()) || event.hasMatching(getGraph()))) {
+            if (isUseDependencies() && !disabledRules.contains(event.getRule()) || event.hasMatching(getGraph())) {
                 result.add(createAlias(event, state, stub));
         	}
         }
@@ -137,9 +138,9 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	protected boolean doApplications(Set<Rule> rules, final Action action) {
 		boolean result = false;
 		Action myAction = action;
-    	if (state != null) {
+    	if (state != null && control == null) {
     		int rulesPriority = rules.iterator().next().getPriority();
-			if (rulesPriority == priority) {
+			if (rulesPriority == priority ) {
 				final Set<RuleApplication> aliases = createApplicationSet();
 				collectAliases(aliases);
 				for (RuleApplication alias : aliases) {
@@ -173,18 +174,37 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 
 	/** Callback factory method to create an {@link AliasSPOApplication}. */
     private RuleApplication createAlias(RuleEvent event, GraphNextState source, GraphTransitionStub prior) {
-    	return new AliasNestedApplication(event, source, prior); 
+    	return new AliasSPOApplication(event, source, prior); 
     }
 
+    @Override
+    protected Iterator<Set<Rule>> getRuleSetIter()
+    {
+    	if( control != null  ) {
+    		return control.getRuleMap().values().iterator();
+    	}
+    	else {
+    		return super.getRuleSetIter();
+    	}
+    }
+    
+    
     @Override
 	protected Graph getGraph() {
 		return graph;
 	}
+    
+    @Override
+    protected GraphState getState() {
+    	return state;
+    }
 
     /** The graph on which this applier currently works. */
     private Graph graph;
 	/** The (fixed) state of this deriver. */
     private GraphNextState state;
+    /** Control location of the current the state on which this applier works **/
+    private ControlState control;
     /** The rule leading up to <code>state</code>. */
     private Rule rule;
     /** The priority of the rule leading to <code>state</code>. */

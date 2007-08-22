@@ -19,7 +19,6 @@ import groove.graph.DeltaGraph;
 import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
@@ -36,7 +35,7 @@ import java.util.Arrays;
  * Class that combines state and incoming transition information.
  * The rule is stored in the state and the anchor images are added to the delta.
  * @author Arend
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  * @deprecated use {@link DefaultGraphNextState} instead
  */
 @Deprecated
@@ -347,7 +346,7 @@ public class DerivedGraphState extends DefaultGraphState implements GraphNextSta
 	 * Has to be included to have a correct return type.
 	 */
 	@Override
-	public DerivedGraphState imageFor(GenericNodeEdgeMap elementMap) {
+	public DerivedGraphState imageFor(NodeEdgeMap elementMap) {
 		throw new UnsupportedOperationException();
 	}
 

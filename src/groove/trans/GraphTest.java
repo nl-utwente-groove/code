@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.6 2007-08-22 09:19:44 kastenberg Exp $
+ * $Id: GraphTest.java,v 1.7 2007-08-22 15:04:48 rensink Exp $
  */
 package groove.trans;
 
@@ -24,7 +24,7 @@ import groove.rel.VarMorphism;
  * Super-interface for tests over graphs.
  * Contains the common functionality of {@link GraphPredicate} and {@link GraphCondition}.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public interface GraphTest {    
     /**
@@ -85,6 +85,4 @@ public interface GraphTest {
      * @throws IllegalArgumentException if <code>! morph.isTotal()</code> or <code>morph.dom() != getContext()</code>
      */
     public GraphTestOutcome<?,?> getOutcome(VarMorphism subject);
-    
-    public GraphTestOutcome<?,?> getOutcome(Graph subject);
 }

@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.5 2007-08-22 09:19:46 kastenberg Exp $
+ * $Id: RuleAspect.java,v 1.6 2007-08-22 15:04:49 rensink Exp $
  */
 package groove.view.aspect;
 
 import groove.graph.Label;
-import groove.nesting.NestingAspect;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.trans.NameLabel;
@@ -30,7 +29,7 @@ import groove.view.FormatException;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class RuleAspect extends AbstractAspect {
     /**
@@ -163,9 +162,7 @@ public class RuleAspect extends AbstractAspect {
 	 * information <i>about</i> the rule.
 	 */
 	public static boolean inRule(AspectElement elem) {
-		// JHK: Nesting Meta-nodes and edges are not in the rule
-		return (inLHS(elem) || inRHS(elem) || inNAC(elem)) 
-			&& ! NestingAspect.isMetaElement(elem);
+		return inLHS(elem) || inRHS(elem) || inNAC(elem);
 	}
 	
 	/**

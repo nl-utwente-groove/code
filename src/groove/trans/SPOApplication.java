@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.14 2007-08-22 09:19:44 kastenberg Exp $
+ * $Id: SPOApplication.java,v 1.15 2007-08-22 15:04:48 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2007-08-22 09:19:44 $
+ * @version $Revision: 1.15 $ $Date: 2007-08-22 15:04:48 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -65,7 +65,7 @@ public class SPOApplication implements RuleApplication, Derivation {
     	this.event = event;
         this.rule = event.getRule();
         this.source = source;
-        this.anchorMap = event.getFlattenedAnchorMap();
+        this.anchorMap = event.getAnchorMap();
         assert event.hasMatching(source): String.format("Rule event %s has no matching in %s", event, AbstractGraph.toString(source));
     }
 
@@ -181,7 +181,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 * creator edges.
 	 */
 	protected VarNodeEdgeMap computeCoanchorMap() {
-		final VarNodeEdgeMap result = getEvent().getCoanchorMap().flatten().clone();
+		final VarNodeEdgeMap result = getEvent().getCoanchorMap().clone();
 		// add creator node images
 		Node[] coanchor = rule.coanchor();
 		int coanchorSize = coanchor.length;

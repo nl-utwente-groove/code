@@ -12,12 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: VarFlag.java,v 1.5 2007-08-22 09:19:52 kastenberg Exp $
+ * $Id: VarFlag.java,v 1.6 2007-08-22 15:05:06 rensink Exp $
  */
 package groove.rel;
 
 import groove.graph.DefaultFlag;
-import groove.graph.GenericNodeEdgeMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -27,7 +26,7 @@ import groove.graph.UnaryEdge;
  * Specialization of a default edge with a variable as label
  * (in the form of a {@link groove.rel.RegExpr.Wildcard}).
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 @Deprecated
 public class VarFlag extends DefaultFlag {
@@ -61,7 +60,7 @@ public class VarFlag extends DefaultFlag {
      * with that label; otherwise delegates to <code>super</code>.
      */
     @Override
-    protected UnaryEdge imageFor(NodeEdgeMap elementMap) {
+    public UnaryEdge imageFor(NodeEdgeMap elementMap) {
         if (elementMap instanceof VarNodeEdgeMap) {
             Label varImage = ((VarNodeEdgeMap) elementMap).getVar(var);
             if (varImage != null) {

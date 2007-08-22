@@ -12,20 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Counter.java,v 1.1 2007-08-22 09:19:50 kastenberg Exp $
+ * $Id: Counter.java,v 1.2 2007-08-22 15:05:05 rensink Exp $
  */
 package groove.util;
 
-import groove.nesting.rule.NestedAspectualRuleView;
-
 /**
- * An object of this class keeps an internal counter. Used in 
- * {@link NestedAspectualRuleView} while building the hierarchy.
+ * An object of this class keeps an internal counter. 
  * @author J.H. Kuperus
- * @version 0.1 $Revision: 1.1 $ $Date: 2007-08-22 09:19:50 $
+ * @version 0.1 $Revision: 1.2 $ $Date: 2007-08-22 15:05:05 $
  */
 public class Counter {
-
 	private int count;
 	
 	public Counter() {
@@ -47,5 +43,4 @@ public class Counter {
 	public int decrement() {
 		return --count;
 	}
-	
 }

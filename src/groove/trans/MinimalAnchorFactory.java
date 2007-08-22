@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MinimalAnchorFactory.java,v 1.3 2007-08-22 09:19:44 kastenberg Exp $
+ * $Id: MinimalAnchorFactory.java,v 1.4 2007-08-22 15:04:48 rensink Exp $
  */
 package groove.trans;
 
@@ -26,7 +26,6 @@ import java.util.Set;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.nesting.rule.NestedRule;
 
 /**
  * In this implementation, the anchors are the minimal set of nodes and edges 
@@ -34,7 +33,7 @@ import groove.nesting.rule.NestedRule;
  * matching: only mergers, eraser nodes and edges (the later only if they are 
  * not incident to an eraser node) and the incident nodes of creator edges are stored.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class MinimalAnchorFactory implements AnchorFactory {
 	/**
@@ -59,8 +58,7 @@ public class MinimalAnchorFactory implements AnchorFactory {
      * @require <tt>rule instanceof SPORule</tt>
      */
     public Element[] newAnchors(Rule generalRule) {
-    	// JHK: NestedRule
-        NestedRule rule = (NestedRule) generalRule;
+        SPORule rule = (SPORule) generalRule;
         Set<Element> anchors = new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));
         Set<? extends Node> creatorNodes = rule.getCreatorGraph().nodeSet();
         for (Map.Entry<Node,Node> ruleMorphNodeEntry: rule.getMorphism().nodeMap().entrySet()) {

@@ -12,8 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ContentAspectValue.java,v 1.4 2007-08-22 09:19:46 kastenberg Exp $
- * $Id: ContentAspectValue.java,v 1.4 2007-08-22 09:19:46 kastenberg Exp $
+ * $Id: ContentAspectValue.java,v 1.5 2007-08-22 15:04:49 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -50,7 +49,7 @@ abstract public class ContentAspectValue<C> extends AspectValue {
      * @param original the aspect value being copied
      * @param content the content of the specialised value
      */
-    protected ContentAspectValue(AspectValue original, ContentParser<C> parser, C content) {
+    ContentAspectValue(AspectValue original, ContentParser<C> parser, C content) {
     	super(original.getAspect(), original.getName(), original.getIncompatibles());
     	this.content = content;
     	this.parser = parser;
