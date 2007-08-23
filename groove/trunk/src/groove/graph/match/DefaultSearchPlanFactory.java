@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultSearchPlanFactory.java,v 1.5 2007-08-22 15:04:57 rensink Exp $
+ * $Id: DefaultSearchPlanFactory.java,v 1.6 2007-08-23 07:33:27 rensink Exp $
  */
 package groove.graph.match;
 
@@ -47,7 +47,7 @@ import groove.util.HashBag;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	/**
@@ -62,8 +62,8 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
      * Creates the search plan by constructing a {@link groove.graph.match.DefaultSearchPlanFactory.PlanData} object
      * and then invoking {@link groove.graph.match.DefaultSearchPlanFactory.PlanData#getPlan()}.
      */
-    public Iterable<SearchItem> createSearchPlan(Graph graph, Collection<? extends Node> boundNodes, Collection<? extends Edge> boundEdges) {
-        PlanData data = new PlanData(graph, boundNodes, boundEdges);
+    public Iterable<SearchItem> createSearchPlan(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
+        PlanData data = new PlanData(graph, preMatchedNodes, preMatchedEdges);
         return data.getPlan();
     }
 
@@ -109,16 +109,17 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
     protected class PlanData extends Observable implements Comparator<Edge> {
         /**
          * Construct a given plan data object for a given graph,
-         * with certain sets of already pre-matched nodes and edges.
+         * with certain sets of already pre-matched elements.
          * @param graph the graph to be matched by the plan
-         * @param boundNodes the set of pre-matched nodes
-         * @param boundEdges the set of pre-matched edges
+         * @param preMatchedNodes the set of pre-matched nodes
+         * @param preMatchedEdges the set of pre-matched edges
          */
-        public PlanData(Graph graph, Collection<? extends Node> boundNodes, Collection<? extends Edge> boundEdges) {
+        public PlanData(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
             nodeSet = new HashSet<Node>(graph.nodeSet());
-            nodeSet.removeAll(boundNodes);
+            nodeSet.removeAll(preMatchedNodes);
             edgeSet = new HashSet<Edge>(graph.edgeSet());
-            edgeSet.removeAll(boundEdges);        }
+            edgeSet.removeAll(preMatchedEdges);        
+        }
 
         /**
          * Creates and returns a search plan on the basis of the given data.

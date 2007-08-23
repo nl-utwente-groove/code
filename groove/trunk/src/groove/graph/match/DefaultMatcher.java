@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatcher.java,v 1.7 2007-08-22 15:04:57 rensink Exp $
+ * $Id: DefaultMatcher.java,v 1.8 2007-08-23 07:33:27 rensink Exp $
  */
 package groove.graph.match;
 
@@ -38,7 +38,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class DefaultMatcher implements Matcher {
 	/** 
@@ -305,7 +305,7 @@ public class DefaultMatcher implements Matcher {
      * This implementation calls {@link #getSearchPlanFactory()}.
      */
     protected Iterable<SearchItem> computeSearchPlan() {
-    	return getSearchPlanFactory().createSearchPlan(dom(), getMorphism().nodeMap().values(), getMorphism().edgeMap().values());
+    	return getSearchPlanFactory().createSearchPlan(dom(), getMorphism().nodeMap().keySet(), getMorphism().edgeMap().keySet());
     }
     
     /**
