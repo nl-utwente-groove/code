@@ -15,10 +15,11 @@
  * $Id $
  */
 
-package groove.graph.match;
+package groove.match;
 
 import groove.graph.Graph;
 import groove.graph.NodeEdgeMap;
+import groove.rel.VarNodeEdgeMap;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,7 +31,7 @@ import java.util.Iterator;
  * @author Arend Rensink
  * @version $Revision: 1.1 $
  */
-public interface MatchStrategy<M extends NodeEdgeMap> {
+public interface MatchStrategy {
     /** 
      * Returns a single match to a given graph, extending a given partial match.
      * The partial match should be defined precisely for the pre-matched elements indicated
@@ -41,7 +42,7 @@ public interface MatchStrategy<M extends NodeEdgeMap> {
      * @return a mapping to the elements of <code>graph</code> that augments <code>partialMatch</code>
      * and fulfills the requirements to be a total match
      */
-    public M getMatch(Graph graph, M preMatch);
+    public VarNodeEdgeMap getMatch(Graph graph, NodeEdgeMap preMatch);
     
     /** 
      * Returns the collection of all matches to a given graph that extend a given partial match. 
@@ -53,7 +54,7 @@ public interface MatchStrategy<M extends NodeEdgeMap> {
      * @return the set of all mappings to the elements of <code>graph</code> that
      * augment <code>partialMatch</code> and fulfill the requirements to be total matches
      */
-    public Collection<M> getMatchSet(Graph graph, M preMatch);
+    public Collection<VarNodeEdgeMap> getMatchSet(Graph graph, NodeEdgeMap preMatch);
     
     /** 
      * Returns an iterator over all matches to a given graph that extend a given partial match.
@@ -67,5 +68,5 @@ public interface MatchStrategy<M extends NodeEdgeMap> {
      * @return an iterator over all mappings to the elements of <code>graph</code> that
      * augment <code>partialMatch</code> and fulfill the requirements to be total matches
      */
-    public Iterator<M> getMatchIter(Graph graph, M preMatch);
+    public Iterator<VarNodeEdgeMap> getMatchIter(Graph graph, NodeEdgeMap preMatch);
 }

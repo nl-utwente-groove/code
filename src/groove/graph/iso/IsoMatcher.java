@@ -1,5 +1,5 @@
 /*
- * $Id: IsoMatcher.java,v 1.4 2007-04-27 22:07:02 rensink Exp $
+ * $Id: IsoMatcher.java,v 1.5 2007-08-24 17:35:00 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -19,8 +19,9 @@ import java.util.Set;
  * into play in the construction and refinement of the simulation..
  * The graphs' partition maps are used to match elements.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
+@Deprecated
 public class IsoMatcher extends DefaultMatcher {
 	/** The factory for creating search plans. */
 	private static final IsoSearchPlanFactory searchPlanFactory = new IsoSearchPlanFactory();

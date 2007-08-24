@@ -1,5 +1,5 @@
 /*
- * $Id: VarNodeEdgeHashMap.java,v 1.2 2007-03-27 14:18:36 rensink Exp $
+ * $Id: VarNodeEdgeHashMap.java,v 1.3 2007-08-24 17:35:20 rensink Exp $
  */
 package groove.rel;
 
@@ -8,6 +8,7 @@ import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,7 +17,7 @@ import java.util.Map;
  * Implementation of the {@link VarNodeEdgeMap} interface where
  * the variable mapping part is given by a separater instance variable.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements VarNodeEdgeMap {
     /**
@@ -29,10 +30,12 @@ public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements VarNodeEdgeMa
     /**
      * Creates a map filled from a given map.
      */
-    public VarNodeEdgeHashMap(VarNodeEdgeMap map) {
+    public VarNodeEdgeHashMap(NodeEdgeMap map) {
         super(map);
         this.valuation = createValuation();
-        valuation.putAll(map.getValuation());
+        if (map instanceof VarNodeEdgeMap) {
+            valuation.putAll(((VarNodeEdgeMap) map).getValuation());
+        }
     }
 
     /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductEdgeSearchItem.java,v 1.4 2007-07-21 20:07:53 rensink Exp $
+ * $Id: ProductEdgeSearchItem.java,v 1.5 2007-08-24 17:34:51 rensink Exp $
  */
 package groove.graph.match;
 
@@ -34,6 +34,7 @@ import groove.graph.algebra.ValueNode;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public class ProductEdgeSearchItem implements SearchItem {
 	/**
 	 * Record of an edge seach item, storing an iterator over the
@@ -41,6 +42,7 @@ public class ProductEdgeSearchItem implements SearchItem {
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
+    @Deprecated
 	private class ProductEdgeRecord implements Record {
 		/**
 		 * Creates a record based on a given underlying matcher.

@@ -1,4 +1,4 @@
-/* $Id: ConditionSearchItem.java,v 1.1.1.2 2007-03-20 10:42:57 kastenberg Exp $ */
+/* $Id: ConditionSearchItem.java,v 1.2 2007-08-24 17:34:50 rensink Exp $ */
 package groove.trans.match;
 
 import groove.graph.match.SearchItem;
@@ -9,12 +9,14 @@ import groove.graph.match.SearchItem;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public abstract class ConditionSearchItem implements SearchItem {
 	/**
 	 * Record for a {@link ConditionSearchItem}.
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
+    @Deprecated
 	public abstract class ConditionRecord implements Record {
 		/**
 		 * The first call delegates to {@link #condition()};

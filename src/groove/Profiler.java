@@ -5,6 +5,7 @@ package groove;
  * @see groove.util.Profiler
  * @author J. ter Hove
  */
+@Deprecated
 public class Profiler {
     /**
      * Main method.

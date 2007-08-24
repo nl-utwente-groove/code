@@ -1,5 +1,5 @@
 /*
- * $Id: RegExprMatcher.java,v 1.3 2007-06-01 18:04:19 rensink Exp $
+ * $Id: RegExprMatcher.java,v 1.4 2007-08-24 17:34:52 rensink Exp $
  */
 package groove.rel.match;
 
@@ -16,8 +16,9 @@ import java.util.Map;
 /**
  * Simulation from a {@link groove.rel.VarGraph} in a {@link groove.graph.Graph}. 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
+@Deprecated
 public class RegExprMatcher extends DefaultMatcher {
 	static private final SearchPlanFactory searchPlanFactory = new RegExprSearchPlanFactory();
 	/**

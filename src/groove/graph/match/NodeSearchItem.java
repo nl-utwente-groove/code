@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.4 2007-07-18 09:20:40 iovka Exp $
+ * $Id: NodeSearchItem.java,v 1.5 2007-08-24 17:34:51 rensink Exp $
  */
 package groove.graph.match;
 
@@ -26,6 +26,7 @@ import groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public class NodeSearchItem implements SearchItem {
 	/**
 	 * Node search record.
@@ -33,6 +34,7 @@ public class NodeSearchItem implements SearchItem {
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
+    @Deprecated
 	protected class NodeRecord<M extends Matcher> implements Record {
 		/** Constructs a record for a given matcher. */
 		protected NodeRecord(M matcher) {

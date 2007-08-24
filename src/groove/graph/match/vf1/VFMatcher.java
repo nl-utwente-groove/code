@@ -8,6 +8,7 @@ import java.util.*;
 /**
  * @author iGniSz
  */
+@Deprecated
 public class VFMatcher implements Matcher {
 
     /**

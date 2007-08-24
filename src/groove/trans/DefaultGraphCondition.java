@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphCondition.java,v 1.17 2007-08-22 15:04:48 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.18 2007-08-24 17:35:12 rensink Exp $
  */
 package groove.trans;
 
@@ -31,17 +31,15 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
-import groove.graph.match.SearchItem;
+import groove.match.MatchStrategy;
 import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
-import groove.trans.match.ConditionSearchPlanFactory;
-import groove.trans.match.DefaultConditionSearchPlanFactory;
 import groove.util.Reporter;
 import groove.view.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -548,26 +546,54 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * the order using {@link #createSearchPlan()} if that has not been done.
      * @see #createSearchPlan()
      */
-    public List<SearchItem> getSearchPlan() {
+    public MatchStrategy getMatchStrategy() {
+        if (matcher == null) {
+            matcher = createMatchStrategy();
+        }
+        return matcher;
+    }
+
+    /**
+     * Callback method to create a matching order.
+     * Typically invoked once, at the first invocation of {@link #getMatchStrategy()}.
+     * This implementation retrieves its value from the matching order factory.
+     * @see #getMatchStrategy()
+     * For a (non-closed) graph condition, it is more efficient to start the matching at the edges
+     * connected to the context.
+     */
+    @Override
+    protected MatchStrategy createMatchStrategy() {
+        setFixed();
+        return groove.match.ConditionSearchPlanFactory.getInstance().createSearchPlan(this, getProperties().isInjective());
+    }
+
+    /**
+     * Returns the precomputed matching order for the elements of the target pattern. First creates
+     * the order using {@link #createSearchPlan()} if that has not been done.
+     * @see #createSearchPlan()
+     */
+    @Deprecated
+    public List<groove.graph.match.SearchItem> getSearchPlan() {
         if (searchPlan == null) {
             searchPlan = createSearchPlan();
         }
         return searchPlan;
     }
-    
+
     /**
-	 * Callback method to create a matching order.
-	 * Typically invoked once, at the first invocation of {@link #getSearchPlan()}.
-	 * This implementation retrieves its value from the matching order factory.
-	 * @see #getSearchPlan()
-	 * @see #getSearchPlanFactory()
-	 * For a (non-closed) graph condition, it is more efficient to start the matching at the edges
-	 * connected to the context.
-	 */
-	protected List<SearchItem> createSearchPlan() {
-	    setFixed();
-	    return getSearchPlanFactory().createSearchPlan(this);
-	}
+     * Callback method to create a matching order.
+     * Typically invoked once, at the first invocation of {@link #getSearchPlan()}.
+     * This implementation retrieves its value from the matching order factory.
+     * @see #getSearchPlan()
+     * @see #getSearchPlanFactory()
+     * For a (non-closed) graph condition, it is more efficient to start the matching at the edges
+     * connected to the context.
+     */
+    @Deprecated
+    protected List<groove.graph.match.SearchItem> createSearchPlan() {
+        setFixed();
+        return getSearchPlanFactory().createSearchPlan(this);
+    }
 
 	/**
      * Returns the fragment of the negated conjunct without the edge or merge embargoes. Since we
@@ -635,7 +661,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
             throw new IllegalStateException("Method only allowed on ground condition");
         }
     }
-    
+
     /**
      * Returns the search plan factory factory.
      * If no matching schedule factory yet exists, one is created using
@@ -643,10 +669,11 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * @see #createSearchPlanFactory()
      * @see #createSearchPlan()
      */
-    protected ConditionSearchPlanFactory getSearchPlanFactory() {
-    	if (searchPlanFactory == null) {
-    		searchPlanFactory = createSearchPlanFactory();
-    	}
+    @Deprecated
+    protected groove.trans.match.ConditionSearchPlanFactory getSearchPlanFactory() {
+        if (searchPlanFactory == null) {
+            searchPlanFactory = createSearchPlanFactory();
+        }
         return searchPlanFactory;
     }
     
@@ -654,8 +681,9 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * Callback factory method to create a matching schedule factory.
      * This implementation returns a {@linkplain DefaultConditionSearchPlanFactory}.
      */
-    protected ConditionSearchPlanFactory createSearchPlanFactory() {
-    	return new DefaultConditionSearchPlanFactory();
+    @Deprecated
+    protected groove.trans.match.ConditionSearchPlanFactory createSearchPlanFactory() {
+    	return new groove.trans.match.DefaultConditionSearchPlanFactory();
     }
     
     /**
@@ -683,15 +711,23 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      */
     private Set<Edge> negations;
     /**
+     * The fixed matching strategy for this graph condition.
+     * Initially <code>null</code>; set by {@link #getMatchStrategy()} upon its
+     * first invocation.
+     */
+    private MatchStrategy matcher;
+    /**
      * The fixed matching order for this graph condition.
      * Initially <code>null</code>; set by {@link #getSearchPlan()} upon its
      * first invocation.
      */
-    private List<SearchItem> searchPlan;
+    @Deprecated
+    private List<groove.graph.match.SearchItem> searchPlan;
     /**
      * The strategy for constructing the matching order.
      */
-    private ConditionSearchPlanFactory searchPlanFactory;
+    @Deprecated
+    private groove.trans.match.ConditionSearchPlanFactory searchPlanFactory;
 
     /**
      * Factory instance for creating the correct simulation.

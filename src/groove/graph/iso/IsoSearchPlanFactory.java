@@ -1,5 +1,5 @@
 /*
- * $Id: IsoSearchPlanFactory.java,v 1.2 2007-08-22 15:04:59 rensink Exp $
+ * $Id: IsoSearchPlanFactory.java,v 1.3 2007-08-24 17:35:00 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -22,8 +22,9 @@ import java.util.List;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
+@Deprecated
 public class IsoSearchPlanFactory implements SearchPlanFactory {
 	/** 
 	 * This implementation merely returns search items for the edges and nodes of the

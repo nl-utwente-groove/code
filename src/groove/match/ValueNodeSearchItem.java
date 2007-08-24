@@ -12,81 +12,72 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.4 2007-08-24 17:34:51 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.1 2007-08-24 17:34:56 rensink Exp $
  */
-package groove.graph.match;
+package groove.match;
 
 import groove.graph.algebra.ValueNode;
+import groove.match.SearchPlanStrategy.Search;
 
 /**
  * A search item for a value node.
  * @author Arend Rensink
  * @version $Revision $
  */
-@Deprecated
 public class ValueNodeSearchItem implements SearchItem {
 	/**
 	 * Record of a value node search item.
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
-    @Deprecated
 	private class ValueNodeRecord implements Record {
 		/**
 		 * Creates a record based on a given underlying matcher.
 		 */
-		protected ValueNodeRecord(Matcher matcher) {
-			this.matcher = matcher;
+		protected ValueNodeRecord(SearchPlanStrategy.Search matcher) {
+			this.search = matcher;
 		}
 		
 		/**
-		 * The first call delegates to {@link #select()};
+		 * The first call puts #node to itself;
 		 * the next call returns <code>false</code>.
 		 */
 		public boolean find() {
-			if (atEnd) {
+			if (findFailed) {
 				// if we already returned false, as per contract
 				// we restart
-				reset();
+			    reset();
 			}
-			if (called) {
+			if (findCalled) {
 				// if the test was called before, it should return false now
-				undo();
-				atEnd = true;
+                search.getResult().removeNode(node);
+				findFailed = true;
 				return false;
 			} else {
-				select();
-				atEnd = false;
-				called = true;
+                search.getResult().putNode(node, node);
+                findCalled = true;
+				findFailed = false;
 				return true;
 			}
 		}
+        
+        public void reset() {
+            search.getResult().removeNode(node);
+            findCalled = false;
+            findFailed = false;
+        }
 
-		/**
-		 * Computes the result of the product edge's operation
-		 */
-		public void select() {
-			matcher.getSingularMap().putNode(node, node);
-		}
+        @Override
+        public String toString() {
+            return ValueNodeRecord.this.toString();
+        }
 
-		/**
-		 * Removes the edge added during the last {@link #find()}, if any.
-		 */
-		public void undo() {
-			matcher.getSingularMap().removeNode(node);
-		}
-		
-		public void reset() {
-			called = false;
-			atEnd = false;
-		}
-
-		/** The underlying matcher of the search record. */
-		private final Matcher matcher;
+        /** The underlying matcher of the search record. */
+		private final Search search;
 		/** Flag to indicate that {@link #find()} has been called. */
-		private boolean called;
+		private boolean findCalled;
 		/** Flag to indicate that {@link #find()} has returned <code>false</code>. */
-		private boolean atEnd;
+		private boolean findFailed;
 	}
 
 	/**
@@ -98,7 +89,7 @@ public class ValueNodeSearchItem implements SearchItem {
 		this.node = node;
 	}
 	
-	public Record get(Matcher matcher) {
+	public Record getRecord(SearchPlanStrategy.Search matcher) {
 		return new ValueNodeRecord(matcher);
 	}
 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanFactory.java,v 1.3 2007-08-22 15:04:57 rensink Exp $
+ * $Id: SearchPlanFactory.java,v 1.4 2007-08-24 17:34:51 rensink Exp $
  */
 package groove.graph.match;
 
@@ -30,8 +30,9 @@ import java.util.Collection;
  * A search plan is a list of search items, all of which should be successfully executed
  * in order for the full graph to be matched.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
+@Deprecated
 public interface SearchPlanFactory {
     /** 
      * Factory method returning a list of search items for matching a given graph. 

@@ -1,24 +1,20 @@
 /*
- * $Id: DefaultConditionSearchPlanFactory.java,v 1.8 2007-08-24 17:34:50 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.1 2007-08-24 17:34:57 rensink Exp $
  */
-package groove.trans.match;
+package groove.match;
 
 import groove.graph.Edge;
 import groove.graph.Node;
-import groove.graph.match.EdgeSearchItem;
-import groove.graph.match.NodeSearchItem;
-import groove.graph.match.ProductEdgeSearchItem;
-import groove.graph.match.SearchItem;
-import groove.graph.match.ValueNodeSearchItem;
+import groove.graph.algebra.ProductEdge;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
-import groove.rel.match.RegExprSearchPlanFactory;
 import groove.trans.DefaultGraphCondition;
 import groove.trans.GraphCondition;
 import groove.trans.SystemProperties;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -34,58 +30,77 @@ import java.util.Set;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.1 $
  */
-@Deprecated
-public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory implements ConditionSearchPlanFactory {
-	/**
-	 * Takes control labels into account if there are any,
-	 * and adds embargo tests to the schedule. 
-	 */
-    public List<SearchItem> createSearchPlan(GraphCondition condition) {
-    	return createSearchPlan(condition, condition.getPattern().nodeMap().values(), condition.getContext().edgeSet());
+public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
+    /** 
+     * Private, empty constructor.
+     * This is a ginleton class; get the instance through {@link #getInstance()}.
+     */
+    ConditionSearchPlanFactory() {
+        // empty
     }
 
-	/**
-	 * Takes control labels into account if there are any,
-	 * and adds embargo tests to the schedule. 
-	 */
-    public List<SearchItem> createSearchPlan(GraphCondition condition, Collection<? extends Node> boundNodes, Collection<? extends Edge> boundEdges) {
-//    	Graph subject = condition.getTarget();
-//    	Set<Node> nodeSet = new HashSet<Node>(subject.nodeSet());
-//    	nodeSet.removeAll(boundNodes);
-//    	Set<Edge> edgeSet = new HashSet<Edge>(subject.edgeSet());
-//    	edgeSet.removeAll(boundEdges);
-    	PlanData planData = new GrammarPlanData(condition, boundNodes, boundEdges);
-    	List<SearchItem> result = planData.getPlan();
-    	return result;
+    /** 
+     * Factory method returning a search plan for a graph condition.
+     * This extends the ordinary search plan with negative tests, and
+     * Takes control and common labels into account (if any).
+     * @param condition the condition for which a search plan is to be constructed
+     * @param injective flag to indicate if the condition is to be matched injectively
+     */
+    public SearchPlanStrategy createSearchPlan(GraphCondition condition, boolean injective) {
+    	return createSearchPlan(condition, condition.getPattern().nodeMap().values(), condition.getContext().edgeSet(), injective);
     }
+
+    /** 
+     * Factory method returning a search plan for a graph condition,
+     * taking into account that a certain set of nodes and edges has been matched already.
+     * This extends the ordinary search plan with negative tests.
+     * Takes control and common labels into account (if any).
+     * @param condition the condition for which a search plan is to be constructed
+     * @param preMatchedNodes the nodes of the condition that have been matched already
+     * @param preMatchedEdges the edges of the condition that have been matched already
+     * @param injective flag to indicate if the condition is to be matched injectively
+     */
+    public SearchPlanStrategy createSearchPlan(GraphCondition condition, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges, boolean injective) {
+    	PlanData planData = new GrammarPlanData(condition, preMatchedNodes, preMatchedEdges);
+    	return new SearchPlanStrategy(planData.getPlan(), injective);
+    }
+    
+
+    /** Returns the singleton instance of this factory class. */
+    static public ConditionSearchPlanFactory getInstance() {
+        return instance;
+    }
+    
+    /** The fixed, singleton instance of this factory. */
+    static private final ConditionSearchPlanFactory instance = new ConditionSearchPlanFactory();
+
     /**
      * Plan data extension based on a graph grammar.
      * Additionally it takes the control labels of the grammar into account.
      * @author Arend Rensink
      * @version $Revision $
      */
-    @Deprecated
     protected class GrammarPlanData extends PlanData {
         /** 
          * Constructs a fresh instance of the plan data,
          * based on a given set of system properties, and sets
          * of already matched nodes and edges. 
          * @param condition the graph condition for which we develop the search plan
-         * @param boundNodes the set of pre-matched nodes
-         * @param boundEdges the set of pre-matched edges
+         * @param preMatchedNodes the set of pre-matched nodes
+         * @param preMatchedEdges the set of pre-matched edges
          */
-        protected GrammarPlanData(GraphCondition condition, Collection<? extends Node> boundNodes, Collection<? extends Edge> boundEdges) {
-            super(condition.getTarget(), boundNodes, boundEdges);
+        protected GrammarPlanData(GraphCondition condition, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
+            super(condition.getTarget(), preMatchedNodes, preMatchedEdges);
             this.condition = condition;
-            this.boundNodes = boundNodes;
-            this.boundEdges = boundEdges;
+            this.preMatchedNodes = preMatchedNodes;
+            this.preMatchedEdges = preMatchedEdges;
         }
         
         /**
          * In addition to calling the super method, adds edge and merge embargoes if the
-         * condition if a {@link DefaultGraphCondition}.
+         * condition is a {@link DefaultGraphCondition}.
          */
         @Override
         public List<SearchItem> getPlan() {
@@ -175,23 +190,24 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
 //        
         /**
          * Inserts an edge embargo search item at the appropriate place in a 
-         * search plan, namely directly after all end nodes have been matched.
+         * search plan, namely directly after all end nodes and variables have been matched.
          * @param result the pre-existing search plan
          * @param embargoEdge the embargo edge to be inserted
          */
         private void addEdgeEmbargo(List<SearchItem> result, Edge embargoEdge) {
+            // collect the unmatched edge ends
             Set<Node> endSet = new HashSet<Node>(Arrays.asList(embargoEdge.ends()));
-            endSet.removeAll(boundNodes);
+            // operator edges are treated as hyperedges with the argument nodes as end nodes
+            if (embargoEdge instanceof ProductEdge) {
+                endSet.remove(((ProductEdge) embargoEdge).source());
+                endSet.addAll(((ProductEdge) embargoEdge).source().getArguments());
+            }
+            endSet.removeAll(preMatchedNodes);
             // the set of variables possibly occurring in the edge
-            Set<String> varSet = new HashSet<String>();
-            RegExpr edgeExpr = getRegExpr(embargoEdge);
-            if (edgeExpr != null) {
-                varSet.addAll(edgeExpr.allVarSet());
-                for (Edge preMatchedEdge: boundEdges) {
-                    edgeExpr = getRegExpr(preMatchedEdge);
-                    if (edgeExpr != null) {
-                        varSet.removeAll(edgeExpr.boundVarSet());
-                    }
+            Set<String> varSet = new HashSet<String>(getBoundVars(embargoEdge));
+            if (! varSet.isEmpty()) {
+                for (Edge preMatchedEdge: preMatchedEdges) {
+                    varSet.removeAll(getBoundVars(preMatchedEdge));
                 }
             }
             // look for first position in result after which all
@@ -206,12 +222,9 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
                 } else if (next instanceof EdgeSearchItem) {
                     Edge edge = ((EdgeSearchItem) next).getEdge();
                     endSet.removeAll(Arrays.asList(edge.ends()));
-                    edgeExpr = getRegExpr(edge);
-                    if (edgeExpr != null) {
-                        varSet.removeAll(edgeExpr.boundVarSet());
-                    }
-                } else if (next instanceof ProductEdgeSearchItem) {
-                    Edge edge = ((ProductEdgeSearchItem) next).getEdge();
+                    varSet.removeAll(getBoundVars(edge));
+                } else if (next instanceof OperatorEdgeSearchItem) {
+                    Edge edge = ((OperatorEdgeSearchItem) next).getEdge();
                     endSet.removeAll(Arrays.asList(edge.ends()));
                 }
                 index++;
@@ -226,8 +239,13 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
          * Returns the regular expression on a given edge label, if any,
          * or <code>null</code> otherwise.
          */
-        private RegExpr getRegExpr(Edge edge) {
-            return RegExprLabel.getRegExpr(edge.label());
+        private Set<String> getBoundVars(Edge edge) {
+            RegExpr edgeExpr = RegExprLabel.getRegExpr(edge.label());
+            if (edgeExpr == null) {
+                return Collections.emptySet();
+            } else {
+                return edgeExpr.boundVarSet();
+            }
         }
         
         /**
@@ -238,7 +256,7 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
          */
         private void addMergeEmbargo(List<SearchItem> result, Set<? extends Node> injection) {
             Set<Node> nodeSet = new HashSet<Node>(injection);
-            nodeSet.removeAll(boundNodes);
+            nodeSet.removeAll(preMatchedNodes);
             int index = 0;
             while (! nodeSet.isEmpty()) {
                 SearchItem next = result.get(index);
@@ -257,9 +275,9 @@ public class DefaultConditionSearchPlanFactory extends RegExprSearchPlanFactory 
         /** The graph condition for which we develop the plan. */
         private final GraphCondition condition;
         /** The set of pre-matched nodes. */
-        private final Collection<? extends Node> boundNodes;
+        private final Collection<? extends Node> preMatchedNodes;
         /** The set of pre-matched edges. */
-        private final Collection<? extends Edge> boundEdges;
+        private final Collection<? extends Edge> preMatchedEdges;
     }
     
     /**

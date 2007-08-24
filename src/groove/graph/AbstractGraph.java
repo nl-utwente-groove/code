@@ -12,17 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.12 2007-07-02 07:21:32 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.13 2007-08-24 17:34:54 rensink Exp $
  */
 
 package groove.graph;
 
-import groove.control.Location;
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
-import groove.graph.iso.IsoMatcher;
-import groove.graph.match.Matcher;
+import groove.match.IsoMatchFactory;
+import groove.match.MatchStrategy;
 import groove.util.Dispenser;
 import groove.util.Pair;
 import groove.view.FormatException;
@@ -40,7 +39,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     /**
@@ -157,8 +156,8 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         reporter.start(GET_ISOMORPHISM_TO);
         Morphism isoMorphism = new DefaultMorphism(this, to) {
 			@Override
-			protected Matcher createMatcher() {
-				return new IsoMatcher(this);
+			protected MatchStrategy createMatchStrategy() {
+				return IsoMatchFactory.getInstance().createSearchPlan(dom());
 			}
         };
         Morphism result = isoMorphism.getTotalExtension();
@@ -416,7 +415,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
      * Returns the isomorphism checking strategy used by this graph.
      * This implementation returns a statically set {@link DefaultIsoChecker}.
      * @return the isomorphism checking strategy used by this graph
-     * @see #hasIsomorphismTo(Graph)
+     * @see #getIsomorphismTo(Graph)
      */
     protected IsoChecker getIsoChecker() {
     	return isoChecker;

@@ -12,9 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.9 2007-08-24 17:34:51 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.1 2007-08-24 17:34:57 rensink Exp $
  */
-package groove.graph.match;
+package groove.match;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -24,113 +24,110 @@ import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 
+import static groove.match.SearchPlanStrategy.Search;
+
 /**
  * A search item that searches an image for an edge.
  * @author Arend Rensink
  * @version $Revision $
  */
-@Deprecated
-public class EdgeSearchItem<E extends Edge> implements SearchItem {
+public class EdgeSearchItem extends AbstractSearchItem {
 	/**
 	 * Record of an edge seach item, storing an iterator over the
 	 * candidate images.
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
-    @Deprecated
-	protected class EdgeRecord<M extends DefaultMatcher> implements Record {
+	protected class EdgeRecord extends AbstractRecord {
 		/**
 		 * Creates a record based on a given underlying matcher.
 		 */
-		protected EdgeRecord(M matcher) {
-			this.matcher = matcher;
-			assert ! matcher.getMorphism().containsKey(edge) : String.format("Edge %s already in %s", edge, matcher.getMorphism().elementMap());
+		protected EdgeRecord(Search search) {
+            super(search);
+			assert ! getResult().containsKey(edge) : String.format("Edge %s already in %s", edge, getResult());
 		}
 
-		public boolean find() {
-			boolean result;
-			// first test if we know the method already returned false
-			if (findReturnedFalse) {
-				reset();
-			} else if (selected != null) {
-				undo();
-			}
-			if (isSingular()) {
-				// if the method was already called, 
-				// it should now certainly return false
-				if (findCalled) {
-					result = false;
-				} else {
-					// get the only possible image
-					Edge image = getSingular();
-					// maybe there is none
-					result = image != null && select(image);
-				}
-			} else {
-				// there is more than one possible image
-				result = false;
-				// iterate over the possible images until one is found
-				Iterator<? extends Edge> imageIter = getPotentialImageIter();
-				while (!result && imageIter.hasNext()) {
-					result = select(imageIter.next());
-				}
-			}
-			findReturnedFalse = !result;
-			findCalled = true;
-			return result;
-		}
+        @Override
+        boolean next() {
+            boolean result;
+            if (isSingular()) {
+                // get the only possible image
+                Edge image = getSingular();
+                // maybe there is none
+                result = image != null && select(image);
+            } else {
+                // there is more than one possible image
+                result = false;
+                // iterate over the possible images until one is found
+                Iterator<? extends Edge> imageIter = getMultiple();
+                while (!result && imageIter.hasNext()) {
+                    result = select(imageIter.next());
+                }
+            }
+            return result;
+        }
+        
+		@Override
+		void undo() {
+            NodeEdgeMap elementMap = getResult();
+            if (!isSingular()) {
+                for (int i = 0; i < arity; i++) {
+                    if (!isPreMatched(i)) {
+                        Node endImage = elementMap.removeNode(edge.end(i));
+                        assert endImage != null;
+                    }
+                }
+            }
+            Edge oldImage = elementMap.removeEdge(edge);
+            assert oldImage == null || oldImage.equals(selected);
+            selected = null;
+        }
 		
-		/**
-		 * Removes the edge added during the last {@link #find()}, if any.
-		 */
-		public void undo() {
-			if (selected != null) {
-				NodeEdgeMap elementMap = matcher.getSingularMap();
-				if (!isSingular()) {
-					for (int i = 0; i < arity; i++) {
-						if (!isPreMatched(i)) {
-							Node endImage = elementMap.removeNode(edge.end(i));
-							assert endImage != null;
-						}
-					}
-				}
-				Edge oldImage = elementMap.removeEdge(edge);
-				assert oldImage == null || oldImage.equals(selected);
-				selected = null;
-			} else {
-				throw new IllegalStateException();
-			}
-		}
-		
-		public void reset() {
-			if (selected != null) {
-				throw new IllegalStateException();
-			} else {
-				imagesInitialised = false;
-				singular = false;
-				potentialImage = null;
-				findCalled = false;
-				findReturnedFalse = false;
-				potentialImageIter = null;
-				potentialImageSet = null;
-			}
+        @Override
+		void exit() {
+            singleImage = null;
+            multiImageIter = null;
+            multiImageSet = null;
 		}
 
-		/**
+		/* (non-Javadoc)
+         * @see groove.match.AbstractSearchItem.AbstractRecord#init()
+         */
+        @Override
+        void init() {
+            if (isAllPreMatched()) {
+                Edge image = edge.imageFor(getResult());
+                assert image != null : String.format("%s has no image in %s", edge, getResult());
+                if (getTarget().containsElement(image)) {
+                    setSingular(image);
+                } else {
+                    setSingular(null);
+                }
+            } else {
+                Set<? extends Edge> imageSet = getTarget().labelEdgeSet(arity,
+                        edge.label());
+                if (imageSet == null || imageSet.isEmpty()) {
+                    setSingular(null);
+                } else {
+                    setMultiple(imageSet);
+                }
+            }
+        }
+
+        /**
 		 * Selects an image for {@link EdgeSearchItem#edge}, after testing
 		 * it for correctness.
 		 * @param image the image to be selected
 		 * @return <code>true</code> if <code>image</code> was indeed selected
 		 */
-		// IOVKA this method fails on an assertion 
-		public boolean select(Edge image) {
+		boolean select(Edge image) {
 			assert image != null : "Selected image should not be null";
-			assert selected == null : String.format("Edge %s already has image %s in map %s", edge, selected, matcher.getSingularMap());
+			assert selected == null : String.format("Edge %s already has image %s in map %s", edge, selected, getResult());
 			boolean result = true;
+            NodeEdgeMap elementMap = getResult();
 			if (! isSingular()) {
 				// select the node ends, insofar necessary
 				int[] duplicates = getDuplicates();
-				NodeEdgeMap elementMap = matcher.getSingularMap();
 				int endIndex = 0;
 				for (endIndex = 0; result && endIndex < arity; endIndex++) {
 					Node keyEnd = edge.end(endIndex);
@@ -139,9 +136,9 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 						result = imageEnd == image.end(duplicates[endIndex]);
 					} else if (isPreMatched(endIndex)) {
 						result = elementMap.getNode(keyEnd) == imageEnd;
-					} else if (matcher.isAvailable(imageEnd)) {
+					} else if (getSearch().isAvailable(imageEnd)) {
 						Node endImage = elementMap.putNode(keyEnd, imageEnd);
-						assert endImage == null : String.format("Node %s already has image %s in map %s", keyEnd, endImage, matcher.getSingularMap());
+						assert endImage == null : String.format("Node %s already has image %s in map %s", keyEnd, endImage, getResult());
 					} else {
 						result = false;
 					}
@@ -172,7 +169,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		 * Callback method for subclasses that give matches that are not edes.
 		 */
 		protected void setSelectedImage(Edge image) {
-			matcher.getSingularMap().putEdge(edge, image);
+			getResult().putEdge(edge, image);
 		}
 		
 		/**
@@ -183,11 +180,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		 * if <code>false</code>, we have no information
 		 */
 		protected boolean isSingular() {
-			if (!imagesInitialised) {
-				initImages();
-				imagesInitialised = true;
-			}
-			return singular;
+			return multiImageSet == null;
 		}
 		
 		/** 
@@ -197,103 +190,75 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		 * one image.
 		 */
 		protected Edge getSingular() {
-			if (!imagesInitialised) {
-				initImages();
-				imagesInitialised = true;
-			}
-			return potentialImage;
+            Edge result = singleImage;
+            singleImage = null;
+            return result;
 		}
 		
 		/** Returns an iterator over the potential images. */
-		protected Iterator<? extends Edge> getPotentialImageIter() {
-			if (potentialImageIter == null) {
-				initImages();
-				imagesInitialised = true;
-				potentialImageIter = potentialImageSet.iterator();
+		protected Iterator<? extends Edge> getMultiple() {
+			if (multiImageIter == null) {
+				multiImageIter = multiImageSet.iterator();
 			}
-			return potentialImageIter;
+			return multiImageIter;
 		}
 		
-		/**
-		 * Initialises the potential images,
-		 * by either calling {@link #setSingular(Edge)} or {@link #setMultiple(Collection)},
-		 * depending on whether a unique image can be determined for the edge.
-		 */
-		protected void initImages() {
-			if (isAllEndsBound()) {
-				Edge image = edge.imageFor(matcher.getSingularMap());
-				assert image != null : String.format("%s has no image in %s", edge, matcher.getSingularMap());
-				if (matcher.cod().containsElement(image)) {
-					setSingular(image);
-				} else {
-					setSingular(null);
-				}
-			} else {
-				Set<? extends Edge> imageSet = matcher.cod().labelEdgeSet(arity,
-						edge.label());
-				if (imageSet == null || imageSet.isEmpty()) {
-					setSingular(null);
-				} else {
-					setMultiple(imageSet);
-				}
-			}
-		}
-		
+//		/**
+//		 * Initialises the potential images,
+//		 * by either calling {@link #setSingular(Edge)} or {@link #setMultiple(Collection)},
+//		 * depending on whether a unique image can be determined for the edge.
+//		 */
+//		protected void initImages() {
+//			if (isAllEndsBound()) {
+//				Edge image = edge.imageFor(search.getResult());
+//				assert image != null : String.format("%s has no image in %s", edge, search.getResult());
+//				if (search.getTarget().containsElement(image)) {
+//					setSingular(image);
+//				} else {
+//					setSingular(null);
+//				}
+//			} else {
+//				Set<? extends Edge> imageSet = search.getTarget().labelEdgeSet(arity,
+//						edge.label());
+//				if (imageSet == null || imageSet.isEmpty()) {
+//					setSingular(null);
+//				} else {
+//					setMultiple(imageSet);
+//				}
+//			}
+//		}
+//		
 		/** 
-		 * Callback method from {@link #initImages()} to indicate
+		 * Callback method from {@link #init()} to indicate
 		 * that there is at most one image of the edge.
 		 * @param image the single image; if <code>null</code>, the
 		 * edge cannot be matched at all
 		 */
 		final protected void setSingular(Edge image) {
-			this.singular = true;
-			this.potentialImage = image;
+			this.singleImage = image;
 		}
 		
 		/**
-		 * Callback method from {@link #initImages()} to pass through
+		 * Callback method from {@link #init()} to pass through
 		 * the set of potential images of the edge.
 		 */
 		final protected void setMultiple(Collection<? extends Edge> imageSet) {
-			this.singular = false;
-			this.potentialImageSet = imageSet;
+			this.multiImageSet = imageSet;
 		}
 
 		/**
-		 * The matcher for which we have instantiated this record.
+		 * The single image of  {@link EdgeSearchItem#edge}. May be <code>null</code> if there is no image at all,
+         * or more than one image.
 		 */
-		protected final M matcher;
-		
-		/**
-		 * Flag indicating that  {@link #find()}  already returned <code>false</code>.
-		 */
-		private boolean findReturnedFalse;
-
-		/**
-		 * Flag indicating that  {@link #find()}  was already called at least once (since the last  {@link #reset()} ).
-		 */
-		private boolean findCalled;
-
-		/**
-		 * Flag indicating that  {@link #initImages()}  has been called (so  {@link #singular}  and  {@link #potentialImage}  have valid values).
-		 */
-		private boolean imagesInitialised;
-		/**
-		 * Flag indicating that  {@link EdgeSearchItem#edge}  has no more than one potential image.
-		 */
-		private boolean singular;
-		/**
-		 * The single image of  {@link EdgeSearchItem#edge}, provided  {@link #singular} holds. May be <code>null</code> if there is no image at all.
-		 */
-		private Edge potentialImage;
+		private Edge singleImage;
 		/**
 		 * The set of images for the item's edge.
 		 */
-		private Collection<? extends Edge> potentialImageSet;
+		private Collection<? extends Edge> multiImageSet;
 		/**
 		 * An iterator over the images for the item's edge.
 		 */
-		private Iterator<? extends Edge> potentialImageIter;
+		private Iterator<? extends Edge> multiImageIter;
 		/**
 		 * The image for {@link #edge} set during the last call to {@link #find()}.
 		 */
@@ -307,20 +272,19 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
-    @Deprecated
-	protected class SingularEdgeRecord<M extends Matcher> implements Record {
+	protected class SingularEdgeRecord implements Record {
 		/**
 		 * Creates a record based on a given underlying matcher.
 		 */
-		protected SingularEdgeRecord(M matcher) {
-			this.matcher = matcher;
-			assert !matcher.getMorphism().containsKey(edge);
+		protected SingularEdgeRecord(SearchPlanStrategy.Search matcher) {
+			this.search = matcher;
+			assert !matcher.getResult().containsKey(edge);
 		}
 
 		public boolean find() {
 			boolean result;
 			// first test if we know the method already returned false
-			if (findReturnedFalse) {
+			if (findFailed) {
 				reset();
 			} else if (selected) {
 				undo();
@@ -335,7 +299,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 				// maybe there is none
 				result = image != null && select(image);
 			}
-			findReturnedFalse = !result;
+			findFailed = !result;
 			findCalled = true;
 			return result;
 		}
@@ -345,7 +309,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		 */
 		public void undo() {
 			if (selected) {
-				NodeEdgeMap elementMap = matcher.getSingularMap();
+				NodeEdgeMap elementMap = search.getResult();
 				Edge oldImage = elementMap.removeEdge(edge);
 				assert oldImage.equals(potentialImage);
 				selected = false;
@@ -354,15 +318,15 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 			}
 		}
 
+        /** Resets the record to pristine state, so that the search can start anew. */
 		public void reset() {
 			if (selected) {
-				throw new IllegalStateException();
-			} else {
-				imageInitialised = false;
-				potentialImage = null;
-				findCalled = false;
-				findReturnedFalse = false;
+				undo();
 			}
+            imageInitialised = false;
+            potentialImage = null;
+            findCalled = false;
+            findFailed = false;
 		}
 
 		/**
@@ -379,8 +343,8 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 			assert !selected : String.format("Edge %s already has image %s in map %s",
 					edge,
 					potentialImage,
-					matcher.getSingularMap());
-			NodeEdgeMap elementMap = matcher.getSingularMap();
+					search.getResult());
+			NodeEdgeMap elementMap = search.getResult();
 			elementMap.putEdge(edge, image);
 			selected = true;
 			return true;
@@ -403,9 +367,9 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		 * potential image is not in the codomain.
 		 */
 		protected Edge computeSingular() {
-			Edge result = edge.imageFor(matcher.getSingularMap());
+			Edge result = edge.imageFor(search.getResult());
 			assert result != null;
-			if (! matcher.cod().containsElement(result)) {
+			if (! search.getTarget().containsElement(result)) {
 				result = null;
 			}
 			return result;
@@ -414,13 +378,13 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		/**
 		 * The matcher for which we have instantiated this record.
 		 */
-		protected final M matcher;
+		protected final Search search;
 
 		/**
 		 * Flag indicating that {@link #find()} already returned
 		 * <code>false</code>.
 		 */
-		private boolean findReturnedFalse;
+		private boolean findFailed;
 
 		/**
 		 * Flag indicating that {@link #find()} was already called at least once
@@ -454,7 +418,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	 * end has been pre-matched according to the search plan; or <code>null</code>
 	 * if all ends have been pre-matched.
 	 */
-	public EdgeSearchItem(E edge, boolean[] bound) {
+	public EdgeSearchItem(Edge edge, boolean[] bound) {
 		this.edge = edge;
 		this.arity = edge.endCount();
 		boolean allEndsBound = true;
@@ -463,17 +427,18 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 				allEndsBound &= endBound;
 			}
 		}
-		this.bound = allEndsBound ? null : bound;
+		this.preMatched = allEndsBound ? null : bound;
 	}
 	
-	public Record get(Matcher matcher) {
-		return new EdgeRecord<DefaultMatcher>((DefaultMatcher) matcher);
+    @Override
+	public EdgeRecord getRecord(Search matcher) {
+		return new EdgeRecord( matcher);
 	}
 	
 	/**
 	 * Returns the edge for which this item tests.
 	 */
-	public E getEdge() {
+	public Edge getEdge() {
 		return edge;
 	}
 	
@@ -481,14 +446,14 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	 * Indicates if a given edge end has been pre-matched.
 	 */
 	protected boolean isPreMatched(int i) {
-		return isAllEndsBound() || bound[i];
+		return isAllPreMatched() || preMatched[i];
 	}
 	
 	/**
 	 * Indicates if all edge ends have been pre-matched.
 	 */
-	protected boolean isAllEndsBound() {
-		return bound == null;
+	protected boolean isAllPreMatched() {
+		return preMatched == null;
 	}
 	
 	/**
@@ -534,14 +499,14 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 	/**
 	 * The edge for which this search item is to find an image.
 	 */
-	protected final E edge;
+	protected final Edge edge;
 	/** The number of ends of {@link #edge}. */
 	protected final int arity;
 	/**
 	 * Array of flags indicating if the corresponding end of {@link #edge}.
 	 * May be <code>null</code> if all ends are matched.
 	 */
-	protected final boolean[] bound;
+	protected final boolean[] preMatched;
 	/**
 	 * Array of lower end indices that are duplicates of a given end.
 	 * That is, duplicates[i] is the smallest j smaller than or equal to i

@@ -1,4 +1,4 @@
-/* $Id: IsoEdgeSearchItem.java,v 1.3 2007-08-22 15:05:00 rensink Exp $ */
+/* $Id: IsoEdgeSearchItem.java,v 1.4 2007-08-24 17:35:00 rensink Exp $ */
 package groove.graph.iso;
 
 import groove.graph.Edge;
@@ -10,7 +10,9 @@ import groove.graph.match.Matcher;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public class IsoEdgeSearchItem extends EdgeSearchItem<Edge> {
+    @Deprecated
 	private class IsoEdgeRecord extends EdgeRecord<IsoMatcher> {
         /** Creates a record for a given matcher. */
 		protected IsoEdgeRecord(IsoMatcher matcher) {

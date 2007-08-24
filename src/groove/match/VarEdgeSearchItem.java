@@ -1,5 +1,5 @@
-/* $Id: VarEdgeSearchItem.java,v 1.5 2007-08-24 17:34:52 rensink Exp $ */
-package groove.rel.match;
+/* $Id: VarEdgeSearchItem.java,v 1.1 2007-08-24 17:34:56 rensink Exp $ */
+package groove.match;
 
 import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
@@ -7,25 +7,23 @@ import groove.graph.DefaultFlag;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.match.EdgeSearchItem;
-import groove.graph.match.Matcher;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
+
+import static groove.match.SearchPlanStrategy.Search;
 
 /**
  * A search item that searches an image for an edge.
  * @author Arend Rensink
  * @version $Revision $
  */
-@Deprecated
-public class VarEdgeSearchItem extends EdgeSearchItem<Edge> {
+public class VarEdgeSearchItem extends EdgeSearchItem {
 	/** Record for this type of search item. */
-    @Deprecated
-	protected class VarEdgeRecord extends EdgeRecord<RegExprMatcher> {
+	protected class VarEdgeRecord extends EdgeRecord {
 		/** Constructs a new record, for a given matcher. */
-		protected VarEdgeRecord(RegExprMatcher matcher) {
-			super(matcher);
-			varPreMatched = matcher.getVar(var) != null;
+		protected VarEdgeRecord(Search search) {
+			super(search);
+			varPreMatched = search.getResult().getVar(var) != null;
 		}
 		
 		/**
@@ -35,40 +33,40 @@ public class VarEdgeSearchItem extends EdgeSearchItem<Edge> {
 		 * for {@link VarEdgeSearchItem#edge}
 		 */
 		@Override
-		public boolean select(Edge image) {
+		boolean select(Edge image) {
 			boolean result = image.endCount() == edge.endCount() && super.select(image);
 			if (result) {
-				assert ! varPreMatched || matcher.getVar(var) != null;
+				assert ! varPreMatched || getResult().getVar(var) != null;
 				if (!varPreMatched) {
-					matcher.putVar(var, image.label());
+                    getResult().putVar(var, image.label());
 				}
 			}
 			return result;
 		}
 
 		@Override
-		public void undo() {
-			assert matcher.getVar(var).equals(selected.label()) : String.format("Wrong image %s for variable %s: should be %s", matcher.getVar(var), var, selected.label());
+		void undo() {
+			assert getResult().getVar(var).equals(selected.label()) : String.format("Wrong image %s for variable %s: should be %s", getResult().getVar(var), var, selected.label());
 			super.undo();
 			if (!varPreMatched) {
-				Label oldImage = matcher.getValuation().remove(var);
+				Label oldImage = getResult().getValuation().remove(var);
 				assert oldImage != null;
 			}
 		}
 
 		@Override
-		protected void initImages() {
-			if (varPreMatched && isAllEndsBound()) {
-				Edge image = edge.imageFor(matcher.getSingularMap());
-				if (matcher.cod().containsElement(image)) {
+		void init() {
+			if (varPreMatched && isAllPreMatched()) {
+				Edge image = edge.imageFor(getResult());
+				if (getTarget().containsElement(image)) {
 					setSingular(image);
 				} else {
 					setSingular(null);
 				}
 			} else if (varPreMatched) {
-		        setMultiple(matcher.cod().labelEdgeSet(edge.endCount(), matcher.getVar(var)));
+		        setMultiple(getTarget().labelEdgeSet(edge.endCount(), getResult().getVar(var)));
 			} else {
-				setMultiple(matcher.cod().edgeSet());
+				setMultiple(getTarget().edgeSet());
 			}
 		}
 		
@@ -117,8 +115,8 @@ public class VarEdgeSearchItem extends EdgeSearchItem<Edge> {
 	}
 	
 	@Override
-	public Record get(Matcher matcher) {
-		return new VarEdgeRecord((RegExprMatcher) matcher);
+	public EdgeRecord getRecord(Search search) {
+		return new VarEdgeRecord(search);
 	}
 	
 	/** The variable bound in the wildcard (not <code>null</code>). */

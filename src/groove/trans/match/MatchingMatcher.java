@@ -1,5 +1,5 @@
 /*
- * $Id: MatchingMatcher.java,v 1.6 2007-06-01 18:04:03 rensink Exp $
+ * $Id: MatchingMatcher.java,v 1.7 2007-08-24 17:34:50 rensink Exp $
  */
 package groove.trans.match;
 
@@ -15,8 +15,9 @@ import java.util.List;
 /**
  * Matcher that takes conditions into account.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
+@Deprecated
 public class MatchingMatcher extends RegExprMatcher {
 	/** 
 	 * Constructs a matcher on the basis of a pre-existing mapping. 

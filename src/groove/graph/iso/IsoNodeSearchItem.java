@@ -1,4 +1,4 @@
-/* $Id: IsoNodeSearchItem.java,v 1.3 2007-04-30 19:53:32 rensink Exp $ */
+/* $Id: IsoNodeSearchItem.java,v 1.4 2007-08-24 17:35:00 rensink Exp $ */
 package groove.graph.iso;
 
 import java.util.Collection;
@@ -16,7 +16,9 @@ import groove.graph.match.NodeSearchItem;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public class IsoNodeSearchItem extends NodeSearchItem {
+    @Deprecated
 	private class IsoNodeRecord extends NodeRecord<IsoMatcher> {
 		/** Constructs a new record for this search item. */
 		protected IsoNodeRecord(IsoMatcher matcher) {

@@ -12,9 +12,30 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.20 2007-08-22 15:04:48 rensink Exp $
+ * $Id: SPOEvent.java,v 1.21 2007-08-24 17:35:17 rensink Exp $
  */
 package groove.trans;
+
+import groove.graph.DefaultNode;
+import groove.graph.Edge;
+import groove.graph.Element;
+import groove.graph.Graph;
+import groove.graph.GraphShape;
+import groove.graph.Label;
+import groove.graph.MergeMap;
+import groove.graph.Morphism;
+import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
+import groove.graph.NodeSet;
+import groove.graph.WrapperLabel;
+import groove.graph.algebra.ValueNode;
+import groove.match.MatchStrategy;
+import groove.rel.RegExprLabel;
+import groove.rel.VarNodeEdgeHashMap;
+import groove.rel.VarNodeEdgeMap;
+import groove.util.Groove;
+import groove.util.Reporter;
+import groove.util.TreeHashSet3;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,31 +47,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import groove.graph.DefaultNode;
-import groove.graph.Edge;
-import groove.graph.Element;
-import groove.graph.GraphShape;
-import groove.graph.Morphism;
-import groove.graph.NodeEdgeMap;
-import groove.graph.Graph;
-import groove.graph.MergeMap;
-import groove.graph.Label;
-import groove.graph.Node;
-import groove.graph.NodeSet;
-import groove.graph.WrapperLabel;
-import groove.graph.algebra.ValueNode;
-import groove.rel.RegExprLabel;
-import groove.rel.VarNodeEdgeHashMap;
-import groove.rel.VarNodeEdgeMap;
-import groove.util.Groove;
-import groove.util.Reporter;
-import groove.util.TreeHashSet3;
-
 /**
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.20 $ $Date: 2007-08-22 15:04:48 $
+ * @version $Revision: 1.21 $ $Date: 2007-08-24 17:35:17 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -308,28 +309,39 @@ public class SPOEvent implements RuleEvent {
      * Returns <code>null</code> if a matching does not exist.
      */
     public Morphism getMatching(Graph host) {
-        Matching result = computeMatcher(host);
-        if (result == null) {
-        	return result;
+        if (isCorrectFor(host)) {
+            DefaultMatching result = new DefaultMatching(getRule(), host, getRule().getProperties().isInjective()) {
+                @Override
+                protected VarNodeEdgeMap createElementMap() {
+                    return getAnchorMap();
+                }
+
+                @Override
+                protected MatchStrategy createMatchStrategy() {
+                    return getRule().getEventMatcher();
+                }
+            };
+            result.setFixed();
+            return result.getTotalExtension();
         } else {
-        	return result.getTotalExtension();
+            return null;
         }
     }
 
     /**
-	 * Computes a matching based on the given anchor images, but without
-	 * computing its total extension. Return <code>null</code> if any of the
-	 * anchor images is not in the source graph.
+	 * Tests if there is a matching of this event to a given host graph.
+     * A matching may fail to exist because the anchor map does not map into the
+     * host graph, or because conditions outside the anchor map are not fulfilled. 
 	 */
 	public boolean hasMatching(Graph host) {
-        Matching result = computeMatcher(host);
-        if (result == null) {
-        	return false;
-        } else {
-        	return result.hasTotalExtensions();
-        }
+        return getMatching(host) != null;
+//        if (isCorrectFor(host)) {
+//            return getRule().getEventMatcher().getMatch(host, getAnchorMap()) != null;
+//        } else {
+//            return false;
+//        }
 	}
-
+    
 	/**
 	 * Compares two events first on the basis of their rules,
 	 * then lexicographically on the basis of thei anchor images.
@@ -377,45 +389,70 @@ public class SPOEvent implements RuleEvent {
 		}
 	}
 
-	/**
-	 * Computes a matcher for this event in a given graph,
-	 * based on the precomputed anchor map.
-	 * Returns <code>null</code> if the anchor map does not fit to the host graph.
-	 */
-	protected Matching computeMatcher(Graph host) {
-		reporter.start(GET_PARTIAL_MATCH);
-	    Matching result;
-	    VarNodeEdgeMap anchorMap = getAnchorMap();
-	    boolean correct = true;
-	    Iterator<Edge> edgeImageIter = anchorMap.edgeMap().values().iterator();
-	    while (correct && edgeImageIter.hasNext()) {
-	    	correct = virtuallyContains(host, edgeImageIter.next());
-	    }
-		if (correct) {
-			Iterator<Node> nodeImageIter = anchorMap.nodeMap().values().iterator();
-			while (correct && nodeImageIter.hasNext()) {
-		    	correct = virtuallyContains(host, nodeImageIter.next());
-			}
-		}
-		result = correct ? createMatcher(host) : null;
-	    reporter.stop();
-		return result;
-	}
+    /**
+     * Tests if the anchor map fits into a given host graph.
+     * @param host the graph to be tested
+     * @return <code>true</code> if the anchor map images are all in <code>host</code>
+     */
+    protected boolean isCorrectFor(Graph host) {
+        reporter.start(GET_PARTIAL_MATCH);
+        VarNodeEdgeMap anchorMap = getAnchorMap();
+        boolean correct = true;
+        Iterator<Edge> edgeImageIter = anchorMap.edgeMap().values().iterator();
+        while (correct && edgeImageIter.hasNext()) {
+            correct = virtuallyContains(host, edgeImageIter.next());
+        }
+        if (correct) {
+            Iterator<Node> nodeImageIter = anchorMap.nodeMap().values().iterator();
+            while (correct && nodeImageIter.hasNext()) {
+                correct = virtuallyContains(host, nodeImageIter.next());
+            }
+        }
+        reporter.stop();
+        return correct;
+    }
 
-	/**
-	 * Creates a matcher for this event in a given host graph, based on the rule and anchor map.
-	 */
-	private Matching createMatcher(Graph host) {
-		DefaultMatching result = new DefaultMatching(getRule(), host, rule.getProperties().isInjective()) {
-			@Override
-			protected VarNodeEdgeMap createElementMap() {
-				return getAnchorMap();
-			}
-		};
-		result.setFixed();
-		return result;
-//		return getRuleFactory().createMatching(getRule(), getAnchorMap(), host);
-	}
+    /**
+     * Computes a matcher for this event in a given graph,
+     * based on the precomputed anchor map.
+     * Returns <code>null</code> if the anchor map does not fit to the host graph.
+     */
+    @Deprecated
+    protected Matching computeMatcher(Graph host) {
+        reporter.start(GET_PARTIAL_MATCH);
+        Matching result;
+        VarNodeEdgeMap anchorMap = getAnchorMap();
+        boolean correct = true;
+        Iterator<Edge> edgeImageIter = anchorMap.edgeMap().values().iterator();
+        while (correct && edgeImageIter.hasNext()) {
+            correct = virtuallyContains(host, edgeImageIter.next());
+        }
+        if (correct) {
+            Iterator<Node> nodeImageIter = anchorMap.nodeMap().values().iterator();
+            while (correct && nodeImageIter.hasNext()) {
+                correct = virtuallyContains(host, nodeImageIter.next());
+            }
+        }
+        result = isCorrectFor(host) ? createMatcher(host) : null;
+        reporter.stop();
+        return result;
+    }
+
+    /**
+     * Creates a matcher for this event in a given host graph, based on the rule and anchor map.
+     */
+    @Deprecated
+    private Matching createMatcher(Graph host) {
+        DefaultMatching result = new DefaultMatching(getRule(), host, rule.getProperties().isInjective()) {
+            @Override
+            protected VarNodeEdgeMap createElementMap() {
+                return getAnchorMap();
+            }
+        };
+        result.setFixed();
+        return result;
+//      return getRuleFactory().createMatching(getRule(), getAnchorMap(), host);
+    }
     
 	/** 
 	 * Tests if a graph contains a given element, 
