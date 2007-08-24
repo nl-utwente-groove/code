@@ -11,6 +11,7 @@ import java.util.*;
 /**
  * @author J. ter Hove
  */
+@Deprecated
 public class VF2Matcher implements Matcher {
 
     /**

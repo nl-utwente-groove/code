@@ -1,29 +1,26 @@
-/* $Id: InjectionSearchItem.java,v 1.2 2007-08-24 17:34:52 rensink Exp $ */
-package groove.rel.match;
+/* $Id: InjectionSearchItem.java,v 1.1 2007-08-24 17:34:57 rensink Exp $ */
+package groove.match;
 
 import java.util.Collection;
 import java.util.Iterator;
 
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
-import groove.graph.match.Matcher;
-import groove.trans.match.ConditionSearchItem;
+import static groove.match.SearchPlanStrategy.Search;
 
 /**
  * A search item that searches an image for an edge.
  * @author Arend Rensink
  * @version $Revision $
  */
-@Deprecated
 public class InjectionSearchItem extends ConditionSearchItem {
 	/** The record for this search item. */
-    @Deprecated
 	protected class MergeEmbargoRecord extends ConditionRecord {
 		/** Constructs a fresh record, for a given matcher. */
-		protected MergeEmbargoRecord(Matcher matcher) {
-			this.matcher = matcher;
-			assert matcher.getSingularMap().containsKey(node1) : String.format("Merge embargo node %s not yet matched", node1);
-			assert matcher.getSingularMap().containsKey(node2) : String.format("Merge embargo node %s not yet matched", node2);
+		protected MergeEmbargoRecord(Search search) {
+			super(search);
+			assert getResult().containsKey(node1) : String.format("Merge embargo node %s not yet matched", node1);
+			assert getResult().containsKey(node2) : String.format("Merge embargo node %s not yet matched", node2);
 		}
 
 		/**
@@ -31,11 +28,9 @@ public class InjectionSearchItem extends ConditionSearchItem {
 		 */
 		@Override
 		protected boolean condition() {
-			NodeEdgeMap elementMap = matcher.getSingularMap();
+			NodeEdgeMap elementMap = getResult();
 			return elementMap.getNode(node1) != elementMap.getNode(node2);
 		}
-		
-		private final Matcher matcher;
 	}
 
 	/** 
@@ -51,7 +46,8 @@ public class InjectionSearchItem extends ConditionSearchItem {
 		this.node2 = nodeIter.next();
 	}
 	
-	public Record get(Matcher matcher) {
+    @Override
+	public MergeEmbargoRecord getRecord(Search matcher) {
 		return new MergeEmbargoRecord(matcher);
 	}
 	

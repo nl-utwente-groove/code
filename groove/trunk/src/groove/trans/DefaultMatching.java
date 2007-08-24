@@ -1,35 +1,34 @@
-// GROOVE: GRaphs for Object Oriented VErification
-// Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
-// language governing permissions and limitations under the License.
-/*
- * $Id: DefaultMatching.java,v 1.9 2007-08-22 15:04:48 rensink Exp $
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ *
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id: DefaultMatching.java,v 1.10 2007-08-24 17:35:11 rensink Exp $
  */
 package groove.trans;
+
+import groove.graph.Graph;
+import groove.graph.Morphism;
+import groove.graph.NodeEdgeMap;
+import groove.match.MatchStrategy;
+import groove.rel.RegExprMorphism;
+import groove.rel.VarMorphism;
+import groove.rel.VarNodeEdgeMap;
+import groove.util.FilterIterator;
 
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-
-import groove.graph.Graph;
-import groove.graph.Morphism;
-import groove.graph.NodeEdgeMap;
-import groove.graph.match.Matcher;
-import groove.rel.RegExprMorphism;
-import groove.rel.VarMorphism;
-import groove.rel.VarNodeEdgeMap;
-import groove.trans.match.MatchingMatcher;
-import groove.util.FilterIterator;
 
 /**
  * Default implementation of the {@link Matching} interface, based on
@@ -37,7 +36,7 @@ import groove.util.FilterIterator;
  * Expecially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
@@ -150,11 +149,20 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
     }
 
     /**
-     * This implementation returns a {@link MatchingMatcher} based on this matching.
+     * This implementation delegates to {@link DefaultGraphCondition#getMatchStrategy()}.
      */
     @Override
-    protected Matcher createMatcher() {
-        return new MatchingMatcher(this, injective);
+    protected MatchStrategy createMatchStrategy() {
+        return getCondition().getMatchStrategy();
+    }
+
+    /**
+     * This implementation returns a {@link groove.trans.match.MatchingMatcher} based on this matching.
+     */
+    @Override
+    @Deprecated
+    protected groove.graph.match.Matcher createMatcher() {
+        return new groove.trans.match.MatchingMatcher(this, injective);
     }
 //
 //    /**

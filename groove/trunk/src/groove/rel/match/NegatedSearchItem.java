@@ -1,4 +1,4 @@
-/* $Id: NegatedSearchItem.java,v 1.1 2007-04-18 08:36:08 rensink Exp $ */
+/* $Id: NegatedSearchItem.java,v 1.2 2007-08-24 17:34:52 rensink Exp $ */
 package groove.rel.match;
 
 import groove.graph.match.Matcher;
@@ -10,8 +10,10 @@ import groove.trans.match.ConditionSearchItem;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public class NegatedSearchItem extends ConditionSearchItem {
 	/** Record for the negated search item. */
+    @Deprecated
 	protected class NegatedSearchRecord extends ConditionRecord {
 		/** Constructs a new record, for a given matcher. */
 		protected NegatedSearchRecord(Matcher matcher) {

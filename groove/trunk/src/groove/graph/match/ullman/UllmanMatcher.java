@@ -9,6 +9,7 @@ import java.util.*;
 /**
  * @author J. ter Hove
  */
+@Deprecated
 public class UllmanMatcher implements Matcher {
     // information for GROOVE
 

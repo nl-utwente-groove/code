@@ -26,13 +26,14 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Node;
+import groove.match.IsoMatchFactory;
 import groove.util.Reporter;
 
 /**
  * Implementation of an isomorphism checking algorithm that first tries to
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy}. 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -200,7 +201,7 @@ public class DefaultIsoChecker implements IsoChecker {
         } else {
         	reporter.start(ISO_SIM_CHECK);
         	if (getNodePartitionCount(domCertifier) == getNodePartitionCount(codCertifier)) {
-        		result = new IsoMatcher(graphFactory.newMorphism(dom, cod)).hasRefinement();
+        		result = IsoMatchFactory.getInstance().createSearchPlan(dom).getMatch(cod, null) != null;
         	} else {
         		result = false;
         	}

@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultSearchPlanFactory.java,v 1.7 2007-08-24 17:34:51 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.1 2007-08-24 17:34:57 rensink Exp $
  */
-package groove.graph.match;
+package groove.match;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -29,13 +30,17 @@ import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
 
+import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.AlgebraEdge;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.rel.RegExpr;
+import groove.rel.RegExprLabel;
 import groove.util.Bag;
 import groove.util.HashBag;
 
@@ -47,25 +52,41 @@ import groove.util.HashBag;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.1 $
  */
-@Deprecated
-public class DefaultSearchPlanFactory implements SearchPlanFactory {
-	/**
-	 * Creates the search plan by constructing a {@link groove.graph.match.DefaultSearchPlanFactory.PlanData} object
-	 * and then invoking {@link groove.graph.match.DefaultSearchPlanFactory.PlanData#getPlan()}.
-	 */
-	public Iterable<SearchItem> createSearchPlan(Graph graph) {
-        return createSearchPlan(graph, Collections.<Node>emptySet(), Collections.<Edge>emptySet());
-	}
-
-    /**
-     * Creates the search plan by constructing a {@link groove.graph.match.DefaultSearchPlanFactory.PlanData} object
-     * and then invoking {@link groove.graph.match.DefaultSearchPlanFactory.PlanData#getPlan()}.
+public class GraphSearchPlanFactory {
+    /** 
+     * Private, empty constructor.
+     * This is a ginleton class; get the instance through {@link #getInstance()}.
      */
-    public Iterable<SearchItem> createSearchPlan(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
+    GraphSearchPlanFactory() {
+        // empty
+    }
+//    /** 
+//     * Factory method returning a search strategy for matching a given graph. 
+//     * This is a convenience method for {@link #createSearchPlan(Graph, Collection, Collection)} with
+//     * empty sets of pre-matched nodes and edges.
+//     * @param graph the graph that is to be matched
+//     * @return a search strategy to look for a subgraph matchings of <code>graph</code>
+//     */
+//	public Iterable<SearchItem> createSearchPlan(Graph graph) {
+//        return createSearchPlan(graph, Collections.<Node>emptySet(), Collections.<Edge>emptySet());
+//	}
+//
+    /** 
+     * Factory method returning a list of search items for matching a given graph, given also
+     * that certain nodes and edges have already been pre-matched (<i>bound</i>).
+     * @param graph the graph that is to be matched
+     * @param preMatchedNodes the set of pre-matched nodes when searching; may be <code>null</code> if there are
+     * no pre-matched nodes
+     * @param preMatchedEdges the set of pre-matched edges when searching; may be <code>null</code> if there are
+     * no pre-matched edges
+     * @return a list of search items that will result in a matching of <code>graph</code>
+     * when successfully executed in the given order
+     */
+    public SearchPlanStrategy createSearchPlan(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges, boolean injective) {
         PlanData data = new PlanData(graph, preMatchedNodes, preMatchedEdges);
-        return data.getPlan();
+        return new SearchPlanStrategy(data.getPlan(), injective);
     }
 
     /**
@@ -74,6 +95,7 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	 */
 	protected List<Comparator<Edge>> createComparators(Set<? extends Node> nodeSet, Set<? extends Edge> edgeSet) {
 		List<Comparator<Edge>> result = new ArrayList<Comparator<Edge>>();
+        result.add(new RegExprComparator());
 		result.add(new ConnectivityComparator(nodeSet));
 		result.add(new IndegreeComparator(edgeSet));
 		return result;
@@ -83,10 +105,26 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
 	 * Callback factory method for creating an edge search item.
 	 */
 	protected SearchItem createEdgeSearchItem(Edge edge, boolean[] matched) {
-		if (edge instanceof ProductEdge) {
-			return new ProductEdgeSearchItem((ProductEdge) edge, matched);
+        Label label = edge.label();
+        RegExpr negOperand = RegExprLabel.getNegOperand(label);
+        if (negOperand instanceof RegExpr.Empty) {
+            return createInjectionSearchItem(Arrays.asList(edge.ends()));
+        } else if (negOperand != null) {
+            Edge negatedEdge = DefaultEdge.createEdge(edge.source(), negOperand.toLabel(), edge.opposite());
+            return createNegatedSearchItem(createEdgeSearchItem(negatedEdge, matched));
+        } else if (RegExprLabel.getWildcardId(label) != null) {
+            return new VarEdgeSearchItem(edge, matched);
+        } else if (RegExprLabel.isWildcard(label)) {
+            return new WildcardEdgeSearchItem(edge, matched);
+        } else if (RegExprLabel.isAtom(label)) {
+            Edge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
+            return new EdgeSearchItem(defaultEdge, matched);
+        } else if (label instanceof RegExprLabel) {
+            return new RegExprEdgeSearchItem(edge, matched);
+        } else if (edge instanceof ProductEdge) {
+			return new OperatorEdgeSearchItem((ProductEdge) edge, matched);
 		} else {
-			return new EdgeSearchItem<Edge>(edge, matched);
+			return new EdgeSearchItem(edge, matched);
 		}
 	}
 
@@ -100,6 +138,32 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
     		return new NodeSearchItem(node);
     	}
     }
+    
+    /**
+     * Callback factory method for a negated search item.
+     * @param inner the internal search item which this one negates
+     * @return an instance of {@link NegatedSearchItem}
+     */
+    protected NegatedSearchItem createNegatedSearchItem(SearchItem inner) {
+        return new NegatedSearchItem(inner);
+    }
+    
+    /**
+     * Callback factory method for an injection search item.
+     * @param injection the first node to be matched injectively
+     * @return an instance of {@link InjectionSearchItem}
+     */
+    protected InjectionSearchItem createInjectionSearchItem(Collection<? extends Node> injection) {
+        return new InjectionSearchItem(injection);
+    }    
+
+    /** Returns the singleton instance of this factory class. */
+    static public GraphSearchPlanFactory getInstance() {
+        return instance;
+    }
+    
+    /** The fixed, singleton instance of this factory. */
+    static private final GraphSearchPlanFactory instance = new GraphSearchPlanFactory();
     
     /**
      * Internal class to collect the data necessary to create a plan
@@ -117,9 +181,13 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
          */
         public PlanData(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
             nodeSet = new HashSet<Node>(graph.nodeSet());
-            nodeSet.removeAll(preMatchedNodes);
+            if (preMatchedNodes != null) {
+                nodeSet.removeAll(preMatchedNodes);
+            }
             edgeSet = new HashSet<Edge>(graph.edgeSet());
-            edgeSet.removeAll(preMatchedEdges);        
+            if (preMatchedEdges != null) {
+                edgeSet.removeAll(preMatchedEdges);
+            }
         }
 
         /**
@@ -261,7 +329,7 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
          * Constructs the list of edge comparators to be used.
          */
         protected List<Comparator<Edge>> createComparators() {
-            return DefaultSearchPlanFactory.this.createComparators(nodeSet, edgeSet);
+            return GraphSearchPlanFactory.this.createComparators(nodeSet, edgeSet);
         }
 
         /**
@@ -407,5 +475,50 @@ public class DefaultSearchPlanFactory implements SearchPlanFactory {
          * The indegrees.
          */
         private final Bag<Node> indegrees;
+    }
+    
+    /**
+     * Edge comparator for regular expression edges.
+     * An edge is better if it is not regular, or if the automaton is not reflexive.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    private static class RegExprComparator implements Comparator<Edge> {
+        /**
+         * Compares two labels, with the purpose of determining which one should
+         * be tried first. The rules are as follows:
+         * <ul>
+         * <li> Regular expression labels are worse than others
+         * <li> Reflexive regular expressions are worse than others
+         * </ul>
+         */
+        public int compare(Edge o1, Edge o2) {
+            Label first = o1.label();
+            Label second = o2.label();
+            int result = compare(second instanceof RegExprLabel,
+                    first instanceof RegExprLabel);
+            if (result == 0 && first instanceof RegExprLabel) {
+                // remove the potential outer negation from the labels
+                if (RegExprLabel.isNeg(first)) {
+                    first = RegExprLabel.getNegOperand(first).toLabel();
+                }
+                if (RegExprLabel.isNeg(second)) {
+                    second = RegExprLabel.getNegOperand(second).toLabel();
+                }
+                result = compare(!((RegExprLabel) first).getAutomaton().isAcceptsEmptyWord(),
+                        !((RegExprLabel) second).getAutomaton().isAcceptsEmptyWord());
+            }
+            return result;
+        }
+
+        /**
+         * Compares two booleans, and returns the result of the comparison as an integer.
+         * @return <code>+1</code> if <code>first</code> is <code>true</code>
+         * but <code>second</code> is not, <code>-1</code> if the reverse is the case,
+         * and <code>0</code> if their values are equal.
+         */
+        protected int compare(boolean first, boolean second) {
+            return first ? (second ? 0 : +1) : (second ? -1 : 0);
+        }
     }
 }

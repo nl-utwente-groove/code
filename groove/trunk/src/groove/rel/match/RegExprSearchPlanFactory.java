@@ -1,5 +1,5 @@
 /*
- * $Id: RegExprSearchPlanFactory.java,v 1.4 2007-06-27 13:18:56 rensink Exp $
+ * $Id: RegExprSearchPlanFactory.java,v 1.5 2007-08-24 17:34:52 rensink Exp $
  */
 package groove.rel.match;
 
@@ -25,8 +25,9 @@ import groove.rel.match.VarEdgeSearchItem;
  * their source nodes.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
+@Deprecated
 public class RegExprSearchPlanFactory extends DefaultSearchPlanFactory {
 	/**
 	 * Edge comparator for regular expression edges.

@@ -14,7 +14,7 @@ import java.util.Map;
  * Mapping from certificate values to sets of graph elements having those certificates.
  * For efficiency, singular image sets are stored as single objects. 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class PartitionMap {
 	/** Adds a pair of certificate and graph element to the partition map. */
@@ -35,7 +35,7 @@ public class PartitionMap {
 	    }
 	}
 	
-	/** Indicates if the partition map has non-singleton partitions as values. */
+	/** Indicates if the partition map has only singleton partitions as values. */
 	public boolean isOneToOne() {
 		return oneToOne;
 	}

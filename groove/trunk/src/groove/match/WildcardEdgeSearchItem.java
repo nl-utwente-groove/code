@@ -1,35 +1,33 @@
-/* $Id: WildcardEdgeSearchItem.java,v 1.2 2007-08-24 17:34:52 rensink Exp $ */
-package groove.rel.match;
+/* $Id: WildcardEdgeSearchItem.java,v 1.1 2007-08-24 17:34:56 rensink Exp $ */
+package groove.match;
 
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Node;
-import groove.graph.match.EdgeSearchItem;
-import groove.graph.match.Matcher;
 import groove.rel.RegExprLabel;
+
+import static groove.match.SearchPlanStrategy.Search;
 
 /**
  * A search item that searches an image for an edge.
  * @author Arend Rensink
  * @version $Revision $
  */
-@Deprecated
-public class WildcardEdgeSearchItem extends EdgeSearchItem<Edge> {
+public class WildcardEdgeSearchItem extends EdgeSearchItem {
 	/** Record for this type of search item. */
-    @Deprecated
-	protected class WildcardEdgeRecord extends EdgeRecord<RegExprMatcher> {
+	protected class WildcardEdgeRecord extends EdgeRecord {
 		/** Constructs a new record, for a given matcher. */
-		protected WildcardEdgeRecord(RegExprMatcher matcher) {
-			super(matcher);
+		protected WildcardEdgeRecord(Search search) {
+			super(search);
 		}
 		
 		@Override
-		protected void initImages() {
+		void init() {
 			if (isPreMatched(Edge.SOURCE_INDEX)) {
-                Node sourceImage = matcher.getSingularMap().getNode(getEdge().source());
-                setMultiple(matcher.cod().outEdgeSet(sourceImage));
+                Node sourceImage = getResult().getNode(getEdge().source());
+                setMultiple(getTarget().outEdgeSet(sourceImage));
 			} else {
-				setMultiple(matcher.cod().edgeSet());
+				setMultiple(getTarget().edgeSet());
 			}
 		}
 	}
@@ -46,7 +44,7 @@ public class WildcardEdgeSearchItem extends EdgeSearchItem<Edge> {
 	}
 	
 	@Override
-	public Record get(Matcher matcher) {
-		return new WildcardEdgeRecord((RegExprMatcher) matcher);
+	public EdgeRecord getRecord(Search search) {
+		return new WildcardEdgeRecord(search);
 	}
 }

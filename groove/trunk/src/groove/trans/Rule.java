@@ -12,15 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.9 2007-05-09 22:53:34 rensink Exp $
- * $Date: 2007-05-09 22:53:34 $
+ * $Id: Rule.java,v 1.10 2007-08-24 17:35:11 rensink Exp $
+ * $Date: 2007-08-24 17:35:11 $
  */
 package groove.trans;
 
 import groove.graph.Element;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.match.SearchItem;
+import groove.match.MatchStrategy;
 import groove.rel.VarGraph;
 import groove.rel.VarNodeEdgeMap;
 
@@ -34,7 +34,7 @@ import java.util.List;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -114,8 +114,15 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
     public RuleEvent newEvent(VarNodeEdgeMap anchorMap, SystemRecord record);
 
     /**
+     * Lazily creates and returns a matcher for rule events of this rule,
+     * which tries to find the anchor image in a given graph. 
+     */
+    public MatchStrategy getEventMatcher();
+
+    /**
      * Lazily creates and returns a search plan for rule events of this rule,
      * which tries to find the anchor image in a given graph. 
      */
-    public List<SearchItem> getAnchorSearchPlan();
+    @Deprecated
+    public List<groove.graph.match.SearchItem> getAnchorSearchPlan();
 }

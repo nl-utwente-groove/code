@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMorphism.java,v 1.5 2007-04-29 09:22:27 rensink Exp $
+ * $Id: AbstractMorphism.java,v 1.6 2007-08-24 17:34:54 rensink Exp $
  */
 package groove.graph;
 
-import groove.graph.match.Matcher;
+import groove.match.MatchStrategy;
+import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
 import groove.view.FormatException;
@@ -32,7 +33,7 @@ import java.util.Set;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edge,Edge> implements Morphism {
     /**
@@ -198,31 +199,31 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
 
     public boolean hasTotalExtensions() {
         reporter.start(HAS_TOTAL_EXTENSIONS);
-        Matcher sim = createMatcher();
-        boolean result = sim.hasRefinement();
+        VarNodeEdgeMap match = createMatchStrategy().getMatch(cod(), elementMap());
+        boolean result = match != null;
         reporter.stop();
         return result;
     }
 
     public Morphism getTotalExtension() {
-        NodeEdgeMap sim = createMatcher().getRefinement();
-        if (sim == null) {
+        VarNodeEdgeMap match = createMatchStrategy().getMatch(cod(), elementMap());
+        if (match == null) {
             return null;
         } else {
-            return createMorphism(sim);
+            return createMorphism(match);
         }
     }
 
     public Collection<? extends Morphism> getTotalExtensions() {
         reporter.start(GET_TOTAL_EXTENSIONS);
         try {
-        	Matcher sim = createMatcher();
+            MatchStrategy matcher = createMatchStrategy();
             // we choose a LinkedList because there will be removal
             // a HashSet would be an option but then we need to take care of
             // the equals method of the morphisms returned by createMorphism,
             // also in subclasses, which is hard to maintain
             Collection<Morphism> result = new LinkedList<Morphism>();
-            Iterator<? extends NodeEdgeMap> refinementIter = sim.getRefinementIter();
+            Iterator<? extends NodeEdgeMap> refinementIter = matcher.getMatchIter(cod(), elementMap());
             while (refinementIter.hasNext()) {
 				NodeEdgeMap elementMap = refinementIter.next();
 				result.add(createMorphism(elementMap));
@@ -247,8 +248,8 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     public Iterator<? extends Morphism> getTotalExtensionsIter() {
         reporter.start(GET_TOTAL_EXTENSIONS);
         try {
-        	Matcher sim = createMatcher();
-            return new TransformIterator<NodeEdgeMap,Morphism>(sim.getRefinementIter()) {
+            MatchStrategy matcher = createMatchStrategy();
+            return new TransformIterator<NodeEdgeMap,Morphism>(matcher.getMatchIter(cod(), elementMap())) {
             	@Override
             	public Morphism toOuter(NodeEdgeMap obj) {
                     return createMorphism(obj);
@@ -575,9 +576,15 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     }
 
     /**
+     * Factory method for match strategies.
+     */
+    abstract protected MatchStrategy createMatchStrategy();
+
+    /**
      * Factory method for simulations.
      */
-    abstract protected Matcher createMatcher();
+    @Deprecated
+    abstract protected groove.graph.match.Matcher createMatcher();
     
     /**
      * The codomain of this Morphism.

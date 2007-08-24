@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.17 2007-08-22 15:04:48 rensink Exp $
+ * $Id: SPORule.java,v 1.18 2007-08-24 17:35:17 rensink Exp $
  */
 package groove.trans;
 
@@ -22,7 +22,8 @@ import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
-import groove.graph.match.SearchItem;
+import groove.match.ConditionSearchPlanFactory;
+import groove.match.MatchStrategy;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarGraph;
@@ -42,7 +43,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -139,13 +140,22 @@ public class SPORule extends DefaultGraphCondition implements Rule {
         return new SPOEvent(this, anchorMap, record);
     }
     
-	/** Creates the search plan using the rule's search plan factory. */
-    public List<SearchItem> getAnchorSearchPlan() {
-		if (eventSearchPlan == null) {
-			eventSearchPlan = getSearchPlanFactory().createSearchPlan(this, getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
-		}
-		return eventSearchPlan;
-	}
+    /** Creates the search plan using the rule's search plan factory. */
+    public MatchStrategy getEventMatcher() {
+        if (eventMatcher == null) {
+            eventMatcher = ConditionSearchPlanFactory.getInstance().createSearchPlan(this, getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet(), false);
+        }
+        return eventMatcher;
+    }
+    
+    /** Creates the search plan using the rule's search plan factory. */
+    @Deprecated
+    public List<groove.graph.match.SearchItem> getAnchorSearchPlan() {
+        if (eventSearchPlan == null) {
+            eventSearchPlan = getSearchPlanFactory().createSearchPlan(this, getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
+        }
+        return eventSearchPlan;
+    }
 
     public VarGraph lhs() {
         return lhs;
@@ -711,8 +721,11 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 //     * @see #isModifying()
 //     */
 //    private RuleEvent unmodifyingEvent;
+    /** The matcher for events of this rule. */
+    private MatchStrategy eventMatcher;
     /** The search plan for events of this rule. */
-    private List<SearchItem> eventSearchPlan;
+    @Deprecated
+    private List<groove.graph.match.SearchItem> eventSearchPlan;
     /** Debug flag for the constructor. */
     private static final boolean CONSTRUCTOR_DEBUG = false;
     /** Handle for profiling {@link #matches(Graph)} and related methods. */

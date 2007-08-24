@@ -12,12 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultMorphism.java,v 1.7 2007-08-22 15:04:56 rensink Exp $
+ * $Id: DefaultMorphism.java,v 1.8 2007-08-24 17:34:54 rensink Exp $
  */
 package groove.graph;
 
-import groove.graph.match.DefaultMatcher;
-import groove.graph.match.Matcher;
+import groove.match.GraphSearchPlanFactory;
+import groove.match.MatchStrategy;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +26,7 @@ import java.util.Map;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class DefaultMorphism extends AbstractMorphism {
     /**
@@ -193,12 +193,21 @@ public class DefaultMorphism extends AbstractMorphism {
     }
 
     /**
-     * Factory method for simulations.
-     * This implementation returns a <tt>{@link DefaultMatcher}</tt>.
+     * Factory method for match strategies.
      */
-	@Override
-    protected Matcher createMatcher() {
-        return new DefaultMatcher(this);
+    @Override
+    protected MatchStrategy createMatchStrategy() {
+        return GraphSearchPlanFactory.getInstance().createSearchPlan(dom(), elementMap().nodeMap().keySet(), elementMap().edgeMap().keySet(), false);
+    }
+
+    /**
+     * Factory method for simulations.
+     * This implementation returns a <tt>{@link groove.graph.match.DefaultMatcher}</tt>.
+     */
+    @Override
+    @Deprecated
+    protected groove.graph.match.Matcher createMatcher() {
+        return new groove.graph.match.DefaultMatcher(this);
     }
     
     /**

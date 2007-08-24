@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatcher.java,v 1.8 2007-08-23 07:33:27 rensink Exp $
+ * $Id: DefaultMatcher.java,v 1.9 2007-08-24 17:34:51 rensink Exp $
  */
 package groove.graph.match;
 
@@ -38,8 +38,9 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
+@Deprecated
 public class DefaultMatcher implements Matcher {
 	/** 
 	 * The search plan factory for default matchers, statically created

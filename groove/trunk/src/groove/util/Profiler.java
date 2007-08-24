@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Profiler.java,v 1.4 2007-03-30 15:50:37 rensink Exp $
+ * $Id: Profiler.java,v 1.5 2007-08-24 17:35:07 rensink Exp $
  */
 package groove.util;
 
@@ -36,6 +36,7 @@ import java.util.*;
  * Currently it is geared towards correctness verification
  * @author J. ter Hove
  */
+@Deprecated
 public class Profiler extends CommandLineTool {
 
     /** Usage message for the profiler. */

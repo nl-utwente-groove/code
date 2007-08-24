@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Matcher.java,v 1.4 2007-04-22 23:32:27 rensink Exp $
+ * $Id: Matcher.java,v 1.5 2007-08-24 17:34:51 rensink Exp $
  */
 package groove.graph.match;
 
@@ -31,6 +31,7 @@ import groove.util.Reporter;
  * @author Arend Rensink
  * @version $Revision $
  */
+@Deprecated
 public interface Matcher {
     /** 
      * Returns the domain of the underlying morphism.

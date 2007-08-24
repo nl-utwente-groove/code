@@ -1,5 +1,5 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.4 2007-08-24 17:34:52 rensink Exp $ */
-package groove.rel.match;
+/* $Id: RegExprEdgeSearchItem.java,v 1.1 2007-08-24 17:34:57 rensink Exp $ */
+package groove.match;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -11,31 +11,29 @@ import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
-import groove.graph.match.EdgeSearchItem;
-import groove.graph.match.Matcher;
 import groove.rel.Automaton;
 import groove.rel.NodeRelation;
 import groove.rel.RegExprLabel;
 import groove.rel.ValuationEdge;
 import groove.rel.VarAutomaton;
 
+import static groove.match.SearchPlanStrategy.Search;
+
 /**
  * A search item that searches an image for an edge.
  * @author Arend Rensink
  * @version $Revision $
  */
-@Deprecated
-public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
+public class RegExprEdgeSearchItem extends EdgeSearchItem {
 	/** Record for the search item. */
-    @Deprecated
-	protected class RegExprEdgeRecord extends EdgeRecord<RegExprMatcher> {
+	protected class RegExprEdgeRecord extends EdgeRecord {
 		/** Constructs a new record, for a given matcher. */
-		protected RegExprEdgeRecord(RegExprMatcher matcher) {
-			super(matcher);
+		protected RegExprEdgeRecord(Search search) {
+			super(search);
 		}
 
 		@Override
-		public boolean select(Edge image) {
+		boolean select(Edge image) {
 			if (super.select(image)) {
 				if (image instanceof ValuationEdge) {
 					// there's something more to be optimized here:
@@ -43,8 +41,8 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
 					// in the current valuation
 					Map<String, Label> newValuation = ((ValuationEdge) image).getValue();
 					freshVars = new HashSet<String>(newValuation.keySet());
-					freshVars.removeAll(matcher.getValuation().keySet());
-					matcher.putAllVar(newValuation);
+					freshVars.removeAll(getResult().getValuation().keySet());
+					getResult().putAllVar(newValuation);
 				}
 				return true;
 			} else {
@@ -62,18 +60,18 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
 		}
 
 		@Override
-		public void undo() {
+		void undo() {
 			super.undo();
 			if (freshVars != null) {
 	    		for (String var : freshVars) {
-					matcher.getValuation().remove(var);
+					getResult().getValuation().remove(var);
 				}
 			}
 			freshVars = null;
 		}
 		
 		@Override
-		protected void initImages() {
+		void init() {
 			setMultiple(computeImageSet());
 		}
 
@@ -82,16 +80,16 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
 		 * for the edge label.
 		 */
 		protected Collection<? extends Edge> computeImageSet() {
-	    	NodeEdgeMap elementMap = matcher.getSingularMap();
+	    	NodeEdgeMap elementMap = getResult();
 	    	Node imageSource = elementMap.getNode(edge.source());
 	    	Set<Node> imageSourceSet = imageSource == null ? null : Collections.singleton(imageSource);
 	    	Node imageTarget = elementMap.getNode(edge.opposite());
 	    	Set<Node> imageTargetSet = imageTarget == null ? null : Collections.singleton(imageTarget);
 	        NodeRelation matches;
 	        if (labelAutomaton instanceof VarAutomaton) {
-	            matches = ((VarAutomaton) labelAutomaton).getMatches(matcher.cod(), imageSourceSet, imageTargetSet, matcher.getValuation());            
+	            matches = ((VarAutomaton) labelAutomaton).getMatches(getTarget(), imageSourceSet, imageTargetSet, getResult().getValuation());            
 	        } else {
-	            matches = labelAutomaton.getMatches(matcher.cod(), imageSourceSet, imageTargetSet);
+	            matches = labelAutomaton.getMatches(getTarget(), imageSourceSet, imageTargetSet);
 	        }
 	        return matches.getAllRelated();
 		}
@@ -109,8 +107,8 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem<Edge> {
 	}
 	
 	@Override
-	public Record get(Matcher matcher) {
-		return new RegExprEdgeRecord((RegExprMatcher) matcher);
+	public EdgeRecord getRecord(Search search) {
+		return new RegExprEdgeRecord(search);
 	}
 	
 	/**
