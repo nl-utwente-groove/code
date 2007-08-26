@@ -1,5 +1,4 @@
-/*
- * GROOVE: GRaphs for Object Oriented VErification
+/* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -13,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.54 2007-08-22 15:04:58 rensink Exp $
+ * $Id: Simulator.java,v 1.55 2007-08-26 07:24:00 rensink Exp $
  */
 package groove.gui;
 
@@ -124,7 +123,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.54 $
+ * @version $Revision: 1.55 $
  */
 public class Simulator {
     /**
@@ -2968,7 +2967,7 @@ public class Simulator {
 //    /**
 //     * Class providing functionality to export a {@link JGraph} to a file in different formats.
 //     * @author Arend Rensink
-//     * @version $Revision: 1.54 $
+//     * @version $Revision: 1.55 $
 //     */
 //    static public class Exporter {
 //        /**

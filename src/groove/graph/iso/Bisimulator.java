@@ -1,18 +1,18 @@
-// GROOVE: GRaphs for Object Oriented VErification
-// Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
-// language governing permissions and limitations under the License.
-/*
- * $Id: Bisimulator.java,v 1.6 2007-07-21 20:07:54 rensink Exp $
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id: Bisimulator.java,v 1.7 2007-08-26 07:23:11 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -38,7 +38,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elemens to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class Bisimulator implements CertificateStrategy {
 	/**
@@ -147,7 +147,7 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.6 $
+     * @version $Revision: 1.7 $
      */
     static private class CertificateNode extends Certificate {
     	/** Initial node value to provide a better spread of hash codes. */
@@ -212,7 +212,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.6 $
+     * @version $Revision: 1.7 $
      */
     static private class CertificateEdge extends Certificate {
 //        /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
@@ -317,7 +317,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.6 $
+     * @version $Revision: 1.7 $
      */
     static private class CertificateFlag extends Certificate {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */

@@ -1,5 +1,4 @@
-/*
- * GROOVE: GRaphs for Object Oriented VErification
+/* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -13,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VerifyMenu.java,v 1.2 2007-05-10 08:34:15 kastenberg Exp $
+ * $Id: VerifyMenu.java,v 1.3 2007-08-26 07:24:04 rensink Exp $
  */
 
 package groove.gui;
@@ -24,7 +23,7 @@ import javax.swing.JMenuItem;
 /**
  * Menu item for the simulator for starting the verification process.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class VerifyMenu extends JMenu {
     /**
