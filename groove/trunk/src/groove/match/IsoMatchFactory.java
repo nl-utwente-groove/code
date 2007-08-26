@@ -1,5 +1,18 @@
-/*
- * $Id: IsoMatchFactory.java,v 1.1 2007-08-24 17:34:57 rensink Exp $
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id: IsoMatchFactory.java,v 1.2 2007-08-26 07:24:12 rensink Exp $
  */
 package groove.match;
 
@@ -7,7 +20,6 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.match.IsoMatchStrategy.IsoSearch;
 import groove.match.SearchPlanStrategy.Search;
 
 import java.util.ArrayList;
@@ -27,7 +39,7 @@ import java.util.Map;
  * remains unchanged throughout the transformation, it will be very beneficial to take this into account.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class IsoMatchFactory {
     /** Private constructor, to ensure the class is used as singleton. */
@@ -39,29 +51,29 @@ public class IsoMatchFactory {
 	 * This implementation merely returns search items for the edges and nodes of the
 	 * graph, in arbitrary order.
 	 */
-	public IsoMatchStrategy createSearchPlan(Graph graph) {
+	public SearchPlanStrategy createSearchPlan(Graph graph) {
         List<SearchItem> result = new ArrayList<SearchItem>();
         Map<Element,Object> certMap = graph.getCertifier().getCertificateMap();
         for (Node node: graph.nodeSet()) {
             result.add(createNodeSearchItem(node, certMap.get(node)));
         }
         for (Edge edge: graph.edgeSet()) {
-            result.add(createEdgeSearchItem(edge, certMap.get(edge)));
+            result.add(createEdgeSearchItem(edge));
         }
-        return new IsoMatchStrategy(result);
+        return new SearchPlanStrategy(result, true);
 	}
 
     /**
-     * This implementation returns an {@link IsoNodeSearchItem}
+     * This implementation returns an {@link IsoNodeSearchItem}.
      */
-	protected SearchItem createNodeSearchItem(Node node, Object cert) {
+	private SearchItem createNodeSearchItem(Node node, Object cert) {
 		return new IsoNodeSearchItem(node, cert);
 	}
 
 	/**
-     * This implementation returns an {@link IsoEdgeSearchItem}
+     * This implementation returns an {@link IsoEdgeSearchItem}.
      */
-    protected SearchItem createEdgeSearchItem(Edge edge, Object cert) {
+    private SearchItem createEdgeSearchItem(Edge edge) {
     	return new IsoEdgeSearchItem(edge);
     }
 
@@ -80,6 +92,30 @@ public class IsoMatchFactory {
      * @version $Revision $
      */
     static public class IsoNodeSearchItem extends AbstractSearchItem {
+        /**
+         * Creates a search item for a given node.
+         * @param node the node from the domain for which we search images
+         * @param cert the isomorphism certificate of the node
+         */
+        public IsoNodeSearchItem(Node node, Object cert) {
+            this.node = node;
+            this.cert = cert;
+        }
+        
+        /**
+         * Returns a fresh search item record for the given node.
+         */
+        @Override
+        public IsoNodeRecord getRecord(Search search) {
+            return new IsoNodeRecord(search);
+        }
+        
+        /** The node for which the item searches an image. */
+        private final Node node;
+        /** The certificate of <code>node</code>. */
+        private final Object cert;
+        
+        /** Record for an isomorphism node search. */
         private class IsoNodeRecord extends AbstractRecord {
             /** Constructs a new record for this search item. */
             protected IsoNodeRecord(Search matcher) {
@@ -117,6 +153,13 @@ public class IsoMatchFactory {
                 return result;
             }
             
+            /** 
+             * Tries out a given node image.
+             * The return value indicates if this has been successful.
+             * @param image the proposed node image
+             * @return <code>true</code> if <code>image</code> was suitable and
+             * has been selected
+             */
             private boolean select(Node image) {
                 if (getSearch().isAvailable(image)) {
                     getResult().putNode(node, image);
@@ -140,29 +183,6 @@ public class IsoMatchFactory {
             /** The single (remaining) image, in case {@link #images} is not a set. */
             private Node singleImage;
         }
-
-        /**
-         * Creates a search item for a given edge.
-         * @param node the edge from the domain for which we search images
-         */
-        public IsoNodeSearchItem(Node node, Object cert) {
-            this.node = node;
-            this.cert = cert;
-        }
-        
-        /**
-         * Returns a fresh search item record for the given node.
-         * The search record is required to be an {@link IsoSearch}.
-         * @param search the matcher for which the record is to be created;
-         * should be an {@link IsoSearch}
-         */
-        @Override
-        public IsoNodeRecord getRecord(Search search) {
-            return new IsoNodeRecord(search);
-        }
-        
-        private final Node node;
-        private final Object cert;
     }
     
 
@@ -172,26 +192,8 @@ public class IsoMatchFactory {
      * @version $Revision $
      */
     static public class IsoEdgeSearchItem extends EdgeSearchItem {
-        private class IsoEdgeRecord extends EdgeRecord {
-            /** Creates a record for a given matcher. */
-            protected IsoEdgeRecord(IsoSearch matcher) {
-                super(matcher);
-            }
-
-            /**
-             * The search plan should have made sure that all 
-             * end nodes have been matched.
-             */
-            @Override
-            void init() {
-                Edge image = edge.imageFor(getResult());
-                setSingular(image);
-            }
-        }
-        
         /**
          * Creates a search item for a given edge.
-         * 
          */
         public IsoEdgeSearchItem(Edge edge) {
             super(edge, null);
@@ -199,7 +201,24 @@ public class IsoMatchFactory {
         
         @Override
         public IsoEdgeRecord getRecord(Search matcher) {
-            return new IsoEdgeRecord((IsoSearch) matcher);
+            return new IsoEdgeRecord(matcher);
+        }
+        
+        /** Record of an isomorphism edge search item. */
+        private class IsoEdgeRecord extends EdgeRecord {
+            /** Creates a record for a given matcher. */
+            protected IsoEdgeRecord(Search matcher) {
+                super(matcher);
+            }
+
+            /**
+             * The search plan has made sure that all 
+             * end nodes have been matched.
+             */
+            @Override
+            void init() {
+            	setSingular(edge.imageFor(getResult()));
+            }
         }
     }
 }

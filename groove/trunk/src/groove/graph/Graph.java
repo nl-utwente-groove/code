@@ -1,18 +1,18 @@
-// GROOVE: GRaphs for Object Oriented VErification
-// Copyright 2003--2007 University of Twente
- 
-// Licensed under the Apache License, Version 2.0 (the "License"); 
-// you may not use this file except in compliance with the License. 
-// You may obtain a copy of the License at 
-// http://www.apache.org/licenses/LICENSE-2.0 
- 
-// Unless required by applicable law or agreed to in writing, 
-// software distributed under the License is distributed on an 
-// "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
-// either express or implied. See the License for the specific 
-// language governing permissions and limitations under the License.
-/* 
- * $Id: Graph.java,v 1.7 2007-05-14 19:52:13 rensink Exp $
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id: Graph.java,v 1.8 2007-08-26 07:23:36 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.7 $ $Date: 2007-05-14 19:52:13 $
+ * @version $Revision: 1.8 $ $Date: 2007-08-26 07:23:36 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
     /**

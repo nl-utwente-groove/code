@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.7 2007-08-22 15:04:47 rensink Exp $
+ * $Id: GraphCondition.java,v 1.8 2007-08-26 07:24:08 rensink Exp $
  */
 package groove.trans;
 
@@ -31,7 +31,7 @@ import groove.view.FormatException;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public interface GraphCondition extends GraphTest {
     /**
@@ -127,14 +127,6 @@ public interface GraphCondition extends GraphTest {
      */
     @Deprecated
     public GraphCondition setAndNot(Edge embargoEdge);
-    
-    /** 
-     * Factory method to create an initially empty matcher for this condition
-     * and a given graph.
-     * @param graph the graph in which we want to match this condition
-     * @return an initially empty matching, to be refined to get a real matching.
-     */
-    public Matching newMatcher(Graph graph);
     
     /**
      * Specialises the return type.

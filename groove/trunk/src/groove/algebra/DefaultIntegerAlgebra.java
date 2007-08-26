@@ -1,5 +1,4 @@
-/*
- * GROOVE: GRaphs for Object Oriented VErification
+/* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -13,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIntegerAlgebra.java,v 1.6 2007-07-21 20:07:43 rensink Exp $
+ * $Id: DefaultIntegerAlgebra.java,v 1.7 2007-08-26 07:24:19 rensink Exp $
  */
 
 package groove.algebra;
@@ -26,7 +25,7 @@ import java.util.List;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $ $Date: 2007-07-21 20:07:43 $
+ * @version $Revision: 1.7 $ $Date: 2007-08-26 07:24:19 $
  */
 public class DefaultIntegerAlgebra extends Algebra {
 	/**

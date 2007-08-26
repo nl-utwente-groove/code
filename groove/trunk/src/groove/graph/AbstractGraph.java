@@ -12,9 +12,8 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.13 2007-08-24 17:34:54 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.14 2007-08-26 07:23:43 rensink Exp $
  */
-
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
@@ -39,7 +38,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     /**
@@ -452,17 +451,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         return (C) new GraphCache(this);
     }
     
-//    /**
-//     * Factory method for a reference to a given graph cache.
-//     * @param referent the graph cache for which to create a reference
-//     * @return This implementation returns a {@link CacheReference}.
-//     */
-//    @Override
-//    protected CacheReference<? extends GraphCache> createCacheReference(GraphShapeCache referent) {
-//        return new CacheReference<GraphCache>(this, (GraphCache) referent);
-//    }
-//    
-
     /**
      * Partitions a set of graph elements into its maximal connected subsets.
      * The set does not necessarily contain all endpoints of edges it contains.
