@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.2 2007-08-26 07:24:12 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.3 2007-08-27 07:25:11 rensink Exp $
  */
 package groove.match;
 
@@ -43,7 +43,7 @@ import java.util.Set;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 
@@ -59,10 +59,9 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      * This extends the ordinary search plan with negative tests, and
      * Takes control and common labels into account (if any).
      * @param condition the condition for which a search plan is to be constructed
-     * @param injective flag to indicate if the condition is to be matched injectively
      */
-    public SearchPlanStrategy createSearchPlan(GraphCondition condition, boolean injective) {
-    	return createSearchPlan(condition, condition.getPattern().nodeMap().values(), condition.getContext().edgeSet(), injective);
+    public SearchPlanStrategy createSearchPlan(GraphCondition condition) {
+    	return createSearchPlan(condition, condition.getPattern().nodeMap().values(), condition.getContext().edgeSet());
     }
 
     /** 
@@ -73,11 +72,10 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      * @param condition the condition for which a search plan is to be constructed
      * @param preMatchedNodes the nodes of the condition that have been matched already
      * @param preMatchedEdges the edges of the condition that have been matched already
-     * @param injective flag to indicate if the condition is to be matched injectively
      */
-    public SearchPlanStrategy createSearchPlan(GraphCondition condition, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges, boolean injective) {
+    public SearchPlanStrategy createSearchPlan(GraphCondition condition, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
     	PlanData planData = new GrammarPlanData(condition, preMatchedNodes, preMatchedEdges);
-    	return new SearchPlanStrategy(planData.getPlan(), injective);
+    	return new SearchPlanStrategy(planData.getPlan(), condition.getProperties().isInjective());
     }
     
 
