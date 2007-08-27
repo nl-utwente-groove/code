@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.1 2007-08-24 17:34:57 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.2 2007-08-27 07:25:11 rensink Exp $
  */
 package groove.match;
 
@@ -52,7 +52,7 @@ import groove.util.HashBag;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -84,9 +84,9 @@ public class GraphSearchPlanFactory {
      * @return a list of search items that will result in a matching of <code>graph</code>
      * when successfully executed in the given order
      */
-    public SearchPlanStrategy createSearchPlan(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges, boolean injective) {
+    public SearchPlanStrategy createSearchPlan(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
         PlanData data = new PlanData(graph, preMatchedNodes, preMatchedEdges);
-        return new SearchPlanStrategy(data.getPlan(), injective);
+        return new SearchPlanStrategy(data.getPlan(), false);
     }
 
     /**
