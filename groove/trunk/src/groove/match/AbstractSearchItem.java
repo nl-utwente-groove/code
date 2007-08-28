@@ -17,6 +17,9 @@
 
 package groove.match;
 
+import java.util.Collection;
+import java.util.Collections;
+
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
@@ -25,15 +28,45 @@ import groove.rel.VarNodeEdgeMap;
 /**
  * Abstract implementation of a searh item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
+    abstract public AbstractRecord getRecord(Search search);
+
+    /**
+     * This implementation returns the empty set.
+     */
+    public Collection<Node> bindsNodes() {
+        return Collections.emptySet();
+    }
+
+    /**
+     * This implementation returns the empty set.
+     */
+    public Collection<String> bindsVars() {
+        return Collections.emptySet();
+    }
+
+    /**
+     * This implementation returns the empty set.
+     */
+    public Collection<Node> needsNodes() {
+        return Collections.emptySet();
+    }
+
+    /**
+     * This implementation returns the empty set.
+     */
+    public Collection<String> needsVars() {
+        return Collections.emptySet();
+    }
+
     /**
      * Abstract implementation of a search item record, offering basic search functionality.
      * At any point, the record has a state which is {@link #EMPTY} (if the search
      * has not yielded a solution), #READY or {@link #FOUND} (if the search has yielded a solution).
      * @author Arend Rensink
-     * @version $Revision: 1.1 $
+     * @version $Revision: 1.2 $
      */
     abstract public class AbstractRecord implements Record {
         /** Constructs a record for a given search. */
@@ -54,10 +87,11 @@ abstract public class AbstractSearchItem implements SearchItem {
             assert isEmpty() || isFound();
             if (isEmpty()) {
                 init();
+                setState(FIRST);
             } else {
                 undo();
+                setState(LATER);
             }
-            setState(READY);
             result = next();
             if (result) {
                 setState(FOUND);
@@ -76,6 +110,7 @@ abstract public class AbstractSearchItem implements SearchItem {
         final public void reset() {
             if (isFound()) {
                 undo();
+                setState(LATER);
                 exit();
             } else if (isReady()) {
                 exit();
@@ -85,18 +120,23 @@ abstract public class AbstractSearchItem implements SearchItem {
 
         /**
          * Sets the state to a given value.
-         * The value is required to be one of {@link #EMPTY}, {@link #READY} or {@link #FOUND}.
+         * The value is required to be one of {@link #EMPTY}, {@link #FIRST}, {@link #LATER} or {@link #FOUND}.
          */
         final void setState(int value) {
             state = value;
+            assert isEmpty() || isReady() || isFound();
         }
         
         /** 
          * Returns the current state of the record, which is one of
-         * {@link #EMPTY} (the initial state, to which the record returns upon an
-         * unsuccessful search), {@link #READY} (if all preparations have been made
-         * for the next search, but no selection is active) or {@link #FOUND} 
-         * (if a search has just been successful). 
+         * <ul>
+         * <li> {@link #EMPTY}, the initial state, to which the record returns upon an unsuccessful search;
+         * <li> {@link #FIRST}, if all preparations have been made for the first search, but 
+         * {@link #next()} has not yet been called;
+         * <li> {@link #LATER}, if {@link #next()} has returned <code>false</code> or {@link #undo()} has
+         * just been invoked; or 
+         * <li> {@link #FOUND}, if a search has just been successful. 
+         * </ul>
          */
         final int getState() {
             return state;
@@ -112,12 +152,30 @@ abstract public class AbstractSearchItem implements SearchItem {
         }
 
         /** 
-         * Indicates that the state of the record is {@link #READY}.
-         * Convenience method for <code>getState() == READY</code>.
-         * @return <code>true</code> if {@link #getState()} returns {@link #READY}.
+         * Indicates that the state of the record is {@link #FIRST} or {@link #LATER}.
+         * Convenience method for <code>isFirst() || isLater()</code>.
+         * @return <code>true</code> if {@link #getState()} returns {@link #FIRST} or {@link #LATER}.
          */
         final boolean isReady() {
-            return getState() == READY;
+            return isFirst() || isLater();
+        }
+
+        /** 
+         * Indicates that the state of the record is {@link #FIRST}.
+         * Convenience method for <code>getState() == FIRST</code>.
+         * @return <code>true</code> if {@link #getState()} returns {@link #FIRST}.
+         */
+        final boolean isFirst() {
+            return getState() == FIRST;
+        }
+
+        /** 
+         * Indicates that the state of the record is {@link #LATER}.
+         * Convenience method for <code>getState() == LATER</code>.
+         * @return <code>true</code> if {@link #getState()} returns {@link #LATER}.
+         */
+        final boolean isLater() {
+            return getState() == LATER;
         }
 
         /** 
@@ -131,29 +189,35 @@ abstract public class AbstractSearchItem implements SearchItem {
 
         /** 
          * Callback method from {@link #reset()} to undo the effects of {@link #init()}.
-         * It is guaranteed that the state is {@link #READY} upon invocation;
+         * It is guaranteed that the state is {@link #FIRST} or {@link #LATER} upon invocation;
          * after return, the state is changed to {@link #EMPTY}.
+         * This implementation does nothing.
          */ 
-        abstract void exit();
+        void exit() {
+            // empty
+        }
 
         /** 
          * Callback method from {@link #find()} to prepare the search.
          * It is guaranteed that the state is {@link #EMPTY} upon invocation;
-         * after return, the state is changed to {@link #READY}.
+         * after return, the state is changed to {@link #FIRST}.
+         * This implementation does nothing.
          */ 
-        abstract void init();
+        void init() {
+            // empty
+        }
         
         /** 
          * Callback method from {@link #find()} to undo the previously found solution.
          * It is guaranteed that the state is {@link #FOUND} upon invocation;
-         * after return, the state is changed to {@link #READY}.
+         * after return, the state is changed to {@link #LATER}.
          */ 
         abstract void undo();
         
         /** 
          * Callback method from {@link #find()} to search for and select a next solution.
-         * It is guaranteed that the state is {@link #READY} upon invocation;
-         * after return, the state is changed to {@link #EMPTY} or {@link #FOUND},
+         * It is guaranteed that the state is {@link #FIRST} or {@link #LATER} upon invocation;
+         * after return, the state is changed to {@link #LATER} or {@link #FOUND},
          * depending on the return value.
          */ 
         abstract boolean next();
@@ -188,7 +252,7 @@ abstract public class AbstractSearchItem implements SearchItem {
             return search.isAvailable(node);
         }
         
-        /** The state of the record: one of {@link #EMPTY}, {@link #READY} or {@link #FOUND}. */
+        /** The state of the record: one of {@link #EMPTY}, {@link #FIRST}, {@link #LATER} or {@link #FOUND}. */
         private int state;
         /** The underlying search for this record. */
         private final Search search;
@@ -199,15 +263,17 @@ abstract public class AbstractSearchItem implements SearchItem {
          */
         static final int EMPTY = 0;
         /**
-         * State of the record after an invocation of #init() or #undo().
+         * State of the record after an invocation of #init().
          */
-        static final int READY = 1;
+        static final int FIRST = 1;
+        /**
+         * State of the record after an invocation of #undo().
+         */
+        static final int LATER = 2;
         /** 
          * State of the recordreached when {@link #find()} returns <code>true</code>,
          * signifying that the search item has been satisfied.
          */
-        static final int FOUND = 2;
+        static final int FOUND = 3;
     }
-
-    abstract public AbstractRecord getRecord(Search search);
 }

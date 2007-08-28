@@ -12,9 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchItem.java,v 1.1 2007-08-24 17:34:58 rensink Exp $
+ * $Id: SearchItem.java,v 1.2 2007-08-28 22:01:24 rensink Exp $
  */
 package groove.match;
+
+import groove.graph.Node;
+
+import java.util.Collection;
 
 /**
  * Interface for an item in a search plan.
@@ -56,4 +60,35 @@ public interface SearchItem {
 	 * search.
 	 */
 	Record getRecord(SearchPlanStrategy.Search search);
+    
+    /** 
+     * Returns the collection of nodes that should already be matched
+     * before this item should be scheduled.
+     */ 
+    Collection<Node> needsNodes();
+    
+    /** 
+     * Returns the collection of nodes for which this search item will 
+     * find a matching when actvated.
+     */ 
+    Collection<Node> bindsNodes();
+    
+    /** 
+     * Returns the collection of label variables that should already be matched
+     * before this item should be scheduled.
+     */ 
+    Collection<String> needsVars();
+    
+    /** 
+     * Returns the collection of label variables for which this search item will 
+     * find a matching when actvated.
+     */ 
+    Collection<String> bindsVars();
+//    
+//    /** 
+//     * Enables the search item so that it can optimise towards certain sets of
+//     * pre-matched nodes and variables.
+//     * This is called before the first invocation of {@link #getRecord(groove.match.SearchPlanStrategy.Search)}.
+//     */
+//    void schedule(Collection<Node> preMatchedNodes, Collection<String> preMatchedVars);
 }

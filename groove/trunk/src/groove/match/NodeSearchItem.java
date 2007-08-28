@@ -12,13 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.1 2007-08-24 17:34:56 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.2 2007-08-28 22:01:23 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 
 /**
@@ -30,6 +32,7 @@ public class NodeSearchItem extends AbstractSearchItem {
 	/** Constructs a new search item, for a given node. */
 	public NodeSearchItem(Node node) {
 		this.node = node;
+        this.boundNodes = Collections.singleton(node);
 	}
 	
     @Override
@@ -38,6 +41,24 @@ public class NodeSearchItem extends AbstractSearchItem {
 	}
 	
 	/**
+     * Returns a singleton set consisting of the single node in this item.
+     */
+    @Override
+    public Collection<Node> bindsNodes() {
+        return boundNodes;
+    }
+//
+//    /**
+//     * Throws an exception if the node searched in this item is pre-matched;
+//     * does nothing otherwise.
+//     */
+//    public void schedule(Collection<Node> preMatchedNodes, Collection<String> preMatchedVars) {
+//        if (preMatchedNodes.contains(getNode())) {
+//            throw new IllegalStateException(String.format("Node searched by %s is pre-matched in %s", toString(), preMatchedNodes));
+//        }
+//    }
+
+    /**
 	 * Returns the node that this item tries to match.
 	 */
 	public Node getNode() {
@@ -54,6 +75,9 @@ public class NodeSearchItem extends AbstractSearchItem {
 	 * The edge for which this search item is to find an image.
 	 */
 	private final Node node;
+    
+    /** Singleton set consisting only of <code>node</code>. */
+    private final Collection<Node> boundNodes;
     
     /**
      * Node search record.

@@ -12,22 +12,23 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.1 2007-08-24 17:34:57 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.2 2007-08-28 22:01:20 rensink Exp $
  */
 package groove.match;
 
-import java.util.Arrays;
-import java.util.List;
-
 import groove.algebra.Operation;
-import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.algebra.AlgebraGraph;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
+import groove.match.SearchPlanStrategy.Search;
 
-import static groove.match.SearchPlanStrategy.Search;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
 
 /**
  * A search item for a product edge.
@@ -41,16 +42,15 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 	 * Creates a search item for a given edge, for which it is know
 	 * which edge ends have already been matched (in the search plan) before this one.
 	 * @param edge the edge to be matched
-	 * @param preMatched array of booleans indicating if the corresponding edge
-	 * end has been pre-matched according to the search plan; or <code>null</code>
-	 * if all ends have been pre-matched.
 	 */
-	public OperatorEdgeSearchItem(ProductEdge edge, boolean[] preMatched) {
+	public OperatorEdgeSearchItem(ProductEdge edge) {
 		this.edge = edge;
 		this.operation = edge.getOperation();
 		this.arguments = edge.source().getArguments();
 		this.target = edge.target();
-		this.targetPreMatched = preMatched == null || preMatched[Edge.TARGET_INDEX];
+//		this.targetPreMatched = preMatched == null || preMatched[Edge.TARGET_INDEX];
+        this.boundNodes = Collections.<Node>singleton(target);
+        this.neededNodes = new HashSet<Node>(arguments);
 	}
 	
     @Override
@@ -58,7 +58,23 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 		return new OperatorEdgeRecord(matcher);
 	}
 
-	@Override
+	/**
+     * Returns a singleton set consisting of the target node of the operator edge.
+     */
+    @Override
+    public Collection<Node> bindsNodes() {
+        return boundNodes;
+    }
+
+    /**
+     * Returns the set of argument nodes of the source (product) node.
+     */
+    @Override
+    public Collection<Node> needsNodes() {
+        return neededNodes;
+    }
+
+    @Override
 	public String toString() {
 		return String.format("Compute %s", edge); 
 	}
@@ -76,8 +92,12 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 	private final List<ValueNode> arguments;
 	/** The target node of the product edge. */
 	private final ValueNode target;
-	/** Flag indicating whether the target of the edge is prematched. */
-	private final boolean targetPreMatched;
+//	/** Flag indicating whether the target of the edge is prematched. */
+//	private final boolean targetPreMatched;
+    /** Singleton set consisting of <code>target</code>. */
+    private final Collection<Node> boundNodes;
+    /** Set of the nodes in <code>argumants</code>. */
+    private final Collection<Node> neededNodes;
     
     /**
      * Record of an edge seach item, storing an iterator over the
@@ -92,33 +112,33 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
         protected OperatorEdgeRecord(Search search) {
             super(search);
         }
-        
-        @Override
-        void exit() {
-            nextCalled = false;
-        }
-
+//        
+//        @Override
+//        void exit() {
+//            nextCalled = false;
+//        }
+//
         @Override
         void init() {
-            // empty
+            targetPreMatch = (ValueNode) getResult().getNode(target);
         }
 
         @Override
         boolean next() {
-            boolean result = !nextCalled;
+            boolean result = isFirst();
             if (result) {
                 Object outcome = calculateResult();
-                if (outcome == null) {
+                if (outcome == null || target.hasValue() && !target.getValue().equals(outcome)) {
                     result = false;
-                } else if (targetPreMatched) {
-                    ValueNode currentTargetImage;
-                    if (target.hasValue()) {
-                        currentTargetImage = target;
-                    } else {
-                        currentTargetImage = (ValueNode) getResult().getNode(target);
-                    }
-                    assert currentTargetImage != null: String.format("Target image of %s null in %s", edge, getResult());
-                    result = currentTargetImage.getValue().equals(outcome);
+                } else if (targetPreMatch != null) {
+//                    ValueNode currentTargetImage;
+//                    if (target.hasValue()) {
+//                        currentTargetImage = target;
+//                    } else {
+//                        currentTargetImage = (ValueNode) getResult().getNode(target);
+//                    }
+//                    assert currentTargetImage != null: String.format("Target image of %s null in %s", edge, getResult());
+                    result = targetPreMatch.getValue().equals(outcome);
                 } else {
                     ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(operation.getResultType(), outcome);
                     result = isAvailable(targetImage);
@@ -127,7 +147,6 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
                     }
                 }
             }
-            nextCalled = true;
             return result;
         }
 
@@ -187,7 +206,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
          */
         @Override
         void undo() {
-            if (!targetPreMatched) {
+            if (targetPreMatch == null) {
                 getResult().removeNode(target);
             }
         }
@@ -230,8 +249,10 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
             return String.format("%s = %s", OperatorEdgeSearchItem.this.toString(), getResult().getNode(target));
         }
         
-        /** Flag indicating that {@link #next()} has been invoked since {@link #init()}. */
-        private boolean nextCalled;
+        private ValueNode targetPreMatch;
+//        
+//        /** Flag indicating that {@link #next()} has been invoked since {@link #init()}. */
+//        private boolean nextCalled;
 //
 //        /** The underlying matcher of the search record. */
 //        private final SearchPlanStrategy.Search search;
