@@ -12,11 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NegatedSearchItem.java,v 1.2 2007-08-26 07:24:12 rensink Exp $
+ * $Id: NegatedSearchItem.java,v 1.3 2007-08-28 22:01:24 rensink Exp $
  */
 package groove.match;
 
 import static groove.match.SearchPlanStrategy.Search;
+
+import groove.graph.Node;
+
+import java.util.Collection;
+import java.util.HashSet;
 
 /**
  * A search item that negates another search item.
@@ -31,6 +36,10 @@ public class NegatedSearchItem extends ConditionSearchItem {
 	 */
 	public NegatedSearchItem(SearchItem item) {
 		this.inner = item;
+        this.neededNodes = new HashSet<Node>(item.needsNodes());
+        neededNodes.addAll(item.bindsNodes());
+        this.neededVars = new HashSet<String>(item.needsVars());
+        neededVars.addAll(item.bindsVars());
 	}
 	
     @Override
@@ -42,16 +51,36 @@ public class NegatedSearchItem extends ConditionSearchItem {
 	public String toString() {
 		return String.format("Negation of %s", inner); 
 	}
-
+    
 	/**
+     * Returns the union of the inner condition's needed and bound nodes.
+     */
+    @Override
+    public Collection<Node> needsNodes() {
+        return neededNodes;
+    }
+
+    /**
+     * Returns the union of the inner condition's needed and bound variables.
+     */
+    @Override
+    public Collection<String> needsVars() {
+        return neededVars;
+    }
+
+    /**
 	 * The inner search item, for which we test for the negation.
 	 */
-	protected final SearchItem inner;
+	private final SearchItem inner;
+    /** Union of the needed and bound nodes of the inner condition. */
+    private final Collection<Node> neededNodes;
+    /** Union of the needed and bound variables of the inner condition. */
+    private final Collection<String> neededVars;
 
     /** Record for the negated search item. */
-    protected class NegatedSearchRecord extends ConditionRecord {
+    private class NegatedSearchRecord extends ConditionRecord {
         /** Constructs a new record, for a given matcher. */
-        protected NegatedSearchRecord(Search search) {
+        private NegatedSearchRecord(Search search) {
             super(search);
             this.innerRecord = inner.getRecord(search);
         }
@@ -61,14 +90,14 @@ public class NegatedSearchItem extends ConditionSearchItem {
          * it is undone immediately to avoid lasting effects.
          */
         @Override
-        protected boolean condition() {
+        boolean condition() {
             boolean result = !innerRecord.find();
             innerRecord.reset();
             return result;
         }
 
         @Override
-        public void exit() {
+        void exit() {
             innerRecord.reset();
             super.exit();
         }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchItem.java,v 1.2 2007-08-26 07:24:12 rensink Exp $
+ * $Id: ConditionSearchItem.java,v 1.3 2007-08-28 22:01:20 rensink Exp $
  */
 package groove.match;
 
@@ -34,36 +34,22 @@ public abstract class ConditionSearchItem extends AbstractSearchItem {
         ConditionRecord(Search search) {
             super(search);
         }
-        
-        @Override
-        void exit() {
-            tested = false;
-        }
 
-        @Override
-        void init() {
-            // does nothing
-        }
-
+        /** Returns <code>true</code> if {@link #isFirst()} and {@link #condition()} both hold. */
         @Override
         boolean next() {
-            return !tested && condition();
+            return isFirst() && condition();
         }
 
+        /** This implementation does nothing. */
         @Override
         void undo() {
-            tested = true;
+            // empty
         }
 
         /**
 		 * Callback method implementing the condition of this search item.
 		 */
-		protected abstract boolean condition();
-
-		/** 
-         * Flag to indicate that the condition has been tested positively.
-         * If so, {@link #next()} should yield <code>false</code> on the next invocation.
-         */
-		private boolean tested;
-	}	
+		abstract boolean condition();
+	}
 }

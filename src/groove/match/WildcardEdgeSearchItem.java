@@ -12,16 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WildcardEdgeSearchItem.java,v 1.2 2007-08-26 07:24:11 rensink Exp $
+ * $Id: WildcardEdgeSearchItem.java,v 1.3 2007-08-28 22:01:20 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
-import groove.graph.Node;
+import groove.graph.Label;
+import groove.match.SearchPlanStrategy.Search;
 import groove.rel.RegExprLabel;
 
-import static groove.match.SearchPlanStrategy.Search;
+import java.util.Collection;
 
 /**
  * A search item that searches an image for an edge.
@@ -29,31 +30,13 @@ import static groove.match.SearchPlanStrategy.Search;
  * @version $Revision $
  */
 public class WildcardEdgeSearchItem extends EdgeSearchItem {
-	/** Record for this type of search item. */
-	protected class WildcardEdgeRecord extends EdgeRecord {
-		/** Constructs a new record, for a given matcher. */
-		protected WildcardEdgeRecord(Search search) {
-			super(search);
-		}
-		
-		@Override
-		void init() {
-			if (isPreMatched(Edge.SOURCE_INDEX)) {
-                Node sourceImage = getResult().getNode(getEdge().source());
-                setMultiple(getTarget().outEdgeSet(sourceImage));
-			} else {
-				setMultiple(getTarget().edgeSet());
-			}
-		}
-	}
-
 	/** 
 	 * Constructs a new search item.
 	 * The item will match any edge between the end images, and record
 	 * the edge label as value of the wildcard variable.
 	 */
-	public WildcardEdgeSearchItem(Edge edge, boolean... matched) {
-		super(edge, matched);
+	public WildcardEdgeSearchItem(Edge edge) {
+		super(edge);
 		assert RegExprLabel.isWildcard(edge.label()) && RegExprLabel.getWildcardId(edge.label()) == null: String.format("Edge %s is not a true wildcard edge", edge);
 		assert edge.endCount() <= BinaryEdge.END_COUNT : String.format("Search item undefined for hyperedge", edge);
 	}
@@ -62,4 +45,37 @@ public class WildcardEdgeSearchItem extends EdgeSearchItem {
 	public EdgeRecord getRecord(Search search) {
 		return new WildcardEdgeRecord(search);
 	}
+    
+    /** Record for this type of search item. */
+    protected class WildcardEdgeRecord extends EdgeRecord {
+        /** Constructs a new record, for a given matcher. */
+        protected WildcardEdgeRecord(Search search) {
+            super(search);
+        }
+
+        /** This method returns <code>false</code>. */
+        @Override
+        boolean isPreDetermined() {
+            return false;
+        }
+        
+        /**
+         * This implementation returns <code>null</code>.
+         */
+        @Override
+        Label getPreMatchedLabel() {
+            return null;
+        }
+
+        @Override
+        Collection<? extends Edge> computeMultiple() {
+            if (getPreMatchedSource() != null) {
+                return getTarget().edgeSet(getPreMatchedSource());
+            } else if (getPreMatchedTarget() != null) {
+                return getTarget().edgeSet(getPreMatchedTarget());
+            } else {
+                return getTarget().edgeSet();
+            }
+        }
+    }
 }

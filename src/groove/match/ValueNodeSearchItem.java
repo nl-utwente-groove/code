@@ -12,10 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.1 2007-08-24 17:34:56 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.2 2007-08-28 22:01:21 rensink Exp $
  */
 package groove.match;
 
+import java.util.Collection;
+import java.util.Collections;
+
+import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
 
@@ -24,62 +28,7 @@ import groove.match.SearchPlanStrategy.Search;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ValueNodeSearchItem implements SearchItem {
-	/**
-	 * Record of a value node search item.
-	 * @author Arend Rensink
-	 * @version $Revision $
-	 */
-	private class ValueNodeRecord implements Record {
-		/**
-		 * Creates a record based on a given underlying matcher.
-		 */
-		protected ValueNodeRecord(SearchPlanStrategy.Search matcher) {
-			this.search = matcher;
-		}
-		
-		/**
-		 * The first call puts #node to itself;
-		 * the next call returns <code>false</code>.
-		 */
-		public boolean find() {
-			if (findFailed) {
-				// if we already returned false, as per contract
-				// we restart
-			    reset();
-			}
-			if (findCalled) {
-				// if the test was called before, it should return false now
-                search.getResult().removeNode(node);
-				findFailed = true;
-				return false;
-			} else {
-                search.getResult().putNode(node, node);
-                findCalled = true;
-				findFailed = false;
-				return true;
-			}
-		}
-        
-        public void reset() {
-            search.getResult().removeNode(node);
-            findCalled = false;
-            findFailed = false;
-        }
-
-        @Override
-        public String toString() {
-            return ValueNodeRecord.this.toString();
-        }
-
-        /** The underlying matcher of the search record. */
-		private final Search search;
-		/** Flag to indicate that {@link #find()} has been called. */
-		private boolean findCalled;
-		/** Flag to indicate that {@link #find()} has returned <code>false</code>. */
-		private boolean findFailed;
-	}
-
+public class ValueNodeSearchItem extends AbstractSearchItem {
 	/**
 	 * Creates a search item for a value node.
 	 * The image is always the node itself.
@@ -87,13 +36,24 @@ public class ValueNodeSearchItem implements SearchItem {
 	 */
 	public ValueNodeSearchItem(ValueNode node) {
 		this.node = node;
+        this.boundNodes = Collections.<Node>singleton(node);
 	}
 	
-	public Record getRecord(SearchPlanStrategy.Search matcher) {
+    @Override
+	public ValueNodeRecord getRecord(SearchPlanStrategy.Search matcher) {
 		return new ValueNodeRecord(matcher);
 	}
 
-	@Override
+	/**
+     * Returns the singleton set consisting of the node matched by this item
+     * @see #getNode()
+     */
+    @Override
+    public Collection<Node> bindsNodes() {
+        return boundNodes;
+    }
+
+    @Override
 	public String toString() {
 		return String.format("Value %s", node); 
 	}
@@ -105,4 +65,43 @@ public class ValueNodeSearchItem implements SearchItem {
 	
 	/** The value node to be matched. */
 	private final ValueNode node;
+    /** Singleton set consisting of <code>node</code>. */
+    private final Collection<Node> boundNodes;
+    
+    /**
+     * Record of a value node search item.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    private class ValueNodeRecord extends AbstractRecord {
+        /**
+         * Creates a record based on a given underlying matcher.
+         */
+        protected ValueNodeRecord(Search matcher) {
+            super(matcher);
+        }
+
+        /**
+         * The first call puts #node to itself;
+         * the next call returns <code>false</code>.
+         */
+        @Override
+        public boolean next() {
+            boolean result = isFirst();
+            if (result) {
+                getResult().putNode(node, node);
+            }
+            return result;
+        }
+        
+        @Override
+        public void undo() {
+            getResult().removeNode(node);
+        }
+
+        @Override
+        public String toString() {
+            return ValueNodeRecord.this.toString();
+        }
+    }
 }

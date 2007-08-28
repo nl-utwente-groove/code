@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoMatchFactory.java,v 1.2 2007-08-26 07:24:12 rensink Exp $
+ * $Id: IsoMatchFactory.java,v 1.3 2007-08-28 22:01:23 rensink Exp $
  */
 package groove.match;
 
@@ -24,6 +24,7 @@ import groove.match.SearchPlanStrategy.Search;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -39,7 +40,7 @@ import java.util.Map;
  * remains unchanged throughout the transformation, it will be very beneficial to take this into account.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class IsoMatchFactory {
     /** Private constructor, to ensure the class is used as singleton. */
@@ -71,10 +72,10 @@ public class IsoMatchFactory {
 	}
 
 	/**
-     * This implementation returns an {@link IsoEdgeSearchItem}.
+     * This implementation returns an {@link EdgeSearchItem}.
      */
     private SearchItem createEdgeSearchItem(Edge edge) {
-    	return new IsoEdgeSearchItem(edge);
+    	return new EdgeSearchItem(edge);
     }
 
     /** Returns the singleton instance of this factory class. */
@@ -100,8 +101,18 @@ public class IsoMatchFactory {
         public IsoNodeSearchItem(Node node, Object cert) {
             this.node = node;
             this.cert = cert;
+            this.boundNodes = Collections.singleton(node);
         }
         
+        /**
+         * Returns the singleton set consisting of the node that this item searches.
+         */
+        @Override
+        public Collection<Node> bindsNodes() {
+            return boundNodes;
+        }
+
+
         /**
          * Returns a fresh search item record for the given node.
          */
@@ -112,6 +123,8 @@ public class IsoMatchFactory {
         
         /** The node for which the item searches an image. */
         private final Node node;
+        /** Singleton set consisting of <code>node</code>. */
+        private final Collection<Node> boundNodes;
         /** The certificate of <code>node</code>. */
         private final Object cert;
         
@@ -184,41 +197,49 @@ public class IsoMatchFactory {
             private Node singleImage;
         }
     }
-    
-
-    /**
-     * A search item that searches an image for an edge in an isomorphism.
-     * @author Arend Rensink
-     * @version $Revision $
-     */
-    static public class IsoEdgeSearchItem extends EdgeSearchItem {
-        /**
-         * Creates a search item for a given edge.
-         */
-        public IsoEdgeSearchItem(Edge edge) {
-            super(edge, null);
-        }
-        
-        @Override
-        public IsoEdgeRecord getRecord(Search matcher) {
-            return new IsoEdgeRecord(matcher);
-        }
-        
-        /** Record of an isomorphism edge search item. */
-        private class IsoEdgeRecord extends EdgeRecord {
-            /** Creates a record for a given matcher. */
-            protected IsoEdgeRecord(Search matcher) {
-                super(matcher);
-            }
-
-            /**
-             * The search plan has made sure that all 
-             * end nodes have been matched.
-             */
-            @Override
-            void init() {
-            	setSingular(edge.imageFor(getResult()));
-            }
-        }
-    }
+//
+//    /**
+//     * A search item that searches an image for an edge in an isomorphism.
+//     * @author Arend Rensink
+//     * @version $Revision $
+//     */
+//    static public class IsoEdgeSearchItem extends EdgeSearchItem {
+//        /**
+//         * Creates a search item for a given edge.
+//         */
+//        public IsoEdgeSearchItem(Edge edge) {
+//            super(edge);
+//        }
+//        
+//        @Override
+//        public IsoEdgeRecord getRecord(Search matcher) {
+//            return new IsoEdgeRecord(matcher);
+//        }
+//        
+//        /**
+//         * Since this search item assumes all nodes are bound, this implementation returns the end nodes of the edge.
+//         */
+//        @Override
+//        public Collection<Node> needsNodes() {
+//            return super.bindsNodes();
+//        }
+//
+//        /** Record of an isomorphism edge search item. */
+//        private class IsoEdgeRecord extends EdgeRecord {
+//            /** Creates a record for a given matcher. */
+//            protected IsoEdgeRecord(Search matcher) {
+//                super(matcher);
+//            }
+//
+//            
+//            /**
+//             * The search plan has made sure that all 
+//             * end nodes have been matched.
+//             */
+//            @Override
+//            void init() {
+//                setSingular(getEdge().imageFor(getResult()));
+//            }
+//        }
+//    }
 }

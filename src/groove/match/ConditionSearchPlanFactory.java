@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.3 2007-08-27 07:25:11 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.4 2007-08-28 22:01:20 rensink Exp $
  */
 package groove.match;
 
@@ -43,7 +43,7 @@ import java.util.Set;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 
@@ -139,13 +139,13 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
          * @return a list of comparators determining the order in which edges should be matched
          */
         @Override
-        protected List<Comparator<Edge>> createComparators() {
-            List<Comparator<Edge>> result = super.createComparators();
+        protected List<Comparator<SearchItem>> createComparators() {
+            List<Comparator<SearchItem>> result = super.createComparators();
             SystemProperties properties = condition.getProperties();
             if (properties != null) {
                 List<String> controlLabels = properties.getControlLabels();
                 List<String> commonLabels = properties.getCommonLabels();
-                Comparator<Edge> labelComparator = new ControlLabelComparator(controlLabels, commonLabels);
+                Comparator<SearchItem> labelComparator = new ControlLabelComparator(controlLabels, commonLabels);
                 int position = 0;
                 while (position < result.size() && !(result.get(position) instanceof IndegreeComparator)) {
                     position++;
@@ -243,7 +243,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
             if (!endSet.isEmpty() || !varSet.isEmpty()) {
                 throw new IllegalStateException(String.format("Embargo edge %s cannot be acheduled in %s", embargoEdge, result));
             }
-            result.add(index, createNegatedSearchItem(createEdgeSearchItem(embargoEdge, null)));
+            result.add(index, createNegatedSearchItem(createEdgeSearchItem(embargoEdge)));
         }
         
         /** 
@@ -297,7 +297,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      * @author Arend Rensink
      * @version $Revision $
      */
-    static private class ControlLabelComparator implements Comparator<Edge> {
+    static private class ControlLabelComparator implements Comparator<SearchItem> {
         /**
          * Constructs a comparator on the basis of two lists of labels.
          * The first list contains high-priority labels, in the order of decreasing priority;
@@ -325,11 +325,15 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
          * Favours the edge occurring earliest in the high-priority labels, or
          * latest in the low-priority labels. In case of equal priority, alphabetical ordering is used.
          */
-        public int compare(Edge first, Edge second) {
-            String firstLabel = first.label().text();
-            String secondLabel = second.label().text();
+        public int compare(SearchItem first, SearchItem second) {
+            if (first instanceof EdgeSearchItem && second instanceof EdgeSearchItem) {
+            String firstLabel = ((EdgeSearchItem) first).getEdge().label().text();
+            String secondLabel = ((EdgeSearchItem) second).getEdge().label().text();
             // compare edge priorities
             return getEdgePriority(firstLabel) - getEdgePriority(secondLabel);
+            } else {
+                return 0;
+            }
         }
         
         /**
