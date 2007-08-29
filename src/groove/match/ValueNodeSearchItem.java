@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.2 2007-08-28 22:01:21 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.3 2007-08-29 11:07:44 rensink Exp $
  */
 package groove.match;
 
@@ -43,8 +43,32 @@ public class ValueNodeSearchItem extends AbstractSearchItem {
 	public ValueNodeRecord getRecord(SearchPlanStrategy.Search matcher) {
 		return new ValueNodeRecord(matcher);
 	}
+//
+//	/**
+//     * If the other search item is also a {@link ValueNodeSearchItem}, compares
+//     * the value nodes; otherwise, delegates to super.
+//     */
+//    @Override
+//    public int compareTo(SearchItem other) {
+//        if (other instanceof ValueNodeSearchItem) {
+//            return node.compareTo(((ValueNodeSearchItem) other).getNode());
+//        } else {
+//            return super.compareTo(other);
+//        }
+//    }
 
-	/**
+    /**
+     * Since the order in which value nodes are matched does not make 
+     * a difference to the outcome, and the effort is also the same,
+     * no natural ordering is imposed.
+     * @return <code>0</code> always
+     */
+    @Override
+    int getRating() {
+        return 0;
+    }
+
+    /**
      * Returns the singleton set consisting of the node matched by this item
      * @see #getNode()
      */

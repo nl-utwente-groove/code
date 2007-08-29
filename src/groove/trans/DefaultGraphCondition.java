@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.20 2007-08-27 07:25:07 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.21 2007-08-29 11:07:53 rensink Exp $
  */
 package groove.trans;
 
@@ -39,7 +39,7 @@ import groove.view.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -564,7 +564,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     @Override
     protected MatchStrategy createMatchStrategy() {
         setFixed();
-        return groove.match.ConditionSearchPlanFactory.getInstance().createSearchPlan(this);
+        return groove.match.ConditionSearchPlanFactory.getInstance().createMatcher(this);
     }
 
     /**

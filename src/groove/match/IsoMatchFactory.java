@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoMatchFactory.java,v 1.3 2007-08-28 22:01:23 rensink Exp $
+ * $Id: IsoMatchFactory.java,v 1.4 2007-08-29 11:07:44 rensink Exp $
  */
 package groove.match;
 
@@ -40,7 +40,7 @@ import java.util.Map;
  * remains unchanged throughout the transformation, it will be very beneficial to take this into account.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class IsoMatchFactory {
     /** Private constructor, to ensure the class is used as singleton. */
@@ -52,7 +52,7 @@ public class IsoMatchFactory {
 	 * This implementation merely returns search items for the edges and nodes of the
 	 * graph, in arbitrary order.
 	 */
-	public SearchPlanStrategy createSearchPlan(Graph graph) {
+	public SearchPlanStrategy createMatcher(Graph graph) {
         List<SearchItem> result = new ArrayList<SearchItem>();
         Map<Element,Object> certMap = graph.getCertifier().getCertificateMap();
         for (Node node: graph.nodeSet()) {
@@ -112,7 +112,6 @@ public class IsoMatchFactory {
             return boundNodes;
         }
 
-
         /**
          * Returns a fresh search item record for the given node.
          */
@@ -121,6 +120,19 @@ public class IsoMatchFactory {
             return new IsoNodeRecord(search);
         }
         
+        /**
+         * This method returns the hash code of the certificate as rating.
+         */
+        @Override
+        int getRating() {
+            return cert.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Node %s(%s)", node, cert);
+        }
+
         /** The node for which the item searches an image. */
         private final Node node;
         /** Singleton set consisting of <code>node</code>. */
@@ -136,6 +148,11 @@ public class IsoMatchFactory {
                 images = getTarget().getCertifier().getPartitionMap().get(cert);
             }
             
+            @Override
+            public String toString() {
+                return String.format("%s = %s", IsoNodeSearchItem.this.toString(), getResult().getNode(node));
+            }
+
             @Override
             void exit() {
                 multiImageIter = null;
@@ -197,49 +214,4 @@ public class IsoMatchFactory {
             private Node singleImage;
         }
     }
-//
-//    /**
-//     * A search item that searches an image for an edge in an isomorphism.
-//     * @author Arend Rensink
-//     * @version $Revision $
-//     */
-//    static public class IsoEdgeSearchItem extends EdgeSearchItem {
-//        /**
-//         * Creates a search item for a given edge.
-//         */
-//        public IsoEdgeSearchItem(Edge edge) {
-//            super(edge);
-//        }
-//        
-//        @Override
-//        public IsoEdgeRecord getRecord(Search matcher) {
-//            return new IsoEdgeRecord(matcher);
-//        }
-//        
-//        /**
-//         * Since this search item assumes all nodes are bound, this implementation returns the end nodes of the edge.
-//         */
-//        @Override
-//        public Collection<Node> needsNodes() {
-//            return super.bindsNodes();
-//        }
-//
-//        /** Record of an isomorphism edge search item. */
-//        private class IsoEdgeRecord extends EdgeRecord {
-//            /** Creates a record for a given matcher. */
-//            protected IsoEdgeRecord(Search matcher) {
-//                super(matcher);
-//            }
-//
-//            
-//            /**
-//             * The search plan has made sure that all 
-//             * end nodes have been matched.
-//             */
-//            @Override
-//            void init() {
-//                setSingular(getEdge().imageFor(getResult()));
-//            }
-//        }
-//    }
 }

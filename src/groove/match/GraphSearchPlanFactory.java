@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.3 2007-08-28 22:01:20 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.4 2007-08-29 11:07:44 rensink Exp $
  */
 package groove.match;
 
@@ -36,6 +36,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -43,6 +44,7 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Strategy that yields the edges in order of ascending indegree of
@@ -52,7 +54,7 @@ import java.util.Set;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -84,25 +86,25 @@ public class GraphSearchPlanFactory {
      * @return a list of search items that will result in a matching of <code>graph</code>
      * when successfully executed in the given order
      */
-    public SearchPlanStrategy createSearchPlan(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
+    public SearchPlanStrategy createMatcher(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
         PlanData data = new PlanData(graph, preMatchedNodes, preMatchedEdges);
         return new SearchPlanStrategy(data.getPlan(), false);
     }
-
-    /**
-	 * Callback method creating the list of comparators that is used to
-	 * construct the search plan.
-     * @param nodeSet view on the set of currently unmtched nodes
-     * @param edgeSet view on the set of currently unmtched edges
-     * @param varSet view on the set of currently unmtched variables
-	 */
-	protected List<Comparator<SearchItem>> createComparators(Set<Node> nodeSet, Set<Edge> edgeSet, Set<String> varSet) {
-		List<Comparator<SearchItem>> result = new ArrayList<Comparator<SearchItem>>();
-        result.add(new NeededPartsComparator(nodeSet, varSet));
-        result.add(new ItemTypeComparator());
-		result.add(new IndegreeComparator(edgeSet));
-		return result;
-	}
+//
+//    /**
+//	 * Callback method creating the list of comparators that is used to
+//	 * construct the search plan.
+//     * @param nodeSet view on the set of currently unmtched nodes
+//     * @param edgeSet view on the set of currently unmtched edges
+//     * @param varSet view on the set of currently unmtched variables
+//	 */
+//	protected List<Comparator<SearchItem>> createComparators(Set<Node> nodeSet, Set<Edge> edgeSet, Set<String> varSet) {
+//		List<Comparator<SearchItem>> result = new ArrayList<Comparator<SearchItem>>();
+//        result.add(new NeededPartsComparator(nodeSet, varSet));
+//        result.add(new ItemTypeComparator());
+//		result.add(new IndegreeComparator(edgeSet));
+//		return result;
+//	}
 	
     /**
 	 * Callback factory method for creating an edge search item.
@@ -183,7 +185,7 @@ public class GraphSearchPlanFactory {
      * @author Arend Rensink
      * @version $Revision $
      */
-    protected class PlanData extends Observable implements Comparator<SearchItem> {
+    class PlanData extends Observable implements Comparator<SearchItem> {
         /**
          * Construct a given plan data object for a given graph,
          * with certain sets of already pre-matched elements.
@@ -191,7 +193,7 @@ public class GraphSearchPlanFactory {
          * @param preMatchedNodes the set of pre-matched nodes
          * @param preMatchedEdges the set of pre-matched edges
          */
-        public PlanData(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
+        PlanData(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
             remainingNodes = new HashSet<Node>(graph.nodeSet());
             if (preMatchedNodes != null) {
                 remainingNodes.removeAll(preMatchedNodes);
@@ -227,86 +229,22 @@ public class GraphSearchPlanFactory {
                 used = true;
             }
             List<SearchItem> result = new ArrayList<SearchItem>();
-            Collection<SearchItem> items = getSearchItems();
+            Collection<SearchItem> items = computeSearchItems();
             while (!items.isEmpty()) {
                 SearchItem bestItem = Collections.max(items, this);
                 result.add(bestItem);
                 items.remove(bestItem);
                 remainingNodes.removeAll(bestItem.bindsNodes());
                 remainingVars.removeAll(bestItem.bindsVars());
+                // notify the observing comparators of the change
+                setChanged();
+                notifyObservers(bestItem);
             }
-//            // copy the node and edge sets to avoid sharing problems
-//            Set<Node> remainingNodes = new HashSet<Node>(remainingNodes);
-//            Set<Edge> remainingEdges = new HashSet<Edge>(edgeSet);
-//            // first do all non-variable value nodes, 
-//            // and remove all value and product nodes
-//            Iterator<Node> nodeIter = remainingNodes.iterator();
-//            while (nodeIter.hasNext()) {
-//                Node node = nodeIter.next();
-//                SearchItem nodeItem = createNodeSearchItem(node);
-//                if (node instanceof ValueNode) {
-//                    // value nodes always match themselve, and so can be scheduled straight away
-//                    if (((ValueNode) node).hasValue()) {
-//                        result.add(nodeItem);
-//                        items.add(nodeItem);
-//                        nodeIter.remove();
-//                    }
-//                } else if (node instanceof ProductNode) {
-//                    // product nodes will not be matched explicitly
-//                    // (rather, the outgoing operator edges will be matched)
-//                    nodeIter.remove();                  
-//                } else {
-//                    items.add(nodeItem);
-//                }
-//            }
-//            // collect the non-constant operator edges, and remove all
-//            // operator and argument edges
-//            Map<ProductEdge,Set<Node>> operatorEdgeMap = new HashMap<ProductEdge,Set<Node>>();
-//            Iterator<Edge> edgeIter = remainingEdges.iterator();
-//            while (edgeIter.hasNext()) {
-//                Edge edge = edgeIter.next();
-//                if (edge instanceof ProductEdge) {
-//                    ProductEdge operatorEdge = (ProductEdge) edge;
-//                    if (operatorEdge.getOperation().arity() > 0) {
-//                        operatorEdgeMap.put(operatorEdge, new HashSet<Node>(operatorEdge.source().getArguments()));
-//                    }
-//                    edgeIter.remove();
-//                } else if (edge instanceof AlgebraEdge) {
-//                    edgeIter.remove();
-//                }
-//            }
-//            // pick the best remaining edge each time and add it to the
-//            // result, adjusting the remaining edges, nodes and indegrees
-//            while (! remainingEdges.isEmpty()) {
-//                scheduleOperatorEdges(result, operatorEdgeMap);
-//                Edge bestEdge = Collections.max(remainingEdges, this);
-//                int arity = bestEdge.endCount();
-//                boolean allMatched = true;
-//                boolean[] matched = new boolean[arity];
-//                for (int i = 0; i < arity; i++) {
-//                    matched[i] = !remainingNodes.remove(bestEdge.end(i));
-//                    allMatched &= matched[i];
-//                }
-//                if (allMatched) {
-//                    matched = null;
-//                }
-//                result.add(createEdgeSearchItem(bestEdge));
-//                remainingEdges.remove(bestEdge);
-//                setChanged();
-//                notifyObservers(bestEdge);
-//            }
-//            scheduleOperatorEdges(result, operatorEdgeMap);
-//            // remaining nodes are loose nodes: add them
-//            for (Node node: remainingNodes) {
-//                assert ! (node instanceof ValueNode) : String.format("Remaining value node %s", node);
-//                result.add(createNodeSearchItem(node));
-//            }
-//            assert operatorEdgeMap.isEmpty() : String.format("Remaining operation edges %s", operatorEdgeMap.keySet());
             return result;
         }
 
-        /** Returns the collection of search items for the plan. */
-        protected Collection<SearchItem> getSearchItems() {
+        /** Callback method to compute the collection of search items for the plan. */
+        Collection<SearchItem> computeSearchItems() {
             Collection<SearchItem> result = new ArrayList<SearchItem>();
             Set<Node> unmatchedNodes = new HashSet<Node>(remainingNodes);
             for (Edge edge: remainingEdges) {
@@ -326,53 +264,29 @@ public class GraphSearchPlanFactory {
         }
         
         /**
-         * Schedules all produce edges of which the arguments have 
-         * already been scheduled (i.e., are no longer in the remaining nodes).
+         * Orders search items according to the lexicographic order of 
+         * the available item comparators.
          */
-        private void scheduleOperatorEdges(List<SearchItem> result, Map<ProductEdge, Set<Node>> productEdgeMap) {
-            // flag to indicate there might yeat be something to be scheduled
-            boolean schedule;
-            do {
-                schedule = false;
-                // see if there is a product edge whose arguments are all
-                // matched
-                Iterator<Map.Entry<ProductEdge, Set<Node>>> productEdgeIter = productEdgeMap.entrySet().iterator();
-                while (productEdgeIter.hasNext()) {
-                    Map.Entry<ProductEdge, Set<Node>> productEdgeEntry = productEdgeIter.next();
-                    // schedule the edge if all arguments are matched
-                    if (!new HashSet<Node>(productEdgeEntry.getValue()).removeAll(remainingNodes)) {
-                        ProductEdge productEdge = productEdgeEntry.getKey();
-                        boolean targetMatched = !remainingNodes.remove(productEdge.target());
-                        boolean[] matched = new boolean[] { true, targetMatched };
-                        result.add(createEdgeSearchItem(productEdge));
-                        productEdgeIter.remove();
-                        schedule = true;
-                    }
-                }
-            } while (schedule);
-        }
-        
-        /**
-         * Orders edges according to the lexicographic order of 
-         * the available edge comparators.
-         */
-        public int compare(SearchItem o1, SearchItem o2) {
+        final public int compare(SearchItem o1, SearchItem o2) {
             int result = 0;
             Iterator<Comparator<SearchItem>> comparatorIter = getComparators().iterator();
             while (result == 0 && comparatorIter.hasNext()) {
                 Comparator<SearchItem> next = comparatorIter.next();
                 result = next.compare(o1, o2);
             }
+            if (result == 0) {
+                result = o1.compareTo(o2);
+            }
             return result;
         }
         
         /**
-         * Lazily creates and returns the set of edge comparators that determines 
+         * Lazily creates and returns the set of search item comparators that determines 
          * their priority in the search plan.
          */
-        protected List<Comparator<SearchItem>> getComparators() {
+        final Collection<Comparator<SearchItem>> getComparators() {
             if (comparators == null) {
-                comparators = createComparators();
+                comparators = computeComparators();
                 // add those comparators as listeners that implement the observer interface
                 for (Comparator<SearchItem> comparator: comparators) {
                     if (comparator instanceof Observer) {
@@ -384,86 +298,90 @@ public class GraphSearchPlanFactory {
         }
         
         /**
-         * Constructs the list of edge comparators to be used.
+         * Callback method to construct the list of search item comparators to be used.
          */
-        protected List<Comparator<SearchItem>> createComparators() {
-            return GraphSearchPlanFactory.this.createComparators(remainingNodes, remainingEdges, remainingVars);
+        Collection<Comparator<SearchItem>> computeComparators() {
+            Collection<Comparator<SearchItem>> result = new TreeSet<Comparator<SearchItem>>(new ItemComparatorComparator());
+            result.add(new NeededPartsComparator(remainingNodes, remainingVars));
+            result.add(new ItemTypeComparator());
+            result.add(new IndegreeComparator(remainingEdges));
+            return result;
         }
 
         /**
          * The set of nodes to be matched.
          */
-        protected final Set<Node> remainingNodes;
+        private final Set<Node> remainingNodes;
         /**
          * The set of edges to be matched.
          */
-        protected final Set<Edge> remainingEdges;
+        private final Set<Edge> remainingEdges;
         /**
          * The set of variables to be matched.
          */
-        protected final Set<String> remainingVars;
+        private final Set<String> remainingVars;
         /**
          * The comparators used to determine the order in which the edges
          * should be matched.
          */
-        private List<Comparator<SearchItem>> comparators;
+        private Collection<Comparator<SearchItem>> comparators;
         /** Flag determining if {@link #getPlan()} was already called. */
         private boolean used;
     }
-
-    /**
-     * Edge comparator based on the number of already matched end nodes of a given
-     * edge. The higher this number, the less nondeterminism matching the node
-     * will cause, so the sooner it should be scheduled.
-     * The class is an observer in order to be able to maintain its internal data.
-     * @author Arend Rensink
-     * @version $Revision $
-     */
-    protected static class ConnectivityComparator implements Comparator<Edge> {
-        /**
-         * Constructs a comparator, on the basis of the set of 
-         * currently matched nodes. This set is shared with the caller.
-         * @param remainingNodes the set of remaining unmatched nodes.
-         */
-        private ConnectivityComparator(Set<? extends Node> remainingNodes) {
-            this.remainingNodes = new HashSet<Node>(remainingNodes);
-        }
-        
-        /** 
-         * Favours the edge with the highest number of nodes not in 
-         * the set of remaining nodes.
-         */
-        public int compare(Edge first, Edge second) {
-            return connectivity(first) - connectivity(second);
-        }
+//
+//    /**
+//     * Edge comparator based on the number of already matched end nodes of a given
+//     * edge. The higher this number, the less nondeterminism matching the node
+//     * will cause, so the sooner it should be scheduled.
+//     * The class is an observer in order to be able to maintain its internal data.
+//     * @author Arend Rensink
+//     * @version $Revision $
+//     */
+//    protected static class ConnectivityComparator implements Comparator<Edge> {
+//        /**
+//         * Constructs a comparator, on the basis of the set of 
+//         * currently matched nodes. This set is shared with the caller.
+//         * @param remainingNodes the set of remaining unmatched nodes.
+//         */
+//        private ConnectivityComparator(Set<? extends Node> remainingNodes) {
+//            this.remainingNodes = new HashSet<Node>(remainingNodes);
+//        }
+//        
+//        /** 
+//         * Favours the edge with the highest number of nodes not in 
+//         * the set of remaining nodes.
+//         */
+//        public int compare(Edge first, Edge second) {
+//            return connectivity(first) - connectivity(second);
+//        }
+////
+////        /**
+////         * This method is called when a new edge is scheduled.
+////         * It removes the end nodes of that edge from the set of remaining nodes.
+////         */
+////        public void update(Observable o, Object arg) {
+////            for (Node end: ((Edge) arg).ends()) {
+////                remainingNodes.remove(end);
+////            }
+////        }
 //
 //        /**
-//         * This method is called when a new edge is scheduled.
-//         * It removes the end nodes of that edge from the set of remaining nodes.
+//         * Returns the number of matched end points of a given edge.
+//         * An end point is matched if it is not in the set of remaining nodes.
 //         */
-//        public void update(Observable o, Object arg) {
-//            for (Node end: ((Edge) arg).ends()) {
-//                remainingNodes.remove(end);
+//        private int connectivity(Edge edge) {
+//            int result = 0;
+//            for (Node end : edge.ends()) {
+//                if (!remainingNodes.contains(end)) {
+//                    result++;
+//                }
 //            }
+//            return result;
 //        }
-
-        /**
-         * Returns the number of matched end points of a given edge.
-         * An end point is matched if it is not in the set of remaining nodes.
-         */
-        private int connectivity(Edge edge) {
-            int result = 0;
-            for (Node end : edge.ends()) {
-                if (!remainingNodes.contains(end)) {
-                    result++;
-                }
-            }
-            return result;
-        }
-        
-        /** The set of currently unmatched nodes. */
-        private final Set<Node> remainingNodes; 
-    }
+//        
+//        /** The set of currently unmatched nodes. */
+//        private final Set<Node> remainingNodes; 
+//    }
     
     /**
      * Edge comparator based on the number of incoming edges of the
@@ -478,11 +396,11 @@ public class GraphSearchPlanFactory {
      * @author Arend Rensink
      * @version $Revision $
      */
-    static protected class IndegreeComparator implements Comparator<SearchItem>, Observer {
+    static class IndegreeComparator implements Comparator<SearchItem>, Observer {
         /**
          * Constructs a comparator on the basis of a given set of unmatched edges.
          */
-        private IndegreeComparator(Set<? extends Edge> remainingEdges) {
+        IndegreeComparator(Set<? extends Edge> remainingEdges) {
             // compute indegrees
             Bag<Node> indegrees = new HashBag<Node>();
             for (Edge edge: remainingEdges) {
@@ -519,10 +437,12 @@ public class GraphSearchPlanFactory {
          * It decreases the indegree of all end nodes of that edge except its source.
          */
         public void update(Observable o, Object arg) {
-            Edge selected = (Edge) arg;
-            for (Node end: selected.ends()) {
-                if (!end.equals(selected.source())) {
-                    indegrees.remove(end);
+            if (arg instanceof EdgeSearchItem) {
+                Edge selected = ((EdgeSearchItem) arg).getEdge();
+                for (Node end : selected.ends()) {
+                    if (!end.equals(selected.source())) {
+                        indegrees.remove(end);
+                    }
                 }
             }
         }
@@ -547,9 +467,9 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.3 $
+     * @version $Revision: 1.4 $
      */
-    private static class NeededPartsComparator implements Comparator<SearchItem> {
+    static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
             this.remainingNodes = remainingNodes;
             this.remainingVars = remainingVars;
@@ -561,6 +481,9 @@ public class GraphSearchPlanFactory {
          */
         public int compare(SearchItem o1, SearchItem o2) {
             int result = getNeedCount(o1) - getNeedCount(o2);
+            if (result == 0) {
+                result = getConnectCount(o1) - getConnectCount(o2);
+            }
             if (result == 0) {
                 result = getBindCount(o2) - getBindCount(o1);
             }
@@ -585,9 +508,28 @@ public class GraphSearchPlanFactory {
         }
         
         /** 
+         * Returns the number of nodes bound by the item that have already been matched. 
+         * More pre-matched nodes means less determinism, so the higher the better.
+         */
+        private int getConnectCount(SearchItem item) {
+            int result = 0;
+            for (Node node: item.bindsNodes()) {
+                if (!remainingNodes.contains(node)) {
+                    result++;
+                }
+            }
+            for (String var: item.bindsVars()) {
+                if (remainingVars.contains(var)) {
+                    result++;
+                }
+            }
+            return result;
+        }
+        
+        /** 
          * Returns the number of nodes and variables bound by the
-         * item that have not yet been matched. The lower this number,
-         * the more desirable it is to schedule the item.
+         * item that have not yet been matched. 
+         * More unmatched parts means more non-determinism, so the lower the better.
          */
         private int getBindCount(SearchItem item) {
             int result = 0;
@@ -616,7 +558,7 @@ public class GraphSearchPlanFactory {
      * @author Arend Rensink
      * @version $Revision $
      */
-    private static class ItemTypeComparator implements Comparator<SearchItem> {
+    static class ItemTypeComparator implements Comparator<SearchItem> {
         /**
          * Compares two regular expression-based items, with the purpose of determining which one should
          * be scheduled first. In order from worst to best:
@@ -637,6 +579,7 @@ public class GraphSearchPlanFactory {
         
         /**
          * Computes a rating for a search item from its type.
+         * A higher rating is better.
          */
         int getRating(SearchItem item) {
             int result = 0;
@@ -673,6 +616,117 @@ public class GraphSearchPlanFactory {
                 return result;
             } 
             throw new IllegalArgumentException(String.format("Unrecognised search item %s", item));
+        }
+    }
+
+    /**
+     * Edge comparator on the basis of lists of high- and low-priority labels.
+     * Preference is given to labels occurring early in this list.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    static class FrequencyComparator implements Comparator<SearchItem> {
+        /**
+         * Constructs a comparator on the basis of two lists of labels.
+         * The first list contains high-priority labels, in the order of decreasing priority;
+         * the second list low-priority labels, in order of increasing priority.
+         * Labels not in either list have intermediate priority and are ordered
+         * alphabetically.
+         * @param rare high-priority labels, in order of decreasing priority; may be <code>null</code>
+         * @param common low-priority labels, in order of increasing priority; may be <code>null</code>
+         */
+        FrequencyComparator(List<String> rare, List<String> common) {
+            this.priorities = new HashMap<String, Integer>();
+            if (rare != null) {
+                for (int i = 0; i < rare.size(); i++) {
+                    priorities.put(rare.get(i), rare.size() - i);
+                }
+            }
+            if (common != null) {
+                for (int i = 0; i < common.size(); i++) {
+                    priorities.put(common.get(i), i - common.size());
+                }
+            }
+        }
+
+        /**
+         * Favours the edge occurring earliest in the high-priority labels, or
+         * latest in the low-priority labels. In case of equal priority, alphabetical ordering is used.
+         */
+        public int compare(SearchItem first, SearchItem second) {
+            if (first instanceof EdgeSearchItem && second instanceof EdgeSearchItem) {
+                String firstLabel = ((EdgeSearchItem) first).getEdge().label().text();
+                String secondLabel = ((EdgeSearchItem) second).getEdge().label().text();
+                // compare edge priorities
+                return getEdgePriority(firstLabel) - getEdgePriority(secondLabel);
+            } else {
+                return 0;
+            }
+        }
+
+        /**
+         * Returns the priority of an edge, judged by its label.
+         */
+        private int getEdgePriority(String edgeLabel) {
+            Integer result = priorities.get(edgeLabel);
+            if (result == null) {
+                return 0;
+            } else {
+                return result;
+            }
+        }
+
+        /**
+         * The priorities assigned to labels, on the basis of the list of labels
+         * passed in at construction time.
+         */
+        private final Map<String, Integer> priorities;
+    }
+    
+    /**
+     * Comparator determining the ordering in which the search item comparators should be applied.
+     * Comparators will be applied in increating order, so the comparators should be ordered
+     * in decreasing priority.
+     * @author Arend Rensink
+     * @version $Revision: 1.4 $
+     */
+    static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
+        /** 
+         * Returns the difference in ratings between the two comparators. 
+         * This means lower-rated comparators are ordered first.
+         */
+        public int compare(Comparator<SearchItem> o1, Comparator<SearchItem> o2) {
+            return getRating(o1) - getRating(o2);
+        }
+        
+        /**
+         * Comparators are rated as follows, in increasing order:
+         * <ul>
+         * <li> {@link NeededPartsComparator}
+         * <li> {@link ItemTypeComparator}
+         * <li> {@link FrequencyComparator}
+         * <li> {@link IndegreeComparator}
+         * </ul>
+         */
+        private int getRating(Comparator<SearchItem> comparator) {
+            int result = 0;
+            Class<?> compClass = comparator.getClass();
+            if (compClass == NeededPartsComparator.class) {
+                return result;
+            }
+            result++;
+            if (compClass == ItemTypeComparator.class) {
+                return result;
+            }
+            result++;
+            if (compClass == FrequencyComparator.class) {
+                return result;
+            }
+            result++;
+            if (compClass == IndegreeComparator.class) {
+                return result;
+            }
+            throw new IllegalArgumentException(String.format("Unknown comparator class %s", compClass));
         }
     }
 }

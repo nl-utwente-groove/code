@@ -240,11 +240,9 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	protected boolean doApplications(Set<Rule> rules, Action action) {
 		boolean result = false;
 		reporter.start(COLLECT_APPLICATIONS);
-		int priority = 0;
 		for (Rule rule : rules) {
 			if (doApplications(rule, action)) {
 				result = true;
-				priority = rule.getPriority();
 			}
 		}
 		reporter.stop();

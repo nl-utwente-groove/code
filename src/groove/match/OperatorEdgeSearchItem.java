@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.2 2007-08-28 22:01:20 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.3 2007-08-29 11:07:44 rensink Exp $
  */
 package groove.match;
 
@@ -79,7 +79,40 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 		return String.format("Compute %s", edge); 
 	}
 	
-	/** Returns the product edge being calculated by this search item. */
+	/**
+     * If the other item is also a {@link OperatorEdgeSearchItem}, compares on the
+     * basis of the label and then the arguments; otherwise, delegates to <code>super</code>.
+     */
+    @Override
+    public int compareTo(SearchItem other) {
+        int result = 0;
+        if (other instanceof OperatorEdgeSearchItem) {
+            ProductEdge otherEdge = ((OperatorEdgeSearchItem) other).getEdge();
+            List<ValueNode> otherArguments = otherEdge.source().getArguments();
+            result = edge.label().compareTo(otherEdge.label());
+            for (int i = 0; result == 0 && i < arguments.size(); i++) {
+                result = arguments.get(i).compareTo(otherArguments.get(i));
+            }
+            if (result == 0) {
+                result = target.compareTo(otherEdge.target());
+            }
+        }
+        if (result == 0) {
+            return super.compareTo(other);
+        } else {
+            return result;
+        }
+    }
+
+    /**
+     * This implementation returns the product edge's hash code.
+     */
+    @Override
+    int getRating() {
+        return edge.hashCode();
+    }
+
+    /** Returns the product edge being calculated by this search item. */
 	public ProductEdge getEdge() {
 		return edge;
 	}

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchItem.java,v 1.3 2007-08-28 22:01:20 rensink Exp $
+ * $Id: ConditionSearchItem.java,v 1.4 2007-08-29 11:07:44 rensink Exp $
  */
 package groove.match;
 
@@ -25,6 +25,16 @@ import groove.match.SearchPlanStrategy.Search;
  * @version $Revision $
  */
 public abstract class ConditionSearchItem extends AbstractSearchItem {
+    /** 
+     * Since the order of condition search items does not influence the match,
+     * we give all of them the same rating.
+     * @return <code>0</code> always
+     */
+    @Override
+    int getRating() {
+        return 0;
+    }
+    
 	/**
 	 * Record for a {@link ConditionSearchItem}.
 	 * @author Arend Rensink
@@ -33,6 +43,11 @@ public abstract class ConditionSearchItem extends AbstractSearchItem {
 	public abstract class ConditionRecord extends AbstractRecord {
         ConditionRecord(Search search) {
             super(search);
+        }
+
+        @Override
+        public String toString() {
+            return String.format("%s: %b", ConditionSearchItem.this.toString(), isFound());
         }
 
         /** Returns <code>true</code> if {@link #isFirst()} and {@link #condition()} both hold. */
