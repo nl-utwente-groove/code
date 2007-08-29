@@ -28,7 +28,7 @@ import groove.rel.VarNodeEdgeMap;
 /**
  * Abstract implementation of a searh item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
     abstract public AbstractRecord getRecord(Search search);
@@ -62,11 +62,42 @@ abstract public class AbstractSearchItem implements SearchItem {
     }
 
     /**
+     * This implementation compares items on the basis of their class names,
+     * and after that, on the basis of their ratings.
+     * A lower rating means a "smaller" search item.
+     */
+    public int compareTo(SearchItem other) {
+        int result = getClass().getName().compareTo(other.getClass().getName());
+        if (result == 0) {
+            result = getRating() - getRating(other);
+        }
+        return result;
+    }
+    
+    /** 
+     * Returns the rating of a search item, for the purpose of {@link #compareTo(SearchItem)}.
+     * This is obtained by {@link #getRating()} if the item is an {@link AbstractSearchItem};
+     * otherwise, it is derived from the item's class name.
+     */
+    private int getRating(SearchItem other) {
+        if (other instanceof AbstractSearchItem) {
+            return ((AbstractSearchItem) other).getRating();
+        } else {
+            return 0;
+        }
+    }
+    
+    /** 
+     * Returns a rating for this search item, for the purpose of its natural ordering. 
+     */
+    abstract int getRating();
+
+    /**
      * Abstract implementation of a search item record, offering basic search functionality.
      * At any point, the record has a state which is {@link #EMPTY} (if the search
      * has not yielded a solution), #READY or {@link #FOUND} (if the search has yielded a solution).
      * @author Arend Rensink
-     * @version $Revision: 1.2 $
+     * @version $Revision: 1.3 $
      */
     abstract public class AbstractRecord implements Record {
         /** Constructs a record for a given search. */

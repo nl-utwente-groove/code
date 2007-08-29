@@ -12,20 +12,21 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchItem.java,v 1.2 2007-08-28 22:01:24 rensink Exp $
+ * $Id: SearchItem.java,v 1.3 2007-08-29 11:07:44 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.Node;
 
 import java.util.Collection;
+import java.util.Comparator;
 
 /**
  * Interface for an item in a search plan.
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface SearchItem {
+public interface SearchItem extends Comparable<SearchItem> {
 	/**
 	 * Interface for an activation record of a search item.
 	 * @author Arend Rensink

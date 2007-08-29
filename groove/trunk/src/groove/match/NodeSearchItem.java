@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.2 2007-08-28 22:01:23 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.3 2007-08-29 11:07:44 rensink Exp $
  */
 package groove.match;
 
@@ -47,16 +47,6 @@ public class NodeSearchItem extends AbstractSearchItem {
     public Collection<Node> bindsNodes() {
         return boundNodes;
     }
-//
-//    /**
-//     * Throws an exception if the node searched in this item is pre-matched;
-//     * does nothing otherwise.
-//     */
-//    public void schedule(Collection<Node> preMatchedNodes, Collection<String> preMatchedVars) {
-//        if (preMatchedNodes.contains(getNode())) {
-//            throw new IllegalStateException(String.format("Node searched by %s is pre-matched in %s", toString(), preMatchedNodes));
-//        }
-//    }
 
     /**
 	 * Returns the node that this item tries to match.
@@ -72,6 +62,14 @@ public class NodeSearchItem extends AbstractSearchItem {
 	}
 
 	/**
+     * This implementation returns the node's hash code.
+     */
+    @Override
+    int getRating() {
+        return node.hashCode();
+    }
+
+    /**
 	 * The edge for which this search item is to find an image.
 	 */
 	private final Node node;

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.2 2007-08-28 22:01:22 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.3 2007-08-29 11:07:44 rensink Exp $
  */
 package groove.match;
 
@@ -135,8 +135,38 @@ public class EdgeSearchItem extends AbstractSearchItem {
 	public String toString() {
 		return String.format("Find %s", getEdge()); 
 	}
-			
-	/**
+    
+    /**
+     * This implementation first attempts to compare edge labels and ends,
+     * if the other search item is also an {@link EdgeSearchItem};
+     * otherwise, it delegates to super. 
+     */
+    @Override
+    public int compareTo(SearchItem other) {
+        int result = 0;
+        if (other instanceof EdgeSearchItem) {
+            Edge otherEdge = ((EdgeSearchItem) other).getEdge();
+            result = getEdge().label().compareTo(otherEdge.label());
+            for (int i = 0; result == 0 && i < arity; i++) {
+                result = edge.end(i).compareTo(otherEdge.end(i));
+            }
+        } 
+        if (result == 0) {
+            return super.compareTo(other);
+        } else {
+            return result;
+        }
+    }
+
+    /**
+     * This method returns the hash code of the label as rating.
+     */
+    @Override
+    int getRating() {
+        return edge.label().hashCode();
+    }
+
+    /**
 	 * The edge for which this search item is to find an image.
 	 */
 	private final Edge edge;
