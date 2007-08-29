@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleDependencies.java,v 1.7 2007-05-22 11:29:42 kastenberg Exp $
+ * $Id: RuleDependencies.java,v 1.8 2007-08-29 07:00:18 rensink Exp $
  */
 package groove.trans;
 
@@ -28,6 +28,7 @@ import groove.rel.RegExprLabel;
 import groove.util.Groove;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,7 +40,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-05-22 11:29:42 $
+ * @version $Revision: 1.8 $ $Date: 2007-08-29 07:00:18 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */
@@ -346,51 +347,57 @@ public class RuleDependencies {
     void collectConditionCharacteristics(GraphCondition cond, Set<Label> positive, Set<Label> negative) {
     	Morphism pattern = cond.getPattern();
     	Graph target = cond.getTarget();
+        // collected the isolated fresh nodes
+        Set<Node> isolatedNodes = new HashSet<Node>(target.nodeSet());
+        isolatedNodes.removeAll(pattern.nodeMap().values());
     	// iterate over the edges that are new in the target
     	for (Edge edge: target.edgeSet()) {
     		if (!pattern.containsValue(edge)) {
-    			// yep, it's a fresh edge
-					Label label = edge.label();
-					if (label instanceof RegExprLabel) {
-						Set<Label> posOrNeg;
-						RegExpr negOperand = RegExprLabel.getNegOperand(label);
-						if (negOperand == null) {
-							posOrNeg = positive;
-						} else {
-							label = negOperand.toLabel();
-							posOrNeg = negative;
-						}
-						Automaton labelAut = ((RegExprLabel) label).getAutomaton();
-						// if a regular expression accepts the empty word, merging is allowed
-						if (labelAut.isAcceptsEmptyWord()) {
-							posOrNeg.add(MERGE_LABEL);
-						}
-						if (RegExprLabel.isWildcard(label) || RegExprLabel.getRegExpr(label).containsOperator(RegExpr.wildcard())) {
-							// testing for a wildcard means all labels are positive
-							posOrNeg.add(ALL_LABEL);						
-						} else {
-							// all the labels in the regular expression's automaton are positive
-							for (Edge labelAutEdge: labelAut.edgeSet()) {
-								Label innerLabel = labelAutEdge.label();
-								assert !(innerLabel instanceof RegExprLabel) : String.format("Wildcard label %s should have been caught above", innerLabel);
-								posOrNeg.add(innerLabel);
-							}
-						}
-					} else {
-						positive.add(label);
-					}
-			}
+                // yep, it's a fresh edge
+                Label label = edge.label();
+                if (label instanceof RegExprLabel) {
+                    Set<Label> posOrNeg;
+                    RegExpr negOperand = RegExprLabel.getNegOperand(label);
+                    if (negOperand == null) {
+                        posOrNeg = positive;
+                        isolatedNodes.removeAll(Arrays.asList(edge.ends()));
+                    } else {
+                        label = negOperand.toLabel();
+                        posOrNeg = negative;
+                    }
+                    Automaton labelAut = ((RegExprLabel) label).getAutomaton();
+                    // if a regular expression accepts the empty word, merging is allowed
+                    if (labelAut.isAcceptsEmptyWord()) {
+                        posOrNeg.add(MERGE_LABEL);
+                    }
+                    if (RegExprLabel.isWildcard(label)
+                            || RegExprLabel.getRegExpr(label).containsOperator(RegExpr.wildcard())) {
+                        // testing for a wildcard means all labels are positive
+                        posOrNeg.add(ALL_LABEL);
+                    } else {
+                        // all the labels in the regular expression's automaton are positive
+                        for (Edge labelAutEdge : labelAut.edgeSet()) {
+                            Label innerLabel = labelAutEdge.label();
+                            assert !(innerLabel instanceof RegExprLabel) : String
+                                    .format("Wildcard label %s should have been caught above",
+                                        innerLabel);
+                            posOrNeg.add(innerLabel);
+                        }
+                    }
+                } else {
+                    positive.add(label);
+                    isolatedNodes.removeAll(Arrays.asList(edge.ends()));
+                }
+            }
 		}
-    	// if the condition pattern is injective, it means merging is part of the condition
+    	// if the condition pattern is non-injective, it means merging is part of the condition
     	if (!pattern.isInjective()) {
     		positive.add(MERGE_LABEL);
     	}
     	// does the condition test for an isolated node? 
-    	for (Node node: target.nodeSet()) {
-			if (!pattern.containsValue(node) && target.edgeSet(node).isEmpty()) {
-				positive.add(ANY_NODE);
-			}
-		}
+        if (!isolatedNodes.isEmpty()) {
+            positive.add(ANY_NODE);
+        }
     	// now investigate the negative conjunct, taking care to swap positive and negative
     	for (GraphCondition negCond: cond.getNegConjunct().getConditions()) {
 			collectConditionCharacteristics(negCond, negative, positive);
