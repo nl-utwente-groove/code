@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoMatchFactory.java,v 1.4 2007-08-29 11:07:44 rensink Exp $
+ * $Id: IsoMatchFactory.java,v 1.5 2007-08-29 14:00:27 rensink Exp $
  */
 package groove.match;
 
@@ -40,7 +40,7 @@ import java.util.Map;
  * remains unchanged throughout the transformation, it will be very beneficial to take this into account.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class IsoMatchFactory {
     /** Private constructor, to ensure the class is used as singleton. */
@@ -148,6 +148,11 @@ public class IsoMatchFactory {
                 images = getTarget().getCertifier().getPartitionMap().get(cert);
             }
             
+            /** The record is singular it there is exactly one image with the correct certificate. */
+            public boolean isSingular() {
+                return images instanceof Element;
+            }
+
             @Override
             public String toString() {
                 return String.format("%s = %s", IsoNodeSearchItem.this.toString(), getResult().getNode(node));

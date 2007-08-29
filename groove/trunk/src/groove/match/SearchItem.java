@@ -12,14 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchItem.java,v 1.3 2007-08-29 11:07:44 rensink Exp $
+ * $Id: SearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.Node;
 
 import java.util.Collection;
-import java.util.Comparator;
 
 /**
  * Interface for an item in a search plan.
@@ -27,35 +26,6 @@ import java.util.Comparator;
  * @version $Revision $
  */
 public interface SearchItem extends Comparable<SearchItem> {
-	/**
-	 * Interface for an activation record of a search item.
-	 * @author Arend Rensink
-	 * @version $Revision $
-	 */
-	interface Record {
-		/**
-		 * Tries to find (and select, if appropriate) the next fit for this search item.
-         * Where necessary, the previously selected fit is first undone.
-		 * The return value indicates if a new fit has been found (and selected).
-         * @return <code>true</code> if a fit has been found
-		 */
-		boolean find();
-//		
-//		/**
-//		 * Turns back all actions performed for finding the last match
-//		 * (using {@link #find()}).
-//		 * @throws IllegalStateException if {@link #find()} was not called
-//		 * or the last call to {@link #find()} returned <code>false</code>
-//		 * Calls of {@link #find()} and {@link #undo()} should be alternated.
-//		 */
-//		void undo();
-//		
-		/**
-		 * Resets the record to the initial state, at which the search can be restarted.
-		 */
-		void reset();
-	}
-	
 	/**
 	 * Creates an activation record for this search item, for a given
 	 * search.
@@ -85,11 +55,31 @@ public interface SearchItem extends Comparable<SearchItem> {
      * find a matching when actvated.
      */ 
     Collection<String> bindsVars();
-//    
-//    /** 
-//     * Enables the search item so that it can optimise towards certain sets of
-//     * pre-matched nodes and variables.
-//     * This is called before the first invocation of {@link #getRecord(groove.match.SearchPlanStrategy.Search)}.
-//     */
-//    void schedule(Collection<Node> preMatchedNodes, Collection<String> preMatchedVars);
+
+    /**
+     * Interface for an activation record of a search item.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    interface Record {
+        /** 
+         * Indicates if this search record is known to be successful no more than once
+         * in a row. That is, the record is singular if {@link #find()} will return
+         * <code>true</code> at most once before the next {@link #reset()}.
+         */
+        boolean isSingular();
+        
+        /**
+         * Tries to find (and select, if appropriate) the next fit for this search item.
+         * Where necessary, the previously selected fit is first undone.
+         * The return value indicates if a new fit has been found (and selected).
+         * @return <code>true</code> if a fit has been found
+         */
+        boolean find();
+        
+        /**
+         * Resets the record to the initial state, at which the search can be restarted.
+         */
+        void reset();
+    }
 }

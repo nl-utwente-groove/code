@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.21 2007-08-29 11:07:53 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.22 2007-08-29 14:00:35 rensink Exp $
  */
 package groove.trans;
 
@@ -39,7 +39,7 @@ import groove.view.FormatException;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -508,7 +508,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * @see #newMatcher(VarMorphism)
      */
     protected Matching newMatcher(Graph graph) {
-    	return new DefaultMatching(this, graph, getProperties().isInjective());
+    	return new DefaultMatching(this, graph);
     }
     
     /**

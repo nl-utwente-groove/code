@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Graph.java,v 1.8 2007-08-26 07:23:36 rensink Exp $
+ * $Id: Graph.java,v 1.9 2007-08-29 14:00:37 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.8 $ $Date: 2007-08-26 07:23:36 $
+ * @version $Revision: 1.9 $ $Date: 2007-08-29 14:00:37 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
     /**
@@ -40,6 +40,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @require <tt>to != null</tt>
      * @ensure <tt>result = { (m: this --> to) \in Morphism | m.isTotal() }</tt>
      */
+    @Deprecated
     Collection<? extends Morphism> getMatchesTo(Graph to);
 
     /**
@@ -50,6 +51,7 @@ public interface Graph extends GraphShape, DeltaTarget {
      * @require <tt>to != null</tt>
      * @ensure <tt>result = { (m: this --> to) \in Morphism | m.isTotal() }</tt>
      */
+    @Deprecated
     Iterator<? extends Morphism> getMatchesToIter(Graph to);
 
     /**
