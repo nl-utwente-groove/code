@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIsoChecker.java,v 1.11 2007-08-29 11:07:54 rensink Exp $
+ * $Id: DefaultIsoChecker.java,v 1.12 2007-08-29 14:00:36 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -33,7 +33,7 @@ import groove.util.Reporter;
  * Implementation of an isomorphism checking algorithm that first tries to
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy}. 
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -168,11 +168,6 @@ public class DefaultIsoChecker implements IsoChecker {
      */
     static private int distinctSimCount;
     
-    /**
-     * The factory used to get morphisms from
-     */
-    static private GraphFactory graphFactory = GraphFactory.getInstance();
-
 	public boolean areIsomorphic(Graph dom, Graph cod) {
 		boolean result;
         reporter.start(ISO_CHECK);

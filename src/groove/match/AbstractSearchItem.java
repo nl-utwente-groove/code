@@ -28,7 +28,7 @@ import groove.rel.VarNodeEdgeMap;
 /**
  * Abstract implementation of a searh item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
     abstract public AbstractRecord getRecord(Search search);
@@ -97,7 +97,7 @@ abstract public class AbstractSearchItem implements SearchItem {
      * At any point, the record has a state which is {@link #EMPTY} (if the search
      * has not yielded a solution), #READY or {@link #FOUND} (if the search has yielded a solution).
      * @author Arend Rensink
-     * @version $Revision: 1.3 $
+     * @version $Revision: 1.4 $
      */
     abstract public class AbstractRecord implements Record {
         /** Constructs a record for a given search. */
@@ -106,20 +106,21 @@ abstract public class AbstractSearchItem implements SearchItem {
         }
         
         /**
-         * The state is required to be {@link #EMPTY} or {@link #FOUND} upon invocation.
-         * The method first invokes {@link #init()} or {@link #undo()}, depending on the state,
+         * The method first invokes {@link #init()} or {@link #undo()}, if the state upon
+         * invocation is {@link #EMPTY} or {@link #FOUND}, respectively,
          * followed by {@link #next()} to actually search for a solution.
          * If no solution is found, the state of the record is returned to {@link #EMPTY},
          * meaning that the next invocation of {@link #find()} will restart the search.
          * If a solution is found, the state will be set to {@link #FOUND}.
          */
         final public boolean find() {
+            SearchPlanStrategy.reporter.start(SearchPlanStrategy.RECORD_FIND);
             boolean result;
             assert isEmpty() || isFound();
             if (isEmpty()) {
                 init();
                 setState(FIRST);
-            } else {
+            } else if (isFound()) {
                 undo();
                 setState(LATER);
             }
@@ -130,6 +131,7 @@ abstract public class AbstractSearchItem implements SearchItem {
                 exit();
                 setState(EMPTY);
             }
+            SearchPlanStrategy.reporter.stop();
             return result;
         }
         

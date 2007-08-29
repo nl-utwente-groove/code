@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.3 2007-08-29 11:07:44 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
  */
 package groove.match;
 
@@ -48,7 +48,6 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 		this.operation = edge.getOperation();
 		this.arguments = edge.source().getArguments();
 		this.target = edge.target();
-//		this.targetPreMatched = preMatched == null || preMatched[Edge.TARGET_INDEX];
         this.boundNodes = Collections.<Node>singleton(target);
         this.neededNodes = new HashSet<Node>(arguments);
 	}
@@ -125,8 +124,6 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 	private final List<ValueNode> arguments;
 	/** The target node of the product edge. */
 	private final ValueNode target;
-//	/** Flag indicating whether the target of the edge is prematched. */
-//	private final boolean targetPreMatched;
     /** Singleton set consisting of <code>target</code>. */
     private final Collection<Node> boundNodes;
     /** Set of the nodes in <code>argumants</code>. */
@@ -142,15 +139,22 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
         /**
          * Creates a record based on a given underlying matcher.
          */
-        protected OperatorEdgeRecord(Search search) {
+        OperatorEdgeRecord(Search search) {
             super(search);
         }
-//        
-//        @Override
-//        void exit() {
-//            nextCalled = false;
-//        }
-//
+        
+        @Override
+        public String toString() {
+            return String.format("%s = %s", OperatorEdgeSearchItem.this.toString(), getResult().getNode(target));
+        }
+
+        /**
+         * This type of record is always singular.
+         */
+        public boolean isSingular() {
+            return true;
+        }
+
         @Override
         void init() {
             targetPreMatch = (ValueNode) getResult().getNode(target);
@@ -164,13 +168,6 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
                 if (outcome == null || target.hasValue() && !target.getValue().equals(outcome)) {
                     result = false;
                 } else if (targetPreMatch != null) {
-//                    ValueNode currentTargetImage;
-//                    if (target.hasValue()) {
-//                        currentTargetImage = target;
-//                    } else {
-//                        currentTargetImage = (ValueNode) getResult().getNode(target);
-//                    }
-//                    assert currentTargetImage != null: String.format("Target image of %s null in %s", edge, getResult());
                     result = targetPreMatch.getValue().equals(outcome);
                 } else {
                     ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(operation.getResultType(), outcome);
@@ -183,57 +180,6 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
             return result;
         }
 
-//        
-//        /**
-//         * The first call delegates to {@link #select()};
-//         * the next call returns <code>false</code>.
-//         */
-//        public boolean find() {
-//            if (atEnd) {
-//                // if we already returned false, as per contract
-//                // we restart
-//                reset();
-//            }
-//            if (called) {
-//                // if the test was called before, it should return false now
-//                undo();
-//                atEnd = true;
-//                return false;
-//            } else {
-//                called = true;
-//                boolean result = select();
-//                atEnd = !result;
-//                return result;
-//            }
-//        }
-//
-//        /**
-//         * Computes the result of the product edge's operation
-//         */
-//        boolean select() {
-//            Object outcome = calculateResult();
-//            if (outcome == null) {
-//                return false;
-//            } else if (targetPreMatched) {
-//                ValueNode currentTargetImage;
-//                if (target.hasValue()) {
-//                    currentTargetImage = target;
-//                } else {
-//                    currentTargetImage = (ValueNode) getResult().getNode(target);
-//                }
-//                assert currentTargetImage != null: String.format("Target image of %s null in %s", edge, getResult());
-//                return currentTargetImage.getValue().equals(outcome);
-//            } else {
-//                ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(operation.getResultType(), outcome);
-//                if (isAvailable(targetImage)) {
-//                    getResult().putNode(target, targetImage);
-//                    return true;
-//                } else {
-//                    return false;
-//                }
-//            }
-//        }
-
         /**
          * Removes the edge added during the last {@link #find()}, if any.
          */
@@ -243,13 +189,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
                 getResult().removeNode(target);
             }
         }
-//        
-//        /** Resets the record to its original state (after construction), so that the search can start anew. */
-//        public void reset() {
-//            called = false;
-//            atEnd = false;
-//        }
-
+        
         /**
          * Calculates the result of the operation in {@link #getEdge()},
          * based on the currently installed images of the arguments.
@@ -277,21 +217,6 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
             }
         }
         
-        @Override
-        public String toString() {
-            return String.format("%s = %s", OperatorEdgeSearchItem.this.toString(), getResult().getNode(target));
-        }
-        
         private ValueNode targetPreMatch;
-//        
-//        /** Flag indicating that {@link #next()} has been invoked since {@link #init()}. */
-//        private boolean nextCalled;
-//
-//        /** The underlying matcher of the search record. */
-//        private final SearchPlanStrategy.Search search;
-//        /** Flag to indicate that {@link #find()} has been called. */
-//        private boolean called;
-//        /** Flag to indicate that {@link #find()} has returned <code>false</code>. */
-//        private boolean atEnd;
     }
 }

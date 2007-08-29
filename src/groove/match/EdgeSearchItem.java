@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.3 2007-08-29 11:07:44 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
  */
 package groove.match;
 
@@ -206,6 +206,16 @@ public class EdgeSearchItem extends AbstractSearchItem {
             assert ! getResult().containsKey(edge) : String.format("Edge %s already in %s", edge, getResult());
         }
 
+        /** 
+         * The record is singular if the image is either pre-matched
+         * or pre-determined.
+         * @see #isPreMatched()
+         * @see #isPreDetermined()
+         */
+        public boolean isSingular() {
+            return isPreMatched() || isPreDetermined();
+        }
+
         @Override
         void exit() {
             multipleIter = null;
@@ -224,75 +234,94 @@ public class EdgeSearchItem extends AbstractSearchItem {
             edgePreMatch = getResult().getEdge(getEdge());
         }
         
+        /**
+         * If {@link #isPreMatched()}, delegates to {@link #nextPreMatched()}.
+         * Otherwise, if {@link #isPreDetermined()}, delegates to {@link #nextPreDetermined()}.
+         * Otherwise, delegates to {@link #nextMultiple()}.
+         */
         @Override
-        boolean next() {
-            boolean result;
-            if (isSingular()) {
-                if (isFirst()) {
-                    Edge image = getSingular();
-                    result = image != null && select(image);
-                } else {
-                    result = false;
-                }
+        final boolean next() {
+            Edge result;
+            if (isPreMatched()) {
+                result = nextPreMatched();
+            } else if (isPreDetermined()) {
+                result = nextPreDetermined();
             } else {
-                // there is more than one possible image
-                result = false;
-                // iterate over the possible images until one is found
-                Iterator<? extends Edge> imageIter = getMultiple();
-                while (!result && imageIter.hasNext()) {
-                    result = select(imageIter.next());
+                result = nextMultiple();
+            }
+            if (result == null) {
+                return false;
+            } else {
+                selected = result;
+                return true;
+            }
+        }
+
+        /**
+         * Callback method from {@link #next()} in case there is a pre-matched edge
+         * in the result map (as tested by {@link #isPreMatched()}).
+         * In that case, the edge ends need to be checked for consistency (using {@link #selectEnds(Edge)}).
+         * @return the pre-matched edge image, if the edge ends are consistent with thte current result map
+         */
+        Edge nextPreMatched() {
+            Edge result = null;
+            if (isFirst() && selectEnds(edgePreMatch)) {
+                result = edgePreMatch;
+            } 
+            return result;
+        }
+
+        /**
+         * Callback method from {@link #next()} in case the edge image can be completely
+         * constructed from pre-matched parts (as tested by {@link #isPreDetermined()}).
+         * This needs to be tested for presence in the target graph.
+         * @return the pre-determined edge image, in case it occurs in the target
+         */
+        Edge nextPreDetermined() {
+            Edge result = null;
+            if (isFirst()) {
+                Edge image = computePreDetermined();
+                if (getTarget().containsElement(image)) {
+                    selectEdge(image);
+                    result = image;
+                }
+            }
+            return result;
+        }
+        
+        /**
+         * Callback method from {@link #next()} in case the potential edge images need
+         * to be looked up in the target graph.
+         * Potential images are computed using {@link #getMultiple()} and checked using {@link #select(Edge)}.
+         * @return the selected edge image, if any
+         */
+        Edge nextMultiple() {
+            Edge result = null;
+            // iterate over the possible images until one is found
+            Iterator<? extends Edge> imageIter = getMultiple();
+            while (result == null && imageIter.hasNext()) {
+                Edge image = imageIter.next();
+                if (select(image)) {
+                    result = image;
                 }
             }
             return result;
         }
 
         /**
-         * Indicates if the record is singular, i.e., there is exactly one potential image.
-         * This is the case if either all edge ends are pre-matched or the edge itself is pre-matched.
-         * @return if <code>true</code>, there is at most one potential image
-         * (which can then be obtained by invoking {@link #getSingular()})
-         * @see #isPreMatched()
-         * @see #isPreDetermined()
-         */
-        final boolean isSingular() {
-            return isPreMatched() || isPreDetermined();
-        }
-
-        /**
-         * Callback method from {@link #isSingular()} to signal if the edge
-         * is pre-matched.
+         * Callback method to signal if the edge
+         * is pre-matched in the result map.
          */
         final boolean isPreMatched() {
             return edgePreMatch != null;
         }
         
         /** 
-         * Callback method from {@link #isSingular()} to signal if the edge image
+         * Callback method to signal if the edge image
          * is completely determined by the pre-matched ends.
          */
         boolean isPreDetermined() {
             return endsPreMatched;
-        }
-        
-        /** 
-         * Returns the singular image of the searched edge,
-         * if indeed the image is singular according to {@link #isSingular()}.
-         * @return the unique image according to this search record,
-         * or <code>null</code> if the image is not singular.
-         */
-        Edge getSingular() {
-            if (edgePreMatch != null) {
-                return edgePreMatch;
-            } else if (isPreDetermined()) {
-                Edge result = computePreDetermined();
-                if (getTarget().containsElement(result)) {
-                    return result;
-                } else {
-                    return null;
-                }
-            } else {
-                return null;
-            }
         }
         
         /** 
@@ -319,38 +348,8 @@ public class EdgeSearchItem extends AbstractSearchItem {
             return getEdge().label();
         }
         
-        //
-        //        /** 
-        //         * Actually sets the image in the matcher's map.
-        //         * Callback method for subclasses that give matches that are not edes.
-        //         */
-        //        protected void setSelectedImage(Edge image) {
-        //            getResult().putEdge(edge, image);
-        //        }
-        //        
-        //        /**
-        //         * Indicates if there is at most one potential image, provided we can
-        //         * detect this ceaply.
-        //         * @return if <code>true</code>, there is at most one potential image
-        //         * (which can then be obtained by invoking {@link #getSingular()});
-        //         * if <code>false</code>, we have no information
-        //         */
-        //        protected boolean isSingular() {
-        //            return singular != null;
-        //        }
-        //        
-        //        /** 
-        //         * Returns the singular image of the searched edge,
-        //         * if indeed the image is singular according to {@link #isSingular()}.
-        //         * Returns <code>null</code> if there are either fewer or more than
-        //         * one image.
-        //         */
-        //        protected Edge getSingular() {
-        //            return singular;
-        //        }
-                
         /** Returns an iterator over the potential images. */
-        Iterator< ? extends Edge> getMultiple() {
+        final Iterator< ? extends Edge> getMultiple() {
             if (multipleIter == null) {
                 multipleIter = computeMultiple().iterator();
             }
@@ -381,59 +380,52 @@ public class EdgeSearchItem extends AbstractSearchItem {
         /** Callback method from {@link #select(Edge)} to select the edge ends. */
         boolean selectEnds(Edge image) {
             boolean result = true;
-            // if the ends are all pre-matched, there is nothing to do
-            if (!isPreDetermined()) {
-                NodeEdgeMap elementMap = getResult();
-                int endIndex = 0;
-                for (endIndex = 0; result && endIndex < arity; endIndex++) {
-                    Node keyEnd = edge.end(endIndex);
-                    Node imageEnd = image.end(endIndex);
-                    if (duplicates[endIndex] < endIndex) {
-                        // test if the intended image has the same duplication
-                        result = imageEnd == image.end(duplicates[endIndex]);
-                    } else if (endPreMatches[endIndex] != null) {
-                        // test if the intended image has the correct end
-                        result = imageEnd == endPreMatches[endIndex];
-                    } else if (getSearch().isAvailable(imageEnd)) {
-                        // put the end image in the result map
-                        Node endImage = elementMap.putNode(keyEnd, imageEnd);
-                        assert endImage == null : String
-                                .format("Node %s already has image %s when selecting %s (map: %s)",
-                                    keyEnd,
-                                    endImage,
-                                    imageEnd,
-                                    elementMap);
-                    } else {
-                        result = false;
-                    }
+            NodeEdgeMap elementMap = getResult();
+            int endIndex = 0;
+            for (endIndex = 0; result && endIndex < arity; endIndex++) {
+                Node keyEnd = edge.end(endIndex);
+                Node imageEnd = image.end(endIndex);
+                if (duplicates[endIndex] < endIndex) {
+                    // test if the intended image has the same duplication
+                    result = imageEnd == image.end(duplicates[endIndex]);
+                } else if (endPreMatches[endIndex] != null) {
+                    // test if the intended image has the correct end
+                    result = imageEnd == endPreMatches[endIndex];
+                } else if (getSearch().isAvailable(imageEnd)) {
+                    // put the end image in the result map
+                    Node endImage = elementMap.putNode(keyEnd, imageEnd);
+                    assert endImage == null : String
+                            .format("Node %s already has image %s when selecting %s (map: %s)",
+                                keyEnd,
+                                endImage,
+                                imageEnd,
+                                elementMap);
+                } else {
+                    result = false;
                 }
-                // roll back if one of the selections was unsuccessful
-                if (!result) {
-                    // deselect the selected node ends
-                    for (endIndex--; endIndex >= 0; endIndex--) {
-                        if (duplicates[endIndex] == endIndex && endPreMatches[endIndex] == null) {
-                            elementMap.removeNode(edge.end(endIndex));
-                        }
-                    }
+            }
+            // roll back if one of the selections was unsuccessful
+            if (!result) {
+                // deselect the selected node ends
+                for (endIndex--; endIndex >= 0; endIndex--) {
+                    undoEnd(endIndex);
                 }
             }
             return result;
         }
 
-        /** 
-         * Callback method from {@link #select(Edge)} to put the actual edge image into the result map,
-         * if the image was not pre-selected. 
+        /**
+         * Callback method from {@link #select(Edge)} to put the actual edge image into the result
+         * map, if the image was not pre-selected.
          */
         void selectEdge(Edge image) {
-            if (edgePreMatch == null) {
-                Edge current = getResult().putEdge(edge, image);
-                assert current == null : String
-                        .format("Edge %s already has image %s when selecting %s (map: %s)",
-                            getEdge(),
-                            current,
-                            image,
-                            getResult());
-            }
+            Edge current = getResult().putEdge(edge, image);
+            assert current == null : String
+                    .format("Edge %s already has image %s when selecting %s (map: %s)",
+                        getEdge(),
+                        current,
+                        image,
+                        getResult());
         }
         
         /**
@@ -441,8 +433,12 @@ public class EdgeSearchItem extends AbstractSearchItem {
          */
         @Override
         void undo() {
-            undoEnds();
-            undoEdge();
+            if (!isPreDetermined()) {
+                undoEnds();
+            }
+            if (!isPreMatched()) {
+                undoEdge();
+            }
             selected = null;
         }
 
@@ -451,75 +447,42 @@ public class EdgeSearchItem extends AbstractSearchItem {
          * Reverses the effect of {@link #selectEnds(Edge)} if that method returned <code>true</code>.
          */
         void undoEnds() {
-            if (! isPreDetermined()) {
-                for (int i = 0; i < arity; i++) {
-                    if (endPreMatches[i] == null && duplicates[i] == i) {
-                        Node endImage = getResult().removeNode(edge.end(i));
-                        assert endImage == selected.end(i) : String
-                                .format("Node %s had image %s instead of expected %s (map: %s)",
-                                    getEdge().end(i),
-                                    endImage,
-                                    selected.end(i),
-                                    getResult());
-                    }
-                }
+            for (int i = 0; i < arity; i++) {
+                undoEnd(i);
             }
         }
 
-        /**
-         * Callback method from {@link #undo()} to undo the selection of the edge itself.
-         * Reverses the effect of {@link #selectEdge(Edge)} if that method returned <code>true</code>. 
-         */
-        void undoEdge() {
-            if (edgePreMatch == null) {
-                Edge image = getResult().removeEdge(edge);
-                assert image.equals(selected) : String
-                        .format("Edge %s had image %s instead of expected %s (map: %s)",
-                            getEdge(),
-                            image,
-                            selected,
+        void undoEnd(int i) {
+            if (endPreMatches[i] == null && duplicates[i] == i) {
+                Node endImage = getResult().removeNode(edge.end(i));
+                assert selected == null || endImage == selected.end(i) : String
+                        .format("Node %s had image %s instead of expected %s (map: %s)",
+                            getEdge().end(i),
+                            endImage,
+                            selected.end(i),
                             getResult());
             }
+        }
+        
+        /**
+         * Callback method from {@link #undo()} to undo the selection of the edge itself. Reverses
+         * the effect of {@link #selectEdge(Edge)} if that method returned <code>true</code>.
+         */
+        void undoEdge() {
+            Edge image = getResult().removeEdge(edge);
+            assert image.equals(selected) : String
+                    .format("Edge %s had image %s instead of expected %s (map: %s)",
+                        getEdge(),
+                        image,
+                        selected,
+                        getResult());
         }
 
         @Override
         public String toString() {
             return EdgeSearchItem.this.toString()+" = "+selected;
         }
-//
-//        /** 
-//         * Actually sets the image in the matcher's map.
-//         * Callback method for subclasses that give matches that are not edes.
-//         */
-//        protected void setSelectedImage(Edge image) {
-//            getResult().putEdge(edge, image);
-//        }
-//        
-//        /**
-//         * Indicates if there is at most one potential image, provided we can
-//         * detect this ceaply.
-//         * @return if <code>true</code>, there is at most one potential image
-//         * (which can then be obtained by invoking {@link #getSingular()});
-//         * if <code>false</code>, we have no information
-//         */
-//        protected boolean isSingular() {
-//            return singular != null;
-//        }
-//        
-//        /** 
-//         * Returns the singular image of the searched edge,
-//         * if indeed the image is singular according to {@link #isSingular()}.
-//         * Returns <code>null</code> if there are either fewer or more than
-//         * one image.
-//         */
-//        protected Edge getSingular() {
-//            return singular;
-//        }
-        
-        //        /**
-//         * The image for {@link #edge} set during the last call to {@link #next()}, if any.
-//         */
-//        private Edge edgeImage;
+
         /**
          * The pre-matched images for the edge ends, if any.
          * A value of <code>null</code> means that no image is currently selected
@@ -539,150 +502,5 @@ public class EdgeSearchItem extends AbstractSearchItem {
         private Iterator< ? extends Edge> multipleIter;
         /** Edge image with which {@link #select(Edge)} was successfully called. */ 
         Edge selected;
-    }
-
-    /**
-     * Record of an edge seach item, storing an iterator over the candidate
-     * images.
-     * 
-     * @author Arend Rensink
-     * @version $Revision $
-     */
-    protected class SingularEdgeRecord implements Record {
-        /**
-         * Creates a record based on a given underlying matcher.
-         */
-        protected SingularEdgeRecord(SearchPlanStrategy.Search matcher) {
-            this.search = matcher;
-            assert !matcher.getResult().containsKey(edge);
-        }
-
-        public boolean find() {
-            boolean result;
-            // first test if we know the method already returned false
-            if (findFailed) {
-                reset();
-            } else if (selected) {
-                undo();
-            }
-            // if the method was already called,
-            // it should now certainly return false
-            if (findCalled) {
-                result = false;
-            } else {
-                // get the only possible image
-                Edge image = getSingular();
-                // maybe there is none
-                result = image != null && select(image);
-            }
-            findFailed = !result;
-            findCalled = true;
-            return result;
-        }
-
-        /**
-         * Removes the edge added during the last {@link #find()}, if any.
-         */
-        public void undo() {
-            if (selected) {
-                NodeEdgeMap elementMap = search.getResult();
-                Edge oldImage = elementMap.removeEdge(edge);
-                assert oldImage.equals(potentialImage);
-                selected = false;
-            } else {
-                throw new IllegalStateException();
-            }
-        }
-
-        /** Resets the record to pristine state, so that the search can start anew. */
-        public void reset() {
-            if (selected) {
-                undo();
-            }
-            imageInitialised = false;
-            potentialImage = null;
-            findCalled = false;
-            findFailed = false;
-        }
-
-        /**
-         * Selects an image for {@link EdgeSearchItem#edge}, after testing it
-         * for correctness.
-         * 
-         * @param image
-         *            the image to be selected
-         * @return <code>true</code> if <code>image</code> was indeed
-         *         selected
-         */
-        public boolean select(Edge image) {
-            assert image != null : "Selected image should not be null";
-            assert !selected : String.format("Edge %s already has image %s in map %s",
-                    edge,
-                    potentialImage,
-                    search.getResult());
-            NodeEdgeMap elementMap = search.getResult();
-            elementMap.putEdge(edge, image);
-            selected = true;
-            return true;
-        }
-
-        /** 
-         * Returns the singular image of the searched edge.
-         * Returns <code>null</code> if the edge has no image at all.
-         */
-        protected Edge getSingular() {
-            if (!imageInitialised) {
-                potentialImage = computeSingular();
-                imageInitialised = true;
-            }
-            return potentialImage;
-        }
-
-        /**
-         * Computes the potential singular image, or <code>null</code> if the
-         * potential image is not in the codomain.
-         */
-        protected Edge computeSingular() {
-            Edge result = edge.imageFor(search.getResult());
-            assert result != null;
-            if (! search.getTarget().containsElement(result)) {
-                result = null;
-            }
-            return result;
-        }
-
-        /**
-         * The matcher for which we have instantiated this record.
-         */
-        protected final Search search;
-
-        /**
-         * Flag indicating that {@link #find()} already returned
-         * <code>false</code>.
-         */
-        private boolean findFailed;
-
-        /**
-         * Flag indicating that {@link #find()} was already called at least once
-         * (since the last {@link #reset()} ).
-         */
-        private boolean findCalled;
-
-        /**
-         * Flag indicating that {@link #computeSingular()} has been called (so
-         * {@link #potentialImage} has a valid value).
-         */
-        private boolean imageInitialised;
-
-        /**
-         * The single image of {@link EdgeSearchItem#edge}. 
-         * May be <code>null</code> if there is no image at all.
-         */
-        private Edge potentialImage;
-        /**
-         * The image for {@link #edge} set during the last call to
-         * {@link #find()}.
-         */
-        protected boolean selected;
     }
 }

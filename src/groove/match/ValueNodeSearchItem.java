@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.3 2007-08-29 11:07:44 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
  */
 package groove.match;
 
@@ -101,8 +101,15 @@ public class ValueNodeSearchItem extends AbstractSearchItem {
         /**
          * Creates a record based on a given underlying matcher.
          */
-        protected ValueNodeRecord(Search matcher) {
+        ValueNodeRecord(Search matcher) {
             super(matcher);
+        }
+
+        /**
+         * This type of record is always singular.
+         */
+        public boolean isSingular() {
+            return true;
         }
 
         /**
@@ -110,7 +117,7 @@ public class ValueNodeSearchItem extends AbstractSearchItem {
          * the next call returns <code>false</code>.
          */
         @Override
-        public boolean next() {
+        boolean next() {
             boolean result = isFirst();
             if (result) {
                 getResult().putNode(node, node);
@@ -119,7 +126,7 @@ public class ValueNodeSearchItem extends AbstractSearchItem {
         }
         
         @Override
-        public void undo() {
+        void undo() {
             getResult().removeNode(node);
         }
 

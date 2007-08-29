@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.3 2007-08-29 11:07:44 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
  */
 package groove.match;
 
@@ -83,17 +83,28 @@ public class NodeSearchItem extends AbstractSearchItem {
      * @author Arend Rensink
      * @version $Revision $
      */
-    protected class NodeRecord extends AbstractRecord {
+    class NodeRecord extends AbstractRecord {
         /** Constructs a record for a given matcher. */
-        protected NodeRecord(Search search) {
+        NodeRecord(Search search) {
             super(search);
             this.preMatched = search.getResult().containsKey(node);
+        }
+
+        /**
+         * The record is singular if there is a pre-matched image.
+         */
+        public boolean isSingular() {
+            return preMatched;
+        }
+
+        @Override
+        public String toString() {
+            return NodeSearchItem.this.toString() + " = " + selected;
         }
 
         @Override
         void exit() {
             imageIter = null;
-            found = false;
         }
 
         @Override
@@ -107,10 +118,9 @@ public class NodeSearchItem extends AbstractSearchItem {
         boolean next() {
             boolean result;
             if (preMatched) {
-                result = found;
+                result = isFirst();
             } else {
                 result = false;
-//                Iterator<? extends Node> imageIter = getImageIter();
                 while (!result && imageIter.hasNext()) {
                     result = select(imageIter.next());
                 }
@@ -126,32 +136,7 @@ public class NodeSearchItem extends AbstractSearchItem {
                 assert selected.equals(oldImage) : String.format("Image %s=%s should coincide with %s", node, selected, oldImage);
             }
             selected = null;
-            found = true;
         }
-//
-//        /**
-//         * Tries out next elements from the remaining images until one fits.
-//         */
-//        public boolean find() {
-//            boolean result;
-//            if (findFailed) {
-//                reset();
-//            } else if (isSelected()) {
-//                resetSelected();
-//            }
-//            if (preMatched) {
-//                result = findCalled ? false : select(getSingular());
-//            } else {
-//                result = false;
-//                Iterator<? extends Node> imageIter = getImageIter();
-//                while (!result && imageIter.hasNext()) {
-//                    result = select(imageIter.next());
-//                }
-//            }
-//            findCalled = !findFailed; // if findReturnedFalse before the actual call, then reset() done, so findCalled should false after. If ! findReturnedFalse before the actual call, so no reset in this call, so findCalled should be true after.
-//            findFailed = !result;
-//            return result;
-//        }
         
         /**
          * Actually selects a node image and puts it into the element
@@ -170,114 +155,11 @@ public class NodeSearchItem extends AbstractSearchItem {
             }
             return result;
         }
-//
-//        /** Returns the record to pristine state, so that the search can start anew. */
-//        public void reset() {
-//            if (isSelected()) {
-//                resetSelected();
-//            }
-//            findCalled = false;
-//            findFailed = false;
-//            imageIter = null;
-//        }
         
-        @Override
-        public String toString() {
-            return NodeSearchItem.this.toString()+" = "+selected;
-        }
-//
-//        /**
-//         * Indicates if there is currently an image selected.
-//         * If so, the record should be undone before a new image is searched.
-//         */
-//        protected boolean isSelected() {
-//            return selected != null;
-//        }
-//
-//        /**
-//         * Returns the currently selected image, if any.
-//         */
-//        protected Node getSelected() {
-//            return selected;
-//        }
-//
-//        /**
-//         * Sets the selected image and inserts it into the element map of the matcher.
-//         */
-//        protected void setSelected(Node image) {
-//            assert !isSelected() : String.format("Image %s already selected for node %s", image, node);
-//            assert preMatched == (getSingular() != null);
-//            if (! preMatched) {
-//                getResult().putNode(node, image);
-//            }
-//            selected = image;
-//        }
-//
-//        /**
-//         * Resets the selected image to <code>null</code> and removes it from
-//         * the underlying map.
-//         */
-//        protected void resetSelected() {
-//            assert isSelected();
-//            if (! preMatched) {
-//                Node oldImage = getResult().removeNode(node);
-//                assert oldImage.equals(selected) : String.format("Image %s=%s should coincide with %s", node, selected, oldImage);
-//            }
-//            selected = null;
-//        }
-//
-//        /** 
-//         * Returns the singular image of the searched edge,
-//         * if indeed the image is singular.
-//         * Returns <code>null</code> if there are either fewer or more than
-//         * one image.
-//         */
-//        protected Node getSingular() {
-//            return getResult().getNode(node);
-//        }
-//        
-//        /**
-//         * Returns an iterator over the possible images, creating the
-//         * iterator if that has not yet been done.
-//         */
-//        protected Iterator<? extends Node> getImageIter() {
-//            if (imageIter == null) {
-//                imageIter = computeImageSet().iterator();
-//            }
-//            return imageIter;
-//        }
-//        
-//        /**
-//         * Computes the set of possible images for the node.
-//         * The set is either the image already in the element map, or
-//         * the set of all nodes of the codomain.
-//         */
-//        protected Iterator<? extends Node> computeImageSet() {
-//            return getTarget().nodeSet().iterator();
-//        }
-//        
-//        /**
-//         * The matcher for which we have instantiated this record.
-//         */
-//        protected final SearchPlanStrategy.Search search;
-//        /**
-//         * Flag indicating that {@link #find()} already returned <code>false</code>.
-//         */
-//        private boolean findFailed;
-//        /**
-//         * Flag indicating that {@link #find()} was already
-//         * called at least once (since the last {@link #reset()}).
-//         */
-//        private boolean findCalled;
         /**
          * The images for the item's edge.
          */
         private Iterator<? extends Node> imageIter;
-        /** 
-         * Flag indicating that at least one image has already been 
-         * delived by {@link #next()}.
-         */
-        private boolean found;
         
         /**
          * The image for {@link #node} set during the last call to {@link #find()}.

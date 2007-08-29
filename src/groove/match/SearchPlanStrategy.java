@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.1 2007-08-24 17:34:58 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.2 2007-08-29 14:00:27 rensink Exp $
  */
 package groove.match;
 
@@ -38,7 +38,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class SearchPlanStrategy implements MatchStrategy {
 	/**
@@ -156,15 +156,17 @@ public class SearchPlanStrategy implements MatchStrategy {
 	private final boolean injective;
     
     /** Reporter instance to profile matcher methods. */
-    static protected final Reporter reporter = Reporter.register(SearchPlanStrategy.class);
+    static final Reporter reporter = Reporter.register(SearchPlanStrategy.class);
     /** Handle for profiling {@link #getMatch(Graph, NodeEdgeMap)} */
-    static protected final int GET_MATCH = reporter.newMethod("getMatch()");
+    static final int GET_MATCH = reporter.newMethod("getMatch()");
     /** Handle for profiling {@link #getMatchSet(Graph, NodeEdgeMap)} */
-    static protected final int GET_MATCH_SET = reporter.newMethod("getMatchSet()");
+    static final int GET_MATCH_SET = reporter.newMethod("getMatchSet()");
     /** Handle for profiling {@link #getMatchIter(Graph, NodeEdgeMap)} */
-    static protected final int GET_MATCH_ITER = reporter.newMethod("getMatchIter()");
+    static final int GET_MATCH_ITER = reporter.newMethod("getMatchIter()");
     /** Handle for profiling {@link Search#find()} */
-    static protected final int FIND = reporter.newMethod("find()");
+    static final int SEARCH_FIND = reporter.newMethod("Search.find()");
+    /** Handle for profiling {@link SearchItem.Record#find()} */
+    static final int RECORD_FIND = reporter.newMethod("Record.find()");
 
     /** Class implementing an instantiation of the search plan algorithm for a given graph. */
     static public class Search {
@@ -176,6 +178,7 @@ public class SearchPlanStrategy implements MatchStrategy {
             this.index = 0;
             this.result = createElementMap(preMatch);
             this.itemRecords = new ArrayList<SearchItem.Record>();
+            this.lastSingular = -1;
         }
         
         /**
@@ -183,18 +186,18 @@ public class SearchPlanStrategy implements MatchStrategy {
          * @return <code>true</code> if there is a next result.
          */
         public boolean find() {
-            reporter.start(FIND);
+            reporter.start(SEARCH_FIND);
             if (found) {
                 // we already found a solution
                 // clone the previous result to avoid sharing problems
                 result = createElementMap(result);
                 index--;
             }
-            while (index >= 0 && index < plan.size()) {
+            while (index > lastSingular && index < plan.size()) {
                 index += getItemRecord().find() ? +1 : -1;
             }
             reporter.stop();
-            boolean result = index >= 0;
+            boolean result = index > lastSingular;
             found |= result;
             return result;
         }
@@ -212,6 +215,9 @@ public class SearchPlanStrategy implements MatchStrategy {
                 // make a new one
                 result = plan.get(index).getRecord(this);
                 itemRecords.add(result);
+                if (lastSingular == index-1 && result.isSingular()) {
+                    lastSingular++;
+                }
             }
             return result;
         }
@@ -301,6 +307,8 @@ public class SearchPlanStrategy implements MatchStrategy {
         private boolean found;
         /** The index of the currently active search item. */
         private int index;
+        /** Index of the last search record known to be singular. */
+        private int lastSingular;
         /** The target graph of the search. */
         private final Graph target;
         /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchItem.java,v 1.4 2007-08-29 11:07:44 rensink Exp $
+ * $Id: ConditionSearchItem.java,v 1.5 2007-08-29 14:00:27 rensink Exp $
  */
 package groove.match;
 
@@ -43,6 +43,11 @@ public abstract class ConditionSearchItem extends AbstractSearchItem {
 	public abstract class ConditionRecord extends AbstractRecord {
         ConditionRecord(Search search) {
             super(search);
+        }
+
+        /** Condition records are always singular. */
+        public boolean isSingular() {
+            return true;
         }
 
         @Override

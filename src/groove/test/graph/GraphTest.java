@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.8 2007-04-30 19:53:32 rensink Exp $
+ * $Id: GraphTest.java,v 1.9 2007-08-29 14:00:39 rensink Exp $
  */
 package groove.test.graph;
 
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -161,24 +161,24 @@ public class GraphTest extends TestCase {
     private File testFile(String fileName) {
         return new File(GraphTestDir, gxlFilter.addExtension(fileName));
     }
-
-    final public void testGetMatchesTo() {
-        Collection<? extends Morphism> matches = matchDom[0].getMatchesTo(matchCod);
-        assertEquals(4, matches.size());
-        Iterator<? extends Morphism> matchIter = matches.iterator();
-        while (matchIter.hasNext()) {
-            Object match = matchIter.next();
-            assertTrue(match instanceof Morphism);
-            Morphism matchAsMorphism = (Morphism) match;
-            assertTrue(matchAsMorphism.isTotal());
-        }
-        matches = matchDom[1].getMatchesTo(matchCod);
-        assertEquals(2, matches.size());
-        matches = matchDom[2].getMatchesTo(matchCod);
-        assertEquals(2, matches.size());
-        matches = matchDom[3].getMatchesTo(matchCod);
-        assertEquals(1, matches.size());
-    }
+//
+//    final public void testGetMatchesTo() {
+//        Collection<? extends Morphism> matches = matchDom[0].getMatchesTo(matchCod);
+//        assertEquals(4, matches.size());
+//        Iterator<? extends Morphism> matchIter = matches.iterator();
+//        while (matchIter.hasNext()) {
+//            Object match = matchIter.next();
+//            assertTrue(match instanceof Morphism);
+//            Morphism matchAsMorphism = (Morphism) match;
+//            assertTrue(matchAsMorphism.isTotal());
+//        }
+//        matches = matchDom[1].getMatchesTo(matchCod);
+//        assertEquals(2, matches.size());
+//        matches = matchDom[2].getMatchesTo(matchCod);
+//        assertEquals(2, matches.size());
+//        matches = matchDom[3].getMatchesTo(matchCod);
+//        assertEquals(1, matches.size());
+//    }
 //
 //    final public void testGetInjectiveMatchesTo() {
 //        Collection<? extends Morphism> matches = matchDom[0].getInjectiveMatchesTo(matchCod);

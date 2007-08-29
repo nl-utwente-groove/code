@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.21 2007-08-24 17:35:17 rensink Exp $
+ * $Id: SPOEvent.java,v 1.22 2007-08-29 14:00:35 rensink Exp $
  */
 package groove.trans;
 
@@ -51,7 +51,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.21 $ $Date: 2007-08-24 17:35:17 $
+ * @version $Revision: 1.22 $ $Date: 2007-08-29 14:00:35 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -310,7 +310,7 @@ public class SPOEvent implements RuleEvent {
      */
     public Morphism getMatching(Graph host) {
         if (isCorrectFor(host)) {
-            DefaultMatching result = new DefaultMatching(getRule(), host, getRule().getProperties().isInjective()) {
+            DefaultMatching result = new DefaultMatching(getRule(), host) {
                 @Override
                 protected VarNodeEdgeMap createElementMap() {
                     return getAnchorMap();
@@ -443,7 +443,7 @@ public class SPOEvent implements RuleEvent {
      */
     @Deprecated
     private Matching createMatcher(Graph host) {
-        DefaultMatching result = new DefaultMatching(getRule(), host, rule.getProperties().isInjective()) {
+        DefaultMatching result = new DefaultMatching(getRule(), host) {
             @Override
             protected VarNodeEdgeMap createElementMap() {
                 return getAnchorMap();
@@ -603,10 +603,10 @@ public class SPOEvent implements RuleEvent {
         for (int i = 0; i < eraserEdges.length; i++) {
             Edge edge = eraserEdges[i];
             Edge edgeImage = anchorMap.getEdge(edge);
-            if (edgeImage == null) {
-                edgeImage = edge.imageFor(anchorMap);
-                assert edgeImage != null : "Image of "+edge+" cannot be deduced from "+anchorMap;
-            }
+            assert edgeImage != null : "Image of "+edge+" cannot be deduced from "+anchorMap;
+//            if (edgeImage == null) {
+//                edgeImage = edge.imageFor(anchorMap);
+//            }
             result.add(edgeImage);
         }
         return result;

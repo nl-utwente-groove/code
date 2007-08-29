@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.3 2007-08-28 22:01:23 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
  */
 package groove.match;
 
@@ -77,7 +77,20 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
             varPreMatch = getResult().getVar(var);
         }
 
-        
+        /** 
+         * In addition checkes if the label of the pre-matched edge is consistent with 
+         * the variable. 
+         */
+        @Override
+        Edge nextPreMatched() {
+            Edge result = super.nextPreMatched();
+            if (result != null && !selectVar(result)) {
+                undoEnds();
+                result = null;
+            }
+            return result;
+        }
+
         /**
          * In addition to the super method returning <code>true</code>, the variable
          * should be pre-matched.
@@ -91,6 +104,19 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
         @Override
         Label getPreMatchedLabel() {
             return varPreMatch;
+        }
+
+        @Override
+        Collection<? extends Edge> computeMultiple() {
+            if (varPreMatch != null) {
+                return getTarget().labelEdgeSet(getEdge().endCount(), varPreMatch);
+            } else if (getPreMatchedSource() != null) {
+                return getTarget().edgeSet(getPreMatchedSource());
+            } else if (getPreMatchedTarget() != null) {
+                return getTarget().edgeSet(getPreMatchedTarget());
+            } else {
+                return getTarget().edgeSet();
+            }
         }
 
         /**
@@ -141,19 +167,6 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
             }
         }
 
-        @Override
-        Collection<? extends Edge> computeMultiple() {
-            if (varPreMatch != null) {
-                return getTarget().labelEdgeSet(getEdge().endCount(), varPreMatch);
-            } else if (getPreMatchedSource() != null) {
-                return getTarget().edgeSet(getPreMatchedSource());
-            } else if (getPreMatchedTarget() != null) {
-                return getTarget().edgeSet(getPreMatchedTarget());
-            } else {
-                return getTarget().edgeSet();
-            }
-        }
-        
         /** 
          * The pre-matched variable image, if any.
          */
