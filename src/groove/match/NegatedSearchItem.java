@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NegatedSearchItem.java,v 1.3 2007-08-28 22:01:24 rensink Exp $
+ * $Id: NegatedSearchItem.java,v 1.4 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
@@ -42,7 +42,6 @@ public class NegatedSearchItem extends ConditionSearchItem {
         neededVars.addAll(item.bindsVars());
 	}
 	
-    @Override
 	public NegatedSearchRecord getRecord(Search search) {
 		return new NegatedSearchRecord(search);
 	}
@@ -90,18 +89,12 @@ public class NegatedSearchItem extends ConditionSearchItem {
          * it is undone immediately to avoid lasting effects.
          */
         @Override
-        boolean condition() {
+        boolean set() {
             boolean result = !innerRecord.find();
             innerRecord.reset();
             return result;
         }
 
-        @Override
-        void exit() {
-            innerRecord.reset();
-            super.exit();
-        }
-        
         /**
          * The record of the inner (negated) item.
          */

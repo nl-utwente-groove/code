@@ -12,14 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchItem.java,v 1.5 2007-08-29 14:00:27 rensink Exp $
+ * $Id: ConditionSearchItem.java,v 1.6 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
 import groove.match.SearchPlanStrategy.Search;
 
 /**
- * Abstract class for a search plan item that only checks for a condition
+ * Abstract search plan item that only checks for a condition,
  * without affecting the match if the condition holds.
  * @author Arend Rensink
  * @version $Revision $
@@ -27,7 +27,7 @@ import groove.match.SearchPlanStrategy.Search;
 public abstract class ConditionSearchItem extends AbstractSearchItem {
     /** 
      * Since the order of condition search items does not influence the match,
-     * we give all of them the same rating.
+     * all of them have the same rating.
      * @return <code>0</code> always
      */
     @Override
@@ -40,14 +40,10 @@ public abstract class ConditionSearchItem extends AbstractSearchItem {
 	 * @author Arend Rensink
 	 * @version $Revision $
 	 */
-	public abstract class ConditionRecord extends AbstractRecord {
+	abstract class ConditionRecord extends SingularRecord {
+        /** Constructs an instance for a given search. */
         ConditionRecord(Search search) {
             super(search);
-        }
-
-        /** Condition records are always singular. */
-        public boolean isSingular() {
-            return true;
         }
 
         @Override
@@ -55,21 +51,10 @@ public abstract class ConditionSearchItem extends AbstractSearchItem {
             return String.format("%s: %b", ConditionSearchItem.this.toString(), isFound());
         }
 
-        /** Returns <code>true</code> if {@link #isFirst()} and {@link #condition()} both hold. */
-        @Override
-        boolean next() {
-            return isFirst() && condition();
-        }
-
         /** This implementation does nothing. */
         @Override
-        void undo() {
+        final void undo() {
             // empty
         }
-
-        /**
-		 * Callback method implementing the condition of this search item.
-		 */
-		abstract boolean condition();
 	}
 }

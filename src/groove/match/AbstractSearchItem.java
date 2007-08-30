@@ -17,22 +17,20 @@
 
 package groove.match;
 
-import java.util.Collection;
-import java.util.Collections;
-
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.VarNodeEdgeMap;
 
+import java.util.Collection;
+import java.util.Collections;
+
 /**
  * Abstract implementation of a searh item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
-    abstract public AbstractRecord getRecord(Search search);
-
     /**
      * This implementation returns the empty set.
      */
@@ -91,18 +89,69 @@ abstract public class AbstractSearchItem implements SearchItem {
      * Returns a rating for this search item, for the purpose of its natural ordering. 
      */
     abstract int getRating();
+    
+    abstract class PrimitiveRecord implements Record {
+        /** Constructs a record for a given search. */
+        protected PrimitiveRecord(Search search) {
+            this.search = search;
+            this.result = search.getResult();
+            this.target = search.getTarget();
+        }
+
+        /** Returns the search associated with this record. */
+        final Search getSearch() {
+            return search;
+        }
+        
+        /** 
+         * Returns the (partial) result of the search associated with this record.
+         * Convenience method for <code>getSearch().getResult()</code>.
+         */
+        final VarNodeEdgeMap getResult() {
+            return result;
+        }
+
+        /** 
+         * Returns the (partial) result of the search associated with this record.
+         * Convenience method for <code>getSearch().getResult()</code>.
+         */
+        final Graph getTarget() {
+            return target;
+        }
+
+        /** 
+         * Indicates if a given node is available as image in the current search.
+         * This may fail to be the case due to availability constraints.
+         * Convenience method for <code>getSearch().isAvailable(node)</code>.
+         */
+        final boolean isAvailable(Node node) {
+            return search.isAvailable(node);
+        }
+        
+        /** The underlying search for this record. */
+        private final Search search;
+        /** The underlying search for this record. */
+        private final VarNodeEdgeMap result;
+        /** The underlying search for this record. */
+        private final Graph target;
+    }
 
     /**
      * Abstract implementation of a search item record, offering basic search functionality.
-     * At any point, the record has a state which is {@link #EMPTY} (if the search
-     * has not yielded a solution), #READY or {@link #FOUND} (if the search has yielded a solution).
+     * At any point, the record has one of the following internal states:
+     * <ul>
+     * <li> {@link #EMPTY}, the initial state
+     * <li> {@link #FIRST}, the state reached before the first solution has been found
+     * <li> {@link #LATER}, the state reached after the first solution has been found
+     * <li> {@link #FOUND}, reached at the moment a solution has been found
+     * </ul>
      * @author Arend Rensink
-     * @version $Revision: 1.4 $
+     * @version $Revision: 1.5 $
      */
-    abstract public class AbstractRecord implements Record {
+    abstract public class AbstractRecord extends PrimitiveRecord {
         /** Constructs a record for a given search. */
         protected AbstractRecord(Search search) {
-            this.search = search;
+            super(search);
         }
         
         /**
@@ -155,7 +204,7 @@ abstract public class AbstractSearchItem implements SearchItem {
          * Sets the state to a given value.
          * The value is required to be one of {@link #EMPTY}, {@link #FIRST}, {@link #LATER} or {@link #FOUND}.
          */
-        final void setState(int value) {
+        private void setState(int value) {
             state = value;
             assert isEmpty() || isReady() || isFound();
         }
@@ -254,41 +303,9 @@ abstract public class AbstractSearchItem implements SearchItem {
          * depending on the return value.
          */ 
         abstract boolean next();
-
-        /** Returns the search associated with this record. */
-        final Search getSearch() {
-            return search;
-        }
-        
-        /** 
-         * Returns the (partial) result of the search associated with this record.
-         * Convenience method for <code>getSearch().getResult()</code>.
-         */
-        final VarNodeEdgeMap getResult() {
-            return search.getResult();
-        }
-
-        /** 
-         * Returns the (partial) result of the search associated with this record.
-         * Convenience method for <code>getSearch().getResult()</code>.
-         */
-        final Graph getTarget() {
-            return search.getTarget();
-        }
-
-        /** 
-         * Indicates if a given node is available as image in the current search.
-         * This may fail to be the case due to availability constraints.
-         * Convenience method for <code>getSearch().isAvailable(node)</code>.
-         */
-        final boolean isAvailable(Node node) {
-            return search.isAvailable(node);
-        }
         
         /** The state of the record: one of {@link #EMPTY}, {@link #FIRST}, {@link #LATER} or {@link #FOUND}. */
         private int state;
-        /** The underlying search for this record. */
-        private final Search search;
         
         /** 
          * Initial state of the record, which is revisited every time {@link #find()}
@@ -308,5 +325,64 @@ abstract public class AbstractSearchItem implements SearchItem {
          * signifying that the search item has been satisfied.
          */
         static final int FOUND = 3;
+    }
+    
+    /**
+     * Record type for a search item known to yield at most one solution.
+     * @author Arend Rensink
+     * @version $Revision: 1.5 $
+     */
+    abstract public class SingularRecord extends PrimitiveRecord {
+        /** Constructs an instance for a given search. */
+        SingularRecord(Search search) {
+            super(search);
+        }
+        
+        /** 
+         * Calls {@link #reset()} and returns <code>false</code> if {@link #find()} was
+         * successful at the last call; otherwise, delegates to {@link #set()}.
+         */
+        public boolean find() {
+            if (found) {
+                reset();
+            } else {
+                found = set();
+            }
+            return found;
+        }
+
+        /**
+         * Always returns <code>true</code>.
+         */
+        final public boolean isSingular() {
+            return true;
+        }
+
+        /**
+         * Calls {@link #undo()} and sets {@link #found} to <code>false</code>.
+         */
+        public void reset() {
+            undo();
+            found = false;
+        }
+        
+        /**
+         * Tries to set the unique solution in the target map.
+         * @return <code>true</code> if setting the solution was successful.
+         */
+        abstract boolean set();
+        
+        /**
+         * Undoes the effect of {@link #set()}.
+         */
+        abstract void undo();
+
+        /** Returns the return value of the last invocation of {@link #find()}. */
+        final boolean isFound() {
+            return found;
+        }
+        
+        /** Flag storing the last return value of {@link #find()}. */
+        private boolean found;
     }
 }

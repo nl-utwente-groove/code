@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoMatchFactory.java,v 1.5 2007-08-29 14:00:27 rensink Exp $
+ * $Id: IsoMatchFactory.java,v 1.6 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
@@ -40,7 +40,7 @@ import java.util.Map;
  * remains unchanged throughout the transformation, it will be very beneficial to take this into account.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class IsoMatchFactory {
     /** Private constructor, to ensure the class is used as singleton. */
@@ -101,7 +101,6 @@ public class IsoMatchFactory {
         public IsoNodeSearchItem(Node node, Object cert) {
             this.node = node;
             this.cert = cert;
-            this.boundNodes = Collections.singleton(node);
         }
         
         /**
@@ -109,13 +108,12 @@ public class IsoMatchFactory {
          */
         @Override
         public Collection<Node> bindsNodes() {
-            return boundNodes;
+            return Collections.singleton(node);
         }
 
         /**
          * Returns a fresh search item record for the given node.
          */
-        @Override
         public IsoNodeRecord getRecord(Search search) {
             return new IsoNodeRecord(search);
         }
@@ -135,8 +133,6 @@ public class IsoMatchFactory {
 
         /** The node for which the item searches an image. */
         private final Node node;
-        /** Singleton set consisting of <code>node</code>. */
-        private final Collection<Node> boundNodes;
         /** The certificate of <code>node</code>. */
         private final Object cert;
         
@@ -196,7 +192,7 @@ public class IsoMatchFactory {
              * has been selected
              */
             private boolean select(Node image) {
-                if (getSearch().isAvailable(image)) {
+                if (isAvailable(image)) {
                     getResult().putNode(node, image);
                     return true;
                 } else {

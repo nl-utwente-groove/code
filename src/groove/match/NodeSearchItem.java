@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.5 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
@@ -35,7 +35,6 @@ public class NodeSearchItem extends AbstractSearchItem {
         this.boundNodes = Collections.singleton(node);
 	}
 	
-    @Override
 	public NodeRecord getRecord(Search search) {
 		return new NodeRecord(search);
 	}

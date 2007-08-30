@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.6 2007-08-30 08:55:27 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.7 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
@@ -27,7 +27,9 @@ import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.rel.RegExpr;
+import groove.rel.RegExprGraph;
 import groove.rel.RegExprLabel;
+import groove.rel.VarGraph;
 import groove.util.Bag;
 import groove.util.HashBag;
 
@@ -47,14 +49,11 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Strategy that yields the edges in order of ascending indegree of
- * their source nodes.
- * The idea is that the "roots" of a graph (those starting in nodes with
- * small indegree) are likely to give a better immediate reduction of
- * the number of possible matches.
- * Furthermore, regular expression edges are saved to the last.
+ * Factory for search plan-based graph matching strategies.
+ * The search plans include items for all graph nodes and edges, ordered
+ * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -64,17 +63,7 @@ public class GraphSearchPlanFactory {
     GraphSearchPlanFactory() {
         // empty
     }
-//    /** 
-//     * Factory method returning a search strategy for matching a given graph. 
-//     * This is a convenience method for {@link #createSearchPlan(Graph, Collection, Collection)} with
-//     * empty sets of pre-matched nodes and edges.
-//     * @param graph the graph that is to be matched
-//     * @return a search strategy to look for a subgraph matchings of <code>graph</code>
-//     */
-//	public Iterable<SearchItem> createSearchPlan(Graph graph) {
-//        return createSearchPlan(graph, Collections.<Node>emptySet(), Collections.<Edge>emptySet());
-//	}
-//
+
     /** 
      * Factory method returning a list of search items for matching a given graph, given also
      * that certain nodes and edges have already been pre-matched (<i>bound</i>).
@@ -90,87 +79,7 @@ public class GraphSearchPlanFactory {
         PlanData data = new PlanData(graph, preMatchedNodes, preMatchedEdges);
         return new SearchPlanStrategy(data.getPlan(), false);
     }
-//
-//    /**
-//	 * Callback method creating the list of comparators that is used to
-//	 * construct the search plan.
-//     * @param nodeSet view on the set of currently unmtched nodes
-//     * @param edgeSet view on the set of currently unmtched edges
-//     * @param varSet view on the set of currently unmtched variables
-//	 */
-//	protected List<Comparator<SearchItem>> createComparators(Set<Node> nodeSet, Set<Edge> edgeSet, Set<String> varSet) {
-//		List<Comparator<SearchItem>> result = new ArrayList<Comparator<SearchItem>>();
-//        result.add(new NeededPartsComparator(nodeSet, varSet));
-//        result.add(new ItemTypeComparator());
-//		result.add(new IndegreeComparator(edgeSet));
-//		return result;
-//	}
 	
-    /**
-	 * Callback factory method for creating an edge search item.
-	 */
-	protected SearchItem createEdgeSearchItem(Edge edge) {
-        Label label = edge.label();
-        RegExpr negOperand = RegExprLabel.getNegOperand(label);
-        if (negOperand instanceof RegExpr.Empty) {
-            return createInjectionSearchItem(Arrays.asList(edge.ends()));
-        } else if (negOperand != null) {
-            Edge negatedEdge = DefaultEdge.createEdge(edge.source(), negOperand.toLabel(), edge.opposite());
-            return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
-        } else if (RegExprLabel.getWildcardId(label) != null) {
-            return new VarEdgeSearchItem(edge);
-        } else if (RegExprLabel.isWildcard(label)) {
-            return new WildcardEdgeSearchItem(edge);
-        } else if (RegExprLabel.isAtom(label)) {
-            Edge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
-            return new EdgeSearchItem(defaultEdge);
-        } else if (label instanceof RegExprLabel) {
-            return new RegExprEdgeSearchItem(edge);
-        } else if (edge instanceof ProductEdge) {
-            if (((ProductEdge) edge).getOperation() instanceof Constant) {
-                // constants are more efficiently matched as ValueNodes
-                return null;
-            } else {
-                return new OperatorEdgeSearchItem((ProductEdge) edge);
-            }
-		} else if (edge instanceof AlgebraEdge) {
-			return null;
-		} else {
-		    return new EdgeSearchItem(edge);      
-        }
-	}
-
-	/**
-     * Callback factory method for creating a node search item.
-     */
-    protected SearchItem createNodeSearchItem(Node node) {
-    	if (node instanceof ValueNode) {
-    		return new ValueNodeSearchItem((ValueNode) node);
-    	} else if (node instanceof ProductNode) {
-    	    return null;
-        } else {
-    		return new NodeSearchItem(node);
-    	}
-    }
-    
-    /**
-     * Callback factory method for a negated search item.
-     * @param inner the internal search item which this one negates
-     * @return an instance of {@link NegatedSearchItem}
-     */
-    protected NegatedSearchItem createNegatedSearchItem(SearchItem inner) {
-        return new NegatedSearchItem(inner);
-    }
-    
-    /**
-     * Callback factory method for an injection search item.
-     * @param injection the first node to be matched injectively
-     * @return an instance of {@link InjectionSearchItem}
-     */
-    protected InjectionSearchItem createInjectionSearchItem(Collection<? extends Node> injection) {
-        return new InjectionSearchItem(injection);
-    }    
-
     /** Returns the singleton instance of this factory class. */
     static public GraphSearchPlanFactory getInstance() {
         return instance;
@@ -194,27 +103,21 @@ public class GraphSearchPlanFactory {
          * @param preMatchedEdges the set of pre-matched edges
          */
         PlanData(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
+            // compute the set of remaining (unmatched) nodes
             remainingNodes = new HashSet<Node>(graph.nodeSet());
             if (preMatchedNodes != null) {
                 remainingNodes.removeAll(preMatchedNodes);
             }
-            remainingEdges = new HashSet<Edge>();
+            // compute the set of remaining (unmatched) edges and variables
+            remainingEdges = new HashSet<Edge>(graph.edgeSet());
             remainingVars = new HashSet<String>();
-            for (Edge edge : graph.edgeSet()) {
-                remainingEdges.add(edge);
-                RegExpr edgeExpr = RegExprLabel.getRegExpr(edge.label());
-                if (edgeExpr != null) {
-                    remainingVars.addAll(edgeExpr.allVarSet());
-                }
+            if (graph instanceof VarGraph) {
+                remainingVars.addAll(((VarGraph) graph).allVarSet());
             }
             if (preMatchedEdges != null) {
                 for (Edge edge: preMatchedEdges) {
-//                    assert preMatchedNodes.containsAll(Arrays.asList(edge.ends())) : String.format("Ends of pre-matched edge %s not in pre-matched nodes %s", edge, preMatchedNodes);
                     remainingEdges.remove(edge);
-                    RegExpr edgeExpr = RegExprLabel.getRegExpr(edge.label());
-                    if (edgeExpr != null) {
-                        remainingVars.removeAll(edgeExpr.boundVarSet());
-                    }                    
+                    remainingVars.removeAll(RegExprGraph.getBoundVars(edge));
                 }
             }
         }
@@ -309,6 +212,71 @@ public class GraphSearchPlanFactory {
         }
 
         /**
+         * Callback factory method for creating an edge search item.
+         */
+        protected SearchItem createEdgeSearchItem(Edge edge) {
+            Label label = edge.label();
+            RegExpr negOperand = RegExprLabel.getNegOperand(label);
+            if (negOperand instanceof RegExpr.Empty) {
+                return createInjectionSearchItem(Arrays.asList(edge.ends()));
+            } else if (negOperand != null) {
+                Edge negatedEdge = DefaultEdge.createEdge(edge.source(), negOperand.toLabel(), edge.opposite());
+                return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
+            } else if (RegExprLabel.getWildcardId(label) != null) {
+                return new VarEdgeSearchItem(edge);
+            } else if (RegExprLabel.isWildcard(label)) {
+                return new WildcardEdgeSearchItem(edge);
+            } else if (RegExprLabel.isAtom(label)) {
+                Edge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
+                return new EdgeSearchItem(defaultEdge);
+            } else if (label instanceof RegExprLabel) {
+                return new RegExprEdgeSearchItem(edge);
+            } else if (edge instanceof ProductEdge) {
+                if (((ProductEdge) edge).getOperation() instanceof Constant) {
+                    // constants are more efficiently matched as ValueNodes
+                    return null;
+                } else {
+                    return new OperatorEdgeSearchItem((ProductEdge) edge);
+                }
+        	} else if (edge instanceof AlgebraEdge) {
+        		return null;
+        	} else {
+        	    return new EdgeSearchItem(edge);      
+            }
+        }
+
+        /**
+         * Callback factory method for creating a node search item.
+         */
+        protected SearchItem createNodeSearchItem(Node node) {
+        	if (node instanceof ValueNode) {
+        		return new ValueNodeSearchItem((ValueNode) node);
+        	} else if (node instanceof ProductNode) {
+        	    return null;
+            } else {
+        		return new NodeSearchItem(node);
+        	}
+        }
+
+        /**
+         * Callback factory method for a negated search item.
+         * @param inner the internal search item which this one negates
+         * @return an instance of {@link NegatedSearchItem}
+         */
+        protected NegatedSearchItem createNegatedSearchItem(SearchItem inner) {
+            return new NegatedSearchItem(inner);
+        }
+
+        /**
+         * Callback factory method for an injection search item.
+         * @param injection the first node to be matched injectively
+         * @return an instance of {@link InjectionSearchItem}
+         */
+        protected InjectionSearchItem createInjectionSearchItem(Collection<? extends Node> injection) {
+            return new InjectionSearchItem(injection);
+        }
+
+        /**
          * The set of nodes to be matched.
          */
         private final Set<Node> remainingNodes;
@@ -328,61 +296,7 @@ public class GraphSearchPlanFactory {
         /** Flag determining if {@link #getPlan()} was already called. */
         private boolean used;
     }
-//
-//    /**
-//     * Edge comparator based on the number of already matched end nodes of a given
-//     * edge. The higher this number, the less nondeterminism matching the node
-//     * will cause, so the sooner it should be scheduled.
-//     * The class is an observer in order to be able to maintain its internal data.
-//     * @author Arend Rensink
-//     * @version $Revision $
-//     */
-//    protected static class ConnectivityComparator implements Comparator<Edge> {
-//        /**
-//         * Constructs a comparator, on the basis of the set of 
-//         * currently matched nodes. This set is shared with the caller.
-//         * @param remainingNodes the set of remaining unmatched nodes.
-//         */
-//        private ConnectivityComparator(Set<? extends Node> remainingNodes) {
-//            this.remainingNodes = new HashSet<Node>(remainingNodes);
-//        }
-//        
-//        /** 
-//         * Favours the edge with the highest number of nodes not in 
-//         * the set of remaining nodes.
-//         */
-//        public int compare(Edge first, Edge second) {
-//            return connectivity(first) - connectivity(second);
-//        }
-////
-////        /**
-////         * This method is called when a new edge is scheduled.
-////         * It removes the end nodes of that edge from the set of remaining nodes.
-////         */
-////        public void update(Observable o, Object arg) {
-////            for (Node end: ((Edge) arg).ends()) {
-////                remainingNodes.remove(end);
-////            }
-////        }
-//
-//        /**
-//         * Returns the number of matched end points of a given edge.
-//         * An end point is matched if it is not in the set of remaining nodes.
-//         */
-//        private int connectivity(Edge edge) {
-//            int result = 0;
-//            for (Node end : edge.ends()) {
-//                if (!remainingNodes.contains(end)) {
-//                    result++;
-//                }
-//            }
-//            return result;
-//        }
-//        
-//        /** The set of currently unmatched nodes. */
-//        private final Set<Node> remainingNodes; 
-//    }
-    
+  
     /**
      * Edge comparator based on the number of incoming edges of the
      * source and target nodes.
@@ -467,7 +381,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.6 $
+     * @version $Revision: 1.7 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -512,7 +426,7 @@ public class GraphSearchPlanFactory {
          * More pre-matched nodes means less determinism, so the higher the better.
          */
         private int getConnectCount(SearchItem item) {
-            int result = 0;
+            int result = item.needsNodes().size() + item.needsVars().size();
             for (Node node: item.bindsNodes()) {
                 if (!remainingNodes.contains(node)) {
                     result++;
@@ -688,7 +602,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.6 $
+     * @version $Revision: 1.7 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 

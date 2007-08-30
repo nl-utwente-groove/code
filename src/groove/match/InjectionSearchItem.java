@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: InjectionSearchItem.java,v 1.3 2007-08-28 22:01:23 rensink Exp $
+ * $Id: InjectionSearchItem.java,v 1.4 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
@@ -44,7 +44,6 @@ public class InjectionSearchItem extends ConditionSearchItem {
         this.neededNodes = new HashSet<Node>(nodes);
 	}
 	
-    @Override
 	public InjectionRecord getRecord(Search matcher) {
 		return new InjectionRecord(matcher);
 	}
@@ -86,7 +85,7 @@ public class InjectionSearchItem extends ConditionSearchItem {
          * Tests if the images of {@link #node1} and {@link #node2} are distinct.
          */
         @Override
-        boolean condition() {
+        boolean set() {
             NodeEdgeMap elementMap = getResult();
             return elementMap.getNode(node1) != elementMap.getNode(node2);
         }

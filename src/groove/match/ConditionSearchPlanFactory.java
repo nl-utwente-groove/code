@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.5 2007-08-29 11:07:44 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.6 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
@@ -28,14 +28,13 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Strategy that yields the edges in order of ascending indegree of
- * their source nodes.
- * The idea is that the "roots" of a graph (those starting in nodes with
- * small indegree) are likely to give a better immediate reduction of
- * the number of possible matches.
- * Furthermore, regular expression edges are saved to the last.
+ * Factory that adds to a graph search plan the following items, obtained from a graph condition:
+ * <ul>
+ * <li> Search items for the simple negative conditions (edge and merge embargoes) 
+ * <li> A {@link FrequencyComparator} to rank search items based on the expected frequency of edge labels
+ * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 
@@ -53,7 +52,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      * @param condition the condition for which a search plan is to be constructed
      */
     public SearchPlanStrategy createMatcher(GraphCondition condition) {
-    	return createMatcher(condition, condition.getPattern().nodeMap().values(), condition.getContext().edgeSet());
+    	return createMatcher(condition, condition.getPattern().nodeMap().values(), condition.getPattern().edgeMap().values());
     }
 
     /** 
@@ -67,7 +66,11 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      */
     public SearchPlanStrategy createMatcher(GraphCondition condition, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
     	PlanData planData = new GrammarPlanData(condition, preMatchedNodes, preMatchedEdges);
-    	return new SearchPlanStrategy(planData.getPlan(), condition.getProperties().isInjective());
+    	SearchPlanStrategy result = new SearchPlanStrategy(planData.getPlan(), condition.getProperties().isInjective());
+        if (PRINT) {
+            System.out.print(String.format("%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s", condition.getName(), preMatchedNodes, preMatchedEdges, result));
+        }
+        return result;
     }
     
 
@@ -79,6 +82,9 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** The fixed, singleton instance of this factory. */
     static private final ConditionSearchPlanFactory instance = new ConditionSearchPlanFactory();
 
+    /** Flag to control search plan printing. */
+    static private final boolean PRINT = false;
+    
     /**
      * Plan data extension based on a graph condition.
      * Additionally it takes the control labels of the condition into account.
