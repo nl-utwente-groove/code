@@ -12,18 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.5 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
+import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.RegExprLabel;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * A search item that searches an image for an edge.
@@ -84,8 +86,8 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
         @Override
         Edge nextPreMatched() {
             Edge result = super.nextPreMatched();
-            if (result != null && !selectVar(result)) {
-                undoEnds();
+            if (result != null && !setLabel(result)) {
+                resetEnds();
                 result = null;
             }
             return result;
@@ -107,34 +109,51 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
         }
 
         @Override
-        Collection<? extends Edge> computeMultiple() {
+        Iterator< ? extends Edge> computeMultiple() {
             if (varPreMatch != null) {
-                return getTarget().labelEdgeSet(getEdge().endCount(), varPreMatch);
-            } else if (getPreMatchedSource() != null) {
-                return getTarget().edgeSet(getPreMatchedSource());
-            } else if (getPreMatchedTarget() != null) {
-                return getTarget().edgeSet(getPreMatchedTarget());
-            } else {
-                return getTarget().edgeSet();
+                return filterImages(getTarget().labelEdgeSet(arity, varPreMatch), false);
             }
+            // take the incident edges of the pre-matched source or target, if any
+            // otherwise, the set of all edges
+            Node imageEnd = getPreMatchedSource();
+            if (imageEnd == null) {
+                imageEnd = getPreMatchedTarget();
+            }
+            Collection< ? extends Edge> edgeSet = imageEnd == null ? getTarget().edgeSet() : getTarget().edgeSet(imageEnd);
+            return filterImages(edgeSet, true);
+//            return new FilterIterator<Edge>(edgeSet.iterator()) {
+//                @Override
+//                protected boolean approves(Object obj) {
+//                    // select the edges with the correct ends
+//                    Edge image = (Edge) obj;
+//                    boolean result = selectEnds(image);
+//                    if (result) {
+//                        // insert both the variable and the edge itself
+//                        selectVar(image);
+//                        selectEdge(image);
+//                    }
+//                    return result;
+//                }
+//            };
         }
+//
+//        /**
+//         * Calls {@link #selectVar(Edge)}, and when successful the super method.
+//         */
+//        @Override
+//        boolean select(Edge image) {
+//            boolean result = selectVar(image);
+//            if (result && !super.select(image)) {
+//                // roll back the variable selection
+//                undoVar();
+//                result = false;
+//            }
+//            return result;
+//        }
 
-        /**
-         * Calls {@link #selectVar(Edge)}, and when successful the super method.
-         */
+        /** Selects the variable image. */
         @Override
-        boolean select(Edge image) {
-            boolean result = selectVar(image);
-            if (result && !super.select(image)) {
-                // roll back the variable selection
-                undoVar();
-                result = false;
-            }
-            return result;
-        }
-
-        /** Callback method from {@link #select(Edge)} to select the variable image. */
-        final boolean selectVar(Edge image) {
+        final boolean setLabel(Edge image) {
             boolean result;
             if (varPreMatch == null) {
                 Label current = getResult().putVar(var, image.label());
@@ -147,20 +166,12 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
             return result;
         }
 
-        /** 
-         * Calls {@link #undoVar()} followed by the super method. 
-         */
-        @Override
-        void undo() {
-            undoVar();
-            super.undo();
-        }
-        
         /**
          * Callback method from {@link #undo()} to roll back the variable selection.
-         * Reverses the effect of the last {@link #selectVar(Edge)} invocation.
+         * Reverses the effect of the last {@link #setLabel(Edge)} invocation.
          */
-        void undoVar() {
+        @Override
+        void resetLabel() {
             if (varPreMatch == null) {
                 Label oldImage = getResult().getValuation().remove(var);
                 assert selected == null || oldImage == selected.label();

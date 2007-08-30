@@ -1,24 +1,24 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.2 2007-08-28 22:01:24 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.3 2007-08-30 15:18:18 rensink Exp $ */
 package groove.match;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
+import groove.match.SearchPlanStrategy.Search;
 import groove.rel.Automaton;
 import groove.rel.NodeRelation;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
 import groove.rel.ValuationEdge;
 import groove.rel.VarAutomaton;
+import groove.util.FilterIterator;
 
-import static groove.match.SearchPlanStrategy.Search;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * A search item that searches an image for an edge.
@@ -86,6 +86,7 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem {
             assert getResult().getValuation().keySet().containsAll(neededVars);
         }
 
+        /** In addition to the <code>super</code> method, initialises the set of fresh variables. */
         @Override
         void init() {
             super.init();
@@ -95,51 +96,41 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem {
 
         /** This implementation returns <code>null</code>. */
         @Override
-        Label getPreMatchedLabel() {
-            return null;
+        final Label getPreMatchedLabel() {
+            throw new UnsupportedOperationException();
         }
 
         /** This implementation returns <code>false</code>. */
         @Override
-        boolean isPreDetermined() {
+        final boolean isPreDetermined() {
             return false;
         }
-
-        @Override
-        boolean select(Edge image) {
-            boolean result = super.select(image);
-            if (result && image instanceof ValuationEdge) {
-                for (Map.Entry<String,Label> valueEntry: ((ValuationEdge) image).getValue().entrySet()) {
-                    String var = valueEntry.getKey();
-                    if (freshVars.contains(var)) {
-                        getResult().putVar(var, valueEntry.getValue());
-                    }
-                }
-//                if (image instanceof ValuationEdge) {
-//                    // there's something more to be optimized here:
-//                    // the search plan can predict wich variables are fresh
-//                    // in the current valuation
-//                    Map<String, Label> newValuation = ((ValuationEdge) image).getValue();
-//                    freshVars = new HashSet<String>(newValuation.keySet());
-//                    freshVars.removeAll(getResult().getValuation().keySet());
-//                    getResult().putAllVar(newValuation);
+//
+//        @Override
+//        boolean select(Edge image) {
+//            boolean result = super.select(image);
+//            if (result && image instanceof ValuationEdge) {
+//                for (Map.Entry<String,Label> valueEntry: ((ValuationEdge) image).getValue().entrySet()) {
+//                    String var = valueEntry.getKey();
+//                    if (freshVars.contains(var)) {
+//                        getResult().putVar(var, valueEntry.getValue());
+//                    }
 //                }
-            } 
-            return result;
-        }
+//            } 
+//            return result;
+//        }
 
         /**
          * Since the image is not really an edge of the underlying graph, 
          * don't set it in the result map.
          */
         @Override
-        void selectEdge(Edge image) {
+        void setEdge(Edge image) {
             // does nothing
         }
 
         @Override
-        void undo() {
-            super.undo();
+        void resetLabel() {
             for (String var : freshVars) {
                 getResult().getValuation().remove(var);
             }
@@ -147,7 +138,7 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem {
         
         /** Since edge images are not put into the result map, there is nothing to undo. */
         @Override
-        void undoEdge() {
+        void resetEdge() {
             // empty
         }
 
@@ -156,11 +147,10 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem {
          * for the edge label.
          */
         @Override
-        Collection<? extends Edge> computeMultiple() {
-            NodeEdgeMap elementMap = getResult();
-            Node imageSource = elementMap.getNode(getEdge().source());
+        Iterator< ? extends Edge> computeMultiple() {
+            final Node imageSource = getPreMatchedSource();
             Set<Node> imageSourceSet = imageSource == null ? null : Collections.singleton(imageSource);
-            Node imageTarget = elementMap.getNode(getEdge().opposite());
+            final Node imageTarget = getPreMatchedTarget();
             Set<Node> imageTargetSet = imageTarget == null ? null : Collections.singleton(imageTarget);
             NodeRelation matches;
             if (labelAutomaton instanceof VarAutomaton) {
@@ -168,7 +158,38 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem {
             } else {
                 matches = labelAutomaton.getMatches(getTarget(), imageSourceSet, imageTargetSet);
             }
-            return matches.getAllRelated();
+            return new FilterIterator<Edge>(matches.getAllRelated().iterator()) {
+                @Override
+                protected boolean approves(Object obj) {
+                    Edge image = (Edge) obj;
+                    boolean result = true;
+                    // select the source only if it was not pre-matched
+                    if (imageSource == null) {
+                        result = setEnd(Edge.SOURCE_INDEX, image);
+                    }
+                    // select the target only if it was not pre-matched
+                    if (result && imageTarget == null) {
+                        result = setEnd(Edge.TARGET_INDEX, image);
+                    }
+                    // select the variables if there are any
+                    if (result && image instanceof ValuationEdge) {
+                        selectVars(((ValuationEdge) image).getValue());
+                    }
+                    return result;
+                }
+            };
+        }
+        
+        /**
+         * Inserts a valuation for the fresh variables into the result map.
+         */
+        private void selectVars(Map<String,Label> valuation) {
+            for (Map.Entry<String,Label> valueEntry: valuation.entrySet()) {
+                String var = valueEntry.getKey();
+                if (freshVars.contains(var)) {
+                    getResult().putVar(var, valueEntry.getValue());
+                }
+            }
         }
         
         /** The set of bound variables that are not yet pre-matched. */

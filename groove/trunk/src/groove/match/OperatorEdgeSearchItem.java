@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.5 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
@@ -52,7 +52,6 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
         this.neededNodes = new HashSet<Node>(arguments);
 	}
 	
-    @Override
 	public OperatorEdgeRecord getRecord(Search matcher) {
 		return new OperatorEdgeRecord(matcher);
 	}
@@ -135,12 +134,13 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
      * @author Arend Rensink
      * @version $Revision $
      */
-    private class OperatorEdgeRecord extends AbstractRecord {
+    private class OperatorEdgeRecord extends SingularRecord {
         /**
          * Creates a record based on a given underlying matcher.
          */
         OperatorEdgeRecord(Search search) {
             super(search);
+            targetPreMatch = (ValueNode) getResult().getNode(target);
         }
         
         @Override
@@ -148,33 +148,19 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
             return String.format("%s = %s", OperatorEdgeSearchItem.this.toString(), getResult().getNode(target));
         }
 
-        /**
-         * This type of record is always singular.
-         */
-        public boolean isSingular() {
-            return true;
-        }
-
         @Override
-        void init() {
-            targetPreMatch = (ValueNode) getResult().getNode(target);
-        }
-
-        @Override
-        boolean next() {
-            boolean result = isFirst();
-            if (result) {
-                Object outcome = calculateResult();
-                if (outcome == null || target.hasValue() && !target.getValue().equals(outcome)) {
-                    result = false;
-                } else if (targetPreMatch != null) {
-                    result = targetPreMatch.getValue().equals(outcome);
-                } else {
-                    ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(operation.getResultType(), outcome);
-                    result = isAvailable(targetImage);
-                    if (result) {
-                        getResult().putNode(target, targetImage);
-                    }
+        boolean set() {
+            boolean result;
+            Object outcome = calculateResult();
+            if (outcome == null || target.hasValue() && !target.getValue().equals(outcome)) {
+                result = false;
+            } else if (targetPreMatch != null) {
+                result = targetPreMatch.getValue().equals(outcome);
+            } else {
+                ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(operation.getResultType(), outcome);
+                result = isAvailable(targetImage);
+                if (result) {
+                    getResult().putNode(target, targetImage);
                 }
             }
             return result;

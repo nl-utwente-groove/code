@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.2 2007-08-29 14:00:27 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.3 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
@@ -38,7 +38,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class SearchPlanStrategy implements MatchStrategy {
 	/**
@@ -57,7 +57,7 @@ public class SearchPlanStrategy implements MatchStrategy {
         reporter.start(GET_MATCH);
         Search search = createSearch(graph, preMatch);
         if (search.find()) {
-            result = search.getResult();
+            result = search.getMatch();
         } else {
             result = null;
         }
@@ -75,7 +75,7 @@ public class SearchPlanStrategy implements MatchStrategy {
                 if (next == null && !atEnd) {
                     // search for the next solution
                     if (search.find()) {
-                        next = search.getResult();
+                        next = search.getMatch();
                     } else {
                         // there is none and will be none; give up
                         atEnd = true;
@@ -116,7 +116,7 @@ public class SearchPlanStrategy implements MatchStrategy {
         Collection<VarNodeEdgeMap> result = new ArrayList<VarNodeEdgeMap>();
         Search searchRecord = createSearch(graph, preMatch);
         while (searchRecord.find()) {
-            result.add(searchRecord.getResult());
+            result.add(searchRecord.getMatch());
         }
         reporter.stop();
         return result;
@@ -175,14 +175,21 @@ public class SearchPlanStrategy implements MatchStrategy {
             this.plan = strategy.getPlan();
             this.injective = strategy.isInjective();
             this.target = target;
-            this.index = 0;
+            this.current = 0;
             this.result = createElementMap(preMatch);
-            this.itemRecords = new ArrayList<SearchItem.Record>();
+            this.records = new ArrayList<SearchItem.Record>(plan.size());
             this.lastSingular = -1;
         }
         
+        @Override
+        public String toString() {
+            return records.toString();
+        }
+
         /**
          * Computes the next search result.
+         * If the method returns <code>true</code>, the result can be obtained by
+         * {@link #getMatch()}.
          * @return <code>true</code> if there is a next result.
          */
         public boolean find() {
@@ -190,41 +197,57 @@ public class SearchPlanStrategy implements MatchStrategy {
             if (found) {
                 // we already found a solution
                 // clone the previous result to avoid sharing problems
-                result = createElementMap(result);
-                index--;
+//                result = createElementMap(result);
+                current--;
             }
-            while (index > lastSingular && index < plan.size()) {
-                index += getItemRecord().find() ? +1 : -1;
+            while (current > lastSingular && current < plan.size()) {
+                current += getCurrentRecord().find() ? +1 : -1;
             }
             reporter.stop();
-            boolean result = index > lastSingular;
-            found |= result;
-            return result;
+            found = current > lastSingular;
+            return found;
         }
 
         /** 
          * Returns the currently active search item record,
          * i.e., belonging to the current value of <code>index</code>.
          */
-        private SearchItem.Record getItemRecord() {
+        private SearchItem.Record getCurrentRecord() {
             SearchItem.Record result;
-            if (index < itemRecords.size()) {
+            if (current < records.size()) {
                 // take it from the existing records
-                result = itemRecords.get(index);
+                result = records.get(current);
             } else {
                 // make a new one
-                result = plan.get(index).getRecord(this);
-                itemRecords.add(result);
-                if (lastSingular == index-1 && result.isSingular()) {
+                result = plan.get(current).getRecord(this);
+                records.add(result);
+                if (lastSingular == current-1 && result.isSingular()) {
                     lastSingular++;
                 }
             }
             return result;
         }
-        
-        /** Returns the (partial) result of the search. */
-        public VarNodeEdgeMap getResult() {
+
+        /** Returns an alias of the (partial) result of the search. */
+        VarNodeEdgeMap getResult() {
             return result;
+        }
+//
+//        /** Returns the pre-match with which the search was initialised. */
+//        NodeEdgeMap getPreMatch() {
+//            return preMatch;
+//        }
+        
+        /** 
+         * Returns a copy of the search result, or <code>null</code> if 
+         * the last invocation of {@link #find()} was not successful. 
+         */
+        public VarNodeEdgeMap getMatch() {
+            if (found) {
+                return new VarNodeEdgeHashMap(result);
+            } else {
+                return null;
+            }
         }
         
         /** Returns the target graph of the search. */
@@ -306,11 +329,13 @@ public class SearchPlanStrategy implements MatchStrategy {
         /** Flag indicating that a solution has already been found. */
         private boolean found;
         /** The index of the currently active search item. */
-        private int index;
+        private int current;
         /** Index of the last search record known to be singular. */
         private int lastSingular;
         /** The target graph of the search. */
         private final Graph target;
+//        /** The initial pre-match map. */
+//        private NodeEdgeMap preMatch;
         /**
          * The element map built up during the search process.
          */
@@ -320,6 +345,6 @@ public class SearchPlanStrategy implements MatchStrategy {
          */
         private Set<Node> usedNodes;
         /** Search stack. */
-        private final List<SearchItem.Record> itemRecords;
+        private final List<SearchItem.Record> records;
     }
 }

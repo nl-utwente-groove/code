@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.5 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
@@ -39,23 +39,9 @@ public class ValueNodeSearchItem extends AbstractSearchItem {
         this.boundNodes = Collections.<Node>singleton(node);
 	}
 	
-    @Override
 	public ValueNodeRecord getRecord(SearchPlanStrategy.Search matcher) {
 		return new ValueNodeRecord(matcher);
 	}
-//
-//	/**
-//     * If the other search item is also a {@link ValueNodeSearchItem}, compares
-//     * the value nodes; otherwise, delegates to super.
-//     */
-//    @Override
-//    public int compareTo(SearchItem other) {
-//        if (other instanceof ValueNodeSearchItem) {
-//            return node.compareTo(((ValueNodeSearchItem) other).getNode());
-//        } else {
-//            return super.compareTo(other);
-//        }
-//    }
 
     /**
      * Since the order in which value nodes are matched does not make 
@@ -97,19 +83,12 @@ public class ValueNodeSearchItem extends AbstractSearchItem {
      * @author Arend Rensink
      * @version $Revision $
      */
-    private class ValueNodeRecord extends AbstractRecord {
+    private class ValueNodeRecord extends SingularRecord {
         /**
          * Creates a record based on a given underlying matcher.
          */
-        ValueNodeRecord(Search matcher) {
-            super(matcher);
-        }
-
-        /**
-         * This type of record is always singular.
-         */
-        public boolean isSingular() {
-            return true;
+        ValueNodeRecord(Search search) {
+            super(search);
         }
 
         /**
@@ -117,12 +96,9 @@ public class ValueNodeSearchItem extends AbstractSearchItem {
          * the next call returns <code>false</code>.
          */
         @Override
-        boolean next() {
-            boolean result = isFirst();
-            if (result) {
-                getResult().putNode(node, node);
-            }
-            return result;
+        boolean set() {
+            getResult().putNode(node, node);
+            return true;
         }
         
         @Override

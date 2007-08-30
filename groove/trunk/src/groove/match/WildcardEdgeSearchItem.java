@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WildcardEdgeSearchItem.java,v 1.3 2007-08-28 22:01:20 rensink Exp $
+ * $Id: WildcardEdgeSearchItem.java,v 1.4 2007-08-30 15:18:18 rensink Exp $
  */
 package groove.match;
 
@@ -22,7 +22,7 @@ import groove.graph.Label;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.RegExprLabel;
 
-import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * A search item that searches an image for an edge.
@@ -64,17 +64,17 @@ public class WildcardEdgeSearchItem extends EdgeSearchItem {
          */
         @Override
         Label getPreMatchedLabel() {
-            return null;
+            throw new UnsupportedOperationException();
         }
 
         @Override
-        Collection<? extends Edge> computeMultiple() {
+        Iterator< ? extends Edge> computeMultiple() {
             if (getPreMatchedSource() != null) {
-                return getTarget().edgeSet(getPreMatchedSource());
+                return filterImages(getTarget().edgeSet(getPreMatchedSource()), false);
             } else if (getPreMatchedTarget() != null) {
-                return getTarget().edgeSet(getPreMatchedTarget());
+                return filterImages(getTarget().edgeSet(getPreMatchedTarget()), false);
             } else {
-                return getTarget().edgeSet();
+                return filterImages(getTarget().edgeSet(), false);
             }
         }
     }
