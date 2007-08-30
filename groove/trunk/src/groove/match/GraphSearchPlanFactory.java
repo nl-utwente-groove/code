@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.5 2007-08-29 14:00:27 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.6 2007-08-30 08:55:27 rensink Exp $
  */
 package groove.match;
 
@@ -27,9 +27,7 @@ import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.rel.RegExpr;
-import groove.rel.RegExprGraph;
 import groove.rel.RegExprLabel;
-import groove.rel.VarGraph;
 import groove.util.Bag;
 import groove.util.HashBag;
 
@@ -56,7 +54,7 @@ import java.util.TreeSet;
  * the number of possible matches.
  * Furthermore, regular expression edges are saved to the last.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -108,6 +106,71 @@ public class GraphSearchPlanFactory {
 //		return result;
 //	}
 	
+    /**
+	 * Callback factory method for creating an edge search item.
+	 */
+	protected SearchItem createEdgeSearchItem(Edge edge) {
+        Label label = edge.label();
+        RegExpr negOperand = RegExprLabel.getNegOperand(label);
+        if (negOperand instanceof RegExpr.Empty) {
+            return createInjectionSearchItem(Arrays.asList(edge.ends()));
+        } else if (negOperand != null) {
+            Edge negatedEdge = DefaultEdge.createEdge(edge.source(), negOperand.toLabel(), edge.opposite());
+            return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
+        } else if (RegExprLabel.getWildcardId(label) != null) {
+            return new VarEdgeSearchItem(edge);
+        } else if (RegExprLabel.isWildcard(label)) {
+            return new WildcardEdgeSearchItem(edge);
+        } else if (RegExprLabel.isAtom(label)) {
+            Edge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
+            return new EdgeSearchItem(defaultEdge);
+        } else if (label instanceof RegExprLabel) {
+            return new RegExprEdgeSearchItem(edge);
+        } else if (edge instanceof ProductEdge) {
+            if (((ProductEdge) edge).getOperation() instanceof Constant) {
+                // constants are more efficiently matched as ValueNodes
+                return null;
+            } else {
+                return new OperatorEdgeSearchItem((ProductEdge) edge);
+            }
+		} else if (edge instanceof AlgebraEdge) {
+			return null;
+		} else {
+		    return new EdgeSearchItem(edge);      
+        }
+	}
+
+	/**
+     * Callback factory method for creating a node search item.
+     */
+    protected SearchItem createNodeSearchItem(Node node) {
+    	if (node instanceof ValueNode) {
+    		return new ValueNodeSearchItem((ValueNode) node);
+    	} else if (node instanceof ProductNode) {
+    	    return null;
+        } else {
+    		return new NodeSearchItem(node);
+    	}
+    }
+    
+    /**
+     * Callback factory method for a negated search item.
+     * @param inner the internal search item which this one negates
+     * @return an instance of {@link NegatedSearchItem}
+     */
+    protected NegatedSearchItem createNegatedSearchItem(SearchItem inner) {
+        return new NegatedSearchItem(inner);
+    }
+    
+    /**
+     * Callback factory method for an injection search item.
+     * @param injection the first node to be matched injectively
+     * @return an instance of {@link InjectionSearchItem}
+     */
+    protected InjectionSearchItem createInjectionSearchItem(Collection<? extends Node> injection) {
+        return new InjectionSearchItem(injection);
+    }    
+
     /** Returns the singleton instance of this factory class. */
     static public GraphSearchPlanFactory getInstance() {
         return instance;
@@ -131,34 +194,27 @@ public class GraphSearchPlanFactory {
          * @param preMatchedEdges the set of pre-matched edges
          */
         PlanData(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
-            remainingNodes = new HashSet<Node>();
-            nodeIndexMap = new HashMap<Node,Integer>();
-            for (Node node: graph.nodeSet()) {
-                remainingNodes.add(node);
-                nodeIndexMap.put(node, nodeIndexMap.size());
-            }
+            remainingNodes = new HashSet<Node>(graph.nodeSet());
             if (preMatchedNodes != null) {
                 remainingNodes.removeAll(preMatchedNodes);
             }
             remainingEdges = new HashSet<Edge>();
-            edgeIndexMap = new HashMap<Edge,Integer>();
-            for (Edge edge: graph.edgeSet()) {
-                remainingEdges.add(edge);
-                edgeIndexMap.put(edge, edgeIndexMap.size());
-            }
             remainingVars = new HashSet<String>();
-            varIndexMap = new HashMap<String,Integer>();
-            if (graph instanceof VarGraph) {
-                for (String var: ((VarGraph) graph).allVarSet()) {
-                    remainingVars.add(var);
-                    varIndexMap.put(var, varIndexMap.size());
+            for (Edge edge : graph.edgeSet()) {
+                remainingEdges.add(edge);
+                RegExpr edgeExpr = RegExprLabel.getRegExpr(edge.label());
+                if (edgeExpr != null) {
+                    remainingVars.addAll(edgeExpr.allVarSet());
                 }
             }
             if (preMatchedEdges != null) {
                 for (Edge edge: preMatchedEdges) {
 //                    assert preMatchedNodes.containsAll(Arrays.asList(edge.ends())) : String.format("Ends of pre-matched edge %s not in pre-matched nodes %s", edge, preMatchedNodes);
                     remainingEdges.remove(edge);
-                    remainingVars.removeAll(RegExprGraph.getBoundVars(edge));
+                    RegExpr edgeExpr = RegExprLabel.getRegExpr(edge.label());
+                    if (edgeExpr != null) {
+                        remainingVars.removeAll(edgeExpr.boundVarSet());
+                    }                    
                 }
             }
         }
@@ -253,100 +309,6 @@ public class GraphSearchPlanFactory {
         }
 
         /**
-         * Callback factory method for creating an edge search item.
-         */
-        protected SearchItem createEdgeSearchItem(Edge edge) {
-            Label label = edge.label();
-            RegExpr negOperand = RegExprLabel.getNegOperand(label);
-            if (negOperand instanceof RegExpr.Empty) {
-                return createInjectionSearchItem(Arrays.asList(edge.ends()));
-            } else if (negOperand != null) {
-                Edge negatedEdge = DefaultEdge.createEdge(edge.source(), negOperand.toLabel(), edge
-                        .opposite());
-                return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
-            } else if (RegExprLabel.getWildcardId(label) != null) {
-                return new VarEdgeSearchItem(edge);
-            } else if (RegExprLabel.isWildcard(label)) {
-                return new WildcardEdgeSearchItem(edge);
-            } else if (RegExprLabel.isAtom(label)) {
-                Edge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel
-                        .getAtomText(label), edge.opposite());
-                return new EdgeSearchItem(defaultEdge);
-            } else if (label instanceof RegExprLabel) {
-                return new RegExprEdgeSearchItem(edge);
-            } else if (edge instanceof ProductEdge) {
-                if (((ProductEdge) edge).getOperation() instanceof Constant) {
-                    // constants are more efficiently matched as ValueNodes
-                    return null;
-                } else {
-                    return new OperatorEdgeSearchItem((ProductEdge) edge);
-                }
-            } else if (edge instanceof AlgebraEdge) {
-                return null;
-            } else {
-                return new EdgeSearchItem(edge);
-            }
-        }
-
-        /**
-         * Callback factory method for creating a node search item.
-         */
-        protected SearchItem createNodeSearchItem(Node node) {
-            if (node instanceof ValueNode) {
-                return new ValueNodeSearchItem((ValueNode) node);
-            } else if (node instanceof ProductNode) {
-                return null;
-            } else {
-                return new NodeSearchItem(node);
-            }
-        }
-
-        /**
-         * Callback factory method for a negated search item.
-         * @param inner the internal search item which this one negates
-         * @return an instance of {@link NegatedSearchItem}
-         */
-        protected NegatedSearchItem createNegatedSearchItem(SearchItem inner) {
-            return new NegatedSearchItem(inner);
-        }
-
-        /**
-         * Callback factory method for an injection search item.
-         * @param injection the first node to be matched injectively
-         * @return an instance of {@link InjectionSearchItem}
-         */
-        protected InjectionSearchItem createInjectionSearchItem(Collection<? extends Node> injection) {
-            return new InjectionSearchItem(injection);
-        }
-
-        int getNodeIndex(Node node) {
-            Integer result = nodeIndexMap.get(node);
-            if (result == null) {
-                result = nodeIndexMap.size();
-                nodeIndexMap.put(node, result);
-            }
-            return result;
-        }
-
-        int getEdgeIndex(Edge edge) {
-            Integer result = edgeIndexMap.get(edge);
-            if (result == null) {
-                result = edgeIndexMap.size();
-                edgeIndexMap.put(edge, result);
-            }
-            return result;
-        }
-
-        int getVarIndex(String var) {
-            Integer result = varIndexMap.get(var);
-            if (result == null) {
-                result = varIndexMap.size();
-                varIndexMap.put(var, result);
-            }
-            return result;
-        }
-        
-        /**
          * The set of nodes to be matched.
          */
         private final Set<Node> remainingNodes;
@@ -358,10 +320,6 @@ public class GraphSearchPlanFactory {
          * The set of variables to be matched.
          */
         private final Set<String> remainingVars;
-        private final Map<Node,Integer> nodeIndexMap;
-        private final Map<Edge,Integer> edgeIndexMap;
-        private final Map<String,Integer> varIndexMap;
-        
         /**
          * The comparators used to determine the order in which the edges
          * should be matched.
@@ -509,7 +467,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.5 $
+     * @version $Revision: 1.6 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -730,7 +688,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.5 $
+     * @version $Revision: 1.6 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 
