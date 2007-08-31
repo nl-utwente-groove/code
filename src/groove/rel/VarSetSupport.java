@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarSetSupport.java,v 1.2 2007-08-26 07:23:55 rensink Exp $
+ * $Id: VarSetSupport.java,v 1.3 2007-08-31 10:23:21 rensink Exp $
  */
 package groove.rel;
 
@@ -23,8 +23,10 @@ import java.util.Set;
  * A distinction is made between the variables occurring in an object and 
  * the variables bound by that object.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
+ * @deprecated Functionality no longer needed
  */
+@Deprecated
 public interface VarSetSupport {
     /**
      * Returns the set of variables occurring in this object.

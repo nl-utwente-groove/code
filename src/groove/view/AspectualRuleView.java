@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.10 2007-08-22 15:04:59 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.11 2007-08-31 10:23:37 rensink Exp $
  */
 
 package groove.view;
@@ -36,9 +36,7 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
-import groove.rel.RegExprGraph;
 import groove.rel.RegExprLabel;
-import groove.rel.VarGraph;
 import groove.trans.DefaultNAC;
 import groove.trans.EdgeEmbargo;
 import groove.trans.GraphCondition;
@@ -79,7 +77,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -265,11 +263,11 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             System.out.println("");
         }
         // create the new lhs
-        VarGraph lhs = createVarGraph();
+        Graph lhs = createGraph();
         // also create a graph for all left elements, i.e., LHS and NAC
-        VarGraph left = createVarGraph();
+        Graph left = createGraph();
         // create the new rhs
-        VarGraph rhs = createVarGraph();
+        Graph rhs = createGraph();
         // mapping from aspect nodes to RHS nodes
         Map<AspectNode,Node> toRight = new HashMap<AspectNode,Node>();
         // we create a single graph containing all NAC nodes and edges
@@ -424,7 +422,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @param lhs the LHS graph
      * @param nacNodeSet set of graph elements that should be turned into a NAC target
      */
-    protected NAC computeNac(VarGraph lhs, Set<Node> nacNodeSet, Set<Edge> nacEdgeSet) {
+    protected NAC computeNac(Graph lhs, Set<Node> nacNodeSet, Set<Edge> nacEdgeSet) {
     	NAC result = null;
         // first check for merge end edge embargoes
         // they are characterised by the fact that there is precisely 1 element
@@ -441,7 +439,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 		} else {
 			// if we're here it means we couldn't make an embargo
 			result = createNAC(lhs);
-			VarGraph nacTarget = result.getTarget();
+			Graph nacTarget = result.getTarget();
 			Morphism nacMorphism = result.getPattern();
 			// add all nodes to nacTarget
 			nacTarget.addNodeSet(nacNodeSet);
@@ -466,36 +464,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 		}
         return result;
     }
-//
-//	/**
-//     * Callback method to construct a merge or edge embargo from a given edge,
-//     * in case the edge label is a negated regular expression. If the inner
-//     * regular expression is an {@link RegExpr.Empty}, the method yields a 
-//     * merge embargo, for any other it yields an edge embargo. If the label is
-//     * not a negation, the method returns <code>null</code>.
-//	 * @param graph the context for the embargo, if one is constructed
-//	 * @param edge the edge from which the embargo is constructed
-//	 * @return the embargo, or <code>null</code> if <code>edge</code> does
-//	 * not have a top-level {@link RegExpr.Neg} operator.
-//     */
-//    protected NAC computeEmbargoFromNegation(VarGraph graph, Edge edge) {
-//        RegExpr negOperand = RegExprLabel.getNegOperand(edge.label());
-//        if (negOperand == null) {
-//            // the label is not a negation: no embargo
-//            return null;
-//        } else if (negOperand instanceof RegExpr.Empty) {
-//            return createMergeEmbargo(graph, edge.ends());
-//        } else {
-//            // it is an edge embargo. we prefer DefaultLabels.
-//            Label embargoLabel;
-//            if (negOperand instanceof RegExpr.Atom) {
-//                embargoLabel = DefaultLabel.createLabel(((RegExpr.Atom) negOperand).text());
-//            } else {
-//                embargoLabel = new RegExprLabel(negOperand);
-//            }
-//            return createEdgeEmbargo(graph, createEdge(edge.ends(), embargoLabel));
-//        }
-//    }
     
     /**
 	 * Callback method to create a merge embargo.
@@ -504,7 +472,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @return the new {@link groove.trans.MergeEmbargo}
 	 * @see #toRule()
 	 */
-	protected MergeEmbargo createMergeEmbargo(VarGraph context, Node[] embargoNodes) {
+	protected MergeEmbargo createMergeEmbargo(Graph context, Node[] embargoNodes) {
 	    return new MergeEmbargo(context, embargoNodes, properties);
 	}
 
@@ -515,17 +483,17 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @return the new {@link groove.trans.EdgeEmbargo}
 	 * @see #toRule()
 	 */
-	protected EdgeEmbargo createEdgeEmbargo(VarGraph context, Edge embargoEdge) {
+	protected EdgeEmbargo createEdgeEmbargo(Graph context, Edge embargoEdge) {
 	    return new EdgeEmbargo(context, embargoEdge, properties);
 	}
 
 	/**
-	 * Callback method to create a general NAC on a given {@link VarGraph}.
+	 * Callback method to create a general NAC on a given graph.
 	 * @param context the context-graph
 	 * @return the new {@link groove.trans.NAC}
 	 * @see #toRule()
 	 */
-	protected NAC createNAC(VarGraph context) {
+	protected NAC createNAC(Graph context) {
 	    return new DefaultNAC(context, properties);
 	}
 
@@ -563,11 +531,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 
     /**
 	 * Callback method to create a graph that can serve as LHS or RHS of a rule.
-	 * @return a fresh instance of {@link groove.rel.RegExprGraph}
 	 * @see #getAspectGraph()
 	 */
-	protected VarGraph createVarGraph() {
-	    return new RegExprGraph();
+	protected Graph createGraph() {
+	    return graphFactory.newGraph();
 	}
 
 	/**

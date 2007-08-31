@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.7 2007-08-30 15:18:18 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.8 2007-08-31 10:23:22 rensink Exp $
  */
 package groove.match;
 
@@ -27,9 +27,8 @@ import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.rel.RegExpr;
-import groove.rel.RegExprGraph;
 import groove.rel.RegExprLabel;
-import groove.rel.VarGraph;
+import groove.rel.VarSupport;
 import groove.util.Bag;
 import groove.util.HashBag;
 
@@ -53,7 +52,7 @@ import java.util.TreeSet;
  * The search plans include items for all graph nodes and edges, ordered
  * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -110,14 +109,11 @@ public class GraphSearchPlanFactory {
             }
             // compute the set of remaining (unmatched) edges and variables
             remainingEdges = new HashSet<Edge>(graph.edgeSet());
-            remainingVars = new HashSet<String>();
-            if (graph instanceof VarGraph) {
-                remainingVars.addAll(((VarGraph) graph).allVarSet());
-            }
+            remainingVars = new HashSet<String>(VarSupport.getAllVars(graph));
             if (preMatchedEdges != null) {
                 for (Edge edge: preMatchedEdges) {
                     remainingEdges.remove(edge);
-                    remainingVars.removeAll(RegExprGraph.getBoundVars(edge));
+                    remainingVars.removeAll(VarSupport.getBoundVars(edge));
                 }
             }
         }
@@ -381,7 +377,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.7 $
+     * @version $Revision: 1.8 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -602,7 +598,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.7 $
+     * @version $Revision: 1.8 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 

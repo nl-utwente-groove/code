@@ -12,13 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MergeEmbargo.java,v 1.3 2007-04-20 15:12:28 rensink Exp $
+ * $Id: MergeEmbargo.java,v 1.4 2007-08-31 10:23:06 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.DefaultMorphism;
+import groove.graph.Graph;
 import groove.graph.Node;
-import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
 
 /**
@@ -27,7 +27,7 @@ import groove.rel.VarMorphism;
  * by early enforcement (while searching for matchings of the enclosing graph condition).
  * A merge embargo may itself not have negative conditions.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class MergeEmbargo extends DefaultGraphCondition implements NAC, GraphCondition {
     /**
@@ -38,7 +38,7 @@ public class MergeEmbargo extends DefaultGraphCondition implements NAC, GraphCon
      * @require <tt>source.contains(node1) && source.contains(node2)</tt>
      * @ensure <tt>node1().equals(node1) && node2().equals(node2)</tt>
      */
-    public MergeEmbargo(VarGraph source, Node node1, Node node2, SystemProperties properties) {
+    public MergeEmbargo(Graph source, Node node1, Node node2, SystemProperties properties) {
         super(new DefaultMorphism(source, source.newGraph()), properties);
         this.node1 = node1;
         this.node2 = node2;
@@ -54,7 +54,7 @@ public class MergeEmbargo extends DefaultGraphCondition implements NAC, GraphCon
      * @param embargoNodes the nodes that should be matched injectively
      * @require <code>embargoEdge.endCount() == 2</code>
      */
-    public MergeEmbargo(VarGraph source, Node[] embargoNodes, SystemProperties properties) {
+    public MergeEmbargo(Graph source, Node[] embargoNodes, SystemProperties properties) {
         this(source, embargoNodes[0], embargoNodes[1], properties);
         if (embargoNodes.length != 2) {
             throw new IllegalArgumentException("Merge embargo must be binary");

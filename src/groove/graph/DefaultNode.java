@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.5 2007-08-26 07:23:39 rensink Exp $
+ * $Id: DefaultNode.java,v 1.6 2007-08-31 10:23:24 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-08-26 07:23:39 $
+ * @version $Revision: 1.6 $ $Date: 2007-08-31 10:23:24 $
  */
 public class DefaultNode implements Node {
     /**
@@ -215,7 +215,9 @@ public class DefaultNode implements Node {
      * @return the hashcode for this node.
      */
     protected int computeHashCode() {
-    	return System.identityHashCode(this);
+        // for the sake of non-determinism we use the node number as hash code
+        return nodeNr;
+//    	return System.identityHashCode(this);
 //    	return nodeNr;
 //    	int code = nodeNr;
 //    	code ^= (code << 8);

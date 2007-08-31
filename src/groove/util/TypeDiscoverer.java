@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.11 2007-04-30 19:53:32 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.12 2007-08-31 10:23:26 rensink Exp $
  */
 package groove.util;
 
@@ -24,19 +24,18 @@ import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphFactory;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
-import groove.rel.RegExprGraph;
-import groove.rel.VarGraph;
 import groove.trans.DefaultNAC;
 import groove.trans.GraphGrammar;
-import groove.trans.RuleNameLabel;
-import groove.trans.SystemProperties;
 import groove.trans.Rule;
+import groove.trans.RuleNameLabel;
 import groove.trans.RuleSystem;
 import groove.trans.SPORule;
+import groove.trans.SystemProperties;
 import groove.view.FormatException;
 
 import java.io.IOException;
@@ -48,97 +47,9 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-04-30 19:53:32 $
+ * @version $Revision: 1.12 $ $Date: 2007-08-31 10:23:26 $
  */
 public class TypeDiscoverer {
-	/** Extension of files containing type information. */
-	public static final String TYPE_EXTENSION = ".type";
-	
-    /**
-     * Static variable holding the unique instance of this class.
-     */
-    private static final TypeDiscoverer instance = new TypeDiscoverer();
-    
-    /**
-     * Applies the type discoverer to a given graph grammar.
-     */
-    public static void main(String[] args) {
-        TypeDiscoverer discoverer = getInstance();
-        GraphGrammar grammar;
-        try {
-            switch (args.length) {
-            case 1 :
-                grammar = Groove.loadGrammar(getGrammarDirname(args)).toGrammar();
-                break;
-            case 2 :
-            case 3 :
-                grammar = Groove.loadGrammar(getGrammarDirname(args), getStartFilename(args)).toGrammar();
-                break;
-            default : printUsage();
-            return;
-            }
-        } catch (FormatException exc) {
-            System.err.println("Error loading graph grammar: "+exc.getMessage());
-            return;
-        } catch (IOException exc) {
-            System.err.println("Error loading graph grammar: "+exc.getMessage());
-            return;
-        }
-        try {
-            Graph type = discoverer.inferType(grammar);
-            String resultFilename = getTypeFilename(args);
-            Groove.saveGraph(type, resultFilename);
-        } catch (FormatException exc) {
-            System.err.println("Error in rule format: "+exc.getMessage());
-            return;
-        } catch (IOException exc) {
-            System.err.println("Error saving type graph: "+exc.getMessage());
-            return;
-        }
-    }
-
-    /**
-     * Retrieves the grammar directory name from main's arguments.
-     */
-    private static String getGrammarDirname(String[] args) {
-        return args[0];
-    }
-    
-    /**
-     * Retrieves the start state file name from main's arguments, under the assumeption
-     * that the name is actually given as a parameter.
-     */
-    private static String getStartFilename(String[] args) {
-        return args[1];
-    }
-    
-    /**
-     * Retrieves the resulting type file name from main's arguments.
-     * Either the name is explicitly given, or it equals the grammar name minus extension.
-     */
-    private static String getTypeFilename(String[] args) {
-        if (args.length == 3) {
-        	return args[2];
-        } else {
-            String ruleSystemName = Groove.createRuleSystemFilter().stripExtension(getGrammarDirname(args));
-            return ruleSystemName+TYPE_EXTENSION;
-        }
-    }
-
-    /**
-     * Returns the unique instance of this (singleton) class.
-     */
-    public static TypeDiscoverer getInstance() {
-        return instance;
-    }
-    
-    /**
-     * Prints a usage message to the standard error output.
-     */
-    private static void printUsage() {
-        System.err.println("Usage: TypeDiscoverer <grammar> [<start state>] [<type graph>]");
-    }
-
     /**
      * Creates and returns a type graph for a given graph grammar.
      */
@@ -151,7 +62,7 @@ public class TypeDiscoverer {
             // first do the introduction rule
             // create the rule handle, which is the structure used to 
             // identify the rule in the intermediate stages of constructing the type graph
-            Graph ruleHandle = createVarGraph();
+            Graph ruleHandle = createGraph();
             Node ruleIdNode = new DefaultNode();
             ruleHandle.addNode(ruleIdNode);
             ruleHandle.addEdge(ruleIdNode, DefaultLabel.createLabel(rule.getName().text()), ruleIdNode);
@@ -172,19 +83,19 @@ public class TypeDiscoverer {
                 handleToRhsNodeMap.put(creatorImage, creatorNode);
                 ruleHandle.addEdge(ruleIdNode, createFreshLabel(), creatorImage);
             }
-            Morphism introduceMorph = new DefaultMorphism(createVarGraph(), ruleHandle);
+            Morphism introduceMorph = new DefaultMorphism(createGraph(), ruleHandle);
             Rule introduce = createRule(introduceMorph, rule.getName(), introduceSystem);
             introduce.setAndNot(new DefaultNAC(introduceMorph, SystemProperties.getInstance(true)));
             introduceSystem.add(introduce);
             // now the deletion rule
-            Graph deleteLhs = createVarGraph();
+            Graph deleteLhs = createGraph();
             deleteLhs.addNode(ruleIdNode);
             deleteLhs.addEdge(ruleIdEdge);
-            Morphism deleteMorph = new DefaultMorphism(deleteLhs, createVarGraph());
+            Morphism deleteMorph = new DefaultMorphism(deleteLhs, createGraph());
             deleteSystem.add(createRule(deleteMorph, rule.getName(), deleteSystem));
             // now the merging rule
-            Graph mergeLhs = createVarGraph(rule.lhs());
-            Graph mergeRhs = createVarGraph(rule.rhs());
+            Graph mergeLhs = rule.lhs().clone();
+            Graph mergeRhs = rule.rhs().clone();
             Morphism mergeMorph = new DefaultMorphism(mergeLhs, mergeRhs);
             // process the rule's LHS
             for (Node lhsNode: mergeLhs.nodeSet()) {
@@ -247,18 +158,18 @@ public class TypeDiscoverer {
 	}
 
     /**
-     * Factory method for a {@link VarGraph}.
+     * Factory method for a graph.
      */
-    protected VarGraph createVarGraph() {
-        return new RegExprGraph();
+    protected Graph createGraph() {
+        return GraphFactory.getInstance().newGraph();
     }
-
-    /**
-     * Factory method for a {@link VarGraph} copy of a given graph.
-     */
-    protected VarGraph createVarGraph(Graph graph) {
-        return new RegExprGraph(graph);
-    }
+//
+//    /**
+//     * Factory method for a {@link VarGraph} copy of a given graph.
+//     */
+//    protected Graph createVarGraph(Graph graph) {
+//        return graph.newGraph();
+//    }
     
     /**
      * Factory method for a fresh label.
@@ -266,13 +177,13 @@ public class TypeDiscoverer {
     protected Label createFreshLabel() {
         return DefaultLabel.createFreshLabel();
     }
-    
-    /**
-     * Factory method to create a graph to be used as the LHS or RHS of an {@link SPORule}.
-     */
-    protected Graph createGraph() {
-        return new RegExprGraph();
-    }
+//    
+//    /**
+//     * Factory method to create a graph to be used as the LHS or RHS of an {@link SPORule}.
+//     */
+//    protected Graph createGraph() {
+//        return new RegExprGraph();
+//    }
     
     /** Callback factory method to create a rule. */
     protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name, RuleSystem ruleSystem) throws FormatException {
@@ -285,4 +196,91 @@ public class TypeDiscoverer {
         result.removeAll(rule.getMorphism().elementMap().nodeMap().keySet());
         return result;
     }
+    
+    /**
+     * Applies the type discoverer to a given graph grammar.
+     */
+    public static void main(String[] args) {
+        TypeDiscoverer discoverer = getInstance();
+        GraphGrammar grammar;
+        try {
+            switch (args.length) {
+            case 1 :
+                grammar = Groove.loadGrammar(getGrammarDirname(args)).toGrammar();
+                break;
+            case 2 :
+            case 3 :
+                grammar = Groove.loadGrammar(getGrammarDirname(args), getStartFilename(args)).toGrammar();
+                break;
+            default : printUsage();
+            return;
+            }
+        } catch (FormatException exc) {
+            System.err.println("Error loading graph grammar: "+exc.getMessage());
+            return;
+        } catch (IOException exc) {
+            System.err.println("Error loading graph grammar: "+exc.getMessage());
+            return;
+        }
+        try {
+            Graph type = discoverer.inferType(grammar);
+            String resultFilename = getTypeFilename(args);
+            Groove.saveGraph(type, resultFilename);
+        } catch (FormatException exc) {
+            System.err.println("Error in rule format: "+exc.getMessage());
+            return;
+        } catch (IOException exc) {
+            System.err.println("Error saving type graph: "+exc.getMessage());
+            return;
+        }
+    }
+
+    /**
+     * Retrieves the grammar directory name from main's arguments.
+     */
+    private static String getGrammarDirname(String[] args) {
+        return args[0];
+    }
+    
+    /**
+     * Retrieves the start state file name from main's arguments, under the assumeption
+     * that the name is actually given as a parameter.
+     */
+    private static String getStartFilename(String[] args) {
+        return args[1];
+    }
+    
+    /**
+     * Retrieves the resulting type file name from main's arguments.
+     * Either the name is explicitly given, or it equals the grammar name minus extension.
+     */
+    private static String getTypeFilename(String[] args) {
+        if (args.length == 3) {
+            return args[2];
+        } else {
+            String ruleSystemName = Groove.createRuleSystemFilter().stripExtension(getGrammarDirname(args));
+            return ruleSystemName+TYPE_EXTENSION;
+        }
+    }
+
+    /**
+     * Returns the unique instance of this (singleton) class.
+     */
+    public static TypeDiscoverer getInstance() {
+        return instance;
+    }
+    
+    /**
+     * Prints a usage message to the standard error output.
+     */
+    private static void printUsage() {
+        System.err.println("Usage: TypeDiscoverer <grammar> [<start state>] [<type graph>]");
+    }
+    /** Extension of files containing type information. */
+    public static final String TYPE_EXTENSION = ".type";
+    
+    /**
+     * Static variable holding the unique instance of this class.
+     */
+    private static final TypeDiscoverer instance = new TypeDiscoverer();
 }

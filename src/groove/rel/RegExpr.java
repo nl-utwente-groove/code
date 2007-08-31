@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExpr.java,v 1.13 2007-08-26 07:23:54 rensink Exp $
+ * $Id: RegExpr.java,v 1.14 2007-08-31 10:23:21 rensink Exp $
  */
 package groove.rel;
 
@@ -33,9 +33,9 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
-abstract public class RegExpr implements VarSetSupport {
+abstract public class RegExpr { //implements VarSetSupport {
     /** 
      * Sequential operator.
      * @see Seq
@@ -1254,34 +1254,6 @@ abstract public class RegExpr implements VarSetSupport {
         return result;
     }
 
-    public boolean hasVar(String var) {
-        if (getWildcardId() != null) {
-            return getWildcardId().equals(var);
-        } else {
-            boolean result = false;
-            Iterator<RegExpr> operands = getOperands().iterator();
-            while (!result && operands.hasNext()) {
-                RegExpr operand = operands.next();
-                result = operand.hasVar(var);
-            }
-            return result;
-        }
-    }
-
-    public boolean hasVars() {
-        if (getWildcardId() != null) {
-            return true;
-        } else {
-            boolean result = false;
-            Iterator<RegExpr> operands = getOperands().iterator();
-            while (!result && operands.hasNext()) {
-                RegExpr operand = operands.next();
-                result = operand.hasVars();
-            }
-            return result;
-        }
-    }
-
     /**
      * Returns the list of variables <i>bound</i> by this regular expression.
      * A variable is bound if the expression cannot be matched without providing
@@ -1308,10 +1280,6 @@ abstract public class RegExpr implements VarSetSupport {
         return result;
     }
     
-    public boolean bindsVar(String var) {
-        return boundVarSet().contains(var);
-    }
-
     /**
      * Returns the (plain text) denotation for the operator in this class, as set in the
      * constructor.

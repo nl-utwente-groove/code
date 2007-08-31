@@ -12,17 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.22 2007-08-29 14:00:35 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.23 2007-08-31 10:23:06 rensink Exp $
  */
 package groove.trans;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import groove.graph.DefaultMorphism;
 import groove.graph.Edge;
@@ -32,14 +24,22 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
 import groove.match.MatchStrategy;
-import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
+import groove.rel.VarSupport;
 import groove.util.Reporter;
 import groove.view.FormatException;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
 /**
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -57,7 +57,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * and initially empty nested predicate.
      * The name may be <code>null</code>.
      */
-    protected DefaultGraphCondition(VarGraph target, NameLabel name, SystemProperties properties) {
+    protected DefaultGraphCondition(Graph target, NameLabel name, SystemProperties properties) {
         super(target.newGraph(), target);
 		this.properties = properties;
         this.name = name;
@@ -216,8 +216,8 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     /**
      * This implementation returns <code>cod()</code>.
      */
-    public VarGraph getTarget() {
-        return (VarGraph) cod();
+    public Graph getTarget() {
+        return cod();
     }
     
     /**
@@ -237,8 +237,8 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     /**
      * Returns <code>getPattern().dom()</code>.
      */
-    public VarGraph getContext() {
-        return (VarGraph) dom();
+    public Graph getContext() {
+        return dom();
     }
 
     /** 
@@ -468,7 +468,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     
     /**
      * Callback method for creating the negated and complex negated conjuncts.
-     * @see #DefaultGraphCondition(VarGraph, NameLabel, SystemProperties)
+     * @see #DefaultGraphCondition(Graph, NameLabel, SystemProperties)
      * @see #addComplexNegCondition(GraphCondition)
      */
     protected DefaultGraphPredicate createGraphPredicate() {
@@ -479,9 +479,8 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * Callback method to create an initial (partial) matching for a given subject
      * morphism. The matching goes from the target pattern of this condition to 
      * the subject's codomain.
-     * This implementation builds the result upon an empty matching obtained from
-     * {@link #newMatcher(Graph)} by inverting the underlying morphism of 
-     * this condition and concatenating the subject morphism.
+     * This implementation builds the result upon a given subject matching of the context,
+     * by inverting the underlying morphism of this condition and concatenating the subject morphism.
      * Returns <code>null</code> if this fails due to inconsistent injectivity constraints
      * of <code>this</code> and <code>subject</code>.
      */
@@ -491,7 +490,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
             constructInvertConcat(this, subject, result);
             for (Map.Entry<String,Label> varEntry: subject.getValuation().entrySet()) {
                 String var = varEntry.getKey();
-                if (getTarget().hasVar(var)) {
+                if (getTargetVars().contains(var)) {
                     result.putVar(var, varEntry.getValue());
                 }
             }
@@ -511,6 +510,13 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     	return new DefaultMatching(this, graph);
     }
     
+    /** Returns the set of variables in the target graph. */
+    private Set<String> getTargetVars() {
+        if (targetVars == null) {
+            targetVars = VarSupport.getAllVars(getTarget());
+        }
+        return targetVars;
+    }
     /**
      * Creates and returns a failure result for a given subject morphism,
      * based on a given mapping from matchings of this condition's pattern
@@ -528,7 +534,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      */
     @Deprecated
     protected MergeEmbargo createMergeEmbargo(Node node1, Node node2) {
-        return new MergeEmbargo((VarGraph) cod(), node1, node2, getProperties());
+        return new MergeEmbargo(cod(), node1, node2, getProperties());
     }
     
     /**
@@ -538,7 +544,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      */
     @Deprecated
     protected EdgeEmbargo createEdgeEmbargo(Edge embargoEdge) {
-        return new EdgeEmbargo((VarGraph) cod(), embargoEdge, getProperties());
+        return new EdgeEmbargo(cod(), embargoEdge, getProperties());
     }
 
     /**
@@ -679,7 +685,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     
     /**
      * Callback factory method to create a matching schedule factory.
-     * This implementation returns a {@linkplain DefaultConditionSearchPlanFactory}.
+     * This implementation returns a {@linkplain groove.trans.match.DefaultConditionSearchPlanFactory}.
      */
     @Deprecated
     protected groove.trans.match.ConditionSearchPlanFactory createSearchPlanFactory() {
@@ -716,6 +722,8 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * first invocation.
      */
     private MatchStrategy matcher;
+    /** The variables occurring in edges of the target (i.e., the codomain). */
+    private Set<String> targetVars;
     /**
      * The fixed matching order for this graph condition.
      * Initially <code>null</code>; set by {@link #getSearchPlan()} upon its
