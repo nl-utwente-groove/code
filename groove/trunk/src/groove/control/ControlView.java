@@ -12,13 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlView.java,v 1.4 2007-08-26 07:23:33 rensink Exp $
+ * $Id: ControlView.java,v 1.5 2007-08-31 10:23:32 rensink Exp $
  */
 package groove.control;
 
-import groove.graph.DefaultMorphism;
+import groove.graph.GraphFactory;
 import groove.graph.Morphism;
-import groove.rel.RegExprGraph;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
@@ -62,11 +61,13 @@ public class ControlView {
 	/** the RUle object used for Else Transitions **/
 	public static Rule ELSE_RULE;
 	
+    private static GraphFactory factory = GraphFactory.getInstance();
+    
 	static {
 		try
 		{
-			Morphism m_l = new DefaultMorphism(new RegExprGraph(), new RegExprGraph());
-			Morphism m_e = new DefaultMorphism(new RegExprGraph(), new RegExprGraph());
+			Morphism m_l = factory.newMorphism(factory.newGraph(), factory.newGraph());
+			Morphism m_e = factory.newMorphism(factory.newGraph(), factory.newGraph());
 			LAMBDA_RULE = new SPORule(m_l, new RuleNameLabel(Control.LAMBDA_LABEL),ANY_RULE_PRORITY, new SystemProperties());
 			LAMBDA_RULE.setFixed();
 			ELSE_RULE = new SPORule(m_e, new RuleNameLabel(Control.ELSE_LABEL),ELSE_RULE_PRIORITY, new SystemProperties());

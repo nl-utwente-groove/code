@@ -12,17 +12,17 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultNAC.java,v 1.4 2007-04-20 15:12:27 rensink Exp $
+ * $Id: DefaultNAC.java,v 1.5 2007-08-31 10:23:07 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.DefaultMorphism;
+import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
 
 /**
- * @version $Revision: 1.4 $ $Date: 2007-04-20 15:12:27 $
+ * @version $Revision: 1.5 $ $Date: 2007-08-31 10:23:07 $
  */
 public class DefaultNAC extends DefaultGraphCondition implements NAC {
     /**
@@ -35,7 +35,7 @@ public class DefaultNAC extends DefaultGraphCondition implements NAC {
     /**
      * Creates a NAC over a default context and an initially empty target pattern.
      */
-    public DefaultNAC(VarGraph context, SystemProperties properties) {
+    public DefaultNAC(Graph context, SystemProperties properties) {
         this(new DefaultMorphism(context, context.newGraph()), properties);
     }
 

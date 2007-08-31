@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.22 2007-08-29 14:00:35 rensink Exp $
+ * $Id: SPOEvent.java,v 1.23 2007-08-31 10:23:06 rensink Exp $
  */
 package groove.trans;
 
@@ -51,7 +51,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.22 $ $Date: 2007-08-29 14:00:35 $
+ * @version $Revision: 1.23 $ $Date: 2007-08-31 10:23:06 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -743,8 +743,8 @@ public class SPOEvent implements RuleEvent {
     }
 
     /** 
-     * Returns a coanhor image suitable for a given graph.
-     * This is delegate to the event, which can indeed keep a map of such 
+     * Returns a coanchor image suitable for a given graph.
+     * This is delegated to the event, which can indeed keep a map of such 
      * images, and so save memory. 
      */
     Node[] getCoanchorImage(Graph host) {

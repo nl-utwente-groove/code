@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.9 2007-06-05 10:31:45 kastenberg Exp $
+ * $Id: NACTest.java,v 1.10 2007-08-31 10:23:24 rensink Exp $
  */
 package groove.test;
 
@@ -22,9 +22,8 @@ import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphFactory;
 import groove.graph.Morphism;
-import groove.rel.RegExprGraph;
-import groove.rel.VarGraph;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.EdgeEmbargo;
 import groove.trans.Matching;
@@ -56,7 +55,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -77,16 +76,16 @@ public class NACTest extends TestCase {
     /** The setup is as in the paper */
     @Override
     protected void setUp() {
-        VarGraph protREGraph = new RegExprGraph();
+        Graph protREGraph = GraphFactory.getInstance().newGraph();
         int[] lhsSrc    = { 0 };
         String[] lhsLab = {"a"};
         int[] lhsTgt    = { 1 };
-        VarGraph lhs = (VarGraph) setUpGraph(protREGraph, 0, 2, lhsSrc, lhsLab, lhsTgt);
+        Graph lhs = setUpGraph(protREGraph, 0, 2, lhsSrc, lhsLab, lhsTgt);
 
         int[] rhsSrc    = { 0 };
         String[] rhsLab = {"b"};
         int[] rhsTgt    = { 1 };
-        VarGraph rhs = (VarGraph) setUpGraph(protREGraph, 1, 2, rhsSrc, rhsLab, rhsTgt);
+        Graph rhs = setUpGraph(protREGraph, 1, 2, rhsSrc, rhsLab, rhsTgt);
 
         DefaultMorphism ruleMorphism = new DefaultMorphism(lhs,rhs);
         ruleMorphism.dom().addNode(n[0][0]);

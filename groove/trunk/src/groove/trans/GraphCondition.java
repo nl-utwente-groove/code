@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.8 2007-08-26 07:24:08 rensink Exp $
+ * $Id: GraphCondition.java,v 1.9 2007-08-31 10:23:06 rensink Exp $
  */
 package groove.trans;
 
@@ -23,7 +23,6 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.rel.VarGraph;
 import groove.rel.VarMorphism;
 import groove.view.FormatException;
 
@@ -31,7 +30,7 @@ import groove.view.FormatException;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public interface GraphCondition extends GraphTest {
     /**
@@ -47,7 +46,7 @@ public interface GraphCondition extends GraphTest {
      * The codomain of the pattern morphism.
      * Convenience method for <code>getPattern().cod()</code>.
      */
-    public VarGraph getTarget();
+    public Graph getTarget();
     
     /** Returns the secondary properties of this graph condition. */
     public SystemProperties getProperties();

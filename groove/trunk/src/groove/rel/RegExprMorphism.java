@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprMorphism.java,v 1.7 2007-08-26 07:23:54 rensink Exp $
+ * $Id: RegExprMorphism.java,v 1.8 2007-08-31 10:23:21 rensink Exp $
  */
 package groove.rel;
 
@@ -29,13 +29,13 @@ import java.util.Map;
  * Implementation of the {@link groove.rel.VarMorphism} interface that
  * implements the required variable by putting it into the element map.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
     /**
      * Creates an initially empty morphism between two given graphs.
      */
-    public RegExprMorphism(VarGraph dom, Graph cod) {
+    public RegExprMorphism(Graph dom, Graph cod) {
         super(dom, cod);
     }
 
@@ -74,11 +74,10 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
 
     /**
      * This implementation returns a {@link RegExprMorphism}.
-     * The first parameter is required to be a {@link VarGraph}.
      */
     @Override
     public RegExprMorphism createMorphism(Graph dom, Graph cod) {
-        return new RegExprMorphism((VarGraph) dom, cod);
+        return new RegExprMorphism(dom, cod);
     }
 
     /**
@@ -88,7 +87,7 @@ public class RegExprMorphism extends DefaultMorphism implements VarMorphism {
      */
     @Override
     protected Morphism createMorphism(final NodeEdgeMap sim) {
-        RegExprMorphism result = new RegExprMorphism((VarGraph) dom(), cod()) {
+        RegExprMorphism result = new RegExprMorphism(dom(), cod()) {
             @Override
             protected VarNodeEdgeMap createElementMap() {
                 return (VarNodeEdgeMap) sim;

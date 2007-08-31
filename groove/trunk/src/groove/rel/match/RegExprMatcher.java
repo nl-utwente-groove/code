@@ -1,5 +1,5 @@
 /*
- * $Id: RegExprMatcher.java,v 1.4 2007-08-24 17:34:52 rensink Exp $
+ * $Id: RegExprMatcher.java,v 1.5 2007-08-31 10:23:22 rensink Exp $
  */
 package groove.rel.match;
 
@@ -14,9 +14,9 @@ import groove.rel.VarNodeEdgeMap;
 import java.util.Map;
 
 /**
- * Simulation from a {@link groove.rel.VarGraph} in a {@link groove.graph.Graph}. 
+ * Simulation that takes regular expressions into account.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 @Deprecated
 public class RegExprMatcher extends DefaultMatcher {

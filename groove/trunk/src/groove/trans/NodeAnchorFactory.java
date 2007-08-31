@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeAnchorFactory.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: NodeAnchorFactory.java,v 1.2 2007-08-31 10:23:07 rensink Exp $
  */
 package groove.trans;
 
@@ -23,6 +23,7 @@ import java.util.Set;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
+import groove.rel.VarSupport;
 
 /**
  * Morphism specialization that includes the possibility to 
@@ -31,7 +32,7 @@ import groove.graph.Node;
  * array of node images, as well as the ability to reconstruct
  * itself out of such a  minimal representation.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class NodeAnchorFactory implements AnchorFactory {
     /**
@@ -50,7 +51,7 @@ public class NodeAnchorFactory implements AnchorFactory {
         Set<Element> anchors = new HashSet<Element>(rule.lhs().nodeSet());
         // set of edge ends that may be removed because the edges themselves are anchors
         Set<Node> removableEnds = new HashSet<Node>();
-        for (Edge lhsVarEdge: rule.lhs().varEdgeSet()) {
+        for (Edge lhsVarEdge: VarSupport.getVarEdges(rule.lhs())) {
             anchors.add(lhsVarEdge);
             // if we have the edge in the anchors, its end nodes need not be there
             removableEnds.addAll(Arrays.asList(lhsVarEdge.ends()));

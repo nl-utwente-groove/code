@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.15 2007-08-22 15:04:48 rensink Exp $
+ * $Id: SPOApplication.java,v 1.16 2007-08-31 10:23:06 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2007-08-22 15:04:48 $
+ * @version $Revision: 1.16 $ $Date: 2007-08-31 10:23:06 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -185,12 +185,9 @@ public class SPOApplication implements RuleApplication, Derivation {
 		// add creator node images
 		Node[] coanchor = rule.coanchor();
 		int coanchorSize = coanchor.length;
-		Element[] coanchorImage = getCoanchorImage();
+		Node[] coanchorImage = getCoanchorImage();
 		for (int i = 0; i < coanchorSize; i++) {
-			assert coanchorImage[i] instanceof Node : String.format("Coanchor image at %d is %s",
-					i,
-					coanchorImage[i]);
-			result.putNode(coanchor[i], (Node) coanchorImage[i]);
+			result.putNode(coanchor[i], coanchorImage[i]);
 		}
 		return result;
 	}

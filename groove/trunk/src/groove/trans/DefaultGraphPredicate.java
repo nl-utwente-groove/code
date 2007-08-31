@@ -12,9 +12,18 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphPredicate.java,v 1.8 2007-08-22 15:04:48 rensink Exp $
+ * $Id: DefaultGraphPredicate.java,v 1.9 2007-08-31 10:23:07 rensink Exp $
  */
 package groove.trans;
+
+import groove.graph.DefaultMorphism;
+import groove.graph.Graph;
+import groove.graph.GraphFactory;
+import groove.graph.Morphism;
+import groove.rel.RegExprMorphism;
+import groove.rel.VarMorphism;
+import groove.util.NestedIterator;
+import groove.util.TransformIterator;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,29 +33,16 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import groove.graph.DefaultMorphism;
-import groove.graph.Graph;
-import groove.graph.Morphism;
-import groove.rel.RegExprGraph;
-import groove.rel.RegExprMorphism;
-import groove.rel.VarGraph;
-import groove.rel.VarMorphism;
-import groove.util.NestedIterator;
-import groove.util.TransformIterator;
-
 /**
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implements GraphPredicate {
-	/** Empty graph, to be used in the standard construction of an initial morphism. */
-    static private final VarGraph EMPTY_VAR_GRAPH = new RegExprGraph();
-    
     /**
      * Constructs a graph condition with given context and empty name,
      * and initially empty pattern and target graph.
      */
-    protected DefaultGraphPredicate(VarGraph context, NameLabel name) {
+    protected DefaultGraphPredicate(Graph context, NameLabel name) {
         this.context = context;
         this.name = name;
     }
@@ -55,7 +51,7 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
      * Constructs a graph condition with given context and name,
      * and initially empty pattern and target graph.
      */
-    protected DefaultGraphPredicate(VarGraph context) {
+    protected DefaultGraphPredicate(Graph context) {
         this(context, null);
     }
 
@@ -103,20 +99,9 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
     /**
      * Returns <code>getPattern().dom()</code>.
      */
-    public VarGraph getContext() {
+    public Graph getContext() {
         return context;
     }
-//
-//    /** Returns <code>true</code> if any of the graph conditions does. */
-//    public boolean isAttributed() {
-//    	boolean result = false;
-//    	Iterator<GraphCondition> conditionIter = this.iterator();
-//    	while (! result && conditionIter.hasNext()) {
-//    		result = conditionIter.next().isAttributed();
-//    	}
-//		return result;
-//	}
-
 	/**
      * If {@link #isGround()} holds, delegates to {@link #matches(VarMorphism)} 
      * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
@@ -225,11 +210,11 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
 
     /**
      * Factory method for a morphism from the empty graph to a given graph.
-     * This implementation returns a {@link DefaultMorphism}; the empty graph
+     * This implementation returns a {@link RegExprMorphism}; the empty graph
      * is obtained by creating one from <code>graph.newGraph()</code>.
      */
     protected VarMorphism createInitialMorphism(Graph graph) {
-        return new RegExprMorphism(EMPTY_VAR_GRAPH, graph);
+        return new RegExprMorphism(EMPTY_GRAPH, graph);
     }
 
     /**
@@ -256,11 +241,14 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
     /**
      * The context of this predicate.
      */
-    private final VarGraph context;
+    private final Graph context;
     /**
      * Flag to indicate that the predicate is fixed.
      * This means all the graphs and morphisms are fixed,
      * and no more conditions may be added.
      */
     private boolean fixed;
+    
+    /** Empty graph, to be used in the standard construction of an initial morphism. */
+    static private final Graph EMPTY_GRAPH = GraphFactory.getInstance().newGraph();
 }

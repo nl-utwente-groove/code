@@ -12,21 +12,17 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphGrammar.java,v 1.18 2007-06-18 07:25:46 fladder Exp $
+ * $Id: GraphGrammar.java,v 1.19 2007-08-31 10:23:06 rensink Exp $
  */
 package groove.trans;
 
 import groove.control.ControlAutomaton;
-import groove.control.ControlState;
-import groove.control.ControlTransition;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.algebra.ValueNode;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -35,7 +31,7 @@ import java.util.List;
  * Currently the grammar also keeps track of the GTS generated, which is not
  * really natural.
  * @author Arend Rensink
- * @version $Revision: 1.18 $ $Date: 2007-06-18 07:25:46 $
+ * @version $Revision: 1.19 $ $Date: 2007-08-31 10:23:06 $
  */
 public class GraphGrammar extends RuleSystem {   
     /**
@@ -154,6 +150,22 @@ public class GraphGrammar extends RuleSystem {
         this.startGraph = startGraph;
     }
 
+    /** 
+     * Sets a control automaton for this grammar. 
+     * This is only allowed if the grammar is not yet fixed, as indicated by {@link #isFixed()}.
+     * @throws IllegalStateException if the grammar is already fixed
+     * @see #isFixed()
+     */
+    public void setControl(ControlAutomaton control) {
+        testFixed(false);
+        this.control = control;
+    }
+    
+    /** Returns the control automaton of this grammar, or <code>null</code> if there is none. */
+    public ControlAutomaton getControl() {
+        return this.control;
+    }
+    
     /** Fixes the start graph, in addition to calling the <code>super</code> method. */
 	@Override
 	public void setFixed() throws FormatException {
@@ -207,25 +219,9 @@ public class GraphGrammar extends RuleSystem {
     }
 
     /**
-     * The start Graph of this graph grammar.
-     * @invariant <tt>startGraph != null</tt>
+     * The start graph of this graph grammar.
      */
     private Graph startGraph;
-    
+    /** The control automaton of this grammar; <code>null</code> if there is none. */
     private ControlAutomaton control;
-    
-    public void setControl(ControlAutomaton control)
-    {
-    	this.control = control;
-    }
-    
-    public ControlAutomaton getControl()
-    {
-    	return this.control;
-    }
-//    /**
-//     * The name of this grammar;
-//     * <tt>null</tt> if the grammar is anonymous.
-//     */
-//    private final String name;
 }

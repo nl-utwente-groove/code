@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprGraph.java,v 1.5 2007-08-29 14:00:39 rensink Exp $
+ * $Id: RegExprGraph.java,v 1.6 2007-08-31 10:23:21 rensink Exp $
  */
 package groove.rel;
 
@@ -28,8 +28,10 @@ import groove.graph.NodeSetEdgeSetGraph;
  * Default implementation of the {@link groove.rel.VarGraph} interface,
  * where the variables correspond to wildcard identifiers in the edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
+ * @deprecated Use ordinary graphs and the utilities in {@link VarSupport}
  */
+@Deprecated
 public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     /**
      * Constructs an empty graph.
@@ -154,7 +156,7 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     protected Set<String> computeAllVars() {
         Set<String> result = new HashSet<String>();
         for (Edge edge: edgeSet()) {
-            result.addAll(getAllVars(edge));
+            result.addAll(VarSupport.getAllVars(edge));
         }
         return result;
     }
@@ -166,7 +168,7 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
     protected Set<String> computeBoundVars() {
         Set<String> result = new HashSet<String>();
         for (Edge edge: edgeSet()) {
-            result.addAll(getBoundVars(edge));
+            result.addAll(VarSupport.getBoundVars(edge));
         }
         return result;
     }
@@ -201,30 +203,4 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
      * <code>null</code> as long as the graph is not fixed.
      */
     private Set<Edge> varEdgeSet;
-    
-    /** 
-     * Returns the set of all variables involved in a given edge.
-     * If the edge is has a {@link RegExprLabel}, this is the result of
-     * {@link RegExpr#allVarSet()}; otherwise, it is the empty set.
-     */
-    static public Set<String> getAllVars(Edge edge) {
-        if (edge.label() instanceof RegExprLabel) {
-            return ((RegExprLabel) edge.label()).getRegExpr().allVarSet();
-        } else {
-            return Collections.emptySet();
-        }
-    }
-    
-    /** 
-     * Returns the set of variables bound by a given edge.
-     * If the edge is has a {@link RegExprLabel}, this is the result of
-     * {@link RegExpr#boundVarSet()}; otherwise, it is the empty set.
-     */
-    static public Set<String> getBoundVars(Edge edge) {
-        if (edge.label() instanceof RegExprLabel) {
-            return ((RegExprLabel) edge.label()).getRegExpr().boundVarSet();
-        } else {
-            return Collections.emptySet();
-        }
-    }
 }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.20 2007-08-29 11:07:52 rensink Exp $
+ * $Id: SPORule.java,v 1.21 2007-08-31 10:23:06 rensink Exp $
  */
 package groove.trans;
 
@@ -26,7 +26,7 @@ import groove.match.ConditionSearchPlanFactory;
 import groove.match.MatchStrategy;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
-import groove.rel.VarGraph;
+import groove.rel.VarSupport;
 import groove.util.Groove;
 import groove.view.FormatException;
 
@@ -43,7 +43,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -99,15 +99,15 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * @throws FormatException if the rule system properties do not concur with the rule itself
      */
     public SPORule(Morphism morph, RuleNameLabel name, int priority, SystemProperties properties) throws FormatException {
-        super((VarGraph) morph.dom(), name, properties);
+        super(morph.dom(), name, properties);
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Constructing rule: " + name);
             Groove.message("Rule morphism: " + morph);
         }
         this.hasCreators = !morph.isSurjective();
         this.morphism = morph;
-        this.lhs = (VarGraph) morphism.dom();
-        this.rhs = (VarGraph) morphism.cod();
+        this.lhs = morphism.dom();
+        this.rhs = morphism.cod();
     	this.priority = priority;
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Rule " + name + ": " + this);
@@ -157,11 +157,11 @@ public class SPORule extends DefaultGraphCondition implements Rule {
         return eventSearchPlan;
     }
 
-    public VarGraph lhs() {
+    public Graph lhs() {
         return lhs;
     }
 
-    public VarGraph rhs() {
+    public Graph rhs() {
         return rhs;
     }
 
@@ -573,7 +573,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * Computes the set of variable-binding edges occurring in the lhs.
 	 */
 	protected Edge[] computeVarEdges() {
-		return lhs.varEdgeSet().toArray(new Edge[0]);
+		return VarSupport.getVarEdges(lhs).toArray(new Edge[0]);
 	}
 	
 	/**
@@ -628,12 +628,12 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * This production rule's left hand side.
      * @invariant lhs != null
      */
-    private final VarGraph lhs;
+    private final Graph lhs;
     /** 
      * This production rule's right hand side.
      * @invariant rhs != null
      */
-    private final VarGraph rhs;
+    private final Graph rhs;
 //    /**
 //     * The grammar with which this rule is associated; may be <code>null</code>.
 //     */

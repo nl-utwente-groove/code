@@ -12,16 +12,16 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.10 2007-08-24 17:35:11 rensink Exp $
- * $Date: 2007-08-24 17:35:11 $
+ * $Id: Rule.java,v 1.11 2007-08-31 10:23:07 rensink Exp $
+ * $Date: 2007-08-31 10:23:07 $
  */
 package groove.trans;
 
 import groove.graph.Element;
+import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.match.MatchStrategy;
-import groove.rel.VarGraph;
 import groove.rel.VarNodeEdgeMap;
 
 import java.util.Comparator;
@@ -34,7 +34,7 @@ import java.util.List;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -66,13 +66,13 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * Returns the left hand side of this Rule.
      * @ensure <tt>result == morphism().source()</tt>
      */
-    public VarGraph lhs();
+    public Graph lhs();
 
     /**
      * Returns the right hand side of this Rule.
      * @ensure <tt>result == morphism().cod()</tt>
      */
-    public VarGraph rhs();
+    public Graph rhs();
 
     /**
      * Returns the rule morphism, which is the partial morphism from LHS
