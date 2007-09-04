@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.13 2007-06-04 19:47:18 rensink Exp $
+ * $Id: Gossips.java,v 1.14 2007-09-04 20:59:26 rensink Exp $
  */
 package groove.samples;
 
@@ -26,6 +26,7 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.NodeFactory;
 import groove.lts.AliasRuleApplier;
 import groove.lts.DefaultGraphTransition;
 import groove.lts.GraphNextState;
@@ -39,10 +40,8 @@ import groove.trans.SPOApplication;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
-import groove.trans.SystemRecord;
 import groove.util.GenerateProgressMonitor;
 import groove.util.Groove;
-import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 
 import java.io.IOException;
@@ -54,7 +53,7 @@ import java.util.List;
  * Sample class for a universal rule.
  * The example is based on the <i>gossiping girl</i> case.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";
@@ -174,17 +173,17 @@ public class Gossips {
         }
 
         @Override
-        public RuleEvent newEvent(VarNodeEdgeMap anchorMap, SystemRecord record) {
+        public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory) {
 //        	return getRuleFactory().createRuleEvent(this, anchorMap);
-            return new GossipEvent(this, anchorMap, record);
+            return new GossipEvent(this, anchorMap, nodeFactory);
         }
     }
     
     /** Event class corresponding to the {@link GossipRule}. */
     static class GossipEvent extends SPOEvent {
     	/** Constructs an event for the gossip rule. */
-        public GossipEvent(GossipRule gossipRule, VarNodeEdgeMap anchorMap, SystemRecord record) {
-            super(gossipRule, anchorMap, record);
+        public GossipEvent(GossipRule gossipRule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory) {
+            super(gossipRule, anchorMap, nodeFactory);
         }
 
         @Override

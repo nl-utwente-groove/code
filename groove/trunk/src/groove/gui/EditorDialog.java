@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorDialog.java,v 1.7 2007-08-26 07:24:04 rensink Exp $
+ * $Id: EditorDialog.java,v 1.8 2007-09-04 20:59:32 rensink Exp $
  */
 package groove.gui;
 
@@ -39,7 +39,7 @@ import javax.swing.WindowConstants;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class EditorDialog extends JDialog {
     /**
@@ -98,11 +98,12 @@ public class EditorDialog extends JDialog {
     }
 
     /**
-     * Creates and returns the menu bar. Requires the actions to have been initialized first.
+     * Creates and returns the menu bar. Requires the actions to have been initialised first.
      */
     protected JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(editor.createEditMenu());
+        menuBar.add(editor.createPropertiesMenu());
         menuBar.add(editor.createDisplayMenu());
         menuBar.add(createOptionsMenu());
         menuBar.add(editor.createHelpMenu());
@@ -202,7 +203,6 @@ public class EditorDialog extends JDialog {
     /** Besides calling the super method, also disposes the editor frame. */
     @Override
 	public void dispose() {
-		// TODO Auto-generated method stub
 		super.dispose();
 		editor.getFrame().dispose();
 	}

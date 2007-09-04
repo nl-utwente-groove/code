@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.8 2007-08-31 10:23:22 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.9 2007-09-04 20:59:24 rensink Exp $
  */
 package groove.match;
 
@@ -52,12 +52,12 @@ import java.util.TreeSet;
  * The search plans include items for all graph nodes and edges, ordered
  * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class GraphSearchPlanFactory {
     /** 
      * Private, empty constructor.
-     * This is a ginleton class; get the instance through {@link #getInstance()}.
+     * This is a singleton class; get the instance through {@link #getInstance()}.
      */
     GraphSearchPlanFactory() {
         // empty
@@ -377,7 +377,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.8 $
+     * @version $Revision: 1.9 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -598,7 +598,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.8 $
+     * @version $Revision: 1.9 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 

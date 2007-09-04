@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatching.java,v 1.11 2007-08-29 14:00:35 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.12 2007-09-04 20:59:29 rensink Exp $
  */
 package groove.trans;
 
+import groove.calc.Property;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.NodeEdgeMap;
@@ -33,10 +34,10 @@ import java.util.Map;
 /**
  * Default implementation of the {@link Matching} interface, based on
  * {@link groove.graph.DefaultMorphism}.
- * Expecially redefines the notion of a <i>total extension</i> to those that
+ * Especially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
@@ -59,7 +60,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      */
     @Override
     public boolean hasTotalExtensions() {
-        if (hasComplexNegConjunct()) {
+        if (hasAC()) {
             return getTotalExtension() != null;
         } else {
             // if there are no complex negative conditions,
@@ -76,11 +77,11 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      */
     @Override
     public Morphism getTotalExtension() {
-        if (hasComplexNegConjunct()) {
+        if (hasAC()) {
             Iterator<? extends Matching> matchIter = (Iterator<? extends Matching>) super.getTotalExtensionsIter();
             while (matchIter.hasNext()) {
                 Matching candidate = matchIter.next();
-                if (!matchesComplexNegConjunct(candidate)) {
+                if (!satisfiesAC(candidate)) {
                     return candidate;
                 }
             }
@@ -101,12 +102,12 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
     @Override
     public Collection<? extends Matching> getTotalExtensions() {
         Collection<? extends Matching> result = (Collection<? extends Matching>) super.getTotalExtensions();
-        if (hasComplexNegConjunct()) {
+        if (hasAC()) {
             // throw away those results that match the negated conjunct
             Iterator<? extends Matching> matchIter = result.iterator();
             while (matchIter.hasNext()) {
                 Matching candidate = matchIter.next();
-                if (matchesComplexNegConjunct(candidate)) {
+                if (satisfiesAC(candidate)) {
                     matchIter.remove();
                 }
             }
@@ -123,11 +124,11 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
     @Override
     public Iterator<? extends Matching> getTotalExtensionsIter() {
         Iterator<? extends Matching> result = (Iterator<? extends Matching>) super.getTotalExtensionsIter();
-        if (hasComplexNegConjunct()) {
+        if (hasAC()) {
             return new FilterIterator<Matching>(result) {
                 @Override
                 protected boolean approves(Object obj) {
-                    return !matchesComplexNegConjunct((Matching) obj);
+                    return !satisfiesAC((Matching) obj);
                 }
             };
         } else {
@@ -184,36 +185,49 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
         return result;
     }
 
+    public void setAC(Property<VarMorphism> ac) {
+    	this.ac = ac;
+    }
+    
     /**
      * Callback method that checks if the underlying graph condition has
-     * more complex negated conditions than merge and edge embargoes, which
+     * more complex application conditions than merge and edge embargoes, which
      * therefore have to be checked separately.
      * @see #getTotalExtension()
      * @see #getTotalExtensions()
      * @see #getTotalExtensionsIter()
      */
-    protected boolean hasComplexNegConjunct() {
-        return condition.hasComplexNegConjunct();
+    protected boolean hasAC() {
+        return condition.hasComplexNegConjunct() || ac != null;
     }
 
     /**
-     * Callback method that checks if a candidate matching satisfies the
-     * complex negated conjunct of the underlying graph condition.
-     * This will always return <tt>true</tt> if {@link #hasComplexNegConjunct()}
+     * Callback method that checks if a candidate matching satisfies the (additional)
+     * application conditions of the underlying graph condition.
+     * This will always return <tt>true</tt> if {@link #hasAC()}
      * does not hold.
      * @see #getTotalExtension()
      * @see #getTotalExtensions()
      * @see #getTotalExtensionsIter()
      */
-    protected boolean matchesComplexNegConjunct(VarMorphism candidate) {
+    protected boolean satisfiesAC(VarMorphism candidate) {
         DefaultGraphPredicate complexNegConjunct = condition.getComplexNegConjunct();
-        return complexNegConjunct == null || complexNegConjunct.matches(candidate);
+        boolean result = complexNegConjunct == null || complexNegConjunct.matches(candidate);
+        if (result) {
+        	result = ac == null || ac.isSatisfied(candidate);
+        }
+        return result;
     }
     
     /**
      * The graph condition for which this is a matching.
      */
     private final DefaultGraphCondition condition;
+    /** 
+     * Filter to be applied to all matchings returned by
+     * any of the extension methods.
+     */
+    private Property<VarMorphism> ac;
 //    /** Flag indicating that matching should be injective. */
 //    private final boolean injective;
 //

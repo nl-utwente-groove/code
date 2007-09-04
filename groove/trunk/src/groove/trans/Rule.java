@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.11 2007-08-31 10:23:07 rensink Exp $
- * $Date: 2007-08-31 10:23:07 $
+ * $Id: Rule.java,v 1.12 2007-09-04 20:59:29 rensink Exp $
+ * $Date: 2007-09-04 20:59:29 $
  */
 package groove.trans;
 
@@ -21,6 +21,7 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeFactory;
 import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeMap;
 
@@ -34,7 +35,7 @@ import java.util.List;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -97,25 +98,25 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
     public Element[] anchor();
     
     /**
-     * Returns the array of co-anchor elements of this rule.
+     * Returns the array of coanchor elements of this rule.
      * These are the elements from the right hand side that together with
-     * the matching and derivation morphism fully determine the comatchings of the rule.
+     * the matching and derivation morphism fully determine the comatches of the rule.
      * Essentially, they are the creator nodes.
      */
     public Node[] coanchor();
     
     /**
      * Factory method to create an event based on this rule.
-     * Parameters are an anchor map and an optional derivation record.
-     * @param anchorMap the anchor map of the event, being a mapping from the 
-     * anchors to elements presumably in the host graph
-     * @param record an object queried for fresh node numbers
+     * @param anchorMap the anchor map of the new event; should map at least
+     * the elements of the rule anchor to elements presumably in the host graph
+     * @param nodeFactory an object queried for fresh node numbers; may be
+     * <code>null</code>
      */
-    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, SystemRecord record);
+    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory);
 
     /**
-     * Lazily creates and returns a matcher for rule events of this rule,
-     * which tries to find the anchor image in a given graph. 
+     * Lazily creates and returns a matcher for rule events of this rule.
+     * The matcher will try to extend anchor maps to full matches.
      */
     public MatchStrategy getEventMatcher();
 

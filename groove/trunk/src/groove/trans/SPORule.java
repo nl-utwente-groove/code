@@ -12,19 +12,24 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.21 2007-08-31 10:23:06 rensink Exp $
+ * $Id: SPORule.java,v 1.22 2007-09-04 20:59:29 rensink Exp $
  */
 package groove.trans;
 
+import groove.calc.Property;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
+import groove.graph.NodeFactory;
 import groove.graph.algebra.ValueNode;
 import groove.match.ConditionSearchPlanFactory;
 import groove.match.MatchStrategy;
 import groove.rel.RegExprLabel;
+import groove.rel.VarMorphism;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
 import groove.util.Groove;
@@ -43,7 +48,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -136,8 +141,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     	}
     }
     
-    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, SystemRecord record) {
-        return new SPOEvent(this, anchorMap, record);
+    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory) {
+        return new SPOEvent(this, anchorMap, nodeFactory);
     }
     
     /** Creates the search plan using the rule's search plan factory. */
@@ -147,8 +152,40 @@ public class SPORule extends DefaultGraphCondition implements Rule {
         }
         return eventMatcher;
     }
-    
-    /** Creates the search plan using the rule's search plan factory. */
+	
+	@Override
+	protected DefaultMatching newMatcher(Graph graph) {
+		DefaultMatching result = super.newMatcher(graph);
+		result.setAC(createAC());
+		return result;
+	}
+
+	/** 
+	 * Returns the application condition imposed by the
+	 * rule system properties.
+	 */
+	private Property<VarMorphism> createAC() {
+		if (getProperties().isCheckDangling()) {
+			return new Property<VarMorphism>() {
+				@Override
+				public boolean isSatisfied(VarMorphism value) {
+					Set<Edge> danglingEdges = new HashSet<Edge>();
+					for (Node eraserNode : getEraserNodes()) {
+						Node erasedNode = value.getNode(eraserNode);
+						danglingEdges.addAll(value.cod().edgeSet(erasedNode));
+					}
+					for (Edge eraserEdge : getEraserEdges()) {
+						danglingEdges.remove(value.getEdge(eraserEdge));
+					}
+					return danglingEdges.isEmpty();
+				}
+			};
+		} else {
+			return null;
+		}
+	}
+
+	/** Creates the search plan using the rule's search plan factory. */
     @Deprecated
     public List<groove.graph.match.SearchItem> getAnchorSearchPlan() {
         if (eventSearchPlan == null) {
@@ -257,7 +294,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	}
 
 	/** Computes the array of nodes isolated in the left hand side. */
-	protected Node[] computeIsolatedNodes() {
+	private Node[] computeIsolatedNodes() {
 		List<Node> result = new ArrayList<Node>();
 		for (Node node: lhs.nodeSet()) {
 			if (lhs.edgeSet(node).isEmpty()) {
@@ -275,10 +312,36 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	    return modifying;
 	}
 
+	/** 
+	 * In addition to calling the super method,
+	 * adds implicit NACs as dictated by {@link SystemProperties#isCheckCreatorEdges()}
+	 * and {@link SystemProperties#isRhsAsNac()}.
+	 */
+	@Override
+	public void setFixed() {
+		if (!isFixed()) {
+			if (getProperties() != null) {
+				if (getProperties().isCheckCreatorEdges()) {
+					for (Edge edge : getSimpleCreatorEdges()) {
+						setAndNot(new EdgeEmbargo(lhs(),
+								edge.imageFor(getCreatorMap()), getProperties()));
+					}
+				}
+				if (getProperties().isRhsAsNac()) {
+					GraphCondition rhsNac = new DefaultGraphCondition(
+							getMorphism(), null, getProperties());
+					rhsNac.setFixed();
+					setAndNot(rhsNac);
+				}
+			}
+			super.setFixed();
+		}
+	}
+
 	/**
 	 * Computes if the rule is modifying or not.
 	 */
-	protected boolean computeModifying() {
+	private boolean computeModifying() {
 		return this.getEraserEdges().length > 0 || this.getEraserNodes().length > 0 || hasMergers() || hasCreators();
 	}
 
@@ -293,7 +356,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /**
 	 * Computes the eraser (i.e., LHS-only) edges.
 	 */
-	protected Edge[] computeEraserEdges() {
+	private Edge[] computeEraserEdges() {
 	    Set<Edge> eraserEdgeSet = new HashSet<Edge>(lhs.edgeSet());
 	    eraserEdgeSet.removeAll(getMorphism().edgeMap().keySet());
 	    // also remove the incident edges of the lhs-only nodes
@@ -314,7 +377,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	/**
 	 * Computes the array of creator edges that are not themselves anchors.
 	 */
-	protected Edge[] computeEraserNonAnchorEdges() {
+	private Edge[] computeEraserNonAnchorEdges() {
 		Set<Edge> eraserNonAnchorEdgeSet = new HashSet<Edge>(Arrays.asList(getEraserEdges()));
 		eraserNonAnchorEdgeSet.removeAll(Arrays.asList(anchor()));
 		return eraserNonAnchorEdgeSet.toArray(new Edge[0]);
@@ -333,7 +396,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	/**
 	 * Computes the eraser (i.e., lhs-only) nodes.
 	 */
-	protected Node[] computeEraserNodes() {
+	private Node[] computeEraserNodes() {
 		// construct lhsOnlyNodes
 	    Set<Node> eraserNodeSet = new HashSet<Node>(lhs.nodeSet());
 	    eraserNodeSet.removeAll(getMorphism().nodeMap().keySet());
@@ -362,16 +425,12 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      */
     private Edge[] computeSimpleCreatorEdges() {
         List<Edge> result = new ArrayList<Edge>();
+        Set<Node> nonCreatorNodes = getCreatorMap().nodeMap().keySet();
         // iterate over all creator edges
-        for (Edge creatorEdge: getCreatorEdges()) {
+        for (Edge edge: getCreatorEdges()) {
             // determine if this edge is simple
-            boolean isSimple = true;
-            for (int i = 0; isSimple && i < creatorEdge.endCount(); i++) {
-                isSimple = getCreatorMap().containsKey(creatorEdge.end(i));
-            }
-            // if so, add it
-            if (isSimple) {
-                result.add(creatorEdge);
+            if (nonCreatorNodes.containsAll(Arrays.asList(edge.ends()))) {
+                result.add(edge);
             }
         }
         return result.toArray(new Edge[0]);
@@ -391,20 +450,9 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * Computes the creator edges that have at least one creator end.
      */
     private Edge[] computeComplexCreatorEdges() {
-        List<Edge> result = new ArrayList<Edge>();
-        // iterate over all creator edges
-        for (Edge creatorEdge: getCreatorEdges()) {
-            // determine if this edge is complex
-            boolean isComplex = false;
-            for (int i = 0; !isComplex && i < creatorEdge.endCount(); i++) {
-                isComplex = !getCreatorMap().containsKey(creatorEdge.end(i));
-            }
-            // if so, add it
-            if (isComplex) {
-                result.add(creatorEdge);
-            }
-        }
-        return result.toArray(new Edge[0]);
+        Set<Edge> result = new HashSet<Edge>(Arrays.asList(getCreatorEdges()));
+        result.removeAll(Arrays.asList(getSimpleCreatorEdges()));
+        return result.toArray(new Edge[result.size()]);
     }
 
     /**
@@ -439,7 +487,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	/**
 	 * Computes the creator (i.e., RHS-only) nodes.
 	 */
-	protected Node[] computeCreatorNodes() {
+	private Node[] computeCreatorNodes() {
 	    Set<Node> result = new HashSet<Node>(rhs.nodeSet());
 	    result.removeAll(getMorphism().nodeMap().values());
 		return result.toArray(new Node[0]);
@@ -457,9 +505,9 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	}
 
 	/**
-	 * Computes the variables occurrind in RHS edges.
+	 * Computes the variables occurring in RHS edges.
 	 */
-	protected String[] computeCreatorVars() {
+	private String[] computeCreatorVars() {
 		Set<String> creatorVarSet = new HashSet<String>();
 	    for (int i = 0; i < getCreatorEdges().length; i++) {
 	        Edge creatorEdge = getCreatorEdges()[i];
@@ -472,7 +520,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	}
 
 	/** 
-	 * Returns a sub-graph of the RHS concisting of the creator nodes and
+	 * Returns a sub-graph of the RHS consisting of the creator nodes and
 	 * the creator edges with their endpoints.
 	 */
 	final Graph getCreatorGraph() {
@@ -486,7 +534,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * Computes a creator graph, consisting of the 
 	 * creator nodes together with the creator edges and their endpoints. 
 	 */
-	protected Graph computeCreatorGraph() {
+	private Graph computeCreatorGraph() {
 		Graph result = rhs.newGraph();
 		result.addNodeSet(Arrays.asList(this.getCreatorNodes()));
 		result.addEdgeSet(Arrays.asList(this.getCreatorEdges()));
@@ -501,7 +549,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * that are not themselves creator nodes but are the ends of creator edges, to the
 	 * corresponding nodes of the LHS.
 	 */
-	final Map<Node,Node> getCreatorMap() {
+	final NodeEdgeMap getCreatorMap() {
 		if (creatorMap == null) {
 			creatorMap = computeCreatorMap();
 		}
@@ -513,13 +561,13 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * The creator map maps the endpoints of creator edges
 	 * that are not themselves creator nodes to one of their pre-images.
 	 */
-	protected Map<Node, Node> computeCreatorMap() {
+	private NodeEdgeMap computeCreatorMap() {
 		// construct rhsOnlyMap
-	    Map<Node, Node> result = new HashMap<Node, Node>();
+	    NodeEdgeMap result = new NodeEdgeHashMap();
 	    Set<? extends Node> creatorNodes = getCreatorGraph().nodeSet();
-	    for (Map.Entry<Node,Node> nodeEntry: getMorphism().elementMap().nodeMap().entrySet()) {
+	    for (Map.Entry<Node,Node> nodeEntry: getMorphism().nodeMap().entrySet()) {
 	    	if (creatorNodes.contains(nodeEntry.getValue())) {
-	    		result.put(nodeEntry.getValue(), nodeEntry.getKey());
+	    		result.putNode(nodeEntry.getValue(), nodeEntry.getKey());
 	    	}
 	    }
 	    return result;
@@ -541,7 +589,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * that is merged with others
 	 * to the LHS node it is merged with.
 	 */
-	protected Map<Node, Node> computeMergeMap() {
+	private Map<Node, Node> computeMergeMap() {
 		Map<Node,Node> result = new HashMap<Node,Node>();
 		Map<Node,Node> rhsToLhsMap = new HashMap<Node,Node>();
 		for (Map.Entry<Node,Node> nodeEntry: getMorphism().elementMap().nodeMap().entrySet()) {
@@ -572,7 +620,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	/**
 	 * Computes the set of variable-binding edges occurring in the lhs.
 	 */
-	protected Edge[] computeVarEdges() {
+	private Edge[] computeVarEdges() {
 		return VarSupport.getVarEdges(lhs).toArray(new Edge[0]);
 	}
 	
@@ -593,7 +641,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * Computes the anchor graph of this rule.
 	 * @see #getAnchorGraph()
 	 */
-	Graph computeAnchorGraph() {
+	private Graph computeAnchorGraph() {
 		Graph result = lhs().newGraph();
 		for (Element elem: anchor()) {
 			if (elem instanceof Node) {
@@ -605,8 +653,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 		result.addEdgeSet(Arrays.asList(getEraserEdges()));
 		return result;
 	}
-	
-    /**
+
+	/**
      * Indicates if this rule has creator edges or nodes.
      * @invariant <tt>hasCreators == ! ruleMorph.isSurjective()</tt>
      */
@@ -652,7 +700,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * A map from the nodes of <tt>rhsOnlyGraph</tt> to <tt>lhs</tt>,
      * which is the restriction of the inverse of <tt>ruleMorph</tt> to <tt>rhsOnlyGraph</tt>.
      */
-    private Map<Node,Node> creatorMap;
+    private NodeEdgeMap creatorMap;
     /** 
      * The lhs nodes that are not ruleMorph keys
      * @invariant lhsOnlyNodes \subseteq lhs.nodeSet()

@@ -82,6 +82,9 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
 	public final void setProperties(Properties properties) {
 		this.properties = new SystemProperties();
 		this.properties.putAll(properties);
+		for (AspectualRuleView rule: ruleMap.values()) {
+			rule.setProperties(this.properties);
+		}
 		invalidateGrammar();
 	}
 

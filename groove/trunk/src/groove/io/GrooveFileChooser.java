@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GrooveFileChooser.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
+ * $Id: GrooveFileChooser.java,v 1.3 2007-09-04 20:59:36 rensink Exp $
  */
 package groove.io;
 
@@ -21,13 +21,14 @@ import groove.util.Groove;
 import java.io.File;
 
 import javax.swing.JFileChooser;
+import javax.swing.ToolTipManager;
 import javax.swing.filechooser.FileView;
 
 /**
  * A file chooser with a {@link GrooveFileView}, which prevents traversal of 
  * directories if these are selectable by the current file filter.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class GrooveFileChooser extends JFileChooser {
     /** File chooser with initial directory {@link Groove#WORKING_DIR}. */
@@ -41,6 +42,7 @@ public class GrooveFileChooser extends JFileChooser {
     public GrooveFileChooser(File currentDirectory) {
         super(currentDirectory);
         setFileView(createFileView());
+        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
     /**
@@ -49,6 +51,7 @@ public class GrooveFileChooser extends JFileChooser {
     public GrooveFileChooser(String currentDirectoryPath) {
         super(currentDirectoryPath);
         setFileView(createFileView());
+        ToolTipManager.sharedInstance().registerComponent(this);
     }
 
     /**
@@ -61,7 +64,22 @@ public class GrooveFileChooser extends JFileChooser {
                 .acceptExtension(file));
     }
 
-    /**
+    /** 
+     * This implementation adds a file extension, if
+     * the file filter used is an {@link ExtensionFilter}.
+     */
+    @Override
+	public File getSelectedFile() {
+    	File result = super.getSelectedFile();
+    	if (result != null && getFileFilter() instanceof ExtensionFilter) {
+    		ExtensionFilter fileFilter = (ExtensionFilter) getFileFilter();
+    		String resultName = fileFilter.addExtension(result.getName());
+    		result = new File(result.getParentFile(), resultName);
+    	}
+    	return result;
+	}
+
+	/**
      * Factory method for the file view set in this file chooser.
      * @return This implementation returns a {@link GrooveFileView}.
      */

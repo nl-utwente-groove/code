@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.11 2007-08-31 10:23:37 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.12 2007-09-04 20:59:23 rensink Exp $
  */
 
 package groove.view;
@@ -65,6 +65,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -77,7 +78,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -250,6 +251,23 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			}
 		}
 		return viewToRuleMap;
+	}
+
+	/**
+	 * Sets the properties of this view.
+	 * This means that the previously constructed model (if any) becomes invalid.
+	 */
+	public final void setProperties(SystemProperties properties) {
+		this.properties = properties;
+		invalidateRule();
+	}
+	
+	/**
+	 * Invalidates any previous construction of the underlying rule.
+	 */
+	private void invalidateRule() {
+		rule = null;
+		errors = null;
 	}
 
 	/**
@@ -468,7 +486,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
 	 * Callback method to create a merge embargo.
 	 * @param context the context-graph
-	 * @param embargoNodes the nodes involved in this merge-embargoe
+	 * @param embargoNodes the nodes involved in this merge-embargo
 	 * @return the new {@link groove.trans.MergeEmbargo}
 	 * @see #toRule()
 	 */
@@ -479,7 +497,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	/**
 	 * Callback method to create an edge embargo.
 	 * @param context the context-graph
-	 * @param embargoEdge the edge to be turned into an embargoe
+	 * @param embargoEdge the edge to be turned into an embargo
 	 * @return the new {@link groove.trans.EdgeEmbargo}
 	 * @see #toRule()
 	 */
@@ -807,8 +825,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * to the corresponding elements of the rule.
      */
     private NodeEdgeMap viewToRuleMap;
-    /** Rule factory set for this rule. */
-    private final SystemProperties properties;
+    /** Rule properties set for this rule. */
+    private SystemProperties properties;
 
     /**
      * This main is provided for testing purposes only.

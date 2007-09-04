@@ -4,6 +4,7 @@ package groove.trans;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.graph.NodeFactory;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.DefaultDispenser;
 import groove.util.Reporter;
@@ -22,7 +23,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SystemRecord {
+public class SystemRecord implements NodeFactory {
     /**
      * The total number of events (over all rules) created in {@link #getEvent(Rule, VarNodeEdgeMap)}.
      */

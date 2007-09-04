@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphShape.java,v 1.7 2007-08-26 07:23:38 rensink Exp $
+ * $Id: GraphShape.java,v 1.8 2007-09-04 20:59:27 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import java.util.Set;
 /**
  * Model of a graph shape, consisting of nodes and labelled edges between them..
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-08-26 07:23:38 $
+ * @version $Revision: 1.8 $ $Date: 2007-09-04 20:59:27 $
  */
 public interface GraphShape extends java.io.Serializable {
     /**
@@ -165,7 +165,7 @@ public interface GraphShape extends java.io.Serializable {
      * Changes the modifiability of this graph. After invoking this method,
      * <tt>isFixed()</tt> holds.
      * If the graph is fixed, no <tt>add</tt>- or <tt>remove</tt>-method may be
-     * invoked any more; moreove, all graph listeners are removed.
+     * invoked any more; moreover, all graph listeners are removed.
      * @ensure <tt>isFixed()</tt>
      * @see #isFixed()
      */

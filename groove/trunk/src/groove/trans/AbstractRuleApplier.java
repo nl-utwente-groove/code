@@ -18,7 +18,6 @@ package groove.trans;
 
 import groove.control.ControlView;
 import groove.graph.Graph;
-import groove.lts.GraphState;
 import groove.util.AbstractNestedIterator;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
@@ -50,7 +49,7 @@ abstract public class AbstractRuleApplier implements RuleApplier {
         // find the first batch of rules that has any derivations
         
         //Iterator<Set<Rule>> ruleSetIter = record.getRuleSystem().getRuleMap().values().iterator();
-        // optionaly return only for current control state
+        // optionally return only for current control state
         Iterator<Set<Rule>> ruleSetIter = getRuleSetIter();
         
         while (result == null && ruleSetIter.hasNext()) {
@@ -59,7 +58,7 @@ abstract public class AbstractRuleApplier implements RuleApplier {
         	
         	
         	// this would implement the stuff considering an iterator over all applications
-        	// but it doesnt matter yet for linear exploration since it would only do the
+        	// but it doesn't matter yet for linear exploration since it would only do the
         	// highest priority anyway. Maybe add later for e.g. barbed?
         	// TODO: should this be inhere?
         	//int priority = rules.iterator().next().getPriority();
@@ -81,11 +80,12 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	}
 	
 	/** 
-	 * Returns a lazy iterator over the applications of a given set of rules
-	 * to a given graph.
-	 * The set of rules is guaranteed to be non-empty and to have a uniform priority.
+	 * Returns a lazy iterator over the applications of a given set of rules (with
+	 * equal priority) to the underlying graph.
+	 * @param rules the set of rules to be applied;
+	 * assumed to be non-empty and to have a uniform priority.
 	 */
-	Iterator<RuleApplication> getDerivationIter(final Set<Rule> rules) {
+	private Iterator<RuleApplication> getDerivationIter(final Set<Rule> rules) {
         Iterator<RuleApplication> result = new AbstractNestedIterator<RuleApplication>() {
         	@Override
             protected boolean hasNextIterator() {
@@ -190,8 +190,7 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	}
 
 	/**
-	 *  Returns the currently possible rules. Possible means either all rules in the rulesystem
-	 *  or all rules associated to outgoing transitions of the current controlstate.
+	 *  Returns the currently possible rules.
 	 */
 	protected Iterator<Set<Rule>> getRuleSetIter()
 	{
@@ -286,11 +285,8 @@ abstract public class AbstractRuleApplier implements RuleApplier {
     /** Callback method to provide the graph on which the applier works. */
     abstract protected Graph getGraph();
     
-    /** Callback method to provide the graphstate on which the applier works. */
-    abstract protected GraphState getState();
-    
     /**
-	 * The (fixed) derivation data used by this deriver.
+	 * The (fixed) system record used by this deriver.
 	 */
 	protected final SystemRecord record;
 //	/**
