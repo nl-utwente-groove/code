@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.3 2007-07-02 07:21:42 rensink Exp $
+ * $Id: StateCache.java,v 1.4 2007-09-04 20:59:00 rensink Exp $
  */
 package groove.lts;
 
@@ -24,7 +24,6 @@ import groove.graph.Element;
 import groove.graph.FixedDeltaGraph;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.SwingDeltaGraph;
 import groove.trans.RuleEvent;
 import groove.util.TreeHashSet;
 
@@ -36,7 +35,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class StateCache {
     /**

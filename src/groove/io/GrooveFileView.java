@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GrooveFileView.java,v 1.2 2007-03-28 15:12:32 rensink Exp $
+ * $Id: GrooveFileView.java,v 1.3 2007-09-04 20:59:35 rensink Exp $
  */
 package groove.io;
 
@@ -25,15 +25,15 @@ import javax.swing.Icon;
 /**
  * Implements a file view that displays the correct icons and descriptions for
  * graph files, rules files and grammar directories.
- * @version $Date: 2007-03-28 15:12:32 $ $Revision: 1.2 $
+ * @version $Date: 2007-09-04 20:59:35 $ $Revision: 1.3 $
  * @author Arend Rensink
  */
 public class GrooveFileView extends javax.swing.filechooser.FileView {
     /**
-     * Tests whether a given file is a graph file recognized by this program.
+     * Tests whether a given file is a graph file recognised by this program.
      * This is the case if it is either a gxl file or a state file.
      * @param f the file to be tested
-     * @return <tt>true</tt> if <f> is a graph file
+     * @return <tt>true</tt> if <code>f</code> is a graph file
      * @require <tt>f != null</tt>
      */
     static protected boolean isGraphFile(File f) {
@@ -41,9 +41,9 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
     }
 
     /**
-     * Tests whether a given file is a state file recognized by this program.
+     * Tests whether a given file is a state file recognised by this program.
      * @param f the file to be tested
-     * @return <tt>true</tt> if <f> is a state file
+     * @return <tt>true</tt> if <code>f</code> is a state file
      * @require <tt>f != null</tt>
      */
     static protected boolean isStateFile(File f) {
@@ -51,9 +51,9 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
     }
 
     /**
-     * Tests whether a given file is a gxl file recognized by this program.
+     * Tests whether a given file is a gxl file recognised by this program.
      * @param f the file to be tested
-     * @return <tt>true</tt> if <f> is a gxl file
+     * @return <tt>true</tt> if <code>f</code> is a gxl file
      * @require <tt>f != null</tt>
      */
     static protected boolean isGxlFile(File f) {
@@ -63,7 +63,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
     /**
      * Tests whether a given file is a production rule file.
      * @param f the file to be tested
-     * @return <tt>true</tt> if <f> is a production rule file
+     * @return <tt>true</tt> if <code>f</code> is a production rule file
      * @require <tt>f != null</tt>
      */
     static protected boolean isRuleFile(File f) {
@@ -74,13 +74,11 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
      * Tests whether a given file is a GPS (graph production system) folder,
      * i.e., a folder containing rule files.
      * @param f the file to be tested
-     * @return <tt>true</tt> if <f> is a GPS folder
+     * @return <tt>true</tt> if <code>f</code> is a GPS folder
      * @require <tt>f != null</tt>
      */
     static protected boolean isGpsFolder(File f) {
         return ruleSystemFilter.accept(f);
-        //        File[] ruleFiles = f.listFiles(ruleFilter);
-        //        return ruleFiles != null && ruleFiles.length > 0;
     }
 
     static private final java.io.FileFilter gxlFilter = Groove.createGxlFilter(false);
@@ -100,7 +98,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
 
     /**
      * Constructs a file view, with the traversability of 
-     * production syatem directories set according to a parameter.
+     * production system directories set according to a parameter.
      * @see #isTraversable(File)
      */
     public GrooveFileView(boolean gpsTraversable) {
@@ -126,7 +124,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
     }
 
     /**
-     * Returns an appropriate description for files recognized by the groove tools.
+     * Returns an appropriate description for files recognised by the groove tools.
      * @param f the file to be described
      * @require <tt>f != null</tt>
      */
@@ -167,7 +165,7 @@ public class GrooveFileView extends javax.swing.filechooser.FileView {
     @Override
     public Boolean isTraversable(File f) {
         Boolean superTraversable = super.isTraversable(f);
-        if (gpsTraversable) {
+        if (isGpsTraversable()) {
             return superTraversable;
         } else {
             return new Boolean((superTraversable == null || superTraversable.booleanValue()) && !isGpsFolder(f));

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.23 2007-08-31 10:23:06 rensink Exp $
+ * $Id: SPOEvent.java,v 1.24 2007-09-04 20:59:29 rensink Exp $
  */
 package groove.trans;
 
@@ -26,6 +26,7 @@ import groove.graph.MergeMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
+import groove.graph.NodeFactory;
 import groove.graph.NodeSet;
 import groove.graph.WrapperLabel;
 import groove.graph.algebra.ValueNode;
@@ -51,7 +52,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.23 $ $Date: 2007-08-31 10:23:06 $
+ * @version $Revision: 1.24 $ $Date: 2007-09-04 20:59:29 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -71,7 +72,7 @@ public class SPOEvent implements RuleEvent {
 	static public final String ANCHOR_END = ")";
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
-     * The rule is required to be fixed, as inticated by {@link SPORule#isFixed()}.
+     * The rule is required to be fixed, as indicated by {@link SPORule#isFixed()}.
      * @param rule the production rule involved
      * @param anchorMap the match of the rule's LHS elements to the host graph
      */
@@ -87,25 +88,19 @@ public class SPOEvent implements RuleEvent {
      * Constructs a new event on the basis of a given production rule and anchor map.
      * @param rule the production rule involved
      * @param anchorMap the match of the rule's LHS elements to the host graph
+     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      */
-    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, SystemRecord record) {
+    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory) {
     	this(rule, anchorMap);
-    	this.record = record;
+    	this.nodeFactory = nodeFactory;
     }
-//
-//	/**
-//	 * Returns the rule factory of this event.
-//     */
-//    public RuleFactory getRuleFactory() {
-//    	return ruleFactory;
-//    }
     
     /** 
      * Returns the derivation record associated with this event. 
      * May be <code>null</code>.
      */
-    protected SystemRecord getRecord() {
-    	return record;
+    protected NodeFactory getNodeFactory() {
+    	return nodeFactory;
     }
 
     public SPORule getRule() {
@@ -196,7 +191,7 @@ public class SPOEvent implements RuleEvent {
 		VarNodeEdgeMap anchorMap = getAnchorMap();
 		NodeEdgeMap mergeMap = getRule().hasMergers() ? getMergeMap() : null;
 		// add reader node images
-		for (Map.Entry<Node,Node> creatorEntry: getRule().getCreatorMap().entrySet()) {
+		for (Map.Entry<Node,Node> creatorEntry: getRule().getCreatorMap().nodeMap().entrySet()) {
 			Node creatorKey = creatorEntry.getKey();
 			Node creatorValue = anchorMap.getNode(creatorEntry.getValue());
 			if (mergeMap != null) {
@@ -800,7 +795,7 @@ public class SPOEvent implements RuleEvent {
      */
     protected Node createNode() {
         SPOApplication.freshNodeCount++;
-    	SystemRecord record = getRecord();
+    	NodeFactory record = getNodeFactory();
     	Node result = record == null ? new DefaultNode() : record.newNode();
     	return result;
     }
@@ -821,7 +816,7 @@ public class SPOEvent implements RuleEvent {
 //     */
 //    private final RuleFactory ruleFactory;
     /** The derivation record that has created this event, if any. */
-    private SystemRecord record;
+    private NodeFactory nodeFactory;
     /**
      * Matching from the rule's lhs to the source graph.
      */

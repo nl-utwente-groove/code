@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.23 2007-08-31 10:23:06 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.24 2007-09-04 20:59:29 rensink Exp $
  */
 package groove.trans;
 
@@ -39,7 +39,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -126,8 +126,8 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 
     /**
      * If the condition is an edge embargo, calls
-     * {@link #addNegation(Edge)} with the embardo edge, and if it
-     * is a merge embargo, calle {@link #addInjection(Set)} with
+     * {@link #addNegation(Edge)} with the embargo edge, and if it
+     * is a merge embargo, calls {@link #addInjection(Set)} with
      * the injectively matchable nodes. If it is neither, adds the
      * condition to the complex negated conjunct.
      * @see #addInjection(Set)
@@ -153,7 +153,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
         complexNegConjunct.setOr(condition);        
     }
     
-    /** Adds a negative edge, i.e., an edge empargo, to this condition. */
+    /** Adds a negative edge, i.e., an edge embargo, to this condition. */
     protected void addNegation(Edge negativeEdge) {
         if (negations == null) {
             negations = new HashSet<Edge>();
@@ -161,7 +161,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
         negations.add(negativeEdge);
     }
 
-    /** Adds an injection constraint, i.e., a merge empargo, to this condition. */
+    /** Adds an injection constraint, i.e., a merge embargo, to this condition. */
     protected void addInjection(Set<? extends Node> injection) {
     	assert injection.size() == 2 : String.format("Injection %s should have size 2", injection);
         if (injections == null) {
@@ -195,8 +195,10 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     /** Fixes the sub-predicate and this morphism. */
     @Override
     public void setFixed() {
-        getNegConjunct().setFixed();
-        super.setFixed();
+    	if (!isFixed()) {
+			getNegConjunct().setFixed();
+			super.setFixed();
+		}
     }
 
     public DefaultGraphPredicate getNegConjunct() {
@@ -506,7 +508,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * This implementation returns a {@link DefaultMatching}.
      * @see #newMatcher(VarMorphism)
      */
-    protected Matching newMatcher(Graph graph) {
+    protected DefaultMatching newMatcher(Graph graph) {
     	return new DefaultMatching(this, graph);
     }
     

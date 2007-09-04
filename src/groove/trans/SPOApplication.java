@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.16 2007-08-31 10:23:06 rensink Exp $
+ * $Id: SPOApplication.java,v 1.17 2007-09-04 20:59:28 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2007-08-31 10:23:06 $
+ * @version $Revision: 1.17 $ $Date: 2007-09-04 20:59:28 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -514,7 +514,7 @@ public class SPOApplication implements RuleApplication, Derivation {
     /**
 	 * Adds an edge to a delta target, if the edge
 	 * is not <code>null</code> and not already in the source graph.
-	 * Optimizes by trying to call {@link InternalGraph#addEdgeWithoutCheck(Edge)}
+	 * Optimises by trying to call {@link InternalGraph#addEdgeWithoutCheck(Edge)}
 	 * if the target is an {@link InternalGraph}.
 	 */
 	protected void addEdge(DeltaTarget target, Edge edge) {

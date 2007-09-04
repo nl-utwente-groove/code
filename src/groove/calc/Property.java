@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Property.java,v 1.5 2007-08-26 07:24:21 rensink Exp $
+ * $Id: Property.java,v 1.6 2007-09-04 20:59:34 rensink Exp $
  */
 package groove.calc;
 
@@ -85,7 +85,7 @@ abstract public class Property<S> {
 		
 		/** Constructs an instance with <code>null</code> description and a given comment. */
 		public True(String comment) {
-			super(comment);
+			super(null, comment);
 		}
 		
 		@Override

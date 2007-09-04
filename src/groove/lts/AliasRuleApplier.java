@@ -177,6 +177,10 @@ public class AliasRuleApplier extends AbstractRuleApplier {
     	return new AliasSPOApplication(event, source, prior); 
     }
 
+    /** 
+     * Attempts to obtain the applicable rules from the control state, if any.
+     * Calls <code>super</code> if there is no control state.
+     */
     @Override
     protected Iterator<Set<Rule>> getRuleSetIter()
     {
@@ -194,11 +198,6 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 		return graph;
 	}
     
-    @Override
-    protected GraphState getState() {
-    	return state;
-    }
-
     /** The graph on which this applier currently works. */
     private Graph graph;
 	/** The (fixed) state of this deriver. */

@@ -25,7 +25,7 @@ import groove.trans.RuleEvent;
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public interface GraphTransition extends Transition {
 	/** Overrides the method to specialise the result type. */
@@ -46,8 +46,7 @@ public interface GraphTransition extends Transition {
 	public abstract Rule getRule();
 
 	/** 
-	 * Returns the set of nodes added by this transition.
-	 * The iterator over the set returns the nodes in the coanchor order.
+	 * Returns the nodes added by this transition, in coanchor order.
 	 */
 	public Node[] getAddedNodes();
 	

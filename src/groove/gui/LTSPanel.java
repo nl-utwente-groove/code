@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSPanel.java,v 1.14 2007-08-26 07:24:05 rensink Exp $
+ * $Id: LTSPanel.java,v 1.15 2007-09-04 20:59:32 rensink Exp $
  */
 package groove.gui;
 
@@ -43,7 +43,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2007-08-26 07:24:05 $
+ * @version $Revision: 1.15 $ $Date: 2007-09-04 20:59:32 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -179,13 +179,21 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
      */
     @Override
     protected String getStatusText() {
-        String text;
+        StringBuilder text = new StringBuilder();
         if (!isGTSactivated()) {
-            text = "No start state loaded";
+            text.append("No start state loaded");
         } else {
-            text = "" + gts.nodeCount() + " nodes, " + gts.edgeCount() + " edges";
+        	text.append("Currently explored: ");
+            text.append(gts.nodeCount());
+            text.append(" states");
+            if (gts.openStateCount() > 0) {
+            	text.append(" ("+gts.openStateCount()+" open)");
+            }
+            text.append(", ");
+            text.append(gts.edgeCount());
+            text.append(" transitions");
         }
-        return text;
+        return text.toString();
     }
     
     

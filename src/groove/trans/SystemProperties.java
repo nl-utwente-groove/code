@@ -17,26 +17,11 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 /**
- * 
+ * Properties class for graph production systems.
  * @author Arend Rensink
  * @version $Revision $
  */
 public class SystemProperties extends java.util.Properties {
-//	/** 
-//	 * Constructs an empty properties object for a given rule system.
-//	 * @param system the rule system with which these properties are associated
-//	 */
-//	SystemProperties(RuleSystem system) {
-////		this.ruleSystem = system;
-//		// empty
-//	}
-//	
-//	/** Constructs an empty properties object, not associated to any rule system. */
-//	public SystemProperties() {
-//		this(null);
-//		// empty
-//	}
-//	
 	/** 
 	 * Freezes the properties object, after which 
 	 * changing any properties becomes illegal.
@@ -57,7 +42,7 @@ public class SystemProperties extends java.util.Properties {
     }
     
     /**
-     * Sets the attributed propery to a given value.
+     * Sets the attributed property to a given value.
      * @param attributed <code>true</code> if the rules have attributes
      */
     public void setAttributed(boolean attributed) {
@@ -139,6 +124,46 @@ public class SystemProperties extends java.util.Properties {
      */
     public boolean isCheckDangling() {
     	String result = getProperty(DANGLING_KEY);
+    	return result != null && new Boolean(result);
+    }
+    
+    /** 
+     * Sets the creator edge check to a certain value.
+     * @param check if <code>true</code>, creator edges are 
+     * treated as negative application conditions
+     */
+    public void setCheckCreatorEdges(boolean check) {
+    	setProperty(CREATOR_EDGE_KEY, ""+check);
+    }
+    
+    /**
+     * Returns the value of the creator edge check property.
+     * @return if <code>true</code>, creator edges are 
+     * treated as negative application conditions
+     */
+    public boolean isCheckCreatorEdges() {
+    	String result = getProperty(CREATOR_EDGE_KEY);
+    	return result != null && new Boolean(result);
+    }
+    
+    /** 
+     * Sets the RHS-as-NAC property to a certain value.
+     * @param value if <code>true</code>, the RHS is treated as a negative application
+     * condition, preventing the same rule instance from being applied twice in
+     * a row
+     */
+    public void setRhsAsNac(boolean value) {
+    	setProperty(RHS_AS_NAC_KEY, ""+value);
+    }
+    
+    /**
+     * Returns the value of the RHS-as-NAC property.
+     * @return if <code>true</code>, the RHS is treated as a negative application
+     * condition, preventing the same rule instance from being applied twice in
+     * a row
+     */
+    public boolean isRhsAsNac() {
+    	String result = getProperty(RHS_AS_NAC_KEY);
     	return result != null && new Boolean(result);
     }
     
@@ -266,7 +291,6 @@ public class SystemProperties extends java.util.Properties {
      */
     private boolean fixed;
     
-    
     /**
      * Name of the file containing the used control program. 
      * Will only be loaded when the file exists in the grammar directory.
@@ -286,7 +310,6 @@ public class SystemProperties extends java.util.Properties {
      * The control labels are those labels which should be matched last
      * for optimal performance, presumably because they occur frequently.
 	 */
-	
 	static public final String COMMON_LABELS_KEY = "commonLabels";
 	/** 
 	 * Property that determines if the graph grammar uses attributes.
@@ -308,38 +331,53 @@ public class SystemProperties extends java.util.Properties {
 	 */
 	static public final String INJECTIVE_KEY = "matchInjective";
 	/** 
-	 * Property name of the dankling edge check.
+	 * Property name of the dangling edge check.
 	 * If <code>true</code>, all matches that leave dangling edges are invalid.
 	 * Default is <code>false</code>.
 	 */
 	static public final String DANGLING_KEY = "checkDangling";
-//	/** 
-//	 * Property that determines the graph properties that can be stored.
-//	 */
-//	static public final String GRAPH_PROPERTIES = "graphProperties";
-	
+	/** 
+	 * Property name of the creator edge check.
+	 * If <code>true</code>, creator edges are implicitly treated as (individual) NACs.
+	 * Default is <code>false</code>.
+	 */
+	static public final String CREATOR_EDGE_KEY = "checkCreatorEdges";
+	/** 
+	 * Property name of the RHS-as-NAC property.
+	 * If <code>true</code>, each RHS is implicitly treated as a NAC.
+	 * Default is <code>false</code>.
+	 */
+	static public final String RHS_AS_NAC_KEY = "rhsIsNAC";
+	/**
+	 * Property name for one-line comments on the graph production system.
+	 */
+	static public final String REMARK_KEY = "remark";
 	/**
 	 * List of system-defined keys, in the order in which they are to appear in a properties editor. 
 	 */
 	static public final Map<String,Property<String>> DEFAULT_KEYS;
 	
 	static {
+		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>();
+		defaultKeys.put(REMARK_KEY, new Property.True<String>("A one-line description of the graph production system"));
 		String attributesDescription = String.format("'%s' for default attributes", ATTRIBUTES_YES);
 		StringBuilder attributesCommentBuilder = new StringBuilder();
 		attributesCommentBuilder.append("Indicates whether the graphs and rules are attributed\n");
 		attributesCommentBuilder.append(String.format("Use '%s' for default attributes, '%s' or empty for no attributes",
 		ATTRIBUTES_YES, ATTRIBUTES_NO));
 		String attributesComment = Converter.HTML_TAG.on(Converter.toHtml(attributesCommentBuilder)).toString();
-		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>();
 		defaultKeys.put(ATTRIBUTES_KEY, new Property<String>(attributesDescription, attributesComment) {
 			@Override
 			public boolean isSatisfied(String value) {
 				return value.equals(ATTRIBUTES_YES) || value.equals(ATTRIBUTES_NO);
 			}
 		});
+		defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean("Flag controlling if matches should be injective", true));
+		defaultKeys.put(DANGLING_KEY, new Property.IsBoolean("Flag controlling if dangling edges should be forbidden rather than deleted", true));
+		defaultKeys.put(CREATOR_EDGE_KEY, new Property.IsBoolean("Flag controlling if creator edges should be treated as implicit NACs", true));
+		defaultKeys.put(RHS_AS_NAC_KEY, new Property.IsBoolean("Flag controlling if RHSs should be treated as implicit NACs", true));
 		defaultKeys.put(CONTROL_LABELS_KEY, new Property.True<String>("A list of rare labels, used to optimise rule matching"));
 		defaultKeys.put(COMMON_LABELS_KEY, new Property.True<String>("A list of frequent labels, used to optimise rule matching"));
-		defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean("Flag controlling if matches should be injective", true));
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
 	}
 	
@@ -352,7 +390,7 @@ public class SystemProperties extends java.util.Properties {
 	static private final Map<Boolean,SystemProperties> instances = new HashMap<Boolean,SystemProperties>();
 	
 	static {
-		// initialize the instance map
+		// initialise the instance map
 		for (boolean attributed: new boolean[] { true, false } ) {
 			SystemProperties properties = new SystemProperties();
 			properties.setAttributed(attributed);
@@ -376,5 +414,4 @@ public class SystemProperties extends java.util.Properties {
 	 * and a {@link DefaultRuleFactory}. 
 	 */
 	static public final SystemProperties DEFAULT_PROPERTIES = getInstance(false);
-
 }

@@ -30,7 +30,7 @@ public interface RuleApplier {
     /**
      * Returns a set of {@link RuleApplication}s for a given graph,
      * according to the derivation strategy of this deriver.
-     * @return a set of rule applicatons.
+     * @return a set of rule applications.
      */
 	public Set<RuleApplication> getApplications();
 	
@@ -38,8 +38,8 @@ public interface RuleApplier {
      * Returns an iterator over the {@link RuleApplication}s for a given graph,
      * according to the derivation strategy of this deriver.
      * The iterator may operate lazily; it is guaranteed to return every application
-     * at most once, so that it behaves functionally the same as <code>getDerivations(graph).iterator()</code>
-     * @return an iterator over the rule applicatons for <code>graph</code>
+     * at most once, so that it behaves functionally the same as <code>getApplications().iterator()</code>
+     * @return an iterator over the rule applications for <code>graph</code>
      * @see #getApplications()
      */
 	public Iterator<RuleApplication> getApplicationIter();

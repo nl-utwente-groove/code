@@ -158,6 +158,23 @@ public class GraphProperties extends Properties {
 			return Boolean.parseBoolean(result);
 		}
 	}
+
+	/**
+	 * Retrieves the {@link #REMARK_KEY} value in this properties object.
+	 * @return the current value for {@link #REMARK_KEY}; may be <code>null</code>
+	 */
+	public String getRemark() {
+		return getProperty(REMARK_KEY);
+	}
+	
+	/** 
+	 * Sets the {@link #REMARK_KEY} property to a given value.
+	 * @param remark the new remark; may be <code>null</code>
+	 * @return the previous value for {@link #REMARK_KEY}; may be <code>null</code>
+	 */
+	public String setRemark(String remark) {
+		return (String) setProperty(REMARK_KEY, remark);
+	}
 //	
 //	/** 
 //	 * Returns a static comparator, which orders property keys so that
@@ -243,7 +260,7 @@ public class GraphProperties extends Properties {
             
             @Override
             public String getComment() {
-                return "The remark is a comment shown e.g. as tool tip";
+                return "A one-line description of the rule, shown e.g. as tool tip";
             }
         });
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
@@ -264,7 +281,7 @@ public class GraphProperties extends Properties {
 			return properties.getPriority();
 		}
 	}
-	
+
 	/** 
 	 * Returns the enabledness property from a given graph.
 	 * The property is stored under {@link #ENABLED_KEY}.
@@ -278,6 +295,22 @@ public class GraphProperties extends Properties {
 			return true;
 		} else {
 			return properties.isEnabled();
+		}
+	}
+
+	/** 
+	 * Returns the remark property from a given graph.
+	 * The property is stored under {@link #REMARK_KEY}.
+	 * Yields <code>null</code> if the graph has no properties,
+	 * or the properties contain no remark value.
+	 * @see #getRemark()
+	 */
+	static public String getRemark(GraphShape graph) {
+		GraphProperties properties = GraphInfo.getProperties(graph, false);
+		if (properties == null) {
+			return null;
+		} else {
+			return properties.getRemark();
 		}
 	}
 }

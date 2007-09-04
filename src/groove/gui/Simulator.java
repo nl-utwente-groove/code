@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.55 2007-08-26 07:24:00 rensink Exp $
+ * $Id: Simulator.java,v 1.56 2007-09-04 20:59:32 rensink Exp $
  */
 package groove.gui;
 
@@ -123,7 +123,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.55 $
+ * @version $Revision: 1.56 $
  */
 public class Simulator {
     /**
@@ -132,8 +132,6 @@ public class Simulator {
     public Simulator() {
         initGrammarLoaders();
         getFrame();
-//        setActionsEnabled();
-        // set the menu bar
     }
 
     /**
@@ -940,7 +938,7 @@ public class Simulator {
         		CTLModelChecker modelChecker = new CTLModelChecker(getCurrentGTS(), formula);
         		modelChecker.verify();
         		Set<State> counterExamples = formula.getCounterExamples();
-        		notifyVerifyProperty(counterExamples);
+        		fireVerifyProperty(counterExamples);
     		} else {
     			showErrorDialog("Invalid atomic proposition", new Exception("'" + invalidAtom + "' is not a valid atomic proposition."));
     		}
@@ -1009,9 +1007,7 @@ public class Simulator {
             graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON, getStatePanel(), "Current graph state");
             graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(), "Selected rule");
             graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, getLtsPanel(), "Labelled transition system");
-            graphViewsPanel.addTab(null, Groove.CTRL_FRAME_ICON , getControlPanel(), "Current Control Specification" );
-            // Tom Staijen : Control
-            //graphViewsPanel.addTab(null, Groove.CONTROL_FRAME_ICON, getControlPanel(), "Current Control Machine");
+            graphViewsPanel.addTab(null, Groove.CTRL_FRAME_ICON , getControlPanel(), "Control specification" );
             // add this simulator as a listener so that the actions are updated regularly
             graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
@@ -1173,12 +1169,12 @@ public class Simulator {
     		action.refresh();
     	}
     }
-
+    
     /**
      * Adds the accelerator key for a given action to the action and input maps of the simulator
      * frame's content pane.
      * @param action the action to be added
-     * @require <tt>frame.getContentPane()</tt> should be initialized
+     * @require <tt>frame.getContentPane()</tt> should be initialised
      */
     private void addAccelerator(Action action) {
         JComponent contentPane = (JComponent) getFrame().getContentPane();
@@ -1541,14 +1537,14 @@ public class Simulator {
 
     /**
 	 * Notifies all listeners of the verification of the current generated
-	 * transistion system. This method should not be called directly: use
+	 * transition system. This method should not be called directly: use
 	 * {@link #verifyProperty(String)} instead.
 	 * 
 	 * @param counterExamples
 	 *            the collection of states that do not satisfy the property
-	 *            verfied
+	 *            verified
 	 */
-    protected synchronized void notifyVerifyProperty(Set<State> counterExamples) {
+    protected synchronized void fireVerifyProperty(Set<State> counterExamples) {
     	if (counterExamples.isEmpty()) {
     		JOptionPane.showMessageDialog(getFrame(), "There were no counter-examples.", "Verification results", JOptionPane.INFORMATION_MESSAGE, Groove.GROOVE_ICON_32x32);
     	} else {
@@ -1578,16 +1574,13 @@ public class Simulator {
         }
         jModel.setEmphasized(jCells);
 	}
+    
 	/**
 	 * Refreshes the title bar, layout and actions.
 	 */
 	private void refresh() {
 		setTitle();
 		refreshActions();
-
-//		if (getFrame().getContentPane() instanceof JSplitPane) {
-//			((JSplitPane) getFrame().getContentPane()).resetToPreferredSizes();
-//		}
 	}
 
     /**
@@ -2963,263 +2956,4 @@ public class Simulator {
             return KeyEvent.getKeyText(Options.START_SIMULATION_KEY.getKeyCode());
         }
     }
-//    
-//    /**
-//     * Class providing functionality to export a {@link JGraph} to a file in different formats.
-//     * @author Arend Rensink
-//     * @version $Revision: 1.55 $
-//     */
-//    static public class Exporter {
-//        /**
-//         * Returns a file chooser for exporting, lazily creating it first.
-//         */
-//        public JFileChooser getFileChooser() {
-//            if (fileChooser== null) {
-//                fileChooser = new GrooveFileChooser();
-//                fileChooser.setAcceptAllFileFilterUsed(false);
-//                for (Format format: getFormats()) {
-//                    fileChooser.addChoosableFileFilter(format.getFilter());
-//                }
-//                fileChooser.setFileFilter(PngFormat.getInstance().getFilter());
-//            }
-//            return fileChooser;
-//        }
-//        
-//        /**
-//         * Exports the current state to a given format. The format is deduced from the file name, using
-//         * known file filters.
-//         */
-//        public void export(JGraph jGraph, File file) throws IOException {
-//            for (Format format: getFormats()) {
-//                if (format.getFilter().accept(file)) {
-//                    format.export(jGraph, file);
-//                    return;
-//                }
-//            }
-//        }
-//        
-//        private List<Format> getFormats() {
-//            if (formats == null) {
-//                formats = new ArrayList<Format>();
-//                formats.add(LispFormat.getInstance());
-//                formats.add(FsmFormat.getInstance());
-//                formats.add(JpgFormat.getInstance());
-//                formats.add(PngFormat.getInstance());
-//                formats.add(EpsFormat.getInstance());
-//            }
-//            return formats;
-//        }
-//        
-//        /** The file chooser of this exporter. */
-//        private GrooveFileChooser fileChooser;
-//        /** List of the supported export formats. */
-//        private List<Format> formats;
-//        
-//        /** Singleton class implementing the FSM export format. */
-//        private static class FsmFormat implements Format {
-//            /** Empty constructor to ensure singleton usage of the class. */
-//            private FsmFormat() {
-//                // empty
-//            }
-//            
-//            public ExtensionFilter getFilter() {
-//                return fsmFilter;
-//            }
-//
-//            public void export(JGraph jGraph, File file) throws IOException {
-//                PrintWriter writer = new PrintWriter(new FileWriter(file));
-//                Converter.graphToFsm(jGraph.getModel().toPlainGraph(), writer);
-//                writer.close();
-//            }
-//
-//            /**
-//             * Extension filter used for exporting graphs in fsm format.
-//             */
-//            private final ExtensionFilter fsmFilter = Groove.createFsmFilter();
-//            
-//            /** Returns the singleton instance of this class. */
-//            public static Format getInstance() {
-//                return instance;
-//            }
-//            
-//            /** The singleton instance of this class. */
-//            private static final Format instance = new FsmFormat();
-//        }
-//
-//        
-//        /** Singleton class implementing the Lisp export format. */
-//        private static class LispFormat implements Format {
-//            /** Empty constructor to ensure singleton usage of the class. */
-//            private LispFormat() {
-//                // empty
-//            }
-//
-//            public ExtensionFilter getFilter() {
-//                return lispFilter;
-//            }
-//
-//            public void export(JGraph jGraph, File file) throws IOException {
-//                PrintWriter writer = new PrintWriter(new FileWriter(file));
-//                convert(jGraph.getModel().toPlainGraph(), writer);
-//                writer.close();
-//            }
-//            
-//            /** Writes a graph to a writer in the requried format. */
-//            private void convert(GraphShape graph, PrintWriter writer) {
-//                this.writer = writer;
-//                this.indent = 0;
-//                println("(%s", GRAPH_KEYWORD);
-//                println(")");
-//                assert this.indent == 0 : String.format("Conversion ended at indentation level %d", indent);
-//            }
-//            
-//            /** Prints a line to a writer, taking care of indentation. */
-//            private void println(String line, Object... args) {
-//                char[] spaces = new char[INDENT_COUNT * indent];
-//                Arrays.fill(spaces, ' ');
-//                writer.print(spaces);
-//                String text = String.format(line, args);
-//                writer.println(text);
-//                int opens = 0;
-//                int closes = 0;
-//                for (char c: text.toCharArray()) {
-//                    if (c=='(') opens++;
-//                    if (c==')') closes++;
-//                }
-//                indent += opens - closes;
-//            }
-//
-//            /** The writer used in the current {@link #convert(GraphShape, PrintWriter)} invocation. */
-//            private PrintWriter writer;
-//            /** The indentation level of the current {@link #convert(GraphShape, PrintWriter)} invocation. */
-//            private int indent;
-//            /**
-//             * Extension filter used for exporting graphs in lisp format.
-//             */
-//            private final ExtensionFilter lispFilter = Groove.getFilter("Lisp layout files", Groove.LISP_EXTENSION, true);
-//
-//            /** Returns the singleton instance of this class. */
-//            public static Format getInstance() {
-//                return instance;
-//            }
-//            
-//            /** The singleton instance of this class. */
-//            private static final Format instance = new LispFormat();
-//            
-//            /** Number of indentation positions per indent level. */
-//            private static int INDENT_COUNT = 4;
-//            /** Lisp function for graphs. */
-//            private static final String GRAPH_KEYWORD = "graph";
-//        }
-//
-//        
-//        /** Class implementing the JPG export format. */
-//        private static class JpgFormat implements Format {
-//            /** Empty constructor to ensure singleton usage of the class. */
-//            private JpgFormat() {
-//                // empty
-//            }
-//            
-//            public ExtensionFilter getFilter() {
-//                return jpgFilter;
-//            }
-//
-//            public void export(JGraph jGraph, File file) throws IOException {
-//                ImageIO.write(jGraph.toImage(), jpgFilter.getExtension().substring(1), file);
-//            }
-//
-//            /**
-//             * Extension filter used for exporting graphs in jpeg format.
-//             */
-//            private final ExtensionFilter jpgFilter = new ExtensionFilter("JPEG image files", Groove.JPG_EXTENSION);
-//
-//            /** Returns the singleton instance of this class. */
-//            public static Format getInstance() {
-//                return instance;
-//            }
-//            
-//            /** The singleton instance of this class. */
-//            private static final Format instance = new JpgFormat();
-//        }
-//
-//        
-//        /** Class implementing the PNG export format. */
-//        private static class PngFormat implements Format {
-//            /** Empty constructor to ensure singleton usage of the class. */
-//            private PngFormat() {
-//                // empty
-//            }
-//            
-//            public ExtensionFilter getFilter() {
-//                return pngFilter;
-//            }
-//
-//            public void export(JGraph jGraph, File file) throws IOException {
-//                ImageIO.write(jGraph.toImage(), pngFilter.getExtension().substring(1), file);
-//            }
-//
-//            /**
-//             * Extension filter used for exporting graphs in png format.
-//             */
-//            private final ExtensionFilter pngFilter = new ExtensionFilter("PNG image files",
-//                    Groove.PNG_EXTENSION);
-//
-//            /** Returns the singleton instance of this class. */
-//            public static Format getInstance() {
-//                return instance;
-//            }
-//            
-//            /** The singleton instance of this class. */
-//            private static final Format instance = new PngFormat();
-//        }
-//
-//        
-//        /** Class implementing the EPS export format. */
-//        private static class EpsFormat implements Format {
-//            /** Empty constructor to ensure singleton usage of the class. */
-//            private EpsFormat() {
-//                // empty
-//            }
-//
-//            public ExtensionFilter getFilter() {
-//                return epsFilter;
-//            }
-//
-//            public void export(JGraph jGraph, File file) throws IOException {
-//                // Create a graphics contents on the buffered image
-//                BufferedImage image = jGraph.toImage();
-//                // Create an output stream
-//                OutputStream out = new FileOutputStream(file);
-//                // minX,minY,maxX,maxY
-//                EpsGraphics g2d = new EpsGraphics("Title", out, 0, 0, image.getWidth(), image
-//                        .getHeight(), ColorMode.COLOR_RGB);
-//                g2d.drawImage(jGraph.toImage(), new AffineTransform(), null);
-//                g2d.close();
-//            }
-//
-//            /**
-//             * Extension filter used for exporting graphs in png format.
-//             */
-//            private final ExtensionFilter epsFilter = new ExtensionFilter("EPS image files",
-//                    Groove.EPS_EXTENSION);
-//
-//            /** Returns the singleton instance of this class. */
-//            public static Format getInstance() {
-//                return instance;
-//            }
-//            
-//            /** The singleton instance of this class. */
-//            private static final Format instance = new EpsFormat();
-//        }
-//
-//        /**
-//         * Interface for export formats.
-//         */
-//        private static interface Format {
-//            /** Returns the extension filter for this format. */
-//            ExtensionFilter getFilter();
-//            /** Exports a JGraph into this format. */
-//            void export(JGraph jGraph, File file) throws IOException;
-//        }
-//    }
 }

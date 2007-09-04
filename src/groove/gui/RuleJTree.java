@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJTree.java,v 1.21 2007-09-04 15:56:39 rensink Exp $
+ * $Id: RuleJTree.java,v 1.22 2007-09-04 20:59:32 rensink Exp $
  */
 package groove.gui;
 
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -596,21 +596,20 @@ public class RuleJTree extends JTree implements SimulationListener {
 	    /** Returns HTML-formatted tool tip text for this rule node. */
 	    public String getToolTipText() {
 	    	StringBuilder result = new StringBuilder();
+	    	result.append("Rule ");
+	    	result.append(Converter.STRONG_TAG.on(getRule().getName()));
         	GraphProperties properties = GraphInfo.getProperties(getRule().getAspectGraph(), false);
-        	if (properties == null || properties.isEmpty()) {
-        		result.append("Rule without special properties");
-        	} else {
+        	if (properties != null && !properties.isEmpty()) {
         	    boolean hasProperties;
-        	    String remark = properties.getProperty(GraphProperties.REMARK_KEY);
+        	    result.append(": ");
+        	    String remark = properties.getRemark();
         	    if (remark != null) {
-                    result.append("Purpose: "+remark);
-                    result.append(Converter.HTML_LINEBREAK);
+                    result.append(Converter.toHtml(remark));
                     hasProperties = properties.size() > 1;
         	    } else {
         	        hasProperties = true;
         	    }
         	    if (hasProperties) {
-                    result.append("Rule properties:");
                     for (String key : properties.getPropertyKeys()) {
                         if (!key.equals(GraphProperties.REMARK_KEY)) {
                             result.append(Converter.HTML_LINEBREAK);
@@ -618,8 +617,8 @@ public class RuleJTree extends JTree implements SimulationListener {
                         }
                     }
                 }
-        		Converter.HTML_TAG.on(result);
         	}
+    		Converter.HTML_TAG.on(result);
         	return result.toString();
 	    }
 	    

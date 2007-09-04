@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RulePanel.java,v 1.14 2007-08-26 07:24:01 rensink Exp $
+ * $Id: RulePanel.java,v 1.15 2007-09-04 20:59:32 rensink Exp $
  */
 package groove.gui;
 
@@ -21,6 +21,7 @@ import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
+import groove.graph.GraphProperties;
 import groove.gui.jgraph.AspectJGraph;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.JModel;
@@ -29,10 +30,11 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
+import groove.util.Converter;
 import groove.util.Groove;
+import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
-import groove.view.RuleView;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -42,7 +44,7 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -164,22 +166,28 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
 	 */
     @Override
     protected String getStatusText() {
-    	String text;
-    	RuleView rule = simulator.getCurrentRule();
+    	StringBuilder text = new StringBuilder();
+    	AspectualRuleView rule = simulator.getCurrentRule();
     	if (rule != null) {
-    		text = "Rule " + rule.getNameLabel().name();
+    		text.append("Rule ");
+    		text.append(Converter.STRONG_TAG.on(rule.getNameLabel().name()));
     		if (getOptionsItem(SHOW_ANCHORS_OPTION).isSelected()) {
     			try {
-					text += "; anchor "
-							+ Groove.toString(rule.toRule().anchor(), "(", ")", ",");
+					text.append(", anchor ");
+					text.append(Groove.toString(rule.toRule().anchor(), "(", ")", ","));
 				} catch (FormatException exc) {
 					// don't add the anchor
 				}
     		}
+    		String remark = GraphProperties.getRemark(rule.getAspectGraph());
+    		if (remark != null) {
+    			text.append(": ");
+    			text.append(Converter.toHtml(remark));
+    		}
     	} else {
-    		text = INITIAL_FRAME_NAME;
+    		text.append(INITIAL_FRAME_NAME);
     	}
-    	return text;
+    	return Converter.HTML_TAG.on(text).toString();
     }
 
     /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FixedDeltaGraph.java,v 1.7 2007-08-26 07:23:43 rensink Exp $
+ * $Id: FixedDeltaGraph.java,v 1.8 2007-09-04 20:59:27 rensink Exp $
  */
 package groove.graph;
 
@@ -48,11 +48,6 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		this.delta = delta;
 		super.setFixed();
 	}
-//	
-//	@Override
-//	public boolean isFixed() {
-//		return true;
-//	}
 
 	/**
 	 * Since the result should be modifiable, returns a {@link DeltaGraph}.
@@ -292,9 +287,9 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	private Reference<CertificateStrategy> certifier;
 	
 	/** Factory instance of this class. */
-	static private final DeltaGraphFactory instance = new FixedDeltaGraph(null,null);
+	static private final FixedDeltaGraph instance = new FixedDeltaGraph(null,null);
 	/** Returns a fixed factory instance of the {@link FixedDeltaGraph} class. */
-	static public DeltaGraphFactory getInstance() {
+	static public FixedDeltaGraph getInstance() {
 		return instance;
 	}
 	

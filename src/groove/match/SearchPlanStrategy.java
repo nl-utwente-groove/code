@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.3 2007-08-30 15:18:18 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.4 2007-09-04 20:59:24 rensink Exp $
  */
 package groove.match;
 
+import groove.calc.Property;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -38,7 +39,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class SearchPlanStrategy implements MatchStrategy {
 	/**
@@ -52,6 +53,21 @@ public class SearchPlanStrategy implements MatchStrategy {
         this.injective = injective;
     }
 
+    public void setFilter(Property<VarNodeEdgeMap> filter) {
+    	this.filter = filter;
+    }
+    
+    /**
+     * Returns the filter currently set for the matches found by this strategy.
+     * @return a property which may be <code>null</code>, but if not,
+     * is guaranteed to hold for all matches returned by any of the 
+     * search methods.
+     * @see #setFilter(Property)
+     */
+    protected Property<VarNodeEdgeMap> getFilter() {
+    	return filter;
+    }
+    
     public VarNodeEdgeMap getMatch(Graph graph, NodeEdgeMap preMatch) {
         VarNodeEdgeMap result;
         reporter.start(GET_MATCH);
@@ -154,6 +170,11 @@ public class SearchPlanStrategy implements MatchStrategy {
 	private final List<SearchItem> plan;
     /** Flag indicating that the matching should be injective. */
 	private final boolean injective;
+	/** 
+	 * Additional property that has to be satisfied by all matches returned
+	 * by the matcher.
+	 */
+	Property<VarNodeEdgeMap> filter;
     
     /** Reporter instance to profile matcher methods. */
     static final Reporter reporter = Reporter.register(SearchPlanStrategy.class);
@@ -173,6 +194,7 @@ public class SearchPlanStrategy implements MatchStrategy {
         /** Constructs a new record for a given graph and partial match. */
         public Search(SearchPlanStrategy strategy, Graph target, NodeEdgeMap preMatch) {
             this.plan = strategy.getPlan();
+            this.filter = strategy.getFilter();
             this.injective = strategy.isInjective();
             this.target = target;
             this.current = 0;
@@ -194,6 +216,7 @@ public class SearchPlanStrategy implements MatchStrategy {
          */
         public boolean find() {
             reporter.start(SEARCH_FIND);
+            do {
             if (found) {
                 // we already found a solution
                 // clone the previous result to avoid sharing problems
@@ -205,6 +228,7 @@ public class SearchPlanStrategy implements MatchStrategy {
             }
             reporter.stop();
             found = current > lastSingular;
+            } while (found && !satisfiesFilter());
             return found;
         }
 
@@ -228,6 +252,10 @@ public class SearchPlanStrategy implements MatchStrategy {
             return result;
         }
 
+        /** Tests if the current search result satisfies the additional filter (if any). */
+        private boolean satisfiesFilter() {
+        	return filter == null || filter.isSatisfied(result);
+        }
         /** Returns an alias of the (partial) result of the search. */
         VarNodeEdgeMap getResult() {
             return result;
@@ -324,6 +352,8 @@ public class SearchPlanStrategy implements MatchStrategy {
 
         /** The search plan for this record. */
         private final List<SearchItem> plan;
+        /** Property to be satisfied by all search results. May be <code>null</code>. */
+        private final Property<VarNodeEdgeMap> filter;
         /** Flag indicating that the match should be injective. */
         private final boolean injective;
         /** Flag indicating that a solution has already been found. */

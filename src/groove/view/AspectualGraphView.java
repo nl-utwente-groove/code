@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGraphView.java,v 1.10 2007-08-26 07:24:09 rensink Exp $
+ * $Id: AspectualGraphView.java,v 1.11 2007-09-04 20:59:23 rensink Exp $
  */
 package groove.view;
 
@@ -292,6 +292,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 				// update the model-to-view element map
 				elementMap.edgeMap().put(edge, edgeImage);
 			}
+			view.setFixed();
 		} catch (FormatException exc) {
 			throw new IllegalStateException("Exception should not occur: "+exc);
 		}
