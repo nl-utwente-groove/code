@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LabelList.java,v 1.14 2007-08-26 07:24:04 rensink Exp $
+ * $Id: LabelList.java,v 1.15 2007-09-04 15:56:39 rensink Exp $
  */
 package groove.gui;
 
@@ -55,7 +55,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /**
@@ -459,11 +459,13 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
             	text.append(label);
             }
             Converter.toHtml(text);
-            if (filteredLabels != null && filteredLabels.contains(label)) {
-            	Converter.STRIKETHROUGH_TAG.on(text);
-                setToolTipText("Filtered label; doubleclick to show");
-            } else {
-                setToolTipText("Visible label; doubleclick to filter");   	
+            if (filteredLabels != null) {
+                if (filteredLabels.contains(label)) {
+                    Converter.STRIKETHROUGH_TAG.on(text);
+                    setToolTipText("Filtered label; doubleclick to show");
+                } else {
+                    setToolTipText("Visible label; doubleclick to filter");
+                }
             }
             Converter.createColorTag(foreground).on(text);
             super.setText(Converter.HTML_TAG.on(text).toString());
