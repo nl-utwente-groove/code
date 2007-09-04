@@ -179,11 +179,16 @@ public class GraphProperties extends Properties {
 	 * The corresponding value should be an integer.
 	 */
 	static public final String PRIORITY_KEY = "priority";
-	/**
-	 * Rule enabledness key.
-	 * The corresponding value should be a boolean.
-	 */
-	static public final String ENABLED_KEY = "enabled";
+    /**
+     * Rule enabledness key.
+     * The corresponding value should be a boolean.
+     */
+    static public final String ENABLED_KEY = "enabled";
+    /**
+     * Rule remark key.
+     * The corresponding value should be a string.
+     */
+    static public final String REMARK_KEY = "remark";
 	/** Array of keys, in order of display appearance. */
 	static public final Map<String,Property<String>> DEFAULT_KEYS;
 	
@@ -209,22 +214,38 @@ public class GraphProperties extends Properties {
 				return "Higher-priority rules are evaluated first";
 			}
 		});
-		defaultKeys.put(ENABLED_KEY, new Property<String>() {
-			@Override
-			public boolean isSatisfied(String value) {
-				return value.equals(""+true) || value.equals(""+false);
-			}
-			
-			@Override
-			public String getDescription() {
-				return "a boolean indicating rule enabledness";
-			}
-			
-			@Override
-			public String getComment() {
-				return "Disabled rules are never evaluated";
-			}
-		});
+        defaultKeys.put(ENABLED_KEY, new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.equals(""+true) || value.equals(""+false);
+            }
+            
+            @Override
+            public String getDescription() {
+                return "a boolean indicating rule enabledness";
+            }
+            
+            @Override
+            public String getComment() {
+                return "Disabled rules are never evaluated";
+            }
+        });
+        defaultKeys.put(REMARK_KEY, new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.trim().length() > 0;
+            }
+            
+            @Override
+            public String getDescription() {
+                return "a one-line description of the purpose of the graph or rule";
+            }
+            
+            @Override
+            public String getComment() {
+                return "The remark is a comment shown e.g. as tool tip";
+            }
+        });
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
 	}
 	

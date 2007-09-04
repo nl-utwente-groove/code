@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Matching.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: Matching.java,v 1.2 2007-09-04 15:56:39 rensink Exp $
  */
 package groove.trans;
 
@@ -26,12 +26,12 @@ import groove.rel.VarMorphism;
 
 /**
  * Interface for the matching morphism from a {@link GraphCondition}.
- * The added functionality is that a matching can be initialized as an
+ * The added functionality is that a matching can be initialised as an
  * empty or partial morphism, and be extended from there to a total
  * morphism (called a <i>total extension</i> here) while checking the
  * nested sub-conditions. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface Matching extends VarMorphism {
     /**
