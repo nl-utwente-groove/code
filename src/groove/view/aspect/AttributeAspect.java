@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.6 2007-07-21 20:07:51 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.7 2007-09-05 20:40:51 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -45,7 +45,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -88,7 +88,7 @@ public class AttributeAspect extends AbstractAspect {
     	} else if (attributeValue == VALUE) {
     		result = createValueNode(node, graph);
     	} else {
-    		assert attributeValue == PRODUCT;
+    		assert attributeValue == PRODUCT : String.format("Illegal attribute aspect value: %s", attributeValue);
     		result = createProductNode(node, graph);
     	}
     	return result;

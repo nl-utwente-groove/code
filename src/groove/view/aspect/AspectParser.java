@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.7 2007-08-22 15:04:49 rensink Exp $
+ * $Id: AspectParser.java,v 1.8 2007-09-05 20:40:51 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class AspectParser {
 	/** 
@@ -172,14 +172,24 @@ public class AspectParser {
     }
     
     /**
+     * The set of registered aspects.
+     */
+    private final Set<Aspect> aspects = new HashSet<Aspect>();
+    /** 
+     * Indicates that parsing should be lenient,
+     * i.e., some errors are glossed over.
+     */
+    private final boolean lenient;
+    
+    /**
      * Returns a strict or lenient parser instance.
      * @see #isLenient()
      */
     public static AspectParser getInstance(boolean lenient) {
         if (lenient) {
-        	return lenientParser;
+            return lenientParser;
         } else {
-        	return strictParser;
+            return strictParser;
         }
     }
 
@@ -244,15 +254,6 @@ public class AspectParser {
         return new ComposedLabelParser(parsers);
     }
 
-    /**
-     * The set of registered aspects.
-     */
-    private final Set<Aspect> aspects = new HashSet<Aspect>();
-    /** 
-     * Indicates that parsing should be lenient,
-     * i.e., some errors are glossed over.
-     */
-    private final boolean lenient;
     /** The singleton lenient parser instance. */
     private static AspectParser lenientParser = new AspectParser(true);
     /** The singleton strict parser instance. */
