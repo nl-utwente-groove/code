@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LabelList.java,v 1.15 2007-09-04 15:56:39 rensink Exp $
+ * $Id: LabelList.java,v 1.16 2007-09-05 14:12:42 rensink Exp $
  */
 package groove.gui;
 
@@ -55,7 +55,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /**
@@ -72,7 +72,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
                 }
             });
         }
-        // initialize the list model
+        // initialise the list model
         this.listModel = new DefaultListModel();
         setModel(listModel);
         // change the cell renderer so it adds a space in front of the labels
@@ -237,26 +237,22 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 	}
 
 	/**
-	 * Emphasizes/deemphasizes cells in the associated jmodel, based on the list
+	 * Emphasises/deemphasises cells in the associated jmodel, based on the list
 	 * selection.
 	 */
     public void valueChanged(ListSelectionEvent e) {
-//    	if (!valueChangeUnderway) {
-//			valueChangeUnderway = true;
-			Set<JCell> emphSet = new HashSet<JCell>();
-			int i = getMinSelectionIndex();
-			if (i >= 0) {
-				while (i <= getMaxSelectionIndex()) {
-					String label = (String) listModel.getElementAt(i);
-					if (isSelectedIndex(i)) {
-						emphSet.addAll(labels.get(label));
-					}
-					i++;
+		Set<JCell> emphSet = new HashSet<JCell>();
+		int i = getMinSelectionIndex();
+		if (i >= 0) {
+			while (i <= getMaxSelectionIndex()) {
+				String label = (String) listModel.getElementAt(i);
+				if (isSelectedIndex(i)) {
+					emphSet.addAll(labels.get(label));
 				}
+				i++;
 			}
-			jmodel.setEmphasized(emphSet);
-//			valueChangeUnderway = false;
-//		}
+		}
+		jmodel.setEmphasized(emphSet);
 	}
 
     /**
@@ -436,7 +432,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     private final ObservableSet<String> filteredLabels;
     
     /**
-     * The background color of this component when it is enabled.
+     * The background colour of this component when it is enabled.
      */
     private Color enabledBackground;
     
