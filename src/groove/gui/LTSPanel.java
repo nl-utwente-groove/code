@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSPanel.java,v 1.15 2007-09-04 20:59:32 rensink Exp $
+ * $Id: LTSPanel.java,v 1.16 2007-09-05 14:12:42 rensink Exp $
  */
 package groove.gui;
 
@@ -43,7 +43,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2007-09-04 20:59:32 $
+ * @version $Revision: 1.16 $ $Date: 2007-09-05 14:12:42 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -78,6 +78,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
         setGTS(null);
         getJGraph().setModel(LTSJModel.EMPTY_LTS_JMODEL);
+        getJGraph().getFilteredLabels().clear();
         setEnabled(false);
         refreshStatus();
     }

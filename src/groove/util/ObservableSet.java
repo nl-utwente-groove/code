@@ -14,7 +14,7 @@ import java.util.Set;
  * Provides a view upon a given set that sends notifications of
  * additions and removals.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ObservableSet<T> extends Observable implements Set<T> {
     /** 
@@ -38,7 +38,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     public boolean add(T o) {
         if (set.add(o)) {
             setChanged();
-            notifyObservers(new AddUpdate(o));
+            notifyObservers(new AddUpdate<T>(o));
             return true;
         } else {
             return false;
@@ -60,21 +60,21 @@ public class ObservableSet<T> extends Observable implements Set<T> {
         }
         if (result) {
             setChanged();
-            notifyObservers(new AddUpdate(addedElements));
+            notifyObservers(new AddUpdate<T>(addedElements));
         }
         return result;
     }
 
     /**
      * Delegates the method to the underlying set, then
-     * notifies the observers rith a {@link RemoveUpdate}.
+     * notifies the observers with a {@link RemoveUpdate}.
      */
     public void clear() {
         if (!set.isEmpty()) {
             Set<T> elements = new HashSet<T>(set);
             set.clear();
             setChanged();
-            notifyObservers(elements);
+            notifyObservers(new RemoveUpdate<T>(elements));
         }
     }
 
@@ -134,7 +134,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
             public void remove() {
                 iter.remove();
                 setChanged();
-                notifyObservers(new RemoveUpdate(last));
+                notifyObservers(new RemoveUpdate<T>(last));
             }
             
             /** The last element returned by #next(). */
@@ -148,7 +148,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     public boolean remove(Object o) {
         if (set.remove(o)) {
             setChanged();
-            notifyObservers(new RemoveUpdate((T) o));
+            notifyObservers(new RemoveUpdate<T>((T) o));
             return true;
         } else {
             return false;
@@ -169,7 +169,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
         }
         if (result) {
             setChanged();
-            notifyObservers(new RemoveUpdate(removedElements));
+            notifyObservers(new RemoveUpdate<T>(removedElements));
         }
         return result;
 
@@ -192,7 +192,7 @@ public class ObservableSet<T> extends Observable implements Set<T> {
         }
         if (result) {
             setChanged();
-            notifyObservers(new RemoveUpdate(removedSet));
+            notifyObservers(new RemoveUpdate<T>(removedSet));
         }
         return result;
     }

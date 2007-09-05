@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.19 2007-06-04 19:46:50 rensink Exp $
+ * $Id: JGraph.java,v 1.20 2007-09-05 14:12:43 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -79,7 +79,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.19 $ $Date: 2007-06-04 19:46:50 $
+ * @version $Revision: 1.20 $ $Date: 2007-09-05 14:12:43 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -310,10 +310,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * <ul>
      * <li>The selection is cleared
      * <li>the layout action is stopped for the old model
-     * <li>the popup menu is re-initialized
+     * <li>the popup menu is re-initialised
      * <li>the layout action is started for the new model
      * </ul>
-     * @require <tt>model instanceof JModel</tt>
      */
     @Override
     public void setModel(GraphModel model) {

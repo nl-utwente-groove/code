@@ -211,6 +211,22 @@ public class GraphProperties extends Properties {
 	
 	static {
 		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>();
+        defaultKeys.put(REMARK_KEY, new Property<String>() {
+            @Override
+            public boolean isSatisfied(String value) {
+                return value.trim().length() > 0;
+            }
+            
+            @Override
+            public String getDescription() {
+                return "a one-line description of the purpose of the graph or rule";
+            }
+            
+            @Override
+            public String getComment() {
+                return "A one-line description of the rule, shown e.g. as tool tip";
+            }
+        });
 		defaultKeys.put(PRIORITY_KEY, new Property<String>() {
 			@Override
 			public boolean isSatisfied(String value) {
@@ -245,22 +261,6 @@ public class GraphProperties extends Properties {
             @Override
             public String getComment() {
                 return "Disabled rules are never evaluated";
-            }
-        });
-        defaultKeys.put(REMARK_KEY, new Property<String>() {
-            @Override
-            public boolean isSatisfied(String value) {
-                return value.trim().length() > 0;
-            }
-            
-            @Override
-            public String getDescription() {
-                return "a one-line description of the purpose of the graph or rule";
-            }
-            
-            @Override
-            public String getComment() {
-                return "A one-line description of the rule, shown e.g. as tool tip";
             }
         });
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
