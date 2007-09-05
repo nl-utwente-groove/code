@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.56 2007-09-04 20:59:32 rensink Exp $
+ * $Id: Simulator.java,v 1.57 2007-09-05 20:40:54 rensink Exp $
  */
 package groove.gui;
 
@@ -123,7 +123,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.56 $
+ * @version $Revision: 1.57 $
  */
 public class Simulator {
     /**
@@ -736,6 +736,7 @@ public class Simulator {
 	 */
 	private void doAddRule(RuleNameLabel ruleName, AspectGraph ruleAsGraph) {
 		try {
+		    GraphInfo.setName(ruleAsGraph, ruleName.name());
 			AspectualRuleView ruleView = new AspectualRuleView(
 					ruleAsGraph, ruleName, getCurrentGrammar()
 							.getProperties());
@@ -2427,15 +2428,10 @@ public class Simulator {
             EditorDialog dialog = showEditorDialog(getRulePanel().getJModel().toPlainGraph());
             if (dialog.isOK()) {
                 AspectGraph ruleAsAspectGraph = dialog.toAspectGraph();
-//                String question = String.format("Replace rule %s with edited version?", ruleName);
-//                if (confirmBehaviour(REPLACE_RULE_OPTION, question)) {
-//                    doAddRule(ruleName, ruleAsAspectGraph);
-//                } else {
-                    RuleNameLabel newRuleName = askNewRuleName("Name for edited rule", ruleName.name(), false);
-                    if (newRuleName != null) {
-                        doAddRule(newRuleName, ruleAsAspectGraph);
-                    }
-//                }
+                RuleNameLabel newRuleName = askNewRuleName("Name for edited rule", ruleName.name(), false);
+                if (newRuleName != null) {
+                    doAddRule(newRuleName, ruleAsAspectGraph);
+                }
             }
         }
     }
