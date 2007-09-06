@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExpr.java,v 1.14 2007-08-31 10:23:21 rensink Exp $
+ * $Id: RegExpr.java,v 1.15 2007-09-06 07:36:41 rensink Exp $
  */
 package groove.rel;
 
@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 abstract public class RegExpr { //implements VarSetSupport {
     /** 
@@ -901,7 +901,7 @@ abstract public class RegExpr { //implements VarSetSupport {
                 return result;
             }
         }
-        throw new FormatException("Unable to parse expression %s", expr);
+        throw new FormatException("Unable to parse expression %s as regular expression", expr);
     }
 
     /** Creates and returns an atomic regular expression with a given atom text. */
