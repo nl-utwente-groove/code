@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.12 2007-09-04 20:59:23 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.13 2007-09-06 07:36:46 rensink Exp $
  */
 
 package groove.view;
@@ -36,7 +36,6 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
-import groove.rel.RegExprLabel;
 import groove.trans.DefaultNAC;
 import groove.trans.EdgeEmbargo;
 import groove.trans.GraphCondition;
@@ -65,7 +64,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -78,7 +76,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -162,10 +160,12 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	    while (edgeIter.hasNext()) {
 	        AspectEdge edge = (AspectEdge) edgeIter.next();
 	        if (edge.getValue(RuleAspect.getInstance()) == role) {
-	            if (edge.label() instanceof RegExprLabel) {
-	                RegExpr expr = ((RegExprLabel) edge.label()).getRegExpr();
-	                result.addAll(bound ? expr.boundVarSet() : expr.allVarSet());
-	            }
+	            try {
+                    RegExpr expr = RegExpr.parse(edge.label().text());
+                    result.addAll(bound ? expr.boundVarSet() : expr.allVarSet());
+                } catch (FormatException e) {
+                    // not a regular expression; do nothing
+                }
 	        }
 	    }
 	    return result;
@@ -323,7 +323,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         }
         // add merger edges
         for (AspectEdge edge: graph.edgeSet()) {
-        	if (RuleAspect.isCreator(edge) && RegExprLabel.isEmpty(edge.label())) {
+        	if (RuleAspect.isCreator(edge) && isMergeLabel(edge.label())) {
                 // it's a merger; it's bound to be binary
                 assert edge.endCount() == 2 : "Merger edge "+edge+" should be binary";
                 // existing edges will automatically be redirected
@@ -344,7 +344,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 					lhs.addEdge(edgeImage);
 				}
 				if (RuleAspect.inRHS(edge)
-						&& !(RuleAspect.isCreator(edge) && RegExprLabel.isEmpty(edge.label()))) {
+						&& !(RuleAspect.isCreator(edge) && isMergeLabel(edge.label()))) {
 					// use the toRight map because we may have merged nodes
 					Edge rhsEdgeImage = computeEdgeImage(edge, graph, toRight);
 					rhs.addEdge(rhsEdgeImage);
@@ -425,8 +425,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     		}
     		ends[i] = endImage;
     	}
+    	// compute the label; either a DefaultLabel or a RegExprLabel
     	if (edge.getValue(AttributeAspect.getInstance()) == null) {
-    		return createEdge(ends, edge.label());
+    		return createEdge(ends, createRuleLabel(edge.label()));
     	} else {
     		return AttributeAspect.createAttributeEdge(edge, context, ends);
     	}
@@ -447,7 +448,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         // in the nacElemSet, which is an edge
 		if (nacNodeSet.size() == 0 && nacEdgeSet.size() == 1) {
 			Edge embargoEdge = nacEdgeSet.iterator().next();
-			if (RegExprLabel.isEmpty(embargoEdge.label())) {
+			if (isMergeLabel(embargoEdge.label())) {
 				// this is supposed to be a merge embargo
 				result = createMergeEmbargo(lhs, embargoEdge.ends());
 			} else {
@@ -547,6 +548,37 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     	return DefaultEdge.createEdge(source, label, target);
     }
 
+    /** 
+     * Turns a label of the aspect graph into a rule label.
+     * This especially involves recognising regular expressions on the label. 
+     * @param label the original label; should not be <code>null</code>
+     * @return the converted label; not <code>null</code>
+     * @throws FormatException if the label text is not a well-formed regular expression
+     */
+    protected Label createRuleLabel(Label label) throws FormatException {
+        String text = label.text();
+        RegExpr expr = RegExpr.parse(text);
+        if (expr.isAtom()) {
+            return label;
+        } else {
+            return expr.toLabel();
+        }
+    }
+    
+    /** 
+     * Tests if a given label carries a merge text.
+     * This is the case if it parses to a {@link RegExpr.Empty} expression.
+     * @param label the label to be tested
+     * @return <code>true</code> if <code>label</code> correctly parses to a {@link RegExpr.Empty}
+     */
+    protected boolean isMergeLabel(Label label) {
+        try {
+            return RegExpr.parse(label.text()).isEmpty();
+        } catch (FormatException e) {
+            return false;
+        }
+    }
+    
     /**
 	 * Callback method to create a graph that can serve as LHS or RHS of a rule.
 	 * @see #getAspectGraph()

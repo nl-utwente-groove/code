@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.6 2007-08-31 10:23:24 rensink Exp $
+ * $Id: DefaultNode.java,v 1.7 2007-09-06 07:36:45 rensink Exp $
  */
 package groove.graph;
 
@@ -23,86 +23,9 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-08-31 10:23:24 $
+ * @version $Revision: 1.7 $ $Date: 2007-09-06 07:36:45 $
  */
 public class DefaultNode implements Node {
-    /**
-     * Returns the total number of nodes created.
-     * @return the {@link #nodeCount}-value
-     */
-    static public int getNodeCount() {
-    	return nodeCount;
-    }
-    
-    /**
-     * Resets the static node number counter. 
-     */
-    static public void resetNodeNr() {
-    	nextNodeNr = 0;
-    }
-    
-    /** 
-     * Extracts a node number from a node. 
-     * The node number is assumed to exist only if the node is a {@link DefaultNode}
-     * Returns {@link #NO_NODE_NUMBER} if the number does not exist.
-     * @param node the node of which to get the number
-     * @return the number of the given node
-     */
-    static public int getNodeNr(Node node) {
-        if (node instanceof DefaultNode) {
-            int result = ((DefaultNode) node).getNumber();
-            return result < MAX_NODE_NUMBER ? result : NO_NODE_NUMBER;
-        } else {
-            return NO_NODE_NUMBER;
-        }
-    }
-    
-    /**
-     * Returns the next free node number, according to the static counter.
-     * @return the next node-number
-     */
-    static private int nextNodeNr() {
-        int result = nextNodeNr;
-        nextNodeNr++;
-        return result;
-    }
-    
-    /**
-     * Registers the fact that a certain node number has been used.
-     * This affects the fresh node numbers available, as well as the node count.
-     * @param nr the node-number to be registered
-     */
-    static private void registerNode(int nr) {
-//    	if (nr > MAX_NODE_NUMBER) {
-//    		throw new IllegalArgumentException(String.format("Default node number %s exceeds maximum %s", nr, MAX_NODE_NUMBER));
-//    	}
-    	if (nr <= MAX_NODE_NUMBER && nextNodeNr <= nr) {
-    		nextNodeNr = nr+1;
-    	}
-    	nodeCount++;
-    }
-
-    /**
-     * The total number of nodes created during the run time of the program.
-     * Used to number nodes uniquely.
-     */
-    static private int nodeCount;
-    
-    /**
-     * First fresh node number available.
-     */
-    static private int nextNodeNr;
-
-    /**
-     * The maximal number for ordinary graph nodes.
-     */
-    public static final int MAX_NODE_NUMBER = 999999999;
-
-    /**
-     * Value indicating an invalid node number.
-     */
-    public static final int NO_NODE_NUMBER = -1;
-
     /**
      * Constructs a fresh node, with a number determined by an internally kept count.
      */
@@ -185,7 +108,7 @@ public class DefaultNode implements Node {
 
     /**
      * Implements the ordering criteria for graph elements from the perspective of {@link Node}s.
-     * {@link DefaultNode}s are mututally ordered by their number.
+     * {@link DefaultNode}s are mutually ordered by their number.
      */
     public int compareTo(Element obj) {
         if (obj instanceof DefaultNode) {
@@ -216,21 +139,93 @@ public class DefaultNode implements Node {
      */
     protected int computeHashCode() {
         // for the sake of non-determinism we use the node number as hash code
-        return nodeNr;
 //    	return System.identityHashCode(this);
 //    	return nodeNr;
-//    	int code = nodeNr;
-//    	code ^= (code << 8);
-//    	return code ^ (code << 16);
+    	int code = nodeNr;
+    	code ^= (code << 8);
+    	return code ^ (code << 16);
     }
     
     /**
      * The number of this node.
      */
-    protected final int nodeNr;
+    private final int nodeNr;
     /**
      * The hashcode of this node.
      * The hashcode is precomputed at creation time using {@link #computeHashCode()}.
      */
-    protected final int hashCode;
+    private final int hashCode;
+    /**
+     * Returns the total number of nodes created.
+     * @return the {@link #nodeCount}-value
+     */
+    static public int getNodeCount() {
+        return nodeCount;
+    }
+    
+    /**
+     * Resets the static node number counter. 
+     */
+    static public void resetNodeNr() {
+        nextNodeNr = 0;
+    }
+    
+    /** 
+     * Extracts a node number from a node. 
+     * The node number is assumed to exist only if the node is a {@link DefaultNode}
+     * Returns {@link #NO_NODE_NUMBER} if the number does not exist.
+     * @param node the node of which to get the number
+     * @return the number of the given node
+     */
+    static public int getNodeNr(Node node) {
+        if (node instanceof DefaultNode) {
+            int result = ((DefaultNode) node).getNumber();
+            return result < MAX_NODE_NUMBER ? result : NO_NODE_NUMBER;
+        } else {
+            return NO_NODE_NUMBER;
+        }
+    }
+    
+    /**
+     * Returns the next free node number, according to the static counter.
+     * @return the next node-number
+     */
+    static private int nextNodeNr() {
+        int result = nextNodeNr;
+        nextNodeNr++;
+        return result;
+    }
+    
+    /**
+     * Registers the fact that a certain node number has been used.
+     * This affects the fresh node numbers available, as well as the node count.
+     * @param nr the node-number to be registered
+     */
+    static private void registerNode(int nr) {
+        if (nr <= MAX_NODE_NUMBER && nextNodeNr <= nr) {
+            nextNodeNr = nr+1;
+        }
+        nodeCount++;
+    }
+
+    /**
+     * The total number of nodes created during the run time of the program.
+     * Used to number nodes uniquely.
+     */
+    static private int nodeCount;
+    
+    /**
+     * First fresh node number available.
+     */
+    static private int nextNodeNr;
+
+    /**
+     * The maximal number for ordinary graph nodes.
+     */
+    public static final int MAX_NODE_NUMBER = 999999999;
+
+    /**
+     * Value indicating an invalid node number.
+     */
+    public static final int NO_NODE_NUMBER = -1;
 }

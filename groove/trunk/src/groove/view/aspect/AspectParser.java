@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.8 2007-09-05 20:40:51 rensink Exp $
+ * $Id: AspectParser.java,v 1.9 2007-09-06 07:36:44 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class AspectParser {
 	/** 
@@ -249,7 +249,7 @@ public class AspectParser {
         }
         // if none was induced, get the default parser
         if (parsers.isEmpty()) {
-            parsers.add(AbstractAspect.getRegExprLabelParser());
+            parsers.add(AbstractAspect.getFreeLabelParser());
         }
         return new ComposedLabelParser(parsers);
     }
