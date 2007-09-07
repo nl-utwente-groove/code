@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectEdge.java,v 1.3 2007-09-05 20:40:51 rensink Exp $
+ * $Id: AspectEdge.java,v 1.4 2007-09-07 19:13:41 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -21,6 +21,7 @@ import java.util.List;
 
 import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
+import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -29,7 +30,7 @@ import groove.view.FormatException;
 /**
  * Edge enriched with aspect data.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class AspectEdge extends DefaultEdge implements AspectElement {
 	/**
@@ -137,11 +138,11 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 	}
 
 	/**
-	 * Apart from the super method, includes a test for equality of aspect values.
+	 * Tests equality of type, ends and aspect values.
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		return super.equals(obj) && isAspectEqual((AspectEdge) obj);
+		return isTypeEqual(obj) && isEndEqual((Edge) obj) && isLabelEqual((Edge) obj) && isAspectEqual((AspectEdge) obj);
 	}
 
 	/**

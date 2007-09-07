@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MergeMap.java,v 1.3 2007-05-14 18:52:01 rensink Exp $
+ * $Id: MergeMap.java,v 1.4 2007-09-07 19:13:37 rensink Exp $
  */
 package groove.graph;
 
@@ -26,11 +26,11 @@ import java.util.Set;
  * anything not explicitly set to a particular value defaults to identity.
  * This is actually not a map, in that the entries do not reflect the actual mapping.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class MergeMap extends NodeEdgeHashMap {
     /** Internal representation of undefined. */
-    static public final Node UNDEFINED = new DefaultNode(); 
+    static public final Node UNDEFINED = DefaultNode.createNode(); 
     
     /**
      * Creates a global identity function.

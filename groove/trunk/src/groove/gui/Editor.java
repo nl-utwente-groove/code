@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Editor.java,v 1.43 2007-09-04 20:59:32 rensink Exp $
+ * $Id: Editor.java,v 1.44 2007-09-07 19:13:31 rensink Exp $
  */
 package groove.gui;
 
@@ -91,7 +91,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.43 $ $Date: 2007-09-04 20:59:32 $
+ * @version $Revision: 1.44 $ $Date: 2007-09-07 19:13:31 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -201,15 +201,16 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     }
 
     /** 
-     * Creates and returns an aspect graph, based on the current plain graph.
-     * The view is a graph view or a rule view, depending in {@link #hasGraphRole()}.
+     * Creates and returns a fixed aspect graph, based on the current plain graph.
      */
     public AspectGraph toAspectGraph() {
-    	return AspectGraph.getFactory().fromPlainGraph(getPlainGraph());
+    	AspectGraph result = AspectGraph.getFactory().fromPlainGraph(getPlainGraph());
+    	result.setFixed();
+    	return result;
     }
 
     /** 
-     * Refreshes the statur bar.
+     * Refreshes the status bar.
      */
     public void graphChanged(GraphModelEvent e) {
     	setErrors(null);
@@ -299,21 +300,28 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 			return false;
 		}
 	}
-	
+    
     /**
      * If the editor has unsaved changes, asks if these should be abandoned;
-     * then calls {@link JFrame#dispose()}.
+     * then calls {@link #doQuit()}.
      */
     protected void handleQuit() {
         if (confirmAbandon()) {
-            // calling exit is too rigorous
-        	getFrame().dispose();
+            doQuit();
         }
+    }
+    
+    /**
+     * Makes sure all resources are abandoned.
+     */
+    protected void doQuit() {
+        getFrame().dispose();
+        getGraphPanel().dispose();
     }
 
 	/**
-     * Reads the graph to be edited from a file.
-     * If the file does not exist, a new, empty model with the given name is created.
+     * Reads the graph to be edited from a file. If the file does not exist, a new, empty model with
+     * the given name is created.
      * @param fromFile the file to read from
      * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
      */
@@ -636,7 +644,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	}
 
     /**
-	 * Sets the modified status of the currentle edited graph. Also updates the frame
+	 * Sets the modified status of the currently edited graph. Also updates the frame
 	 * title to reflect the new modified status.
 	 * 
 	 * @param modified
@@ -1747,7 +1755,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.43 $
+     * @version $Revision: 1.44 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

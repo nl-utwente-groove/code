@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraphPanel.java,v 1.14 2007-09-05 14:12:42 rensink Exp $
+ * $Id: JGraphPanel.java,v 1.15 2007-09-07 19:13:31 rensink Exp $
  */
 package groove.gui;
 
@@ -20,9 +20,12 @@ import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.util.LinkedList;
+import java.util.List;
 
 import groove.gui.jgraph.JGraph;
 import groove.gui.jgraph.JModel;
+import groove.util.Pair;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
@@ -37,7 +40,7 @@ import javax.swing.JSplitPane;
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
@@ -113,6 +116,14 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
         jGraph.setEnabled(enabled);
         statusBar.setEnabled(enabled);
         super.setEnabled(enabled);
+    }
+    
+    /** 
+     * Readies the panel for garbage collection,
+     * in particular unregistering all listeners.
+     */
+    public void dispose() {
+        removeOptionListeners();
     }
 
     /**
@@ -197,19 +208,6 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     protected JComponent getPane() {
     	return currentPane;
     }
-    
-    /**
-     * Adds a listener to the menu item associated with for an option with a given name.
-     * Throws an exception if no such option was in the options object passed
-     * in at construction time.
-     */
-    protected void addOptionListener(String option, ItemListener listener) {
-    	JMenuItem optionItem = getOptionsItem(option);
-    	if (optionItem == null) {
-    		throw new IllegalArgumentException(String.format("Unknown option: %s", option));
-    	}
-    	optionItem.addItemListener(listener);
-    }
 
     /**
      * Adds a refresh listener to the menu item associated with for an option with a given name.
@@ -234,6 +232,28 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     		};
     	}
     	return refreshListener;
+    }
+    
+    /**
+     * Adds a listener to the menu item associated with for an option with a given name.
+     * Throws an exception if no such option was in the options object passed
+     * in at construction time.
+     */
+    private void addOptionListener(String option, ItemListener listener) {
+        JMenuItem optionItem = getOptionsItem(option);
+        if (optionItem == null) {
+            throw new IllegalArgumentException(String.format("Unknown option: %s", option));
+        }
+        optionItem.addItemListener(listener);
+        listeners.add(new Pair<JMenuItem, ItemListener>(optionItem, listener));
+    }
+    
+    /** Removes all listeners added by {@link #addOptionListener(String, ItemListener)}. */
+    private void removeOptionListeners() {
+        for (Pair<JMenuItem,ItemListener> record: listeners) {
+            record.first().removeItemListener(record.second());
+        }
+        listeners.clear();
     }
     
     /** 
@@ -302,6 +322,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     /** The menu item to switch the label list on and off. */
     private final JMenuItem viewLabelListItem;
 
+    private final List<Pair<JMenuItem,ItemListener>> listeners =  new LinkedList<Pair<JMenuItem,ItemListener>>();
     /**
      * The editor pane most recently installed by {@link #setPane}.
      */

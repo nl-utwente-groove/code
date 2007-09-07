@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FixedDeltaGraph.java,v 1.8 2007-09-04 20:59:27 rensink Exp $
+ * $Id: FixedDeltaGraph.java,v 1.9 2007-09-07 19:13:37 rensink Exp $
  */
 package groove.graph;
 
@@ -251,6 +251,9 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		}
 		// apply the delta to fill the structures
 		delta.applyDelta(new Target(nodeSet, edgeSet, nodeEdgeMap, labelEdgeMaps));
+		// there is no more reason to retain the basis graph
+		basis = null;
+		delta = null;
 		reporter.stop();
 	}
 
@@ -271,9 +274,9 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	}
 
 	/** The fixed (possibly <code>null</code> basis of this graph. */
-	private final FixedDeltaGraph basis;
+	private FixedDeltaGraph basis;
 	/** The fixed delta of this graph. */
-	private final DeltaApplier delta;
+	private DeltaApplier delta;
 	
 	/** The (initially null) edge set of this graph. */
 	private Set<Edge> edgeSet;

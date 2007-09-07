@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.20 2007-09-05 14:12:43 rensink Exp $
+ * $Id: JGraph.java,v 1.21 2007-09-07 19:13:24 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -79,7 +79,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.20 $ $Date: 2007-09-05 14:12:43 $
+ * @version $Revision: 1.21 $ $Date: 2007-09-07 19:13:24 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -1142,25 +1142,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             setEnabled(getSelectionCell() instanceof JEdge);
         }
     }
-//    
-//    /**
-//     * A menu item, initialized to an action, that hides itself whenever it is disabled.
-//     */
-//    private class DisappearingJMenuItem extends JMenuItem {
-//    	/**
-//    	 * Constructs a menu item for a given action.
-//    	 * @param action the Action for which to create a menu item
-//    	 */
-//        DisappearingJMenuItem(Action action) {
-//            super(action);
-//        }
-//        
-//        @Override
-//        public void setEnabled(boolean enabled) {
-//            super.setEnabled(enabled);
-//            setVisible(enabled);
-//        }
-//    }
+    
     /**
      * A layout cache that, for efficiency, does not pass on all change events,
      * and sets a {@link JCellViewFactory}.
@@ -1214,10 +1196,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             if (!(change instanceof JModel.RefreshEdit)) {
                 super.graphChanged(change);
             }
-//            Object[] inserted = change.getInserted();
-//            if (inserted != null) {
-//            	setVisible(inserted, true);
-//            }
         }
     }
     

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.57 2007-09-05 20:40:54 rensink Exp $
+ * $Id: Simulator.java,v 1.58 2007-09-07 19:13:31 rensink Exp $
  */
 package groove.gui;
 
@@ -123,7 +123,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.57 $
+ * @version $Revision: 1.58 $
  */
 public class Simulator {
     /**
@@ -217,11 +217,14 @@ public class Simulator {
      * In any case, sets the current transition to <code>null</code>.
      * @return <code>true</code> if the new GTS is different from the previous
      */
-    public boolean setCurrentGTS(GTS gts) {
+    private boolean setCurrentGTS(GTS gts) {
     	boolean result = currentGTS == gts;
     	currentGTS = gts;
+        currentTransition = null;
     	currentState = gts == null ? null : gts.startState();
-    	currentTransition = null;
+    	if (gts != null) {
+    	    getGenerator().setGTS(gts);
+    	}
     	return result;
     }
 
@@ -2426,13 +2429,13 @@ public class Simulator {
         public void actionPerformed(ActionEvent e) {
         	RuleNameLabel ruleName = getCurrentRule().getNameLabel();
             EditorDialog dialog = showEditorDialog(getRulePanel().getJModel().toPlainGraph());
-            if (dialog.isOK()) {
+            if (dialog.isOK() && confirmAbandon(false)) {
                 AspectGraph ruleAsAspectGraph = dialog.toAspectGraph();
                 RuleNameLabel newRuleName = askNewRuleName("Name for edited rule", ruleName.name(), false);
                 if (newRuleName != null) {
                     doAddRule(newRuleName, ruleAsAspectGraph);
                 }
-            }
+        	}
         }
     }
 

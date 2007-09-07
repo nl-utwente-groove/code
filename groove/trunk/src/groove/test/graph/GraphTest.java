@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.9 2007-08-29 14:00:39 rensink Exp $
+ * $Id: GraphTest.java,v 1.10 2007-09-07 19:13:39 rensink Exp $
  */
 package groove.test.graph;
 
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -308,7 +308,7 @@ public class GraphTest extends TestCase {
         Collection nodeSet = matchDom[0].nodeSet();
         assertEquals(3, nodeSet.size());
         try {
-            nodeSet.add(new DefaultNode());
+            nodeSet.add(DefaultNode.createNode());
             fail("Addition to node set should not have been allowed");
         } catch (UnsupportedOperationException exc) {
             // proceed
@@ -323,7 +323,7 @@ public class GraphTest extends TestCase {
         Collection edgeSet = matchDom[0].edgeSet();
         assertEquals(2, edgeSet.size());
         try {
-            edgeSet.add(DefaultEdge.createEdge(new DefaultNode(), "", new DefaultNode()));
+            edgeSet.add(DefaultEdge.createEdge(DefaultNode.createNode(), "", DefaultNode.createNode()));
             fail("Addition to node set should not have been allowed");
         } catch (UnsupportedOperationException exc) {
             // proceed
@@ -442,7 +442,7 @@ public class GraphTest extends TestCase {
     final public void testContainsElement() {
         assertTrue(graph.containsElement(source));
         assertTrue(graph.containsElement(aEdge));
-        assertFalse(graph.containsElement(new DefaultNode()));
+        assertFalse(graph.containsElement(DefaultNode.createNode()));
         assertFalse(graph.containsElement(DefaultEdge.createEdge(aTarget, cLabel, aTarget)));
         assertTrue(graph.containsElement(DefaultEdge.createEdge(source, aLabel, aTarget)));
     }
@@ -465,7 +465,7 @@ public class GraphTest extends TestCase {
      */
     final public void testAddNodeNode() {
         assertFalse(graph.addNode(source));
-        Node newNode = new DefaultNode();
+        Node newNode = DefaultNode.createNode();
         assertTrue(graph.addNode(newNode));
         assertTrue(graph.containsElement(newNode));
     }
@@ -479,7 +479,7 @@ public class GraphTest extends TestCase {
         Edge newEdge = DefaultEdge.createEdge(aTarget, cLabel, bTarget);
         assertTrue(graph.addEdge(newEdge));
         assertTrue(graph.containsElement(newEdge));
-        Node newNode = new DefaultNode();
+        Node newNode = DefaultNode.createNode();
         newEdge = DefaultEdge.createEdge(bTarget, cLabel, newNode);
         assertTrue(graph.addEdge(newEdge));
         assertTrue(graph.containsElement(newNode));
@@ -490,7 +490,7 @@ public class GraphTest extends TestCase {
         assertFalse(graph.addNodeSet(nodeSet));
         nodeSet.add(source);
         assertFalse(graph.addNodeSet(nodeSet));
-        Node newNode = new DefaultNode();
+        Node newNode = DefaultNode.createNode();
         nodeSet.add(newNode);
         assertTrue(graph.addNodeSet(nodeSet));
         assertTrue(graph.containsElement(newNode));
@@ -503,7 +503,7 @@ public class GraphTest extends TestCase {
         assertFalse(graph.addEdgeSet(edgeSet));
         edgeSet.add(DefaultEdge.createEdge(source, bLabel, bTarget));
         assertFalse(graph.addEdgeSet(edgeSet));
-        Node newNode = new DefaultNode();
+        Node newNode = DefaultNode.createNode();
         Edge newEdge = DefaultEdge.createEdge(bTarget, cLabel, newNode);
         edgeSet.add(newEdge);
         assertTrue(graph.addEdgeSet(edgeSet));
@@ -511,7 +511,7 @@ public class GraphTest extends TestCase {
     }
 
     final public void testRemoveNode() {
-        Node newNode = new DefaultNode();
+        Node newNode = DefaultNode.createNode();
         assertFalse(graph.removeNode(newNode));
         graph.addNode(newNode);
         assertTrue(graph.removeNode(newNode));
@@ -536,7 +536,7 @@ public class GraphTest extends TestCase {
     final public void testRemoveNodeSet() {
         Set<Node> nodeSet = new HashSet<Node>();
         assertFalse(graph.removeNodeSet(nodeSet));
-        Node newNode = new DefaultNode();
+        Node newNode = DefaultNode.createNode();
         nodeSet.add(newNode);
         assertFalse(graph.removeNodeSet(nodeSet));
         graph.addNode(newNode);
@@ -551,7 +551,7 @@ public class GraphTest extends TestCase {
     final public void testRemoveEdgeSet() {
         Set<Edge> edgeSet = new HashSet<Edge>();
         assertFalse(graph.removeEdgeSet(edgeSet));
-        Node newNode = new DefaultNode();
+        Node newNode = DefaultNode.createNode();
         Edge newEdge = DefaultEdge.createEdge(bTarget, cLabel, newNode);
         edgeSet.add(newEdge);
         assertFalse(graph.removeEdgeSet(edgeSet));
@@ -582,7 +582,7 @@ public class GraphTest extends TestCase {
         Node addedNode = graph.addNode();
         addedGraphElements.add(addedNode);
         // add a fresh node using addNode(Node)
-        addedNode = new DefaultNode();
+        addedNode = DefaultNode.createNode();
         graph.addNode(addedNode);
         addedGraphElements.add(addedNode);
         // add a fresh edge using addEdge(Node,Label,Node)
@@ -591,21 +591,21 @@ public class GraphTest extends TestCase {
         // add an existing edge using addEdge(Node,Label,Node)
         graph.addEdge(source, aLabel, aTarget);
         // add a fresh edge with a fresh end node       
-        addedNode = new DefaultNode();
+        addedNode = DefaultNode.createNode();
         addedEdge = DefaultEdge.createEdge(aTarget, cLabel, addedNode);
         graph.addEdge(addedEdge);
         addedGraphElements.add(addedNode);
         addedGraphElements.add(addedEdge);
         // add a set of nodes
         Collection<Node> nodeSet = new LinkedList<Node>();
-        nodeSet.add(new DefaultNode());
-        nodeSet.add(new DefaultNode());
-        nodeSet.add(new DefaultNode());
+        nodeSet.add(DefaultNode.createNode());
+        nodeSet.add(DefaultNode.createNode());
+        nodeSet.add(DefaultNode.createNode());
         addedGraphElements.addAll(nodeSet);
         graph.addNodeSet(nodeSet);
         // add a set of edges        
         Collection<Edge> edgeSet = new LinkedList<Edge>();
-        addedNode = new DefaultNode();
+        addedNode = DefaultNode.createNode();
         addedEdge = DefaultEdge.createEdge(bTarget, cLabel, addedNode);
         addedGraphElements.add(addedNode);
         addedGraphElements.add(addedEdge);
@@ -634,7 +634,7 @@ public class GraphTest extends TestCase {
         removedGraphElements.add(bEdge);
         assertEquals(removedGraphElements, listener.removed.get(graph));
         // try to remove a non-existent node
-        Node removedNode = new DefaultNode();
+        Node removedNode = DefaultNode.createNode();
         graph.removeNode(removedNode);
         assertEquals(removedGraphElements, listener.removed.get(graph));
         // remove an existing node
@@ -648,7 +648,7 @@ public class GraphTest extends TestCase {
         assertEquals(removedGraphElements, listener.removed.get(graph));
         // remove a set of nodes
         Collection<Node> nodeSet = new LinkedList<Node>();
-        nodeSet.add(new DefaultNode());
+        nodeSet.add(DefaultNode.createNode());
         nodeSet.add(bTarget);
         removedGraphElements.add(bEdge);
         removedGraphElements.add(bTarget);
@@ -656,7 +656,7 @@ public class GraphTest extends TestCase {
         assertEquals(removedGraphElements, listener.removed.get(graph));
         // remove a set of edges        
         Collection<Edge> edgeSet = new LinkedList<Edge>();
-        edgeSet.add(DefaultEdge.createEdge(bTarget, cLabel, new DefaultNode()));
+        edgeSet.add(DefaultEdge.createEdge(bTarget, cLabel, DefaultNode.createNode()));
         edgeSet.add(aEdge);
         removedGraphElements.add(aEdge);
         graph.removeEdgeSet(edgeSet);

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.12 2007-08-31 10:23:26 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.13 2007-09-07 19:13:40 rensink Exp $
  */
 package groove.util;
 
@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-08-31 10:23:26 $
+ * @version $Revision: 1.13 $ $Date: 2007-09-07 19:13:40 $
  */
 public class TypeDiscoverer {
     /**
@@ -63,8 +63,7 @@ public class TypeDiscoverer {
             // create the rule handle, which is the structure used to 
             // identify the rule in the intermediate stages of constructing the type graph
             Graph ruleHandle = createGraph();
-            Node ruleIdNode = new DefaultNode();
-            ruleHandle.addNode(ruleIdNode);
+            Node ruleIdNode = ruleHandle.addNode();
             ruleHandle.addEdge(ruleIdNode, DefaultLabel.createLabel(rule.getName().text()), ruleIdNode);
             Edge ruleIdEdge = ruleHandle.addEdge(ruleIdNode, createFreshLabel(), ruleIdNode);
             Map<Node,Node> lhsToHandleNodeMap = new HashMap<Node,Node>();

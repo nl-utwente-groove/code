@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MatrixAutomaton.java,v 1.5 2007-08-26 07:23:54 rensink Exp $
+ * $Id: MatrixAutomaton.java,v 1.6 2007-09-07 19:13:37 rensink Exp $
  */
 package groove.rel;
 
@@ -1290,7 +1290,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     /** Returns a node with a number that is guaranteed to be fresh every time. */
     @Override
     public Node createNode() {
-        return new DefaultNode();
+        return DefaultNode.createNode();
     }
     
     private Map<Label, int[]> toIntArrayMap(Map<Label, ? extends Collection<? extends Element>> labelSetMap) {

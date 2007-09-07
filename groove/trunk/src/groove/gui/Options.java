@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.31 2007-06-27 13:24:27 rensink Exp $
+ * $Id: Options.java,v 1.32 2007-09-07 19:13:31 rensink Exp $
  */
 package groove.gui;
 
@@ -40,7 +40,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  */
 public class Options {
     /** 
@@ -462,7 +462,7 @@ public class Options {
     }
 
     /**
-     * Adds abehaviour menu with a given name to the options, and returns the 
+     * Adds a behaviour menu with a given name to the options, and returns the 
      * associated (fresh) menu item.
      * @param name the name of the behaviour menu item to add
      * @return the added {@link javax.swing.JCheckBoxMenuItem}

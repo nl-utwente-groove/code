@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSet.java,v 1.4 2007-08-26 07:23:40 rensink Exp $
+ * $Id: NodeSet.java,v 1.5 2007-09-07 19:13:37 rensink Exp $
  */
 package groove.graph;
 
@@ -37,7 +37,7 @@ public class NodeSet extends TreeHashSet3<Node> {
 
     /** Constructs a copy of an existing set. */
 	public NodeSet(Collection<? extends Node> other) {
-		super(other, HASHCODE_EQUATOR);
+		super(other, DefaultNode.getNodeCount(), HASHCODE_EQUATOR);
 		//            super(other, NODE_SET_RESOLUTION, HASHCODE_EQUATOR);
 	}
 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorDialog.java,v 1.8 2007-09-04 20:59:32 rensink Exp $
+ * $Id: EditorDialog.java,v 1.9 2007-09-07 19:13:31 rensink Exp $
  */
 package groove.gui;
 
@@ -39,7 +39,7 @@ import javax.swing.WindowConstants;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class EditorDialog extends JDialog {
     /**
@@ -76,7 +76,9 @@ public class EditorDialog extends JDialog {
 
     /** Returns the resulting aspect graph of the editor. */
     public AspectGraph toAspectGraph() {
-        return AspectGraph.getFactory().fromPlainGraph(toPlainGraph());
+        AspectGraph result = AspectGraph.getFactory().fromPlainGraph(toPlainGraph());
+        result.setFixed();
+        return result;
     }
     
     /** Indicates if the resulting aspect graph has syntax errors. */
@@ -204,7 +206,7 @@ public class EditorDialog extends JDialog {
     @Override
 	public void dispose() {
 		super.dispose();
-		editor.getFrame().dispose();
+		editor.doQuit();
 	}
 
 	/** Flag recording the decision of the user on exit. */

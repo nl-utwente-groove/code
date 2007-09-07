@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphCreationTest.java,v 1.3 2007-04-22 23:32:25 rensink Exp $
+ * $Id: GraphCreationTest.java,v 1.4 2007-09-07 19:13:36 rensink Exp $
  */
 package groove.test;
 
@@ -33,7 +33,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class GraphCreationTest extends TestCase {
     protected static int NR_NODES_TOTAL = 9;
@@ -53,7 +53,7 @@ public class GraphCreationTest extends TestCase {
         g = new DefaultGraph();
 
         for (int i = 0; i < NR_NODES_TOTAL; i++)
-            n[i] = new DefaultNode();
+            n[i] = DefaultNode.createNode();
 
         e[0] = DefaultEdge.createEdge(n[0], "a", n[1]);
         e[1] = DefaultEdge.createEdge(n[0], "b", n[3]);
