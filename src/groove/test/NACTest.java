@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.10 2007-08-31 10:23:24 rensink Exp $
+ * $Id: NACTest.java,v 1.11 2007-09-07 19:13:35 rensink Exp $
  */
 package groove.test;
 
@@ -55,7 +55,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -131,7 +131,7 @@ public class NACTest extends TestCase {
 
         n[graphNr] = new DefaultNode[nrNodes];
         for (int j = 0; j < nrNodes; j++) {
-             n[graphNr][j] = new DefaultNode();
+             n[graphNr][j] = DefaultNode.createNode();
              res.addNode(n[graphNr][j]);
         }
 

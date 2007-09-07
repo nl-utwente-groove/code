@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RelationEdge.java,v 1.2 2007-08-26 07:23:56 rensink Exp $
+ * $Id: RelationEdge.java,v 1.3 2007-09-07 19:13:38 rensink Exp $
  */
 package groove.rel;
 
 import groove.graph.DefaultEdge;
+import groove.graph.Edge;
 import groove.graph.Node;
 
 /**
@@ -82,7 +83,7 @@ public class RelationEdge<V> extends DefaultEdge {
 	 */
 	@Override
 	public boolean equals(Object obj) {
-		return super.equals(obj) && isValueEqual((RelationEdge<?>) obj);
+		return isTypeEqual(obj) && isEndEqual((Edge) obj) && isLabelEqual((Edge) obj) && isValueEqual((RelationEdge<?>) obj);
 	}
 
 	/**

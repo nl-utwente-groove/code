@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.13 2007-09-06 07:36:46 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.14 2007-09-07 19:13:42 rensink Exp $
  */
 
 package groove.view;
@@ -23,6 +23,7 @@ import static groove.view.aspect.RuleAspect.ERASER;
 import static groove.view.aspect.RuleAspect.READER;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultEdge;
+import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -76,7 +77,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -122,6 +123,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.enabled = GraphProperties.isEnabled(graph);
         this.properties = properties;
         this.graph = graph;
+        // we fix the view; is it conceptually right to do that here?
+        graph.setFixed();
     }
     
     /**
@@ -399,7 +402,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 */
 	protected Node computeNodeImage(AspectNode node, AspectGraph context) throws FormatException {
 		if (node.getValue(AttributeAspect.getInstance()) == null) {
-			return new DefaultNode(node.getNumber());
+			return DefaultNode.createNode(node.getNumber());
 		} else {
 			return AttributeAspect.createAttributeNode(node, context);
 		}
@@ -559,7 +562,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         String text = label.text();
         RegExpr expr = RegExpr.parse(text);
         if (expr.isAtom()) {
-            return label;
+            return DefaultLabel.createLabel(expr.getAtomText());
         } else {
             return expr.toLabel();
         }

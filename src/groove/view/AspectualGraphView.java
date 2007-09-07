@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGraphView.java,v 1.11 2007-09-04 20:59:23 rensink Exp $
+ * $Id: AspectualGraphView.java,v 1.12 2007-09-07 19:13:42 rensink Exp $
  */
 package groove.view;
 
@@ -57,6 +57,8 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	 */
 	public AspectualGraphView(AspectGraph view) {
 		this.view = view;
+		// we fix the view; is it conceptually right to do that here?
+		view.setFixed();
 		String name = GraphInfo.getName(view);
 		this.name = name == null ? "" : name;
         Graph model;
@@ -217,6 +219,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 		// transfer graph info such as layout from view to model
 		GraphInfo.transfer(view, model, elementMap);
 		if (errors.isEmpty()) {
+		    model.setFixed();
 			return new Pair<Graph,NodeEdgeMap>(model, elementMap);
 		} else {
 			throw new FormatException(new ArrayList<String>(errors));

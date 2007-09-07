@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: MorphismTest.java,v 1.3 2007-04-01 12:50:31 rensink Exp $
+ * $Id: MorphismTest.java,v 1.4 2007-09-07 19:13:36 rensink Exp $
  */
 package groove.test;
 
@@ -26,7 +26,7 @@ import groove.graph.Node;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.3 $ $Date: 2007-04-01 12:50:31 $
+ * @version $Revision: 1.4 $ $Date: 2007-09-07 19:13:36 $
  */
 public class MorphismTest extends TestCase {
     public MorphismTest(String name) {
@@ -57,7 +57,7 @@ public class MorphismTest extends TestCase {
             e[i] = new Edge[NR_EDGES[i]];
 
             for (int j = 0; j < NR_NODES[i]; j++) {
-                n[i][j] = new DefaultNode();
+                n[i][j] = DefaultNode.createNode();
                 g[i].addNode(n[i][j]);
             }
         }

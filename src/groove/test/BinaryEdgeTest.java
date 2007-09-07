@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: BinaryEdgeTest.java,v 1.2 2007-03-30 15:50:40 rensink Exp $
+ * $Id: BinaryEdgeTest.java,v 1.3 2007-09-07 19:13:36 rensink Exp $
  */
 package groove.test;
 
@@ -28,7 +28,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.2 $ $Date: 2007-03-30 15:50:40 $
+ * @version $Revision: 1.3 $ $Date: 2007-09-07 19:13:36 $
  */
 public class BinaryEdgeTest extends TestCase {
     protected Node n1, n2;
@@ -40,8 +40,8 @@ public class BinaryEdgeTest extends TestCase {
 
     @Override
     protected void setUp() {
-        n1 = new DefaultNode();
-        n2 = new DefaultNode();
+        n1 = DefaultNode.createNode();
+        n2 = DefaultNode.createNode();
         e = DefaultEdge.createEdge(n1, "a", n2);
     }
 

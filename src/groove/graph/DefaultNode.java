@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.7 2007-09-06 07:36:45 rensink Exp $
+ * $Id: DefaultNode.java,v 1.8 2007-09-07 19:13:37 rensink Exp $
  */
 package groove.graph;
 
@@ -23,33 +23,31 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-09-06 07:36:45 $
+ * @version $Revision: 1.8 $ $Date: 2007-09-07 19:13:37 $
  */
 public class DefaultNode implements Node {
     /**
      * Constructs a fresh node, with a number determined by an internally kept count.
+     * @deprecated use {@link #createNode()} instead
      */
+    @Deprecated
     public DefaultNode() {
         this(nextNodeNr());
     }
-    
-    /**
-     * Constructs a fresh node, with a number determined by a given dispenser.
-     * @param dispenser object used to determine the node number
-     * @see Dispenser#getNumber()
-     */
-    public DefaultNode(Dispenser dispenser) {
-        this(dispenser.getNumber());
-    }
-    
+
     /**
      * Constructs a fresh node, with an explicitly given number.
+     * Note that node equality is determined by identity, but it is assumed
+     * that never two distinct nodes with the same number will be compared.
+     * This is achieved by using one of the <code>createNode</code> methods
+     * in preference to this constructor.
      * @param nr the number for this node
+     * @see #createNode()
+     * @see #createNode(int)
      */
-    public DefaultNode(int nr) {
+    protected DefaultNode(int nr) {
     	this.nodeNr = nr;
     	this.hashCode = computeHashCode();
-    	registerNode(nr);
     }
 
     // ---------------- Element and related methods ----------------------
@@ -79,6 +77,7 @@ public class DefaultNode implements Node {
     
     /**
      * Indicates whether this node is the same as another object.
+     * This is implemented by object equality, but it is considered 
      * This is considered to be the case if the other object is also a
      * <tt>DefaultNode</tt>, and the node numbers coincide.
      * @param obj the object with which this node is compared
@@ -87,7 +86,9 @@ public class DefaultNode implements Node {
      */
     @Override
     public boolean equals(Object obj) {
-        return this == obj;
+        boolean result = (obj == this);
+        assert result || !(obj instanceof DefaultNode) || (nodeNr != ((DefaultNode) obj).nodeNr) : String.format("Distinct nodes with number %d", nodeNr);
+        return result;
     }
 
     /**
@@ -95,7 +96,7 @@ public class DefaultNode implements Node {
      */
     @Deprecated
     public Node newNode() {
-        return new DefaultNode();
+        return createNode();
     }
 
     /**
@@ -155,19 +156,46 @@ public class DefaultNode implements Node {
      * The hashcode is precomputed at creation time using {@link #computeHashCode()}.
      */
     private final int hashCode;
+
+    /** 
+     * Factory method to create a default node with a certain number.
+     * The idea is to create canonical representatives, so node equality is object equality. 
+     */
+    static public DefaultNode createNode(int nr) {
+        if (nr >= nodes.length) {
+            int newSize = Math.max(nodes.length, nr+1);
+            DefaultNode[] newNodes = new DefaultNode[newSize];
+            System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
+            nodes = newNodes;
+        }
+        DefaultNode result = nodes[nr];
+        if (result == null) {
+            result = nodes[nr] = new DefaultNode(nr); 
+            nodeCount++;
+        }
+        return result;
+    }
+    
+    /** 
+     * Factory method to create a default node with a number obtained from
+     * a dispenser.
+     * Convenience method for <code>createNode(dispenser.getNumber())</code>.
+     */
+    static public DefaultNode createNode(Dispenser dispenser) {
+        return createNode(dispenser.getNumber());
+    }
+    
+    /** Returns the node with the first currently unused node number. */
+    static public DefaultNode createNode() {
+        return createNode(nextNodeNr());
+    }
+    
     /**
      * Returns the total number of nodes created.
      * @return the {@link #nodeCount}-value
      */
     static public int getNodeCount() {
         return nodeCount;
-    }
-    
-    /**
-     * Resets the static node number counter. 
-     */
-    static public void resetNodeNr() {
-        nextNodeNr = 0;
     }
     
     /** 
@@ -191,36 +219,31 @@ public class DefaultNode implements Node {
      * @return the next node-number
      */
     static private int nextNodeNr() {
-        int result = nextNodeNr;
-        nextNodeNr++;
-        return result;
+        while (nextNodeNr < nodes.length && nodes[nextNodeNr] != null) {
+            nextNodeNr++;
+        }
+        return nextNodeNr;
     }
     
     /**
-     * Registers the fact that a certain node number has been used.
-     * This affects the fresh node numbers available, as well as the node count.
-     * @param nr the node-number to be registered
-     */
-    static private void registerNode(int nr) {
-        if (nr <= MAX_NODE_NUMBER && nextNodeNr <= nr) {
-            nextNodeNr = nr+1;
-        }
-        nodeCount++;
-    }
-
-    /**
-     * The total number of nodes created during the run time of the program.
-     * Used to number nodes uniquely.
+     * The total number of nodes in the {@link #nodes} array.
      */
     static private int nodeCount;
     
     /**
-     * First fresh node number available.
+     * First (potentially) fresh node number available.
      */
     static private int nextNodeNr;
+    
+    /** Initial capacity of the nodes array. */
+    static private final int INIT_CAPACITY = 100;
+    /** Array of canonical nodes, such that <code>nodes[i] == 0</code> or
+     * <code>nodes[i].getNumber() == i</code> for all <code>i</code>. 
+     */
+    static private DefaultNode[] nodes = new DefaultNode[INIT_CAPACITY];
 
     /**
-     * The maximal number for ordinary graph nodes.
+     * The maximal number for {@link DefaultNode}s.
      */
     public static final int MAX_NODE_NUMBER = 999999999;
 

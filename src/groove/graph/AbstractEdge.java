@@ -12,14 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractEdge.java,v 1.3 2007-08-26 07:23:41 rensink Exp $
+ * $Id: AbstractEdge.java,v 1.4 2007-09-07 19:13:37 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class AbstractEdge implements Edge {
     /**
@@ -194,7 +194,7 @@ public abstract class AbstractEdge implements Edge {
      */
     @Override
     public boolean equals(Object obj) {
-        return isTypeEqual(obj) && isEndEqual((Edge) obj) && label().equals(((Edge) obj).label());
+        return isTypeEqual(obj) && isEndEqual((Edge) obj) && isLabelEqual((Edge) obj);
     }
 
     /**
@@ -209,32 +209,29 @@ public abstract class AbstractEdge implements Edge {
         return obj instanceof Edge;
     }
 
-    //
-	//    /**
-	//     * Tests if another object is type equal to this one. This implementation insists that the
-	//     * object is a {@link Composite} and not an {@link Edge}. Callback method from
-	//     * {@link #equals(Object)}.
-	//     */
-	//    protected boolean isTypeEqual(Object obj) {
-	//        return obj instanceof Composite && !(obj instanceof Edge);
-	//    }
-	//    
-	    /**
-	     * Tests if this composite has the same number of end points as well as
-	     * equal end points as another.
-	     * Callback method from {@link #equals(Object)}.
-	     */
-	    protected boolean isEndEqual(Edge other) {
-	        boolean result = endCount() == other.endCount();
-	        for (int i = 0; result && i < endCount(); i++) {
-	            result = end(i).equals(other.end(i));
-	        }
-	        return result;
-	    }
+    /**
+     * Tests if this composite has the same number of end points as well as equal end points as
+     * another. Callback method from {@link #equals(Object)}.
+     */
+    protected boolean isEndEqual(Edge other) {
+        boolean result = endCount() == other.endCount();
+        for (int i = 0; result && i < endCount(); i++) {
+            result = end(i).equals(other.end(i));
+        }
+        return result;
+    }
+
+    /**
+     * Tests if this composite has the same number of end points as well as equal end points as
+     * another. Callback method from {@link #equals(Object)}.
+     */
+    protected boolean isLabelEqual(Edge other) {
+        return label().equals(other.label());
+    }
 
 	/**
-	 * The source node of this edge. 
-	 */
+     * The source node of this edge.
+     */
 	protected final Node source;
     /** The label of this edge. @invariant label != null */
     protected final Label label;

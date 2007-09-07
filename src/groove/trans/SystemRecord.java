@@ -50,7 +50,7 @@ public class SystemRecord implements NodeFactory {
 
 	/** Factory method to create a fresh node, based on the internally stored node counter. */
 	public Node newNode() {
-		return new DefaultNode(nodeCounter);
+		return DefaultNode.createNode(nodeCounter);
 	}
 
 	/** Returns the stored rule system on which the derivations are based. */
