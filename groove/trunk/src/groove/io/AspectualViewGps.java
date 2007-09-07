@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.14 2007-08-22 15:05:02 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.15 2007-09-07 19:24:17 rensink Exp $
  */
 
 package groove.io;
@@ -29,7 +29,6 @@ import groove.util.Groove;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
-import groove.view.FormatException;
 import groove.view.GrammarView;
 import groove.view.aspect.AspectGraph;
 
@@ -45,7 +44,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     /** Error message if a grammar cannot be loaded. */
@@ -335,8 +334,9 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	 * 
 	 */
 	private void saveProperties(GrammarView gg, File location) throws IOException, FileNotFoundException {
-		// save propeties
-	    File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(gg.getName()));
+		// save properties
+		String grammarName = GRAMMAR_FILTER.stripExtension(location.getName());
+	    File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(grammarName));
 	    Properties grammarProperties = gg.getProperties();
 	    grammarProperties.store(new FileOutputStream(propertiesFile), "Graph grammar properties for "+gg.getName());
 	}
