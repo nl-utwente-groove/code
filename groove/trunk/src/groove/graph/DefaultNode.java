@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.8 2007-09-07 19:13:37 rensink Exp $
+ * $Id: DefaultNode.java,v 1.9 2007-09-10 19:13:32 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-09-07 19:13:37 $
+ * @version $Revision: 1.9 $ $Date: 2007-09-10 19:13:32 $
  */
 public class DefaultNode implements Node {
     /**
@@ -112,18 +112,20 @@ public class DefaultNode implements Node {
      * {@link DefaultNode}s are mutually ordered by their number.
      */
     public int compareTo(Element obj) {
+    	int result;
         if (obj instanceof DefaultNode) {
-            return nodeNr - ((DefaultNode) obj).nodeNr;
+            result = nodeNr - ((DefaultNode) obj).nodeNr;
         } else if (obj instanceof Edge) {
-            Node edgeSource = ((Edge) obj).source();
-            if (equals(edgeSource)) {
-                return -1;
-            } else {
-                return compareTo(edgeSource);
+            result = compareTo(((Edge) obj).source());
+            if (result == 0) {
+            	// nodes come before edges with the same source
+            	result = -1;
             }
         } else {
             throw new IllegalArgumentException("Default node "+this+" not comparable with "+obj);
         }
+        assert result != 0 || equals(obj) : String.format("Ordering of distinct objects %s and %s yields 0", this, obj);
+        return result;
     }
     
     /**

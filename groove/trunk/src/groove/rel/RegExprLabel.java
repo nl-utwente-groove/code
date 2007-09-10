@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprLabel.java,v 1.7 2007-08-26 07:23:53 rensink Exp $
+ * $Id: RegExprLabel.java,v 1.8 2007-09-10 19:13:33 rensink Exp $
  */
 package groove.rel;
 
@@ -25,9 +25,58 @@ import groove.view.FormatException;
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-08-26 07:23:53 $
+ * @version $Revision: 1.8 $ $Date: 2007-09-10 19:13:33 $
  */
 public class RegExprLabel extends AbstractLabel {
+    /**
+     * Constructs a regular expression label on the basis of a regular expression.
+     * Local constructor; should be called only from {@link RegExpr#toLabel()}.
+     * @param regExpr the underlying regular expression; may not be <tt>null</tt>
+     */
+    RegExprLabel(RegExpr regExpr) {
+        if (regExpr == null) {
+            throw new IllegalArgumentException("Can't create regular expression label from null expression");
+        }
+        this.regExpr = regExpr;
+    }
+
+    /**
+     * Factory method: returns a label corresponding to a given string.
+     */
+    @Deprecated
+    public Label parse(String text) throws FormatException {
+        return parseLabel(text);
+    }
+
+    /**
+     * Returns the textual description of the underlying regular expression.
+     */
+    public String text() {
+        return regExpr.toString();
+    }
+    
+	/**
+     * Returns the underlying regular expression.
+     */
+    public RegExpr getRegExpr() {
+        return regExpr;
+    }
+    
+    /** Returns the regular automaton for this label. */
+    public Automaton getAutomaton() {
+        if (automaton == null) {
+        	// we create a new automaton calculator to ensure 
+        	// node numbers at the low end
+            automaton = calculator.compute(getRegExpr());
+        }
+        return automaton;
+    }
+
+    /** The underlying regular expression. */
+    private final RegExpr regExpr;
+    /** An automaton constructed lazily for the regular expression. */
+    private Automaton automaton;
+    
     /**
      * Attempts to construct a label by interpreting a given string as a regular expression.
      * @param text the string to be parsed
@@ -213,58 +262,7 @@ public class RegExprLabel extends AbstractLabel {
         }
         return null;
     }
-
-    /** 
-     * The static calculator instance used for calculating the 
-     * label automaton.
-     * @see #getAutomaton()
-     */
+    
+    /** Calculator used to construct all the automata. */
     static private final AutomatonCalculator calculator = new AutomatonCalculator();
-    
-    /**
-     * Constructs a regular expression label on the basis of a regular expression.
-     * Local constructor; should be called only from {@link RegExpr#toLabel()}.
-     * @param regExpr the underlying regular expression; may not be <tt>null</tt>
-     */
-    RegExprLabel(RegExpr regExpr) {
-        if (regExpr == null) {
-            throw new IllegalArgumentException("Can't create regular expression label from null expression");
-        }
-        this.regExpr = regExpr;
-    }
-
-    /**
-     * Factory method: returns a label corresponding to a given string.
-     */
-    @Deprecated
-    public Label parse(String text) throws FormatException {
-        return parseLabel(text);
-    }
-
-    /**
-     * Returns the textual description of the underlying regular expression.
-     */
-    public String text() {
-        return regExpr.toString();
-    }
-    
-	/**
-     * Returns the underlying regular expression.
-     */
-    public RegExpr getRegExpr() {
-        return regExpr;
-    }
-    
-    /** Returns the regular automaton for this label. */
-    public Automaton getAutomaton() {
-        if (automaton == null) {
-            automaton = calculator.compute(getRegExpr());
-        }
-        return automaton;
-    }
-
-    /** The underlying regular expression. */
-    protected final RegExpr regExpr;
-    /** An automaton constructed lazily for the regular expression. */
-    private Automaton automaton;
 }

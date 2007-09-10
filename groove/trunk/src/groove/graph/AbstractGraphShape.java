@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphShape.java,v 1.8 2007-05-14 19:52:13 rensink Exp $
+ * $Id: AbstractGraphShape.java,v 1.9 2007-09-10 19:13:32 rensink Exp $
  */
 
 package groove.graph;
@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Partial implementation of a graph. Records a set of <tt>GraphListener</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public abstract class AbstractGraphShape<C extends GraphShapeCache> extends AbstractCacheHolder<C> implements GraphShape {
     /**
@@ -338,21 +338,6 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
             listener.removeUpdate(this, edge);
         }
     }
-
-//    /**
-//     * Returns a graph cache for this graph.
-//     * The graph cache is newly created, using {@link #createCache()}, if no
-//     * cache is currently set. A reference to the cache is created using
-//     * {@link #createCacheReference(GraphCache)}.
-//     * @return a graph cache for this graph
-//     */
-//    public GraphShapeCache getCache() {
-//        GraphShapeCache result = cacheReference.get();
-//        if (result == null) {
-//            cacheReference = createCacheReference(result = createCache());
-//        }
-//        return result;
-//    }
 
     /**
 	 * Factory method for a graph cache.

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.6 2007-08-30 15:18:18 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.7 2007-09-10 19:13:39 rensink Exp $
  */
 package groove.match;
 
@@ -34,12 +34,12 @@ import java.util.Set;
  * <li> A {@link FrequencyComparator} to rank search items based on the expected frequency of edge labels
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 
      * Private, empty constructor.
-     * This is a ginleton class; get the instance through {@link #getInstance()}.
+     * This is a sinlgeton class; get the instance through {@link #getInstance()}.
      */
     ConditionSearchPlanFactory() {
         // empty
@@ -106,7 +106,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
         }
 
         /**
-         * Adds ambargo and injection search items to the super result.
+         * Adds embargo and injection search items to the super result.
          */
         @Override Collection<SearchItem> computeSearchItems() {
             Collection<SearchItem> result = super.computeSearchItems();
