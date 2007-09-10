@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.15 2007-09-07 19:24:17 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.16 2007-09-10 19:13:30 rensink Exp $
  */
 
 package groove.io;
@@ -44,22 +44,9 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
-    /** Error message if a grammar cannot be loaded. */
-    static private final String LOAD_ERROR = "Can't load graph grammar";
-
-    /** File filter for graph grammars in the GPS format. */
-    static private final ExtensionFilter GRAMMAR_FILTER = Groove.createRuleSystemFilter();
-    /** File filter for transformation rules in the GPR format. */
-    static private final ExtensionFilter RULE_FILTER = Groove.createRuleFilter();
-    /** File filter for state graphs in the GST format. */
-    static private final ExtensionFilter STATE_FILTER = Groove.createStateFilter();
-    /** File filter for property files. */
-    static private final ExtensionFilter PROPERTIES_FILTER = Groove.createPropertyFilter();
-
-    
     /**
      * Constructs an instance based on a given graph format reader, and a given production rule, to
      * be used as a rule factory. If no file with the default start graph name exists then the empty
@@ -270,6 +257,8 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 
     public void marshal(DefaultGrammarView gg, File location) throws IOException {
         createLocation(location);
+        String grammarName = GRAMMAR_FILTER.stripExtension(location.getName());
+        gg.setName(grammarName);
 		// iterate over rules and save them
 		for (RuleNameLabel ruleName : gg.getRuleMap().keySet()) {
 			// turn the rule into a rule graph
@@ -335,7 +324,7 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	 */
 	private void saveProperties(GrammarView gg, File location) throws IOException, FileNotFoundException {
 		// save properties
-		String grammarName = GRAMMAR_FILTER.stripExtension(location.getName());
+		String grammarName = gg.getName();
 	    File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(grammarName));
 	    Properties grammarProperties = gg.getProperties();
 	    grammarProperties.store(new FileOutputStream(propertiesFile), "Graph grammar properties for "+gg.getName());
@@ -413,4 +402,16 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
      * The xml reader used to unmarshal graphs.
      */
     private final Xml<AspectGraph> graphMarshaller;
+    
+    /** Error message if a grammar cannot be loaded. */
+    static private final String LOAD_ERROR = "Can't load graph grammar";
+
+    /** File filter for graph grammars in the GPS format. */
+    static private final ExtensionFilter GRAMMAR_FILTER = Groove.createRuleSystemFilter();
+    /** File filter for transformation rules in the GPR format. */
+    static private final ExtensionFilter RULE_FILTER = Groove.createRuleFilter();
+    /** File filter for state graphs in the GST format. */
+    static private final ExtensionFilter STATE_FILTER = Groove.createStateFilter();
+    /** File filter for property files. */
+    static private final ExtensionFilter PROPERTIES_FILTER = Groove.createPropertyFilter();
 }

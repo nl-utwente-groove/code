@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphCache.java,v 1.3 2007-08-26 07:23:40 rensink Exp $
+ * $Id: GraphCache.java,v 1.4 2007-09-10 19:13:32 rensink Exp $
  */
 package groove.graph;
 
@@ -24,7 +24,7 @@ import groove.util.DefaultDispenser;
  * graph, for faster access.
  * Typically, the graph will have a graph cache as a <tt>{@link java.lang.ref.Reference}</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class GraphCache extends GraphShapeCache {
     /**
@@ -48,7 +48,7 @@ public class GraphCache extends GraphShapeCache {
      * A static cache does not cache dynamic information as long as the graph
      * is not fixed.
      * @param graph the graph for which the cache is to be created.
-     * @param dynamic switch to indicate if caching should bbe dynamic
+     * @param dynamic switch to indicate if caching should be dynamic
      */
     public GraphCache(AbstractGraph graph, boolean dynamic) {
         super(graph, dynamic);
@@ -71,6 +71,13 @@ public class GraphCache extends GraphShapeCache {
     protected DefaultDispenser getNodeCounter() {
     	if (nodeCounter == null) {
     		nodeCounter = new DefaultDispenser();
+    		// make sure all existing node numbers are accounted for
+    		for (Node node: getGraph().nodeSet()) {
+    			int nodeNr = DefaultNode.getNodeNr(node); 
+    			if (nodeNr >= nodeCounter.getCount()) {
+    				nodeCounter.setCount(nodeNr+1);
+    			}
+    		}
     	}
     	return nodeCounter;
     }

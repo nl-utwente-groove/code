@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: OperationNodeTest.java,v 1.2 2007-03-30 15:50:47 rensink Exp $
+ * $Id: OperationNodeTest.java,v 1.3 2007-09-10 19:13:15 rensink Exp $
  */
 
 package groove.test.graph;
@@ -51,8 +51,8 @@ public class OperationNodeTest extends TestCase {
 			checkIntNode = algebraGraph.getValueNode((Constant) iAlgebra.getOperation("2"));
 			boolNode = algebraGraph.getValueNode((Constant) bAlgebra.getOperation(DefaultBooleanAlgebra.TRUE));
 			checkBoolNode = algebraGraph.getValueNode((Constant) bAlgebra.getOperation(DefaultBooleanAlgebra.FALSE));
-			stringNode = algebraGraph.getValueNode((Constant) sAlgebra.getOperation("Hello"));
-			checkStringNode = algebraGraph.getValueNode((Constant) sAlgebra.getOperation("Hello World!"));
+			stringNode = algebraGraph.getValueNode((Constant) sAlgebra.getOperation("\"Hello\""));
+			checkStringNode = algebraGraph.getValueNode((Constant) sAlgebra.getOperation("\"Hello World!\""));
 		} catch (UnknownSymbolException exc) {
 			exc.printStackTrace();
 		}

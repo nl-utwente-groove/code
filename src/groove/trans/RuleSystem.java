@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.15 2007-06-25 10:35:16 fladder Exp $
+ * $Id: RuleSystem.java,v 1.16 2007-09-10 19:13:35 rensink Exp $
  */
 package groove.trans;
 
@@ -39,7 +39,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2007-06-25 10:35:16 $
+ * @version $Revision: 1.16 $ $Date: 2007-09-10 19:13:35 $
  * @see NameLabel
  * @see SPORule
  */
@@ -89,7 +89,7 @@ public class RuleSystem {
      * Returns the production rule known under a given name, if any.
      * @param name the name of the requested production rule
      * @return the Rule known as "name"; null if name is not known
-     * @ensure <tt>resul.equals(getRuleMap.get(name))</tt>
+     * @ensure <tt>result.equals(getRuleMap.get(name))</tt>
       */
     public Rule getRule(NameLabel name) {
         return nameRuleMap.get(name);
@@ -362,8 +362,6 @@ public class RuleSystem {
      * The properties bundle of this rule system.
      */
     private SystemProperties properties; 
-//    /** The (fixed) rule factory for this rule system. */
-//    private RuleFactory ruleFactory;
     /** Flag indicating that the rule system has been fixed and is ready for use. */
     private boolean fixed;
 

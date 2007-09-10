@@ -12,14 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractEdge.java,v 1.4 2007-09-07 19:13:37 rensink Exp $
+ * $Id: AbstractEdge.java,v 1.5 2007-09-10 19:13:32 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class AbstractEdge implements Edge {
     /**
@@ -156,32 +156,30 @@ public abstract class AbstractEdge implements Edge {
      * @see Element#compareTo(Element)
      */
     public int compareTo(Element obj) {
+    	int result;
         if (obj instanceof Node) {
             // for nodes, we just need to look at the source of this edge
-            if (source().equals(obj)) {
-                return +1;
-            } else {
-                return source().compareTo(obj);
+        	result = source().compareTo(obj);
+        	// if the source equals the node, edges come later
+            if (result == 0) {
+            	result++;
             }
         } else {
             Edge other = (Edge) obj;
-            if (!source().equals(other.source())) {
-                return source().compareTo(other.source());
-            }
+            result = source().compareTo(other.source());
             // for other edges, first the end count, then the label, then the other ends
-            if (endCount() != other.endCount()) {
-                return endCount() - other.endCount();
+            if (result == 0) {
+                result = endCount() - other.endCount();
             }
-            if (!label().equals(other.label())) {
-                return label().compareTo(other.label());
+            if (result == 0) {
+                result = label().compareTo(other.label());
             }
-            for (int i = 1; i < endCount(); i++) {
-                if (!end(i).equals(other.end(i))) {
-                    return end(i).compareTo(other.end(i));
-                }
+            for (int i = 1; result == 0 && i < endCount(); i++) {
+                result = end(i).compareTo(other.end(i));
             }
-            return 0;
         }
+//        assert result != 0 || this.equals(obj) : String.format("Ordering of distinct objects %s and %s yields 0", this, obj);
+        return result;
     }
 
     /**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AutomatonTest.java,v 1.6 2007-04-30 19:53:31 rensink Exp $
+ * $Id: AutomatonTest.java,v 1.7 2007-09-10 19:13:36 rensink Exp $
  */
 package groove.test;
 
@@ -50,10 +50,11 @@ import junit.framework.TestCase;
 /**
  * Tests the available {@link Automaton} interface.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class AutomatonTest extends TestCase {
-    static public final String GRAPH_TEST_DIR = "groove/test/graph";
+	/** Directory with test files (relative to the project) */
+    static public final String GRAPH_TEST_DIR = "junit/graphs";
 
     AutomatonCalculator calculator = new AutomatonCalculator();
     

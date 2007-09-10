@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LabelList.java,v 1.16 2007-09-05 14:12:42 rensink Exp $
+ * $Id: LabelList.java,v 1.17 2007-09-10 19:13:40 rensink Exp $
  */
 package groove.gui;
 
@@ -55,7 +55,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /**
@@ -480,7 +480,13 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
         	if (evt.getButton() == MouseEvent.BUTTON3) {
                 int index = locationToIndex(evt.getPoint());
         		if (index >= 0) {
-        			setSelectedIndex(index);
+        			if (evt.isControlDown()) {
+        				addSelectionInterval(index, index);
+        			} else if (evt.isShiftDown()) {
+        				addSelectionInterval(getAnchorSelectionIndex(), index);
+        			} else {
+        				setSelectedIndex(index);
+        			}
         		}
         	}
             maybeShowPopup(evt);

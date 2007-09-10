@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GrammarViewXml.java,v 1.1 2007-04-30 19:53:24 rensink Exp $
+ * $Id: GrammarViewXml.java,v 1.2 2007-09-10 19:13:30 rensink Exp $
  */
 package groove.io;
 
@@ -26,7 +26,7 @@ import java.io.IOException;
  * Interface for the conversion of graph grammars to and from 
  * (sets of) XML documents.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface GrammarViewXml<GG extends GrammarView> extends ViewXml<GG> {
     /**
@@ -41,6 +41,7 @@ public interface GrammarViewXml<GG extends GrammarView> extends ViewXml<GG> {
     
 	/**
 	 * Writes a graph grammar to a file or set of files, in XML format.
+	 * Also changes the name of the grammar accordingly.
      * The XML format may either support multiple rules in a single document,
      * or each of the rules is stored in a separate file. 
 	 * @param gg the graph grammar to be marshalled

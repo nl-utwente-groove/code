@@ -12,15 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AutomatonCalculator.java,v 1.2 2007-04-18 08:36:15 rensink Exp $
+ * $Id: AutomatonCalculator.java,v 1.3 2007-09-10 19:13:33 rensink Exp $
  */
 package groove.rel;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-
 import groove.graph.DefaultLabel;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -33,19 +30,25 @@ import groove.rel.RegExpr.Plus;
 import groove.rel.RegExpr.Seq;
 import groove.rel.RegExpr.Star;
 import groove.rel.RegExpr.Wildcard;
+import groove.util.DefaultDispenser;
+
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 
 /**
- * Visitor for a {@link groove.rel.RegExpr} that constructs a regular automaton.
+ * Visitor for a {@link RegExpr} that constructs a regular automaton.
  * The automaton is a graph with a distinguished start state and end node.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     /**
      * Applies this calculator to a given regular expression,
      * fixes the resulting automaton and returns it.
      */
-    public Automaton compute(RegExpr expr) {
+    public synchronized Automaton compute(RegExpr expr) {
+    	nodeDispenser.reset();
         Automaton result = expr.apply(this);
         result.setFixed();
         return result;
@@ -61,7 +64,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     }
 
     /**
-     * Identical to {@link groove.rel.AutomatonCalculator#computePlus(Plus, Automaton)},
+     * Identical to {@link #computePlus(Plus, Automaton)},
      * except that the empty word is also always allowed. 
      */
     public Automaton computeStar(Star expr, Automaton arg) {
@@ -76,7 +79,8 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
      * and edges from that node for every current edge from the start node.
      */
     public Automaton computePlus(Plus expr, Automaton result) {
-        Node newNode = result.addNode();
+        Node newNode = createNode();
+        result.addNode(newNode);
         // copy final edges
         for (Edge finalEdge: result.edgeSet(result.getEndNode(), Edge.TARGET_INDEX)) {
             Node[] ends = Arrays.asList(finalEdge.ends()).toArray(new Node[0]);
@@ -119,6 +123,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     /**
      * Merges the end node of one automaton with the start node of the next.
      * Also adds initial/final edges if the first or second argument accepts the empty word.
+     * It is assumed that the nodes of the argument automata are disjoint.
      */
     public Automaton computeSeq(Seq expr, List<Automaton> argList) {
         Iterator<Automaton> argIter = argList.iterator();
@@ -154,6 +159,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     /**
      * Merges the operand automata,
      * by adding the nodes and edges to the first and merging the start and end nodes.
+     * It is assumed that the nodes of the argument automata are disjoint.
      */
     public Automaton computeChoice(Choice expr, List<Automaton> argList) {
         Iterator<Automaton> argIter = argList.iterator();
@@ -192,7 +198,7 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     }
 
     /**
-     * Returns an eutomaton with end state equal to start state, and no transitions.
+     * Returns an automaton with end state equal to start state, and no transitions.
      */
     public Automaton computeEmpty(Empty expr) {
         Automaton result = createAutomaton();
@@ -201,10 +207,11 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     }
 
     /**
-     * Callback factory method to create an automaton.
+     * Callback factory method to create an automaton, with
+     * fresh node identities (in the context of this calculator).
      */
     protected Automaton createAutomaton() {
-        return new MatrixAutomaton();
+        return new MatrixAutomaton(createNode(), createNode());
     }
     
     /**
@@ -228,4 +235,15 @@ public class AutomatonCalculator implements RegExprCalculator<Automaton> {
             }
         }
     }
+    
+    /** 
+     * Callback factory method to create a fresh node,
+     * using the fixed node identity dispenser.
+     */
+    private Node createNode() {
+    	return DefaultNode.createNode(nodeDispenser);
+    }
+    
+    /** the dispenser for automaton node identities. */
+    private final DefaultDispenser nodeDispenser = new DefaultDispenser();
 }
