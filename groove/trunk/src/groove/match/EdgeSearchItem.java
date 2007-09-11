@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.6 2007-09-11 10:17:08 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.7 2007-09-11 16:20:35 rensink Exp $
  */
 package groove.match;
 
@@ -47,9 +47,12 @@ public class EdgeSearchItem extends AbstractSearchItem {
 		this.arity = edge.endCount();
         this.duplicates = computeDuplicates();
         this.boundNodes = new HashSet<Node>();
+        this.neededNodes = new HashSet<Node>();
         for (Node node: edge.ends()) {
             if (isBindable(node)) {
                 boundNodes.add(node);
+            } else {
+                neededNodes.add(node);
             }
         }
 	}
@@ -62,13 +65,21 @@ public class EdgeSearchItem extends AbstractSearchItem {
 	public EdgeRecord getRecord(Search matcher) {
 		return new EdgeRecord( matcher);
 	}
-	
-	/**
-     * Returns the end nodes of the edge.
+    
+    /**
+     * Returns the non-value end nodes of the edge.
      */
     @Override
     public Collection<Node> bindsNodes() {
         return boundNodes;
+    }
+    
+    /**
+     * Returns the value end nodes of the edge.
+     */
+    @Override
+    public Collection<Node> needsNodes() {
+        return neededNodes;
     }
 
     /**
@@ -148,11 +159,13 @@ public class EdgeSearchItem extends AbstractSearchItem {
 	 * such that <code>edge.end(duplicates[i]) == edge.end(i)</code>.
 	 */
 	private final int[] duplicates;
-    /** The set of end nodes of this edge. */
+    /** The set of non-value end nodes of this edge. */
     private final Set<Node> boundNodes;
+    /** The set of value end nodes of this edge. */
+    private final Set<Node> neededNodes;
 
     /**
-     * Record of an edge seach item, storing an iterator over the
+     * Record of an edge search item, storing an iterator over the
      * candidate images.
      * @author Arend Rensink
      * @version $Revision $
@@ -277,7 +290,7 @@ public class EdgeSearchItem extends AbstractSearchItem {
          * Calls {@link #getPreMatchedSource()}, {@link #getPreMatchedTarget()} and {@link #getPreMatchedLabel()}
          * for the edge parts. 
          */
-        final Edge computePreDetermined() {
+        Edge computePreDetermined() {
             return DefaultEdge.createEdge(getPreMatchedSource(), getPreMatchedLabel(), getPreMatchedTarget());
         }
         
