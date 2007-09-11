@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BarbedStrategy.java,v 1.2 2007-04-27 22:06:58 rensink Exp $
+ * $Id: BarbedStrategy.java,v 1.3 2007-09-11 11:23:05 fladder Exp $
  */
 package groove.lts.explore;
 
@@ -30,7 +30,7 @@ import java.util.List;
  * closed state is found.
  * The maximum depth of the search can be set; a depth of 0 means unbounded depth.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BarbedStrategy extends AbstractStrategy {
 	/** Name of the barbed exploration strategy. */
@@ -52,11 +52,15 @@ public class BarbedStrategy extends AbstractStrategy {
             // choose randomly among the next states
             int nextIndex = (int) (Math.random() * nextStates.size());
             GraphState state = nextStates.get(nextIndex);
+            
             // set nextStates to collect the successors of state
             nextStates.clear();
             getCollector().set(nextStates);
             explore(state);
             getCollector().reset();
+            
+            if( nextStates.size() == 0 )
+            	nextStates = new ArrayList<GraphState>(getSuccessors(state));
         }
         return getGTS().getFinalStates();
     }
