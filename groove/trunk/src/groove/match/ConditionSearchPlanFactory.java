@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.8 2007-09-11 16:20:35 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.9 2007-09-11 16:21:28 rensink Exp $
  */
 package groove.match;
 
@@ -34,7 +34,7 @@ import java.util.Set;
  * <li> A {@link FrequencyComparator} to rank search items based on the expected frequency of edge labels
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 
@@ -83,7 +83,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     static private final ConditionSearchPlanFactory instance = new ConditionSearchPlanFactory();
 
     /** Flag to control search plan printing. */
-    static private final boolean PRINT = true;
+    static private final boolean PRINT = false;
     
     /**
      * Plan data extension based on a graph condition.
