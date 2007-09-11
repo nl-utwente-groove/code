@@ -262,6 +262,7 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 		boolean result = false;
 		for (Matching match : rule.getMatchingSet(getGraph())) {
 			RuleApplication application = record.getApplication(rule, match);
+//			System.out.printf("Application of %s with match %s%n", rule.getName(), match.elementMap());
 			reporter.stop();
 			reporter.stop();
 			action.perform(application);

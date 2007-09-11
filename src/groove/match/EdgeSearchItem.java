@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.5 2007-08-30 15:18:18 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.6 2007-09-11 10:17:08 rensink Exp $
  */
 package groove.match;
 
@@ -20,10 +20,10 @@ import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.util.FilterIterator;
 
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -46,7 +46,17 @@ public class EdgeSearchItem extends AbstractSearchItem {
         this.label = edge.label();
 		this.arity = edge.endCount();
         this.duplicates = computeDuplicates();
-        this.boundNodes = new HashSet<Node>(Arrays.asList(edge.ends()));
+        this.boundNodes = new HashSet<Node>();
+        for (Node node: edge.ends()) {
+            if (isBindable(node)) {
+                boundNodes.add(node);
+            }
+        }
+	}
+	
+	/** Determines whether a given node can be bound as a result of binding this edge. */
+	private boolean isBindable(Node node) {
+	    return !(node instanceof ValueNode) || !((ValueNode) node).hasValue();
 	}
 	
 	public EdgeRecord getRecord(Search matcher) {
