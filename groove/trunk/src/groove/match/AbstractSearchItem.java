@@ -28,7 +28,7 @@ import java.util.Collections;
 /**
  * Abstract implementation of a searh item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
     /**
@@ -146,7 +146,7 @@ abstract public class AbstractSearchItem implements SearchItem {
      * <li> {@link #FOUND}, reached at the moment a solution has been found
      * </ul>
      * @author Arend Rensink
-     * @version $Revision: 1.5 $
+     * @version $Revision: 1.6 $
      */
     abstract public class AbstractRecord extends PrimitiveRecord {
         /** Constructs a record for a given search. */
@@ -330,7 +330,7 @@ abstract public class AbstractSearchItem implements SearchItem {
     /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.5 $
+     * @version $Revision: 1.6 $
      */
     abstract public class SingularRecord extends PrimitiveRecord {
         /** Constructs an instance for a given search. */
@@ -342,7 +342,7 @@ abstract public class AbstractSearchItem implements SearchItem {
          * Calls {@link #reset()} and returns <code>false</code> if {@link #find()} was
          * successful at the last call; otherwise, delegates to {@link #set()}.
          */
-        public boolean find() {
+        final public boolean find() {
             if (found) {
                 reset();
             } else {

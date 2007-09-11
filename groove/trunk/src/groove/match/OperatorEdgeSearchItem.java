@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.5 2007-08-30 15:18:18 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.6 2007-09-11 10:17:08 rensink Exp $
  */
 package groove.match;
 
@@ -48,7 +48,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 		this.operation = edge.getOperation();
 		this.arguments = edge.source().getArguments();
 		this.target = edge.target();
-        this.boundNodes = Collections.<Node>singleton(target);
+        this.boundNodes = isBindable(target) ? Collections.<Node>singleton(target) : Collections.<Node>emptySet();
         this.neededNodes = new HashSet<Node>(arguments);
 	}
 	
@@ -56,6 +56,11 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 		return new OperatorEdgeRecord(matcher);
 	}
 
+    /** Determines whether a given node can be bound as a result of binding this edge. */
+    private boolean isBindable(Node node) {
+        return !(node instanceof ValueNode) || !((ValueNode) node).hasValue();
+    }
+    
 	/**
      * Returns a singleton set consisting of the target node of the operator edge.
      */
@@ -125,11 +130,11 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 	private final ValueNode target;
     /** Singleton set consisting of <code>target</code>. */
     private final Collection<Node> boundNodes;
-    /** Set of the nodes in <code>argumants</code>. */
+    /** Set of the nodes in <code>arguments</code>. */
     private final Collection<Node> neededNodes;
     
     /**
-     * Record of an edge seach item, storing an iterator over the
+     * Record of an edge search item, storing an iterator over the
      * candidate images.
      * @author Arend Rensink
      * @version $Revision $
@@ -197,12 +202,19 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
                 operands[i] = ((ValueNode) operandImage).getValue();
             }
             try {
-                return operation.apply(Arrays.asList(operands));
+                Object result = operation.apply(Arrays.asList(operands));
+                if (PRINT) {
+                    System.out.printf("Applying %s to %s yields %s%n", operation, Arrays.asList(operands), result);
+                }
+                return result;
             } catch (IllegalArgumentException exc) {
                 return null;
             }
         }
         
         private ValueNode targetPreMatch;
+        
+        /** Flag to control debug printing. */
+        static private final boolean PRINT = false; 
     }
 }
