@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.6 2007-09-11 10:17:08 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.7 2007-09-11 16:20:35 rensink Exp $
  */
 package groove.match;
 
@@ -48,8 +48,13 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 		this.operation = edge.getOperation();
 		this.arguments = edge.source().getArguments();
 		this.target = edge.target();
-        this.boundNodes = isBindable(target) ? Collections.<Node>singleton(target) : Collections.<Node>emptySet();
         this.neededNodes = new HashSet<Node>(arguments);
+        if (isBindable(target)) {
+            this.boundNodes = Collections.<Node>singleton(target);
+        } else {
+            this.boundNodes = Collections.<Node>emptySet();
+            this.neededNodes.add(target);
+        }
 	}
 	
 	public OperatorEdgeRecord getRecord(Search matcher) {
@@ -79,7 +84,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 
     @Override
 	public String toString() {
-		return String.format("Compute %s", edge); 
+		return String.format("Compute %s%s-->%s", operation.toString(), arguments, target); 
 	}
 	
 	/**
@@ -145,7 +150,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
          */
         OperatorEdgeRecord(Search search) {
             super(search);
-            targetPreMatch = (ValueNode) getResult().getNode(target);
+            targetPreMatched = getResult().containsKey(target);
         }
         
         @Override
@@ -159,8 +164,8 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
             Object outcome = calculateResult();
             if (outcome == null || target.hasValue() && !target.getValue().equals(outcome)) {
                 result = false;
-            } else if (targetPreMatch != null) {
-                result = targetPreMatch.getValue().equals(outcome);
+            } else if (targetPreMatched) {
+                result = ((ValueNode) getResult().getNode(target)).getValue().equals(outcome);
             } else {
                 ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(operation.getResultType(), outcome);
                 result = isAvailable(targetImage);
@@ -176,7 +181,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
          */
         @Override
         void undo() {
-            if (targetPreMatch == null) {
+            if (! targetPreMatched) {
                 getResult().removeNode(target);
             }
         }
@@ -212,7 +217,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
             }
         }
         
-        private ValueNode targetPreMatch;
+        private final boolean targetPreMatched;
         
         /** Flag to control debug printing. */
         static private final boolean PRINT = false; 

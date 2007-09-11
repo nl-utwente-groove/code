@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.3 2007-08-30 15:18:18 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.4 2007-09-11 16:20:35 rensink Exp $ */
 package groove.match;
 
 import groove.graph.Edge;
@@ -100,25 +100,24 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem {
             throw new UnsupportedOperationException();
         }
 
-        /** This implementation returns <code>false</code>. */
+        /** This implementation returns <code>true</code> if the super implementation does,
+         * and there are no fresh variables to be bound. 
+         */
         @Override
         final boolean isPreDetermined() {
-            return false;
+            return super.isPreDetermined() && freshVars.isEmpty();
         }
-//
-//        @Override
-//        boolean select(Edge image) {
-//            boolean result = super.select(image);
-//            if (result && image instanceof ValuationEdge) {
-//                for (Map.Entry<String,Label> valueEntry: ((ValuationEdge) image).getValue().entrySet()) {
-//                    String var = valueEntry.getKey();
-//                    if (freshVars.contains(var)) {
-//                        getResult().putVar(var, valueEntry.getValue());
-//                    }
-//                }
-//            } 
-//            return result;
-//        }
+
+        /** Returns the first image according to {@link #computeMultiple()}, if any. */
+        @Override
+        Edge computePreDetermined() {
+            Iterator<? extends Edge> imageIter = computeMultiple();
+            if (imageIter.hasNext()) {
+                return imageIter.next();
+            } else {
+                return null;
+            }
+        }
 
         /**
          * Since the image is not really an edge of the underlying graph, 
