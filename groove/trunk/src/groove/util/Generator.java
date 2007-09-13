@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.14 2007-04-30 19:53:32 rensink Exp $
+ * $Id: Generator.java,v 1.15 2007-09-13 10:33:43 iovka Exp $
  */
 package groove.util;
 
@@ -76,7 +76,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -136,6 +136,9 @@ public class Generator extends CommandLineTool {
             Collection<? extends State> result = generate();
             report();
             exit(result);
+        } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
+        	e.printStackTrace();
+        	System.out.println("\n\tStates:\t" + getGTS().nodeCount());
         } catch (Exception e) {
         	e.printStackTrace();
         }
