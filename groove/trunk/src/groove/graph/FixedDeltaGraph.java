@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FixedDeltaGraph.java,v 1.9 2007-09-07 19:13:37 rensink Exp $
+ * $Id: FixedDeltaGraph.java,v 1.10 2007-09-14 11:48:21 rensink Exp $
  */
 package groove.graph;
 
@@ -272,8 +272,20 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		}
 		return certifier.get(); 
 	}
+		
+	/** Tests for equality of node and edge sets. */
+	@Override
+    public boolean equals(Object obj) {
+        return obj instanceof Graph && nodeSet().equals(((Graph) obj).nodeSet()) && edgeSet().equals(((Graph) obj).edgeSet());
+    }
 
-	/** The fixed (possibly <code>null</code> basis of this graph. */
+	/** Combines the hashcodes of node and edge sets. */
+    @Override
+    public int hashCode() {
+        return nodeSet().hashCode() ^ edgeSet().hashCode();
+    }
+
+    /** The fixed (possibly <code>null</code> basis of this graph. */
 	private FixedDeltaGraph basis;
 	/** The fixed delta of this graph. */
 	private DeltaApplier delta;
