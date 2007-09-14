@@ -126,14 +126,14 @@ public class SystemProperties extends java.util.Properties {
     	String result = getProperty(DANGLING_KEY);
     	return result != null && new Boolean(result);
     }
-    
+
     /** 
      * Sets the creator edge check to a certain value.
      * @param check if <code>true</code>, creator edges are 
      * treated as negative application conditions
      */
     public void setCheckCreatorEdges(boolean check) {
-    	setProperty(CREATOR_EDGE_KEY, ""+check);
+        setProperty(CREATOR_EDGE_KEY, ""+check);
     }
     
     /**
@@ -142,8 +142,25 @@ public class SystemProperties extends java.util.Properties {
      * treated as negative application conditions
      */
     public boolean isCheckCreatorEdges() {
-    	String result = getProperty(CREATOR_EDGE_KEY);
-    	return result != null && new Boolean(result);
+        String result = getProperty(CREATOR_EDGE_KEY);
+        return result != null && new Boolean(result);
+    }
+
+    /** 
+     * Sets the graph isomorphism check to a certain value.
+     * @param check if <code>true</code>, state graphs are compared up to isomorphism
+     */
+    public void setCheckIsomorphism(boolean check) {
+        setProperty(ISOMORPHISM_KEY, ""+check);
+    }
+    
+    /**
+     * Returns the value of the graph isomorphism check property.
+     * @return if <code>true</code>, state graphs are compared up to isomorphism
+     */
+    public boolean isCheckIsomorphism() {
+        String result = getProperty(ISOMORPHISM_KEY);
+        return result == null || new Boolean(result);
     }
     
     /** 
@@ -336,12 +353,19 @@ public class SystemProperties extends java.util.Properties {
 	 * Default is <code>false</code>.
 	 */
 	static public final String DANGLING_KEY = "checkDangling";
-	/** 
-	 * Property name of the creator edge check.
-	 * If <code>true</code>, creator edges are implicitly treated as (individual) NACs.
-	 * Default is <code>false</code>.
-	 */
-	static public final String CREATOR_EDGE_KEY = "checkCreatorEdges";
+    /** 
+     * Property name of the creator edge check.
+     * If <code>true</code>, creator edges are implicitly treated as (individual) NACs.
+     * Default is <code>false</code>.
+     */
+    static public final String CREATOR_EDGE_KEY = "checkCreatorEdges";
+    /** 
+     * Property name of the isomorphism check.
+     * If <code>true</code>, state graphs are compared up to isomorphism;
+     * otherwise, they are compared up to equality.
+     * Default is <code>true</code>.
+     */
+    static public final String ISOMORPHISM_KEY = "checkIsomorphism";
 	/** 
 	 * Property name of the RHS-as-NAC property.
 	 * If <code>true</code>, each RHS is implicitly treated as a NAC.
@@ -375,7 +399,8 @@ public class SystemProperties extends java.util.Properties {
 		defaultKeys.put(INJECTIVE_KEY, new Property.IsBoolean("Flag controlling if matches should be injective", true));
 		defaultKeys.put(DANGLING_KEY, new Property.IsBoolean("Flag controlling if dangling edges should be forbidden rather than deleted", true));
 		defaultKeys.put(CREATOR_EDGE_KEY, new Property.IsBoolean("Flag controlling if creator edges should be treated as implicit NACs", true));
-		defaultKeys.put(RHS_AS_NAC_KEY, new Property.IsBoolean("Flag controlling if RHSs should be treated as implicit NACs", true));
+        defaultKeys.put(RHS_AS_NAC_KEY, new Property.IsBoolean("Flag controlling if RHSs should be treated as implicit NACs", true));
+        defaultKeys.put(ISOMORPHISM_KEY, new Property.IsBoolean("Flag controlling state graphs are checked up to isomorphism", true));
 		defaultKeys.put(CONTROL_LABELS_KEY, new Property.True<String>("A list of rare labels, used to optimise rule matching"));
 		defaultKeys.put(COMMON_LABELS_KEY, new Property.True<String>("A list of frequent labels, used to optimise rule matching"));
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);

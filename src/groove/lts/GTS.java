@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.16 2007-08-22 15:04:51 rensink Exp $
+ * $Id: GTS.java,v 1.17 2007-09-14 11:48:20 rensink Exp $
  */
 package groove.lts;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2007-08-22 15:04:51 $
+ * @version $Revision: 1.17 $ $Date: 2007-09-14 11:48:20 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -103,6 +103,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         this.ruleSystem = grammar;
         this.storeTransitions = storeTransitions;
         this.startState = computeStartState(grammar.getStartGraph());
+        this.checkIsomrophism = getGrammar().getProperties().isCheckIsomorphism();
         addState(startState);
 //        this.strategy = new FullStrategy();
 //        this.strategy.setLTS(this);
@@ -385,6 +386,10 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             }
         }
     }
+    
+    private boolean isCheckIsomorphism() {
+        return checkIsomrophism;
+    }
 
     /**
      * The start state of this LTS.
@@ -405,6 +410,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * @invariant <tt>freshStates \subseteq nodes</tt>
      */
     private final Set<GraphState> finalStates = new HashSet<GraphState>();
+    /** Flag indicating that graphs should be compared up to isomorphism. */
+    private final boolean checkIsomrophism;
     /** The system record for this GTS. */
     private SystemRecord record;
     /**
@@ -448,11 +455,15 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 			if (stateKey.getControl() == otherStateKey.getControl()) {
 				Graph one = stateKey.getGraph();
 				Graph two = otherStateKey.getGraph();
-				if (!one.getCertifier().getGraphCertificate().equals(two.getCertifier().getGraphCertificate())) {
-					intCertOverlap++;
-					return false;
+				if (isCheckIsomorphism()) {
+				    if (!one.getCertifier().getGraphCertificate().equals(two.getCertifier().getGraphCertificate())) {
+	                    intCertOverlap++;
+	                    return false;
+	                } else {
+	                    return checker.areIsomorphic(one, two);
+	                }
 				} else {
-					return checker.areIsomorphic(one, two);
+				    return one.equals(two);
 				}
 			} else {
 				return false;
@@ -465,8 +476,13 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 		 */
     	@Override
         protected int getCode(Object key) {
+    	    int result;
     		GraphState stateKey = (GraphState) key;
-    		int result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
+    		if (isCheckIsomorphism()) {
+    		    result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
+    		} else {
+    		    result = stateKey.getGraph().hashCode();
+    		}
     		Object control = stateKey.getControl();
     		result += control == null ? 0 : System.identityHashCode(control);
     		return result;
