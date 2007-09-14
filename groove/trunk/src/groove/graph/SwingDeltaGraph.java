@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SwingDeltaGraph.java,v 1.3 2007-08-26 07:23:41 rensink Exp $
+ * $Id: SwingDeltaGraph.java,v 1.4 2007-09-14 14:38:10 rensink Exp $
  */
 package groove.graph;
 
@@ -49,12 +49,13 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		} else {
 			this.delta = new DeltaStore(delta);
 		}
+		setFixed();
 	}
-	
-	@Override
-	public boolean isFixed() {
-		return true;
-	}
+//	
+//	@Override
+//	public boolean isFixed() {
+//		return true;
+//	}
 
 	/**
 	 * Since the result should be modifiable, returns a {@link DeltaGraph}.
