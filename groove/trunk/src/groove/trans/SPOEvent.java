@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.25 2007-09-07 19:13:39 rensink Exp $
+ * $Id: SPOEvent.java,v 1.26 2007-09-14 13:54:43 rensink Exp $
  */
 package groove.trans;
 
@@ -27,7 +27,6 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
-import groove.graph.NodeSet;
 import groove.graph.WrapperLabel;
 import groove.graph.algebra.ValueNode;
 import groove.match.MatchStrategy;
@@ -41,6 +40,7 @@ import groove.util.TreeHashSet3;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -52,7 +52,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.25 $ $Date: 2007-09-07 19:13:39 $
+ * @version $Revision: 1.26 $ $Date: 2007-09-14 13:54:43 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -564,15 +564,18 @@ public class SPOEvent implements RuleEvent {
 	 * Callback method from {@link #getErasedNodes()}.
 	 */
 	protected Set<Node> computeErasedNodes() {
-		NodeEdgeMap anchorMap = getAnchorMap();
-		Node[] eraserNodes = getRule().getEraserNodes();
-	    Set<Node> erasedNodes = createNodeSet();
-	    // register the node erasures
-	    for (int i = 0; i < eraserNodes.length; i++) {
-	        Node nodeMatch = anchorMap.getNode(eraserNodes[i]);
-	        erasedNodes.add(nodeMatch);
-	    }
-	    return erasedNodes;
+        Node[] eraserNodes = getRule().getEraserNodes();
+        if (eraserNodes.length == 0) {
+            return EMPTY_NODE_SET;
+        } else {
+            NodeEdgeMap anchorMap = getAnchorMap();
+            Set<Node> erasedNodes = createNodeSet();
+            // register the node erasures
+            for (Node node: eraserNodes) {
+                erasedNodes.add(anchorMap.getNode(node));
+            }
+            return erasedNodes;
+        }
 	}
 
     /**
@@ -709,7 +712,7 @@ public class SPOEvent implements RuleEvent {
      * Callback factory method to create a fresh, empty node set.
      */
     protected Set<Node> createNodeSet() {
-    	return new NodeSet();
+    	return new TreeHashSet3<Node>(TreeHashSet3.HASHCODE_EQUATOR);
     }
 
 	/**
@@ -894,6 +897,8 @@ public class SPOEvent implements RuleEvent {
 	static private int coanchorImageOverlap;
 	/** Counter for the coanchor images. */
 	static private int coanchorImageCount;
+	/** Global empty set of nodes. */
+	static private Set<Node> EMPTY_NODE_SET = Collections.<Node>emptySet();
 	
 	static private Reporter reporter = Reporter.register(RuleEvent.class);
 	static private int HASHCODE = reporter.newMethod("computeHashCode()");
