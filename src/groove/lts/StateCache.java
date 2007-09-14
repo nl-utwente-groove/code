@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.4 2007-09-04 20:59:00 rensink Exp $
+ * $Id: StateCache.java,v 1.5 2007-09-14 08:30:26 rensink Exp $
  */
 package groove.lts;
 
@@ -35,7 +35,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class StateCache {
     /**
@@ -82,7 +82,10 @@ public class StateCache {
 			result = graphFactory.newGraph(state.source().getGraph(), state.getDelta());
 			// If the state is closed, then we are reconstructing the graph
 			// for the second time at least; see if we should freeze it
-			if (state.isClosed() && isFreezeGraph()) {
+			// on the other hand, the stack of derived next states should not grow so large
+			// that (re)constructing the graph gives a stack overflow!
+			// so the closedness test should be skipped
+			if (isFreezeGraph()) {
 				state.setFrozenGraph(computeFrozenGraph(result));
 			}
 		}
