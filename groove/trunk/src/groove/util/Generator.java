@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.17 2007-09-13 14:25:42 iovka Exp $
+ * $Id: Generator.java,v 1.18 2007-09-15 07:47:17 rensink Exp $
  */
 package groove.util;
 
@@ -76,7 +76,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -463,7 +463,7 @@ public class Generator extends CommandLineTool {
         int equalGraphCount = DefaultIsoChecker.getEqualGraphsCount();
         int equalCertsCount = DefaultIsoChecker.getEqualCertsCount();
         int equalSimCount = DefaultIsoChecker.getEqualSimCount();
-        int intCertOverlap = GTS.getIntCertOverlap();
+        int intCertOverlap = DefaultIsoChecker.getIntCertOverlap();
         println("\tIsomorphism:\tPredicted:\t"+predicted);
         println("\t\tFalse positives:\t"+distinctCount);
         println("\t\tFraction:\t"+percentage((double) distinctCount / predicted));

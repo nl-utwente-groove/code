@@ -12,28 +12,27 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIsoChecker.java,v 1.12 2007-08-29 14:00:36 rensink Exp $
+ * $Id: DefaultIsoChecker.java,v 1.13 2007-09-15 07:46:53 rensink Exp $
  */
 package groove.graph.iso;
+
+import groove.graph.Edge;
+import groove.graph.Element;
+import groove.graph.Graph;
+import groove.graph.Node;
+import groove.match.IsoMatchFactory;
+import groove.util.Reporter;
 
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
-import groove.graph.Edge;
-import groove.graph.Element;
-import groove.graph.Graph;
-import groove.graph.GraphFactory;
-import groove.graph.Node;
-import groove.match.IsoMatchFactory;
-import groove.util.Reporter;
-
 /**
  * Implementation of an isomorphism checking algorithm that first tries to
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy}. 
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -164,6 +163,10 @@ public class DefaultIsoChecker implements IsoChecker {
      */
     static private int equalSimCount;
     /**
+	 * The number of isomorphism warnings given while exploring the GTS.
+	 */
+    static private int intCertOverlap = 0;
+	/**
      * The number of times graphs were simulated and found to be non-isomorphic. 
      */
     static private int distinctSimCount;
@@ -178,36 +181,40 @@ public class DefaultIsoChecker implements IsoChecker {
             equalGraphsCount++;
         	result = true;
         } else {
-        	CertificateStrategy domCertifier = dom.getCertifier();
-        	CertificateStrategy codCertifier = cod.getCertifier();
-        	if (hasDistinctCerts(codCertifier)) {
-        	reporter.start(ISO_CERT_CHECK);
-        	if (hasDistinctCerts(domCertifier)) {
-            	result = areCertEqual(domCertifier, codCertifier);
-        	} else {
-        		result = false;
-        	}
-    		reporter.stop();
-    		if (result) {
-    		    equalCertsCount++;
-    		} else {
-    		    distinctCertsCount++;
-    		}
-        } else {
-        	reporter.start(ISO_SIM_CHECK);
-        	if (getNodePartitionCount(domCertifier) == getNodePartitionCount(codCertifier)) {
-        		result = IsoMatchFactory.getInstance().createMatcher(dom).getMatch(cod, null) != null;
-        	} else {
-        		result = false;
-        	}
-        	reporter.stop();
-            if (result) {
-                equalSimCount++;
-            } else {
-                distinctSimCount++;
-            }
-        }
-        }
+			CertificateStrategy domCertifier = dom.getCertifier();
+			CertificateStrategy codCertifier = cod.getCertifier();
+			if (!domCertifier.getGraphCertificate().equals(codCertifier.getGraphCertificate())) {
+				intCertOverlap++;
+				result = false;
+			} else if (hasDistinctCerts(codCertifier)) {
+				reporter.start(ISO_CERT_CHECK);
+				if (hasDistinctCerts(domCertifier)) {
+					result = areCertEqual(domCertifier, codCertifier);
+				} else {
+					result = false;
+				}
+				reporter.stop();
+				if (result) {
+					equalCertsCount++;
+				} else {
+					distinctCertsCount++;
+				}
+			} else {
+				reporter.start(ISO_SIM_CHECK);
+				if (getNodePartitionCount(domCertifier) == getNodePartitionCount(codCertifier)) {
+					result = IsoMatchFactory.getInstance().createMatcher(dom).getMatch(cod,
+							null) != null;
+				} else {
+					result = false;
+				}
+				reporter.stop();
+				if (result) {
+					equalSimCount++;
+				} else {
+					distinctSimCount++;
+				}
+			}
+		}
         reporter.stop();
         totalCheckCount++;
         return result;
@@ -304,7 +311,15 @@ public class DefaultIsoChecker implements IsoChecker {
 		return result;
 	}
 	
-    /** Reporter instance for profiling IsoChecker methods. */
+    /**
+	 * Returns the number of times an isomorphism was suspected on the basis
+	 * of the "early warning system", viz. the graph certificate.
+	 */
+	static public int getIntCertOverlap() {
+	    return intCertOverlap;
+	}
+
+	/** Reporter instance for profiling IsoChecker methods. */
     static public final Reporter reporter = Reporter.register(IsoChecker.class);
     /** Handle for profiling {@link #areIsomorphic(Graph, Graph)}. */
     static public final int ISO_CHECK = reporter.newMethod("areIsomorphic(Graph,Graph)");
