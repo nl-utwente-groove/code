@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.17 2007-09-14 11:48:20 rensink Exp $
+ * $Id: GTS.java,v 1.18 2007-09-15 07:46:24 rensink Exp $
  */
 package groove.lts;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.17 $ $Date: 2007-09-14 11:48:20 $
+ * @version $Revision: 1.18 $ $Date: 2007-09-15 07:46:24 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -422,21 +422,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * The number of transitions in the GTS.
      */
     private int transitionCount = 0;
-    /**
-	 * Returns the number of times an isomorphism was suspected on the basis
-	 * of the "early warning system", viz. the graph certificate.
-	 */
-	static public int getIntCertOverlap() {
-	    return intCertOverlap;
-	}
-
-	/** Flag to indicate whether transitions are to be stored in the GTS. */
+    /** Flag to indicate whether transitions are to be stored in the GTS. */
     private final boolean storeTransitions;
-    /**
-     * The number of isomorphism warnings given while exploring the GTS.
-     */
-    static private int intCertOverlap = 0; 
-    
     /** Specialised set implementation for storing states. */
     private class TreeHashStateSet extends TreeHashSet<GraphState> {
     	/** Constructs a new, empty state set. */
@@ -456,12 +443,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 				Graph one = stateKey.getGraph();
 				Graph two = otherStateKey.getGraph();
 				if (isCheckIsomorphism()) {
-				    if (!one.getCertifier().getGraphCertificate().equals(two.getCertifier().getGraphCertificate())) {
-	                    intCertOverlap++;
-	                    return false;
-	                } else {
-	                    return checker.areIsomorphic(one, two);
-	                }
+				    return checker.areIsomorphic(one, two);
 				} else {
 				    return one.equals(two);
 				}
