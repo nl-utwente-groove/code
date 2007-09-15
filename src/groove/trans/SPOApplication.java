@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.17 2007-09-04 20:59:28 rensink Exp $
+ * $Id: SPOApplication.java,v 1.18 2007-09-15 17:25:24 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.17 $ $Date: 2007-09-04 20:59:28 $
+ * @version $Revision: 1.18 $ $Date: 2007-09-15 17:25:24 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -421,7 +421,7 @@ public class SPOApplication implements RuleApplication, Derivation {
      */
     @Override
     public int hashCode() {
-    	return System.identityHashCode(getEvent());
+    	return getEvent().identityHashCode();
     }
     
     /**

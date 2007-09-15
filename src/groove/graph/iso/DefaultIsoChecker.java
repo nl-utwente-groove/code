@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIsoChecker.java,v 1.13 2007-09-15 07:46:53 rensink Exp $
+ * $Id: DefaultIsoChecker.java,v 1.14 2007-09-15 17:25:23 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -20,10 +20,13 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.match.IsoMatchFactory;
+import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
 import groove.util.Reporter;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -32,7 +35,7 @@ import java.util.Set;
  * Implementation of an isomorphism checking algorithm that first tries to
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy}. 
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -202,8 +205,7 @@ public class DefaultIsoChecker implements IsoChecker {
 			} else {
 				reporter.start(ISO_SIM_CHECK);
 				if (getNodePartitionCount(domCertifier) == getNodePartitionCount(codCertifier)) {
-					result = IsoMatchFactory.getInstance().createMatcher(dom).getMatch(cod,
-							null) != null;
+					result = hasIsomorphism(dom, cod);
 				} else {
 					result = false;
 				}
@@ -220,6 +222,214 @@ public class DefaultIsoChecker implements IsoChecker {
         return result;
 	}
 
+	/**
+	 * Tries to construct an isomorphism between the two given graphs,
+	 * and reports if this succeeds.
+	 */
+	public boolean hasIsomorphism(Graph dom, Graph cod) {
+		return computeIsomorphism(dom, cod) != null;
+	}
+	
+	/**
+	 * Tries to construct an isomorphism between the two given graphs.
+	 * The result is a bijective mapping from the nodes and edges
+	 * of the source graph to those of the target graph, or <code>null</code>
+	 * if no such mapping could be found. 
+	 * @param dom the first graph to be compared
+	 * @param cod the second graph to be compared
+	 */
+	public NodeEdgeMap getIsomorphism(Graph dom, Graph cod) {
+		NodeEdgeMap result = computeIsomorphism(dom, cod);
+		// there's sure to be an isomorphism, but we have to add the isolated nodes
+		if (result.nodeMap().size() != dom.nodeCount()) {
+			// there are isolated nodes
+			Map<Element,Object> domCertificateMap = dom.getCertifier().getCertificateMap();
+			PartitionMap codPartitionMap = cod.getCertifier().getPartitionMap();
+			Set<Node> usedNodeImages = new HashSet<Node>();
+			for (Node node: dom.nodeSet()) {
+				if (!result.containsKey(node)) {
+					// this is an isolated node
+					Object nodeImages = codPartitionMap.get(domCertificateMap.get(node));
+					if (nodeImages instanceof Node) {
+						// it follows that there is only one isolated node
+						result.putNode(node, (Node) nodeImages);
+						break;
+					} else {
+						// find an unused node
+						for (Node nodeImage: (Collection<Node>) nodeImages) {
+							if (!usedNodeImages.contains(nodeImage)) {
+								result.putNode(node, nodeImage);
+								usedNodeImages.add(nodeImage);
+								break;
+							}
+						}
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Tries to construct an isomorphism between the two given graphs.
+	 * The result is a bijective mapping from the nodes and edges
+	 * of the source graph to those of the target graph, or <code>null</code>
+	 * if no such mapping could be found. 
+	 * @param dom the first graph to be compared
+	 * @param cod the second graph to be compared
+	 */
+	private NodeEdgeMap computeIsomorphism(Graph dom, Graph cod) {
+		// make sure the graphs are of the same size
+		if (dom.nodeCount() != cod.nodeCount() || dom.edgeCount() != cod.edgeCount()) {
+			return null;
+		}
+		NodeEdgeMap result = new NodeEdgeHashMap();	
+		Map<Element,Object> domCertificateMap = dom.getCertifier().getCertificateMap();
+		PartitionMap codPartitionMap = cod.getCertifier().getPartitionMap();
+		// the mapping has to be injective, so we remember the used cod nodes
+		Set<Node> usedNodeImages = new HashSet<Node>();
+		// the set of dom nodes that have an image in result, but whose incident
+		// images possibly don't
+		Set<Node> connectedNodes = new HashSet<Node>();
+		Map<Edge, Collection<Edge>> edgeImageMap = new HashMap<Edge, Collection<Edge>>();
+		for (Edge edge : dom.edgeSet()) {
+			Object images = codPartitionMap.get(domCertificateMap.get(edge));
+			if (images == null) {
+				return null;
+			} else if (images instanceof Edge) {
+				if (!setEdge(edge,
+						(Edge) images,
+						result,
+						connectedNodes,
+						usedNodeImages)) {
+					return null;
+				}
+			} else {
+				edgeImageMap.put(edge, (Collection<Edge>) images);
+			}
+		}
+		while (!edgeImageMap.isEmpty()) {
+			if (connectedNodes.isEmpty()) {
+				// there are no edges connected to the part of the graph that
+				// is already mapped;
+				Iterator<Map.Entry<Edge,Collection<Edge>>> edgeImageEntryIter = edgeImageMap.entrySet().iterator();
+				Map.Entry<Edge, Collection<Edge>> edgeImageEntry = edgeImageEntryIter.next();
+				edgeImageEntryIter.remove();
+				Edge domEdge = edgeImageEntry.getKey();
+				// search a suitable value
+				boolean found = false;
+				for (Edge codEdge: edgeImageEntry.getValue()) {
+					search:
+					for (Node valueEnd: codEdge.ends()) {
+						if (usedNodeImages.contains(valueEnd)) {
+							continue search;
+						}
+					}
+					// this image is OK
+					for (int i = 0; i < domEdge.endCount(); i++) {
+						Node domNode = domEdge.end(i);
+						connectedNodes.add(domNode);
+						Node codNode = codEdge.end(i);
+						usedNodeImages.add(codNode);
+						result.putNode(domNode, codNode);
+					}
+					result.putEdge(domEdge, codEdge);
+					found = true;
+					break;
+				}
+				if (!found) {
+					return null;
+				}
+			} else {
+				Iterator<Node> connectedNodeIter = connectedNodes.iterator();
+				Node connectedNode = connectedNodeIter.next();
+				connectedNodeIter.remove();
+				for (Edge edge : dom.edgeSet(connectedNode)) {
+					Collection<Edge> images = edgeImageMap.remove(edge);
+					if (images != null
+							&& !selectEdge(edge,
+									images,
+									result,
+									connectedNodes,
+									usedNodeImages)) {
+						// the edge is unmapped, and no suitable image can be found
+						return null;
+					}
+				}
+			}
+		}
+		return result;
+	}
+
+	/** 
+	 * Inserts an edge from a set of possible edges into the result mapping,
+	 * if one can be found that is consistent with the current state.
+	 * @param key the dom edge to be inserted
+	 * @param values the set of cod edges that should be tried as image of <code>key</code>
+	 * @param result the result map
+	 * @param newlyMappedDomNodes the set of dom nodes that are mapped but may have unmapped incident edges
+	 * @param usedCodNodes the set of node values in <code>result</code>
+	 * @return <code>true</code> if the key/value-pair was successfully added to <code>result</code>
+	 */
+	private boolean selectEdge(Edge key, Collection<Edge> values, NodeEdgeMap result, Set<Node> newlyMappedDomNodes, Set<Node> usedCodNodes) {
+		int arity = key.endCount();
+		Node[] nodeImages = new Node[arity];
+		for (int i = 0; i < arity; i++) {
+			nodeImages[i] = result.getNode(key.end(i));
+		}
+		for (Edge value : values) {
+			boolean correct = true;
+			for (int i = 0; correct && i < key.endCount(); i++) {
+				if (nodeImages[i] == null) {
+					correct = !usedCodNodes.contains(value.end(i));
+				} else {
+					correct = nodeImages[i] == value.end(i);
+				}
+			}
+			if (correct) {
+				for (int i = 0; correct && i < key.endCount(); i++) {
+					if (nodeImages[i] == null) {
+						result.putNode(key.end(i), value.end(i));
+						newlyMappedDomNodes.add(key.end(i));
+						usedCodNodes.add(value.end(i));
+					}
+				}
+				result.putEdge(key, value);
+				return true;
+			}
+		}
+		return true;
+	}
+
+	/** 
+	 * Inserts an edge into the result mapping,
+	 * testing if the resulting end node mapping is consistent with the
+	 * current state.
+	 * @param key the dom edge to be inserted
+	 * @param value the cod edge that is the image of <code>key</code>
+	 * @param result the result map
+	 * @param newlyMappedDomNodes the set of dom nodes that are mapped but may have unmapped incident edges
+	 * @param usedCodNodes the set of node values in <code>result</code>
+	 * @return <code>true</code> if the key/value-pair was successfully added to <code>result</code>
+	 */
+	private boolean setEdge(Edge key, Edge value, NodeEdgeMap result, Set<Node> newlyMappedDomNodes, Set<Node> usedCodNodes) {
+		for (int i = 0; i < key.endCount(); i++) {
+			Node end = key.end(i);
+			Node endImage = value.end(i);
+			Node oldEndImage = result.putNode(end, endImage);
+			if (oldEndImage == null) {
+				if (!usedCodNodes.add(endImage)) {
+					return false;
+				}
+				newlyMappedDomNodes.add(end);
+			} else if (oldEndImage != endImage) {
+				return false;
+			}
+		}
+		result.putEdge(key, value);
+		return true;
+	}
+	
 	/**
 	 * Tests if the elements of a graph have all different certificates.
 	 * If this holds, then {@link #areCertEqual(CertificateStrategy, CertificateStrategy)} can be

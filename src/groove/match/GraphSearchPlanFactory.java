@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.11 2007-09-11 16:20:34 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.12 2007-09-15 17:25:27 rensink Exp $
  */
 package groove.match;
 
 import groove.algebra.Constant;
+import groove.graph.BinaryEdge;
 import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -52,7 +53,7 @@ import java.util.TreeSet;
  * The search plans include items for all graph nodes and edges, ordered
  * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -223,8 +224,8 @@ public class GraphSearchPlanFactory {
             } else if (RegExprLabel.isWildcard(label)) {
                 return new WildcardEdgeSearchItem(edge);
             } else if (RegExprLabel.isAtom(label)) {
-                Edge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
-                return new EdgeSearchItem(defaultEdge);
+                DefaultEdge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
+                return new BinaryEdgeSearchItem(defaultEdge);
             } else if (label instanceof RegExprLabel) {
                 return new RegExprEdgeSearchItem(edge);
             } else if (edge instanceof ProductEdge) {
@@ -236,7 +237,9 @@ public class GraphSearchPlanFactory {
                 }
         	} else if (edge instanceof AlgebraEdge) {
         		return null;
-        	} else {
+        	} else if (edge instanceof BinaryEdge) {
+        	    return new BinaryEdgeSearchItem((BinaryEdge) edge);      
+            } else {
         	    return new EdgeSearchItem(edge);      
             }
         }
@@ -377,7 +380,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.11 $
+     * @version $Revision: 1.12 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -477,6 +480,7 @@ public class GraphSearchPlanFactory {
          * <li> {@link RegExprEdgeSearchItem}s
          * <li> {@link VarEdgeSearchItem}s
          * <li> {@link WildcardEdgeSearchItem}s
+         * <li> {@link BinaryEdgeSearchItem}s
          * <li> {@link EdgeSearchItem}s of a non-specialised type
          * <li> {@link ConditionSearchItem}s
          * <li> {@link OperatorEdgeSearchItem}s
@@ -507,6 +511,10 @@ public class GraphSearchPlanFactory {
             } 
             result++;
             if (itemClass == WildcardEdgeSearchItem.class) {
+                return result;
+            } 
+            result++;
+            if (itemClass == BinaryEdgeSearchItem.class) {
                 return result;
             } 
             result++;
@@ -598,7 +606,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.11 $
+     * @version $Revision: 1.12 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 

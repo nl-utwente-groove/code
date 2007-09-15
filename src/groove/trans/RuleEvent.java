@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.10 2007-08-22 15:04:48 rensink Exp $
+ * $Id: RuleEvent.java,v 1.11 2007-09-15 17:25:24 rensink Exp $
  */
 package groove.trans;
 
@@ -26,7 +26,7 @@ import groove.rel.VarNodeEdgeMap;
  * Together with the source and target state, the event uniquely defines the transition.
  * Typically, the event stores the anchor images of the particular rule application in the host graph.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-08-22 15:04:48 $
+ * @version $Revision: 1.11 $ $Date: 2007-09-15 17:25:24 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -89,15 +89,8 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      * Factory method to create a rule application on a given source graph.
      */
     public RuleApplication newApplication(Graph source);
-//
-//    /**
-//     * @param ruleFactory the <code>ruleFactory</code> to be set
-//     */
-//    public void setRuleFactory(RuleFactory ruleFactory);
-//
-//    /**
-//     * Returns the {@link groove.trans.RuleFactory} the is needed to instantiate classes for performing transformations.
-//     * @return the current <code>ruleFactory</code>
-//     */
-//    public RuleFactory getRuleFactory();
+
+    
+    /** Convenience method for {@link System#identityHashCode(Object)} */
+    public int identityHashCode();
 }

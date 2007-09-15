@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Bisimulator.java,v 1.7 2007-08-26 07:23:11 rensink Exp $
+ * $Id: Bisimulator.java,v 1.8 2007-09-15 17:25:23 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -38,7 +38,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elemens to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class Bisimulator implements CertificateStrategy {
 	/**
@@ -147,7 +147,7 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.7 $
+     * @version $Revision: 1.8 $
      */
     static private class CertificateNode extends Certificate {
     	/** Initial node value to provide a better spread of hash codes. */
@@ -212,7 +212,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.7 $
+     * @version $Revision: 1.8 $
      */
     static private class CertificateEdge extends Certificate {
 //        /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
@@ -317,7 +317,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.7 $
+     * @version $Revision: 1.8 $
      */
     static private class CertificateFlag extends Certificate {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
@@ -356,7 +356,9 @@ public class Bisimulator implements CertificateStrategy {
     	@Override
         protected int computeNewValue() {
             int sourceHashCode = source.hashCode();
-            return (sourceHashCode << 8) + (sourceHashCode >> 24) + value;
+            int result = (sourceHashCode << 8) + (sourceHashCode >> 24) + value;
+//            source.nextValue += result;
+            return result;
         }
         
         /**

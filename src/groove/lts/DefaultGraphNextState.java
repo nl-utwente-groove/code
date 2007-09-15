@@ -31,7 +31,7 @@ import groove.trans.RuleEvent;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
@@ -295,7 +295,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
      */
     @Override
     public int hashCode() {
-        return System.identityHashCode(source()) + System.identityHashCode(getEvent());
+        return source().getStateNumber() + getEvent().identityHashCode();
     }
 
     @Override

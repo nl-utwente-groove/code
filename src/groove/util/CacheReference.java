@@ -92,7 +92,6 @@ public class CacheReference<C> extends SoftReference<C> {
 	public void clear() {
 		super.clear();
 		updateCleared();
-		cacheClearCount++;
 	}
 
 	/**
@@ -104,6 +103,7 @@ public class CacheReference<C> extends SoftReference<C> {
 			synchronized (holder) {
 				if (holder.getCacheReference() == this) {
 					holder.setCacheReference(CacheReference.<C>getNullInstance(strong, incarnation));
+					cacheClearCount++;
 				}
 			}
 		}
