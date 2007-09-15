@@ -3,8 +3,6 @@
  */
 package groove.util;
 
-import groove.graph.GraphCache;
-
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.SoftReference;
 
@@ -94,6 +92,7 @@ public class CacheReference<C> extends SoftReference<C> {
 	public void clear() {
 		super.clear();
 		updateCleared();
+		cacheClearCount++;
 	}
 
 	/**
