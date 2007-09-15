@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.26 2007-09-14 13:54:43 rensink Exp $
+ * $Id: SPOEvent.java,v 1.27 2007-09-15 17:25:24 rensink Exp $
  */
 package groove.trans;
 
@@ -52,7 +52,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.26 $ $Date: 2007-09-14 13:54:43 $
+ * @version $Revision: 1.27 $ $Date: 2007-09-15 17:25:24 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -289,6 +289,18 @@ public class SPOEvent implements RuleEvent {
 //            result = anchorImage[i].equals(otherAnchorImage[i]);
 //        }
         return Arrays.equals(getAnchorImage(), other.getAnchorImage());
+    }
+    
+    /** 
+     * Returns a hash code based on the identity rather than
+     * the content of the event.
+     */
+    public int identityHashCode() {
+    	if (!identityHashCodeSet) {
+    		identityHashCode = System.identityHashCode(this);
+    		identityHashCodeSet = true;
+    	}
+    	return identityHashCode;
     }
     
 	@Override
@@ -872,6 +884,16 @@ public class SPOEvent implements RuleEvent {
 	 * The precomputed hash code.
 	 */
 	private int hashCode;
+	/**
+	 * Flag indicating that {@link #identityHashCode} has been computed
+	 * and assigned.
+	 */
+	private boolean identityHashCodeSet;
+	/**
+	 * Hash code based on the identity, rather than the content, of
+	 * the event.
+	 */
+	private int identityHashCode;
 	/**
 	 * The list of nodes created by {@link #createNode()}.
 	 */

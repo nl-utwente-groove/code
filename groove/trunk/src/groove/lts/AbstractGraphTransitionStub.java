@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphTransitionStub.java,v 1.6 2007-08-22 15:04:51 rensink Exp $
+ * $Id: AbstractGraphTransitionStub.java,v 1.7 2007-09-15 17:25:10 rensink Exp $
  */
 package groove.lts;
 
@@ -27,7 +27,7 @@ import groove.trans.RuleEvent;
  * ({@link SymmetryTransitionStub}) and one that is not ({@link SymmetryTransitionStub}).
  * The only abstract method is {@link #toTransition(GraphState)}.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     /**
@@ -103,7 +103,7 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
 	 */
     @Override
     public int hashCode() {
-        return System.identityHashCode(getEvent()) + System.identityHashCode(target());
+        return getEvent().identityHashCode() + target().hashCode();
     }
 	
     /**

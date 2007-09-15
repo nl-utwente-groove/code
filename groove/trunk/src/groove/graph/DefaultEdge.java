@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultEdge.java,v 1.5 2007-09-10 19:13:32 rensink Exp $
+ * $Id: DefaultEdge.java,v 1.6 2007-09-15 17:25:26 rensink Exp $
  */
 package groove.graph;
 
@@ -24,7 +24,7 @@ import java.util.TreeMap;
  * Default implementation of an (immutable) graph edge, as a triple consisting of
  * source and target nodes and an arbitrary label.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-09-10 19:13:32 $
+ * @version $Revision: 1.6 $ $Date: 2007-09-15 17:25:26 $
  */
 public class DefaultEdge extends AbstractBinaryEdge {
 	/**
@@ -69,17 +69,17 @@ public class DefaultEdge extends AbstractBinaryEdge {
     // In principle, equality is determined by object identity,
     // but for the purpose of looking up canonical edge objects we need to
     // test the parts instead.
-    /** 
-     * For efficiency, this implementation tests for object equality.
-     * It is, however, considered an error if two distinct {@link DefaultEdge} objects have the 
-     * same source and target nodes and the same label.
-     */
-    @Override
-    public boolean equals(Object obj) {
-        boolean result = this == obj;
-        assert result || !super.equals(obj) : String.format("Distinct edges with same appearance (%s)", toString());
-        return result;
-    }
+//    /** 
+//     * For efficiency, this implementation tests for object equality.
+//     * It is, however, considered an error if two distinct {@link DefaultEdge} objects have the 
+//     * same source and target nodes and the same label.
+//     */
+//    @Override
+//    public boolean equals(Object obj) {
+//        boolean result = this == obj;
+//        assert result || !super.equals(obj) : String.format("Distinct edges with same appearance (%s)", toString());
+//        return result;
+//    }
 
     /**
      * Creates an default edge from a given source node, label text and target node.
@@ -137,5 +137,5 @@ public class DefaultEdge extends AbstractBinaryEdge {
      * A identity map, mapping previously created instances of {@link DefaultEdge}
      * to themselves. Used to ensure that edge objects are reused.
      */
-    static private final Map<DefaultEdge,DefaultEdge> edgeMap = new TreeMap<DefaultEdge,DefaultEdge>();
+    static private final Map<DefaultEdge,DefaultEdge> edgeMap = new HashMap<DefaultEdge,DefaultEdge>();
 }

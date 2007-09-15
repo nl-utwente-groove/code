@@ -25,6 +25,7 @@ import groove.util.TransformIterator;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
@@ -280,7 +281,7 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	 * should really be a set.
 	 */
     protected Set<RuleApplication> createApplicationSet() {
-        return new HashSet<RuleApplication>();
+        return new LinkedHashSet<RuleApplication>();
     }
 
     /** Callback method to provide the graph on which the applier works. */

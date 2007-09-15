@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.24 2007-09-04 20:59:29 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.25 2007-09-15 17:25:24 rensink Exp $
  */
 package groove.trans;
 
@@ -39,7 +39,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -465,7 +465,11 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      */
     @Override
     public int hashCode() {
-        return System.identityHashCode(this);
+    	if (! identityHashCodeSet) {
+    		identityHashCode = System.identityHashCode(this);
+    		identityHashCodeSet = true;
+    	}
+    	return identityHashCode;
     }
     
     /**
@@ -726,6 +730,16 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     private MatchStrategy matcher;
     /** The variables occurring in edges of the target (i.e., the codomain). */
     private Set<String> targetVars;
+	/**
+	 * Flag indicating that {@link #identityHashCode} has been computed
+	 * and assigned.
+	 */
+	private boolean identityHashCodeSet;
+	/**
+	 * Hash code based on the identity, rather than the content, of
+	 * the event.
+	 */
+    private int identityHashCode;
     /**
      * The fixed matching order for this graph condition.
      * Initially <code>null</code>; set by {@link #getSearchPlan()} upon its
