@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlState.java,v 1.3 2007-08-26 07:23:33 rensink Exp $
+ * $Id: ControlState.java,v 1.4 2007-09-16 21:44:31 rensink Exp $
  */
 package groove.control;
 
@@ -54,13 +54,12 @@ public class ControlState implements State, Location {
 	}
 
 	public int compareTo(Element obj) {
-		// TODO Auto-generated method stub
 		return getStateNumber() - ((ControlState) obj).getStateNumber();
 	}
 
+	@Deprecated
 	public Element imageFor(NodeEdgeMap elementMap) {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 
 	public int getStateNumber()
@@ -70,14 +69,12 @@ public class ControlState implements State, Location {
 	
 	@Deprecated
 	public State newState() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 	
 	@Deprecated
 	public Node newNode() {
-		// TODO Auto-generated method stub
-		return null;
+		throw new UnsupportedOperationException();
 	}
 	
 	public void add(ControlTransition transition) {

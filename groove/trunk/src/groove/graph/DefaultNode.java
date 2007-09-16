@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.9 2007-09-10 19:13:32 rensink Exp $
+ * $Id: DefaultNode.java,v 1.10 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-09-10 19:13:32 $
+ * @version $Revision: 1.10 $ $Date: 2007-09-16 21:44:23 $
  */
 public class DefaultNode implements Node {
     /**
@@ -52,6 +52,7 @@ public class DefaultNode implements Node {
 
     // ---------------- Element and related methods ----------------------
 
+    @Deprecated
     public Node imageFor(NodeEdgeMap elementMap) {
         return elementMap.getNode(this);
     }
@@ -165,7 +166,7 @@ public class DefaultNode implements Node {
      */
     static public DefaultNode createNode(int nr) {
         if (nr >= nodes.length) {
-            int newSize = Math.max(nodes.length, nr+1);
+            int newSize = Math.max((int)(nodes.length*GROWTH_FACTOR), nr+1);
             DefaultNode[] newNodes = new DefaultNode[newSize];
             System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
             nodes = newNodes;
@@ -236,9 +237,11 @@ public class DefaultNode implements Node {
      * First (potentially) fresh node number available.
      */
     static private int nextNodeNr;
-    
+
     /** Initial capacity of the nodes array. */
     static private final int INIT_CAPACITY = 100;
+    /** Growth factor of the nodes array. */
+    static private final float GROWTH_FACTOR = 2.0f;
     /** Array of canonical nodes, such that <code>nodes[i] == 0</code> or
      * <code>nodes[i].getNumber() == i</code> for all <code>i</code>. 
      */

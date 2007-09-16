@@ -12,15 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeEdgeHashMap.java,v 1.3 2007-05-14 18:52:01 rensink Exp $
+ * $Id: NodeEdgeHashMap.java,v 1.4 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Default implementation of a generic node-edge-map.
- * The implementation is based on two internally stored hash maps.
+ * The implementation is based on two internally stored hash maps, for
+ * the nodes and edges.
+ * Labels are not translated.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class NodeEdgeHashMap extends GenericNodeEdgeHashMap<Node, Node, Edge, Edge> implements NodeEdgeMap {
 	/** Constructs a copy of another node-edge-map. */
@@ -53,6 +55,58 @@ public class NodeEdgeHashMap extends GenericNodeEdgeHashMap<Node, Node, Edge, Ed
 	/** This implementation acts as the identity function. */
 	public Label getLabel(Label label) {
 		return label;
+	}
+
+	/** 
+	 * If no edge image is stored, this implementation invokes {@link #createImage(Edge)}.
+	 */
+	public Edge mapEdge(Edge key) {
+		Edge result = getEdge(key);
+		if (result == null) {
+			putEdge(key, result = createImage(key));
+		}
+		return result;
+	}
+
+	/** 
+	 * Callback method to create an edge image for {@link #mapEdge(Edge)}.
+	 * This implementation creates a {@link DefaultFlag} or {@link DefaultEdge}
+	 * if the map contains images for the key's end nodes.
+	 */
+	protected Edge createImage(Edge key) {
+		Node sourceImage = getNode(key.source());
+		if (sourceImage == null) {
+			return null;
+		} 
+		Label labelImage = getLabel(key.label());
+		if (labelImage == null) {
+			return null;
+		}
+		if (key instanceof UnaryEdge) {
+			return createUnaryEdge(sourceImage, labelImage);
+		} else {
+			assert key instanceof BinaryEdge : String.format("Hyper-edge %s node supperted", key);
+			Node targetImage = getNode(key.opposite());
+			if (targetImage == null) {
+				return null;
+			} else {
+				return createBinaryEdge(sourceImage, labelImage, targetImage);
+			}
+		}
+	}
+
+	/**
+	 * Callback method to create a unary edge image.
+	 */
+	protected UnaryEdge createUnaryEdge(Node sourceImage, Label labelImage) {
+		return new DefaultFlag(sourceImage, labelImage);
+	}
+
+	/**
+	 * Callback method to create a binary edge image.
+	 */
+	protected BinaryEdge createBinaryEdge(Node sourceImage, Label labelImage, Node targetImage) {
+		return DefaultEdge.createEdge(sourceImage, labelImage, targetImage);
 	}
 
 	@Override

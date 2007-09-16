@@ -12,12 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RelationEdge.java,v 1.3 2007-09-07 19:13:38 rensink Exp $
+ * $Id: RelationEdge.java,v 1.4 2007-09-16 21:44:32 rensink Exp $
  */
 package groove.rel;
 
-import groove.graph.DefaultEdge;
+import groove.graph.AbstractBinaryEdge;
+import groove.graph.BinaryEdge;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
+import groove.graph.Label;
 import groove.graph.Node;
 
 /**
@@ -27,14 +30,14 @@ import groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RelationEdge<V> extends DefaultEdge {
+public class RelationEdge<V> extends AbstractBinaryEdge {
 	/** Yields a string description of a {@link RelationType} value. */
 	public static String typeToString(RelationType type) {
 		return "["+type.getText()+"]";
 	}
 
 	/**
-	 * Constructrs a relation edge of a given type, with associated value <code>null</code>.
+	 * Constructs a relation edge of a given type, with associated value <code>null</code>.
 	 * @param source source node of the edge
 	 * @param type type of the relation edge
 	 * @param target target node of the edge
@@ -44,14 +47,14 @@ public class RelationEdge<V> extends DefaultEdge {
 	}
 
 	/**
-	 * Constructrs a relation edge of a given type, with a given associated value.
+	 * Constructs a relation edge of a given type, with a given associated value.
 	 * @param source source node of the edge
 	 * @param type type of the relation edge
 	 * @param target target node of the edge
 	 * @param value associated value
 	 */
 	public RelationEdge(Node source, RelationType type, Node target, V value) {
-		super(source, typeToString(type), target);
+		super(source, DefaultLabel.createLabel(typeToString(type)), target);
 		this.value = value;
 		this.type = type;
 	}
@@ -97,6 +100,12 @@ public class RelationEdge<V> extends DefaultEdge {
 	/** Callback method for testing equality of type and value. */
 	protected boolean isValueEqual(RelationEdge<?> other) {
 		return type.equals(other.getType()) && (value == null ? other.value == null : value.equals(other.getValue()));
+	}
+
+	@Override
+	@Deprecated
+	public BinaryEdge newEdge(Node source, Label label, Node target) {
+		throw new UnsupportedOperationException();
 	}
 
 	/**

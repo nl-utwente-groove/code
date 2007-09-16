@@ -12,18 +12,22 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractStrategy.java,v 1.7 2007-04-27 22:06:58 rensink Exp $
+ * $Id: AbstractStrategy.java,v 1.8 2007-09-16 21:44:29 rensink Exp $
  */
 package groove.lts.explore;
 
+import groove.graph.DeltaGraphFactory;
 import groove.graph.Edge;
+import groove.graph.FixedDeltaGraph;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.State;
+import groove.lts.StateCache;
 import groove.lts.StateGenerator;
+import groove.trans.SystemRecord;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -31,7 +35,7 @@ import java.util.Collection;
 /**
  * Abstract LTS exploration strategy.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public abstract class AbstractStrategy extends StateGenerator implements ExploreStrategy {
 //	/** 
@@ -118,43 +122,24 @@ public abstract class AbstractStrategy extends StateGenerator implements Explore
      */
     @Override
     public void setGTS(GTS gts) {
+        StateCache.setGraphFactory(createGraphFactory());
+        StateCache.setFreezeGraphs(isFreezeGraphs());
+        SystemRecord.setReuseEvents(isReuseEvents());
         super.setGTS(gts);
         setAtState(gts.startState());
         if (collector != null) {
         	collector.setGTS(gts);
         }
     }
-//
-//    /**
-//     * Returns the underlying lts that is being explored.
-//     * @return the underlying lts being explored
-//     */
-//    public GTS getGTS() {
-//        return lts;
-//    }
     
     @Override
     public String toString() {
         String result = getName();
-//        if (toDepth != NO_TO_DEPTH) {
-//            result += "  to depth " + toDepth;
-//        }
         if (getGTS() != null && atState != null && atState != getGTS().startState()) {
             result += " (starting at " + atState + ")";
         }
         return result;
     }
-//
-//    /**
-//	 * Lazily creates and returns the state generator for this strategy.
-//	 * @return a generator for the current GTS; never <code>null</code>
-//	 */
-//	protected StateGenerator getGenerator() {
-////	    if (generator == null) {
-////	    	generator = new StateGenerator(getLTS());
-////	    }
-//	    return generator;
-//	}
 
 	/**
      * Callback method to create the (initially empty) collection of open states 
@@ -184,19 +169,30 @@ public abstract class AbstractStrategy extends StateGenerator implements Explore
     	return collector;
     }
     
-//    /**
-//     * The current graph deriver.
-//     */
-//    private final StateGenerator generator;
-//    /**
-//     * The currently set LTS.
-//     */
-//    private GTS lts;
-//    /**
-//     * The currently set exploration depth.
-//     * @invariant <tt>toDepth >= 0</tt>
-//     */
-//    private int toDepth = 0;
+    /** 
+     * Callback factory method for the graph factory, 
+     * to be used in a call of StateCache#setGraphFactory(). 
+     */
+    DeltaGraphFactory createGraphFactory() {
+    	return FixedDeltaGraph.getInstance();
+    }
+    
+    /** 
+     * Callback method to determine if state graphs should be frozen.
+     * to be used as parameter in a call of {@link StateCache#setFreezeGraphs(boolean)}.
+     */
+    boolean isFreezeGraphs() {
+    	return true;
+    }
+    
+    /** 
+     * Callback method to determine if rule events should be reused.
+     * To be used as parameter in a call of {@link SystemRecord#setReuseEvents(boolean)}.
+     */
+    boolean isReuseEvents() {
+    	return true;
+    }
+    
     /**
      * The currently set start state for the exploration.
      * @invariant <tt>lts.containsNode(atState)</tt>
@@ -214,7 +210,7 @@ public abstract class AbstractStrategy extends StateGenerator implements Explore
 			// empty
 		}
 		/**
-		 * Sets the result set to an alial of a given set.
+		 * Sets the result set to an alias of a given set.
 		 */
 		public void set(Collection<GraphState> result){
 			this.result = result;

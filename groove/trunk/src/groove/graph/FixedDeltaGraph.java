@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FixedDeltaGraph.java,v 1.10 2007-09-14 11:48:21 rensink Exp $
+ * $Id: FixedDeltaGraph.java,v 1.11 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
@@ -187,7 +187,12 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		testNodeEdgeMap();
 		return nodeEdgeMap;
 	}
-	
+
+	@Override
+	public Set<? extends Edge> edgeSet(Node node) {
+		return nodeEdgeMap().get(node);
+	}
+
 	/** 
 	 * Computes the node-to-edgeset map from the node and edge sets.
 	 * This method is only used if the map could not be obtained from the basis.

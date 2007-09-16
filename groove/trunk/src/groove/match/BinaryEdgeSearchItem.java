@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BinaryEdgeSearchItem.java,v 1.1 2007-09-15 17:25:27 rensink Exp $
+ * $Id: BinaryEdgeSearchItem.java,v 1.2 2007-09-16 21:44:30 rensink Exp $
  */
 package groove.match;
 
@@ -286,19 +286,35 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
             // it does not pay off here to take only the incident edges of pre-matched ends,
             // no doubt because building the necessary additional data structures takes more
             // time than is saved by trying out fewer images
-            return filterImages(getTarget().labelEdgeSet(arity, label), false);
+//            return filterImages(getTarget().labelEdgeSet(arity, label), false);
+        	Set<? extends Edge> labelEdgeSet = getTarget().labelEdgeSet(arity, label);
+        	if (sourcePreMatch != null) {
+        		Set<? extends Edge> nodeEdgeSet = getTarget().edgeSet(sourcePreMatch);
+        		if (nodeEdgeSet.size() < labelEdgeSet.size()) {
+        			return filterImages(getTarget().edgeSet(sourcePreMatch), true);
+        		}
+			} else if (targetPreMatch != null) {
+        		Set<? extends Edge> nodeEdgeSet = getTarget().edgeSet(targetPreMatch);
+        		if (nodeEdgeSet.size() < labelEdgeSet.size()) {
+        			return filterImages(getTarget().edgeSet(targetPreMatch), true);
+        		}
+			}
+        	return filterImages(getTarget().labelEdgeSet(arity, label), false);
         }
         
         /**
-         * Returns an iterator over the elements of a given image set,
-         * which filters the edges for which {@link #setEnds(Edge)} is successful.
-         * As a side effect, calls {@link #setEdge(Edge)} with the selected image
-         * before returning it.
-         * @param images the set of potential images
-         * @param checkLabel flag to indicate if #selectLabel(Edge) should also be called
-         * before selecting an edge
-         */
-        Iterator<? extends Edge> filterImages(Collection<? extends Edge> images, final boolean checkLabel) {
+		 * Returns an iterator over the elements of a given image set, which
+		 * filters the edges for which {@link #setEnds(Edge)} is successful. As
+		 * a side effect, calls {@link #setEdge(Edge)} with the selected image
+		 * before returning it.
+		 * 
+		 * @param images
+		 *            the set of potential images
+		 * @param checkLabel
+		 *            flag to indicate if #selectLabel(Edge) should also be
+		 *            called before selecting an edge
+		 */
+        Iterator<? extends Edge> filterImages(final Collection<? extends Edge> images, final boolean checkLabel) {
             return new FilterIterator<Edge>(images.iterator()) {
                 @Override
                 protected boolean approves(Object obj) {

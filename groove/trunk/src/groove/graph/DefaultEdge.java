@@ -12,21 +12,22 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultEdge.java,v 1.6 2007-09-15 17:25:26 rensink Exp $
+ * $Id: DefaultEdge.java,v 1.7 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
+import groove.util.TreeHashSet3;
+
 import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
 
 /**
  * Default implementation of an (immutable) graph edge, as a triple consisting of
  * source and target nodes and an arbitrary label.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-09-15 17:25:26 $
+ * @version $Revision: 1.7 $ $Date: 2007-09-16 21:44:23 $
  */
-public class DefaultEdge extends AbstractBinaryEdge {
+final public class DefaultEdge extends AbstractBinaryEdge {
 	/**
      * Constructs a new edge on the basis of a given source, label text and target.
      * The label created will be a {@link DefaultLabel}.
@@ -38,7 +39,7 @@ public class DefaultEdge extends AbstractBinaryEdge {
      *         <tt>label().text().equals(text)</tt>,
      *         <tt>target()==target </tt>
      */
-    protected DefaultEdge(Node source, String text, Node target) {
+    private DefaultEdge(Node source, String text, Node target) {
         this(source,DefaultLabel.createLabel(text),target);
     }
 
@@ -52,7 +53,7 @@ public class DefaultEdge extends AbstractBinaryEdge {
      *         <tt>label()==label</tt>,
      *         <tt>target()==target </tt>
      */
-    protected DefaultEdge(Node source, Label label, Node target) {
+    private DefaultEdge(Node source, Label label, Node target) {
         super(source, label, target);
     }
 
@@ -62,24 +63,22 @@ public class DefaultEdge extends AbstractBinaryEdge {
      * This implementation returns a {@link DefaultEdge}.
      */
     @Override
+    @Deprecated
     public BinaryEdge newEdge(Node source, Label label, Node target) {
         return DefaultEdge.createEdge(source, label, target);
     }
 
-    // In principle, equality is determined by object identity,
-    // but for the purpose of looking up canonical edge objects we need to
-    // test the parts instead.
-//    /** 
-//     * For efficiency, this implementation tests for object equality.
-//     * It is, however, considered an error if two distinct {@link DefaultEdge} objects have the 
-//     * same source and target nodes and the same label.
-//     */
-//    @Override
-//    public boolean equals(Object obj) {
-//        boolean result = this == obj;
-//        assert result || !super.equals(obj) : String.format("Distinct edges with same appearance (%s)", toString());
-//        return result;
-//    }
+    /** 
+     * For efficiency, this implementation tests for object equality.
+     * It is, however, considered an error if two distinct {@link DefaultEdge} objects have the 
+     * same source and target nodes and the same label.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        boolean result = this == obj;
+        assert result || !super.equals(obj) : String.format("Distinct edges with same appearance (%s)", toString());
+        return result;
+    }
 
     /**
      * Creates an default edge from a given source node, label text and target node.
@@ -113,10 +112,10 @@ public class DefaultEdge extends AbstractBinaryEdge {
         assert target != null : "Target node of default edge should not be null";
         assert label != null : "Label of default edge should not be null";
         DefaultEdge edge = new DefaultEdge(source, label, target);
-        DefaultEdge result = DefaultEdge.edgeMap.get(edge);
+        DefaultEdge result = DefaultEdge.edgeSet.put(edge);
         if (result == null) {
             result = edge;
-            DefaultEdge.edgeMap.put(edge, result);
+//            DefaultEdge.edgeMap.put(edge, result);
         }
         return result;
     }
@@ -125,17 +124,32 @@ public class DefaultEdge extends AbstractBinaryEdge {
      * Returns the total number of default edges created.
      */
     static public int getEdgeCount() {
-        return edgeMap.size();
+        return edgeSet.size();
     }
 
     /** Clears the store of canonical edges. */
     static public void clearEdgeMap() {
-        edgeMap.clear();
+        edgeSet.clear();
     }
     
+//    /**
+//     * An identity map, mapping previously created instances of {@link DefaultEdge}
+//     * to themselves. Used to ensure that edge objects are reused.
+//     */
+//    static private final Map<DefaultEdge,DefaultEdge> edgeMap = new HashMap<DefaultEdge,DefaultEdge>();
     /**
      * A identity map, mapping previously created instances of {@link DefaultEdge}
      * to themselves. Used to ensure that edge objects are reused.
      */
-    static private final Map<DefaultEdge,DefaultEdge> edgeMap = new HashMap<DefaultEdge,DefaultEdge>();
+    static private final TreeHashSet3<DefaultEdge> edgeSet = new TreeHashSet3<DefaultEdge>(new TreeHashSet3.Equator() {
+		public boolean areEqual(Object o1, Object o2) {
+			DefaultEdge e1 = (DefaultEdge) o1;
+			DefaultEdge e2 = (DefaultEdge) o2;
+			return e1.source().equals(e2.source()) && e1.target().equals(e2.target()) && e1.label().equals(e2.label());
+		}
+
+		public int getCode(Object key) {
+			return key.hashCode();
+		}    	
+    });
 }

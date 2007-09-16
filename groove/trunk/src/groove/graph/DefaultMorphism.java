@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMorphism.java,v 1.11 2007-08-29 11:07:53 rensink Exp $
+ * $Id: DefaultMorphism.java,v 1.12 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
@@ -26,7 +26,7 @@ import java.util.Map;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class DefaultMorphism extends AbstractMorphism {
     /**
@@ -59,18 +59,7 @@ public class DefaultMorphism extends AbstractMorphism {
     }
 
     /**
-     * Constructs a new morphism as a clone of another with a given rule factory.
-     * @param morph the morphism to be cloned
-     * @param ruleFactory the rule factory to be used for creating a simulation
-     */
-//    public DefaultMorphism(Morphism morph, RuleFactory ruleFactory) {
-//    	this(morph);
-//    	setRuleFactory(ruleFactory);
-//    	this.ruleFactory = ruleFactory;
-//    }
-
-    /**
-     * Constructs a protytpe object of this class, to be used as a factory
+     * Constructs a prototype object of this class, to be used as a factory
      * for new (default) morphisms. The prototype is only intended to
      * be used for its <tt>newMorphism()</tt> method.
      * @see #prototype

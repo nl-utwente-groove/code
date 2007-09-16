@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.18 2007-09-15 07:46:24 rensink Exp $
+ * $Id: GTS.java,v 1.19 2007-09-16 21:44:27 rensink Exp $
  */
 package groove.lts;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.18 $ $Date: 2007-09-15 07:46:24 $
+ * @version $Revision: 1.19 $ $Date: 2007-09-16 21:44:27 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -84,9 +84,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     
     /**
      * Constructs a GTS from a (fixed) graph grammar.
-     * @ensure <tt>startState().isEmpty()</tt> and
-     * <tt>nodeSet().contains(startState())</tt> and
-     * <tt>getExploreStarategy() instanceof FullStrategy</tt>
      */
     public GTS(GraphGrammar grammar) {
         this(grammar, true);
@@ -102,11 +99,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     	grammar.testFixed(true);
         this.ruleSystem = grammar;
         this.storeTransitions = storeTransitions;
-        this.startState = computeStartState(grammar.getStartGraph());
         this.checkIsomrophism = getGrammar().getProperties().isCheckIsomorphism();
-        addState(startState);
-//        this.strategy = new FullStrategy();
-//        this.strategy.setLTS(this);
     }
 
     /**
@@ -116,7 +109,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     protected GraphState computeStartState(Graph startGraph) {
         GraphState result = createStartState(startGraph);
-        result.getGraph().setFixed();
+//        result.getGraph().setFixed();
         return result;
     }
 
@@ -138,50 +131,12 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     /** This implementation specialises the return type to {@link GraphState}. */
     public GraphState startState() {
+    	if (startState == null) {
+    		startState = computeStartState(getGrammar().getStartGraph());
+    		addState(startState);
+    	}
         return startState;
     }
-//
-//    /** @deprecated */
-//    @Deprecated
-//    public Collection<? extends GraphState> nextStates(State state) {
-//        freshNextStates(state);
-//        return ((GraphState) state).getNextStateSet();
-//    }
-//    
-//    /** @deprecated */
-//    @Deprecated
-//    public Iterator<? extends GraphState> nextStateIter(final State state) {
-//        if (state.isClosed()) {
-//            // get the next states from the outgoing edges
-//            return ((GraphState) state).getNextStateIter();
-//        } else {
-//            final Iterator<RuleApplication> derivationIter = getDeriver().getDerivationIter(((GraphState) state).getGraph());
-//            if (!derivationIter.hasNext()) {
-//                finalStates.add((GraphState) state);
-//            }
-//            // get the next states by adding transitions for the derivations
-//            return new TransformIterator<RuleApplication,GraphState>(derivationIter) {
-//            	@Override
-//                public boolean hasNext() {
-//                    if (hasNext) {
-//                        hasNext = super.hasNext();
-//                        if (!hasNext) {
-//                            setClosed(state);
-//                        }
-//                    }
-//                    return hasNext;
-//                }
-//
-//            	@Override
-//                protected GraphState toOuter(RuleApplication from) {
-//                    return addTransition(from);
-//                }
-//                
-//                private boolean hasNext = true;
-//            };
-//        }
-//    }
-//    
     
     /**
      * Returns the rule system underlying this GTS.
@@ -202,7 +157,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         return getFinalStates().contains(state);
     }
 
-    /** Adds a given state to the final states of theis GTS. */
+    /** Adds a given state to the final states of this GTS. */
     public void setFinal(State state) {
         finalStates.add((GraphState) state);
     }
@@ -395,7 +350,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * The start state of this LTS.
      * @invariant <tt>nodeSet().contains(startState)</tt>
      */
-    private final GraphState startState;
+    private GraphState startState;
     
     /**
      * The rule system generating this LTS.

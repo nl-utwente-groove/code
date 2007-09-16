@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractBinaryEdge.java,v 1.5 2007-08-26 07:23:41 rensink Exp $
+ * $Id: AbstractBinaryEdge.java,v 1.6 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
  * Abstract implementation of an (immutable) binary graph edge, as a tuple consisting of source and
  * target nodes.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-08-26 07:23:41 $
+ * @version $Revision: 1.6 $ $Date: 2007-09-16 21:44:23 $
  */
 abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryEdge {
     static {
@@ -43,6 +43,7 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
 
     // ----------------- Element methods ----------------------------
 
+    @Deprecated
     public Edge imageFor(NodeEdgeMap elementMap) {
         // if this edge has an explicit image in the map, use that
         Edge image = elementMap.getEdge(this);
@@ -116,19 +117,10 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
      * @param target target of the new edge
      * @ensure <tt>result.source() == source</tt>, <tt>result.label() == label</tt>,
      *         <tt>result.target() == target</tt>
+     * @deprecated Use another factory method
      */
+    @Deprecated
     abstract public BinaryEdge newEdge(Node source, Label label, Node target);
-
-    /**
-     * Factory method: constructs new edge between given nodes, with label taken from this one.
-     * Convenience method for <tt>newEdge(source, label(), target)</tt>.
-     * @param source source of the new edge
-     * @param target target of the new edge
-     * @see #newEdge(Node,Label,Node)
-     */
-    public BinaryEdge newEdge(Node source, Node target) {
-        return newEdge(source, this.label(), target);
-    }
 
     // -------------------- Object and related methods --------------------
 

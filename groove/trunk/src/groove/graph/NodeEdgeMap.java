@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeEdgeMap.java,v 1.2 2007-03-27 14:18:32 rensink Exp $
+ * $Id: NodeEdgeMap.java,v 1.3 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
@@ -39,6 +39,14 @@ public interface NodeEdgeMap extends GenericNodeEdgeMap<Node,Node,Edge,Edge> { /
 	boolean containsValue(Element elem);
 	/** Returns the image of a label under this map. */
 	Label getLabel(Label label);
+	/** 
+	 * Returns the image of an edge under this map,
+	 * creating the image if necessary. 
+	 * An image is created if the map does not contain an image but does
+	 * contain images for the end nodes and label.
+	 * The exact type of the created edge depends on the map instance.
+	 */
+	Edge mapEdge(Edge key);
 	/**
 	 * A public clone method returning a {@link NodeEdgeMap}.
 	 * @return a copy of this object

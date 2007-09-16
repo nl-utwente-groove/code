@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.18 2007-09-15 17:25:24 rensink Exp $
+ * $Id: SPOApplication.java,v 1.19 2007-09-16 21:44:30 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.18 $ $Date: 2007-09-15 17:25:24 $
+ * @version $Revision: 1.19 $ $Date: 2007-09-16 21:44:30 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -155,7 +155,7 @@ public class SPOApplication implements RuleApplication, Derivation {
     	Set<Edge> erasedEdges = getErasedEdges();
     	for (Edge edge: source.edgeSet()) {
 			if (!erasedEdges.contains(edge)) {
-				Edge edgeImage = edge.imageFor(mergeMap);
+				Edge edgeImage = mergeMap.mapEdge(edge);
 				if (edgeImage != null && getTarget().containsElement(edgeImage)) {
 					result.putEdge(edge, edgeImage);
 				}
@@ -358,7 +358,7 @@ public class SPOApplication implements RuleApplication, Derivation {
             Set<Edge> erasedEdges = getErasedEdges();
             for (Edge sourceEdge: source.edgeSet()) {
                 if (!erasedEdges.contains(sourceEdge)) {
-                    Edge image = sourceEdge.imageFor(mergeMap);
+                    Edge image = mergeMap.mapEdge(sourceEdge);
                     if (image != sourceEdge) {
 						target.removeEdge(sourceEdge);
 						// if the edge is in the source and not erased, it is also already
@@ -407,7 +407,7 @@ public class SPOApplication implements RuleApplication, Derivation {
             }
             // now compute and add the complex creator edge images
             for (Edge edge: getRule().getComplexCreatorEdges()) {
-                Edge image = edge.imageFor(getCoanchorMap());
+                Edge image = getCoanchorMap().mapEdge(edge);
                 // only add if the image exists
                 if (image != null) {
                 	addEdge(target, image);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MergeMap.java,v 1.4 2007-09-07 19:13:37 rensink Exp $
+ * $Id: MergeMap.java,v 1.5 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
@@ -24,9 +24,9 @@ import java.util.Set;
 /**
  * Variation on a map that only stores non-identity mappings for nodes; hence
  * anything not explicitly set to a particular value defaults to identity.
- * This is actually not a map, in that the entries do not reflect the actual mapping.
+ * This is actually not a proper node/edge map, in that the entries do not reflect the actual mapping.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class MergeMap extends NodeEdgeHashMap {
     /** Internal representation of undefined. */
@@ -77,7 +77,21 @@ public class MergeMap extends NodeEdgeHashMap {
 		return keyImage;
 	}
     
-    /**
+    /** 
+     * This implementation returns the identical edge if
+     * the end nodes are also mapped to themselves.
+     */
+    @Override
+	public Edge mapEdge(Edge key) {
+    	Map<Node,Node> nodeMap = nodeMap();
+    	if (! nodeMap.containsKey(key.source()) && ! nodeMap.containsKey(key.opposite())) {
+    		return key;
+    	} else {
+    		return super.mapEdge(key);
+    	}
+	}
+
+	/**
      * Merges a given key and image.
      * This means that the key and its current pre-images will be
      * mapped to the image. 

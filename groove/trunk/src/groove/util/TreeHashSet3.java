@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TreeHashSet3.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: TreeHashSet3.java,v 1.3 2007-09-16 21:44:29 rensink Exp $
  */
 package groove.util;
 
@@ -28,14 +28,14 @@ import java.util.Set;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:28 $
+ * @version $Revision: 1.3 $ $Date: 2007-09-16 21:44:29 $
  */
 public class TreeHashSet3<T> extends AbstractSet<T> {
 	/**
 	 * Interface used for testing whether two elements with the same hash
 	 * code are actually equal.
 	 */
-	static protected interface Equator {
+	static public interface Equator {
 	    public int getCode(Object key);
         
 		/**
@@ -180,7 +180,7 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
 		// initialize the keys and tree
 		this.codes = new int[1 + capacity];
 		this.keys = new Object[1 + capacity];
-		this.tree = new int[WIDTH * capacity];
+		this.tree = new int[capacity];
 	}
 	
 	public TreeHashSet3(int capacity) {
@@ -673,19 +673,18 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
 	 * position of the new branch.
 	 */
     private int newBranchIndex() {
-    	int treeSize = size == 0 ? 0 : this.treeSize;
-    	int result = treeSize;
-    	treeSize += result == 0 ? ROOT_WIDTH : WIDTH;
-    	if (treeSize >= tree.length) {
+    	int result = size == 0 ? 0 : this.treeSize;
+    	int upper = result + (result == 0 ? ROOT_WIDTH : WIDTH);
+    	if (upper > tree.length) {
     		// extend the length of the next array
-    		int[] newTree = new int[(int) (1.4 * treeSize)];
+    		int[] newTree = new int[(int) (1.4 * upper)];
     		System.arraycopy(tree, 0, newTree, 0, tree.length);
 			tree = newTree;
 		} else {
 			// clean the new fragment of the next array
-			Arrays.fill(tree, result, treeSize, 0);
+			Arrays.fill(tree, result, upper, 0);
 		}
-    	this.treeSize = treeSize;
+    	this.treeSize = upper;
     	return result;
     }
     
@@ -858,7 +857,7 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
     /**
      * Number of bits involved in the root.
      */
-    static private final int ROOT_RESOLUTION = 7;
+    static private final int ROOT_RESOLUTION = 4;
     /**
      * The width of a single branch.
      * This equals <code>2^resolution</code>.

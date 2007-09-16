@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.10 2007-08-22 15:04:51 rensink Exp $
+ * $Id: DefaultGraphTransition.java,v 1.11 2007-09-16 21:44:27 rensink Exp $
  */
 package groove.lts;
 
@@ -32,7 +32,7 @@ import groove.trans.RuleEvent;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-08-22 15:04:51 $
+ * @version $Revision: 1.11 $ $Date: 2007-09-16 21:44:27 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphTransitionStub, GraphTransition {
     /** The total number of anchor images created. */
@@ -204,6 +204,7 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
      * This implementation throws an {@link UnsupportedOperationException} always.
      */
 	@Override
+	@Deprecated
     public Transition imageFor(NodeEdgeMap elementMap) {
         throw new UnsupportedOperationException("Transition images are currenty not supported");
     }
@@ -248,6 +249,7 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
 
     /** Always throws an <tt>UnsupportedOperationException</tt>. */
 	@Override
+	@Deprecated
     public BinaryEdge newEdge(Node source, Label label, Node target) {
         throw new UnsupportedOperationException();
     }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: HyperEdge.java,v 1.5 2007-08-26 07:23:40 rensink Exp $
+ * $Id: HyperEdge.java,v 1.6 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
  * General edge implementation.
  * Don't use it if efficiency is a concern!
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class HyperEdge extends AbstractEdge {
     /**
@@ -40,6 +40,7 @@ public class HyperEdge extends AbstractEdge {
     	return result;
     }
 
+    @Deprecated
     public Edge imageFor(NodeEdgeMap elementMap) {
         Node[] endImages = new Node[endCount()];
         for (int i = 0; i < endImages.length; i++) {

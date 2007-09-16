@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoEdgeSearchItem.java,v 1.5 2007-08-26 07:23:10 rensink Exp $
+ * $Id: IsoEdgeSearchItem.java,v 1.6 2007-09-16 21:44:29 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -40,7 +40,7 @@ public class IsoEdgeSearchItem extends EdgeSearchItem<Edge> {
 		 */
 		@Override
 		protected void initImages() {
-			Edge image = edge.imageFor(matcher.getSingularMap());
+			Edge image = matcher.getSingularMap().mapEdge(edge);
 			setSingular(image);
 		}
 	}
