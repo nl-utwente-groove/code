@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.9 2007-08-24 17:34:51 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.10 2007-09-16 21:44:31 rensink Exp $
  */
 package groove.graph.match;
 
@@ -221,7 +221,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		 */
 		protected void initImages() {
 			if (isAllEndsBound()) {
-				Edge image = edge.imageFor(matcher.getSingularMap());
+				Edge image = matcher.getSingularMap().mapEdge(edge);
 				assert image != null : String.format("%s has no image in %s", edge, matcher.getSingularMap());
 				if (matcher.cod().containsElement(image)) {
 					setSingular(image);
@@ -403,7 +403,7 @@ public class EdgeSearchItem<E extends Edge> implements SearchItem {
 		 * potential image is not in the codomain.
 		 */
 		protected Edge computeSingular() {
-			Edge result = edge.imageFor(matcher.getSingularMap());
+			Edge result = matcher.getSingularMap().mapEdge(edge);
 			assert result != null;
 			if (! matcher.cod().containsElement(result)) {
 				result = null;

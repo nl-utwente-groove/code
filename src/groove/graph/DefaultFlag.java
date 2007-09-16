@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultFlag.java,v 1.3 2007-08-26 07:23:41 rensink Exp $
+ * $Id: DefaultFlag.java,v 1.4 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
  * Default implementation of an (immutable) unary graph edge, as a tuple consisting of
  * a source node and a label.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-08-26 07:23:41 $
+ * @version $Revision: 1.4 $ $Date: 2007-09-16 21:44:23 $
  */
 public class DefaultFlag extends AbstractUnaryEdge {
 	/**
@@ -46,16 +46,15 @@ public class DefaultFlag extends AbstractUnaryEdge {
      */
     public DefaultFlag(Node source, Label label) {
         super(source, label);
-//        this.label = label;
-//        this.hashCode = computeHashCode();
     }
 
     // ----------------- Element methods ----------------------------
 
     /**
-     * This implamentation returns a {@link UnaryEdge}.
+     * This implementation returns a {@link UnaryEdge}.
      */
     @Override
+    @Deprecated
     public UnaryEdge newEdge(Node source, Label label) {
         return new DefaultFlag(source, label);
     }

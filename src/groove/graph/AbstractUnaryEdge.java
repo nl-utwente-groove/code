@@ -12,14 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractUnaryEdge.java,v 1.5 2007-08-26 07:23:41 rensink Exp $
+ * $Id: AbstractUnaryEdge.java,v 1.6 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Abstract implementation of an (immutable) unary graph edge, consisting of one source node only.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-08-26 07:23:41 $
+ * @version $Revision: 1.6 $ $Date: 2007-09-16 21:44:23 $
  */
 abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdge {
     static {
@@ -40,6 +40,7 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
 
     // ----------------- Element methods ----------------------------
 
+    @Deprecated
     public UnaryEdge imageFor(NodeEdgeMap elementMap) {
         Node sourceImage = elementMap.getNode(source());
         if (sourceImage == null) {
@@ -95,7 +96,9 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
      * @param label label of the new edge
      * @ensure <tt>result.source() == source</tt>, <tt>result.label() == label</tt>,
      *         <tt>result.target() == target</tt>
+     * @deprecated use other factory methods
      */
+    @Deprecated
     abstract public UnaryEdge newEdge(Node source, Label label);
 
     /**
@@ -103,7 +106,9 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
      * Convenience method for <tt>newEdge(source, label(), target)</tt>.
      * @param source source of the new edge
      * @see #newEdge(Node,Label)
+     * @deprecated use other factory methods
      */
+    @Deprecated
     public UnaryEdge newEdge(Node source) {
         return newEdge(source, this.label());
     }

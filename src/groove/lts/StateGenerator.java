@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.19 2007-08-22 15:04:51 rensink Exp $
+ * $Id: StateGenerator.java,v 1.20 2007-09-16 21:44:27 rensink Exp $
  */
 package groove.lts;
 
@@ -65,7 +65,7 @@ public class StateGenerator {
 
 	/**
 	 * Computes and returns the set of successor states of a given state,
-	 * insofar thay are not yet in the GTS at time of invocation.
+	 * insofar they are not yet in the GTS at time of invocation.
 	 * The states that are returned are added to the GTS first.
 	 * @param state the state for which the successors are to be generated;
 	 * assumed to be in the GTS
@@ -327,7 +327,7 @@ public class StateGenerator {
 			applier = new AliasRuleApplier(getRecord(), state);
 			
 			// control replaces dependencies
-			if( this.getGTS().startState().getControl() != null )
+			if( this.getGTS().getGrammar().getControl() != null )
 				AliasRuleApplier.setUseDependencies(false);
 			else
 				AliasRuleApplier.setUseDependencies(true);

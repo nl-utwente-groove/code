@@ -12,13 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductEdge.java,v 1.5 2007-09-07 19:13:42 rensink Exp $
+ * $Id: ProductEdge.java,v 1.6 2007-09-16 21:44:28 rensink Exp $
  */
 package groove.graph.algebra;
 
 import groove.algebra.Constant;
 import groove.algebra.Operation;
-import groove.graph.DefaultEdge;
+import groove.graph.AbstractBinaryEdge;
+import groove.graph.BinaryEdge;
+import groove.graph.DefaultLabel;
+import groove.graph.Label;
+import groove.graph.Node;
 
 /**
  * This class represents the edges in attributed graphs which support the
@@ -27,10 +31,10 @@ import groove.graph.DefaultEdge;
  * and the target-node should be an instance of {@link groove.graph.algebra.ValueNode}.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 // AREND I would call this OperatorEdge and unify it with ValueEdge
-public class ProductEdge extends DefaultEdge {
+public class ProductEdge extends AbstractBinaryEdge {
     /**
      * Constructs a product edge for a constant, which is always a self-edge.
      * @param target the source and target of the edge
@@ -42,12 +46,12 @@ public class ProductEdge extends DefaultEdge {
 
     /**
      * Constructs an edge for a given operation.
-     * @param source the product node that is the soruce of the edge
+     * @param source the product node that is the source of the edge
      * @param target the target node for the edge
      * @param operation the associated operation
      */
     public ProductEdge(ProductNode source, ValueNode target, Operation operation) {
-        super(source, operation.symbol(), target);
+        super(source, DefaultLabel.createLabel(operation.symbol()), target);
         this.operation = operation;
     }
 
@@ -94,6 +98,12 @@ public class ProductEdge extends DefaultEdge {
 	@Override
 	public ProductNode source() {
 		return (ProductNode) source;
+	}
+
+	@Override
+	@Deprecated
+	public BinaryEdge newEdge(Node source, Label label, Node target) {
+		throw new UnsupportedOperationException();
 	}
 
 	/** The operation represented by this edge. */

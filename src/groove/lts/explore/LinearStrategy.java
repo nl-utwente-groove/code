@@ -13,10 +13,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LinearStrategy.java,v 1.3 2007-07-25 13:56:44 kastenberg Exp $
+ * $Id: LinearStrategy.java,v 1.4 2007-09-16 21:44:29 rensink Exp $
  */
 package groove.lts.explore;
 
+import groove.graph.DeltaGraphFactory;
+import groove.graph.SwingDeltaGraph;
 import groove.lts.GraphState;
 import groove.lts.State;
 
@@ -30,7 +32,7 @@ import java.util.Iterator;
  * <i>maximal</i> state is found; that is, a state that only loops back to already explored states.
  * The maximum depth of the search can be set; a depth of 0 means unbounded depth.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class LinearStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
@@ -72,4 +74,22 @@ public class LinearStrategy extends AbstractStrategy {
     public String getShortDescription() {
         return STRATEGY_DESCRIPTION;
     }
+
+    /** Since this strategy does no backtracking, swing graphs are in order. */
+	@Override
+	DeltaGraphFactory createGraphFactory() {
+		return SwingDeltaGraph.getInstance();
+	}    
+
+    /** Since this strategy does no backtracking, graphs need not be frozen. */
+	@Override
+	boolean isFreezeGraphs() {
+		return false;
+	}    
+
+    /** Since this strategy does no backtracking, events need not be stored. */
+	@Override
+	boolean isReuseEvents() {
+		return false;
+	}    
 }

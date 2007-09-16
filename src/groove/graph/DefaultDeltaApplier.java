@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultDeltaApplier.java,v 1.2 2007-08-26 07:23:38 rensink Exp $
+ * $Id: DefaultDeltaApplier.java,v 1.3 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * Delta target that collects the addition and removal information 
  * and can play it back later, in the role of delta applier.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DefaultDeltaApplier implements DeltaApplier {
 	/**
@@ -50,9 +50,6 @@ public class DefaultDeltaApplier implements DeltaApplier {
 			for (Node addedNode: addedNodeSet) {
 				target.addNode(addedNode);
 			}
-			for (Node removedNode: removedNodeSet) {
-				target.removeNode(removedNode);
-			}
 		}
 		if (mode != NODES_ONLY) {
 			for (Edge addedEdge: addedEdgeSet) {
@@ -60,6 +57,12 @@ public class DefaultDeltaApplier implements DeltaApplier {
 			}
 			for (Edge removedEdge: removedEdgeSet) {
 				target.removeEdge(removedEdge);
+			}
+		}
+		// remove nodes only after the edges
+		if (mode != EDGES_ONLY) {
+			for (Node removedNode: removedNodeSet) {
+				target.removeNode(removedNode);
 			}
 		}
 	}

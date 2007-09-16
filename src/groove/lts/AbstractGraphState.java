@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.7 2007-08-22 15:04:51 rensink Exp $
+ * $Id: AbstractGraphState.java,v 1.8 2007-09-16 21:44:27 rensink Exp $
  */
 package groove.lts;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-08-22 15:04:51 $
+ * @version $Revision: 1.8 $ $Date: 2007-09-16 21:44:27 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
@@ -139,7 +139,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
 
     public GraphState getNextState(RuleEvent event) {
-//    	return getCache().getTransitionMap().get(event);
         assert event != null;
         GraphState result = null;
         if (isClosed()) {
@@ -161,15 +160,6 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         }
         return result;
     }
-//    
-//    /**
-//     * Callback method to retrieve the event from an outgoing transition.
-//     */
-//    protected RuleEvent getEvent(GraphOutTransition trans) {
-//    	return trans.getEvent();
-//    }
-//    
-    // ----------------------- commands -----------------------------
     
     /**
 	 * Callback factory method for creating an outgoing transition (from this state) for the given
@@ -272,14 +262,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 		return newState();
 	}
 
-//    
-//    /**
-//     * This implementation clears the cache upon disposal.
-//     */
-//    public void dispose() {
-//    	getCacheReference().clear();
-//    }
-
+    @Deprecated
     public Element imageFor(NodeEdgeMap elementMap) {
         throw new UnsupportedOperationException(
                 "Mappings between transition systems are currently not supported");
@@ -315,24 +298,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 			return "s??";
 		}
     }
-//
-//	/** Lazily creates and returns the cache for this state. */
-//	public StateCache getCache() {
-//		StateCache result = getCacheReference().get();
-//		if (result == null) {
-//			result = createCache();
-//			setCache(result);
-//		}
-//		return result;
-//	}
-//	
-//	/** 
-//	 * Sets the cache to a given value.
-//	 */
-//	protected void setCache(StateCache cache) {
-//		setCacheReference(CacheReference.getInstance(this, cache));
-//	}
-//	
+	
 	/**
      * Callback factory method for a new cache based on this state.
      */

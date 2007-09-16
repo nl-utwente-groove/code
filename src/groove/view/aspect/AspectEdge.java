@@ -12,27 +12,27 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectEdge.java,v 1.4 2007-09-07 19:13:41 rensink Exp $
+ * $Id: AspectEdge.java,v 1.5 2007-09-16 21:44:32 rensink Exp $
  */
 package groove.view.aspect;
 
-import java.util.Collection;
-import java.util.List;
-
+import groove.graph.AbstractBinaryEdge;
 import groove.graph.BinaryEdge;
-import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.view.FormatException;
 
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Edge enriched with aspect data.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
-public class AspectEdge extends DefaultEdge implements AspectElement {
+public class AspectEdge extends AbstractBinaryEdge implements AspectElement {
 	/**
 	 * Constructs a new edge from an array of end nodes, a label,
 	 * and a collection of aspect values.
@@ -105,6 +105,7 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 	 * This implementation returns an {@link AspectEdge}.
 	 */
 	@Override
+	@Deprecated
 	public BinaryEdge newEdge(Node source, Label label, Node target) {
 		if (source instanceof AspectNode && target instanceof AspectNode) {
 			// we certainly want an aspect edge
@@ -118,7 +119,7 @@ public class AspectEdge extends DefaultEdge implements AspectElement {
 				return null;
 			}
 		} else {
-			return super.newEdge(source, label, target);
+			throw new IllegalArgumentException();
 		}
 	}
 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.13 2007-09-07 19:13:40 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.14 2007-09-16 21:44:29 rensink Exp $
  */
 package groove.util;
 
@@ -47,7 +47,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2007-09-07 19:13:40 $
+ * @version $Revision: 1.14 $ $Date: 2007-09-16 21:44:29 $
  */
 public class TypeDiscoverer {
     /**
@@ -106,7 +106,7 @@ public class TypeDiscoverer {
                 mergeMorph.putNode(lhsNode, rhsNode); 
             }
             for (Edge lhsEdge: mergeLhs.edgeSet()) {
-                Edge rhsEdge = lhsEdge.imageFor(mergeMorph.elementMap());
+                Edge rhsEdge = mergeMorph.mapEdge(lhsEdge);
                 // add the edge image to the rhs (necessary for eraser edges)
                 mergeRhs.addEdge(rhsEdge);
                 mergeMorph.putEdge(lhsEdge, rhsEdge);
@@ -128,7 +128,7 @@ public class TypeDiscoverer {
                 }
             }
             for (Edge handleEdge: ruleHandle.edgeSet()) {
-                Edge handleEdgeImage = handleEdge.imageFor(mergeMorph.elementMap());
+                Edge handleEdgeImage = mergeMorph.mapEdge(handleEdge);
                 mergeLhs.addEdge(handleEdge);
                 mergeRhs.addEdge(handleEdgeImage);
                 mergeMorph.putEdge(handleEdge, handleEdgeImage);
@@ -138,13 +138,6 @@ public class TypeDiscoverer {
             // merge.addNAC(new DefaultNAC(mergeMorph));
             mergeSystem.add(merge);
         }
-//        try {
-//            Groove.saveRuleSystem(introduceSystem, grammar.getName()+"-I");
-//            Groove.saveRuleSystem(deleteSystem, grammar.getName()+"-D");
-//            Groove.saveRuleSystem(mergeSystem, grammar.getName()+"-M");
-//        } catch (IOException exc) {
-//            exc.printStackTrace();
-//        }
         GraphResult deleted;
 		Graph typeStartGraph = new NodeSetEdgeSetGraph(grammar.getStartGraph());
 		GraphGrammar newGrammar = new GraphGrammar(introduceSystem, typeStartGraph);

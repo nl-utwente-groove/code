@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SwingDeltaGraph.java,v 1.4 2007-09-14 14:38:10 rensink Exp $
+ * $Id: SwingDeltaGraph.java,v 1.5 2007-09-16 21:44:23 rensink Exp $
  */
 package groove.graph;
 
@@ -42,7 +42,6 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	 * @param delta the delta with respect to the basis; non-<code>null</code>
 	 */
 	public SwingDeltaGraph(final SwingDeltaGraph basis, final DeltaApplier delta) {
-		assert delta != null;
 		this.basis = basis;
 		if (delta == null || delta instanceof DeltaStore) {
 			this.delta = (DeltaStore) delta;
@@ -194,7 +193,12 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		}
 		return nodeEdgeMap;
 	}
-	
+		
+	@Override
+	public Set<? extends Edge> edgeSet(Node node) {
+		return nodeEdgeMap().get(node);
+	}
+
 	/** 
 	 * Computes the node-to-edgeset map from the node and edge sets.
 	 * This method is only used if the map could not be obtained from the basis.
@@ -367,6 +371,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 				for (int i = 0; i < arity; i++) {
 					Node end = elem.end(i);
 					Set<Edge> edgeSet = nodeEdgeMap.get(end);
+					assert edgeSet != null : String.format("Node edge map %s does not contain image for %s", nodeEdgeMap, end);
 					edgeSet.remove(elem);
 				}
 			}

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.27 2007-09-15 17:25:24 rensink Exp $
+ * $Id: SPOEvent.java,v 1.28 2007-09-16 21:44:30 rensink Exp $
  */
 package groove.trans;
 
@@ -52,7 +52,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.27 $ $Date: 2007-09-15 17:25:24 $
+ * @version $Revision: 1.28 $ $Date: 2007-09-16 21:44:30 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -161,7 +161,8 @@ public class SPOEvent implements RuleEvent {
         }
         // add the eraser edges
         for (Edge eraserEdge: getRule().getEraserNonAnchorEdges()) {
-            Edge eraserImage = eraserEdge.imageFor(result);
+            Edge eraserImage = result.mapEdge(eraserEdge);
+            assert eraserImage != null : String.format("Eraser edge %s has no image in anchor map %s", eraserEdge, result);
             result.putEdge(eraserEdge, eraserImage);
         }
         return result;
@@ -642,7 +643,7 @@ public class SPOEvent implements RuleEvent {
         Set<Edge> result = createEdgeSet();
         VarNodeEdgeMap coAnchorMap = getCoanchorMap();
         for (Edge edge: getRule().getSimpleCreatorEdges()) {
-            Edge edgeImage = edge.imageFor(coAnchorMap);
+            Edge edgeImage = coAnchorMap.mapEdge(edge);
             if (edgeImage != null) {
                 result.add(edgeImage);
             }

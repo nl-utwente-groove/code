@@ -73,18 +73,16 @@ public class SystemRecord implements NodeFactory {
     	reporter.start(GET_EVENT);
         if (rule.isModifying()) {
             RuleEvent event = rule.newEvent(elementMap, this);
-//            // look if we have an event with the same characteristics
-//            Map<RuleEvent,RuleEvent> eventMap = normalEventMap.get(rule);
-//            if (eventMap == null) {
-//            	eventMap = new HashMap<RuleEvent,RuleEvent>();
-//            	normalEventMap.put(rule, eventMap);
-//            }
-            result = normalEventMap.get(event);
-            if (result == null) {
-                // no, the event is new.
-                result = event;
-                normalEventMap.put(event, result);
-                eventCount++;
+            if (reuseEvents) {
+				result = normalEventMap.get(event);
+				if (result == null) {
+					// no, the event is new.
+					result = event;
+					normalEventMap.put(event, result);
+					eventCount++;
+				}
+			} else {
+				result = event;
             }
         } else {
         	result = unmodifyingEventMap.get(rule);
@@ -165,12 +163,18 @@ public class SystemRecord implements NodeFactory {
      * for time and space reasons.
      */
     private final Map<RuleEvent,RuleEvent> normalEventMap = new HashMap<RuleEvent,RuleEvent>();
-//    private final Map<Rule,Map<RuleEvent,RuleEvent>> normalEventMap = new HashMap<Rule,Map<RuleEvent,RuleEvent>>();
     /** 
      * Map from unmodifying rules to their (unique) events.
      */
     private final Map<Rule,RuleEvent> unmodifyingEventMap = new HashMap<Rule,RuleEvent>();
 
+    /** Controls if events of modifying rules are to be stored and reused. */
+    static public void setReuseEvents(boolean reuse) {
+    	SystemRecord.reuseEvents = reuse;
+    }
+    
+    /** Flag indicating if events of modifying rules should be stored and reused. */
+    static private boolean reuseEvents = true;
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");
 }

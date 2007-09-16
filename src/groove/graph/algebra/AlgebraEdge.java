@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AlgebraEdge.java,v 1.4 2007-08-26 07:23:58 rensink Exp $
+ * $Id: AlgebraEdge.java,v 1.5 2007-09-16 21:44:28 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -25,7 +25,7 @@ import groove.graph.Node;
  * and {@link groove.graph.algebra.ValueNode}s.
  * 
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-08-26 07:23:58 $
+ * @version $Revision 1.0$ $Date: 2007-09-16 21:44:28 $
  */
 // AREND I would call this ArgumentEdge, and include the 
 // number (as derived from the label); in fact, I think a constructor 
@@ -38,6 +38,7 @@ public class AlgebraEdge extends AbstractBinaryEdge {
 
     /** Overrides the super method to return an {@link AlgebraEdge}. */
     @Override
+    @Deprecated
     public AlgebraEdge newEdge(Node source, Label label, Node target) {
         return new AlgebraEdge(source, label, target);
     }

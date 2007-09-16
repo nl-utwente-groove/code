@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.22 2007-09-04 20:59:29 rensink Exp $
+ * $Id: SPORule.java,v 1.23 2007-09-16 21:44:30 rensink Exp $
  */
 package groove.trans;
 
@@ -48,7 +48,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -324,7 +324,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 				if (getProperties().isCheckCreatorEdges()) {
 					for (Edge edge : getSimpleCreatorEdges()) {
 						setAndNot(new EdgeEmbargo(lhs(),
-								edge.imageFor(getCreatorMap()), getProperties()));
+								getCreatorMap().mapEdge(edge), getProperties()));
 					}
 				}
 				if (getProperties().isRhsAsNac()) {

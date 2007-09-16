@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.5 2007-09-14 08:30:26 rensink Exp $
+ * $Id: StateCache.java,v 1.6 2007-09-16 21:44:27 rensink Exp $
  */
 package groove.lts;
 
@@ -35,7 +35,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class StateCache {
     /**
@@ -100,7 +100,7 @@ public class StateCache {
      * @return <code>true</code> if the graph should be frozen
      */
     private boolean isFreezeGraph() {
-    	return getFreezeCount() > FREEZE_BOUND;
+    	return freezeGraphs && getFreezeCount() > FREEZE_BOUND;
     }
 
     /** 
@@ -279,8 +279,25 @@ public class StateCache {
     /** Cached graph for this state. */
     private Graph graph;
     
+    /** 
+     * Sets the freeze bound for state graphs;
+     * a value of <code>-1</code> means graphs are never frozen.
+     */
+    static public void setFreezeGraphs(boolean freeze) {
+    	StateCache.freezeGraphs = freeze;
+    }
+    
+    /** Sets the factory used to create the state graphs. */
+    static public void setGraphFactory(DeltaGraphFactory factory) {
+    	graphFactory = factory;
+    }
+    
     /** The graph factory currently used for states. */
-    static private final DeltaGraphFactory graphFactory = FixedDeltaGraph.getInstance();
-    /** The bound above which the underlying graph will be frozen. */
+    static private DeltaGraphFactory graphFactory = FixedDeltaGraph.getInstance();
+    /** Flag indicating if the graph should be frozen. */
+    static private boolean freezeGraphs = true;
+    /** 
+     * The depth of the graph above which the underlying graph will be frozen.
+     */
     static private final int FREEZE_BOUND = 10;
 }

@@ -31,7 +31,7 @@ import groove.trans.RuleEvent;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
@@ -299,43 +299,10 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     }
 
     @Override
+    @Deprecated
 	public NextState imageFor(NodeEdgeMap elementMap) {
 		throw new UnsupportedOperationException();
 	}
-//
-//	/**
-//     * This implementation transforms the outgoing transitions from
-//     * their raw format to the proper representation as a {@link groove.lts.GraphTransitionStub}
-//     * from the current state.
-//     */
-//    @Override
-//    public Iterator<GraphTransitionStub> getOutTransitionIter() {
-//		return new TransformIterator<GraphTransitionStub,GraphTransitionStub>(getTransitionStubIter()) {
-//			@Override
-//			protected GraphTransitionStub toOuter(GraphTransitionStub trans) {
-//				if (trans instanceof DefaultGraphNextState) {
-//					DefaultGraphNextState derivedOut = (DefaultGraphNextState) trans;
-//					if (derivedOut.source() != DefaultGraphNextState.this) {
-//						return createOutTransitionFromThis(derivedOut.getSourceEvent(), derivedOut);
-//					}
-////					return ((DerivedGraphState) inner).createOutTransitionToThis(DerivedGraphState.this);
-//				}
-//				return trans;
-//			}
-//		};
-//	}
-//    
-//    /**
-//     * Creates an outgoing transition starting in a given source state,
-//     * based on the transformation information of this state.
-//     */
-//    protected GraphOutTransition createOutTransitionTo(DefaultNextGraphState source) {
-//    	if (source != source()) {
-//    		return createOutTransitionToThis(getSourceEvent());
-//    	} else {
-//    		return this;
-//    	}
-//    }
     
     /**
 	 * This implementation returns <code>this</code> if the derivation's event
@@ -353,39 +320,21 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 		}
 	}
 //    
-//    protected GraphTransitionStub createOutTransitionFromThis(RuleEvent event, GraphState target) {
-//    	return new DefaultGraphTransitionStub(event, target);
-//    }
-//
 //	/**
-//	 * This implementation takes into account that an outgoing transition may
-//	 * actually be an alias to some other transition that forms the outer end of
-//	 * a confluent diamond with this one.
+//	 * Applies the underlying rule of this derived state to a given target.
 //	 */
-//    @Override
-//	protected RuleEvent getEvent(GraphOutTransition trans) {
-//		if (trans instanceof DefaultGraphNextState && ((DefaultGraphNextState)trans).source() != this) {
-//			return ((DefaultGraphNextState) trans).getSourceEvent();
-//		} else {
-//			return super.getEvent(trans);
-//		}
+//	protected void applyRule(DeltaTarget target) {
+//		// if the basis graph cache is cleared before rule application, 
+//		// clear it again afterwards
+//		boolean sourceCacheCleared = source.isCacheCleared();
+//		// do the actual rule application
+//		getDelta().applyDelta(target);
+//	    // clear the basis cache
+//	    if (sourceCacheCleared) {
+//	    	source.clearCache();
+//	    }
 //	}
-
-	/**
-	 * Applies the underlying rule of this derived state to a given target.
-	 */
-	protected void applyRule(DeltaTarget target) {
-		// if the basis graph cache is cleared before rule application, 
-		// clear it again afterwards
-		boolean sourceCacheCleared = source.isCacheCleared();
-		// do the actual rule application
-		getDelta().applyDelta(target);
-	    // clear the basis cache
-	    if (sourceCacheCleared) {
-	    	source.clearCache();
-	    }
-	}
-	
+//	
 	/**
 	 * The rule of the incoming transition with which this state was created.
 	 */
