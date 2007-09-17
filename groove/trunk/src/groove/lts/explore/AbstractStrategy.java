@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractStrategy.java,v 1.9 2007-09-17 09:51:37 rensink Exp $
+ * $Id: AbstractStrategy.java,v 1.10 2007-09-17 10:11:36 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -32,7 +32,7 @@ import java.util.Collection;
 /**
  * Abstract LTS exploration strategy.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public abstract class AbstractStrategy extends StateGenerator implements ExploreStrategy {
 //	/** 
@@ -119,7 +119,7 @@ public abstract class AbstractStrategy extends StateGenerator implements Explore
      */
     @Override
     public void setGTS(GTS gts) {
-        GTS.setReuse(isReuse());
+        SystemRecord.setReuse(isReuse());
         super.setGTS(gts);
         setAtState(gts.startState());
         if (collector != null) {

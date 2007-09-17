@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.28 2007-09-16 21:44:30 rensink Exp $
+ * $Id: SPOEvent.java,v 1.29 2007-09-17 10:11:34 rensink Exp $
  */
 package groove.trans;
 
@@ -52,7 +52,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.28 $ $Date: 2007-09-16 21:44:30 $
+ * @version $Revision: 1.29 $ $Date: 2007-09-17 10:11:34 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -177,10 +177,14 @@ public class SPOEvent implements RuleEvent {
 	}
 
 	public VarNodeEdgeMap getCoanchorMap() {
-        if (coanchorMap == null) {
-            coanchorMap = computeCoanchorMap();
-        }
-        return coanchorMap;
+	    if (SystemRecord.isReuse()) {
+            if (coanchorMap == null) {
+                coanchorMap = computeCoanchorMap();
+            }
+            return coanchorMap;
+        } else {
+	        return computeCoanchorMap();
+	    }
     }
     
 	/**
@@ -565,10 +569,14 @@ public class SPOEvent implements RuleEvent {
 	 * eraser nodes.
 	 */
     protected Set<Node> getErasedNodes() {
-        if (erasedNodeSet == null) {
-            erasedNodeSet = computeErasedNodes();
+        if (SystemRecord.isReuse()) {
+            if (erasedNodeSet == null) {
+                erasedNodeSet = computeErasedNodes();
+            }
+            return erasedNodeSet;
+        } else {
+            return computeErasedNodes();
         }
-        return erasedNodeSet;
     }
 
 	/**
@@ -596,10 +604,14 @@ public class SPOEvent implements RuleEvent {
      * images of the LHS eraser edges.
      */
     protected Set<Edge> getErasedEdges() {
-        if (erasedEdgeSet == null) {
-            erasedEdgeSet = computeErasedEdges();
+        if (SystemRecord.isReuse()) {
+            if (erasedEdgeSet == null) {
+                erasedEdgeSet = computeErasedEdges();
+            }
+            return erasedEdgeSet;
+        } else {
+            return computeErasedEdges();
         }
-        return erasedEdgeSet;
     }
 
     /**
@@ -628,10 +640,14 @@ public class SPOEvent implements RuleEvent {
      * images of the LHS eraser edges.
      */
     protected Set<Edge> getSimpleCreatedEdges() {
-        if (simpleCreatedEdgeSet == null) {
-            simpleCreatedEdgeSet = computeSimpleCreatedEdges();
+        if (SystemRecord.isReuse()) {
+            if (simpleCreatedEdgeSet == null) {
+                simpleCreatedEdgeSet = computeSimpleCreatedEdges();
+            }
+            return simpleCreatedEdgeSet;
+        } else {
+            return computeSimpleCreatedEdges();
         }
-        return simpleCreatedEdgeSet;
     }
 
     /**

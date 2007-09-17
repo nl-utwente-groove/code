@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.20 2007-09-17 09:51:38 rensink Exp $
+ * $Id: GTS.java,v 1.21 2007-09-17 10:11:36 rensink Exp $
  */
 package groove.lts;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.20 $ $Date: 2007-09-17 09:51:38 $
+ * @version $Revision: 1.21 $ $Date: 2007-09-17 10:11:36 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -380,29 +380,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /** Flag to indicate whether transitions are to be stored in the GTS. */
     private final boolean storeTransitions;
     
-    /** 
-     * Changes the behaviour of the GTS to reuse previously explored states and rule events.
-     * If the reuse property is <code>false</code>, state graph equality is never detected,
-     * and backtracking is not supported.
-     * Unpredictable behaviour will ensue if this method is called while an existing GTS is being explored.
-     * Initially the property is set to <code>true</code>
-     * @param reuse if <code>true</code>, results are reused henceforth 
-     */
-    public static void setReuse(boolean reuse) {
-        GTS.reuse = reuse;
-    }
-    
-    /** 
-     * Returns the current value of the reuse property.
-     * @return if <code>true</code>, previously found results are reused
-     */
-    public static boolean isReuse() {
-        return reuse;
-    }
-    
-    /** Flag indicating if previous result are reused. */
-    private static boolean reuse = true;
-    
     /** Specialised set implementation for storing states. */
     private class TreeHashStateSet extends TreeHashSet<GraphState> {
     	/** Constructs a new, empty state set. */
@@ -418,7 +395,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         protected boolean areEqual(Object key, Object otherKey) {
     		GraphState stateKey = (GraphState) key;
     		GraphState otherStateKey = (GraphState) otherKey;
-			if (!GTS.isReuse()) {
+			if (!SystemRecord.isReuse()) {
 			    return key == otherKey;
 			} else if (stateKey.getControl() == otherStateKey.getControl()) {
 				Graph one = stateKey.getGraph();
@@ -441,7 +418,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         protected int getCode(Object key) {
     	    int result;
     		GraphState stateKey = (GraphState) key;
-    		if (!GTS.isReuse()) { 
+    		if (!SystemRecord.isReuse()) { 
     		    result = System.identityHashCode(stateKey);
     		} else if (isCheckIsomorphism()) {
     		    result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
