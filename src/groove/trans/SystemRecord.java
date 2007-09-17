@@ -5,6 +5,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeFactory;
+import groove.lts.GTS;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.DefaultDispenser;
 import groove.util.Reporter;
@@ -73,7 +74,7 @@ public class SystemRecord implements NodeFactory {
     	reporter.start(GET_EVENT);
         if (rule.isModifying()) {
             RuleEvent event = rule.newEvent(elementMap, this);
-            if (reuseEvents) {
+            if (GTS.isReuse()) {
 				result = normalEventMap.get(event);
 				if (result == null) {
 					// no, the event is new.
@@ -167,14 +168,14 @@ public class SystemRecord implements NodeFactory {
      * Map from unmodifying rules to their (unique) events.
      */
     private final Map<Rule,RuleEvent> unmodifyingEventMap = new HashMap<Rule,RuleEvent>();
-
-    /** Controls if events of modifying rules are to be stored and reused. */
-    static public void setReuseEvents(boolean reuse) {
-    	SystemRecord.reuseEvents = reuse;
-    }
-    
-    /** Flag indicating if events of modifying rules should be stored and reused. */
-    static private boolean reuseEvents = true;
+//
+//    /** Controls if events of modifying rules are to be stored and reused. */
+//    static public void setReuseEvents(boolean reuse) {
+//    	SystemRecord.reuseEvents = reuse;
+//    }
+//    
+//    /** Flag indicating if events of modifying rules should be stored and reused. */
+//    static private boolean reuseEvents = true;
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");
 }

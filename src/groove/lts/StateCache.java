@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.7 2007-09-17 06:55:55 rensink Exp $
+ * $Id: StateCache.java,v 1.8 2007-09-17 09:51:38 rensink Exp $
  */
 package groove.lts;
 
@@ -24,6 +24,7 @@ import groove.graph.Element;
 import groove.graph.FixedDeltaGraph;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.graph.SwingDeltaGraph;
 import groove.trans.RuleEvent;
 import groove.util.TreeHashSet;
 
@@ -35,7 +36,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class StateCache {
     /**
@@ -278,23 +279,25 @@ public class StateCache {
     private Map<RuleEvent,GraphState> transitionMap;
     /** Cached graph for this state. */
     private Graph graph;
-    
-    /** 
-     * Sets the freeze bound for state graphs;
-     * a value of <code>-1</code> means graphs are never frozen.
-     */
-    static public void setFreezeGraphs(boolean freeze) {
-    	StateCache.freezeGraphs = freeze;
-    }
-    
-    /** Sets the factory used to create the state graphs. */
-    static public void setGraphFactory(DeltaGraphFactory factory) {
-    	graphFactory = factory;
-    }
-    
-    static private DeltaGraphFactory graphFactory = FixedDeltaGraph.getInstance();
-    /** Flag indicating if the graph should be frozen. */
-    static private boolean freezeGraphs = true;
+    /** Flag indicating if state graphs should be frozen. */
+    private final boolean freezeGraphs = GTS.isReuse();
+    /** Factory used to create the state graphs. */
+    private final DeltaGraphFactory graphFactory = GTS.isReuse() ? FixedDeltaGraph.getInstance() : SwingDeltaGraph.getInstance();
+//    
+//    /** 
+//     * Sets the freeze bound for state graphs;
+//     * a value of <code>-1</code> means graphs are never frozen.
+//     */
+//    static public void setFreezeGraphs(boolean freeze) {
+//    	StateCache.freezeGraphs = freeze;
+//    }
+//    
+//    /** Sets the factory used to create the state graphs. */
+//    static public void setGraphFactory(DeltaGraphFactory factory) {
+//    	graphFactory = factory;
+//    }
+//    
+//    static private DeltaGraphFactory graphFactory = FixedDeltaGraph.getInstance();
     /** 
      * The depth of the graph above which the underlying graph will be frozen.
      */
