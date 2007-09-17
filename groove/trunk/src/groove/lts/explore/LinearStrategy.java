@@ -13,10 +13,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LinearStrategy.java,v 1.4 2007-09-16 21:44:29 rensink Exp $
+ * $Id: LinearStrategy.java,v 1.5 2007-09-17 06:55:56 rensink Exp $
  */
 package groove.lts.explore;
 
+import groove.lts.GraphNextState;
 import groove.graph.DeltaGraphFactory;
 import groove.graph.SwingDeltaGraph;
 import groove.lts.GraphState;
@@ -32,7 +33,7 @@ import java.util.Iterator;
  * <i>maximal</i> state is found; that is, a state that only loops back to already explored states.
  * The maximum depth of the search can be set; a depth of 0 means unbounded depth.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class LinearStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
@@ -57,6 +58,9 @@ public class LinearStrategy extends AbstractStrategy {
             	if (getGTS().outEdgeSet(nextState).isEmpty() && !nextState.isClosed()) {
             		nextOpenState = nextState;
             	}
+            }
+            if (atState instanceof GraphNextState) {
+                ((GraphNextState) atState).source().setClosed();
             }
             intermediateState = nextOpenState != null;
             if (intermediateState) {
