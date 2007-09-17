@@ -5,7 +5,6 @@ import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeFactory;
-import groove.lts.GTS;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.DefaultDispenser;
 import groove.util.Reporter;
@@ -74,7 +73,7 @@ public class SystemRecord implements NodeFactory {
     	reporter.start(GET_EVENT);
         if (rule.isModifying()) {
             RuleEvent event = rule.newEvent(elementMap, this);
-            if (GTS.isReuse()) {
+            if (SystemRecord.isReuse()) {
 				result = normalEventMap.get(event);
 				if (result == null) {
 					// no, the event is new.
@@ -144,7 +143,7 @@ public class SystemRecord implements NodeFactory {
     }
     
     /**
-     * Initializes the rule dependencies.
+     * Initialises the rule dependencies.
      */
     protected RuleDependencies getDependencies() {
     	if (dependencies == null) {
@@ -168,6 +167,29 @@ public class SystemRecord implements NodeFactory {
      * Map from unmodifying rules to their (unique) events.
      */
     private final Map<Rule,RuleEvent> unmodifyingEventMap = new HashMap<Rule,RuleEvent>();
+
+    /** 
+     * Changes the behaviour of the GTS to reuse previously explored states and rule events.
+     * If the reuse property is <code>false</code>, state graph equality is never detected,
+     * and backtracking is not supported.
+     * Unpredictable behaviour will ensue if this method is called while an existing GTS is being explored.
+     * Initially the property is set to <code>true</code>
+     * @param reuse if <code>true</code>, results are reused henceforth 
+     */
+    public static void setReuse(boolean reuse) {
+        SystemRecord.reuse = reuse;
+    }
+
+    /** 
+     * Returns the current value of the reuse property.
+     * @return if <code>true</code>, previously found results are reused
+     */
+    public static boolean isReuse() {
+        return SystemRecord.reuse;
+    }
+
+    /** Flag indicating if previous result are reused. */
+    public static boolean reuse = true;
 //
 //    /** Controls if events of modifying rules are to be stored and reused. */
 //    static public void setReuseEvents(boolean reuse) {

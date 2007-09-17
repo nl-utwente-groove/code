@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.19 2007-09-16 21:44:30 rensink Exp $
+ * $Id: SPOApplication.java,v 1.20 2007-09-17 10:11:34 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.19 $ $Date: 2007-09-16 21:44:30 $
+ * @version $Revision: 1.20 $ $Date: 2007-09-17 10:11:34 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -473,7 +473,10 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 * images of the LHS eraser edges.
 	 */
     protected Set<Edge> getErasedEdges() {
-		return event.getErasedEdges();
+        if (erasedEdges == null) {
+            erasedEdges = event.getErasedEdges();
+        }
+        return erasedEdges;
 	}
 
 	/**
@@ -695,10 +698,12 @@ public class SPOApplication implements RuleApplication, Derivation {
     private Set<ValueNode> addedValueNodes;
     /** The set of value nodes that have been added due to edge creation. */
     private Set<ValueNode> removedValueNodes;
+    /** The set of edges (to be) erased by this rule applications. */
+    private Set<Edge> erasedEdges;
     
     /** Static constant for rules with coanchors. */
     static private final Node[] EMPTY_COANCHOR_IMAGE = new Node[0];
-    /** Reporter for prifiling the application class. */
+    /** Reporter for profiling the application class. */
     static public final Reporter reporter = Reporter.register(RuleApplication.class);
     /** Handle for profiling the actual rule application. */
     static public final int APPLY = reporter.newMethod("apply(Matching)");
