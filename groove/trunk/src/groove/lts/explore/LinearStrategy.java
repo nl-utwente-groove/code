@@ -13,13 +13,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LinearStrategy.java,v 1.5 2007-09-17 06:55:56 rensink Exp $
+ * $Id: LinearStrategy.java,v 1.6 2007-09-17 09:51:37 rensink Exp $
  */
 package groove.lts.explore;
 
 import groove.lts.GraphNextState;
-import groove.graph.DeltaGraphFactory;
-import groove.graph.SwingDeltaGraph;
 import groove.lts.GraphState;
 import groove.lts.State;
 
@@ -33,15 +31,22 @@ import java.util.Iterator;
  * <i>maximal</i> state is found; that is, a state that only loops back to already explored states.
  * The maximum depth of the search can be set; a depth of 0 means unbounded depth.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class LinearStrategy extends AbstractStrategy {
-	/** Name of this exploration strategy. */
-    static public final String STRATEGY_NAME = "Linear";
-	/** Short description of this exploration strategy. */
-    static public final String STRATEGY_DESCRIPTION =
-        "Generates a single outgoing transition and continues with the target state";
-
+    /** Constructs an instance of the strategy that reuses exploration results. */
+    public LinearStrategy() {
+        this(true);
+    }
+    
+    /** 
+     * Constructs an instance of the strategy with a parameter that controls
+     * whether exploration results should be reused.
+     */
+    public LinearStrategy(boolean reuse) {
+        this.reuse = reuse;
+    }
+    
     /** The result of this strategy is the set of all states traversed during exploration. */
     public Collection<? extends State> explore() throws InterruptedException {
         boolean intermediateState = true;
@@ -79,21 +84,19 @@ public class LinearStrategy extends AbstractStrategy {
         return STRATEGY_DESCRIPTION;
     }
 
-    /** Since this strategy does no backtracking, swing graphs are in order. */
+    /**
+     * Returns the result of the reuse property, set at construction time. 
+     */
 	@Override
-	DeltaGraphFactory createGraphFactory() {
-		return SwingDeltaGraph.getInstance();
-	}    
-
-    /** Since this strategy does no backtracking, graphs need not be frozen. */
-	@Override
-	boolean isFreezeGraphs() {
-		return false;
-	}    
-
-    /** Since this strategy does no backtracking, events need not be stored. */
-	@Override
-	boolean isReuseEvents() {
-		return false;
-	}    
+	boolean isReuse() {
+		return reuse;
+	} 
+	
+	/** Flag indicating if this strategy should reuse previous results. */
+	private final boolean reuse;
+	/** Name of this exploration strategy. */
+    static public final String STRATEGY_NAME = "Linear";
+    /** Short description of this exploration strategy. */
+    static public final String STRATEGY_DESCRIPTION =
+        "Generates a single outgoing transition and continues with the target state";
 }

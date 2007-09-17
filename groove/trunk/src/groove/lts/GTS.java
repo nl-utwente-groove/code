@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.19 2007-09-16 21:44:27 rensink Exp $
+ * $Id: GTS.java,v 1.20 2007-09-17 09:51:38 rensink Exp $
  */
 package groove.lts;
 
@@ -26,9 +26,9 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
+import groove.util.CollectionView;
 import groove.util.FilterIterator;
 import groove.util.NestedIterator;
-import groove.util.SetView;
 import groove.util.TransformIterator;
 import groove.util.TreeHashSet;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.19 $ $Date: 2007-09-16 21:44:27 $
+ * @version $Revision: 1.20 $ $Date: 2007-09-17 09:51:38 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -184,7 +184,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * @see #getOpenStateIter()
      */
     public Collection<GraphState> getOpenStates() {
-        return new SetView<GraphState>(stateSet) {
+        return new CollectionView<GraphState>(stateSet) {
         	@Override
             public boolean approves(Object obj) {
                 return !((State) obj).isClosed();
@@ -238,7 +238,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
 	/**
 	 * This implementation calls {@link GraphState#getTransitionSet()} on <tt>node</tt>.
-	 * @require <tt>node instanceof GraphState</tt>
+	 * @require <code>node instanceof GraphState</code>
 	 */
 	@Override
 	public Set<GraphTransition> outEdgeSet(Node node) {
@@ -379,6 +379,30 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     private int transitionCount = 0;
     /** Flag to indicate whether transitions are to be stored in the GTS. */
     private final boolean storeTransitions;
+    
+    /** 
+     * Changes the behaviour of the GTS to reuse previously explored states and rule events.
+     * If the reuse property is <code>false</code>, state graph equality is never detected,
+     * and backtracking is not supported.
+     * Unpredictable behaviour will ensue if this method is called while an existing GTS is being explored.
+     * Initially the property is set to <code>true</code>
+     * @param reuse if <code>true</code>, results are reused henceforth 
+     */
+    public static void setReuse(boolean reuse) {
+        GTS.reuse = reuse;
+    }
+    
+    /** 
+     * Returns the current value of the reuse property.
+     * @return if <code>true</code>, previously found results are reused
+     */
+    public static boolean isReuse() {
+        return reuse;
+    }
+    
+    /** Flag indicating if previous result are reused. */
+    private static boolean reuse = true;
+    
     /** Specialised set implementation for storing states. */
     private class TreeHashStateSet extends TreeHashSet<GraphState> {
     	/** Constructs a new, empty state set. */
@@ -394,7 +418,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         protected boolean areEqual(Object key, Object otherKey) {
     		GraphState stateKey = (GraphState) key;
     		GraphState otherStateKey = (GraphState) otherKey;
-			if (stateKey.getControl() == otherStateKey.getControl()) {
+			if (!GTS.isReuse()) {
+			    return key == otherKey;
+			} else if (stateKey.getControl() == otherStateKey.getControl()) {
 				Graph one = stateKey.getGraph();
 				Graph two = otherStateKey.getGraph();
 				if (isCheckIsomorphism()) {
@@ -415,7 +441,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         protected int getCode(Object key) {
     	    int result;
     		GraphState stateKey = (GraphState) key;
-    		if (isCheckIsomorphism()) {
+    		if (!GTS.isReuse()) { 
+    		    result = System.identityHashCode(stateKey);
+    		} else if (isCheckIsomorphism()) {
     		    result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
     		} else {
     		    result = stateKey.getGraph().hashCode();

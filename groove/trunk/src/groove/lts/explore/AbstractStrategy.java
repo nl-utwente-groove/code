@@ -12,20 +12,17 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractStrategy.java,v 1.8 2007-09-16 21:44:29 rensink Exp $
+ * $Id: AbstractStrategy.java,v 1.9 2007-09-17 09:51:37 rensink Exp $
  */
 package groove.lts.explore;
 
-import groove.graph.DeltaGraphFactory;
 import groove.graph.Edge;
-import groove.graph.FixedDeltaGraph;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.State;
-import groove.lts.StateCache;
 import groove.lts.StateGenerator;
 import groove.trans.SystemRecord;
 
@@ -35,7 +32,7 @@ import java.util.Collection;
 /**
  * Abstract LTS exploration strategy.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public abstract class AbstractStrategy extends StateGenerator implements ExploreStrategy {
 //	/** 
@@ -122,9 +119,7 @@ public abstract class AbstractStrategy extends StateGenerator implements Explore
      */
     @Override
     public void setGTS(GTS gts) {
-        StateCache.setGraphFactory(createGraphFactory());
-        StateCache.setFreezeGraphs(isFreezeGraphs());
-        SystemRecord.setReuseEvents(isReuseEvents());
+        GTS.setReuse(isReuse());
         super.setGTS(gts);
         setAtState(gts.startState());
         if (collector != null) {
@@ -170,26 +165,10 @@ public abstract class AbstractStrategy extends StateGenerator implements Explore
     }
     
     /** 
-     * Callback factory method for the graph factory, 
-     * to be used in a call of StateCache#setGraphFactory(). 
-     */
-    DeltaGraphFactory createGraphFactory() {
-    	return FixedDeltaGraph.getInstance();
-    }
-    
-    /** 
-     * Callback method to determine if state graphs should be frozen.
-     * to be used as parameter in a call of {@link StateCache#setFreezeGraphs(boolean)}.
-     */
-    boolean isFreezeGraphs() {
-    	return true;
-    }
-    
-    /** 
      * Callback method to determine if rule events should be reused.
      * To be used as parameter in a call of {@link SystemRecord#setReuseEvents(boolean)}.
      */
-    boolean isReuseEvents() {
+    boolean isReuse() {
     	return true;
     }
     
