@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FixedDeltaGraph.java,v 1.11 2007-09-16 21:44:23 rensink Exp $
+ * $Id: FixedDeltaGraph.java,v 1.12 2007-09-17 06:55:56 rensink Exp $
  */
 package groove.graph;
 
@@ -46,7 +46,7 @@ public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	public FixedDeltaGraph(final FixedDeltaGraph basis, final DeltaApplier delta) {
 		this.basis = basis;
 		this.delta = delta;
-		super.setFixed();
+		setFixed();
 	}
 
 	/**
