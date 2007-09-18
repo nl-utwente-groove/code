@@ -12,14 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CertificateStrategy.java,v 1.3 2007-08-26 07:23:11 rensink Exp $
+ * $Id: CertificateStrategy.java,v 1.4 2007-09-18 15:11:05 rensink Exp $
  */
 package groove.graph.iso;
 
 import java.util.Map;
 
+import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.Node;
 
 /**
  * Interface for algorithms to compute isomorphism certificates for a given graph,
@@ -29,7 +31,7 @@ import groove.graph.Graph;
  * A certificate strategy is specialized to a graph upon which it works;
  * this is set at creation time.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface CertificateStrategy {
     /**
@@ -43,21 +45,13 @@ public interface CertificateStrategy {
      * @return the isomorphism certificate for the underlying graph.
      */
     public Object getGraphCertificate();
-//    
-//    /**
-//     * Method to compute the isomorphism certificate for the underlying graph,
-//     * to a given precision. The larger the precision, the more accurate (but probably
-//     * also costly in time and space) the certificate. From precision <tt>1</tt> 
-//     * onward, the graph certificate is computed from the individual graph elements;
-//     * i.e., it is derived from the value set of <tt>getCertificateMap(precision)</tt>
-//     * @param precision the precision to which the certificate is to be computed;
-//     * <tt>0</tt> is the lowest precision
-//     * @return an isomorphism certificate for the underlying graph
-//     * @see #getCertificateMap(int)
-//     * @deprecated will be removed from the interface; use {@link #getGraphCertificate()} instead
-//     */
-//    public Object getGraphCertificate(int precision);
-//    
+    
+    /** Returns the node certificates calculated for the graph. */
+    public Certificate<Node>[] getNodeCertificates();
+    
+    /** Returns the edge certificates calculated for the graph. */
+    public Certificate<Edge>[] getEdgeCertificates();
+    
     /**
      * Returns a map from graph elements to certificates for the underlying graph.
      * Two elements from different graphs may only be joined by isomorphism
@@ -65,11 +59,11 @@ public interface CertificateStrategy {
      * @ensure <tt>result.keySet() \subseteq getGraph().nodeSet() \cup getGraph().edgeSet()</tt>
      * @see #getCertificateMap()
      */
-    public Map<Element, Object> getCertificateMap();
+    public Map<Element, ? extends Certificate<?>> getCertificateMap();
   
     /**
      * Returns a map from certificates to sets of nodes and edges of the underlying graph.
-     * This is the reverse of {@link #getCertificateMap()}, specialized to nodes.
+     * This is the reverse of {@link #getCertificateMap()}, specialised to nodes.
      * Two elements from different graphs may only be joined by isomorphism
      * if their certificates are equal; i.e., if they are in the image of the same certificate.
      * The return type is a map to either {@link Element}s or {@link java.util.Collection}s.
@@ -89,4 +83,15 @@ public interface CertificateStrategy {
      * @return a fresh certificate strategy for <tt>graph</tt>
      */
     public CertificateStrategy newInstance(Graph graph);
+    
+    /** 
+     * Type of the certificates constructed by the strategy.
+     * A value of this type represents a given graph element in an isomorphism-invariant way.
+     * Hence, equality of certificates does not imply equality of the corresponding
+     * graph elements. 
+     */
+    public interface Certificate<E extends Element> {
+    	/** Returns the element for which this is a certificate. */
+    	E getElement();
+    }
 }
