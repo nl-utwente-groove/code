@@ -189,15 +189,8 @@ public class SystemRecord implements NodeFactory {
     }
 
     /** Flag indicating if previous result are reused. */
-    public static boolean reuse = true;
-//
-//    /** Controls if events of modifying rules are to be stored and reused. */
-//    static public void setReuseEvents(boolean reuse) {
-//    	SystemRecord.reuseEvents = reuse;
-//    }
-//    
-//    /** Flag indicating if events of modifying rules should be stored and reused. */
-//    static private boolean reuseEvents = true;
+    private static boolean reuse = true;
+
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");
 }
