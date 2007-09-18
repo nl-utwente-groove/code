@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIsoChecker.java,v 1.15 2007-09-18 15:11:05 rensink Exp $
+ * $Id: DefaultIsoChecker.java,v 1.16 2007-09-18 21:57:51 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  * Implementation of an isomorphism checking algorithm that first tries to
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy}. 
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -178,8 +178,12 @@ public class DefaultIsoChecker implements IsoChecker {
     
 	public boolean areIsomorphic(Graph dom, Graph cod) {
 		boolean result;
+		// pre-calculate the node counts to take the time for 
+		// constructing the graph out of the isomorphism check time
+		int domNodeCount = dom.nodeCount();
+		int codNodeCount = cod.nodeCount();
         reporter.start(ISO_CHECK);
-        if (dom.nodeCount() != cod.nodeCount() || dom.edgeCount() != cod.edgeCount()) {
+        if (domNodeCount != codNodeCount || dom.edgeCount() != cod.edgeCount()) {
             distinctSizeCount++;
         	result = false;
         } else if (areGraphEqual(dom, cod)) {

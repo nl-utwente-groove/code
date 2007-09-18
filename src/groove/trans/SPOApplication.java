@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.20 2007-09-17 10:11:34 rensink Exp $
+ * $Id: SPOApplication.java,v 1.21 2007-09-18 21:57:59 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.20 $ $Date: 2007-09-17 10:11:34 $
+ * @version $Revision: 1.21 $ $Date: 2007-09-18 21:57:59 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -269,30 +269,30 @@ public class SPOApplication implements RuleApplication, Derivation {
         Set<Node> nodeSet = getErasedNodes();
 		// also remove the incident edges of the eraser nodes
         if (!nodeSet.isEmpty()) {
-//        	// there is a choice here to query the graph for its incident edge set
-//        	// which may be expensive if it hasn't yet been computed
-//        	Set<Edge> removedEdges = new HashSet<Edge>();
-//        	for (Node node: nodeSet) {
-//        		for (Edge edge: source.edgeSet(node)) {
-//        			if (removedEdges.add(edge)) {
-//        				target.removeEdge(edge);
-//						registerErasure(edge);
-//        			}
-//        		}
-//        	}
-        	// the alternative is to iterate over all edges of the source graph
-        	// currently this seems to be fastest
-        	for (Edge edgeMatch: source.edgeSet()) {
-                int arity = edgeMatch.endCount();
-                boolean removed = false;
-                for (int i = 0; !removed && i < arity; i++) {
-                	removed = nodeSet.contains(edgeMatch.end(i));
-                }
-                if (removed) {
-                	target.removeEdge(edgeMatch);
-                	registerErasure(edgeMatch);
-                }
-            }
+        	// there is a choice here to query the graph for its incident edge set
+        	// which may be expensive if it hasn't yet been computed
+        	Set<Edge> removedEdges = new HashSet<Edge>();
+        	for (Node node: nodeSet) {
+        		for (Edge edge: source.edgeSet(node)) {
+        			if (removedEdges.add(edge)) {
+        				target.removeEdge(edge);
+						registerErasure(edge);
+        			}
+        		}
+        	}
+//        	// the alternative is to iterate over all edges of the source graph
+//        	// currently this seems to be fastest
+//        	for (Edge edgeMatch: source.edgeSet()) {
+//                int arity = edgeMatch.endCount();
+//                boolean removed = false;
+//                for (int i = 0; !removed && i < arity; i++) {
+//                	removed = nodeSet.contains(edgeMatch.end(i));
+//                }
+//                if (removed) {
+//                	target.removeEdge(edgeMatch);
+//                	registerErasure(edgeMatch);
+//                }
+//            }
             removeNodeSet(target, nodeSet);
         }
         removeIsolatedValueNodes(target);

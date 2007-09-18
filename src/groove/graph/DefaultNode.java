@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.10 2007-09-16 21:44:23 rensink Exp $
+ * $Id: DefaultNode.java,v 1.11 2007-09-18 21:57:56 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-09-16 21:44:23 $
+ * @version $Revision: 1.11 $ $Date: 2007-09-18 21:57:56 $
  */
 public class DefaultNode implements Node {
     /**
@@ -165,6 +165,9 @@ public class DefaultNode implements Node {
      * The idea is to create canonical representatives, so node equality is object equality. 
      */
     static public DefaultNode createNode(int nr) {
+    	if (nr > MAX_NODE_NUMBER) {
+    		throw new IllegalArgumentException(String.format("Node number %s too high", nr));
+    	}
         if (nr >= nodes.length) {
             int newSize = Math.max((int)(nodes.length*GROWTH_FACTOR), nr+1);
             DefaultNode[] newNodes = new DefaultNode[newSize];
@@ -192,13 +195,20 @@ public class DefaultNode implements Node {
     static public DefaultNode createNode() {
         return createNode(nextNodeNr());
     }
-    
+
     /**
      * Returns the total number of nodes created.
      * @return the {@link #nodeCount}-value
      */
     static public int getNodeCount() {
         return nodeCount;
+    }
+
+    /**
+     * Returns the maximum node number created.
+     */
+    static public int getHighestNodeNr() {
+        return nextNodeNr;
     }
     
     /** 

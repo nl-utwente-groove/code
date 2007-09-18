@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SwingDeltaGraph.java,v 1.6 2007-09-18 16:48:52 rensink Exp $
+ * $Id: SwingDeltaGraph.java,v 1.7 2007-09-18 21:57:57 rensink Exp $
  */
 package groove.graph;
 
@@ -254,18 +254,10 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
         this.nodeEdgeMap = null;
         this.labelEdgeMaps = null;
         this.certifier = null;
-        if (isSwingDelta()) {
+        if (delta == null) {
             this.basis = child;
             this.delta = ((DeltaStore) delta).invert();
         }
-    }
-    
-    /**
-     * Indicates if the delta is to be swung to a child graph or not.
-     * If this method returns <code>true</code>, {@link #delta} is guaranteed to be of type {@link DeltaStore}.
-     */
-    private final boolean isSwingDelta() {
-        return !(delta instanceof FrozenDeltaApplier);
     }
     
 	private Set<Edge> createEdgeSet() {
