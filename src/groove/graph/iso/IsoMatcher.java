@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoMatcher.java,v 1.6 2007-08-26 07:23:11 rensink Exp $
+ * $Id: IsoMatcher.java,v 1.7 2007-09-18 15:11:05 rensink Exp $
  */
 package groove.graph.iso;
 
 import groove.graph.Element;
 import groove.graph.Morphism;
+import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.match.DefaultMatcher;
 import groove.graph.match.SearchPlanFactory;
 
@@ -32,7 +33,7 @@ import java.util.Set;
  * into play in the construction and refinement of the simulation..
  * The graphs' partition maps are used to match elements.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 @Deprecated
 public class IsoMatcher extends DefaultMatcher {
@@ -82,7 +83,7 @@ public class IsoMatcher extends DefaultMatcher {
 	 * Returns the map from domain elements to certificates.
 	 * Lazily creates the map first. 
 	 */
-	protected Map<Element, Object> getDomCertificateMap() {
+	protected Map<Element, ? extends Certificate<?>> getDomCertificateMap() {
 		if (domCertificateMap == null) {
 			domCertificateMap = computeDomCertificateMap();
 		}
@@ -93,7 +94,7 @@ public class IsoMatcher extends DefaultMatcher {
 	 * Computes the certificate map of the domain,
 	 * by querying the codomain's certificate strategy.
 	 */
-	protected Map<Element,Object> computeDomCertificateMap() {
+	protected Map<Element,? extends Certificate<?>> computeDomCertificateMap() {
 		return dom().getCertifier().getCertificateMap();
 	}
 
@@ -113,7 +114,7 @@ public class IsoMatcher extends DefaultMatcher {
     /**
      * Mapping from domain elements to certificates.
      */
-    private Map<Element,Object> domCertificateMap;
+    private Map<Element,? extends Certificate<?>> domCertificateMap;
     /**
      * Mapping from certificates to codomain element partitions.
      * The images are either {@link Element}s or {@link Collection}s.

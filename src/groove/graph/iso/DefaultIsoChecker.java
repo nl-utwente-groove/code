@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIsoChecker.java,v 1.14 2007-09-15 17:25:23 rensink Exp $
+ * $Id: DefaultIsoChecker.java,v 1.15 2007-09-18 15:11:05 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -22,6 +22,7 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.util.Reporter;
 
 import java.util.Collection;
@@ -31,16 +32,17 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+
 /**
  * Implementation of an isomorphism checking algorithm that first tries to
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy}. 
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
      * Returns the total time doing isomorphism-related computations.
-     * This includes time spent in cerftificate calculation.
+     * This includes time spent in certificate calculation.
      */
     static public long getTotalTime() {
         return getIsoCheckTime() + getCertifyingTime();
@@ -243,13 +245,14 @@ public class DefaultIsoChecker implements IsoChecker {
 		// there's sure to be an isomorphism, but we have to add the isolated nodes
 		if (result.nodeMap().size() != dom.nodeCount()) {
 			// there are isolated nodes
-			Map<Element,Object> domCertificateMap = dom.getCertifier().getCertificateMap();
 			PartitionMap codPartitionMap = cod.getCertifier().getPartitionMap();
 			Set<Node> usedNodeImages = new HashSet<Node>();
-			for (Node node: dom.nodeSet()) {
+			Certificate<Node>[] nodeCerts = dom.getCertifier().getNodeCertificates();
+			for (Certificate<Node> nodeCert: nodeCerts) {
+				Node node = nodeCert.getElement();
 				if (!result.containsKey(node)) {
 					// this is an isolated node
-					Object nodeImages = codPartitionMap.get(domCertificateMap.get(node));
+					Object nodeImages = codPartitionMap.get(nodeCert);
 					if (nodeImages instanceof Node) {
 						// it follows that there is only one isolated node
 						result.putNode(node, (Node) nodeImages);
@@ -284,7 +287,6 @@ public class DefaultIsoChecker implements IsoChecker {
 			return null;
 		}
 		NodeEdgeMap result = new NodeEdgeHashMap();	
-		Map<Element,Object> domCertificateMap = dom.getCertifier().getCertificateMap();
 		PartitionMap codPartitionMap = cod.getCertifier().getPartitionMap();
 		// the mapping has to be injective, so we remember the used cod nodes
 		Set<Node> usedNodeImages = new HashSet<Node>();
@@ -292,12 +294,13 @@ public class DefaultIsoChecker implements IsoChecker {
 		// images possibly don't
 		Set<Node> connectedNodes = new HashSet<Node>();
 		Map<Edge, Collection<Edge>> edgeImageMap = new HashMap<Edge, Collection<Edge>>();
-		for (Edge edge : dom.edgeSet()) {
-			Object images = codPartitionMap.get(domCertificateMap.get(edge));
+		Certificate<Edge>[] edgeCerts = dom.getCertifier().getEdgeCertificates();
+		for (Certificate<Edge> edgeCert: edgeCerts) {
+			Object images = codPartitionMap.get(edgeCert);
 			if (images == null) {
 				return null;
 			} else if (images instanceof Edge) {
-				if (!setEdge(edge,
+				if (!setEdge(edgeCert.getElement(),
 						(Edge) images,
 						result,
 						connectedNodes,
@@ -305,7 +308,7 @@ public class DefaultIsoChecker implements IsoChecker {
 					return null;
 				}
 			} else {
-				edgeImageMap.put(edge, (Collection<Edge>) images);
+				edgeImageMap.put(edgeCert.getElement(), (Collection<Edge>) images);
 			}
 		}
 		while (!edgeImageMap.isEmpty()) {
@@ -460,51 +463,47 @@ public class DefaultIsoChecker implements IsoChecker {
 		reporter.stop();
 		// the certificates uniquely identify the dom elements;
 		// it suffices to test if this gives rise to a consistent one-to-one node map
-		Map<Element,Object> domCertificateMap = dom.getCertificateMap();
+		Certificate[] nodeCerts = dom.getNodeCertificates();
+		Certificate[] edgeCerts = dom.getEdgeCertificates();
 		PartitionMap codPartitionMap = cod.getPartitionMap();
 		reporter.restart(ISO_CHECK);
 		reporter.restart(ISO_CERT_CHECK);
 		result = true;
 		// map to store dom-to-cod node mapping
 		Map<Node,Node> nodeMap = new HashMap<Node,Node>();
-		// iterate over the dom certificates
-		Iterator<Map.Entry<Element,Object>> domCertIter = domCertificateMap.entrySet().iterator();
-		while (result && domCertIter.hasNext()) {
-			Map.Entry<Element,Object> domCertEntry = domCertIter.next();
-			Element key = domCertEntry.getKey();
-			Object image = codPartitionMap.get(domCertEntry.getValue());
-			if (! (image instanceof Element)) {
-				result = false;
-			} else if (key instanceof Node) {
-				result = testAndSet(nodeMap, (Node) key, (Node) image);
+		// iterate over the dom node certificates
+		int nodeCount = nodeCerts.length;
+		for (int i = 0; result && i < nodeCount; i++) {
+			Certificate domNodeCert = nodeCerts[i];
+			Element key = domNodeCert.getElement();
+			Object image = codPartitionMap.get(domNodeCert);
+			if (image instanceof Node) {
+				nodeMap.put((Node) key, (Node) image);
 			} else {
+				result = false;
+			}
+		}
+		// iterate over the dom edge certificates
+		int edgeCount = edgeCerts.length;
+		for (int i = 0; result && i < edgeCount; i++) {
+			Certificate domEdgeCert = edgeCerts[i];
+			Element key = domEdgeCert.getElement();
+			Object image = codPartitionMap.get(domEdgeCert);
+			if (image instanceof Edge) {
 				Edge edgeKey = (Edge) key;
 				Edge edgeImage = (Edge) image;
 				int endCount = edgeKey.endCount();
 				for (int end = 0; result && end < endCount; end++) {
-					result = testAndSet(nodeMap, edgeKey.end(end),
-							edgeImage.end(end));
+					Node endImage = nodeMap.get(edgeKey.end(end));
+					result = endImage != null && endImage.equals(edgeImage.end(end));
 				}
+			} else {
+				result = false;
 			}
 		}
 		return result;
 	}
 	
-	/**
-	 * Puts a new dom-to-cod node pair into a map, in the meanwhile testing
-	 * if this is consistent with the image already in the map, if any.
-	 * @param nodeMap the dom-to-cod node map to be extended
-	 * @param key the node for which an image is to be inserted
-	 * @param image the (new) image fo <code>key</code>
-	 * @return <code>true</code> if <code>oldImage == null || oldImage.equals(image)</code>
-	 * where <code>oldImage = old.nodeMap.get(key)</code>
-	 */
-	private boolean testAndSet(Map<Node,Node> nodeMap, Node key, Node image) {
-		Node oldImage = nodeMap.put(key, image);
-		boolean result = oldImage == null || oldImage.equals(image);
-		return result;
-	}
-
 	/**
 	 * This method wraps a node and edge set equality test on two graphs,
 	 * under the assumption that the node and edge counts are already known

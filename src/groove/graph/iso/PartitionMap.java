@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PartitionMap.java,v 1.4 2007-08-26 07:23:11 rensink Exp $
+ * $Id: PartitionMap.java,v 1.5 2007-09-18 15:11:05 rensink Exp $
  */
 package groove.graph.iso;
 
 import groove.graph.Element;
+import groove.graph.iso.CertificateStrategy.Certificate;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -27,11 +28,12 @@ import java.util.Map;
  * Mapping from certificate values to sets of graph elements having those certificates.
  * For efficiency, singular image sets are stored as single objects. 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class PartitionMap {
 	/** Adds a pair of certificate and graph element to the partition map. */
-	public void add(Object certificate, Element elem) {
+	public void add(Certificate<?> certificate) {
+		Element elem = certificate.getElement();
 	    // retrieve the image of the certificate, if any
 	    Object oldPartition = partitionMap.get(certificate);
 	    if (oldPartition == null) {
@@ -58,7 +60,7 @@ public class PartitionMap {
 	 * @param certificate the value for which we want the partition.
 	 * @return an object of type {@link Element} or type {@link Collection}, or <code>null</code>
 	 */
-	public Object get(Object certificate) {
+	public Object get(Certificate<?> certificate) {
 		return partitionMap.get(certificate);
 	}
 	
@@ -76,7 +78,7 @@ public class PartitionMap {
 	}
 
 	/** The actual mapping. */
-	private Map<Object,Object> partitionMap = new HashMap<Object,Object>();
+	private Map<Certificate<?>,Object> partitionMap = new HashMap<Certificate<?>,Object>();
 	/** Flag indicating if the partition map contains non-singleton images. */
 	private boolean oneToOne = true;
 }

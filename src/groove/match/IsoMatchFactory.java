@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoMatchFactory.java,v 1.6 2007-08-30 15:18:18 rensink Exp $
+ * $Id: IsoMatchFactory.java,v 1.7 2007-09-18 15:11:09 rensink Exp $
  */
 package groove.match;
 
@@ -20,6 +20,7 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.match.SearchPlanStrategy.Search;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ import java.util.Map;
  * remains unchanged throughout the transformation, it will be very beneficial to take this into account.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class IsoMatchFactory {
     /** Private constructor, to ensure the class is used as singleton. */
@@ -54,7 +55,7 @@ public class IsoMatchFactory {
 	 */
 	public SearchPlanStrategy createMatcher(Graph graph) {
         List<SearchItem> result = new ArrayList<SearchItem>();
-        Map<Element,Object> certMap = graph.getCertifier().getCertificateMap();
+        Map<Element,? extends Certificate<?>> certMap = graph.getCertifier().getCertificateMap();
         for (Node node: graph.nodeSet()) {
             result.add(createNodeSearchItem(node, certMap.get(node)));
         }
@@ -67,7 +68,7 @@ public class IsoMatchFactory {
     /**
      * This implementation returns an {@link IsoNodeSearchItem}.
      */
-	private SearchItem createNodeSearchItem(Node node, Object cert) {
+	private SearchItem createNodeSearchItem(Node node, Certificate cert) {
 		return new IsoNodeSearchItem(node, cert);
 	}
 
@@ -98,7 +99,7 @@ public class IsoMatchFactory {
          * @param node the node from the domain for which we search images
          * @param cert the isomorphism certificate of the node
          */
-        public IsoNodeSearchItem(Node node, Object cert) {
+        public IsoNodeSearchItem(Node node, Certificate cert) {
             this.node = node;
             this.cert = cert;
         }
@@ -134,7 +135,7 @@ public class IsoMatchFactory {
         /** The node for which the item searches an image. */
         private final Node node;
         /** The certificate of <code>node</code>. */
-        private final Object cert;
+        private final Certificate cert;
         
         /** Record for an isomorphism node search. */
         private class IsoNodeRecord extends AbstractRecord {

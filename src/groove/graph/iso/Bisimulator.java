@@ -12,19 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Bisimulator.java,v 1.8 2007-09-15 17:25:23 rensink Exp $
+ * $Id: Bisimulator.java,v 1.9 2007-09-18 15:11:05 rensink Exp $
  */
 package groove.graph.iso;
 
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.UnaryEdge;
 import groove.graph.algebra.ValueNode;
-import groove.util.Reporter;
 import groove.util.IntSet;
+import groove.util.Reporter;
 import groove.util.TreeIntSet;
 
 import java.util.ArrayList;
@@ -38,7 +37,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elemens to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class Bisimulator implements CertificateStrategy {
 	/**
@@ -83,13 +82,10 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Superclass of graph element certificates.
      */
-    public static abstract class Certificate {
-    	/**
-    	 * Creates a certificate, with a link to the next one in the list.
-    	 * @param next
-    	 */
-    	public Certificate(Certificate next) {
-    		this.next = next;
+    public static abstract class Certificate<E extends Element> implements CertificateStrategy.Certificate<E> {
+    	/** Constructs a certificate for a given graph element. */
+    	Certificate(E element) {
+    		this.element = element;
     	}
     	
         /**
@@ -136,20 +132,23 @@ public class Bisimulator implements CertificateStrategy {
          */
         abstract protected int computeNewValue();
 
+        /** Returns the element of which this is a certificate. */
+        public E getElement() {
+        	return element;
+        }
+        
         /** The current value, which determines the hash code. */
         protected int value;
-        /**
-         * The next certificate in the list.
-         */
-        final Certificate next;
+        /** The element for which this is a certificate. */
+        private final E element;
     }
     
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.8 $
+     * @version $Revision: 1.9 $
      */
-    static private class CertificateNode extends Certificate {
+    static private class CertificateNode extends Certificate<Node> {
     	/** Initial node value to provide a better spread of hash codes. */
     	static private final int INIT_NODE_VALUE = 0x126b;
         /**
@@ -157,9 +156,9 @@ public class Bisimulator implements CertificateStrategy {
          * The incidence count (i.e., the number of incident edges) is passed in as a parameter.
          * The initial value is set to the incidence count.
          */
-        public CertificateNode(CertificateNode next) {
-        	super(next);
-        	value = INIT_NODE_VALUE;
+        public CertificateNode(Node node) {
+        	super(node);
+        	this.value = INIT_NODE_VALUE;
         }
 
     	@Override
@@ -188,9 +187,9 @@ public class Bisimulator implements CertificateStrategy {
         	return result;
         }
 
-        /**
+		/**
          * Adds to the current value.
-         * Used during construction, to record the intitial value of incident edges.
+         * Used during construction, to record the initial value of incident edges.
          */
         protected void addValue(int inc) {
             value += inc;
@@ -212,30 +211,20 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.8 $
+     * @version $Revision: 1.9 $
      */
-    static private class CertificateEdge extends Certificate {
-//        /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
-//        public CertificateEdge(CertificateNode source, DefaultLabel label) {
-//            this.source = source;
-//            this.target = source;
-//            this.labelIndex = label.getIndex();
-//            source.add(value);
-//            initValue();
-//        }
-
+    static private class CertificateEdge extends Certificate<Edge> {
         /**
          * Constructs a certificate for a binary edge.
+         * @param edge The target certificate node
          * @param source The source certificate node
-         * @param label The target certificate node
          * @param target The label of the original edge
          */
-        public CertificateEdge(CertificateNode source, Label label, CertificateNode target, CertificateEdge next) {
-        	super(next);
+        public CertificateEdge(Edge edge, CertificateNode source, CertificateNode target) {
+        	super(edge);
             this.source = source;
-            this.target = source == target ? null : target;
-            this.label = label;
-            this.labelIndex = label.hashCode();
+            this.target = target;
+            this.labelIndex = edge.label().hashCode();
             initValue();
             source.addValue(value);
             target.addValue(value << 1);
@@ -243,7 +232,7 @@ public class Bisimulator implements CertificateStrategy {
 
     	@Override
         public String toString() {
-            return "["+source+","+label+"("+labelIndex+"),"+target+"]";
+            return "["+source+","+getElement().label()+"("+labelIndex+"),"+target+"]";
         }
         
         /**
@@ -284,21 +273,14 @@ public class Bisimulator implements CertificateStrategy {
         }
         
         /**
-		 * Initializes the value. Callback method from the constructor. This
+		 * Initialises the value. Callback method from the constructor. This
 		 * implementation takes the label index as the initial value.
 		 */
         protected void initValue() {
             value = labelIndex;
         }
         
-        /**
-         * Returns the label index of the underlying label for this certificate.
-         */
-        protected int getLabelIndex() {
-            return labelIndex;
-        }
-
-        /** The source certificate for the edge. */
+		/** The source certificate for the edge. */
         private final CertificateNode source;
         /** The target certificate for the edge; may be <tt>null</tt>. */
         private final CertificateNode target;
@@ -306,10 +288,6 @@ public class Bisimulator implements CertificateStrategy {
          * The hash code of the original edge label.
          */
         private final int labelIndex;
-        /**
-         * The original edge label.
-         */
-        private final Label label;
     }
     
     /**
@@ -317,22 +295,21 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.8 $
+     * @version $Revision: 1.9 $
      */
-    static private class CertificateFlag extends Certificate {
+    static private class CertificateFlag extends Certificate<Edge> {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
-        public CertificateFlag(CertificateNode source, Label label, CertificateFlag next) {
-        	super(next);
+        public CertificateFlag(Edge edge, CertificateNode source) {
+        	super(edge);
             this.source = source;
-            this.label = label;
-            this.labelIndex = label.hashCode();
+            this.labelIndex = edge.label().hashCode();
             initValue();
             source.addValue(value);
         }
 
     	@Override
         public String toString() {
-            return "["+source+","+label+"("+labelIndex+")]";
+            return "["+source+","+getElement().label()+"("+labelIndex+")]";
         }
 
         /**
@@ -362,30 +339,19 @@ public class Bisimulator implements CertificateStrategy {
         }
         
         /**
-		 * Initializes the value. Callback method from the constructor. This
+		 * Initialises the value. Callback method from the constructor. This
 		 * implementation takes the label index as the initial value.
 		 */
         protected void initValue() {
             value = labelIndex << 4;
         }
-        
-        /**
-         * Returns the label index of the underlying label for this certificate.
-         */
-        protected int getLabelIndex() {
-            return labelIndex;
-        }
-
-        /** The source certificate for the edge. */
+       
+		/** The source certificate for the edge. */
         private final CertificateNode source;
         /**
          * The hash code of the original edge label.
          */
         private final int labelIndex;
-        /**
-         * The original edge label.
-         */
-        private final Label label;
     }
 
     /**
@@ -402,19 +368,25 @@ public class Bisimulator implements CertificateStrategy {
     }
 
     /**
-     * The result is computed by first initializing arrays of certificates
+     * The result is computed by first initialising arrays of certificates
      * and subsequently iterating over those arrays until the number of
      * distinct certificate values does not grow any more.
      * Each iteration first recomputes the edge certificates using the
      * current node certificate values, and then the node certificates
      * using the current edge certificate values. 
      */
-    public Map<Element, Object> getCertificateMap() {
+    public Map<Element, Certificate<?>> getCertificateMap() {
         reporter.start(GET_CERTIFICATE_MAP);
         // check if the map has been computed before
         if (certificateMap == null) {
             getGraphCertificate();
         }
+        if (!edgeCertificatesAdded) {
+			// add the edge certificates to the certificate map
+			for (Certificate edgeCert : edgeCerts) {
+				certificateMap.put(edgeCert.getElement(), edgeCert);
+			}
+		}
         reporter.stop();
         return certificateMap;
     }
@@ -428,6 +400,7 @@ public class Bisimulator implements CertificateStrategy {
         // check if the map has been computed before
         if (this.partitionMap == null) {
     		// no; go ahead and compute it
+        	getGraphCertificate();
             this.partitionMap = computePartitionMap();
         }
         return this.partitionMap;
@@ -441,13 +414,11 @@ public class Bisimulator implements CertificateStrategy {
         reporter.start(GET_PARTITION_MAP);
 		PartitionMap result = new PartitionMap();
 		// invert the certificate map
-		reporter.stop();
-		Map<Element,Object> certMap = getCertificateMap();
-		reporter.restart(GET_PARTITION_MAP);
-		for (Map.Entry<Element,Object> certEntry: certMap.entrySet()) {
-		    Element key = certEntry.getKey();
-		    Object certificate = certEntry.getValue();
-		    result.add(certificate, key);
+		for (Certificate cert: nodeCerts) {
+		    result.add(cert);
+		}
+		for (Certificate cert: edgeCerts) {
+		    result.add(cert);
 		}
         reporter.stop();
 		return result;
@@ -481,6 +452,14 @@ public class Bisimulator implements CertificateStrategy {
     	}
     	return nodePartitionCount;
     }
+    
+    public Certificate<Node>[] getNodeCertificates() {
+    	return nodeCerts;
+    }
+    
+    public Certificate<Edge>[] getEdgeCertificates() {
+    	return edgeCerts;
+    }
 
     /** Computes the node and edge certificate arrays. */
     private void computeCertificates() {
@@ -488,27 +467,20 @@ public class Bisimulator implements CertificateStrategy {
         // we compute the certificate map 
         initCertificates();
         iterateCertificates();
-        // so far we have done nothing with the flags, so 
-        // give them a chance to get their hash code right
-        Certificate flagCerts = flagCertList;
-        while (flagCerts != null) {
-            flagCerts.setNewValue();
-            flagCerts = flagCerts.next;
-        }
-        dispose();
         reporter.stop();
     }
     
     /**
-     * Initializes the node and edge certificate arrays,
+     * Initialises the node and edge certificate arrays,
      * and the certificate map.
      */
     private void initCertificates() {
         reporter.start(INIT_CERTIFICATES);
         int nodeCount = graph.nodeCount();
         int edgeCount = graph.edgeCount();
-        // mapping from graph elements to the corresponding certificate elements
-        certificateMap = new HashMap<Element,Object>(nodeCount+edgeCount);
+        nodeCerts = new CertificateNode[nodeCount];
+        edgeCerts = new Certificate[edgeCount];
+        certificateMap = new HashMap<Element,Certificate<?>>();
         // create the edge certificates
         if (TIME) reporter.start(EDGE_CERTS);
         for (Edge edge: graph.edgeSet()) {
@@ -539,7 +511,7 @@ public class Bisimulator implements CertificateStrategy {
         // therefore, the computeNewValue()-method of class
         // CertificateNode must be overridden
         if (node instanceof ValueNode) {
-            certNode = new CertificateNode(nodeCertList) {
+            certNode = new CertificateNode(node) {
             	@Override
                 protected int computeNewValue() {
                     // only take the last 8 bits of the operation-hashcode
@@ -550,11 +522,11 @@ public class Bisimulator implements CertificateStrategy {
             certNode.setNewValue();
         }
         else {
-            certNode = new CertificateNode(nodeCertList);
+            certNode = new CertificateNode(node);
         }
         Object oldObject = certificateMap.put(node, certNode);
         assert oldObject == null : "Certificate node "+certNode+" for "+node+" seems to override "+oldObject;
-        nodeCertList = certNode;
+        nodeCerts[nodeCertCount] = certNode;
         nodeCertCount++;
         if (TIME) reporter.stop();
         return certNode;
@@ -579,26 +551,29 @@ public class Bisimulator implements CertificateStrategy {
      */
     private void initCertEdge(Edge edge) {
     	if (TIME) reporter.start(INIT_CERT_EDGE);
-        assert ! certificateMap.containsKey(edge) : "Edge "+edge+" already in certificate map "+certificateMap;
-        Certificate edgeImage;
-        Label label = edge.label();
         Node source = edge.source();
         CertificateNode sourceImage = getCertNode(source); // (CertificateNode) certificateMap.get(source);
         assert sourceImage != null : "Edge source of " + edge + " not found in "
                 + certificateMap + "; so not in the node set " + graph.nodeSet() + " of "
                 + graph;
         if (edge instanceof UnaryEdge || source == edge.opposite()) {
-            edgeImage = flagCertList = new CertificateFlag(sourceImage, label, flagCertList);
+            CertificateFlag flagCert = new CertificateFlag(edge, sourceImage);
+            edgeCerts[edgeCerts.length - flagCertCount - 1] = flagCert;
+            flagCertCount++;
+            assert flagCertCount + edgeCertCount <= edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges", flagCertCount, edgeCertCount, edgeCerts.length);
         } else {
             CertificateNode targetImage = getCertNode(edge.opposite()); //(CertificateNode) certificateMap
 //                    .get(edge.opposite());
             assert targetImage != null : "Edge target of " + edge + " not found in "
                     + certificateMap + "; so not in the node set " + graph.nodeSet() + " of "
                     + graph;
-            edgeImage = edgeCertList = new CertificateEdge(sourceImage, label, targetImage, edgeCertList);
+            CertificateEdge edgeCert = new CertificateEdge(edge, sourceImage, targetImage);
+            edgeCerts[edgeCertCount] = edgeCert;
+            edgeCertCount++;
+            assert flagCertCount + edgeCertCount <= edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges", flagCertCount, edgeCertCount, edgeCerts.length);
         }
-        Object oldObject = certificateMap.put(edge, edgeImage);
-        assert oldObject == null : "Certificate node "+edgeImage+" for "+edge+" seems to override "+oldObject;
+//        Object oldObject = certificateMap.put(edge, edgeImage);
+//        assert oldObject == null : "Certificate node "+edgeImage+" for "+edge+" seems to override "+oldObject;
         if (TIME) reporter.stop();
     }
     
@@ -606,8 +581,6 @@ public class Bisimulator implements CertificateStrategy {
     private synchronized void iterateCertificates() {
     	// get local copies of attributes for speedup
     	IntSet certStore = Bisimulator.certStore;
-    	Certificate nodeCertList = this.nodeCertList;
-    	Certificate edgeCertList = this.edgeCertList;
     	int nodeCertCount = this.nodeCertCount;
     	int nodePartitionCount = 0;
     	int certificateValue;
@@ -619,20 +592,17 @@ public class Bisimulator implements CertificateStrategy {
             certificateValue = nodeCertCount;
             certStore.clear(nodeCertCount);
             // first compute the new edge certificates
-            Certificate edgeCerts = edgeCertList;
-            while (edgeCerts != null) {
-                certificateValue += edgeCerts.setNewValue();
-                edgeCerts = edgeCerts.next;
+            for (int i = 0; i < edgeCerts.length; i++) {
+            	Certificate edgeCert = edgeCerts[i];
+            	certificateValue += edgeCert.setNewValue();
             }
             // now compute the new node certificates
-            Certificate nodeCerts = nodeCertList;
-            while (nodeCerts != null) {
-                int newCert = nodeCerts.setNewValue();
+            for (Certificate nodeCert: nodeCerts) {
+                int newCert = nodeCert.setNewValue();
                 if (iterateCount > 0 && nodePartitionCount < nodeCertCount) {
                 	certStore.add(newCert);
                 }
                 certificateValue += newCert;
-                nodeCerts = nodeCerts.next;
             }
             int newNodePartitionCount = certStore.size();
             // we stop the iteration when the number of partitions has not grown
@@ -649,6 +619,12 @@ public class Bisimulator implements CertificateStrategy {
         } while (goOn);
         this.nodePartitionCount = nodePartitionCount;
         this.graphCertificate = new Long(certificateValue);
+        // so far we have done nothing with the flags, so 
+        // give them a chance to get their hash code right
+        int edgeCount = edgeCerts.length;
+        for (int i = edgeCertCount; i < edgeCount; i++) {
+            edgeCerts[i].setNewValue();
+        }
         recordIterateCount(iterateCount);
     }
     
@@ -656,9 +632,8 @@ public class Bisimulator implements CertificateStrategy {
      * Abandons the auxiliary arrays to free some space.
      */
     private void dispose() {
-    	nodeCertList = null;
-    	edgeCertList = null;
-    	flagCertList = null;
+    	nodeCerts = null;
+    	edgeCerts = null;
 //    	certNodes = Bisimulator.certNodes;
 //    	certNodeCount = Bisimulator.certNodeCount;
 //        for (int i = 0; i < certNodeCount; i++) {
@@ -670,10 +645,12 @@ public class Bisimulator implements CertificateStrategy {
     private final Graph graph;
     /** The pre-computed graph certificate, if any. */
     private Object graphCertificate;
-    /** The pre-computed crtificate maps, if any. */
-    private Map<Element,Object> certificateMap;
+    /** The pre-computed certificate map, if any. */
+    private Map<Element,Certificate<?>> certificateMap;
     /** The pre-computed partition map, if any. */
     private PartitionMap partitionMap;
+    /** Flag indicating that the edge certificates have been added to the certificate map. */
+    private boolean edgeCertificatesAdded;
     /**
      * The number of pre-computed node partitions.
      */
@@ -681,18 +658,19 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * The list of node certificates in this bisimulator.
      */
-    private CertificateNode nodeCertList;
-    /** The number of elements in {@link #nodeCertList}. */
+    private CertificateNode[] nodeCerts;
+    /** The number of elements in {@link #nodeCerts}. */
     private int nodeCertCount;
     /**
      * The list of edge certificates in this bisimulator.
+     * The array consists of a number of {@link CertificateEdge}s,
+     * followed by a number of {@link CertificateFlag}s.
      */
-    private CertificateEdge edgeCertList;
-    /**
-     * The list of flag certificates in this bisimulator.
-     */
-    private CertificateFlag flagCertList;
-    
+    private Certificate<Edge>[] edgeCerts;
+    /** The number of {@link CertificateEdge}s in {@link #edgeCerts}. */
+    private int edgeCertCount;
+    /** The number of {@link CertificateFlag}s in {@link #edgeCerts}. */
+    private int flagCertCount;
 
     // --------------------------- reporter definitions ---------------------
     /** Reporter instance to profile methods of this class. */
