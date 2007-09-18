@@ -12,16 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.9 2007-09-17 10:11:36 rensink Exp $
+ * $Id: StateCache.java,v 1.10 2007-09-18 22:12:08 rensink Exp $
  */
 package groove.lts;
 
-import groove.graph.DeltaApplier;
 import groove.graph.DeltaGraphFactory;
-import groove.graph.DeltaTarget;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.FixedDeltaGraph;
+import groove.graph.FrozenDeltaApplier;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.SwingDeltaGraph;
@@ -37,7 +36,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class StateCache {
     /**
@@ -76,7 +75,7 @@ public class StateCache {
 		Element[] frozenGraph = state.getFrozenGraph();
     	Graph result;
 		if (frozenGraph != null) {
-			result = graphFactory.newGraph(null, computeFrozenDelta(frozenGraph));
+			result = graphFactory.newGraph(null, new FrozenDeltaApplier(frozenGraph));
 		} else if (!(state instanceof GraphNextState)) {
 			throw new IllegalStateException("Underlying state does not have information to reconstruct the graph");
 		} else {
@@ -158,32 +157,18 @@ public class StateCache {
     	}
     	return result;
     }
-    
-    /**
-     * Converts a frozen graph representation into a delta applier.
-     * It is assumed that the frozen graph representation contains all nodes
-     * and edges of the graph in a single array.
-     * @param elements the frozen graph representation; non-<code>null</code>
-     * @return a delta applier based on <code>elements</code>
-     */
-    private DeltaApplier computeFrozenDelta(final Element[] elements) {
-		return new DeltaApplier() {
-			public void applyDelta(DeltaTarget target, int mode) {
-				for (Element elem : elements) {
-					if (elem instanceof Node && mode != EDGES_ONLY) {
-						target.addNode((Node) elem);
-					} else if (elem instanceof Edge && mode != NODES_ONLY) {
-						target.addEdge((Edge) elem);
-					}
-				}
-			}
-
-			public void applyDelta(DeltaTarget target) {
-				applyDelta(target, ALL_ELEMENTS);
-			}
-		};
-	}
-    
+//    
+//    /**
+//     * Converts a frozen graph representation into a delta applier.
+//     * It is assumed that the frozen graph representation contains all nodes
+//     * and edges of the graph in a single array.
+//     * @param elements the frozen graph representation; non-<code>null</code>
+//     * @return a delta applier based on <code>elements</code>
+//     */
+//    private DeltaApplier computeFrozenDelta(final Element[] elements) {
+//		return new FrozenDeltaApplier(elements);
+//    }
+//    
     /**
 	 * Lazily creates and returns a mapping from the events to the target states
 	 * of the currently stored outgoing transitions of this state.
@@ -283,22 +268,7 @@ public class StateCache {
     /** Flag indicating if state graphs should be frozen. */
     private final boolean freezeGraphs = SystemRecord.isReuse();
     /** Factory used to create the state graphs. */
-    private final DeltaGraphFactory graphFactory = SystemRecord.isReuse() ? FixedDeltaGraph.getInstance() : SwingDeltaGraph.getInstance();
-//    
-//    /** 
-//     * Sets the freeze bound for state graphs;
-//     * a value of <code>-1</code> means graphs are never frozen.
-//     */
-//    static public void setFreezeGraphs(boolean freeze) {
-//    	StateCache.freezeGraphs = freeze;
-//    }
-//    
-//    /** Sets the factory used to create the state graphs. */
-//    static public void setGraphFactory(DeltaGraphFactory factory) {
-//    	graphFactory = factory;
-//    }
-//    
-//    static private DeltaGraphFactory graphFactory = FixedDeltaGraph.getInstance();
+    private final DeltaGraphFactory graphFactory = SwingDeltaGraph.getInstance(); //SystemRecord.isReuse() ? FixedDeltaGraph.getInstance() : SwingDeltaGraph.getInstance();
     /** 
      * The depth of the graph above which the underlying graph will be frozen.
      */
