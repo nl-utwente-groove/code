@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SwingDeltaGraph.java,v 1.5 2007-09-16 21:44:23 rensink Exp $
+ * $Id: SwingDeltaGraph.java,v 1.6 2007-09-18 16:48:52 rensink Exp $
  */
 package groove.graph;
 
@@ -41,21 +41,16 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	 * @param basis the basis for the new delta graph; possibly <code>null</code>
 	 * @param delta the delta with respect to the basis; non-<code>null</code>
 	 */
-	public SwingDeltaGraph(final SwingDeltaGraph basis, final DeltaApplier delta) {
+	private SwingDeltaGraph(final SwingDeltaGraph basis, final DeltaApplier delta) {
 		this.basis = basis;
-		if (delta == null || delta instanceof DeltaStore) {
-			this.delta = (DeltaStore) delta;
+		if (delta == null || delta instanceof DeltaStore || delta instanceof FrozenDeltaApplier) {
+			this.delta = delta;
 		} else {
 			this.delta = new DeltaStore(delta);
 		}
 		setFixed();
 	}
-//	
-//	@Override
-//	public boolean isFixed() {
-//		return true;
-//	}
-
+	
 	/**
 	 * Since the result should be modifiable, returns a {@link DeltaGraph}.
 	 */
@@ -176,11 +171,6 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		return result;
 	}
 	
-	/** Indicates if the label-to-edge map has been initialised. */
-	private boolean isLabelEdgeMapSet() {
-		return labelEdgeMaps != null;
-	}
-
 	@Override
 	public Map<Node, Set<Edge>> nodeEdgeMap() {
 		if (nodeEdgeMap == null) {
@@ -216,11 +206,6 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		return result;
 	}
 	
-	/** Indicates if the label-to-edge map has been initialised. */
-	private boolean isNodeEdgeMapSet() {
-		return nodeEdgeMap != null;
-	}
-
 	/** 
 	 * Computes all the data structures that are available from
 	 * the basis graph.
@@ -236,36 +221,53 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 			edgeSet = createEdgeSet();
 			// apply the delta to fill the structures
 			delta.applyDelta(new Target(nodeSet, edgeSet, null, null));
-			delta = null;
 		} else {
-			nodeSet = basis.nodeSet();
-			edgeSet = basis.edgeSet();
-			// initialise the node-edge map from the basis, if it is set in the basis
-			if (basis.isNodeEdgeMapSet()) {
-				nodeEdgeMap = basis.nodeEdgeMap();
-			}
-			if (basis.isLabelEdgeMapSet()) {
-				labelEdgeMaps = basis.getLabelEdgeMaps();
-			}
-			// apply the delta to fill the structures
-			delta.applyDelta(new Target(nodeSet, edgeSet, nodeEdgeMap, labelEdgeMaps));
-			basis.releaseData(this, delta);
+		    basis.transferData(this);
 			basis = null;
-			delta = null;
 		}
 		reporter.stop();
 	}
 
-	private void releaseData(SwingDeltaGraph basis, DeltaStore basisDelta) {
-		this.nodeSet = null;
-		this.edgeSet = null;
-		this.nodeEdgeMap = null;
-		this.labelEdgeMaps = null;
-		this.certifier = null;
-		this.basis = basis;
-		this.delta = basisDelta.invert();
-	}
-	
+    /** Transfers the data from this graph to a child graph. */
+    private void transferData(SwingDeltaGraph child) {
+        reporter.start(INIT_DATA);
+        assert child.basis == this;
+        assert child.nodeSet == null;
+        assert child.edgeSet == null;
+        assert child.nodeEdgeMap == null;
+        assert child.labelEdgeMaps == null;
+        // initialise own data, if necessary
+        if (nodeSet == null) {
+            initData();
+        }
+        DeltaApplier delta = child.delta;
+        // apply the delta to fill the structures
+        delta.applyDelta(new Target(nodeSet, edgeSet, nodeEdgeMap, labelEdgeMaps));
+        child.nodeSet = nodeSet;
+        child.edgeSet = edgeSet;
+        child.nodeEdgeMap = nodeEdgeMap;
+        child.labelEdgeMaps = labelEdgeMaps;
+        child.delta = null;
+        reporter.stop();
+        this.nodeSet = null;
+        this.edgeSet = null;
+        this.nodeEdgeMap = null;
+        this.labelEdgeMaps = null;
+        this.certifier = null;
+        if (isSwingDelta()) {
+            this.basis = child;
+            this.delta = ((DeltaStore) delta).invert();
+        }
+    }
+    
+    /**
+     * Indicates if the delta is to be swung to a child graph or not.
+     * If this method returns <code>true</code>, {@link #delta} is guaranteed to be of type {@link DeltaStore}.
+     */
+    private final boolean isSwingDelta() {
+        return !(delta instanceof FrozenDeltaApplier);
+    }
+    
 	private Set<Edge> createEdgeSet() {
 		return new HashSet<Edge>();
 	}
@@ -285,7 +287,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	/** The fixed (possibly <code>null</code> basis of this graph. */
 	private SwingDeltaGraph basis;
 	/** The fixed delta of this graph. */
-	private DeltaStore delta;
+	private DeltaApplier delta;
 	
 	/** The (initially null) edge set of this graph. */
 	private Set<Edge> edgeSet;
