@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.4 2007-09-04 20:59:24 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.5 2007-09-18 21:57:58 rensink Exp $
  */
 package groove.match;
 
@@ -39,7 +39,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class SearchPlanStrategy implements MatchStrategy {
 	/**
@@ -177,7 +177,7 @@ public class SearchPlanStrategy implements MatchStrategy {
 	Property<VarNodeEdgeMap> filter;
     
     /** Reporter instance to profile matcher methods. */
-    static final Reporter reporter = Reporter.register(SearchPlanStrategy.class);
+    static public final Reporter reporter = Reporter.register(SearchPlanStrategy.class);
     /** Handle for profiling {@link #getMatch(Graph, NodeEdgeMap)} */
     static final int GET_MATCH = reporter.newMethod("getMatch()");
     /** Handle for profiling {@link #getMatchSet(Graph, NodeEdgeMap)} */
@@ -185,7 +185,7 @@ public class SearchPlanStrategy implements MatchStrategy {
     /** Handle for profiling {@link #getMatchIter(Graph, NodeEdgeMap)} */
     static final int GET_MATCH_ITER = reporter.newMethod("getMatchIter()");
     /** Handle for profiling {@link Search#find()} */
-    static final int SEARCH_FIND = reporter.newMethod("Search.find()");
+    static public final int SEARCH_FIND = reporter.newMethod("Search.find()");
     /** Handle for profiling {@link SearchItem.Record#find()} */
     static final int RECORD_FIND = reporter.newMethod("Record.find()");
 

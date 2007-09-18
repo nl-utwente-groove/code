@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.23 2007-09-16 21:44:30 rensink Exp $
+ * $Id: SPORule.java,v 1.24 2007-09-18 21:57:59 rensink Exp $
  */
 package groove.trans;
 
@@ -28,6 +28,7 @@ import groove.graph.NodeFactory;
 import groove.graph.algebra.ValueNode;
 import groove.match.ConditionSearchPlanFactory;
 import groove.match.MatchStrategy;
+import groove.match.SearchPlanStrategy;
 import groove.rel.RegExprLabel;
 import groove.rel.VarMorphism;
 import groove.rel.VarNodeEdgeMap;
@@ -48,7 +49,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -73,24 +74,12 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     
     /**
      * Returns the total time doing matching-related computations.
-     * This includes time spent in cerftificate calculation.
+     * This includes time spent in certificate calculation.
      */
     static public long getMatchingTime() {
-        return DefaultGraphCondition.reporter.getTotalTime(GET_MATCHING);
+        return SearchPlanStrategy.reporter.getTotalTime(SearchPlanStrategy.SEARCH_FIND);
     }
-//    
-//    /**
-//     * Returns the number of events created in the course of rule application.
-//     */
-//    static public int getEventCount() {
-//    	return eventCount;
-//    }
-//
-//    /**
-//     * The total number of events (over all rules) created in {@link #getEvent(VarNodeEdgeMap)}.
-//     */
-//    private static int eventCount;
-//    
+    
     /**
      * The factory used for creating rule anchors.
      */
