@@ -1,4 +1,4 @@
-/* $Id: StartGraphState.java,v 1.3 2007-06-18 07:25:45 fladder Exp $ */
+/* $Id: StartGraphState.java,v 1.4 2007-09-18 15:14:33 rensink Exp $ */
 package groove.lts;
 
 import groove.control.Location;
@@ -38,35 +38,7 @@ public class StartGraphState extends AbstractGraphState {
 	protected void updateClosed() {
 		// empty
 	}
-//	
-//	DeltaApplier getDelta(final Graph graph) {
-//		return new DeltaApplier() {
-//
-//			public void applyDelta(DeltaTarget target, int mode) {
-//				if (mode != EDGES_ONLY) {
-//					for (Node node: graph.nodeSet()) {
-//						target.addNode(node);
-//					}
-//				}
-//				if (mode != NODES_ONLY) {
-//					for (Edge edge: graph.edgeSet()) {
-//						target.addEdge(edge);
-//					}
-//				}
-//				
-//			}
-//
-//			public void applyDelta(DeltaTarget target) {
-//				for (Node node: graph.nodeSet()) {
-//					target.addNode(node);
-//				}
-//				for (Edge edge: graph.edgeSet()) {
-//					target.addEdge(edge);
-//				}
-//			}
-//		};
-//	}
-
+	
 	/** The stored graph. */
 	private Graph graph;
 }

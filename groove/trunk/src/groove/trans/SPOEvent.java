@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.29 2007-09-17 10:11:34 rensink Exp $
+ * $Id: SPOEvent.java,v 1.30 2007-09-18 15:14:32 rensink Exp $
  */
 package groove.trans;
 
@@ -52,7 +52,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.29 $ $Date: 2007-09-17 10:11:34 $
+ * @version $Revision: 1.30 $ $Date: 2007-09-18 15:14:32 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -80,8 +80,6 @@ public class SPOEvent implements RuleEvent {
     	rule.testFixed(true);
         this.rule = rule;
         this.anchorMap = anchorMap;
-//		this.ruleFactory = rule.getRuleFactory();
-        this.freshNodeList = createFreshNodeList();
     }
 
     /**
@@ -177,7 +175,7 @@ public class SPOEvent implements RuleEvent {
 	}
 
 	public VarNodeEdgeMap getCoanchorMap() {
-	    if (SystemRecord.isReuse()) {
+	    if (reuse) {
             if (coanchorMap == null) {
                 coanchorMap = computeCoanchorMap();
             }
@@ -569,7 +567,7 @@ public class SPOEvent implements RuleEvent {
 	 * eraser nodes.
 	 */
     protected Set<Node> getErasedNodes() {
-        if (SystemRecord.isReuse()) {
+        if (reuse) {
             if (erasedNodeSet == null) {
                 erasedNodeSet = computeErasedNodes();
             }
@@ -604,7 +602,7 @@ public class SPOEvent implements RuleEvent {
      * images of the LHS eraser edges.
      */
     protected Set<Edge> getErasedEdges() {
-        if (SystemRecord.isReuse()) {
+        if (reuse) {
             if (erasedEdgeSet == null) {
                 erasedEdgeSet = computeErasedEdges();
             }
@@ -640,7 +638,7 @@ public class SPOEvent implements RuleEvent {
      * images of the LHS eraser edges.
      */
     protected Set<Edge> getSimpleCreatedEdges() {
-        if (SystemRecord.isReuse()) {
+        if (reuse) {
             if (simpleCreatedEdgeSet == null) {
                 simpleCreatedEdgeSet = computeSimpleCreatedEdges();
             }
@@ -780,16 +778,21 @@ public class SPOEvent implements RuleEvent {
 		for (int i = 0; i < coanchorSize; i++) {
 			result[i] = getFreshNode(i, host);
 		}
-		List<Node> resultAsList = Arrays.asList(result);
-		Node[] existingResult = coanchorImageMap.get(resultAsList);
-		if (existingResult == null) {
-			coanchorImageMap.put(resultAsList, result);
-			coanchorImageCount++;
-		} else {
-			result = existingResult;
-			coanchorImageOverlap++;
-		}
-		return result;
+		if (reuse) {
+		    if (coanchorImageMap == null) {
+		        coanchorImageMap = new HashMap<List<Node>, Node[]>();
+		    }
+            List<Node> resultAsList = Arrays.asList(result);
+            Node[] existingResult = coanchorImageMap.get(resultAsList);
+            if (existingResult == null) {
+                coanchorImageMap.put(resultAsList, result);
+                coanchorImageCount++;
+            } else {
+                result = existingResult;
+                coanchorImageOverlap++;
+            }
+        }
+        return result;
     }
 
     /**
@@ -806,16 +809,20 @@ public class SPOEvent implements RuleEvent {
 	public Node getFreshNode(int creatorIndex, Graph graph) {
 		Node result = null;
 		Collection<Node> currentFreshNodes = getFreshNodes(creatorIndex);
-		Iterator<Node> freshNodeIter = currentFreshNodes.iterator();
-		while (result == null && freshNodeIter.hasNext()) {
-			Node freshNode = freshNodeIter.next();
-			if (!graph.containsElement(freshNode)) {
-				result = freshNode;
-			}
-		}
+		if (currentFreshNodes != null) {
+            Iterator<Node> freshNodeIter = currentFreshNodes.iterator();
+            while (result == null && freshNodeIter.hasNext()) {
+                Node freshNode = freshNodeIter.next();
+                if (!graph.containsElement(freshNode)) {
+                    result = freshNode;
+                }
+            }
+        }
 		if (result == null) {
 			result = createNode();
-			currentFreshNodes.add(result);
+			if (currentFreshNodes != null) {
+			    currentFreshNodes.add(result);
+			}
 		}
 		return result;
 	}
@@ -834,9 +841,17 @@ public class SPOEvent implements RuleEvent {
 
 	/**
 	 * Returns the list of all previously created fresh nodes.
+	 * Returns <code>null</code> if the reuse policy is set to <code>false</code>.
 	 */
     protected List<Node> getFreshNodes(int creatorIndex) {
-        return freshNodeList.get(creatorIndex);
+        if (reuse) {
+            if (freshNodeList == null) {
+                freshNodeList = createFreshNodeList();
+            }
+            return freshNodeList.get(creatorIndex);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -914,10 +929,11 @@ public class SPOEvent implements RuleEvent {
 	/**
 	 * The list of nodes created by {@link #createNode()}.
 	 */
-	private final List<List<Node>> freshNodeList;
+	private List<List<Node>> freshNodeList;
 	/** Store of previously used coanchor images. */
-	private final Map<List<Node>, Node[]> coanchorImageMap = new HashMap<List<Node>, Node[]>();
-
+	private Map<List<Node>, Node[]> coanchorImageMap;
+	/** Flag indicating if sets should be stored for reuse. */
+	private final boolean reuse = SystemRecord.isReuse();
 	/** 
 	 * Reports the number of times a stored coanchor image has been recomputed 
 	 * for a new rule application.
