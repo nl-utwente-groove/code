@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.7 2007-09-11 16:20:35 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.8 2007-09-19 16:06:13 rensink Exp $
  */
 package groove.match;
 
@@ -277,7 +277,7 @@ public class EdgeSearchItem extends AbstractSearchItem {
             Edge result = null;
             if (isFirst()) {
                 Edge image = computePreDetermined();
-                if (getTarget().containsElement(image)) {
+                if (image != null && getTarget().containsElement(image)) {
                     setEdge(image);
                     result = image;
                 }
