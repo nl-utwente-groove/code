@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSet.java,v 1.6 2007-09-14 16:26:07 rensink Exp $
+ * $Id: NodeSet.java,v 1.7 2007-09-19 14:57:31 rensink Exp $
  */
 package groove.graph;
 
-import groove.util.TreeHashSet3;
+import groove.util.Equator;
+import groove.util.TreeHashSet;
 
 import java.util.Collection;
 
@@ -27,28 +28,44 @@ import java.util.Collection;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NodeSet extends TreeHashSet3<Node> {
+public class NodeSet extends TreeHashSet<Node> {
     /** Constructs an empty set. */
 	public NodeSet() {
-        super(HASHCODE_EQUATOR);
+        super(DEFAULT_CAPACITY, NODE_RESOLUTION, NODE_RESOLUTION, NODE_EQUATOR);
 //        super(DefaultNode.getNodeCount(), HASHCODE_EQUATOR);
 		//            super(NODE_SET_RESOLUTION, DefaultNode.getNodeCount(), HASHCODE_EQUATOR);
 		//            super(NODE_SET_RESOLUTION, HASHCODE_EQUATOR);
 	}
 
     /** Constructs a copy of an existing set. */
-	public NodeSet(Collection<? extends Node> other) {
-        super(other, HASHCODE_EQUATOR);
-//        super(other, DefaultNode.getNodeCount(), HASHCODE_EQUATOR);
-		//            super(other, NODE_SET_RESOLUTION, HASHCODE_EQUATOR);
-	}
+    public NodeSet(Collection<? extends Node> other) {
+        super(other.size(), NODE_RESOLUTION, NODE_RESOLUTION, NODE_EQUATOR);
+        addAll(other);
+    }
 
-	@Override
-	protected int getCode(Object key) {
-        if (key instanceof DefaultNode) {
-            return ((DefaultNode) key).getNumber();
-        } else {
-            return key.hashCode();
+    /** Constructs a copy of an existing node set. */
+    public NodeSet(NodeSet other) {
+        super(other);
+    }
+
+    /** The resolution of the tree for a node set. */
+    static private final int NODE_RESOLUTION = 4;
+    /** The equator for nodes, which looks at the node number. */
+	static private final Equator<Node> NODE_EQUATOR = new Equator<Node>() {
+        public boolean allEqual() {
+            return true;
         }
-	}
+
+        public boolean areEqual(Node newKey, Node oldKey) {
+            return true;
+        }
+
+        public int getCode(Node key) {
+            if (key instanceof DefaultNode) {
+                return ((DefaultNode) key).getNumber();
+            } else {
+                return key.hashCode();
+            }
+        }	    
+	};
 }

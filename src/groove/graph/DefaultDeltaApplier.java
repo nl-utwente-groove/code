@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultDeltaApplier.java,v 1.3 2007-09-16 21:44:23 rensink Exp $
+ * $Id: DefaultDeltaApplier.java,v 1.4 2007-09-19 14:57:31 rensink Exp $
  */
 package groove.graph;
 
 import groove.util.DeltaSet;
 import groove.util.StackedSet;
+import groove.util.TreeHashSet;
 import groove.util.TreeHashSet3;
 
 import java.util.Collection;
@@ -27,7 +28,7 @@ import java.util.Set;
  * Delta target that collects the addition and removal information 
  * and can play it back later, in the role of delta applier.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DefaultDeltaApplier implements DeltaApplier {
 	/**
@@ -209,11 +210,11 @@ public class DefaultDeltaApplier implements DeltaApplier {
 	 * Returns the empty set if the given edge set is <code>null</code>. 
 	 */
 	protected Set<Edge> createEdgeSet(Collection<? extends Edge> set) {
-		if (set == null) {
-			return new TreeHashSet3<Edge>();
-		} else {
-			return new TreeHashSet3<Edge>(set);
+	    Set<Edge> result = new TreeHashSet<Edge>();
+		if (set != null) {
+			result.addAll(set);
 		}
+		return result;
 	}
 
 	/**
