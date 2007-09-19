@@ -12,14 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractEdge.java,v 1.5 2007-09-10 19:13:32 rensink Exp $
+ * $Id: AbstractEdge.java,v 1.6 2007-09-19 07:10:29 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public abstract class AbstractEdge implements Edge {
     /**
@@ -131,11 +131,15 @@ public abstract class AbstractEdge implements Edge {
      */
     @Override
     final public int hashCode() {
-    	if (! hashCodeInit) {
-    		hashCode = computeHashCode();
-    		hashCodeInit = true;
+    	int result = hashCode;
+    	if (result == 0) {
+    		result = computeHashCode();
+    		if (result == 0) {
+    			result = 1;
+    		}
+    		hashCode = result;
     	}
-        return hashCode;
+        return result;
     }
 
     /**
@@ -234,7 +238,5 @@ public abstract class AbstractEdge implements Edge {
     /** The label of this edge. @invariant label != null */
     protected final Label label;
     /** The pre-computed hash code. */
-    protected int hashCode;
-    /** Flag to indicate that the hash code has been initialised. */
-    protected boolean hashCodeInit;
+    private int hashCode;
 }

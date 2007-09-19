@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractBinaryEdge.java,v 1.6 2007-09-16 21:44:23 rensink Exp $
+ * $Id: AbstractBinaryEdge.java,v 1.7 2007-09-19 07:10:29 rensink Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
  * Abstract implementation of an (immutable) binary graph edge, as a tuple consisting of source and
  * target nodes.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-09-16 21:44:23 $
+ * @version $Revision: 1.7 $ $Date: 2007-09-19 07:10:29 $
  */
 abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryEdge {
     static {
@@ -163,15 +163,9 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
     	int labelCode = label().hashCode();
     	int sourceCode = source.hashCode();
     	int targetCode = target.hashCode();
-    	final int SOURCE_SHIFT = 1;
-    	final int TARGET_SHIFT = 2;
-    	final int BIT_COUNT = 32; 
-    	final int SOURCE_RIGHT_SHIFT = BIT_COUNT - SOURCE_SHIFT;
-    	final int TARGET_RIGHT_SHIFT = BIT_COUNT - TARGET_SHIFT;
         return labelCode
 				^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
 				^ ((targetCode << TARGET_SHIFT) + (targetCode >>> TARGET_RIGHT_SHIFT));
-//        return (((targetCode * labelCode) ^ labelCode) << 4) + sourceCode; 
     }
 
     /** The target node of this edge. */
@@ -180,4 +174,11 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
 //     * The end nodes of this edge.
 //     */
 //    private Node[] ends;
+
+    // constants for hash code computation
+	static private final int SOURCE_SHIFT = 1;
+	static private final int TARGET_SHIFT = 2;
+	static private final int BIT_COUNT = 32; 
+	static private final int SOURCE_RIGHT_SHIFT = BIT_COUNT - SOURCE_SHIFT;
+	static private final int TARGET_RIGHT_SHIFT = BIT_COUNT - TARGET_SHIFT;
 }
