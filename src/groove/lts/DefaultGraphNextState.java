@@ -17,7 +17,6 @@ package groove.lts;
 import groove.control.Location;
 import groove.graph.AbstractGraph;
 import groove.graph.DeltaApplier;
-import groove.graph.DeltaTarget;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
@@ -31,7 +30,7 @@ import groove.trans.RuleEvent;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
@@ -249,23 +248,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 			return null;
 		}
 	}
-//	
-//    /**
-//     * This implementation compares the event identities.
-//     * Callback method from {@link #equals(Object)}.
-//     */
-//    protected boolean equalsEvent(GraphTransitionStub other) {
-//        return getEvent() == other.getEvent();
-//    }
-//
-//    /**
-//     * This implementation compares the source graph identities.
-//     * Callback method from {@link #equals(Object)}.
-//     */
-//    protected boolean equalsSource(GraphTransitionStub other) {
-//        return !(other instanceof DefaultGraphNextState) || source() == ((DefaultGraphNextState) other).source();
-//    }
-//    
+	
     /**
      * This implementation compares the state on the basis of its qualities as
      * a {@link GraphTransition}.

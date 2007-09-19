@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.24 2007-09-19 14:57:26 rensink Exp $
+ * $Id: GTS.java,v 1.25 2007-09-19 22:44:30 rensink Exp $
  */
 package groove.lts;
 
@@ -43,7 +43,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.24 $ $Date: 2007-09-19 14:57:26 $
+ * @version $Revision: 1.25 $ $Date: 2007-09-19 22:44:30 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -85,7 +85,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public GTS(GraphGrammar grammar) {
-        this(grammar, true);
+        this(grammar, SystemRecord.isReuse());
     }
 
     /**
@@ -255,7 +255,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         if (isStoreTransitions()) {
         	return new TransitionSet();
         } else {
-            return Collections.emptySet();
+            return new NextStateSet();
         }   	
     }
     
@@ -310,7 +310,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         reporter.start(ADD_STATE);
         // see if isomorphic graph is already in the LTS
         ((AbstractGraphState) newState).setStateNumber(nodeCount());
-        GraphState result = (GraphState) stateSet.put(newState);
+        GraphState result = stateSet.put(newState);
         if (result == null) {
             fireAddNode(newState);
         }
@@ -429,7 +429,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         /** The isomorphism checker of the state set. */
         private IsoChecker checker = new groove.graph.iso.DefaultIsoChecker();
     }
-    
+
     /**
      * An unmodifiable view on the transitions of this GTS.
      * The transitions are (re)constructed from the outgoing
@@ -471,6 +471,48 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     	@Override
         public int size() {
             return transitionCount;
+        }
+    }
+
+    /**
+     * An unmodifiable view on the transitions of this GTS.
+     * The transitions are (re)constructed from the outgoing
+     * transitions as stored in the states.
+     */
+    private class NextStateSet extends AbstractSet<GraphTransition> {
+        /**
+         * To determine whether a transition is in the set,
+         * we look if the target state (which is typically a {@link GraphNextState})
+         * is actually this transition.
+         */
+    	@Override
+        public boolean contains(Object o) {
+        	if (o instanceof GraphTransition) {
+        		GraphTransition transition = (GraphTransition) o;
+        		GraphState target = transition.target();
+        		return target.equals(transition);
+        	} else {
+        		return false;
+        	}
+        }
+
+        /**
+         * Iterates over the states that are {@link GraphNextState}s.
+         */
+    	@Override
+        public Iterator<GraphTransition> iterator() {
+            Iterator<? extends GraphState> stateIter = nodeSet().iterator();
+            return new FilterIterator<GraphTransition>(stateIter) {
+				@Override
+				protected boolean approves(Object obj) {
+					return obj instanceof GraphNextState;
+				}
+            };
+        }
+
+    	@Override
+        public int size() {
+            return nodeCount() - 1;
         }
     }
     
