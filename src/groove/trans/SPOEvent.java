@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.31 2007-09-19 14:57:29 rensink Exp $
+ * $Id: SPOEvent.java,v 1.32 2007-09-19 21:59:10 rensink Exp $
  */
 package groove.trans;
 
@@ -38,6 +38,8 @@ import groove.util.Groove;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
 
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,7 +55,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.31 $ $Date: 2007-09-19 14:57:29 $
+ * @version $Revision: 1.32 $ $Date: 2007-09-19 21:59:10 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -80,7 +82,7 @@ public class SPOEvent implements RuleEvent {
     public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap) {
     	rule.testFixed(true);
         this.rule = rule;
-        this.anchorMap = anchorMap;
+        this.anchorImage = computeAnchorImage(anchorMap);
     }
 
     /**
@@ -124,11 +126,11 @@ public class SPOEvent implements RuleEvent {
 	}
 
 	public VarNodeEdgeMap getAnchorMap() {
-		if (!anchorMapNormalised) {
-			anchorMap = computeNormalisedAnchorMap();
-			anchorMapNormalised = true;
-		}
-	    return anchorMap;
+		VarNodeEdgeMap result = anchorMap == null ? null : anchorMap.get();
+		if (result == null) {
+			anchorMap = new WeakReference<VarNodeEdgeMap>(result = computeAnchorMap());
+		} 
+	    return result;
 	}
 
 	/**
@@ -136,14 +138,17 @@ public class SPOEvent implements RuleEvent {
 	 * The resulting map contains images for the anchor and eraser edges 
 	 * and any variables on them.
 	 */
-    protected VarNodeEdgeMap computeNormalisedAnchorMap() {
-    	NodeEdgeMap anchorMap = this.anchorMap;
+    protected VarNodeEdgeMap computeAnchorMap() {
+    	Element[] anchor = getRule().anchor();
+    	Element[] anchorImage = getAnchorImage();
     	VarNodeEdgeMap result = createVarMap();
-    	for (Element key: getRule().anchor()) {
+    	for (int i = 0; i < anchor.length; i++) {
+    		Element key = anchor[i];
+    		Element image = anchorImage[i];
             if (key instanceof Edge) {
             	// store the endpoints and the variable valuations for the edges
                 Edge edgeKey = (Edge) key;
-            	Edge edgeImage = anchorMap.getEdge(edgeKey);
+            	Edge edgeImage = (Edge) image;
             	assert edgeImage != null : String.format("Edge %s has no image in anchor map %s", edgeKey, anchorMap);
                 int arity = edgeKey.endCount();
                 for (int end = 0; end < arity; end++) {
@@ -155,7 +160,7 @@ public class SPOEvent implements RuleEvent {
                 }
                 result.putEdge(edgeKey, edgeImage);
             } else {
-                result.putNode((Node) key, anchorMap.getNode((Node) key));
+                result.putNode((Node) key, (Node) image);
             }
         }
         // add the eraser edges
@@ -300,9 +305,11 @@ public class SPOEvent implements RuleEvent {
      * the content of the event.
      */
     public int identityHashCode() {
-    	if (!identityHashCodeSet) {
+    	if (identityHashCode == 0) {
     		identityHashCode = System.identityHashCode(this);
-    		identityHashCodeSet = true;
+    		if (identityHashCode == 0) {
+    			identityHashCode = 1;
+    		}
     	}
     	return identityHashCode;
     }
@@ -478,9 +485,9 @@ public class SPOEvent implements RuleEvent {
      * Returns the set of source elements that form the anchor image.
      */
     protected Element[] getAnchorImage() {
-        if (anchorImage == null) {
-            anchorImage = computeAnchorImage();
-        }
+//        if (anchorImage == null) {
+//            anchorImage = computeAnchorImage();
+//        }
         return anchorImage;
     }
     
@@ -488,7 +495,7 @@ public class SPOEvent implements RuleEvent {
      * Callback method to lazily compute 
      * the set of source elements that form the anchor image.
      */
-    protected Element[] computeAnchorImage() {
+    protected Element[] computeAnchorImage(VarNodeEdgeMap anchorMap) {
     	reporter.start(GET_ANCHOR_IMAGE);
         Element[] anchor = getRule().anchor();
         int anchorSize = anchor.length;
@@ -868,11 +875,7 @@ public class SPOEvent implements RuleEvent {
     /**
      * Matching from the rule's lhs to the source graph.
      */
-    private VarNodeEdgeMap anchorMap;
-    /**
-     * Flag that indicates if {@linkplain #computeNormalisedAnchorMap()} has been invoked.
-     */
-    private boolean anchorMapNormalised = false;
+    private Reference<VarNodeEdgeMap> anchorMap;
     /**
      * Mapping from selected RHS elements to target graph. 
      * The comatch is constructed in the course of rule application.
@@ -902,7 +905,7 @@ public class SPOEvent implements RuleEvent {
 //     */
 //    private Element[] anchorImage;
     /**
-     * Flag to indicate that the {@link #hashCode} variable has been initialized.
+     * Flag to indicate that the {@link #hashCode} variable has been initialised.
      */
     private boolean hashCodeSet;
     /**
@@ -912,16 +915,11 @@ public class SPOEvent implements RuleEvent {
     /**
      * The array of source elements that form the anchor image.
      */
-    private Element[] anchorImage;
+    private final Element[] anchorImage;
     /**
 	 * The precomputed hash code.
 	 */
 	private int hashCode;
-	/**
-	 * Flag indicating that {@link #identityHashCode} has been computed
-	 * and assigned.
-	 */
-	private boolean identityHashCodeSet;
 	/**
 	 * Hash code based on the identity, rather than the content, of
 	 * the event.
