@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIsoChecker.java,v 1.17 2007-09-19 09:01:05 rensink Exp $
+ * $Id: DefaultIsoChecker.java,v 1.18 2007-09-19 23:05:09 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  * Implementation of an isomorphism checking algorithm that first tries to
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy}. 
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /**
@@ -490,7 +490,7 @@ public class DefaultIsoChecker implements IsoChecker {
 		for (int i = 0; result && i < edgeCount; i++) {
 			Certificate<Edge> domEdgeCert = edgeCerts[i];
 			SmallCollection<Edge> image = codPartitionMap.get(domEdgeCert);
-			result = image.isSingleton();
+			result = image != null && image.isSingleton();
 			if (result) {
 				Edge edgeKey = domEdgeCert.getElement();
 				Edge edgeImage = image.getSingleton();
