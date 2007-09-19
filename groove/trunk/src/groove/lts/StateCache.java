@@ -12,18 +12,17 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.12 2007-09-19 14:57:26 rensink Exp $
+ * $Id: StateCache.java,v 1.13 2007-09-19 21:14:57 rensink Exp $
  */
 package groove.lts;
 
 import groove.graph.DeltaGraphFactory;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.FixedDeltaGraph;
 import groove.graph.FrozenDeltaApplier;
 import groove.graph.Graph;
+import groove.graph.NewDeltaGraph;
 import groove.graph.Node;
-import groove.graph.SwingDeltaGraph;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TreeHashSet;
@@ -36,7 +35,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 class StateCache {
     /**
@@ -260,7 +259,7 @@ class StateCache {
     /** Flag indicating if state graphs should be frozen. */
     private final boolean freezeGraphs = SystemRecord.isReuse();
     /** Factory used to create the state graphs. */
-    private final DeltaGraphFactory graphFactory = SwingDeltaGraph.getInstance(); //SystemRecord.isReuse() ? FixedDeltaGraph.getInstance() : SwingDeltaGraph.getInstance();
+    private final DeltaGraphFactory graphFactory = NewDeltaGraph.getInstance(false && SystemRecord.isReuse());
     /** 
      * The depth of the graph above which the underlying graph will be frozen.
      */

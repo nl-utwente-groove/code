@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaStore.java,v 1.2 2007-08-26 07:23:40 rensink Exp $
+ * $Id: DeltaStore.java,v 1.3 2007-09-19 21:15:12 rensink Exp $
  */
 package groove.graph;
 
@@ -22,7 +22,7 @@ import java.util.Set;
  * Delta target that collects the addition and removal information 
  * and can play it back later, in the role of delta applier.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget, DeltaApplier {
 	/**
@@ -45,6 +45,14 @@ public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget, Delt
 	 */
 	protected DeltaStore(Set<Node> addedNodeSet, Set<Node> removedNodeSet, Set<Edge> addedEdgeSet, Set<Edge> removedEdgeSet) {
 		super(addedNodeSet, removedNodeSet, addedEdgeSet, removedEdgeSet);
+	}
+
+	/**
+	 * Creates a delta store based on explicitly given added and removed sets.
+	 * A further parameter controls if the sets are copied or shared.
+	 */
+	protected DeltaStore(Set<Node> addedNodeSet, Set<Node> removedNodeSet, Set<Edge> addedEdgeSet, Set<Edge> removedEdgeSet, boolean share) {
+		super(addedNodeSet, removedNodeSet, addedEdgeSet, removedEdgeSet, share);
 	}
 	
 	/** Creates a delta store by applying a delta applier to an empty initial store. */

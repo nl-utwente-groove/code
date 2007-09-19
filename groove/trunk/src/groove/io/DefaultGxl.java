@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.10 2007-06-27 11:55:19 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.11 2007-09-19 21:15:17 rensink Exp $
  */
 package groove.io;
 
@@ -55,7 +55,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -398,6 +398,7 @@ public class DefaultGxl extends AbstractXml {
             return new AttributeEdge(new Node[] { sourceNode, targetNode }, new AttributeLabel(attributes));            
         }
     }
+    
     /** Test method: tries loading and saving graphs, and comparing them for isomorphism. */
     static public void main(String[] args) {
         System.out.println("Test of groove.io.UntypedGxl");
