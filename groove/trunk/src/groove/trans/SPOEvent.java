@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.30 2007-09-18 15:14:32 rensink Exp $
+ * $Id: SPOEvent.java,v 1.31 2007-09-19 14:57:29 rensink Exp $
  */
 package groove.trans;
 
@@ -27,6 +27,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
+import groove.graph.NodeSet;
 import groove.graph.WrapperLabel;
 import groove.graph.algebra.ValueNode;
 import groove.match.MatchStrategy;
@@ -35,7 +36,7 @@ import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Groove;
 import groove.util.Reporter;
-import groove.util.TreeHashSet3;
+import groove.util.TreeHashSet;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -52,7 +53,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.30 $ $Date: 2007-09-18 15:14:32 $
+ * @version $Revision: 1.31 $ $Date: 2007-09-19 14:57:29 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -739,14 +740,14 @@ public class SPOEvent implements RuleEvent {
      * Callback factory method to create a fresh, empty node set.
      */
     protected Set<Node> createNodeSet() {
-    	return new TreeHashSet3<Node>(TreeHashSet3.HASHCODE_EQUATOR);
+    	return new NodeSet();
     }
 
 	/**
      * Callback factory method to create a fresh, empty edge set.
      */
     protected Set<Edge> createEdgeSet() {
-    	return new TreeHashSet3<Edge>();
+    	return new TreeHashSet<Edge>();
     }
     
     /**

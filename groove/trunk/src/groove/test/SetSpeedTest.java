@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * Class to test the various implementations of {@link groove.util.IntSet} regarding speed.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class SetSpeedTest {
 	static private final int SMALL_SAMPLE_SIZE = 100;
@@ -90,7 +90,7 @@ public class SetSpeedTest {
 //		new SetSpeedTest(new BitHashSet()).start();
 //		new SetSpeedTest(new TreeStoreSet(1, SMALL_SAMPLE_SIZE, TreeStoreSet.HASHCODE_EQUATOR)).start();
 //		new SetSpeedTest(new TreeHashSet(2, SMALL_SAMPLE_SIZE, TreeHashSet.HASHCODE_EQUATOR)).start();
-		new SetSpeedTest(new TreeHashSet<Object>(3, 7, SMALL_SAMPLE_SIZE, TreeHashSet.HASHCODE_EQUATOR)).start();
+		new SetSpeedTest(new TreeHashSet<Object>(SMALL_SAMPLE_SIZE, 3, 7, TreeHashSet.HASHCODE_EQUATOR)).start();
 		new SetSpeedTest(new TreeHashSet3<Object>(SMALL_SAMPLE_SIZE, TreeHashSet3.HASHCODE_EQUATOR)).start();
 	}
 	
@@ -166,7 +166,7 @@ public class SetSpeedTest {
 		} else if (object instanceof TreeHashSet3) {
 			newObject = new TreeHashSet3<Object>(object);
 		} else {
-			newObject = new TreeHashSet<Object>(object);
+			newObject = new TreeHashSet<Object>((TreeHashSet) object);
 		}
 		reporter.start(OVERALL_INDEX);
 		reporter.start(measures[EQUALS_INDEX]);

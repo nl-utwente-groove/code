@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphShapeCache.java,v 1.3 2007-08-26 07:23:42 rensink Exp $
+ * $Id: GraphShapeCache.java,v 1.4 2007-09-19 14:57:31 rensink Exp $
  */
 package groove.graph;
 
 import groove.util.Groove;
 import groove.util.Reporter;
+import groove.util.TreeHashSet;
 import groove.util.TreeHashSet3;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ import java.util.Set;
  * graph, for faster access.
  * Typically, the graph will have a graph cache as a <tt>{@link java.lang.ref.Reference}</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class GraphShapeCache implements GraphShapeListener {
     /**
@@ -353,11 +354,11 @@ public class GraphShapeCache implements GraphShapeListener {
      * that it is not already in the set.
      */
     protected Set<Edge> createSmallEdgeSet() {
-    	return new TreeHashSet3<Edge>();
+    	return new TreeHashSet<Edge>();
     }
     
     /**
-     * Factory method for a set of nodes, initialized on a given set. The initial set may be
+     * Factory method for a set of nodes, initialised on a given set. The initial set may be
      * <code>null</code>, indicating that the node set is to be initially empty.
      */
     protected Set<Node> createNodeSet(Collection<Node> set) {
@@ -369,15 +370,15 @@ public class GraphShapeCache implements GraphShapeListener {
     }
 
     /**
-     * Factory method for a set of edges, initialized on a given set. The initial set may be
-     * <code>null</code>, indicating that the node set is to be initially empty.
+     * Factory method for a set of edges, initialised on a given set. The initial set may be
+     * <code>null</code>, indicating that the edge set is to be initially empty.
      */
     protected Set<Edge> createEdgeSet(Collection<Edge> set) {
-        if (set == null) {
-            return new TreeHashSet3<Edge>();
-        } else {
-            return new TreeHashSet3<Edge>(set);
+        Set<Edge> result = new TreeHashSet<Edge>();
+        if (set != null) {
+            result.addAll(set);
         }
+        return result;
     }
 
     /**

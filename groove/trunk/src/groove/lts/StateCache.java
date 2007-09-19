@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.11 2007-09-19 09:01:06 rensink Exp $
+ * $Id: StateCache.java,v 1.12 2007-09-19 14:57:26 rensink Exp $
  */
 package groove.lts;
 
@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 class StateCache {
     /**
@@ -235,22 +235,14 @@ class StateCache {
     private Set<GraphTransitionStub> createStubSet() {
     	return new TreeHashSet<GraphTransitionStub>() {
 			@Override
-			protected boolean areEqual(Object key, Object otherKey) {
-				return getEvent(key) == getEvent(otherKey);
+			protected boolean areEqual(GraphTransitionStub key, GraphTransitionStub otherKey) {
+				return key.getEvent(state) == otherKey.getEvent(state);
 			}
 
 			@Override
-			protected int getCode(Object key) {
-				RuleEvent keyEvent = getEvent(key);
+			protected int getCode(GraphTransitionStub key) {
+				RuleEvent keyEvent = key.getEvent(state);
 				return keyEvent == null ? 0 : System.identityHashCode(keyEvent);
-			}
-			
-			private RuleEvent getEvent(Object key) {
-				if (key instanceof GraphTransitionStub) {
-					return ((GraphTransitionStub) key).getEvent(state);
-				} else {
-					return null;
-				}
 			}
     	};
     }

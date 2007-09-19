@@ -12,20 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultEdge.java,v 1.7 2007-09-16 21:44:23 rensink Exp $
+ * $Id: DefaultEdge.java,v 1.8 2007-09-19 14:57:31 rensink Exp $
  */
 package groove.graph;
 
-import groove.util.TreeHashSet3;
-
-import java.util.HashMap;
-import java.util.Map;
+import groove.util.Equator;
+import groove.util.TreeHashSet;
 
 /**
  * Default implementation of an (immutable) graph edge, as a triple consisting of
  * source and target nodes and an arbitrary label.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-09-16 21:44:23 $
+ * @version $Revision: 1.8 $ $Date: 2007-09-19 14:57:31 $
  */
 final public class DefaultEdge extends AbstractBinaryEdge {
 	/**
@@ -115,7 +113,6 @@ final public class DefaultEdge extends AbstractBinaryEdge {
         DefaultEdge result = DefaultEdge.edgeSet.put(edge);
         if (result == null) {
             result = edge;
-//            DefaultEdge.edgeMap.put(edge, result);
         }
         return result;
     }
@@ -141,15 +138,17 @@ final public class DefaultEdge extends AbstractBinaryEdge {
      * A identity map, mapping previously created instances of {@link DefaultEdge}
      * to themselves. Used to ensure that edge objects are reused.
      */
-    static private final TreeHashSet3<DefaultEdge> edgeSet = new TreeHashSet3<DefaultEdge>(new TreeHashSet3.Equator() {
-		public boolean areEqual(Object o1, Object o2) {
-			DefaultEdge e1 = (DefaultEdge) o1;
-			DefaultEdge e2 = (DefaultEdge) o2;
-			return e1.source().equals(e2.source()) && e1.target().equals(e2.target()) && e1.label().equals(e2.label());
+    static private final TreeHashSet<DefaultEdge> edgeSet = new TreeHashSet<DefaultEdge>(new Equator<DefaultEdge>() {
+		public boolean areEqual(DefaultEdge o1, DefaultEdge o2) {
+			return o1.source().equals(o2.source()) && o1.target().equals(o2.target()) && o1.label().equals(o2.label());
 		}
 
-		public int getCode(Object key) {
+		public int getCode(DefaultEdge key) {
 			return key.hashCode();
-		}    	
+		}
+
+        public boolean allEqual() {
+            return false;
+        }
     });
 }

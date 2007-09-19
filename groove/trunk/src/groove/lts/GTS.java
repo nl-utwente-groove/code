@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.23 2007-09-18 21:57:55 rensink Exp $
+ * $Id: GTS.java,v 1.24 2007-09-19 14:57:26 rensink Exp $
  */
 package groove.lts;
 
@@ -43,7 +43,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.23 $ $Date: 2007-09-18 21:57:55 $
+ * @version $Revision: 1.24 $ $Date: 2007-09-19 14:57:26 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -383,7 +383,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     private class TreeHashStateSet extends TreeHashSet<GraphState> {
     	/** Constructs a new, empty state set. */
         TreeHashStateSet() {
-            super(STATE_SET_RESOLUTION, STATE_SET_ROOT_RESOLUTION, INITIAL_STATE_SET_SIZE);
+            super(INITIAL_STATE_SET_SIZE, STATE_SET_RESOLUTION, STATE_SET_ROOT_RESOLUTION);
         }
         
         /**
@@ -391,11 +391,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
          * @see GraphState#getControl()
          */
     	@Override
-        protected boolean areEqual(Object key, Object otherKey) {
-    		GraphState stateKey = (GraphState) key;
-    		GraphState otherStateKey = (GraphState) otherKey;
+        protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
 			if (!SystemRecord.isReuse()) {
-			    return key == otherKey;
+			    return stateKey == otherStateKey;
 			} else if (stateKey.getControl() == otherStateKey.getControl()) {
 				Graph one = stateKey.getGraph();
 				Graph two = otherStateKey.getGraph();
@@ -414,9 +412,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 		 * location (if any).
 		 */
     	@Override
-        protected int getCode(Object key) {
+        protected int getCode(GraphState stateKey) {
     	    int result;
-    		GraphState stateKey = (GraphState) key;
     		if (!SystemRecord.isReuse()) { 
     		    result = System.identityHashCode(stateKey);
     		} else if (isCheckIsomorphism()) {
