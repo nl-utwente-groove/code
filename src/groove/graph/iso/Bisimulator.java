@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Bisimulator.java,v 1.10 2007-09-18 21:57:51 rensink Exp $
+ * $Id: Bisimulator.java,v 1.11 2007-09-19 09:01:05 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -38,7 +38,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elements to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class Bisimulator implements CertificateStrategy {
     /**
@@ -86,33 +86,60 @@ public class Bisimulator implements CertificateStrategy {
      * If none is stored, computes, stores and returns the inverse of the certificate map.
      * @see #getCertificateMap()
      */
-    public PartitionMap getPartitionMap() {
+    public PartitionMap<Node> getNodePartitionMap() {
         // check if the map has been computed before
-        if (this.partitionMap == null) {
-    		// no; go ahead and compute it
-        	getGraphCertificate();
-            this.partitionMap = computePartitionMap();
+        if (this.nodePartitionMap == null) {
+            // no; go ahead and compute it
+            getGraphCertificate();
+            this.nodePartitionMap = computeNodePartitionMap();
         }
-        return this.partitionMap;
+        return this.nodePartitionMap;
     }
 
-	/**
-	 * Computes the partition map, i.e., the mapping from certificates
-	 * to sets of graph elements having those certificates. 
-	 */
-	private PartitionMap computePartitionMap() {
+    /**
+     * Returns the pre-computed partition map, if any.
+     * If none is stored, computes, stores and returns the inverse of the certificate map.
+     * @see #getCertificateMap()
+     */
+    public PartitionMap<Edge> getEdgePartitionMap() {
+        // check if the map has been computed before
+        if (this.edgePartitionMap == null) {
+            // no; go ahead and compute it
+            getGraphCertificate();
+            this.edgePartitionMap = computeEdgePartitionMap();
+        }
+        return this.edgePartitionMap;
+    }
+
+    /**
+     * Computes the partition map, i.e., the mapping from certificates
+     * to sets of graph elements having those certificates. 
+     */
+    private PartitionMap<Node> computeNodePartitionMap() {
         reporter.start(GET_PARTITION_MAP);
-		PartitionMap result = new PartitionMap();
-		// invert the certificate map
-		for (Certificate cert: nodeCerts) {
-		    result.add(cert);
-		}
-		for (Certificate cert: edgeCerts) {
-		    result.add(cert);
-		}
+        PartitionMap<Node> result = new PartitionMap<Node>();
+        // invert the certificate map
+        for (Certificate<Node> cert: nodeCerts) {
+            result.add(cert);
+        }
         reporter.stop();
-		return result;
-	}
+        return result;
+    }
+
+    /**
+     * Computes the partition map, i.e., the mapping from certificates
+     * to sets of graph elements having those certificates. 
+     */
+    private PartitionMap<Edge> computeEdgePartitionMap() {
+        reporter.start(GET_PARTITION_MAP);
+        PartitionMap<Edge> result = new PartitionMap<Edge>();
+        // invert the certificate map
+        for (Certificate<Edge> cert: edgeCerts) {
+            result.add(cert);
+        }
+        reporter.stop();
+        return result;
+    }
 
     /**
      * The graph certificate is computed as the sum of the node and edge certificates.
@@ -336,8 +363,10 @@ public class Bisimulator implements CertificateStrategy {
     private Object graphCertificate;
     /** The pre-computed certificate map, if any. */
     private Map<Element,Certificate<?>> certificateMap;
-    /** The pre-computed partition map, if any. */
-    private PartitionMap partitionMap;
+    /** The pre-computed node partition map, if any. */
+    private PartitionMap<Node> nodePartitionMap;
+    /** The pre-computed edge partition map, if any. */
+    private PartitionMap<Edge> edgePartitionMap;
     /**
      * The number of pre-computed node partitions.
      */
@@ -428,7 +457,7 @@ public class Bisimulator implements CertificateStrategy {
     static protected final int ITERATE_CERTIFICATES = reporter.newMethod("iterateCertificates()");
     /** Handle to profile {@link #getCertificateMap()}. */
     static protected final int GET_CERTIFICATE_MAP = reporter.newMethod("getCertificateMap()");
-    /** Handle to profile {@link #getPartitionMap()}. */
+    /** Handle to profile {@link #getNodePartitionMap()}. */
     static protected final int GET_PARTITION_MAP = reporter.newMethod("getPartitionMap()");
     /** Handle to profile {@link #getGraphCertificate()}. */
     static protected final int GET_GRAPH_CERTIFICATE = reporter.newMethod("getGraphCertificate()");
@@ -501,7 +530,7 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.10 $
+     * @version $Revision: 1.11 $
      */
     static private class NodeCertificate extends Certificate<Node> {
     	/** Initial node value to provide a better spread of hash codes. */
@@ -566,7 +595,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.10 $
+     * @version $Revision: 1.11 $
      */
     static private class EdgeCertificate extends Certificate<Edge> {
         /**
@@ -650,7 +679,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.10 $
+     * @version $Revision: 1.11 $
      */
     static private class FlagCertificate extends Certificate<Edge> {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */

@@ -12,15 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoMatcher.java,v 1.7 2007-09-18 15:11:05 rensink Exp $
+ * $Id: IsoMatcher.java,v 1.8 2007-09-19 09:01:05 rensink Exp $
  */
 package groove.graph.iso;
 
 import groove.graph.Element;
 import groove.graph.Morphism;
+import groove.graph.Node;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.graph.match.DefaultMatcher;
 import groove.graph.match.SearchPlanFactory;
+import groove.util.SmallCollection;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -33,7 +35,7 @@ import java.util.Set;
  * into play in the construction and refinement of the simulation..
  * The graphs' partition maps are used to match elements.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 @Deprecated
 public class IsoMatcher extends DefaultMatcher {
@@ -56,17 +58,17 @@ public class IsoMatcher extends DefaultMatcher {
 	 * as a given key from the domain.
 	 * The result can be a single element or a set of elements. 
 	 */
-	public Object getCertEquivalent(Element key) {
-		return getCodPartitionMap().get(getDomCertificateMap().get(key));
+	public SmallCollection<Node> getCertEquivalent(Node key) {
+		return getCodNodePartitionMap().get((Certificate<Node>) getDomCertificateMap().get(key));
 	}
 	
 	/** 
 	 * Returns the certificate partition map of the codomain.
 	 * Lazily creates the map first. 
 	 */
-	protected PartitionMap getCodPartitionMap() {
+	protected PartitionMap<Node> getCodNodePartitionMap() {
 		if (codPartitionMap == null) {
-			codPartitionMap = computeCodPartitionMap();
+			codPartitionMap = computeCodNodePartitionMap();
 		}
 		return codPartitionMap;
 	}
@@ -75,8 +77,8 @@ public class IsoMatcher extends DefaultMatcher {
 	 * Computes the certificate partition map of the codomain,
 	 * by querying the codomain's certificate strategy.
 	 */
-	protected PartitionMap computeCodPartitionMap() {
-		return cod().getCertifier().getPartitionMap();
+	protected PartitionMap<Node> computeCodNodePartitionMap() {
+		return cod().getCertifier().getNodePartitionMap();
 	}
 
 	/** 
@@ -119,5 +121,5 @@ public class IsoMatcher extends DefaultMatcher {
      * Mapping from certificates to codomain element partitions.
      * The images are either {@link Element}s or {@link Collection}s.
      */
-    private PartitionMap codPartitionMap;
+    private PartitionMap<Node> codPartitionMap;
 }
