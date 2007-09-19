@@ -12,23 +12,21 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultDeltaApplier.java,v 1.4 2007-09-19 14:57:31 rensink Exp $
+ * $Id: DefaultDeltaApplier.java,v 1.5 2007-09-19 21:15:16 rensink Exp $
  */
 package groove.graph;
 
 import groove.util.DeltaSet;
 import groove.util.StackedSet;
 import groove.util.TreeHashSet;
-import groove.util.TreeHashSet3;
 
 import java.util.Collection;
 import java.util.Set;
 
 /**
- * Delta target that collects the addition and removal information 
- * and can play it back later, in the role of delta applier.
+ * Default implementation of a delta applier.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class DefaultDeltaApplier implements DeltaApplier {
 	/**
@@ -40,6 +38,17 @@ public class DefaultDeltaApplier implements DeltaApplier {
 		this.removedNodeSet = createNodeSet(removedNodeSet);
 		this.addedEdgeSet = createEdgeSet(addedEdgeSet);
 		this.removedEdgeSet = createEdgeSet(removedEdgeSet);
+	}
+
+	/**
+	 * Creates a delta store based on explicitly given added and removed sets.
+	 * A further parameter controls if the sets are copied or shared.
+	 */
+	protected DefaultDeltaApplier(Set<Node> addedNodeSet, Set<Node> removedNodeSet, Set<Edge> addedEdgeSet, Set<Edge> removedEdgeSet, boolean share) {
+		this.addedNodeSet = share ? addedNodeSet : createNodeSet(addedNodeSet);
+		this.removedNodeSet = share ? removedNodeSet : createNodeSet(removedNodeSet);
+		this.addedEdgeSet = share ? addedEdgeSet : createEdgeSet(addedEdgeSet);
+		this.removedEdgeSet = share ? removedEdgeSet : createEdgeSet(removedEdgeSet);
 	}
 
 	/**
@@ -163,13 +172,22 @@ public class DefaultDeltaApplier implements DeltaApplier {
 	public DeltaSet<Node> newDeltaNodeSet(Collection<Node> origin) {
 		return createDeltaSet(newNodeSet(origin), addedNodeSet, removedNodeSet);
 	}
-	
+
 	/**
 	 * Swaps the added and removed node sets, so that the delta
 	 * represents the inverse of what it did before.
 	 */
 	public DeltaStore invert() {
-		return new DeltaStore(removedNodeSet, addedNodeSet, removedEdgeSet, addedEdgeSet);
+		return invert(false);
+	}
+
+	/**
+	 * Swaps the added and removed node sets, so that the delta
+	 * represents the inverse of what it did before.
+	 * A further parameter controls if the sets are copied or shared.
+	 */
+	public DeltaStore invert(boolean share) {
+		return new DeltaStore(removedNodeSet, addedNodeSet, removedEdgeSet, addedEdgeSet, share);
 	}
 
 	/**
