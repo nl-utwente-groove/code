@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.8 2007-09-16 21:44:27 rensink Exp $
+ * $Id: AbstractGraphState.java,v 1.9 2007-09-19 22:44:30 rensink Exp $
  */
 package groove.lts;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-09-16 21:44:27 $
+ * @version $Revision: 1.9 $ $Date: 2007-09-19 22:44:30 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
@@ -214,8 +214,12 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 	 * Stores the outgoing transitions in a memory efficient way.
 	 */
 	private void setStoredTransitionStubs(Collection<GraphTransitionStub> outTransitionSet) {
-		transitionStubs = new GraphTransitionStub[outTransitionSet.size()];
-		outTransitionSet.toArray(transitionStubs);
+		if (outTransitionSet.isEmpty()) {
+			transitionStubs = EMPTY_TRANSITION_STUBS;
+		} else {
+			transitionStubs = new GraphTransitionStub[outTransitionSet.size()];
+			outTransitionSet.toArray(transitionStubs);
+		}
 	}
 
 	public boolean isClosed() {
