@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SwingDeltaGraph.java,v 1.9 2007-09-19 10:15:06 rensink Exp $
+ * $Id: SwingDeltaGraph.java,v 1.10 2007-09-19 16:06:09 rensink Exp $
  */
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
+import groove.util.TreeHashSet;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -166,7 +167,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 			Map<Label,Set<Edge>> labelEdgeMap = result.get(edge.endCount());
 			Set<Edge> edges = labelEdgeMap.get(edge.label());
 			if (edges == null) {
-				labelEdgeMap.put(edge.label(), edges = new HashSet<Edge>());
+				labelEdgeMap.put(edge.label(), edges = createEdgeSet());
 			}
 			edges.add(edge);
 		}
@@ -196,7 +197,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	private Map<Node, Set<Edge>> computeNodeEdgeMap() {
 		Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>();
 		for (Node node: nodeSet()) {
-			result.put(node, new HashSet<Edge>());
+			result.put(node, createEdgeSet());
 		}
 		for (Edge edge: edgeSet()) {
 			for (int i = 0; i < edge.endCount(); i++) {
@@ -220,7 +221,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
                 nodeSet = createNodeSet();
                 edgeSet = createEdgeSet();
                 // apply the delta to fill the structures
-                delta.applyDelta(new Target(nodeSet, edgeSet, null, null));
+                delta.applyDelta(new ShareTarget(this));
             } else {
                 basis.transferData(this);
                 basis = null;
@@ -239,32 +240,86 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
         assert child.labelEdgeMaps == null;
         // initialise own data, if necessary
         initData();
-        DeltaApplier delta = child.delta;
         // if the node-edge map is set, no need to construct the node set
         if (nodeEdgeMap != null) {
         	nodeSet = null;
         }
+        child.nodeSet = initTransferNodeSet();
+        child.edgeSet = initTransferEdgeSet();
+        child.nodeEdgeMap = initTransferNodeEdgeMap();
+        child.labelEdgeMaps = initTransferLabelEdgeMaps();
+        DeltaTarget target;
+        if (copyData) {
+            target = new CopyTarget(child);
+        } else {
+            target = new ShareTarget(child);
+        }
         // apply the delta to fill the structures
-        delta.applyDelta(new Target(nodeSet, edgeSet, nodeEdgeMap, labelEdgeMaps));
-        child.nodeSet = nodeSet;
-        child.edgeSet = edgeSet;
-        child.nodeEdgeMap = nodeEdgeMap;
-        child.labelEdgeMaps = labelEdgeMaps;
+        DeltaApplier delta = child.delta;
         child.delta = null;
+        delta.applyDelta(target);
         reporter.stop();
-        this.nodeSet = null;
-        this.edgeSet = null;
-        this.nodeEdgeMap = null;
-        this.labelEdgeMaps = null;
-        this.certifier = null;
-        if (this.delta == null) {
+        if (!copyData && this.delta == null) {
             this.basis = child;
             this.delta = ((DeltaStore) delta).invert();
         }
     }
     
+    private Set<Node> initTransferNodeSet() {
+        Set<Node> result;
+        if (copyData && this.nodeSet != null) {
+            result = createNodeSet();
+            result.addAll(this.nodeSet);
+        } else {
+            result = this.nodeSet;
+            this.nodeSet = null;
+        }
+        return result;
+    }
+    
+    private Set<Edge> initTransferEdgeSet() {
+        Set<Edge> result;
+        if (copyData && this.edgeSet != null) {
+                result = createEdgeSet();
+                result.addAll(this.edgeSet);
+        } else {
+            result = this.edgeSet;
+            this.edgeSet = null;
+        }
+        return result;
+    }
+    
+    private Map<Node,Set<Edge>> initTransferNodeEdgeMap() {
+        Map<Node,Set<Edge>> result;
+        if (copyData && this.nodeEdgeMap != null) {
+            result = new HashMap<Node,Set<Edge>>(this.nodeEdgeMap);
+        } else {
+            result = this.nodeEdgeMap;
+            this.nodeEdgeMap = null;
+        }
+        return result;
+    }
+    
+    private List<Map<Label,Set<Edge>>> initTransferLabelEdgeMaps() {
+        List<Map<Label,Set<Edge>>> result;
+        if (copyData && this.labelEdgeMaps != null) {
+            result = new ArrayList<Map<Label, Set<Edge>>>();
+            for (Map<Label, Set<Edge>> arityLabelEdgeMap : this.labelEdgeMaps) {
+                if (arityLabelEdgeMap == null) {
+                    result.add(null);
+                } else {
+                    result.add(new HashMap<Label, Set<Edge>>(arityLabelEdgeMap));
+                }
+            }
+        } else {
+            result = this.labelEdgeMaps;
+            this.labelEdgeMaps = null;
+        }
+        return result;
+    }
+    
 	private Set<Edge> createEdgeSet() {
-		return new HashSet<Edge>();
+        return new HashSet<Edge>();
 	}
 
 	private Set<Node> createNodeSet() {
@@ -294,7 +349,8 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	private List<Map<Label,Set<Edge>>> labelEdgeMaps;
 	/** The certificate strategy of this graph, set on demand. */
 	private Reference<CertificateStrategy> certifier;
-
+	/** Flag indicating that data should be copied rather than shared in {@link #transferData(SwingDeltaGraph)}. */ 
+	private boolean copyData = false;
 	/** Factory instance of this class. */
 	static private final DeltaGraphFactory instance = new SwingDeltaGraph(null,null);
 	/** Returns a fixed factory instance of the {@link FixedDeltaGraph} class. */
@@ -303,13 +359,13 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	}
 	
 	/** Delta target to initialise the data structures. */
-	static private class Target implements DeltaTarget {
+	static private class ShareTarget implements DeltaTarget {
 		/** Constructs and instance for a given node and edge set. */
-		public Target(final Set<Node> nodeSet, final Set<Edge> edgeSet, Map<Node,Set<Edge>> nodeEdgeMap, List<Map<Label,Set<Edge>>> labelEdgeMaps) {
-			this.nodeSet = nodeSet;
-			this.edgeSet = edgeSet;
-			this.nodeEdgeMap = nodeEdgeMap;
-			this.labelEdgeMaps = labelEdgeMaps;
+		public ShareTarget(SwingDeltaGraph recipient) {
+			this.nodeSet = recipient.nodeSet;
+			this.edgeSet = recipient.edgeSet;
+			this.nodeEdgeMap = recipient.nodeEdgeMap;
+			this.labelEdgeMaps = recipient.labelEdgeMaps;
 		}
 
 		/** 
@@ -418,4 +474,157 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 		/** Label/edge map to be filled by this target. */
 		private final List<Map<Label,Set<Edge>>> labelEdgeMaps;
 	}
+
+    /** Delta target to initialise the data structures. */
+    static private class CopyTarget implements DeltaTarget {
+        /** Constructs and instance for a given node and edge set. */
+        public CopyTarget(SwingDeltaGraph recipient) {
+            this.nodeSet = recipient.nodeSet;
+            this.edgeSet = recipient.edgeSet;
+            this.nodeEdgeMap = recipient.nodeEdgeMap;
+            if (nodeEdgeMap != null) {
+                this.freshNodeKeys = new HashSet<Node>();
+            } else {
+                this.freshNodeKeys = null;
+            }
+            this.labelEdgeMaps = recipient.labelEdgeMaps;
+            if (labelEdgeMaps != null) {
+                this.freshLabelKeys = new ArrayList<Set<Label>>();
+                for (Map<Label, Set<Edge>> arityLabelEdgeMap : labelEdgeMaps) {
+                    if (arityLabelEdgeMap == null) {
+                        freshLabelKeys.add(null);
+                    } else {
+                        freshLabelKeys.add(new HashSet<Label>());
+                    }
+                }
+            } else {
+                this.freshLabelKeys = null;
+            }
+        }
+
+        /** 
+         * Adds the edge to the edge set, the node-edge map (if it is set),
+         * and the label-edge maps (if it is set). 
+         */
+        public boolean addEdge(Edge elem) {
+            boolean result = edgeSet.add(elem);
+            assert result;
+            int arity = elem.endCount();
+            // adapt node-edge map
+            if (nodeEdgeMap != null) {
+                for (int i = 0; i < arity; i++) {
+                    Node end = elem.end(i);
+                    Set<Edge> edgeSet = nodeEdgeMap.get(end);
+                    if (! freshNodeKeys.contains(end)) {
+                        nodeEdgeMap.put(end, edgeSet = createEdgeSet(edgeSet));
+                        freshNodeKeys.add(end);
+                    }
+                    edgeSet.add(elem);
+                }
+            }
+            // adapt label-edge map
+            if (labelEdgeMaps != null) {
+                Label label = elem.label();
+                Map<Label,Set<Edge>> arityLabelEdgeMap = labelEdgeMaps.get(arity);
+                Set<Edge> edgeSet = arityLabelEdgeMap.get(label);
+                Set<Label> freshArityLabelKeys = freshLabelKeys.get(arity);
+                if (! freshArityLabelKeys.contains(label)) {
+                    arityLabelEdgeMap.put(label, edgeSet = createEdgeSet(edgeSet));
+                    freshArityLabelKeys.add(label);
+                }
+                edgeSet.add(elem);
+            }
+            return result;
+        }
+
+        /** Adds the node to the node set and the node-edge map. */
+        public boolean addNode(Node elem) {
+            if (nodeSet != null) {
+                boolean result = nodeSet.add(elem);
+                assert result;
+            }
+            if (nodeEdgeMap != null) {
+                Set<Edge> edges = nodeEdgeMap.put(elem, new HashSet<Edge>());
+                assert edges == null : String.format("Node %s already has incident edges %s", elem, edges);
+                freshNodeKeys.add(elem);
+            }
+            return true;
+        }
+
+        /** 
+         * Removes the edge from the edge set, the node-edge map (if it is set),
+         * and the label-edge maps (if it is set). 
+         */
+        public boolean removeEdge(Edge elem) {
+            boolean result = edgeSet.remove(elem);
+            assert result;
+            int arity = elem.endCount();
+            // adapt node-edge map
+            if (nodeEdgeMap != null) {
+                for (int i = 0; i < arity; i++) {
+                    Node end = elem.end(i);
+                    Set<Edge> edgeSet = nodeEdgeMap.get(end);
+                    if (edgeSet != null) {
+                    if (! freshNodeKeys.contains(end)) {
+                        nodeEdgeMap.put(end, edgeSet = createEdgeSet(edgeSet));
+                        freshNodeKeys.add(end);
+                    }
+                    edgeSet.remove(elem);
+                    }
+                }
+            }
+            // adapt label-edge map
+            if (labelEdgeMaps != null) {
+                Label label = elem.label();
+                Map<Label,Set<Edge>> arityLabelEdgeMap = labelEdgeMaps.get(arity);
+                Set<Edge> edgeSet = arityLabelEdgeMap.get(label);
+                Set<Label> freshArityLabelKeys = freshLabelKeys.get(arity);
+                if (! freshArityLabelKeys.contains(label)) {
+                    arityLabelEdgeMap.put(label, edgeSet = createEdgeSet(edgeSet));
+                    freshArityLabelKeys.add(label);
+                }
+                edgeSet.remove(elem);
+            }
+            return result;
+        }
+
+        /** Removes the node from the node set and the node-edge map. */
+        public boolean removeNode(Node elem) {
+            if (nodeSet != null) {
+                boolean result = nodeSet.remove(elem);
+                assert result;
+            }
+            if (nodeEdgeMap != null) {
+                Set<Edge> edges = nodeEdgeMap.remove(elem);
+                assert edges.isEmpty();
+                freshNodeKeys.remove(elem);
+            }
+            return true;
+        }
+        
+        /** 
+         * Creates a copy of an existing set of edges, or an empty set if the
+         * given set is <code>null</code>.
+         */
+        private Set<Edge> createEdgeSet(Set<Edge> edgeSet) {
+            if (edgeSet == null) {
+                return new HashSet<Edge>();
+            } else {
+                return new HashSet<Edge>(edgeSet);
+            }
+        }
+
+        /** Node set to be filled by this target. */
+        private final Set<Node> nodeSet;
+        /** Edge set to be filled by this target. */
+        private final Set<Edge> edgeSet;
+        /** Node/edge map to be filled by this target. */
+        private final Map<Node,Set<Edge>> nodeEdgeMap;
+        /** Label/edge map to be filled by this target. */
+        private final List<Map<Label,Set<Edge>>> labelEdgeMaps;
+        /** Auxiliary set to determine the nodes changed w.r.t. the basis. */
+        private final Set<Node> freshNodeKeys;
+        /** Auxiliary set to determine the labels changed w.r.t. the basis. */
+        private final List<Set<Label>> freshLabelKeys;
+    }
 }
