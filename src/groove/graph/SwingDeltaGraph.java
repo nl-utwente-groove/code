@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SwingDeltaGraph.java,v 1.7 2007-09-18 21:57:57 rensink Exp $
+ * $Id: SwingDeltaGraph.java,v 1.8 2007-09-19 07:10:29 rensink Exp $
  */
 package groove.graph;
 
@@ -119,10 +119,14 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	}
 
 	public Set<Node> nodeSet() {
-		if (nodeSet == null) {
+		if (nodeSet == null && nodeEdgeMap == null) {
 			initData();
 		}
-		return nodeSet;
+		if (nodeSet != null) {
+			return nodeSet;
+		} else {
+			return nodeEdgeMap.keySet();
+		}
 	}
 	
 	public Set<Edge> edgeSet() {
@@ -237,10 +241,14 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
         assert child.nodeEdgeMap == null;
         assert child.labelEdgeMaps == null;
         // initialise own data, if necessary
-        if (nodeSet == null) {
+        if (edgeSet == null) {
             initData();
         }
         DeltaApplier delta = child.delta;
+        // if the node-edge map is set, no need to construct the node set
+        if (nodeEdgeMap != null) {
+        	nodeSet = null;
+        }
         // apply the delta to fill the structures
         delta.applyDelta(new Target(nodeSet, edgeSet, nodeEdgeMap, labelEdgeMaps));
         child.nodeSet = nodeSet;
@@ -254,7 +262,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
         this.nodeEdgeMap = null;
         this.labelEdgeMaps = null;
         this.certifier = null;
-        if (delta == null) {
+        if (this.delta == null) {
             this.basis = child;
             this.delta = ((DeltaStore) delta).invert();
         }
@@ -343,13 +351,15 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 
 		/** Adds the node to the node set and the node-edge map. */
 		public boolean addNode(Node elem) {
-			boolean result = nodeSet.add(elem);
-			assert result;
+			if (nodeSet != null) {
+				boolean result = nodeSet.add(elem);
+				assert result;
+			}
 			if (nodeEdgeMap != null) {
 				Set<Edge> edges = nodeEdgeMap.put(elem, new HashSet<Edge>());
 				assert edges == null;
 			}
-			return result;
+			return true;
 		}
 
 		/** 
@@ -381,13 +391,15 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 
 		/** Removes the node from the node set and the node-edge map. */
 		public boolean removeNode(Node elem) {
-			boolean result = nodeSet.remove(elem);
-			assert result;
+			if (nodeSet != null) {
+				boolean result = nodeSet.remove(elem);
+				assert result;
+			}
 			if (nodeEdgeMap != null) {
 				Set<Edge> edges = nodeEdgeMap.remove(elem);
 				assert edges.isEmpty();
 			}
-			return result;
+			return true;
 		}
 		
 		/** 
