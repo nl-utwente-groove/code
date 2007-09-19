@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SwingDeltaGraph.java,v 1.8 2007-09-19 07:10:29 rensink Exp $
+ * $Id: SwingDeltaGraph.java,v 1.9 2007-09-19 10:15:06 rensink Exp $
  */
 package groove.graph;
 
@@ -144,9 +144,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	@Override
 	protected List<Map<Label, Set<Edge>>> getLabelEdgeMaps() {
 		if (labelEdgeMaps == null) {
-			if (nodeSet == null) {
-				initData();
-			}
+		    initData();
 			if (labelEdgeMaps == null) {
 				labelEdgeMaps = computeLabelEdgeMaps();
 			}
@@ -178,9 +176,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	@Override
 	public Map<Node, Set<Edge>> nodeEdgeMap() {
 		if (nodeEdgeMap == null) {
-			if (nodeSet == null) {
-				initData();
-			}
+		    initData();
 			if (nodeEdgeMap == null) { 
 				nodeEdgeMap = computeNodeEdgeMap();
 			}
@@ -211,24 +207,25 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
 	}
 	
 	/** 
-	 * Computes all the data structures that are available from
-	 * the basis graph.
+	 * Initialises all the data structures, if this has not yet been done.
 	 */
 	private void initData() {
 		reporter.start(INIT_DATA);
-		assert nodeSet == null;
-		assert edgeSet == null;
-		assert nodeEdgeMap == null;
-		assert labelEdgeMaps == null;
-		if (basis == null) {
-			nodeSet = createNodeSet();
-			edgeSet = createEdgeSet();
-			// apply the delta to fill the structures
-			delta.applyDelta(new Target(nodeSet, edgeSet, null, null));
-		} else {
-		    basis.transferData(this);
-			basis = null;
-		}
+		if (edgeSet == null) {
+            assert nodeSet == null;
+            assert edgeSet == null;
+            assert nodeEdgeMap == null;
+            assert labelEdgeMaps == null;
+            if (basis == null) {
+                nodeSet = createNodeSet();
+                edgeSet = createEdgeSet();
+                // apply the delta to fill the structures
+                delta.applyDelta(new Target(nodeSet, edgeSet, null, null));
+            } else {
+                basis.transferData(this);
+                basis = null;
+            }
+        }
 		reporter.stop();
 	}
 
@@ -241,9 +238,7 @@ public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaG
         assert child.nodeEdgeMap == null;
         assert child.labelEdgeMaps == null;
         // initialise own data, if necessary
-        if (edgeSet == null) {
-            initData();
-        }
+        initData();
         DeltaApplier delta = child.delta;
         // if the node-edge map is set, no need to construct the node set
         if (nodeEdgeMap != null) {
