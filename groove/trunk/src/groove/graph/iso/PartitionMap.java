@@ -12,41 +12,36 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PartitionMap.java,v 1.5 2007-09-18 15:11:05 rensink Exp $
+ * $Id: PartitionMap.java,v 1.6 2007-09-19 09:01:05 rensink Exp $
  */
 package groove.graph.iso;
 
 import groove.graph.Element;
 import groove.graph.iso.CertificateStrategy.Certificate;
+import groove.util.SmallCollection;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Mapping from certificate values to sets of graph elements having those certificates.
- * For efficiency, singular image sets are stored as single objects. 
+ * For efficiency, images are stored as {@link SmallCollection}s
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
-public class PartitionMap {
+public class PartitionMap<E extends Element> {
 	/** Adds a pair of certificate and graph element to the partition map. */
-	public void add(Certificate<?> certificate) {
-		Element elem = certificate.getElement();
+	public void add(Certificate<E> certificate) {
+		E elem = certificate.getElement();
 	    // retrieve the image of the certificate, if any
-	    Object oldPartition = partitionMap.get(certificate);
+	    SmallCollection<E> oldPartition = partitionMap.get(certificate);
 	    if (oldPartition == null) {
 	        // no, the certificate did not yet exist; create an entry for it
-	    	partitionMap.put(certificate, elem);
-	    } else if (oldPartition instanceof Collection) {
-	        ((Collection<Element>) oldPartition).add(elem);
+	    	partitionMap.put(certificate, new SmallCollection<E>(elem));
 	    } else {
-	        Collection<Element> partitionSet = new ArrayList<Element>();
-	        partitionSet.add((Element) oldPartition);
-	        partitionSet.add(elem);
-	        partitionMap.put(certificate, partitionSet);
-	        oneToOne = false;
+	        oldPartition.add(elem);
+            oneToOne = false;
 	    }
 	}
 	
@@ -60,7 +55,7 @@ public class PartitionMap {
 	 * @param certificate the value for which we want the partition.
 	 * @return an object of type {@link Element} or type {@link Collection}, or <code>null</code>
 	 */
-	public Object get(Certificate<?> certificate) {
+	public SmallCollection<E> get(Certificate<E> certificate) {
 		return partitionMap.get(certificate);
 	}
 	
@@ -78,7 +73,7 @@ public class PartitionMap {
 	}
 
 	/** The actual mapping. */
-	private Map<Certificate<?>,Object> partitionMap = new HashMap<Certificate<?>,Object>();
+	private Map<Certificate<E>,SmallCollection<E>> partitionMap = new HashMap<Certificate<E>,SmallCollection<E>>();
 	/** Flag indicating if the partition map contains non-singleton images. */
 	private boolean oneToOne = true;
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoMatchFactory.java,v 1.7 2007-09-18 15:11:09 rensink Exp $
+ * $Id: IsoMatchFactory.java,v 1.8 2007-09-19 09:01:13 rensink Exp $
  */
 package groove.match;
 
@@ -41,7 +41,7 @@ import java.util.Map;
  * remains unchanged throughout the transformation, it will be very beneficial to take this into account.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class IsoMatchFactory {
     /** Private constructor, to ensure the class is used as singleton. */
@@ -142,7 +142,7 @@ public class IsoMatchFactory {
             /** Constructs a new record for this search item. */
             protected IsoNodeRecord(Search matcher) {
                 super(matcher);
-                images = getTarget().getCertifier().getPartitionMap().get(cert);
+                images = getTarget().getCertifier().getNodePartitionMap().get(cert);
             }
             
             /** The record is singular it there is exactly one image with the correct certificate. */

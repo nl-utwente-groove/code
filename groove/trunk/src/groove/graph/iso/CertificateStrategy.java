@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CertificateStrategy.java,v 1.4 2007-09-18 15:11:05 rensink Exp $
+ * $Id: CertificateStrategy.java,v 1.5 2007-09-19 09:01:05 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -31,7 +31,7 @@ import groove.graph.Node;
  * A certificate strategy is specialized to a graph upon which it works;
  * this is set at creation time.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface CertificateStrategy {
     /**
@@ -60,16 +60,21 @@ public interface CertificateStrategy {
      * @see #getCertificateMap()
      */
     public Map<Element, ? extends Certificate<?>> getCertificateMap();
-  
+
     /**
-     * Returns a map from certificates to sets of nodes and edges of the underlying graph.
+     * Returns a map from node certificates to sets of nodes of the underlying graph.
      * This is the reverse of {@link #getCertificateMap()}, specialised to nodes.
-     * Two elements from different graphs may only be joined by isomorphism
+     * Two nodes from different graphs may only be joined by isomorphism
      * if their certificates are equal; i.e., if they are in the image of the same certificate.
-     * The return type is a map to either {@link Element}s or {@link java.util.Collection}s.
-     * @ensure <tt>result.get(c).contains(e)</tt> iff <tt>getCertificateMap.get(e).equals(c)</tt>
      */
-    public PartitionMap getPartitionMap();
+    public PartitionMap<Node> getNodePartitionMap();
+
+    /**
+     * Returns a map from edge certificates to sets of edges of the underlying graph.
+     * This is the reverse of {@link #getCertificateMap()}, specialised to edges.
+     * Two edges from different graphs may only be joined by isomorphism
+     * if their certificates are equal; i.e., if they are in the image of the same certificate.     */
+    public PartitionMap<Edge> getEdgePartitionMap();
 
     /**
      * Returns the number of (node) certificates occurring as targets in the certificate map.

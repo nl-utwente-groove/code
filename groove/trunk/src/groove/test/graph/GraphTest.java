@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.10 2007-09-07 19:13:39 rensink Exp $
+ * $Id: GraphTest.java,v 1.11 2007-09-19 09:01:08 rensink Exp $
  */
 package groove.test.graph;
 
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -247,19 +247,19 @@ public class GraphTest extends TestCase {
 
     final public void testGetPartitionMap() {
         // iso-0
-        PartitionMap partitionMap = isoGraph[0].getCertifier().getPartitionMap();
+        PartitionMap partitionMap = isoGraph[0].getCertifier().getNodePartitionMap();
         int elementCount = isoGraph[0].nodeCount() + isoGraph[0].edgeCount();
         assertEquals(elementCount, partitionMap.size());
         // iso-1
-        partitionMap = isoGraph[1].getCertifier().getPartitionMap();
+        partitionMap = isoGraph[1].getCertifier().getNodePartitionMap();
         elementCount = isoGraph[1].nodeCount() + isoGraph[1].edgeCount();
         assertEquals(elementCount - 2, partitionMap.size());
         // iso-2
-        partitionMap = isoGraph[2].getCertifier().getPartitionMap();
+        partitionMap = isoGraph[2].getCertifier().getNodePartitionMap();
         elementCount = isoGraph[2].nodeCount() + isoGraph[2].edgeCount();
         assertEquals(elementCount, partitionMap.size());
         // iso-3
-        partitionMap = isoGraph[3].getCertifier().getPartitionMap();
+        partitionMap = isoGraph[3].getCertifier().getNodePartitionMap();
         elementCount = isoGraph[3].nodeCount() + isoGraph[3].edgeCount();
         assertTrue((elementCount - 5) >= partitionMap.size());
     }

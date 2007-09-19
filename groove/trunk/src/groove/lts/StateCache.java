@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.10 2007-09-18 22:12:08 rensink Exp $
+ * $Id: StateCache.java,v 1.11 2007-09-19 09:01:06 rensink Exp $
  */
 package groove.lts;
 
@@ -36,13 +36,13 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
-public class StateCache {
+class StateCache {
     /**
      * Constructs a cache for a given state.
      */
-    protected StateCache(AbstractGraphState state) {
+    StateCache(AbstractGraphState state) {
         this.state = state;
     }
    
