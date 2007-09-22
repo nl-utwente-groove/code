@@ -30,20 +30,30 @@ import groove.trans.RuleEvent;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
-	 * Constructs a successor state on the basis of a given parent state and 
-	 * rule application, and a given control location.
-	 */
-	public DefaultGraphNextState(AbstractGraphState source, RuleEvent event, Node[] addedNodes, Location control) {
-		super(control);
-		this.source = source;
-		this.event = event;
-		this.addedNodes = addedNodes;
-	}
-	
+     * Constructs a successor state on the basis of a given parent state and 
+     * rule application, and a given control location.
+     */
+    public DefaultGraphNextState(AbstractGraphState source, RuleEvent event, Node[] addedNodes, Location control) {
+        super(control);
+        this.source = source;
+        this.event = event;
+        this.addedNodes = addedNodes;
+    }
+    
+    /**
+     * Constructs a successor state on the basis of a given parent state and 
+     * rule application, and a given control location.
+     */
+    public DefaultGraphNextState(AbstractGraphState source, RuleApplication appl, Location control) {
+        this(source, appl.getEvent(), appl.getCoanchorImage(), control);
+        getCache().setDelta(appl);
+        
+    }
+    
     /**
 	 * Constructs a state on the basis of a given parent state and 
 	 * rule application, with <code>null</code> control location.
