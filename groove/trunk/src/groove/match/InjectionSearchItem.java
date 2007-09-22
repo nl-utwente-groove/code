@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: InjectionSearchItem.java,v 1.5 2007-09-22 09:10:36 rensink Exp $
+ * $Id: InjectionSearchItem.java,v 1.6 2007-09-22 16:28:06 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.match.SearchPlanStrategy.Search;
 
 import java.util.Collection;

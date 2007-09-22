@@ -48,8 +48,9 @@ public interface RuleApplier {
 	 * Calls the action's <code>perform</code> method for all rule applications.
 	 * These are the same rule applications returned by {@link #getApplications()}.
 	 * @param action the action to be performed
+	 * @return <code>true</code> if at least one application was performed
 	 */
-	public void doApplications(Action action);
+	public boolean doApplications(Action action);
 	
 	/** Interface for a method that is called during {@link RuleApplier#doApplications(Action)}. */
 	interface Action {

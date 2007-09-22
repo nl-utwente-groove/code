@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoMatchFactory.java,v 1.9 2007-09-22 09:10:35 rensink Exp $
+ * $Id: IsoMatchFactory.java,v 1.10 2007-09-22 16:28:07 rensink Exp $
  */
 package groove.match;
 
@@ -42,7 +42,7 @@ import java.util.List;
  * remains unchanged throughout the transformation, it will be very beneficial to take this into account.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @deprecated isomorphism check is now in {@link DefaultIsoChecker}
  */
 @Deprecated
@@ -111,7 +111,7 @@ public class IsoMatchFactory {
          * Returns the singleton set consisting of the node that this item searches.
          */
         @Override
-        public Collection<Node> bindsNodes() {
+        public Collection<? extends Node> bindsNodes() {
             return Collections.singleton(node);
         }
 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BinaryEdgeSearchItem.java,v 1.3 2007-09-22 09:10:35 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.1 2007-09-22 16:28:07 rensink Exp $
  */
 package groove.match;
 
@@ -26,6 +26,7 @@ import groove.util.FilterIterator;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -35,13 +36,13 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class BinaryEdgeSearchItem extends AbstractSearchItem {
+public class Edge2SearchItem extends AbstractSearchItem {
 	/**
 	 * Creates a search item for a given edge, for which it is know
 	 * which edge ends have already been matched (in the search plan) before this one.
 	 * @param edge the edge to be matched
 	 */
-	public BinaryEdgeSearchItem(BinaryEdge edge) {
+	public Edge2SearchItem(BinaryEdge edge) {
 		this.edge = edge;
         this.source = edge.source();
         this.target = edge.target();
@@ -59,11 +60,17 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
      * Returns the end nodes of the edge.
      */
     @Override
-    public Collection<Node> bindsNodes() {
+    public Collection<? extends Node> bindsNodes() {
         return boundNodes;
     }
 
-    /**
+    /** Returns the singleton set consisting of the matched edge. */
+    @Override
+	public Collection<? extends Edge> bindsEdges() {
+		return Collections.singleton(edge);
+	}
+
+	/**
 	 * Returns the edge for which this item tests.
 	 */
 	public BinaryEdge getEdge() {
@@ -77,15 +84,15 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
     
     /**
      * This implementation first attempts to compare edge labels and ends,
-     * if the other search item is also an {@link BinaryEdgeSearchItem};
+     * if the other search item is also an {@link Edge2SearchItem};
      * otherwise, it delegates to super. 
      */
     @Override
     public int compareTo(SearchItem other) {
         int result = 0;
-        if (other instanceof BinaryEdgeSearchItem) {
+        if (other instanceof Edge2SearchItem) {
             // compare first the edge labels, then the edge ends
-            Edge otherEdge = ((BinaryEdgeSearchItem) other).getEdge();
+            Edge otherEdge = ((Edge2SearchItem) other).getEdge();
             result = getEdge().label().compareTo(otherEdge.label());
             for (int i = 0; result == 0 && i < arity; i++) {
                 result = edge.end(i).compareTo(otherEdge.end(i));
@@ -519,7 +526,7 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
 
         @Override
         public String toString() {
-            return BinaryEdgeSearchItem.this.toString()+" = "+selected;
+            return Edge2SearchItem.this.toString()+" = "+selected;
         }
 
         /**

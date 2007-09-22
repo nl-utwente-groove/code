@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.21 2007-09-22 07:59:41 rensink Exp $
+ * $Id: StateGenerator.java,v 1.22 2007-09-22 16:28:40 rensink Exp $
  */
 package groove.lts;
 
@@ -75,7 +75,7 @@ public class StateGenerator {
         // check if the transitions have not yet been generated
         if (!state.isClosed()) {
             collector.reset();
-        	getApplier(state).doApplications(new RuleApplier.Action() {
+        	boolean applied = getApplier(state).doApplications(new RuleApplier.Action() {
 				public void perform(RuleApplication application) {
                     addTransition(state, application);
 				}
@@ -89,7 +89,7 @@ public class StateGenerator {
             //}
         	
         	// new test, just look if there are any transitions stored for this state
-        	if( state.getTransitionSet().size() == 0 ) {
+        	if (applied) {
         		getGTS().setFinal(state);
         	}
             
@@ -300,6 +300,7 @@ public class StateGenerator {
 	 */
 	protected GraphNextState createState(RuleApplication appl, GraphState source, Location location) {
 		return new DefaultGraphNextState((AbstractGraphState) source, appl, location);
+//		return new DefaultGraphNextState((AbstractGraphState) source, appl.getEvent(), appl.getCoanchorImage(), location);
 	}
 
     /**

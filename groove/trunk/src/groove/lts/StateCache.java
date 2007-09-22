@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.14 2007-09-22 07:56:47 rensink Exp $
+ * $Id: StateCache.java,v 1.15 2007-09-22 16:28:40 rensink Exp $
  */
 package groove.lts;
 
@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 class StateCache {
     /**
@@ -277,7 +277,7 @@ class StateCache {
     /** Flag indicating if state graphs should be frozen. */
     private final boolean freezeGraphs = SystemRecord.isReuse();
     /** Factory used to create the state graphs. */
-    private final DeltaGraphFactory graphFactory = NewDeltaGraph.getInstance(false && SystemRecord.isReuse());
+    private final DeltaGraphFactory graphFactory = NewDeltaGraph.getInstance(SystemRecord.isReuse());
     /** 
      * The depth of the graph above which the underlying graph will be frozen.
      */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.13 2007-09-22 09:10:34 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.14 2007-09-22 16:28:06 rensink Exp $
  */
 package groove.match;
 
@@ -53,7 +53,7 @@ import java.util.TreeSet;
  * The search plans include items for all graph nodes and edges, ordered
  * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -76,8 +76,8 @@ public class GraphSearchPlanFactory {
      * when successfully executed in the given order
      */
     public SearchPlanStrategy createMatcher(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
-        PlanData data = new PlanData(graph, preMatchedNodes, preMatchedEdges);
-        SearchPlanStrategy result = new SearchPlanStrategy(graph, data.getPlan(), false);
+        PlanData data = new PlanData(graph);
+        SearchPlanStrategy result = new SearchPlanStrategy(graph, data.getPlan(preMatchedNodes, preMatchedEdges), false);
         result.setFixed();
         return result;
     }
@@ -101,41 +101,33 @@ public class GraphSearchPlanFactory {
          * Construct a given plan data object for a given graph,
          * with certain sets of already pre-matched elements.
          * @param graph the graph to be matched by the plan
-         * @param preMatchedNodes the set of pre-matched nodes
-         * @param preMatchedEdges the set of pre-matched edges
          */
-        PlanData(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
+        PlanData(Graph graph) {
             // compute the set of remaining (unmatched) nodes
             remainingNodes = new HashSet<Node>(graph.nodeSet());
-            if (preMatchedNodes != null) {
-                remainingNodes.removeAll(preMatchedNodes);
-            }
             // compute the set of remaining (unmatched) edges and variables
             remainingEdges = new HashSet<Edge>(graph.edgeSet());
             remainingVars = new HashSet<String>(VarSupport.getAllVars(graph));
-            if (preMatchedEdges != null) {
-                for (Edge edge: preMatchedEdges) {
-                    remainingEdges.remove(edge);
-                    remainingVars.removeAll(VarSupport.getBoundVars(edge));
-                }
-            }
         }
 
         /**
          * Creates and returns a search plan on the basis of the given data.
+         * @param preMatchedNodes the set of pre-matched nodes
+         * @param preMatchedEdges the set of pre-matched edges
          */
-        public List<SearchItem> getPlan() {
+        public List<SearchItem> getPlan(Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
             if (used) {
                 throw new IllegalStateException("Method getPlan() was already called");
             } else {
                 used = true;
             }
             List<SearchItem> result = new ArrayList<SearchItem>();
-            Collection<SearchItem> items = computeSearchItems();
+            Collection<SearchItem> items = computeSearchItems(preMatchedNodes, preMatchedEdges);
             while (!items.isEmpty()) {
                 SearchItem bestItem = Collections.max(items, this);
                 result.add(bestItem);
                 items.remove(bestItem);
+                remainingEdges.removeAll(bestItem.bindsEdges());
                 remainingNodes.removeAll(bestItem.bindsNodes());
                 remainingVars.removeAll(bestItem.bindsVars());
                 // notify the observing comparators of the change
@@ -146,16 +138,26 @@ public class GraphSearchPlanFactory {
         }
 
         /** Callback method to compute the collection of search items for the plan. */
-        Collection<SearchItem> computeSearchItems() {
+        Collection<SearchItem> computeSearchItems(Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
             Collection<SearchItem> result = new ArrayList<SearchItem>();
             Set<Node> unmatchedNodes = new HashSet<Node>(remainingNodes);
-            for (Edge edge: remainingEdges) {
+            Set<Edge> unmatchedEdges = new HashSet<Edge>(remainingEdges);
+            // first a single search item for the pre-matched elements
+            if (preMatchedNodes != null) {
+            	SearchItem preMatchItem = new PreMatchSearchItem(preMatchedNodes, preMatchedEdges);
+            	result.add(preMatchItem);
+            	unmatchedNodes.removeAll(preMatchItem.bindsNodes());
+            	unmatchedEdges.removeAll(preMatchItem.bindsEdges());
+            }
+            // then a search item per remaining edge
+            for (Edge edge: unmatchedEdges) {
                 SearchItem edgeItem = createEdgeSearchItem(edge);
                 if (edgeItem != null) {
                     result.add(edgeItem);
                     unmatchedNodes.removeAll(edgeItem.bindsNodes());
                 }
             }
+            // finally a search item per remaining node
             for (Node node : unmatchedNodes) {
                 SearchItem nodeItem = createNodeSearchItem(node);
                 if (nodeItem != null) {
@@ -227,7 +229,7 @@ public class GraphSearchPlanFactory {
                 return new WildcardEdgeSearchItem(edge);
             } else if (RegExprLabel.isAtom(label)) {
                 DefaultEdge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
-                return new BinaryEdgeSearchItem(defaultEdge);
+                return new Edge2SearchItem(defaultEdge);
             } else if (label instanceof RegExprLabel) {
                 return new RegExprEdgeSearchItem(edge);
             } else if (edge instanceof ProductEdge) {
@@ -240,7 +242,7 @@ public class GraphSearchPlanFactory {
         	} else if (edge instanceof AlgebraEdge) {
         		return null;
         	} else if (edge instanceof BinaryEdge) {
-        	    return new BinaryEdgeSearchItem((BinaryEdge) edge);      
+        	    return new Edge2SearchItem((BinaryEdge) edge);      
             } else {
         	    return new EdgeSearchItem(edge);      
             }
@@ -294,7 +296,7 @@ public class GraphSearchPlanFactory {
          * should be matched.
          */
         private Collection<Comparator<SearchItem>> comparators;
-        /** Flag determining if {@link #getPlan()} was already called. */
+        /** Flag determining if {@link #getPlan(Collection, Collection)} was already called. */
         private boolean used;
     }
   
@@ -382,7 +384,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.13 $
+     * @version $Revision: 1.14 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -482,11 +484,12 @@ public class GraphSearchPlanFactory {
          * <li> {@link RegExprEdgeSearchItem}s
          * <li> {@link VarEdgeSearchItem}s
          * <li> {@link WildcardEdgeSearchItem}s
-         * <li> {@link BinaryEdgeSearchItem}s
+         * <li> {@link Edge2SearchItem}s
          * <li> {@link EdgeSearchItem}s of a non-specialised type
          * <li> {@link ConditionSearchItem}s
          * <li> {@link OperatorEdgeSearchItem}s
          * <li> {@link ValueNodeSearchItem}s
+         * <li> {@link PreMatchSearchItem}s
          * </ul>
          */
         public int compare(SearchItem o1, SearchItem o2) {
@@ -516,7 +519,7 @@ public class GraphSearchPlanFactory {
                 return result;
             } 
             result++;
-            if (itemClass == BinaryEdgeSearchItem.class) {
+            if (itemClass == Edge2SearchItem.class) {
                 return result;
             } 
             result++;
@@ -533,6 +536,10 @@ public class GraphSearchPlanFactory {
             } 
             result++;
             if (itemClass == ValueNodeSearchItem.class) {
+                return result;
+            } 
+            result++;
+            if (itemClass == PreMatchSearchItem.class) {
                 return result;
             } 
             throw new IllegalArgumentException(String.format("Unrecognised search item %s", item));
@@ -608,7 +615,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.13 $
+     * @version $Revision: 1.14 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 
