@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchItem.java,v 1.5 2007-09-22 09:10:36 rensink Exp $
+ * $Id: SearchItem.java,v 1.6 2007-09-22 16:28:06 rensink Exp $
  */
 package groove.match;
 
+import groove.graph.Edge;
 import groove.graph.Node;
 
 import java.util.Collection;
@@ -42,7 +43,7 @@ public interface SearchItem extends Comparable<SearchItem> {
      * Returns the collection of nodes for which this search item will 
      * find a matching when activated.
      */ 
-    Collection<Node> bindsNodes();
+    Collection<? extends Node> bindsNodes();
     
     /** 
      * Returns the collection of label variables that should already be matched
@@ -56,6 +57,12 @@ public interface SearchItem extends Comparable<SearchItem> {
      */ 
     Collection<String> bindsVars();
 
+    /** 
+     * Returns the collection of edges for which this 
+     * search item will find a matching. 
+     */
+    Collection<? extends Edge> bindsEdges();
+    
     /** 
      * Prepares the search item for actual searching by providing 
      * additional information about the strategy.

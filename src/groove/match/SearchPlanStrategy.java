@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.6 2007-09-22 09:10:36 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.7 2007-09-22 16:28:07 rensink Exp $
  */
 package groove.match;
 
@@ -24,7 +24,6 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
-import groove.rel.VarSupport;
 import groove.util.Reporter;
 
 import java.util.ArrayList;
@@ -42,7 +41,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class SearchPlanStrategy implements MatchStrategy {
 	/**
@@ -53,26 +52,26 @@ public class SearchPlanStrategy implements MatchStrategy {
      */
     public SearchPlanStrategy(Graph source, List<SearchItem> plan, boolean injective) {
         this.nodeIxMap = new HashMap<Node,Integer>();
-        int nodeCount = 0;
-        for (Node node: source.nodeSet()) {
-            nodeIxMap.put(node, nodeCount);
-            nodeCount++;
-        }
-        sourceNodeCount = nodeCount;
+//        int nodeCount = 0;
+//        for (Node node: source.nodeSet()) {
+//            nodeIxMap.put(node, nodeCount);
+//            nodeCount++;
+//        }
+//        sourceNodeCount = nodeCount;
         this.edgeIxMap = new HashMap<Edge,Integer>();
-        int edgeCount = 0;
-        for (Edge edge: source.edgeSet()) {
-            edgeIxMap.put(edge, edgeCount);
-            edgeCount++;
-        }
-        sourceEdgeCount = edgeCount;
+//        int edgeCount = 0;
+//        for (Edge edge: source.edgeSet()) {
+//            edgeIxMap.put(edge, edgeCount);
+//            edgeCount++;
+//        }
+//        sourceEdgeCount = edgeCount;
         this.varIxMap = new HashMap<String,Integer>();
-        int varCount = 0;
-        for (String var: VarSupport.getAllVars(source)) {
-            varIxMap.put(var, varCount);
-            varCount++;
-        }
-        sourceVarCount = varCount;
+//        int varCount = 0;
+//        for (String var: VarSupport.getAllVars(source)) {
+//            varIxMap.put(var, varCount);
+//            varCount++;
+//        }
+//        sourceVarCount = varCount;
         this.plan = plan;
         this.injective = injective;
     }
@@ -347,12 +346,12 @@ public class SearchPlanStrategy implements MatchStrategy {
     private Edge[] edgeKeys;
     /** Array of source graph variables, which is the inverse of {@link #varIxMap} .*/
     private String[] varKeys;
-    /** The number of nodes in the source graph. */
-    private final int sourceNodeCount;
-    /** The number of edge in the source graph. */
-    private final int sourceEdgeCount;
-    /** The number of variables in the source graph. */
-    private final int sourceVarCount;
+//    /** The number of nodes in the source graph. */
+//    private final int sourceNodeCount;
+//    /** The number of edge in the source graph. */
+//    private final int sourceEdgeCount;
+//    /** The number of variables in the source graph. */
+//    private final int sourceVarCount;
 //	/** 
 //	 * Number of pre-matched nodes.
 //	 * All nodes with an index (in {@link #nodeIndexMap}) lower than this count should be pre-matched.
@@ -386,17 +385,17 @@ public class SearchPlanStrategy implements MatchStrategy {
     public class Search {
         /** Constructs a new record for a given graph and partial match. */
         public Search(SearchPlanStrategy strategy, Graph target, NodeEdgeMap preMatch) {
-            this.plan = strategy.getPlan();
-            this.filter = strategy.getFilter();
-            this.injective = strategy.isInjective();
+//            this.plan = strategy.getPlan();
+//            this.filter = strategy.getFilter();
+//            this.injective = strategy.isInjective();
             this.target = target;
             this.current = 0;
-            this.result = createElementMap(preMatch);
+//            this.result = createElementMap(preMatch);
             this.records = new ArrayList<SearchItem.Record>(plan.size());
             this.lastSingular = -1;
-            this.nodeKeys = strategy.nodeKeys;
-            this.edgeKeys = strategy.edgeKeys;
-            this.varKeys = strategy.varKeys;
+//            this.nodeKeys = strategy.nodeKeys;
+//            this.edgeKeys = strategy.edgeKeys;
+//            this.varKeys = strategy.varKeys;
             this.nodeImages = new Node[strategy.nodeKeys.length];
             this.edgeImages = new Edge[strategy.edgeKeys.length];
             this.varImages = new Label[strategy.varKeys.length];
@@ -409,11 +408,11 @@ public class SearchPlanStrategy implements MatchStrategy {
                 edgeImages[i] = edgeEntry.getValue();
             }
             if (preMatch instanceof VarNodeEdgeMap) {
-            for (Map.Entry<String,Label> varEntry: ((VarNodeEdgeMap) preMatch).getValuation().entrySet()) {
-                int i = strategy.getVarIx(varEntry.getKey());
-                varImages[i] = varEntry.getValue();
-            }
-            }
+				for (Map.Entry<String, Label> varEntry : ((VarNodeEdgeMap) preMatch).getValuation().entrySet()) {
+					int i = strategy.getVarIx(varEntry.getKey());
+					varImages[i] = varEntry.getValue();
+				}
+			}
         }
         
         @Override
@@ -430,25 +429,24 @@ public class SearchPlanStrategy implements MatchStrategy {
         public boolean find() {
             reporter.start(SEARCH_FIND);
             do {
-            if (found) {
-                // we already found a solution
-                // clone the previous result to avoid sharing problems
-//                result = createElementMap(result);
-                current--;
-            }
-            while (current > lastSingular && current < plan.size()) {
-                current += getCurrentRecord().find() ? +1 : -1;
-            }
-            reporter.stop();
-            found = current > lastSingular;
-            } while (found && !satisfiesFilter());
+				if (found) {
+					// we already found a solution
+					match = null;
+					current--;
+				}
+				while (current > lastSingular && current < plan.size()) {
+					current += getCurrentRecord().find() ? +1 : -1;
+				}
+				reporter.stop();
+				found = current > lastSingular;
+			} while (found && !satisfiesFilter());
             return found;
         }
 
-        /** 
-         * Returns the currently active search item record,
-         * i.e., belonging to the current value of <code>index</code>.
-         */
+        /**
+		 * Returns the currently active search item record, i.e., belonging to
+		 * the current value of <code>index</code>.
+		 */
         private SearchItem.Record getCurrentRecord() {
             SearchItem.Record result;
             if (current < records.size()) {
@@ -467,7 +465,7 @@ public class SearchPlanStrategy implements MatchStrategy {
 
         /** Tests if the current search result satisfies the additional filter (if any). */
         private boolean satisfiesFilter() {
-        	return filter == null || filter.isSatisfied(result);
+        	return filter == null || filter.isSatisfied(getMatch());
         }
         
         /** Sets the node image for the source node with a given index. */
@@ -511,21 +509,21 @@ public class SearchPlanStrategy implements MatchStrategy {
          * the last invocation of {@link #find()} was not successful. 
          */
         public VarNodeEdgeMap getMatch() {
-            if (found) {
+            if (found && match == null) {
                 VarNodeEdgeMap result = new VarNodeEdgeHashMap();
-                for (int i = 0; i < sourceNodeCount; i++) {
+                for (int i = 0; i < nodeImages.length; i++) {
                     Node image = nodeImages[i];
                     if (image != null) {
                         result.putNode(nodeKeys[i], image);
                     }
                 }
-                for (int i = 0; i < sourceEdgeCount; i++) {
+                for (int i = 0; i < edgeImages.length; i++) {
                     Edge image = edgeImages[i];
                     if (image != null) {
                         result.putEdge(edgeKeys[i], image);
                     }
                 }
-                for (int i = 0; i < sourceVarCount; i++) {
+                for (int i = 0; i < varImages.length; i++) {
                     Label image = varImages[i];
                     if (image != null) {
                         result.putVar(varKeys[i], image);
@@ -533,7 +531,7 @@ public class SearchPlanStrategy implements MatchStrategy {
                 }
                 return result;
             } else {
-                return null;
+                return match;
             }
         }
         
@@ -609,24 +607,24 @@ public class SearchPlanStrategy implements MatchStrategy {
             return usedNodes;
         }
 
-        /** The search plan for this record. */
-        private final List<SearchItem> plan;
-        /** Array of node images. */
-        private final Node[] nodeKeys;
-        /** Array of edge images. */
-        private final Edge[] edgeKeys;
-        /** Array of variable images. */
-        private final String[] varKeys;
+//        /** The search plan for this record. */
+//        private final List<SearchItem> plan;
+//        /** Array of node images. */
+//        private final Node[] nodeKeys;
+//        /** Array of edge images. */
+//        private final Edge[] edgeKeys;
+//        /** Array of variable images. */
+//        private final String[] varKeys;
         /** Array of node images. */
         private final Node[] nodeImages;
         /** Array of edge images. */
         private final Edge[] edgeImages;
         /** Array of variable images. */
         private final Label[] varImages;
-        /** Property to be satisfied by all search results. May be <code>null</code>. */
-        private final Property<VarNodeEdgeMap> filter;
-        /** Flag indicating that the match should be injective. */
-        private final boolean injective;
+//        /** Property to be satisfied by all search results. May be <code>null</code>. */
+//        private final Property<VarNodeEdgeMap> filter;
+//        /** Flag indicating that the match should be injective. */
+//        private final boolean injective;
         /** Flag indicating that a solution has already been found. */
         private boolean found;
         /** The index of the currently active search item. */
@@ -637,15 +635,20 @@ public class SearchPlanStrategy implements MatchStrategy {
         private final Graph target;
 //        /** The initial pre-match map. */
 //        private NodeEdgeMap preMatch;
-        /**
-         * The element map built up during the search process.
-         */
-        private VarNodeEdgeMap result;
+//        /**
+//         * The element map built up during the search process.
+//         */
+//        private VarNodeEdgeMap result;
         /** 
          * The set of nodes already used as images, used for the injectivity test.
          */
         private Set<Node> usedNodes;
         /** Search stack. */
         private final List<SearchItem.Record> records;
+        /** 
+         * The match found at the last invocation of {@link #find()},
+         * if it has been computed (in {@link #getMatch()}). 
+         */
+        private VarNodeEdgeMap match;
     }
 }

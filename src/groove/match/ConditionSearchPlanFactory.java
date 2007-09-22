@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.10 2007-09-22 09:10:36 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.11 2007-09-22 16:28:06 rensink Exp $
  */
 package groove.match;
 
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Factory that adds to a graph search plan the following items the search items for the simple negative conditions (edge and merge embargoes).
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 
@@ -61,8 +61,8 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      * @param preMatchedEdges the edges of the condition that have been matched already
      */
     public SearchPlanStrategy createMatcher(GraphCondition condition, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
-    	PlanData planData = new GrammarPlanData(condition, preMatchedNodes, preMatchedEdges);
-    	SearchPlanStrategy result = new SearchPlanStrategy(condition.getTarget(), planData.getPlan(), condition.getProperties().isInjective());
+    	PlanData planData = new GrammarPlanData(condition);
+    	SearchPlanStrategy result = new SearchPlanStrategy(condition.getTarget(), planData.getPlan(preMatchedNodes, preMatchedEdges), condition.getProperties().isInjective());
         if (PRINT) {
             System.out.print(String.format("%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s", condition.getName(), preMatchedNodes, preMatchedEdges, result));
         }
@@ -94,19 +94,19 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
          * based on a given set of system properties, and sets
          * of already matched nodes and edges. 
          * @param condition the graph condition for which we develop the search plan
-         * @param preMatchedNodes the set of pre-matched nodes
-         * @param preMatchedEdges the set of pre-matched edges
          */
-        GrammarPlanData(GraphCondition condition, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
-            super(condition.getTarget(), preMatchedNodes, preMatchedEdges);
+        GrammarPlanData(GraphCondition condition) {
+            super(condition.getTarget());
             this.condition = condition;
         }
 
         /**
          * Adds embargo and injection search items to the super result.
+         * @param preMatchedNodes the set of pre-matched nodes
+         * @param preMatchedEdges the set of pre-matched edges
          */
-        @Override Collection<SearchItem> computeSearchItems() {
-            Collection<SearchItem> result = super.computeSearchItems();
+        @Override Collection<SearchItem> computeSearchItems(Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
+            Collection<SearchItem> result = super.computeSearchItems(preMatchedNodes, preMatchedEdges);
             if (condition instanceof DefaultGraphCondition) {
                 Set<Edge> negations = ((DefaultGraphCondition) condition).getNegations();
                 if (negations != null) {

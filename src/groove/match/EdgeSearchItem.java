@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.9 2007-09-22 09:10:35 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.10 2007-09-22 16:28:06 rensink Exp $
  */
 package groove.match;
 
@@ -25,6 +25,7 @@ import groove.match.SearchPlanStrategy.Search;
 import groove.util.FilterIterator;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -70,7 +71,7 @@ public class EdgeSearchItem extends AbstractSearchItem {
      * Returns the non-value end nodes of the edge.
      */
     @Override
-    public Collection<Node> bindsNodes() {
+    public Collection<? extends Node> bindsNodes() {
         return boundNodes;
     }
     
@@ -82,7 +83,16 @@ public class EdgeSearchItem extends AbstractSearchItem {
         return neededNodes;
     }
 
-    /**
+    /** 
+     * This implementation returns a singleton set consisting of 
+     * the matched edge.
+     */
+    @Override
+	public Collection<? extends Edge> bindsEdges() {
+		return Collections.singleton(edge);
+	}
+
+	/**
 	 * Returns the edge for which this item tests.
 	 */
 	public Edge getEdge() {

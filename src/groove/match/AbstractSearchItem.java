@@ -17,10 +17,10 @@
 
 package groove.match;
 
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
-import groove.rel.VarNodeEdgeMap;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -28,13 +28,13 @@ import java.util.Collections;
 /**
  * Abstract implementation of a searh item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
-    public Collection<Node> bindsNodes() {
+    public Collection<? extends Node> bindsNodes() {
         return Collections.emptySet();
     }
 
@@ -42,6 +42,13 @@ abstract public class AbstractSearchItem implements SearchItem {
      * This implementation returns the empty set.
      */
     public Collection<String> bindsVars() {
+        return Collections.emptySet();
+    }
+
+    /**
+     * This implementation returns the empty set.
+     */
+    public Collection<? extends Edge> bindsEdges() {
         return Collections.emptySet();
     }
 
@@ -135,7 +142,7 @@ abstract public class AbstractSearchItem implements SearchItem {
      * <li> {@link #FOUND}, reached at the moment a solution has been found
      * </ul>
      * @author Arend Rensink
-     * @version $Revision: 1.7 $
+     * @version $Revision: 1.8 $
      */
     abstract public class AbstractRecord extends PrimitiveRecord {
         /** Constructs a record for a given search. */
@@ -319,7 +326,7 @@ abstract public class AbstractSearchItem implements SearchItem {
     /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.7 $
+     * @version $Revision: 1.8 $
      */
     abstract public class SingularRecord extends PrimitiveRecord {
         /** Constructs an instance for a given search. */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.8 2007-09-22 09:10:36 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.9 2007-09-22 16:28:07 rensink Exp $
  */
 package groove.match;
 
@@ -29,7 +29,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 
 /**
  * A search item for a product edge.
@@ -71,7 +70,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
      * Returns a singleton set consisting of the target node of the operator edge.
      */
     @Override
-    public Collection<Node> bindsNodes() {
+    public Collection<? extends Node> bindsNodes() {
         return boundNodes;
     }
 

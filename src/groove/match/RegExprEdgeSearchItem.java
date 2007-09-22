@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.5 2007-09-22 09:10:36 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.6 2007-09-22 16:28:06 rensink Exp $ */
 package groove.match;
 
 import groove.graph.Edge;
@@ -69,7 +69,13 @@ public class RegExprEdgeSearchItem extends EdgeSearchItem {
         return edgeExpr;
     }
     
+    /** This implementation returns the empty set. */
     @Override
+	public Collection<? extends Edge> bindsEdges() {
+		return Collections.emptySet();
+	}
+
+	@Override
     public void activate(SearchPlanStrategy strategy) {
         super.activate(strategy);
         this.varIxMap = new HashMap<String,Integer>();

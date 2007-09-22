@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractStrategy.java,v 1.10 2007-09-17 10:11:36 rensink Exp $
+ * $Id: AbstractStrategy.java,v 1.11 2007-09-22 16:28:43 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -32,7 +32,7 @@ import java.util.Collection;
 /**
  * Abstract LTS exploration strategy.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public abstract class AbstractStrategy extends StateGenerator implements ExploreStrategy {
 //	/** 
@@ -166,7 +166,7 @@ public abstract class AbstractStrategy extends StateGenerator implements Explore
     
     /** 
      * Callback method to determine if rule events should be reused.
-     * To be used as parameter in a call of {@link SystemRecord#setReuseEvents(boolean)}.
+     * To be used as parameter in a call of {@link SystemRecord#setReuse(boolean)}.
      */
     boolean isReuse() {
     	return true;

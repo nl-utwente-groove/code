@@ -23,7 +23,6 @@ import groove.util.Reporter;
 import groove.util.TransformIterator;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
@@ -199,7 +198,7 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 		return record.getRuleSystem().getRuleMap().values().iterator();
 	}
 	
-	public void doApplications(Action action) {
+	public boolean doApplications(Action action) {
 		reporter.start(GET_DERIVATIONS);
 		boolean done = false;
 		boolean lambdas = false;
@@ -225,6 +224,7 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 				done = doApplications(rules, action);
 		}
 		reporter.stop();
+		return done;
 	}
 
 	/**
