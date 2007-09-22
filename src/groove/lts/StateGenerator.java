@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.20 2007-09-16 21:44:27 rensink Exp $
+ * $Id: StateGenerator.java,v 1.21 2007-09-22 07:59:41 rensink Exp $
  */
 package groove.lts;
 
@@ -299,7 +299,7 @@ public class StateGenerator {
 	 * Creates a fresh graph state, based on a given rule application and source state.
 	 */
 	protected GraphNextState createState(RuleApplication appl, GraphState source, Location location) {
-		return new DefaultGraphNextState((AbstractGraphState) source, appl.getEvent(), appl.getCoanchorImage(), location);
+		return new DefaultGraphNextState((AbstractGraphState) source, appl, location);
 	}
 
     /**

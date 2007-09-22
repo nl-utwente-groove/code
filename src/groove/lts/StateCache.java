@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.13 2007-09-19 21:14:57 rensink Exp $
+ * $Id: StateCache.java,v 1.14 2007-09-22 07:56:47 rensink Exp $
  */
 package groove.lts;
 
+import groove.graph.DeltaApplier;
 import groove.graph.DeltaGraphFactory;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -35,7 +36,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 class StateCache {
     /**
@@ -66,6 +67,22 @@ class StateCache {
     	return graph;
     }
     
+    DeltaApplier getDelta() {
+        if (delta == null) {
+            Element[] frozenGraph = state.getFrozenGraph();
+            if (frozenGraph != null) {
+                delta = new FrozenDeltaApplier(frozenGraph);
+            } else {
+                delta = ((DefaultGraphNextState) state).getDelta();
+            }
+        }
+        return delta;
+    }
+    
+    void setDelta(DeltaApplier delta) {
+        this.delta = delta;
+    }
+    
     /** 
      * Compute the graph from the information in the state.
      * The state is assumed to be a {@link DefaultGraphNextState}.
@@ -74,12 +91,12 @@ class StateCache {
 		Element[] frozenGraph = state.getFrozenGraph();
     	Graph result;
 		if (frozenGraph != null) {
-			result = graphFactory.newGraph(null, new FrozenDeltaApplier(frozenGraph));
+			result = graphFactory.newGraph(null, getDelta());
 		} else if (!(state instanceof GraphNextState)) {
 			throw new IllegalStateException("Underlying state does not have information to reconstruct the graph");
 		} else {
 			DefaultGraphNextState state = (DefaultGraphNextState) this.state;
-			result = graphFactory.newGraph(state.source().getGraph(), state.getDelta());
+			result = graphFactory.newGraph(state.source().getGraph(), getDelta());
 			// If the state is closed, then we are reconstructing the graph
 			// for the second time at least; see if we should freeze it
 			// on the other hand, the stack of derived next states should not grow so large
@@ -256,6 +273,7 @@ class StateCache {
     private Map<RuleEvent,GraphState> transitionMap;
     /** Cached graph for this state. */
     private Graph graph;
+    private groove.graph.DeltaApplier delta;
     /** Flag indicating if state graphs should be frozen. */
     private final boolean freezeGraphs = SystemRecord.isReuse();
     /** Factory used to create the state graphs. */
