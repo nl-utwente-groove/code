@@ -12,15 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.19 2007-09-19 21:15:12 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.20 2007-09-22 09:10:43 rensink Exp $
  */
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
 import groove.graph.iso.DefaultIsoChecker;
-import groove.graph.iso.IsoChecker;
-import groove.match.IsoMatchFactory;
-import groove.match.MatchStrategy;
 import groove.util.Dispenser;
 import groove.util.Pair;
 import groove.view.FormatException;
@@ -38,7 +35,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     /**
@@ -47,12 +44,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
      */
     static private GraphFactory graphFactory = GraphFactory.getInstance();
     
-    /**
-     * The isomorphism checking strategy.
-     * @see #getIsoChecker()
-     */
-    static private IsoChecker isoChecker = new DefaultIsoChecker();
-
     /**
      * The current strategy for computing isomorphism certificates.
      * @see #getCertifier()
@@ -153,15 +144,26 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
      * compares the graph certificates at increasing precision to ensure that it is actually worth
      * trying to compute an isomorphism.
      */
-    public Morphism getIsomorphismTo(Graph to) {
+    public Morphism getIsomorphismTo(final Graph to) {
         reporter.start(GET_ISOMORPHISM_TO);
-        Morphism isoMorphism = new DefaultMorphism(this, to) {
-			@Override
-			protected MatchStrategy createMatchStrategy() {
-				return IsoMatchFactory.getInstance().createMatcher(dom());
-			}
-        };
-        Morphism result = isoMorphism.getTotalExtension();
+//        Morphism isoMorphism = new DefaultMorphism(this, to) {
+//			@Override
+//			protected MatchStrategy createMatchStrategy() {
+//				return IsoMatchFactory.getInstance().createMatcher(dom());
+//			}
+//        };
+        Morphism result;
+        final NodeEdgeMap map = DefaultIsoChecker.getInstance().getIsomorphism(AbstractGraph.this, to);
+        if (map != null) {
+            result = new DefaultMorphism(this, to) {
+                @Override
+                protected NodeEdgeMap createElementMap() {
+                    return map;
+                }
+            };
+        } else {
+            result = null;
+        }
         reporter.stop();
         return result;
     }
@@ -412,16 +414,16 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     public CertificateStrategy getCertifier() {
         return getCache().getCertificateStrategy();
     }
-    
-    /**
-     * Returns the isomorphism checking strategy used by this graph.
-     * This implementation returns a statically set {@link DefaultIsoChecker}.
-     * @return the isomorphism checking strategy used by this graph
-     * @see #getIsomorphismTo(Graph)
-     */
-    protected IsoChecker getIsoChecker() {
-    	return isoChecker;
-    }
+//    
+//    /**
+//     * Returns the isomorphism checking strategy used by this graph.
+//     * This implementation returns a statically set {@link DefaultIsoChecker}.
+//     * @return the isomorphism checking strategy used by this graph
+//     * @see #getIsomorphismTo(Graph)
+//     */
+//    protected IsoChecker getIsoChecker() {
+//    	return isoChecker;
+//    }
 //
 //    /**
 //     * Returns a graph cache for this graph.

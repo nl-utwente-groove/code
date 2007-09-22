@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoNodeSearchItem.java,v 1.6 2007-09-19 09:01:05 rensink Exp $
+ * $Id: IsoNodeSearchItem.java,v 1.7 2007-09-22 09:10:39 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -22,6 +22,7 @@ import java.util.Set;
 
 import groove.graph.Node;
 import groove.graph.Element;
+import groove.graph.iso.Bisimulator.Certificate;
 import groove.graph.match.Matcher;
 import groove.graph.match.NodeSearchItem;
 import groove.util.SmallCollection;
@@ -77,8 +78,8 @@ public class IsoNodeSearchItem extends NodeSearchItem {
 	 * Creates a search item for a given edge.
 	 * @param edge the edge from the domain for which we search images
 	 */
-	public IsoNodeSearchItem(Node edge) {
-		super(edge);
+	public IsoNodeSearchItem(Node node) {
+		super(node);
 	}
 	
 	/**

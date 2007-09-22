@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.25 2007-09-19 22:44:30 rensink Exp $
+ * $Id: GTS.java,v 1.26 2007-09-22 09:10:44 rensink Exp $
  */
 package groove.lts;
 
@@ -22,6 +22,7 @@ import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
 import groove.graph.GraphShapeListener;
 import groove.graph.Node;
+import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
@@ -43,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.25 $ $Date: 2007-09-19 22:44:30 $
+ * @version $Revision: 1.26 $ $Date: 2007-09-22 09:10:44 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**
@@ -85,7 +86,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * Constructs a GTS from a (fixed) graph grammar.
      */
     public GTS(GraphGrammar grammar) {
-        this(grammar, SystemRecord.isReuse());
+        this(grammar, true);
     }
 
     /**
@@ -427,7 +428,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         }
         
         /** The isomorphism checker of the state set. */
-        private IsoChecker checker = new groove.graph.iso.DefaultIsoChecker();
+        private IsoChecker checker = DefaultIsoChecker.getInstance();
     }
 
     /**

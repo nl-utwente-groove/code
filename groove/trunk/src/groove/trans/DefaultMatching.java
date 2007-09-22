@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatching.java,v 1.12 2007-09-04 20:59:29 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.13 2007-09-22 09:10:44 rensink Exp $
  */
 package groove.trans;
 
@@ -37,7 +37,7 @@ import java.util.Map;
  * Especially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
@@ -81,7 +81,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
             Iterator<? extends Matching> matchIter = (Iterator<? extends Matching>) super.getTotalExtensionsIter();
             while (matchIter.hasNext()) {
                 Matching candidate = matchIter.next();
-                if (!satisfiesAC(candidate)) {
+                if (satisfiesAC(candidate)) {
                     return candidate;
                 }
             }
@@ -107,7 +107,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
             Iterator<? extends Matching> matchIter = result.iterator();
             while (matchIter.hasNext()) {
                 Matching candidate = matchIter.next();
-                if (satisfiesAC(candidate)) {
+                if (!satisfiesAC(candidate)) {
                     matchIter.remove();
                 }
             }
@@ -128,7 +128,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
             return new FilterIterator<Matching>(result) {
                 @Override
                 protected boolean approves(Object obj) {
-                    return !satisfiesAC((Matching) obj);
+                    return satisfiesAC((Matching) obj);
                 }
             };
         } else {
@@ -185,6 +185,12 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
         return result;
     }
 
+    /** 
+     * Sets a (further) application condition,
+     * i.e., a property that should be satisfied for 
+     * a morphism to be a valid matching.
+     * @param ac
+     */
     public void setAC(Property<VarMorphism> ac) {
     	this.ac = ac;
     }
@@ -212,7 +218,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      */
     protected boolean satisfiesAC(VarMorphism candidate) {
         DefaultGraphPredicate complexNegConjunct = condition.getComplexNegConjunct();
-        boolean result = complexNegConjunct == null || complexNegConjunct.matches(candidate);
+        boolean result = complexNegConjunct == null || !complexNegConjunct.matches(candidate);
         if (result) {
         	result = ac == null || ac.isSatisfied(candidate);
         }

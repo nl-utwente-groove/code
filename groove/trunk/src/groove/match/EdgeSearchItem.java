@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EdgeSearchItem.java,v 1.8 2007-09-19 16:06:13 rensink Exp $
+ * $Id: EdgeSearchItem.java,v 1.9 2007-09-22 09:10:35 rensink Exp $
  */
 package groove.match;
 
@@ -133,6 +133,14 @@ public class EdgeSearchItem extends AbstractSearchItem {
         }
     }
 
+    public void activate(SearchPlanStrategy strategy) {
+        edgeIx = strategy.getEdgeIx(edge);
+        endIxs = new int[ends.length];
+        for (int i = 0; i < arity; i++) {
+            endIxs[i] = strategy.getNodeIx(ends[i]);
+        }
+    }
+
     /**
      * This method returns the hash code of the label as rating.
      */
@@ -163,6 +171,10 @@ public class EdgeSearchItem extends AbstractSearchItem {
     private final Set<Node> boundNodes;
     /** The set of value end nodes of this edge. */
     private final Set<Node> neededNodes;
+    /** The edge index in the result. */
+    private int edgeIx;
+    /** The end indices. */
+    private int[] endIxs;
 
     /**
      * Record of an edge search item, storing an iterator over the
@@ -177,7 +189,7 @@ public class EdgeSearchItem extends AbstractSearchItem {
         EdgeRecord(Search search) {
             super(search);
             endPreMatches = new Node[arity];
-            assert ! getResult().containsKey(edge) : String.format("Edge %s already in %s", edge, getResult());
+            assert getSearch().getEdge(edgeIx) == null : String.format("Edge %s already in %s", edge, getSearch());
         }
 
         /** 
@@ -203,7 +215,7 @@ public class EdgeSearchItem extends AbstractSearchItem {
             allEndsPreMatched = true;
             preMatchedEndIndex = -1;
             for (int i = 0; i < arity; i++) {
-                Node endImage = getResult().getNode(ends[i]);
+                Node endImage = getSearch().getNode(endIxs[i]);
                 endPreMatches[i] = endImage;
                 if (endImage == null) {
                     allEndsPreMatched = false;
@@ -211,7 +223,7 @@ public class EdgeSearchItem extends AbstractSearchItem {
                     preMatchedEndIndex = i;
                 }
             }
-            edgePreMatch = getResult().getEdge(edge);
+            edgePreMatch = getSearch().getEdge(edgeIx);
         }
         
         /**
@@ -419,15 +431,15 @@ public class EdgeSearchItem extends AbstractSearchItem {
                 // test if the intended image has the same duplication
                 result = imageEnd == image.end(duplicates[endIndex]);
             } else if (isAvailable(imageEnd)) {
-                Node keyEnd = ends[endIndex];
+                int keyIx = endIxs[endIndex];
                 // put the end image in the result map
-                Node endImage = getResult().putNode(keyEnd, imageEnd);
+                Node endImage = getSearch().putNode(keyIx, imageEnd);
                 assert endImage == null : String
                         .format("Node %s already has image %s when selecting %s (map: %s)",
-                            keyEnd,
+                            ends[endIndex],
                             endImage,
                             imageEnd,
-                            getResult());
+                            getSearch());
                 result = true;
             } else {
                 result = false;
@@ -437,16 +449,16 @@ public class EdgeSearchItem extends AbstractSearchItem {
         
         /**
          * Puts the actual edge image into the result map,
-         * unde the assumption that the edge is not pre-matched.
+         * undo the assumption that the edge is not pre-matched.
          */
         void setEdge(Edge image) {
-            Edge current = getResult().putEdge(edge, image);
+            Edge current = getSearch().putEdge(edgeIx, image);
             assert current == null : String
                     .format("Edge %s already has image %s when selecting %s (map: %s)",
                         edge,
                         current,
                         image,
-                        getResult());
+                        getSearch());
         }
         
         /**
@@ -484,13 +496,13 @@ public class EdgeSearchItem extends AbstractSearchItem {
 
         final void resetEnd(int i) {
             if (endPreMatches[i] == null && duplicates[i] == i) {
-                Node endImage = getResult().removeNode(ends[i]);
+                Node endImage = getSearch().putNode(endIxs[i], null);
                 assert selected == null || endImage == selected.end(i) : String
                         .format("Node %s had image %s instead of expected %s (map: %s)",
                             ends[i],
                             endImage,
                             selected.end(i),
-                            getResult());
+                            getSearch());
             }
         }
         
@@ -499,13 +511,13 @@ public class EdgeSearchItem extends AbstractSearchItem {
          * the effect of {@link #setEdge(Edge)} if that method returned <code>true</code>.
          */
         void resetEdge() {
-            Edge image = getResult().removeEdge(edge);
+            Edge image = getSearch().putEdge(edgeIx, null);
             assert image.equals(selected) : String
                     .format("Edge %s had image %s instead of expected %s (map: %s)",
                         edge,
                         image,
                         selected,
-                        getResult());
+                        getSearch());
         }
 
         @Override

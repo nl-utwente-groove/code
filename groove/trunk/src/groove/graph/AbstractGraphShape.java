@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphShape.java,v 1.10 2007-09-16 21:44:23 rensink Exp $
+ * $Id: AbstractGraphShape.java,v 1.11 2007-09-22 09:10:40 rensink Exp $
  */
 
 package groove.graph;
@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Partial implementation of a graph. Records a set of <tt>GraphListener</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public abstract class AbstractGraphShape<C extends GraphShapeCache> extends AbstractCacheHolder<C> implements GraphShape {
     /**
@@ -164,7 +164,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
         }
     }
 
-    public Map<Label, Set<Edge>> labelEdgeMap(int i) {
+    public Map<Label, ? extends Set<Edge>> labelEdgeMap(int i) {
         return Collections.unmodifiableMap(getLabelEdgeMaps().get(i));
     }
 

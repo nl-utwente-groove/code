@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: InjectionSearchItem.java,v 1.4 2007-08-30 15:18:18 rensink Exp $
+ * $Id: InjectionSearchItem.java,v 1.5 2007-09-22 09:10:36 rensink Exp $
  */
 package groove.match;
 
@@ -31,7 +31,7 @@ import java.util.Iterator;
  */
 public class InjectionSearchItem extends ConditionSearchItem {
 	/** 
-	 * Constructs an injection item, which chechks for the injectivity
+	 * Constructs an injection item, which checks for the injectivity
 	 * of the match found so far. That is, the item will match if and only if the
 	 * nodes in a given set have been matched injectively.
 	 * @param nodes the nodes that should be matched injectively
@@ -61,7 +61,12 @@ public class InjectionSearchItem extends ConditionSearchItem {
 		return String.format("Separate %s and %s", node1, node2); 
 	}
 
-	/**
+	public void activate(SearchPlanStrategy strategy) {
+        node1Ix = strategy.getNodeIx(node1);
+        node2Ix = strategy.getNodeIx(node2);
+    }
+
+    /**
 	 * First node which may not be merged.
 	 */
 	private final Node node1;
@@ -71,14 +76,18 @@ public class InjectionSearchItem extends ConditionSearchItem {
     private final Node node2;
     /** Collection consisting of <code>node1</code> and <code>node2</code>. */
     private final Collection<Node> neededNodes;
+    /** Node index (in the result) of {@link #node1}. */
+    private int node1Ix;
+    /** Node index (in the result) of {@link #node2}. */
+    private int node2Ix;
     
     /** The record for this search item. */
     private class InjectionRecord extends ConditionRecord {
         /** Constructs a fresh record, for a given matcher. */
         private InjectionRecord(Search search) {
             super(search);
-            assert getResult().containsKey(node1) : String.format("Merge embargo node %s not yet matched", node1);
-            assert getResult().containsKey(node2) : String.format("Merge embargo node %s not yet matched", node2);
+            assert getSearch().getNode(node1Ix) != null : String.format("Merge embargo node %s not yet matched", node1);
+            assert getSearch().getNode(node2Ix) != null: String.format("Merge embargo node %s not yet matched", node2);
         }
 
         /**
@@ -86,8 +95,7 @@ public class InjectionSearchItem extends ConditionSearchItem {
          */
         @Override
         boolean set() {
-            NodeEdgeMap elementMap = getResult();
-            return elementMap.getNode(node1) != elementMap.getNode(node2);
+            return getSearch().getNode(node1Ix) != getSearch().getNode(node2Ix);
         }
     }
 }

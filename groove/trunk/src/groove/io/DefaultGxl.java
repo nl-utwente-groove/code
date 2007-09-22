@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.11 2007-09-19 21:15:17 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.12 2007-09-22 09:10:37 rensink Exp $
  */
 package groove.io;
 
@@ -55,7 +55,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -441,10 +441,10 @@ public class DefaultGxl extends AbstractXml {
     
     /** The name of graphs whose name is not explicitly included in the graph info. */
     static public final String DEFAULT_GRAPH_NAME = "graph";
-    /** Attribute name for node and edge ids. */
+    /** Attribute name for node and edge identities. */
     static public final String LABEL_ATTR_NAME = "label";
-    /** Private siomorphism checker, for testing purposes. */
-    static private final IsoChecker isoChecker = new DefaultIsoChecker();
+    /** Private isomorphism checker, for testing purposes. */
+    static private final IsoChecker isoChecker = DefaultIsoChecker.getInstance();
 
     /**
 	 * The following implementation of <tt>Label</tt> allows us to

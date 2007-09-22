@@ -28,7 +28,7 @@ import java.util.Collections;
 /**
  * Abstract implementation of a searh item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
     /**
@@ -94,7 +94,6 @@ abstract public class AbstractSearchItem implements SearchItem {
         /** Constructs a record for a given search. */
         protected PrimitiveRecord(Search search) {
             this.search = search;
-            this.result = search.getResult();
             this.target = search.getTarget();
         }
 
@@ -103,14 +102,6 @@ abstract public class AbstractSearchItem implements SearchItem {
             return search;
         }
         
-        /** 
-         * Returns the (partial) result of the search associated with this record.
-         * Convenience method for <code>getSearch().getResult()</code>.
-         */
-        final VarNodeEdgeMap getResult() {
-            return result;
-        }
-
         /** 
          * Returns the (partial) result of the search associated with this record.
          * Convenience method for <code>getSearch().getResult()</code>.
@@ -131,8 +122,6 @@ abstract public class AbstractSearchItem implements SearchItem {
         /** The underlying search for this record. */
         private final Search search;
         /** The underlying search for this record. */
-        private final VarNodeEdgeMap result;
-        /** The underlying search for this record. */
         private final Graph target;
     }
 
@@ -146,7 +135,7 @@ abstract public class AbstractSearchItem implements SearchItem {
      * <li> {@link #FOUND}, reached at the moment a solution has been found
      * </ul>
      * @author Arend Rensink
-     * @version $Revision: 1.6 $
+     * @version $Revision: 1.7 $
      */
     abstract public class AbstractRecord extends PrimitiveRecord {
         /** Constructs a record for a given search. */
@@ -330,7 +319,7 @@ abstract public class AbstractSearchItem implements SearchItem {
     /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.6 $
+     * @version $Revision: 1.7 $
      */
     abstract public class SingularRecord extends PrimitiveRecord {
         /** Constructs an instance for a given search. */

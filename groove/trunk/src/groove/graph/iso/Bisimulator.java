@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Bisimulator.java,v 1.11 2007-09-19 09:01:05 rensink Exp $
+ * $Id: Bisimulator.java,v 1.12 2007-09-22 09:10:39 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -38,7 +38,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elements to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class Bisimulator implements CertificateStrategy {
     /**
@@ -171,10 +171,12 @@ public class Bisimulator implements CertificateStrategy {
     }
     
     public Certificate<Node>[] getNodeCertificates() {
+        getGraphCertificate();
     	return nodeCerts;
     }
     
     public Certificate<Edge>[] getEdgeCertificates() {
+        getGraphCertificate();
     	return edgeCerts;
     }
 
@@ -530,7 +532,7 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.11 $
+     * @version $Revision: 1.12 $
      */
     static private class NodeCertificate extends Certificate<Node> {
     	/** Initial node value to provide a better spread of hash codes. */
@@ -595,7 +597,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.11 $
+     * @version $Revision: 1.12 $
      */
     static private class EdgeCertificate extends Certificate<Edge> {
         /**
@@ -679,7 +681,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.11 $
+     * @version $Revision: 1.12 $
      */
     static private class FlagCertificate extends Certificate<Edge> {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */

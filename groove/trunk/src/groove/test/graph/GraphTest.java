@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.11 2007-09-19 09:01:08 rensink Exp $
+ * $Id: GraphTest.java,v 1.12 2007-09-22 09:10:40 rensink Exp $
  */
 package groove.test.graph;
 
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -63,8 +63,6 @@ public class GraphTest extends TestCase {
     static private final File GraphTestDir = new File(GRAPH_TEST_DIR);
 
     static private final ExtensionFilter gxlFilter = Groove.createGxlFilter();
-
-    static private final IsoChecker isoChecker = new DefaultIsoChecker();
     
     /** 
      * The graph upon which most tests are done.
@@ -220,7 +218,7 @@ public class GraphTest extends TestCase {
     }
 
     final public void testIsoHashCode() {
-    	IsoChecker checker = new DefaultIsoChecker();
+    	IsoChecker checker = DefaultIsoChecker.getInstance();
         Object[] codes = new Object[MATCH_DOM_COUNT];
         for (int i = 0; i < codes.length; i++) {
             codes[i] = matchDom[i].getCertifier().getGraphCertificate();

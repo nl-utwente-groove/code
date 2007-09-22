@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchItem.java,v 1.4 2007-08-29 14:00:27 rensink Exp $
+ * $Id: SearchItem.java,v 1.5 2007-09-22 09:10:36 rensink Exp $
  */
 package groove.match;
 
@@ -40,7 +40,7 @@ public interface SearchItem extends Comparable<SearchItem> {
     
     /** 
      * Returns the collection of nodes for which this search item will 
-     * find a matching when actvated.
+     * find a matching when activated.
      */ 
     Collection<Node> bindsNodes();
     
@@ -52,10 +52,17 @@ public interface SearchItem extends Comparable<SearchItem> {
     
     /** 
      * Returns the collection of label variables for which this search item will 
-     * find a matching when actvated.
+     * find a matching when activated.
      */ 
     Collection<String> bindsVars();
 
+    /** 
+     * Prepares the search item for actual searching by providing 
+     * additional information about the strategy.
+     * @param strategy the search strategy to be applied
+     */
+    void activate(SearchPlanStrategy strategy);
+    
     /**
      * Interface for an activation record of a search item.
      * @author Arend Rensink
