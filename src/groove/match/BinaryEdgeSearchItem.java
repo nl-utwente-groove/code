@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BinaryEdgeSearchItem.java,v 1.2 2007-09-16 21:44:30 rensink Exp $
+ * $Id: BinaryEdgeSearchItem.java,v 1.3 2007-09-22 09:10:35 rensink Exp $
  */
 package groove.match;
 
@@ -98,6 +98,12 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
         }
     }
 
+    public void activate(SearchPlanStrategy strategy) {
+        edgeIx = strategy.getEdgeIx(edge);
+        sourceIx = strategy.getNodeIx(source);
+        targetIx = strategy.getNodeIx(target);
+    }
+
     /**
      * This method returns the hash code of the label as rating.
      */
@@ -129,6 +135,9 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
     /** The set of end nodes of this edge. */
     private final Set<Node> boundNodes;
 
+    private int edgeIx;
+    private int sourceIx;
+    private int targetIx;
     /**
      * Record of an edge search item, storing an iterator over the
      * candidate images.
@@ -141,7 +150,7 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
          */
         BinaryEdgeRecord(Search search) {
             super(search);
-            assert ! getResult().containsKey(edge) : String.format("Edge %s already in %s", edge, getResult());
+            assert getSearch().getEdge(edgeIx) == null : String.format("Edge %s already in %s", edge, getSearch());
         }
 
         /** 
@@ -164,10 +173,10 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
         @Override
         void init() {
             allEndsPreMatched = true;
-            sourcePreMatch = getResult().getNode(source);
-            targetPreMatch = getResult().getNode(target);
+            sourcePreMatch = getSearch().getNode(sourceIx);
+            targetPreMatch = getSearch().getNode(targetIx);
             allEndsPreMatched = sourcePreMatch != null && targetPreMatch != null;
-            edgePreMatch = getResult().getEdge(edge);
+            edgePreMatch = getSearch().getEdge(edgeIx);
         }
         
         /**
@@ -382,13 +391,13 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
                 result = imageSource == sourcePreMatch;
             } else if (isAvailable(imageSource)) {
                 // put the end image in the result map
-                Node sourceImage = getResult().putNode(source, imageSource);
+                Node sourceImage = getSearch().putNode(sourceIx, imageSource);
                 assert sourceImage == null : String
                         .format("Node %s already has image %s when selecting %s (map: %s)",
                             source,
                             sourceImage,
                             imageSource,
-                            getResult());
+                            getSearch());
                 result = true;
             } else {
                 result = false;
@@ -410,13 +419,13 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
                 result = imageTarget == image.source();
             } else if (isAvailable(imageTarget)) {
                 // put the end image in the result map
-                Node targetImage = getResult().putNode(target, imageTarget);
+                Node targetImage = getSearch().putNode(targetIx, imageTarget);
                 assert targetImage == null : String
                         .format("Node %s already has image %s when selecting %s (map: %s)",
                             target,
                             targetImage,
                             imageTarget,
-                            getResult());
+                            getSearch());
                 result = true;
             } else {
                 result = false;
@@ -429,13 +438,13 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
          * unde the assumption that the edge is not pre-matched.
          */
         void setEdge(Edge image) {
-            Edge current = getResult().putEdge(edge, image);
+            Edge current = getSearch().putEdge(edgeIx, image);
             assert current == null : String
                     .format("Edge %s already has image %s when selecting %s (map: %s)",
                         edge,
                         current,
                         image,
-                        getResult());
+                        getSearch());
         }
         
         /**
@@ -472,25 +481,25 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
 
         final void resetSource() {
             if (sourcePreMatch == null) {
-                Node endImage = getResult().removeNode(source);
+                Node endImage = getSearch().putNode(sourceIx, null);
                 assert selected == null || endImage == selected.source() : String
                         .format("Node %s had image %s instead of expected %s (map: %s)",
                             source,
                             endImage,
                             selected.source(),
-                            getResult());
+                            getSearch());
             }
         }
 
         final void resetTarget() {
             if (targetPreMatch == null && !selfEdge) {
-                Node endImage = getResult().removeNode(target);
+                Node endImage = getSearch().putNode(targetIx, null);
                 assert selected == null || endImage == selected.opposite() : String
                         .format("Node %s had image %s instead of expected %s (map: %s)",
                             target,
                             endImage,
                             selected.opposite(),
-                            getResult());
+                            getSearch());
             }
         }
         
@@ -499,13 +508,13 @@ public class BinaryEdgeSearchItem extends AbstractSearchItem {
          * the effect of {@link #setEdge(Edge)} if that method returned <code>true</code>.
          */
         void resetEdge() {
-            Edge image = getResult().removeEdge(edge);
+            Edge image = getSearch().putEdge(edgeIx, null);
             assert image.equals(selected) : String
                     .format("Edge %s had image %s instead of expected %s (map: %s)",
                         edge,
                         image,
                         selected,
-                        getResult());
+                        getSearch());
         }
 
         @Override

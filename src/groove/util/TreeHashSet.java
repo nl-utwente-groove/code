@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class TreeHashSet<T> extends AbstractSet<T> {
 	/**
@@ -671,6 +671,22 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * The strategy to compare keys whose hashcodes are equal.
      */
     private final Equator<T> equator;
+    
+    /** Returns an equator which calls {@link #equals(Object)} to determine equality. */
+    static public <E> Equator<E> equalsEquator() {
+        return EQUALS_EQUATOR;
+    }
+    
+    /** Returns an equator which only compares hash codes to determine equality. */
+    static public <E> Equator<E> hashCodeEquator() {
+        return HASHCODE_EQUATOR;
+    }
+    
+    /** Returns an equator which uses object identity to determine equality. */
+    static public <E> Equator<E> identityEquator() {
+        return IDENTITY_EQUATOR;
+    }
+    
     /**
      * The default initial capacity of the set.
      */

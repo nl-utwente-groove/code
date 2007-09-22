@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.9 2007-09-11 16:21:28 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.10 2007-09-22 09:10:36 rensink Exp $
  */
 package groove.match;
 
@@ -28,18 +28,14 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Factory that adds to a graph search plan the following items, obtained from a graph condition:
- * <ul>
- * <li> Search items for the simple negative conditions (edge and merge embargoes) 
- * <li> A {@link FrequencyComparator} to rank search items based on the expected frequency of edge labels
- * </ul>
+ * Factory that adds to a graph search plan the following items the search items for the simple negative conditions (edge and merge embargoes).
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 
      * Private, empty constructor.
-     * This is a sinlgeton class; get the instance through {@link #getInstance()}.
+     * This is a singleton class; get the instance through {@link #getInstance()}.
      */
     ConditionSearchPlanFactory() {
         // empty
@@ -66,10 +62,11 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      */
     public SearchPlanStrategy createMatcher(GraphCondition condition, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
     	PlanData planData = new GrammarPlanData(condition, preMatchedNodes, preMatchedEdges);
-    	SearchPlanStrategy result = new SearchPlanStrategy(planData.getPlan(), condition.getProperties().isInjective());
+    	SearchPlanStrategy result = new SearchPlanStrategy(condition.getTarget(), planData.getPlan(), condition.getProperties().isInjective());
         if (PRINT) {
             System.out.print(String.format("%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s", condition.getName(), preMatchedNodes, preMatchedEdges, result));
         }
+        result.setFixed();
         return result;
     }
     

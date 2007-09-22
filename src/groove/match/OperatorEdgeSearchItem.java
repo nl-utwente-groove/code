@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.7 2007-09-11 16:20:35 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.8 2007-09-22 09:10:36 rensink Exp $
  */
 package groove.match;
 
@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A search item for a product edge.
@@ -125,7 +126,15 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 		return edge;
 	}
 
-	/** The product edge for which we seek an image. */
+	public void activate(SearchPlanStrategy strategy) {
+        targetIx = strategy.getNodeIx(target);
+        argumentIxs = new int[arguments.size()];
+        for (int i = 0; i < arguments.size(); i++) {
+            argumentIxs[i] = strategy.getNodeIx(arguments.get(i));
+        }
+    }
+
+    /** The product edge for which we seek an image. */
 	private final ProductEdge edge;
 	/** The operation of the product edge. */
 	private final Operation operation;
@@ -137,6 +146,10 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
     private final Collection<Node> boundNodes;
     /** Set of the nodes in <code>arguments</code>. */
     private final Collection<Node> neededNodes;
+    /** Indices of the argument nodes in the result. */
+    private int[] argumentIxs;
+    /** Index of {@link #target} in the result. */
+    private int targetIx;
     
     /**
      * Record of an edge search item, storing an iterator over the
@@ -150,12 +163,12 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
          */
         OperatorEdgeRecord(Search search) {
             super(search);
-            targetPreMatched = getResult().containsKey(target);
+            targetPreMatched = getSearch().getNode(targetIx) != null;
         }
         
         @Override
         public String toString() {
-            return String.format("%s = %s", OperatorEdgeSearchItem.this.toString(), getResult().getNode(target));
+            return String.format("%s = %s", OperatorEdgeSearchItem.this.toString(), getSearch().getNode(targetIx));
         }
 
         @Override
@@ -165,12 +178,12 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
             if (outcome == null || target.hasValue() && !target.getValue().equals(outcome)) {
                 result = false;
             } else if (targetPreMatched) {
-                result = ((ValueNode) getResult().getNode(target)).getValue().equals(outcome);
+                result = ((ValueNode) getSearch().getNode(targetIx)).getValue().equals(outcome);
             } else {
                 ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(operation.getResultType(), outcome);
                 result = isAvailable(targetImage);
                 if (result) {
-                    getResult().putNode(target, targetImage);
+                    getSearch().putNode(targetIx, targetImage);
                 }
             }
             return result;
@@ -182,7 +195,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
         @Override
         void undo() {
             if (! targetPreMatched) {
-                getResult().removeNode(target);
+                getSearch().putNode(targetIx, null);
             }
         }
         
@@ -196,7 +209,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
         private Object calculateResult() throws IllegalArgumentException {
             Object[] operands = new Object[arguments.size()];
             for (int i = 0; i < arguments.size(); i++) {
-                Node operandImage = getResult().getNode(arguments.get(i));
+                Node operandImage = getSearch().getNode(argumentIxs[i]);
                 if (! (operandImage instanceof ValueNode)) {
                     // one of the arguments was not bound to a value
                     // (probably due to some typing error in another rule)

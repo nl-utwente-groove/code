@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.5 2007-08-30 15:18:18 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.6 2007-09-22 09:10:35 rensink Exp $
  */
 package groove.match;
 
@@ -68,11 +68,16 @@ public class NodeSearchItem extends AbstractSearchItem {
         return node.hashCode();
     }
 
+    public void activate(SearchPlanStrategy strategy) {
+        nodeIx = strategy.getNodeIx(node);
+    }
+
     /**
 	 * The edge for which this search item is to find an image.
 	 */
 	private final Node node;
-    
+    /** The index of {@link #node} in the result. */
+	private int nodeIx;
     /** Singleton set consisting only of <code>node</code>. */
     private final Collection<Node> boundNodes;
     
@@ -86,7 +91,7 @@ public class NodeSearchItem extends AbstractSearchItem {
         /** Constructs a record for a given matcher. */
         NodeRecord(Search search) {
             super(search);
-            this.preMatched = search.getResult().containsKey(node);
+            this.preMatched = search.getNode(nodeIx) != null;
         }
 
         /**
@@ -131,7 +136,7 @@ public class NodeSearchItem extends AbstractSearchItem {
         @Override
         void undo() {
             if (! preMatched) {
-                Node oldImage = getResult().removeNode(node);
+                Node oldImage = getSearch().putNode(nodeIx, null);
                 assert selected.equals(oldImage) : String.format("Image %s=%s should coincide with %s", node, selected, oldImage);
             }
             selected = null;
@@ -149,7 +154,7 @@ public class NodeSearchItem extends AbstractSearchItem {
             boolean result = isAvailable(image);
             if (result) {
                 assert selected == null : String.format("Image %s already selected for node %s", image, node);
-                getResult().putNode(node, image);
+                getSearch().putNode(nodeIx, image);
                 selected = image;
             }
             return result;

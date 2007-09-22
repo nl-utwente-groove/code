@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.5 2007-08-30 15:18:18 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.6 2007-09-22 09:10:35 rensink Exp $
  */
 package groove.match;
 
@@ -61,10 +61,18 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
         return boundVars;
     }
 
+    @Override
+    public void activate(SearchPlanStrategy strategy) {
+        super.activate(strategy);
+        varIx = strategy.getVarIx(var);
+    }
+
     /** The variable bound in the wildcard (not <code>null</code>). */
 	private final String var;
     /** Singleton set consisting of <code>var</code>. */
     private final Collection<String> boundVars;
+    /** The index of {@link #var} in the result. */
+    private int varIx;
     
     /** Record for this type of search item. */
     protected class VarEdgeRecord extends EdgeRecord {
@@ -76,11 +84,11 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
         @Override
         void init() {
             super.init();
-            varPreMatch = getResult().getVar(var);
+            varPreMatch = getSearch().getVar(varIx);
         }
 
         /** 
-         * In addition checkes if the label of the pre-matched edge is consistent with 
+         * In addition checks if the label of the pre-matched edge is consistent with 
          * the variable. 
          */
         @Override
@@ -121,47 +129,19 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
             }
             Collection< ? extends Edge> edgeSet = imageEnd == null ? getTarget().edgeSet() : getTarget().edgeSet(imageEnd);
             return filterImages(edgeSet, true);
-//            return new FilterIterator<Edge>(edgeSet.iterator()) {
-//                @Override
-//                protected boolean approves(Object obj) {
-//                    // select the edges with the correct ends
-//                    Edge image = (Edge) obj;
-//                    boolean result = selectEnds(image);
-//                    if (result) {
-//                        // insert both the variable and the edge itself
-//                        selectVar(image);
-//                        selectEdge(image);
-//                    }
-//                    return result;
-//                }
-//            };
         }
-//
-//        /**
-//         * Calls {@link #selectVar(Edge)}, and when successful the super method.
-//         */
-//        @Override
-//        boolean select(Edge image) {
-//            boolean result = selectVar(image);
-//            if (result && !super.select(image)) {
-//                // roll back the variable selection
-//                undoVar();
-//                result = false;
-//            }
-//            return result;
-//        }
 
         /** Selects the variable image. */
         @Override
         final boolean setLabel(Edge image) {
             boolean result;
             if (varPreMatch == null) {
-                Label current = getResult().putVar(var, image.label());
+                Label current = getSearch().putVar(varIx, image.label());
                 assert current == null;
                 result = true;
             } else {
                 result = image.label() == varPreMatch;
-                assert getResult().getVar(var) == varPreMatch;
+                assert getSearch().getVar(varIx) == varPreMatch;
             }
             return result;
         }
@@ -173,7 +153,7 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
         @Override
         void resetLabel() {
             if (varPreMatch == null) {
-                Label oldImage = getResult().getValuation().remove(var);
+                Label oldImage = getSearch().putVar(varIx, null);
                 assert selected == null || oldImage == selected.label();
             }
         }

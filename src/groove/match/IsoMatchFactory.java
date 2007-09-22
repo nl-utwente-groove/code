@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoMatchFactory.java,v 1.8 2007-09-19 09:01:13 rensink Exp $
+ * $Id: IsoMatchFactory.java,v 1.9 2007-09-22 09:10:35 rensink Exp $
  */
 package groove.match;
 
@@ -20,15 +20,16 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.CertificateStrategy.Certificate;
 import groove.match.SearchPlanStrategy.Search;
+import groove.util.SmallCollection;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Class creating isomorphism matchers.
@@ -41,8 +42,10 @@ import java.util.Map;
  * remains unchanged throughout the transformation, it will be very beneficial to take this into account.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
+ * @deprecated isomorphism check is now in {@link DefaultIsoChecker}
  */
+@Deprecated
 public class IsoMatchFactory {
     /** Private constructor, to ensure the class is used as singleton. */
     private IsoMatchFactory() {
@@ -54,22 +57,23 @@ public class IsoMatchFactory {
 	 * graph, in arbitrary order.
 	 */
 	public SearchPlanStrategy createMatcher(Graph graph) {
-        List<SearchItem> result = new ArrayList<SearchItem>();
-        Map<Element,? extends Certificate<?>> certMap = graph.getCertifier().getCertificateMap();
-        for (Node node: graph.nodeSet()) {
-            result.add(createNodeSearchItem(node, certMap.get(node)));
+        List<SearchItem> items = new ArrayList<SearchItem>();
+        for (Certificate<Node> nodeCert: graph.getCertifier().getNodeCertificates()) {
+            items.add(createNodeSearchItem(nodeCert));
         }
         for (Edge edge: graph.edgeSet()) {
-            result.add(createEdgeSearchItem(edge));
+            items.add(createEdgeSearchItem(edge));
         }
-        return new SearchPlanStrategy(result, true);
+        SearchPlanStrategy result = new SearchPlanStrategy(graph, items, true);
+        result.setFixed();
+        return result;
 	}
 
     /**
      * This implementation returns an {@link IsoNodeSearchItem}.
      */
-	private SearchItem createNodeSearchItem(Node node, Certificate cert) {
-		return new IsoNodeSearchItem(node, cert);
+	private SearchItem createNodeSearchItem(Certificate<Node> cert) {
+		return new IsoNodeSearchItem(cert);
 	}
 
 	/**
@@ -96,11 +100,10 @@ public class IsoMatchFactory {
     static public class IsoNodeSearchItem extends AbstractSearchItem {
         /**
          * Creates a search item for a given node.
-         * @param node the node from the domain for which we search images
          * @param cert the isomorphism certificate of the node
          */
-        public IsoNodeSearchItem(Node node, Certificate cert) {
-            this.node = node;
+        public IsoNodeSearchItem(Certificate<Node> cert) {
+            this.node = cert.getElement();
             this.cert = cert;
         }
         
@@ -132,11 +135,16 @@ public class IsoMatchFactory {
             return String.format("Node %s(%s)", node, cert);
         }
 
+        public void activate(SearchPlanStrategy strategy) {
+            nodeIx = strategy.getNodeIx(node);
+        }
+
         /** The node for which the item searches an image. */
         private final Node node;
         /** The certificate of <code>node</code>. */
-        private final Certificate cert;
-        
+        private final Certificate<Node> cert;
+        /** The index of {@link #node} in the result. */
+        private int nodeIx;
         /** Record for an isomorphism node search. */
         private class IsoNodeRecord extends AbstractRecord {
             /** Constructs a new record for this search item. */
@@ -152,7 +160,7 @@ public class IsoMatchFactory {
 
             @Override
             public String toString() {
-                return String.format("%s = %s", IsoNodeSearchItem.this.toString(), getResult().getNode(node));
+                return String.format("%s = %s", IsoNodeSearchItem.this.toString(), getSearch().getNode(nodeIx));
             }
 
             @Override
@@ -163,10 +171,12 @@ public class IsoMatchFactory {
 
             @Override
             void init() {
-                if (images == null || images instanceof Node) {
-                    singleImage = (Node) images;
+                if (images == null) {
+                    singleImage = null;
+                } else if (images.isSingleton()) {
+                    singleImage = images.getSingleton();
                 } else {
-                    multiImageIter = ((Collection<Node>) images).iterator();
+                    multiImageIter = images.iterator();
                 }
             }
             
@@ -194,7 +204,7 @@ public class IsoMatchFactory {
              */
             private boolean select(Node image) {
                 if (isAvailable(image)) {
-                    getResult().putNode(node, image);
+                    getSearch().putNode(nodeIx, image);
                     return true;
                 } else {
                     return false;
@@ -203,11 +213,11 @@ public class IsoMatchFactory {
             
             @Override
             void undo() {
-                getResult().removeNode(node);
+                getSearch().putNode(nodeIx, null);
             }
 
             /** The image or set of images of the node certificate, according to the target partition map. */
-            private final Object images;
+            private final SmallCollection<Node> images;
             /**
              * Iterator over the remaining images, in case {@link #images} is a set.
              */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.14 2007-09-07 19:13:42 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.15 2007-09-22 09:10:45 rensink Exp $
  */
 
 package groove.view;
@@ -77,7 +77,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -936,7 +936,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	/** Label for merges (merger edges and merge embargoes) */
     static public final Label MERGE_LABEL = RegExpr.empty().toLabel();
     /** Isomorphism checker (used for testing purposes). */
-    static private final IsoChecker isoChecker = new DefaultIsoChecker();
+    static private final IsoChecker isoChecker = DefaultIsoChecker.getInstance();
     /** Graph factory used for building a graph view of this rule graph.*/
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */

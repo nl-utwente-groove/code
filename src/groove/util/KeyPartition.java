@@ -12,13 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: KeyPartition.java,v 1.1 2007-09-20 12:17:55 rensink Exp $
+ * $Id: KeyPartition.java,v 1.2 2007-09-22 09:10:33 rensink Exp $
  */
 package groove.util;
 
 import java.util.AbstractSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -27,16 +26,23 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class KeyPartition<T,U> extends AbstractSet<U> {
-	/** 
-	 * Creates an empty partition object.
-	 * A further parameter determines if the partition may
-	 * have empty cells. 
-	 */
-	public KeyPartition(boolean emptyCells) {
-		this.partitionMap = createPartitionMap();
-		this.emptyCells = emptyCells;
-	}
+abstract public class KeyPartition<T,U,S extends Set<U>> extends AbstractSet<U> {
+    /** 
+     * Creates an empty partition object.
+     * A further parameter determines if the partition may
+     * have empty cells. 
+     */
+    public KeyPartition(boolean emptyCells) {
+        this.partitionMap = createPartitionMap();
+        this.emptyCells = emptyCells;
+    }
+
+    /** 
+     * Creates an empty partition object, without empty cells.
+     */
+    public KeyPartition() {
+        this(false);
+    }
 
 	@Override
 	public Iterator<U> iterator() {
@@ -56,8 +62,8 @@ abstract public class KeyPartition<T,U> extends AbstractSet<U> {
 	@Override
 	public boolean add(U value) {
 		T key = getKey(value);
-		Set<U> cell = getCell(key);
-		if (cell != null) {
+		S cell = getCell(key);
+		if (cell == null) {
 			cell = createCell();
 			partitionMap.put(key, cell);
 		}
@@ -102,7 +108,7 @@ abstract public class KeyPartition<T,U> extends AbstractSet<U> {
 	 * Returns the partition cell for a given key.
 	 * Directly modifying the cell will lead to inconsistencies. 
 	 */
-	public Set<U> getCell(T key) {
+	public S getCell(T key) {
 		return partitionMap.get(key);
 	}
 	
@@ -110,7 +116,7 @@ abstract public class KeyPartition<T,U> extends AbstractSet<U> {
 	 * Returns the mapping from keys to partition calls.
 	 * Directly modifying this map may result in inconsistencies.
 	 */
-	public Map<T,Set<U>> getPartitionMap() {
+	public Map<T,S> getPartitionMap() {
 		return partitionMap;
 	}
 	
@@ -150,20 +156,18 @@ abstract public class KeyPartition<T,U> extends AbstractSet<U> {
 	}
 	
 	/** Callback factory method to create the inner partition map. */
-	protected Map<T,Set<U>> createPartitionMap() {
-		return new HashMap<T,Set<U>>();
+	protected Map<T,S> createPartitionMap() {
+		return new HashMap<T,S>();
 	}
 	
 	/** Callback factory method to create a partition cell. */
-	protected Set<U> createCell() {
-		return new HashSet<U>();
-	}
+	abstract protected S createCell();
 	
 	/** Method to retrieve a key from a value. */
 	abstract protected T getKey(U value);
 	
 	/** The inner partition map, from keys to cells. */
-	private final Map<T,Set<U>> partitionMap;
+	private final Map<T,S> partitionMap;
 	/** Total size of the (partitioned) set. */
 	private int size;
 	/** Flag indicating if the partition may have empty cells. */

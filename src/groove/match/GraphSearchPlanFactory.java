@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.12 2007-09-15 17:25:27 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.13 2007-09-22 09:10:34 rensink Exp $
  */
 package groove.match;
 
@@ -53,7 +53,7 @@ import java.util.TreeSet;
  * The search plans include items for all graph nodes and edges, ordered
  * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -77,7 +77,9 @@ public class GraphSearchPlanFactory {
      */
     public SearchPlanStrategy createMatcher(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
         PlanData data = new PlanData(graph, preMatchedNodes, preMatchedEdges);
-        return new SearchPlanStrategy(data.getPlan(), false);
+        SearchPlanStrategy result = new SearchPlanStrategy(graph, data.getPlan(), false);
+        result.setFixed();
+        return result;
     }
 	
     /** Returns the singleton instance of this factory class. */
@@ -380,7 +382,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.12 $
+     * @version $Revision: 1.13 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -606,7 +608,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.12 $
+     * @version $Revision: 1.13 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 

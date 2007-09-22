@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.6 2007-09-11 10:17:08 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.7 2007-09-22 09:10:35 rensink Exp $
  */
 package groove.match;
 
@@ -76,11 +76,18 @@ public class ValueNodeSearchItem extends AbstractSearchItem {
 		return node;
 	}
 	
-	/** The value node to be matched. */
+	
+	public void activate(SearchPlanStrategy strategy) {
+        nodeIx = strategy.getNodeIx(node);
+    }
+
+
+    /** The value node to be matched. */
 	private final ValueNode node;
     /** Singleton set consisting of <code>node</code>. */
     private final Collection<Node> boundNodes;
-    
+    /** The index of the value node (in the result. */
+    private int nodeIx;
     /**
      * Record of a value node search item.
      * @author Arend Rensink
@@ -100,13 +107,13 @@ public class ValueNodeSearchItem extends AbstractSearchItem {
          */
         @Override
         boolean set() {
-            getResult().putNode(node, node);
+            getSearch().putNode(nodeIx, node);
             return true;
         }
         
         @Override
         void undo() {
-            getResult().removeNode(node);
+            getSearch().putNode(nodeIx, null);
         }
 
         @Override

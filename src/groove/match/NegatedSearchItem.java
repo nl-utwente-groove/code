@@ -12,13 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NegatedSearchItem.java,v 1.4 2007-08-30 15:18:18 rensink Exp $
+ * $Id: NegatedSearchItem.java,v 1.5 2007-09-22 09:10:35 rensink Exp $
  */
 package groove.match;
 
-import static groove.match.SearchPlanStrategy.Search;
-
 import groove.graph.Node;
+import groove.match.SearchPlanStrategy.Search;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -65,6 +64,11 @@ public class NegatedSearchItem extends ConditionSearchItem {
     @Override
     public Collection<String> needsVars() {
         return neededVars;
+    }
+
+    /** This implementation propagates the call to the inner item. */
+    public void activate(SearchPlanStrategy strategy) {
+        inner.activate(strategy);
     }
 
     /**

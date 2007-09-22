@@ -12,16 +12,19 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.5 2007-09-18 21:57:58 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.6 2007-09-22 09:10:36 rensink Exp $
  */
 package groove.match;
 
 import groove.calc.Property;
+import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
+import groove.rel.VarSupport;
 import groove.util.Reporter;
 
 import java.util.ArrayList;
@@ -39,16 +42,37 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class SearchPlanStrategy implements MatchStrategy {
 	/**
      * Constructs a strategy from a given list of search items.
      * A flag controls if solutions should be injective.
-     * @param plan the search items that make up the search plan
-     * @param injective flag to indicate that the matching should be injective
+	 * @param plan the search items that make up the search plan
+	 * @param injective flag to indicate that the matching should be injective
      */
-    public SearchPlanStrategy(List<SearchItem> plan, boolean injective) {
+    public SearchPlanStrategy(Graph source, List<SearchItem> plan, boolean injective) {
+        this.nodeIxMap = new HashMap<Node,Integer>();
+        int nodeCount = 0;
+        for (Node node: source.nodeSet()) {
+            nodeIxMap.put(node, nodeCount);
+            nodeCount++;
+        }
+        sourceNodeCount = nodeCount;
+        this.edgeIxMap = new HashMap<Edge,Integer>();
+        int edgeCount = 0;
+        for (Edge edge: source.edgeSet()) {
+            edgeIxMap.put(edge, edgeCount);
+            edgeCount++;
+        }
+        sourceEdgeCount = edgeCount;
+        this.varIxMap = new HashMap<String,Integer>();
+        int varCount = 0;
+        for (String var: VarSupport.getAllVars(source)) {
+            varIxMap.put(var, varCount);
+            varCount++;
+        }
+        sourceVarCount = varCount;
         this.plan = plan;
         this.injective = injective;
     }
@@ -161,9 +185,139 @@ public class SearchPlanStrategy implements MatchStrategy {
      * Callback factory method for an auxiliary {@link Search} object.
      */
     protected Search createSearch(Graph target, NodeEdgeMap preMatch) {
+        testFixed(true);
         return new Search(this, target, preMatch);
     }
+//
+//    /**
+//     * Returns the mapping from source graph nodes to distinct indices.
+//     * This is set at construction time.
+//     */
+//    protected Map<Node, Integer> getNodeIxMap() {
+//        return nodeIxMap;
+//    }
+//
+//    /**
+//     * Returns the mapping from source graph edges to distinct indices.
+//     * This is set at construction time.
+//     */
+//    protected Map<Edge, Integer> getEdgeIxMap() {
+//        return edgeIxMap;
+//    }
+//
+//    /**
+//     * Returns the mapping from source graph edges to distinct indices.
+//     * This is set at construction time.
+//     */
+//    protected Map<String, Integer> getVarIxMap() {
+//        return varIxMap;
+//    }
+    
+    /** 
+     * Returns the index of a given node in the node index map.
+     * Adds an index for the node to the map if it was not yet there.
+     * @param node the node to be looked up
+     * @return an index for <code>node</code>
+     */
+    int getNodeIx(Node node) {
+        Integer result = nodeIxMap.get(node);
+        if (result == null) {
+            testFixed(false);
+            nodeIxMap.put(node, result = nodeIxMap.size());
+        }
+        return result;
+    }
+    
+    /** 
+     * Returns the index of a given edge in the edge index map.
+     * Adds an index for the edge to the map if it was not yet there.
+     * @param edge the edge to be looked up
+     * @return an index for <code>edge</code>
+     */
+    int getEdgeIx(Edge edge) {
+        Integer result = edgeIxMap.get(edge);
+        if (result == null) {
+            testFixed(false);
+            edgeIxMap.put(edge, result = edgeIxMap.size());
+        }
+        return result;
+    }
+    
+    /** 
+     * Returns the index of a given variable in the node index map.
+     * Adds an index for the variable to the map if it was not yet there.
+     * @param var the variable to be looked up
+     * @return an index for <code>var</code>
+     */
+    int getVarIx(String var) {
+        Integer result = varIxMap.get(var);
+        if (result == null) {
+            testFixed(false);
+            varIxMap.put(var, result = varIxMap.size());
+        }
+        return result;
+    }
+//
+//    /**
+//     * Sets the expected numbers of pre-matched nodes and edges.
+//     * If these counts are never set, no pre-matches are expected.
+//     */
+//    public final void setPreMatchCounts(int nodePreMatchCount, int edgePreMatchCount) {
+//        testFixed(false);
+//        this.nodePreMatchCount = nodePreMatchCount;
+//        this.edgePreMatchCount = edgePreMatchCount;
+//    }
+//
+//    /**
+//     * Returns the expected number of pre-matched nodes.
+//     */
+//    public final int getNodePreMatchCount() {
+//        return nodePreMatchCount;
+//    }
+//
+//    /**
+//     * Returns the expected number of pre-matched edges.
+//     */
+//    public final int getEdgePreMatchCount() {
+//        return edgePreMatchCount;
+//    }
 
+    /**
+     * Indicates that the strategy is now fixed, meaning that it has been completely constructed.
+     */
+    public void setFixed() {
+        if (!fixed) {
+            for (SearchItem item : plan) {
+                item.activate(this);
+            }
+            // now create the inverse of the index maps
+            nodeKeys = new Node[nodeIxMap.size()];
+            for (Map.Entry<Node,Integer> nodeIxEntry: nodeIxMap.entrySet()) {
+                nodeKeys[nodeIxEntry.getValue()] = nodeIxEntry.getKey();
+            }
+            edgeKeys = new Edge[edgeIxMap.size()];
+            for (Map.Entry<Edge,Integer> edgeIxEntry: edgeIxMap.entrySet()) {
+                edgeKeys[edgeIxEntry.getValue()] = edgeIxEntry.getKey();
+            }
+            varKeys = new String[varIxMap.size()];
+            for (Map.Entry<String,Integer> varIxEntry: varIxMap.entrySet()) {
+                varKeys[varIxEntry.getValue()] = varIxEntry.getKey();
+            }
+            this.fixed = true;
+        }
+    }
+
+    /** 
+     * Method that tests the fixedness of the search plan
+     * and throws an exception if it is not as expected.
+     * @param fixed indication whether or not the plan is expected to be currently fixed
+     */
+    private void testFixed(boolean fixed) {
+        if (this.fixed != fixed) {
+            throw new IllegalStateException(String.format("Search plan is %s fixed", fixed ? "not yet" : ""));
+        }
+    }
+    
     /**
 	 * A list of domain elements, in the order in which they are to be matched.
 	 */
@@ -174,7 +328,46 @@ public class SearchPlanStrategy implements MatchStrategy {
 	 * Additional property that has to be satisfied by all matches returned
 	 * by the matcher.
 	 */
-	Property<VarNodeEdgeMap> filter;
+	private Property<VarNodeEdgeMap> filter;
+    /** 
+     * Map from source graph nodes to (distinct) indices.
+     */
+    private final Map<Node,Integer> nodeIxMap;
+    /** 
+     * Map from source graph edges to (distinct) indices.
+     */
+    private final Map<Edge,Integer> edgeIxMap;
+    /** 
+     * Map from source graph variables to (distinct) indices.
+     */
+    private final Map<String,Integer> varIxMap;
+    /** Array of source graph nodes, which is the inverse of {@link #nodeIxMap} .*/
+    private Node[] nodeKeys;
+    /** Array of source graph edges, which is the inverse of {@link #edgeIxMap} .*/
+    private Edge[] edgeKeys;
+    /** Array of source graph variables, which is the inverse of {@link #varIxMap} .*/
+    private String[] varKeys;
+    /** The number of nodes in the source graph. */
+    private final int sourceNodeCount;
+    /** The number of edge in the source graph. */
+    private final int sourceEdgeCount;
+    /** The number of variables in the source graph. */
+    private final int sourceVarCount;
+//	/** 
+//	 * Number of pre-matched nodes.
+//	 * All nodes with an index (in {@link #nodeIndexMap}) lower than this count should be pre-matched.
+//	 */
+//	private int nodePreMatchCount;
+//    /** 
+//     * Number of pre-matched edges.
+//     * All edges with an index (in {@link #edgeIndexMap}) lower than this count should be pre-matched.
+//     */
+//	private int edgePreMatchCount;
+	/** 
+	 * Flag to indicate that the construction of the object has finished,
+	 * so that it can now be used for searching.
+	 */
+	private boolean fixed;
     
     /** Reporter instance to profile matcher methods. */
     static public final Reporter reporter = Reporter.register(SearchPlanStrategy.class);
@@ -190,7 +383,7 @@ public class SearchPlanStrategy implements MatchStrategy {
     static final int RECORD_FIND = reporter.newMethod("Record.find()");
 
     /** Class implementing an instantiation of the search plan algorithm for a given graph. */
-    static public class Search {
+    public class Search {
         /** Constructs a new record for a given graph and partial match. */
         public Search(SearchPlanStrategy strategy, Graph target, NodeEdgeMap preMatch) {
             this.plan = strategy.getPlan();
@@ -201,6 +394,26 @@ public class SearchPlanStrategy implements MatchStrategy {
             this.result = createElementMap(preMatch);
             this.records = new ArrayList<SearchItem.Record>(plan.size());
             this.lastSingular = -1;
+            this.nodeKeys = strategy.nodeKeys;
+            this.edgeKeys = strategy.edgeKeys;
+            this.varKeys = strategy.varKeys;
+            this.nodeImages = new Node[strategy.nodeKeys.length];
+            this.edgeImages = new Edge[strategy.edgeKeys.length];
+            this.varImages = new Label[strategy.varKeys.length];
+            for (Map.Entry<Node,Node> nodeEntry: preMatch.nodeMap().entrySet()) {
+                int i = strategy.getNodeIx(nodeEntry.getKey());
+                nodeImages[i] = nodeEntry.getValue();
+            }
+            for (Map.Entry<Edge,Edge> edgeEntry: preMatch.edgeMap().entrySet()) {
+                int i = strategy.getEdgeIx(edgeEntry.getKey());
+                edgeImages[i] = edgeEntry.getValue();
+            }
+            if (preMatch instanceof VarNodeEdgeMap) {
+            for (Map.Entry<String,Label> varEntry: ((VarNodeEdgeMap) preMatch).getValuation().entrySet()) {
+                int i = strategy.getVarIx(varEntry.getKey());
+                varImages[i] = varEntry.getValue();
+            }
+            }
         }
         
         @Override
@@ -256,15 +469,42 @@ public class SearchPlanStrategy implements MatchStrategy {
         private boolean satisfiesFilter() {
         	return filter == null || filter.isSatisfied(result);
         }
-        /** Returns an alias of the (partial) result of the search. */
-        VarNodeEdgeMap getResult() {
+        
+        /** Sets the node image for the source node with a given index. */
+        Node putNode(int index, Node image) {
+            Node result = nodeImages[index];
+            nodeImages[index] = image;
             return result;
         }
-//
-//        /** Returns the pre-match with which the search was initialised. */
-//        NodeEdgeMap getPreMatch() {
-//            return preMatch;
-//        }
+        
+        /** Sets the edge image for the source edge with a given index. */
+        Edge putEdge(int index, Edge image) {
+            Edge result = edgeImages[index];
+            edgeImages[index] = image;
+            return result;
+        }
+        
+        /** Sets the variable image for the source graph variable with a given index. */
+        Label putVar(int index, Label image) {
+            Label result = varImages[index];
+            varImages[index] = image;
+            return result;
+        }
+        
+        /** Returns the current node image at a given index. */
+        Node getNode(int index) {
+            return nodeImages[index];
+        }
+        
+        /** Returns the current edge image at a given index. */
+        Edge getEdge(int index) {
+            return edgeImages[index];
+        }
+        
+        /** Returns the current variable image at a given index. */
+        Label getVar(int index) {
+            return varImages[index];
+        }
         
         /** 
          * Returns a copy of the search result, or <code>null</code> if 
@@ -272,7 +512,26 @@ public class SearchPlanStrategy implements MatchStrategy {
          */
         public VarNodeEdgeMap getMatch() {
             if (found) {
-                return new VarNodeEdgeHashMap(result);
+                VarNodeEdgeMap result = new VarNodeEdgeHashMap();
+                for (int i = 0; i < sourceNodeCount; i++) {
+                    Node image = nodeImages[i];
+                    if (image != null) {
+                        result.putNode(nodeKeys[i], image);
+                    }
+                }
+                for (int i = 0; i < sourceEdgeCount; i++) {
+                    Edge image = edgeImages[i];
+                    if (image != null) {
+                        result.putEdge(edgeKeys[i], image);
+                    }
+                }
+                for (int i = 0; i < sourceVarCount; i++) {
+                    Label image = varImages[i];
+                    if (image != null) {
+                        result.putVar(varKeys[i], image);
+                    }
+                }
+                return result;
             } else {
                 return null;
             }
@@ -352,6 +611,18 @@ public class SearchPlanStrategy implements MatchStrategy {
 
         /** The search plan for this record. */
         private final List<SearchItem> plan;
+        /** Array of node images. */
+        private final Node[] nodeKeys;
+        /** Array of edge images. */
+        private final Edge[] edgeKeys;
+        /** Array of variable images. */
+        private final String[] varKeys;
+        /** Array of node images. */
+        private final Node[] nodeImages;
+        /** Array of edge images. */
+        private final Edge[] edgeImages;
+        /** Array of variable images. */
+        private final Label[] varImages;
         /** Property to be satisfied by all search results. May be <code>null</code>. */
         private final Property<VarNodeEdgeMap> filter;
         /** Flag indicating that the match should be injective. */
