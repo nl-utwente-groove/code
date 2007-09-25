@@ -18,17 +18,19 @@
 package groove.match;
 
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 
 /**
- * Abstract implementation of a searh item, offering some basic search functionality.
+ * Abstract implementation of a search item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
     /**
@@ -97,9 +99,56 @@ abstract public class AbstractSearchItem implements SearchItem {
      */
     abstract int getRating();
     
-    abstract class PrimitiveRecord implements Record {
+    /** Creates a new dummy search record. */
+    final Record createDummyRecord() {
+    	return new DummyRecord();
+    }
+
+    /** 
+     * Dummy search record, which does nothing upon {@link #find()}
+     * except alternatingly return <code>true</code> and <code>false</code>.
+     */
+    final class DummyRecord implements Record {
+    	/** 
+    	 * This record alternates between <code>true</code> and <code>false</code>,
+    	 * and resets to <code>true</code> upon invocation of {@link #reset()}.
+    	 */
+		@Override
+		public boolean find() {
+			found = !found;
+			return found;
+		}
+
+		/** This implementation returns <code>true</code>. */
+		@Override
+		public boolean isSingular() {
+			return true;
+		}
+
+		@Override
+		public void reset() {
+			found = false;
+		}
+    	
+		@Override
+		public String toString() {
+			return String.format("%s: %s", AbstractSearchItem.this.toString(), found);
+		}
+
+		/** 
+		 * Flag indicating if the last call of #find returned <code>true</code>,
+		 * and hence the next should return <code>false</code>.
+		 */
+    	private boolean found;
+    }
+    
+    /** 
+     * Search item record offering basic functionality 
+     * for querying the underlying search and target.
+     */
+    abstract class BasicRecord implements Record {
         /** Constructs a record for a given search. */
-        protected PrimitiveRecord(Search search) {
+        BasicRecord(Search search) {
             this.search = search;
             this.target = search.getTarget();
         }
@@ -116,15 +165,6 @@ abstract public class AbstractSearchItem implements SearchItem {
         final Graph getTarget() {
             return target;
         }
-
-        /** 
-         * Indicates if a given node is available as image in the current search.
-         * This may fail to be the case due to availability constraints.
-         * Convenience method for <code>getSearch().isAvailable(node)</code>.
-         */
-        final boolean isAvailable(Node node) {
-            return search.isAvailable(node);
-        }
         
         /** The underlying search for this record. */
         private final Search search;
@@ -133,202 +173,11 @@ abstract public class AbstractSearchItem implements SearchItem {
     }
 
     /**
-     * Abstract implementation of a search item record, offering basic search functionality.
-     * At any point, the record has one of the following internal states:
-     * <ul>
-     * <li> {@link #EMPTY}, the initial state
-     * <li> {@link #FIRST}, the state reached before the first solution has been found
-     * <li> {@link #LATER}, the state reached after the first solution has been found
-     * <li> {@link #FOUND}, reached at the moment a solution has been found
-     * </ul>
-     * @author Arend Rensink
-     * @version $Revision: 1.8 $
-     */
-    abstract public class AbstractRecord extends PrimitiveRecord {
-        /** Constructs a record for a given search. */
-        protected AbstractRecord(Search search) {
-            super(search);
-        }
-        
-        /**
-         * The method first invokes {@link #init()} or {@link #undo()}, if the state upon
-         * invocation is {@link #EMPTY} or {@link #FOUND}, respectively,
-         * followed by {@link #next()} to actually search for a solution.
-         * If no solution is found, the state of the record is returned to {@link #EMPTY},
-         * meaning that the next invocation of {@link #find()} will restart the search.
-         * If a solution is found, the state will be set to {@link #FOUND}.
-         */
-        final public boolean find() {
-            SearchPlanStrategy.reporter.start(SearchPlanStrategy.RECORD_FIND);
-            boolean result;
-            assert isEmpty() || isFound();
-            if (isEmpty()) {
-                init();
-                setState(FIRST);
-            } else if (isFound()) {
-                undo();
-                setState(LATER);
-            }
-            result = next();
-            if (result) {
-                setState(FOUND);
-            } else {
-                exit();
-                setState(EMPTY);
-            }
-            SearchPlanStrategy.reporter.stop();
-            return result;
-        }
-        
-        /**
-         * This implementation always turns the state to {@link #EMPTY}, irregardless of
-         * the state at invocation time, by calling {@link #undo()} and {@link #exit()} if
-         * necessary.
-         */
-        final public void reset() {
-            if (isFound()) {
-                undo();
-                setState(LATER);
-                exit();
-            } else if (isReady()) {
-                exit();
-            }
-            setState(EMPTY);
-        }
-
-        /**
-         * Sets the state to a given value.
-         * The value is required to be one of {@link #EMPTY}, {@link #FIRST}, {@link #LATER} or {@link #FOUND}.
-         */
-        private void setState(int value) {
-            state = value;
-            assert isEmpty() || isReady() || isFound();
-        }
-        
-        /** 
-         * Returns the current state of the record, which is one of
-         * <ul>
-         * <li> {@link #EMPTY}, the initial state, to which the record returns upon an unsuccessful search;
-         * <li> {@link #FIRST}, if all preparations have been made for the first search, but 
-         * {@link #next()} has not yet been called;
-         * <li> {@link #LATER}, if {@link #next()} has returned <code>false</code> or {@link #undo()} has
-         * just been invoked; or 
-         * <li> {@link #FOUND}, if a search has just been successful. 
-         * </ul>
-         */
-        final int getState() {
-            return state;
-        }
-        
-        /** 
-         * Indicates that the state of the record is {@link #EMPTY}.
-         * Convenience method for <code>getState() == EMPTY</code>.
-         * @return <code>true</code> if {@link #getState()} returns {@link #EMPTY}.
-         */
-        final boolean isEmpty() {
-            return getState() == EMPTY;
-        }
-
-        /** 
-         * Indicates that the state of the record is {@link #FIRST} or {@link #LATER}.
-         * Convenience method for <code>isFirst() || isLater()</code>.
-         * @return <code>true</code> if {@link #getState()} returns {@link #FIRST} or {@link #LATER}.
-         */
-        final boolean isReady() {
-            return isFirst() || isLater();
-        }
-
-        /** 
-         * Indicates that the state of the record is {@link #FIRST}.
-         * Convenience method for <code>getState() == FIRST</code>.
-         * @return <code>true</code> if {@link #getState()} returns {@link #FIRST}.
-         */
-        final boolean isFirst() {
-            return getState() == FIRST;
-        }
-
-        /** 
-         * Indicates that the state of the record is {@link #LATER}.
-         * Convenience method for <code>getState() == LATER</code>.
-         * @return <code>true</code> if {@link #getState()} returns {@link #LATER}.
-         */
-        final boolean isLater() {
-            return getState() == LATER;
-        }
-
-        /** 
-         * Indicates that the state of the record is {@link #FOUND}.
-         * Convenience method for <code>getState() == FOUND</code>.
-         * @return <code>true</code> if {@link #getState()} returns {@link #FOUND}.
-         */
-        final boolean isFound() {
-            return getState() == FOUND;
-        }
-
-        /** 
-         * Callback method from {@link #reset()} to undo the effects of {@link #init()}.
-         * It is guaranteed that the state is {@link #FIRST} or {@link #LATER} upon invocation;
-         * after return, the state is changed to {@link #EMPTY}.
-         * This implementation does nothing.
-         */ 
-        void exit() {
-            // empty
-        }
-
-        /** 
-         * Callback method from {@link #find()} to prepare the search.
-         * It is guaranteed that the state is {@link #EMPTY} upon invocation;
-         * after return, the state is changed to {@link #FIRST}.
-         * This implementation does nothing.
-         */ 
-        void init() {
-            // empty
-        }
-        
-        /** 
-         * Callback method from {@link #find()} to undo the previously found solution.
-         * It is guaranteed that the state is {@link #FOUND} upon invocation;
-         * after return, the state is changed to {@link #LATER}.
-         */ 
-        abstract void undo();
-        
-        /** 
-         * Callback method from {@link #find()} to search for and select a next solution.
-         * It is guaranteed that the state is {@link #FIRST} or {@link #LATER} upon invocation;
-         * after return, the state is changed to {@link #LATER} or {@link #FOUND},
-         * depending on the return value.
-         */ 
-        abstract boolean next();
-        
-        /** The state of the record: one of {@link #EMPTY}, {@link #FIRST}, {@link #LATER} or {@link #FOUND}. */
-        private int state;
-        
-        /** 
-         * Initial state of the record, which is revisited every time {@link #find()}
-         * returns <code>false</code>.
-         */
-        static final int EMPTY = 0;
-        /**
-         * State of the record after an invocation of #init().
-         */
-        static final int FIRST = 1;
-        /**
-         * State of the record after an invocation of #undo().
-         */
-        static final int LATER = 2;
-        /** 
-         * State of the recordreached when {@link #find()} returns <code>true</code>,
-         * signifying that the search item has been satisfied.
-         */
-        static final int FOUND = 3;
-    }
-    
-    /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.8 $
+     * @version $Revision: 1.9 $
      */
-    abstract public class SingularRecord extends PrimitiveRecord {
+    abstract class SingularRecord extends BasicRecord {
         /** Constructs an instance for a given search. */
         SingularRecord(Search search) {
             super(search);
@@ -339,11 +188,13 @@ abstract public class AbstractSearchItem implements SearchItem {
          * successful at the last call; otherwise, delegates to {@link #set()}.
          */
         final public boolean find() {
+            SearchPlanStrategy.reporter.start(SearchPlanStrategy.RECORD_FIND_SINGULAR);
             if (found) {
                 reset();
             } else {
                 found = set();
             }
+            SearchPlanStrategy.reporter.stop();
             return found;
         }
 
@@ -355,10 +206,9 @@ abstract public class AbstractSearchItem implements SearchItem {
         }
 
         /**
-         * Calls {@link #undo()} and sets {@link #found} to <code>false</code>.
+         * Sets {@link #found} to <code>false</code>.
          */
         public void reset() {
-            undo();
             found = false;
         }
         
@@ -368,11 +218,6 @@ abstract public class AbstractSearchItem implements SearchItem {
          */
         abstract boolean set();
         
-        /**
-         * Undoes the effect of {@link #set()}.
-         */
-        abstract void undo();
-
         /** Returns the return value of the last invocation of {@link #find()}. */
         final boolean isFound() {
             return found;
@@ -381,4 +226,68 @@ abstract public class AbstractSearchItem implements SearchItem {
         /** Flag storing the last return value of {@link #find()}. */
         private boolean found;
     }
+    /**
+     * Abstract implementation of a search item record expected to
+     * have more than one solution.
+     * @author Arend Rensink
+     * @version $Revision: 1.9 $
+     */
+    abstract class MultipleRecord<E extends Element> extends BasicRecord {
+        /** Constructs a record for a given search. */
+        MultipleRecord(Search search) {
+            super(search);
+        }
+        
+        /** This implementation returns <code>false</code>. */
+        @Override
+		public boolean isSingular() {
+			return false;
+		}
+
+		/**
+         * If {@link #imageIter} is not initialised, first invokes {@link #init()}.
+         * Then iterates over the images of {@link #imageIter} until one is
+         * found for which {@link #setImage(Element)} is satisfied. Calls {@link #reset()}
+         * if no such image is found.
+         */
+        final public boolean find() {
+            SearchPlanStrategy.reporter.start(SearchPlanStrategy.RECORD_FIND_MULTIPLE);
+            if (imageIter == null) {
+                init();
+            }
+            boolean result = false;
+            while (!result && imageIter.hasNext()) {
+            	E image = imageIter.next();
+            	result = setImage(image);
+            }
+            if (!result) {
+            	reset();
+            }
+            SearchPlanStrategy.reporter.stop();
+            return result;
+        }
+        
+        public void reset() {
+        	imageIter = null;
+        }
+        
+		/**
+		 * Callback method from {@link #find()} to initialise the variables
+		 * necessary for searching; in any case {@link #imageIter}.
+		 */
+		abstract void init();
+
+		/** 
+		 * Callback method from {@link #find()} to install an image.
+		 * This method is expected to call other methods of the underlying search
+		 * to store images of nodes and edges.
+		 * The return value indicates is this has been successful.
+		 */
+		abstract boolean setImage(E image);
+		
+		/**
+		 * An iterator over the images for the item's edge.
+		 */
+        Iterator<? extends E> imageIter;
+    }    
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: InjectionSearchItem.java,v 1.6 2007-09-22 16:28:06 rensink Exp $
+ * $Id: InjectionSearchItem.java,v 1.7 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
@@ -24,7 +24,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 
 /**
- * A search item that searches an image for an edge.
+ * A search item that checks distinctness of two node images.
  * @author Arend Rensink
  * @version $Revision $
  */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchItem.java,v 1.6 2007-08-30 15:18:18 rensink Exp $
+ * $Id: ConditionSearchItem.java,v 1.7 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
@@ -49,12 +49,6 @@ public abstract class ConditionSearchItem extends AbstractSearchItem {
         @Override
         public String toString() {
             return String.format("%s: %b", ConditionSearchItem.this.toString(), isFound());
-        }
-
-        /** This implementation does nothing. */
-        @Override
-        final void undo() {
-            // empty
         }
 	}
 }

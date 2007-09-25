@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.1 2007-09-22 16:28:07 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.2 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
@@ -22,13 +22,11 @@ import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
-import groove.util.FilterIterator;
 
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -38,8 +36,7 @@ import java.util.Set;
  */
 public class Edge2SearchItem extends AbstractSearchItem {
 	/**
-	 * Creates a search item for a given edge, for which it is know
-	 * which edge ends have already been matched (in the search plan) before this one.
+	 * Creates a search item for a given binary edge.
 	 * @param edge the edge to be matched
 	 */
 	public Edge2SearchItem(BinaryEdge edge) {
@@ -50,10 +47,6 @@ public class Edge2SearchItem extends AbstractSearchItem {
 		this.arity = edge.endCount();
         this.selfEdge = source == target;
         this.boundNodes = new HashSet<Node>(Arrays.asList(edge.ends()));
-	}
-	
-	public BinaryEdgeRecord getRecord(Search matcher) {
-		return new BinaryEdgeRecord( matcher);
 	}
 	
 	/**
@@ -106,9 +99,17 @@ public class Edge2SearchItem extends AbstractSearchItem {
     }
 
     public void activate(SearchPlanStrategy strategy) {
+    	assert !strategy.isEdgeFound(edge);
         edgeIx = strategy.getEdgeIx(edge);
+        sourceFound = strategy.isNodeFound(source);
         sourceIx = strategy.getNodeIx(source);
-        targetIx = strategy.getNodeIx(target);
+        if (selfEdge) {
+        	targetFound = sourceFound;
+        	targetIx = sourceIx;
+        } else {
+        	targetFound = strategy.isNodeFound(target);
+        	targetIx = strategy.getNodeIx(target);
+        }
     }
 
     /**
@@ -119,7 +120,39 @@ public class Edge2SearchItem extends AbstractSearchItem {
         return edge.label().hashCode();
     }
 
-    /**
+    final public Record getRecord(Search search) {
+		if (isPreMatched(search)) {
+			// the edge is unexpectedly pre-matched
+			return createDummyRecord();
+		} else if (isSingular(search)) {
+			return createSingularRecord(search);
+		} else {
+			return createMultipleRecord(search);
+		}
+	}
+    
+    /** Indicates if the edge is pre-matched in the search. */
+    boolean isPreMatched(Search search) {
+    	return search.getEdgePreMatch(edgeIx) != null;
+    }
+    
+    /** Indicates if the edge has a singular image in the search. */
+    boolean isSingular(Search search) {
+    	boolean sourceSingular = sourceFound || search.getNodePreMatch(sourceIx) != null;
+    	boolean targetSingular = targetFound || search.getNodePreMatch(targetIx) != null;
+    	return sourceSingular && targetSingular;
+    }
+
+    /** Creates a record for the case the image is singular. */
+    SingularRecord createSingularRecord(Search search) {
+    	return new Edge2SingularRecord(search);
+    }
+    
+    /** Creates a record for the case the image is not singular. */
+    MultipleRecord createMultipleRecord(Search search) {
+    	return new Edge2MultipleRecord(search);
+    }
+	/**
 	 * The edge for which this search item is to find an image.
 	 */
 	final BinaryEdge edge;
@@ -142,416 +175,448 @@ public class Edge2SearchItem extends AbstractSearchItem {
     /** The set of end nodes of this edge. */
     private final Set<Node> boundNodes;
 
-    private int edgeIx;
-    private int sourceIx;
-    private int targetIx;
+    /** The index of the edge in the search. */
+    int edgeIx;
+    /** The index of the source in the search. */
+    int sourceIx;
+    /** The index of the target in the search. */
+    int targetIx;
+    /** Indicates if the source is found before this item is invoked. */
+    boolean sourceFound;
+    /** Indicates if the target is found before this item is invoked. */
+    boolean targetFound;
+    
+    /** 
+     * Search record to be used if the edge image is completely
+     * determined by the pre-matched ends.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    class Edge2SingularRecord extends SingularRecord {
+    	/** Constructs an instance for a given search. */
+		public Edge2SingularRecord(Search search) {
+			super(search);
+			this.sourcePreMatch = search.getNodePreMatch(sourceIx);
+			this.targetPreMatch = search.getNodePreMatch(targetIx);
+		}
+//
+//		@Override
+//		public void reset() {
+//			super.reset();
+//			getSearch().putEdge(edgeIx, null);
+//		}
+
+		@Override
+		final boolean set() {
+			Edge image = getEdgeImage();
+			assert image != null;
+			boolean result = getTarget().containsElement(image);
+			if (result) {
+				getSearch().putEdge(edgeIx, image);
+			}
+			return result;
+		}
+		
+		/** 
+		 * Creates and returns the edge image, as constructed from
+		 * the available end node images. 
+		 */
+		private Edge getEdgeImage() {
+			Node sourceFind = this.sourcePreMatch;
+			if (sourceFind == null) {
+				sourceFind = getSearch().getNode(sourceIx);
+			}
+			assert sourceFind != null : String.format("Source node of %s has not been found", edge);
+			Node targetFind = this.targetPreMatch;
+			if (targetFind == null) {
+				targetFind = getSearch().getNode(targetIx);
+			}
+			assert targetFind != null : String.format("Target node of %s has not been found", edge);
+			return DefaultEdge.createEdge(sourceFind, getLabel(), targetFind);
+		}
+		
+		/** Callback method to determine the label of the edge image. */
+		Label getLabel() {
+			return label;
+		}
+
+        @Override
+        public String toString() {
+            return Edge2SearchItem.this.toString()+" = "+getEdgeImage();
+        }
+
+		/** The pre-matched (fixed) source image, if any. */
+		private final Node sourcePreMatch;
+		/** The pre-matched (fixed) target image, if any. */
+		private final Node targetPreMatch;
+    }
+    
     /**
      * Record of an edge search item, storing an iterator over the
      * candidate images.
      * @author Arend Rensink
      * @version $Revision $
      */
-    class BinaryEdgeRecord extends AbstractRecord {
+    class Edge2MultipleRecord extends MultipleRecord<Edge> {
         /**
          * Creates a record based on a given search.
          */
-        BinaryEdgeRecord(Search search) {
+        Edge2MultipleRecord(Search search) {
             super(search);
+            sourcePreMatch = getSearch().getNodePreMatch(sourceIx);
+            targetPreMatch = getSearch().getNodePreMatch(targetIx);
             assert getSearch().getEdge(edgeIx) == null : String.format("Edge %s already in %s", edge, getSearch());
         }
-
-        /** 
-         * The record is singular if the image is either pre-matched
-         * or pre-determined.
-         * @see #isPreMatched()
-         * @see #isPreDetermined()
-         */
-        public boolean isSingular() {
-            return isPreMatched() || isPreDetermined();
-        }
-
-        @Override
-        void exit() {
-            multipleIter = null;
-            allEndsPreMatched = false;
-            edgePreMatch = null;
-        }
+//
+//        @Override
+//        void exit() {
+//            multipleIter = null;
+//        }
 
         @Override
         void init() {
-            allEndsPreMatched = true;
-            sourcePreMatch = getSearch().getNode(sourceIx);
-            targetPreMatch = getSearch().getNode(targetIx);
-            allEndsPreMatched = sourcePreMatch != null && targetPreMatch != null;
-            edgePreMatch = getSearch().getEdge(edgeIx);
+            sourceFind = sourcePreMatch;
+            if (sourceFind == null && sourceFound) {
+            	sourceFind = getSearch().getNode(sourceIx);
+                assert sourceFind != null : String.format("Source node of %s not found", edge); 
+            }
+            targetFind = targetPreMatch;
+            if (targetFind == null && targetFound) {
+            	targetFind = getSearch().getNode(targetIx);
+                assert targetFind != null : String.format("Target node of %s not found", edge); 
+            }
+            initImages();
         }
         
-        /**
-         * If {@link #isPreMatched()}, delegates to {@link #nextPreMatched()}.
-         * Otherwise, if {@link #isPreDetermined()}, delegates to {@link #nextPreDetermined()}.
-         * Otherwise, delegates to {@link #nextMultiple()}.
-         */
         @Override
-        final boolean next() {
-            Edge result;
-            if (isPreMatched()) {
-                result = nextPreMatched();
-            } else if (isPreDetermined()) {
-                result = nextPreDetermined();
-            } else {
-                result = nextMultiple();
-            }
-            if (result == null) {
-                return false;
-            } else {
-                selected = result;
-                return true;
-            }
+        boolean setImage(Edge image) {
+        	assert image instanceof BinaryEdge;
+        	if (sourceFind == null) {
+        		if (! getSearch().putNode(sourceIx, image.source())) {
+        			return false;
+        		}
+        	} else if (checkSource) {
+        		if (image.source() != sourceFind) {
+        			return false;
+        		}
+        	}
+        	if (targetFind == null) {
+        		if (! getSearch().putNode(targetIx, image.opposite())) {
+        			return false;
+        		}
+        	} else if (checkTarget) {
+        		if (image.opposite() != targetFind) {
+        			return false;
+        		}
+        	}
+        	if (checkLabel) {
+            	if (!image.label().equals(label)) {
+            		return false;
+            	}
+        	}
+        	if (setEdge) {
+        		getSearch().putEdge(edgeIx, image);
+        	}
+        	selected = image;
+        	return true;
         }
 
-        /**
-         * Callback method to signal if the edge
-         * is pre-matched in the result map.
-         */
-        final boolean isPreMatched() {
-            return edgePreMatch != null;
-        }
-
-        /**
-         * Callback method from {@link #next()} in case there is a pre-matched edge
-         * in the result map (as tested by {@link #isPreMatched()}).
-         * In that case, the edge ends need to be checked for consistency (using {@link #setEnds(Edge)}).
-         * @return the pre-matched edge image, if the edge ends are consistent with thte current result map
-         */
-        Edge nextPreMatched() {
-            Edge result = null;
-            if (isFirst() && setEnds(edgePreMatch)) {
-                result = edgePreMatch;
-            } 
-            return result;
-        }
-
-        /** 
-         * Callback method to signal if the edge image
-         * is completely determined by the pre-matched ends.
-         */
-        boolean isPreDetermined() {
-            return allEndsPreMatched;
-        }
-
-        /**
-         * Callback method from {@link #next()} in case the edge image can be completely
-         * constructed from pre-matched parts (as tested by {@link #isPreDetermined()}).
-         * This needs to be tested for presence in the target graph.
-         * @return the pre-determined edge image, in case it occurs in the target
-         */
-        final Edge nextPreDetermined() {
-            Edge result = null;
-            if (isFirst()) {
-                Edge image = computePreDetermined();
-                if (getTarget().containsElement(image)) {
-                    setEdge(image);
-                    result = image;
-                }
-            }
-            return result;
-        }
-        
-        /** 
-         * Factory method to create a binary edge from the pre-matched edge ends.
-         * Calls {@link #getPreMatchedSource()}, {@link #getPreMatchedTarget()} and {@link #getPreMatchedLabel()}
-         * for the edge parts. 
-         */
-        final Edge computePreDetermined() {
-            return DefaultEdge.createEdge(getPreMatchedSource(), getPreMatchedLabel(), getPreMatchedTarget());
-        }
-        
-        /** Callback method from {@link #computePreDetermined()} to retrieve the pre-matched source end. */
-        final Node getPreMatchedSource() {
-            return sourcePreMatch;
-        }
-        
-        /** Callback method from {@link #computePreDetermined()} to retrieve the pre-matched target end. */
-        final Node getPreMatchedTarget() {
-            return targetPreMatch;
-        }
-        
-        /** Callback method from {@link #computePreDetermined()} to retrieve the pre-matched label. */
-        Label getPreMatchedLabel() {
-            return label;
+        @Override
+        public void reset() {
+        	super.reset();
+        	if (selected != null) {
+        		if (setEdge) {
+        			getSearch().putEdge(edgeIx, null);
+        		}
+        		if (sourceFind == null) {
+        			getSearch().putNode(sourceIx, null);
+        		}
+        		if (targetFind == null) {
+        			getSearch().putNode(targetIx, null);
+        		}
+        	}
         }
         
         /**
-         * Selects and returns the next correct edge from the target graph.
-         * Callback method from {@link #next()} in case there is not a singular
-         * (pre-matched or pre-determined) image.
-         */
-        final Edge nextMultiple() {
-            if (multipleIter == null) {
-                multipleIter = computeMultiple();
-            }
-            return multipleIter.hasNext() ? multipleIter.next() : null;
-        }
-
-        /**
-         * Returns an interator over those images for {@link #edge} that are consistent with the
+         * Returns an iterator over those images for {@link #edge} that are consistent with the
          * pre-matched edge ends.
          * The iterator actually selects the returned edges in the result map, as a side effect.
          */
-        Iterator<? extends Edge> computeMultiple() {
+        void initImages() {
+        	Set<? extends Edge> result = null;
+        	boolean checkLabel = false;
             // it does not pay off here to take only the incident edges of pre-matched ends,
             // no doubt because building the necessary additional data structures takes more
             // time than is saved by trying out fewer images
 //            return filterImages(getTarget().labelEdgeSet(arity, label), false);
         	Set<? extends Edge> labelEdgeSet = getTarget().labelEdgeSet(arity, label);
-        	if (sourcePreMatch != null) {
-        		Set<? extends Edge> nodeEdgeSet = getTarget().edgeSet(sourcePreMatch);
+        	if (sourceFind != null) {
+        		Set<? extends Edge> nodeEdgeSet = getTarget().edgeSet(sourceFind);
         		if (nodeEdgeSet.size() < labelEdgeSet.size()) {
-        			return filterImages(getTarget().edgeSet(sourcePreMatch), true);
+        			result = nodeEdgeSet;
+        			checkLabel = true;
         		}
-			} else if (targetPreMatch != null) {
-        		Set<? extends Edge> nodeEdgeSet = getTarget().edgeSet(targetPreMatch);
+			} else if (targetFind != null) {
+        		Set<? extends Edge> nodeEdgeSet = getTarget().edgeSet(targetFind);
         		if (nodeEdgeSet.size() < labelEdgeSet.size()) {
-        			return filterImages(getTarget().edgeSet(targetPreMatch), true);
+        			result = nodeEdgeSet;
+        			checkLabel = true;
         		}
 			}
-        	return filterImages(getTarget().labelEdgeSet(arity, label), false);
+        	if (result == null) {
+        		result = labelEdgeSet;
+        	}
+        	initImages(result, true, true, checkLabel, true);
         }
         
-        /**
-		 * Returns an iterator over the elements of a given image set, which
-		 * filters the edges for which {@link #setEnds(Edge)} is successful. As
-		 * a side effect, calls {@link #setEdge(Edge)} with the selected image
-		 * before returning it.
-		 * 
-		 * @param images
-		 *            the set of potential images
-		 * @param checkLabel
-		 *            flag to indicate if #selectLabel(Edge) should also be
-		 *            called before selecting an edge
-		 */
-        Iterator<? extends Edge> filterImages(final Collection<? extends Edge> images, final boolean checkLabel) {
-            return new FilterIterator<Edge>(images.iterator()) {
-                @Override
-                protected boolean approves(Object obj) {
-                    Edge edge = (Edge) obj;
-                    boolean result = !checkLabel || setLabel(edge);
-                    if (result) {
-                        result = setEnds(edge);
-                        if (result) {
-                            setEdge(edge);
-                        } else if (checkLabel) {
-                            resetLabel();
-                        }
-                    }
-                    return result;
-                }                
-            };
+        /** 
+         * Callback method to set the iterator over potential images.
+         * Also sets flags indicating whether potential images still have to be 
+         * checked for correctness of the source, target or label parts.
+         * @param imageSet the iterator over potential images
+         * @param checkSource if <code>true</code>, the sources of potential images 
+         * have to be compared with {@link #sourceFind}
+         * @param checkLabel if <code>true</code>, the sources of potential images 
+         * have to be compared with {@link #targetFind}
+         * @param checkTarget if <code>true</code>, the sources of potential images 
+         * have to be compared with #label.
+         */
+        void initImages(Set<? extends Edge> imageSet, boolean checkSource, boolean checkTarget, boolean checkLabel, boolean setEdge) {
+        	this.imageIter = imageSet.iterator();
+        	this.checkSource = checkSource;
+        	this.checkTarget = checkTarget;
+        	this.checkLabel = checkLabel;
+        	this.setEdge = setEdge;
         }
 //        
 //        /**
-//         * Selects an image for {@link EdgeSearchItem#edge}, after testing it for correctness.
-//         * Successively calls {@link #selectParts(Edge)} and (if successful)
-//         * {@link #selectEdge(Edge)}.
-//         * @param image the image to be selected
-//         * @return <code>true</code> if <code>image</code> was indeed selected
+//		 * Returns an iterator over the elements of a given image set, which
+//		 * filters the edges for which {@link #setEnds(Edge)} is successful. As
+//		 * a side effect, calls {@link #setEdge(Edge)} with the selected image
+//		 * before returning it.
+//		 * 
+//		 * @param images
+//		 *            the set of potential images
+//		 * @param checkLabel
+//		 *            flag to indicate if #selectLabel(Edge) should also be
+//		 *            called before selecting an edge
+//		 */
+//        Iterator<? extends Edge> filterImages(final Collection<? extends Edge> images, final boolean checkLabel) {
+//            return new FilterIterator<Edge>(images.iterator()) {
+//                @Override
+//                protected boolean approves(Object obj) {
+//                    Edge edge = (Edge) obj;
+//                    boolean result = !checkLabel || setLabel(edge);
+//                    if (result) {
+//                        result = setEnds(edge);
+//                        if (result) {
+//                            setEdge(edge);
+//                        } else if (checkLabel) {
+//                            resetLabel();
+//                        }
+//                    }
+//                    return result;
+//                }                
+//            };
+//        }
+//        
+//        /**
+//         * Selects the edge label.
+//         * In this case this just comes down to testing equality with the image label.
 //         */
-//        boolean select(Edge image) {
-//            assert image != null : "Selected image should not be null";
-//            boolean result = selectParts(image);
-//            if (result) {
-//                selectEdge(image);
-//                selected = image;
+//        boolean setLabel(Edge image) {
+//            return label == image.label();
+//        }
+//
+//        /** 
+//         * Select the edge end images, if they are compatible with
+//         * the pre-matched ends. 
+//         */
+//        boolean setEnds(Edge image) {
+//            boolean result = setSource(image);
+//            if (result && !setTarget(image)) {
+//            	resetSource();
+//            	result = false;
 //            }
 //            return result;
 //        }
-        
-        /**
-         * Selects the edge label.
-         * In this case this just comes down to testing equality with the image label.
-         */
-        boolean setLabel(Edge image) {
-            return label == image.label();
-        }
-
-        /** 
-         * Select the edge end images, if they are compatible with
-         * the pre-matched ends. 
-         */
-        boolean setEnds(Edge image) {
-            boolean result = setSource(image);
-            if (result && !setTarget(image)) {
-            	resetSource();
-            	result = false;
-            }
-            return result;
-        }
-
-        /**
-         * Tests or selects the image of a given edge end.
-         */
-        final boolean setSource(Edge image) {
-            boolean result;
-            Node imageSource = image.source();
-            if (sourcePreMatch != null) {
-                // test if the intended image has the correct end
-                result = imageSource == sourcePreMatch;
-            } else if (isAvailable(imageSource)) {
-                // put the end image in the result map
-                Node sourceImage = getSearch().putNode(sourceIx, imageSource);
-                assert sourceImage == null : String
-                        .format("Node %s already has image %s when selecting %s (map: %s)",
-                            source,
-                            sourceImage,
-                            imageSource,
-                            getSearch());
-                result = true;
-            } else {
-                result = false;
-            }
-            return result;
-        }
-
-        /**
-         * Tests or selects the image of a given edge end.
-         */
-        final boolean setTarget(Edge image) {
-            boolean result;
-            Node imageTarget = image.opposite();
-            if (targetPreMatch != null) {
-                // test if the intended image has the correct end
-                result = imageTarget == targetPreMatch;
-            } else if (selfEdge) {
-                // test if the intended image has the same duplication
-                result = imageTarget == image.source();
-            } else if (isAvailable(imageTarget)) {
-                // put the end image in the result map
-                Node targetImage = getSearch().putNode(targetIx, imageTarget);
-                assert targetImage == null : String
-                        .format("Node %s already has image %s when selecting %s (map: %s)",
-                            target,
-                            targetImage,
-                            imageTarget,
-                            getSearch());
-                result = true;
-            } else {
-                result = false;
-            }
-            return result;
-        }
-        
-        /**
-         * Puts the actual edge image into the result map,
-         * unde the assumption that the edge is not pre-matched.
-         */
-        void setEdge(Edge image) {
-            Edge current = getSearch().putEdge(edgeIx, image);
-            assert current == null : String
-                    .format("Edge %s already has image %s when selecting %s (map: %s)",
-                        edge,
-                        current,
-                        image,
-                        getSearch());
-        }
-        
-        /**
-         * Successively calls {@link #resetEnds()} and {@link #resetEdge()}.
-         */
-        @Override
-        final void undo() {
-            if (!isPreDetermined()) {
-                resetEnds();
-                resetLabel();
-            }
-            if (!isPreMatched()) {
-                resetEdge();
-            }
-            selected = null;
-        }
-        
-        /** 
-         * Rolls back the effect of {@link #setLabel(Edge)}. 
-         * For this implementation, there is nothing to roll back.
-         */
-        void resetLabel() {
-            // empty
-        }
-
-        /**
-         * Callback method from {@link #undo()} to undo the selection of the edge ends.
-         * Reverses the effect of {@link #setEnds(Edge)} if that method returned <code>true</code>.
-         */
-        final void resetEnds() {
-            resetSource();
-            resetTarget();
-        }
-
-        final void resetSource() {
-            if (sourcePreMatch == null) {
-                Node endImage = getSearch().putNode(sourceIx, null);
-                assert selected == null || endImage == selected.source() : String
-                        .format("Node %s had image %s instead of expected %s (map: %s)",
-                            source,
-                            endImage,
-                            selected.source(),
-                            getSearch());
-            }
-        }
-
-        final void resetTarget() {
-            if (targetPreMatch == null && !selfEdge) {
-                Node endImage = getSearch().putNode(targetIx, null);
-                assert selected == null || endImage == selected.opposite() : String
-                        .format("Node %s had image %s instead of expected %s (map: %s)",
-                            target,
-                            endImage,
-                            selected.opposite(),
-                            getSearch());
-            }
-        }
-        
-        /**
-         * Callback method from {@link #undo()} to undo the selection of the edge itself. Reverses
-         * the effect of {@link #setEdge(Edge)} if that method returned <code>true</code>.
-         */
-        void resetEdge() {
-            Edge image = getSearch().putEdge(edgeIx, null);
-            assert image.equals(selected) : String
-                    .format("Edge %s had image %s instead of expected %s (map: %s)",
-                        edge,
-                        image,
-                        selected,
-                        getSearch());
-        }
+//
+//        /**
+//         * Tests or selects the image of a given edge end.
+//         */
+//        final boolean setSource(Edge image) {
+//            boolean result;
+//            Node imageSource = image.source();
+//            if (sourceFind != null) {
+//                // test if the intended image has the correct end
+//                result = imageSource == sourceFind;
+//            } else if (isAvailable(imageSource)) {
+//                // put the end image in the result map
+//                Node sourceImage = getSearch().putNode(sourceIx, imageSource);
+//                assert sourceImage == null : String
+//                        .format("Node %s already has image %s when selecting %s (map: %s)",
+//                            source,
+//                            sourceImage,
+//                            imageSource,
+//                            getSearch());
+//                result = true;
+//            } else {
+//                result = false;
+//            }
+//            return result;
+//        }
+//
+//        /**
+//         * Tests or selects the image of a given edge end.
+//         */
+//        final boolean setTarget(Edge image) {
+//            boolean result;
+//            Node imageTarget = image.opposite();
+//            if (targetFind != null) {
+//                // test if the intended image has the correct end
+//                result = imageTarget == targetFind;
+//            } else if (selfEdge) {
+//                // test if the intended image has the same duplication
+//                result = imageTarget == image.source();
+//            } else if (isAvailable(imageTarget)) {
+//                // put the end image in the result map
+//                Node targetImage = getSearch().putNode(targetIx, imageTarget);
+//                assert targetImage == null : String
+//                        .format("Node %s already has image %s when selecting %s (map: %s)",
+//                            target,
+//                            targetImage,
+//                            imageTarget,
+//                            getSearch());
+//                result = true;
+//            } else {
+//                result = false;
+//            }
+//            return result;
+//        }
+//        
+//        /**
+//         * Puts the actual edge image into the result map,
+//         * undo the assumption that the edge is not pre-matched.
+//         */
+//        void setEdge(Edge image) {
+//            Edge current = getSearch().putEdge(edgeIx, image);
+//            assert current == null : String
+//                    .format("Edge %s already has image %s when selecting %s (map: %s)",
+//                        edge,
+//                        current,
+//                        image,
+//                        getSearch());
+//        }
+//        
+//        /**
+//         * Successively calls {@link #resetEnds()} and {@link #resetEdge()}.
+//         */
+//        @Override
+//        final void undo() {
+//            if (!isSingular()) {
+//                resetEnds();
+//                resetLabel();
+//            }
+////            if (!isPreMatched()) {
+//                resetEdge();
+////            }
+//            selected = null;
+//        }
+//        
+//        /** 
+//         * Rolls back the effect of {@link #setLabel(Edge)}. 
+//         * For this implementation, there is nothing to roll back.
+//         */
+//        void resetLabel() {
+//            // empty
+//        }
+//
+//        /**
+//         * Callback method from {@link #undo()} to undo the selection of the edge ends.
+//         * Reverses the effect of {@link #setEnds(Edge)} if that method returned <code>true</code>.
+//         */
+//        final void resetEnds() {
+//            resetSource();
+//            resetTarget();
+//        }
+//
+//        final void resetSource() {
+//            if (sourceFind == null) {
+//                Node endImage = getSearch().putNode(sourceIx, null);
+//                assert selected == null || endImage == selected.source() : String
+//                        .format("Node %s had image %s instead of expected %s (map: %s)",
+//                            source,
+//                            endImage,
+//                            selected.source(),
+//                            getSearch());
+//            }
+//        }
+//
+//        final void resetTarget() {
+//            if (targetFind == null && !selfEdge) {
+//                Node endImage = getSearch().putNode(targetIx, null);
+//                assert selected == null || endImage == selected.opposite() : String
+//                        .format("Node %s had image %s instead of expected %s (map: %s)",
+//                            target,
+//                            endImage,
+//                            selected.opposite(),
+//                            getSearch());
+//            }
+//        }
+//        
+//        /**
+//         * Callback method from {@link #undo()} to undo the selection of the edge itself. Reverses
+//         * the effect of {@link #setEdge(Edge)} if that method returned <code>true</code>.
+//         */
+//        void resetEdge() {
+//            Edge image = getSearch().putEdge(edgeIx, null);
+//            assert image.equals(selected) : String
+//                    .format("Edge %s had image %s instead of expected %s (map: %s)",
+//                        edge,
+//                        image,
+//                        selected,
+//                        getSearch());
+//        }
 
         @Override
         public String toString() {
             return Edge2SearchItem.this.toString()+" = "+selected;
         }
 
+        private final Node sourcePreMatch;
+        private final Node targetPreMatch;
         /**
          * The pre-matched image for the edge source, if any.
          * A value of <code>null</code> means that no image is currently selected
          * for the source, or the source was pre-matched.
          */
-        private Node sourcePreMatch;
+        Node sourceFind;
         /**
          * The pre-matched image for the edge target, if any.
          * A value of <code>null</code> means that no image is currently selected
          * for the target, or the target was pre-matched.
          */
-        private Node targetPreMatch;
-        /**
-         * Flag indicating that all edge ends were pre-matched.
+        Node targetFind;
+//        /** The intended label of the edge image. */
+//        private Label label;
+        /** 
+         * Flag indicating the if sources of images returned by {@link #initImages()} 
+         * have to be checked against the found source image.
          */
-        private boolean allEndsPreMatched;
-        /** The pre-matched image for the edge, if any. */
-        private Edge edgePreMatch;
-        /**
-         * An iterator over the images for the item's edge.
+        private boolean checkSource;
+        /** 
+         * Flag indicating the if targets of images returned by {@link #initImages()} 
+         * have to be checked against the found target image.
          */
-        private Iterator< ? extends Edge> multipleIter;
-        /** Image found by the latest call to {@link #next()}, if any; erased by {@link #undo()}. */ 
+        private boolean checkTarget;
+        /** 
+         * Flag indicating the if labels of images returned by {@link #initImages()} 
+         * have to be checked against the edge label.
+         */
+        private boolean checkLabel;
+        /** Flag indicating if the edge image should actually be set in the search. */
+        private boolean setEdge;
+        /** Image found by the latest call to {@link #find()}, if any. */ 
         Edge selected;
     }
 }

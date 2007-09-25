@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PreMatchSearchItem.java,v 1.2 2007-09-25 11:21:06 iovka Exp $
+ * $Id: PreMatchSearchItem.java,v 1.3 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
@@ -21,9 +21,11 @@ import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.VarSupport;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -79,20 +81,53 @@ public class PreMatchSearchItem extends AbstractSearchItem {
 	public void activate(SearchPlanStrategy strategy) {
 		nodeIxMap = new HashMap<Node,Integer>();
 		for (Node node: nodes) {
+			assert !strategy.isNodeFound(node) : String.format("Node %s is not fresh", node);
 			nodeIxMap.put(node, strategy.getNodeIx(node));
 		}
 		edgeIxMap = new HashMap<Edge,Integer>();
 		for (Edge edge: edges) {
+			assert !strategy.isEdgeFound(edge) : String.format("Edge %s is not fresh", edge);
 			edgeIxMap.put(edge, strategy.getEdgeIx(edge));
 		}
 		varIxMap = new HashMap<String,Integer>();
 		for (String var: vars) {
+			assert !strategy.isVarFound(var) : String.format("Variable %s is not fresh", var);
 			varIxMap.put(var, strategy.getVarIx(var));
 		}
 	}
 
+	@Override
+	public String toString() {
+		List<Object> elementList = new ArrayList<Object>();
+		elementList.addAll(nodes);
+		elementList.addAll(edges);
+		elementList.addAll(vars);
+		return String.format("Check %s", elementList);
+	}
+
 	public Record getRecord(Search search) {
-		return new PreMatchRecord(search);
+		assert allElementsMatched(search) : String.format("Elements %s not pre-matched", unmatched);
+		return new DummyRecord();
+	}
+
+	private boolean allElementsMatched(Search search) {
+		unmatched = new HashSet<Object>();
+		for (Map.Entry<Node,Integer> nodeEntry: nodeIxMap.entrySet()) {
+			if (search.getNode(nodeEntry.getValue()) == null) {
+				unmatched.add(nodeEntry.getKey());
+			}
+		}
+		for (Map.Entry<Edge,Integer> edgeEntry: edgeIxMap.entrySet()) {
+			if (search.getEdge(edgeEntry.getValue()) == null) {
+				unmatched.add(edgeEntry.getKey());
+			}
+		}
+		for (Map.Entry<String,Integer> varEntry: varIxMap.entrySet()) {
+			if (search.getVar(varEntry.getValue()) == null) {
+				unmatched.add(varEntry.getKey());
+			}
+		}
+		return unmatched.isEmpty();
 	}
 
 	/** The set of pre-matched nodes. */
@@ -107,57 +142,6 @@ public class PreMatchSearchItem extends AbstractSearchItem {
 	private Map<Edge,Integer> edgeIxMap;
 	/** Mapping from pre-matched variables (in {@link #vars}) to their indices in the result. */
 	private Map<String,Integer> varIxMap;
-	
-	
-	/**
-	 * @author Arend Rensink
-	 * @version $Revision $
-	 */
-	public class PreMatchRecord implements Record {
-		/** Constructs an instance for a given search. */
-		public PreMatchRecord(Search search) {
-			assert allElementsMatched(search) : String.format("Elements %s not pre-matched", unmatched);
-		}
-
-		public boolean find() {
-			found = !found;
-			return found;
-		}
-
-		private boolean allElementsMatched(Search search) {
-			unmatched = new HashSet<Object>();
-			for (Map.Entry<Node,Integer> nodeEntry: nodeIxMap.entrySet()) {
-				if (search.getNode(nodeEntry.getValue()) == null) {
-					unmatched.add(nodeEntry.getKey());
-				}
-			}
-			for (Map.Entry<Edge,Integer> edgeEntry: edgeIxMap.entrySet()) {
-				if (search.getEdge(edgeEntry.getValue()) == null) {
-					unmatched.add(edgeEntry.getKey());
-				}
-			}
-			for (Map.Entry<String,Integer> varEntry: varIxMap.entrySet()) {
-				if (search.getVar(varEntry.getValue()) == null) {
-					unmatched.add(varEntry.getKey());
-				}
-			}
-			return unmatched.isEmpty();
-		}
-		
-		public boolean isSingular() {
-			return true;
-		}
-
-		public void reset() {
-			found = false;
-		}
-		
-		/** 
-		 * Indicates if {@link #find()} has returned <code>true</code>
-		 * on the last invocation (so the next invocation should return <code>false</code>).
-		 */
-		private boolean found;
-		/** The set of unmatched graph elements (that should have been pre-matched) . */
-		private Set<Object> unmatched;
-	}
+	/** The set of unmatched graph elements (that should have been pre-matched) . */
+	private Set<Object> unmatched;
 }

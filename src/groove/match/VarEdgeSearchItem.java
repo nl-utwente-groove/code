@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.6 2007-09-22 09:10:35 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.7 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
@@ -25,31 +25,26 @@ import groove.rel.RegExprLabel;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A search item that searches an image for an edge.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class VarEdgeSearchItem extends EdgeSearchItem {
+public class VarEdgeSearchItem extends Edge2SearchItem {
 
 	/** 
 	 * Constructs a new search item.
 	 * The item will match any edge between the end images, and record
 	 * the edge label as value of the wildcard variable.
 	 */
-	public VarEdgeSearchItem(Edge edge) {
+	public VarEdgeSearchItem(BinaryEdge edge) {
 		super(edge);
 		this.var = RegExprLabel.getWildcardId(edge.label());
         this.boundVars = Collections.singleton(var);
 		assert this.var != null : String.format("Edge %s is not a variable edge", edge);
 		assert edge.endCount() <= BinaryEdge.END_COUNT : String.format("Search item undefined for hyperedge", edge);
-	}
-	
-	@Override
-	public EdgeRecord getRecord(Search search) {
-		return new VarEdgeRecord(search);
 	}
 	
 	/**
@@ -64,103 +59,112 @@ public class VarEdgeSearchItem extends EdgeSearchItem {
     @Override
     public void activate(SearchPlanStrategy strategy) {
         super.activate(strategy);
+        varFound = strategy.isVarFound(var);
         varIx = strategy.getVarIx(var);
     }
 
-    /** The variable bound in the wildcard (not <code>null</code>). */
+	@Override
+	boolean isSingular(Search search) {
+		return super.isSingular(search) && (varFound || search.getVarPreMatch(varIx) != null);
+	}
+
+	@Override
+	SingularRecord createSingularRecord(Search search) {
+		return new VarEdgeSingularRecord(search);
+	}
+
+    @Override
+	MultipleRecord createMultipleRecord(Search search) {
+		return new VarEdgeMultipleRecord(search);
+	}
+
+	/** The variable bound in the wildcard (not <code>null</code>). */
 	private final String var;
     /** Singleton set consisting of <code>var</code>. */
     private final Collection<String> boundVars;
     /** The index of {@link #var} in the result. */
-    private int varIx;
+    int varIx;
+    /** Flag indicating that {@link #var} is matched before this item is invoked. */
+    boolean varFound;
+    
+    class VarEdgeSingularRecord extends Edge2SingularRecord {
+    	/** 
+    	 * Constructs a record from a given search, and 
+    	 * (possibly <code>null</code>) pre-matched end node and variable images.
+    	 */
+		VarEdgeSingularRecord(Search search) {
+			super(search);
+			this.varPreMatch = search.getVarPreMatch(varIx);
+		}
+
+		/** This implementation returns the variable image from the match. */
+		@Override
+		Label getLabel() {
+			Label result = varPreMatch;
+			if (result == null) {
+				result = getSearch().getVar(varIx);
+			}
+			return result;
+		}
+		
+		private final Label varPreMatch;
+    }
     
     /** Record for this type of search item. */
-    protected class VarEdgeRecord extends EdgeRecord {
+    class VarEdgeMultipleRecord extends Edge2MultipleRecord {
         /** Constructs a new record, for a given matcher. */
-        protected VarEdgeRecord(Search search) {
+        VarEdgeMultipleRecord(Search search) {
             super(search);
+            varPreMatch = search.getVarPreMatch(varIx);
         }
 
         @Override
         void init() {
             super.init();
-            varPreMatch = getSearch().getVar(varIx);
-        }
-
-        /** 
-         * In addition checks if the label of the pre-matched edge is consistent with 
-         * the variable. 
-         */
-        @Override
-        Edge nextPreMatched() {
-            Edge result = super.nextPreMatched();
-            if (result != null && !setLabel(result)) {
-                resetEnds();
-                result = null;
+            varFind = varPreMatch;
+            if (varFind == null && varFound) {
+            	varFind = getSearch().getVar(varIx);
             }
-            return result;
-        }
-
-        /**
-         * In addition to the super method returning <code>true</code>, the variable
-         * should be pre-matched.
-         */
-        @Override
-        boolean isPreDetermined() {
-            return super.isPreDetermined() && varPreMatch != null;
-        }
-
-        /** This implementation returns the pre-matched label. */
-        @Override
-        Label getPreMatchedLabel() {
-            return varPreMatch;
         }
 
         @Override
-        Iterator< ? extends Edge> computeMultiple() {
-            if (varPreMatch != null) {
-                return filterImages(getTarget().labelEdgeSet(arity, varPreMatch), false);
-            }
-            // take the incident edges of the pre-matched source or target, if any
-            // otherwise, the set of all edges
-            Node imageEnd = getPreMatchedSource();
-            if (imageEnd == null) {
-                imageEnd = getPreMatchedTarget();
-            }
-            Collection< ? extends Edge> edgeSet = imageEnd == null ? getTarget().edgeSet() : getTarget().edgeSet(imageEnd);
-            return filterImages(edgeSet, true);
-        }
-
-        /** Selects the variable image. */
-        @Override
-        final boolean setLabel(Edge image) {
-            boolean result;
-            if (varPreMatch == null) {
-                Label current = getSearch().putVar(varIx, image.label());
-                assert current == null;
-                result = true;
+        void initImages() {
+            Set<? extends Edge> edgeSet;
+            if (varFind != null) {
+            	edgeSet = getTarget().labelEdgeSet(arity, varFind);
             } else {
-                result = image.label() == varPreMatch;
-                assert getSearch().getVar(varIx) == varPreMatch;
+            	// take the incident edges of the pre-matched source or target, if any
+            	// otherwise, the set of all edges
+            	Node imageEnd = sourceFind == null ? targetFind : sourceFind;
+            	edgeSet = imageEnd == null ? getTarget().edgeSet() : getTarget().edgeSet(imageEnd);
             }
-            return result;
+            initImages(edgeSet, true, true, false, true);
         }
 
-        /**
-         * Callback method from {@link #undo()} to roll back the variable selection.
-         * Reverses the effect of the last {@link #setLabel(Edge)} invocation.
-         */
         @Override
-        void resetLabel() {
-            if (varPreMatch == null) {
-                Label oldImage = getSearch().putVar(varIx, null);
-                assert selected == null || oldImage == selected.label();
-            }
-        }
+		boolean setImage(Edge image) {
+			boolean result = super.setImage(image);
+			if (result && varFind == null) {
+				getSearch().putVar(varIx, image.label());
+			}
+			return result;
+		}
 
-        /** 
+        @Override
+		public void reset() {
+			super.reset();
+			if (varFind == null) {
+				getSearch().putVar(varIx, null);
+			}
+		}
+
+		/**
          * The pre-matched variable image, if any.
          */
-        private Label varPreMatch;
+        private final Label varPreMatch;
+        /** 
+         * The found variable image, if any.
+         */
+        private Label varFind;
     }
 }
