@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphShape.java,v 1.11 2007-09-22 09:10:40 rensink Exp $
+ * $Id: AbstractGraphShape.java,v 1.12 2007-09-25 22:57:53 rensink Exp $
  */
 
 package groove.graph;
@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Partial implementation of a graph. Records a set of <tt>GraphListener</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public abstract class AbstractGraphShape<C extends GraphShapeCache> extends AbstractCacheHolder<C> implements GraphShape {
     /**
@@ -151,7 +151,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     /**
      * Returns a mapping from nodes to sets of edges of this graph.
      */
-    public Map<Node, Set<Edge>> nodeEdgeMap() {
+    protected Map<Node, Set<Edge>> nodeEdgeMap() {
         return Collections.unmodifiableMap(getCache().getNodeEdgeMap());
     }
 
@@ -163,9 +163,15 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
             return Collections.emptySet();
         }
     }
-
-    public Map<Label, ? extends Set<Edge>> labelEdgeMap(int i) {
-        return Collections.unmodifiableMap(getLabelEdgeMaps().get(i));
+    
+    /**
+     * Returns a map from the labels in this graph of a given arity to non-empty sets
+     * (actually, <tt>Collection</tt>s guaranteed to contain distinct
+     * elements) of all edges with that label and arity in this graph.
+     * @param arity the number of endpoints of the required edges
+     */
+    protected Map<Label, ? extends Set<Edge>> labelEdgeMap(int arity) {
+        return Collections.unmodifiableMap(getLabelEdgeMaps().get(arity));
     }
 
     /**

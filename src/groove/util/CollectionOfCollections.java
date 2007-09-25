@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CollectionOfCollections.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: CollectionOfCollections.java,v 1.3 2007-09-25 22:57:51 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Iterator;
  * which is expensive!
  * Equality is deferred to <tt>Object</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class CollectionOfCollections<T> extends AbstractCollection<T> {
     /**
@@ -47,24 +47,29 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
 
             public T next() {
                 forwardCollectionIter();
-                return elemIter.next();
+                T latest = elemIter.next();
+                return latest;
             }
 
             public void remove() {
                 elemIter.remove();
+                updateRemove(latest);
             }
 
             private boolean forwardCollectionIter() {
-                while (elemIter == null || !elemIter.hasNext())
-                    if (collectionIter.hasNext())
+                while (elemIter == null || !elemIter.hasNext()) {
+                    if (collectionIter.hasNext()) {
                         elemIter = collectionIter.next().iterator();
-                    else
+                    } else {
                         return false;
+                    }
+                }
                 return true;
             }
 
             private Iterator<? extends Collection<? extends T>> collectionIter = collections.iterator();
             private Iterator<? extends T> elemIter;
+            private T latest;
         };
         return res;
    }
@@ -78,22 +83,13 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
         return size;
     }
 
-    /**
-     * Adding elements to this type of collection is not possible.
-     * @throws UnsupportedOperationException
+    /** 
+     * Callback method that signals the removal of an element
+     * by an inner iterator.
+     * This implementation does nothing.
      */
-    @Override
-    public boolean add(T elem) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Removing elements from this type of collection is not possible.
-     * @throws UnsupportedOperationException
-     */
-    @Override
-    public boolean remove(Object elem) {
-        throw new UnsupportedOperationException();
+    protected void updateRemove(T elem) {
+    	// empty
     }
 
     /**

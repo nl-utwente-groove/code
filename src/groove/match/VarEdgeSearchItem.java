@@ -12,14 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.7 2007-09-25 15:12:34 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.8 2007-09-25 22:57:52 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
-import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.RegExprLabel;
 
@@ -135,8 +134,13 @@ public class VarEdgeSearchItem extends Edge2SearchItem {
             } else {
             	// take the incident edges of the pre-matched source or target, if any
             	// otherwise, the set of all edges
-            	Node imageEnd = sourceFind == null ? targetFind : sourceFind;
-            	edgeSet = imageEnd == null ? getTarget().edgeSet() : getTarget().edgeSet(imageEnd);
+                if (sourceFind != null) {
+                    edgeSet = getTarget().outEdgeSet(sourceFind);
+                } else if (targetFind != null) {
+                    edgeSet = getTarget().edgeSet(targetFind, Edge.TARGET_INDEX);
+                } else {
+                    edgeSet = getTarget().edgeSet();
+                }
             }
             initImages(edgeSet, true, true, false, true);
         }

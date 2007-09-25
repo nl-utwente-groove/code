@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WildcardEdgeSearchItem.java,v 1.5 2007-09-25 15:12:34 rensink Exp $
+ * $Id: WildcardEdgeSearchItem.java,v 1.6 2007-09-25 22:57:52 rensink Exp $
  */
 package groove.match;
 
@@ -63,9 +63,9 @@ public class WildcardEdgeSearchItem extends Edge2SearchItem {
         void initImages() {
         	Set<? extends Edge> edgeSet;
             if (sourceFind != null) {
-                edgeSet = getTarget().edgeSet(sourceFind);
+                edgeSet = getTarget().outEdgeSet(sourceFind);
             } else if (targetFind != null) {
-                edgeSet = getTarget().edgeSet(targetFind);
+                edgeSet = getTarget().edgeSet(targetFind, Edge.TARGET_INDEX);
             } else {
                 edgeSet = getTarget().edgeSet();
             }

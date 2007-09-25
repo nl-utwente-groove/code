@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJTree.java,v 1.22 2007-09-04 20:59:32 rensink Exp $
+ * $Id: RuleJTree.java,v 1.23 2007-09-25 22:57:49 rensink Exp $
  */
 package groove.gui;
 
@@ -40,11 +40,11 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -284,7 +284,7 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Refreshes the match nodes, based on a given derivation edge set.
      * @param derivations the set of derivation edges used to create match nodes
      */
-    private void refreshMatches(Collection<GraphTransition> derivations) {
+    private void refreshMatches(Set<? extends GraphTransition> derivations) {
         // remove current matches
     	for (MatchTreeNode matchNode: matchNodeMap.values()) {
             ruleDirectory.removeNodeFromParent(matchNode);

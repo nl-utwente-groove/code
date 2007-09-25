@@ -12,18 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphShape.java,v 1.8 2007-09-04 20:59:27 rensink Exp $
+ * $Id: GraphShape.java,v 1.9 2007-09-25 22:57:53 rensink Exp $
  */
 package groove.graph;
 
 import java.util.Collection;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * Model of a graph shape, consisting of nodes and labelled edges between them..
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-09-04 20:59:27 $
+ * @version $Revision: 1.9 $ $Date: 2007-09-25 22:57:53 $
  */
 public interface GraphShape extends java.io.Serializable {
     /**
@@ -94,7 +93,7 @@ public interface GraphShape extends java.io.Serializable {
      * @require node != null
      * @ensure result == { edge \in E | edge.source().equals(node) }
      */
-    Collection<? extends Edge> outEdgeSet(Node node);
+    Set<? extends Edge> outEdgeSet(Node node);
 
     /**
      * Returns the set of all edges in this graph with a given label and arity.
@@ -106,21 +105,20 @@ public interface GraphShape extends java.io.Serializable {
      * @param arity the number of endpoints of the required edges
      * @require <tt>label != null</tt> and <tt>1 <= arity <= AbstractEdge.getMaxEndCount()</tt>
      * @ensure <tt>result == labelEdgeMap(arity).get(Label).get(arity)</tt>
-     * @see #labelEdgeMap(int)
      */
     Set<? extends Edge> labelEdgeSet(int arity, Label label);
-
-    /**
-     * Returns a map from the labels in this graph of a given arity to non-empty sets
-     * (actually, <tt>Collection</tt>s guaranteed to contain distinct
-     * elements) of all edges with that label and arity in this graph.
-     * @param arity the number of endpoints of the required edges
-     * @return <tt>result: Label -> Collection^*</tt> such that
-     * <tt>result.get(label).get(arity).contains(edge)</tt> iff 
-     * <tt>contains(edge) && edge.label().equals(label) && edge.partsCount() == arity</tt> 
-     * @require <tt>1 <= arity <= AbstractEdge.getMaxEndCount()</tt>
-     */
-    Map<Label, ? extends Set<? extends Edge>> labelEdgeMap(int arity);
+//
+//    /**
+//     * Returns a map from the labels in this graph of a given arity to non-empty sets
+//     * (actually, <tt>Collection</tt>s guaranteed to contain distinct
+//     * elements) of all edges with that label and arity in this graph.
+//     * @param arity the number of endpoints of the required edges
+//     * @return <tt>result: Label -> Collection^*</tt> such that
+//     * <tt>result.get(label).get(arity).contains(edge)</tt> iff 
+//     * <tt>contains(edge) && edge.label().equals(label) && edge.partsCount() == arity</tt> 
+//     * @require <tt>1 <= arity <= AbstractEdge.getMaxEndCount()</tt>
+//     */
+//    Map<Label, ? extends Set<? extends Edge>> labelEdgeMap(int arity);
     
     /**
      * Returns the total number of elements (nodes plus edges) in this graph.

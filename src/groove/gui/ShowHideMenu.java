@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ShowHideMenu.java,v 1.10 2007-08-26 07:24:02 rensink Exp $
+ * $Id: ShowHideMenu.java,v 1.11 2007-09-25 22:57:49 rensink Exp $
  */
 package groove.gui;
 
@@ -31,6 +31,7 @@ import groove.rel.RegExpr;
 import groove.rel.RelationCalculator;
 import groove.rel.SupportedNodeRelation;
 import groove.rel.SupportedSetNodeRelation;
+import groove.util.KeyPartition;
 import groove.view.FormatException;
 
 import java.awt.event.ActionEvent;
@@ -54,7 +55,7 @@ import org.jgraph.graph.DefaultPort;
 /**
  * Menu to control the visibility of nodes and edges in a jgraph.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class ShowHideMenu extends JMenu {
     /**
@@ -526,16 +527,20 @@ public class ShowHideMenu extends JMenu {
                     // since the labels may not be default labels
                     // (as in the case of LTS graphs)
                     // we have to convert the label map so that it maps label text instead
-                    Map<Label,? extends Set<? extends Edge>> labelEdgeMap = getGraph().labelEdgeMap(2);
-                    textEdgeMap = new HashMap<String,Set<Edge>>();
-                    for (Map.Entry<Label,? extends Set<? extends Edge>> labelEdgeEntry: labelEdgeMap.entrySet()) {
-                        String labelText = labelEdgeEntry.getKey().text();
-                        Set<Edge> textLabelSet = getTextEdgeSet(labelText);
-                        textLabelSet.addAll(labelEdgeEntry.getValue());
-                    }
+                    textEdgeMap = new KeyPartition<String,Edge>() {
+						@Override
+						protected String getKey(Object value) {
+							if (value instanceof Edge) {
+								return ((Edge) value).label().text();
+							} else {
+								return null;
+							}
+						}
+                    };
+                    textEdgeMap.values().addAll(getGraph().edgeSet());
                     getGraph().addGraphListener(listener);
                 }
-                return textEdgeMap.get(label);
+                return textEdgeMap.getCell(label);
             }
             
             /**
@@ -544,26 +549,31 @@ public class ShowHideMenu extends JMenu {
             protected void unregister() {
                 getGraph().removeGraphListener(listener);
             }
-            
-            /**
-             * Returns the set associated with a given string from the {@link #textEdgeMap}.
-             * Creates the set if necessary; the return value is never <code>null</code>.
-             */
-            private Set<Edge> getTextEdgeSet(String text) {
-                Set<Edge> result = textEdgeMap.get(text);
-                if (result == null) {
-                    textEdgeMap.put(text, result = new HashSet<Edge>());
-                }
-                return result;
-            }
-            
+//            
+//            /**
+//             * Returns the set associated with a given string from the {@link #textEdgeMap}.
+//             * Creates the set if necessary; the return value is never <code>null</code>.
+//             */
+//            private Set<Edge> getTextEdgeSet(String text) {
+//                Set<Edge> result = textEdgeMap.get(text);
+//                if (result == null) {
+//                    textEdgeMap.put(text, result = new HashSet<Edge>());
+//                }
+//                return result;
+//            }
+//            
             /** Mapping from label text to edges. */
-            private Map<String,Set<Edge>> textEdgeMap;
+            private KeyPartition<String,Edge> textEdgeMap;
             /** Graph listener to keep the {@link #textEdgeMap} up-to-date. */
             private GraphListener listener = new GraphAdapter() {
                 @Override
                 public void addUpdate(GraphShape graph, Edge edge) {
-                	getTextEdgeSet(edge.label().text()).add(edge);
+                	textEdgeMap.add(edge);
+                }
+                
+                @Override
+                public void removeUpdate(GraphShape graph, Edge edge) {
+                	textEdgeMap.remove(edge);
                 }
             };
         }
@@ -630,7 +640,7 @@ public class ShowHideMenu extends JMenu {
      * Show/hide action based on the currently emphasized cells. The action adds the selection to
      * the shown or hidden cells
      * @author Arend Rensink
-     * @version $Revision: 1.10 $
+     * @version $Revision: 1.11 $
      */
     static protected class EmphasizedAction extends ShowHideAction {
     	/** 

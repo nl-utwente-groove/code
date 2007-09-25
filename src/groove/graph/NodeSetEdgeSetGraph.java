@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSetEdgeSetGraph.java,v 1.6 2007-08-26 07:23:39 rensink Exp $
+ * $Id: NodeSetEdgeSetGraph.java,v 1.7 2007-09-25 22:57:53 rensink Exp $
  */
 package groove.graph;
 
@@ -25,13 +25,13 @@ import java.util.Set;
 /**
  * Graph implementation based on distinct sets of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class NodeSetEdgeSetGraph
     extends AbstractGraph<GraphCache>
     implements InternalGraph {
     /**
-     * Constructs a protytpe object of this class, to be used as a factory
+     * Constructs a prototype object of this class, to be used as a factory
      * for new (default) graphs.
      * @return a prototype <tt>GeneralGraph</tt> instance, only intended to
      * be used for its <tt>newGraph()</tt> method.

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.2 2007-09-25 15:12:34 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.3 2007-09-25 22:57:52 rensink Exp $
  */
 package groove.match;
 
@@ -348,7 +348,6 @@ public class Edge2SearchItem extends AbstractSearchItem {
             // it does not pay off here to take only the incident edges of pre-matched ends,
             // no doubt because building the necessary additional data structures takes more
             // time than is saved by trying out fewer images
-//            return filterImages(getTarget().labelEdgeSet(arity, label), false);
         	Set<? extends Edge> labelEdgeSet = getTarget().labelEdgeSet(arity, label);
         	if (sourceFind != null) {
         		Set<? extends Edge> nodeEdgeSet = getTarget().edgeSet(sourceFind);

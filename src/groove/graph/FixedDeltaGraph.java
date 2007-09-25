@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FixedDeltaGraph.java,v 1.12 2007-09-17 06:55:56 rensink Exp $
+ * $Id: FixedDeltaGraph.java,v 1.13 2007-09-25 22:57:53 rensink Exp $
  */
 package groove.graph;
 
@@ -35,7 +35,9 @@ import java.util.Set;
  * delta to another graph (where the delta is the result of a rule application). 
  * @author Arend Rensink
  * @version $Revision $
+ * @deprecated use {@link NewDeltaGraph} instead
  */
+@Deprecated
 public class FixedDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGraphFactory<FixedDeltaGraph> {
 	/** 
 	 * Constructs a graph with a given basis and delta

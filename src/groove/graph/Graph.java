@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Graph.java,v 1.9 2007-08-29 14:00:37 rensink Exp $
+ * $Id: Graph.java,v 1.10 2007-09-25 22:57:53 rensink Exp $
  */
 package groove.graph;
 
@@ -20,9 +20,6 @@ import groove.graph.iso.CertificateStrategy;
 import groove.view.FormatException;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Provides a model of a graph whose nodes and edges are unstructured,
@@ -30,29 +27,29 @@ import java.util.Set;
  * source and target nodes and edge label.
  * The interface extends <tt>GraphShape</tt> with factory methods for
  * nodes and edges and methods for generating morphisms.
- * @version $Revision: 1.9 $ $Date: 2007-08-29 14:00:37 $
+ * @version $Revision: 1.10 $ $Date: 2007-09-25 22:57:53 $
  */
 public interface Graph extends GraphShape, DeltaTarget {
-    /**
-     * Returns the set of all matches (i.e., colourings) from this graph to another.
-     * @param to the graph to which this one is to be matched
-     * @return the set of all total morphisms from this graph to <tt>to</tt>
-     * @require <tt>to != null</tt>
-     * @ensure <tt>result = { (m: this --> to) \in Morphism | m.isTotal() }</tt>
-     */
-    @Deprecated
-    Collection<? extends Morphism> getMatchesTo(Graph to);
-
-    /**
-     * Returns an iterator over the matches (i.e., colourings) from this graph to another.
-     * The matches may be computed in a lazy fashion.
-     * @param to the graph to which this one is to be matched
-     * @return the set of all total morphisms from this graph to <tt>to</tt>
-     * @require <tt>to != null</tt>
-     * @ensure <tt>result = { (m: this --> to) \in Morphism | m.isTotal() }</tt>
-     */
-    @Deprecated
-    Iterator<? extends Morphism> getMatchesToIter(Graph to);
+//    /**
+//     * Returns the set of all matches (i.e., colourings) from this graph to another.
+//     * @param to the graph to which this one is to be matched
+//     * @return the set of all total morphisms from this graph to <tt>to</tt>
+//     * @require <tt>to != null</tt>
+//     * @ensure <tt>result = { (m: this --> to) \in Morphism | m.isTotal() }</tt>
+//     */
+//    @Deprecated
+//    Collection<? extends Morphism> getMatchesTo(Graph to);
+//
+//    /**
+//     * Returns an iterator over the matches (i.e., colourings) from this graph to another.
+//     * The matches may be computed in a lazy fashion.
+//     * @param to the graph to which this one is to be matched
+//     * @return the set of all total morphisms from this graph to <tt>to</tt>
+//     * @require <tt>to != null</tt>
+//     * @ensure <tt>result = { (m: this --> to) \in Morphism | m.isTotal() }</tt>
+//     */
+//    @Deprecated
+//    Iterator<? extends Morphism> getMatchesToIter(Graph to);
 
     /**
      * Returns an isomorphism from this graph to another, if one exists.
@@ -65,28 +62,27 @@ public interface Graph extends GraphShape, DeltaTarget {
     /**
      * Returns the certificate strategy object used for this graph.
      * The certificate strategy is used to decide isomorphism between graphs.
-     * @see #getCertificate()
      */
     public CertificateStrategy getCertifier();
-
-    /**
-     * Returns an isomorphism certificate for this graph, i.e., an object
-     * optimistically predicting whether or not this graph could be isomorphic
-     * to another. Two graphs are potentially isomorphic if their graph certificates
-     * coincide according to {@link Object#equals(java.lang.Object)}). 
-     * Yields the same result as <code>getCertificateStrategy().getCertificate()</code>.
-     * @return an isomorphism certificate for this graph
-     * @see #getCertifier()
-     * @deprecated use {@link #getCertifier()} and {@link CertificateStrategy#getGraphCertificate()}
-     */
-    @Deprecated
-    Object getCertificate();
-    
-    /**
-     * Returns an unmodifiable view on the map from the nodes of this graph
-     * to the set of its incident edges.
-     */
-    Map<Node, ? extends Set<? extends Edge>> nodeEdgeMap();
+//
+//    /**
+//     * Returns an isomorphism certificate for this graph, i.e., an object
+//     * optimistically predicting whether or not this graph could be isomorphic
+//     * to another. Two graphs are potentially isomorphic if their graph certificates
+//     * coincide according to {@link Object#equals(java.lang.Object)}). 
+//     * Yields the same result as <code>getCertificateStrategy().getCertificate()</code>.
+//     * @return an isomorphism certificate for this graph
+//     * @see #getCertifier()
+//     * @deprecated use {@link #getCertifier()} and {@link CertificateStrategy#getGraphCertificate()}
+//     */
+//    @Deprecated
+//    Object getCertificate();
+//    
+//    /**
+//     * Returns an unmodifiable view on the map from the nodes of this graph
+//     * to the set of its incident edges.
+//     */
+//    Map<Node, ? extends Set<? extends Edge>> nodeEdgeMap();
     
     // --------------------------------- Object overrides ----------------------------
     

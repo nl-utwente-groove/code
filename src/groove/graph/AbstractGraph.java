@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.20 2007-09-22 09:10:43 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.21 2007-09-25 22:57:53 rensink Exp $
  */
 package groove.graph;
 
@@ -35,7 +35,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     /**
@@ -122,22 +122,22 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     static protected CertificateStrategy getCertificateFactory() {
         return certificateFactory;
     }
-
-    @Deprecated
-    public Collection<? extends Morphism> getMatchesTo(Graph to) {
-        reporter.start(GET_MATCHES_TO);
-        Collection<? extends Morphism> res = createMorphism(this, to).getTotalExtensions();
-        reporter.stop();
-        return res;
-    }
-
-    @Deprecated
-    public Iterator<? extends Morphism> getMatchesToIter(Graph to) {
-        reporter.start(GET_MATCHES_TO);
-        Iterator<? extends Morphism> res = createMorphism(this, to).getTotalExtensionsIter();
-        reporter.stop();
-        return res;
-    }
+//
+//    @Deprecated
+//    public Collection<? extends Morphism> getMatchesTo(Graph to) {
+//        reporter.start(GET_MATCHES_TO);
+//        Collection<? extends Morphism> res = createMorphism(this, to).getTotalExtensions();
+//        reporter.stop();
+//        return res;
+//    }
+//
+//    @Deprecated
+//    public Iterator<? extends Morphism> getMatchesToIter(Graph to) {
+//        reporter.start(GET_MATCHES_TO);
+//        Iterator<? extends Morphism> res = createMorphism(this, to).getTotalExtensionsIter();
+//        reporter.stop();
+//        return res;
+//    }
 
     /**
      * This implementation checks if the other is also an <tt>AbstractGraph</tt>; if so, it first
@@ -167,16 +167,16 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         reporter.stop();
         return result;
     }
-
-    /** 
-     * This implementation delegates the method to the {@link CertificateStrategy}.
-     * @see #getCertifier()
-     * @see CertificateStrategy#getGraphCertificate()
-     */
-    @Deprecated
-    public Object getCertificate() {
-        return getCertifier().getGraphCertificate();
-    }
+//
+//    /** 
+//     * This implementation delegates the method to the {@link CertificateStrategy}.
+//     * @see #getCertifier()
+//     * @see CertificateStrategy#getGraphCertificate()
+//     */
+//    @Deprecated
+//    public Object getCertificate() {
+//        return getCertifier().getGraphCertificate();
+//    }
 
     /**
      * Factory method for nodes of this graph.
@@ -406,11 +406,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         return endCount == 2;
     }
     
-    /**
-     * Returns a certificate strategy for the current state of this graph.
-     * This implementation retrieves the strategy from the graph cache.
-     * @see #getCertificate()
-     */
     public CertificateStrategy getCertifier() {
         return getCache().getCertificateStrategy();
     }
@@ -520,8 +515,6 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     
     // -------------------- REPORTER DEFINITIONS ------------------------
 
-    /** Handle for profiling the {@link #getMatchesTo(Graph)} method */
-    static final int GET_MATCHES_TO = reporter.newMethod("getMatchesTo(Graph)");
     /** Handle for profiling the {@link #getIsomorphismTo(Graph)} method */
     static final int GET_ISOMORPHISM_TO = reporter.newMethod("getIsomorphismTo(Graph)");
     /** Handle for profiling the {@link #clone()} method */

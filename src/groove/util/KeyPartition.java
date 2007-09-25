@@ -12,29 +12,35 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: KeyPartition.java,v 1.2 2007-09-22 09:10:33 rensink Exp $
+ * $Id: KeyPartition.java,v 1.3 2007-09-25 22:57:51 rensink Exp $
  */
 package groove.util;
 
-import java.util.AbstractSet;
+import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.Map.Entry;
 
 /**
+ * Storage structure combining a map from keys to sets of values,
+ * and the set of all values partitioned by the map.
  * @author Arend Rensink
  * @version $Revision $
  */
-abstract public class KeyPartition<T,U,S extends Set<U>> extends AbstractSet<U> {
+abstract public class KeyPartition<T,U> {
     /** 
      * Creates an empty partition object.
-     * A further parameter determines if the partition may
-     * have empty cells. 
+     * A parameter determines if the partition may
+     * have empty cells.
+     * @param emptyCells if <code>true</code>, the partition may have
+     * empty cells. 
      */
     public KeyPartition(boolean emptyCells) {
-        this.partitionMap = createPartitionMap();
         this.emptyCells = emptyCells;
+        this.partitionMap = new HashMap<T,Set<U>>();
+        this.valueSet = new ValueSetView();
     }
 
     /** 
@@ -44,28 +50,101 @@ abstract public class KeyPartition<T,U,S extends Set<U>> extends AbstractSet<U> 
         this(false);
     }
 
-	@Override
-	public Iterator<U> iterator() {
-		return new NestedIterator<U>(new TransformIterator<Set<U>, Iterator<U>>(partitionMap.values()){
-			@Override
-			protected Iterator<U> toOuter(Set<U> from) {
-				return from.iterator();
-			}
-		});
+    /** 
+     * Returns an unmodifiable view on the entries of
+     * the partition map.
+     */
+	public Set<Entry<T, Set<U>>> entrySet() {
+		return Collections.unmodifiableSet(partitionMap.entrySet());
 	}
 
-	@Override
+	/**
+	 * Returns an unmodifiable view on the keys of the partition map.
+	 */
+	public Set<T> keySet() {
+		return Collections.unmodifiableSet(partitionMap.keySet());
+	}
+
+	/** Returns the number of cells in the partition map. */
+	public int cellCount() {
+		return partitionMap.size();
+	}
+	
+	/** Tests if a given key value occurs as key in the partition map. */
+	public boolean containsKey(T key) {
+		return partitionMap.containsKey(key);
+	}
+	
+	/** 
+	 * Removes a key (and corresponding cell) from the partition. 
+	 * The return value indicates if the key was actually present.
+	 * @param key the key to remove
+	 * @return if <code>true</code>, there was a (possibly empty) cell for the key
+	 */
+	public Set<U> removeCell(T key) {
+		Set<U> result = partitionMap.remove(key);
+		if (result != null) {
+			size -= result.size();
+		}
+		return result;
+	}
+
+	/**
+	 * Adds a key (with empty cell) to the partition.
+	 * This is only successful if empty cells are allowed, and the
+	 * key is not yet in the partition.
+	 * @param key the key to be added
+	 * @return if <code>true</code>, the key and cell were added
+	 */
+	public boolean addCell(T key) {
+		boolean result = emptyCells && !containsKey(key);
+		if (result) {
+			partitionMap.put(key, createCell());
+		}
+		return result;
+	}
+
+	/** 
+	 * Returns an unmodifiable view on the cell
+	 * associated with a given key, if any. 
+	 */
+	public Set<U> getCell(T key) {
+		Set<U> result = partitionMap.get(key);
+		return result == null ? null : Collections.unmodifiableSet(result);
+	}
+	
+	/** Returns a view on the combined map values that behaves as the union of the cells. */
+    public Set<U> values() {
+    	return valueSet;
+    }
+
+    /** Returns the total number of values in the partition. */
 	public int size() {
 		return size;
 	}
 
-	@Override
+	/** Clears the partition. */
+	public void clear() {
+		partitionMap.clear();
+		size = 0;
+	}
+
+	/** Tests if a given value is among the values of the partition. */
+	public boolean contains(U value) {
+		Set<U> cell = partitionMap.get(getKey(value));
+		return cell != null && cell.contains(value);
+	}
+
+	/** 
+	 * Adds a given value to the partition.
+	 * If the value is the last of the corresponding key,
+	 * and empty cells are not allowed, then the key is also removed.
+	 */
 	public boolean add(U value) {
 		T key = getKey(value);
-		S cell = getCell(key);
+		Set<U> cell = partitionMap.get(key);
 		if (cell == null) {
-			cell = createCell();
-			partitionMap.put(key, cell);
+			partitionMap.put(key, cell = createCell());
 		}
 		boolean result = cell.add(value);
 		if (result) {
@@ -74,27 +153,15 @@ abstract public class KeyPartition<T,U,S extends Set<U>> extends AbstractSet<U> 
 		return result;
 	}
 
-	@Override
-	public void clear() {
-		partitionMap.clear();
-		size = 0;
-	}
-
-	@Override
-	public boolean contains(Object value) {
-		Set<U> cell = getCell(getKey((U) value));
-		return cell != null && cell.contains(value);
-	}
-
 	/** 
+	 * Removes a given value from the value set.
 	 * If the value is the last of the corresponding key,
 	 * and empty cells are not allowed, then the key is also removed.
 	 */
-	@Override
 	public boolean remove(Object value) {
-		T key = getKey((U) value);
-		Set<U> cell = getCell(key);
-		boolean result = cell != null &&  cell.remove(value);
+		T key = getKey(value);
+		Set<U> cell = partitionMap.get(key);
+		boolean result = cell != null && cell.remove(value);
 		if (result) {
 			size--;
 			if (cell.isEmpty() && !emptyCells) {
@@ -104,72 +171,52 @@ abstract public class KeyPartition<T,U,S extends Set<U>> extends AbstractSet<U> 
 		return result;
 	}
 
-	/** 
-	 * Returns the partition cell for a given key.
-	 * Directly modifying the cell will lead to inconsistencies. 
-	 */
-	public S getCell(T key) {
-		return partitionMap.get(key);
-	}
-	
-	/** 
-	 * Returns the mapping from keys to partition calls.
-	 * Directly modifying this map may result in inconsistencies.
-	 */
-	public Map<T,S> getPartitionMap() {
-		return partitionMap;
-	}
-	
-	/**
-	 * Adds a key (with empty cell) to the partition.
-	 * This is only successful if empty cells are allowed, and the
-	 * key is not yet in the partition.
-	 * @param key the key to be added
-	 * @return if <code>true</code>, the key and cell were added
-	 */
-	public boolean addKey(T key) {
-		boolean result = emptyCells && !partitionMap.containsKey(key);
-		if (result) {
-			partitionMap.put(key, createCell());
-		}
-		return result;
-	}
-	
-	/** 
-	 * Removes a key (and corresponding cell) from the partition. 
-	 * The return value indicates if the key was actually present.
-	 * @param key the key to remove
-	 * @return if <code>true</code>, there was a (possibly empty) cell for the key
-	 */
-	public boolean removeKey(T key) {
-		Set<U> cell = partitionMap.remove(key);
-		boolean result = cell != null;
-		if (result) {
-			size -= cell.size();
-		}
-		return result;
-	}
-	
 	/** Indicates if this partition may have empty cells. */
 	public boolean allowsEmptyCells() {
 		return emptyCells;
 	}
 	
-	/** Callback factory method to create the inner partition map. */
-	protected Map<T,S> createPartitionMap() {
-		return new HashMap<T,S>();
+	/** Callback factory method to create a partition cell. */
+	protected Set<U> createCell() {
+		return new HashSet<U>();
 	}
 	
-	/** Callback factory method to create a partition cell. */
-	abstract protected S createCell();
+	/** 
+	 * Method to retrieve a key from a value.
+	 * The method should return <code>null</code> if the
+	 * value is not of the appropriate type. 
+	 */
+	abstract protected T getKey(Object value);
 	
-	/** Method to retrieve a key from a value. */
-	abstract protected T getKey(U value);
-	
-	/** The inner partition map, from keys to cells. */
-	private final Map<T,S> partitionMap;
+	/** The underlying partition map. */
+	private final Map<T,Set<U>> partitionMap;
+	/** View on the values of the partition map as a modifiable set. */
+	private final Set<U> valueSet; 
 	/** Total size of the (partitioned) set. */
 	private int size;
 	/** Flag indicating if the partition may have empty cells. */
 	private final boolean emptyCells;
+	
+	/** Class implementing a set view on the values of the partition map. */
+	private class ValueSetView extends SetOfDisjointSets<U> {
+		/** Creates a fresh instance of the view. */
+		public ValueSetView() {
+			super(partitionMap.values());
+		}
+
+		@Override
+		public boolean add(U elem) {
+			return KeyPartition.this.add(elem);
+		}
+
+		@Override
+		public boolean remove(Object elem) {
+			return KeyPartition.this.remove(elem);
+		}
+
+		@Override
+		public int size() {
+			return size;
+		}
+	}
 }
