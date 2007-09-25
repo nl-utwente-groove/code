@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NewDeltaGraph.java,v 1.2 2007-09-20 09:58:41 rensink Exp $
+ * $Id: NewDeltaGraph.java,v 1.3 2007-09-25 22:34:38 rensink Exp $
  */
 package groove.graph;
 
@@ -384,11 +384,15 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 			int arity = elem.endCount();
 			// adapt node-edge map
 			if (nodeEdgeMap != null) {
-				for (int i = 0; i < arity; i++) {
-					Node end = elem.end(i);
-					EdgeSet edgeSet = (EdgeSet) nodeEdgeMap.get(end);
+				EdgeSet edgeSet = (EdgeSet) nodeEdgeMap.get(elem.source());
+				if (edgeSet == null) {
+					nodeEdgeMap.put(elem.source(), edgeSet = createEdgeSet(edgeSet));
+				}
+				edgeSet.add(elem);
+				if (elem.source() != elem.opposite()) {
+					edgeSet = (EdgeSet) nodeEdgeMap.get(elem.opposite());
 					if (edgeSet == null) {
-						nodeEdgeMap.put(end, edgeSet = createEdgeSet(edgeSet));
+						nodeEdgeMap.put(elem.opposite(), edgeSet = createEdgeSet(edgeSet));
 					}
 					edgeSet.add(elem);
 				}
@@ -429,11 +433,9 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 			int arity = elem.endCount();
 			// adapt node-edge map
 			if (nodeEdgeMap != null) {
-				for (int i = 0; i < arity; i++) {
-					Node end = elem.end(i);
-					Set<Edge> edgeSet = nodeEdgeMap.get(end);
-					assert edgeSet != null : String.format("Node edge map %s does not contain image for %s", nodeEdgeMap, end);
-					edgeSet.remove(elem);
+				nodeEdgeMap.get(elem.source()).remove(elem);
+				if (elem.source() != elem.opposite()) {
+					nodeEdgeMap.get(elem.opposite()).remove(elem);
 				}
 			}
 			// adapt label-edge map
@@ -472,17 +474,6 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 			}
 			super.install(child);
 		}
-//
-//		private final NewDeltaGraph basis;
-//
-//		/** Node set to be filled by this target. */
-//		private final Set<Node> nodeSet;
-//		/** Edge set to be filled by this target. */
-//		private final Set<Edge> edgeSet;
-//		/** Node/edge map to be filled by this target. */
-//		private final Map<Node,Set<Edge>> nodeEdgeMap;
-//		/** Label/edge map to be filled by this target. */
-//		private final List<Map<Label,Set<Edge>>> labelEdgeMaps;
 	}
 
     /** Delta target to initialise the data structures. */
@@ -529,16 +520,23 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
             int arity = elem.endCount();
             // adapt node-edge map
             if (nodeEdgeMap != null) {
-                for (int i = 0; i < arity; i++) {
-                    Node end = elem.end(i);
-                    EdgeSet edgeSet = (EdgeSet) nodeEdgeMap.get(end);
-                    if (! freshNodeKeys.contains(end)) {
-                        nodeEdgeMap.put(end, edgeSet = createEdgeSet(edgeSet));
-                        freshNodeKeys.add(end);
-                    }
-                    edgeSet.add(elem);
-                }
-            }
+				Node source = elem.source();
+				Node opposite = elem.opposite();
+				EdgeSet edgeSet = (EdgeSet) nodeEdgeMap.get(source);
+				if (!freshNodeKeys.contains(source)) {
+					nodeEdgeMap.put(source, edgeSet = createEdgeSet(edgeSet));
+					freshNodeKeys.add(source);
+				}
+				edgeSet.add(elem);
+				if (source != opposite) {
+					edgeSet = (EdgeSet) nodeEdgeMap.get(opposite);
+					if (!freshNodeKeys.contains(opposite)) {
+						nodeEdgeMap.put(opposite, edgeSet = createEdgeSet(edgeSet));
+						freshNodeKeys.add(opposite);
+					}
+					edgeSet.add(elem);
+				}
+			}
             // adapt label-edge map
             if (labelEdgeMaps != null) {
                 Label label = elem.label();
@@ -578,18 +576,23 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
             int arity = elem.endCount();
             // adapt node-edge map
             if (nodeEdgeMap != null) {
-                for (int i = 0; i < arity; i++) {
-                    Node end = elem.end(i);
-                    EdgeSet edgeSet = (EdgeSet) nodeEdgeMap.get(end);
-                    if (edgeSet != null) {
-                    if (! freshNodeKeys.contains(end)) {
-                        nodeEdgeMap.put(end, edgeSet = createEdgeSet(edgeSet));
-                        freshNodeKeys.add(end);
-                    }
-                    edgeSet.remove(elem);
-                    }
-                }
-            }
+				Node source = elem.source();
+				Node opposite = elem.opposite();
+				EdgeSet edgeSet = (EdgeSet) nodeEdgeMap.get(source);
+				if (!freshNodeKeys.contains(source)) {
+					nodeEdgeMap.put(source, edgeSet = createEdgeSet(edgeSet));
+					freshNodeKeys.add(source);
+				}
+				edgeSet.remove(elem);
+				if (source != opposite) {
+					edgeSet = (EdgeSet) nodeEdgeMap.get(source);
+					if (!freshNodeKeys.contains(source)) {
+						nodeEdgeMap.put(source, edgeSet = createEdgeSet(edgeSet));
+						freshNodeKeys.add(source);
+					}
+					edgeSet.remove(elem);
+				}
+			}
             // adapt label-edge map
             if (labelEdgeMaps != null) {
                 Label label = elem.label();
@@ -618,27 +621,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
             }
             return true;
         }
-//        
-//        /** 
-//         * Creates a copy of an existing set of edges, or an empty set if the
-//         * given set is <code>null</code>.
-//         */
-//        private Set<Edge> createEdgeSet(Set<Edge> edgeSet) {
-//            if (edgeSet == null) {
-//                return new HashSet<Edge>();
-//            } else {
-//                return new HashSet<Edge>(edgeSet);
-//            }
-//        }
-//
-//        /** Node set to be filled by this target. */
-//        private final Set<Node> nodeSet;
-//        /** Edge set to be filled by this target. */
-//        private final Set<Edge> edgeSet;
-//        /** Node/edge map to be filled by this target. */
-//        private final Map<Node,Set<Edge>> nodeEdgeMap;
-//        /** Label/edge map to be filled by this target. */
-//        private final List<Map<Label,Set<Edge>>> labelEdgeMaps;
+        
         /** Auxiliary set to determine the nodes changed w.r.t. the basis. */
         private final Set<Node> freshNodeKeys;
         /** Auxiliary set to determine the labels changed w.r.t. the basis. */
