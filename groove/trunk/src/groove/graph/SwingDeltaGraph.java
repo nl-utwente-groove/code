@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SwingDeltaGraph.java,v 1.11 2007-09-19 21:15:16 rensink Exp $
+ * $Id: SwingDeltaGraph.java,v 1.12 2007-09-25 22:57:53 rensink Exp $
  */
 package groove.graph;
 
@@ -33,7 +33,9 @@ import java.util.Set;
  * delta to another graph (where the delta is the result of a rule application). 
  * @author Arend Rensink
  * @version $Revision $
+ * @deprecated use {@link NewDeltaGraph} instead
  */
+@Deprecated
 public class SwingDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGraphFactory<SwingDeltaGraph> {
 	/** 
 	 * Constructs a graph with a given basis and delta

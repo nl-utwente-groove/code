@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaGraph.java,v 1.9 2007-08-26 07:23:46 rensink Exp $
+ * $Id: DeltaGraph.java,v 1.10 2007-09-25 22:57:53 rensink Exp $
  */
 package groove.graph;
 
@@ -29,7 +29,7 @@ import java.util.Set;
  * the changes. This implementation caches the element set so as to avoid too frequent
  * reconstruction.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> implements DeltaApplier {
     /**
@@ -50,7 +50,7 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
      * @require <tt>graph != null && graph.isFixed()</tt>
      * @ensure <tt>result.equals(graph)</tt>
      */
-    public DeltaGraph(Graph graph) {
+    public DeltaGraph(AbstractGraph graph) {
         assert graph.isFixed() : "Don't create delta graph on top of unfixed graph " + graph;
         this.basis = graph;
         deltaGraphCount++;
@@ -202,15 +202,15 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
         clearCache();
         if (basis instanceof DeltaGraph) {
             ((DeltaGraph) basis).clearAllCaches();
-        } else if (basis instanceof AbstractGraph) {
-            ((AbstractGraph) basis).clearCache();
+        } else {
+            basis.clearCache();
         }
     }
 
     /**
      * Returns the basis of this delta graph. May be <tt>null</tt> if the graph has no basis.
      */
-    public Graph getBasis() {
+    public AbstractGraph getBasis() {
         return basis;
     }
 
@@ -362,7 +362,7 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
 
 	/**
      * This implementation returns a {@link DeltaGraphCache}. Note that the cache will attempt to
-     * initialize itself using the basis' node and edge sets, if this graph is not fixed.
+     * initialise itself using the basis' node and edge sets, if this graph is not fixed.
      */
 	@Override
     protected C createCache() {
@@ -532,7 +532,7 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
     /**
 	 * The basis graph, with respect to which the delta is calculated.
 	 */
-    private Graph basis;
+    private AbstractGraph basis;
 
     private static int SET_FIXED = reporter.newMethod("setFixed()");
 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StackedSet.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: StackedSet.java,v 1.3 2007-09-25 22:57:51 rensink Exp $
  */
 package groove.util;
 
@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
  * The implementation is based on a lower set, and sets of added and removed
  * elements with respect to this lower set.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class StackedSet<T> extends AbstractSet<T> {
 	/**
@@ -47,8 +47,8 @@ public class StackedSet<T> extends AbstractSet<T> {
         assert lower != null : "Lower set of stacked set should not be null";
         assert added != null : "Added set of stacked set should not be null";
         assert removed != null : "Removed set of stacked set should not be null";
-        assert lower.containsAll(removed) : String.format("Lower set %s does not contain all removed elements %s", lower, removed);
-        assert !added.removeAll(lower) : String.format("Lower set %s not disjoint with added elements %s", lower, added);
+//        assert lower.containsAll(removed) : String.format("Lower set %s does not contain all removed elements %s", lower, removed);
+//        assert !added.removeAll(lower) : String.format("Lower set %s not disjoint with added elements %s", lower, added);
 	}
 	
     /**

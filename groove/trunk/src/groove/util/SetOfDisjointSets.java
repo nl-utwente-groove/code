@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SetOfDisjointSets.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: SetOfDisjointSets.java,v 1.3 2007-09-25 22:57:51 rensink Exp $
  */
 package groove.util;
 
@@ -22,14 +22,13 @@ import java.util.Set;
 /**
  * Implements a set by flattening a set of sets.
  * The set is unmodifiable.
- * There is a user requirement that the set must be initialized
+ * There is a user requirement that the set must be initialised
  * with a set of disjoint sets.
- * However, the 
- * containment test does not notice multiplicities, and hence is
+ * However, the containment test does not notice multiplicities, and hence is
  * set equality. (It is implemented by iterating over the underlying collections,
  * which is expensive!)
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements Set<T> {
     /**

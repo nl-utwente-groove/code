@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaGraphCache.java,v 1.5 2007-08-26 07:23:36 rensink Exp $
+ * $Id: DeltaGraphCache.java,v 1.6 2007-09-25 22:57:53 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DeltaGraphCache extends GraphCache {
     /**
@@ -110,7 +110,7 @@ public class DeltaGraphCache extends GraphCache {
     }
 
     /** Returns the basis of the underlying graph. */
-    public Graph getCacheBasis() {
+    public AbstractGraph getCacheBasis() {
     	if (! isCacheInit()) {
     		initCache();
     	}
@@ -164,7 +164,7 @@ public class DeltaGraphCache extends GraphCache {
      * @require <code>isFixed() && !isFrozen()</code>
      */
 	protected void initFixedCache() {
-		Graph graphBasis = getGraph().getBasis();
+		AbstractGraph graphBasis = getGraph().getBasis();
 		DeltaGraphCache basisCache = getDeltaCache(graphBasis);
 		if (basisCache == null || basisCache.suggestSetFrozen()) {
 			cacheBasis = graphBasis;
@@ -233,49 +233,45 @@ public class DeltaGraphCache extends GraphCache {
      */
     @Override
     protected List<Map<Label, Set<Edge>>> computeLabelEdgeMaps() {
-    	// the cache basis
-    	Graph basis = getCacheBasis();
-    	if (!(basis instanceof AbstractGraph)) {
-    		// if the cache basis is not an abstract graph,
-    		// we cannot use the delta to compute the label/edge maps array
-    		// so we have to compute it the hard way
-    		return super.computeLabelEdgeMaps();
-    	} else {
-    		// otherwise, we can use the cache delta
-            reporter.start(COMPUTE_LABEL_EDGE_MAP);
-    		DeltaApplier delta = getCacheDelta();
-    		final List<Map<Label, Set<Edge>>> basisMaps = ((AbstractGraph) basis).getLabelEdgeMaps();
-			final List<Map<Label, Set<Edge>>> result = new ArrayList<Map<Label,Set<Edge>>>();//[basisMaps.length];
-			result.add(null);
-			for (int i = 1; i < basisMaps.size(); i++) {
-				if (basisMaps.get(i) != null) {
-					result.add(new HashMap<Label,Set<Edge>>(basisMaps.get(i)));
-				}
+		// the cache basis
+		AbstractGraph<?> basis = getCacheBasis();
+		// otherwise, we can use the cache delta
+		reporter.start(COMPUTE_LABEL_EDGE_MAP);
+		DeltaApplier delta = getCacheDelta();
+		final List<Map<Label, Set<Edge>>> basisMaps = basis.getLabelEdgeMaps();
+		final List<Map<Label, Set<Edge>>> result = new ArrayList<Map<Label, Set<Edge>>>();// [basisMaps.length];
+		result.add(null);
+		for (int i = 1; i < basisMaps.size(); i++) {
+			if (basisMaps.get(i) != null) {
+				result.add(new HashMap<Label, Set<Edge>>(basisMaps.get(i)));
 			}
-			DeltaTarget target = new DeltaTarget() {
-				public boolean addEdge(Edge elem) {
-					return addToLabelEdgeMaps(result, elem, basisMaps);
-				}
-
-				public boolean addNode(Node elem) {
-					throw new UnsupportedOperationException("No node manipulation through this delta target");
-				}
-
-				public boolean removeEdge(Edge elem) {
-					return removeFromLabelEdgeMaps(result, elem, basisMaps);
-				}
-
-				public boolean removeNode(Node elem) {
-					throw new UnsupportedOperationException("No node manipulation through this delta target");
-				}
-			};
-			delta.applyDelta(target, DeltaApplier.EDGES_ONLY);
-			reporter.stop();
-			assert getEdgeSet().containsAll(new CollectionOfCollections<Edge>(result.get(2).values())) : "Edges not correct: "
-					+ getEdgeSet() + " does not contains all of " + result.get(2).values();
-			return result;
 		}
-    }
+		DeltaTarget target = new DeltaTarget() {
+			public boolean addEdge(Edge elem) {
+				return addToLabelEdgeMaps(result, elem, basisMaps);
+			}
+
+			public boolean addNode(Node elem) {
+				throw new UnsupportedOperationException(
+						"No node manipulation through this delta target");
+			}
+
+			public boolean removeEdge(Edge elem) {
+				return removeFromLabelEdgeMaps(result, elem, basisMaps);
+			}
+
+			public boolean removeNode(Node elem) {
+				throw new UnsupportedOperationException(
+						"No node manipulation through this delta target");
+			}
+		};
+		delta.applyDelta(target, DeltaApplier.EDGES_ONLY);
+		reporter.stop();
+		assert getEdgeSet().containsAll(new CollectionOfCollections<Edge>(
+				result.get(2).values())) : "Edges not correct: " + getEdgeSet()
+				+ " does not contains all of " + result.get(2).values();
+		return result;
+	}
 
     /**
 	 * If the node-to-edge map of the basis is currently set, constructs the
@@ -285,7 +281,7 @@ public class DeltaGraphCache extends GraphCache {
     @Override
     protected Map<Node, Set<Edge>> computeNodeEdgeMap() {
     	// the cache basis
-    	Graph basis = getCacheBasis();
+    	AbstractGraph<?> basis = getCacheBasis();
     	if (basis == null) {
     		// if the cache basis is not an abstract graph,
     		// we cannot use the delta to compute the label/edge maps array
@@ -293,7 +289,7 @@ public class DeltaGraphCache extends GraphCache {
         	return super.computeNodeEdgeMap();
     	} else {
 			reporter.start(COMPUTE_NODE_EDGE_MAP);
-			Map<Node, Set<Edge>> basisMap = (Map<Node,Set<Edge>>) basis.nodeEdgeMap();
+			Map<Node, Set<Edge>> basisMap = basis.nodeEdgeMap();
 			Map<Node, Set<Edge>> result = new HashMap<Node, Set<Edge>>(basisMap);
 			DeltaTarget target = createNodeEdgeMapTarget(basisMap, result);
 			getCacheDelta().applyDelta(target);
@@ -690,7 +686,7 @@ public class DeltaGraphCache extends GraphCache {
      * This is either some predecessor in the chain of graph bases or <code>null</code> (if the
      * graph is frozen).
      */
-    private Graph cacheBasis;
+    private AbstractGraph cacheBasis;
 //    /**
 //     * Count of the number of times this cache delta has been computed.
 //     */

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.12 2007-09-22 09:10:40 rensink Exp $
+ * $Id: GraphTest.java,v 1.13 2007-09-25 22:57:51 rensink Exp $
  */
 package groove.test.graph;
 
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -392,28 +392,28 @@ public class GraphTest extends TestCase {
         cEdgeSet.add(cEdge);
         assertEquals(cEdgeSet, graph.labelEdgeSet(2, cLabel));
     }
-
-    final public void testLabelEdgeMap() {
-        // prepare the expected map
-        Set<Edge> aEdgeSet = new HashSet<Edge>();
-        aEdgeSet.add(aEdge);
-        Set<Edge> bEdgeSet = new HashSet<Edge>();
-        bEdgeSet.add(bEdge);
-        Map<Label,Set<Edge>> labelEdgeMap = new HashMap<Label,Set<Edge>>();
-        labelEdgeMap.put(aLabel, aEdgeSet);
-        labelEdgeMap.put(bLabel, bEdgeSet);
-        // now test it
-        assertEquals(new HashMap<Label,Set<Edge>>(), graph.labelEdgeMap(1));
-        assertEquals(labelEdgeMap, graph.labelEdgeMap(2));
-        // if we add an edge to the graph, that should be visible
-        Edge anotherAEdge = graph.addEdge(bTarget, aLabel, source);
-        aEdgeSet.add(anotherAEdge);
-        Edge cEdge = graph.addEdge(bTarget, cLabel, aTarget);
-        Set<Edge> cEdgeSet = new HashSet<Edge>();
-        cEdgeSet.add(cEdge);
-        labelEdgeMap.put(cLabel, cEdgeSet);
-        assertEquals(cEdgeSet, graph.labelEdgeSet(2, cLabel));
-    }
+//
+//    final public void testLabelEdgeMap() {
+//        // prepare the expected map
+//        Set<Edge> aEdgeSet = new HashSet<Edge>();
+//        aEdgeSet.add(aEdge);
+//        Set<Edge> bEdgeSet = new HashSet<Edge>();
+//        bEdgeSet.add(bEdge);
+//        Map<Label,Set<Edge>> labelEdgeMap = new HashMap<Label,Set<Edge>>();
+//        labelEdgeMap.put(aLabel, aEdgeSet);
+//        labelEdgeMap.put(bLabel, bEdgeSet);
+//        // now test it
+//        assertEquals(new HashMap<Label,Set<Edge>>(), graph.labelEdgeMap(1));
+//        assertEquals(labelEdgeMap, graph.labelEdgeMap(2));
+//        // if we add an edge to the graph, that should be visible
+//        Edge anotherAEdge = graph.addEdge(bTarget, aLabel, source);
+//        aEdgeSet.add(anotherAEdge);
+//        Edge cEdge = graph.addEdge(bTarget, cLabel, aTarget);
+//        Set<Edge> cEdgeSet = new HashSet<Edge>();
+//        cEdgeSet.add(cEdge);
+//        labelEdgeMap.put(cLabel, cEdgeSet);
+//        assertEquals(cEdgeSet, graph.labelEdgeSet(2, cLabel));
+//    }
 
     final public void testSize() {
         assertEquals(5, graph.size());

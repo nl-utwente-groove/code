@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.21 2007-09-18 21:57:59 rensink Exp $
+ * $Id: SPOApplication.java,v 1.22 2007-09-25 22:57:54 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.21 $ $Date: 2007-09-18 21:57:59 $
+ * @version $Revision: 1.22 $ $Date: 2007-09-25 22:57:54 $
  */
 public class SPOApplication implements RuleApplication, Derivation {
     /**
@@ -620,7 +620,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 		}
 		Set<Edge> result = valueNodeEdgesMap.get(node);
 		if (result == null) {
-			result = new HashSet<Edge>(source.edgeSet(node));
+			result = new HashSet<Edge>(source.edgeSet(node, Edge.TARGET_INDEX));
 			valueNodeEdgesMap.put(node, result);
 		}
 		return result;

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AlgebraConstants.java,v 1.7 2007-08-26 07:23:57 rensink Exp $
+ * $Id: AlgebraConstants.java,v 1.8 2007-09-25 22:57:52 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -35,7 +35,7 @@ import java.util.Iterator;
 /**
  * Class containing all the constant values used for dealing with attributed graphs.
  * @author Harmen Kastenberg
- * @version $Revision: 1.7 $ $Date: 2007-08-26 07:23:57 $
+ * @version $Revision: 1.8 $ $Date: 2007-09-25 22:57:52 $
  */
 public class AlgebraConstants {
 	/** Code for attributes of type integer. */
@@ -156,159 +156,6 @@ public class AlgebraConstants {
             return label.text();
         else
             return label.text().substring(TYPE_PREFIX[type].length());
-    }
-
-    /**
-     * Returns the type as indicated by an ordinary edge.
-     * An edge indicates a type if it is a self-edge labelled only with the type prefix.
-     * @param edge the label whose type indication is to be investigated
-     * @return the type as indicated by <tt>edge</tt>
-     * @ensure <tt>isValidType(result) || result == NO_TYPE</tt>
-     */
-    @Deprecated
-    static public int selfEdgeType(Edge edge) {
-        if (edge instanceof BinaryEdge && edge.source() != ((BinaryEdge) edge).target())
-            return AlgebraConstants.NO_TYPE;
-        else {
-            int type = labelType(edge.label());
-            if (type != AlgebraConstants.NO_TYPE && edge.label().text().equals(TYPE_PREFIX[type]))
-                type = AlgebraConstants.NO_TYPE;
-            return type;
-        }
-    }
-
-    /**
-     * Gets the algebraic value of a given node in a given graph.
-     * @param node the node for which to determine the algebraic value it represents
-     * @param graph the graph providing the edges on this node which are needed
-     * to determine that algebraic value
-     * @return the algebraic value the node represents
-     */
-    @Deprecated
-    static public Constant getNodeValue(Graph graph, Node node) {
-    	Constant result = null;
-
-    	Edge selfEdge = null;
-
-   		int nodeType = AlgebraConstants.NO_TYPE;
-//   		AlgebraGraph algebraGraph = AlgebraGraph.getInstance();
-
-   		// ok, now look up the type: it is indicated by the prefix of a self-edge
-   		Iterator<? extends Edge> selfEdgeIter = graph.outEdgeSet(node).iterator();
-   		while (nodeType == AlgebraConstants.NO_TYPE && selfEdgeIter.hasNext()) {
-   			selfEdge = selfEdgeIter.next();
-   			nodeType = AlgebraConstants.selfEdgeType(selfEdge);
-   		}
-
-   		if (nodeType != AlgebraConstants.NO_TYPE) {
-   	   		Algebra algebra = getAlgebraGraph().getAlgebra(nodeType);
-   	   		try {
-   	   			result = (Constant) algebra.getOperation(AlgebraConstants.labelText(selfEdge.label()));
-   	   		} catch (UnknownSymbolException use) {
-   	   			use.printStackTrace();
-   	   		}
-   	   		return result;
-   		}
-   		else {
-   			return null;
-   		}
-    }
-
-    /**
-     * If the given node represents an algebra node in the given
-     * graph, this method returns an instance of the correct node-type.
-     * If the node does not represent an algebra node, it will
-     * return <tt>null</tt>.
-     * @param node the node for which to determine its algebra-role
-     * @param graph the graph the given node is in and, more importantly,
-     * its adjacent edge
-     * @return an instance of the correct node-type, or <tt>null</tt> if the
-     * node has nothing to do with algebra-stuff
-     * @deprecated No longer used; functionality taken over by {@link AttributeAspect#createAttributeNode(AspectNode, AspectGraph)}
-     */
-    @Deprecated
-    public static Node getAlgebraNode(Graph graph, Node node) {
-    	Node result = null;
-    	// first check whether this node is an product node
-    	result = getProductNode(graph, node);
-    	if (result != null)
-    		return result;
-
-    	// then we check whether it represents a specific algebraic data value
-    	result = getValueNode(graph, node);
-    	if (result != null)
-    		return result;
-
-    	// at last, we check whether it represents a variable
-    	result = getVariableNode(graph, node);
-    	if (result != null)
-    		return result;
-    	return result;
-    }
-
-    /**
-     * Given a node and the graph this node is in, it checks whether this node
-     * represents a product node (i.e. an ordered tuple of data values). If so,
-     * it returns a fresh instance of {@link groove.graph.algebra.ProductNode}.
-     * If not, it returns <tt>null</tt>.
-     * @param node the node for which to check whether it represents a product
-     * @param graph the graph containing this node and, more importantly, its
-     * adjacent edges
-     * @return a fresh instance of {@link groove.graph.algebra.ProductNode} if
-     * this nodes represents an product, <tt>null</tt> otherwise
-     */
-    static private Node getProductNode(Graph graph, Node node) {
-    	Iterator<? extends Edge> selfEdgeIter = graph.edgeSet(node).iterator();
-    	while (selfEdgeIter.hasNext()) {
-    		Edge nextEdge = selfEdgeIter.next();
-    		if (isProductLabel(nextEdge.label())) {
-    			return new ProductNode(0);
-    		}
-    	}
-    	return null;
-    }
-
-    /**
-     * Given a node and the graph this node is in, it checks whether this node
-     * represents an algebraic data value. If so, it returns the only
-     * {@link groove.graph.algebra.ValueNode} for this data value, otherwise
-     * <tt>null</tt>.
-     * @param node the node for which to check whether it represents an algebraic
-     * data value
-     * @param graph the graph containing this node and, more importantly, its
-     * adjacent edges
-     * @return the {@link groove.graph.algebra.ValueNode} if the given node
-     * represents an algebraic data value, <tt>null</tt> otherwise
-     */
-    @Deprecated
-    static private Node getValueNode(Graph graph, Node node) {
-    	Constant constant = getNodeValue(graph, node);
-    	if (constant != null)
-        	return AlgebraGraph.getInstance().getValueNode(constant);
-    	return null;
-    }
-
-    /**
-     * Given a node and the graph this node is in, it checks whether this node
-     * represents a data variable. If so, it returns a fresh instance of
-     * {@link groove.graph.algebra.ValueNode}. If not, it returns <tt>null</tt>.
-     * @param node the node for which to check whether it represents a data variable
-     * @param graph the graph containing this node and, more importantly, its
-     * adjacent edges
-     * @return a fresh instance of {@link groove.graph.algebra.ValueNode} if this
-     * node represents a data variable, <tt>null</tt> otherwise
-     * @deprecated No longer used; functionality taken over by {@link AttributeAspect#createAttributeNode(AspectNode, AspectGraph)}
-     */
-    @Deprecated
-    public static Node getVariableNode(Graph graph, Node node) {
-		Iterator<? extends Edge> selfEdgeIter = graph.edgeSet(node).iterator();
-		while (selfEdgeIter.hasNext()) {
-			Edge nextEdge = selfEdgeIter.next();
-			if (isAttributeLabel(nextEdge.label())) {
-				return new ValueNode();
-			}
-		}
-		return null;
     }
 
     /**
