@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.7 2007-09-25 15:12:34 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.8 2007-09-25 16:30:35 rensink Exp $ */
 package groove.match;
 
 import groove.graph.BinaryEdge;
@@ -98,7 +98,7 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
 	
 	@Override
 	MultipleRecord createMultipleRecord(Search search) {
-		return new RegExprEdgeRecord(search);
+		return new RegExprEdgeMultipleRecord(search);
 	}
     /**
 	 * The automaton that computes the matches for the underlying edge.
@@ -170,28 +170,15 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
         private final Node targetPreMatch;
     }
     
-    class RegExprEdgeRecord extends Edge2MultipleRecord {
+    class RegExprEdgeMultipleRecord extends Edge2MultipleRecord {
         /** Constructs a new record, for a given matcher. */
-        RegExprEdgeRecord(Search search) {
+        RegExprEdgeMultipleRecord(Search search) {
             super(search);
             assert varIxMap.keySet().containsAll(neededVars);
             freshVars = new HashSet<String>();
             for (String var: boundVars) {
                 if (getSearch().getVar(varIxMap.get(var)) == null) {
                     freshVars.add(var);
-                }
-            }
-        }
-
-        /** In addition to the <code>super</code> method, initialises the set of fresh variables. */
-        @Override
-        void init() {
-            super.init();
-            valuation = new HashMap<String,Label>();
-            for (String var: allVars) {
-                Label image = getSearch().getVar(varIxMap.get(var));
-                if (image != null) {
-                    valuation.put(var, image);
                 }
             }
         }
@@ -206,6 +193,12 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
             Set<Node> imageTargetSet = targetFind == null ? null : Collections.singleton(targetFind);
             NodeRelation matches;
             if (labelAutomaton instanceof VarAutomaton) {
+                Map<String,Label> valuation = new HashMap<String,Label>();
+                for (String var: allVars) {
+                    if (! freshVars.contains(var)) {
+                        valuation.put(var, getSearch().getVar(varIxMap.get(var)));
+                    }
+                }
                 matches = ((VarAutomaton) labelAutomaton).getMatches(getTarget(), imageSourceSet, imageTargetSet, valuation);            
             } else {
                 matches = labelAutomaton.getMatches(getTarget(), imageSourceSet, imageTargetSet);
@@ -217,26 +210,24 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
 		boolean setImage(Edge image) {
 			boolean result = super.setImage(image);
 			if (result && ! freshVars.isEmpty()) {
-				selectVars(((ValuationEdge) image).getValue());
+			    Map<String,Label> valuation = ((ValuationEdge) image).getValue();
+	            for (String var: freshVars) {
+	                getSearch().putVar(varIxMap.get(var), valuation.get(var));
+	            }
 			}
 			return result;
 		}
 
-		/**
-         * Inserts a valuation for the fresh variables into the result map.
-         */
-        private void selectVars(Map<String,Label> valuation) {
-            for (Map.Entry<String,Label> valueEntry: valuation.entrySet()) {
-                String var = valueEntry.getKey();
-                if (freshVars.contains(var)) {
-                    getSearch().putVar(varIxMap.get(var), valueEntry.getValue());
-                }
+        
+        @Override
+        public void reset() {
+            super.reset();
+            for (String var: freshVars) {
+                getSearch().putVar(varIxMap.get(var), null);
             }
         }
-        
+
         /** The set of bound variables that are not yet pre-matched. */
         private Set<String> freshVars;
-        /** Valuation of the variables, insofar known at the time of matching this item. */
-        private Map<String,Label> valuation;
     }
 }

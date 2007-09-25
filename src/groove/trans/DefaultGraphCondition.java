@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.25 2007-09-15 17:25:24 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.26 2007-09-25 16:30:34 rensink Exp $
  */
 package groove.trans;
 
@@ -23,6 +23,7 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.algebra.ValueNode;
+import groove.match.ConditionSearchPlanFactory;
 import groove.match.MatchStrategy;
 import groove.rel.VarMorphism;
 import groove.rel.VarSupport;
@@ -33,13 +34,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -555,8 +555,8 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 
     /**
      * Returns the precomputed matching order for the elements of the target pattern. First creates
-     * the order using {@link #createSearchPlan()} if that has not been done.
-     * @see #createSearchPlan()
+     * the order using {@link #createMatchStrategy()} if that has not been done.
+     * @see #createMatchStrategy()
      */
     public MatchStrategy getMatchStrategy() {
         if (matcher == null) {
@@ -576,37 +576,14 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     @Override
     protected MatchStrategy createMatchStrategy() {
         setFixed();
-        return groove.match.ConditionSearchPlanFactory.getInstance().createMatcher(this);
+        return getMatcherFactory().createMatcher(this);
     }
 
-    /**
-     * Returns the precomputed matching order for the elements of the target pattern. First creates
-     * the order using {@link #createSearchPlan()} if that has not been done.
-     * @see #createSearchPlan()
-     */
-    @Deprecated
-    public List<groove.graph.match.SearchItem> getSearchPlan() {
-        if (searchPlan == null) {
-            searchPlan = createSearchPlan();
-        }
-        return searchPlan;
+    /** Returns a matcher factory, tuned to the injectivity of this rule system. */
+    protected ConditionSearchPlanFactory getMatcherFactory() {
+        return groove.match.ConditionSearchPlanFactory.getInstance(getProperties().isInjective());
     }
-
-    /**
-     * Callback method to create a matching order.
-     * Typically invoked once, at the first invocation of {@link #getSearchPlan()}.
-     * This implementation retrieves its value from the matching order factory.
-     * @see #getSearchPlan()
-     * @see #getSearchPlanFactory()
-     * For a (non-closed) graph condition, it is more efficient to start the matching at the edges
-     * connected to the context.
-     */
-    @Deprecated
-    protected List<groove.graph.match.SearchItem> createSearchPlan() {
-        setFixed();
-        return getSearchPlanFactory().createSearchPlan(this);
-    }
-
+    
 	/**
      * Returns the fragment of the negated conjunct without the edge or merge embargoes. Since we
      * are checking for those already in the simulation, the search for matchings only has to regard
@@ -673,37 +650,13 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
             throw new IllegalStateException("Method only allowed on ground condition");
         }
     }
-
-    /**
-     * Returns the search plan factory factory.
-     * If no matching schedule factory yet exists, one is created using
-     * {@link #createSearchPlanFactory()}.
-     * @see #createSearchPlanFactory()
-     * @see #createSearchPlan()
-     */
-    @Deprecated
-    protected groove.trans.match.ConditionSearchPlanFactory getSearchPlanFactory() {
-        if (searchPlanFactory == null) {
-            searchPlanFactory = createSearchPlanFactory();
-        }
-        return searchPlanFactory;
-    }
-    
-    /**
-     * Callback factory method to create a matching schedule factory.
-     * This implementation returns a {@linkplain groove.trans.match.DefaultConditionSearchPlanFactory}.
-     */
-    @Deprecated
-    protected groove.trans.match.ConditionSearchPlanFactory createSearchPlanFactory() {
-    	return new groove.trans.match.DefaultConditionSearchPlanFactory();
-    }
     
     /**
      * The name of this condition. May be <code>code</code> null.
      */
     protected NameLabel name;
     /** 
-     * The negated cunjunct of this graph condition.
+     * The negated conjunct of this graph condition.
      */
     private DefaultGraphPredicate negConjunct;
     /** 
@@ -740,19 +693,6 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	 * the event.
 	 */
     private int identityHashCode;
-    /**
-     * The fixed matching order for this graph condition.
-     * Initially <code>null</code>; set by {@link #getSearchPlan()} upon its
-     * first invocation.
-     */
-    @Deprecated
-    private List<groove.graph.match.SearchItem> searchPlan;
-    /**
-     * The strategy for constructing the matching order.
-     */
-    @Deprecated
-    private groove.trans.match.ConditionSearchPlanFactory searchPlanFactory;
-
     /**
      * Factory instance for creating the correct simulation.
      */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.11 2007-09-22 16:28:06 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.12 2007-09-25 16:30:35 rensink Exp $
  */
 package groove.match;
 
@@ -30,15 +30,16 @@ import java.util.Set;
 /**
  * Factory that adds to a graph search plan the following items the search items for the simple negative conditions (edge and merge embargoes).
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 
-     * Private, empty constructor.
-     * This is a singleton class; get the instance through {@link #getInstance()}.
+     * Private constructor. 
+     * This is a singleton class; get the instance through {@link #getInstance(boolean)}.
+     * @param injective if <code>true</code>, the factory produces injective matchers only
      */
-    ConditionSearchPlanFactory() {
-        // empty
+    private ConditionSearchPlanFactory(boolean injective) {
+        super(injective, false);
     }
 
     /** 
@@ -62,7 +63,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      */
     public SearchPlanStrategy createMatcher(GraphCondition condition, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
     	PlanData planData = new GrammarPlanData(condition);
-    	SearchPlanStrategy result = new SearchPlanStrategy(condition.getTarget(), planData.getPlan(preMatchedNodes, preMatchedEdges), condition.getProperties().isInjective());
+    	SearchPlanStrategy result = new SearchPlanStrategy(condition.getTarget(), planData.getPlan(preMatchedNodes, preMatchedEdges), isInjective());
         if (PRINT) {
             System.out.print(String.format("%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s", condition.getName(), preMatchedNodes, preMatchedEdges, result));
         }
@@ -72,12 +73,14 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     
 
     /** Returns the singleton instance of this factory class. */
-    static public ConditionSearchPlanFactory getInstance() {
-        return instance;
+    static public ConditionSearchPlanFactory getInstance(boolean injective) {
+        return injective ? injectiveInstance : nonInjectiveInstance;
     }
     
-    /** The fixed, singleton instance of this factory. */
-    static private final ConditionSearchPlanFactory instance = new ConditionSearchPlanFactory();
+    /** Instance of this factory for non-injective matchings. */
+    static private final ConditionSearchPlanFactory nonInjectiveInstance = new ConditionSearchPlanFactory(false);
+    /** The fixed, singleton instance of this factory for injective matchings. */
+    static private final ConditionSearchPlanFactory injectiveInstance = new ConditionSearchPlanFactory(true);
 
     /** Flag to control search plan printing. */
     static private final boolean PRINT = false;

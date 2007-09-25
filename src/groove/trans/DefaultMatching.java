@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatching.java,v 1.13 2007-09-22 09:10:44 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.14 2007-09-25 16:30:34 rensink Exp $
  */
 package groove.trans;
 
@@ -37,7 +37,7 @@ import java.util.Map;
  * Especially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
@@ -154,25 +154,6 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
     protected MatchStrategy createMatchStrategy() {
         return getCondition().getMatchStrategy();
     }
-
-    /**
-     * This implementation returns a {@link groove.trans.match.MatchingMatcher} based on this matching.
-     */
-    @Override
-    @Deprecated
-    protected groove.graph.match.Matcher createMatcher() {
-        return new groove.trans.match.MatchingMatcher(this, condition.getProperties().isInjective());
-    }
-//
-//    /**
-//     * This implementation defers the creation to the rule factory.
-//     * It is assumed that the simulation <code>sim</code> is a {@link MatchingSimulation}.
-//     * @see RuleFactory#createMatching(MatchingSimulation)
-//     */
-//    @Override
-//    protected DefaultMatching createMorphism(final Simulation sim) {
-//    	return (DefaultMatching) getRuleFactory().createMatching(sim);
-//    }
 
     @Override
     protected DefaultMatching createMorphism(final NodeEdgeMap sim) {

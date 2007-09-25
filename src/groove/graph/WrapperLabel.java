@@ -12,11 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WrapperLabel.java,v 1.8 2007-08-26 07:23:40 rensink Exp $
+ * $Id: WrapperLabel.java,v 1.9 2007-09-25 16:30:17 rensink Exp $
  */
 package groove.graph;
-
-import groove.view.FormatException;
 
 /**
  * Label class that wraps an immutable object of a given (generic) type.
@@ -30,11 +28,6 @@ public class WrapperLabel<Type extends Comparable<Type>> implements Label {
 		this.text = convertToText(content);
 	}
 	
-	@Deprecated
-	public Label parse(String text) throws FormatException {
-		throw new UnsupportedOperationException();
-	}
-
 	/**
 	 * Returns a string representation of the wrapped object.
 	 */

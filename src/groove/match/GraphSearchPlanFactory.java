@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.15 2007-09-25 15:12:34 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.16 2007-09-25 16:30:35 rensink Exp $
  */
 package groove.match;
 
@@ -53,15 +53,19 @@ import java.util.TreeSet;
  * The search plans include items for all graph nodes and edges, ordered
  * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class GraphSearchPlanFactory {
     /** 
-     * Private, empty constructor.
-     * This is a singleton class; get the instance through {@link #getInstance()}.
+     * Private, empty constructor with a parameter to control injectivity.
+     * This is a singleton class; get the instance through {@link #getInstance(boolean,boolean)}.
+     * @param injective if <code>true</code>, the factory produces injective matchers.
+     * @param ignoreNeg if <code>true</code>, the factory produces matchings that do
+     * not regard the negated edges
      */
-    GraphSearchPlanFactory() {
-        // empty
+    GraphSearchPlanFactory(boolean injective, boolean ignoreNeg) {
+        this.injective = injective;
+        this.ignoreNeg = ignoreNeg;
     }
 
     /** 
@@ -77,18 +81,51 @@ public class GraphSearchPlanFactory {
      */
     public SearchPlanStrategy createMatcher(Graph graph, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
         PlanData data = new PlanData(graph);
-        SearchPlanStrategy result = new SearchPlanStrategy(graph, data.getPlan(preMatchedNodes, preMatchedEdges), false);
+        SearchPlanStrategy result = new SearchPlanStrategy(graph, data.getPlan(preMatchedNodes, preMatchedEdges), injective);
         result.setFixed();
         return result;
     }
-	
+    
+    /** Indicates if the matchers this factory produces are injective. */
+    public final boolean isInjective() {
+        return injective;
+    }
+    
+    /** Indicates if the matchers this factory produces ignore negations in the host graph. */
+    public final boolean isIgnoreNeg() {
+        return ignoreNeg;
+    }
+    
+    /** Flag indicating if this factory creates injective matchings. */
+    private final boolean injective;
+    
+    /** Flag indicating if this factory creates matchings that ignore negations in the source graph. */
+    private final boolean ignoreNeg;
+    
     /** Returns the singleton instance of this factory class. */
     static public GraphSearchPlanFactory getInstance() {
-        return instance;
+        return getInstance(false, false);
+    }
+    
+    /** 
+     * Returns an instance of this factory class.
+     * @param injective if <code>true</code>, the factory produces injective matchers.
+     * @param ignoreNeg if <code>true</code>, the factory produces matchings that do
+     * not regard the negated edges
+     */
+    static public GraphSearchPlanFactory getInstance(boolean injective, boolean ignoreNeg) {
+        return instances[injective ? 1 : 0][ignoreNeg ? 1 : 0];
     }
     
     /** The fixed, singleton instance of this factory. */
-    static private final GraphSearchPlanFactory instance = new GraphSearchPlanFactory();
+    static private final GraphSearchPlanFactory[][] instances = new GraphSearchPlanFactory[2][2];
+    static {
+        for (int injective = 0; injective <= 1; injective++) {
+            for (int ignoreNeg = 0; ignoreNeg <= 1; ignoreNeg++) {
+                instances[injective][ignoreNeg] = new GraphSearchPlanFactory(injective==1, ignoreNeg ==1);
+            }
+        }
+    }
     
     /**
      * Internal class to collect the data necessary to create a plan
@@ -208,7 +245,7 @@ public class GraphSearchPlanFactory {
             Collection<Comparator<SearchItem>> result = new TreeSet<Comparator<SearchItem>>(new ItemComparatorComparator());
             result.add(new NeededPartsComparator(remainingNodes, remainingVars));
             result.add(new ItemTypeComparator());
-            result.add(new ConnectPartsComparator(remainingNodes, remainingVars));
+            result.add(new ConnectedPartsComparator(remainingNodes, remainingVars));
             result.add(new IndegreeComparator(remainingEdges));
             return result;
         }
@@ -220,10 +257,14 @@ public class GraphSearchPlanFactory {
             Label label = edge.label();
             RegExpr negOperand = RegExprLabel.getNegOperand(label);
             if (negOperand instanceof RegExpr.Empty) {
-                return createInjectionSearchItem(Arrays.asList(edge.ends()));
+                if (! ignoreNeg) {
+                    return createInjectionSearchItem(Arrays.asList(edge.ends()));
+                }
             } else if (negOperand != null) {
-                Edge negatedEdge = DefaultEdge.createEdge(edge.source(), negOperand.toLabel(), edge.opposite());
-                return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
+                if (! ignoreNeg) {
+                    Edge negatedEdge = DefaultEdge.createEdge(edge.source(), negOperand.toLabel(), edge.opposite());
+                    return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
+                }
             } else if (RegExprLabel.getWildcardId(label) != null) {
                 return new VarEdgeSearchItem((BinaryEdge) edge);
             } else if (RegExprLabel.isWildcard(label)) {
@@ -234,10 +275,8 @@ public class GraphSearchPlanFactory {
             } else if (label instanceof RegExprLabel) {
                 return new RegExprEdgeSearchItem((BinaryEdge) edge);
             } else if (edge instanceof ProductEdge) {
-                if (((ProductEdge) edge).getOperation() instanceof Constant) {
-                    // constants are more efficiently matched as ValueNodes
-                    return null;
-                } else {
+                // constants are more efficiently matched as ValueNodes
+                if (!(((ProductEdge) edge).getOperation() instanceof Constant)) {
                     return new OperatorEdgeSearchItem((ProductEdge) edge);
                 }
         	} else if (edge instanceof AlgebraEdge) {
@@ -247,6 +286,7 @@ public class GraphSearchPlanFactory {
             } else {
         	    throw new IllegalArgumentException(String.format("Edge %s cannot be matched", edge));
             }
+            return null;
         }
 
         /**
@@ -385,7 +425,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.15 $
+     * @version $Revision: 1.16 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -417,26 +457,7 @@ public class GraphSearchPlanFactory {
             }
             return missing ? 0 : 1;
         }
-        
-        /** 
-         * Returns the number of nodes bound by the item that have already been matched. 
-         * More pre-matched nodes means less determinism, so the higher the better.
-         */
-        private int getConnectCount(SearchItem item) {
-            int result = item.needsNodes().size() + item.needsVars().size();
-            for (Node node: item.bindsNodes()) {
-                if (!remainingNodes.contains(node)) {
-                    result++;
-                }
-            }
-            for (String var: item.bindsVars()) {
-                if (remainingVars.contains(var)) {
-                    result++;
-                }
-            }
-            return result;
-        }
-        
+                
         /** The set of (as yet) unscheduled nodes. */
         private final Set<Node> remainingNodes;
         /** The set of (as yet) unscheduled variables. */
@@ -444,16 +465,13 @@ public class GraphSearchPlanFactory {
     }
 
     /** 
-     * Search item comparator that gives least priority to items
-     * of which some needed nodes or variables have not yet been matched.
-     * Among those of which all needed parts have been matched,
-     * the comparator prefers those of which the most bound parts 
-     * have also been matched.
+     * Search item comparator that gives higher priority to
+     * items of which more parts have been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.15 $
+     * @version $Revision: 1.16 $
      */
-    static class ConnectPartsComparator implements Comparator<SearchItem> {
-        ConnectPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
+    static class ConnectedPartsComparator implements Comparator<SearchItem> {
+        ConnectedPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
             this.remainingNodes = remainingNodes;
             this.remainingVars = remainingVars;
         }
@@ -479,6 +497,51 @@ public class GraphSearchPlanFactory {
             }
             for (String var: item.bindsVars()) {
                 if (!remainingVars.contains(var)) {
+                    result++;
+                }
+            }
+            return result;
+        }
+        
+        /** The set of (as yet) unscheduled nodes. */
+        private final Set<Node> remainingNodes;
+        /** The set of (as yet) unscheduled variables. */
+        private final Set<String> remainingVars;
+    }
+
+    /** 
+     * Search item comparator that gives higher priority to
+     * items with more unmatched parts.
+     * @author Arend Rensink
+     * @version $Revision: 1.16 $
+     */
+    static class BoundPartsComparator implements Comparator<SearchItem> {
+        BoundPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
+            this.remainingNodes = remainingNodes;
+            this.remainingVars = remainingVars;
+        }
+
+        /**
+         * Compares the connect count (higher is better).
+         */
+        public int compare(SearchItem o1, SearchItem o2) {
+            return getBoundCount(o1) - getBoundCount(o2);
+        }
+        
+        /** 
+         * Returns the number of nodes and variables bound by the
+         * item that have not yet been matched. 
+         * More unmatched parts means more non-determinism, so the lower the better.
+         */
+        private int getBoundCount(SearchItem item) {
+            int result = 0;
+            for (Node node: item.bindsNodes()) {
+                if (remainingNodes.contains(node)) {
+                    result++;
+                }
+            }
+            for (String var: item.bindsVars()) {
+                if (remainingVars.contains(var)) {
                     result++;
                 }
             }
@@ -632,7 +695,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.15 $
+     * @version $Revision: 1.16 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 
@@ -648,7 +711,7 @@ public class GraphSearchPlanFactory {
          * <ul>
          * <li> {@link NeededPartsComparator}
          * <li> {@link ItemTypeComparator}
-         * <li> {@link ConnectPartsComparator}
+         * <li> {@link ConnectedPartsComparator}
          * <li> {@link FrequencyComparator}
          * <li> {@link IndegreeComparator}
          * </ul>
@@ -664,7 +727,7 @@ public class GraphSearchPlanFactory {
                 return result;
             }
             result++;
-            if (compClass == ConnectPartsComparator.class) {
+            if (compClass == ConnectedPartsComparator.class) {
                 return result;
             }
             result++;

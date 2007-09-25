@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.12 2007-09-04 20:59:29 rensink Exp $
- * $Date: 2007-09-04 20:59:29 $
+ * $Id: Rule.java,v 1.13 2007-09-25 16:30:33 rensink Exp $
+ * $Date: 2007-09-25 16:30:33 $
  */
 package groove.trans;
 
@@ -35,7 +35,7 @@ import java.util.List;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -119,11 +119,4 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * The matcher will try to extend anchor maps to full matches.
      */
     public MatchStrategy getEventMatcher();
-
-    /**
-     * Lazily creates and returns a search plan for rule events of this rule,
-     * which tries to find the anchor image in a given graph. 
-     */
-    @Deprecated
-    public List<groove.graph.match.SearchItem> getAnchorSearchPlan();
 }

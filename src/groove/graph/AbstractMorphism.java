@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMorphism.java,v 1.7 2007-09-16 21:44:23 rensink Exp $
+ * $Id: AbstractMorphism.java,v 1.8 2007-09-25 16:30:17 rensink Exp $
  */
 package groove.graph;
 
@@ -33,7 +33,7 @@ import java.util.Set;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edge,Edge> implements Morphism {
     /**
@@ -589,12 +589,6 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     abstract protected MatchStrategy createMatchStrategy();
 
     /**
-     * Factory method for simulations.
-     */
-    @Deprecated
-    abstract protected groove.graph.match.Matcher createMatcher();
-    
-    /**
      * The codomain of this Morphism.
      * @invariant cod != null
      */
@@ -611,8 +605,8 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     protected boolean fixed;
 
     /**
-     * Switch to control whether injectivity is checked early (duriing
-     * potential slabilization) or late (during morphism construction).
+     * Switch to control whether injectivity is checked early (during
+     * potential stabilisation) or late (during morphism construction).
      * Late seems to be faster for small morphisms;
      * we conjecture that early is faster for larger cases.
      */
