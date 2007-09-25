@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.9 2007-09-22 16:28:07 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.10 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
@@ -49,11 +49,11 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 		this.arguments = edge.source().getArguments();
 		this.target = edge.target();
         this.neededNodes = new HashSet<Node>(arguments);
-        if (isBindable(target)) {
-            this.boundNodes = Collections.<Node>singleton(target);
-        } else {
+        if (target.hasValue()) {
             this.boundNodes = Collections.<Node>emptySet();
             this.neededNodes.add(target);
+        } else {
+            this.boundNodes = Collections.<Node>singleton(target);
         }
 	}
 	
@@ -61,11 +61,6 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 		return new OperatorEdgeRecord(matcher);
 	}
 
-    /** Determines whether a given node can be bound as a result of binding this edge. */
-    private boolean isBindable(Node node) {
-        return !(node instanceof ValueNode) || !((ValueNode) node).hasValue();
-    }
-    
 	/**
      * Returns a singleton set consisting of the target node of the operator edge.
      */
@@ -126,6 +121,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
 	}
 
 	public void activate(SearchPlanStrategy strategy) {
+		targetFound = strategy.isNodeFound(target);
         targetIx = strategy.getNodeIx(target);
         argumentIxs = new int[arguments.size()];
         for (int i = 0; i < arguments.size(); i++) {
@@ -147,6 +143,8 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
     private final Collection<Node> neededNodes;
     /** Indices of the argument nodes in the result. */
     private int[] argumentIxs;
+    /** Flag indicating if the target node has been found at search time. */
+    private boolean targetFound;
     /** Index of {@link #target} in the result. */
     private int targetIx;
     
@@ -162,7 +160,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
          */
         OperatorEdgeRecord(Search search) {
             super(search);
-            targetPreMatched = getSearch().getNode(targetIx) != null;
+            targetPreMatch = getSearch().getNodePreMatch(targetIx);
         }
         
         @Override
@@ -176,14 +174,15 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
             Object outcome = calculateResult();
             if (outcome == null || target.hasValue() && !target.getValue().equals(outcome)) {
                 result = false;
-            } else if (targetPreMatched) {
-                result = ((ValueNode) getSearch().getNode(targetIx)).getValue().equals(outcome);
+            } else if (targetFound || targetPreMatch != null) {
+            	Node targetFind = targetPreMatch;
+            	if (targetFind == null) {
+            		targetFind = getSearch().getNode(targetIx);
+            	}
+                result = ((ValueNode) targetFind).getValue().equals(outcome);
             } else {
                 ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(operation.getResultType(), outcome);
-                result = isAvailable(targetImage);
-                if (result) {
-                    getSearch().putNode(targetIx, targetImage);
-                }
+                result = getSearch().putNode(targetIx, targetImage);
             }
             return result;
         }
@@ -192,8 +191,9 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
          * Removes the edge added during the last {@link #find()}, if any.
          */
         @Override
-        void undo() {
-            if (! targetPreMatched) {
+        public void reset() {
+        	super.reset();
+            if (targetPreMatch == null && !targetFound) {
                 getSearch().putNode(targetIx, null);
             }
         }
@@ -229,7 +229,8 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
             }
         }
         
-        private final boolean targetPreMatched;
+        /** The pre-matched target node, if any. */
+        private final Node targetPreMatch;
         
         /** Flag to control debug printing. */
         static private final boolean PRINT = false; 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.14 2007-09-22 16:28:06 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.15 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
@@ -53,7 +53,7 @@ import java.util.TreeSet;
  * The search plans include items for all graph nodes and edges, ordered
  * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -143,7 +143,7 @@ public class GraphSearchPlanFactory {
             Set<Node> unmatchedNodes = new HashSet<Node>(remainingNodes);
             Set<Edge> unmatchedEdges = new HashSet<Edge>(remainingEdges);
             // first a single search item for the pre-matched elements
-            if (preMatchedNodes != null) {
+            if (preMatchedNodes != null && !(preMatchedNodes.isEmpty() && preMatchedEdges.isEmpty())) {
             	SearchItem preMatchItem = new PreMatchSearchItem(preMatchedNodes, preMatchedEdges);
             	result.add(preMatchItem);
             	unmatchedNodes.removeAll(preMatchItem.bindsNodes());
@@ -208,6 +208,7 @@ public class GraphSearchPlanFactory {
             Collection<Comparator<SearchItem>> result = new TreeSet<Comparator<SearchItem>>(new ItemComparatorComparator());
             result.add(new NeededPartsComparator(remainingNodes, remainingVars));
             result.add(new ItemTypeComparator());
+            result.add(new ConnectPartsComparator(remainingNodes, remainingVars));
             result.add(new IndegreeComparator(remainingEdges));
             return result;
         }
@@ -224,14 +225,14 @@ public class GraphSearchPlanFactory {
                 Edge negatedEdge = DefaultEdge.createEdge(edge.source(), negOperand.toLabel(), edge.opposite());
                 return createNegatedSearchItem(createEdgeSearchItem(negatedEdge));
             } else if (RegExprLabel.getWildcardId(label) != null) {
-                return new VarEdgeSearchItem(edge);
+                return new VarEdgeSearchItem((BinaryEdge) edge);
             } else if (RegExprLabel.isWildcard(label)) {
-                return new WildcardEdgeSearchItem(edge);
+                return new WildcardEdgeSearchItem((BinaryEdge) edge);
             } else if (RegExprLabel.isAtom(label)) {
                 DefaultEdge defaultEdge = DefaultEdge.createEdge(edge.source(), RegExprLabel.getAtomText(label), edge.opposite());
                 return new Edge2SearchItem(defaultEdge);
             } else if (label instanceof RegExprLabel) {
-                return new RegExprEdgeSearchItem(edge);
+                return new RegExprEdgeSearchItem((BinaryEdge) edge);
             } else if (edge instanceof ProductEdge) {
                 if (((ProductEdge) edge).getOperation() instanceof Constant) {
                     // constants are more efficiently matched as ValueNodes
@@ -244,7 +245,7 @@ public class GraphSearchPlanFactory {
         	} else if (edge instanceof BinaryEdge) {
         	    return new Edge2SearchItem((BinaryEdge) edge);      
             } else {
-        	    return new EdgeSearchItem(edge);      
+        	    throw new IllegalArgumentException(String.format("Edge %s cannot be matched", edge));
             }
         }
 
@@ -336,9 +337,9 @@ public class GraphSearchPlanFactory {
          */
         public int compare(SearchItem item1, SearchItem item2) {
             int result = 0;
-            if (item1 instanceof EdgeSearchItem && item2 instanceof EdgeSearchItem) {
-                Edge first = ((EdgeSearchItem) item1).getEdge();
-                Edge second = ((EdgeSearchItem) item2).getEdge();
+            if (item1 instanceof Edge2SearchItem && item2 instanceof Edge2SearchItem) {
+                Edge first = ((Edge2SearchItem) item1).getEdge();
+                Edge second = ((Edge2SearchItem) item2).getEdge();
                 // first test for the indegree of the source (lower = better)
                 result = indegree(second.source()) - indegree(first.source()); 
                 if (result == 0) {
@@ -354,8 +355,8 @@ public class GraphSearchPlanFactory {
          * It decreases the indegree of all end nodes of that edge except its source.
          */
         public void update(Observable o, Object arg) {
-            if (arg instanceof EdgeSearchItem) {
-                Edge selected = ((EdgeSearchItem) arg).getEdge();
+            if (arg instanceof Edge2SearchItem) {
+                Edge selected = ((Edge2SearchItem) arg).getEdge();
                 for (Node end : selected.ends()) {
                     if (!end.equals(selected.source())) {
                         indegrees.remove(end);
@@ -376,7 +377,7 @@ public class GraphSearchPlanFactory {
          */
         private final Bag<Node> indegrees;
     }
-    
+
     /** 
      * Search item comparator that gives least priority to items
      * of which some needed nodes or variables have not yet been matched.
@@ -384,7 +385,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.14 $
+     * @version $Revision: 1.15 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -397,14 +398,7 @@ public class GraphSearchPlanFactory {
          * the bind count (lower is better).
          */
         public int compare(SearchItem o1, SearchItem o2) {
-            int result = getNeedCount(o1) - getNeedCount(o2);
-//            if (result == 0) {
-//                result = getConnectCount(o1) - getConnectCount(o2);
-//            }
-            if (result == 0) {
-                result = getBindCount(o2) - getBindCount(o1);
-            }
-            return result;
+            return getNeedCount(o1) - getNeedCount(o2);
         }
         
         /** 
@@ -443,20 +437,48 @@ public class GraphSearchPlanFactory {
             return result;
         }
         
+        /** The set of (as yet) unscheduled nodes. */
+        private final Set<Node> remainingNodes;
+        /** The set of (as yet) unscheduled variables. */
+        private final Set<String> remainingVars;
+    }
+
+    /** 
+     * Search item comparator that gives least priority to items
+     * of which some needed nodes or variables have not yet been matched.
+     * Among those of which all needed parts have been matched,
+     * the comparator prefers those of which the most bound parts 
+     * have also been matched.
+     * @author Arend Rensink
+     * @version $Revision: 1.15 $
+     */
+    static class ConnectPartsComparator implements Comparator<SearchItem> {
+        ConnectPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
+            this.remainingNodes = remainingNodes;
+            this.remainingVars = remainingVars;
+        }
+
+        /**
+         * Compares the connect count (higher is better).
+         */
+        public int compare(SearchItem o1, SearchItem o2) {
+            return getConnectCount(o1) - getConnectCount(o2);
+        }
+        
         /** 
          * Returns the number of nodes and variables bound by the
          * item that have not yet been matched. 
          * More unmatched parts means more non-determinism, so the lower the better.
          */
-        private int getBindCount(SearchItem item) {
+        private int getConnectCount(SearchItem item) {
             int result = 0;
             for (Node node: item.bindsNodes()) {
-                if (remainingNodes.contains(node)) {
+                if (!remainingNodes.contains(node)) {
                     result++;
                 }
             }
             for (String var: item.bindsVars()) {
-                if (remainingVars.contains(var)) {
+                if (!remainingVars.contains(var)) {
                     result++;
                 }
             }
@@ -485,7 +507,6 @@ public class GraphSearchPlanFactory {
          * <li> {@link VarEdgeSearchItem}s
          * <li> {@link WildcardEdgeSearchItem}s
          * <li> {@link Edge2SearchItem}s
-         * <li> {@link EdgeSearchItem}s of a non-specialised type
          * <li> {@link ConditionSearchItem}s
          * <li> {@link OperatorEdgeSearchItem}s
          * <li> {@link ValueNodeSearchItem}s
@@ -520,10 +541,6 @@ public class GraphSearchPlanFactory {
             } 
             result++;
             if (itemClass == Edge2SearchItem.class) {
-                return result;
-            } 
-            result++;
-            if (itemClass == EdgeSearchItem.class) {
                 return result;
             } 
             result++;
@@ -581,9 +598,9 @@ public class GraphSearchPlanFactory {
          * latest in the low-priority labels. In case of equal priority, alphabetical ordering is used.
          */
         public int compare(SearchItem first, SearchItem second) {
-            if (first instanceof EdgeSearchItem && second instanceof EdgeSearchItem) {
-                String firstLabel = ((EdgeSearchItem) first).getEdge().label().text();
-                String secondLabel = ((EdgeSearchItem) second).getEdge().label().text();
+            if (first instanceof Edge2SearchItem && second instanceof Edge2SearchItem) {
+                String firstLabel = ((Edge2SearchItem) first).getEdge().label().text();
+                String secondLabel = ((Edge2SearchItem) second).getEdge().label().text();
                 // compare edge priorities
                 return getEdgePriority(firstLabel) - getEdgePriority(secondLabel);
             } else {
@@ -615,7 +632,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.14 $
+     * @version $Revision: 1.15 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 
@@ -631,6 +648,7 @@ public class GraphSearchPlanFactory {
          * <ul>
          * <li> {@link NeededPartsComparator}
          * <li> {@link ItemTypeComparator}
+         * <li> {@link ConnectPartsComparator}
          * <li> {@link FrequencyComparator}
          * <li> {@link IndegreeComparator}
          * </ul>
@@ -643,6 +661,10 @@ public class GraphSearchPlanFactory {
             }
             result++;
             if (compClass == ItemTypeComparator.class) {
+                return result;
+            }
+            result++;
+            if (compClass == ConnectPartsComparator.class) {
                 return result;
             }
             result++;

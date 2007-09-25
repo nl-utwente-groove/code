@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.7 2007-09-22 16:28:07 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.8 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
@@ -21,7 +21,6 @@ import groove.match.SearchPlanStrategy.Search;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Iterator;
 
 /**
  * A search item that searches an image for a node.
@@ -35,8 +34,13 @@ public class NodeSearchItem extends AbstractSearchItem {
         this.boundNodes = Collections.singleton(node);
 	}
 	
-	public NodeRecord getRecord(Search search) {
-		return new NodeRecord(search);
+	public Record getRecord(Search search) {
+		if (nodeMatched || search.getNodePreMatch(nodeIx) != null) {
+			// the node is pre-matched, so there is nothing to do
+			return createDummyRecord();
+		} else {
+			return new NodeRecord(search);
+		}
 	}
 	
 	/**
@@ -69,6 +73,7 @@ public class NodeSearchItem extends AbstractSearchItem {
     }
 
     public void activate(SearchPlanStrategy strategy) {
+    	nodeMatched = strategy.isNodeFound(node);
         nodeIx = strategy.getNodeIx(node);
     }
 
@@ -76,6 +81,8 @@ public class NodeSearchItem extends AbstractSearchItem {
 	 * The edge for which this search item is to find an image.
 	 */
 	private final Node node;
+	/** Flag indicating if the node is pre-matched. */
+	private boolean nodeMatched;
     /** The index of {@link #node} in the result. */
 	private int nodeIx;
     /** Singleton set consisting only of <code>node</code>. */
@@ -87,18 +94,11 @@ public class NodeSearchItem extends AbstractSearchItem {
      * @author Arend Rensink
      * @version $Revision $
      */
-    class NodeRecord extends AbstractRecord {
+    class NodeRecord extends MultipleRecord<Node> {
         /** Constructs a record for a given matcher. */
         NodeRecord(Search search) {
             super(search);
-            this.preMatched = search.getNode(nodeIx) != null;
-        }
-
-        /**
-         * The record is singular if there is a pre-matched image.
-         */
-        public boolean isSingular() {
-            return preMatched;
+            assert search.getNode(nodeIx) == null;
         }
 
         @Override
@@ -107,40 +107,37 @@ public class NodeSearchItem extends AbstractSearchItem {
         }
 
         @Override
-        void exit() {
+        public void reset() {
             imageIter = null;
+            selected = null;
+            getSearch().putNode(nodeIx, null);
         }
 
         @Override
         void init() {
-            if (!preMatched) {
-                imageIter = getTarget().nodeSet().iterator();
-            }
+        	imageIter = getTarget().nodeSet().iterator();
         }
-
-        @Override
-        boolean next() {
-            boolean result;
-            if (preMatched) {
-                result = isFirst();
-            } else {
-                result = false;
-                while (!result && imageIter.hasNext()) {
-                    result = select(imageIter.next());
-                }
-            }
-            return result;
-        }
-
-        /** Undoes the effect of {@link #select(Node)}. */
-        @Override
-        void undo() {
-            if (! preMatched) {
-                Node oldImage = getSearch().putNode(nodeIx, null);
-                assert selected.equals(oldImage) : String.format("Image %s=%s should coincide with %s", node, selected, oldImage);
-            }
-            selected = null;
-        }
+//
+//        @Override
+//        boolean next() {
+//            boolean result;
+//			result = false;
+//			while (!result && imageIter.hasNext()) {
+//				result = select(imageIter.next());
+//			}
+//			return result;
+//        }
+//
+//        /** Undoes the effect of {@link #select(Node)}. */
+//        @Override
+//        void undo() {
+//			Node oldImage = getSearch().putNode(nodeIx, null);
+//			assert selected.equals(oldImage) : String.format("Image %s=%s should coincide with %s",
+//					node,
+//					selected,
+//					oldImage);
+//			selected = null;
+//        }
         
         /**
          * Actually selects a node image and puts it into the element
@@ -149,30 +146,26 @@ public class NodeSearchItem extends AbstractSearchItem {
          * @param image the value to be inserted in the element map of the matcher
          * @return <code>true</code> if the selection has succeeded
          */
-        boolean select(Node image) {
-            assert !preMatched;
-            boolean result = isAvailable(image);
-            if (result) {
-                assert selected == null : String.format("Image %s already selected for node %s", image, node);
-                getSearch().putNode(nodeIx, image);
-                selected = image;
-            }
+        @Override
+        boolean setImage(Node image) {
+        	boolean result = getSearch().putNode(nodeIx, image);
+        	selected = image;
             return result;
         }
-        
-        /**
-         * The images for the item's edge.
-         */
-        private Iterator<? extends Node> imageIter;
-        
+//        
+//        /**
+//         * The images for the item's edge.
+//         */
+//        private Iterator<? extends Node> imageIter;
+//        
         /**
          * The image for {@link #node} set during the last call to {@link #find()}.
          */
         private Node selected;
-        
-        /** 
-         * Flag indicating that the selected image was already in the element map.
-         */
-        private final boolean preMatched;
+//        
+//        /** 
+//         * Flag indicating that the selected image was already in the element map.
+//         */
+//        private final boolean preMatched;
     }
 }

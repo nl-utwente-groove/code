@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchItem.java,v 1.6 2007-09-22 16:28:06 rensink Exp $
+ * $Id: SearchItem.java,v 1.7 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
@@ -23,6 +23,18 @@ import java.util.Collection;
 
 /**
  * Interface for an item in a search plan.
+ * The use of a search item has the following phases:
+ * <ul>
+ * <li> Creation (constructor call). At this time nothing is known about the ordering of search items 
+ * in the search plan, so nothing is known about already found or pre-matched parts.
+ * <li> Activation (call of {@link #activate(SearchPlanStrategy)}). At this time the
+ * ordering of the items is known, and indices for the parts can be obtained, as
+ * well as knowledge about which parts are already found.
+ * <li> Record creation (call of {@link #getRecord(SearchPlanStrategy.Search)}). At this
+ * time the pre-matched images are known. Found images are also known, but are due to 
+ * change at subsequent finds.
+ * <li> Record usage (call of {@link Record#find()}). At this time the found images are known. 
+ * </ul>
  * @author Arend Rensink
  * @version $Revision $
  */

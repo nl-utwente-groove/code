@@ -12,70 +12,64 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WildcardEdgeSearchItem.java,v 1.4 2007-08-30 15:18:18 rensink Exp $
+ * $Id: WildcardEdgeSearchItem.java,v 1.5 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
-import groove.graph.Label;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.RegExprLabel;
 
-import java.util.Iterator;
+import java.util.Set;
 
 /**
  * A search item that searches an image for an edge.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class WildcardEdgeSearchItem extends EdgeSearchItem {
+public class WildcardEdgeSearchItem extends Edge2SearchItem {
 	/** 
 	 * Constructs a new search item.
 	 * The item will match any edge between the end images, and record
 	 * the edge label as value of the wildcard variable.
 	 */
-	public WildcardEdgeSearchItem(Edge edge) {
+	public WildcardEdgeSearchItem(BinaryEdge edge) {
 		super(edge);
 		assert RegExprLabel.isWildcard(edge.label()) && RegExprLabel.getWildcardId(edge.label()) == null: String.format("Edge %s is not a true wildcard edge", edge);
 		assert edge.endCount() <= BinaryEdge.END_COUNT : String.format("Search item undefined for hyperedge", edge);
 	}
-	
+
+	/** This implementation returns <code>false</code>. */
 	@Override
-	public EdgeRecord getRecord(Search search) {
+	boolean isSingular(Search search) {
+		return false;
+	}
+
+	/** This implementation returns a {@link WildcardEdgeRecord}. */
+	@Override
+	public MultipleRecord createMultipleRecord(Search search) {
 		return new WildcardEdgeRecord(search);
 	}
     
     /** Record for this type of search item. */
-    protected class WildcardEdgeRecord extends EdgeRecord {
+    class WildcardEdgeRecord extends Edge2MultipleRecord {
         /** Constructs a new record, for a given matcher. */
-        protected WildcardEdgeRecord(Search search) {
+        WildcardEdgeRecord(Search search) {
             super(search);
         }
 
-        /** This method returns <code>false</code>. */
         @Override
-        boolean isPreDetermined() {
-            return false;
-        }
-        
-        /**
-         * This implementation returns <code>null</code>.
-         */
-        @Override
-        Label getPreMatchedLabel() {
-            throw new UnsupportedOperationException();
-        }
-
-        @Override
-        Iterator< ? extends Edge> computeMultiple() {
-            if (getPreMatchedSource() != null) {
-                return filterImages(getTarget().edgeSet(getPreMatchedSource()), false);
-            } else if (getPreMatchedTarget() != null) {
-                return filterImages(getTarget().edgeSet(getPreMatchedTarget()), false);
+        void initImages() {
+        	Set<? extends Edge> edgeSet;
+            if (sourceFind != null) {
+                edgeSet = getTarget().edgeSet(sourceFind);
+            } else if (targetFind != null) {
+                edgeSet = getTarget().edgeSet(targetFind);
             } else {
-                return filterImages(getTarget().edgeSet(), false);
+                edgeSet = getTarget().edgeSet();
             }
+            initImages(edgeSet, true, true, false, true);
         }
     }
 }

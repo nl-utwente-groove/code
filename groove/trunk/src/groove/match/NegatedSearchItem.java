@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NegatedSearchItem.java,v 1.5 2007-09-22 09:10:35 rensink Exp $
+ * $Id: NegatedSearchItem.java,v 1.6 2007-09-25 15:12:34 rensink Exp $
  */
 package groove.match;
 
@@ -99,7 +99,13 @@ public class NegatedSearchItem extends ConditionSearchItem {
             return result;
         }
 
-        /**
+        @Override
+		public void reset() {
+			super.reset();
+			innerRecord.reset();
+		}
+
+		/**
          * The record of the inner (negated) item.
          */
         private final SearchItem.Record innerRecord;
