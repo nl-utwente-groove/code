@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.22 2007-09-22 16:28:40 rensink Exp $
+ * $Id: StateGenerator.java,v 1.23 2007-09-25 12:59:01 rensink Exp $
  */
 package groove.lts;
 
@@ -89,7 +89,7 @@ public class StateGenerator {
             //}
         	
         	// new test, just look if there are any transitions stored for this state
-        	if (applied) {
+        	if (state.getTransitionSet().isEmpty()) {
         		getGTS().setFinal(state);
         	}
             
