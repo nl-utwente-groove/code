@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaGraphFactory.java,v 1.2 2007-08-26 07:23:39 rensink Exp $
+ * $Id: DeltaGraphFactory.java,v 1.3 2007-09-25 09:38:05 kastenberg Exp $
  */
 package groove.graph;
 
@@ -23,6 +23,6 @@ package groove.graph;
  * @version $Revision $
  */
 public interface DeltaGraphFactory<G extends Graph> {
-	/** Creates a new graph from this graph by applying a delts to the current graph. */
+	/** Creates a new graph from this graph by applying a delta to the current graph. */
 	G newGraph(G basis, DeltaApplier applier);
 }
