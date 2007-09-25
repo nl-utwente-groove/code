@@ -13,9 +13,9 @@
 // language governing permissions and limitations under the License.
 /* 
 <<<<<<< GTS.java
- * $Id: GTS.java,v 1.27 2007-09-22 16:28:40 rensink Exp $
+ * $Id: GTS.java,v 1.28 2007-09-25 15:20:41 rensink Exp $
 =======
- * $Id: GTS.java,v 1.27 2007-09-22 16:28:40 rensink Exp $
+ * $Id: GTS.java,v 1.28 2007-09-25 15:20:41 rensink Exp $
 >>>>>>> 1.26
  */
 package groove.lts;
@@ -48,11 +48,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
-<<<<<<< GTS.java
- * @version $Revision: 1.27 $ $Date: 2007-09-22 16:28:40 $
-=======
- * @version $Revision: 1.27 $ $Date: 2007-09-22 16:28:40 $
->>>>>>> 1.26
+ * @version $Revision: 1.28 $ $Date: 2007-09-25 15:20:41 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	/**

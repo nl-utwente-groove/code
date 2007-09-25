@@ -30,7 +30,7 @@ import java.util.Iterator;
 /**
  * Abstract implementation of a search item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
     /**
@@ -113,19 +113,16 @@ abstract public class AbstractSearchItem implements SearchItem {
     	 * This record alternates between <code>true</code> and <code>false</code>,
     	 * and resets to <code>true</code> upon invocation of {@link #reset()}.
     	 */
-		@Override
 		public boolean find() {
 			found = !found;
 			return found;
 		}
 
 		/** This implementation returns <code>true</code>. */
-		@Override
 		public boolean isSingular() {
 			return true;
 		}
 
-		@Override
 		public void reset() {
 			found = false;
 		}
@@ -175,7 +172,7 @@ abstract public class AbstractSearchItem implements SearchItem {
     /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.9 $
+     * @version $Revision: 1.10 $
      */
     abstract class SingularRecord extends BasicRecord {
         /** Constructs an instance for a given search. */
@@ -230,7 +227,7 @@ abstract public class AbstractSearchItem implements SearchItem {
      * Abstract implementation of a search item record expected to
      * have more than one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.9 $
+     * @version $Revision: 1.10 $
      */
     abstract class MultipleRecord<E extends Element> extends BasicRecord {
         /** Constructs a record for a given search. */
@@ -239,7 +236,6 @@ abstract public class AbstractSearchItem implements SearchItem {
         }
         
         /** This implementation returns <code>false</code>. */
-        @Override
 		public boolean isSingular() {
 			return false;
 		}
