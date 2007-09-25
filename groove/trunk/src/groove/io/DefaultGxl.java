@@ -12,11 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.12 2007-09-22 09:10:37 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.13 2007-09-25 16:30:16 rensink Exp $
  */
 package groove.io;
 
+import groove.graph.AbstractBinaryEdge;
 import groove.graph.AbstractLabel;
+import groove.graph.AbstractUnaryEdge;
+import groove.graph.BinaryEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -24,9 +27,9 @@ import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.GraphShape;
-import groove.graph.HyperEdge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.UnaryEdge;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.util.Groove;
@@ -55,7 +58,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -382,8 +385,12 @@ public class DefaultGxl extends AbstractXml {
 	 * Callback factory method to create an attribute edge with given ends and
 	 * attribute map.
 	 */
-    private AttributeEdge createEdge(Node[] ends, Map<String, String> attributes) {
-        return new AttributeEdge(ends, new AttributeLabel(attributes));
+    private Edge createEdge(Node[] ends, Map<String, String> attributes) {
+        if (ends.length == BinaryEdge.END_COUNT) {
+            return new AttributeEdge2(ends, new AttributeLabel(attributes));
+        } else {
+            return new AttributeEdge1(ends, new AttributeLabel(attributes));
+        }
     }
 
     /**
@@ -391,11 +398,11 @@ public class DefaultGxl extends AbstractXml {
      * source node, and a label based on a given attribute map. The edge will be unary of
      * <code>targetNode == null</code>, binary otherwise.
      */
-    private AttributeEdge createEdge(Node sourceNode, Map<String, String> attributes, Node targetNode) {
+    private Edge createEdge(Node sourceNode, Map<String, String> attributes, Node targetNode) {
         if (targetNode == null) {
-            return new AttributeEdge(new Node[] { sourceNode }, new AttributeLabel(attributes));
+            return new AttributeEdge1(sourceNode, new AttributeLabel(attributes));
         } else {
-            return new AttributeEdge(new Node[] { sourceNode, targetNode }, new AttributeLabel(attributes));            
+            return new AttributeEdge2(sourceNode, new AttributeLabel(attributes), targetNode);            
         }
     }
     
@@ -456,15 +463,6 @@ public class DefaultGxl extends AbstractXml {
 	        this.attributes = new HashMap<String,String>(attributes);
 	    }
 	
-	    /**
-	     * Parsing is not supported for attribute labels.
-	     * @throws UnsupportedOperationException always
-	     */
-	    @Deprecated
-	    public Label parse(String text) throws FormatException {
-	        throw new UnsupportedOperationException();
-	    }
-	
 	    public String text() {
 	        return attributes.toString();
 	    }
@@ -482,11 +480,43 @@ public class DefaultGxl extends AbstractXml {
 	    private final Map<String,String> attributes;
 	}
 
-	/** Edge carrying an attribute map on its label, with an unknown end count. */ 
-	static private class AttributeEdge extends HyperEdge {
-		/** Constructs in instance for given ends and label. */
-	    public AttributeEdge(Node[] ends, AttributeLabel label) {
-	        super(ends, label);
-	    }
-	}
+    /** Edge carrying an attribute map on its label, with an unknown end count. */ 
+    static private class AttributeEdge2 extends AbstractBinaryEdge {
+        /** Constructs in instance for given ends and label. */
+        public AttributeEdge2(Node[] ends, AttributeLabel label) {
+            this(ends[SOURCE_INDEX], label, ends[TARGET_INDEX]);
+        }
+
+        private AttributeEdge2(Node source, AttributeLabel label, Node target) {
+            super(source, label, target);
+        }
+
+        @Override
+        @Deprecated
+        public BinaryEdge newEdge(Node source, Label label, Node target) {
+            return new AttributeEdge2(source, (AttributeLabel) label, target);
+        }
+        
+        
+    }
+
+    /** Edge carrying an attribute map on its label, with an unknown end count. */ 
+    static private class AttributeEdge1 extends AbstractUnaryEdge {
+        /** Constructs in instance for given ends and label. */
+        public AttributeEdge1(Node[] ends, AttributeLabel label) {
+            this(ends[SOURCE_INDEX], label);
+        }
+
+        private AttributeEdge1(Node source, AttributeLabel label) {
+            super(source, label);
+        }
+        
+        @Override
+        @Deprecated
+        public UnaryEdge newEdge(Node source, Label label) {
+            return new AttributeEdge1(source, (AttributeLabel) label);
+        }
+        
+        
+    }
 }

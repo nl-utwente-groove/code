@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprLabel.java,v 1.8 2007-09-10 19:13:33 rensink Exp $
+ * $Id: RegExprLabel.java,v 1.9 2007-09-25 16:30:29 rensink Exp $
  */
 package groove.rel;
 
@@ -25,7 +25,7 @@ import groove.view.FormatException;
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-09-10 19:13:33 $
+ * @version $Revision: 1.9 $ $Date: 2007-09-25 16:30:29 $
  */
 public class RegExprLabel extends AbstractLabel {
     /**
@@ -38,14 +38,6 @@ public class RegExprLabel extends AbstractLabel {
             throw new IllegalArgumentException("Can't create regular expression label from null expression");
         }
         this.regExpr = regExpr;
-    }
-
-    /**
-     * Factory method: returns a label corresponding to a given string.
-     */
-    @Deprecated
-    public Label parse(String text) throws FormatException {
-        return parseLabel(text);
     }
 
     /**
@@ -77,24 +69,6 @@ public class RegExprLabel extends AbstractLabel {
     /** An automaton constructed lazily for the regular expression. */
     private Automaton automaton;
     
-    /**
-     * Attempts to construct a label by interpreting a given string as a regular expression.
-     * @param text the string to be parsed
-     * @exception FormatException if <tt>text</tt> is not a correctly formatted
-     * regular expression text
-     * @see RegExpr#parse(String)
-     * @require <tt>text != null</tt>
-     * @deprecated parsing string to get labels is not reliable
-     */
-	@Deprecated
-    public static RegExprLabel parseLabel(String text) throws FormatException {
-        try {
-            return RegExpr.parse(text).toLabel();
-        } catch (FormatException exc) {
-            throw new FormatException(exc.getMessage());
-        }
-    }
-	
 	/**
 	 * Returns the regular expression on the label if it is a {@link RegExprLabel},
 	 * <code>null</code> otherwise.

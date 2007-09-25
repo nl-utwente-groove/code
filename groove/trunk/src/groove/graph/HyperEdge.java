@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: HyperEdge.java,v 1.7 2007-09-19 07:10:29 rensink Exp $
+ * $Id: HyperEdge.java,v 1.8 2007-09-25 16:30:17 rensink Exp $
  */
 package groove.graph;
 
@@ -20,8 +20,10 @@ package groove.graph;
  * General edge implementation.
  * Don't use it if efficiency is a concern!
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
+ * @deprecated Hyperedges are no longer (planned to be) supported; use {@link UnaryEdge} or {@link BinaryEdge} instead.
  */
+@Deprecated 
 public class HyperEdge extends AbstractEdge {
     /**
      * Constructs an edge with given ends and label.

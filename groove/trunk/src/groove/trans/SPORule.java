@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.24 2007-09-18 21:57:59 rensink Exp $
+ * $Id: SPORule.java,v 1.25 2007-09-25 16:30:34 rensink Exp $
  */
 package groove.trans;
 
@@ -26,7 +26,6 @@ import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
 import groove.graph.algebra.ValueNode;
-import groove.match.ConditionSearchPlanFactory;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
 import groove.rel.RegExprLabel;
@@ -49,7 +48,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -137,7 +136,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /** Creates the search plan using the rule's search plan factory. */
     public MatchStrategy getEventMatcher() {
         if (eventMatcher == null) {
-            eventMatcher = ConditionSearchPlanFactory.getInstance().createMatcher(this, getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
+            eventMatcher = getMatcherFactory().createMatcher(this, getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
         }
         return eventMatcher;
     }
@@ -173,15 +172,6 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 			return null;
 		}
 	}
-
-	/** Creates the search plan using the rule's search plan factory. */
-    @Deprecated
-    public List<groove.graph.match.SearchItem> getAnchorSearchPlan() {
-        if (eventSearchPlan == null) {
-            eventSearchPlan = getSearchPlanFactory().createSearchPlan(this, getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
-        }
-        return eventSearchPlan;
-    }
 
     public Graph lhs() {
         return lhs;
@@ -748,21 +738,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      * The priority of this rule.
      */
     private int priority;
-//    /**
-//     * Map from anchor maps to {@link RuleEvent}s.
-//     */
-//    private final Map<RuleEvent,RuleEvent> eventMap = new HashMap<RuleEvent,RuleEvent>();
-//
-//	/**
-//     * The unique event in case this rule is not modifying.
-//     * @see #isModifying()
-//     */
-//    private RuleEvent unmodifyingEvent;
     /** The matcher for events of this rule. */
     private MatchStrategy eventMatcher;
-    /** The search plan for events of this rule. */
-    @Deprecated
-    private List<groove.graph.match.SearchItem> eventSearchPlan;
     /** Debug flag for the constructor. */
     private static final boolean CONSTRUCTOR_DEBUG = false;
     /** Handle for profiling {@link #matches(Graph)} and related methods. */

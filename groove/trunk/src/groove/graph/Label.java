@@ -12,24 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Label.java,v 1.6 2007-08-26 07:23:42 rensink Exp $
+ * $Id: Label.java,v 1.7 2007-09-25 16:30:17 rensink Exp $
  */
 package groove.graph;
-
-import groove.view.FormatException;
 
 /**
  * Interface for edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-08-26 07:23:42 $
+ * @version $Revision: 1.7 $ $Date: 2007-09-25 16:30:17 $
  */
 public interface Label extends Comparable<Label>, java.io.Serializable {
-    /**
-     * Returns a label corresponding to a given string.
-     */
-	@Deprecated
-    Label parse(String text) throws FormatException;
-
     /**
      * Returns the text that this Label carries.
      * As a rule, <code>text()</code> should equal <code>toString()</code>.

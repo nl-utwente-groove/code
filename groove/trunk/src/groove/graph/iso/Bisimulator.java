@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Bisimulator.java,v 1.12 2007-09-22 09:10:39 rensink Exp $
+ * $Id: Bisimulator.java,v 1.13 2007-09-25 16:30:36 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -38,7 +38,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elements to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class Bisimulator implements CertificateStrategy {
     /**
@@ -244,7 +244,7 @@ public class Bisimulator implements CertificateStrategy {
     }
 
     /** 
-     * Creates a {@link EdgeCertificate} for a given graph edge,
+     * Creates a {@link Edge2Certificate} for a given graph edge,
      * and inserts into the certificate edge map. 
      */
     private void initEdgeCert(Edge edge) {
@@ -255,19 +255,19 @@ public class Bisimulator implements CertificateStrategy {
 	                + otherNodeCertMap + "; so not in the node set " + graph.nodeSet() + " of "
 	                + graph;
     	if (edge instanceof UnaryEdge || source == edge.opposite()) {
-    		FlagCertificate flagCert = new FlagCertificate(edge, sourceCert);
-    		edgeCerts[edgeCerts.length - flagCertCount - 1] = flagCert;
-    		flagCertCount++;
-    		assert flagCertCount + edgeCertCount <= edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges", flagCertCount, edgeCertCount, edgeCerts.length);
+    		Edge1Certificate edge1Cert = new Edge1Certificate(edge, sourceCert);
+    		edgeCerts[edgeCerts.length - edge1CertCount - 1] = edge1Cert;
+    		edge1CertCount++;
+    		assert edge1CertCount + edge2CertCount <= edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges", edge1CertCount, edge2CertCount, edgeCerts.length);
     	} else {
     		NodeCertificate targetCert = getNodeCert(edge.opposite());
     		assert targetCert != null : "Edge target of " + edge + " not found in "
 	                    + otherNodeCertMap + "; so not in the node set " + graph.nodeSet() + " of "
 	                    + graph;
-    		EdgeCertificate edgeCert = new EdgeCertificate(edge, sourceCert, targetCert);
-    		edgeCerts[edgeCertCount] = edgeCert;
-    		edgeCertCount++;
-    		assert flagCertCount + edgeCertCount <= edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges", flagCertCount, edgeCertCount, edgeCerts.length);
+    		Edge2Certificate edge2Cert = new Edge2Certificate(edge, sourceCert, targetCert);
+    		edgeCerts[edge2CertCount] = edge2Cert;
+    		edge2CertCount++;
+    		assert edge1CertCount + edge2CertCount <= edgeCerts.length : String.format("%s unary and %s binary edges do not equal %s edges", edge1CertCount, edge2CertCount, edgeCerts.length);
     	}
     	if (TIME) reporter.stop();
     }
@@ -353,7 +353,7 @@ public class Bisimulator implements CertificateStrategy {
         // so far we have done nothing with the flags, so 
         // give them a chance to get their hash code right
         int edgeCount = edgeCerts.length;
-        for (int i = edgeCertCount; i < edgeCount; i++) {
+        for (int i = edge2CertCount; i < edgeCount; i++) {
             edgeCerts[i].setNewValue();
         }
         recordIterateCount(iterateCount);
@@ -381,14 +381,14 @@ public class Bisimulator implements CertificateStrategy {
     private int nodeCertCount;
     /**
      * The list of edge certificates in this bisimulator.
-     * The array consists of a number of {@link EdgeCertificate}s,
-     * followed by a number of {@link FlagCertificate}s.
+     * The array consists of a number of {@link Edge2Certificate}s,
+     * followed by a number of {@link Edge1Certificate}s.
      */
     private Certificate<Edge>[] edgeCerts;
-    /** The number of {@link EdgeCertificate}s in {@link #edgeCerts}. */
-    private int edgeCertCount;
-    /** The number of {@link FlagCertificate}s in {@link #edgeCerts}. */
-    private int flagCertCount;
+    /** The number of {@link Edge2Certificate}s in {@link #edgeCerts}. */
+    private int edge2CertCount;
+    /** The number of {@link Edge1Certificate}s in {@link #edgeCerts}. */
+    private int edge1CertCount;
     /** Map from nodes that are not {@link DefaultNode}s to node certificates. */
     private Map<Node,NodeCertificate> otherNodeCertMap;
     /** Array of default node certificates. */
@@ -532,7 +532,7 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.12 $
+     * @version $Revision: 1.13 $
      */
     static private class NodeCertificate extends Certificate<Node> {
     	/** Initial node value to provide a better spread of hash codes. */
@@ -597,16 +597,16 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.12 $
+     * @version $Revision: 1.13 $
      */
-    static private class EdgeCertificate extends Certificate<Edge> {
+    static private class Edge2Certificate extends Certificate<Edge> {
         /**
          * Constructs a certificate for a binary edge.
          * @param edge The target certificate node
          * @param source The source certificate node
          * @param target The label of the original edge
          */
-        public EdgeCertificate(Edge edge, NodeCertificate source, NodeCertificate target) {
+        public Edge2Certificate(Edge edge, NodeCertificate source, NodeCertificate target) {
         	super(edge);
             this.source = source;
             this.target = target;
@@ -622,14 +622,14 @@ public class Bisimulator implements CertificateStrategy {
         }
         
         /**
-         * Returns <tt>true</tt> if <tt>obj</tt> is also a {@link EdgeCertificate}
+         * Returns <tt>true</tt> if <tt>obj</tt> is also a {@link Edge2Certificate}
          * and has the same value, as well as the same source and target values, as this one.
          * @see #getValue()
          */
     	@Override
         public boolean equals(Object obj) {
-            if (obj instanceof EdgeCertificate) {
-                EdgeCertificate other = (EdgeCertificate) obj; 
+            if (obj instanceof Edge2Certificate) {
+                Edge2Certificate other = (Edge2Certificate) obj; 
                 if (value != other.value || labelIndex != other.labelIndex || source.value != other.source.value) {
                 	return false;
                 } else if (target == source) {
@@ -681,11 +681,11 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.12 $
+     * @version $Revision: 1.13 $
      */
-    static private class FlagCertificate extends Certificate<Edge> {
+    static private class Edge1Certificate extends Certificate<Edge> {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
-        public FlagCertificate(Edge edge, NodeCertificate source) {
+        public Edge1Certificate(Edge edge, NodeCertificate source) {
         	super(edge);
             this.source = source;
             this.labelIndex = edge.label().hashCode();
@@ -699,14 +699,14 @@ public class Bisimulator implements CertificateStrategy {
         }
 
         /**
-         * Returns <tt>true</tt> if <tt>obj</tt> is also a {@link FlagCertificate}
+         * Returns <tt>true</tt> if <tt>obj</tt> is also a {@link Edge1Certificate}
          * and has the same value, as well as the same source and target values, as this one.
          * @see #getValue()
          */
     	@Override
         public boolean equals(Object obj) {
-            if (obj instanceof FlagCertificate) {
-                FlagCertificate other = (FlagCertificate) obj; 
+            if (obj instanceof Edge1Certificate) {
+                Edge1Certificate other = (Edge1Certificate) obj; 
                 return (value == other.value && labelIndex == other.labelIndex);
             } else {
                 return false;
