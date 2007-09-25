@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PreMatchSearchItem.java,v 1.1 2007-09-22 16:28:06 rensink Exp $
+ * $Id: PreMatchSearchItem.java,v 1.2 2007-09-25 11:21:06 iovka Exp $
  */
 package groove.match;
 
@@ -76,7 +76,6 @@ public class PreMatchSearchItem extends AbstractSearchItem {
 		return Integer.MAX_VALUE;
 	}
 
-	@Override
 	public void activate(SearchPlanStrategy strategy) {
 		nodeIxMap = new HashMap<Node,Integer>();
 		for (Node node: nodes) {
@@ -92,7 +91,6 @@ public class PreMatchSearchItem extends AbstractSearchItem {
 		}
 	}
 
-	@Override
 	public Record getRecord(Search search) {
 		return new PreMatchRecord(search);
 	}
@@ -121,7 +119,6 @@ public class PreMatchSearchItem extends AbstractSearchItem {
 			assert allElementsMatched(search) : String.format("Elements %s not pre-matched", unmatched);
 		}
 
-		@Override
 		public boolean find() {
 			found = !found;
 			return found;
@@ -147,12 +144,10 @@ public class PreMatchSearchItem extends AbstractSearchItem {
 			return unmatched.isEmpty();
 		}
 		
-		@Override
 		public boolean isSingular() {
 			return true;
 		}
 
-		@Override
 		public void reset() {
 			found = false;
 		}
