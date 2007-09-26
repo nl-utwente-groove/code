@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WildcardEdgeSearchItem.java,v 1.7 2007-09-26 08:30:24 rensink Exp $
+ * $Id: WildcardEdgeSearchItem.java,v 1.8 2007-09-26 21:04:25 rensink Exp $
  */
 package groove.match;
 
@@ -48,7 +48,7 @@ public class WildcardEdgeSearchItem extends Edge2SearchItem {
 
 	/** This implementation returns a {@link WildcardEdgeRecord}. */
 	@Override
-	public MultipleRecord createMultipleRecord(Search search) {
+	MultipleRecord<Edge> createMultipleRecord(Search search) {
 		return new WildcardEdgeRecord(search);
 	}
     

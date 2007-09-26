@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.32 2007-09-19 21:59:10 rensink Exp $
+ * $Id: SPOEvent.java,v 1.33 2007-09-26 21:04:24 rensink Exp $
  */
 package groove.trans;
 
@@ -55,7 +55,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.32 $ $Date: 2007-09-19 21:59:10 $
+ * @version $Revision: 1.33 $ $Date: 2007-09-26 21:04:24 $
  */
 public class SPOEvent implements RuleEvent {
 	/** 
@@ -430,48 +430,6 @@ public class SPOEvent implements RuleEvent {
         return correct;
     }
 
-    /**
-     * Computes a matcher for this event in a given graph,
-     * based on the precomputed anchor map.
-     * Returns <code>null</code> if the anchor map does not fit to the host graph.
-     */
-    @Deprecated
-    protected Matching computeMatcher(Graph host) {
-        reporter.start(GET_PARTIAL_MATCH);
-        Matching result;
-        VarNodeEdgeMap anchorMap = getAnchorMap();
-        boolean correct = true;
-        Iterator<Edge> edgeImageIter = anchorMap.edgeMap().values().iterator();
-        while (correct && edgeImageIter.hasNext()) {
-            correct = virtuallyContains(host, edgeImageIter.next());
-        }
-        if (correct) {
-            Iterator<Node> nodeImageIter = anchorMap.nodeMap().values().iterator();
-            while (correct && nodeImageIter.hasNext()) {
-                correct = virtuallyContains(host, nodeImageIter.next());
-            }
-        }
-        result = isCorrectFor(host) ? createMatcher(host) : null;
-        reporter.stop();
-        return result;
-    }
-
-    /**
-     * Creates a matcher for this event in a given host graph, based on the rule and anchor map.
-     */
-    @Deprecated
-    private Matching createMatcher(Graph host) {
-        DefaultMatching result = new DefaultMatching(getRule(), host) {
-            @Override
-            protected VarNodeEdgeMap createElementMap() {
-                return getAnchorMap();
-            }
-        };
-        result.setFixed();
-        return result;
-//      return getRuleFactory().createMatching(getRule(), getAnchorMap(), host);
-    }
-    
 	/** 
 	 * Tests if a graph contains a given element, 
 	 * either explicitly (through {@link GraphShape#containsElement(Element)}) 

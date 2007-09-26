@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.9 2007-09-26 08:30:24 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.10 2007-09-26 21:04:25 rensink Exp $
  */
 package groove.match;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class SearchPlanStrategy implements MatchStrategy {
 	/**
@@ -53,26 +53,8 @@ public class SearchPlanStrategy implements MatchStrategy {
      */
     public SearchPlanStrategy(Graph source, List<SearchItem> plan, boolean injective) {
         this.nodeIxMap = new HashMap<Node,Integer>();
-//        int nodeCount = 0;
-//        for (Node node: source.nodeSet()) {
-//            nodeIxMap.put(node, nodeCount);
-//            nodeCount++;
-//        }
-//        sourceNodeCount = nodeCount;
         this.edgeIxMap = new HashMap<Edge,Integer>();
-//        int edgeCount = 0;
-//        for (Edge edge: source.edgeSet()) {
-//            edgeIxMap.put(edge, edgeCount);
-//            edgeCount++;
-//        }
-//        sourceEdgeCount = edgeCount;
         this.varIxMap = new HashMap<String,Integer>();
-//        int varCount = 0;
-//        for (String var: VarSupport.getAllVars(source)) {
-//            varIxMap.put(var, varCount);
-//            varCount++;
-//        }
-//        sourceVarCount = varCount;
         this.plan = plan;
         this.injective = injective;
     }

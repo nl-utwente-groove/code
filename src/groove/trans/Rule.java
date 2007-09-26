@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.13 2007-09-25 16:30:33 rensink Exp $
- * $Date: 2007-09-25 16:30:33 $
+ * $Id: Rule.java,v 1.14 2007-09-26 21:04:24 rensink Exp $
+ * $Date: 2007-09-26 21:04:24 $
  */
 package groove.trans;
 
@@ -26,7 +26,6 @@ import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeMap;
 
 import java.util.Comparator;
-import java.util.List;
 
 /**
  * Interface of a production rule.
@@ -35,7 +34,7 @@ import java.util.List;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**

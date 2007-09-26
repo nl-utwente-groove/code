@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.4 2007-09-26 08:30:24 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.5 2007-09-26 21:04:25 rensink Exp $
  */
 package groove.match;
 
@@ -149,7 +149,7 @@ public class Edge2SearchItem extends AbstractSearchItem {
     }
     
     /** Creates a record for the case the image is not singular. */
-    MultipleRecord createMultipleRecord(Search search) {
+    MultipleRecord<Edge> createMultipleRecord(Search search) {
     	return new Edge2MultipleRecord(search);
     }
 	/**
