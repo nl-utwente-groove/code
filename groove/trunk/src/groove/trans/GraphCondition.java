@@ -12,25 +12,23 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.9 2007-08-31 10:23:06 rensink Exp $
+ * $Id: GraphCondition.java,v 1.10 2007-09-26 21:04:24 rensink Exp $
  */
 package groove.trans;
 
-import java.util.Collection;
-import java.util.Iterator;
-
-import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.graph.Node;
 import groove.rel.VarMorphism;
 import groove.view.FormatException;
+
+import java.util.Collection;
+import java.util.Iterator;
 
 /**
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public interface GraphCondition extends GraphTest {
     /**
@@ -86,76 +84,14 @@ public interface GraphCondition extends GraphTest {
      * @param test the condition to be added
      * @require <code>condition.getContext() == getPattern().cod()</code>
      * @throws IllegalStateException if the precondition is not fulfilled
-     * @see #setAndDistinct(Node, Node)
-     * @see #setAndNot(Edge)
      */
     public void setAndNot(GraphTest test);
 
     /**
-     * Adds a negative condition that is an injectivity constraint for two
-     * given nodes.
-     * This kind of condition is called a <i>merge embargo</i>
-     * The method creates and returns a {@link MergeEmbargo}, and adds
-     * it to the negative predicate using {@link #setAndNot(GraphTest)}.
-     * @param node1 first node of the injectivity constraint
-     * @param node2 second node of the injectivity constraint
-     * @see #setAndNot(GraphTest)
-     * @deprecated no longer used (since new search plan implementation)
-     */
-    @Deprecated
-    public GraphCondition setAndDistinct(Node node1, Node node2);
-
-    /**
-     * Adds a negative condition that is an injectivity constraint for the
-     * nodes in a given node array. The array is required to be binary.
-     * Convenience method for <code>addMergeEmbargo(nodes[0], nodes[1])</code>.
-     * @see #setAndDistinct(Node, Node)
-     * @deprecated no longer used (since new search plan implementation)
-     */
-    @Deprecated
-    public GraphCondition setAndDistinct(Node[] nodes);
-    
-    /**
-     * Adds a negative condition that forbids the existence of a certain edge.
-     * This kind of condition is called an <i>edge embargo</i>
-     * The method creates and returns a {@link EdgeEmbargo}, and adds
-     * it to the negative predicate using {@link #setAndNot(GraphTest)}.
-     * @param embargoEdge the edge that is forbidden
-     * @see #setAndNot(GraphTest)
-     * @deprecated no longer used (since new search plan implementation)
-     */
-    @Deprecated
-    public GraphCondition setAndNot(Edge embargoEdge);
-    
-    /**
      * Specialises the return type.
      */
-    public GraphConditionOutcome getOutcome(VarMorphism subject);
-//
-//    /**
-//     * Indicates if a given graph satisfies this predicate.
-//     * Only applicable if this predicate is closed; throws an
-//     * {@link IllegalArgumentException} otherwise.
-//     * @param graph the graph to be tested
-//     * @return <code>true</code> if this predicate is closed and <code>graph</code> satisfies it
-//     * @throws IllegalArgumentException if <code>! isClosed()</code>
-//     * @see #matches(VarMorphism)
-//     * @see #getMatching(Graph)
-//     */
-//    public boolean matches(Graph graph);
-//    
-//    /**
-//     * Indicates if a given graph morphism satisfies this predicate.
-//     * It is required that the morphism domain equals this condition's context
-//     * and that the morphism is total;
-//     * an <code>IllegalArgumentException</code> may be thrown otherwise.
-//     * @param subject the morphism to be tested
-//     * @return <code>true</code> if <code>morph</code> satisfies this predicate
-//     * @see #getMatching(VarMorphism)
-//     * @throws IllegalArgumentException if <code>! subject.isTotal()</code> or <code>subject.dom() != getContext()</code>
-//     */
-//    public boolean matches(VarMorphism subject);
     
+    public GraphConditionOutcome getOutcome(VarMorphism subject);
     /**
      * Returns a matching for a given graph, or <code>null</code> if no matching exists.
      * The matching condition is this condition.

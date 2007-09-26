@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.26 2007-09-25 16:30:34 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.27 2007-09-26 21:04:24 rensink Exp $
  */
 package groove.trans;
 
@@ -39,7 +39,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -168,28 +168,6 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
             injections = new HashSet<Set<? extends Node>>();
         }
         injections.add(injection);
-    }
-
-    @Deprecated
-    public GraphCondition setAndNot(Edge embargoEdge) {
-        GraphCondition result = createEdgeEmbargo(embargoEdge); 
-        setAndNot(result);
-        return result;
-    }
-    
-    @Deprecated
-    public GraphCondition setAndDistinct(Node node1, Node node2) {
-        GraphCondition result = createMergeEmbargo(node1, node2);
-        setAndNot(result);
-        return result;
-    }
-
-    @Deprecated
-    public GraphCondition setAndDistinct(Node[] nodes) {
-        if (nodes.length != 2) {
-            throw new IllegalArgumentException("Merge embargo must be binary");
-        }
-        return setAndDistinct(nodes[0], nodes[1]);
     }
 
     /** Fixes the sub-predicate and this morphism. */
@@ -532,27 +510,6 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
         return new DefaultConditionOutcome(this, subject, matchingMap);
     }
     
-    /**
-     * Callback method to create a merge embargo.
-     * @see #setAndDistinct(Node, Node)
-     * @see #setAndDistinct(Node[])
-     * @deprecated No longer used since new search plan implementation
-     */
-    @Deprecated
-    protected MergeEmbargo createMergeEmbargo(Node node1, Node node2) {
-        return new MergeEmbargo(cod(), node1, node2, getProperties());
-    }
-    
-    /**
-     * Callback method to create a merge embargo.
-     * @see #setAndNot(Edge)
-     * @deprecated No longer used since new search plan implementation
-     */
-    @Deprecated
-    protected EdgeEmbargo createEdgeEmbargo(Edge embargoEdge) {
-        return new EdgeEmbargo(cod(), embargoEdge, getProperties());
-    }
-
     /**
      * Returns the precomputed matching order for the elements of the target pattern. First creates
      * the order using {@link #createMatchStrategy()} if that has not been done.

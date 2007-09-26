@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.9 2007-09-26 08:30:24 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.10 2007-09-26 21:04:25 rensink Exp $
  */
 package groove.match;
 
@@ -73,7 +73,7 @@ public class VarEdgeSearchItem extends Edge2SearchItem {
 	}
 
     @Override
-	MultipleRecord createMultipleRecord(Search search) {
+	MultipleRecord<Edge> createMultipleRecord(Search search) {
 		return new VarEdgeMultipleRecord(search);
 	}
 

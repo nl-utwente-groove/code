@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.9 2007-09-26 08:30:24 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.10 2007-09-26 21:04:25 rensink Exp $ */
 package groove.match;
 
 import groove.graph.BinaryEdge;
@@ -97,7 +97,7 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
 	}
 	
 	@Override
-	MultipleRecord createMultipleRecord(Search search) {
+	MultipleRecord<Edge> createMultipleRecord(Search search) {
 		return new RegExprEdgeMultipleRecord(search);
 	}
     /**

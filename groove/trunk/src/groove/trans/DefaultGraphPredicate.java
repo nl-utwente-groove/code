@@ -12,11 +12,10 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphPredicate.java,v 1.9 2007-08-31 10:23:07 rensink Exp $
+ * $Id: DefaultGraphPredicate.java,v 1.10 2007-09-26 21:04:23 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.DefaultMorphism;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Morphism;
@@ -35,7 +34,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implements GraphPredicate {
     /**
