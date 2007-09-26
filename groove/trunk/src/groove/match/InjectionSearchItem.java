@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: InjectionSearchItem.java,v 1.7 2007-09-25 15:12:34 rensink Exp $
+ * $Id: InjectionSearchItem.java,v 1.8 2007-09-26 08:30:24 rensink Exp $
  */
 package groove.match;
 
@@ -85,8 +85,8 @@ public class InjectionSearchItem extends ConditionSearchItem {
         /** Constructs a fresh record, for a given matcher. */
         private InjectionRecord(Search search) {
             super(search);
-            assert getSearch().getNode(node1Ix) != null : String.format("Merge embargo node %s not yet matched", node1);
-            assert getSearch().getNode(node2Ix) != null: String.format("Merge embargo node %s not yet matched", node2);
+            assert search.getNode(node1Ix) != null : String.format("Merge embargo node %s not yet matched", node1);
+            assert search.getNode(node2Ix) != null: String.format("Merge embargo node %s not yet matched", node2);
         }
 
         /**
@@ -94,7 +94,7 @@ public class InjectionSearchItem extends ConditionSearchItem {
          */
         @Override
         boolean set() {
-            return getSearch().getNode(node1Ix) != getSearch().getNode(node2Ix);
+            return search.getNode(node1Ix) != search.getNode(node2Ix);
         }
     }
 }

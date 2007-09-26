@@ -12,58 +12,29 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractEdge.java,v 1.6 2007-09-19 07:10:29 rensink Exp $
+ * $Id: AbstractEdge.java,v 1.7 2007-09-26 08:30:21 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
-public abstract class AbstractEdge implements Edge {
-    /**
-     * The maximal number of ends of any edge currently in the system.
-     * Note that this may be dynamically updated by any concrete edge class.
-     * @invariant <tt>maxEndCount &gtr;= 1</tt>
-     */
-    static private int maxEndCount;
-    
-    /**
-     * Sets the maximal number of ends of any edge currently in the system.
-     * This only has effect if the new number exceeds the previous maximum.
-     * @param endCount the new maximum end count
-     * @ensure if <tt>getMaxEndCount() &gtr;= endCount</tt>
-     * @see #getMaxEndCount()
-     */
-    static public void setMaxEndCount(int endCount) {
-        maxEndCount = Math.max(maxEndCount, endCount);
-    }
-
-    /**
-     * Returns the maximal number of ends of any edge currently in the system.
-     * Note that this may be dynamically increased by any concrete edge class.
-     * @return the maximum number of ends of any edge
-     * @ensure <tt>result &gtr;= 1</tt>
-     */
-    static public int getMaxEndCount() {
-        return maxEndCount;
-    }
-
+public abstract class AbstractEdge<N extends Node> implements Edge {
     /**
      * Creates an edge with a given source node and label.
      */
-    public AbstractEdge(Node source, Label label) {
+    protected AbstractEdge(N source, Label label) {
 		this.source = source;
 		this.label = label;
-//		this.hashCode = computeHashCode();
 	}
 
-	public Node source() {
+	public final N source() {
         return source;
     }
 	
-	public Label label() {
+	public final Label label() {
 		return label;
 	}
 
@@ -234,9 +205,37 @@ public abstract class AbstractEdge implements Edge {
 	/**
      * The source node of this edge.
      */
-	protected final Node source;
+	protected final N source;
     /** The label of this edge. @invariant label != null */
     protected final Label label;
     /** The pre-computed hash code. */
     private int hashCode;
+    
+    /**
+     * Sets the maximal number of ends of any edge currently in the system.
+     * This only has effect if the new number exceeds the previous maximum.
+     * @param endCount the new maximum end count
+     * @ensure if <tt>getMaxEndCount() &gtr;= endCount</tt>
+     * @see #getMaxEndCount()
+     */
+
+    static public void setMaxEndCount(int endCount) {
+        maxEndCount = Math.max(maxEndCount, endCount);
+    }
+    /**
+     * Returns the maximal number of ends of any edge currently in the system.
+     * Note that this may be dynamically increased by any concrete edge class.
+     * @return the maximum number of ends of any edge
+     * @ensure <tt>result &gtr;= 1</tt>
+     */
+    static public int getMaxEndCount() {
+        return maxEndCount;
+    }
+
+    /**
+     * The maximal number of ends of any edge currently in the system.
+     * Note that this may be dynamically updated by any concrete edge class.
+     * @invariant <tt>maxEndCount &gtr;= 1</tt>
+     */
+    static private int maxEndCount;
 }

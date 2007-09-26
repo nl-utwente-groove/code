@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.8 2007-09-25 16:30:35 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.9 2007-09-26 08:30:24 rensink Exp $ */
 package groove.match;
 
 import groove.graph.BinaryEdge;
@@ -133,7 +133,7 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
         boolean set() {
             Map<String,Label> valuation = new HashMap<String,Label>();
             for (String var: allVars) {
-                Label image = getSearch().getVar(varIxMap.get(var));
+                Label image = search.getVar(varIxMap.get(var));
                 assert image != null;
                 valuation.put(var, image);
             }
@@ -148,18 +148,18 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
             NodeRelation result;
         	Node sourceFind = sourcePreMatch;
         	if (sourceFind == null && sourceFound) {
-        		sourceFind = getSearch().getNode(sourceIx);
+        		sourceFind = search.getNode(sourceIx);
         	}
             Set<Node> imageSourceSet = Collections.singleton(sourceFind);
         	Node targetFind = targetPreMatch;
         	if (targetFind == null && targetFound) {
-        		targetFind = getSearch().getNode(targetIx);
+        		targetFind = search.getNode(targetIx);
         	}
             Set<Node> imageTargetSet = Collections.singleton(targetFind);
             if (labelAutomaton instanceof VarAutomaton) {
-                result = ((VarAutomaton) labelAutomaton).getMatches(getTarget(), imageSourceSet, imageTargetSet, valuation);            
+                result = ((VarAutomaton) labelAutomaton).getMatches(host, imageSourceSet, imageTargetSet, valuation);            
             } else {
-                result = labelAutomaton.getMatches(getTarget(), imageSourceSet, imageTargetSet);
+                result = labelAutomaton.getMatches(host, imageSourceSet, imageTargetSet);
             }
             return result;
         }
@@ -177,7 +177,7 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
             assert varIxMap.keySet().containsAll(neededVars);
             freshVars = new HashSet<String>();
             for (String var: boundVars) {
-                if (getSearch().getVar(varIxMap.get(var)) == null) {
+                if (search.getVar(varIxMap.get(var)) == null) {
                     freshVars.add(var);
                 }
             }
@@ -196,12 +196,12 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
                 Map<String,Label> valuation = new HashMap<String,Label>();
                 for (String var: allVars) {
                     if (! freshVars.contains(var)) {
-                        valuation.put(var, getSearch().getVar(varIxMap.get(var)));
+                        valuation.put(var, search.getVar(varIxMap.get(var)));
                     }
                 }
-                matches = ((VarAutomaton) labelAutomaton).getMatches(getTarget(), imageSourceSet, imageTargetSet, valuation);            
+                matches = ((VarAutomaton) labelAutomaton).getMatches(host, imageSourceSet, imageTargetSet, valuation);            
             } else {
-                matches = labelAutomaton.getMatches(getTarget(), imageSourceSet, imageTargetSet);
+                matches = labelAutomaton.getMatches(host, imageSourceSet, imageTargetSet);
             }
             initImages(matches.getAllRelated(), false, false, false, false);
         }
@@ -212,7 +212,7 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
 			if (result && ! freshVars.isEmpty()) {
 			    Map<String,Label> valuation = ((ValuationEdge) image).getValue();
 	            for (String var: freshVars) {
-	                getSearch().putVar(varIxMap.get(var), valuation.get(var));
+	            	search.putVar(varIxMap.get(var), valuation.get(var));
 	            }
 			}
 			return result;
@@ -223,7 +223,7 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
         public void reset() {
             super.reset();
             for (String var: freshVars) {
-                getSearch().putVar(varIxMap.get(var), null);
+                search.putVar(varIxMap.get(var), null);
             }
         }
 

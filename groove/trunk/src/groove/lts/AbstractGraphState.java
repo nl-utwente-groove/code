@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.9 2007-09-19 22:44:30 rensink Exp $
+ * $Id: AbstractGraphState.java,v 1.10 2007-09-26 08:30:22 rensink Exp $
  */
 package groove.lts;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-09-19 22:44:30 $
+ * @version $Revision: 1.10 $ $Date: 2007-09-26 08:30:22 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
@@ -282,7 +282,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         if (obj instanceof AbstractGraphState) {
             return getStateNumber() - ((AbstractGraphState) obj).getStateNumber();
         } else if (obj instanceof DefaultGraphTransition) {
-            return getStateNumber() - ((DefaultGraphTransition) obj).source().getStateNumber();
+            return getStateNumber() - ((AbstractGraphState) ((DefaultGraphTransition) obj).source()).getStateNumber();
         } else {
             throw new UnsupportedOperationException(String.format("Classes %s and %s cannot be compared", getClass(), obj.getClass()));
         }

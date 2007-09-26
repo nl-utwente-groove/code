@@ -30,7 +30,7 @@ import java.util.Iterator;
 /**
  * Abstract implementation of a search item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
     /**
@@ -147,32 +147,32 @@ abstract public class AbstractSearchItem implements SearchItem {
         /** Constructs a record for a given search. */
         BasicRecord(Search search) {
             this.search = search;
-            this.target = search.getTarget();
+            this.host = search.getHost();
         }
-
-        /** Returns the search associated with this record. */
-        final Search getSearch() {
-            return search;
-        }
-        
-        /** 
-         * Returns the (partial) result of the search associated with this record.
-         * Convenience method for <code>getSearch().getResult()</code>.
-         */
-        final Graph getTarget() {
-            return target;
-        }
+//
+//        /** Returns the search associated with this record. */
+//        final Search getSearch() {
+//            return search;
+//        }
+//        
+//        /** 
+//         * Returns the (partial) result of the search associated with this record.
+//         * Convenience method for <code>getSearch().getResult()</code>.
+//         */
+//        final Graph getTarget() {
+//            return target;
+//        }
         
         /** The underlying search for this record. */
-        private final Search search;
+        final Search search;
         /** The underlying search for this record. */
-        private final Graph target;
+        final Graph host;
     }
 
     /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.10 $
+     * @version $Revision: 1.11 $
      */
     abstract class SingularRecord extends BasicRecord {
         /** Constructs an instance for a given search. */
@@ -227,7 +227,7 @@ abstract public class AbstractSearchItem implements SearchItem {
      * Abstract implementation of a search item record expected to
      * have more than one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.10 $
+     * @version $Revision: 1.11 $
      */
     abstract class MultipleRecord<E extends Element> extends BasicRecord {
         /** Constructs a record for a given search. */
