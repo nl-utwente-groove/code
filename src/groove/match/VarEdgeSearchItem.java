@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.8 2007-09-25 22:57:52 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.9 2007-09-26 08:30:24 rensink Exp $
  */
 package groove.match;
 
@@ -101,7 +101,7 @@ public class VarEdgeSearchItem extends Edge2SearchItem {
 		Label getLabel() {
 			Label result = varPreMatch;
 			if (result == null) {
-				result = getSearch().getVar(varIx);
+				result = search.getVar(varIx);
 			}
 			return result;
 		}
@@ -122,7 +122,7 @@ public class VarEdgeSearchItem extends Edge2SearchItem {
             super.init();
             varFind = varPreMatch;
             if (varFind == null && varFound) {
-            	varFind = getSearch().getVar(varIx);
+            	varFind = search.getVar(varIx);
             }
         }
 
@@ -130,16 +130,16 @@ public class VarEdgeSearchItem extends Edge2SearchItem {
         void initImages() {
             Set<? extends Edge> edgeSet;
             if (varFind != null) {
-            	edgeSet = getTarget().labelEdgeSet(arity, varFind);
+            	edgeSet = host.labelEdgeSet(arity, varFind);
             } else {
             	// take the incident edges of the pre-matched source or target, if any
             	// otherwise, the set of all edges
                 if (sourceFind != null) {
-                    edgeSet = getTarget().outEdgeSet(sourceFind);
+                    edgeSet = host.outEdgeSet(sourceFind);
                 } else if (targetFind != null) {
-                    edgeSet = getTarget().edgeSet(targetFind, Edge.TARGET_INDEX);
+                    edgeSet = host.edgeSet(targetFind, Edge.TARGET_INDEX);
                 } else {
-                    edgeSet = getTarget().edgeSet();
+                    edgeSet = host.edgeSet();
                 }
             }
             initImages(edgeSet, true, true, false, true);
@@ -149,7 +149,7 @@ public class VarEdgeSearchItem extends Edge2SearchItem {
 		boolean setImage(Edge image) {
 			boolean result = super.setImage(image);
 			if (result && varFind == null) {
-				getSearch().putVar(varIx, image.label());
+				search.putVar(varIx, image.label());
 			}
 			return result;
 		}
@@ -158,7 +158,7 @@ public class VarEdgeSearchItem extends Edge2SearchItem {
 		public void reset() {
 			super.reset();
 			if (varFind == null) {
-				getSearch().putVar(varIx, null);
+				search.putVar(varIx, null);
 			}
 		}
 

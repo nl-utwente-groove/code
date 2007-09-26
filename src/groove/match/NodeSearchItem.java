@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.8 2007-09-25 15:12:34 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.9 2007-09-26 08:30:24 rensink Exp $
  */
 package groove.match;
 
@@ -110,34 +110,13 @@ public class NodeSearchItem extends AbstractSearchItem {
         public void reset() {
             imageIter = null;
             selected = null;
-            getSearch().putNode(nodeIx, null);
+            search.putNode(nodeIx, null);
         }
 
         @Override
         void init() {
-        	imageIter = getTarget().nodeSet().iterator();
+        	imageIter = host.nodeSet().iterator();
         }
-//
-//        @Override
-//        boolean next() {
-//            boolean result;
-//			result = false;
-//			while (!result && imageIter.hasNext()) {
-//				result = select(imageIter.next());
-//			}
-//			return result;
-//        }
-//
-//        /** Undoes the effect of {@link #select(Node)}. */
-//        @Override
-//        void undo() {
-//			Node oldImage = getSearch().putNode(nodeIx, null);
-//			assert selected.equals(oldImage) : String.format("Image %s=%s should coincide with %s",
-//					node,
-//					selected,
-//					oldImage);
-//			selected = null;
-//        }
         
         /**
          * Actually selects a node image and puts it into the element
@@ -148,24 +127,14 @@ public class NodeSearchItem extends AbstractSearchItem {
          */
         @Override
         boolean setImage(Node image) {
-        	boolean result = getSearch().putNode(nodeIx, image);
+        	boolean result = search.putNode(nodeIx, image);
         	selected = image;
             return result;
         }
-//        
-//        /**
-//         * The images for the item's edge.
-//         */
-//        private Iterator<? extends Node> imageIter;
-//        
+
         /**
          * The image for {@link #node} set during the last call to {@link #find()}.
          */
         private Node selected;
-//        
-//        /** 
-//         * Flag indicating that the selected image was already in the element map.
-//         */
-//        private final boolean preMatched;
     }
 }

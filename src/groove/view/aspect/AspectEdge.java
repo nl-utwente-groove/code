@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectEdge.java,v 1.5 2007-09-16 21:44:32 rensink Exp $
+ * $Id: AspectEdge.java,v 1.6 2007-09-26 08:30:23 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -30,9 +30,9 @@ import java.util.List;
 /**
  * Edge enriched with aspect data.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
-public class AspectEdge extends AbstractBinaryEdge implements AspectElement {
+public class AspectEdge extends AbstractBinaryEdge<AspectNode,AspectNode> implements AspectElement {
 	/**
 	 * Constructs a new edge from an array of end nodes, a label,
 	 * and a collection of aspect values.
@@ -60,18 +60,18 @@ public class AspectEdge extends AbstractBinaryEdge implements AspectElement {
     	this.parseData = parseData;
 		testLabel();
     }
-    
-    /** Specialises the return type. */
-	@Override
-	public AspectNode target() {
-		return (AspectNode) super.target();
-	}
-
-    /** Specialises the return type. */
-	@Override
-	public AspectNode source() {
-		return (AspectNode) super.source();
-	}
+//    
+//    /** Specialises the return type. */
+//	@Override
+//	public AspectNode target() {
+//		return (AspectNode) super.target();
+//	}
+//
+//    /** Specialises the return type. */
+//	@Override
+//	public AspectNode source() {
+//		return (AspectNode) super.source();
+//	}
 
 	public AspectValue getValue(Aspect aspect) {
     	AspectValue result = getAspectMap().get(aspect);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductEdge.java,v 1.6 2007-09-16 21:44:28 rensink Exp $
+ * $Id: ProductEdge.java,v 1.7 2007-09-26 08:30:22 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -31,10 +31,10 @@ import groove.graph.Node;
  * and the target-node should be an instance of {@link groove.graph.algebra.ValueNode}.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 // AREND I would call this OperatorEdge and unify it with ValueEdge
-public class ProductEdge extends AbstractBinaryEdge {
+public class ProductEdge extends AbstractBinaryEdge<ProductNode,ValueNode> {
     /**
      * Constructs a product edge for a constant, which is always a self-edge.
      * @param target the source and target of the edge
@@ -87,18 +87,18 @@ public class ProductEdge extends AbstractBinaryEdge {
         }
         return true;
     }
-
-    /** Specialises the return type. */
-    @Override
-	public ValueNode target() {
-		return (ValueNode) target;
-	}
-
-    /** Specialises the return type. */
-	@Override
-	public ProductNode source() {
-		return (ProductNode) source;
-	}
+//
+//    /** Specialises the return type. */
+//    @Override
+//	public ValueNode target() {
+//		return (ValueNode) target;
+//	}
+//
+//    /** Specialises the return type. */
+//	@Override
+//	public ProductNode source() {
+//		return (ProductNode) source;
+//	}
 
 	@Override
 	@Deprecated

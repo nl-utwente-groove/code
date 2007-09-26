@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.10 2007-09-25 15:12:34 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.11 2007-09-26 08:30:24 rensink Exp $
  */
 package groove.match;
 
@@ -160,12 +160,12 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
          */
         OperatorEdgeRecord(Search search) {
             super(search);
-            targetPreMatch = getSearch().getNodePreMatch(targetIx);
+            targetPreMatch = search.getNodePreMatch(targetIx);
         }
         
         @Override
         public String toString() {
-            return String.format("%s = %s", OperatorEdgeSearchItem.this.toString(), getSearch().getNode(targetIx));
+            return String.format("%s = %s", OperatorEdgeSearchItem.this.toString(), search.getNode(targetIx));
         }
 
         @Override
@@ -177,12 +177,12 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
             } else if (targetFound || targetPreMatch != null) {
             	Node targetFind = targetPreMatch;
             	if (targetFind == null) {
-            		targetFind = getSearch().getNode(targetIx);
+            		targetFind = search.getNode(targetIx);
             	}
                 result = ((ValueNode) targetFind).getValue().equals(outcome);
             } else {
                 ValueNode targetImage = AlgebraGraph.getInstance().getValueNode(operation.getResultType(), outcome);
-                result = getSearch().putNode(targetIx, targetImage);
+                result = search.putNode(targetIx, targetImage);
             }
             return result;
         }
@@ -194,7 +194,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
         public void reset() {
         	super.reset();
             if (targetPreMatch == null && !targetFound) {
-                getSearch().putNode(targetIx, null);
+                search.putNode(targetIx, null);
             }
         }
         
@@ -208,7 +208,7 @@ public class OperatorEdgeSearchItem extends AbstractSearchItem {
         private Object calculateResult() throws IllegalArgumentException {
             Object[] operands = new Object[arguments.size()];
             for (int i = 0; i < arguments.size(); i++) {
-                Node operandImage = getSearch().getNode(argumentIxs[i]);
+                Node operandImage = search.getNode(argumentIxs[i]);
                 if (! (operandImage instanceof ValueNode)) {
                     // one of the arguments was not bound to a value
                     // (probably due to some typing error in another rule)

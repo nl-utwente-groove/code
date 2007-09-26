@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractBinaryEdge.java,v 1.7 2007-09-19 07:10:29 rensink Exp $
+ * $Id: AbstractBinaryEdge.java,v 1.8 2007-09-26 08:30:21 rensink Exp $
  */
 package groove.graph;
 
@@ -20,9 +20,9 @@ package groove.graph;
  * Abstract implementation of an (immutable) binary graph edge, as a tuple consisting of source and
  * target nodes.
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-09-19 07:10:29 $
+ * @version $Revision: 1.8 $ $Date: 2007-09-26 08:30:21 $
  */
-abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryEdge {
+abstract public class AbstractBinaryEdge<SN extends Node, TN extends Node> extends AbstractEdge<SN> implements BinaryEdge {
     static {
         AbstractEdge.setMaxEndCount(END_COUNT);
     }
@@ -36,7 +36,7 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
      * @require <tt>source != null && target != null</tt>
      * @ensure <tt>source()==source</tt>, <tt>target()==target </tt>
      */
-    protected AbstractBinaryEdge(Node source, Label label, Node target) {
+    protected AbstractBinaryEdge(SN source, Label label, TN target) {
     	super(source, label);
         this.target = target;
     }
@@ -132,12 +132,12 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
         return (source.equals(other.source())) && other.endCount() == END_COUNT && target.equals(other.end(TARGET_INDEX));
     }
 
-    public Node target() {
+    public final TN target() {
         return target;
     }
 
     @Override
-    public final Node opposite() {
+    public final TN opposite() {
         return target;
     }
 
@@ -169,11 +169,7 @@ abstract public class AbstractBinaryEdge extends AbstractEdge implements BinaryE
     }
 
     /** The target node of this edge. */
-    protected final Node target;
-//    /**
-//     * The end nodes of this edge.
-//     */
-//    private Node[] ends;
+    protected final TN target;
 
     // constants for hash code computation
 	static private final int SOURCE_SHIFT = 1;

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.3 2007-09-25 22:57:52 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.4 2007-09-26 08:30:24 rensink Exp $
  */
 package groove.match;
 
@@ -210,9 +210,9 @@ public class Edge2SearchItem extends AbstractSearchItem {
 		final boolean set() {
 			Edge image = getEdgeImage();
 			assert image != null;
-			boolean result = getTarget().containsElement(image);
+			boolean result = host.containsElement(image);
 			if (result) {
-				getSearch().putEdge(edgeIx, image);
+				search.putEdge(edgeIx, image);
 			}
 			return result;
 		}
@@ -224,12 +224,12 @@ public class Edge2SearchItem extends AbstractSearchItem {
 		private Edge getEdgeImage() {
 			Node sourceFind = this.sourcePreMatch;
 			if (sourceFind == null) {
-				sourceFind = getSearch().getNode(sourceIx);
+				sourceFind = search.getNode(sourceIx);
 			}
 			assert sourceFind != null : String.format("Source node of %s has not been found", edge);
 			Node targetFind = this.targetPreMatch;
 			if (targetFind == null) {
-				targetFind = getSearch().getNode(targetIx);
+				targetFind = search.getNode(targetIx);
 			}
 			assert targetFind != null : String.format("Target node of %s has not been found", edge);
 			return DefaultEdge.createEdge(sourceFind, getLabel(), targetFind);
@@ -263,26 +263,21 @@ public class Edge2SearchItem extends AbstractSearchItem {
          */
         Edge2MultipleRecord(Search search) {
             super(search);
-            sourcePreMatch = getSearch().getNodePreMatch(sourceIx);
-            targetPreMatch = getSearch().getNodePreMatch(targetIx);
-            assert getSearch().getEdge(edgeIx) == null : String.format("Edge %s already in %s", edge, getSearch());
+            sourcePreMatch = search.getNodePreMatch(sourceIx);
+            targetPreMatch = search.getNodePreMatch(targetIx);
+            assert search.getEdge(edgeIx) == null : String.format("Edge %s already in %s", edge, search);
         }
-//
-//        @Override
-//        void exit() {
-//            multipleIter = null;
-//        }
 
         @Override
         void init() {
             sourceFind = sourcePreMatch;
             if (sourceFind == null && sourceFound) {
-            	sourceFind = getSearch().getNode(sourceIx);
+            	sourceFind = search.getNode(sourceIx);
                 assert sourceFind != null : String.format("Source node of %s not found", edge); 
             }
             targetFind = targetPreMatch;
             if (targetFind == null && targetFound) {
-            	targetFind = getSearch().getNode(targetIx);
+            	targetFind = search.getNode(targetIx);
                 assert targetFind != null : String.format("Target node of %s not found", edge); 
             }
             initImages();
@@ -292,7 +287,7 @@ public class Edge2SearchItem extends AbstractSearchItem {
         boolean setImage(Edge image) {
         	assert image instanceof BinaryEdge;
         	if (sourceFind == null) {
-        		if (! getSearch().putNode(sourceIx, image.source())) {
+        		if (! search.putNode(sourceIx, image.source())) {
         			return false;
         		}
         	} else if (checkSource) {
@@ -301,7 +296,7 @@ public class Edge2SearchItem extends AbstractSearchItem {
         		}
         	}
         	if (targetFind == null) {
-        		if (! getSearch().putNode(targetIx, image.opposite())) {
+        		if (! search.putNode(targetIx, image.opposite())) {
         			return false;
         		}
         	} else if (checkTarget) {
@@ -310,12 +305,12 @@ public class Edge2SearchItem extends AbstractSearchItem {
         		}
         	}
         	if (checkLabel) {
-            	if (!image.label().equals(label)) {
+            	if (image.label() != label) {
             		return false;
             	}
         	}
         	if (setEdge) {
-        		getSearch().putEdge(edgeIx, image);
+        		search.putEdge(edgeIx, image);
         	}
         	selected = image;
         	return true;
@@ -326,13 +321,13 @@ public class Edge2SearchItem extends AbstractSearchItem {
         	super.reset();
         	if (selected != null) {
         		if (setEdge) {
-        			getSearch().putEdge(edgeIx, null);
+        			search.putEdge(edgeIx, null);
         		}
         		if (sourceFind == null) {
-        			getSearch().putNode(sourceIx, null);
+        			search.putNode(sourceIx, null);
         		}
         		if (targetFind == null) {
-        			getSearch().putNode(targetIx, null);
+        			search.putNode(targetIx, null);
         		}
         	}
         }
@@ -348,15 +343,15 @@ public class Edge2SearchItem extends AbstractSearchItem {
             // it does not pay off here to take only the incident edges of pre-matched ends,
             // no doubt because building the necessary additional data structures takes more
             // time than is saved by trying out fewer images
-        	Set<? extends Edge> labelEdgeSet = getTarget().labelEdgeSet(arity, label);
+        	Set<? extends Edge> labelEdgeSet = host.labelEdgeSet(arity, label);
         	if (sourceFind != null) {
-        		Set<? extends Edge> nodeEdgeSet = getTarget().edgeSet(sourceFind);
+        		Set<? extends Edge> nodeEdgeSet = host.edgeSet(sourceFind);
         		if (nodeEdgeSet.size() < labelEdgeSet.size()) {
         			result = nodeEdgeSet;
         			checkLabel = true;
         		}
 			} else if (targetFind != null) {
-        		Set<? extends Edge> nodeEdgeSet = getTarget().edgeSet(targetFind);
+        		Set<? extends Edge> nodeEdgeSet = host.edgeSet(targetFind);
         		if (nodeEdgeSet.size() < labelEdgeSet.size()) {
         			result = nodeEdgeSet;
         			checkLabel = true;

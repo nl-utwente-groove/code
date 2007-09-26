@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AlgebraEdge.java,v 1.5 2007-09-16 21:44:28 rensink Exp $
+ * $Id: AlgebraEdge.java,v 1.6 2007-09-26 08:30:22 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -25,13 +25,14 @@ import groove.graph.Node;
  * and {@link groove.graph.algebra.ValueNode}s.
  * 
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-09-16 21:44:28 $
+ * @version $Revision 1.0$ $Date: 2007-09-26 08:30:22 $
  */
 // AREND I would call this ArgumentEdge, and include the 
 // number (as derived from the label); in fact, I think a constructor 
 // with an int rather than a label would be more appropriate
-public class AlgebraEdge extends AbstractBinaryEdge {
-    public AlgebraEdge(Node source, Label label, Node target) {
+public class AlgebraEdge extends AbstractBinaryEdge<ProductNode,ValueNode> {
+	/** Constructs a fresh edge. */
+    public AlgebraEdge(ProductNode source, Label label, ValueNode target) {
         super(source, label, target);
         number = Integer.parseInt(label.text());
     }
@@ -40,21 +41,21 @@ public class AlgebraEdge extends AbstractBinaryEdge {
     @Override
     @Deprecated
     public AlgebraEdge newEdge(Node source, Label label, Node target) {
-        return new AlgebraEdge(source, label, target);
+        return new AlgebraEdge((ProductNode) source, label, (ValueNode) target);
     }
-
-    /** Specialises the return type. */
-	@Override
-	public ValueNode target() {
-		return (ValueNode) super.target();
-	}
-
-    /** Specialises the return type. */
-	@Override
-	public ProductNode source() {
-		return (ProductNode) super.source();
-	}
-	
+//
+//    /** Specialises the return type. */
+//	@Override
+//	public ValueNode target() {
+//		return (ValueNode) super.target();
+//	}
+//
+//    /** Specialises the return type. */
+//	@Override
+//	public ProductNode source() {
+//		return (ProductNode) super.source();
+//	}
+//	
 	/** Returns the argument number of this edge. */
 	public int getNumber() {
 		return number;

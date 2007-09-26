@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.11 2007-09-16 21:44:27 rensink Exp $
+ * $Id: DefaultGraphTransition.java,v 1.12 2007-09-26 08:30:22 rensink Exp $
  */
 package groove.lts;
 
@@ -32,9 +32,9 @@ import groove.trans.RuleEvent;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-09-16 21:44:27 $
+ * @version $Revision: 1.12 $ $Date: 2007-09-26 08:30:22 $
  */
-public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphTransitionStub, GraphTransition {
+public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,GraphState> implements GraphTransitionStub, GraphTransition {
     /** The total number of anchor images created. */
     static private int anchorImageCount = 0;
     
@@ -234,18 +234,18 @@ public class DefaultGraphTransition extends AbstractBinaryEdge implements GraphT
     public boolean equals(Object obj) {
         return obj instanceof GraphTransition && equalsSource((GraphTransition) obj) && equalsEvent((GraphTransition) obj);
     }
-    
-    /** This implementation specialises the return type to a {@link DefaultGraphState}. */
-    @Override
-    public AbstractGraphState source() {
-    	return (AbstractGraphState) source;
-    }
-    
-    /** This implementation specialises the return type to a {@link DefaultGraphState}. */
-    @Override
-    public AbstractGraphState target() {
-    	return (AbstractGraphState) target;
-    }
+//    
+//    /** This implementation specialises the return type to a {@link DefaultGraphState}. */
+//    @Override
+//    public AbstractGraphState source() {
+//    	return (AbstractGraphState) source;
+//    }
+//    
+//    /** This implementation specialises the return type to a {@link DefaultGraphState}. */
+//    @Override
+//    public AbstractGraphState target() {
+//    	return (AbstractGraphState) target;
+//    }
 
     /** Always throws an <tt>UnsupportedOperationException</tt>. */
 	@Override

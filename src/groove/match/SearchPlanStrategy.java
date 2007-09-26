@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.8 2007-09-25 15:12:34 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.9 2007-09-26 08:30:24 rensink Exp $
  */
 package groove.match;
 
@@ -42,7 +42,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class SearchPlanStrategy implements MatchStrategy {
 	/**
@@ -92,10 +92,10 @@ public class SearchPlanStrategy implements MatchStrategy {
     	return filter;
     }
     
-    public VarNodeEdgeMap getMatch(Graph graph, NodeEdgeMap preMatch) {
+    public VarNodeEdgeMap getMatch(Graph host, NodeEdgeMap preMatch) {
         VarNodeEdgeMap result;
         reporter.start(GET_MATCH);
-        Search search = createSearch(graph, preMatch);
+        Search search = createSearch(host, preMatch);
         if (search.find()) {
             result = search.getMatch();
         } else {
@@ -105,10 +105,10 @@ public class SearchPlanStrategy implements MatchStrategy {
         return result;
     }
 
-    public Iterator<VarNodeEdgeMap> getMatchIter(Graph graph, NodeEdgeMap preMatch) {
+    public Iterator<VarNodeEdgeMap> getMatchIter(Graph host, NodeEdgeMap preMatch) {
         Iterator<VarNodeEdgeMap> result;
         reporter.start(GET_MATCH_ITER);
-        final Search search = createSearch(graph, preMatch);
+        final Search search = createSearch(host, preMatch);
         result = new Iterator<VarNodeEdgeMap>() {
             public boolean hasNext() {
                 // test if there is an unreturned next or if we are done
@@ -151,10 +151,10 @@ public class SearchPlanStrategy implements MatchStrategy {
         return result;
     }
 
-    public Collection<VarNodeEdgeMap> getMatchSet(Graph graph, NodeEdgeMap preMatch) {
+    public Collection<VarNodeEdgeMap> getMatchSet(Graph host, NodeEdgeMap preMatch) {
         reporter.start(GET_MATCH_SET);
         Collection<VarNodeEdgeMap> result = new ArrayList<VarNodeEdgeMap>();
-        Search searchRecord = createSearch(graph, preMatch);
+        Search searchRecord = createSearch(host, preMatch);
         while (searchRecord.find()) {
             result.add(searchRecord.getMatch());
         }
@@ -184,9 +184,9 @@ public class SearchPlanStrategy implements MatchStrategy {
     /**
      * Callback factory method for an auxiliary {@link Search} object.
      */
-    protected Search createSearch(Graph target, NodeEdgeMap preMatch) {
+    protected Search createSearch(Graph host, NodeEdgeMap preMatch) {
         testFixed(true);
-        return new Search(target, preMatch);
+        return new Search(host, preMatch);
     }
     
     /** 
@@ -350,9 +350,8 @@ public class SearchPlanStrategy implements MatchStrategy {
     /** Class implementing an instantiation of the search plan algorithm for a given graph. */
     public class Search {
         /** Constructs a new record for a given graph and partial match. */
-        public Search(Graph target, NodeEdgeMap preMatch) {
-            this.target = target;
-            this.current = 0;
+        public Search(Graph host, NodeEdgeMap preMatch) {
+            this.host = host;
             this.records = new SearchItem.Record[plan.size()];
             this.lastSingular = -1;
             this.nodeImages = new Node[nodeKeys.length];
@@ -393,26 +392,36 @@ public class SearchPlanStrategy implements MatchStrategy {
          */
         public boolean find() {
             reporter.start(SEARCH_FIND);
+            final int planSize = plan.size();
+            final boolean filtered = filter != null;
+            boolean found = this.found;
+            boolean exhausted;
+            int current = found ? planSize-1 : 0;
             do {
-				if (found) {
-					// we already found a solution
-					match = null;
+            	// the outer loop is to filter solutions through
+				while (current > lastSingular && current < planSize) {
+					current += getRecord(current).find() ? +1 : -1;
+				}
+				// now check if a found solution passes the filter (if there is one)
+				found = current == planSize;
+				exhausted = !found;
+				if (found && filtered && !satisfiesFilter()) {
+					// we have to go on searching
 					current--;
+					found = false;
+					match = null;
 				}
-				while (current > lastSingular && current < plan.size()) {
-					current += getCurrentRecord().find() ? +1 : -1;
-				}
-				reporter.stop();
-				found = current > lastSingular;
-			} while (found && !satisfiesFilter());
+			} while (!found && !exhausted);
+            this.found = found;
+			reporter.stop();
             return found;
         }
 
         /**
-		 * Returns the currently active search item record, i.e., belonging to
-		 * the value of {@link #current}.
+		 * Returns the currently active search item record.
+         * @param current the index of the requested record
 		 */
-        private SearchItem.Record getCurrentRecord() {
+        private SearchItem.Record getRecord(int current) {
             SearchItem.Record result = records[current];
             if (result == null) {
                 // make a new one
@@ -521,66 +530,9 @@ public class SearchPlanStrategy implements MatchStrategy {
         }
         
         /** Returns the target graph of the search. */
-        public Graph getTarget() {
-            return target;
+        public Graph getHost() {
+            return host;
         }
-//
-//        /**
-//         * Callback factory method to create the node-edge map to store the
-//         * final result of the simulation.
-//         */
-//        private VarNodeEdgeMap createElementMap(NodeEdgeMap basis) {
-//            if (basis == null) {
-//                basis = new VarNodeEdgeHashMap();
-//            }
-//            if (injective) {
-//                // returns a hash map that maintains the usedNodes
-//                // when nodes are added or removed.
-//                return new VarNodeEdgeHashMap(basis) {
-//                    @Override
-//                    protected Map<Node, Node> createNodeMap() {
-//                        return createUsedNodeSensitiveNodeMap();
-//                    }
-//                };
-//            } else {
-//                return new VarNodeEdgeHashMap(basis);
-//            }
-//        }
-//        
-//        /** 
-//         * Callback method to create the node map part of the singular map.
-//         * This implementation returns a map that maintains the {@link #usedNodes}
-//         * whenever an entry is inserted into or removed from the map.
-//         */
-//        private Map<Node,Node> createUsedNodeSensitiveNodeMap() {
-//            return new HashMap<Node,Node>() {
-//                @Override
-//                public Node put(Node key, Node value) {
-//                    // also adds the node to the used nodes
-//                    getUsedNodes().add(value);
-//                    return super.put(key, value);
-//                }
-//
-//                @Override
-//                public Node remove(Object key) {
-//                    Node result = super.remove(key);
-//                    // also remove the node from the used nodes
-//                    getUsedNodes().remove(result);
-//                    return result;
-//                }
-//            };
-//        }
-//
-//        /** 
-//         * Indicates if a given node of the codomain is available for use
-//         * as an image of the match under construction.
-//         * @return <code>true</code> if the match is not injective, or 
-//         * the node has not yet been used as image.
-//         */
-//        public boolean isAvailable(Node node) {
-//            return !(injective && getUsedNodes().contains(node));
-//        }
-//        
         /** 
          * Returns the set of nodes already used as images.
          * This is needed for the injectivity check, if any.
@@ -592,14 +544,6 @@ public class SearchPlanStrategy implements MatchStrategy {
             return usedNodes;
         }
 
-//        /** The search plan for this record. */
-//        private final List<SearchItem> plan;
-//        /** Array of node images. */
-//        private final Node[] nodeKeys;
-//        /** Array of edge images. */
-//        private final Edge[] edgeKeys;
-//        /** Array of variable images. */
-//        private final String[] varKeys;
         /** Array of node images. */
         private final Node[] nodeImages;
         /** Array of edge images. */
@@ -612,24 +556,12 @@ public class SearchPlanStrategy implements MatchStrategy {
         private final Edge[] edgePreMatches;
         /** Array indicating, for each index, if the edge with that image was pre-matched in the search. */
         private final Label[] varPreMatches;
-//        /** Property to be satisfied by all search results. May be <code>null</code>. */
-//        private final Property<VarNodeEdgeMap> filter;
-//        /** Flag indicating that the match should be injective. */
-//        private final boolean injective;
         /** Flag indicating that a solution has already been found. */
         private boolean found;
-        /** The index of the currently active search item. */
-        private int current;
         /** Index of the last search record known to be singular. */
         private int lastSingular;
-        /** The target graph of the search. */
-        private final Graph target;
-//        /** The initial pre-match map. */
-//        private NodeEdgeMap preMatch;
-//        /**
-//         * The element map built up during the search process.
-//         */
-//        private VarNodeEdgeMap result;
+        /** The host graph of the search. */
+        private final Graph host;
         /** 
          * The set of nodes already used as images, used for the injectivity test.
          */
