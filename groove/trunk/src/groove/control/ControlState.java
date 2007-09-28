@@ -12,13 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlState.java,v 1.4 2007-09-16 21:44:31 rensink Exp $
+ * $Id: ControlState.java,v 1.5 2007-09-28 10:58:28 rensink Exp $
  */
 package groove.control;
 
 import groove.graph.Element;
+import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.lts.State;
 import groove.trans.Rule;
 
@@ -56,11 +56,11 @@ public class ControlState implements State, Location {
 	public int compareTo(Element obj) {
 		return getStateNumber() - ((ControlState) obj).getStateNumber();
 	}
-
-	@Deprecated
-	public Element imageFor(NodeEdgeMap elementMap) {
-		throw new UnsupportedOperationException();
-	}
+//
+//	@Deprecated
+//	public Element imageFor(GenericNodeEdgeMap elementMap) {
+//		throw new UnsupportedOperationException();
+//	}
 
 	public int getStateNumber()
 	{
@@ -72,10 +72,10 @@ public class ControlState implements State, Location {
 		throw new UnsupportedOperationException();
 	}
 	
-	@Deprecated
-	public Node newNode() {
-		throw new UnsupportedOperationException();
-	}
+//	@Deprecated
+//	public Node newNode() {
+//		throw new UnsupportedOperationException();
+//	}
 	
 	public void add(ControlTransition transition) {
 		int priority = transition.getPriority();
