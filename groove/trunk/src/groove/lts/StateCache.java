@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.15 2007-09-22 16:28:40 rensink Exp $
+ * $Id: StateCache.java,v 1.16 2007-09-28 10:02:53 rensink Exp $
  */
 package groove.lts;
 
@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 class StateCache {
     /**
@@ -49,8 +49,9 @@ class StateCache {
     /** Adds a transition stub to the data structures stored in this cache. */
     boolean addTransitionStub(GraphTransitionStub stub) {
     	boolean result = getStubSet().add(stub);
-    	if (transitionMap != null) {
-    		transitionMap.put(stub.getEvent(state), stub.target());
+    	if (result && transitionMap != null) {
+    		GraphState oldState = transitionMap.put(stub.getEvent(state), stub.target());
+    		assert oldState == null;
     	}
     	return result;
     }
