@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: HyperEdge.java,v 1.8 2007-09-25 16:30:17 rensink Exp $
+ * $Id: HyperEdge.java,v 1.9 2007-09-28 10:25:39 rensink Exp $
  */
 package groove.graph;
 
@@ -20,11 +20,11 @@ package groove.graph;
  * General edge implementation.
  * Don't use it if efficiency is a concern!
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @deprecated Hyperedges are no longer (planned to be) supported; use {@link UnaryEdge} or {@link BinaryEdge} instead.
  */
 @Deprecated 
-public class HyperEdge extends AbstractEdge {
+public class HyperEdge extends AbstractEdge<Node> {
     /**
      * Constructs an edge with given ends and label.
      */
@@ -41,33 +41,37 @@ public class HyperEdge extends AbstractEdge {
     	System.arraycopy(ends, 0, result, 0, ends.length);
     	return result;
     }
-
-    @Deprecated
-    public Edge imageFor(NodeEdgeMap elementMap) {
-        Node[] endImages = new Node[endCount()];
-        for (int i = 0; i < endImages.length; i++) {
-            endImages[i] = elementMap.getNode(ends[i]);
-            if (endImages[i] == null) {
-                return null;
-            }
-        }
-        return newEdge(endImages);
-    }
-    
-    /**
-     * Constructs a new edge with the given ends and the label of this edge.
-     * Convenience method for <code>noeWedge(ends, label())</code>.
-     */
-    public Edge newEdge(Node[] ends) {
-        return newEdge(ends, label);
-    }
-
-    /**
-     * Constructs a new edge with the given ends and label.
-     */
-    public Edge newEdge(Node[] ends, Label label) {
-        return new HyperEdge(ends, label);
-    }
+//
+//    @Deprecated
+//    public Edge imageFor(GenericNodeEdgeMap elementMap) {
+//    	return imageFor((NodeEdgeMap)elementMap);
+//    }
+//    
+//    private Edge imageFor(NodeEdgeMap elementMap) {
+//        Node[] endImages = new Node[endCount()];
+//        for (int i = 0; i < endImages.length; i++) {
+//            endImages[i] = elementMap.getNode(ends[i]);
+//            if (endImages[i] == null) {
+//                return null;
+//            }
+//        }
+//        return newEdge(endImages);
+//    }
+//    
+//    /**
+//     * Constructs a new edge with the given ends and the label of this edge.
+//     * Convenience method for <code>noeWedge(ends, label())</code>.
+//     */
+//    public Edge newEdge(Node[] ends) {
+//        return newEdge(ends, label);
+//    }
+//
+//    /**
+//     * Constructs a new edge with the given ends and label.
+//     */
+//    public Edge newEdge(Node[] ends, Label label) {
+//        return new HyperEdge(ends, label);
+//    }
     
     @Override
     public String toString() {

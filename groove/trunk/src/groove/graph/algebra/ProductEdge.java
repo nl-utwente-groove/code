@@ -12,17 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductEdge.java,v 1.7 2007-09-26 08:30:22 rensink Exp $
+ * $Id: ProductEdge.java,v 1.8 2007-09-28 10:20:54 rensink Exp $
  */
 package groove.graph.algebra;
 
 import groove.algebra.Constant;
 import groove.algebra.Operation;
 import groove.graph.AbstractBinaryEdge;
-import groove.graph.BinaryEdge;
 import groove.graph.DefaultLabel;
-import groove.graph.Label;
-import groove.graph.Node;
 
 /**
  * This class represents the edges in attributed graphs which support the
@@ -31,7 +28,7 @@ import groove.graph.Node;
  * and the target-node should be an instance of {@link groove.graph.algebra.ValueNode}.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 // AREND I would call this OperatorEdge and unify it with ValueEdge
 public class ProductEdge extends AbstractBinaryEdge<ProductNode,ValueNode> {
@@ -99,12 +96,12 @@ public class ProductEdge extends AbstractBinaryEdge<ProductNode,ValueNode> {
 //	public ProductNode source() {
 //		return (ProductNode) source;
 //	}
-
-	@Override
-	@Deprecated
-	public BinaryEdge newEdge(Node source, Label label, Node target) {
-		throw new UnsupportedOperationException();
-	}
+//
+//	@Override
+//	@Deprecated
+//	public BinaryEdge newEdge(Node source, Label label, Node target) {
+//		throw new UnsupportedOperationException();
+//	}
 
 	/** The operation represented by this edge. */
 	private final Operation operation;

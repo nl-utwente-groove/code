@@ -12,15 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractBinaryEdge.java,v 1.8 2007-09-26 08:30:21 rensink Exp $
+ * $Id: AbstractBinaryEdge.java,v 1.9 2007-09-28 10:23:59 rensink Exp $
  */
 package groove.graph;
+
 
 /**
  * Abstract implementation of an (immutable) binary graph edge, as a tuple consisting of source and
  * target nodes.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-09-26 08:30:21 $
+ * @version $Revision: 1.9 $ $Date: 2007-09-28 10:23:59 $
  */
 abstract public class AbstractBinaryEdge<SN extends Node, TN extends Node> extends AbstractEdge<SN> implements BinaryEdge {
     static {
@@ -42,29 +43,64 @@ abstract public class AbstractBinaryEdge<SN extends Node, TN extends Node> exten
     }
 
     // ----------------- Element methods ----------------------------
-
-    @Deprecated
-    public Edge imageFor(NodeEdgeMap elementMap) {
-        // if this edge has an explicit image in the map, use that
-        Edge image = elementMap.getEdge(this);
-        if (image != null) {
-            return image;
-        }
-        Node sourceImage = elementMap.getNode(source());
-        if (sourceImage == null) {
-            return null;
-        }
-        Node targetImage = elementMap.getNode(target());
-        if (targetImage == null) {
-            return null;
-        }
-        Label labelImage = elementMap.getLabel(label());
-        if (source() == sourceImage && target() == targetImage && label() == labelImage) {
-            return this;
-        } else {
-            return newEdge(sourceImage, labelImage, targetImage);
-        }
-    }
+//
+//    @Deprecated
+//    public Edge imageFor(GenericNodeEdgeMap elementMap) {
+//    	if( elementMap instanceof NodeEdgeMap ) {
+//    		return imageFor((NodeEdgeMap)elementMap);
+//    	} else if( elementMap instanceof VarNodeEdgeMultiMap ) {
+//    		return imageFor((VarNodeEdgeMultiMap)elementMap);
+//    	} return null;
+//    }
+//    
+//    @Deprecated
+//    private Edge imageFor(VarNodeEdgeMultiMap elementMap) {
+//        // if this edge has an explicit image in the map, use that
+//        Set<Edge> image = elementMap.getEdge(this);
+//        if (image != null) {
+//        	// TODO: This can't be right
+//            return image.toArray(new Edge[0])[0];
+//        }
+//        Set<Node> sourceImage = elementMap.getNode(source());
+//        if (sourceImage == null) {
+//            return null;
+//        }
+//        Set<Node> targetImage = elementMap.getNode(target());
+//        if (targetImage == null) {
+//            return null;
+//        }
+//        Label labelImage = elementMap.getLabel(label());
+//        Node imgSource = sourceImage.toArray(new Node[0])[0];
+//        Node imgTarget = targetImage.toArray(new Node[0])[0];
+//        if (source() == imgSource && target() == imgTarget && label() == labelImage) {
+//            return this;
+//        } else {
+//            return newEdge(imgSource, labelImage, imgTarget);
+//        }
+//    }
+//    
+//    @Deprecated
+//    private Edge imageFor(NodeEdgeMap elementMap) {
+//        // if this edge has an explicit image in the map, use that
+//        Edge image = elementMap.getEdge(this);
+//        if (image != null) {
+//            return image;
+//        }
+//        Node sourceImage = elementMap.getNode(source());
+//        if (sourceImage == null) {
+//            return null;
+//        }
+//        Node targetImage = elementMap.getNode(target());
+//        if (targetImage == null) {
+//            return null;
+//        }
+//        Label labelImage = elementMap.getLabel(label());
+//        if (source() == sourceImage && target() == targetImage && label() == labelImage) {
+//            return this;
+//        } else {
+//            return newEdge(sourceImage, labelImage, targetImage);
+//        }
+//    }
 
     final public Node[] ends() {
     	return new Node[] { source, target };
@@ -109,18 +145,18 @@ abstract public class AbstractBinaryEdge<SN extends Node, TN extends Node> exten
     final public int endCount() {
         return END_COUNT;
     }
-
-    /**
-     * Factory method: constructs a new edge from given source and target nodes and label.
-     * @param source source of the new edge
-     * @param label label of the new edge
-     * @param target target of the new edge
-     * @ensure <tt>result.source() == source</tt>, <tt>result.label() == label</tt>,
-     *         <tt>result.target() == target</tt>
-     * @deprecated Use another factory method
-     */
-    @Deprecated
-    abstract public BinaryEdge newEdge(Node source, Label label, Node target);
+//
+//    /**
+//     * Factory method: constructs a new edge from given source and target nodes and label.
+//     * @param source source of the new edge
+//     * @param label label of the new edge
+//     * @param target target of the new edge
+//     * @ensure <tt>result.source() == source</tt>, <tt>result.label() == label</tt>,
+//     *         <tt>result.target() == target</tt>
+//     * @deprecated Use another factory method
+//     */
+//    @Deprecated
+//    abstract public BinaryEdge newEdge(Node source, Label label, Node target);
 
     // -------------------- Object and related methods --------------------
 

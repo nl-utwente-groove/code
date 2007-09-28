@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultEdge.java,v 1.8 2007-09-19 14:57:31 rensink Exp $
+ * $Id: DefaultEdge.java,v 1.9 2007-09-28 10:24:30 rensink Exp $
  */
 package groove.graph;
 
@@ -23,9 +23,9 @@ import groove.util.TreeHashSet;
  * Default implementation of an (immutable) graph edge, as a triple consisting of
  * source and target nodes and an arbitrary label.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-09-19 14:57:31 $
+ * @version $Revision: 1.9 $ $Date: 2007-09-28 10:24:30 $
  */
-final public class DefaultEdge extends AbstractBinaryEdge {
+final public class DefaultEdge extends AbstractBinaryEdge<Node,Node> {
 	/**
      * Constructs a new edge on the basis of a given source, label text and target.
      * The label created will be a {@link DefaultLabel}.
@@ -56,15 +56,15 @@ final public class DefaultEdge extends AbstractBinaryEdge {
     }
 
     // ----------------- Element methods ----------------------------
-
-    /**
-     * This implementation returns a {@link DefaultEdge}.
-     */
-    @Override
-    @Deprecated
-    public BinaryEdge newEdge(Node source, Label label, Node target) {
-        return DefaultEdge.createEdge(source, label, target);
-    }
+//
+//    /**
+//     * This implementation returns a {@link DefaultEdge}.
+//     */
+//    @Override
+//    @Deprecated
+//    public BinaryEdge newEdge(Node source, Label label, Node target) {
+//        return DefaultEdge.createEdge(source, label, target);
+//    }
 
     /** 
      * For efficiency, this implementation tests for object equality.

@@ -12,20 +12,19 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AlgebraEdge.java,v 1.6 2007-09-26 08:30:22 rensink Exp $
+ * $Id: AlgebraEdge.java,v 1.7 2007-09-28 10:20:55 rensink Exp $
  */
 package groove.graph.algebra;
 
 import groove.graph.AbstractBinaryEdge;
 import groove.graph.Label;
-import groove.graph.Node;
 
 /**
  * Instances of this class are edges between {@link groove.graph.algebra.ProductNode}s
  * and {@link groove.graph.algebra.ValueNode}s.
  * 
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-09-26 08:30:22 $
+ * @version $Revision 1.0$ $Date: 2007-09-28 10:20:55 $
  */
 // AREND I would call this ArgumentEdge, and include the 
 // number (as derived from the label); in fact, I think a constructor 
@@ -36,13 +35,13 @@ public class AlgebraEdge extends AbstractBinaryEdge<ProductNode,ValueNode> {
         super(source, label, target);
         number = Integer.parseInt(label.text());
     }
-
-    /** Overrides the super method to return an {@link AlgebraEdge}. */
-    @Override
-    @Deprecated
-    public AlgebraEdge newEdge(Node source, Label label, Node target) {
-        return new AlgebraEdge((ProductNode) source, label, (ValueNode) target);
-    }
+//
+//    /** Overrides the super method to return an {@link AlgebraEdge}. */
+//    @Override
+//    @Deprecated
+//    public AlgebraEdge newEdge(Node source, Label label, Node target) {
+//        return new AlgebraEdge((ProductNode) source, label, (ValueNode) target);
+//    }
 //
 //    /** Specialises the return type. */
 //	@Override

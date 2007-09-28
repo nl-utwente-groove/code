@@ -12,14 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractEdge.java,v 1.7 2007-09-26 08:30:21 rensink Exp $
+ * $Id: AbstractEdge.java,v 1.8 2007-09-28 10:23:59 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public abstract class AbstractEdge<N extends Node> implements Edge {
     /**
@@ -93,7 +93,7 @@ public abstract class AbstractEdge<N extends Node> implements Edge {
      * Since all composites are immutable, the method just returns <code>this</code>.
      */
     @Override
-    public AbstractEdge clone() {
+    public AbstractEdge<N> clone() {
         return this;
     }
     

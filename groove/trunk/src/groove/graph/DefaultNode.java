@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.11 2007-09-18 21:57:56 rensink Exp $
+ * $Id: DefaultNode.java,v 1.12 2007-09-28 10:23:59 rensink Exp $
  */
 package groove.graph;
 
@@ -23,18 +23,18 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-09-18 21:57:56 $
+ * @version $Revision: 1.12 $ $Date: 2007-09-28 10:23:59 $
  */
 public class DefaultNode implements Node {
-    /**
-     * Constructs a fresh node, with a number determined by an internally kept count.
-     * @deprecated use {@link #createNode()} instead
-     */
-    @Deprecated
-    public DefaultNode() {
-        this(nextNodeNr());
-    }
-
+//    /**
+//     * Constructs a fresh node, with a number determined by an internally kept count.
+//     * @deprecated use {@link #createNode()} instead
+//     */
+//    @Deprecated
+//    public DefaultNode() {
+//        this(nextNodeNr());
+//    }
+//
     /**
      * Constructs a fresh node, with an explicitly given number.
      * Note that node equality is determined by identity, but it is assumed
@@ -49,13 +49,24 @@ public class DefaultNode implements Node {
     	this.nodeNr = nr;
     	this.hashCode = computeHashCode();
     }
-
-    // ---------------- Element and related methods ----------------------
-
-    @Deprecated
-    public Node imageFor(NodeEdgeMap elementMap) {
-        return elementMap.getNode(this);
-    }
+//
+//    // ---------------- Element and related methods ----------------------
+//
+//    public Node imageFor(GenericNodeEdgeMap elementMap) {
+//    	if( elementMap instanceof NodeEdgeMap ) {
+//    		return imageFor((NodeEdgeMap)elementMap);
+//    	} else if( elementMap instanceof VarNodeEdgeMultiMap ) {
+//    		return imageFor((VarNodeEdgeMultiMap)elementMap);
+//    	} return null;
+//    }
+//    
+//    private Node imageFor(VarNodeEdgeMultiMap elementMap) {
+//        return elementMap.getNode(this).toArray(new Node[0])[0];
+//    }
+//
+//    private Node imageFor(NodeEdgeMap elementMap) {
+//        return elementMap.getNode(this);
+//    }
 
     // ----------------------------- OBJECT OVERRIDES -----------------------------
 
@@ -91,14 +102,14 @@ public class DefaultNode implements Node {
         assert result || !(obj instanceof DefaultNode) || (nodeNr != ((DefaultNode) obj).nodeNr) : String.format("Distinct nodes with number %d", nodeNr);
         return result;
     }
-
-    /**
-     * Invokes the default constructor to create a fresh node.
-     */
-    @Deprecated
-    public Node newNode() {
-        return createNode();
-    }
+//
+//    /**
+//     * Invokes the default constructor to create a fresh node.
+//     */
+//    @Deprecated
+//    public Node newNode() {
+//        return createNode();
+//    }
 
     /**
      * Returns a string consisting of the letter <tt>'n'</tt> and the node number.
