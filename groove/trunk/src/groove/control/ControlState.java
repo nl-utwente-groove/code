@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlState.java,v 1.5 2007-09-28 10:58:28 rensink Exp $
+ * $Id: ControlState.java,v 1.6 2007-09-28 12:48:08 rensink Exp $
  */
 package groove.control;
 
@@ -66,12 +66,12 @@ public class ControlState implements State, Location {
 	{
 		return stateNumber;
 	}
-	
-	@Deprecated
-	public State newState() {
-		throw new UnsupportedOperationException();
-	}
-	
+//	
+//	@Deprecated
+//	public State newState() {
+//		throw new UnsupportedOperationException();
+//	}
+//	
 //	@Deprecated
 //	public Node newNode() {
 //		throw new UnsupportedOperationException();

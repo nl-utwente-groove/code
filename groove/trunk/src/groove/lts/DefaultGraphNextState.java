@@ -22,7 +22,6 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
@@ -30,7 +29,7 @@ import groove.trans.RuleEvent;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
@@ -290,12 +289,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     public int hashCode() {
         return source().getStateNumber() + getEvent().identityHashCode();
     }
-
-    @Override
-    @Deprecated
-	public NextState imageFor(NodeEdgeMap elementMap) {
-		throw new UnsupportedOperationException();
-	}
+//
+//    @Override
+//    @Deprecated
+//	public NextState imageFor(GenericNodeEdgeMap elementMap) {
+//		throw new UnsupportedOperationException();
+//	}
     
     /**
 	 * This implementation returns <code>this</code> if the derivation's event

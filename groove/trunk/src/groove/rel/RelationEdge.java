@@ -12,15 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RelationEdge.java,v 1.4 2007-09-16 21:44:32 rensink Exp $
+ * $Id: RelationEdge.java,v 1.5 2007-09-28 12:49:21 rensink Exp $
  */
 package groove.rel;
 
 import groove.graph.AbstractBinaryEdge;
-import groove.graph.BinaryEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
-import groove.graph.Label;
 import groove.graph.Node;
 
 /**
@@ -30,7 +28,7 @@ import groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RelationEdge<V> extends AbstractBinaryEdge {
+public class RelationEdge<V> extends AbstractBinaryEdge<Node,Node> {
 	/** Yields a string description of a {@link RelationType} value. */
 	public static String typeToString(RelationType type) {
 		return "["+type.getText()+"]";
@@ -101,12 +99,12 @@ public class RelationEdge<V> extends AbstractBinaryEdge {
 	protected boolean isValueEqual(RelationEdge<?> other) {
 		return type.equals(other.getType()) && (value == null ? other.value == null : value.equals(other.getValue()));
 	}
-
-	@Override
-	@Deprecated
-	public BinaryEdge newEdge(Node source, Label label, Node target) {
-		throw new UnsupportedOperationException();
-	}
+//
+//	@Override
+//	@Deprecated
+//	public BinaryEdge newEdge(Node source, Label label, Node target) {
+//		throw new UnsupportedOperationException();
+//	}
 
 	/**
 	 * The type of relation of this edge.
