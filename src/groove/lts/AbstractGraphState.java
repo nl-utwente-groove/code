@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.10 2007-09-26 08:30:22 rensink Exp $
+ * $Id: AbstractGraphState.java,v 1.11 2007-09-28 12:46:00 rensink Exp $
  */
 package groove.lts;
 
@@ -21,7 +21,6 @@ import groove.control.Location;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.trans.RuleEvent;
 import groove.util.AbstractCacheHolder;
 import groove.util.TransformIterator;
@@ -37,7 +36,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-09-26 08:30:22 $
+ * @version $Revision: 1.11 $ $Date: 2007-09-28 12:46:00 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
@@ -260,17 +259,17 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     public State newState() {
 		return new StartGraphState(getGraph());
 	}
-
-    @Deprecated
-	public Node newNode() {
-		return newState();
-	}
-
-    @Deprecated
-    public Element imageFor(NodeEdgeMap elementMap) {
-        throw new UnsupportedOperationException(
-                "Mappings between transition systems are currently not supported");
-    }
+//
+//    @Deprecated
+//	public Node newNode() {
+//		return newState();
+//	}
+//
+//    @Deprecated
+//    public Element imageFor(GenericNodeEdgeMap elementMap) {
+//        throw new UnsupportedOperationException(
+//                "Mappings between transition systems are currently not supported");
+//    }
 
     /**
      * This implementation compares state numbers.

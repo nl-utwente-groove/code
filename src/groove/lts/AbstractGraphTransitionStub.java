@@ -12,13 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphTransitionStub.java,v 1.8 2007-09-16 21:44:27 rensink Exp $
+ * $Id: AbstractGraphTransitionStub.java,v 1.9 2007-09-28 12:45:56 rensink Exp $
  */
 package groove.lts;
 
 import groove.graph.Element;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.trans.RuleEvent;
 
 /**
@@ -27,7 +26,7 @@ import groove.trans.RuleEvent;
  * ({@link SymmetryTransitionStub}) and one that is not ({@link SymmetryTransitionStub}).
  * The only abstract method is {@link #toTransition(GraphState)}.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     /**
@@ -88,16 +87,16 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     public int compareTo(Element obj) {
 		throw new UnsupportedOperationException();
 	}
-
-    /**
-     * This method is only there because we needed to make {@link groove.lts.GraphTransitionStub}
-     * a sub-interface of {@link Element}.
-     * The method throws an {@link UnsupportedOperationException} always.
-     */
-    @Deprecated
-	public Element imageFor(NodeEdgeMap elementMap) {
-		throw new UnsupportedOperationException();
-	}
+//
+//    /**
+//     * This method is only there because we needed to make {@link groove.lts.GraphTransitionStub}
+//     * a sub-interface of {@link Element}.
+//     * The method throws an {@link UnsupportedOperationException} always.
+//     */
+//    @Deprecated
+//	public Element imageFor(GenericNodeEdgeMap elementMap) {
+//		throw new UnsupportedOperationException();
+//	}
 	
     /**
 	 * This implementation returns the identity of the event.
