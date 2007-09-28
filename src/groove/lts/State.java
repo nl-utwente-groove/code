@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: State.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: State.java,v 1.2 2007-09-28 12:48:07 rensink Exp $
  */
 package groove.lts;
 
@@ -21,7 +21,7 @@ import groove.graph.Node;
 /**
  * Interface of a state of a labelled transition system.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:52 $
+ * @version $Revision: 1.2 $ $Date: 2007-09-28 12:48:07 $
  */
 public interface State extends Node {
     // ----------------------- OBJECT OVERRIDES ---------------------
@@ -36,12 +36,12 @@ public interface State extends Node {
     
     /** Overrides the {@link Object#clone()} method so as to return a {@link State}. */
     //public State clone();
-    
-    /**
-     * Returns a new, empty state prototyped on this one.
-     */
-	@Deprecated
-    public State newState();
+//    
+//    /**
+//     * Returns a new, empty state prototyped on this one.
+//     */
+//	@Deprecated
+//    public State newState();
     
     /**
      * Tests if this state is fully explored, i.e., all outgoing transitions have been generated.

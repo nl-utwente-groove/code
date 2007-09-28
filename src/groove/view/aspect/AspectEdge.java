@@ -12,16 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectEdge.java,v 1.6 2007-09-26 08:30:23 rensink Exp $
+ * $Id: AspectEdge.java,v 1.7 2007-09-28 12:50:25 rensink Exp $
  */
 package groove.view.aspect;
 
 import groove.graph.AbstractBinaryEdge;
-import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
-import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.view.FormatException;
 
 import java.util.Collection;
@@ -30,7 +27,7 @@ import java.util.List;
 /**
  * Edge enriched with aspect data.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class AspectEdge extends AbstractBinaryEdge<AspectNode,AspectNode> implements AspectElement {
 	/**
@@ -99,29 +96,29 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,AspectNode> implem
 	public String getPlainText() {
 		return parseData.toString();
 	}
-
-	/**
-	 * Has to be overridden to make {@link #imageFor(NodeEdgeMap)} work.
-	 * This implementation returns an {@link AspectEdge}.
-	 */
-	@Override
-	@Deprecated
-	public BinaryEdge newEdge(Node source, Label label, Node target) {
-		if (source instanceof AspectNode && target instanceof AspectNode) {
-			// we certainly want an aspect edge
-			try {
-				AspectParseData declaredData = AspectParser.getInstance().getParseData(label.text());
-				declaredData.addInferences(((AspectNode) source).getAspectMap(), ((AspectNode) target).getAspectMap());
-				return new AspectEdge((AspectNode) source, (AspectNode) target, declaredData);
-			} catch (FormatException exc) {
-				// the edge aspects were incompatible with the node aspects
-				// so the edge has no image
-				return null;
-			}
-		} else {
-			throw new IllegalArgumentException();
-		}
-	}
+//
+//	/**
+//	 * Has to be overridden to make {@link #imageFor(NodeEdgeMap)} work.
+//	 * This implementation returns an {@link AspectEdge}.
+//	 */
+//	@Override
+//	@Deprecated
+//	public BinaryEdge newEdge(Node source, Label label, Node target) {
+//		if (source instanceof AspectNode && target instanceof AspectNode) {
+//			// we certainly want an aspect edge
+//			try {
+//				AspectParseData declaredData = AspectParser.getInstance().getParseData(label.text());
+//				declaredData.addInferences(((AspectNode) source).getAspectMap(), ((AspectNode) target).getAspectMap());
+//				return new AspectEdge((AspectNode) source, (AspectNode) target, declaredData);
+//			} catch (FormatException exc) {
+//				// the edge aspects were incompatible with the node aspects
+//				// so the edge has no image
+//				return null;
+//			}
+//		} else {
+//			throw new IllegalArgumentException();
+//		}
+//	}
 
 	/**
      * Includes the hash code of the associated aspect values.

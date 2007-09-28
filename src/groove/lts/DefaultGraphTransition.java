@@ -12,14 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.12 2007-09-26 08:30:22 rensink Exp $
+ * $Id: DefaultGraphTransition.java,v 1.13 2007-09-28 12:46:00 rensink Exp $
  */
 package groove.lts;
 
 import groove.graph.AbstractBinaryEdge;
 import groove.graph.AbstractGraph;
-import groove.graph.BinaryEdge;
-import groove.graph.NodeEdgeMap;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
@@ -32,7 +30,7 @@ import groove.trans.RuleEvent;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-09-26 08:30:22 $
+ * @version $Revision: 1.13 $ $Date: 2007-09-28 12:46:00 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,GraphState> implements GraphTransitionStub, GraphTransition {
     /** The total number of anchor images created. */
@@ -199,15 +197,15 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,GraphS
     }
 
     // --------------------- Element methods -----------------------
-
-    /**
-     * This implementation throws an {@link UnsupportedOperationException} always.
-     */
-	@Override
-	@Deprecated
-    public Transition imageFor(NodeEdgeMap elementMap) {
-        throw new UnsupportedOperationException("Transition images are currenty not supported");
-    }
+//
+//    /**
+//     * This implementation throws an {@link UnsupportedOperationException} always.
+//     */
+//	@Override
+//	@Deprecated
+//    public Transition imageFor(GenericNodeEdgeMap elementMap) {
+//        throw new UnsupportedOperationException("Transition images are currenty not supported");
+//    }
 
     // ----------------------- OBJECT OVERRIDES -----------------------
 
@@ -246,13 +244,13 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,GraphS
 //    public AbstractGraphState target() {
 //    	return (AbstractGraphState) target;
 //    }
-
-    /** Always throws an <tt>UnsupportedOperationException</tt>. */
-	@Override
-	@Deprecated
-    public BinaryEdge newEdge(Node source, Label label, Node target) {
-        throw new UnsupportedOperationException();
-    }
+//
+//    /** Always throws an <tt>UnsupportedOperationException</tt>. */
+//	@Override
+//	@Deprecated
+//    public BinaryEdge newEdge(Node source, Label label, Node target) {
+//        throw new UnsupportedOperationException();
+//    }
 
 	/**
      * This implementation combines the hash codes of the rule and the anchor images.
