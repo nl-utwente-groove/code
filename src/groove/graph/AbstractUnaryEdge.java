@@ -12,16 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractUnaryEdge.java,v 1.6 2007-09-16 21:44:23 rensink Exp $
+ * $Id: AbstractUnaryEdge.java,v 1.7 2007-09-28 10:23:59 rensink Exp $
  */
 package groove.graph;
+
 
 /**
  * Abstract implementation of an (immutable) unary graph edge, consisting of one source node only.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-09-16 21:44:23 $
+ * @version $Revision: 1.7 $ $Date: 2007-09-28 10:23:59 $
  */
-abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdge {
+abstract public class AbstractUnaryEdge<N extends Node> extends AbstractEdge<N> implements UnaryEdge {
     static {
         AbstractEdge.setMaxEndCount(END_COUNT);
     }
@@ -34,32 +35,55 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
      * @require <tt>source != null</tt>
      * @ensure <tt>source()==source</tt>
      */
-    protected AbstractUnaryEdge(Node source, Label label) {
+    protected AbstractUnaryEdge(N source, Label label) {
     	super(source, label);
     }
-
-    // ----------------- Element methods ----------------------------
-
-    @Deprecated
-    public UnaryEdge imageFor(NodeEdgeMap elementMap) {
-        Node sourceImage = elementMap.getNode(source());
-        if (sourceImage == null) {
-            return null;
-        }
-        Label labelImage = elementMap.getLabel(label());
-        if (source() == sourceImage && label() == labelImage) {
-            return this;
-        } else {
-            return newEdge(sourceImage, labelImage);
-        }
-    }
+//
+//    // ----------------- Element methods ----------------------------
+//
+//    @Deprecated
+//    public UnaryEdge imageFor(GenericNodeEdgeMap elementMap) {
+//    	if( elementMap instanceof NodeEdgeMap ) {
+//    		return imageFor((NodeEdgeMap)elementMap);
+//    	} else if( elementMap instanceof VarNodeEdgeMultiMap ) {
+//    		return imageFor((VarNodeEdgeMultiMap)elementMap);
+//    	} return null;
+//    }
+//    
+//    @Deprecated
+//    protected UnaryEdge imageFor(VarNodeEdgeMultiMap elementMap) {
+//        Node sourceImage = elementMap.getNode(source()).toArray(new Node[0])[0];
+//        if (sourceImage == null) {
+//            return null;
+//        }
+//        Label labelImage = elementMap.getLabel(label());
+//        if (source() == sourceImage && label() == labelImage) {
+//            return this;
+//        } else {
+//            return newEdge(sourceImage, labelImage);
+//        }
+//    }
+//    
+//    @Deprecated
+//    public UnaryEdge imageFor(NodeEdgeMap elementMap) {
+//        Node sourceImage = elementMap.getNode(source());
+//        if (sourceImage == null) {
+//            return null;
+//        }
+//        Label labelImage = elementMap.getLabel(label());
+//        if (source() == sourceImage && label() == labelImage) {
+//            return this;
+//        } else {
+//            return newEdge(sourceImage, labelImage);
+//        }
+//    }
 
     final public Node[] ends() {
     	return new Node[] { source };
     }
 
     @Override
-    final public Node end(int i) {
+    final public N end(int i) {
         switch (i) {
         case SOURCE_INDEX:
             return source;
@@ -89,29 +113,29 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
     final public int endCount() {
         return END_COUNT;
     }
-
-    /**
-     * Factory method: constructs a new edge from given source and target nodes and label.
-     * @param source source of the new edge
-     * @param label label of the new edge
-     * @ensure <tt>result.source() == source</tt>, <tt>result.label() == label</tt>,
-     *         <tt>result.target() == target</tt>
-     * @deprecated use other factory methods
-     */
-    @Deprecated
-    abstract public UnaryEdge newEdge(Node source, Label label);
-
-    /**
-     * Factory method: constructs new edge between given nodes, with label taken from this one.
-     * Convenience method for <tt>newEdge(source, label(), target)</tt>.
-     * @param source source of the new edge
-     * @see #newEdge(Node,Label)
-     * @deprecated use other factory methods
-     */
-    @Deprecated
-    public UnaryEdge newEdge(Node source) {
-        return newEdge(source, this.label());
-    }
+//
+//    /**
+//     * Factory method: constructs a new edge from given source and target nodes and label.
+//     * @param source source of the new edge
+//     * @param label label of the new edge
+//     * @ensure <tt>result.source() == source</tt>, <tt>result.label() == label</tt>,
+//     *         <tt>result.target() == target</tt>
+//     * @deprecated use other factory methods
+//     */
+//    @Deprecated
+//    abstract public UnaryEdge newEdge(Node source, Label label);
+//
+//    /**
+//     * Factory method: constructs new edge between given nodes, with label taken from this one.
+//     * Convenience method for <tt>newEdge(source, label(), target)</tt>.
+//     * @param source source of the new edge
+//     * @see #newEdge(Node,Label)
+//     * @deprecated use other factory methods
+//     */
+//    @Deprecated
+//    public UnaryEdge newEdge(Node source) {
+//        return newEdge(source, this.label());
+//    }
 
     // -------------------- Object and related methods --------------------
 
@@ -124,7 +148,7 @@ abstract public class AbstractUnaryEdge extends AbstractEdge implements UnaryEdg
     }
 
     @Override
-    public final Node opposite() {
+    public final N opposite() {
         return source;
     }
 
