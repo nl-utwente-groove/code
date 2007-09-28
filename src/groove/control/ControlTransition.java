@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlTransition.java,v 1.5 2007-09-16 21:44:31 rensink Exp $
+ * $Id: ControlTransition.java,v 1.6 2007-09-28 10:58:28 rensink Exp $
  */
 package groove.control;
 
@@ -20,7 +20,6 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.lts.Transition;
 import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
@@ -118,14 +117,13 @@ public class ControlTransition implements Transition {
 		// TODO Auto-generated method stub
 		return false;
 	}
-
-	@Deprecated
-	public Edge imageFor(NodeEdgeMap elementMap) {
-		throw new UnsupportedOperationException("Transition images are currenty not supported");
-	}
+//
+//	@Deprecated
+//	public Edge imageFor(GenericNodeEdgeMap elementMap) {
+//		throw new UnsupportedOperationException("Transition images are currenty not supported");
+//	}
 	
 	public Node opposite() {
-		// TODO Auto-generated method stub
 		return target();
 	}
 
