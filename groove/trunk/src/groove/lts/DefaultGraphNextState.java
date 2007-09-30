@@ -29,7 +29,7 @@ import groove.trans.RuleEvent;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
@@ -37,7 +37,7 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
      * rule application, and a given control location.
      */
     public DefaultGraphNextState(AbstractGraphState source, RuleEvent event, Node[] addedNodes, Location control) {
-        super(control);
+        super(source.getCacheReference(), control);
         this.source = source;
         this.event = event;
         this.addedNodes = addedNodes;
@@ -50,7 +50,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
     public DefaultGraphNextState(AbstractGraphState source, RuleApplication appl, Location control) {
         this(source, appl.getEvent(), appl.getCoanchorImage(), control);
         getCache().setDelta(appl);
-        
     }
     
     /**

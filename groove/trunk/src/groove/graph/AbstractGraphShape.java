@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphShape.java,v 1.12 2007-09-25 22:57:53 rensink Exp $
+ * $Id: AbstractGraphShape.java,v 1.13 2007-09-30 11:20:36 rensink Exp $
  */
 
 package groove.graph;
@@ -36,46 +36,15 @@ import java.util.Set;
 /**
  * Partial implementation of a graph. Records a set of <tt>GraphListener</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public abstract class AbstractGraphShape<C extends GraphShapeCache> extends AbstractCacheHolder<C> implements GraphShape {
-    /**
-     * Private copy of the static variable to allow compiler optimization.
-     */
-    static private final boolean GATHER_STATISTICS = Groove.GATHER_STATISTICS;
-
-    /**
-     * Counts the number of graphs that were not fixed. Added for debugging purposes: observers of
-     * modifiable graphs may cause memory leaks.
-     */
-    static private int modifiableGraphCount = 0;
-
-    /**
-     * Returns the number of graphs created and never fixed. 
-     * @return the number of graphs created and never fixed
-     */
-    static public int getModifiableGraphCount() {
-        return modifiableGraphCount;
-    }
-
-    /**
-     * Provides a textual description of a given graph. Lists the nodes and their outgoing edges.
-     * @param graph the graph to be described
-     * @return a textual description of <tt>graph</tt>
-     */
-    public static String toString(GraphShape graph) {
-    	StringBuffer result = new StringBuffer();
-    	result.append(graph.getInfo());
-    	result.append(String.format("Nodes: %s%n", graph.nodeSet()));
-    	result.append(String.format("Edges: %s%n", graph.edgeSet()));
-        return "Nodes: " + graph.nodeSet() + "; Edges: " + graph.edgeSet();
-    }
-
     /**
      * This constructor polls the cache reference queue and calls 
      * {@link Reference#clear()} on all encountered references.
      */
     protected AbstractGraphShape() {
+    	super(null);
         modifiableGraphCount++;
     }
 
@@ -89,13 +58,13 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     
     /**
      * Implements the method by distinguishing between nodes and edges, and deferring the
-     * containement question to <tt>nodeSet()</tt> respectively <tt>edgeSet()</tt>
+     * containment question to <tt>nodeSet()</tt> respectively <tt>edgeSet()</tt>
      */
     public boolean containsElement(Element elem) {
         if (elem instanceof Node) {
             return nodeSet().contains(elem);
         } else if (elem instanceof RelationEdge) {
-            return nodeSet().containsAll(Arrays.asList(((RelationEdge) elem).ends()));
+            return nodeSet().containsAll(Arrays.asList(((RelationEdge<?>) elem).ends()));
         } else {
             return edgeSet().contains(elem);
         }
@@ -354,15 +323,47 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
 	protected C createCache() {
 	    return (C) new GraphShapeCache(this);
 	}
+    
     /**
      * Set of  {@link GraphListener} s to be identified of changes in this graph. Set to <tt>null</tt> when the graph is fixed.
      */
     protected Map<GraphShapeListener,Object> listeners = new HashMap<GraphShapeListener,Object>();
 
     /**
+     * Returns the number of graphs created and never fixed. 
+     * @return the number of graphs created and never fixed
+     */
+    static public int getModifiableGraphCount() {
+        return modifiableGraphCount;
+    }
+
+    /**
+     * Provides a textual description of a given graph. Lists the nodes and their outgoing edges.
+     * @param graph the graph to be described
+     * @return a textual description of <tt>graph</tt>
+     */
+    public static String toString(GraphShape graph) {
+    	StringBuffer result = new StringBuffer();
+    	result.append(graph.getInfo());
+    	result.append(String.format("Nodes: %s%n", graph.nodeSet()));
+    	result.append(String.format("Edges: %s%n", graph.edgeSet()));
+        return "Nodes: " + graph.nodeSet() + "; Edges: " + graph.edgeSet();
+    }
+
+    /**
      * Map in which varies kinds of data can be stored.
      */
     private GraphInfo graphInfo;
+    /**
+     * Private copy of the static variable to allow compiler optimization.
+     */
+    static private final boolean GATHER_STATISTICS = Groove.GATHER_STATISTICS;
+
+    /**
+     * Counts the number of graphs that were not fixed. Added for debugging purposes: observers of
+     * modifiable graphs may cause memory leaks.
+     */
+    static private int modifiableGraphCount = 0;
 
     /** Reporter instance for profiling graph methods. */
     static public final Reporter reporter = Reporter.register(GraphShape.class);
