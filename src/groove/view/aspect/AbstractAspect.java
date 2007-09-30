@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractAspect.java,v 1.7 2007-08-22 15:04:49 rensink Exp $
+ * $Id: AbstractAspect.java,v 1.8 2007-09-30 21:29:08 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -49,7 +49,7 @@ public abstract class AbstractAspect implements Aspect {
      * @throws FormatException if <code>name</code> is an already existing aspect value name.
      * The actual aspect value instance is created by {@link #createValue(String)}.
      */
-    AspectValue addValue(String name) throws FormatException {
+    protected AspectValue addValue(String name) throws FormatException {
         AspectValue result = createValue(name); 
         addNodeValue(result);
         addEdgeValue(result);
@@ -62,7 +62,7 @@ public abstract class AbstractAspect implements Aspect {
      * @throws FormatException if <code>name</code> is an already existing aspect value name.
      * The actual aspect value instance is created by {@link #createValue(String)}.
      */
-    AspectValue addNodeValue(String name) throws FormatException {
+    protected AspectValue addNodeValue(String name) throws FormatException {
         AspectValue result = createValue(name); 
         addNodeValue(result);
         return result;
@@ -74,7 +74,7 @@ public abstract class AbstractAspect implements Aspect {
      * @throws FormatException if <code>name</code> is an already existing aspect value name.
      * The actual aspect value instance is created by {@link #createValue(String)}.
      */
-    AspectValue addEdgeValue(String name) throws FormatException {
+    protected AspectValue addEdgeValue(String name) throws FormatException {
         AspectValue result = createValue(name); 
         addEdgeValue(result);
         return result;

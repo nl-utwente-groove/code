@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.9 2007-09-06 07:36:44 rensink Exp $
+ * $Id: AspectParser.java,v 1.10 2007-09-30 21:29:08 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class AspectParser {
 	/** 
@@ -82,6 +82,11 @@ public class AspectParser {
      */
     public AspectParseData getParseData(String plainText) throws FormatException {
     	AspectMap parsedValues = new AspectMap();
+    	/*if( plainText == null && false ) {
+        	// JHK: the calling method (AspectGraph.getNodeValue) can handle empty aspects, but this method cannot
+        	// JHK: this if creates the data AspectGraph expects when there is no aspect-material
+    		return createParseData(parsedValues, false, null);
+    	}*/
 		boolean stopParsing = false;
 		boolean endFound = false;
 		int prevIndex = 0;
@@ -103,7 +108,7 @@ public class AspectParser {
 	            	}
 					stopParsing = addParsedValue(parsedValues, valueText, contentText);
 				} catch (FormatException exc) {
-					throw new FormatException("%s in label '%s'", exc.getMessage(), plainText);
+					throw new FormatException("%s in '%s'", exc.getMessage(), plainText);
 				}
 			}
 			nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
@@ -149,18 +154,18 @@ public class AspectParser {
 			throw new FormatException(String.format("Unknown aspect value '%s'", valueText));
 		} else if (value instanceof ContentAspectValue) {
 			// use the value as a factory to get a correct instance
-			value = ((ContentAspectValue) value).newValue(contentText == null ? "" : contentText);
+			value = ((ContentAspectValue<?>) value).newValue(contentText == null ? "" : contentText);
 		} else if (contentText != null) {
-			throw new FormatException(String.format("Aspect value '%s' cannot have content '%s'", valueText, contentText));
+			throw new FormatException(String.format("Aspect value '%s' cannot have content", valueText));
 		}
 		AspectValue oldValue = parsedValues.put(value.getAspect(), value);
 		if (oldValue != null) {
 			if (isLenient()) {
 				stopParsing = true;
 			} else if (oldValue == value) {
-				throw new FormatException("Duplicate value '%s'", value);
+				throw new FormatException("Duplicate aspect value '%s'", value);
 			} else {
-				throw new FormatException("Conflicting values '%s' and '%s'", oldValue, value);
+				throw new FormatException("Conflicting aspect values '%s' and '%s'", oldValue, value);
 			}
 		}
 		return stopParsing;
