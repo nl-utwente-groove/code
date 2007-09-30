@@ -72,8 +72,8 @@ public class SystemRecord implements NodeFactory {
     	RuleEvent result;
     	reporter.start(GET_EVENT);
         if (rule.isModifying()) {
-            RuleEvent event = rule.newEvent(elementMap, this);
-            if (SystemRecord.isReuse()) {
+            RuleEvent event = rule.newEvent(elementMap, this, reuse);
+            if (isReuse()) {
 				result = normalEventMap.get(event);
 				if (result == null) {
 					// no, the event is new.
@@ -88,7 +88,7 @@ public class SystemRecord implements NodeFactory {
         	result = unmodifyingEventMap.get(rule);
             // there can be at most one event
             if (result == null) {
-                unmodifyingEventMap.put(rule, result = rule.newEvent(elementMap, this));
+                unmodifyingEventMap.put(rule, result = rule.newEvent(elementMap, this, reuse));
                 eventCount++;
             }
         }
@@ -176,20 +176,20 @@ public class SystemRecord implements NodeFactory {
      * Initially the property is set to <code>true</code>
      * @param reuse if <code>true</code>, results are reused henceforth 
      */
-    public static void setReuse(boolean reuse) {
-        SystemRecord.reuse = reuse;
+    public void setReuse(boolean reuse) {
+        this.reuse = reuse;
     }
 
     /** 
      * Returns the current value of the reuse property.
      * @return if <code>true</code>, previously found results are reused
      */
-    public static boolean isReuse() {
-        return SystemRecord.reuse;
+    public boolean isReuse() {
+        return reuse;
     }
 
     /** Flag indicating if previous result are reused. */
-    private static boolean reuse = true;
+    private boolean reuse = true;
 
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");

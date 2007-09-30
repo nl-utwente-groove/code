@@ -133,7 +133,7 @@ public class CacheReference<C> extends SoftReference<C> {
 	 * Factory method to create a null reference with the strength (strong or soft) 
 	 * of this reference, and incarnation count set to 0.
 	 */
-	public CacheReference<C> newNullReference() {
+	final public CacheReference<C> newNullReference() {
 		return getNullInstance(strong, 0);
 	}
 
@@ -141,7 +141,7 @@ public class CacheReference<C> extends SoftReference<C> {
 	 * Returns a (shared) null reference with the strength (strong or soft) 
 	 * and the incarnation count of this reference.
 	 */
-	public CacheReference<C> getNullReference() {
+	final public CacheReference<C> getNullReference() {
 		return getNullInstance(strong, incarnation);
 	}
 	

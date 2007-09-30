@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.14 2007-09-26 21:04:24 rensink Exp $
- * $Date: 2007-09-26 21:04:24 $
+ * $Id: Rule.java,v 1.15 2007-09-30 15:52:46 rensink Exp $
+ * $Date: 2007-09-30 15:52:46 $
  */
 package groove.trans;
 
@@ -34,7 +34,7 @@ import java.util.Comparator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -110,8 +110,9 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * the elements of the rule anchor to elements presumably in the host graph
      * @param nodeFactory an object queried for fresh node numbers; may be
      * <code>null</code>
+     * @param reuse TODO
      */
-    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory);
+    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse);
 
     /**
      * Lazily creates and returns a matcher for rule events of this rule.
