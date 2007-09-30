@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Converter.java,v 1.5 2007-05-29 21:36:03 rensink Exp $
+ * $Id: Converter.java,v 1.6 2007-09-30 21:38:55 rensink Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Performs conversions to and from groove.graph.Graph.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class Converter {
 	/** Main method to test this class. */
@@ -40,17 +40,10 @@ public class Converter {
 	    System.out.println(red.on("Text"));
 	    System.out.println(green.on("Text"));
 	}
-//	
-//	/** Converts the last byte of a number fo hexadecimal representation. */
-//    static private String toHex(int number) {
-//	    return "" + Character.forDigit((number / HEX)%HEX, HEX) + Character.forDigit(number % HEX, HEX);
-//	}
-//    
-//	static private int HEX = 16;
 
 	/** Writes a graph in FSM format to a print writer. */
     static public void graphToFsm(GraphShape graph, PrintWriter writer) {
-        // mapping from nodes of grapg to integers
+        // mapping from nodes of graphs to integers
         Map<Node,Integer> nodeMap = new HashMap<Node,Integer>();
         writer.println("NodeNumber(0)");
         writer.println("---");
@@ -171,39 +164,49 @@ public class Converter {
     	return text;
     }
     
+    /** HTML forall symbol. */
+    static public final String HTML_FORALL = "&forall;";
+    /** HTML exists symbol. */
+    static public final String HTML_EXISTS = "&exist;";
+    /** HTML negation symbol. */
+    static public final String HTML_NOT = "&not;";
     /** Name of the HTML tag (<code>html</code>). */
-    static public String HTML_TAG_NAME = "html";
+    static public final String HTML_TAG_NAME = "html";
     /** HTML tag. */
-    static public HTMLTag HTML_TAG = new HTMLTag(HTML_TAG_NAME);
+    static public final HTMLTag HTML_TAG = new HTMLTag(HTML_TAG_NAME);
     /** Name of the span tag (<code>span</code>). */
-    static public String SPAN_TAG_NAME = "span";
+    static public final String SPAN_TAG_NAME = "span";
     /** Name of the span style attribute. */
-    static public String STYLE_ATTR_NAME = "style";
+    static public final String STYLE_ATTR_NAME = "style";
     /** Name of the linebreak tag (<code>br</code>). */
-    static public String LINEBREAK_TAG_NAME = "br";
+    static public final String LINEBREAK_TAG_NAME = "br";
     /** Name of the horizontal rule tag (<code>hr</code>). */
-    static public String HORIZONTAL_LINE_TAG_NAME = "hr";
+    static public final String HORIZONTAL_LINE_TAG_NAME = "hr";
     /** Name of the font underline tag (<code>u</code>). */
-    static public String UNDERLINE_TAG_NAME = "u";
+    static public final String UNDERLINE_TAG_NAME = "u";
     /** Font underline tag. */
     static public HTMLTag UNDERLINE_TAG = new HTMLTag(UNDERLINE_TAG_NAME);
     /** Name of the font strikethrough tag (<code>s</code>). */
-    static public String STRIKETHROUGH_TAG_NAME = "s";
+    static public final String STRIKETHROUGH_TAG_NAME = "s";
     /** Font strikethrough tag. */
-    static public HTMLTag STRIKETHROUGH_TAG = new HTMLTag(STRIKETHROUGH_TAG_NAME);
+    static public final HTMLTag STRIKETHROUGH_TAG = new HTMLTag(STRIKETHROUGH_TAG_NAME);
     /** Name of the italic font tag (<code>i</code>). */
-    static public String ITALIC_TAG_NAME = "i";
+    static public final String ITALIC_TAG_NAME = "i";
     /** Italic font tag. */
-    static public HTMLTag ITALIC_TAG = new HTMLTag(ITALIC_TAG_NAME);
+    static public final HTMLTag ITALIC_TAG = new HTMLTag(ITALIC_TAG_NAME);
     /** Name of the strong font tag (<code>strong</code>). */
-    static public String STRONG_TAG_NAME = "strong";
+    static public final String STRONG_TAG_NAME = "strong";
     /** Strong font tag. */
-    static public HTMLTag STRONG_TAG = new HTMLTag(STRONG_TAG_NAME);
+    static public final HTMLTag STRONG_TAG = new HTMLTag(STRONG_TAG_NAME);
+    /** Name of the strong font tag (<code>strong</code>). */
+    static public final String SUPER_TAG_NAME = "sup";
+    /** Strong font tag. */
+    static public final HTMLTag SUPER_TAG = new HTMLTag(SUPER_TAG_NAME);
 
     /** The <code>html</code> tag to insert a line break. */
-    static public String HTML_LINEBREAK = createHtmlTag(LINEBREAK_TAG_NAME).tagBegin;
+    static public final String HTML_LINEBREAK = createHtmlTag(LINEBREAK_TAG_NAME).tagBegin;
     /** The <code>html</code> tag to insert a horizontal line. */
-    static public String HTML_HORIZONTAL_LINE = createHtmlTag(HORIZONTAL_LINE_TAG_NAME).tagBegin;
+    static public final String HTML_HORIZONTAL_LINE = createHtmlTag(HORIZONTAL_LINE_TAG_NAME).tagBegin;
 
     /** Map from colours to HTML tags imposing the colour on a text. */
     private static final Map<Color,HTMLTag> colorTagMap = new HashMap<Color,HTMLTag>();
