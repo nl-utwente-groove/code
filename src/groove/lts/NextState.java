@@ -16,15 +16,13 @@
  */
 package groove.lts;
 
-import groove.graph.NodeEdgeMap;
-
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface NextState extends State, Transition {
 	// this interface is just the union of its super-interfaces
-	@Deprecated
-	public NextState imageFor(NodeEdgeMap elementMap);
+//	@Deprecated
+//	public NextState imageFor(GenericNodeEdgeMap elementMap);
 }
