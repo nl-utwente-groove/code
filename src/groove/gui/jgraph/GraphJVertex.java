@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.19 2007-07-21 20:07:53 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.20 2007-09-30 21:45:09 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
@@ -96,7 +97,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
             while (!result && listLabelIter.hasNext()) {
                 result = !jModel.isFiltering(listLabelIter.next());
             }
-            Iterator jEdgeIter = getPort().edges();
+            Iterator<?> jEdgeIter = getPort().edges();
             while (!result && jEdgeIter.hasNext()) {
                 result = !((GraphJEdge) jEdgeIter.next()).isFiltered();
             }
@@ -113,8 +114,8 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
 
     /** This implementation adds the data edges to the super result. */
-	public Collection<StringBuilder> getLines() {
-		List<StringBuilder> result = new ArrayList<StringBuilder>();
+	public List<StringBuilder> getLines() {
+		List<StringBuilder> result = new LinkedList<StringBuilder>();
     	// show the node identity if required
     	if (jModel.isShowNodeIdentities()) {
     		String id = getNodeIdentity();
@@ -363,7 +364,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 //    	if (isConstant()) {
 //    		return getConstant().toString();
 //    	} else 
-    		if (getActualNode() == null) {
+    	if (getActualNode() == null) {
     		return null;
     	} else {
     		return getActualNode().toString();

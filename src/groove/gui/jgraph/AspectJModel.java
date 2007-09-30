@@ -12,15 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.23 2007-07-19 11:27:37 rensink Exp $
+ * $Id: AspectJModel.java,v 1.24 2007-09-30 21:45:09 rensink Exp $
  */
 package groove.gui.jgraph;
 
-import static groove.gui.jgraph.JAttr.RULE_BACKGROUND;
-import static groove.gui.jgraph.JAttr.RULE_BORDER;
-import static groove.gui.jgraph.JAttr.RULE_COLOR;
-import static groove.gui.jgraph.JAttr.RULE_DASH;
-import static groove.gui.jgraph.JAttr.RULE_WIDTH;
+import static groove.gui.jgraph.JAttr.*;
 import static groove.view.aspect.RuleAspect.CREATOR;
 import static groove.view.aspect.RuleAspect.EMBARGO;
 import static groove.view.aspect.RuleAspect.ERASER;
@@ -45,13 +41,15 @@ import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.NestingAspect;
+import groove.view.aspect.NestingAspectValue;
 import groove.view.aspect.RuleAspect;
 
-import java.awt.Color;
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -62,7 +60,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -71,7 +69,7 @@ public class AspectJModel extends GraphJModel {
     /** 
      * Creates a new aspect model instance on top of a given aspectual view.
      */
-    AspectJModel(AspectualView view, Options options) {
+    AspectJModel(AspectualView<?> view, Options options) {
         super(view.getAspectGraph(), options);
         this.view = view;
     }
@@ -168,12 +166,17 @@ public class AspectJModel extends GraphJModel {
 
 	@Override
     protected AttributeMap createJVertexAttr(Node node) {
+        AttributeMap result;
 		AspectNode aspectNode = (AspectNode) node;
-        AspectValue role = role(aspectNode);
-        AttributeMap result = (AttributeMap) RULE_NODE_ATTR.get(role).clone();
-        if (aspectNode.getValue(AttributeAspect.getInstance()) != null) {
-        	result.applyMap(getJVertexDataAttr());
-        }
+		if (aspectNode.getValue(NestingAspect.getInstance()) != null) {
+			result = NESTING_NODE_ATTR.clone();
+		} else {
+			AspectValue role = role(aspectNode);
+			result = RULE_NODE_ATTR.get(role).clone();
+			if (aspectNode.getValue(AttributeAspect.getInstance()) != null) {
+				result.applyMap(getJVertexDataAttr());
+			}
+		}
         if (! isMoveable(aspectNode)) {
         	GraphConstants.setMoveable(result, false);
         	GraphConstants.setBounds(result, new Rectangle(0,0));
@@ -183,14 +186,19 @@ public class AspectJModel extends GraphJModel {
 
     @Override
     protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
+        AttributeMap result;
         assert !edgeSet.isEmpty() : String.format("Underlying edge set should not be empty");
-        Edge ruleEdge = edgeSet.iterator().next();
-        assert ruleEdge instanceof AspectEdge : "Rule model cannot include non-aspect edge " + ruleEdge;
-        AspectValue role = role((AspectEdge) ruleEdge);
-        AttributeMap result = (AttributeMap) RULE_EDGE_ATTR.get(role).clone();
-        if (RegExprLabel.isEmpty(ruleEdge.label())) {
-            // remove edge arrow 
-            GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
+        AspectEdge aspectEdge = (AspectEdge) edgeSet.iterator().next();
+        AspectValue nestingValue = aspectEdge.getValue(NestingAspect.getInstance());
+        if (nestingValue != null && !nestingValue.isNodeValue()) {
+        	result = NESTING_EDGE_ATTR.clone();
+        } else {
+			AspectValue role = role(aspectEdge);
+			result = RULE_EDGE_ATTR.get(role).clone();
+			if (RegExprLabel.isEmpty(aspectEdge.label())) {
+				// remove edge arrow
+				GraphConstants.setLineEnd(result, GraphConstants.ARROW_NONE);
+			}
         }
         return result;
     }
@@ -250,7 +258,7 @@ public class AspectJModel extends GraphJModel {
      * Creates a new aspect model instance on top of a given aspectual view.
      * Returns {@link #EMPTY_ASPECT_JMODEL} if the view is <code>null</code>.
      */
-    static public AspectJModel newInstance(AspectualView view, Options options) {
+    static public AspectJModel newInstance(AspectualView<?> view, Options options) {
     	if (view == null) {
     		return EMPTY_ASPECT_JMODEL;
     	} else {
@@ -267,62 +275,6 @@ public class AspectJModel extends GraphJModel {
 
     /** Empty instance of the {@link AspectJModel}. */
     static public final AspectJModel EMPTY_ASPECT_JMODEL = new AspectJModel();
-
-    /** Collection of attributes for rule nodes. */
-    static private final Map<AspectValue,AttributeMap> RULE_NODE_ATTR = new HashMap<AspectValue,AttributeMap>();
-    /** Collection of attribute changes for emphasized rule nodes. */
-    static private final Map<AspectValue,AttributeMap> RULE_NODE_EMPH_CHANGE = new HashMap<AspectValue,AttributeMap>();
-    /** Collection of attributes for rule edges. */
-    static private final Map<AspectValue,AttributeMap> RULE_EDGE_ATTR = new HashMap<AspectValue,AttributeMap>();
-    /** Collection of attribute changes for emphasized rule edges. */
-    static private final Map<AspectValue,AttributeMap> RULE_EDGE_EMPH_CHANGE = new HashMap<AspectValue,AttributeMap>();
-
-    static {
-        for (AspectValue role: RuleAspect.getInstance().getValues()) {
-            // edge attributes
-            AttributeMap edgeAttr = (AttributeMap) JAttr.DEFAULT_EDGE_ATTR.clone();
-            GraphConstants.setEditable(edgeAttr, false);
-            GraphConstants.setForeground(edgeAttr, RULE_COLOR.get(role));
-            GraphConstants.setLineColor(edgeAttr, RULE_COLOR.get(role));
-            GraphConstants.setLineWidth(edgeAttr, RULE_WIDTH.get(role));
-            GraphConstants.setDashPattern(edgeAttr, RULE_DASH.get(role));
-            GraphConstants.setLineEnd(edgeAttr, GraphConstants.ARROW_CLASSIC);
-            GraphConstants.setEndFill(edgeAttr, role != EMBARGO);
-            GraphConstants.setBeginFill(edgeAttr, true);
-            GraphConstants.setBendable(edgeAttr, true);
-            GraphConstants.setBackground(edgeAttr, Color.WHITE);
-            GraphConstants.setOpaque(edgeAttr, true);
-            GraphConstants.setConnectable(edgeAttr, false);
-            GraphConstants.setDisconnectable(edgeAttr, false);
-            RULE_EDGE_ATTR.put(role,edgeAttr);
-
-            // set default node attributes
-            AttributeMap nodeAttr = (AttributeMap) JAttr.DEFAULT_NODE_ATTR.clone();
-            nodeAttr.applyMap(edgeAttr);
-            GraphConstants.setBorderColor(nodeAttr, RULE_COLOR.get(role));
-            GraphConstants.setAutoSize(nodeAttr, true);
-            GraphConstants.setSizeable(nodeAttr, false);
-            GraphConstants.setBorder(nodeAttr, RULE_BORDER.get(role));
-            GraphConstants.setLineWidth(nodeAttr, RULE_WIDTH.get(role));
-            Color background = RULE_BACKGROUND.get(role);
-            if (background != null) {
-            	GraphConstants.setBackground(nodeAttr, background);
-            }
-            RULE_NODE_ATTR.put(role,nodeAttr);
-
-            // edge emphasis
-            AttributeMap edgeEmphChange = (AttributeMap) JAttr.EMPH_EDGE_CHANGE.clone();
-            GraphConstants.setLineWidth(edgeEmphChange, JAttr.RULE_EMPH_WIDTH.get(role));
-            RULE_EDGE_EMPH_CHANGE.put(role, edgeEmphChange);
-            
-            // node emphasis
-            AttributeMap nodeEmphChange = (AttributeMap) JAttr.EMPH_NODE_CHANGE.clone();
-            GraphConstants.setBorder(nodeEmphChange, JAttr.RULE_EMPH_BORDER.get(role));
-            RULE_NODE_EMPH_CHANGE.put(role, nodeEmphChange);
-        }
-//        GraphConstants.setSelectable(RULE_EDGE_ATTR.get(RULE), false);
-//        GraphConstants.setSelectable(RULE_NODE_ATTR.get(RULE), false);
-    }
 
     /** Role names (for the tool tips). */
     static private final Map<AspectValue,String> ROLE_NAMES = new HashMap<AspectValue,String>(); 
@@ -401,7 +353,37 @@ public class AspectJModel extends GraphJModel {
                 return false;
             }
         }
+        
+        /** Adds a quantifier, if the nesting aspect justifies this. */
+		@Override
+		public List<StringBuilder> getLines() {
+			List<StringBuilder> result = super.getLines();
+			AspectValue nesting = getNode().getValue(NestingAspect.getInstance());
+			if (nesting != null) {
+				result.add(0, getQuantifierLine((NestingAspectValue) nesting));
+			}
+			return result;
+		}
 
+		/** Returns an HTML-formatted line describing a given quantifier value. */
+		private StringBuilder getQuantifierLine(NestingAspectValue nesting) {
+			StringBuilder result = new StringBuilder();
+			if (NestingAspect.FORALL.equals(nesting)) {
+				result.append(Converter.HTML_FORALL);
+			} else if (NestingAspect.EXISTS.equals(nesting)) {
+				result.append(Converter.HTML_EXISTS);
+			} else {
+				assert NestingAspect.NAC.equals(nesting);
+				result.append(Converter.HTML_NOT);
+				result.append(Converter.HTML_EXISTS);
+			}
+			String level = nesting.getContent();
+			if (level.length() != 0) {
+				result.append(Converter.SUPER_TAG.on(level));
+			}
+			return result;
+		}
+		
 		/**
 		 * On demand prefixes the label with the edge's aspect values.
 		 */

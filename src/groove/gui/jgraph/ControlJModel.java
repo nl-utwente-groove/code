@@ -12,17 +12,24 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlJModel.java,v 1.4 2007-08-26 07:24:17 rensink Exp $
+ * $Id: ControlJModel.java,v 1.5 2007-09-30 21:45:14 rensink Exp $
  */
 package groove.gui.jgraph;
 
+import static groove.gui.jgraph.JAttr.LTS_ACTIVE_EMPH_NODE_CHANGE;
+import static groove.gui.jgraph.JAttr.LTS_EDGE_ACTIVE_CHANGE;
+import static groove.gui.jgraph.JAttr.LTS_EDGE_ATTR;
+import static groove.gui.jgraph.JAttr.LTS_FINAL_NODE_ATTR;
+import static groove.gui.jgraph.JAttr.LTS_NODE_ACTIVE_CHANGE;
+import static groove.gui.jgraph.JAttr.LTS_NODE_ATTR;
+import static groove.gui.jgraph.JAttr.LTS_OPEN_NODE_ATTR;
+import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
 import groove.control.ControlAutomaton;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.lts.GraphTransition;
@@ -37,7 +44,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.jgraph.graph.AttributeMap;
-import org.jgraph.graph.GraphConstants;
 
 public class ControlJModel extends GraphJModel {
 
@@ -171,13 +177,13 @@ public class ControlJModel extends GraphJModel {
         AttributeMap result;
         State state = (State) node;
         if (state.equals(getGraph().startState())) {
-            result = (AttributeMap) LTS_START_NODE_ATTR.clone();
+            result = LTS_START_NODE_ATTR.clone();
         } else if (!state.isClosed()) {
-            result = (AttributeMap) LTS_OPEN_NODE_ATTR.clone();
+            result = LTS_OPEN_NODE_ATTR.clone();
         } else if (getGraph().isFinal(state)) {
-            result = (AttributeMap) LTS_FINAL_NODE_ATTR.clone();
+            result = LTS_FINAL_NODE_ATTR.clone();
         } else {
-            result = (AttributeMap) LTS_NODE_ATTR.clone();
+            result = LTS_NODE_ATTR.clone();
         }
         if (state.equals(activeState)) {
             result.applyMap(LTS_NODE_ACTIVE_CHANGE);
@@ -192,7 +198,7 @@ public class ControlJModel extends GraphJModel {
 	 */
 	@Override
     protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
-        AttributeMap result = (AttributeMap) LTS_EDGE_ATTR.clone();
+        AttributeMap result = LTS_EDGE_ATTR.clone();
         if (activeTransition != null && edgeSet.contains(activeTransition)) {
             result.applyMap(LTS_EDGE_ACTIVE_CHANGE);
         }
@@ -214,58 +220,58 @@ public class ControlJModel extends GraphJModel {
 
 	/** Dummy LTS model. */
 	static public final ControlJModel EMPTY_CONTROL_JMODEL = new ControlJModel();
-    /** The default node attributes of the LTS */
-    private static final AttributeMap LTS_NODE_ATTR;
-    /** The start node attributes of the LTS */
-    private static final AttributeMap LTS_START_NODE_ATTR;
-    /** Unexplored node attributes */
-    private static final AttributeMap LTS_OPEN_NODE_ATTR;
-    /** Final node attributes */
-    private static final AttributeMap LTS_FINAL_NODE_ATTR;
-    /** The default edge attributes of the LTS */
-    private static final AttributeMap LTS_EDGE_ATTR;
-
-    /** Active node attributes of the LTS */
-    private static final AttributeMap LTS_NODE_ACTIVE_CHANGE;
-    /** Active edge attributes of the LTS */
-    private static final AttributeMap LTS_EDGE_ACTIVE_CHANGE;
-    /** Emphasized active node attributes of the LTS */
-    private static final AttributeMap LTS_ACTIVE_EMPH_NODE_CHANGE;
-
-    // set the emphasis attributes
-    static {
-        // active LTS nodes
-        LTS_NODE_ACTIVE_CHANGE = new AttributeMap();
-        GraphConstants.setBorder(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_BORDER);
-        GraphConstants.setLineColor(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
-        GraphConstants.setLineWidth(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
-        // active LTS edges
-        LTS_EDGE_ACTIVE_CHANGE = new AttributeMap();
-        GraphConstants.setForeground(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
-        GraphConstants.setLineColor(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
-        GraphConstants.setLineWidth(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
-
-        // LTS nodes
-        LTS_NODE_ATTR = (AttributeMap) JAttr.DEFAULT_NODE_ATTR.clone();
-//        GraphConstants.setFont(LTS_NODE_ATTR, italicFont);
-        // LTS start node
-        LTS_START_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
-        GraphConstants.setBackground(LTS_START_NODE_ATTR, JAttr.LTS_START_BACKGROUND);
-        // LTS unexplored nodes
-        LTS_OPEN_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
-        GraphConstants.setBackground(LTS_OPEN_NODE_ATTR, JAttr.LTS_OPEN_BACKGROUND);
-        // LTS final nodes
-        LTS_FINAL_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
-        GraphConstants.setBackground(LTS_FINAL_NODE_ATTR, JAttr.LTS_FINAL_BACKGROUND);
-        LTS_ACTIVE_EMPH_NODE_CHANGE = new AttributeMap();
-        GraphConstants.setBorder(LTS_ACTIVE_EMPH_NODE_CHANGE, JAttr.LTS_ACTIVE_EMPH_BORDER);
-        GraphConstants.setLineWidth(LTS_ACTIVE_EMPH_NODE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
-        // LTS edges
-        LTS_EDGE_ATTR = (AttributeMap) JAttr.DEFAULT_EDGE_ATTR.clone();
-        GraphConstants.setConnectable(LTS_EDGE_ATTR, false);
-        GraphConstants.setDisconnectable(LTS_EDGE_ATTR, false);
-        GraphConstants.setLineEnd(LTS_EDGE_ATTR, GraphConstants.ARROW_SIMPLE);
-    }
+//    /** The default node attributes of the LTS */
+//    private static final AttributeMap LTS_NODE_ATTR;
+//    /** The start node attributes of the LTS */
+//    private static final AttributeMap LTS_START_NODE_ATTR;
+//    /** Unexplored node attributes */
+//    private static final AttributeMap LTS_OPEN_NODE_ATTR;
+//    /** Final node attributes */
+//    private static final AttributeMap LTS_FINAL_NODE_ATTR;
+//    /** The default edge attributes of the LTS */
+//    private static final AttributeMap LTS_EDGE_ATTR;
+//
+//    /** Active node attributes of the LTS */
+//    private static final AttributeMap LTS_NODE_ACTIVE_CHANGE;
+//    /** Active edge attributes of the LTS */
+//    private static final AttributeMap LTS_EDGE_ACTIVE_CHANGE;
+//    /** Emphasized active node attributes of the LTS */
+//    private static final AttributeMap LTS_ACTIVE_EMPH_NODE_CHANGE;
+//
+//    // set the emphasis attributes
+//    static {
+//        // active LTS nodes
+//        LTS_NODE_ACTIVE_CHANGE = new AttributeMap();
+//        GraphConstants.setBorder(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_BORDER);
+//        GraphConstants.setLineColor(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
+//        GraphConstants.setLineWidth(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
+//        // active LTS edges
+//        LTS_EDGE_ACTIVE_CHANGE = new AttributeMap();
+//        GraphConstants.setForeground(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
+//        GraphConstants.setLineColor(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
+//        GraphConstants.setLineWidth(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
+//
+//        // LTS nodes
+//        LTS_NODE_ATTR = (AttributeMap) JAttr.DEFAULT_NODE_ATTR.clone();
+////        GraphConstants.setFont(LTS_NODE_ATTR, italicFont);
+//        // LTS start node
+//        LTS_START_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
+//        GraphConstants.setBackground(LTS_START_NODE_ATTR, JAttr.LTS_START_BACKGROUND);
+//        // LTS unexplored nodes
+//        LTS_OPEN_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
+//        GraphConstants.setBackground(LTS_OPEN_NODE_ATTR, JAttr.LTS_OPEN_BACKGROUND);
+//        // LTS final nodes
+//        LTS_FINAL_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
+//        GraphConstants.setBackground(LTS_FINAL_NODE_ATTR, JAttr.LTS_FINAL_BACKGROUND);
+//        LTS_ACTIVE_EMPH_NODE_CHANGE = new AttributeMap();
+//        GraphConstants.setBorder(LTS_ACTIVE_EMPH_NODE_CHANGE, JAttr.LTS_ACTIVE_EMPH_BORDER);
+//        GraphConstants.setLineWidth(LTS_ACTIVE_EMPH_NODE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
+//        // LTS edges
+//        LTS_EDGE_ATTR = (AttributeMap) JAttr.DEFAULT_EDGE_ATTR.clone();
+//        GraphConstants.setConnectable(LTS_EDGE_ATTR, false);
+//        GraphConstants.setDisconnectable(LTS_EDGE_ATTR, false);
+//        GraphConstants.setLineEnd(LTS_EDGE_ATTR, GraphConstants.ARROW_SIMPLE);
+//    }
     /**
 	 * JEdge class that describes the underlying edge as a graph transition.
 	 * @author Arend Rensink

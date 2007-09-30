@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJCell.java,v 1.2 2007-08-26 07:24:18 rensink Exp $
+ * $Id: GraphJCell.java,v 1.3 2007-09-30 21:45:10 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -21,15 +21,14 @@ import groove.graph.Label;
 import groove.view.LabelParser;
 
 /**
- * Extension of {@link JCell} that recognizes that cells have underlying edges.
+ * Extension of {@link JCell} that recognises that cells have underlying edges.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 interface GraphJCell extends JCell {
     /** 
-     * This implementation returns the label text of the object
-     * (which is known to be an edge).
-     * Callback method from {@link #getLines()}.
+     * Callback method from {@link #getLines()} to obtain the (html-formatted)
+     * text to be displayed for a given edge.
      */
     StringBuilder getLine(Edge edge);
     

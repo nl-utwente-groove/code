@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JCell.java,v 1.4 2007-05-28 21:32:43 rensink Exp $
+ * $Id: JCell.java,v 1.5 2007-09-30 21:45:14 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 
 import org.jgraph.graph.GraphCell;
 
@@ -26,16 +27,21 @@ import org.jgraph.graph.GraphCell;
  * on a set of strings, displayed in multiline format but edited in
  * single-line format.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface JCell extends GraphCell, Serializable {
-	/** Returns the text that should be displayed upon the call. */
+	/** 
+	 * Returns the complete text that should be displayed upon the cell.
+	 * This is obtained from {@link #getLines()} by inserting appropriate
+	 * line separators. 
+	 */
 	public String getText();
 	/**
 	 * Returns the collection of lines to be displayed upon the cell.
 	 * These are the lines that make up the text returned by {@link #getText()}.
+	 * The test is html-formatted, but without the surrounding html-tag.
 	 */
-	public abstract Collection<StringBuilder> getLines();
+	public abstract List<StringBuilder> getLines();
 	/** Indicates if the cell is currently visible in the j-model. */
 	public boolean isVisible();
 	/** Indicates if the cell should be registered in the label list. */

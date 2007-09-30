@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJEdge.java,v 1.5 2007-06-28 12:05:24 rensink Exp $
+ * $Id: EditableJEdge.java,v 1.6 2007-09-30 21:45:10 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -40,7 +40,7 @@ public class EditableJEdge extends JEdge implements EditableJCell {
     }
     
     /** This implementation just returns the user object. */
-    public Collection<StringBuilder> getLines() {
+    public List<StringBuilder> getLines() {
     	List<StringBuilder> result = new ArrayList<StringBuilder>();
     	for (String label: getUserObject()) {
     		result.add(new StringBuilder(label));
