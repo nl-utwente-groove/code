@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMorphism.java,v 1.8 2007-09-25 16:30:17 rensink Exp $
+ * $Id: AbstractMorphism.java,v 1.9 2007-09-30 21:46:24 rensink Exp $
  */
 package groove.graph;
 
@@ -33,7 +33,7 @@ import java.util.Set;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edge,Edge> implements Morphism {
     /**
@@ -539,9 +539,11 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
                 // result already contains an image for nodeKey
                 // if it is not the same as the one we want to insert now,
                 // stop the whole thing; otherwise we're fine
-                Node oldImage = result.putNode(key, image);
+                Node oldImage = result.getNode(key);
                 if (oldImage != null && !oldImage.equals(image)) {
                     throw new FormatException();
+                } else {
+                	result.putNode(key, image);
                 }
             }
         }        

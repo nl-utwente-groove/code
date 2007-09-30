@@ -12,9 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.17 2007-06-27 13:24:26 rensink Exp $
+ * $Id: JAttr.java,v 1.18 2007-09-30 21:45:12 rensink Exp $
  */
 package groove.gui.jgraph;
+
+import static groove.view.aspect.RuleAspect.EMBARGO;
+import groove.util.Colors;
+import groove.util.Groove;
+import groove.view.aspect.AspectValue;
+import groove.view.aspect.RuleAspect;
 
 import java.awt.BasicStroke;
 import java.awt.Color;
@@ -32,22 +38,16 @@ import javax.swing.border.CompoundBorder;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.LineBorder;
 
-import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
-
-import groove.util.Colors;
-import groove.util.Groove;
-import groove.view.aspect.AspectValue;
-import groove.view.aspect.RuleAspect;
 
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class JAttr {
-    /** Creates a stroke with a given line width and dash pattern. */
+	/** Creates a stroke with a given line width and dash pattern. */
     public static Stroke createStroke(float width, float[] dash) {
     	Stroke result;
     	if (dash == null) {
@@ -58,7 +58,7 @@ public class JAttr {
     	return result;
 	}
     
-	/** Creates a rule border with given color, dash pattern, and width. */
+	/** Creates a rule border with given colour, dash pattern, and width. */
 	public static Border createRuleBorder(Color color, float width, float[] dash) {
 		Border result;
 	    if (dash == NO_DASH) {
@@ -78,31 +78,15 @@ public class JAttr {
      * Tests if a set of attributes specifies an effective Manhattan line style.
      * The Manhattan line style is effective if the edge has more than two points. 
      */
-    public static boolean isManhattanStyle(AttributeMap attributes) {
+    public static boolean isManhattanStyle(org.jgraph.graph.AttributeMap attributes) {
         if (GraphConstants.getLineStyle(attributes) == STYLE_MANHATTAN) {
-            List points = GraphConstants.getPoints(attributes);
+            List<?> points = GraphConstants.getPoints(attributes);
             return points != null && points.size() > 2;
         } else {
             return false;
         }
     }
     
-	/** Line style that always makes right edges. */
-	public static final int STYLE_MANHATTAN = 14;
-
-	/**
-	 * The default line style.
-	 */
-	public static final int DEFAULT_LINE_STYLE = GraphConstants.STYLE_ORTHOGONAL;
-	
-	/** The default font used in the j-graphs. */
-	static public final Font DEFAULT_FONT = GraphConstants.DEFAULTFONT;
-    /** Constant defining an italic font, for displaying state identities. */
-    static public final Font ITALIC_FONT = DEFAULT_FONT.deriveFont(Font.ITALIC);
-	/** Percentage of white in the background colour. */
-	static private final int BACKGROUND_WHITEWASH = 90;
-	/** Maximum value of the colour dimensions. */
-	static private final int MAX_VALUE = 255;
 	/** 
 	 * Converts a colour dimension to a value that is whitewashed by {@link #BACKGROUND_WHITEWASH}
 	 * degrees.
@@ -122,6 +106,30 @@ public class JAttr {
     	int alpha = whitewash(color.getAlpha());
     	return new Color(red, green, blue, alpha);
 	}
+
+    /**
+	 * Creates a new border from a given border, by inserting space to the left and right.
+	 */
+	private static Border createNodeBorder(Border border, boolean emph) {
+	    return new CompoundBorder(border, emph ? EMPH_INSET_BORDER : EMPTY_INSET_BORDER);
+	}
+
+	/** Line style that always makes right edges. */
+	public static final int STYLE_MANHATTAN = 14;
+
+	/**
+	 * The default line style.
+	 */
+	public static final int DEFAULT_LINE_STYLE = GraphConstants.STYLE_ORTHOGONAL;
+	
+	/** The default font used in the j-graphs. */
+	static public final Font DEFAULT_FONT = GraphConstants.DEFAULTFONT;
+    /** Constant defining an italic font, for displaying state identities. */
+    static public final Font ITALIC_FONT = DEFAULT_FONT.deriveFont(Font.ITALIC);
+	/** Percentage of white in the background colour. */
+	static private final int BACKGROUND_WHITEWASH = 90;
+	/** Maximum value of the colour dimensions. */
+	static private final int MAX_VALUE = 255;
 	
     /**
      * The linewidth used for edges and node borders.
@@ -129,12 +137,12 @@ public class JAttr {
     public static final int DEFAULT_LINE_WIDTH = Integer.parseInt(Groove.getGUIProperty("default.width"));
 
     /**
-     * The color used for edges and node.
+     * The colour used for edges and node.
      */
     public static final Color DEFAULT_CELL_COLOR = Colors.findColor(Groove.getGUIProperty("default.color"));
 
     /**
-     * The default background color used for edges and node.
+     * The default background colour used for edges and node.
      */
     public static final Color DEFAULT_BACKGROUND = Colors.findColor(Groove.getGUIProperty("default.background"));
 
@@ -264,7 +272,7 @@ public class JAttr {
 			/**
 			 * Returns <code>null</code>
 			 */
-			public List route(EdgeView edge) {
+			public List<?> route(EdgeView edge) {
 				return null;
 			}
         	
@@ -272,23 +280,13 @@ public class JAttr {
         DEFAULT_EDGE_ATTR = defaultEdgeAttr;
 
         // set default node attributes
-        AttributeMap defaultNodeAttr = (AttributeMap) defaultEdgeAttr.clone();
+        AttributeMap defaultNodeAttr = defaultEdgeAttr.clone();
         GraphConstants.setAutoSize(defaultNodeAttr, true);
 //        GraphConstants.setBounds(defaultNodeAttr, DEFAULT_NODE_BOUNDS);
         GraphConstants.setSizeable(defaultNodeAttr, false);
-        GraphConstants.setBorder(defaultNodeAttr, JAttr.DEFAULT_BORDER);
-        GraphConstants.setBackground(defaultNodeAttr, JAttr.DEFAULT_BACKGROUND);
+        GraphConstants.setBorder(defaultNodeAttr, DEFAULT_BORDER);
+        GraphConstants.setBackground(defaultNodeAttr, DEFAULT_BACKGROUND);
         DEFAULT_NODE_ATTR = defaultNodeAttr;
-//
-//        // invisibility
-//        AttributeMap invisibleAttr = (AttributeMap) defaultNodeAttr.clone();
-//        GraphConstants.setLineColor(invisibleAttr, JAttr.INVISIBLE_COLOR);
-//        GraphConstants.setForeground(invisibleAttr, JAttr.INVISIBLE_COLOR);
-//        GraphConstants.setBorder(invisibleAttr, JAttr.INVISIBLE_BORDER);
-//        GraphConstants.setSelectable(invisibleAttr, false);
-////        GraphConstants.setMoveable(invisibleAttr, false);
-//        GraphConstants.setOpaque(invisibleAttr, false);
-//        INVISIBLE_ATTR = invisibleAttr;
     }
 
     /** Line width used for emphasized cells. */
@@ -305,9 +303,9 @@ public class JAttr {
 	 */
 	public static final Border EMPH_INSET_BORDER = new EmptyBorder(EMPH_INSETS);
 
-	/** Color used for emphasized cells. */
+	/** Colour used for emphasised cells. */
     public static final Color EMPH_COLOR = Colors.findColor(Groove.getGUIProperty("state.emphasis.color"));
-    /** Node border used for emphasized cells. */
+    /** Node border used for emphasised cells. */
     public static final Border EMPH_BORDER =
         createNodeBorder(new LineBorder(JAttr.EMPH_COLOR, JAttr.EMPH_WIDTH) {
 //        	@Override
@@ -329,104 +327,171 @@ public class JAttr {
 //        GraphConstants.setLineWidth(EMPH_NODE_CHANGE, EMPH_WIDTH);
         GraphConstants.setBorder(EMPH_NODE_CHANGE, EMPH_BORDER);
     }
-
-    /**
-	 * Creates a new border from a given border, by inserting space to the left and right.
-	 */
-	private static Border createNodeBorder(Border border, boolean emph) {
-	    return new CompoundBorder(border, emph ? EMPH_INSET_BORDER : EMPTY_INSET_BORDER);
-	}
-
-	/**
-	 * Line width of ordinary inactive LTS cells. 
-	 */
-	static public final int LTS_NORM_WIDTH = Integer.parseInt(Groove.getGUIProperty("default.width"));
+//
+//	/**
+//	 * Line width of ordinary inactive LTS cells. 
+//	 */
+//	static private final int LTS_NORM_WIDTH = Integer.parseInt(Groove.getGUIProperty("default.width"));
 
 	/**
 	 * Line width of active LTS cells. 
 	 */
-	static public final int LTS_ACTIVE_WIDTH = Integer.parseInt(Groove.getGUIProperty("lts.emphasis.width"));
+	static private final int LTS_ACTIVE_WIDTH = Integer.parseInt(Groove.getGUIProperty("lts.emphasis.width"));
+//
+//	/**
+//	 * Foreground colour of ordinary inactive LTS cells. 
+//	 */
+//	static private final Color LTS_NORM_COLOR = Colors.findColor(Groove.getGUIProperty("default.color"));
 
 	/**
-	 * Foreground color of ordinary inactive LTS cells. 
+	 * Colour of active LTS cells. 
 	 */
-	static public final Color LTS_NORM_COLOR = Colors.findColor(Groove.getGUIProperty("default.color"));
+	static private final Color LTS_ACTIVE_COLOR = Colors.findColor(Groove.getGUIProperty("lts.emphasis.color"));
+//
+//	/**
+//	 * Background colour of ordinary (non-emphasised) LTS cells. 
+//	 */
+//	static private final Color LTS_NORM_BACKGROUND = Colors.findColor(Groove.getGUIProperty("default.background"));
 
 	/**
-	 * Color of active LTS cells. 
+	 * Background colour of LTS start cells. 
 	 */
-	static public final Color LTS_ACTIVE_COLOR = Colors.findColor(Groove.getGUIProperty("lts.emphasis.color"));
+	static private final Color LTS_START_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.start.background"));
 
 	/**
-	 * Background color of ordinary (non-emphasized) LTS cells. 
+	 * Background colour of unexplored LTS cells. 
 	 */
-	static public final Color LTS_NORM_BACKGROUND = Colors.findColor(Groove.getGUIProperty("default.background"));
+	static private final Color LTS_OPEN_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.open.background"));
 
 	/**
-	 * Background color of LTS start cells. 
+	 * Background colour of final LTS cells. 
 	 */
-	static public final Color LTS_START_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.start.background"));
-
-	/**
-	 * Background color of unexplored LTS cells. 
-	 */
-	static public final Color LTS_OPEN_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.open.background"));
-
-	/**
-	 * Background color of final LTS cells. 
-	 */
-	static public final Color LTS_FINAL_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.final.background"));
-
-	/**
-	 * Borders of ordinary (non-active) LTS nodes. 
-	 */
-	static public final Border LTS_NORM_BORDER = createNodeBorder(new LineBorder(LTS_NORM_COLOR, LTS_NORM_WIDTH), false);
+	static private final Color LTS_FINAL_BACKGROUND = Colors.findColor(Groove.getGUIProperty("lts.final.background"));
+//
+//	/**
+//	 * Borders of ordinary (non-active) LTS nodes. 
+//	 */
+//	static private final Border LTS_NORM_BORDER = createNodeBorder(new LineBorder(LTS_NORM_COLOR, LTS_NORM_WIDTH), false);
 
 	/**
 	 * Borders of active LTS nodes. 
 	 */
-	static public final Border LTS_ACTIVE_BORDER = createNodeBorder(new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH), false);
+	static private final Border LTS_ACTIVE_BORDER = createNodeBorder(new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH), false);
 
 	/**
-	 * Emphasized borders of active LTS nodes. 
+	 * Emphasised borders of active LTS nodes. 
 	 */
 	static public final Border LTS_ACTIVE_EMPH_BORDER = createNodeBorder(new LineBorder(LTS_ACTIVE_COLOR, LTS_ACTIVE_WIDTH + EMPH_INCREMENT), true);
+    /** The default node attributes of the LTS */
+    static public final AttributeMap LTS_NODE_ATTR;
+    /** The start node attributes of the LTS */
+    static public final AttributeMap LTS_START_NODE_ATTR;
+    /** Unexplored node attributes */
+    static public final AttributeMap LTS_OPEN_NODE_ATTR;
+    /** Final node attributes */
+    static public final AttributeMap LTS_FINAL_NODE_ATTR;
+    /** The default edge attributes of the LTS */
+    static public final AttributeMap LTS_EDGE_ATTR;
+
+    /** Active node attributes of the LTS */
+    static public final AttributeMap LTS_NODE_ACTIVE_CHANGE;
+    /** Active edge attributes of the LTS */
+    static public final AttributeMap LTS_EDGE_ACTIVE_CHANGE;
+    /** Emphasised active node attributes of the LTS */
+    static public final AttributeMap LTS_ACTIVE_EMPH_NODE_CHANGE;
+
+    // set the emphasis attributes
+    static {
+        // active LTS nodes
+        LTS_NODE_ACTIVE_CHANGE = new AttributeMap();
+        GraphConstants.setBorder(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_BORDER);
+        GraphConstants.setLineColor(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
+        GraphConstants.setLineWidth(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
+        // active LTS edges
+        LTS_EDGE_ACTIVE_CHANGE = new AttributeMap();
+        GraphConstants.setForeground(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
+        GraphConstants.setLineColor(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
+        GraphConstants.setLineWidth(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
+
+        // LTS nodes
+        LTS_NODE_ATTR = DEFAULT_NODE_ATTR.clone();
+//        GraphConstants.setFont(LTS_NODE_ATTR, italicFont);
+        // LTS start node
+        LTS_START_NODE_ATTR = LTS_NODE_ATTR.clone();
+        GraphConstants.setBackground(LTS_START_NODE_ATTR, JAttr.LTS_START_BACKGROUND);
+        // LTS unexplored nodes
+        LTS_OPEN_NODE_ATTR = LTS_NODE_ATTR.clone();
+        GraphConstants.setBackground(LTS_OPEN_NODE_ATTR, JAttr.LTS_OPEN_BACKGROUND);
+        // LTS final nodes
+        LTS_FINAL_NODE_ATTR = LTS_NODE_ATTR.clone();
+        GraphConstants.setBackground(LTS_FINAL_NODE_ATTR, JAttr.LTS_FINAL_BACKGROUND);
+        LTS_ACTIVE_EMPH_NODE_CHANGE = new AttributeMap();
+        GraphConstants.setBorder(LTS_ACTIVE_EMPH_NODE_CHANGE, JAttr.LTS_ACTIVE_EMPH_BORDER);
+        GraphConstants.setLineWidth(LTS_ACTIVE_EMPH_NODE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
+        // LTS edges
+        LTS_EDGE_ATTR = DEFAULT_EDGE_ATTR.clone();
+        GraphConstants.setConnectable(LTS_EDGE_ATTR, false);
+        GraphConstants.setDisconnectable(LTS_EDGE_ATTR, false);
+        GraphConstants.setLineEnd(LTS_EDGE_ATTR, GraphConstants.ARROW_SIMPLE);
+    }
 
 	/**
 	 * Store of colours for each role. 
 	 */
-	static public final Map<AspectValue, Color> RULE_COLOR = new HashMap<AspectValue, Color>();
+	static private final Map<AspectValue, Color> RULE_COLOR = new HashMap<AspectValue, Color>();
 
 	/**
 	 * Store of line widths for each role. 
 	 */
-	static public final Map<AspectValue, Integer> RULE_WIDTH = new HashMap<AspectValue, Integer>();
+	static private final Map<AspectValue, Integer> RULE_WIDTH = new HashMap<AspectValue, Integer>();
 
 	/**
 	 * Store of line widths for each role. 
 	 */
-	static public final Map<AspectValue, Color> RULE_BACKGROUND = new HashMap<AspectValue, Color>();
+	static private final Map<AspectValue, Color> RULE_BACKGROUND = new HashMap<AspectValue, Color>();
 
 	/**
 	 * Store of dash patterns for each role. 
 	 */
-	static public final Map<AspectValue, float[]> RULE_DASH = new HashMap<AspectValue, float[]>();
+	static private final Map<AspectValue, float[]> RULE_DASH = new HashMap<AspectValue, float[]>();
 
 	/**
 	 * Store of borders for each role. 
 	 */
-	static public final Map<AspectValue, Border> RULE_BORDER = new HashMap<AspectValue, Border>();
+	static private final Map<AspectValue, Border> RULE_BORDER = new HashMap<AspectValue, Border>();
 
 	/**
 	 * Store of emphasised line widths for each role. 
 	 */
-	static public final Map<AspectValue, Integer> RULE_EMPH_WIDTH = new HashMap<AspectValue, Integer>();
+	static private final Map<AspectValue, Integer> RULE_EMPH_WIDTH = new HashMap<AspectValue, Integer>();
 
 	/**
 	 * Store of emphasised borders for each role. 
 	 */
-	static public final Map<AspectValue, Border> RULE_EMPH_BORDER = new HashMap<AspectValue, Border>();
-    
+	static private final Map<AspectValue, Border> RULE_EMPH_BORDER = new HashMap<AspectValue, Border>();
+	
+	/**
+	 * Dash pattern used for nesting elements. 
+	 */
+	static private final float[] NESTED_DASH = new float[] { 2.0f, 3.0f };
+	/**
+	 * Border used for nesting elements.
+	 */
+	static private final Border NESTED_BORDER =
+        createNodeBorder(new StrokedLineBorder(DEFAULT_CELL_COLOR, createStroke(DEFAULT_LINE_WIDTH, NESTED_DASH)), false);
+	/**
+	 * Arrow used for nesting edges.
+	 */
+	static private final int NESTED_ARROW = GraphConstants.ARROW_SIMPLE;
+	/**
+	 * Arrow size used for nesting edges.
+	 */
+	static private final int NESTED_ARROW_SIZE = GraphConstants.DEFAULTDECORATIONSIZE-2;
+	/**
+	 * Background colour for nesting nodes.
+	 */
+	static private final Color NESTED_BACKGROUND = Color.WHITE;
+
     static {
     	Map<AspectValue,String> RULE_PREFIXES = new HashMap<AspectValue,String>();
         RULE_PREFIXES.put(RuleAspect.READER, "default.");
@@ -451,4 +516,77 @@ public class JAttr {
 	        RULE_EMPH_BORDER.put(role,createNodeBorder(createRuleBorder(RULE_COLOR.get(role), RULE_EMPH_WIDTH.get(role), RULE_DASH.get(role)), true));
 	    }
 	}
+
+    /** Collection of attributes for rule nodes. */
+    static public final Map<AspectValue,AttributeMap> RULE_NODE_ATTR = new HashMap<AspectValue,AttributeMap>();
+    /** Collection of attribute changes for emphasised rule nodes. */
+    static public final Map<AspectValue,AttributeMap> RULE_NODE_EMPH_CHANGE = new HashMap<AspectValue,AttributeMap>();
+    /** Collection of attributes for rule edges. */
+    static public final Map<AspectValue,AttributeMap> RULE_EDGE_ATTR = new HashMap<AspectValue,AttributeMap>();
+    /** Collection of attribute changes for emphasised rule edges. */
+    static public final Map<AspectValue,AttributeMap> RULE_EDGE_EMPH_CHANGE = new HashMap<AspectValue,AttributeMap>();
+    /** Collection of attributes for nesting nodes. */
+    static public final AttributeMap NESTING_NODE_ATTR;
+    /** Collection of attributes for nesting edges. */
+    static public final AttributeMap NESTING_EDGE_ATTR;
+    static {
+        for (AspectValue role: RuleAspect.getInstance().getValues()) {
+            // edge attributes
+            AttributeMap edgeAttr = JAttr.DEFAULT_EDGE_ATTR.clone();
+            GraphConstants.setEditable(edgeAttr, false);
+            GraphConstants.setForeground(edgeAttr, RULE_COLOR.get(role));
+            GraphConstants.setLineColor(edgeAttr, RULE_COLOR.get(role));
+            GraphConstants.setLineWidth(edgeAttr, RULE_WIDTH.get(role));
+            GraphConstants.setDashPattern(edgeAttr, RULE_DASH.get(role));
+            GraphConstants.setLineEnd(edgeAttr, GraphConstants.ARROW_CLASSIC);
+            GraphConstants.setEndFill(edgeAttr, role != EMBARGO);
+            GraphConstants.setBeginFill(edgeAttr, true);
+            GraphConstants.setBendable(edgeAttr, true);
+            GraphConstants.setBackground(edgeAttr, Color.WHITE);
+            GraphConstants.setOpaque(edgeAttr, true);
+            GraphConstants.setConnectable(edgeAttr, false);
+            GraphConstants.setDisconnectable(edgeAttr, false);
+            RULE_EDGE_ATTR.put(role,edgeAttr);
+
+            // set default node attributes
+            AttributeMap nodeAttr = JAttr.DEFAULT_NODE_ATTR.clone();
+            nodeAttr.applyMap(edgeAttr);
+            GraphConstants.setBorderColor(nodeAttr, RULE_COLOR.get(role));
+            GraphConstants.setAutoSize(nodeAttr, true);
+            GraphConstants.setSizeable(nodeAttr, false);
+            GraphConstants.setBorder(nodeAttr, RULE_BORDER.get(role));
+            GraphConstants.setLineWidth(nodeAttr, RULE_WIDTH.get(role));
+            Color background = RULE_BACKGROUND.get(role);
+            if (background != null) {
+            	GraphConstants.setBackground(nodeAttr, background);
+            }
+            RULE_NODE_ATTR.put(role,nodeAttr);
+
+            // edge emphasis
+            AttributeMap edgeEmphChange = JAttr.EMPH_EDGE_CHANGE.clone();
+            GraphConstants.setLineWidth(edgeEmphChange, JAttr.RULE_EMPH_WIDTH.get(role));
+            RULE_EDGE_EMPH_CHANGE.put(role, edgeEmphChange);
+            
+            // node emphasis
+            AttributeMap nodeEmphChange = JAttr.EMPH_NODE_CHANGE.clone();
+            GraphConstants.setBorder(nodeEmphChange, JAttr.RULE_EMPH_BORDER.get(role));
+            RULE_NODE_EMPH_CHANGE.put(role, nodeEmphChange);
+        }
+        NESTING_NODE_ATTR = JAttr.DEFAULT_NODE_ATTR.clone();
+        GraphConstants.setBorder(NESTING_NODE_ATTR, JAttr.NESTED_BORDER);
+        GraphConstants.setDashPattern(NESTING_NODE_ATTR, JAttr.NESTED_DASH);
+        GraphConstants.setBackground(NESTING_NODE_ATTR, NESTED_BACKGROUND);
+        NESTING_EDGE_ATTR = JAttr.DEFAULT_EDGE_ATTR.clone();
+        GraphConstants.setDashPattern(NESTING_EDGE_ATTR, JAttr.NESTED_DASH);
+        GraphConstants.setLineEnd(NESTING_EDGE_ATTR, JAttr.NESTED_ARROW);
+        GraphConstants.setEndSize(NESTING_EDGE_ATTR, JAttr.NESTED_ARROW_SIZE);
+    }
+    
+    /** Specialised class to avoid casting for {@link #clone()}. */
+    static public class AttributeMap extends org.jgraph.graph.AttributeMap {
+		@Override
+		public AttributeMap clone() {
+			return (AttributeMap) super.clone();
+		}
+    }
 }

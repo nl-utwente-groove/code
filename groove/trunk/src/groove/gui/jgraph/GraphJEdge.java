@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.12 2007-06-28 12:05:24 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.13 2007-09-30 21:45:10 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -138,7 +138,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * {@link #getUserObject()} that are not being filtered by the model
      * according to {@link JModel#isFiltering(String)}.
      */
-    public Collection<StringBuilder> getLines() {
+    public List<StringBuilder> getLines() {
     	List<StringBuilder> result = new ArrayList<StringBuilder>();
 		for (Edge edge: getUserObject()) {
 			if (! jModel.isFiltering(getListLabel(edge))) {

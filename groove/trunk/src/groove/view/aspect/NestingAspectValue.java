@@ -12,11 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspectValue.java,v 1.1 2007-09-30 21:36:38 rensink Exp $
+ * $Id: NestingAspectValue.java,v 1.2 2007-09-30 21:50:15 rensink Exp $
  */
 package groove.view.aspect;
 
-import groove.nesting.rule.NestedAspectualRuleView;
 import groove.view.FormatException;
 
 /**
@@ -46,9 +45,7 @@ public class NestingAspectValue extends ContentAspectValue<String> {
 	}
 	
 	/**
-	 * Set the level of the node, which is determined on runtime by
-	 * {@link NestedAspectualRuleView}
-	 * @param level
+	 * Set the level of the node, which is determined on runtime by the nested rule view.
 	 */
 	public void setLevel(String level) { 
 		nestingLevel = level;

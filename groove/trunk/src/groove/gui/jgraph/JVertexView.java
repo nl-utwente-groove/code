@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.14 2007-05-30 21:30:11 rensink Exp $
+ * $Id: JVertexView.java,v 1.15 2007-09-30 21:45:12 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -60,7 +60,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class JVertexView extends VertexView {
     /**
@@ -248,7 +248,7 @@ public class JVertexView extends VertexView {
 		return result;
 	}
 	
-	/** Creates a diamond shape inscibed in the bounds given in the parameters. */
+	/** Creates a diamond shape inscribed in the bounds given in the parameters. */
 	private Shape createDiamondShape(float x, float y, float width, float height) {
 		GeneralPath result = new GeneralPath(GeneralPath.WIND_NON_ZERO, 5);
 		result.moveTo(x+width/2, y);
@@ -512,8 +512,8 @@ public class JVertexView extends VertexView {
      * for this view.
 	 */
 	@Override
-	public Map changeAttributes(Map change) {
-		Map result = super.changeAttributes(change);
+	public Map<?,?> changeAttributes(Map change) {
+		Map<?,?> result = super.changeAttributes(change);
 		text = computeText();
 		jGraph.updateAutoSize(this);
 		return result;
