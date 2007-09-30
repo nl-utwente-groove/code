@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.15 2007-09-22 09:10:45 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.16 2007-09-30 21:36:40 rensink Exp $
  */
 
 package groove.view;
@@ -77,7 +77,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -99,12 +99,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 
     /**
      * Constructs a rule graph with a given name from an (ordinary) graph.
-     * Empty labels (after the role prefix) are interpreted as merge labels.
-     * Priority is set to the default rule priority, and the rule factory
-     * is not set.
+     * The rule properties are all set to default.
      * @param graph the graph to be converted
-     * @param name the name of the rule
-     * @require <tt>graph != null</tt>
+     * @param name the name of the rule; may be <code>null</code>
      */
     public AspectualRuleView(AspectGraph graph, RuleNameLabel name) {
         this(graph, name, null);
@@ -112,10 +109,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 
     /**
      * Constructs a rule graph with a given name from an (ordinary) graph.
-     * Empty labels (after the role prefix) are interpreted as merge labels.
+     * The rule properties are explicitly given.
      * @param graph the graph to be converted
-     * @param name the name of the rule
-     * @require <tt>graph != null</tt>
+     * @param name the name of the rule; may be <code>null</code>
+     * @param properties object specifying rule properties, such as injectivity etc.
      */
     public AspectualRuleView(AspectGraph graph, RuleNameLabel name, SystemProperties properties) {
         this.name = name;
@@ -265,6 +262,13 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 		invalidateRule();
 	}
 	
+	/**
+	 * @return Returns the properties.
+	 */
+	protected final SystemProperties getProperties() {
+		return this.properties;
+	}
+
 	/**
 	 * Invalidates any previous construction of the underlying rule.
 	 */
@@ -809,12 +813,12 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     
     /**
      * Tests if a given graph is connected; throws a {@link IllegalArgumentException} if it is not.
-     * @param graph the graph to be tested for connectiveness
+     * @param graph the graph to be tested for connectivity
      * @throws IllegalArgumentException if <code>graph</code> is not connected
      * @see AbstractGraph#isConnected()
      */
     protected void testConnected(Graph graph) {
-        if (! ((AbstractGraph) graph).isConnected()) {
+        if (! ((AbstractGraph<?>) graph).isConnected()) {
             throw new IllegalArgumentException("Graph "+graph+" should be connected");
         }
     }
