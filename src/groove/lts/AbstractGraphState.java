@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.13 2007-09-30 11:20:35 rensink Exp $
+ * $Id: AbstractGraphState.java,v 1.14 2007-09-30 15:52:36 rensink Exp $
  */
 package groove.lts;
 
@@ -22,6 +22,7 @@ import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.trans.RuleEvent;
+import groove.trans.SystemRecord;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
 import groove.util.TransformIterator;
@@ -37,7 +38,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2007-09-30 11:20:35 $
+ * @version $Revision: 1.14 $ $Date: 2007-09-30 15:52:36 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
@@ -355,6 +356,11 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         	throw new IllegalArgumentException(String.format("Illegal state number %s", nr));
         }
     	this.nr = nr;
+    }
+    
+    /** Returns the system record associated with this state. */
+    SystemRecord getRecord() {
+    	return ((StateReference) getCacheReference()).getRecord();
     }
     
     /** The internally stored (optional) control location. */

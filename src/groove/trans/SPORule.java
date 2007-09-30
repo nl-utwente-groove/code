@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.25 2007-09-25 16:30:34 rensink Exp $
+ * $Id: SPORule.java,v 1.26 2007-09-30 15:52:46 rensink Exp $
  */
 package groove.trans;
 
@@ -48,7 +48,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -129,8 +129,8 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     	}
     }
     
-    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory) {
-        return new SPOEvent(this, anchorMap, nodeFactory);
+    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
+        return new SPOEvent(this, anchorMap, nodeFactory, reuse);
     }
     
     /** Creates the search plan using the rule's search plan factory. */

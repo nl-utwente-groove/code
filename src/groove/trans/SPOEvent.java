@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.33 2007-09-26 21:04:24 rensink Exp $
+ * $Id: SPOEvent.java,v 1.34 2007-09-30 15:52:46 rensink Exp $
  */
 package groove.trans;
 
@@ -55,35 +55,20 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.33 $ $Date: 2007-09-26 21:04:24 $
+ * @version $Revision: 1.34 $ $Date: 2007-09-30 15:52:46 $
  */
 public class SPOEvent implements RuleEvent {
-	/** 
-	 * The start string of the anchor image description.
-	 * @see #getAnchorImageString()
-	 */
-	static public final String ANCHOR_START = "(";
-	/** 
-	 * The string separating the elements in the anchor image description.
-	 * @see #getAnchorImageString()
-	 */
-	static public final String ANCHOR_SEPARATOR = ",";
-	/** 
-	 * The end string of the anchor image description.
-	 * @see #getAnchorImageString()
-	 */
-	static public final String ANCHOR_END = ")";
-    /**
-     * Constructs a new event on the basis of a given production rule and anchor map.
-     * The rule is required to be fixed, as indicated by {@link SPORule#isFixed()}.
-     * @param rule the production rule involved
-     * @param anchorMap the match of the rule's LHS elements to the host graph
-     */
-    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap) {
-    	rule.testFixed(true);
-        this.rule = rule;
-        this.anchorImage = computeAnchorImage(anchorMap);
-    }
+//    /**
+//     * Constructs a new event on the basis of a given production rule and anchor map.
+//     * The rule is required to be fixed, as indicated by {@link SPORule#isFixed()}.
+//     * @param rule the production rule involved
+//     * @param anchorMap the match of the rule's LHS elements to the host graph
+//     */
+//    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap) {
+//    	rule.testFixed(true);
+//        this.rule = rule;
+//        this.anchorImage = computeAnchorImage(anchorMap);
+//    }
 
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
@@ -92,8 +77,23 @@ public class SPOEvent implements RuleEvent {
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      */
     public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory) {
-    	this(rule, anchorMap);
+    	this(rule, anchorMap, nodeFactory, true);
+    }
+
+    /**
+     * Constructs a new event on the basis of a given production rule and anchor map.
+     * A further parameter determines whether information should be stored for reuse.
+     * @param rule the production rule involved
+     * @param anchorMap the match of the rule's LHS elements to the host graph
+     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
+     * @param reuse if <code>true</code>, the event should store diverse data structures to optimise for reuse
+     */
+    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
+    	rule.testFixed(true);
+        this.rule = rule;
+        this.anchorImage = computeAnchorImage(anchorMap);
     	this.nodeFactory = nodeFactory;
+    	this.reuse = reuse;
     }
     
     /** 
@@ -829,7 +829,7 @@ public class SPOEvent implements RuleEvent {
 //     */
 //    private final RuleFactory ruleFactory;
     /** The derivation record that has created this event, if any. */
-    private NodeFactory nodeFactory;
+    private final NodeFactory nodeFactory;
     /**
      * Matching from the rule's lhs to the source graph.
      */
@@ -890,7 +890,7 @@ public class SPOEvent implements RuleEvent {
 	/** Store of previously used coanchor images. */
 	private Map<List<Node>, Node[]> coanchorImageMap;
 	/** Flag indicating if sets should be stored for reuse. */
-	private final boolean reuse = SystemRecord.isReuse();
+	private final boolean reuse;
 	/** 
 	 * Reports the number of times a stored coanchor image has been recomputed 
 	 * for a new rule application.
@@ -905,6 +905,21 @@ public class SPOEvent implements RuleEvent {
 		return coanchorImageCount;
 	}
 	
+	/** 
+	 * The start string of the anchor image description.
+	 * @see #getAnchorImageString()
+	 */
+	static public final String ANCHOR_START = "(";
+	/** 
+	 * The string separating the elements in the anchor image description.
+	 * @see #getAnchorImageString()
+	 */
+	static public final String ANCHOR_SEPARATOR = ",";
+	/** 
+	 * The end string of the anchor image description.
+	 * @see #getAnchorImageString()
+	 */
+	static public final String ANCHOR_END = ")";
 	/** Counter for the reuse in coanchor images. */
 	static private int coanchorImageOverlap;
 	/** Counter for the coanchor images. */

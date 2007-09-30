@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.16 2007-09-28 10:02:53 rensink Exp $
+ * $Id: StateCache.java,v 1.17 2007-09-30 15:52:36 rensink Exp $
  */
 package groove.lts;
 
@@ -36,16 +36,19 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 class StateCache {
     /**
      * Constructs a cache for a given state.
      */
     StateCache(AbstractGraphState state) {
-        this.state = state;
+        this.state = state;    
+        this.record = state.getRecord();
+        this.freezeGraphs = record.isReuse();
+        this.graphFactory = NewDeltaGraph.getInstance(record.isReuse());
     }
-   
+
     /** Adds a transition stub to the data structures stored in this cache. */
     boolean addTransitionStub(GraphTransitionStub stub) {
     	boolean result = getStubSet().add(stub);
@@ -270,15 +273,17 @@ class StateCache {
     private Set<GraphTransitionStub> stubSet;
     /** The graph state of this cache. */
     private final AbstractGraphState state;
+    /** The system record generating this state. */
+    private final SystemRecord record;
     /** Cached map from events to target transitions. */
     private Map<RuleEvent,GraphState> transitionMap;
     /** Cached graph for this state. */
     private Graph graph;
     private groove.graph.DeltaApplier delta;
     /** Flag indicating if state graphs should be frozen. */
-    private final boolean freezeGraphs = SystemRecord.isReuse();
+    private final boolean freezeGraphs;
     /** Factory used to create the state graphs. */
-    private final DeltaGraphFactory graphFactory = NewDeltaGraph.getInstance(SystemRecord.isReuse());
+    private final DeltaGraphFactory graphFactory;
     /** 
      * The depth of the graph above which the underlying graph will be frozen.
      */

@@ -13,9 +13,9 @@
 // language governing permissions and limitations under the License.
 /* 
 <<<<<<< GTS.java
- * $Id: GTS.java,v 1.29 2007-09-25 22:57:53 rensink Exp $
+ * $Id: GTS.java,v 1.30 2007-09-30 15:52:37 rensink Exp $
 =======
- * $Id: GTS.java,v 1.29 2007-09-25 22:57:53 rensink Exp $
+ * $Id: GTS.java,v 1.30 2007-09-30 15:52:37 rensink Exp $
 >>>>>>> 1.26
  */
 package groove.lts;
@@ -48,25 +48,9 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.29 $ $Date: 2007-09-25 22:57:53 $
+ * @version $Revision: 1.30 $ $Date: 2007-09-30 15:52:37 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
-	/**
-	 * Tree resolution of the state set (which is a {@link TreeHashSet}).
-	 * A smaller value means memory savings; a larger value means speedup.
-	 */
-    private final static int STATE_SET_RESOLUTION = 2;
-	/**
-	 * Tree root resolution of the state set (which is a {@link TreeHashSet}).
-	 * A larger number means speedup, but
-	 * the memory initially reserved for the set grows exponentially with this number.
-	 */
-    private final static int STATE_SET_ROOT_RESOLUTION = 10;
-    /**
-     * Number of states for which the state set should have room initially.
-     */
-    private final static int INITIAL_STATE_SET_SIZE = 10000;
-    
     /**
      * The number of transitions generated but not added (due to overlapping existing transitions)
      */
@@ -125,11 +109,11 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         // init the startstate with a control element if possible
     	if( this.ruleSystem.getControl() != null )
         {
-        	return new StartGraphState(startGraph, (Location) this.ruleSystem.getControl().startState() );
+        	return new StartGraphState(getRecord(), startGraph, (Location) this.ruleSystem.getControl().startState() );
         }
         else
         {
-        	return new StartGraphState(startGraph);
+        	return new StartGraphState(getRecord(), startGraph);
         }
     }
 
@@ -401,7 +385,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
          */
     	@Override
         protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
-			if (!SystemRecord.isReuse()) {
+			if (!getRecord().isReuse()) {
 			    return stateKey == otherStateKey;
 			} else if (stateKey.getControl() == otherStateKey.getControl()) {
 				Graph one = stateKey.getGraph();
@@ -423,7 +407,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     	@Override
         protected int getCode(GraphState stateKey) {
     	    int result;
-    		if (!SystemRecord.isReuse()) { 
+    		if (!getRecord().isReuse()) { 
     		    result = System.identityHashCode(stateKey);
     		} else if (isCheckIsomorphism()) {
     		    result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
@@ -524,6 +508,21 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
             return nodeCount() - 1;
         }
     }
+	/**
+	 * Tree resolution of the state set (which is a {@link TreeHashSet}).
+	 * A smaller value means memory savings; a larger value means speedup.
+	 */
+    private final static int STATE_SET_RESOLUTION = 2;
+	/**
+	 * Tree root resolution of the state set (which is a {@link TreeHashSet}).
+	 * A larger number means speedup, but
+	 * the memory initially reserved for the set grows exponentially with this number.
+	 */
+    private final static int STATE_SET_ROOT_RESOLUTION = 10;
+    /**
+     * Number of states for which the state set should have room initially.
+     */
+    private final static int INITIAL_STATE_SET_SIZE = 10000;
     
     /** Profiling aid for adding states. */
     static public final int ADD_STATE = reporter.newMethod("addState");

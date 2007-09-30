@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.14 2007-09-04 20:59:26 rensink Exp $
+ * $Id: Gossips.java,v 1.15 2007-09-30 15:52:47 rensink Exp $
  */
 package groove.samples;
 
@@ -53,7 +53,7 @@ import java.util.List;
  * Sample class for a universal rule.
  * The example is based on the <i>gossiping girl</i> case.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";
@@ -173,7 +173,7 @@ public class Gossips {
         }
 
         @Override
-        public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory) {
+        public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
 //        	return getRuleFactory().createRuleEvent(this, anchorMap);
             return new GossipEvent(this, anchorMap, nodeFactory);
         }

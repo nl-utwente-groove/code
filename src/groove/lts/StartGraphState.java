@@ -1,9 +1,10 @@
-/* $Id: StartGraphState.java,v 1.5 2007-09-30 11:20:35 rensink Exp $ */
+/* $Id: StartGraphState.java,v 1.6 2007-09-30 15:52:36 rensink Exp $ */
 package groove.lts;
 
 import groove.control.Location;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.trans.SystemRecord;
 
 /**
  * @author Arend Rensink
@@ -11,16 +12,16 @@ import groove.graph.GraphInfo;
  */
 public class StartGraphState extends AbstractGraphState {
 	/** 
-	 * Creates a start state based on a given graph, with <code>null</code>
+	 * Creates a start state based on a given system record and start graph, with <code>null</code>
 	 * control location.
 	 */
-	public StartGraphState(Graph graph) {
-		this(graph, null);
+	public StartGraphState(SystemRecord record, Graph graph) {
+		this(record, graph, null);
 	}
 	
-	/** Creates a start state based on a given graph and control location. */
-	public StartGraphState(Graph graph, Location control) {
-		super(null, control);
+	/** Creates a start state based on a given system record, start graph and control location. */
+	public StartGraphState(SystemRecord record, Graph graph, Location control) {
+		super(StateReference.newInstance(record), control);
 		setFrozenGraph(getCache().computeFrozenGraph(graph));
 		this.graph = getCache().getGraph();
 		GraphInfo.transfer(graph, this.graph, null);
