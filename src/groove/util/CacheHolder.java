@@ -14,11 +14,9 @@ public interface CacheHolder<C> {
 	/** 
 	 * Returns the cache reference of this holder.
 	 * This may be <code>null</code> if the reference has not (yet) been initialised.
-	 * This method is called from {@link CacheReference#CacheReference(CacheHolder, Object)}
-	 * to determine if the new reference should be strong or soft. 
 	 * @return the cache reference of this holder; possibly <code>null</code>
 	 */
-	public CacheReference<? extends C> getCacheReference();
+	public CacheReference<C> getCacheReference();
 	
 	/** 
 	 * Sets the cache reference. 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.19 2007-09-17 09:51:38 rensink Exp $
+ * $Id: Generator.java,v 1.20 2007-09-30 11:20:34 rensink Exp $
  */
 package groove.util;
 
@@ -76,7 +76,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -479,7 +479,7 @@ public class Generator extends CommandLineTool {
     	List<Integer> sizes = new ArrayList<Integer>();
     	boolean finished = false;
     	for (int incarnation = 1; !finished; incarnation++) {
-    		int size = CacheReference.getIncarnationSize(incarnation);
+    		int size = CacheReference.getFrequency(incarnation);
     		finished = size == 0;
     		if (! finished) {
     			sizes.add(size);

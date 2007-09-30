@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.12 2007-09-28 12:48:07 rensink Exp $
+ * $Id: AbstractGraphState.java,v 1.13 2007-09-30 11:20:35 rensink Exp $
  */
 package groove.lts;
 
@@ -23,6 +23,7 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import groove.trans.RuleEvent;
 import groove.util.AbstractCacheHolder;
+import groove.util.CacheReference;
 import groove.util.TransformIterator;
 import groove.util.TransformSet;
 
@@ -36,14 +37,15 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-09-28 12:48:07 $
+ * @version $Revision: 1.13 $ $Date: 2007-09-30 11:20:35 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
      * Constructs a an abstract graph state, with a given control location.
      * @param location the control location; may be <code>null</code>.
      */
-    public AbstractGraphState(Location location) {
+    public AbstractGraphState(CacheReference<StateCache> reference, Location location) {
+    	super(reference);
     	this.location = location;
         stateCount++;
     }
@@ -51,8 +53,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     /**
      * Constructs a an abstract graph state, with <code>null</code> control location.
      */
-    public AbstractGraphState() {
-        this(null);
+    public AbstractGraphState(CacheReference<StateCache> reference) {
+        this(reference, null);
     }
     
     abstract public Graph getGraph();

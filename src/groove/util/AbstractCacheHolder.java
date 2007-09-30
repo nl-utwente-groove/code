@@ -1,4 +1,4 @@
-/* $Id: AbstractCacheHolder.java,v 1.2 2007-04-27 22:07:02 rensink Exp $ */
+/* $Id: AbstractCacheHolder.java,v 1.3 2007-09-30 11:20:34 rensink Exp $ */
 package groove.util;
 
 /**
@@ -10,6 +10,15 @@ package groove.util;
  */
 abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
 	/** 
+	 * Creates a holder initialised on a given cache reference.
+	 * The reference of this holder is initialised to a null reference,
+	 * through a call of {@link #createNullReference(CacheReference)}.
+	 */
+	protected AbstractCacheHolder(CacheReference<C> template) {
+		this.reference = createNullReference(template);
+	}
+	
+	/** 
 	 * Lazily creates and returns a cache.
 	 * Cache creation is deferred to {@link #createCache()}.
 	 * @return the cache stored at invocation time, or a fresh cache if 
@@ -19,13 +28,13 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
 		C result = getCacheReference().get();
 		if (result == null) {
 			result = createCache();
-			setCacheReference(CacheReference.getInstance(this, result));
+			setCacheReference(getCacheReference().newReference(this,result));
 		}
 		return result;
 	}
 
     /** 
-     * Cleares the stored graph cache reference.
+     * Clears the stored graph cache reference.
      * This frees the cache for clearing, if that has not yet occurred,
      * and saves memory by sharing a single null reference.
      */
@@ -47,7 +56,7 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
 	abstract protected C createCache();
 	
 	/**
-	 * Sets the cache to garbage collecable. 
+	 * Sets the cache to garbage collectable. 
 	 * This is done by making the cache reference soft.
 	 * The content of the cache is not changed.
 	 * Afterward {@link #isCacheCollectable()} is guaranteed to hold.
@@ -55,7 +64,7 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
 	 */
 	final public void setCacheCollectable() {
 		if (isCacheCleared()) {
-			setCacheReference(CacheReference.<C>getNullInstance(false));
+			setCacheReference(getCacheReference().getNullReference());
 		} else {
 			getCacheReference().setSoft();
 		}
@@ -71,7 +80,7 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
 		return ! getCacheReference().isStrong();
 	}
 	
-	final public CacheReference<? extends C> getCacheReference() {
+	final public CacheReference<C> getCacheReference() {
 		return reference;
 	}
 
@@ -82,15 +91,19 @@ abstract public class AbstractCacheHolder<C> implements CacheHolder<C> {
 	/**
 	 * Callback method to provide the initial value of the cache reference.
 	 * Note that this method is called at construction time, so the <code>this</code>
-	 * object may not have been fully initialized.
-	 * This implementation delegates to {@link CacheReference#getNullInstance()},
-	 * meaning that the cache reference is initially strong and must be set to
-	 * soft before the cache can be garbage collected.
+	 * object may not have been fully initialised.
+	 * either through {@link CacheReference#newNullReference()} called
+	 * on <code>template</code>, or, if <code>template</code> is <code>null</code>,
+	 * through {@link CacheReference#newInstance()}. 
 	 */
-	protected CacheReference<? extends C> getInitCacheReference() {
-		return CacheReference.getNullInstance();
+	protected CacheReference<C> createNullReference(CacheReference<C> template) {
+		if (template == null) {
+			return CacheReference.newInstance();
+		} else {
+			return template.newNullReference();
+		}
 	}
 
 	/** The internally stored reference. */
-	private CacheReference<? extends C> reference = getInitCacheReference();
+	private CacheReference<C> reference;
 }
