@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ContentAspectValue.java,v 1.5 2007-08-22 15:04:49 rensink Exp $
+ * $Id: ContentAspectValue.java,v 1.6 2007-09-30 21:29:08 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -49,7 +49,7 @@ abstract public class ContentAspectValue<C> extends AspectValue {
      * @param original the aspect value being copied
      * @param content the content of the specialised value
      */
-    ContentAspectValue(AspectValue original, ContentParser<C> parser, C content) {
+    protected ContentAspectValue(AspectValue original, ContentParser<C> parser, C content) {
     	super(original.getAspect(), original.getName(), original.getIncompatibles());
     	this.content = content;
     	this.parser = parser;
@@ -79,7 +79,7 @@ abstract public class ContentAspectValue<C> extends AspectValue {
      * @throws FormatException if <code>value</code> is not correctly formatted.
      * @throws UnsupportedOperationException if this instance is not a factory.
      */
-    abstract public ContentAspectValue newValue(String value) throws FormatException;
+    abstract public ContentAspectValue<C> newValue(String value) throws FormatException;
     
     /**
      * Returns the name and optional content of the aspect.
@@ -87,7 +87,13 @@ abstract public class ContentAspectValue<C> extends AspectValue {
      */
     @Override
     public String toString() {
-        return getName() + CONTENT_ASSIGN + getParser().toString(getContent());
+    	StringBuilder result = new StringBuilder(super.toString());
+    	String content = getParser().toString(getContent());
+    	if (!content.isEmpty()) {
+    		result.append(CONTENT_ASSIGN);
+    		result.append(content);
+    	}
+    	return result.toString();
     }
     
     /** Flag indicating that content is optional for actual values. */

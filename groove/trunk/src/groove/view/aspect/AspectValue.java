@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectValue.java,v 1.4 2007-06-27 16:00:28 rensink Exp $
+ * $Id: AspectValue.java,v 1.5 2007-09-30 21:29:08 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -34,36 +34,6 @@ import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
  * @version $Revision $
  */
 public class AspectValue {
-    /** The internally kept register of aspect value names. */
-    private static final Map<String,AspectValue> valueMap = new HashMap<String,AspectValue>();
-    
-    /** 
-     * Registers a new aspect value. For this to be successful, the value name must 
-     * be fresh; otherwise, themathod throws a {@link FormatException}.
-     * If successful, afterwards <code>getValue(value.getName())</code> will yield <code>value</code>. 
-     * @param value the new aspect value
-     * @throws FormatException if <code>value.getName()</code> is an already existing
-     * aspect value name, as attested by {@link #getValue(String)}.
-     * @see #getValue(String)
-     */
-    private static void registerValue(AspectValue value) throws FormatException {
-        String name = value.getName();
-        AspectValue previous = getValue(name);
-        if (previous != null) {
-            throw new FormatException("Aspect value name "+name+" already used for "+previous.getAspect());
-        }
-        valueMap.put(value.getName(), value);
-    }
-    
-    /**
-     * Returns the aspect value associated with a given name, if any.
-     * Returns <code>null</code> if there is no value associated.
-     * @param name the name for which we want the corresponding aspect value.
-     */
-    public static AspectValue getValue(String name) {
-        return valueMap.get(name);
-    }
-
     /**
      * Creates a new aspect value, for a given aspect and with a given name.
      * Throws an exception if an aspect value with the same name exists already.
@@ -75,20 +45,6 @@ public class AspectValue {
     	this(aspect, name, new HashSet<AspectValue>());
         registerValue(this);
     }
-//
-//    /**
-//     * Creates a new aspect value, for a given aspect and with a given name.
-//     * A further flag indicates if labels with this value can be freely formatted.
-//     * Throws an exception if an aspect value with the same name exists already.
-//     * @param aspect the aspect for which this is a value
-//     * @param name the name of the aspect value.
-//     * @boolean freeText if <code>true</code>, labels can be freely formatted
-//     * @throws groove.view.FormatException if the value name is already used
-//     */
-//    public AspectValue(Aspect aspect, String name) throws FormatException {
-//    	this(aspect, name, new HashSet<AspectValue>());
-//        registerValue(this);
-//    }
     
     /**
      * Creates a new aspect value, for a given aspect and with a given name
@@ -244,6 +200,16 @@ public class AspectValue {
     	return incompatibles;
     }
     
+    /** Indicates if this aspect value may occur on nodes. */
+    public boolean isNodeValue() {
+    	return aspect.getNodeValues().contains(this);
+    }
+    
+    /** Indicates if this aspect value may occur on edges. */
+    public boolean isEdgeValue() {
+    	return aspect.getEdgeValues().contains(this);
+    }
+    
     /**
      * Tests for equality by comparing the names.
      * @see #getName()
@@ -293,4 +259,34 @@ public class AspectValue {
     private final Set<AspectValue> incompatibles;
     /** Optional label parser of this aspect value. */
     private LabelParser labelParser;
+    
+    /** 
+     * Registers a new aspect value. For this to be successful, the value name must 
+     * be fresh; otherwise, themathod throws a {@link FormatException}.
+     * If successful, afterwards <code>getValue(value.getName())</code> will yield <code>value</code>. 
+     * @param value the new aspect value
+     * @throws FormatException if <code>value.getName()</code> is an already existing
+     * aspect value name, as attested by {@link #getValue(String)}.
+     * @see #getValue(String)
+     */
+    private static void registerValue(AspectValue value) throws FormatException {
+        String name = value.getName();
+        AspectValue previous = getValue(name);
+        if (previous != null) {
+            throw new FormatException("Aspect value name "+name+" already used for "+previous.getAspect());
+        }
+        valueMap.put(value.getName(), value);
+    }
+    
+    /**
+     * Returns the aspect value associated with a given name, if any.
+     * Returns <code>null</code> if there is no value associated.
+     * @param name the name for which we want the corresponding aspect value.
+     */
+    public static AspectValue getValue(String name) {
+        return valueMap.get(name);
+    }
+
+    /** The internally kept register of aspect value names. */
+    private static final Map<String,AspectValue> valueMap = new HashMap<String,AspectValue>();
 }
