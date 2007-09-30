@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.9 2007-08-22 15:04:49 rensink Exp $
+ * $Id: AspectGraph.java,v 1.10 2007-09-30 21:23:10 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -60,6 +60,22 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	@Override
 	public Set<AspectEdge> edgeSet() {
 		return (Set<AspectEdge>) super.edgeSet();
+	}
+	
+	/**
+	 * Specialises the return type.
+	 */
+	@Override
+	public Set<AspectEdge> edgeSet(Node node) {
+		return (Set<AspectEdge>) super.edgeSet(node);
+	}
+
+	/**
+	 * Specialises the return type.
+	 */
+	@Override
+	public Set<AspectEdge> edgeSet(Node node, int end) {
+		return (Set<AspectEdge>) super.edgeSet(node, end);
 	}
 
 	/**
@@ -269,17 +285,17 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 		if (!parseData.hasText()) {
 			AspectMap aspectMap = parseData.getAspectMap();
 			// this edge is empty or indicates a node aspect
-			if (aspectMap.isEmpty()) {
-				throw new FormatException("Empty label not allowed; prefix with ':'");
-			} else if (edge.opposite() != edge.source()) {
-				// Node aspect values only on self-edges
-				throw new FormatException("Label '%s' only allowed on self-edges",labelText);
+			if (aspectMap.isEmpty() || edge.opposite() != edge.source()) {
+				throw new FormatException("Empty label part not allowed in '%s' (prefix with ':')", labelText);
 			} else if (aspectMap.size() > 1) {
 				// Only one aspect value per node self-edge
 				throw new FormatException("Multiple node aspect values in '%s'", labelText);
 			} else {
 				// add the aspect value found
 				result = aspectMap.values().iterator().next();
+				if (! result.isNodeValue()) {
+					throw new FormatException("Aspect value '%s' is for edges only", result);
+				}
 			}
 		} else {
 			result = null;
