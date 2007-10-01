@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.16 2007-10-01 14:48:23 rensink Exp $
+ * $Id: Gossips.java,v 1.17 2007-10-01 16:02:14 rensink Exp $
  */
 package groove.samples;
 
@@ -53,7 +53,7 @@ import java.util.List;
  * Sample class for a universal rule.
  * The example is based on the <i>gossiping girl</i> case.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";
@@ -203,7 +203,8 @@ public class Gossips {
         @Override
         protected void createEdges(DeltaTarget target) {
             boolean added = false;
-            Iterator<Node> girlIter = getAnchorMap().nodeMap().values().iterator();
+            SPOEvent event = (SPOEvent) getEvent();
+            Iterator<Node> girlIter = event.getAnchorMap().nodeMap().values().iterator();
             Node girl1 = girlIter.next();
             Node girl2 = girlIter.next();
             for (Edge secretEdge: source.outEdgeSet(girl1)) {

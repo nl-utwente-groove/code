@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultApplication.java,v 1.1 2007-10-01 14:48:21 rensink Exp $
+ * $Id: DefaultApplication.java,v 1.2 2007-10-01 16:02:14 rensink Exp $
  */
 package groove.trans;
 
@@ -20,7 +20,6 @@ import groove.graph.AbstractGraph;
 import groove.graph.DefaultMorphism;
 import groove.graph.DeltaTarget;
 import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.FilteredDeltaTarget;
 import groove.graph.Graph;
 import groove.graph.InternalGraph;
@@ -41,7 +40,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.1 $ $Date: 2007-10-01 14:48:21 $
+ * @version $Revision: 1.2 $ $Date: 2007-10-01 16:02:14 $
  */
 public class DefaultApplication implements RuleApplication, Derivation {
     /**
@@ -65,7 +64,9 @@ public class DefaultApplication implements RuleApplication, Derivation {
         this.rule = event.getRule();
         this.source = source;
         this.coanchorImage = coanchorImage;
-        this.anchorMap = event.getAnchorMap();
+        if (event instanceof SPOEvent) {
+        this.anchorMap = ((SPOEvent) event).getAnchorMap();
+        }
         assert event.hasMatching(source): String.format("Rule event %s has no matching in %s", event, AbstractGraph.toString(source));
     }
 
@@ -77,6 +78,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
 	    return rule;
 	}
 
+	@Deprecated
 	public VarNodeEdgeMap getAnchorMap() {
 	    return anchorMap;
 	}
@@ -328,34 +330,51 @@ public class DefaultApplication implements RuleApplication, Derivation {
 	 * @param target the target to which to apply the changes
 	 */
     private void mergeNodes(DeltaTarget target) {
-        if (rule.hasMergers()) {
-        	// delete the merged nodes
-            MergeMap mergeMap = getMergeMap();
-            for (Element mergedElem: mergeMap.nodeMap().keySet()) {
-            	if (mergedElem instanceof Node) {
-            		removeNode(target, (Node)mergedElem);
-            	}
-            }
-//            removeNodeSet(target, mergeMap.keySet());
+        // delete the merged nodes
+        MergeMap mergeMap = getMergeMap();
+        Set<Edge> addedEdges = new HashSet<Edge>();
+        Set<Edge> erasedEdges = getErasedEdges();
+        for (Node mergedElem : mergeMap.nodeMap().keySet()) {
+            removeNode(target, mergedElem);
             // replace the incident edges of the merged nodes
-            Set<Edge> erasedEdges = getErasedEdges();
-            for (Edge sourceEdge: source.edgeSet()) {
+            for (Edge sourceEdge : source.edgeSet(mergedElem)) {
                 if (!erasedEdges.contains(sourceEdge)) {
+                    target.removeEdge(sourceEdge);
                     Edge image = mergeMap.mapEdge(sourceEdge);
-                    if (image != sourceEdge) {
-						target.removeEdge(sourceEdge);
-						// if the edge is in the source and not erased, it is also already
-						// in the target, so we do not have to add it
-		                if (image != null && (erasedEdges.contains(image) || !source.containsElement(image))) {
-		                	addEdge(target, image);
-		                } else {
-		                	registerErasure(sourceEdge);
-		                }
-					}
-				}
-			}
-            removeIsolatedValueNodes(target);
+                    assert image != sourceEdge;
+                    // if the edge is in the source and not erased, it is also already
+                    // in the target, so we do not have to add it
+                    if (image != null
+                            && (erasedEdges.contains(image) || !source.containsElement(image))) {
+                        // maybe we added the edge already, due to another merged node
+                        if (addedEdges.add(image)) {
+                            addEdge(target, image);
+                        }
+                    } else {
+                        registerErasure(sourceEdge);
+                    }
+                }
+            }
         }
+//        // removeNodeSet(target, mergeMap.keySet());
+//        Set<Edge> erasedEdges = getErasedEdges();
+//        for (Edge sourceEdge : source.edgeSet()) {
+//            if (!erasedEdges.contains(sourceEdge)) {
+//                Edge image = mergeMap.mapEdge(sourceEdge);
+//                if (image != sourceEdge) {
+//                    target.removeEdge(sourceEdge);
+//                    // if the edge is in the source and not erased, it is also already
+//                    // in the target, so we do not have to add it
+//                    if (image != null
+//                            && (erasedEdges.contains(image) || !source.containsElement(image))) {
+//                        addEdge(target, image);
+//                    } else {
+//                        registerErasure(sourceEdge);
+//                    }
+//                }
+//            }
+//        }
+        removeIsolatedValueNodes(target);
     }
 
     /**
@@ -516,47 +535,8 @@ public class DefaultApplication implements RuleApplication, Derivation {
 		}
 	}
 
-//    /**
-//	 * Returns a node that is fresh with respect to a given graph. 
-//	 * The previously created fresh nodes are tried first (see {@link SPOEvent#getFreshNodes(int)}; 
-//	 * only if all of those are already in the graph, a new fresh node is created using
-//	 * {@link #createNode()}.
-//	 * @param creatorIndex
-//	 *            index in the rhsOnlyNodes array indicating the node of the
-//	 *            rule for which a new image is to be created
-//	 * @param graph
-//	 *            the graph to which a node should be added
-//	 */
-//	public Node getFreshNode(int creatorIndex, Graph graph) {
-//		Node result = null;
-//		Collection<Node> currentFreshNodes = getEvent().getFreshNodes(creatorIndex);
-//		Iterator<Node> freshNodeIter = currentFreshNodes.iterator();
-//		while (result == null && freshNodeIter.hasNext()) {
-//			Node freshNode = freshNodeIter.next();
-//			if (!graph.containsElement(freshNode)) {
-//				result = freshNode;
-//			}
-//		}
-//		if (result == null) {
-//			result = createNode();
-//			currentFreshNodes.add(result);
-//		}
-//		return result;
-//	}
-//
-//    /**
-//     * Callback factory method for a newly constructed node.
-//     * This implementation returns a {@link DefaultNode}, with
-//     * a node number determined by the grammar's node counter.
-//     */
-//    protected Node createNode() {
-//        freshNodeCount++;
-//    	SystemRecord record = getEvent().getRecord();
-//    	return record == null ? new DefaultNode() : record.newNode();
-//    }
-
 	/**
-	 * Removes a node from a delta target. Optimizes by trying to call
+	 * Removes a node from a delta target. Optimises by trying to call
 	 * {@link InternalGraph#removeNodeWithoutCheck(Node)} if the target is an
 	 * {@link InternalGraph}.
 	 */
@@ -636,7 +616,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /**
      * Matching from the rule's lhs to the source graph.
      */
-    protected final VarNodeEdgeMap anchorMap;
+    private VarNodeEdgeMap anchorMap;
     /**
      * The event from which we get the rule and anchor image.
      */
