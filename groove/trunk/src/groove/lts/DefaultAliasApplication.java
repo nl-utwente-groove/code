@@ -22,25 +22,15 @@ import groove.trans.RuleEvent;
  * prior transition.
  * @author Arend Rensink
  * @version $Revision $
- * @deprecated used {@link DefaultAliasApplication}
  */
-@Deprecated
-public class AliasSPOApplication extends DefaultApplication implements AliasRuleApplication {
-	/** Counter for the number of true application aliases created. */
-    private static int aliasCount;
-    
-    /** Returns the total number of true application aliases created. */
-    public static int getAliasCount() {
-        return aliasCount;
-    }
-
+public class DefaultAliasApplication extends DefaultApplication implements AliasRuleApplication {
     /** 
      * Constructs an SPO application with a given prior target state. 
      * @param event the rule event of this application
      * @param source the source graph of this application
      * source state's predecessor, with the same event
      */
-    public AliasSPOApplication(RuleEvent event, GraphNextState source, GraphTransitionStub prior) {
+    public DefaultAliasApplication(RuleEvent event, GraphNextState source, GraphTransitionStub prior) {
         super(event, source.getGraph());
         assert event == prior.getEvent(source.source());
         this.source = source;
@@ -52,31 +42,41 @@ public class AliasSPOApplication extends DefaultApplication implements AliasRule
     	return prior;
     }
     
-    /** Convenience method to retrieve the parent state of this application's source. */
-    private GraphState getParent() {
-    	return source.source();
-    }
-    
     @Override
     protected Node[] computeCoanchorImage() {
     	Node[] result = prior.getAddedNodes(getParent());
     	// if this application's event is the same as that of prior,
-    	// the added nodes may coincide
+    	// one or more of the added nodes may coincide,
+    	// in which case we have to create really new ones
     	if (result.length > 0 && source.getEvent() == prior.getEvent(getParent())) {
-    		Node[] sourceAddedNodes = source.getAddedNodes();
-    		boolean conflict = false;
-    		for (int i = 0; !conflict && i < result.length; i++) {
-    			conflict = result[i] == sourceAddedNodes[i];
-    			assert conflict || !getSource().containsElement(result[i]);
-    		}
-    		if (conflict) {
+            Node[] sourceAddedNodes = source.getAddedNodes();
+            boolean conflict = false;
+            for (int i = 0; !conflict && i < result.length; i++) {
+                conflict = result[i] == sourceAddedNodes[i];
+                assert conflict || !getSource().containsElement(result[i]);
+            }
+            // we have to create really new nodes
+            if (conflict) {
                 result = super.computeCoanchorImage();
-    		}
+            }
     	}
 	    return result;
+    }
+
+    /** Convenience method to retrieve the parent state of this application's source. */
+    private GraphState getParent() {
+        return source.source();
     }
     
     private final GraphNextState source;
     /** The prior transition for this aliased application, if any. */
     private final GraphTransitionStub prior;
+    
+    /** Returns the total number of true application aliases created. */
+    public static int getAliasCount() {
+        return aliasCount;
+    }
+
+    /** Counter for the number of true application aliases created. */
+    private static int aliasCount;
 }

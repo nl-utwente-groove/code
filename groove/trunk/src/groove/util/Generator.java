@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.20 2007-09-30 11:20:34 rensink Exp $
+ * $Id: Generator.java,v 1.21 2007-10-01 14:48:22 rensink Exp $
  */
 package groove.util;
 
@@ -26,11 +26,11 @@ import groove.graph.iso.Bisimulator;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
-import groove.io.RuleList;
 import groove.io.GrammarViewXml;
+import groove.io.RuleList;
 import groove.lts.AbstractGraphState;
-import groove.lts.AliasSPOApplication;
 import groove.lts.ConditionalExploreStrategy;
+import groove.lts.DefaultAliasApplication;
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
@@ -47,14 +47,14 @@ import groove.lts.explore.InvariantStrategy;
 import groove.lts.explore.LinearStrategy;
 import groove.lts.explore.LiveStrategy;
 import groove.lts.explore.NodeBoundedStrategy;
-import groove.trans.SPOEvent;
-import groove.trans.SystemRecord;
+import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
 import groove.trans.GraphTest;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
-import groove.trans.SPOApplication;
+import groove.trans.SPOEvent;
 import groove.trans.SPORule;
+import groove.trans.SystemRecord;
 import groove.view.FormatException;
 
 import java.io.BufferedReader;
@@ -76,7 +76,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -421,7 +421,7 @@ public class Generator extends CommandLineTool {
      * Gives some statistics regarding the generated transitions. 
      */
     private void reportTransitionStatistics() {
-        printf("\tTransitions:\tAliased:\t%d%n", AliasSPOApplication.getAliasCount());
+        printf("\tTransitions:\tAliased:\t%d%n", DefaultAliasApplication.getAliasCount());
         printf("\t\tConfluent:\t%d%n", StateGenerator.getConfluentDiamondCount());
         printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n", SPOEvent.getCoanchorImageOverlap(), SPOEvent.getCoanchorImageCount());
@@ -444,7 +444,7 @@ public class Generator extends CommandLineTool {
     private void reportGraphElementStatistics() {
         printf("\tDefault nodes:\t%d%n", groove.graph.DefaultNode.getNodeCount());
         printf("\tDefault labels:\t%d%n", groove.graph.DefaultLabel.getLabelCount());
-        printf("\tFresh nodes:\t%d%n", SPOApplication.getFreshNodeCount());
+        printf("\tFresh nodes:\t%d%n", DefaultApplication.getFreshNodeCount());
         printf("\tFresh edges:\t%d%n", groove.graph.DefaultEdge.getEdgeCount());
         double nodeAvg = (double) getStatisticsListener().getNodeCount() / getGTS().nodeCount();
         printf("\tAverage:\tNodes:\t%3.1f%n", nodeAvg);

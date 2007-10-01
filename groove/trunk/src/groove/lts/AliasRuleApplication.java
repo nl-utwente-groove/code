@@ -19,22 +19,15 @@ package groove.lts;
 import groove.trans.RuleApplication;
 
 /**
- * Extension of a rule application object that supports a <i>transition cause</i>,
+ * Extension of a rule application object that supports a <i>prior transition</i>,
  * which is a pre-existing graph transition that essentially equals the one we
  * are deriving now, at an earlier stage.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public interface AliasRuleApplication extends RuleApplication {
     /**
-     * Returns the stored prior target state of this application.
+     * Returns the stored prior transition of this application.
      */
     public GraphTransitionStub getPrior();
-    
-    /**
-     * Indicates if a prior transition has been set for this application.
-     * @deprecated prior is now always set
-     */
-    @Deprecated
-    public boolean hasPrior();
 }

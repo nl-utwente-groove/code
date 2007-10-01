@@ -12,21 +12,27 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.11 2007-09-15 17:25:24 rensink Exp $
+ * $Id: RuleEvent.java,v 1.12 2007-10-01 14:48:21 rensink Exp $
  */
 package groove.trans;
 
+import java.util.Set;
+
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
+import groove.graph.MergeMap;
 import groove.graph.Morphism;
+import groove.graph.Node;
 import groove.rel.VarNodeEdgeMap;
 
 /**
- * Interface to encode the information on a graph transition.
- * Together with the source and target state, the event uniquely defines the transition.
- * Typically, the event stores the anchor images of the particular rule application in the host graph.
+ * Interface to encode a rule instantiation that provides images to the rule anchors.
+ * Together with the host graph, the event uniquely defines a transformation.
+ * The event does not store information specific to the host graph. To apply it to 
+ * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-09-15 17:25:24 $
+ * @version $Revision: 1.12 $ $Date: 2007-10-01 14:48:21 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -44,7 +50,9 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      * This is typically the rule name.
      * The information provided by the name is less extensive than
      * that of the label (see {@link #getLabel()}).
+     * @deprecated use <code>getRule().getName()</code> instead
      */
+    @Deprecated
     public RuleNameLabel getName();
 
 	/**
@@ -57,21 +65,50 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      */
     public String getAnchorImageString();
     
+    /** Returns the set of nodes erased by the event. */
+    public Set<Node> getErasedNodes();
+    
+    /** 
+     * Returns the set of edges explicitly erased by the event.
+     * This does <code>not</code> include all incident edges of the erased or merged nodes. 
+     */
+    public Set<Edge> getSimpleErasedEdges();
+    
     /**
-     * Returns a provisional mapping from the rule's RHS to the target graph,
+     * Returns the merge map of the event.
+     * The merge map contains entries for nodes that are deleted, and nodes that are
+     * mapped to another node as a consequence of a merger in the rule.
+     */
+    public MergeMap getMergeMap();
+    
+    /**
+     * Returns the set of explicitly created edges between existing nodes. 
+     * These are the images of the rule's creator edges of which the endpoints are not creator nodes.
+     */
+    public Set<Edge> getSimpleCreatedEdges();
+    
+    /**
+     * Returns a mapping from the rule's RHS to the target graph,
      * minus the creator nodes.
      * The mapping is only guaranteed to provide images
      * for the endpoints and variables of the creator edges.
      */
-    public VarNodeEdgeMap getCoanchorMap();
+    public VarNodeEdgeMap getSimpleCoanchorMap();
 
+    /** 
+     * Returns a coanchor image suitable for a given host graph.
+     * This is delegated to the event because here we can indeed keep a map of such 
+     * images, and so save memory. 
+     */
+    public Node[] getCoanchorImage(Graph source);
+    
     /**
-	 * Indicates if a matching of the rule exists based on the mapping in this event.
+	 * Indicates if a matching of this event's rule exists, based on the anchor map in this event.
 	 */
 	public boolean hasMatching(Graph source);
 
     /**
-	 * Raturns a matching of the rule based on the mapping in this event, if it exists.
+	 * Returns a matching of this event's rule, based on the anchor map in this event, if a matching exists.
 	 * Returns <code>null</code> otherwise.
 	 */
 	public Morphism getMatching(Graph source);
@@ -87,10 +124,11 @@ public interface RuleEvent extends Comparable<RuleEvent> {
     
     /**
      * Factory method to create a rule application on a given source graph.
+     * The method does <i>not</i> check if the event is actually applicable to the host graph;
+     * for that, use {@link #hasMatching(Graph)} first.
      */
     public RuleApplication newApplication(Graph source);
 
-    
-    /** Convenience method for {@link System#identityHashCode(Object)} */
+    /** Convenience method for {@link System#identityHashCode(Object)}, included here for efficiency. */
     public int identityHashCode();
 }

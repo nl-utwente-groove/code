@@ -174,7 +174,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 
 	/** Callback factory method to create an {@link AliasSPOApplication}. */
     private RuleApplication createAlias(RuleEvent event, GraphNextState source, GraphTransitionStub prior) {
-    	return new AliasSPOApplication(event, source, prior); 
+    	return new DefaultAliasApplication(event, source, prior); 
     }
 
     /** 

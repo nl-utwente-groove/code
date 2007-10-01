@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJTree.java,v 1.23 2007-09-25 22:57:49 rensink Exp $
+ * $Id: RuleJTree.java,v 1.24 2007-10-01 14:48:17 rensink Exp $
  */
 package groove.gui;
 
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -311,7 +311,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         orderedDerivations.addAll(derivations);
         // insert new matches
         for (GraphTransition edge: orderedDerivations) {
-            Label ruleName = edge.getEvent().getName();
+            Label ruleName = edge.getEvent().getRule().getName();
             RuleTreeNode ruleNode = ruleNodeMap.get(ruleName);
             assert ruleNode != null : String.format("Rule %s has no image in map %s", ruleName, ruleNodeMap);
             int nrOfMatches = ruleNode.getChildCount();

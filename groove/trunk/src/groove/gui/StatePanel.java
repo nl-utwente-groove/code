@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StatePanel.java,v 1.23 2007-09-05 14:12:42 rensink Exp $
+ * $Id: StatePanel.java,v 1.24 2007-10-01 14:48:16 rensink Exp $
  */
 package groove.gui;
 
@@ -60,7 +60,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -86,7 +86,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         getJGraph().getLabelList().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
                 if (selectedTransition != null) {
-                    simulator.setRule(selectedTransition.getEvent().getName());
+                    simulator.setRule(selectedTransition.getEvent().getRule().getName());
                 }
             }
         });
@@ -232,7 +232,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     		if (getOptions().isSelected(SHOW_ANCHORS_OPTION)) {
         		text = String.format("%s (with match %s)", trans.source(), trans.getEvent());    			
     		} else {
-    			text = String.format("%s (with match of %s)", trans.source(), trans.getEvent().getName());
+    			text = String.format("%s (with match of %s)", trans.source(), trans.getEvent().getRule().getName());
     		}
     	} else if (getJModel() != null) {
     		text = getJModel().getName();

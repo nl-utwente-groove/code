@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.23 2007-10-01 14:48:21 rensink Exp $
+ * $Id: DefaultApplication.java,v 1.1 2007-10-01 14:48:21 rensink Exp $
  */
 package groove.trans;
 
@@ -41,20 +41,30 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.23 $ $Date: 2007-10-01 14:48:21 $
- * @deprecated use {@link DefaultApplication} instead
+ * @version $Revision: 1.1 $ $Date: 2007-10-01 14:48:21 $
  */
-@Deprecated
-public class SPOApplication implements RuleApplication, Derivation {
+public class DefaultApplication implements RuleApplication, Derivation {
     /**
      * Constructs a new derivation on the basis of a given production rule, host graph and rule factory.
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
      */
-    public SPOApplication(RuleEvent event, Graph source) {
-    	this.event = event;
+    public DefaultApplication(RuleEvent event, Graph source) {
+        this(event, source, null);
+    }
+    
+    /**
+     * Constructs a new derivation on the basis of a given production rule, host graph and rule factory.
+     * @param event the production rule instance involved
+     * @param source the host graph to which the rule is to be applied
+     * @param coanchorImage the created nodes, in the order of the rule's coanchor. If <code>null</code>,
+     * the coanchor image has to be computed from the source graph.
+     */
+    public DefaultApplication(RuleEvent event, Graph source, Node[] coanchorImage) {
+        this.event = event;
         this.rule = event.getRule();
         this.source = source;
+        this.coanchorImage = coanchorImage;
         this.anchorMap = event.getAnchorMap();
         assert event.hasMatching(source): String.format("Rule event %s has no matching in %s", event, AbstractGraph.toString(source));
     }
@@ -190,6 +200,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 		}
 	}
 
+	@Deprecated
 	public void setCoanchorImage(Node[] image) {
 		this.coanchorImage = image;			
 	}
@@ -213,8 +224,10 @@ public class SPOApplication implements RuleApplication, Derivation {
 			}
 			reporter.stop();
             reporter.start(CREATING);
-            createNodes(target);
-            createEdges(target);
+            if (rule.hasCreators()) {
+                createNodes(target);
+                createEdges(target);
+            }
             reporter.stop();
             reporter.start(POSTPROCESSING);
             reporter.stop();
@@ -235,7 +248,7 @@ public class SPOApplication implements RuleApplication, Derivation {
      * together with their incident edges.
      * @param target the target to which to apply the changes
      */
-    protected void eraseNodes(DeltaTarget target) {
+    private void eraseNodes(DeltaTarget target) {
         Set<Node> nodeSet = getErasedNodes();
 		// also remove the incident edges of the eraser nodes
         if (!nodeSet.isEmpty()) {
@@ -271,7 +284,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 	/**
 	 * Removes those value nodes whose incoming edges have all been erased.
 	 */
-	protected void removeIsolatedValueNodes(DeltaTarget target) {
+	private void removeIsolatedValueNodes(DeltaTarget target) {
 		// for efficiency we don't use the getter but test for null
         if (isolatedValueNodes != null) {
         	for (ValueNode node : isolatedValueNodes) {
@@ -288,7 +301,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 * Performs the edge erasure necessary according to the rule.
 	 * @param target the target to which to apply the changes
 	 */
-    protected void eraseEdges(DeltaTarget target) {
+    private void eraseEdges(DeltaTarget target) {
         for (Edge erasedEdge: getErasedEdges()) {
             target.removeEdge(erasedEdge);
         	registerErasure(erasedEdge);
@@ -299,7 +312,7 @@ public class SPOApplication implements RuleApplication, Derivation {
      * Callback method to notify that an edge has been erased.
      * Used to ensure that isolated value nodes are removed from the graph.
      */
-    protected void registerErasure(Edge edge) {
+    private void registerErasure(Edge edge) {
     	Node target = edge.opposite();
     	if (target instanceof ValueNode) {
     		Set<Edge> edges = getValueNodeEdges((ValueNode) target);
@@ -314,7 +327,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 * Performs the node (and edge) merging.
 	 * @param target the target to which to apply the changes
 	 */
-    protected void mergeNodes(DeltaTarget target) {
+    private void mergeNodes(DeltaTarget target) {
         if (rule.hasMergers()) {
         	// delete the merged nodes
             MergeMap mergeMap = getMergeMap();
@@ -351,14 +364,9 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 * @param target
 	 *            the target to which to apply the changes
 	 */
-    protected void createNodes(DeltaTarget target) {
-        if (rule.hasCreators()) {
-            Node[] creatorNodes = rule.coanchor();
-            int creatorNodeCount = creatorNodes.length;
-            NodeEdgeMap coanchorMap = getCoanchorMap();
-            for (int i = 0; i < creatorNodeCount; i++) {
-                target.addNode(coanchorMap.getNode(creatorNodes[i]));
-            }
+    private void createNodes(DeltaTarget target) {
+        for (Node node: getCoanchorImage()) {
+            target.addNode(node);
         }
     }
     
@@ -366,22 +374,21 @@ public class SPOApplication implements RuleApplication, Derivation {
      * Adds edges to the target, as dictated by the rule's RHS.
      * @param target the target to which to apply the changes
      */
+    // protected because of the Gossips sample
     protected void createEdges(DeltaTarget target) {
-        if (rule.hasCreators()) {
-            // first add the (pre-computed) simple creator edge images
-            for (Edge image: getEvent().getSimpleCreatedEdges()) {
-                // only add if not already in the source or just erased
-                if (! source.containsElement(image) || getErasedEdges().contains(image)) {
-                    addEdge(target, image);
-                }
+        // first add the (pre-computed) simple creator edge images
+        for (Edge image : getEvent().getSimpleCreatedEdges()) {
+            // only add if not already in the source or just erased
+            if (!source.containsElement(image) || getErasedEdges().contains(image)) {
+                addEdge(target, image);
             }
-            // now compute and add the complex creator edge images
-            for (Edge edge: getRule().getComplexCreatorEdges()) {
-                Edge image = getCoanchorMap().mapEdge(edge);
-                // only add if the image exists
-                if (image != null) {
-                	addEdge(target, image);
-                }
+        }
+        // now compute and add the complex creator edge images
+        for (Edge edge : getRule().getComplexCreatorEdges()) {
+            Edge image = getCoanchorMap().mapEdge(edge);
+            // only add if the image exists
+            if (image != null) {
+                addEdge(target, image);
             }
         }
     }

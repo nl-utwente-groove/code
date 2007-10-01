@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RulePanel.java,v 1.15 2007-09-04 20:59:32 rensink Exp $
+ * $Id: RulePanel.java,v 1.16 2007-10-01 14:48:16 rensink Exp $
  */
 package groove.gui;
 
@@ -44,7 +44,7 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -126,7 +126,7 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
      * @see #setRuleUpdate(NameLabel)
      */
     public synchronized void setTransitionUpdate(GraphTransition transition) {
-        setRuleUpdate(transition.getEvent().getName());
+        setRuleUpdate(transition.getEvent().getRule().getName());
     }
 
     /**
@@ -135,25 +135,6 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
     	// nothing happens here
     }
-//
-//    /**
-//     * Sets the value of the {@link #displayedGrammar} field.
-//     * The return value indicates if the new value differs from the old.
-//     * @param grammar the new displayed grammar
-//     * @return <code>true</code> if the new value is different from the old
-//     */
-//    private boolean setDisplayedGrammar(GrammarView grammar) {
-//    	boolean result = this.displayedGrammar != grammar;
-//    	this.displayedGrammar = grammar;
-//    	return result;
-//    }
-//    /**
-//     * Callback factory method to construct a new rule model.
-//     */
-//    protected AspectJModel computeRuleModel(AspectualRuleView ruleGraph) {
-//        AspectJModel result = AspectJModel.newInstance(ruleGraph, getOptions());
-//        return result;
-//    }
     
     @Override
 	protected void refresh() {
