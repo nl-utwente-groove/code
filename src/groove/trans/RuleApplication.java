@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleApplication.java,v 1.7 2007-10-01 16:02:14 rensink Exp $
+ * $Id: RuleApplication.java,v 1.8 2007-10-01 21:53:08 rensink Exp $
  */
 package groove.trans;
 
@@ -29,7 +29,7 @@ import groove.rel.VarNodeEdgeMap;
  * derivation, and to reconstruct the matching and the target graph after they
  * have been minimised, if the cached representation has been discarded.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public interface RuleApplication extends Derivation, DeltaApplier {
     /**
@@ -59,27 +59,35 @@ public interface RuleApplication extends Derivation, DeltaApplier {
      */
     @Deprecated
     public VarNodeEdgeMap getAnchorMap();
-    
-    /**
-     * Returns the mapping from the rule's coanchor to the target graph.
-     * The mapping is only guaranteed to provide images for the creator nodes and
-     * for the endpoints and variables of the creator edges.
-     */
-    public VarNodeEdgeMap getCoanchorMap();
+//    
+//    /**
+//     * Returns the mapping from the rule's coanchor to the target graph.
+//     * The mapping is only guaranteed to provide images for the creator nodes and
+//     * for the endpoints and variables of the creator edges.
+//     */
+//    public VarNodeEdgeMap getCoanchorMap();
     
     /**
      * Sets the image of the rule's coanchor in the target graph.
-     * @see #getCoanchorImage()
+     * @see #getCreatedNodes()
      * @deprecated set at construction time
      */
     @Deprecated
     public void setCoanchorImage(Node[] image);
     
     /**
-     * Returns the image of the rule's coanchor in the target graph.
-     * @see Rule#anchor()
-     */
+	 * Returns the image of the rule's creator nodes in the target graph.
+	 * @see Rule#getCreatorNodes()
+	 * @deprecated Use {@link #getCreatedNodes()} instead
+	 */
+    @Deprecated
 	public Node[] getCoanchorImage();
+
+	/**
+     * Returns the image of the rule's creator nodes in the target graph.
+     * @see Rule#getCreatorNodes()
+     */
+	public Node[] getCreatedNodes();
 
     /**
      * Applies the rule to a given delta target.

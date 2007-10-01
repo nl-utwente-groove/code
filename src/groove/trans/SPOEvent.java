@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.36 2007-10-01 16:02:13 rensink Exp $
+ * $Id: SPOEvent.java,v 1.37 2007-10-01 21:53:07 rensink Exp $
  */
 package groove.trans;
 
@@ -21,14 +21,11 @@ import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
-import groove.graph.Label;
 import groove.graph.MergeMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
-import groove.graph.NodeSet;
-import groove.graph.WrapperLabel;
 import groove.graph.algebra.ValueNode;
 import groove.match.MatchStrategy;
 import groove.rel.RegExprLabel;
@@ -36,7 +33,6 @@ import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Groove;
 import groove.util.Reporter;
-import groove.util.TreeHashSet;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -55,21 +51,9 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.36 $ $Date: 2007-10-01 16:02:13 $
+ * @version $Revision: 1.37 $ $Date: 2007-10-01 21:53:07 $
  */
-public class SPOEvent implements RuleEvent {
-//    /**
-//     * Constructs a new event on the basis of a given production rule and anchor map.
-//     * The rule is required to be fixed, as indicated by {@link SPORule#isFixed()}.
-//     * @param rule the production rule involved
-//     * @param anchorMap the match of the rule's LHS elements to the host graph
-//     */
-//    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap) {
-//    	rule.testFixed(true);
-//        this.rule = rule;
-//        this.anchorImage = computeAnchorImage(anchorMap);
-//    }
-
+public class SPOEvent extends AbstractEvent<SPORule> {
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
      * @param rule the production rule involved
@@ -89,43 +73,17 @@ public class SPOEvent implements RuleEvent {
      * @param reuse if <code>true</code>, the event should store diverse data structures to optimise for reuse
      */
     public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
+    	super(rule);
     	rule.testFixed(true);
-        this.rule = rule;
         this.anchorImage = computeAnchorImage(anchorMap);
     	this.nodeFactory = nodeFactory;
     	this.reuse = reuse;
     }
-    
+
     /** 
-     * Returns the derivation record associated with this event. 
-     * May be <code>null</code>.
+     * Returns a map from the rule anchors to elements of the host graph.
+     * #see {@link SPORule#anchor()} 
      */
-    protected NodeFactory getNodeFactory() {
-    	return nodeFactory;
-    }
-
-    public SPORule getRule() {
-	    return rule;
-	}
-
-	public Label getLabel() {
-        return createLabel();
-    }
-    
-	/**
-	 * Callback method to create a label uniquely identifying this event.
-	 * This implementation wraps the event in a {@link WrapperLabel}.
-	 */
-    protected Label createLabel() {
-        return new WrapperLabel<RuleEvent>(this);
-    }
-
-    /** Returns the rule name. */
-    @Deprecated
-	public RuleNameLabel getName() {
-		return getRule().getName();
-	}
-
 	public VarNodeEdgeMap getAnchorMap() {
 		VarNodeEdgeMap result = anchorMap == null ? null : anchorMap.get();
 		if (result == null) {
@@ -139,7 +97,7 @@ public class SPOEvent implements RuleEvent {
 	 * The resulting map contains images for the anchor and eraser edges 
 	 * and any variables on them.
 	 */
-    protected VarNodeEdgeMap computeAnchorMap() {
+    private VarNodeEdgeMap computeAnchorMap() {
     	Element[] anchor = getRule().anchor();
     	Element[] anchorImage = getAnchorImage();
     	VarNodeEdgeMap result = createVarMap();
@@ -168,7 +126,7 @@ public class SPOEvent implements RuleEvent {
         for (Edge eraserEdge: getRule().getEraserNonAnchorEdges()) {
             Edge eraserImage = result.mapEdge(eraserEdge);
             assert eraserImage != null : String.format("Eraser edge %s has no image in anchor map %s", eraserEdge, result);
-            result.putEdge(eraserEdge, eraserImage);
+//            result.putEdge(eraserEdge, eraserImage);
         }
         return result;
     }
@@ -196,7 +154,7 @@ public class SPOEvent implements RuleEvent {
 	 * Constructs a map from the reader nodes of the RHS that are endpoints of
 	 * creator edges, to the target graph nodes.
 	 */
-	protected VarNodeEdgeMap computeCoanchorMap() {
+	private VarNodeEdgeMap computeCoanchorMap() {
 		final VarNodeEdgeMap result = createVarMap();
 		VarNodeEdgeMap anchorMap = getAnchorMap();
 		NodeEdgeMap mergeMap = getRule().hasMergers() ? getMergeMap() : null;
@@ -216,10 +174,6 @@ public class SPOEvent implements RuleEvent {
 		return result;
 	}
 
-	public RuleApplication newApplication(Graph host) {
-		return new DefaultApplication(this, host);
-	}
-    
     /**
      * The hash code is based on that of the rule and an initial fragment of the
      * anchor images.
@@ -301,20 +255,6 @@ public class SPOEvent implements RuleEvent {
         return Arrays.equals(getAnchorImage(), other.getAnchorImage());
     }
     
-    /** 
-     * Returns a hash code based on the identity rather than
-     * the content of the event.
-     */
-    public int identityHashCode() {
-    	if (identityHashCode == 0) {
-    		identityHashCode = System.identityHashCode(this);
-    		if (identityHashCode == 0) {
-    			identityHashCode = 1;
-    		}
-    	}
-    	return identityHashCode;
-    }
-    
 	@Override
 	public String toString() {
 	    StringBuffer result = new StringBuffer(getRule().getName().name());
@@ -370,26 +310,10 @@ public class SPOEvent implements RuleEvent {
 	    if (result != 0) {
 	        return result;
 	    }
-        // we have the same rule
+        // we have the same rule (so the other event is also a SPOEvent)
         Element[] anchorImage = getAnchorImage();
         // retrieve the other even't anchor image array
         Element[] otherAnchorImage = ((SPOEvent) other).getAnchorImage();
-//        if (other instanceof SPOEvent) {
-//            otherAnchorImage = ((SPOEvent) other).getAnchorImage();
-//        } else {
-//            // construct anchor image of the other event
-//            Element[] anchor = getRule().anchor();
-//            VarNodeEdgeMap otherAnchorMap = other.getAnchorMap();
-//            otherAnchorImage = new Element[anchor.length];
-//            for (int i = 0; i < anchor.length; i++) {
-//                Element anchorElement = anchor[i];
-//                if (anchorElement instanceof Node) {
-//                    otherAnchorImage[i] = otherAnchorMap.getNode((Node) anchorElement);
-//                } else {
-//                    otherAnchorImage[i] = otherAnchorMap.getEdge((Edge) anchorElement);
-//                }
-//            }
-//        }
         // now compare the anchor images
         // find the first index in which the anchor images differ
         int upper = Math.min(anchorImage.length, otherAnchorImage.length);
@@ -544,7 +468,7 @@ public class SPOEvent implements RuleEvent {
 	 * images of the LHS eraser nodes.
 	 * Callback method from {@link #getErasedNodes()}.
 	 */
-	protected Set<Node> computeErasedNodes() {
+	private Set<Node> computeErasedNodes() {
         Node[] eraserNodes = getRule().getEraserNodes();
         if (eraserNodes.length == 0) {
             return EMPTY_NODE_SET;
@@ -566,11 +490,11 @@ public class SPOEvent implements RuleEvent {
     public Set<Edge> getSimpleErasedEdges() {
         if (reuse) {
             if (erasedEdgeSet == null) {
-                erasedEdgeSet = computeErasedEdges();
+                erasedEdgeSet = computeSimpleErasedEdges();
             }
             return erasedEdgeSet;
         } else {
-            return computeErasedEdges();
+            return computeSimpleErasedEdges();
         }
     }
 
@@ -579,7 +503,7 @@ public class SPOEvent implements RuleEvent {
      * images of the LHS eraser edges.
      * Callback method from {@link #getSimpleErasedEdges()}.
      */
-    protected Set<Edge> computeErasedEdges() {
+    private Set<Edge> computeSimpleErasedEdges() {
         Set<Edge> result = createEdgeSet();
         VarNodeEdgeMap anchorMap = getAnchorMap();
         Edge[] eraserEdges = getRule().getEraserEdges();
@@ -619,7 +543,26 @@ public class SPOEvent implements RuleEvent {
         return result;
     }
 
-    /**
+    @Override
+	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
+    	Set<Edge> result = createEdgeSet();
+		VarNodeEdgeMap coanchorMap = getSimpleCoanchorMap().clone();
+		// add creator node images
+		for (Node creatorNode: getRule().getCreatorNodes()) {
+			coanchorMap.putNode(creatorNode, createdNodes.next());
+		}
+        // now compute and add the complex creator edge images
+        for (Edge edge : getRule().getComplexCreatorEdges()) {
+            Edge image = coanchorMap.mapEdge(edge);
+            // only add if the image exists
+            if (image != null) {
+                result.add(image);
+            }
+        }
+		return result;
+	}
+
+	/**
 	 * Returns a mapping from source to target graph nodes, dictated by
 	 * the merger and eraser nodes in the rules. 
 	 * @return an {@link MergeMap} that maps nodes of the
@@ -642,7 +585,7 @@ public class SPOEvent implements RuleEvent {
      * may not yet be constructed at the time of invoking this method. The map is an
      * {@link MergeMap} to improve performance.
      */
-    protected MergeMap computeMergeMap() {
+    private MergeMap computeMergeMap() {
     	VarNodeEdgeMap anchorMap = getAnchorMap();
         MergeMap mergeMap = createMergeMap();
         for (Map.Entry<Node,Node> ruleMergeEntry: getRule().getMergeMap().entrySet()) {
@@ -662,7 +605,7 @@ public class SPOEvent implements RuleEvent {
 	 * created by this rule.
 	 */
 	protected List<List<Node>> createFreshNodeList() {
-		int creatorNodeCount = getRule().coanchor().length;
+		int creatorNodeCount = getRule().getCreatorNodes().length;
 		List<List<Node>> result = new ArrayList<List<Node>>();
         for (int i = 0; i < creatorNodeCount; i++) {
         	result.add(new ArrayList<Node>());
@@ -670,20 +613,6 @@ public class SPOEvent implements RuleEvent {
         return result;
 	}
 
-	/**
-     * Callback factory method to create a fresh, empty node set.
-     */
-    protected Set<Node> createNodeSet() {
-    	return new NodeSet();
-    }
-
-	/**
-     * Callback factory method to create a fresh, empty edge set.
-     */
-    protected Set<Edge> createEdgeSet() {
-    	return new TreeHashSet<Edge>();
-    }
-    
     /**
      * Callback factory method to create the merge map object for 
      * {@link #computeMergeMap()}.
@@ -702,20 +631,15 @@ public class SPOEvent implements RuleEvent {
     	return new VarNodeEdgeHashMap();
     }
 
-    public Node[] getCoanchorImage(Graph host) {
-		int coanchorSize = getRule().coanchor().length;
-		Node[] result = new Node[coanchorSize];
-		for (int i = 0; i < coanchorSize; i++) {
-			result[i] = getFreshNode(i, host);
-		}
+    public List<Node> getCreatedNodes(Set<? extends Node> hostNodes) {
+		List<Node> result = computeCreatedNodes(hostNodes);
 		if (reuse) {
 		    if (coanchorImageMap == null) {
-		        coanchorImageMap = new HashMap<List<Node>, Node[]>();
+		        coanchorImageMap = new HashMap<List<Node>, List<Node>>();
 		    }
-            List<Node> resultAsList = Arrays.asList(result);
-            Node[] existingResult = coanchorImageMap.get(resultAsList);
+            List<Node> existingResult = coanchorImageMap.get(result);
             if (existingResult == null) {
-                coanchorImageMap.put(resultAsList, result);
+                coanchorImageMap.put(result, result);
                 coanchorImageCount++;
             } else {
                 result = existingResult;
@@ -723,6 +647,20 @@ public class SPOEvent implements RuleEvent {
             }
         }
         return result;
+    }
+
+    private List<Node> computeCreatedNodes(Set<? extends Node> currentNodes) {
+		List<Node> result;
+		int coanchorSize = getRule().getCreatorNodes().length;
+		if (coanchorSize == 0) {
+			result = EMPTY_COANCHOR_IMAGE;
+		} else {
+			result = new ArrayList<Node>(coanchorSize);
+			for (int i = 0; i < coanchorSize; i++) {
+				result.add(getFreshNode(i, currentNodes));
+			}
+		}
+		return result;
     }
 
     /**
@@ -733,17 +671,17 @@ public class SPOEvent implements RuleEvent {
 	 * @param creatorIndex
 	 *            index in the rhsOnlyNodes array indicating the node of the
 	 *            rule for which a new image is to be created
-	 * @param graph
-	 *            the graph to which a node should be added
+	 * @param currentNodes
+	 *            the existing nodes, which should not contain the fresh node
 	 */
-	public Node getFreshNode(int creatorIndex, Graph graph) {
+	public Node getFreshNode(int creatorIndex, Set<? extends Node> currentNodes) {
 		Node result = null;
 		Collection<Node> currentFreshNodes = getFreshNodes(creatorIndex);
 		if (currentFreshNodes != null) {
             Iterator<Node> freshNodeIter = currentFreshNodes.iterator();
             while (result == null && freshNodeIter.hasNext()) {
                 Node freshNode = freshNodeIter.next();
-                if (!graph.containsElement(freshNode)) {
+                if (!currentNodes.contains(freshNode)) {
                     result = freshNode;
                 }
             }
@@ -762,18 +700,26 @@ public class SPOEvent implements RuleEvent {
      * This implementation returns a {@link DefaultNode}, with
      * a node number determined by the grammar's node counter.
      */
-    protected Node createNode() {
+    private Node createNode() {
         DefaultApplication.freshNodeCount++;
     	NodeFactory record = getNodeFactory();
     	Node result = record == null ? DefaultNode.createNode() : record.newNode();
     	return result;
     }
 
+    /** 
+     * Returns the derivation record associated with this event. 
+     * May be <code>null</code>.
+     */
+    private NodeFactory getNodeFactory() {
+    	return nodeFactory;
+    }
+
 	/**
 	 * Returns the list of all previously created fresh nodes.
 	 * Returns <code>null</code> if the reuse policy is set to <code>false</code>.
 	 */
-    protected List<Node> getFreshNodes(int creatorIndex) {
+    private List<Node> getFreshNodes(int creatorIndex) {
         if (reuse) {
             if (freshNodeList == null) {
                 freshNodeList = createFreshNodeList();
@@ -784,14 +730,6 @@ public class SPOEvent implements RuleEvent {
         }
     }
 
-    /**
-	 * Matching from the rule's lhs to the source graph.
-	 */
-    protected final SPORule rule;
-//    /**
-//     * The factory to be used to instantiate classes specific for this rule event type.
-//     */
-//    private final RuleFactory ruleFactory;
     /** The derivation record that has created this event, if any. */
     private final NodeFactory nodeFactory;
     /**
@@ -843,16 +781,11 @@ public class SPOEvent implements RuleEvent {
 	 */
 	private int hashCode;
 	/**
-	 * Hash code based on the identity, rather than the content, of
-	 * the event.
-	 */
-	private int identityHashCode;
-	/**
 	 * The list of nodes created by {@link #createNode()}.
 	 */
 	private List<List<Node>> freshNodeList;
 	/** Store of previously used coanchor images. */
-	private Map<List<Node>, Node[]> coanchorImageMap;
+	private Map<List<Node>, List<Node>> coanchorImageMap;
 	/** Flag indicating if sets should be stored for reuse. */
 	private final boolean reuse;
 	/** 
@@ -889,8 +822,10 @@ public class SPOEvent implements RuleEvent {
 	/** Counter for the coanchor images. */
 	static private int coanchorImageCount;
 	/** Global empty set of nodes. */
-	static private Set<Node> EMPTY_NODE_SET = Collections.<Node>emptySet();
-	
+	static private final Set<Node> EMPTY_NODE_SET = Collections.<Node>emptySet();
+    /** Global empty list of nodes. */
+    static private final List<Node> EMPTY_COANCHOR_IMAGE = Collections.emptyList();
+
 	static private Reporter reporter = Reporter.register(RuleEvent.class);
 	static private int HASHCODE = reporter.newMethod("computeHashCode()");
 	static private int EQUALS = reporter.newMethod("equals()");

@@ -12,10 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.13 2007-10-01 16:02:13 rensink Exp $
+ * $Id: RuleEvent.java,v 1.14 2007-10-01 21:53:08 rensink Exp $
  */
 package groove.trans;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import groove.graph.Edge;
@@ -32,7 +34,7 @@ import groove.rel.VarNodeEdgeMap;
  * The event does not store information specific to the host graph. To apply it to 
  * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2007-10-01 16:02:13 $
+ * @version $Revision: 1.14 $ $Date: 2007-10-01 21:53:08 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -80,7 +82,7 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      * mapped to another node as a consequence of a merger in the rule.
      */
     public MergeMap getMergeMap();
-    
+
     /**
      * Returns the set of explicitly created edges between existing nodes. 
      * These are the images of the rule's creator edges of which the endpoints are not creator nodes.
@@ -92,7 +94,9 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      * minus the creator nodes.
      * The mapping is only guaranteed to provide images
      * for the endpoints and variables of the creator edges.
+     * @deprecated use {@link #getCreatedNodes(Set)} instead
      */
+    @Deprecated
     public VarNodeEdgeMap getSimpleCoanchorMap();
 
     /** 
@@ -100,7 +104,14 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      * This is delegated to the event because here we can indeed keep a map of such 
      * images, and so save memory. 
      */
-    public Node[] getCoanchorImage(Graph source);
+    public List<Node> getCreatedNodes(Set<? extends Node> hostNodes);
+
+    /** 
+     * Returns a coanchor image suitable for a given host graph.
+     * This is delegated to the event because here we can indeed keep a map of such 
+     * images, and so save memory. 
+     */
+    public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes);
     
     /**
 	 * Indicates if a matching of this event's rule exists, based on the anchor map in this event.

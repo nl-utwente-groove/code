@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.24 2007-10-01 16:02:14 rensink Exp $
+ * $Id: SPOApplication.java,v 1.25 2007-10-01 21:53:08 rensink Exp $
  */
 package groove.trans;
 
@@ -32,6 +32,7 @@ import groove.graph.algebra.ValueNode;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -41,7 +42,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.24 $ $Date: 2007-10-01 16:02:14 $
+ * @version $Revision: 1.25 $ $Date: 2007-10-01 21:53:08 $
  * @deprecated use {@link DefaultApplication} instead
  */
 @Deprecated
@@ -63,7 +64,7 @@ public class SPOApplication implements RuleApplication, Derivation {
         return source;
     }
 
-	public Rule getRule() {
+	public SPORule getRule() {
 	    return rule;
 	}
 
@@ -141,36 +142,44 @@ public class SPOApplication implements RuleApplication, Derivation {
 		}
 		return result;
     }
+//
+//	/**
+//     * The comatch is constructed in the course of rule application.
+//     * Returns <code>null</code> is called before any of the 
+//     * <code>(re)start</code> methods has been invoked.
+//     */
+//    public VarNodeEdgeMap getCoanchorMap() {
+//        if (coAnchorMap == null) {
+//            coAnchorMap = computeCoanchorMap();
+//        }
+//        return coAnchorMap;
+//    }
+//
+//	/**
+//	 * Constructs a map from all nodes of the RHS that are endpoints of
+//	 * creator edges.
+//	 */
+//	protected VarNodeEdgeMap computeCoanchorMap() {
+//		final VarNodeEdgeMap result = getEvent().getSimpleCoanchorMap().clone();
+//		// add creator node images
+//		Node[] coanchor = rule.getCreatorNodes();
+//		int coanchorSize = coanchor.length;
+//		Node[] coanchorImage = getCoanchorImage();
+//		for (int i = 0; i < coanchorSize; i++) {
+//			result.putNode(coanchor[i], coanchorImage[i]);
+//		}
+//		return result;
+//	}
 
 	/**
-     * The comatch is constructed in the course of rule application.
-     * Returns <code>null</code> is called before any of the 
-     * <code>(re)start</code> methods has been invoked.
-     */
-    public VarNodeEdgeMap getCoanchorMap() {
-        if (coAnchorMap == null) {
-            coAnchorMap = computeCoanchorMap();
-        }
-        return coAnchorMap;
-    }
-
-	/**
-	 * Constructs a map from all nodes of the RHS that are endpoints of
-	 * creator edges.
+	 * @deprecated Use {@link #getCreatedNodes()} instead
 	 */
-	protected VarNodeEdgeMap computeCoanchorMap() {
-		final VarNodeEdgeMap result = getEvent().getSimpleCoanchorMap().clone();
-		// add creator node images
-		Node[] coanchor = rule.coanchor();
-		int coanchorSize = coanchor.length;
-		Node[] coanchorImage = getCoanchorImage();
-		for (int i = 0; i < coanchorSize; i++) {
-			result.putNode(coanchor[i], coanchorImage[i]);
-		}
-		return result;
+    @Deprecated
+	public Node[] getCoanchorImage() {
+		return getCreatedNodes();
 	}
 
-	public Node[] getCoanchorImage() {
+	public Node[] getCreatedNodes() {
     	if (coanchorImage == null) {
     		coanchorImage = computeCoanchorImage();
     	}
@@ -186,7 +195,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 		if (getCoanchorSize() == 0) {
 			return EMPTY_COANCHOR_IMAGE;
 		} else {
-			return getEvent().getCoanchorImage(source);
+			return getEvent().getCreatedNodes(source.nodeSet()).toArray(new Node[0]);
 		}
 	}
 
@@ -196,7 +205,7 @@ public class SPOApplication implements RuleApplication, Derivation {
 	
 	/** Convenience method to obtain the size of the coanchor. */
 	private int getCoanchorSize() {
-		return getRule().coanchor().length;
+		return getRule().getCreatorNodes().length;
 	}
 
 	public void applyDelta(DeltaTarget target) {
@@ -353,11 +362,8 @@ public class SPOApplication implements RuleApplication, Derivation {
 	 */
     protected void createNodes(DeltaTarget target) {
         if (rule.hasCreators()) {
-            Node[] creatorNodes = rule.coanchor();
-            int creatorNodeCount = creatorNodes.length;
-            NodeEdgeMap coanchorMap = getCoanchorMap();
-            for (int i = 0; i < creatorNodeCount; i++) {
-                target.addNode(coanchorMap.getNode(creatorNodes[i]));
+            for (Node node: getCreatedNodes()) {
+                target.addNode(node);
             }
         }
     }
@@ -376,11 +382,10 @@ public class SPOApplication implements RuleApplication, Derivation {
                 }
             }
             // now compute and add the complex creator edge images
-            for (Edge edge: getRule().getComplexCreatorEdges()) {
-                Edge image = getCoanchorMap().mapEdge(edge);
+            for (Edge image : getEvent().getComplexCreatedEdges(Arrays.asList(getCreatedNodes()).iterator())) {
                 // only add if the image exists
                 if (image != null) {
-                	addEdge(target, image);
+                    addEdge(target, image);
                 }
             }
         }
@@ -621,7 +626,7 @@ public class SPOApplication implements RuleApplication, Derivation {
     /**
      * Matching from the rule's lhs to the source graph.
      */
-    protected final Rule rule;
+    protected final SPORule rule;
     /**
      * The source graph of this derivation. May not be <tt>null</tt>. 
      */

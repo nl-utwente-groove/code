@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RulePanel.java,v 1.16 2007-10-01 14:48:16 rensink Exp $
+ * $Id: RulePanel.java,v 1.17 2007-10-01 21:53:16 rensink Exp $
  */
 package groove.gui;
 
@@ -30,6 +30,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
+import groove.trans.SPORule;
 import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualRuleView;
@@ -44,7 +45,7 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -148,20 +149,21 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
     @Override
     protected String getStatusText() {
     	StringBuilder text = new StringBuilder();
-    	AspectualRuleView rule = simulator.getCurrentRule();
-    	if (rule != null) {
+    	AspectualRuleView view = simulator.getCurrentRule();
+    	if (view != null) {
     		text.append("Rule ");
-    		text.append(Converter.STRONG_TAG.on(rule.getNameLabel().name()));
-    		if (getOptionsItem(SHOW_ANCHORS_OPTION).isSelected()) {
-    			try {
+    		text.append(Converter.STRONG_TAG.on(view.getNameLabel().name()));
+			try {
+				groove.trans.Rule rule = view.toRule();
+				if (rule instanceof SPORule && getOptionsItem(SHOW_ANCHORS_OPTION).isSelected()) {
 					text.append(", anchor ");
-					text.append(Groove.toString(rule.toRule().anchor(), "(", ")", ","));
-				} catch (FormatException exc) {
-					// don't add the anchor
+					text.append(Groove.toString(((SPORule) rule).anchor(), "(", ")", ","));
 				}
-    		}
-    		String remark = GraphProperties.getRemark(rule.getAspectGraph());
-    		if (remark != null) {
+			} catch (FormatException exc) {
+				// don't add the anchor
+			}
+			String remark = GraphProperties.getRemark(view.getAspectGraph());
+			if (remark != null) {
     			text.append(": ");
     			text.append(Converter.toHtml(remark));
     		}

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.23 2007-09-25 12:59:01 rensink Exp $
+ * $Id: StateGenerator.java,v 1.24 2007-10-01 21:53:15 rensink Exp $
  */
 package groove.lts;
 
@@ -316,7 +316,7 @@ public class StateGenerator {
      * A final parameter determines if the target state is directly derived from the source, or modulo a symmetry.
      */
     protected GraphTransition createTransition(RuleApplication appl, GraphState source, GraphState target, boolean symmetry) {
-        return new DefaultGraphTransition(appl.getEvent(), appl.getCoanchorImage(), source, target, symmetry);
+        return new DefaultGraphTransition(appl.getEvent(), appl.getCreatedNodes(), source, target, symmetry);
     }
     
 	/**

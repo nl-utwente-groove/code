@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultApplication.java,v 1.2 2007-10-01 16:02:14 rensink Exp $
+ * $Id: DefaultApplication.java,v 1.3 2007-10-01 21:53:08 rensink Exp $
  */
 package groove.trans;
 
@@ -31,16 +31,18 @@ import groove.graph.algebra.ValueNode;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-10-01 16:02:14 $
+ * @version $Revision: 1.3 $ $Date: 2007-10-01 21:53:08 $
  */
 public class DefaultApplication implements RuleApplication, Derivation {
     /**
@@ -101,7 +103,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /**
 	 * Callback factory method to compute a target for this applier.
 	 */
-	protected Graph computeTarget() {
+	private Graph computeTarget() {
 		Graph target = createTarget();
 		applyDelta(target);
 		target.setFixed();
@@ -119,7 +121,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
 	 * Callback method to create the matching from the rule's LHS to the source graph. 
 	 * @see #getMatching()
 	 */
-	protected Morphism computeMatching() {
+	private Morphism computeMatching() {
 		return getEvent().getMatching(source);
 	}
 
@@ -133,7 +135,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     /**
      * Constructs the morphism between source and target graph from the application.
      */
-    protected Morphism computeMorphism() {
+    private Morphism computeMorphism() {
     	Morphism result = createMorphism();
     	NodeEdgeMap mergeMap = getMergeMap();
     	for (Node node: source.nodeSet()) {
@@ -153,38 +155,46 @@ public class DefaultApplication implements RuleApplication, Derivation {
 		}
 		return result;
     }
+//
+//	/**
+//     * The comatch is constructed in the course of rule application.
+//     * Returns <code>null</code> is called before any of the 
+//     * <code>(re)start</code> methods has been invoked.
+//     */
+//    public VarNodeEdgeMap getCoanchorMap() {
+//        if (coAnchorMap == null) {
+//            coAnchorMap = computeCoanchorMap();
+//        }
+//        return coAnchorMap;
+//    }
+//
+//	/**
+//	 * Constructs a map from all nodes of the RHS that are endpoints of
+//	 * creator edges.
+//	 */
+//	private VarNodeEdgeMap computeCoanchorMap() {
+//		final VarNodeEdgeMap result = getEvent().getSimpleCoanchorMap().clone();
+//		// add creator node images
+//		Node[] coanchor = rule.getCreatorNodes();
+//		int coanchorSize = coanchor.length;
+//		Node[] coanchorImage = getCoanchorImage();
+//		for (int i = 0; i < coanchorSize; i++) {
+//			result.putNode(coanchor[i], coanchorImage[i]);
+//		}
+//		return result;
+//	}
 
 	/**
-     * The comatch is constructed in the course of rule application.
-     * Returns <code>null</code> is called before any of the 
-     * <code>(re)start</code> methods has been invoked.
-     */
-    public VarNodeEdgeMap getCoanchorMap() {
-        if (coAnchorMap == null) {
-            coAnchorMap = computeCoanchorMap();
-        }
-        return coAnchorMap;
-    }
-
-	/**
-	 * Constructs a map from all nodes of the RHS that are endpoints of
-	 * creator edges.
+	 * @deprecated Use {@link #getCreatedNodes()} instead
 	 */
-	protected VarNodeEdgeMap computeCoanchorMap() {
-		final VarNodeEdgeMap result = getEvent().getSimpleCoanchorMap().clone();
-		// add creator node images
-		Node[] coanchor = rule.coanchor();
-		int coanchorSize = coanchor.length;
-		Node[] coanchorImage = getCoanchorImage();
-		for (int i = 0; i < coanchorSize; i++) {
-			result.putNode(coanchor[i], coanchorImage[i]);
-		}
-		return result;
+    @Deprecated
+	public Node[] getCoanchorImage() {
+		return getCreatedNodes();
 	}
 
-	public Node[] getCoanchorImage() {
+	public Node[] getCreatedNodes() {
     	if (coanchorImage == null) {
-    		coanchorImage = computeCoanchorImage();
+    		coanchorImage = computeCreatedNodes();
     	}
         return coanchorImage;
     }
@@ -194,22 +204,22 @@ public class DefaultApplication implements RuleApplication, Derivation {
 	 * given match and for a given host graph. The image consists of 
 	 * fresh images for the creator nodes of the rule.
 	 */
-	protected Node[] computeCoanchorImage() {
-		if (getCoanchorSize() == 0) {
-			return EMPTY_COANCHOR_IMAGE;
+	// protected to allow subclassing by AliasSPOApplication
+	protected Node[] computeCreatedNodes() {
+		Node[] result;
+		List<Node> createdNodes = getEvent().getCreatedNodes(source.nodeSet());
+		if (createdNodes.size() == 0) {
+			result = EMPTY_COANCHOR_IMAGE;
 		} else {
-			return getEvent().getCoanchorImage(source);
+			result = new Node[createdNodes.size()];
+			createdNodes.toArray(result);
 		}
+		return result;
 	}
 
 	@Deprecated
 	public void setCoanchorImage(Node[] image) {
 		this.coanchorImage = image;			
-	}
-	
-	/** Convenience method to obtain the size of the coanchor. */
-	private int getCoanchorSize() {
-		return getRule().coanchor().length;
 	}
 
 	public void applyDelta(DeltaTarget target) {
@@ -384,7 +394,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
 	 *            the target to which to apply the changes
 	 */
     private void createNodes(DeltaTarget target) {
-        for (Node node: getCoanchorImage()) {
+        for (Node node: getCreatedNodes()) {
             target.addNode(node);
         }
     }
@@ -403,8 +413,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
             }
         }
         // now compute and add the complex creator edge images
-        for (Edge edge : getRule().getComplexCreatorEdges()) {
-            Edge image = getCoanchorMap().mapEdge(edge);
+        for (Edge image : getEvent().getComplexCreatedEdges(Arrays.asList(getCreatedNodes()).iterator())) {
             // only add if the image exists
             if (image != null) {
                 addEdge(target, image);

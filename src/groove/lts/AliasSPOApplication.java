@@ -58,7 +58,7 @@ public class AliasSPOApplication extends DefaultApplication implements AliasRule
     }
     
     @Override
-    protected Node[] computeCoanchorImage() {
+    protected Node[] computeCreatedNodes() {
     	Node[] result = prior.getAddedNodes(getParent());
     	// if this application's event is the same as that of prior,
     	// the added nodes may coincide
@@ -70,7 +70,7 @@ public class AliasSPOApplication extends DefaultApplication implements AliasRule
     			assert conflict || !getSource().containsElement(result[i]);
     		}
     		if (conflict) {
-                result = super.computeCoanchorImage();
+                result = super.computeCreatedNodes();
     		}
     	}
 	    return result;
