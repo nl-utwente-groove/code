@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.34 2007-09-30 15:52:46 rensink Exp $
+ * $Id: SPOEvent.java,v 1.35 2007-10-01 14:48:21 rensink Exp $
  */
 package groove.trans;
 
@@ -55,7 +55,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.34 $ $Date: 2007-09-30 15:52:46 $
+ * @version $Revision: 1.35 $ $Date: 2007-10-01 14:48:21 $
  */
 public class SPOEvent implements RuleEvent {
 //    /**
@@ -121,6 +121,7 @@ public class SPOEvent implements RuleEvent {
     }
 
     /** Returns the rule name. */
+    @Deprecated
 	public RuleNameLabel getName() {
 		return getRule().getName();
 	}
@@ -180,7 +181,7 @@ public class SPOEvent implements RuleEvent {
     	return Groove.toString(getAnchorImage(), ANCHOR_START, ANCHOR_END, ANCHOR_SEPARATOR);
 	}
 
-	public VarNodeEdgeMap getCoanchorMap() {
+	public VarNodeEdgeMap getSimpleCoanchorMap() {
 	    if (reuse) {
             if (coanchorMap == null) {
                 coanchorMap = computeCoanchorMap();
@@ -216,7 +217,7 @@ public class SPOEvent implements RuleEvent {
 	}
 
 	public RuleApplication newApplication(Graph host) {
-		return new SPOApplication(this, host);
+		return new DefaultApplication(this, host);
 	}
     
     /**
@@ -486,7 +487,7 @@ public class SPOEvent implements RuleEvent {
     	if (other instanceof SPOEvent) {
     		result = false;
     		// check if the other creates edges that this event erases
-			Iterator<Edge> myErasedEdgeIter = getErasedEdges().iterator();
+			Iterator<Edge> myErasedEdgeIter = getSimpleErasedEdges().iterator();
 			Set<Edge> otherCreatedEdges = ((SPOEvent) other).getSimpleCreatedEdges();
 			while (!result && myErasedEdgeIter.hasNext()) {
 				result = otherCreatedEdges.contains(myErasedEdgeIter.next());
@@ -494,7 +495,7 @@ public class SPOEvent implements RuleEvent {
 			if (!result) {
 	    		// check if the other erases edges that this event creates
 				Iterator<Edge> myCreatedEdgeIter = getSimpleCreatedEdges().iterator();
-				Set<Edge> otherErasedEdges = ((SPOEvent) other).getErasedEdges();
+				Set<Edge> otherErasedEdges = ((SPOEvent) other).getSimpleErasedEdges();
 				while (!result && myCreatedEdgeIter.hasNext()) {
 					result = otherErasedEdges.contains(myCreatedEdgeIter.next());
 				}
@@ -521,7 +522,7 @@ public class SPOEvent implements RuleEvent {
         while (!result && nodeIter.hasNext()) {
             result = anchorImage.contains(nodeIter.next());
         }
-        Iterator<Edge> edgeIter = getErasedEdges().iterator();
+        Iterator<Edge> edgeIter = getSimpleErasedEdges().iterator();
         while (!result && edgeIter.hasNext()) {
             result = anchorImage.contains(edgeIter.next());
         }
@@ -532,7 +533,7 @@ public class SPOEvent implements RuleEvent {
 	 * Returns the set of explicitly erased nodes, i.e., the images of the LHS
 	 * eraser nodes.
 	 */
-    protected Set<Node> getErasedNodes() {
+    public Set<Node> getErasedNodes() {
         if (reuse) {
             if (erasedNodeSet == null) {
                 erasedNodeSet = computeErasedNodes();
@@ -567,7 +568,7 @@ public class SPOEvent implements RuleEvent {
      * Returns the set of explicitly erased edges, i.e., the
      * images of the LHS eraser edges.
      */
-    protected Set<Edge> getErasedEdges() {
+    public Set<Edge> getSimpleErasedEdges() {
         if (reuse) {
             if (erasedEdgeSet == null) {
                 erasedEdgeSet = computeErasedEdges();
@@ -581,29 +582,21 @@ public class SPOEvent implements RuleEvent {
     /**
      * Computes the set of explicitly erased edges, i.e., the
      * images of the LHS eraser edges.
-     * Callback method from {@link #getErasedEdges()}.
+     * Callback method from {@link #getSimpleErasedEdges()}.
      */
     protected Set<Edge> computeErasedEdges() {
         Set<Edge> result = createEdgeSet();
         VarNodeEdgeMap anchorMap = getAnchorMap();
         Edge[] eraserEdges = getRule().getEraserEdges();
-        for (int i = 0; i < eraserEdges.length; i++) {
-            Edge edge = eraserEdges[i];
+        for (Edge edge: eraserEdges) {
             Edge edgeImage = anchorMap.getEdge(edge);
             assert edgeImage != null : "Image of "+edge+" cannot be deduced from "+anchorMap;
-//            if (edgeImage == null) {
-//                edgeImage = edge.imageFor(anchorMap);
-//            }
             result.add(edgeImage);
         }
         return result;
     }
 
-    /**
-     * Returns the set of explicitly erased edges, i.e., the
-     * images of the LHS eraser edges.
-     */
-    protected Set<Edge> getSimpleCreatedEdges() {
+    public Set<Edge> getSimpleCreatedEdges() {
         if (reuse) {
             if (simpleCreatedEdgeSet == null) {
                 simpleCreatedEdgeSet = computeSimpleCreatedEdges();
@@ -617,11 +610,11 @@ public class SPOEvent implements RuleEvent {
     /**
      * Computes the set of explicitly erased edges, i.e., the
      * images of the LHS eraser edges.
-     * Callback method from {@link #getErasedEdges()}.
+     * Callback method from {@link #getSimpleErasedEdges()}.
      */
     private Set<Edge> computeSimpleCreatedEdges() {
         Set<Edge> result = createEdgeSet();
-        VarNodeEdgeMap coAnchorMap = getCoanchorMap();
+        VarNodeEdgeMap coAnchorMap = getSimpleCoanchorMap();
         for (Edge edge: getRule().getSimpleCreatorEdges()) {
             Edge edgeImage = coAnchorMap.mapEdge(edge);
             if (edgeImage != null) {
@@ -637,11 +630,15 @@ public class SPOEvent implements RuleEvent {
 	 * @return an {@link MergeMap} that maps nodes of the
 	 * source that are merged away to their merged images, and deleted nodes to <code>null</code>.
 	 */
-	protected MergeMap getMergeMap() {
-		if (mergeMap == null) {
-			mergeMap = computeMergeMap();
-		}
-	    return mergeMap;
+	public MergeMap getMergeMap() {
+	    if (reuse) {
+            if (mergeMap == null) {
+                mergeMap = computeMergeMap();
+            }
+            return mergeMap;
+        } else {
+            return computeMergeMap();
+        }
     }
 
     /**
@@ -653,38 +650,15 @@ public class SPOEvent implements RuleEvent {
     protected MergeMap computeMergeMap() {
     	VarNodeEdgeMap anchorMap = getAnchorMap();
         MergeMap mergeMap = createMergeMap();
-        // integrate the mergings
-        // the pre-morphism should be "flat" in the sense that any non-null value of an entry
-        // should itself be a fixpoint of the pre-morphism
-//        boolean mergersStable = true;
         for (Map.Entry<Node,Node> ruleMergeEntry: getRule().getMergeMap().entrySet()) {
             Node mergeKey = anchorMap.getNode(ruleMergeEntry.getKey());
             Node mergeImage = anchorMap.getNode(ruleMergeEntry.getValue());
             mergeMap.putNode(mergeKey, mergeImage);
-//            assert mergeKey != null && mergeImage != null : "Images should be non-null in matching";
-//            // the key-image pair should be put in the merge map,
-//            // but maybe the key has been merged with a different node already
-//            Element mergeKeyFixpoint = getFixpoint(mergeMap, mergeKey);
-//            Element mergeImageFixpoint = getFixpoint(mergeMap, mergeImage);
-//            if (mergeKeyFixpoint != mergeImageFixpoint) {
-//                mergeMap.put(mergeKeyFixpoint, mergeImageFixpoint);
-//                // there are overlapping mergings
-//                mergersStable = false;
-//            }
         }
         // now map the erased nodes to null
         for (Node node: getErasedNodes()) {
             mergeMap.removeNode(node);
-//            mergersStable = false;
         }
-        // flatten the merge map if necessary
-//        if (!mergersStable) {
-//        	for (Map.Entry<Element,Element> resultEntry: mergeMap.entrySet()) {
-//                Element value = mergeMap.getValue(resultEntry);
-//                Element fixpoint = getFixpoint(mergeMap, value);
-//                mergeMap.setValue(resultEntry, fixpoint);
-//            }
-//        }
         return mergeMap;
     }
 
@@ -733,12 +707,7 @@ public class SPOEvent implements RuleEvent {
     	return new VarNodeEdgeHashMap();
     }
 
-    /** 
-     * Returns a coanchor image suitable for a given graph.
-     * This is delegated to the event, which can indeed keep a map of such 
-     * images, and so save memory. 
-     */
-    Node[] getCoanchorImage(Graph host) {
+    public Node[] getCoanchorImage(Graph host) {
 		int coanchorSize = getRule().coanchor().length;
 		Node[] result = new Node[coanchorSize];
 		for (int i = 0; i < coanchorSize; i++) {
@@ -799,7 +768,7 @@ public class SPOEvent implements RuleEvent {
      * a node number determined by the grammar's node counter.
      */
     protected Node createNode() {
-        SPOApplication.freshNodeCount++;
+        DefaultApplication.freshNodeCount++;
     	NodeFactory record = getNodeFactory();
     	Node result = record == null ? DefaultNode.createNode() : record.newNode();
     	return result;

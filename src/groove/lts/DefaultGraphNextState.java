@@ -17,11 +17,11 @@ package groove.lts;
 import groove.control.Location;
 import groove.graph.AbstractGraph;
 import groove.graph.DeltaApplier;
-import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.trans.DefaultApplication;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
@@ -29,7 +29,7 @@ import groove.trans.RuleEvent;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
@@ -167,18 +167,13 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	public boolean hasEnd(Node node) {
 		return source().equals(node) || target().equals(node);
 	}
-
-	/**
-     * This implementation retrieves the coanchor image from the delta array.
-     */
-    public Element[] getCoanchorImage() {
-    	return addedNodes;
-    }
     
 	public RuleEvent getEvent(GraphState source) {
 		if (source == source()) {
 			return getEvent();
 		} else {
+		    // we are acting as a transition stub aliasing the source state 
+		    // (interpreted as a transition)
 			return getSourceEvent();
 		}
 	}	
@@ -187,6 +182,8 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 		if (source == source()) {
 			return getAddedNodes();
 		} else {
+            // we are acting as a transition stub aliasing the source state 
+            // (interpreted as a transition)
 			return getSourceAddedNodes();
 		}
 	}
@@ -197,7 +194,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 
 	public GraphTransitionStub toStub() {
 		return this;
-//		return new IdentityTransitionStub(getEvent(), getAddedNodes(), target());
 	}
 
 	/**
@@ -223,9 +219,12 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	 * leading up to this state.
 	 */
 	DeltaApplier getDelta() {
-		RuleApplication result = getEvent().newApplication(source().getGraph());
-		result.setCoanchorImage(getAddedNodes());
-		return result;
+		return createRuleApplication();
+	}
+
+	/** Callback factory method for a rule application on the basis of this state. */
+	RuleApplication createRuleApplication() {
+	    return new DefaultApplication(getEvent(), source().getGraph(), getAddedNodes());
 	}
 	
 	@Override

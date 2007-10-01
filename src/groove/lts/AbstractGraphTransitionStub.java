@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphTransitionStub.java,v 1.9 2007-09-28 12:45:56 rensink Exp $
+ * $Id: AbstractGraphTransitionStub.java,v 1.10 2007-10-01 14:48:21 rensink Exp $
  */
 package groove.lts;
 
@@ -26,7 +26,7 @@ import groove.trans.RuleEvent;
  * ({@link SymmetryTransitionStub}) and one that is not ({@link SymmetryTransitionStub}).
  * The only abstract method is {@link #toTransition(GraphState)}.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     /**
@@ -42,7 +42,7 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
         return target;
     }
 
-    /** The event wrapped by sthis stub. */
+    /** The event wrapped by this stub. */
 	public final RuleEvent getEvent() {
 		return event;
 	}
@@ -87,16 +87,6 @@ abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     public int compareTo(Element obj) {
 		throw new UnsupportedOperationException();
 	}
-//
-//    /**
-//     * This method is only there because we needed to make {@link groove.lts.GraphTransitionStub}
-//     * a sub-interface of {@link Element}.
-//     * The method throws an {@link UnsupportedOperationException} always.
-//     */
-//    @Deprecated
-//	public Element imageFor(GenericNodeEdgeMap elementMap) {
-//		throw new UnsupportedOperationException();
-//	}
 	
     /**
 	 * This implementation returns the identity of the event.

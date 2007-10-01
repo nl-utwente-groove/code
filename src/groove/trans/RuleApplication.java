@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleApplication.java,v 1.5 2007-08-22 15:04:48 rensink Exp $
+ * $Id: RuleApplication.java,v 1.6 2007-10-01 14:48:21 rensink Exp $
  */
 package groove.trans;
 
@@ -27,9 +27,9 @@ import groove.rel.VarNodeEdgeMap;
  * Interface to wrap the computation involved in applying a production rule.
  * This is used in two different phases: when constructing a
  * derivation, and to reconstruct the matching and the target graph after they
- * have been minimized, if the cached representation has been discarded.
+ * have been minimised, if the cached representation has been discarded.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public interface RuleApplication extends Derivation, DeltaApplier {
     /**
@@ -54,14 +54,7 @@ public interface RuleApplication extends Derivation, DeltaApplier {
     public Graph getTarget();
     
     /**
-     * Indicates if the target of this application has already been computed.
-     * @deprecated remnant from the time that targets could be states
-     */
-    @Deprecated
-    public boolean isTargetSet();
-    
-    /**
-     * Returns the mapping from the rule's LHS to the source graph.
+     * Returns the mapping from the rule's anchor to the source graph of this application.
      */
     public VarNodeEdgeMap getAnchorMap();
     
@@ -75,7 +68,9 @@ public interface RuleApplication extends Derivation, DeltaApplier {
     /**
      * Sets the image of the rule's coanchor in the target graph.
      * @see #getCoanchorImage()
+     * @deprecated set at construction time
      */
+    @Deprecated
     public void setCoanchorImage(Node[] image);
     
     /**
@@ -85,17 +80,10 @@ public interface RuleApplication extends Derivation, DeltaApplier {
 	public Node[] getCoanchorImage();
 
     /**
-     * Applies the rule to a given source graph, using a previously computed footprint
-     * and a target object.
-     * This method is used to reconstruct a rule application from its footprint.
+     * Applies the rule to a given delta target.
+     * This is presumably the host graph to which the underlying rule is to be applied.
      * The source should coincide with that for which the footprint was originally created 
      * @param target the target object on which the modifications are to be performed
      */
     public void applyDelta(DeltaTarget target);
-//
-//    /**
-//     * Returns the {@link groove.trans.RuleFactory} the is needed to instantiate classes for performing transformations.
-//     * @return the current <code>ruleFactory</code>
-//     */
-//    public RuleFactory getRuleFactory();
 }

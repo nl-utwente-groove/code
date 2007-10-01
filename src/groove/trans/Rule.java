@@ -12,11 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.15 2007-09-30 15:52:46 rensink Exp $
- * $Date: 2007-09-30 15:52:46 $
+ * $Id: Rule.java,v 1.16 2007-10-01 14:48:21 rensink Exp $
+ * $Date: 2007-10-01 14:48:21 $
  */
 package groove.trans;
 
+import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
@@ -26,6 +27,7 @@ import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeMap;
 
 import java.util.Comparator;
+import java.util.Set;
 
 /**
  * Interface of a production rule.
@@ -34,7 +36,7 @@ import java.util.Comparator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -114,6 +116,12 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      */
     public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse);
 
+    public boolean hasCreators();
+    
+    public boolean hasMergers();
+    
+    public Set<Edge> getComplexCreatorEdges();
+    
     /**
      * Lazily creates and returns a matcher for rule events of this rule.
      * The matcher will try to extend anchor maps to full matches.

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.26 2007-09-30 15:52:46 rensink Exp $
+ * $Id: SPORule.java,v 1.27 2007-10-01 14:48:21 rensink Exp $
  */
 package groove.trans;
 
@@ -48,7 +48,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -385,7 +385,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	/**
 	 * Indicates if the rule creates any nodes or edges.
 	 */
-	protected boolean hasCreators() {
+	public boolean hasCreators() {
 		return hasCreators;
 	}
 
@@ -418,7 +418,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /**
      * Returns the creator edges that have at least one creator end.
      */
-    final Edge[] getComplexCreatorEdges() {
+    public final Set<Edge> getComplexCreatorEdges() {
         if (complexCreatorEdges == null) {
             complexCreatorEdges = computeComplexCreatorEdges();
         }
@@ -428,10 +428,10 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /**
      * Computes the creator edges that have at least one creator end.
      */
-    private Edge[] computeComplexCreatorEdges() {
+    private Set<Edge> computeComplexCreatorEdges() {
         Set<Edge> result = new HashSet<Edge>(Arrays.asList(getCreatorEdges()));
         result.removeAll(Arrays.asList(getSimpleCreatorEdges()));
-        return result.toArray(new Edge[result.size()]);
+        return result;
     }
 
     /**
@@ -724,7 +724,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     /** 
      * The rhs edges with at least one end not a morphism image
      */
-    private Edge[] complexCreatorEdges;
+    private Set<Edge> complexCreatorEdges;
     /**
      * Variables occurring in the rhsOnlyEdges
      */

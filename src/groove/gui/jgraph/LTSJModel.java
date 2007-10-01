@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.19 2007-09-30 21:45:10 rensink Exp $
+ * $Id: LTSJModel.java,v 1.20 2007-10-01 14:48:23 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -41,7 +41,7 @@ import org.jgraph.graph.AttributeMap;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -332,7 +332,7 @@ public class LTSJModel extends GraphJModel {
 	    		if (isShowAnchors()) {
 	    			description = trans.getEvent().toString();
 	    		} else {
-	    			description = trans.getEvent().getName().toString();
+	    			description = trans.getEvent().getRule().getName().toString();
 	    		}
 	    		displayedLabels[labelIndex] = Converter.STRONG_TAG.on(description, true);
 	    		labelIndex++;
@@ -351,7 +351,7 @@ public class LTSJModel extends GraphJModel {
         @Override
         public Label getLabel(Edge edge) {
             assert edge instanceof GraphTransition : "Edge set contains " + edge;
-            return isShowAnchors() ? super.getLabel(edge) : ((GraphTransition) edge).getEvent().getName();
+            return isShowAnchors() ? super.getLabel(edge) : ((GraphTransition) edge).getEvent().getRule().getName();
         }
 	}
 
@@ -427,7 +427,7 @@ public class LTSJModel extends GraphJModel {
         @Override
         public Label getLabel(Edge edge) {
             assert edge instanceof GraphTransition : "Edge set contains " + edge;
-            return isShowAnchors() ? super.getLabel(edge) : ((GraphTransition) edge).getEvent().getName();
+            return isShowAnchors() ? super.getLabel(edge) : ((GraphTransition) edge).getEvent().getRule().getName();
         }
         
         @Override
