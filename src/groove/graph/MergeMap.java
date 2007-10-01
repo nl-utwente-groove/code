@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MergeMap.java,v 1.5 2007-09-16 21:44:23 rensink Exp $
+ * $Id: MergeMap.java,v 1.6 2007-10-01 16:02:13 rensink Exp $
  */
 package groove.graph;
 
@@ -26,12 +26,9 @@ import java.util.Set;
  * anything not explicitly set to a particular value defaults to identity.
  * This is actually not a proper node/edge map, in that the entries do not reflect the actual mapping.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class MergeMap extends NodeEdgeHashMap {
-    /** Internal representation of undefined. */
-    static public final Node UNDEFINED = DefaultNode.createNode(); 
-    
     /**
      * Creates a global identity function.
      */
@@ -62,7 +59,11 @@ public class MergeMap extends NodeEdgeHashMap {
     	// or deleted
         Node keyImage = getNode(key);
 		Node valueImage = getNode(value);
-		if (keyImage != valueImage) {
+		// if we are combining this merge map with another, if may occur
+		// that the value is UNDEFINED, meaning we should rather remove the key
+		if (valueImage == UNDEFINED) {
+		    removeNode(key);
+		} else if (keyImage != valueImage) {
 			if (keyImage == null) {
 				// delete the key
 				removeNode(valueImage);
@@ -184,4 +185,7 @@ public class MergeMap extends NodeEdgeHashMap {
      * The merge targets are themselves fixpoints of the merge map.
      */
     private Set<Node> mergeTargets;
+    
+    /** Internal representation of undefined. */
+    static public final Node UNDEFINED = DefaultNode.createNode(); 
 }

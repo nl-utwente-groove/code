@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOApplication.java,v 1.23 2007-10-01 14:48:21 rensink Exp $
+ * $Id: SPOApplication.java,v 1.24 2007-10-01 16:02:14 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.23 $ $Date: 2007-10-01 14:48:21 $
+ * @version $Revision: 1.24 $ $Date: 2007-10-01 16:02:14 $
  * @deprecated use {@link DefaultApplication} instead
  */
 @Deprecated
@@ -51,7 +51,7 @@ public class SPOApplication implements RuleApplication, Derivation {
      * @param event the production rule instance involved
      * @param source the host graph to which the rule is to be applied
      */
-    public SPOApplication(RuleEvent event, Graph source) {
+    public SPOApplication(SPOEvent event, Graph source) {
     	this.event = event;
         this.rule = event.getRule();
         this.source = source;

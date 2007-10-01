@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.35 2007-10-01 14:48:21 rensink Exp $
+ * $Id: SPOEvent.java,v 1.36 2007-10-01 16:02:13 rensink Exp $
  */
 package groove.trans;
 
@@ -55,7 +55,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.35 $ $Date: 2007-10-01 14:48:21 $
+ * @version $Revision: 1.36 $ $Date: 2007-10-01 16:02:13 $
  */
 public class SPOEvent implements RuleEvent {
 //    /**
@@ -363,50 +363,45 @@ public class SPOEvent implements RuleEvent {
     
 	/**
 	 * Compares two events first on the basis of their rules,
-	 * then lexicographically on the basis of thei anchor images.
+	 * then lexicographically on the basis of their anchor images.
 	 */
 	public int compareTo(RuleEvent other) {
-		if (other.getRule().equals(getRule())) {
-			// we have the same rule
-			Element[] anchorImage = getAnchorImage();
-			// retrieve the other even't anchor image array
-			Element[] otherAnchorImage;
-			if (other instanceof SPOEvent) {
-				otherAnchorImage = ((SPOEvent) other).getAnchorImage();
-			} else {
-				// construct anchor image of the other event
-				Element[] anchor = getRule().anchor();
-				VarNodeEdgeMap otherAnchorMap = other.getAnchorMap();
-				otherAnchorImage = new Element[anchor.length];
-				for (int i = 0; i < anchor.length; i++) {
-					Element anchorElement = anchor[i];
-					if (anchorElement instanceof Node) {
-						otherAnchorImage[i] = otherAnchorMap.getNode((Node) anchorElement);
-					} else {
-						otherAnchorImage[i] = otherAnchorMap.getEdge((Edge) anchorElement);
-					}
-				}
-			}
-			// now compare
-			boolean equal = true;
-			// walk over the anchor images
-			int i;
-			// find the first index in which the anchor images differ
-			for (i = 0; equal && i < anchorImage.length; i++) {
-				equal = anchorImage[i].equals(otherAnchorImage[i]);
-			}
-			if (equal) {
-				// there was no difference between the anchor images
-				return 0;
-			} else {
-				// there was a difference at index i-1
-				return anchorImage[i-1].compareTo(otherAnchorImage[i-1]);
-			}
-		} else {
-			// we have different rules; compare the rules instead
-			return getRule().compareTo(other.getRule());
-		}
-	}
+	    int result = getRule().compareTo(other.getRule());
+	    if (result != 0) {
+	        return result;
+	    }
+        // we have the same rule
+        Element[] anchorImage = getAnchorImage();
+        // retrieve the other even't anchor image array
+        Element[] otherAnchorImage = ((SPOEvent) other).getAnchorImage();
+//        if (other instanceof SPOEvent) {
+//            otherAnchorImage = ((SPOEvent) other).getAnchorImage();
+//        } else {
+//            // construct anchor image of the other event
+//            Element[] anchor = getRule().anchor();
+//            VarNodeEdgeMap otherAnchorMap = other.getAnchorMap();
+//            otherAnchorImage = new Element[anchor.length];
+//            for (int i = 0; i < anchor.length; i++) {
+//                Element anchorElement = anchor[i];
+//                if (anchorElement instanceof Node) {
+//                    otherAnchorImage[i] = otherAnchorMap.getNode((Node) anchorElement);
+//                } else {
+//                    otherAnchorImage[i] = otherAnchorMap.getEdge((Edge) anchorElement);
+//                }
+//            }
+//        }
+        // now compare the anchor images
+        // find the first index in which the anchor images differ
+        int upper = Math.min(anchorImage.length, otherAnchorImage.length);
+        for (int i = 0; result == 0 && i < upper; i++) {
+            result = anchorImage[i].compareTo(otherAnchorImage[i]);
+        }
+        if (result == 0) {
+            return anchorImage.length - otherAnchorImage.length;
+        } else {
+            return result;
+        }
+    }
 
     /**
      * Tests if the anchor map fits into a given host graph.

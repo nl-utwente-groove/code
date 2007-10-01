@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.12 2007-10-01 14:48:21 rensink Exp $
+ * $Id: RuleEvent.java,v 1.13 2007-10-01 16:02:13 rensink Exp $
  */
 package groove.trans;
 
@@ -32,7 +32,7 @@ import groove.rel.VarNodeEdgeMap;
  * The event does not store information specific to the host graph. To apply it to 
  * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-10-01 14:48:21 $
+ * @version $Revision: 1.13 $ $Date: 2007-10-01 16:02:13 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -54,11 +54,11 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      */
     @Deprecated
     public RuleNameLabel getName();
-
-	/**
-     * Returns the mapping from the anchors in the rule's LHS to the source graph.
-     */
-    public VarNodeEdgeMap getAnchorMap();
+//
+//	/**
+//     * Returns the mapping from the anchors in the rule's LHS to the source graph.
+//     */
+//    public VarNodeEdgeMap getAnchorMap();
     
     /**
      * Returns a string representation of the anchor image.
