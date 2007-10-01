@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.1 2007-09-30 21:36:38 rensink Exp $
+ * $Id: NestingAspect.java,v 1.2 2007-10-01 21:53:16 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.1 $ $Date: 2007-09-30 21:36:38 $
+ * @version 0.1 $Revision: 1.2 $ $Date: 2007-10-01 21:53:16 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -243,10 +243,6 @@ public class NestingAspect extends AbstractAspect {
 				return 1;
 			int cmp = level0.compareTo(level1);
 			return cmp != 0 ? cmp : arg0.compareTo(arg1);
-		}
-		
-		public boolean equals(AspectNode arg0, AspectNode arg1) {
-			return arg0.equals(arg1);
 		}
 	}
 }

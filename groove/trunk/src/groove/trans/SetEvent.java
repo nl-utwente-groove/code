@@ -12,31 +12,32 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SetEvent.java,v 1.1 2007-10-01 16:02:14 rensink Exp $
+ * $Id: SetEvent.java,v 1.2 2007-10-01 21:53:07 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.MergeMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.NodeSet;
 import groove.rel.VarNodeEdgeMap;
-import groove.util.TreeHashSet;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+import java.util.SortedSet;
 
 /**
  * Rule event consisting of a set of events.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SetEvent implements RuleEvent {
+public class SetEvent extends AbstractEvent<Rule> {
     /** Creates a new event on the basis of a given event set. */
-    public SetEvent(Rule rule, Set<RuleEvent> eventSet) {
-        this.rule = rule;
+    public SetEvent(Rule rule, SortedSet<RuleEvent> eventSet) {
+    	super(rule);
         this.eventSet = eventSet;
     }
 
@@ -50,18 +51,15 @@ public class SetEvent implements RuleEvent {
     }
 
     public String getAnchorImageString() {
-        // TODO Auto-generated method stub
-        return null;
+        return "";
     }
 
-    public VarNodeEdgeMap getAnchorMap() {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    public Node[] getCoanchorImage(Graph source) {
-        // TODO Auto-generated method stub
-        return null;
+    public List<Node> getCreatedNodes(Set<? extends Node> hostNodes) {
+    	List<Node> result = new ArrayList<Node>();
+    	for (RuleEvent event: getEventSet()) {
+    		result.addAll(event.getCreatedNodes(hostNodes));
+    	}
+    	return result;
     }
 
     public Set<Node> getErasedNodes() {
@@ -70,11 +68,6 @@ public class SetEvent implements RuleEvent {
             result.addAll(event.getErasedNodes());
         }
         return result;
-    }
-
-    public Label getLabel() {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     public Morphism getMatching(Graph source) {
@@ -91,17 +84,7 @@ public class SetEvent implements RuleEvent {
     }
 
     @Deprecated
-    public RuleNameLabel getName() {
-        return getRule().getName();
-    }
-
-    public Rule getRule() {
-        // TODO Auto-generated method stub
-        return rule;
-    }
-
     public VarNodeEdgeMap getSimpleCoanchorMap() {
-        // TODO Auto-generated method stub
         return null;
     }
 
@@ -113,7 +96,15 @@ public class SetEvent implements RuleEvent {
         return result;
     }
 
-    public Set<Edge> getSimpleErasedEdges() {
+	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
+        Set<Edge> result = createEdgeSet();
+        for (RuleEvent event: eventSet) {
+            result.addAll(event.getComplexCreatedEdges(createdNodes));
+        }
+        return result;
+	}
+
+	public Set<Edge> getSimpleErasedEdges() {
         Set<Edge> result = createEdgeSet();
         for (RuleEvent event: eventSet) {
             result.addAll(event.getSimpleErasedEdges());
@@ -130,44 +121,50 @@ public class SetEvent implements RuleEvent {
         return true;
     }
 
-    public int identityHashCode() {
-        int result = identityHashCode;
-        if (result == 0) {
-            result = identityHashCode = System.identityHashCode(this);
-            if (result == 0) {
-                result = identityHashCode += 1;
-            }
-        }
-        return result;
-    }
-
-    public RuleApplication newApplication(Graph source) {
-        return new DefaultApplication(this, source);
-    }
-
     public int compareTo(RuleEvent o) {
-        // TODO Auto-generated method stub
-        return 0;
+    	int result = getRule().compareTo(o.getRule());
+    	if (result != 0) {
+    		return result;
+    	}
+    	Iterator<RuleEvent> myEvents = eventSet.iterator();
+    	Iterator<RuleEvent> otherEvents = ((SetEvent) o).getEventSet().iterator();
+    	while (result == 0 && myEvents.hasNext() && otherEvents.hasNext()) {
+    		result = myEvents.next().compareTo(otherEvents.next());
+    	}
+    	return result;
     }
 
-    /**
-     * Callback factory method to create a fresh, empty node set.
-     */
-    private Set<Node> createNodeSet() {
-        return new NodeSet();
-    }
-
-    /**
-     * Callback factory method to create a fresh, empty edge set.
-     */
-    private Set<Edge> createEdgeSet() {
-        return new TreeHashSet<Edge>();
+    /** Returns the set of constituent events of this set event. */
+    public Set<RuleEvent> getEventSet() {
+    	return eventSet;
     }
     
-    /** The (nested) rule for which this is a collective event. */
-    private final Rule rule;
+
+    /**
+     * The hash code is based on that of the rule and an initial fragment of the
+     * anchor images.
+     */
+	@Override
+    public int hashCode() {
+    	return identityHashCode();
+    }
+    
+    /**
+     * Two rule applications are equal if they have the same rule and anchor images.
+     * Note that the source is not tested; do not collect rule applications for different sources!
+     */
+	@Override
+    public boolean equals(Object obj) {
+    	return this == obj;
+    }
+    
+	@Override
+	public String toString() {
+	    StringBuffer result = new StringBuffer(getRule().getName().name());
+	    result.append(getAnchorImageString());
+	    return result.toString();
+	}
+	
     /** The set of events constituting this event. */
-    private final Set<RuleEvent> eventSet;
-    /** The pre-computed identity hash code for this object. */
-    private int identityHashCode;
+    private final SortedSet<RuleEvent> eventSet;
 }

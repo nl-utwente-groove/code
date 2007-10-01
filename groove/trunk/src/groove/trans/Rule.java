@@ -12,13 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.16 2007-10-01 14:48:21 rensink Exp $
- * $Date: 2007-10-01 14:48:21 $
+ * $Id: Rule.java,v 1.17 2007-10-01 21:53:08 rensink Exp $
+ * $Date: 2007-10-01 21:53:08 $
  */
 package groove.trans;
 
-import groove.graph.Edge;
-import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -27,7 +25,6 @@ import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeMap;
 
 import java.util.Comparator;
-import java.util.Set;
 
 /**
  * Interface of a production rule.
@@ -36,7 +33,7 @@ import java.util.Set;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -90,41 +87,43 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * If <code>false</code>, this means the rule is essentially a graph condition.
      */
     public boolean isModifying();
-
-    /**
-     * Returns the array of anchor elements of this rule.
-     * These are the elements from the left hand side that fully determine
-     * the matchings of the rule.
-     */
-    public Element[] anchor();
     
-    /**
-     * Returns the array of coanchor elements of this rule.
-     * These are the elements from the right hand side that together with
-     * the matching and derivation morphism fully determine the comatches of the rule.
-     * Essentially, they are the creator nodes.
-     */
-    public Node[] coanchor();
-    
-    /**
-     * Factory method to create an event based on this rule.
-     * @param anchorMap the anchor map of the new event; should map at least
-     * the elements of the rule anchor to elements presumably in the host graph
-     * @param nodeFactory an object queried for fresh node numbers; may be
-     * <code>null</code>
-     * @param reuse TODO
-     */
-    public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse);
-
+    /** Indicates if the rule has (node or edge) creators. */
     public boolean hasCreators();
-    
+	    
+    /** Indicates if the rule has node mergers. */
     public boolean hasMergers();
     
-    public Set<Edge> getComplexCreatorEdges();
+    //
+	//    /**
+	//     * Returns the array of anchor elements of this rule.
+	//     * These are the elements from the left hand side that fully determine
+	//     * the matchings of the rule.
+	//     */
+	//    public Element[] anchor();
+	    
+    /**
+     * Returns the array of creator nodes of this rule.
+     * @deprecated Only valid in {@link SPORule}
+     */
+    @Deprecated
+    public Node[] getCreatorNodes();
     
     /**
      * Lazily creates and returns a matcher for rule events of this rule.
      * The matcher will try to extend anchor maps to full matches.
      */
     public MatchStrategy getEventMatcher();
+
+	/**
+	 * Factory method to create an event based on this rule.
+	 * @param anchorMap the anchor map of the new event; should map at least
+	 * the elements of the rule anchor to elements presumably in the host graph
+	 * @param nodeFactory an object queried for fresh node numbers; may be
+	 * <code>null</code>
+	 * @param reuse if <code>true</code>, the created event will store
+	 * data structures internally for reuse. This takes space, but saves space
+	 * if events are shared among transformations.
+	 */
+	public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse);
 }

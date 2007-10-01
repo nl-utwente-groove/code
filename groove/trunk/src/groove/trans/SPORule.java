@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.27 2007-10-01 14:48:21 rensink Exp $
+ * $Id: SPORule.java,v 1.28 2007-10-01 21:53:08 rensink Exp $
  */
 package groove.trans;
 
@@ -48,7 +48,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -185,6 +185,13 @@ public class SPORule extends DefaultGraphCondition implements Rule {
         return morphism;
     }
 
+    /** 
+     * Returns the array of elements that should be matched to
+     * have an unambiguous rule application.
+     * This includes the eraser nodes (or incident edges thereof),
+     * the eraser edges (or end nodes thereof) and the end nodes of 
+     * creator edges (insofar they are not creator nodes).
+     */
 	public Element[] anchor() {
         if (anchor == null) {
             anchor = computeAnchor();
@@ -199,10 +206,6 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 */
 	protected Element[] computeAnchor() {
 	    return anchorFactory.newAnchors(this);
-	}
-
-	public Node[] coanchor() {
-		return getCreatorNodes();
 	}
 
     // -------------------- OBJECT OVERRIDES -----------------------------
@@ -456,7 +459,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	/**
 	 * Returns the RHS nodes that are not images of an LHS node.
 	 */
-	final Node[] getCreatorNodes() {
+	final public Node[] getCreatorNodes() {
 		if (creatorNodes == null) {
 			creatorNodes = computeCreatorNodes();
 		}

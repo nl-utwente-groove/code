@@ -43,22 +43,20 @@ public class DefaultAliasApplication extends DefaultApplication implements Alias
     }
     
     @Override
-    protected Node[] computeCoanchorImage() {
+    protected Node[] computeCreatedNodes() {
     	Node[] result = prior.getAddedNodes(getParent());
     	// if this application's event is the same as that of prior,
-    	// one or more of the added nodes may coincide,
-    	// in which case we have to create really new ones
+    	// the added nodes may coincide
     	if (result.length > 0 && source.getEvent() == prior.getEvent(getParent())) {
-            Node[] sourceAddedNodes = source.getAddedNodes();
-            boolean conflict = false;
-            for (int i = 0; !conflict && i < result.length; i++) {
-                conflict = result[i] == sourceAddedNodes[i];
-                assert conflict || !getSource().containsElement(result[i]);
-            }
-            // we have to create really new nodes
-            if (conflict) {
-                result = super.computeCoanchorImage();
-            }
+    		Node[] sourceAddedNodes = source.getAddedNodes();
+    		boolean conflict = false;
+    		for (int i = 0; !conflict && i < result.length; i++) {
+    			conflict = result[i] == sourceAddedNodes[i];
+    			assert conflict || !getSource().containsElement(result[i]);
+    		}
+    		if (conflict) {
+                result = super.computeCreatedNodes();
+    		}
     	}
 	    return result;
     }
