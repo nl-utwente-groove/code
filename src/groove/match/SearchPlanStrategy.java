@@ -12,11 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.10 2007-09-26 21:04:25 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.11 2007-10-02 16:15:15 rensink Exp $
  */
 package groove.match;
 
-import groove.calc.Property;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
@@ -42,9 +41,9 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
-public class SearchPlanStrategy implements MatchStrategy {
+public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 	/**
      * Constructs a strategy from a given list of search items.
      * A flag controls if solutions should be injective.
@@ -58,22 +57,8 @@ public class SearchPlanStrategy implements MatchStrategy {
         this.plan = plan;
         this.injective = injective;
     }
-
-    public void setFilter(Property<VarNodeEdgeMap> filter) {
-    	this.filter = filter;
-    }
     
-    /**
-     * Returns the filter currently set for the matches found by this strategy.
-     * @return a property which may be <code>null</code>, but if not,
-     * is guaranteed to hold for all matches returned by any of the 
-     * search methods.
-     * @see #setFilter(Property)
-     */
-    protected Property<VarNodeEdgeMap> getFilter() {
-    	return filter;
-    }
-    
+    @Override
     public VarNodeEdgeMap getMatch(Graph host, NodeEdgeMap preMatch) {
         VarNodeEdgeMap result;
         reporter.start(GET_MATCH);
@@ -133,6 +118,7 @@ public class SearchPlanStrategy implements MatchStrategy {
         return result;
     }
 
+    @Override
     public Collection<VarNodeEdgeMap> getMatchSet(Graph host, NodeEdgeMap preMatch) {
         reporter.start(GET_MATCH_SET);
         Collection<VarNodeEdgeMap> result = new ArrayList<VarNodeEdgeMap>();
@@ -285,11 +271,6 @@ public class SearchPlanStrategy implements MatchStrategy {
 	private final List<SearchItem> plan;
     /** Flag indicating that the matching should be injective. */
 	private final boolean injective;
-	/** 
-	 * Additional property that has to be satisfied by all matches returned
-	 * by the matcher.
-	 */
-	private Property<VarNodeEdgeMap> filter;
     /** 
      * Map from source graph nodes to (distinct) indices.
      */
@@ -375,7 +356,7 @@ public class SearchPlanStrategy implements MatchStrategy {
         public boolean find() {
             reporter.start(SEARCH_FIND);
             final int planSize = plan.size();
-            final boolean filtered = filter != null;
+            final boolean filtered = getFilter() != null;
             boolean found = this.found;
             boolean exhausted;
             int current = found ? planSize-1 : 0;
@@ -418,7 +399,7 @@ public class SearchPlanStrategy implements MatchStrategy {
 
         /** Tests if the current search result satisfies the additional filter (if any). */
         private boolean satisfiesFilter() {
-        	return filter == null || filter.isSatisfied(getMatch());
+        	return getFilter() == null || getFilter().isSatisfied(getMatch());
         }
         
         /** Sets the node image for the node key with a given index. */

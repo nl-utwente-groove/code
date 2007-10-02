@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.28 2007-10-01 21:53:08 rensink Exp $
+ * $Id: SPORule.java,v 1.29 2007-10-02 16:14:57 rensink Exp $
  */
 package groove.trans;
 
@@ -48,7 +48,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /** Returns the current anchor factory for all rules. */
@@ -134,7 +134,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     }
     
     /** Creates the search plan using the rule's search plan factory. */
-    public MatchStrategy getEventMatcher() {
+    public MatchStrategy<VarNodeEdgeMap> getEventMatcher() {
         if (eventMatcher == null) {
             eventMatcher = getMatcherFactory().createMatcher(this, getAnchorGraph().nodeSet(), getAnchorGraph().edgeSet());
         }
@@ -742,7 +742,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
      */
     private int priority;
     /** The matcher for events of this rule. */
-    private MatchStrategy eventMatcher;
+    private MatchStrategy<VarNodeEdgeMap> eventMatcher;
     /** Debug flag for the constructor. */
     private static final boolean CONSTRUCTOR_DEBUG = false;
     /** Handle for profiling {@link #matches(Graph)} and related methods. */

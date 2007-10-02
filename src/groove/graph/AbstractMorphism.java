@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMorphism.java,v 1.9 2007-09-30 21:46:24 rensink Exp $
+ * $Id: AbstractMorphism.java,v 1.10 2007-10-02 16:15:13 rensink Exp $
  */
 package groove.graph;
 
 import groove.match.MatchStrategy;
+import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
@@ -33,7 +34,7 @@ import java.util.Set;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edge,Edge> implements Morphism {
     /**
@@ -225,7 +226,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     public Collection<? extends Morphism> getTotalExtensions() {
         reporter.start(GET_TOTAL_EXTENSIONS);
         try {
-            MatchStrategy matcher = createMatchStrategy();
+            MatchStrategy<VarNodeEdgeMap> matcher = createMatchStrategy();
             // we choose a LinkedList because there will be removal
             // a HashSet would be an option but then we need to take care of
             // the equals method of the morphisms returned by createMorphism,
@@ -256,7 +257,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     public Iterator<? extends Morphism> getTotalExtensionsIter() {
         reporter.start(GET_TOTAL_EXTENSIONS);
         try {
-            MatchStrategy matcher = createMatchStrategy();
+            MatchStrategy<VarNodeEdgeMap> matcher = createMatchStrategy();
             return new TransformIterator<NodeEdgeMap,Morphism>(matcher.getMatchIter(cod(), elementMap())) {
             	@Override
             	public Morphism toOuter(NodeEdgeMap obj) {
@@ -520,7 +521,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
 
     /**
      * Constructs a morphism that is the concatenation of the inverse of the one morphism,
-     * followed by anotherm morphism, if this concatention exists. 
+     * followed by another morphism, if this concatenation exists. 
      * It may fail to exist if the inverted morphism is non-injective on elements
      * on which the concatenated morphism is injective; in this case 
      * an {@link FormatException} is thrown.
@@ -529,9 +530,9 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
      * @param invert morphism whose inverse is serving as the first argument of the concatenation
      * @param concat second argument of the concatenation
      * @param result morphism where the result is to be stored; may be affected even if a {@link FormatException} is thrown
-     * @throws FormatException if the injectivity of <tt>arg1</tt> and <tt>arg2</tt> is inconsistent 
+     * @throws FormatException if the injectivity of <tt>invert</tt> and <tt>concat</tt> is inconsistent 
      */
-    static protected void constructInvertConcat(Morphism invert, Morphism concat, Morphism result) throws FormatException {
+    static protected void constructInvertConcat(NodeEdgeMap invert, NodeEdgeMap concat, NodeEdgeMap result) throws FormatException {
     	for (Map.Entry<Node,Node> entry: invert.nodeMap().entrySet()) {
             Node image = concat.getNode(entry.getKey());
             if (image != null) {
@@ -558,8 +559,16 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
                 if (oldImage != null && !oldImage.equals(image)) {
                     throw new FormatException();
                 }
+                String var = RegExprLabel.getWildcardId(key.label());
+                if (var != null) {
+                    if (!(concat instanceof VarNodeEdgeMap && result instanceof VarNodeEdgeMap)) {
+                        throw new FormatException();
+                    } else {
+                        ((VarNodeEdgeMap) result).putVar(var, ((VarNodeEdgeMap) concat).getVar(var));
+                    }
+                }
             }
-        }        
+        }
     }
 
     /**
@@ -588,7 +597,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     /**
      * Factory method for match strategies.
      */
-    abstract protected MatchStrategy createMatchStrategy();
+    abstract protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy();
 
     /**
      * The codomain of this Morphism.
