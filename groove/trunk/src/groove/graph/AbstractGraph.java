@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.21 2007-09-25 22:57:53 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.22 2007-10-02 23:06:29 rensink Exp $
  */
 package groove.graph;
 
@@ -35,115 +35,9 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
-    /**
-     * The factory used to get morphisms from
-     * @see #createMorphism(Graph,Graph)
-     */
-    static private GraphFactory graphFactory = GraphFactory.getInstance();
-    
-    /**
-     * The current strategy for computing isomorphism certificates.
-     * @see #getCertifier()
-     */
-    static private CertificateStrategy certificateFactory = new groove.graph.iso.Bisimulator(null);
-    
-    /** Fixed empty graphs, used for the constant <tt>{@link #EMPTY_GRAPH}</tt>. */
-    private static class EmptyGraph extends AbstractGraph<GraphCache> {
-        /**
-         * The empty graph to which no elements can be added.
-         */
-        private EmptyGraph() {
-            setFixed();
-        }
-
-        public boolean addEdgeWithoutCheck(Edge edge) {
-            throw new UnsupportedOperationException("Can't add element to fixed empty graph");
-        }
-
-        public boolean removeNodeWithoutCheck(Node node) {
-            throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
-        }
-
-        @Override
-        public Graph clone() {
-            return new EmptyGraph();
-        }
-
-        public Graph newGraph() {
-            return new EmptyGraph();
-        }
-
-        public boolean addEdge(Edge edge) {
-            throw new UnsupportedOperationException("Can't add element to fixed empty graph");
-        }
-
-        public boolean addNode(Node node) {
-            throw new UnsupportedOperationException("Can't add element to fixed empty graph");
-        }
-
-        public Set<? extends Edge> edgeSet() {
-            return Collections.emptySet();
-        }
-
-        public Set<? extends Node> nodeSet() {
-            return Collections.emptySet();
-        }
-
-        public boolean removeEdge(Edge edge) {
-            throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
-        }
-
-        public boolean removeNode(Node node) {
-            throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
-        }
-    }
-    
-    /**
-     * Fixed empty graph.
-     */
-    static public final EmptyGraph EMPTY_GRAPH = new EmptyGraph();
-
-    /**
-     * Changes the strategy for computing isomorphism certificates.
-     * @param certificateFactory the new strategy
-     * @see #getCertifier()
-     */
-    static protected void setCertificateFactory(CertificateStrategy certificateFactory) {
-        AbstractGraph.certificateFactory = certificateFactory;
-    }
-
-    /**
-     * Returns the strategy for computing isomorphism certificates.
-     * @return the strategy for computing isomorphism certificates
-     */
-    static protected CertificateStrategy getCertificateFactory() {
-        return certificateFactory;
-    }
-//
-//    @Deprecated
-//    public Collection<? extends Morphism> getMatchesTo(Graph to) {
-//        reporter.start(GET_MATCHES_TO);
-//        Collection<? extends Morphism> res = createMorphism(this, to).getTotalExtensions();
-//        reporter.stop();
-//        return res;
-//    }
-//
-//    @Deprecated
-//    public Iterator<? extends Morphism> getMatchesToIter(Graph to) {
-//        reporter.start(GET_MATCHES_TO);
-//        Iterator<? extends Morphism> res = createMorphism(this, to).getTotalExtensionsIter();
-//        reporter.stop();
-//        return res;
-//    }
-
-    /**
-     * This implementation checks if the other is also an <tt>AbstractGraph</tt>; if so, it first
-     * compares the graph certificates at increasing precision to ensure that it is actually worth
-     * trying to compute an isomorphism.
-     */
     public Morphism getIsomorphismTo(final Graph to) {
         reporter.start(GET_ISOMORPHISM_TO);
 //        Morphism isoMorphism = new DefaultMorphism(this, to) {
@@ -514,6 +408,68 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     }
     
     // -------------------- REPORTER DEFINITIONS ------------------------
+    
+    /** Returns an empty graph. */
+    static public <C extends GraphCache> AbstractGraph<C> emptyGraph() {
+    	return EMPTY_GRAPH;
+    }
+    
+    /**
+     * The factory used to get morphisms from
+     * @see #createMorphism(Graph,Graph)
+     */
+    static private GraphFactory graphFactory = GraphFactory.getInstance();
+    
+    /**
+     * The current strategy for computing isomorphism certificates.
+     * @see #getCertifier()
+     */
+    static private CertificateStrategy certificateFactory = new groove.graph.iso.Bisimulator(null);
+    
+    
+    /**
+     * Fixed empty graph.
+     */
+    static public final EmptyGraph EMPTY_GRAPH = new EmptyGraph();
+
+    /**
+     * Changes the strategy for computing isomorphism certificates.
+     * @param certificateFactory the new strategy
+     * @see #getCertifier()
+     */
+    static protected void setCertificateFactory(CertificateStrategy certificateFactory) {
+        AbstractGraph.certificateFactory = certificateFactory;
+    }
+
+    /**
+     * Returns the strategy for computing isomorphism certificates.
+     * @return the strategy for computing isomorphism certificates
+     */
+    static protected CertificateStrategy getCertificateFactory() {
+        return certificateFactory;
+    }
+//
+//    @Deprecated
+//    public Collection<? extends Morphism> getMatchesTo(Graph to) {
+//        reporter.start(GET_MATCHES_TO);
+//        Collection<? extends Morphism> res = createMorphism(this, to).getTotalExtensions();
+//        reporter.stop();
+//        return res;
+//    }
+//
+//    @Deprecated
+//    public Iterator<? extends Morphism> getMatchesToIter(Graph to) {
+//        reporter.start(GET_MATCHES_TO);
+//        Iterator<? extends Morphism> res = createMorphism(this, to).getTotalExtensionsIter();
+//        reporter.stop();
+//        return res;
+//    }
+
+    /**
+     * This implementation checks if the other is also an <tt>AbstractGraph</tt>; if so, it first
+     * compares the graph certificates at increasing precision to ensure that it is actually worth
+     * trying to compute an isomorphism.
+     */
 
     /** Handle for profiling the {@link #getIsomorphismTo(Graph)} method */
     static final int GET_ISOMORPHISM_TO = reporter.newMethod("getIsomorphismTo(Graph)");
@@ -533,4 +489,54 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
     static protected final int INIT_DATA = reporter.newMethod("initDelta()");
     /** Handle for profiling the transferDelta method of the delta implementations */
     static protected final int TRANSFER_DATA = reporter.newMethod("transferDelta()");
+    /** Fixed empty graphs, used for the constant <tt>{@link #EMPTY_GRAPH}</tt>. */
+    private static class EmptyGraph<C extends GraphCache> extends AbstractGraph<C> {
+        /**
+         * The empty graph to which no elements can be added.
+         */
+        private EmptyGraph() {
+            setFixed();
+        }
+
+        public boolean addEdgeWithoutCheck(Edge edge) {
+            throw new UnsupportedOperationException("Can't add element to fixed empty graph");
+        }
+
+        public boolean removeNodeWithoutCheck(Node node) {
+            throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
+        }
+
+        @Override
+        public Graph clone() {
+            return new EmptyGraph<C>();
+        }
+
+        public Graph newGraph() {
+            return new EmptyGraph<C>();
+        }
+
+        public boolean addEdge(Edge edge) {
+            throw new UnsupportedOperationException("Can't add element to fixed empty graph");
+        }
+
+        public boolean addNode(Node node) {
+            throw new UnsupportedOperationException("Can't add element to fixed empty graph");
+        }
+
+        public Set<? extends Edge> edgeSet() {
+            return Collections.emptySet();
+        }
+
+        public Set<? extends Node> nodeSet() {
+            return Collections.emptySet();
+        }
+
+        public boolean removeEdge(Edge edge) {
+            throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
+        }
+
+        public boolean removeNode(Node node) {
+            throw new UnsupportedOperationException("Can't remove element vrom fixed empty graph");
+        }
+    }
 }

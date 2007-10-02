@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.29 2007-10-02 16:14:57 rensink Exp $
+ * $Id: SPORule.java,v 1.30 2007-10-02 23:06:22 rensink Exp $
  */
 package groove.trans;
 
@@ -29,16 +29,17 @@ import groove.graph.algebra.ValueNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
 import groove.rel.RegExprLabel;
-import groove.rel.VarMorphism;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
 import groove.util.Groove;
+import groove.util.TransformIterator;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -48,42 +49,9 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
-    /** Returns the current anchor factory for all rules. */
-    public static AnchorFactory getAnchorFactory() {
-        return anchorFactory;
-    }
-
-    /**
-     * Sets the anchor factory for all rules.
-     * Only affects rules created from this moment on.
-     */
-    public static void setAnchorFactory(AnchorFactory anchorFactory) {
-        SPORule.anchorFactory = anchorFactory;
-    }
-
-    /**
-     * Returns the total time doing transformation-related computations.
-     */
-    static public long getTransformingTime() {
-        return AbstractRuleApplier.reporter.getTotalTime(AbstractRuleApplier.GET_DERIVATIONS) - getMatchingTime();
-    }
-    
-    /**
-     * Returns the total time doing matching-related computations.
-     * This includes time spent in certificate calculation.
-     */
-    static public long getMatchingTime() {
-        return SearchPlanStrategy.reporter.getTotalTime(SearchPlanStrategy.SEARCH_FIND);
-    }
-    
-    /**
-     * The factory used for creating rule anchors.
-     */
-    private static AnchorFactory anchorFactory = MinimalAnchorFactory.getInstance(); 
-
     /**
      * @param morph the morphism on which this production is to be based
      * @param name the name of the new rule
@@ -142,9 +110,52 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     }
 	
 	@Override
+	public Iterable<RuleMatch> getMatches(final Graph host, NodeEdgeMap patternMatch) {
+        Iterable<RuleMatch> result;
+        reporter.start(GET_MATCHING);
+        testFixed(true);
+        // list the pattern match to a pre-match of this condition's target
+        final VarNodeEdgeMap preMatch = liftPatternMatch(patternMatch);
+        result = new Iterable<RuleMatch>() {
+            public Iterator<RuleMatch> iterator() {
+            	return new TransformIterator<VarNodeEdgeMap, RuleMatch>(createMatchIter(host, preMatch)) {
+	                @Override
+	                protected RuleMatch toOuter(VarNodeEdgeMap from) {
+	                	return new DefaultRuleMatch(SPORule.this, from);
+	                }
+            	};
+            }
+        };
+        reporter.stop();
+        return result;
+	}
+
+	/** 
+	 * This implementation also returns <code>true</code> if
+	 * the dangling edge check is turned on.
+	 */
+    @Override
+	protected boolean hasConstraints() {
+		return super.hasConstraints() || getProperties().isCheckDangling();
+	}
+
+	@Override
+	protected boolean satisfiesConstraints(Graph host, VarNodeEdgeMap match) {
+		boolean result = true;
+		if (super.hasConstraints()) {
+			result = super.satisfiesConstraints(host, match);
+		}
+		if (result && getProperties().isCheckDangling()) {
+			result = satisfiesDangling(host, match);
+		}
+		return result;
+	}
+
+	@Override
+	@Deprecated
 	protected DefaultMatching newMatcher(Graph graph) {
 		DefaultMatching result = super.newMatcher(graph);
-		result.setAC(createAC());
+		result.setAC(getDanglingEdgeCheck());
 		return result;
 	}
 
@@ -152,25 +163,31 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	 * Returns the application condition imposed by the
 	 * rule system properties.
 	 */
-	private Property<VarMorphism> createAC() {
+	@Deprecated
+	private Property<groove.rel.VarMorphism> getDanglingEdgeCheck() {
 		if (getProperties().isCheckDangling()) {
-			return new Property<VarMorphism>() {
+			return new Property<groove.rel.VarMorphism>() {
 				@Override
-				public boolean isSatisfied(VarMorphism value) {
-					Set<Edge> danglingEdges = new HashSet<Edge>();
-					for (Node eraserNode : getEraserNodes()) {
-						Node erasedNode = value.getNode(eraserNode);
-						danglingEdges.addAll(value.cod().edgeSet(erasedNode));
-					}
-					for (Edge eraserEdge : getEraserEdges()) {
-						danglingEdges.remove(value.getEdge(eraserEdge));
-					}
-					return danglingEdges.isEmpty();
+				public boolean isSatisfied(groove.rel.VarMorphism value) {
+					return satisfiesDangling(value.cod(), value.elementMap());
 				}
 			};
 		} else {
 			return null;
 		}
+	}
+	
+	/** Tests if a given (proposed) match into a host graph leaves dangling edges. */ 
+	private boolean satisfiesDangling(Graph host, VarNodeEdgeMap match) {
+		Set<Edge> danglingEdges = new HashSet<Edge>();
+		for (Node eraserNode : getEraserNodes()) {
+			Node erasedNode = match.getNode(eraserNode);
+			danglingEdges.addAll(host.edgeSet(erasedNode));
+		}
+		for (Edge eraserEdge : getEraserEdges()) {
+			danglingEdges.remove(match.getEdge(eraserEdge));
+		}
+		return danglingEdges.isEmpty();
 	}
 
     public Graph lhs() {
@@ -743,6 +760,39 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     private int priority;
     /** The matcher for events of this rule. */
     private MatchStrategy<VarNodeEdgeMap> eventMatcher;
+    
+    /** Returns the current anchor factory for all rules. */
+    public static AnchorFactory getAnchorFactory() {
+        return anchorFactory;
+    }
+
+    /**
+     * Sets the anchor factory for all rules.
+     * Only affects rules created from this moment on.
+     */
+    public static void setAnchorFactory(AnchorFactory anchorFactory) {
+        SPORule.anchorFactory = anchorFactory;
+    }
+
+    /**
+     * Returns the total time doing transformation-related computations.
+     */
+    static public long getTransformingTime() {
+        return AbstractRuleApplier.reporter.getTotalTime(AbstractRuleApplier.GET_DERIVATIONS) - getMatchingTime();
+    }
+    
+    /**
+     * Returns the total time doing matching-related computations.
+     * This includes time spent in certificate calculation.
+     */
+    static public long getMatchingTime() {
+        return SearchPlanStrategy.reporter.getTotalTime(SearchPlanStrategy.SEARCH_FIND);
+    }
+    
+    /**
+     * The factory used for creating rule anchors.
+     */
+    private static AnchorFactory anchorFactory = MinimalAnchorFactory.getInstance(); 
     /** Debug flag for the constructor. */
     private static final boolean CONSTRUCTOR_DEBUG = false;
     /** Handle for profiling {@link #matches(Graph)} and related methods. */

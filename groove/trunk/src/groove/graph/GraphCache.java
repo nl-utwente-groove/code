@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphCache.java,v 1.4 2007-09-10 19:13:32 rensink Exp $
+ * $Id: GraphCache.java,v 1.5 2007-10-02 23:06:30 rensink Exp $
  */
 package groove.graph;
 
@@ -24,7 +24,7 @@ import groove.util.DefaultDispenser;
  * graph, for faster access.
  * Typically, the graph will have a graph cache as a <tt>{@link java.lang.ref.Reference}</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class GraphCache extends GraphShapeCache {
     /**
@@ -32,7 +32,7 @@ public class GraphCache extends GraphShapeCache {
      * @param graph the graph for which the cache is to be created.
      * @see #GraphCache(AbstractGraph,boolean)
      */
-    public GraphCache(AbstractGraph graph) {
+    public GraphCache(AbstractGraph<?> graph) {
         this(graph, true);
     }
     
@@ -50,7 +50,7 @@ public class GraphCache extends GraphShapeCache {
      * @param graph the graph for which the cache is to be created.
      * @param dynamic switch to indicate if caching should be dynamic
      */
-    public GraphCache(AbstractGraph graph, boolean dynamic) {
+    public GraphCache(AbstractGraph<?> graph, boolean dynamic) {
         super(graph, dynamic);
     }
 
@@ -87,7 +87,6 @@ public class GraphCache extends GraphShapeCache {
      * currently cached, it is created by calling {@link CertificateStrategy#newInstance(Graph)} on
      * {@link AbstractGraph#getCertificateFactory()}. If the underlying graph is fixed (see {@link Graph#isFixed()}, 
      * the strategy is cached.
-     * @see Graph#getCertificate()
      */
     protected CertificateStrategy getCertificateStrategy() {
         CertificateStrategy result = certificateStrategy;
@@ -104,8 +103,8 @@ public class GraphCache extends GraphShapeCache {
      * Returns the graph for which the cache is maintained.
      */
     @Override
-    public AbstractGraph getGraph() {
-        return (AbstractGraph) graph;
+    public AbstractGraph<?> getGraph() {
+        return (AbstractGraph<?>) graph;
     }
 
     /** Counter for node numbers. */

@@ -12,9 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultAutomaton.java,v 1.4 2007-08-26 07:23:53 rensink Exp $
+ * $Id: DefaultAutomaton.java,v 1.5 2007-10-02 23:06:34 rensink Exp $
  */
 package groove.rel;
+
+import groove.graph.DefaultGraph;
+import groove.graph.DefaultLabel;
+import groove.graph.Edge;
+import groove.graph.Graph;
+import groove.graph.Label;
+import groove.graph.Node;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -24,13 +31,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultLabel;
-import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.Label;
-import groove.graph.Node;
 
 /**
  * A default implementation of regular automata.
@@ -52,6 +52,9 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
      * {@link Automaton#getMatches(Graph, Set, Set)}.
      */
     protected class MatchingAlgorithm {
+    	/** Creates an instance of the algorithm that matches in a given direction
+    	 * ({@link #FORWARD} or {@link #BACKWARD}).
+    	 */
         public MatchingAlgorithm(int direction) {
             switch (direction) {
             case FORWARD :
@@ -463,6 +466,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
         }
     }
 
+    /** Indicates if this automaton contains any wildcards on edges. */
     public boolean hasWildcards() {
         return false;
     }

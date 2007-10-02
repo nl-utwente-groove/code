@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprGraph.java,v 1.6 2007-08-31 10:23:21 rensink Exp $
+ * $Id: RegExprGraph.java,v 1.7 2007-10-02 23:06:34 rensink Exp $
  */
 package groove.rel;
 
@@ -28,7 +28,7 @@ import groove.graph.NodeSetEdgeSetGraph;
  * Default implementation of the {@link groove.rel.VarGraph} interface,
  * where the variables correspond to wildcard identifiers in the edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @deprecated Use ordinary graphs and the utilities in {@link VarSupport}
  */
 @Deprecated
@@ -76,18 +76,18 @@ public class RegExprGraph extends NodeSetEdgeSetGraph implements VarGraph {
         }
         return Collections.unmodifiableSet(result);
     }
-    
-    public boolean bindsVar(String var) {
-        return boundVarSet().contains(var);
-    }
-
-    public boolean hasVar(String var) {
-        return allVarSet().contains(var);
-    }
-
-    public boolean hasVars() {
-        return !allVarSet().isEmpty();
-    }
+//    
+//    public boolean bindsVar(String var) {
+//        return boundVarSet().contains(var);
+//    }
+//
+//    public boolean hasVar(String var) {
+//        return allVarSet().contains(var);
+//    }
+//
+//    public boolean hasVars() {
+//        return !allVarSet().isEmpty();
+//    }
 
     /**
      * Returns an unmodifiable view on the set of variable-binding

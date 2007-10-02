@@ -12,14 +12,16 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTestOutcome.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $
+ * $Id: GraphTestOutcome.java,v 1.2 2007-10-02 23:06:24 rensink Exp $
  */
 package groove.trans;
+
+import groove.graph.Graph;
+import groove.graph.NodeEdgeMap;
 
 import java.util.Map;
 import java.util.Set;
 
-import groove.graph.Morphism;
 
 /**
  * Auxiliary class indicating the outcome of a graph test applied to a subject morphism.
@@ -31,14 +33,17 @@ import groove.graph.Morphism;
  * The {@link GraphTestOutcome} also identifies a subset of the keys that stand for
  * <i>success</i> of the test.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface GraphTestOutcome<Mine,Nested> extends Map<Mine,GraphTestOutcome<Nested,Mine>> {
     /** 
-     * Returns the morphism that has been tested, and of which this
-     * outcome reports success or failure.
+     * Returns the host graph into which we have matched the condition
      */
-    Morphism getSubject();
+    Graph getHost();
+    /** 
+     * Returns mapping into the host graph used as the basis for matching the condition
+     */
+    NodeEdgeMap getElementMap();
     
     /**
      * Returns the graph test of which this is the outcome.

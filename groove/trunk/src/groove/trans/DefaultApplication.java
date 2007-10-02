@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultApplication.java,v 1.3 2007-10-01 21:53:08 rensink Exp $
+ * $Id: DefaultApplication.java,v 1.4 2007-10-02 23:06:21 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-10-01 21:53:08 $
+ * @version $Revision: 1.4 $ $Date: 2007-10-02 23:06:21 $
  */
 public class DefaultApplication implements RuleApplication, Derivation {
     /**
@@ -675,7 +675,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
     }
 
     /**
-     * The total number of nodes (over all rules) created by {@link SPOEvent#createNode()}.
+     * The total number of nodes (over all rules) created by {@link SPOEvent}.
      */
     static int freshNodeCount;
 

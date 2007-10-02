@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AdjacencyMapGraph.java,v 1.4 2007-08-26 07:23:39 rensink Exp $
+ * $Id: AdjacencyMapGraph.java,v 1.5 2007-10-02 23:06:29 rensink Exp $
  */
 package groove.graph;
 
@@ -28,11 +28,11 @@ import java.util.Set;
  * other hand, <tt>edgeSet()</tt> and <tt>edgeIterator()</tt> pay a
  * heavy penalty. Also memory consumption may not be so good.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-08-26 07:23:39 $
+ * @version $Revision: 1.5 $ $Date: 2007-10-02 23:06:29 $
  */
-public class AdjacencyMapGraph extends AbstractGraph {
+public class AdjacencyMapGraph extends AbstractGraph<GraphCache> {
     /**
-     * Constructs a protytpe object of this class, to be used as a factory
+     * Constructs a prototype object of this class, to be used as a factory
      * for new (default) graphs.
      * @return a prototype <tt>AdjacencyMapGraph</tt> instance, only intended to
      * be used for its <tt>newGraph()</tt> method.

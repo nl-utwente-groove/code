@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatching.java,v 1.15 2007-10-02 16:14:57 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.16 2007-10-02 23:06:22 rensink Exp $
  */
 package groove.trans;
 
@@ -37,8 +37,10 @@ import java.util.Map;
  * Especially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
+ * @deprecated directly use {@link GraphCondition#getMatches(Graph, NodeEdgeMap)}
  */
+@Deprecated
 public class DefaultMatching extends RegExprMorphism implements Matching {
     /**
      * Constructs an initially empty matching for a given graph condition and graph to be matched.
@@ -141,7 +143,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
         Map<Matching,GraphPredicateOutcome> matchMap = new HashMap<Matching,GraphPredicateOutcome>();
         while (matchIter.hasNext()) {
             Matching match = matchIter.next();
-            GraphPredicateOutcome negResultSet = condition.getNegConjunct().getOutcome(match);
+            GraphPredicateOutcome negResultSet = condition.getNegConjunct().getOutcome(cod(), ((DefaultRuleMatch) match).getElementMap());
             matchMap.put(match, negResultSet);
         }
         return matchMap;
@@ -199,7 +201,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      */
     protected boolean satisfiesAC(VarMorphism candidate) {
         DefaultGraphPredicate complexNegConjunct = condition.getComplexNegConjunct();
-        boolean result = complexNegConjunct == null || !complexNegConjunct.matches(candidate);
+        boolean result = complexNegConjunct == null || !complexNegConjunct.matches(candidate.cod(), candidate.elementMap());
         if (result) {
         	result = ac == null || ac.isSatisfied(candidate);
         }

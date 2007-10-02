@@ -1,4 +1,4 @@
-/* $Id: GraphPredicateOutcome.java,v 1.1.1.2 2007-03-20 10:42:56 kastenberg Exp $ */
+/* $Id: GraphPredicateOutcome.java,v 1.2 2007-10-02 23:06:20 rensink Exp $ */
 package groove.trans;
 
 /**
@@ -6,6 +6,6 @@ package groove.trans;
  * @author Arend Rensink
  * @version $Revision $
  */
-public interface GraphPredicateOutcome extends GraphTestOutcome<GraphCondition,Matching> {
+public interface GraphPredicateOutcome extends GraphTestOutcome<GraphCondition,Match> {
 	// nothing but a specialised interface
 }

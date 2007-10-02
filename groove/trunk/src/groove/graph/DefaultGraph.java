@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraph.java,v 1.6 2007-08-26 07:23:46 rensink Exp $
+ * $Id: DefaultGraph.java,v 1.7 2007-10-02 23:06:30 rensink Exp $
  */
 package groove.graph;
 
@@ -27,9 +27,9 @@ import java.util.Set;
  * Implementation of Graph based on a set of nodes and a 
  * mapping from nodes to sets of outgoing edges.
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-08-26 07:23:46 $
+ * @version $Revision: 1.7 $ $Date: 2007-10-02 23:06:30 $
  */
-public class DefaultGraph extends AbstractGraph {
+public class DefaultGraph extends AbstractGraph<GraphCache> {
     /**
      * Constructs a protytpe object of this class, to be used as a factory
      * for new (default) graphs.

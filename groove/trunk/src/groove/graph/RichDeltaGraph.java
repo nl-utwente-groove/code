@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RichDeltaGraph.java,v 1.1 2007-09-25 22:57:53 rensink Exp $
+ * $Id: RichDeltaGraph.java,v 1.2 2007-10-02 23:06:29 rensink Exp $
  */
 package groove.graph;
 
@@ -25,7 +25,6 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;

@@ -12,27 +12,28 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultConditionOutcome.java,v 1.2 2007-03-28 15:12:27 rensink Exp $
+ * $Id: DefaultConditionOutcome.java,v 1.3 2007-10-02 23:06:20 rensink Exp $
  */
 package groove.trans;
 
-import java.util.Map;
+import groove.graph.Graph;
+import groove.graph.NodeEdgeMap;
 
-import groove.rel.VarMorphism;
+import java.util.Map;
 
 /**
  * Default implementation of a {@link GraphTestOutcome} for {@link GraphCondition}s.
  * Specialises {@link AbstractTestOutcome}.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-public class DefaultConditionOutcome extends AbstractTestOutcome<Matching,GraphCondition> implements GraphConditionOutcome {
+public class DefaultConditionOutcome extends AbstractTestOutcome<Match,GraphCondition> implements GraphConditionOutcome {
     /**
      * Constructs a graph condition outcome from a graph condition, subject,
      * and mapping from {@link Matching}s to {@link GraphTestOutcome}s.
      */
-    public DefaultConditionOutcome(GraphCondition test, VarMorphism subject, Map<Matching,GraphPredicateOutcome> outcome) {
-        super(test, subject, outcome);
+    public DefaultConditionOutcome(GraphCondition test, Graph host, NodeEdgeMap elementMap, Map<Match,GraphPredicateOutcome> outcome) {
+        super(test, host, elementMap, outcome);
     }
 
     /**
@@ -40,7 +41,7 @@ public class DefaultConditionOutcome extends AbstractTestOutcome<Matching,GraphC
      * successful.
      */
     @Override
-    protected boolean isSuccessKey(GraphTestOutcome<GraphCondition,Matching> image) {
+    protected boolean isSuccessKey(GraphTestOutcome<GraphCondition,Match> image) {
         return ! image.isSuccess();
     }
 }

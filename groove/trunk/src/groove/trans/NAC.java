@@ -12,11 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NAC.java,v 1.2 2007-04-20 15:12:28 rensink Exp $
+ * $Id: NAC.java,v 1.3 2007-10-02 23:06:21 rensink Exp $
  */
 package groove.trans;
 
-import groove.rel.VarMorphism;
+import groove.graph.Graph;
+import groove.graph.NodeEdgeMap;
 
 /**
  * A NAC, or <i>Negative Application Condition</i>, implements the standard concept
@@ -24,14 +25,14 @@ import groove.rel.VarMorphism;
  * rule may <i>not</i> be applied.
  * In retrospect, a NAC is just a first level {@link GraphCondition}. However, two
  * special subclasses, {@link MergeEmbargo} and {@link EdgeEmbargo}, are noteworthy
- * because they allow performance optimizations to be made during matching.
+ * because they allow performance optimisations to be made during matching.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface NAC extends GraphCondition {
 	/** Tests if the NAC forbids a certain match.
-	 * @deprecated use {@link #matches(VarMorphism)} instead. 
+	 * @deprecated use {@link #matches(Graph, NodeEdgeMap)} instead. 
 	 */
 	@Deprecated
-    public boolean forbids(VarMorphism match);
+    public boolean forbids(groove.rel.VarMorphism match);
 }

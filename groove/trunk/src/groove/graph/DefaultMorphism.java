@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMorphism.java,v 1.14 2007-10-02 16:15:13 rensink Exp $
+ * $Id: DefaultMorphism.java,v 1.15 2007-10-02 23:06:29 rensink Exp $
  */
 package groove.graph;
 
@@ -27,7 +27,7 @@ import java.util.Map;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class DefaultMorphism extends AbstractMorphism {
     /**
@@ -171,6 +171,7 @@ public class DefaultMorphism extends AbstractMorphism {
      * This implementation returns a {@link DefaultMorphism}.
      */
 	@Override
+	@Deprecated
     protected Morphism createMorphism(final NodeEdgeMap sim) {
         Morphism result = new DefaultMorphism(dom(), cod()) {
         	@Override

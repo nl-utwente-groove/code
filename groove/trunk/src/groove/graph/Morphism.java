@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Morphism.java,v 1.3 2007-08-26 07:23:46 rensink Exp $
+ * $Id: Morphism.java,v 1.4 2007-10-02 23:06:29 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import java.util.Iterator;
  * Interface of a partial graph morphism.
  * Extends <tt>NodeEdgeMap</tt> with a fixed source and target graph.
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-08-26 07:23:46 $
+ * @version $Revision: 1.4 $ $Date: 2007-10-02 23:06:29 $
  */
 public interface Morphism extends NodeEdgeMap, GraphListener {
     /**
@@ -122,12 +122,14 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
      * Does not modify this mapping.
      * @ensure <tt>result = ! getTotalExtensions.isEmpty()</tt>
      */
+    @Deprecated
     public boolean hasTotalExtensions();
 
     /**
      * Returns a total extension of this morphism,
      * or <code>null</code> if there is none.
      */
+    @Deprecated
     public Morphism getTotalExtension();
 
     /**
@@ -135,6 +137,7 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
      * Does not modify this mapping.
      * @ensure <tt>result = { m \in Morphism | m.isTotal(), m \supseteq this }</tt>
      */
+    @Deprecated
     public Collection<? extends Morphism> getTotalExtensions();
 
     /**
@@ -144,6 +147,7 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
      * @see #getTotalExtensions
      * @ensure <tt>result = { m \in Morphism | m.isTotal(), m \supseteq this }</tt>
      */
+    @Deprecated
     public Iterator<? extends Morphism> getTotalExtensionsIter();
 
     /**

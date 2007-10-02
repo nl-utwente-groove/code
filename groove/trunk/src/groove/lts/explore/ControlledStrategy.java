@@ -12,16 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlledStrategy.java,v 1.7 2007-04-27 22:06:58 rensink Exp $
+ * $Id: ControlledStrategy.java,v 1.8 2007-10-02 23:05:56 rensink Exp $
  */
 package groove.lts.explore;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.State;
-import groove.trans.Matching;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
+import groove.trans.RuleMatch;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -33,7 +33,7 @@ import java.util.Stack;
  * Strategy that searches the state space in a depth-first fashion, using a list of rules
  * to control the search.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class ControlledStrategy extends AbstractStrategy {
     /** Name of this strategy. */
@@ -94,16 +94,16 @@ public class ControlledStrategy extends AbstractStrategy {
         } else {
             states = new Stack<GraphState>();
             states.push(getAtState());
-            images = new Stack<Iterator<? extends Matching>>();
+            images = new Stack<Iterator<RuleMatch>>();
             forward = true;
         }
         while (pc >= 0 && pc < program.size()) {
             GraphState currentState = states.peek();
             // retrieve the current search record
-            Iterator<? extends Matching> matchingIter;
+            Iterator<RuleMatch> matchingIter;
             if (forward) {
                 // make a new record
-                matchingIter = program.get(pc).getMatchingIter(currentState.getGraph());
+                matchingIter = program.get(pc).getMatches(currentState.getGraph(), null).iterator();
                 images.push(matchingIter);
             } else {
                 // take it from the existing records
@@ -112,8 +112,7 @@ public class ControlledStrategy extends AbstractStrategy {
             // find a new image 
             forward = matchingIter.hasNext();
             if (forward) {
-            	Rule rule = program.get(pc);
-                RuleApplication ruleApplication = getRecord().getApplication(rule, matchingIter.next());
+                RuleApplication ruleApplication = getRecord().getApplication(matchingIter.next(),currentState.getGraph());
                 GraphState realNextState = addTransition(currentState, ruleApplication);
                 states.push(realNextState);
                 pc++;
@@ -144,7 +143,7 @@ public class ControlledStrategy extends AbstractStrategy {
     /** Program counter; index in {@link #program}. */
     private int pc;
     /** List of currently found image iterators for the rules in the program. */
-    private Stack<Iterator<? extends Matching>> images;
+    private Stack<Iterator<RuleMatch>> images;
     /** 
      * List of currently found intermediate states of the program. 
      * The element at index <code>i</code> is the state reached after step <code>i-1</code> of the program.

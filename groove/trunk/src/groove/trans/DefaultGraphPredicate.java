@@ -12,15 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGraphPredicate.java,v 1.10 2007-09-26 21:04:23 rensink Exp $
+ * $Id: DefaultGraphPredicate.java,v 1.11 2007-10-02 23:06:23 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
-import groove.graph.Morphism;
-import groove.rel.RegExprMorphism;
-import groove.rel.VarMorphism;
+import groove.graph.NodeEdgeMap;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 
@@ -34,7 +32,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implements GraphPredicate {
     /**
@@ -101,24 +99,10 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
     public Graph getContext() {
         return context;
     }
-	/**
-     * If {@link #isGround()} holds, delegates to {@link #matches(VarMorphism)} 
-     * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
-     * Otherwise, throws an exception as per contract.
-     */
-    public boolean matches(Graph graph) {
-        testClosed();
-        return matches(createInitialMorphism(graph));
-    }
 
-    /**
-     * Creates an initial match using <code>this</code> followed by the inverse of
-     * <code>morph</code>, and tests whether that can be extended to a total morphism.
-     * @see Morphism#hasTotalExtensions()
-     */
-    public boolean matches(VarMorphism subject) {
+    public boolean matches(Graph graph) {
     	for (GraphCondition condition: this) {
-            if (condition.matches(subject)) {
+            if (condition.matches(graph)) {
                 return true;
             }
         }
@@ -126,10 +110,34 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
     }
 
     /**
-     * If {@link #isGround()} holds, delegates to {@link #getMatching(VarMorphism)} 
+	 * Creates an initial match using <code>this</code> followed by the inverse of
+	 * <code>morph</code>, and tests whether that can be extended to a total morphism.
+	 * @deprecated Use {@link #matches(Graph,NodeEdgeMap)} instead
+	 */
+    @Deprecated
+	public boolean matches(groove.rel.VarMorphism subject) {
+		return matches(subject.cod(), subject.elementMap());
+	}
+
+	/**
+     * Creates an initial match using <code>this</code> followed by the inverse of
+     * <code>morph</code>, and tests whether that can be extended to a total morphism.
+     */
+    public boolean matches(Graph host, NodeEdgeMap matchMap) {
+    	for (GraphCondition condition: this) {
+            if (condition.matches(host, matchMap)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * If {@link #isGround()} holds, delegates to {@link #getMatching(groove.rel.VarMorphism)} 
      * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
      * Otherwise, throws an exception as per contract.
      */
+    @Deprecated
     public Matching getMatching(Graph graph) {
         testClosed();
         return getMatching(createInitialMorphism(graph));
@@ -139,7 +147,8 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
      * Iterates over the conditions in this predicate. Returns upon the first
      * condition that can be fulfilled. If none can be fulfilled, returns <code>null</code>.
      */
-    public Matching getMatching(VarMorphism subject) {
+    @Deprecated
+    public Matching getMatching(groove.rel.VarMorphism subject) {
     	for (GraphCondition condition: this) {
             Matching result = condition.getMatching(subject);
             if (result != null) {
@@ -150,10 +159,11 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
     }
 
     /**
-     * If {@link #isGround()} holds, delegates to {@link #getMatching(VarMorphism)} 
+     * If {@link #isGround()} holds, delegates to {@link #getMatching(groove.rel.VarMorphism)} 
      * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
      * Otherwise, throws an exception as per contract.
      */
+    @Deprecated
     public Collection<? extends Matching> getMatchingSet(Graph graph) {
         testClosed();
         return getMatchingSet(createInitialMorphism(graph));
@@ -162,7 +172,8 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
     /**
      * Collects the matches of the conditions in this predicate.
      */
-    public Collection<? extends Matching> getMatchingSet(VarMorphism subject) {
+    @Deprecated
+    public Collection<? extends Matching> getMatchingSet(groove.rel.VarMorphism subject) {
         Set<Matching> result = new HashSet<Matching>();
         for (GraphCondition condition: this) {
             result.addAll(condition.getMatchingSet(subject));
@@ -171,10 +182,11 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
     }
 
     /**
-     * If {@link #isGround()} holds, delegates to {@link #getMatching(VarMorphism)} 
+     * If {@link #isGround()} holds, delegates to {@link #getMatching(groove.rel.VarMorphism)} 
      * using an initial morphism (created using {@link #createInitialMorphism(Graph)}).
      * Otherwise, throws an exception as per contract.
      */
+    @Deprecated
     public Iterator<? extends Matching> getMatchingIter(Graph graph) {
         testClosed();
         return getMatchingIter(createInitialMorphism(graph));
@@ -184,7 +196,8 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
      * Iterates over the conditions, and for each condition, over the
      * positive results for that condition.
      */
-    public Iterator<? extends Matching> getMatchingIter(final VarMorphism subject) {
+    @Deprecated
+    public Iterator<? extends Matching> getMatchingIter(final groove.rel.VarMorphism subject) {
         return new NestedIterator<Matching>(new TransformIterator<GraphCondition,Iterator<? extends Matching>>(iterator()) {
         	@Override
         	protected Iterator<? extends Matching> toOuter(GraphCondition from) {
@@ -199,29 +212,30 @@ public class DefaultGraphPredicate extends HashSet<DefaultGraphCondition> implem
      * failure with (if the result is not shallow) a map of the conditions' 
      * failures.
      */
-    public GraphPredicateOutcome getOutcome(VarMorphism subject) {
+    public GraphPredicateOutcome getOutcome(Graph host, NodeEdgeMap map) {
         Map<GraphCondition,GraphConditionOutcome> conditionMap = new HashMap<GraphCondition,GraphConditionOutcome>();
         for (GraphCondition condition: this) {
-            conditionMap.put(condition, condition.getOutcome(subject));
+            conditionMap.put(condition, condition.getOutcome(host, map));
         }
-        return createOutcome(subject, conditionMap);
+        return createOutcome(host, map, conditionMap);
     }
 
     /**
      * Factory method for a morphism from the empty graph to a given graph.
-     * This implementation returns a {@link RegExprMorphism}; the empty graph
+     * This implementation returns a {@link groove.rel.RegExprMorphism}; the empty graph
      * is obtained by creating one from <code>graph.newGraph()</code>.
      */
-    protected VarMorphism createInitialMorphism(Graph graph) {
-        return new RegExprMorphism(EMPTY_GRAPH, graph);
+    @Deprecated
+    protected groove.rel.VarMorphism createInitialMorphism(Graph graph) {
+        return new groove.rel.RegExprMorphism(EMPTY_GRAPH, graph);
     }
 
     /**
      * Factory method for a graph predicate success object from a 
      * graph condition success object.
      */
-    protected GraphPredicateOutcome createOutcome(final VarMorphism subject, final Map<GraphCondition, GraphConditionOutcome> failureMap) {
-        return new DefaultPredicateOutcome(this, subject, failureMap);
+    protected GraphPredicateOutcome createOutcome(Graph host, NodeEdgeMap map, final Map<GraphCondition, GraphConditionOutcome> failureMap) {
+        return new DefaultPredicateOutcome(this, host, map, failureMap);
     }
     
     /**

@@ -12,14 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphShapeCache.java,v 1.4 2007-09-19 14:57:31 rensink Exp $
+ * $Id: GraphShapeCache.java,v 1.5 2007-10-02 23:06:29 rensink Exp $
  */
 package groove.graph;
 
 import groove.util.Groove;
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
-import groove.util.TreeHashSet3;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,7 +32,7 @@ import java.util.Set;
  * graph, for faster access.
  * Typically, the graph will have a graph cache as a <tt>{@link java.lang.ref.Reference}</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class GraphShapeCache implements GraphShapeListener {
     /**
@@ -57,7 +56,7 @@ public class GraphShapeCache implements GraphShapeListener {
      * @param graph the graph for which the cache is to be created.
      * @see #GraphShapeCache(AbstractGraphShape,boolean)
      */
-    public GraphShapeCache(AbstractGraphShape graph) {
+    public GraphShapeCache(AbstractGraphShape<?> graph) {
         this(graph, true);
     }
     
@@ -75,7 +74,7 @@ public class GraphShapeCache implements GraphShapeListener {
      * @param graph the graph for which the cache is to be created.
      * @param dynamic switch to indicate if caching should bbe dynamic
      */
-    public GraphShapeCache(AbstractGraphShape graph, boolean dynamic) {
+    public GraphShapeCache(AbstractGraphShape<?> graph, boolean dynamic) {
         this.graph = graph;
         this.dynamic = dynamic;
         graph.addGraphListener(this);
@@ -155,7 +154,6 @@ public class GraphShapeCache implements GraphShapeListener {
      * If no map is currently cached, it is created by a call to {@link #computeLabelEdgeMaps()}.
      * If the graph is fixed (see {@link Graph#isFixed()}, the map is cached.
      * @return the label-to-edge mapping for arity <tt>i</tt>
-     * @see GraphShape#labelEdgeMap(int)
      * @see #computeLabelEdgeMaps()
      */
     protected List<Map<Label, Set<Edge>>> getLabelEdgeMaps() {
@@ -245,7 +243,7 @@ public class GraphShapeCache implements GraphShapeListener {
     /**
      * Returns the graph for which the cache is maintained.
      */
-    public AbstractGraphShape getGraph() {
+    public AbstractGraphShape<?> getGraph() {
         return graph;
     }
 
@@ -384,7 +382,7 @@ public class GraphShapeCache implements GraphShapeListener {
     /**
      * The graph on which the cache works.
      */
-    protected final AbstractGraphShape graph;
+    protected final AbstractGraphShape<?> graph;
     /**
      * Switch to indicate that the cache is dynamic.
      */

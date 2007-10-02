@@ -91,11 +91,11 @@ abstract public class AbstractRuleApplier implements RuleApplier {
             protected boolean hasNextIterator() {
                 while (!atEnd && nextIter == null && ruleIter.hasNext()) {
                     final Rule nextRule = ruleIter.next();
-					nextIter = new TransformIterator<Matching, RuleApplication>(nextRule
-							.getMatchingIter(getGraph())) {
+					nextIter = new TransformIterator<RuleMatch, RuleApplication>(nextRule
+							.getMatches(getGraph(), null).iterator()) {
 						@Override
-						public RuleApplication toOuter(Matching from) {
-							return record.getApplication(nextRule, from);
+						public RuleApplication toOuter(RuleMatch from) {
+							return record.getApplication(from, getGraph());
 						}
 					};
                 }
@@ -184,8 +184,8 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	 */
 	protected void collectApplications(Rule rule, Set<RuleApplication> result) {
 	    // compute applications of this production rule to graph
-	    for (Matching match: rule.getMatchingSet(getGraph())) {
-	        result.add(record.getApplication(rule, match));
+	    for (RuleMatch match: rule.getMatches(getGraph(), null)) {
+	        result.add(record.getApplication(match, getGraph()));
 	    }
 	}
 
@@ -261,9 +261,8 @@ abstract public class AbstractRuleApplier implements RuleApplier {
 	 */
 	protected boolean doApplications(Rule rule, Action action) {
 		boolean result = false;
-		for (Matching match : rule.getMatchingSet(getGraph())) {
-			RuleApplication application = record.getApplication(rule, match);
-//			System.out.printf("Application of %s with match %s%n", rule.getName(), match.elementMap());
+		for (RuleMatch match : rule.getMatches(getGraph(), null)) {
+			RuleApplication application = record.getApplication(match, getGraph());
 			reporter.stop();
 			reporter.stop();
 			action.perform(application);
