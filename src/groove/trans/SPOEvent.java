@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.40 2007-10-02 23:06:22 rensink Exp $
+ * $Id: SPOEvent.java,v 1.41 2007-10-02 23:36:51 rensink Exp $
  */
 package groove.trans;
 
@@ -28,7 +28,6 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
 import groove.graph.algebra.ValueNode;
-import groove.match.MatchStrategy;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
@@ -52,7 +51,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.40 $ $Date: 2007-10-02 23:06:22 $
+ * @version $Revision: 1.41 $ $Date: 2007-10-02 23:36:51 $
  */
 public class SPOEvent extends AbstractEvent<SPORule> {
     /**
@@ -287,7 +286,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
     public Morphism getMatching(Graph host) {
     	Morphism result = null;
         if (isCorrectFor(host)) {
-        	Iterator<VarNodeEdgeMap> map = getRule().getMatchIter(host, null);
+        	Iterator<VarNodeEdgeMap> map = getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
         	if (map.hasNext()) {
         		result = new DefaultMorphism(getRule().getTarget(), host) {
                     @Override
