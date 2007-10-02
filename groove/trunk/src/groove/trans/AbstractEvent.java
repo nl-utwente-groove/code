@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractEvent.java,v 1.1 2007-10-01 21:53:08 rensink Exp $
+ * $Id: AbstractEvent.java,v 1.2 2007-10-02 11:59:14 rensink Exp $
  */
 package groove.trans;
 
@@ -36,19 +36,16 @@ public abstract class AbstractEvent<R extends Rule> implements RuleEvent {
 	protected AbstractEvent(R rule) {
 		this.rule = rule;
 	}
-	
-	@Override
+
 	public Label getLabel() {
 		return new WrapperLabel<RuleEvent>(this);
 	}
 
-	@Override
 	@Deprecated
 	public RuleNameLabel getName() {
 		return getRule().getName();
 	}
 
-	@Override
 	public R getRule() {
 		return rule;
 	}
@@ -64,7 +61,6 @@ public abstract class AbstractEvent<R extends Rule> implements RuleEvent {
         return result;
     }
 
-	@Override
 	public RuleApplication newApplication(Graph source) {
 		return new DefaultApplication(this, source);
 	}

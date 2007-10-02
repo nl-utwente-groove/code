@@ -12,14 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.17 2007-10-01 21:53:08 rensink Exp $
- * $Date: 2007-10-01 21:53:08 $
+ * $Id: Rule.java,v 1.18 2007-10-02 11:59:14 rensink Exp $
+ * $Date: 2007-10-02 11:59:14 $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.graph.Node;
 import groove.graph.NodeFactory;
 import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeMap;
@@ -33,7 +32,7 @@ import java.util.Comparator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -101,13 +100,13 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
 	//     * the matchings of the rule.
 	//     */
 	//    public Element[] anchor();
-	    
-    /**
-     * Returns the array of creator nodes of this rule.
-     * @deprecated Only valid in {@link SPORule}
-     */
-    @Deprecated
-    public Node[] getCreatorNodes();
+//	
+//    /**
+//     * Returns the array of creator nodes of this rule.
+//     * @deprecated Only valid in {@link SPORule}
+//     */
+//    @Deprecated
+//    public Node[] getCreatorNodes();
     
     /**
      * Lazily creates and returns a matcher for rule events of this rule.
