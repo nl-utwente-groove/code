@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ContentAspectValue.java,v 1.6 2007-09-30 21:29:08 rensink Exp $
+ * $Id: ContentAspectValue.java,v 1.7 2007-10-02 19:41:42 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -89,7 +89,7 @@ abstract public class ContentAspectValue<C> extends AspectValue {
     public String toString() {
     	StringBuilder result = new StringBuilder(super.toString());
     	String content = getParser().toString(getContent());
-    	if (!content.isEmpty()) {
+    	if (content.length() != 0) {
     		result.append(CONTENT_ASSIGN);
     		result.append(content);
     	}
