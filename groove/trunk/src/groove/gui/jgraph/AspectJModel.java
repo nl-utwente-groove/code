@@ -12,16 +12,24 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.24 2007-09-30 21:45:09 rensink Exp $
+ * $Id: AspectJModel.java,v 1.25 2007-10-02 08:02:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
-import static groove.gui.jgraph.JAttr.*;
+import static groove.gui.jgraph.JAttr.NESTING_EDGE_ATTR;
+import static groove.gui.jgraph.JAttr.NESTING_NODE_ATTR;
+import static groove.gui.jgraph.JAttr.RULE_EDGE_ATTR;
+import static groove.gui.jgraph.JAttr.RULE_EDGE_EMPH_CHANGE;
+import static groove.gui.jgraph.JAttr.RULE_NODE_ATTR;
+import static groove.gui.jgraph.JAttr.RULE_NODE_EMPH_CHANGE;
+import static groove.view.aspect.NestingAspect.getNestingValue;
 import static groove.view.aspect.RuleAspect.CREATOR;
 import static groove.view.aspect.RuleAspect.EMBARGO;
 import static groove.view.aspect.RuleAspect.ERASER;
 import static groove.view.aspect.RuleAspect.READER;
 import static groove.view.aspect.RuleAspect.REMARK;
+import static groove.view.aspect.RuleAspect.getRuleValue;
+import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
@@ -40,7 +48,6 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 import groove.view.aspect.AspectValue;
-import groove.view.aspect.AttributeAspect;
 import groove.view.aspect.NestingAspect;
 import groove.view.aspect.NestingAspectValue;
 import groove.view.aspect.RuleAspect;
@@ -60,7 +67,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -168,12 +175,12 @@ public class AspectJModel extends GraphJModel {
     protected AttributeMap createJVertexAttr(Node node) {
         AttributeMap result;
 		AspectNode aspectNode = (AspectNode) node;
-		if (aspectNode.getValue(NestingAspect.getInstance()) != null) {
+		if (getNestingValue(aspectNode) != null) {
 			result = NESTING_NODE_ATTR.clone();
 		} else {
 			AspectValue role = role(aspectNode);
 			result = RULE_NODE_ATTR.get(role).clone();
-			if (aspectNode.getValue(AttributeAspect.getInstance()) != null) {
+			if (getAttributeValue(aspectNode) != null) {
 				result.applyMap(getJVertexDataAttr());
 			}
 		}
@@ -189,7 +196,7 @@ public class AspectJModel extends GraphJModel {
         AttributeMap result;
         assert !edgeSet.isEmpty() : String.format("Underlying edge set should not be empty");
         AspectEdge aspectEdge = (AspectEdge) edgeSet.iterator().next();
-        AspectValue nestingValue = aspectEdge.getValue(NestingAspect.getInstance());
+        AspectValue nestingValue = getNestingValue(aspectEdge);
         if (nestingValue != null && !nestingValue.isNodeValue()) {
         	result = NESTING_EDGE_ATTR.clone();
         } else {
@@ -270,7 +277,7 @@ public class AspectJModel extends GraphJModel {
     
     /** Helper method to return the rule aspect value of an aspect node. */
 	static private AspectValue role(AspectElement node) {
-		return node.getValue(RuleAspect.getInstance());
+		return getRuleValue(node);
 	}
 
     /** Empty instance of the {@link AspectJModel}. */
@@ -358,7 +365,7 @@ public class AspectJModel extends GraphJModel {
 		@Override
 		public List<StringBuilder> getLines() {
 			List<StringBuilder> result = super.getLines();
-			AspectValue nesting = getNode().getValue(NestingAspect.getInstance());
+			AspectValue nesting = getNestingValue(getNode());
 			if (nesting != null) {
 				result.add(0, getQuantifierLine((NestingAspectValue) nesting));
 			}

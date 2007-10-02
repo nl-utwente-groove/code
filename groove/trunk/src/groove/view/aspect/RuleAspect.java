@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.6 2007-08-22 15:04:49 rensink Exp $
+ * $Id: RuleAspect.java,v 1.7 2007-10-02 07:56:04 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -29,7 +29,7 @@ import groove.view.FormatException;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class RuleAspect extends AbstractAspect {
     /**
@@ -101,6 +101,15 @@ public class RuleAspect extends AbstractAspect {
         return instance;
     }
     
+    /** 
+     * Returns the rule aspect value associated with a given aspect element.
+     * Convenience method for {@link AspectElement#getValue(Aspect)} with {@link #getInstance()}
+     * as parameter.
+     */
+    public static AspectValue getRuleValue(AspectElement elem) {
+    	return elem.getValue(getInstance());
+    }
+    
     /**
 	 * Tests if a given aspect element contains a {@link RuleAspect} value
 	 * that indicates presence in the left hand side.
@@ -111,8 +120,8 @@ public class RuleAspect extends AbstractAspect {
 	 * value that equals either  {@link #READER} or {@link #ERASER}.
 	 */
 	public static boolean inLHS(AspectElement element) {
-		AspectValue role = element.getValue(getInstance());
-		return (role == READER || role == ERASER);
+		AspectValue role = getRuleValue(element);
+		return (role == READER || role == ERASER) && hasRole(element);
 	}
 
 	/**
@@ -125,10 +134,18 @@ public class RuleAspect extends AbstractAspect {
 	 * value that equals either  {@link #READER} or {@link #CREATOR}.
 	 */
 	public static boolean inRHS(AspectElement element) {
-		AspectValue role = element.getValue(getInstance());
-		return (role == READER || role == CREATOR);
+		AspectValue role = getRuleValue(element);
+		return (role == READER || role == CREATOR) && hasRole(element);
 	}
 
+	/** 
+	 * Tests if a given element has no rule aspect value, and no other aspect values that 
+	 * prevent it from being interpreted as reader.
+	 */
+	private static boolean hasRole(AspectElement element) {
+		return getRuleValue(element) == null && ! NestingAspect.isMetaElement(element);
+	}
+	
 	/**
 	 * Tests if a given aspect element contains a {@link RuleAspect} value
 	 * that indicates presence a negative application condition.
@@ -139,8 +156,7 @@ public class RuleAspect extends AbstractAspect {
 	 * value that equals {@link #EMBARGO}.
 	 */
 	public static boolean inNAC(AspectElement element) {
-		AspectValue role = element.getValue(getInstance());
-		return (role == EMBARGO);
+		return (getRuleValue(element) == EMBARGO);
 	}
 
 	/**
@@ -152,8 +168,7 @@ public class RuleAspect extends AbstractAspect {
 	 * value that equals {@link #CREATOR}.
 	 */
 	public static boolean isCreator(AspectElement element) {
-		AspectValue role = element.getValue(getInstance());
-		return (role == CREATOR);
+		return getRuleValue(element) == CREATOR;
 	}
 
 	/**
@@ -162,7 +177,9 @@ public class RuleAspect extends AbstractAspect {
 	 * information <i>about</i> the rule.
 	 */
 	public static boolean inRule(AspectElement elem) {
-		return inLHS(elem) || inRHS(elem) || inNAC(elem);
+		// JHK: Nesting Meta-nodes and edges are not in the rule
+		return (inLHS(elem) || inRHS(elem) || inNAC(elem)) 
+			&& ! NestingAspect.isMetaElement(elem);
 	}
 	
 	/**
@@ -174,7 +191,7 @@ public class RuleAspect extends AbstractAspect {
 	 * value that equals {@link #REMARK}.
 	 */
 	public static boolean isRemark(AspectElement element) {
-		AspectValue role = element.getValue(getInstance());
+		AspectValue role = getRuleValue(element);
 		return (role == REMARK);
 	}
 
@@ -185,7 +202,7 @@ public class RuleAspect extends AbstractAspect {
 	 * or <code>null</code> if <code>node</code> does not have this aspect value. 
 	 */
 	public static Pair<NameLabel,Integer> getRuleContent(AspectNode node) {
-		AspectValue ruleValue = node.getValue(getInstance());
+		AspectValue ruleValue = getRuleValue(node);
 		if (ruleValue instanceof RuleAspectValue) {
 			return ((RuleAspectValue) ruleValue).getContent();
 		} else {

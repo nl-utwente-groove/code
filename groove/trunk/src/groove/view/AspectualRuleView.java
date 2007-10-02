@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.16 2007-09-30 21:36:40 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.17 2007-10-02 07:58:39 rensink Exp $
  */
 
 package groove.view;
@@ -21,6 +21,8 @@ import static groove.view.aspect.RuleAspect.CREATOR;
 import static groove.view.aspect.RuleAspect.EMBARGO;
 import static groove.view.aspect.RuleAspect.ERASER;
 import static groove.view.aspect.RuleAspect.READER;
+import static groove.view.aspect.RuleAspect.getRuleValue;
+import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
@@ -77,7 +79,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -159,7 +161,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	    Iterator<? extends Edge> edgeIter = graph.edgeSet().iterator();
 	    while (edgeIter.hasNext()) {
 	        AspectEdge edge = (AspectEdge) edgeIter.next();
-	        if (edge.getValue(RuleAspect.getInstance()) == role) {
+	        if (getRuleValue(edge) == role) {
 	            try {
                     RegExpr expr = RegExpr.parse(edge.label().text());
                     result.addAll(bound ? expr.boundVarSet() : expr.allVarSet());
@@ -405,7 +407,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * occur in a correct way in <code>context</code>
 	 */
 	protected Node computeNodeImage(AspectNode node, AspectGraph context) throws FormatException {
-		if (node.getValue(AttributeAspect.getInstance()) == null) {
+		if (getAttributeValue(node) == null) {
 			return DefaultNode.createNode(node.getNumber());
 		} else {
 			return AttributeAspect.createAttributeNode(node, context);
@@ -433,7 +435,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     		ends[i] = endImage;
     	}
     	// compute the label; either a DefaultLabel or a RegExprLabel
-    	if (edge.getValue(AttributeAspect.getInstance()) == null) {
+    	if (getAttributeValue(edge) == null) {
     		return createEdge(ends, createRuleLabel(edge.label()));
     	} else {
     		return AttributeAspect.createAttributeEdge(edge, context, ends);
@@ -738,7 +740,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 						result);
 			}
 		}
-		AspectValue attributeValue = AttributeAspect.getAttributeValue(original);
+		AspectValue attributeValue = AttributeAspect.getAttributeValueFor(original);
 		if (attributeValue != null) {
 			try {
 				result.setDeclaredValue(attributeValue);
@@ -763,7 +765,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @return the fresh rule-edge
 	 */
     protected AspectEdge computeAspectEdge(List<AspectNode> ends, Label label, AspectValue role, Edge edge) {
-    	AspectValue attributeValue = edge == null ? null : AttributeAspect.getAttributeValue(edge); 
+    	AspectValue attributeValue = edge == null ? null : AttributeAspect.getAttributeValueFor(edge); 
     	try {
     		if (attributeValue == null) {
     			return new AspectEdge(ends, label, role);

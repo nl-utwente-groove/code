@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.8 2007-09-26 08:30:23 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.9 2007-10-02 07:56:04 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -45,7 +45,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -57,6 +57,15 @@ public class AttributeAspect extends AbstractAspect {
      */
     public static AttributeAspect getInstance() {
         return instance;
+    }
+    
+    /** 
+     * Returns the attribute aspect value associated with a given aspect element.
+     * Convenience method for {@link AspectElement#getValue(Aspect)} with {@link #getInstance()}
+     * as parameter.
+     */
+    public static AspectValue getAttributeValue(AspectElement elem) {
+    	return elem.getValue(getInstance());
     }
     
     /**
@@ -82,7 +91,7 @@ public class AttributeAspect extends AbstractAspect {
      */
     public static Node createAttributeNode(AspectNode node, AspectGraph graph) throws FormatException {
     	Node result;
-    	AspectValue attributeValue = node.getValue(getInstance());
+    	AspectValue attributeValue = getAttributeValue(node);
     	if (attributeValue == null) {
     		result = null;
     	} else if (attributeValue == VALUE) {
@@ -110,7 +119,7 @@ public class AttributeAspect extends AbstractAspect {
 		Collection<AspectEdge> outEdges = graph.outEdgeSet(node);
 		Set<AspectEdge> attributeEdges = new HashSet<AspectEdge>();
 		for (AspectEdge outEdge: outEdges) {
-			if (outEdge.getValue(getInstance()) != null) {
+			if (getAttributeValue(outEdge) != null) {
 				attributeEdges.add(outEdge);
 			}
 		}
@@ -120,7 +129,7 @@ public class AttributeAspect extends AbstractAspect {
 			throw new FormatException("Too many edges on constant node: %s", attributeEdges);
 		} else {
 			AspectEdge attributeEdge = attributeEdges.iterator().next();
-			AspectValue algebraValue = attributeEdge.getValue(getInstance());
+			AspectValue algebraValue = getAttributeValue(attributeEdge);
 			if (algebraValue == null) {
 				throw new FormatException("Label %s on value node should be a constant", attributeEdge.getLabelText());
 			}
@@ -165,7 +174,7 @@ public class AttributeAspect extends AbstractAspect {
 		int maxArgNumber = -1;
 		int result = 0;
 		for (AspectEdge outEdge: graph.outEdgeSet(node)) {
-			if (outEdge.getValue(getInstance()) == ARGUMENT) {
+			if (getAttributeValue(outEdge) == ARGUMENT) {
 				try {
 					int argNumber = Integer.parseInt(outEdge.label().text());
 					if (! argNumbers.add(argNumber)) {
@@ -198,7 +207,7 @@ public class AttributeAspect extends AbstractAspect {
      */
     public static Edge createAttributeEdge(AspectEdge edge, AspectGraph graph, Node[] ends) throws FormatException {
     	Edge result;
-    	AspectValue attributeValue = edge.getValue(getInstance());
+    	AspectValue attributeValue = getAttributeValue(edge);
     	if (attributeValue == null) {
     		result = null;
     	} else if (attributeValue == ARGUMENT) {
@@ -224,7 +233,7 @@ public class AttributeAspect extends AbstractAspect {
      */
 	private static Edge createOperatorEdge(AspectEdge edge, AspectGraph graph, Node[] ends) throws FormatException {
 		try {
-			Algebra algebra = algebraMap.get(edge.getValue(getInstance()));
+			Algebra algebra = algebraMap.get(getAttributeValue(edge));
 			Operation operator = algebra.getOperation(edge.label().text());
 			Node source = ends[Edge.SOURCE_INDEX];
 			if (!(source instanceof ProductNode)) {
@@ -269,7 +278,7 @@ public class AttributeAspect extends AbstractAspect {
 	/**
 	 * Returns the aspect value corresponding to a given signature.
 	 */
-	public static AspectValue getValue(Algebra algebra) {
+	public static AspectValue getAttributeValueFor(Algebra algebra) {
 		return aspectValueMap.get(algebra);
 	}
 	
@@ -281,7 +290,7 @@ public class AttributeAspect extends AbstractAspect {
 	 * @return the attribute aspect value for <code>elem</code>, such that <code>result.getAspect() == getInstance()</code>,
 	 * or <code>null</code> if <code>elem</code> does not have any attribute information.
 	 */
-	public static AspectValue getAttributeValue(Element elem) {
+	public static AspectValue getAttributeValueFor(Element elem) {
 		if (elem instanceof ValueNode) {
 			return VALUE;
 		} else if (elem instanceof ProductNode) {
@@ -290,7 +299,7 @@ public class AttributeAspect extends AbstractAspect {
 			return ARGUMENT;
 		} else if (elem instanceof ProductEdge) {
 			Operation operation = ((ProductEdge) elem).getOperation();
-			return aspectValueMap.get(operation.algebra());
+			return getAttributeValueFor(operation.algebra());
 		} else {
 			return null;
 		}
