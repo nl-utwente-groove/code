@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMorphism.java,v 1.10 2007-10-02 16:15:13 rensink Exp $
+ * $Id: AbstractMorphism.java,v 1.11 2007-10-02 23:06:29 rensink Exp $
  */
 package groove.graph;
 
@@ -34,7 +34,7 @@ import java.util.Set;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edge,Edge> implements Morphism {
     /**
@@ -206,6 +206,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
         }
     }
 
+    @Deprecated
     public boolean hasTotalExtensions() {
         reporter.start(HAS_TOTAL_EXTENSIONS);
         VarNodeEdgeMap match = createMatchStrategy().getMatch(cod(), elementMap());
@@ -214,6 +215,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
         return result;
     }
 
+    @Deprecated
     public Morphism getTotalExtension() {
         VarNodeEdgeMap match = createMatchStrategy().getMatch(cod(), elementMap());
         if (match == null) {
@@ -223,6 +225,7 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
         }
     }
 
+    @Deprecated
     public Collection<? extends Morphism> getTotalExtensions() {
         reporter.start(GET_TOTAL_EXTENSIONS);
         try {
@@ -252,8 +255,10 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
      * @see #getTotalExtensions()
      * @see #getTotalExtensionsIter()
      */
+    @Deprecated
     abstract protected Morphism createMorphism(NodeEdgeMap sim);
 
+    @Deprecated
     public Iterator<? extends Morphism> getTotalExtensionsIter() {
         reporter.start(GET_TOTAL_EXTENSIONS);
         try {

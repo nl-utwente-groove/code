@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.39 2007-10-02 16:14:56 rensink Exp $
+ * $Id: SPOEvent.java,v 1.40 2007-10-02 23:06:22 rensink Exp $
  */
 package groove.trans;
 
+import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -51,7 +52,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.39 $ $Date: 2007-10-02 16:14:56 $
+ * @version $Revision: 1.40 $ $Date: 2007-10-02 23:06:22 $
  */
 public class SPOEvent extends AbstractEvent<SPORule> {
     /**
@@ -284,23 +285,19 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      * Returns <code>null</code> if a matching does not exist.
      */
     public Morphism getMatching(Graph host) {
+    	Morphism result = null;
         if (isCorrectFor(host)) {
-            DefaultMatching result = new DefaultMatching(getRule(), host) {
-                @Override
-                protected VarNodeEdgeMap createElementMap() {
-                    return getAnchorMap();
-                }
-
-                @Override
-                protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy() {
-                    return getRule().getEventMatcher();
-                }
-            };
-            result.setFixed();
-            return result.getTotalExtension();
-        } else {
-            return null;
+        	Iterator<VarNodeEdgeMap> map = getRule().getMatchIter(host, null);
+        	if (map.hasNext()) {
+        		result = new DefaultMorphism(getRule().getTarget(), host) {
+                    @Override
+                    protected VarNodeEdgeMap createElementMap() {
+                        return getAnchorMap();
+                    }
+        		};
+        	}
         }
+        return result;
     }
 
     /**

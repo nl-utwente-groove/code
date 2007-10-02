@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.12 2007-09-30 15:52:49 rensink Exp $
+ * $Id: NACTest.java,v 1.13 2007-10-02 23:06:49 rensink Exp $
  */
 package groove.test;
 
@@ -24,9 +24,9 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Morphism;
+import groove.rel.VarNodeEdgeMap;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.EdgeEmbargo;
-import groove.trans.Matching;
 import groove.trans.MergeEmbargo;
 import groove.trans.NAC;
 import groove.trans.RuleApplication;
@@ -55,7 +55,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -240,10 +240,10 @@ public class NACTest extends TestCase {
 
     private Collection<RuleApplication> getDerivations(SPORule rule, Graph graph) {
     	Collection<RuleApplication> result = new ArrayList<RuleApplication>();
-    	Iterator<? extends Matching> matchIter = rule.getMatchingIter(graph);
+    	Iterator<VarNodeEdgeMap> matchIter = rule.getMatchIter(graph, null);
     	while (matchIter.hasNext()) {
-			Matching match = matchIter.next();
-			result.add(rule.newEvent(match.elementMap(), null, true).newApplication(match.cod()));
+    		VarNodeEdgeMap match = matchIter.next();
+			result.add(rule.newEvent(match, null, true).newApplication(graph));
 		}
     	return result;
     }

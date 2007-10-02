@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Bisimulator.java,v 1.13 2007-09-25 16:30:36 rensink Exp $
+ * $Id: Bisimulator.java,v 1.14 2007-10-02 23:06:47 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -38,7 +38,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elements to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class Bisimulator implements CertificateStrategy {
     /**
@@ -73,7 +73,7 @@ public class Bisimulator implements CertificateStrategy {
 				certificateMap.put(nodeCert.getElement(), nodeCert);
 			}
 			// add the edge certificates to the certificate map
-			for (Certificate edgeCert : edgeCerts) {
+			for (Certificate<Edge> edgeCert : edgeCerts) {
 				certificateMap.put(edgeCert.getElement(), edgeCert);
 			}
 		}
@@ -324,11 +324,11 @@ public class Bisimulator implements CertificateStrategy {
             certStore.clear(nodeCertCount);
             // first compute the new edge certificates
             for (int i = 0; i < edgeCerts.length; i++) {
-            	Certificate edgeCert = edgeCerts[i];
+            	Certificate<Edge> edgeCert = edgeCerts[i];
             	certificateValue += edgeCert.setNewValue();
             }
             // now compute the new node certificates
-            for (Certificate nodeCert: nodeCerts) {
+            for (Certificate<Node> nodeCert: nodeCerts) {
                 int newCert = nodeCert.setNewValue();
                 if (iterateCount > 0 && nodePartitionCount < nodeCertCount) {
                 	certStore.add(newCert);
@@ -491,7 +491,7 @@ public class Bisimulator implements CertificateStrategy {
          */
     	@Override
         public boolean equals(Object obj) {
-            return obj instanceof Certificate && (value == ((Certificate) obj).value);
+            return obj instanceof Certificate && (value == ((Certificate<?>) obj).value);
         }
 
         /**
@@ -532,7 +532,7 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.13 $
+     * @version $Revision: 1.14 $
      */
     static private class NodeCertificate extends Certificate<Node> {
     	/** Initial node value to provide a better spread of hash codes. */
@@ -559,7 +559,7 @@ public class Bisimulator implements CertificateStrategy {
          */
     	@Override
         public boolean equals(Object obj) {
-            return obj instanceof NodeCertificate && (value == ((Certificate) obj).value);
+            return obj instanceof NodeCertificate && (value == ((Certificate<?>) obj).value);
         }
 
         /**
@@ -597,7 +597,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.13 $
+     * @version $Revision: 1.14 $
      */
     static private class Edge2Certificate extends Certificate<Edge> {
         /**
@@ -681,7 +681,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.13 $
+     * @version $Revision: 1.14 $
      */
     static private class Edge1Certificate extends Certificate<Edge> {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */

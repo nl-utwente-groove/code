@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BranchingStrategy.java,v 1.2 2007-04-27 22:06:58 rensink Exp $
+ * $Id: BranchingStrategy.java,v 1.3 2007-10-02 23:05:56 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -29,7 +29,7 @@ import java.util.Collection;
 /**
  * LTS exploration strategy based on the principle of breadth first search.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BranchingStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
@@ -101,7 +101,7 @@ public class BranchingStrategy extends AbstractStrategy {
 					explore(atState);
 				} else {
 					if (atState instanceof AbstractCacheHolder) {
-						((AbstractCacheHolder) atState).clearCache();
+						((AbstractCacheHolder<?>) atState).clearCache();
 					}
 					ignoredCount++;
 				}

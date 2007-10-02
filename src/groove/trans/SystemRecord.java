@@ -58,9 +58,18 @@ public class SystemRecord implements NodeFactory {
 		return ruleSystem;
 	}
 
-	/** Returns a rule application for a given rule and matching of that rule. */
+	/** 
+	 * Returns a rule application for a given rule and matching of that rule.
+	 * @deprecated use {@link #getApplication(RuleMatch, Graph)} instead 
+	 */
+	@Deprecated
 	public RuleApplication getApplication(Rule rule, Matching matching) {
 		return getEvent(rule, matching.elementMap()).newApplication(matching.cod());
+	}
+
+	/** Returns a rule application for a given rule and matching of that rule. */
+	public RuleApplication getApplication(RuleMatch match, Graph host) {
+		return getEvent(match).newApplication(host);
 	}
 
 	/** 
@@ -95,17 +104,42 @@ public class SystemRecord implements NodeFactory {
         reporter.stop();
         return result;
     }
-//    
-//    /** 
-//     * Callback method to create a rule event.
-//     * This implementation defers to the rule factory obtained from the rule system.
-//     * @see RuleFactory#createRuleEvent(Rule, VarNodeEdgeMap, DerivationData)
-//     */
-//	protected RuleEvent createEvent(Rule rule, Matching matching) {
-//		return getRuleFactory().createRuleEvent(rule, matching.elementMap(), this);
-//	}
-//	
+
 	/** 
+	 * Returns an event for a given rule and matching of that rule.
+	 * The events are stored internally; an event is reused if it has the
+	 * correct rule and anchor map.
+	 */
+    public RuleEvent getEvent(RuleMatch match) {
+    	RuleEvent result;
+    	reporter.start(GET_EVENT);
+    	Rule rule = match.getRule();
+        if (rule.isModifying()) {
+            RuleEvent event = match.newEvent(this, reuse);
+            if (isReuse()) {
+				result = normalEventMap.get(event);
+				if (result == null) {
+					// no, the event is new.
+					result = event;
+					normalEventMap.put(event, result);
+					eventCount++;
+				}
+			} else {
+				result = event;
+            }
+        } else {
+        	result = unmodifyingEventMap.get(rule);
+            // there can be at most one event
+            if (result == null) {
+                unmodifyingEventMap.put(rule, result = match.newEvent(this, reuse));
+                eventCount++;
+            }
+        }
+        reporter.stop();
+        return result;
+    }
+
+    /** 
 	 * Returns the highest node number occurring in a given graph,
 	 * taking only true {@link DefaultNode}s into account.
 	 */

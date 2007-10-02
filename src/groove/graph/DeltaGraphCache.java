@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaGraphCache.java,v 1.6 2007-09-25 22:57:53 rensink Exp $
+ * $Id: DeltaGraphCache.java,v 1.7 2007-10-02 23:06:28 rensink Exp $
  */
 package groove.graph;
 
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class DeltaGraphCache extends GraphCache {
     /**
@@ -110,7 +110,7 @@ public class DeltaGraphCache extends GraphCache {
     }
 
     /** Returns the basis of the underlying graph. */
-    public AbstractGraph getCacheBasis() {
+    public AbstractGraph<? extends GraphCache> getCacheBasis() {
     	if (! isCacheInit()) {
     		initCache();
     	}
@@ -164,7 +164,7 @@ public class DeltaGraphCache extends GraphCache {
      * @require <code>isFixed() && !isFrozen()</code>
      */
 	protected void initFixedCache() {
-		AbstractGraph graphBasis = getGraph().getBasis();
+		AbstractGraph<?> graphBasis = getGraph().getBasis();
 		DeltaGraphCache basisCache = getDeltaCache(graphBasis);
 		if (basisCache == null || basisCache.suggestSetFrozen()) {
 			cacheBasis = graphBasis;
@@ -650,12 +650,12 @@ public class DeltaGraphCache extends GraphCache {
 //	}
 	
 	/**
-	 * Retrives the delta cache of a given graph, if the graph is a 
+	 * Retrieves the delta cache of a given graph, if the graph is a 
 	 * {@link DeltaGraph} and its cache is currently set. 
 	 */
 	protected DeltaGraphCache getDeltaCache(Graph graph) {
 		if (graph instanceof DeltaGraph && !((DeltaGraph) graph).isCacheCleared()) {
-			return ((DeltaGraph<?>) graph).getCache();
+			return ((DeltaGraph) graph).getCache();
 		} else {
 			return null;
 		}
@@ -686,7 +686,7 @@ public class DeltaGraphCache extends GraphCache {
      * This is either some predecessor in the chain of graph bases or <code>null</code> (if the
      * graph is frozen).
      */
-    private AbstractGraph cacheBasis;
+    private AbstractGraph<? extends GraphCache> cacheBasis;
 //    /**
 //     * Count of the number of times this cache delta has been computed.
 //     */

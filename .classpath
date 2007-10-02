@@ -2,7 +2,6 @@
 <classpath>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="resources"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/antlr.jar"/>
 	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
 	<classpathentry kind="lib" path="lib/jgraph-5_9_2.jar"/>
@@ -12,5 +11,6 @@
 	<classpathentry kind="lib" path="lib/looks-2.1.4.jar"/>
 	<classpathentry kind="lib" path="lib/junit-3_8_1.jar"/>
 	<classpathentry kind="lib" path="lib/groove-gxl-1_0.jar" sourcepath="C:/local/Eclipse/workspace/groove/gxl/src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/Java 5 standard"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -12,13 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.19 2007-10-02 16:14:57 rensink Exp $
- * $Date: 2007-10-02 16:14:57 $
+ * $Id: Rule.java,v 1.20 2007-10-02 23:06:21 rensink Exp $
+ * $Date: 2007-10-02 23:06:21 $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
+import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
 import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeMap;
@@ -32,25 +33,9 @@ import java.util.Comparator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
-	/**
-	 * The lowest rule priority, which is also the default value if no
-	 * explicit priority is given.
-	 */
-	static public final int DEFAULT_PRIORITY = 0;
-	/**
-	 * A comparator for priorities, encoded as {@link Integer} objects.
-	 * This implementation orders priorities from high to low.
-	 */
-	static final public Comparator<Integer> PRIORITY_COMPARATOR = new Comparator<Integer>() {
-	    public int compare(Integer o1, Integer o2) {
-	        return o2.intValue() - o1.intValue();
-	    }
-	    
-	};
-
 	/** Returns the name of this rule. */
 	public RuleNameLabel getName();
 	
@@ -75,7 +60,6 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
     /**
      * Returns the rule morphism, which is the partial morphism from LHS
      * to RHS.
-     * @ensure <tt>result != null</tt>
      * @see #lhs()
      * @see #rhs()
      */
@@ -93,21 +77,18 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
     /** Indicates if the rule has node mergers. */
     public boolean hasMergers();
     
-    //
-	//    /**
-	//     * Returns the array of anchor elements of this rule.
-	//     * These are the elements from the left hand side that fully determine
-	//     * the matchings of the rule.
-	//     */
-	//    public Element[] anchor();
-//	
-//    /**
-//     * Returns the array of creator nodes of this rule.
-//     * @deprecated Only valid in {@link SPORule}
-//     */
-//    @Deprecated
-//    public Node[] getCreatorNodes();
-    
+    /** 
+     * Returns the collection of all matches for a given host graph, given
+     * a matching of the pattern graph.
+     * @param host the graph in which the match is to be found
+     * @param patternMatch a matching of the pattern of this condition; may
+     * be <code>null</code> if the condition is ground.
+     * @throws IllegalArgumentException if <code>patternMatch</code> is <code>null</code>
+     * and the condition is not ground, or if <code>patternMatch</code> is not compatible
+     * with the pattern graph
+     */
+    public Iterable<RuleMatch> getMatches(Graph host, NodeEdgeMap patternMatch);
+
     /**
      * Lazily creates and returns a matcher for rule events of this rule.
      * The matcher will try to extend anchor maps to full matches.
@@ -125,4 +106,20 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
 	 * if events are shared among transformations.
 	 */
 	public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse);
+	
+	/**
+	 * The lowest rule priority, which is also the default value if no
+	 * explicit priority is given.
+	 */
+	static public final int DEFAULT_PRIORITY = 0;
+	/**
+	 * A comparator for priorities, encoded as {@link Integer} objects.
+	 * This implementation orders priorities from high to low.
+	 */
+	static final public Comparator<Integer> PRIORITY_COMPARATOR = new Comparator<Integer>() {
+	    public int compare(Integer o1, Integer o2) {
+	        return o2.intValue() - o1.intValue();
+	    }
+	    
+	};
 }

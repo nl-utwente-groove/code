@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaGraph.java,v 1.10 2007-09-25 22:57:53 rensink Exp $
+ * $Id: DeltaGraph.java,v 1.11 2007-10-02 23:06:30 rensink Exp $
  */
 package groove.graph;
 
@@ -29,19 +29,14 @@ import java.util.Set;
  * the changes. This implementation caches the element set so as to avoid too frequent
  * reconstruction.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
-public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> implements DeltaApplier {
-    /**
-     * An empty array constant, to share in order to save space.
-     */
-    protected static final Element[] EMPTY_ELEMENT_ARRAY = new Element[0];
-
+public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements DeltaApplier {
     /**
      * Creates a new, empty delta graph.
      */
     public DeltaGraph() {
-        this(EMPTY_GRAPH);
+        this(AbstractGraph.<DeltaGraphCache>emptyGraph());
     }
 
     /**
@@ -50,7 +45,7 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
      * @require <tt>graph != null && graph.isFixed()</tt>
      * @ensure <tt>result.equals(graph)</tt>
      */
-    public DeltaGraph(AbstractGraph graph) {
+    public DeltaGraph(AbstractGraph<? extends GraphCache> graph) {
         assert graph.isFixed() : "Don't create delta graph on top of unfixed graph " + graph;
         this.basis = graph;
         deltaGraphCount++;
@@ -210,7 +205,7 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
     /**
      * Returns the basis of this delta graph. May be <tt>null</tt> if the graph has no basis.
      */
-    public AbstractGraph getBasis() {
+    public AbstractGraph<? extends GraphCache> getBasis() {
         return basis;
     }
 
@@ -352,21 +347,14 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
             return basisDepth + 1;
         }
     }
-//
-//    /**
-//	 * Convenience method for <tt>(DeltaGraphCache) getCache()</tt>.
-//	 */
-//	final protected DeltaGraphCache getDeltaCache() {
-//	    return (DeltaGraphCache) getCache();
-//	}
 
 	/**
      * This implementation returns a {@link DeltaGraphCache}. Note that the cache will attempt to
      * initialise itself using the basis' node and edge sets, if this graph is not fixed.
      */
 	@Override
-    protected C createCache() {
-        return (C) new DeltaGraphCache(this);
+    protected DeltaGraphCache createCache() {
+        return new DeltaGraphCache(this);
     }
 
     /**
@@ -532,24 +520,7 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
     /**
 	 * The basis graph, with respect to which the delta is calculated.
 	 */
-    private AbstractGraph basis;
-
-    private static int SET_FIXED = reporter.newMethod("setFixed()");
-
-    /** The number of delta caches reconstructed. */
-    private static int cacheReconstructCount;
-
-    /** The total number of delta elements created. */
-    protected static int deltaElementCount;
-
-    /** The total number of delta graphs. */
-    private static int deltaGraphCount;
-
-    /** The total number of delta graphs fixed. */
-    private static int fixedDeltaGraphCount;
-
-    /** The total number of delta graphs frozen. */
-    protected static int frozenDeltaGraphCount;
+    private AbstractGraph<? extends GraphCache> basis;
 
     /** Returns the total number of frozen delta graphs. */
     static public int getDeltaGraphCount() {
@@ -575,4 +546,26 @@ public class DeltaGraph<C extends DeltaGraphCache> extends AbstractGraph<C> impl
     static public int getCacheReconstructCount() {
         return cacheReconstructCount;
     }
+
+    private static int SET_FIXED = reporter.newMethod("setFixed()");
+
+    /** The number of delta caches reconstructed. */
+    private static int cacheReconstructCount;
+
+    /** The total number of delta elements created. */
+    protected static int deltaElementCount;
+
+    /** The total number of delta graphs. */
+    private static int deltaGraphCount;
+
+    /** The total number of delta graphs fixed. */
+    private static int fixedDeltaGraphCount;
+
+    /** The total number of delta graphs frozen. */
+    protected static int frozenDeltaGraphCount;
+    
+    /**
+     * An empty array constant, to share in order to save space.
+     */
+    protected static final Element[] EMPTY_ELEMENT_ARRAY = new Element[0];
 }

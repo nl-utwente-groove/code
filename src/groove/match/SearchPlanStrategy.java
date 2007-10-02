@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.11 2007-10-02 16:15:15 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.12 2007-10-02 23:06:38 rensink Exp $
  */
 package groove.match;
 
@@ -41,7 +41,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 	/**
@@ -323,21 +323,23 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
             this.nodePreMatches = new Node[nodeKeys.length];
             this.edgePreMatches = new Edge[edgeKeys.length];
             this.varPreMatches = new Label[varKeys.length];
-            for (Map.Entry<Node,Node> nodeEntry: preMatch.nodeMap().entrySet()) {
-            	assert isNodeFound(nodeEntry.getKey());
-                int i = getNodeIx(nodeEntry.getKey());
-                nodeImages[i] = nodePreMatches[i] = nodeEntry.getValue();
-            }
-            for (Map.Entry<Edge,Edge> edgeEntry: preMatch.edgeMap().entrySet()) {
-            	assert isEdgeFound(edgeEntry.getKey());
-                int i = getEdgeIx(edgeEntry.getKey());
-                edgeImages[i] = edgePreMatches[i] = edgeEntry.getValue();
-            }
-            if (preMatch instanceof VarNodeEdgeMap) {
-				for (Map.Entry<String, Label> varEntry : ((VarNodeEdgeMap) preMatch).getValuation().entrySet()) {
-	            	assert isVarFound(varEntry.getKey());
-					int i = getVarIx(varEntry.getKey());
-					varImages[i] = varPreMatches[i] = varEntry.getValue();
+            if (preMatch != null) {
+				for (Map.Entry<Node, Node> nodeEntry : preMatch.nodeMap().entrySet()) {
+					assert isNodeFound(nodeEntry.getKey());
+					int i = getNodeIx(nodeEntry.getKey());
+					nodeImages[i] = nodePreMatches[i] = nodeEntry.getValue();
+				}
+				for (Map.Entry<Edge, Edge> edgeEntry : preMatch.edgeMap().entrySet()) {
+					assert isEdgeFound(edgeEntry.getKey());
+					int i = getEdgeIx(edgeEntry.getKey());
+					edgeImages[i] = edgePreMatches[i] = edgeEntry.getValue();
+				}
+				if (preMatch instanceof VarNodeEdgeMap) {
+					for (Map.Entry<String, Label> varEntry : ((VarNodeEdgeMap) preMatch).getValuation().entrySet()) {
+						assert isVarFound(varEntry.getKey());
+						int i = getVarIx(varEntry.getKey());
+						varImages[i] = varPreMatches[i] = varEntry.getValue();
+					}
 				}
 			}
         }

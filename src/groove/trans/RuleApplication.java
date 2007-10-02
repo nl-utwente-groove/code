@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleApplication.java,v 1.8 2007-10-01 21:53:08 rensink Exp $
+ * $Id: RuleApplication.java,v 1.9 2007-10-02 23:06:25 rensink Exp $
  */
 package groove.trans;
 
@@ -29,7 +29,7 @@ import groove.rel.VarNodeEdgeMap;
  * derivation, and to reconstruct the matching and the target graph after they
  * have been minimised, if the cached representation has been discarded.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public interface RuleApplication extends Derivation, DeltaApplier {
     /**
@@ -77,7 +77,6 @@ public interface RuleApplication extends Derivation, DeltaApplier {
     
     /**
 	 * Returns the image of the rule's creator nodes in the target graph.
-	 * @see Rule#getCreatorNodes()
 	 * @deprecated Use {@link #getCreatedNodes()} instead
 	 */
     @Deprecated
@@ -85,7 +84,6 @@ public interface RuleApplication extends Derivation, DeltaApplier {
 
 	/**
      * Returns the image of the rule's creator nodes in the target graph.
-     * @see Rule#getCreatorNodes()
      */
 	public Node[] getCreatedNodes();
 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJTree.java,v 1.24 2007-10-01 14:48:17 rensink Exp $
+ * $Id: RuleJTree.java,v 1.25 2007-10-02 23:06:31 rensink Exp $
  */
 package groove.gui;
 
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -453,13 +453,13 @@ public class RuleJTree extends JTree implements SimulationListener {
     /** The currently displayed state. */
     private GraphState displayedState;
     /** The currently displayed grammar. */
-    private GrammarView displayedGrammar;
+    private GrammarView<?,?> displayedGrammar;
     
     /** 
      * Transforms a given rule name into the string that shows this rule is disabled.
      * This implementation puts brackets around the rule name.
      * @param name The rule name; non-<code>null</code>
-     * @return a string construced from <code>name</code> that shows the rule to be disabled
+     * @return a string constructed from <code>name</code> that shows the rule to be disabled
      */
     static public String showDisabled(String name) {
     	return "("+name+")";

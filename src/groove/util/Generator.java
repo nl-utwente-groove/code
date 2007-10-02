@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.21 2007-10-01 14:48:22 rensink Exp $
+ * $Id: Generator.java,v 1.22 2007-10-02 23:06:45 rensink Exp $
  */
 package groove.util;
 
@@ -76,7 +76,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -343,7 +343,7 @@ public class Generator extends CommandLineTool {
             // clear all caches to see all available memory
             for (GraphState state: getGTS().nodeSet()) {
                 if (state instanceof AbstractCacheHolder) {
-                    ((AbstractCacheHolder) state).clearCache();
+                    ((AbstractCacheHolder<?>) state).clearCache();
                 }
             }
             // the following is to make sure that the graph reference queue gets flushed

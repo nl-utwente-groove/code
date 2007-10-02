@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphResult.java,v 1.8 2007-04-29 09:22:39 rensink Exp $
+ * $Id: DefaultGraphResult.java,v 1.9 2007-10-02 23:06:43 rensink Exp $
  */
 package groove.calc;
 
@@ -21,12 +21,12 @@ import groove.graph.Morphism;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.SystemRecord;
 import groove.trans.GraphGrammar;
 import groove.trans.GraphTest;
-import groove.trans.Matching;
 import groove.trans.Rule;
+import groove.trans.RuleMatch;
 import groove.trans.RuleSystem;
+import groove.trans.SystemRecord;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -94,12 +94,12 @@ public class DefaultGraphResult implements GraphResult {
 
 	public GraphResult getFirstAfter(String ruleName) {
         Rule rule = calculator.getRule(ruleName);
-        Matching match = rule.getMatching(state.getGraph());
-        if (match == null) {
+        Iterator<RuleMatch> matches = rule.getMatches(state.getGraph(), null).iterator();
+        if (!matches.hasNext()) {
         	return null;
         } else {
 			SystemRecord record = calculator.getGTS().getRecord();
-			GraphState nextState = (GraphState) record.getApplication(rule, match).getTarget();
+			GraphState nextState = (GraphState) record.getApplication(matches.next(), state.getGraph()).getTarget();
 			return calculator.createResult(nextState);
 		}
     }
@@ -107,11 +107,11 @@ public class DefaultGraphResult implements GraphResult {
 	public Collection<GraphResult> getAllAfter(String ruleName) {
 		Collection<GraphResult> result = new ArrayList<GraphResult>();
         Rule rule = calculator.getRule(ruleName);
-        Iterator<? extends Matching> matchIter = rule.getMatchingIter(state.getGraph());
+        Iterator<RuleMatch> matchIter = rule.getMatches(state.getGraph(),null).iterator();
         while (matchIter.hasNext()) {
-			Matching match = matchIter.next();
+        	RuleMatch match = matchIter.next();
 			SystemRecord record = calculator.getGTS().getRecord();
-			GraphState nextState = (GraphState) record.getApplication(rule, match).getTarget();
+			GraphState nextState = (GraphState) record.getApplication(match,state.getGraph()).getTarget();
 			result.add(calculator.createResult(nextState));
 		}
         return result;

@@ -12,18 +12,18 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.8 2007-08-31 10:23:06 rensink Exp $
+ * $Id: GraphTest.java,v 1.9 2007-10-02 23:06:24 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
-import groove.rel.VarMorphism;
+import groove.graph.NodeEdgeMap;
 
 /**
  * Super-interface for tests over graphs.
  * Contains the common functionality of {@link GraphPredicate} and {@link GraphCondition}.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public interface GraphTest {    
     /**
@@ -65,11 +65,22 @@ public interface GraphTest {
     public Graph getContext();
     
     /** 
-     * Checks if this graph test is satisfied for a given subject.
+	 * Checks if this graph test is satisfied for a given subject.
+	 * This can only be the case if the subject's domain coincides with this test's context.
+	 * @throws IllegalArgumentException if <code>subject</code> is not a total morphism
+	 * @deprecated Use {@link #matches(Graph,NodeEdgeMap)} instead
+	 */
+    @Deprecated
+	public boolean matches(groove.rel.VarMorphism subject);
+
+	/** 
+     * Checks if this graph test is satisfied for a given host graph.
      * This can only be the case if the subject's domain coincides with this test's context.
+     * @param host the host graph we try to find a match into
+     * @param patternMap the match of the pattern graph in <code>host</code>
      * @throws IllegalArgumentException if <code>subject</code> is not a total morphism
      */
-    public boolean matches(VarMorphism subject);
+    public boolean matches(Graph host, NodeEdgeMap patternMap);
     
     /** 
      * Checks if this graph test is satisfied for a given subject.
@@ -79,9 +90,10 @@ public interface GraphTest {
     
     /**
      * Returns the outcome of this test for a given subject morphism.
-     * @param subject the morphism to be tested
+     * @param host the host graph we try to find a match into
+     * @param patternMap the match of the pattern graph in <code>host</code>
      * @ensure <code>result.test() == this && result.subject() == morph</code>
      * @throws IllegalArgumentException if <code>! morph.isTotal()</code> or <code>morph.dom() != getContext()</code>
      */
-    public GraphTestOutcome<?,?> getOutcome(VarMorphism subject);
+    public GraphTestOutcome<?,?> getOutcome(Graph host, NodeEdgeMap patternMap);
 }
