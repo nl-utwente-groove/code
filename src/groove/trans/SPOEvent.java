@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.37 2007-10-01 21:53:07 rensink Exp $
+ * $Id: SPOEvent.java,v 1.38 2007-10-02 11:59:13 rensink Exp $
  */
 package groove.trans;
 
@@ -51,7 +51,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.37 $ $Date: 2007-10-01 21:53:07 $
+ * @version $Revision: 1.38 $ $Date: 2007-10-02 11:59:13 $
  */
 public class SPOEvent extends AbstractEvent<SPORule> {
     /**
@@ -139,15 +139,31 @@ public class SPOEvent extends AbstractEvent<SPORule> {
     	return Groove.toString(getAnchorImage(), ANCHOR_START, ANCHOR_END, ANCHOR_SEPARATOR);
 	}
 
-	public VarNodeEdgeMap getSimpleCoanchorMap() {
-	    if (reuse) {
+    @Deprecated
+    public VarNodeEdgeMap getSimpleCoanchorMap() {
+        if (reuse) {
             if (coanchorMap == null) {
                 coanchorMap = computeCoanchorMap();
             }
             return coanchorMap;
         } else {
-	        return computeCoanchorMap();
-	    }
+            return computeCoanchorMap();
+        }
+    }
+    
+    /**
+     * Constructs a map from the reader nodes of the RHS that are endpoints of
+     * creator edges, to the target graph nodes.
+     */
+    private VarNodeEdgeMap getCoanchorMap() {
+        if (reuse) {
+            if (coanchorMap == null) {
+                coanchorMap = computeCoanchorMap();
+            }
+            return coanchorMap;
+        } else {
+            return computeCoanchorMap();
+        }
     }
     
 	/**
@@ -533,7 +549,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      */
     private Set<Edge> computeSimpleCreatedEdges() {
         Set<Edge> result = createEdgeSet();
-        VarNodeEdgeMap coAnchorMap = getSimpleCoanchorMap();
+        VarNodeEdgeMap coAnchorMap = getCoanchorMap();
         for (Edge edge: getRule().getSimpleCreatorEdges()) {
             Edge edgeImage = coAnchorMap.mapEdge(edge);
             if (edgeImage != null) {
@@ -543,10 +559,9 @@ public class SPOEvent extends AbstractEvent<SPORule> {
         return result;
     }
 
-    @Override
 	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
     	Set<Edge> result = createEdgeSet();
-		VarNodeEdgeMap coanchorMap = getSimpleCoanchorMap().clone();
+		VarNodeEdgeMap coanchorMap = getCoanchorMap().clone();
 		// add creator node images
 		for (Node creatorNode: getRule().getCreatorNodes()) {
 			coanchorMap.putNode(creatorNode, createdNodes.next());
