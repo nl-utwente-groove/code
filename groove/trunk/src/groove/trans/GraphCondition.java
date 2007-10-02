@@ -12,12 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.10 2007-09-26 21:04:24 rensink Exp $
+ * $Id: GraphCondition.java,v 1.11 2007-10-02 16:14:56 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
+import groove.graph.NodeEdgeMap;
 import groove.rel.VarMorphism;
 import groove.view.FormatException;
 
@@ -28,7 +29,7 @@ import java.util.Iterator;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public interface GraphCondition extends GraphTest {
     /**
@@ -87,11 +88,21 @@ public interface GraphCondition extends GraphTest {
      */
     public void setAndNot(GraphTest test);
 
+    /** 
+     * Returns the collection of all matches for a given host graph, given
+     * a pre-match of the pattern graph.
+     * @param host the graph in which the match is to be found
+     * @param preMatch the mapping from the pattern graph to <code>host</code>; may be
+     * <code>null</code> this condition is ground.
+     * @throws IllegalArgumentException if this condition is not ground.
+     */
+    public Iterable<? extends Match> getMatches(Graph host, NodeEdgeMap preMatch);
+
     /**
      * Specialises the return type.
      */
-    
     public GraphConditionOutcome getOutcome(VarMorphism subject);
+
     /**
      * Returns a matching for a given graph, or <code>null</code> if no matching exists.
      * The matching condition is this condition.

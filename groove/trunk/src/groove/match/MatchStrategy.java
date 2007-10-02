@@ -20,7 +20,6 @@ package groove.match;
 import groove.calc.Property;
 import groove.graph.Graph;
 import groove.graph.NodeEdgeMap;
-import groove.rel.VarNodeEdgeMap;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,32 +29,32 @@ import java.util.Iterator;
  * A class implementing this interface will generate element maps given
  * a target graph, together with and a partial (initial) map to that target graph.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-public interface MatchStrategy {
+public interface MatchStrategy<Result> {
     /** 
      * Returns a single match to a given graph, extending a given partial match.
      * The partial match should be defined precisely for the pre-matched elements indicated
      * when constructing the match strategy.
-     * @param graph the graph into which the matching is to go
-     * @param preMatch a predefined mapping to the elements of <code>graph</code> that 
+     * @param host the graph into which the matching is to go
+     * @param preMatch a predefined mapping to the elements of <code>host</code> that 
      * the solution should respect. May be <code>null</code> if there is no predefined mapping
-     * @return a mapping to the elements of <code>graph</code> that augments <code>partialMatch</code>
-     * and fulfills the requirements to be a total match
+     * @return a mapping to the elements of <code>host</code> that augments <code>preMatch</code>
+     * and fulfils the requirements to be a total match
      */
-    public VarNodeEdgeMap getMatch(Graph graph, NodeEdgeMap preMatch);
+    public Result getMatch(Graph host, NodeEdgeMap preMatch);
     
     /** 
      * Returns the collection of all matches to a given graph that extend a given partial match. 
      * The partial match should be defined precisely for the pre-matched elements indicated
      * when constructing the match strategy.
-     * @param graph the graph into which the matching is to go
-     * @param preMatch a predefined mapping to the elements of <code>graph</code> that all
+     * @param host the graph into which the matching is to go
+     * @param preMatch a predefined mapping to the elements of <code>host</code> that all
      * the solutions should respect. May be <code>null</code> if there is no predefined mapping
-     * @return the set of all mappings to the elements of <code>graph</code> that
-     * augment <code>partialMatch</code> and fulfil the requirements to be total matches
+     * @return the set of all mappings to the elements of <code>host</code> that
+     * augment <code>preMatch</code> and fulfil the requirements to be total matches
      */
-    public Collection<VarNodeEdgeMap> getMatchSet(Graph graph, NodeEdgeMap preMatch);
+    public Collection<Result> getMatchSet(Graph host, NodeEdgeMap preMatch);
     
     /** 
      * Returns an iterator over all matches to a given graph that extend a given partial match.
@@ -63,14 +62,26 @@ public interface MatchStrategy {
      * when constructing the match strategy.
      * This method is an alternative to {@link #getMatchSet(Graph, NodeEdgeMap)} which allows the
      * matches to be computed lazily. 
-     * @param graph the graph into which the matching is to go
-     * @param preMatch a predefined mapping to the elements of <code>graph</code> that all
+     * @param host the graph into which the matching is to go
+     * @param preMatch a predefined mapping to the elements of <code>host</code> that all
      * the solutions should respect. May be <code>null</code> if there is no predefined mapping
-     * @return an iterator over all mappings to the elements of <code>graph</code> that
-     * augment <code>partialMatch</code> and fulfil the requirements to be total matches
+     * @return an iterator over all mappings to the elements of <code>host</code> that
+     * augment <code>preMatch</code> and fulfil the requirements to be total matches
      */
-    public Iterator<VarNodeEdgeMap> getMatchIter(Graph graph, NodeEdgeMap preMatch);
+    public Iterator<Result> getMatchIter(Graph host, NodeEdgeMap preMatch);
 
+    /** 
+     * Returns the collection of all matches to a given graph that extend a given partial match. 
+     * The partial match should be defined precisely for the pre-matched elements indicated
+     * when constructing the match strategy.
+     * @param host the host graph into which the matching is to go
+     * @param preMatch a predefined mapping to the elements of <code>host</code> that all
+     * the solutions should respect. May be <code>null</code> if there is no predefined mapping
+     * @return the set of all mappings to the elements of <code>host</code> that
+     * augment <code>preMatch</code> and fulfil the requirements to be total matches
+     */
+    public Iterable<Result> getMatches(Graph host, NodeEdgeMap preMatch);
+    
     /**
      * Sets a filter for this strategy.
      * A filter is a property that is required to hold for all search results
@@ -78,5 +89,5 @@ public interface MatchStrategy {
      * @param filter the filter to be set; may be <code>null</code>, in which change
      * no constraints are imposed
      */
-	public void setFilter(Property<VarNodeEdgeMap> filter);
+	public void setFilter(Property<Result> filter);
 }

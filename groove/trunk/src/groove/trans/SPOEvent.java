@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.38 2007-10-02 11:59:13 rensink Exp $
+ * $Id: SPOEvent.java,v 1.39 2007-10-02 16:14:56 rensink Exp $
  */
 package groove.trans;
 
@@ -51,7 +51,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.38 $ $Date: 2007-10-02 11:59:13 $
+ * @version $Revision: 1.39 $ $Date: 2007-10-02 16:14:56 $
  */
 public class SPOEvent extends AbstractEvent<SPORule> {
     /**
@@ -292,7 +292,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
                 }
 
                 @Override
-                protected MatchStrategy createMatchStrategy() {
+                protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy() {
                     return getRule().getEventMatcher();
                 }
             };

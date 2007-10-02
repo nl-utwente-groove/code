@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.27 2007-09-26 21:04:24 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.28 2007-10-02 16:14:57 rensink Exp $
  */
 package groove.trans;
 
@@ -22,12 +22,18 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
+import groove.match.AbstractMatchStrategy;
 import groove.match.ConditionSearchPlanFactory;
 import groove.match.MatchStrategy;
 import groove.rel.VarMorphism;
+import groove.rel.VarNodeEdgeHashMap;
+import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
+import groove.util.FilterIterator;
 import groove.util.Reporter;
+import groove.util.TransformIterator;
 import groove.view.FormatException;
 
 import java.util.Collection;
@@ -39,7 +45,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -307,6 +313,53 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 		}
     }
 
+    public Iterable<? extends Match> getMatches(final Graph host, final NodeEdgeMap preMatch) {
+        Iterable<? extends Match> result;
+        reporter.start(GET_MATCHING);
+        if (preMatch == null) {
+            testGround();
+        }
+        testFixed(true);
+        result = new Iterable() {
+            public Iterator<? extends Match> iterator() {
+                return getMatchIter(host, preMatch);
+            }
+        };
+        reporter.stop();
+        return result;
+    }
+    
+    public Iterator<? extends Match> getMatchIter(final Graph host, NodeEdgeMap preMatch) {
+        Iterator<VarNodeEdgeMap> matchIter = getMatchStrategy().getMatchIter(host, preMatch);
+        if (hasComplexNegConjunct()) {
+            final DefaultGraphPredicate negConjunct = getComplexNegConjunct();
+            matchIter = new FilterIterator<VarNodeEdgeMap>(matchIter) {
+                @Override
+                protected boolean approves(Object obj) {
+                    VarNodeEdgeMap match = (VarNodeEdgeMap) obj;
+                    for (DefaultGraphCondition subCondition : negConjunct) {
+                        VarNodeEdgeMap liftedMatch = new VarNodeEdgeHashMap();
+                        try {
+                            constructInvertConcat(subCondition.elementMap(), match, liftedMatch);
+                            if (subCondition.getMatchIter(host, liftedMatch).hasNext()) {
+                                return false;
+                            }
+                        } catch (FormatException exc) {
+                            return false;
+                        }
+                    }
+                    return true;
+                }
+            };
+        }
+        return new TransformIterator<VarNodeEdgeMap, DefaultConditionMatch>(matchIter) {
+            @Override
+            protected DefaultConditionMatch toOuter(VarNodeEdgeMap from) {
+                return new DefaultConditionMatch(from);
+            }
+        };
+    }
+
     /**
 	 * If the condition is ground, returns a total matching from a given graph
 	 * to this condition's target pattern, if one exists. Otherwise, throws an
@@ -509,17 +562,17 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     protected GraphConditionOutcome createOutcome(final VarMorphism subject, final Map<Matching, GraphPredicateOutcome> matchingMap) {
         return new DefaultConditionOutcome(this, subject, matchingMap);
     }
-    
+
     /**
      * Returns the precomputed matching order for the elements of the target pattern. First creates
      * the order using {@link #createMatchStrategy()} if that has not been done.
      * @see #createMatchStrategy()
      */
-    public MatchStrategy getMatchStrategy() {
-        if (matcher == null) {
-            matcher = createMatchStrategy();
+    public MatchStrategy<VarNodeEdgeMap> getMatchStrategy() {
+        if (simpleMatcher == null) {
+            simpleMatcher = createMatchStrategy();
         }
-        return matcher;
+        return simpleMatcher;
     }
 
     /**
@@ -531,7 +584,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * connected to the context.
      */
     @Override
-    protected MatchStrategy createMatchStrategy() {
+    protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy() {
         setFixed();
         return getMatcherFactory().createMatcher(this);
     }
@@ -637,7 +690,13 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * Initially <code>null</code>; set by {@link #getMatchStrategy()} upon its
      * first invocation.
      */
-    private MatchStrategy matcher;
+    private MatchStrategy<VarNodeEdgeMap> simpleMatcher;
+    /**
+     * The fixed matching strategy for this graph condition.
+     * Initially <code>null</code>; set by {@link #getMatchStrategy()} upon its
+     * first invocation.
+     */
+    private MatchStrategy<? extends Match> matcher;
     /** The variables occurring in edges of the target (i.e., the codomain). */
     private Set<String> targetVars;
 	/**

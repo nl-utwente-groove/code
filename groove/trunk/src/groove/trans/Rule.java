@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.18 2007-10-02 11:59:14 rensink Exp $
- * $Date: 2007-10-02 11:59:14 $
+ * $Id: Rule.java,v 1.19 2007-10-02 16:14:57 rensink Exp $
+ * $Date: 2007-10-02 16:14:57 $
  */
 package groove.trans;
 
@@ -32,7 +32,7 @@ import java.util.Comparator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/**
@@ -112,7 +112,7 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * Lazily creates and returns a matcher for rule events of this rule.
      * The matcher will try to extend anchor maps to full matches.
      */
-    public MatchStrategy getEventMatcher();
+    public MatchStrategy<VarNodeEdgeMap> getEventMatcher();
 
 	/**
 	 * Factory method to create an event based on this rule.
