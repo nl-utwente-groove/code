@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.20 2007-09-30 21:45:09 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.21 2007-10-02 08:02:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -192,7 +192,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     	Collection<String> result = new ArrayList<String>();
     	if (hasValue()) {
     		String symbol = getValueSymbol();
-			String prefix = AttributeAspect.getValue(getAlgebra()).getPrefix();
+			String prefix = AttributeAspect.getAttributeValueFor(getAlgebra()).getPrefix();
     		result.add(prefix+symbol);    		
     	}
 		for (Edge edge : getSelfEdges()) {

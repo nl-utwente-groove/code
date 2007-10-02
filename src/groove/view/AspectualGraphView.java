@@ -12,10 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGraphView.java,v 1.12 2007-09-07 19:13:42 rensink Exp $
+ * $Id: AspectualGraphView.java,v 1.13 2007-10-02 07:58:39 rensink Exp $
  */
 package groove.view;
 
+import static groove.view.aspect.AttributeAspect.getAttributeValue;
+import static groove.view.aspect.AttributeAspect.getAttributeValueFor;
 import groove.algebra.Constant;
 import groove.graph.Edge;
 import groove.graph.Graph;
@@ -27,7 +29,6 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ValueNode;
 import groove.util.Pair;
-import groove.view.aspect.Aspect;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
@@ -137,7 +138,6 @@ public class AspectualGraphView extends AspectualView<Graph> {
 		// we need to record the model-to-view node map for removing isolated value nodes
 		Map<Node,AspectNode> modelToViewMap = new HashMap<Node,AspectNode>();
 		// copy the nodes from view to model
-		Aspect attributeAspect = AttributeAspect.getInstance();
 		for (AspectNode viewNode: view.nodeSet()) {
 			try {
 				boolean actualNode = true;
@@ -157,7 +157,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 						model.addNode(nodeImage);
 					} else {
 						errors.add(String.format("Node aspect value '%s' not allowed in graphs",
-								viewNode.getValue(attributeAspect)));
+								getAttributeValue(viewNode)));
 					}
 					viewToModelMap.put(viewNode, nodeImage);
 					modelToViewMap.put(nodeImage, viewNode);
@@ -196,7 +196,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 					} else if (!isAllowedEdge(edgeImage)) {
 						throw new FormatException(
 								"Edge aspect value '%s' not allowed in graphs",
-								viewEdge.getValue(attributeAspect));
+								getAttributeValue(viewEdge));
 					}
 					elementMap.putEdge(viewEdge, edgeImage);
 				} catch (FormatException exc) {
@@ -274,7 +274,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 			// create the nodes of the view
 			for (Node node: model.nodeSet()) {
 				AspectNode nodeImage = view.createNode();
-				AspectValue value = AttributeAspect.getAttributeValue(node);
+				AspectValue value = getAttributeValueFor(node);
 				if (value != null) {
 					nodeImage.setDeclaredValue(value);
 				}
@@ -290,7 +290,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 				for (int i = 0; i < edge.endCount(); i++) {
 					endImages.add(modelToViewMap.get(edge.end(i)));
 				}
-				AspectEdge edgeImage = new AspectEdge(endImages, edge.label(), AttributeAspect.getAttributeValue(edge));
+				AspectEdge edgeImage = new AspectEdge(endImages, edge.label(), AttributeAspect.getAttributeValueFor(edge));
 				view.addEdge(edgeImage);
 				// update the model-to-view element map
 				elementMap.edgeMap().put(edge, edgeImage);

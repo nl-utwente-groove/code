@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.2 2007-10-01 21:53:16 rensink Exp $
+ * $Id: NestingAspect.java,v 1.3 2007-10-02 07:56:04 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.2 $ $Date: 2007-10-01 21:53:16 $
+ * @version 0.1 $Revision: 1.3 $ $Date: 2007-10-02 07:56:04 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -56,6 +56,15 @@ public class NestingAspect extends AbstractAspect {
 		return instance;
 	}
 	
+    /** 
+     * Returns the nesting aspect value associated with a given aspect element.
+     * Convenience method for {@link AspectElement#getValue(Aspect)} with {@link #getInstance()}
+     * as parameter.
+     */
+    public static AspectValue getNestingValue(AspectElement elem) {
+    	return elem.getValue(getInstance());
+    }
+    
 	/**
 	 * Retrieve the level of an element as a String
 	 * @param element the element to retrieve the level of
@@ -63,7 +72,7 @@ public class NestingAspect extends AbstractAspect {
 	 *   NestingAspectValue, or if its level has not yet been assigned
 	 */
 	public static String getLevel(AspectElement element) {
-		NestingAspectValue value = (NestingAspectValue)element.getValue(getInstance());
+		NestingAspectValue value = (NestingAspectValue) getNestingValue(element);
 		if( value == null ) {
 			return null; // No Nesting Aspect
 		}
@@ -95,7 +104,7 @@ public class NestingAspect extends AbstractAspect {
 	 *   <code>false</code> if not
 	 */
 	public static boolean isMetaElement(AspectElement element) {
-		AspectValue value = element.getValue(getInstance());
+		AspectValue value = getNestingValue(element);
 		if( (element instanceof AspectNode) && value != null ) {
 			// Nodes with an aspect are automatically a Meta Element
 			return true;
@@ -111,7 +120,7 @@ public class NestingAspect extends AbstractAspect {
 	 * Determine whether a certain AspectElement is a Level-indicating edge.
 	 */
 	public static boolean isLevelEdge(AspectEdge element) {
-		AspectValue value = element.getValue(getInstance());
+		AspectValue value = getNestingValue(element);
 		return value != null && value.equals(LEVEL_EDGE);
 	}
 	
@@ -119,7 +128,7 @@ public class NestingAspect extends AbstractAspect {
 	 * Determine whether a certain AspectElement is a parent-indicating edge.
 	 */
 	public static boolean isParentEdge(AspectEdge element) {
-		AspectValue value = element.getValue(getInstance());
+		AspectValue value = getNestingValue(element);
 		return value != null && value.equals(PARENT_EDGE);
 	}	
 
@@ -153,7 +162,7 @@ public class NestingAspect extends AbstractAspect {
 	}
 	/** Returns the name of a nesting level identified by a given aspect element. */
 	public static String getLevelName(AspectElement element) {
-		NestingAspectValue value = (NestingAspectValue) element.getValue(instance);
+		NestingAspectValue value = (NestingAspectValue) getNestingValue(element);
 		return value != null ? (value.getContent()) : null;
 	}
 	
