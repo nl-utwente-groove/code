@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.12 2007-10-02 23:06:22 rensink Exp $
+ * $Id: GraphCondition.java,v 1.13 2007-10-03 07:23:28 rensink Exp $
  */
 package groove.trans;
 
@@ -28,7 +28,7 @@ import java.util.Iterator;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public interface GraphCondition extends GraphTest {
     /**
@@ -84,13 +84,13 @@ public interface GraphCondition extends GraphTest {
      * Returns the collection of all matches for a given host graph, given
      * a matching of the pattern graph.
      * @param host the graph in which the match is to be found
-     * @param patternMatch a matching of the pattern of this condition; may
+     * @param patternMap a matching of the pattern of this condition; may
      * be <code>null</code> if the condition is ground.
      * @throws IllegalArgumentException if <code>patternMatch</code> is <code>null</code>
      * and the condition is not ground, or if <code>patternMatch</code> is not compatible
      * with the pattern graph
      */
-    public Iterable<? extends Match> getMatches(Graph host, NodeEdgeMap patternMatch);
+    public Iterable<? extends Match> getMatches(Graph host, NodeEdgeMap patternMap);
 
     /**
      * Specialises the return type.

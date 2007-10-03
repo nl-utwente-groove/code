@@ -29,7 +29,7 @@ import java.util.Iterator;
  * A class implementing this interface will generate element maps given
  * a target graph, together with and a partial (initial) map to that target graph.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface MatchStrategy<Result> {
     /** 
@@ -37,50 +37,51 @@ public interface MatchStrategy<Result> {
      * The partial match should be defined precisely for the pre-matched elements indicated
      * when constructing the match strategy.
      * @param host the graph into which the matching is to go
-     * @param preMatch a predefined mapping to the elements of <code>host</code> that 
+     * @param anchorMap a predefined mapping to the elements of <code>host</code> that 
      * the solution should respect. May be <code>null</code> if there is no predefined mapping
      * @return a mapping to the elements of <code>host</code> that augments <code>preMatch</code>
      * and fulfils the requirements to be a total match
+     * @deprecated use {@link #getMatchIter(Graph, NodeEdgeMap)} instead
      */
-    public Result getMatch(Graph host, NodeEdgeMap preMatch);
+    @Deprecated
+    public Result getMatch(Graph host, NodeEdgeMap anchorMap);
     
     /** 
      * Returns the collection of all matches to a given graph that extend a given partial match. 
      * The partial match should be defined precisely for the pre-matched elements indicated
      * when constructing the match strategy.
      * @param host the graph into which the matching is to go
-     * @param preMatch a predefined mapping to the elements of <code>host</code> that all
+     * @param anchorMap a predefined mapping to the elements of <code>host</code> that all
      * the solutions should respect. May be <code>null</code> if there is no predefined mapping
      * @return the set of all mappings to the elements of <code>host</code> that
      * augment <code>preMatch</code> and fulfil the requirements to be total matches
      */
-    public Collection<Result> getMatchSet(Graph host, NodeEdgeMap preMatch);
+    public Collection<Result> getMatchSet(Graph host, NodeEdgeMap anchorMap);
     
     /** 
      * Returns an iterator over all matches to a given graph that extend a given partial match.
      * The partial match should be defined precisely for the pre-matched elements indicated
      * when constructing the match strategy.
-     * This method is an alternative to {@link #getMatchSet(Graph, NodeEdgeMap)} which allows the
-     * matches to be computed lazily. 
+     * This method allows the matches to be computed lazily. 
      * @param host the graph into which the matching is to go
-     * @param preMatch a predefined mapping to the elements of <code>host</code> that all
+     * @param anchorMap a predefined mapping to the elements of <code>host</code> that all
      * the solutions should respect. May be <code>null</code> if there is no predefined mapping
      * @return an iterator over all mappings to the elements of <code>host</code> that
      * augment <code>preMatch</code> and fulfil the requirements to be total matches
      */
-    public Iterator<Result> getMatchIter(Graph host, NodeEdgeMap preMatch);
+    public Iterator<Result> getMatchIter(Graph host, NodeEdgeMap anchorMap);
 
     /** 
      * Returns the collection of all matches to a given graph that extend a given partial match. 
      * The partial match should be defined precisely for the pre-matched elements indicated
      * when constructing the match strategy.
      * @param host the host graph into which the matching is to go
-     * @param preMatch a predefined mapping to the elements of <code>host</code> that all
+     * @param anchorMap a predefined mapping to the elements of <code>host</code> that all
      * the solutions should respect. May be <code>null</code> if there is no predefined mapping
      * @return the set of all mappings to the elements of <code>host</code> that
      * augment <code>preMatch</code> and fulfil the requirements to be total matches
      */
-    public Iterable<Result> getMatches(Graph host, NodeEdgeMap preMatch);
+    public Iterable<Result> getMatches(Graph host, NodeEdgeMap anchorMap);
     
     /**
      * Sets a filter for this strategy.
