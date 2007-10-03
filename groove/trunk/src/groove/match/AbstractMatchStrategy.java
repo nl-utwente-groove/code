@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMatchStrategy.java,v 1.1 2007-10-02 16:15:15 rensink Exp $
+ * $Id: AbstractMatchStrategy.java,v 1.2 2007-10-03 07:23:26 rensink Exp $
  */
 package groove.match;
 
@@ -26,7 +26,7 @@ import java.util.Iterator;
 
 /**
  * Class providing basic functionality for match strategies.
- * The only method left to be implemented is {@link #getMatches(Graph host, NodeEdgeMap preMatch)}.
+ * The only method left to be implemented is {@link #getMatches(Graph host, NodeEdgeMap anchorMap)}.
  * @param <R> the result type of the match
  * @author Arend Rensink
  * @version $Revision $
@@ -47,22 +47,23 @@ public abstract class AbstractMatchStrategy<R> implements MatchStrategy<R> {
         return filter;
     }
 
-    public R getMatch(Graph host, NodeEdgeMap preMatch) {
-        Iterator<R> iter = getMatchIter(host, preMatch);
+    @Deprecated
+    public R getMatch(Graph host, NodeEdgeMap anchorMap) {
+        Iterator<R> iter = getMatchIter(host, anchorMap);
         return iter.hasNext() ? iter.next(): null;
     }
 
-    public Iterable<R> getMatches(final Graph host, final NodeEdgeMap preMatch) {
+    public Iterable<R> getMatches(final Graph host, final NodeEdgeMap anchorMap) {
         return new Iterable<R>() {
             public Iterator<R> iterator() {
-                return getMatchIter(host, preMatch);
+                return getMatchIter(host, anchorMap);
             }
         };
     }
 
-    public Collection<R> getMatchSet(Graph host, NodeEdgeMap preMatch) {
+    public Collection<R> getMatchSet(Graph host, NodeEdgeMap anchorMap) {
         Collection<R> result = new ArrayList<R>();
-        for (R match: getMatches(host, preMatch)) {
+        for (R match: getMatches(host, anchorMap)) {
             result.add(match);
         }
         return result;

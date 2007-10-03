@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.12 2007-09-25 16:30:35 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.13 2007-10-03 07:23:25 rensink Exp $
  */
 package groove.match;
 
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Factory that adds to a graph search plan the following items the search items for the simple negative conditions (edge and merge embargoes).
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 
@@ -58,14 +58,14 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      * This extends the ordinary search plan with negative tests.
      * Takes control and common labels into account (if any).
      * @param condition the condition for which a search plan is to be constructed
-     * @param preMatchedNodes the nodes of the condition that have been matched already
-     * @param preMatchedEdges the edges of the condition that have been matched already
+     * @param anchorNodes the nodes of the condition that have been matched already
+     * @param anchorEdges the edges of the condition that have been matched already
      */
-    public SearchPlanStrategy createMatcher(GraphCondition condition, Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
+    public SearchPlanStrategy createMatcher(GraphCondition condition, Collection<? extends Node> anchorNodes, Collection<? extends Edge> anchorEdges) {
     	PlanData planData = new GrammarPlanData(condition);
-    	SearchPlanStrategy result = new SearchPlanStrategy(condition.getTarget(), planData.getPlan(preMatchedNodes, preMatchedEdges), isInjective());
+    	SearchPlanStrategy result = new SearchPlanStrategy(condition.getTarget(), planData.getPlan(anchorNodes, anchorEdges), isInjective());
         if (PRINT) {
-            System.out.print(String.format("%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s", condition.getName(), preMatchedNodes, preMatchedEdges, result));
+            System.out.print(String.format("%nPlan for %s, prematched nodes %s, prematched edges %s:%n    %s", condition.getName(), anchorNodes, anchorEdges, result));
         }
         result.setFixed();
         return result;
@@ -105,11 +105,12 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
 
         /**
          * Adds embargo and injection search items to the super result.
-         * @param preMatchedNodes the set of pre-matched nodes
-         * @param preMatchedEdges the set of pre-matched edges
+         * @param anchorNodes the set of pre-matched nodes
+         * @param anchorEdges the set of pre-matched edges
          */
-        @Override Collection<SearchItem> computeSearchItems(Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
-            Collection<SearchItem> result = super.computeSearchItems(preMatchedNodes, preMatchedEdges);
+        @Override 
+        Collection<SearchItem> computeSearchItems(Collection<? extends Node> anchorNodes, Collection<? extends Edge> anchorEdges) {
+            Collection<SearchItem> result = super.computeSearchItems(anchorNodes, anchorEdges);
             if (condition instanceof DefaultGraphCondition) {
                 Set<Edge> negations = ((DefaultGraphCondition) condition).getNegations();
                 if (negations != null) {

@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.20 2007-10-02 23:06:21 rensink Exp $
- * $Date: 2007-10-02 23:06:21 $
+ * $Id: Rule.java,v 1.21 2007-10-03 07:23:28 rensink Exp $
+ * $Date: 2007-10-03 07:23:28 $
  */
 package groove.trans;
 
@@ -33,7 +33,7 @@ import java.util.Comparator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public interface Rule extends Comparable<Rule>, GraphCondition {
 	/** Returns the name of this rule. */
@@ -81,13 +81,13 @@ public interface Rule extends Comparable<Rule>, GraphCondition {
      * Returns the collection of all matches for a given host graph, given
      * a matching of the pattern graph.
      * @param host the graph in which the match is to be found
-     * @param patternMatch a matching of the pattern of this condition; may
+     * @param patternMap a matching of the pattern of this condition; may
      * be <code>null</code> if the condition is ground.
      * @throws IllegalArgumentException if <code>patternMatch</code> is <code>null</code>
      * and the condition is not ground, or if <code>patternMatch</code> is not compatible
      * with the pattern graph
      */
-    public Iterable<RuleMatch> getMatches(Graph host, NodeEdgeMap patternMatch);
+    public Iterable<RuleMatch> getMatches(Graph host, NodeEdgeMap patternMap);
 
     /**
      * Lazily creates and returns a matcher for rule events of this rule.

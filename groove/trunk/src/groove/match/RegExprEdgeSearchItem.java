@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.10 2007-09-26 21:04:25 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.11 2007-10-03 07:23:25 rensink Exp $ */
 package groove.match;
 
 import groove.graph.BinaryEdge;
@@ -124,8 +124,8 @@ public class RegExprEdgeSearchItem extends Edge2SearchItem {
         /** Constructs a new record, for a given matcher. */
         RegExprEdgeSingularRecord(Search search) {
             super(search);
-            this.sourcePreMatch = search.getNodePreMatch(sourceIx);
-            this.targetPreMatch = search.getNodePreMatch(targetIx);
+            this.sourcePreMatch = search.getNodeAnchor(sourceIx);
+            this.targetPreMatch = search.getNodeAnchor(targetIx);
             assert varIxMap.keySet().containsAll(neededVars);
         }
 

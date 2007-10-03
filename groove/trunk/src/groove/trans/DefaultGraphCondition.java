@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.29 2007-10-02 23:06:24 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.30 2007-10-03 07:23:28 rensink Exp $
  */
 package groove.trans;
 
@@ -44,7 +44,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  */
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {
     /**
@@ -286,11 +286,11 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	 * result.
 	 */
     public boolean matches(Graph graph) {
-    	return getMatchIter(graph, null).hasNext();
+    	return getMapIter(graph, null).hasNext();
 	}
 
     /**
-	 * Returns <code>true</code> if {@link #getMatchIter(Graph, NodeEdgeMap)}
+	 * Returns <code>true</code> if {@link #getMapIter(Graph, NodeEdgeMap)}
 	 * returns a non-empty iterator.
 	 * @deprecated Use {@link #matches(Graph,NodeEdgeMap)} instead
 	 */
@@ -300,22 +300,22 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	}
 
 	/**
-	 * Returns <code>true</code> if {@link #getMatchIter(Graph, NodeEdgeMap)}
+	 * Returns <code>true</code> if {@link #getMapIter(Graph, NodeEdgeMap)}
 	 * returns a non-empty iterator.
 	 */
     public boolean matches(Graph host, NodeEdgeMap matchMap) {
-    	return getMatchIter(host, matchMap).hasNext();
+    	return getMapIter(host, matchMap).hasNext();
     }
 
-    public Iterable<? extends Match> getMatches(final Graph host, final NodeEdgeMap patternMatch) {
+    public Iterable<? extends Match> getMatches(final Graph host, final NodeEdgeMap patternMap) {
         Iterable<? extends Match> result;
         reporter.start(GET_MATCHING);
         testFixed(true);
         // list the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap preMatch = liftPatternMatch(patternMatch);
+        final VarNodeEdgeMap anchorMap = liftPatternMap(patternMap);
         result = new Iterable<Match>() {
             public Iterator<Match> iterator() {
-            	return new TransformIterator<VarNodeEdgeMap, Match>(createMatchIter(host, preMatch)) {
+            	return new TransformIterator<VarNodeEdgeMap, Match>(createMapIter(host, anchorMap)) {
 	                @Override
 	                protected Match toOuter(VarNodeEdgeMap from) {
 	                	return createMatch(from);
@@ -328,10 +328,10 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     }
     
     /** 
-     * Returns an iterator over the matches of this condition
-     * into a given host graph, given a matching of the pattern graph.
+     * Returns an iterator over the mappings of this condition
+     * into a given host graph, given a mapping of the pattern graph.
      * @param host the host graph we are matching into
-     * @param patternMatch a matching of the pattern of this condition; may
+     * @param patternMap a matching of the pattern of this condition; may
      * be <code>null</code> if the condition is ground.
      * @return an iterator over the matches of this graph condition into <code>host</code>
      * that are consistent with <code>patternMatch</code>
@@ -339,12 +339,12 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * and the condition is not ground, or if <code>patternMatch</code> is not compatible
      * with the pattern graph
      */
-    public Iterator<VarNodeEdgeMap> getMatchIter(Graph host, NodeEdgeMap patternMatch) {
+    public Iterator<VarNodeEdgeMap> getMapIter(Graph host, NodeEdgeMap patternMap) {
     	Iterator<VarNodeEdgeMap> result;
         reporter.start(GET_MATCHING);
         testFixed(true);
-        VarNodeEdgeMap preMatch = liftPatternMatch(patternMatch);
-		result = createMatchIter(host, preMatch);
+        VarNodeEdgeMap preMatch = liftPatternMap(patternMap);
+		result = createMapIter(host, preMatch);
 		reporter.stop();
 		return result;
     }
@@ -356,16 +356,16 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * returns <code>patternMatch</code>; or <code>null</code> if there is
      * no such mapping.
      */
-    final protected VarNodeEdgeMap liftPatternMatch(NodeEdgeMap patternMatch) {
+    final protected VarNodeEdgeMap liftPatternMap(NodeEdgeMap patternMap) {
     	VarNodeEdgeMap result;
-    	if (patternMatch == null) {
+    	if (patternMap == null) {
     		testGround();
     		result = null;
     	} else try {
     		result = new VarNodeEdgeHashMap();
-    		constructInvertConcat(elementMap(), patternMatch, result);
-    		if (patternMatch instanceof VarNodeEdgeMap) {
-    			Map<String, Label> valuation = ((VarNodeEdgeMap) patternMatch).getValuation();
+    		constructInvertConcat(elementMap(), patternMap, result);
+    		if (patternMap instanceof VarNodeEdgeMap) {
+    			Map<String, Label> valuation = ((VarNodeEdgeMap) patternMap).getValuation();
     			for (Map.Entry<String, Label> varEntry : valuation.entrySet()) {
     				String var = varEntry.getKey();
     				if (getTargetVars().contains(var)) {
@@ -376,28 +376,40 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
     	} catch (FormatException exc) {
     		throw new IllegalArgumentException(
     				String.format("Pattern match %s incompatible with pattern %s",
-    						patternMatch,
+    						patternMap,
     						getPattern()));
     	}
 		return result;
     }
     
     /**
-	 * Returns an iterator over the matches of this condition into a given host
+	 * Returns an iterator over the mappings of this condition into a given host
 	 * graph, given a pre-matching of the pattern image.
 	 * 
 	 * @param host
-	 *            the host graph we are matching into
-	 * @param preMatch
-	 *            a matching of the image of {@link #getPattern()} under this
-	 *            condition's morphism into <code>host</code>; may be 
+	 *            the host graph we are mapping into
+	 * @param anchorMap
+	 *            a mapping of the image of {@link #getPattern()} under this
+	 *            condition's morphism, into <code>host</code>; may be 
 	 *            <code>null</code> if the condition is ground.
 	 * @return an iterator over the matches of this graph condition into
 	 *         <code>host</code> that are consistent with
 	 *         <code>preMatch</code>
 	 */
-    final protected Iterator<VarNodeEdgeMap> createMatchIter(final Graph host, NodeEdgeMap preMatch) {
-        Iterator<VarNodeEdgeMap> result = getMatchStrategy().getMatchIter(host, preMatch);
+    final protected Iterator<VarNodeEdgeMap> createMapIter(final Graph host, NodeEdgeMap anchorMap) {
+        Iterator<VarNodeEdgeMap> result = getMatchStrategy().getMatchIter(host, anchorMap);
+        return filterMapIter(result, host);
+    }
+
+    /** 
+     * Filters the results of an existing (raw) iterator so that
+     * the resulting objects all satisfy the additional constraints of this condition.
+     * @param matchMapIter the iterator to be filtered
+     * @param host the host graph we are mapping into
+     * @return an iterator of which all results satisfy {@link #satisfiesConstraints(Graph, VarNodeEdgeMap)}
+     */
+    final protected Iterator<VarNodeEdgeMap> filterMapIter(Iterator<VarNodeEdgeMap> matchMapIter, final Graph host) {
+        Iterator<VarNodeEdgeMap> result = matchMapIter;
         if (hasConstraints()) {
             result = new FilterIterator<VarNodeEdgeMap>(result) {
                 @Override
@@ -423,12 +435,12 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
 	 * of this graph condition.
 	 * This includes the negative and universal application conditions, if any.
 	 * @param host the graph into which a match is sought
-	 * @param match a candidate mapping from {@link #getTarget()} to <code>host</code>
-	 * @return <code>true</code> if <code>match</code> satisfies the additional constraints
+	 * @param matchMap a candidate mapping from {@link #getTarget()} to <code>host</code>
+	 * @return <code>true</code> if <code>matchMap</code> satisfies the additional constraints
 	 */
-	protected boolean satisfiesConstraints(final Graph host, VarNodeEdgeMap match) {
+	protected boolean satisfiesConstraints(final Graph host, VarNodeEdgeMap matchMap) {
 		for (DefaultGraphCondition subCondition : getComplexNegConjunct()) {
-			if (subCondition.getMatchIter(host, match).hasNext()) {
+			if (subCondition.getMapIter(host, matchMap).hasNext()) {
 				return false;
 			}
 		}
@@ -665,7 +677,7 @@ public class DefaultGraphCondition extends DefaultMorphism implements GraphCondi
      * the order using {@link #createMatchStrategy()} if that has not been done.
      * @see #createMatchStrategy()
      */
-    public MatchStrategy<VarNodeEdgeMap> getMatchStrategy() {
+    final public MatchStrategy<VarNodeEdgeMap> getMatchStrategy() {
         if (matchStrategy == null) {
             matchStrategy = createMatchStrategy();
         }

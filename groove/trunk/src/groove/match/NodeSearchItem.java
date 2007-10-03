@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.9 2007-09-26 08:30:24 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.10 2007-10-03 07:23:25 rensink Exp $
  */
 package groove.match;
 
@@ -35,7 +35,7 @@ public class NodeSearchItem extends AbstractSearchItem {
 	}
 	
 	public Record getRecord(Search search) {
-		if (nodeMatched || search.getNodePreMatch(nodeIx) != null) {
+		if (nodeMatched || search.getNodeAnchor(nodeIx) != null) {
 			// the node is pre-matched, so there is nothing to do
 			return createDummyRecord();
 		} else {

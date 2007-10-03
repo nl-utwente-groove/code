@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.10 2007-09-26 21:04:25 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.11 2007-10-03 07:23:25 rensink Exp $
  */
 package groove.match;
 
@@ -64,7 +64,7 @@ public class VarEdgeSearchItem extends Edge2SearchItem {
 
 	@Override
 	boolean isSingular(Search search) {
-		return super.isSingular(search) && (varFound || search.getVarPreMatch(varIx) != null);
+		return super.isSingular(search) && (varFound || search.getVarAnchor(varIx) != null);
 	}
 
 	@Override
@@ -93,7 +93,7 @@ public class VarEdgeSearchItem extends Edge2SearchItem {
     	 */
 		VarEdgeSingularRecord(Search search) {
 			super(search);
-			this.varPreMatch = search.getVarPreMatch(varIx);
+			this.varPreMatch = search.getVarAnchor(varIx);
 		}
 
 		/** This implementation returns the variable image from the match. */
@@ -114,7 +114,7 @@ public class VarEdgeSearchItem extends Edge2SearchItem {
         /** Constructs a new record, for a given matcher. */
         VarEdgeMultipleRecord(Search search) {
             super(search);
-            varPreMatch = search.getVarPreMatch(varIx);
+            varPreMatch = search.getVarAnchor(varIx);
         }
 
         @Override

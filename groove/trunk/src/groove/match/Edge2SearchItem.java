@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.5 2007-09-26 21:04:25 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.6 2007-10-03 07:23:25 rensink Exp $
  */
 package groove.match;
 
@@ -133,13 +133,13 @@ public class Edge2SearchItem extends AbstractSearchItem {
     
     /** Indicates if the edge is pre-matched in the search. */
     boolean isPreMatched(Search search) {
-    	return search.getEdgePreMatch(edgeIx) != null;
+    	return search.getEdgeAnchor(edgeIx) != null;
     }
     
     /** Indicates if the edge has a singular image in the search. */
     boolean isSingular(Search search) {
-    	boolean sourceSingular = sourceFound || search.getNodePreMatch(sourceIx) != null;
-    	boolean targetSingular = targetFound || search.getNodePreMatch(targetIx) != null;
+    	boolean sourceSingular = sourceFound || search.getNodeAnchor(sourceIx) != null;
+    	boolean targetSingular = targetFound || search.getNodeAnchor(targetIx) != null;
     	return sourceSingular && targetSingular;
     }
 
@@ -196,8 +196,8 @@ public class Edge2SearchItem extends AbstractSearchItem {
     	/** Constructs an instance for a given search. */
 		public Edge2SingularRecord(Search search) {
 			super(search);
-			this.sourcePreMatch = search.getNodePreMatch(sourceIx);
-			this.targetPreMatch = search.getNodePreMatch(targetIx);
+			this.sourcePreMatch = search.getNodeAnchor(sourceIx);
+			this.targetPreMatch = search.getNodeAnchor(targetIx);
 		}
 //
 //		@Override
@@ -263,8 +263,8 @@ public class Edge2SearchItem extends AbstractSearchItem {
          */
         Edge2MultipleRecord(Search search) {
             super(search);
-            sourcePreMatch = search.getNodePreMatch(sourceIx);
-            targetPreMatch = search.getNodePreMatch(targetIx);
+            sourcePreMatch = search.getNodeAnchor(sourceIx);
+            targetPreMatch = search.getNodeAnchor(targetIx);
             assert search.getEdge(edgeIx) == null : String.format("Edge %s already in %s", edge, search);
         }
 

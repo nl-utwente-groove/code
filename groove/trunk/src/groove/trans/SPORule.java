@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.30 2007-10-02 23:06:22 rensink Exp $
+ * $Id: SPORule.java,v 1.31 2007-10-03 07:23:28 rensink Exp $
  */
 package groove.trans;
 
@@ -49,7 +49,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /**
@@ -110,15 +110,15 @@ public class SPORule extends DefaultGraphCondition implements Rule {
     }
 	
 	@Override
-	public Iterable<RuleMatch> getMatches(final Graph host, NodeEdgeMap patternMatch) {
+	public Iterable<RuleMatch> getMatches(final Graph host, NodeEdgeMap patternMap) {
         Iterable<RuleMatch> result;
         reporter.start(GET_MATCHING);
         testFixed(true);
         // list the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap preMatch = liftPatternMatch(patternMatch);
+        final VarNodeEdgeMap preMatch = liftPatternMap(patternMap);
         result = new Iterable<RuleMatch>() {
             public Iterator<RuleMatch> iterator() {
-            	return new TransformIterator<VarNodeEdgeMap, RuleMatch>(createMatchIter(host, preMatch)) {
+            	return new TransformIterator<VarNodeEdgeMap, RuleMatch>(createMapIter(host, preMatch)) {
 	                @Override
 	                protected RuleMatch toOuter(VarNodeEdgeMap from) {
 	                	return new DefaultRuleMatch(SPORule.this, from);

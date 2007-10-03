@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.12 2007-10-02 23:06:38 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.13 2007-10-03 07:23:26 rensink Exp $
  */
 package groove.match;
 
@@ -25,9 +25,7 @@ import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
 
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,7 +39,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 	/**
@@ -57,25 +55,11 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         this.plan = plan;
         this.injective = injective;
     }
-    
-    @Override
-    public VarNodeEdgeMap getMatch(Graph host, NodeEdgeMap preMatch) {
-        VarNodeEdgeMap result;
-        reporter.start(GET_MATCH);
-        Search search = createSearch(host, preMatch);
-        if (search.find()) {
-            result = search.getMatch();
-        } else {
-            result = null;
-        }
-        reporter.stop();
-        return result;
-    }
 
-    public Iterator<VarNodeEdgeMap> getMatchIter(Graph host, NodeEdgeMap preMatch) {
+    public Iterator<VarNodeEdgeMap> getMatchIter(Graph host, NodeEdgeMap anchorMap) {
         Iterator<VarNodeEdgeMap> result;
         reporter.start(GET_MATCH_ITER);
-        final Search search = createSearch(host, preMatch);
+        final Search search = createSearch(host, anchorMap);
         result = new Iterator<VarNodeEdgeMap>() {
             public boolean hasNext() {
                 // test if there is an unreturned next or if we are done
@@ -117,18 +101,6 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         reporter.stop();
         return result;
     }
-
-    @Override
-    public Collection<VarNodeEdgeMap> getMatchSet(Graph host, NodeEdgeMap preMatch) {
-        reporter.start(GET_MATCH_SET);
-        Collection<VarNodeEdgeMap> result = new ArrayList<VarNodeEdgeMap>();
-        Search searchRecord = createSearch(host, preMatch);
-        while (searchRecord.find()) {
-            result.add(searchRecord.getMatch());
-        }
-        reporter.stop();
-        return result;
-    }
     
     /**
 	 * Indicates if this matching is (to be) injective.
@@ -152,9 +124,9 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /**
      * Callback factory method for an auxiliary {@link Search} object.
      */
-    protected Search createSearch(Graph host, NodeEdgeMap preMatch) {
+    protected Search createSearch(Graph host, NodeEdgeMap anchorMap) {
         testFixed(true);
-        return new Search(host, preMatch);
+        return new Search(host, anchorMap);
     }
     
     /** 
@@ -313,32 +285,32 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /** Class implementing an instantiation of the search plan algorithm for a given graph. */
     public class Search {
         /** Constructs a new record for a given graph and partial match. */
-        public Search(Graph host, NodeEdgeMap preMatch) {
+        public Search(Graph host, NodeEdgeMap anchorMap) {
             this.host = host;
             this.records = new SearchItem.Record[plan.size()];
             this.lastSingular = -1;
             this.nodeImages = new Node[nodeKeys.length];
             this.edgeImages = new Edge[edgeKeys.length];
             this.varImages = new Label[varKeys.length];
-            this.nodePreMatches = new Node[nodeKeys.length];
-            this.edgePreMatches = new Edge[edgeKeys.length];
-            this.varPreMatches = new Label[varKeys.length];
-            if (preMatch != null) {
-				for (Map.Entry<Node, Node> nodeEntry : preMatch.nodeMap().entrySet()) {
+            this.nodeAnchors = new Node[nodeKeys.length];
+            this.edgeAnchors = new Edge[edgeKeys.length];
+            this.varAnchors = new Label[varKeys.length];
+            if (anchorMap != null) {
+				for (Map.Entry<Node, Node> nodeEntry : anchorMap.nodeMap().entrySet()) {
 					assert isNodeFound(nodeEntry.getKey());
 					int i = getNodeIx(nodeEntry.getKey());
-					nodeImages[i] = nodePreMatches[i] = nodeEntry.getValue();
+					nodeImages[i] = nodeAnchors[i] = nodeEntry.getValue();
 				}
-				for (Map.Entry<Edge, Edge> edgeEntry : preMatch.edgeMap().entrySet()) {
+				for (Map.Entry<Edge, Edge> edgeEntry : anchorMap.edgeMap().entrySet()) {
 					assert isEdgeFound(edgeEntry.getKey());
 					int i = getEdgeIx(edgeEntry.getKey());
-					edgeImages[i] = edgePreMatches[i] = edgeEntry.getValue();
+					edgeImages[i] = edgeAnchors[i] = edgeEntry.getValue();
 				}
-				if (preMatch instanceof VarNodeEdgeMap) {
-					for (Map.Entry<String, Label> varEntry : ((VarNodeEdgeMap) preMatch).getValuation().entrySet()) {
+				if (anchorMap instanceof VarNodeEdgeMap) {
+					for (Map.Entry<String, Label> varEntry : ((VarNodeEdgeMap) anchorMap).getValuation().entrySet()) {
 						assert isVarFound(varEntry.getKey());
 						int i = getVarIx(varEntry.getKey());
-						varImages[i] = varPreMatches[i] = varEntry.getValue();
+						varImages[i] = varAnchors[i] = varEntry.getValue();
 					}
 				}
 			}
@@ -406,7 +378,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         
         /** Sets the node image for the node key with a given index. */
         final boolean putNode(int index, Node image) {
-        	assert nodePreMatches[index] == null : String.format("Assignment %s=%s replaces pre-matched image %s", nodeKeys[index], image, nodePreMatches[index]);
+        	assert nodeAnchors[index] == null : String.format("Assignment %s=%s replaces pre-matched image %s", nodeKeys[index], image, nodeAnchors[index]);
         	if (injective) {
         		Set<Node> usedNodes = getUsedNodes();
 				if (image != null && !usedNodes.add(image)) {
@@ -449,18 +421,18 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         }
 
         /** Indicates if the node at a given index was pre-matched in this search. */
-        final Node getNodePreMatch(int index) {
-            return nodePreMatches[index];
+        final Node getNodeAnchor(int index) {
+            return nodeAnchors[index];
         }
         
         /** Indicates if the edge at a given index was pre-matched in this search. */
-        final Edge getEdgePreMatch(int index) {
-            return edgePreMatches[index];
+        final Edge getEdgeAnchor(int index) {
+            return edgeAnchors[index];
         }
         
         /** Indicates if the variable at a given index was pre-matched in this search. */
-        final Label getVarPreMatch(int index) {
-            return varPreMatches[index];
+        final Label getVarAnchor(int index) {
+            return varAnchors[index];
         }
         
         /** 
@@ -516,11 +488,11 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         /** Array of variable images. */
         private final Label[] varImages;
         /** Array indicating, for each index, if the node with that image was pre-matched in the search. */
-        private final Node[] nodePreMatches;
+        private final Node[] nodeAnchors;
         /** Array indicating, for each index, if the variable with that image was pre-matched in the search. */
-        private final Edge[] edgePreMatches;
+        private final Edge[] edgeAnchors;
         /** Array indicating, for each index, if the edge with that image was pre-matched in the search. */
-        private final Label[] varPreMatches;
+        private final Label[] varAnchors;
         /** Flag indicating that a solution has already been found. */
         private boolean found;
         /** Index of the last search record known to be singular. */
