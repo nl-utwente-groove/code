@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleDependencies.java,v 1.8 2007-08-29 07:00:18 rensink Exp $
+ * $Id: RuleDependencies.java,v 1.9 2007-10-03 16:08:40 rensink Exp $
  */
 package groove.trans;
 
@@ -40,7 +40,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-08-29 07:00:18 $
+ * @version $Revision: 1.9 $ $Date: 2007-10-03 16:08:40 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */
@@ -399,7 +399,7 @@ public class RuleDependencies {
             positive.add(ANY_NODE);
         }
     	// now investigate the negative conjunct, taking care to swap positive and negative
-    	for (GraphCondition negCond: cond.getNegConjunct().getConditions()) {
+    	for (GraphCondition negCond: cond.getSubConditions()) {
 			collectConditionCharacteristics(negCond, negative, positive);
 		}
     }

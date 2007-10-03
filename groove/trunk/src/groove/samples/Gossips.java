@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Gossips.java,v 1.17 2007-10-01 16:02:14 rensink Exp $
+ * $Id: Gossips.java,v 1.18 2007-10-03 16:08:55 rensink Exp $
  */
 package groove.samples;
 
@@ -53,7 +53,7 @@ import java.util.List;
  * Sample class for a universal rule.
  * The example is based on the <i>gossiping girl</i> case.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class Gossips {
 //    static private final String GOSSIP_GPS_NAME = "babbelaars";
@@ -150,7 +150,9 @@ public class Gossips {
     	/** Constructs an instance of the rule. */
         public GossipRule(Rule basicRule, SystemProperties properties) throws FormatException {
             super(basicRule.getMorphism(), basicRule.getName(), 1, properties);
-            setAndNot(basicRule.getNegConjunct());
+            // commenting out because of deprecated events
+            // plus, there are no sub-conditions anyway (?)
+//            setAndNot(basicRule.getNegConjunct());
         }
 
         @Override

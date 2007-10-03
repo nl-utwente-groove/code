@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.14 2007-10-03 07:23:29 rensink Exp $
+ * $Id: NACTest.java,v 1.15 2007-10-03 16:08:54 rensink Exp $
  */
 package groove.test;
 
@@ -55,7 +55,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -166,7 +166,7 @@ public class NACTest extends TestCase {
     }
 
     public void testNAC0() {
-        rule.setAndNot(NACs[0]);
+        rule.addAndNot(NACs[0]);
         rule.setFixed();
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
@@ -210,7 +210,7 @@ public class NACTest extends TestCase {
     */
 
     public void testNAC3() {
-        rule.setAndNot(NACs[3]);
+        rule.addAndNot(NACs[3]);
         rule.setFixed();
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
@@ -224,8 +224,8 @@ public class NACTest extends TestCase {
     }
 
     public void testNAC03() {
-        rule.setAndNot(NACs[0]);
-        rule.setAndNot(NACs[3]);
+        rule.addAndNot(NACs[0]);
+        rule.addAndNot(NACs[3]);
         rule.setFixed();
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);

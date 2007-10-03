@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.17 2007-10-02 07:58:39 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.18 2007-10-03 16:08:56 rensink Exp $
  */
 
 package groove.view;
@@ -79,7 +79,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -376,11 +376,11 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			// add the nacs to the rule
 			for (Pair<Set<Node>, Set<Edge>> nacPair : AbstractGraph.getConnectedSets(nacNodeSet,
 					nacEdgeSet)) {
-				result.setAndNot(computeNac(result.lhs(), nacPair.first(), nacPair.second()));
+				result.addSubCondition(computeNac(result.lhs(), nacPair.first(), nacPair.second()));
 			}
 			// add the embargoes
 			for (GraphCondition embargo : embargoes) {
-				result.setAndNot(embargo);
+				result.addSubCondition(embargo);
 			}
 			testVariableBinding(graph);
 			result.setFixed();
@@ -664,7 +664,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			}
 		}
 		// now add the NACs
-		for (GraphCondition nac : rule.getNegConjunct().getConditions()) {
+		for (GraphCondition nac : rule.getSubConditions()) {
 			Morphism nacMorphism = nac.getPattern();
 			if (nac instanceof MergeEmbargo) {
 				result.addEdge(computeAspectEdge(images(lhsNodeMap,

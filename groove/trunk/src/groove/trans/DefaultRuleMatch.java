@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultRuleMatch.java,v 1.1 2007-10-02 16:14:57 rensink Exp $
+ * $Id: DefaultRuleMatch.java,v 1.2 2007-10-03 16:08:40 rensink Exp $
  */
 package groove.trans;
 
@@ -24,19 +24,18 @@ import groove.rel.VarNodeEdgeMap;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class DefaultRuleMatch extends DefaultConditionMatch implements RuleMatch {
+public class DefaultRuleMatch extends ExistentialMatch implements RuleMatch {
     /** Constructs a match for a given {@link SPORule}. */
     public DefaultRuleMatch(SPORule rule, VarNodeEdgeMap elementMap) {
-        super(elementMap);
-        this.rule = rule;
+        super(rule, elementMap);
     }
     
     public SPORule getRule() {
-        return rule;
+        return (SPORule) getCondition();
     }
 
     public SPOEvent newEvent(NodeFactory nodeFactory, boolean reuse) {
-        return new SPOEvent(getRule(), getElementMap(), nodeFactory, reuse);
+        return new SPOEvent(getRule(), matchMap(), nodeFactory, reuse);
     }
 
     /** Equality is determined by rule and element map. */
@@ -55,10 +54,6 @@ public class DefaultRuleMatch extends DefaultConditionMatch implements RuleMatch
 
     @Override
     public String toString() {
-        return String.format("Match of %s: Nodes %s, edges %s", getRule(), getElementMap().nodeMap(), getElementMap().edgeMap());
+        return String.format("Match of %s: Nodes %s, edges %s", getRule(), matchMap().nodeMap(), matchMap().edgeMap());
     }
-
-
-    /** The rule being matched. */
-    private final SPORule rule;
 }
