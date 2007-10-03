@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.13 2007-10-03 07:23:28 rensink Exp $
+ * $Id: GraphCondition.java,v 1.14 2007-10-03 16:08:40 rensink Exp $
  */
 package groove.trans;
 
@@ -28,7 +28,7 @@ import java.util.Iterator;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public interface GraphCondition extends GraphTest {
     /**
@@ -67,6 +67,7 @@ public interface GraphCondition extends GraphTest {
      * @return A predicate over the pattern codomain that
      * @see #getPattern()
      */
+    @Deprecated
     public GraphPredicate getNegConjunct();
     
     /**
@@ -78,7 +79,22 @@ public interface GraphCondition extends GraphTest {
      * @require <code>condition.getContext() == getPattern().cod()</code>
      * @throws IllegalStateException if the precondition is not fulfilled
      */
+    @Deprecated
     public void setAndNot(GraphTest test);
+    
+    /**
+     * Returns the collection of sub-conditions of this graph condition.
+     * The intended interpretation of the sub-conditions (as conjuncts or disjuncts) 
+     * depends on this condition.
+     */
+    public Collection<? extends GraphCondition> getSubConditions();
+    
+    /**
+     * Adds a sub-condition to this graph condition.
+     * @param condition the condition to be added
+     * @see #getSubConditions()
+     */
+    public void addSubCondition(GraphCondition condition);
     
     /** 
      * Returns the collection of all matches for a given host graph, given

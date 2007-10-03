@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatching.java,v 1.16 2007-10-02 23:06:22 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.17 2007-10-03 16:08:40 rensink Exp $
  */
 package groove.trans;
 
@@ -37,7 +37,7 @@ import java.util.Map;
  * Especially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  * @deprecated directly use {@link GraphCondition#getMatches(Graph, NodeEdgeMap)}
  */
 @Deprecated
@@ -143,7 +143,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
         Map<Matching,GraphPredicateOutcome> matchMap = new HashMap<Matching,GraphPredicateOutcome>();
         while (matchIter.hasNext()) {
             Matching match = matchIter.next();
-            GraphPredicateOutcome negResultSet = condition.getNegConjunct().getOutcome(cod(), ((DefaultRuleMatch) match).getElementMap());
+            GraphPredicateOutcome negResultSet = condition.getNegConjunct().getOutcome(cod(), ((DefaultRuleMatch) match).matchMap());
             matchMap.put(match, negResultSet);
         }
         return matchMap;
@@ -187,7 +187,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * @see #getTotalExtensionsIter()
      */
     protected boolean hasAC() {
-        return condition.hasComplexNegConjunct() || ac != null;
+        return condition.hasComplexConjunct() || ac != null;
     }
 
     /**
@@ -200,7 +200,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * @see #getTotalExtensionsIter()
      */
     protected boolean satisfiesAC(VarMorphism candidate) {
-        DefaultGraphPredicate complexNegConjunct = condition.getComplexNegConjunct();
+        DefaultGraphPredicate complexNegConjunct = condition.getComplexConjunct();
         boolean result = complexNegConjunct == null || !complexNegConjunct.matches(candidate.cod(), candidate.elementMap());
         if (result) {
         	result = ac == null || ac.isSatisfied(candidate);

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.31 2007-10-03 07:23:28 rensink Exp $
+ * $Id: SPORule.java,v 1.32 2007-10-03 16:08:40 rensink Exp $
  */
 package groove.trans;
 
@@ -49,7 +49,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /**
@@ -246,9 +246,9 @@ public class SPORule extends DefaultGraphCondition implements Rule {
         if (getNegations() != null && !getNegations().isEmpty()) {
             res += "\nEmbargo edges "+getNegations();
         }
-        if (hasComplexNegConjunct()) {
+        if (hasComplexConjunct()) {
             res += "\nNegative application conditions:";
-            for (GraphCondition nextNac: getComplexNegConjunct()) {
+            for (GraphCondition nextNac: getComplexConjunct()) {
                 if (nextNac instanceof DefaultNAC) {
                     res += "\n    " + nextNac.toString();
                 }
@@ -322,7 +322,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 			if (getProperties() != null) {
 				if (getProperties().isCheckCreatorEdges()) {
 					for (Edge edge : getSimpleCreatorEdges()) {
-						setAndNot(new EdgeEmbargo(lhs(),
+						addAndNot(new EdgeEmbargo(lhs(),
 								getCreatorMap().mapEdge(edge), getProperties()));
 					}
 				}
@@ -330,7 +330,7 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 					GraphCondition rhsNac = new DefaultGraphCondition(
 							getMorphism(), null, getProperties());
 					rhsNac.setFixed();
-					setAndNot(rhsNac);
+					addAndNot(rhsNac);
 				}
 			}
 			super.setFixed();
