@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExistentialCondition.java,v 1.1 2007-10-03 16:08:40 rensink Exp $
+ * $Id: ExistentialCondition.java,v 1.2 2007-10-03 18:03:38 rensink Exp $
  */
 package groove.trans;
 
@@ -32,7 +32,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ExistentialCondition extends AbstractCondition {
     /**
@@ -87,9 +87,6 @@ public class ExistentialCondition extends AbstractCondition {
      * those that are not edge or merge embargoes. 
      */
     protected void addComplexSubCondition(AbstractCondition condition) {
-        if (complexSubConditions == null) {
-            complexSubConditions = new ArrayList<AbstractCondition>();
-        }
         getComplexConjunct().add(condition);        
     }
     
@@ -202,6 +199,9 @@ public class ExistentialCondition extends AbstractCondition {
      * @see #getNegations()
      */
     protected Collection<AbstractCondition> getComplexConjunct() {
+        if (complexSubConditions == null) {
+            complexSubConditions = new ArrayList<AbstractCondition>();
+        }
         return complexSubConditions;
     }
     
@@ -211,7 +211,7 @@ public class ExistentialCondition extends AbstractCondition {
      * Convenience method for <code>getComplexNegConjunct() != null</code>. 
      */
     protected boolean hasComplexConjunct() {
-        return complexSubConditions != null;
+        return !getComplexConjunct().isEmpty();
     }
     
     /**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.32 2007-10-03 16:08:40 rensink Exp $
+ * $Id: SPORule.java,v 1.33 2007-10-03 18:03:38 rensink Exp $
  */
 package groove.trans;
 
@@ -32,14 +32,12 @@ import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
 import groove.util.Groove;
-import groove.util.TransformIterator;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,7 +47,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.32 $
+ * @version $Revision: 1.33 $
  */
 public class SPORule extends DefaultGraphCondition implements Rule {
     /**
@@ -111,25 +109,21 @@ public class SPORule extends DefaultGraphCondition implements Rule {
 	
 	@Override
 	public Iterable<RuleMatch> getMatches(final Graph host, NodeEdgeMap patternMap) {
-        Iterable<RuleMatch> result;
-        reporter.start(GET_MATCHING);
-        testFixed(true);
-        // list the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap preMatch = liftPatternMap(patternMap);
-        result = new Iterable<RuleMatch>() {
-            public Iterator<RuleMatch> iterator() {
-            	return new TransformIterator<VarNodeEdgeMap, RuleMatch>(createMapIter(host, preMatch)) {
-	                @Override
-	                protected RuleMatch toOuter(VarNodeEdgeMap from) {
-	                	return new DefaultRuleMatch(SPORule.this, from);
-	                }
-            	};
-            }
-        };
-        reporter.stop();
-        return result;
+        return (Iterable) super.getMatches(host, patternMap);
 	}
 
+    /** 
+     * Callback factory method to create a match on the basis of
+     * a mapping of this condition's target.
+     * @param matchMap the mapping, presumably of the elements of {@link #getTarget()}
+     * into some host graph
+     * @return a match constructed on the basis of <code>map</code>
+     */
+	@Override
+    protected DefaultRuleMatch createMatch(VarNodeEdgeMap matchMap) {
+        return new DefaultRuleMatch(this, matchMap);
+    }
+    
 	/** 
 	 * This implementation also returns <code>true</code> if
 	 * the dangling edge check is turned on.

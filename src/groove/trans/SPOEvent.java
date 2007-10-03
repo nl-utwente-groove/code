@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.42 2007-10-03 07:23:28 rensink Exp $
+ * $Id: SPOEvent.java,v 1.43 2007-10-03 18:03:38 rensink Exp $
  */
 package groove.trans;
 
@@ -51,7 +51,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.42 $ $Date: 2007-10-03 07:23:28 $
+ * @version $Revision: 1.43 $ $Date: 2007-10-03 18:03:38 $
  */
 public class SPOEvent extends AbstractEvent<SPORule> {
     /**
@@ -287,15 +287,18 @@ public class SPOEvent extends AbstractEvent<SPORule> {
     	Morphism result = null;
         if (isCorrectFor(host)) {
             Iterator<VarNodeEdgeMap> matchMapIter = getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
-        	Iterator<VarNodeEdgeMap> filteredMapIter = getRule().filterMapIter(matchMapIter, host);
+            Iterator<VarNodeEdgeMap> filteredMapIter = getRule().filterMapIter(matchMapIter, host);
         	if (filteredMapIter.hasNext()) {
-        	    final VarNodeEdgeMap matchMap = filteredMapIter.next();
+                ExistentialMatch match = getRule().getMatch(host, filteredMapIter.next());
+                if (match != null) {
+        	    final VarNodeEdgeMap matchMap = match.matchMap();
         		result = new DefaultMorphism(getRule().getTarget(), host) {
                     @Override
                     protected VarNodeEdgeMap createElementMap() {
                         return matchMap;
                     }
         		};
+                }
         	}
         }
         return result;
