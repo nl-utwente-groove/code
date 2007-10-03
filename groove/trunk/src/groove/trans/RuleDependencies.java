@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleDependencies.java,v 1.9 2007-10-03 16:08:40 rensink Exp $
+ * $Id: RuleDependencies.java,v 1.10 2007-10-03 23:10:53 rensink Exp $
  */
 package groove.trans;
 
@@ -22,6 +22,7 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.rel.Automaton;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
@@ -40,7 +41,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-10-03 16:08:40 $
+ * @version $Revision: 1.10 $ $Date: 2007-10-03 23:10:53 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */
@@ -345,7 +346,7 @@ public class RuleDependencies {
     }
     
     void collectConditionCharacteristics(GraphCondition cond, Set<Label> positive, Set<Label> negative) {
-    	Morphism pattern = cond.getPattern();
+    	NodeEdgeMap pattern = cond.getPatternMap();
     	Graph target = cond.getTarget();
         // collected the isolated fresh nodes
         Set<Node> isolatedNodes = new HashSet<Node>(target.nodeSet());
@@ -391,7 +392,7 @@ public class RuleDependencies {
             }
 		}
     	// if the condition pattern is non-injective, it means merging is part of the condition
-    	if (!pattern.isInjective()) {
+    	if (pattern.nodeMap().size() > new HashSet<Node>(pattern.nodeMap().values()).size()) {
     		positive.add(MERGE_LABEL);
     	}
     	// does the condition test for an isolated node? 
@@ -400,7 +401,11 @@ public class RuleDependencies {
         }
     	// now investigate the negative conjunct, taking care to swap positive and negative
     	for (GraphCondition negCond: cond.getSubConditions()) {
-			collectConditionCharacteristics(negCond, negative, positive);
+    		if (negCond instanceof PositiveCondition == cond instanceof PositiveCondition) {
+    			collectConditionCharacteristics(negCond, positive, negative);
+    		} else {
+    			collectConditionCharacteristics(negCond, negative, positive);
+    		}
 		}
     }
 

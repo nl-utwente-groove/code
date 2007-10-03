@@ -12,15 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.1 2007-10-03 16:08:40 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.2 2007-10-03 23:10:54 rensink Exp $
  */
 package groove.trans;
 
+import groove.graph.AbstractMorphism;
 import groove.graph.DefaultMorphism;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ValueNode;
 import groove.match.ConditionSearchPlanFactory;
@@ -28,44 +30,39 @@ import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
-import groove.util.FilterIterator;
 import groove.util.Reporter;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-abstract public class AbstractCondition extends DefaultMorphism implements GraphCondition {
+abstract public class AbstractCondition<M extends Match> implements GraphCondition {
     /**
      * Constructs a (named) graph condition based on a given pattern morphism.
      * The name may be <code>null</code>.
      */
-    protected AbstractCondition(Morphism pattern, NameLabel name, SystemProperties properties) {
-        super(pattern);
+    protected AbstractCondition(Graph target, NodeEdgeMap patternMap, NameLabel name, SystemProperties properties) {
+        this.patternMap = patternMap;
+        this.target = target;
 		this.properties = properties;
         this.name = name;
     }
     
     /**
-     * Constructs a (named) ground graph condition based on a given pattern target.
-     * and initially empty nested predicate.
+     * Constructs a (named) ground graph condition based on a given target graph.
      * The name may be <code>null</code>.
      */
     protected AbstractCondition(Graph target, NameLabel name, SystemProperties properties) {
-        super(target.newGraph(), target);
-		this.properties = properties;
-        this.name = name;
+    	this(target, new NodeEdgeHashMap(), name, properties);
     }
 
     public SystemProperties getProperties() {
@@ -74,16 +71,25 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
 
     /**
      * This implementation returns <code>this</code>.
+     * @deprecated use {@link #getPatternMap()} instead
      */
+    @Deprecated
     public Morphism getPattern() {
-        return this;
+        return new DefaultMorphism(getContext(), getTarget(), getPatternMap());
+    }
+
+    /**
+     * This implementation returns <code>this</code>.
+     */
+    public NodeEdgeMap getPatternMap() {
+        return patternMap;
     }
 
     /**
      * This implementation returns <code>cod()</code>.
      */
     public Graph getTarget() {
-        return cod();
+        return target;
     }
     
     /**
@@ -97,14 +103,15 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
      * Delegates to <code>getContext().isEmpty()</code> as per contract.
      */
     public boolean isGround() {
-        return getContext().isEmpty();
+        return getPatternMap().isEmpty();
     }
 
     /**
      * Returns <code>getPattern().dom()</code>.
      */
+    @Deprecated
     public Graph getContext() {
-        return dom();
+        return null;
     }
 
     /** 
@@ -135,7 +142,7 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
 	protected boolean hasAttributes() {
 		boolean result = ValueNode.hasValueNodes(getTarget());
 		if (result) {
-            Iterator<AbstractCondition> subConditionIter = getSubConditions().iterator();
+            Iterator<AbstractCondition<?>> subConditionIter = getSubConditions().iterator();
             while (!result && subConditionIter.hasNext()) {
                 result = subConditionIter.next().hasAttributes();
             }
@@ -151,14 +158,14 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
 		boolean result = false;
 		// first test if the pattern target has isolated nodes
 		Set<Node> freshTargetNodes = new HashSet<Node>(getTarget().nodeSet());
-		freshTargetNodes.removeAll(getPattern().nodeMap().values());
+		freshTargetNodes.removeAll(getPatternMap().nodeMap().values());
 		Iterator<Node> nodeIter = freshTargetNodes.iterator();
 		while (!result && nodeIter.hasNext()) {
 			result = getTarget().edgeSet(nodeIter.next()).isEmpty();
 		}     
 		if (!result) {
             // now recursively test the sub-conditions
-            Iterator<AbstractCondition> subConditionIter = getSubConditions().iterator();
+            Iterator<AbstractCondition<?>> subConditionIter = getSubConditions().iterator();
             while (!result && subConditionIter.hasNext()) {
                 result = subConditionIter.next().hasIsolatedNodes();
             }
@@ -166,30 +173,34 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
 		return result;
 	}
 
-	public Collection<AbstractCondition> getSubConditions() {
+	public Collection<AbstractCondition<?>> getSubConditions() {
 	    if (subConditions == null) {
-	        subConditions = new ArrayList<AbstractCondition>();
+	        subConditions = new ArrayList<AbstractCondition<?>>();
 	    }
         return subConditions;
     }
 
     public void addSubCondition(GraphCondition condition) {
-        assert condition instanceof GraphCondition : String.format("Condition %s should be an AbstractCondition", condition);
-        getSubConditions().add((AbstractCondition) condition);
+        assert condition instanceof AbstractCondition : String.format("Condition %s should be an AbstractCondition", condition);
+        getSubConditions().add((AbstractCondition<?>) condition);
     }
 
     /** Fixes the sub-predicate and this morphism. */
-    @Override
     public void setFixed() {
         if (!isFixed()) {
-            for (AbstractCondition subCondition: getSubConditions()) {
+        	getTarget().setFixed();
+            for (AbstractCondition<?> subCondition: getSubConditions()) {
                 subCondition.setFixed();
             }
-            super.setFixed();
+            fixed = true;
         }
     }
 
-    /**
+    public boolean isFixed() {
+		return fixed;
+	}
+
+	/**
      * Calls <code>getNegPredicate().setOr(test)</code>,
      * and for all the conditions in <code>test</code> calls
      * {@link #addSubCondition(GraphCondition)}.
@@ -236,46 +247,33 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
     	return getMatches(host, matchMap).iterator().hasNext();
     }
 
-    /** 
-     * Returns an iterator over the mappings of this condition
-     * into a given host graph, given a mapping of the pattern graph.
-     * Sub-conditions are <i>not</i> checked.
-     * @param host the host graph we are matching into
-     * @param patternMap a matching of the pattern of this condition; may
-     * be <code>null</code> if the condition is ground.
-     * @return an iterator over the matches of this graph condition into <code>host</code>
-     * that are consistent with <code>patternMatch</code>
-     * @throws IllegalArgumentException if <code>patternMatch</code> is <code>null</code>
-     * and the condition is not ground, or if <code>patternMatch</code> is not compatible
-     * with the pattern graph
-     */
-    public Iterator<VarNodeEdgeMap> getMatchMapIter(Graph host, NodeEdgeMap patternMap) {
-    	Iterator<VarNodeEdgeMap> result;
-        reporter.start(GET_MATCHING);
-        testFixed(true);
-        VarNodeEdgeMap anchorMap = getAnchorMap(patternMap);
-		result = filterMapIter(getMatchStrategy().getMatchIter(host, anchorMap), host);
-		reporter.stop();
-		return result;
-    }
+    public Iterable<M> getMatches(final Graph host, final NodeEdgeMap contextMap) {
+		return new Iterable<M>() {
+			public Iterator<M> iterator() {
+				return getMatchIter(host, contextMap);
+			}
+		};
+	}
+
+    abstract public Iterator<M> getMatchIter(Graph host, NodeEdgeMap contextMap);
     
     /** 
-     * Factors given matching of {@link #getPattern()} through this condition's
-     * morphism to obtain a matching of {@link #getTarget()}.
+     * Factors given matching of the condition context through this condition's
+     * pattern map, to obtain a matching of {@link #getTarget()}.
      * @return a mapping that, concatenated after this condition's morphism,
      * returns <code>patternMatch</code>; or <code>null</code> if there is
      * no such mapping.
      */
-    final protected VarNodeEdgeMap getAnchorMap(NodeEdgeMap patternMap) {
+    final protected VarNodeEdgeMap getAnchorMap(NodeEdgeMap contextMap) {
     	VarNodeEdgeMap result;
-    	if (patternMap == null) {
+    	if (contextMap == null) {
     		testGround();
     		result = null;
     	} else try {
     		result = new VarNodeEdgeHashMap();
-    		constructInvertConcat(elementMap(), patternMap, result);
-    		if (patternMap instanceof VarNodeEdgeMap) {
-    			Map<String, Label> valuation = ((VarNodeEdgeMap) patternMap).getValuation();
+    		AbstractMorphism.constructInvertConcat(getPatternMap(), contextMap, result);
+    		if (contextMap instanceof VarNodeEdgeMap) {
+    			Map<String, Label> valuation = ((VarNodeEdgeMap) contextMap).getValuation();
     			for (Map.Entry<String, Label> varEntry : valuation.entrySet()) {
     				String var = varEntry.getKey();
     				if (getTargetVars().contains(var)) {
@@ -286,8 +284,8 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
     	} catch (FormatException exc) {
     		throw new IllegalArgumentException(
     				String.format("Pattern match %s incompatible with pattern %s",
-    						patternMap,
-    						getPattern()));
+    						contextMap,
+    						getPatternMap()));
     	}
 		return result;
     }
@@ -311,33 +309,14 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
 //        return filterMapIter(result, host);
 //    }
 //
-    /** 
-     * Filters the results of an existing (raw) iterator so that
-     * the resulting objects all satisfy the additional constraints of this condition.
-     * @param matchMapIter the iterator to be filtered
-     * @param host the host graph we are mapping into
-     * @return an iterator of which all results satisfy {@link #satisfiesConstraints(Graph, VarNodeEdgeMap)}
-     */
-    final protected Iterator<VarNodeEdgeMap> filterMapIter(Iterator<VarNodeEdgeMap> matchMapIter, final Graph host) {
-        Iterator<VarNodeEdgeMap> result = matchMapIter;
-        if (hasConstraints()) {
-            result = new FilterIterator<VarNodeEdgeMap>(result) {
-                @Override
-                protected boolean approves(Object obj) {
-                    return satisfiesConstraints(host, (VarNodeEdgeMap) obj);
-                }
-            };
-        }
-        return result;
-    }
-
-    /**
-     * Indicates whether this graph condition imposes further constraints on
-     * the validity of a match map, besides embedding the condition's target graph.
-     */
-    protected boolean hasConstraints() {
-    	return false;
-    }
+//
+//    /**
+//     * Indicates whether this graph condition imposes further constraints on
+//     * the validity of a match map, besides embedding the condition's target graph.
+//     */
+//    protected boolean hasConstraints() {
+//    	return false;
+//    }
     
 	/**
 	 * Tests if a given candidate match satisfies the additional constraints
@@ -469,14 +448,15 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
 	 * based on a given initial matching of the pattern graph.
 	 */
     public GraphConditionOutcome getOutcome(Graph host, NodeEdgeMap patternMap) {
-    	Iterator<? extends Match> matchIter = getMatches(host, patternMap).iterator();
-    	Map<Match,GraphPredicateOutcome> matchMap = new HashMap<Match,GraphPredicateOutcome>();
-    	while (matchIter.hasNext()) {
-    		Match match = matchIter.next();
-    		GraphPredicateOutcome negResultSet = getNegConjunct().getOutcome(host, ((ExistentialMatch) match).matchMap());
-    		matchMap.put(match, negResultSet);
-    	}
-        return createOutcome(host, patternMap, matchMap);
+    	throw new UnsupportedOperationException();
+//    	Iterator<? extends Match> matchIter = getMatches(host, patternMap).iterator();
+//    	Map<Match,GraphPredicateOutcome> matchMap = new HashMap<Match,GraphPredicateOutcome>();
+//    	while (matchIter.hasNext()) {
+//    		Match match = matchIter.next();
+//    		GraphPredicateOutcome negResultSet = getNegConjunct().getOutcome(host, ((ExistentialMatch) match).matchMap());
+//    		matchMap.put(match, negResultSet);
+//    	}
+//        return createOutcome(host, patternMap, matchMap);
     }
 
     /**
@@ -515,7 +495,7 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
     final protected Matching newMatcher(groove.rel.VarMorphism subject) {
         try {
             Matching result = newMatcher(subject.cod());
-            constructInvertConcat(this, subject, result);
+            AbstractMorphism.constructInvertConcat(getPatternMap(), subject, result);
             for (Map.Entry<String,Label> varEntry: subject.getValuation().entrySet()) {
                 String var = varEntry.getKey();
                 if (getTargetVars().contains(var)) {
@@ -573,7 +553,6 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
      * Typically invoked once, at the first invocation of {@link #getMatchStrategy()}.
      * This implementation retrieves its value from {@link #getMatcherFactory()}.
      */
-    @Override
     protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy() {
         setFixed();
         return getMatcherFactory().createMatcher(this);
@@ -628,7 +607,7 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
     /** The variables occurring in edges of the target (i.e., the codomain). */
     private Set<String> targetVars;
     /** The collection of sub-conditions of this condition. */
-    private Collection<AbstractCondition> subConditions;
+    private Collection<AbstractCondition<?>> subConditions;
 	/**
 	 * Flag indicating that {@link #identityHashCode} has been computed
 	 * and assigned.
@@ -639,77 +618,20 @@ abstract public class AbstractCondition extends DefaultMorphism implements Graph
 	 * the event.
 	 */
     private int identityHashCode;
+    /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
+    boolean fixed;
+    /** 
+     * The pattern map of this condition, i.e., the element
+     * map from the context graph to the target graph.
+     */
+    private final NodeEdgeMap patternMap;
+    /** The target graph of this morphism. */
+    private final Graph target;
     /**
      * Factory instance for creating the correct simulation.
      */
     private final SystemProperties properties;
     
-    /** 
-     * Turns a collection of iterators into an iterator of collections.
-     * The collections returned by the resulting iterator are tuples of elements from the
-     * original iterators.
-     */
-    static public class TransposedIterator<X> implements Iterator<Collection<X>> {
-        /** Creates an iterator from a given collection of iterators. */
-        public TransposedIterator(Collection<Iterator<X>> matrix) {
-            this.matrix = new ArrayList<List<X>>();
-            this.solution = new ArrayList<X>();
-            for (Iterator<X> iter: matrix) {
-                List<X> row = new ArrayList<X>();
-                while (iter.hasNext()) {
-                    row.add(iter.next());
-                }
-                this.matrix.add(row);
-                this.solution.add(null);
-            }
-            rowCount = matrix.size();
-            columnIxs = new int[rowCount];
-            rowIx = 0;
-        }
-        
-        public boolean hasNext() {
-            int rowIx = this.rowIx;
-            while (rowIx >= 0 && rowIx < rowCount) {
-                List<X> row = matrix.get(rowIx);
-                int columnIx = columnIxs[rowIx];
-                if (columnIx < row.size()) {
-                    solution.set(rowIx, row.get(columnIx));
-                    columnIxs[rowIx] = columnIx+1;
-                    rowIx++;
-                } else {
-                    columnIxs[rowIx] = 0;
-                    rowIx--;
-                }
-            }
-            this.rowIx = rowIx;
-            return rowIx >= 0;
-        }
-        
-        public Collection<X> next() {
-            if (hasNext()) {
-                rowIx--;
-                return new ArrayList<X>(solution);
-            } else {
-                throw new UnsupportedOperationException();
-            }
-        }
-        
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-        
-        /** The matrix to be transposed. */
-        private final List<List<X>> matrix;
-        /** The number of rows in {@link #matrix}. */
-        private final int rowCount;
-        /** Structure in which the solution is built up. */
-        private final List<X> solution;
-        /** index in {@link #matrix} indicating to where the current solution has been built. */
-        private int rowIx;
-        /** The next element to be returned by <code>next</code>, if any. */
-        private int[] columnIxs;
-    }
-
     /** Reporter instance for profiling this class. */
     static public final Reporter reporter = Reporter.register(GraphTest.class);
     /** Handle for profiling {@link #getMatches(Graph,NodeEdgeMap)} and related methods. */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExistentialMatch.java,v 1.1 2007-10-03 16:08:40 rensink Exp $
+ * $Id: ExistsMatch.java,v 1.1 2007-10-03 23:10:53 rensink Exp $
  */
 package groove.trans;
 
@@ -29,71 +29,50 @@ import java.util.Collection;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ExistentialMatch extends CompositeMatch {
+public class ExistsMatch extends CompositeMatch {
     /** Constructs a match for a given {@link SPORule}. */
-    public ExistentialMatch(GraphCondition condition, VarNodeEdgeMap matchMap) {
-        this.condition = condition;
+    public ExistsMatch(VarNodeEdgeMap matchMap) {
         this.matchMap = matchMap;
     }
 
     @Override
     public Collection<Edge> getEdgeValues() {
         Collection<Edge> result = super.getEdgeValues();
-        result.addAll(matchMap().edgeMap().values());
+        result.addAll(getMatchMap().edgeMap().values());
         return result;
     }
 
     @Override
     public Collection<Node> getNodeValues() {
         Collection<Node> result = super.getNodeValues();
-        result.addAll(matchMap().nodeMap().values());
+        result.addAll(getMatchMap().nodeMap().values());
         return result;
     }
     
-    /** Returns the condition with which this match is associated. */
-    public GraphCondition getCondition() {
-        return condition;
-    }
-    
     /** Returns the element map constituting the map. */
-    public VarNodeEdgeMap matchMap() {
+    public VarNodeEdgeMap getMatchMap() {
         return matchMap;
     }
 
     /** Equality is determined by rule and element map. */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof ExistentialMatch
-                && ((ExistentialMatch) obj).matchMap().equals(matchMap());
-    }
-
-    @Override
-    public int hashCode() {
-        // pre-compute the value, if not yet done
-        if (hashCode == 0) {
-            hashCode = computeHashCode();
-            if (hashCode == 0) {
-                hashCode = 1;
-            }
-        }
-        return hashCode;
+        return obj instanceof ExistsMatch
+                && ((ExistsMatch) obj).getMatchMap().equals(getMatchMap())
+                && super.equals(obj);
     }
     
     /** Computes a value for the hash code. */
     @Override
     protected int computeHashCode() {
-        return getCondition().hashCode() ^ matchMap().hashCode();
+        return super.computeHashCode() ^ getMatchMap().hashCode();
     }
 
     @Override
     public String toString() {
-        return String.format("Nodes %s, edges %s", matchMap().nodeMap(), matchMap().edgeMap());
+        return String.format("Nodes %s, edges %s", getMatchMap().nodeMap(), getMatchMap().edgeMap());
     }
 
-    /** The condition with which this match is associated. */
-    private final GraphCondition condition;
     /** The map constituting the match. */
     private final VarNodeEdgeMap matchMap;
-    /** The (pre-computed) hash code of this match. */
-    private int hashCode;
 }

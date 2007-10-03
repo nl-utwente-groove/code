@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.15 2007-10-03 16:08:53 rensink Exp $
+ * $Id: TypeDiscoverer.java,v 1.16 2007-10-03 23:10:55 rensink Exp $
  */
 package groove.util;
 
@@ -28,8 +28,8 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeSetEdgeSetGraph;
-import groove.trans.DefaultNAC;
 import groove.trans.GraphGrammar;
+import groove.trans.NegativeCondition;
 import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
 import groove.trans.RuleSystem;
@@ -46,7 +46,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2007-10-03 16:08:53 $
+ * @version $Revision: 1.16 $ $Date: 2007-10-03 23:10:55 $
  */
 public class TypeDiscoverer {
     /**
@@ -83,7 +83,7 @@ public class TypeDiscoverer {
             }
             Morphism introduceMorph = new DefaultMorphism(createGraph(), ruleHandle);
             Rule introduce = createRule(introduceMorph, rule.getName(), introduceSystem);
-            introduce.addSubCondition(new DefaultNAC(introduceMorph, SystemProperties.getInstance(true)));
+            introduce.addSubCondition(new NegativeCondition(introduceMorph, SystemProperties.getInstance(true)));
             introduceSystem.add(introduce);
             // now the deletion rule
             Graph deleteLhs = createGraph();

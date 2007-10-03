@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.14 2007-10-03 16:08:40 rensink Exp $
+ * $Id: GraphCondition.java,v 1.15 2007-10-03 23:10:53 rensink Exp $
  */
 package groove.trans;
 
@@ -28,16 +28,21 @@ import java.util.Iterator;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public interface GraphCondition extends GraphTest {
     /**
      * Returns the pattern morphism that this condition itself tests for.
      * Together with the negative predicate this determines the complete condition.
      * @return a graph that must be present for this condition to hold
-     * @see #getNegConjunct()
+     * @see #getPatternMap()
      */
     public Morphism getPattern();
+    
+    /**
+     * Element map from the context of this condition to the condition target.
+     */
+    public NodeEdgeMap getPatternMap();
     
     /**
      * The codomain of the pattern morphism.
@@ -96,15 +101,20 @@ public interface GraphCondition extends GraphTest {
      */
     public void addSubCondition(GraphCondition condition);
     
-    /** 
-     * Returns the collection of all matches for a given host graph, given
+	/** 
+     * Returns an iterator over all matches for a given host graph, given
      * a matching of the pattern graph.
      * @param host the graph in which the match is to be found
-     * @param patternMap a matching of the pattern of this condition; may
+     * @param contextMap a matching of the pattern of this condition; may
      * be <code>null</code> if the condition is ground.
      * @throws IllegalArgumentException if <code>patternMatch</code> is <code>null</code>
      * and the condition is not ground, or if <code>patternMatch</code> is not compatible
      * with the pattern graph
+     */
+    public Iterator<? extends Match> getMatchIter(Graph host, NodeEdgeMap contextMap);
+    
+    /** 
+     * Returns an iterable wrapping a call to {@link #getMatchIter(Graph, NodeEdgeMap)}.
      */
     public Iterable<? extends Match> getMatches(Graph host, NodeEdgeMap patternMap);
 

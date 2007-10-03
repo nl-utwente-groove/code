@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NAC.java,v 1.3 2007-10-02 23:06:21 rensink Exp $
+ * $Id: NAC.java,v 1.4 2007-10-03 23:10:53 rensink Exp $
  */
 package groove.trans;
 
@@ -27,8 +27,9 @@ import groove.graph.NodeEdgeMap;
  * special subclasses, {@link MergeEmbargo} and {@link EdgeEmbargo}, are noteworthy
  * because they allow performance optimisations to be made during matching.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
+@Deprecated
 public interface NAC extends GraphCondition {
 	/** Tests if the NAC forbids a certain match.
 	 * @deprecated use {@link #matches(Graph, NodeEdgeMap)} instead. 

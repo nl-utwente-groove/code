@@ -12,19 +12,19 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultNAC.java,v 1.6 2007-10-02 23:06:23 rensink Exp $
+ * $Id: DefaultNAC.java,v 1.7 2007-10-03 23:10:53 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.DefaultMorphism;
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.graph.NodeEdgeMap;
 
 /**
- * @version $Revision: 1.6 $ $Date: 2007-10-02 23:06:23 $
+ * @version $Revision: 1.7 $ $Date: 2007-10-03 23:10:53 $
  */
-public class DefaultNAC extends DefaultGraphCondition implements NAC {
+@Deprecated
+public class DefaultNAC extends NegativeCondition {
     /**
      * Creates a NAC based on a given (partial) morphism.
      */
@@ -37,14 +37,5 @@ public class DefaultNAC extends DefaultGraphCondition implements NAC {
      */
     public DefaultNAC(Graph context, SystemProperties properties) {
         this(new DefaultMorphism(context, context.newGraph()), properties);
-    }
-
-    /**
-     * Delegates to {@link #matches(Graph, NodeEdgeMap)}
-     * @require this.dom().equals(match.dom())
-     */
-    @Deprecated
-    public boolean forbids(groove.rel.VarMorphism match) {
-        return matches(match.cod(), match.elementMap());
     }
 }

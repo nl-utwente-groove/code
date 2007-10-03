@@ -12,17 +12,19 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NegativeCondition.java,v 1.1 2007-10-03 16:08:40 rensink Exp $
+ * $Id: NegativeCondition.java,v 1.2 2007-10-03 23:10:54 rensink Exp $
  */
 package groove.trans;
+
+import groove.graph.DefaultMorphism;
+import groove.graph.Graph;
+import groove.graph.Morphism;
+import groove.graph.NodeEdgeMap;
+import groove.rel.VarNodeEdgeMap;
 
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
-
-import groove.graph.Graph;
-import groove.graph.Morphism;
-import groove.graph.NodeEdgeMap;
 
 /**
  * A negative graph condition, which tests against the existence of a graph structure.
@@ -31,15 +33,21 @@ import groove.graph.NodeEdgeMap;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NegativeCondition extends AbstractCondition {
+public class NegativeCondition extends AbstractCondition<CompositeMatch> {
     /**
      * Creates a negative condition that attempts to match a given pattern morphism.
      */
-    public NegativeCondition(Morphism pattern, NameLabel name, SystemProperties properties) {
-        super(pattern, name, properties);
+    public NegativeCondition(Morphism pattern, SystemProperties properties) {
+        super(pattern.cod(), pattern.elementMap(), null, properties);
     }
-    
-    
+
+    /**
+     * Creates a NAC over a default context and an initially empty target pattern.
+     */
+    public NegativeCondition(Graph pattern, SystemProperties properties) {
+        this(new DefaultMorphism(pattern, pattern.newGraph()), properties);
+    }
+
     /**
      * Adding sub-conditions is not allowed and will give rise to an exception.
      * @throws UnsupportedOperationException
@@ -49,19 +57,26 @@ public class NegativeCondition extends AbstractCondition {
         throw new UnsupportedOperationException();
     }
 
-    final public Iterable< ? extends Match> getMatches(Graph host, NodeEdgeMap patternMap) {
-        final boolean matches = getMatchMapIter(host, patternMap).hasNext();
-        return new Iterable<Match>() {
-            public Iterator<Match> iterator() {
-                if (matches) {
-                    return Collections.<Match>emptySet().iterator();
-                } else {
-                    return WRAPPED_EMPTY_MATCH.iterator();
-                }
-            }            
-        };
+	@Override
+    public Iterator<CompositeMatch> getMatchIter(final Graph host, NodeEdgeMap contextMap) {
+        Iterator<CompositeMatch> result = null;
+        reporter.start(GET_MATCHING);
+        testFixed(true);
+        // lift the pattern match to a pre-match of this condition's target
+        final VarNodeEdgeMap anchorMap = getAnchorMap(contextMap);
+        Iterator<VarNodeEdgeMap> matchMapIter = getMatchStrategy().getMatchIter(host, anchorMap);
+        while (result == null && matchMapIter.hasNext()) {
+        	if (satisfiesConstraints(host, matchMapIter.next())) {
+        		result = Collections.<CompositeMatch>emptySet().iterator();
+        	}
+        }
+        if (result == null) {
+        	result = WRAPPED_EMPTY_MATCH.iterator();
+        }
+        reporter.stop();
+        return result;
     }
     
     /** Constant empty match. */
-    static private final Set<Match> WRAPPED_EMPTY_MATCH = Collections.singleton((Match) new CompositeMatch());
+    private final Set<CompositeMatch> WRAPPED_EMPTY_MATCH = Collections.singleton(new CompositeMatch());
 }
