@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.15 2007-10-03 16:08:54 rensink Exp $
+ * $Id: NACTest.java,v 1.16 2007-10-03 23:10:56 rensink Exp $
  */
 package groove.test;
 
@@ -24,12 +24,13 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Morphism;
-import groove.rel.VarNodeEdgeMap;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.EdgeEmbargo;
 import groove.trans.MergeEmbargo;
-import groove.trans.NAC;
+import groove.trans.NegativeCondition;
+import groove.trans.Rule;
 import groove.trans.RuleApplication;
+import groove.trans.RuleMatch;
 import groove.trans.RuleNameLabel;
 import groove.trans.SPORule;
 import groove.trans.SystemProperties;
@@ -55,7 +56,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -67,7 +68,7 @@ public class NACTest extends TestCase {
     protected static final int G0_INDEX = 2;
 
     protected SPORule rule;
-    protected NAC[] NACs = new NAC[NR_NACS];
+    protected NegativeCondition[] NACs = new NegativeCondition[NR_NACS];
     protected Graph[] g = new Graph[NR_GRAPHS];
 
     protected DefaultNode[][] n = new DefaultNode[2+NR_NACS+NR_GRAPHS][];
@@ -166,7 +167,7 @@ public class NACTest extends TestCase {
     }
 
     public void testNAC0() {
-        rule.addAndNot(NACs[0]);
+        rule.addSubCondition(NACs[0]);
         rule.setFixed();
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
@@ -210,7 +211,7 @@ public class NACTest extends TestCase {
     */
 
     public void testNAC3() {
-        rule.addAndNot(NACs[3]);
+        rule.addSubCondition(NACs[3]);
         rule.setFixed();
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
@@ -224,8 +225,8 @@ public class NACTest extends TestCase {
     }
 
     public void testNAC03() {
-        rule.addAndNot(NACs[0]);
-        rule.addAndNot(NACs[3]);
+        rule.addSubCondition(NACs[0]);
+        rule.addSubCondition(NACs[3]);
         rule.setFixed();
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
@@ -240,10 +241,8 @@ public class NACTest extends TestCase {
 
     private Collection<RuleApplication> getDerivations(SPORule rule, Graph graph) {
     	Collection<RuleApplication> result = new ArrayList<RuleApplication>();
-    	Iterator<VarNodeEdgeMap> matchIter = rule.getMapIter(graph, null);
-    	while (matchIter.hasNext()) {
-    		VarNodeEdgeMap match = matchIter.next();
-			result.add(rule.newEvent(match, null, true).newApplication(graph));
+    	for (RuleMatch match: ((Rule) rule).getMatches(graph, null)) {
+			result.add(match.newEvent(null, true).newApplication(graph));
 		}
     	return result;
     }

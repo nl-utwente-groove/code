@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: EdgeEmbargo.java,v 1.6 2007-10-02 23:06:24 rensink Exp $
+ * $Id: EdgeEmbargo.java,v 1.7 2007-10-03 23:10:53 rensink Exp $
  */
 package groove.trans;
 
@@ -26,9 +26,9 @@ import groove.util.Groove;
 /**
  * A specialised NAC that forbids the presence of a certain edge.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
-public class EdgeEmbargo extends DefaultGraphCondition implements NAC {
+public class EdgeEmbargo extends NegativeCondition {
     /**
      * Constructs an edge embargo on a given graph from a given edge with
      * end nodes in a given graph (presumably a rule lhs).
@@ -42,37 +42,17 @@ public class EdgeEmbargo extends DefaultGraphCondition implements NAC {
         Node[] endImages = new Node[arity];
         for (int i = 0; i < arity; i++) {
             Node end = embargoEdge.end(i);
-            endImages[i] = getNode(end);
+            endImages[i] = getPatternMap().getNode(end);
             if (endImages[i] == null) {
                 endImages[i] = getTarget().addNode();
-                putNode(end, endImages[i]);
+                getPatternMap().putNode(end, endImages[i]);
             }
         }
-        cod().addEdge(endImages, embargoEdge.label());
+        getTarget().addEdge(endImages, embargoEdge.label());
         if (CONSTRUCTOR_DEBUG) {
             Groove.message("Edge embargo: " + this);
             Groove.message("Embargo edge: " + embargoEdge);
         }
-    }
-
-    /**
-     * Method overridden for efficiency
-     */
-    @Deprecated
-    public boolean forbids(groove.rel.VarMorphism match) {
-        Edge forbiddenEdge = match.mapEdge(embargoEdge);
-        assert forbiddenEdge != null : embargoEdge + " should have an image under the map " + match.elementMap();
-        boolean result;
-            result = match.cod().containsElement(forbiddenEdge);
-        if (APPLICATION_DEBUG) {
-            Groove.message(
-                "The following graph "
-                    + (result ? "DOES" : "DOES NOT")
-                    + " contain the forbidden edge "
-                    + forbiddenEdge);
-            Groove.message(match.cod());
-        }
-        return result;
     }
 
     /**
@@ -104,6 +84,5 @@ public class EdgeEmbargo extends DefaultGraphCondition implements NAC {
      */
     protected final Edge embargoEdge;
 
-    private final static boolean APPLICATION_DEBUG = false;
     private final static boolean CONSTRUCTOR_DEBUG = false;
 }

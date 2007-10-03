@@ -12,17 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.18 2007-10-03 16:08:56 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.19 2007-10-03 23:10:55 rensink Exp $
  */
 
 package groove.view;
 
+import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import static groove.view.aspect.RuleAspect.CREATOR;
 import static groove.view.aspect.RuleAspect.EMBARGO;
 import static groove.view.aspect.RuleAspect.ERASER;
 import static groove.view.aspect.RuleAspect.READER;
 import static groove.view.aspect.RuleAspect.getRuleValue;
-import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import groove.graph.AbstractGraph;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultLabel;
@@ -39,11 +39,10 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
-import groove.trans.DefaultNAC;
 import groove.trans.EdgeEmbargo;
 import groove.trans.GraphCondition;
 import groove.trans.MergeEmbargo;
-import groove.trans.NAC;
+import groove.trans.NegativeCondition;
 import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
 import groove.trans.SPORule;
@@ -79,7 +78,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -450,8 +449,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @param lhs the LHS graph
      * @param nacNodeSet set of graph elements that should be turned into a NAC target
      */
-    protected NAC computeNac(Graph lhs, Set<Node> nacNodeSet, Set<Edge> nacEdgeSet) {
-    	NAC result = null;
+    protected NegativeCondition computeNac(Graph lhs, Set<Node> nacNodeSet, Set<Edge> nacEdgeSet) {
+    	NegativeCondition result = null;
         // first check for merge end edge embargoes
         // they are characterised by the fact that there is precisely 1 element
         // in the nacElemSet, which is an edge
@@ -468,7 +467,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			// if we're here it means we couldn't make an embargo
 			result = createNAC(lhs);
 			Graph nacTarget = result.getTarget();
-			Morphism nacMorphism = result.getPattern();
+			NodeEdgeMap nacPatternMap = result.getPatternMap();
 			// add all nodes to nacTarget
 			nacTarget.addNodeSet(nacNodeSet);
 			// add edges and embargoes to nacTarget
@@ -479,15 +478,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 					Node end = edge.end(i);
 					if (nacTarget.addNode(end)) {
 						// the node identity in the lhs is the same
-						nacMorphism.putNode(end, end);
+						nacPatternMap.putNode(end, end);
 					}
 				}
-//				NAC subEmbargo = computeEmbargoFromNegation(nacTarget, edge);
-//				if (subEmbargo == null) {
-					nacTarget.addEdge(edge);
-//				} else {
-//					result.setAndNot(subEmbargo);
-//				}
+				nacTarget.addEdge(edge);
 			}
 		}
         return result;
@@ -518,11 +512,11 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	/**
 	 * Callback method to create a general NAC on a given graph.
 	 * @param context the context-graph
-	 * @return the new {@link groove.trans.NAC}
+	 * @return the new {@link groove.trans.NegativeCondition}
 	 * @see #toRule()
 	 */
-	protected NAC createNAC(Graph context) {
-	    return new DefaultNAC(context, properties);
+	protected NegativeCondition createNAC(Graph context) {
+	    return new NegativeCondition(context, properties);
 	}
 
 	/**
@@ -665,7 +659,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 		}
 		// now add the NACs
 		for (GraphCondition nac : rule.getSubConditions()) {
-			Morphism nacMorphism = nac.getPattern();
+			NodeEdgeMap nacMorphism = nac.getPatternMap();
 			if (nac instanceof MergeEmbargo) {
 				result.addEdge(computeAspectEdge(images(lhsNodeMap,
 						((MergeEmbargo) nac).getNodes()), MERGE_LABEL, EMBARGO, null));
@@ -678,16 +672,13 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 				// store the mapping from the NAC target nodes to the rule graph
 				Map<Node, AspectNode> nacNodeMap = new HashMap<Node, AspectNode>();
 				// first register the lhs nodes
-				for (Node key : nacMorphism.dom().nodeSet()) {
-					Node nacNode = nacMorphism.getNode(key);
-					if (nacNode != null) {
-						AspectNode nacNodeImage = lhsNodeMap.get(key);
-						nacNodeMap.put(nacNode, nacNodeImage);
-						nacGraph.addNode(nacNodeImage);
-					}
+				for (Map.Entry<Node, Node> nacEntry : nacMorphism.nodeMap().entrySet()) {
+					AspectNode nacNodeImage = lhsNodeMap.get(nacEntry.getKey());
+					nacNodeMap.put(nacEntry.getValue(), nacNodeImage);
+					nacGraph.addNode(nacNodeImage);
 				}
 				// add this nac's nodes
-				for (Node nacNode : nacMorphism.cod().nodeSet()) {
+				for (Node nacNode : nac.getTarget().nodeSet()) {
 					if (!nacNodeMap.containsKey(nacNode)) {
 						AspectNode nacNodeImage = computeAspectNode(result, EMBARGO, nacNode);
 						nacNodeMap.put(nacNode, nacNodeImage);
@@ -696,8 +687,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 						nacGraph.addNode(nacNodeImage);
 					}
 				}
-				Set<Edge> nacEdgeSet = new HashSet<Edge>(nacMorphism.cod().edgeSet());
-				nacEdgeSet.removeAll(nacMorphism.elementMap().edgeMap().values());
+				Set<Edge> nacEdgeSet = new HashSet<Edge>(nac.getTarget().edgeSet());
+				nacEdgeSet.removeAll(nacMorphism.edgeMap().values());
 				// add this nac's edges
 				for (Edge nacEdge : nacEdgeSet) {
 					List<AspectNode> endImages = images(nacNodeMap, nacEdge.ends());
@@ -807,8 +798,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @param morphism the morphisms to be check for injectivity
      * @throws IllegalArgumentException if <code>morphism</code> is not injective
      */
-    protected void testInjective(Morphism morphism) {
-        if (! morphism.isInjective()) {
+    protected void testInjective(NodeEdgeMap morphism) {
+        if (morphism.size() < new HashSet<Node>(morphism.nodeMap().values()).size()) {
             throw new IllegalArgumentException("Morpism "+morphism+" should be injective");
         }
     }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.32 2007-10-03 18:03:38 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.33 2007-10-03 23:10:53 rensink Exp $
  */
 package groove.trans;
 
@@ -31,15 +31,16 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.32 $
+ * @version $Revision: 1.33 $
  */
-public class DefaultGraphCondition extends AbstractCondition {
+@Deprecated
+public class DefaultGraphCondition extends AbstractCondition<ExistsMatch> {
     /**
      * Constructs a (named) graph condition based on a given pattern morphism.
      * The name may be <code>null</code>.
      */
     protected DefaultGraphCondition(Morphism pattern, NameLabel name, SystemProperties properties) {
-        super(pattern, name, properties);
+        super(pattern.cod(), pattern.elementMap(), name, properties);
     }
     
     /**
@@ -96,7 +97,7 @@ public class DefaultGraphCondition extends AbstractCondition {
      * condition to the complex negated conjunct.
      * @see #addInjection(Set)
      * @see #addNegation(Edge)
-     * @see #addComplexSubCondition(AbstractCondition)
+     * @see #addComplexNegCondition(GraphCondition)
      */
     @Override
     public void addSubCondition(GraphCondition condition) {
@@ -104,10 +105,10 @@ public class DefaultGraphCondition extends AbstractCondition {
         if (condition instanceof EdgeEmbargo) {
             addNegation(((EdgeEmbargo) condition).getEmbargoEdge());
         } else if (condition instanceof MergeEmbargo) {
-            Set<? extends Node> injection = condition.getPattern().elementMap().nodeMap().keySet();
+            Set<? extends Node> injection = condition.getPatternMap().nodeMap().keySet();
             addInjection(injection);
         } else {
-            addComplexNegCondition((AbstractCondition) condition);
+            addComplexNegCondition(condition);
         }
     }
 
@@ -146,22 +147,19 @@ public class DefaultGraphCondition extends AbstractCondition {
 		}
     }
 
-    public Iterable<? extends Match> getMatches(final Graph host, final NodeEdgeMap patternMap) {
-        Iterable<? extends Match> result;
+	@Override
+    public Iterator<ExistsMatch> getMatchIter(final Graph host, final NodeEdgeMap contextMap) {
+        Iterator<ExistsMatch> result;
         reporter.start(GET_MATCHING);
         testFixed(true);
         // list the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap anchorMap = getAnchorMap(patternMap);
-        result = new Iterable<Match>() {
-            public Iterator<Match> iterator() {
-            	return new TransformIterator<VarNodeEdgeMap, Match>(createMapIter(host, anchorMap)) {
+        final VarNodeEdgeMap anchorMap = getAnchorMap(contextMap);
+        result = new TransformIterator<VarNodeEdgeMap, ExistsMatch>(createMapIter(host, anchorMap)) {
 	                @Override
-	                protected Match toOuter(VarNodeEdgeMap from) {
+	                protected ExistsMatch toOuter(VarNodeEdgeMap from) {
 	                	return getMatch(host, from);
 	                }
             	};
-            }
-        };
         reporter.stop();
         return result;
     }
@@ -173,9 +171,9 @@ public class DefaultGraphCondition extends AbstractCondition {
      * into some host graph
      * @return a match constructed on the basis of <code>map</code>
      */
-    protected ExistentialMatch getMatch(Graph host, VarNodeEdgeMap matchMap) {
-        ExistentialMatch result = createMatch(matchMap);
-        for (AbstractCondition condition: getComplexConjunct()) {
+    protected ExistsMatch getMatch(Graph host, VarNodeEdgeMap matchMap) {
+        ExistsMatch result = createMatch(matchMap);
+        for (AbstractCondition<?> condition: getComplexConjunct()) {
             Iterable<? extends Match> subMatch = condition.getMatches(host, matchMap);
             if (subMatch.iterator().hasNext()) {
                 return null;
@@ -191,7 +189,7 @@ public class DefaultGraphCondition extends AbstractCondition {
      * Returns an iterator over the mappings of this condition
      * into a given host graph, given a mapping of the pattern graph.
      * @param host the host graph we are matching into
-     * @param patternMap a matching of the pattern of this condition; may
+     * @param contextMap a matching of the pattern of this condition; may
      * be <code>null</code> if the condition is ground.
      * @return an iterator over the matches of this graph condition into <code>host</code>
      * that are consistent with <code>patternMatch</code>
@@ -199,11 +197,11 @@ public class DefaultGraphCondition extends AbstractCondition {
      * and the condition is not ground, or if <code>patternMatch</code> is not compatible
      * with the pattern graph
      */
-    public Iterator<VarNodeEdgeMap> getMapIter(Graph host, NodeEdgeMap patternMap) {
+    public Iterator<VarNodeEdgeMap> getMapIter(Graph host, NodeEdgeMap contextMap) {
     	Iterator<VarNodeEdgeMap> result;
         reporter.start(GET_MATCHING);
         testFixed(true);
-        VarNodeEdgeMap preMatch = getAnchorMap(patternMap);
+        VarNodeEdgeMap preMatch = getAnchorMap(contextMap);
 		result = createMapIter(host, preMatch);
 		reporter.stop();
 		return result;
@@ -216,17 +214,36 @@ public class DefaultGraphCondition extends AbstractCondition {
 	 * @param host
 	 *            the host graph we are mapping into
 	 * @param anchorMap
-	 *            a mapping of the image of {@link #getPattern()} under this
-	 *            condition's morphism, into <code>host</code>; may be 
-	 *            <code>null</code> if the condition is ground.
+	 *            a mapping of the images of {@link #getPatternMap()} into <code>host</code>; 
+	 *            may be <code>null</code> if the condition is ground.
 	 * @return an iterator over the matches of this graph condition into
 	 *         <code>host</code> that are consistent with
 	 *         <code>preMatch</code>
 	 */
     final protected Iterator<VarNodeEdgeMap> createMapIter(final Graph host, NodeEdgeMap anchorMap) {
-        Iterator<VarNodeEdgeMap> result = getMatchStrategy().getMatchIter(host, anchorMap);
-        return filterMapIter(result, host);
+        return getMatchStrategy().getMatchIter(host, anchorMap);
     }
+//    
+//    /** 
+//     * Filters the results of an existing (raw) iterator so that
+//     * the resulting objects all satisfy the additional constraints of this condition.
+//     * @param matchMapIter the iterator to be filtered
+//     * @param host the host graph we are mapping into
+//     * @return an iterator of which all results satisfy {@link #satisfiesConstraints(Graph, VarNodeEdgeMap)}
+//     */
+//    final protected Iterator<VarNodeEdgeMap> filterMapIter(Iterator<VarNodeEdgeMap> matchMapIter, final Graph host) {
+//        Iterator<VarNodeEdgeMap> result = matchMapIter;
+//        if (hasConstraints()) {
+//            result = new FilterIterator<VarNodeEdgeMap>(result) {
+//                @Override
+//                protected boolean approves(Object obj) {
+//                    return satisfiesConstraints(host, (VarNodeEdgeMap) obj);
+//                }
+//            };
+//        }
+//        return result;
+//    }
+//
 //
 //    /** 
 //     * Filters the results of an existing (raw) iterator so that
@@ -255,8 +272,8 @@ public class DefaultGraphCondition extends AbstractCondition {
      * into some host graph
      * @return a match constructed on the basis of <code>map</code>
      */
-    protected ExistentialMatch createMatch(VarNodeEdgeMap matchMap) {
-    	return new ExistentialMatch(this, matchMap);
+    protected ExistsMatch createMatch(VarNodeEdgeMap matchMap) {
+    	return new ExistsMatch(matchMap);
     }
     
     /**

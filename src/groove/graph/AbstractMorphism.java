@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMorphism.java,v 1.11 2007-10-02 23:06:29 rensink Exp $
+ * $Id: AbstractMorphism.java,v 1.12 2007-10-03 23:10:46 rensink Exp $
  */
 package groove.graph;
 
 import groove.match.MatchStrategy;
-import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.Reporter;
 import groove.util.TransformIterator;
@@ -34,7 +33,7 @@ import java.util.Set;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edge,Edge> implements Morphism {
     /**
@@ -525,81 +524,6 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
     abstract public Morphism clone();
 
     /**
-     * Constructs a morphism that is the concatenation of the inverse of the one morphism,
-     * followed by another morphism, if this concatenation exists. 
-     * It may fail to exist if the inverted morphism is non-injective on elements
-     * on which the concatenated morphism is injective; in this case 
-     * an {@link FormatException} is thrown.
-     * The result is to be stored in a predefined morphism, whose
-     * domain and codomain are assumed to have been constructed correctly.
-     * @param invert morphism whose inverse is serving as the first argument of the concatenation
-     * @param concat second argument of the concatenation
-     * @param result morphism where the result is to be stored; may be affected even if a {@link FormatException} is thrown
-     * @throws FormatException if the injectivity of <tt>invert</tt> and <tt>concat</tt> is inconsistent 
-     */
-    static protected void constructInvertConcat(NodeEdgeMap invert, NodeEdgeMap concat, NodeEdgeMap result) throws FormatException {
-    	for (Map.Entry<Node,Node> entry: invert.nodeMap().entrySet()) {
-            Node image = concat.getNode(entry.getKey());
-            if (image != null) {
-                Node key = entry.getValue();
-                // result already contains an image for nodeKey
-                // if it is not the same as the one we want to insert now,
-                // stop the whole thing; otherwise we're fine
-                Node oldImage = result.getNode(key);
-                if (oldImage != null && !oldImage.equals(image)) {
-                    throw new FormatException();
-                } else {
-                	result.putNode(key, image);
-                }
-            }
-        }        
-    	for (Map.Entry<Edge,Edge> entry: invert.edgeMap().entrySet()) {
-            Edge image = concat.getEdge(entry.getKey());
-            if (image != null) {
-                Edge key = entry.getValue();
-                // result already contains an image for nodeKey
-                // if it is not the same as the one we want to insert now,
-                // stop the whole thing; otherwise we're fine
-                Edge oldImage = result.putEdge(key, image);
-                if (oldImage != null && !oldImage.equals(image)) {
-                    throw new FormatException();
-                }
-                String var = RegExprLabel.getWildcardId(key.label());
-                if (var != null) {
-                    if (!(concat instanceof VarNodeEdgeMap && result instanceof VarNodeEdgeMap)) {
-                        throw new FormatException();
-                    } else {
-                        ((VarNodeEdgeMap) result).putVar(var, ((VarNodeEdgeMap) concat).getVar(var));
-                    }
-                }
-            }
-        }
-    }
-
-    /**
-     * Constructs a morphism that is the concatenation of two morphisms.
-     * The result is to be stored in a predefined morphism, whose
-     * domain and codomain are assumed to have been constructed correctly.
-     * @param subject the first argument of concatenation
-     * @param concat the second argument of concatenation
-     * @param result morphism where the result is to be stored
-     */
-    static protected void constructConcat(Morphism subject, Morphism concat, Morphism result) {
-    	for (Map.Entry<Node,Node> entry: concat.nodeMap().entrySet()) {
-            Node image = subject.getNode(entry.getValue());
-            if (image != null) {
-                result.putNode(entry.getKey(), image);
-            }
-        }
-    	for (Map.Entry<Edge,Edge> entry: concat.edgeMap().entrySet()) {
-            Edge image = subject.getEdge(entry.getValue());
-            if (image != null) {
-                result.putEdge(entry.getKey(), image);
-            }
-        }
-    }
-
-    /**
      * Factory method for match strategies.
      */
     abstract protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy();
@@ -627,6 +551,74 @@ public abstract class AbstractMorphism extends AbstractNodeEdgeMap<Node,Node,Edg
      * we conjecture that early is faster for larger cases.
      */
     protected static final boolean EARLY_INJECTIVITY_CHECK = false;
+
+
+    /**
+     * Constructs a morphism that is the concatenation of the inverse of the one morphism,
+     * followed by another morphism, if this concatenation exists. 
+     * It may fail to exist if the inverted morphism is non-injective on elements
+     * on which the concatenated morphism is injective; in this case 
+     * an {@link FormatException} is thrown.
+     * The result is to be stored in a predefined morphism, whose
+     * domain and codomain are assumed to have been constructed correctly.
+     * @param invert morphism whose inverse is serving as the first argument of the concatenation
+     * @param concat second argument of the concatenation
+     * @param result morphism where the result is to be stored; may be affected even if a {@link FormatException} is thrown
+     * @throws FormatException if the injectivity of <tt>invert</tt> and <tt>concat</tt> is inconsistent 
+     */
+    static public void constructInvertConcat(NodeEdgeMap invert, NodeEdgeMap concat, NodeEdgeMap result) throws FormatException {
+    	for (Map.Entry<Node,Node> entry: invert.nodeMap().entrySet()) {
+            Node image = concat.getNode(entry.getKey());
+            if (image != null) {
+                Node key = entry.getValue();
+                // result already contains an image for nodeKey
+                // if it is not the same as the one we want to insert now,
+                // stop the whole thing; otherwise we're fine
+                Node oldImage = result.getNode(key);
+                if (oldImage != null && !oldImage.equals(image)) {
+                    throw new FormatException();
+                } else {
+                	result.putNode(key, image);
+                }
+            }
+        }        
+    	for (Map.Entry<Edge,Edge> entry: invert.edgeMap().entrySet()) {
+            Edge image = concat.getEdge(entry.getKey());
+            if (image != null) {
+                Edge key = entry.getValue();
+                // result already contains an image for nodeKey
+                // if it is not the same as the one we want to insert now,
+                // stop the whole thing; otherwise we're fine
+                Edge oldImage = result.putEdge(key, image);
+                if (oldImage != null && !oldImage.equals(image)) {
+                    throw new FormatException();
+                }
+            }
+        }
+    }
+
+    /**
+     * Constructs a morphism that is the concatenation of two morphisms.
+     * The result is to be stored in a predefined morphism, whose
+     * domain and codomain are assumed to have been constructed correctly.
+     * @param subject the first argument of concatenation
+     * @param concat the second argument of concatenation
+     * @param result morphism where the result is to be stored
+     */
+    static public void constructConcat(Morphism subject, Morphism concat, Morphism result) {
+    	for (Map.Entry<Node,Node> entry: concat.nodeMap().entrySet()) {
+            Node image = subject.getNode(entry.getValue());
+            if (image != null) {
+                result.putNode(entry.getKey(), image);
+            }
+        }
+    	for (Map.Entry<Edge,Edge> entry: concat.edgeMap().entrySet()) {
+            Edge image = subject.getEdge(entry.getValue());
+            if (image != null) {
+                result.putEdge(entry.getKey(), image);
+            }
+        }
+    }
 
     // ---------------------------- reporting --------------------------------
 

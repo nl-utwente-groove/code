@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMorphism.java,v 1.15 2007-10-02 23:06:29 rensink Exp $
+ * $Id: DefaultMorphism.java,v 1.16 2007-10-03 23:10:46 rensink Exp $
  */
 package groove.graph;
 
@@ -27,15 +27,21 @@ import java.util.Map;
  * Implementation of a morphism on the basis of a single (hash) map 
  * for both nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class DefaultMorphism extends AbstractMorphism {
     /**
-     * A prototype object of this class, to be used as a factory
-     * for new (default) morphisms. That is, the object is only intended to
-     * be used for invoking <tt>newMorphism(Graph,Graph)</tt>.
+     * Constructs a new, fixed morphism with a given domain, codomain
+     * and element map.
+     * The element map is aliased!
      */
-    static public final Morphism prototype = new DefaultMorphism();
+    public DefaultMorphism(Graph dom, Graph cod, NodeEdgeMap elementMap) {
+    	super(dom,cod);
+        this.dom = dom;
+        this.cod = cod;
+        this.elementMap = elementMap;
+        setFixed();
+    }
 
     /**
      * Constructs a new (empty) Morphism with a given domain and codomain.
@@ -45,7 +51,6 @@ public class DefaultMorphism extends AbstractMorphism {
     	super(dom,cod);
         this.dom = dom;
         this.cod = cod;
-//        setRuleFactory(ruleFactory);
         this.elementMap = createElementMap();
         dom.addGraphListener(this);
         cod.addGraphListener(this);
@@ -215,5 +220,12 @@ public class DefaultMorphism extends AbstractMorphism {
      * @invariant <tt>source: dom.nodeSet() -> cod.nodeSet() \cup 
      *                       dom.edgeSet() -> cod.edgeSet()</tt> 
      */
-    protected NodeEdgeMap elementMap;
+    private NodeEdgeMap elementMap;
+    
+    /**
+     * A prototype object of this class, to be used as a factory
+     * for new (default) morphisms. That is, the object is only intended to
+     * be used for invoking <tt>newMorphism(Graph,Graph)</tt>.
+     */
+    static public final Morphism prototype = new DefaultMorphism();
 }

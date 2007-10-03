@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MergeEmbargo.java,v 1.5 2007-10-02 23:06:21 rensink Exp $
+ * $Id: MergeEmbargo.java,v 1.6 2007-10-03 23:10:53 rensink Exp $
  */
 package groove.trans;
 
@@ -26,9 +26,9 @@ import groove.graph.Node;
  * by early enforcement (while searching for matchings of the enclosing graph condition).
  * A merge embargo may itself not have negative conditions.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
-public class MergeEmbargo extends DefaultGraphCondition implements NAC, GraphCondition {
+public class MergeEmbargo extends NegativeCondition {
     /**
      * Constructs a merge embargo on a given graph, between two given nodes.
      * @param source the graph on which this embargo works
@@ -41,9 +41,9 @@ public class MergeEmbargo extends DefaultGraphCondition implements NAC, GraphCon
         super(new DefaultMorphism(source, source.newGraph()), properties);
         this.node1 = node1;
         this.node2 = node2;
-        Node codNode = cod().addNode();
-        putNode(node1, codNode);
-        putNode(node2, codNode);
+        Node codNode = getTarget().addNode();
+        getPatternMap().putNode(node1, codNode);
+        getPatternMap().putNode(node2, codNode);
     }
     
     /**
@@ -58,15 +58,6 @@ public class MergeEmbargo extends DefaultGraphCondition implements NAC, GraphCon
         if (embargoNodes.length != 2) {
             throw new IllegalArgumentException("Merge embargo must be binary");
         }
-    }
-
-    /**
-     * Overwrites the method for efficiency: just an injectivity test is required.
-     */
-    @Deprecated
-    public boolean forbids(groove.rel.VarMorphism match) {
-        boolean result = match.getNode(node1).equals(match.getNode(node2));
-        return result;
     }
 
     /**
