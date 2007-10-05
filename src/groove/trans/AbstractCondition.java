@@ -12,11 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.3 2007-10-05 08:31:38 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.4 2007-10-05 11:44:54 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.AbstractMorphism;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
@@ -40,7 +40,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
@@ -52,7 +52,15 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * @param properties properties for matching the condition
      */
     protected AbstractCondition(Graph target, NodeEdgeMap rootMap, NameLabel name, SystemProperties properties) {
-        this.patternMap = rootMap;
+        this.rootMap = new VarNodeEdgeHashMap();
+        this.rootVars = new HashSet<String>();
+        if (rootMap != null) {
+            this.rootMap.nodeMap().putAll(rootMap.nodeMap());
+            for (Map.Entry<Edge,Edge> edgeEntry: rootMap.edgeMap().entrySet()) {
+                this.rootMap.edgeMap().put(edgeEntry.getKey(), edgeEntry.getValue());
+                this.rootVars.addAll(VarSupport.getAllVars(edgeEntry.getKey()));
+            }
+        }
         this.target = target;
 		this.properties = properties;
         this.name = name;
@@ -66,19 +74,23 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     	this(target, new NodeEdgeHashMap(), name, properties);
     }
 
+    /** 
+     * Returns the properties set at construction time.
+     */
     public SystemProperties getProperties() {
 		return properties;
 	}
 
-    /**
-     * This implementation returns <code>this</code>.
-     */
-    public NodeEdgeMap getPatternMap() {
-        return patternMap;
+    public NodeEdgeMap getRootMap() {
+        return rootMap;
     }
 
-    /**
-     * This implementation returns <code>cod()</code>.
+    public Set<String> getRootVars() {
+        return rootVars;
+    }
+    
+    /** 
+     * Returns the target set at construction time.
      */
     public Graph getTarget() {
         return target;
@@ -92,10 +104,10 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     /**
-     * Delegates to <code>getContext().isEmpty()</code> as per contract.
+     * Delegates to <code>getRootMap().isEmpty()</code> as per contract.
      */
     public boolean isGround() {
-        return getPatternMap().isEmpty();
+        return getRootMap().isEmpty();
     }
 
     /** 
@@ -142,7 +154,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 		boolean result = false;
 		// first test if the pattern target has isolated nodes
 		Set<Node> freshTargetNodes = new HashSet<Node>(getTarget().nodeSet());
-		freshTargetNodes.removeAll(getPatternMap().nodeMap().values());
+		freshTargetNodes.removeAll(getRootMap().nodeMap().values());
 		Iterator<Node> nodeIter = freshTargetNodes.iterator();
 		while (!result && nodeIter.hasNext()) {
 			result = getTarget().edgeSet(nodeIter.next()).isEmpty();
@@ -165,6 +177,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     }
 
     public void addSubCondition(Condition condition) {
+        testFixed(false);
         assert condition instanceof AbstractCondition : String.format("Condition %s should be an AbstractCondition", condition);
         getSubConditions().add((AbstractCondition<?>) condition);
     }
@@ -188,6 +201,9 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         return isGround() && getMatchIter(host, null).hasNext();
 	}
 
+    /** 
+     * Returns an iterable wrapping a call to {@link #getMatchIter(Graph, NodeEdgeMap)}.
+     */
     public Iterable<M> getMatches(final Graph host, final NodeEdgeMap contextMap) {
 		return new Iterable<M>() {
 			public Iterator<M> iterator() {
@@ -200,62 +216,81 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     
     /** 
      * Factors given matching of the condition context through this condition's
-     * pattern map, to obtain a matching of {@link #getTarget()}.
-     * @return a mapping that, concatenated after this condition's morphism,
-     * returns <code>patternMatch</code>; or <code>null</code> if there is
+     * root map, to obtain a matching of {@link #getTarget()}.
+     * @return a mapping that, concatenated after this condition's root map,
+     * is a sub-map of <code>contextMap</code>; or <code>null</code> if there is
      * no such mapping.
      */
-    final protected VarNodeEdgeMap getAnchorMap(NodeEdgeMap contextMap) {
-    	VarNodeEdgeMap result;
+    final protected VarNodeEdgeMap createAnchorMap(NodeEdgeMap contextMap) {
+    	VarNodeEdgeMap result = null;
     	if (contextMap == null) {
     		testGround();
-    		result = null;
-    	} else try {
-    		result = new VarNodeEdgeHashMap();
-    		AbstractMorphism.constructInvertConcat(getPatternMap(), contextMap, result);
-    		if (contextMap instanceof VarNodeEdgeMap) {
-    			Map<String, Label> valuation = ((VarNodeEdgeMap) contextMap).getValuation();
-    			for (Map.Entry<String, Label> varEntry : valuation.entrySet()) {
-    				String var = varEntry.getKey();
-    				if (getTargetVars().contains(var)) {
-    					result.putVar(var, varEntry.getValue());
-    				}
-    			}
-    		}
-    	} catch (FormatException exc) {
-    		throw new IllegalArgumentException(
-    				String.format("Pattern match %s incompatible with pattern %s",
-    						contextMap,
-    						getPatternMap()));
+    	} else {
+    		result = new VarNodeEdgeHashMap();       
+    		for (Map.Entry<Node,Node> entry: getRootMap().nodeMap().entrySet()) {
+                Node image = contextMap.getNode(entry.getKey());
+                if (image == null) {
+                    return null;
+                } else {
+                    Node key = entry.getValue();
+                    // result already contains an image for nodeKey
+                    // if it is not the same as the one we want to insert now,
+                    // stop the whole thing; otherwise we're fine
+                    Node oldImage = result.putNode(key, image);
+                    if (oldImage != null && !oldImage.equals(image)) {
+                        return null;
+                    }
+                }
+            } 
+            for (Map.Entry<Edge,Edge> entry: getRootMap().edgeMap().entrySet()) {
+                Edge image = contextMap.getEdge(entry.getKey());
+                if (image == null) {
+                    return null;
+                } else {
+                    Edge key = entry.getValue();
+                    // result already contains an image for nodeKey
+                    // if it is not the same as the one we want to insert now,
+                    // stop the whole thing; otherwise we're fine
+                    Edge oldImage = result.putEdge(key, image);
+                    if (oldImage != null && !oldImage.equals(image)) {
+                        return null;
+                    }
+                }
+            }
+            if (contextMap instanceof VarNodeEdgeMap) {
+                for (String var : getRootVars()) {
+                    Label image = ((VarNodeEdgeMap) contextMap).getVar(var);
+                    if (image == null) {
+                        return null;
+                    } else {
+                        result.putVar(var, image);
+                    }
+                }
+            } else if (!getRootVars().isEmpty()) {
+                return null;
+            }
     	}
 		return result;
     }
     
-    /** Returns the set of variables in the target graph. */
-    private Set<String> getTargetVars() {
-        if (targetVars == null) {
-            targetVars = VarSupport.getAllVars(getTarget());
-        }
-        return targetVars;
-    }
     /**
      * Returns the precomputed matching order for the elements of the target pattern. First creates
-     * the order using {@link #createMatchStrategy()} if that has not been done.
-     * @see #createMatchStrategy()
+     * the order using {@link #createMatcher()} if that has not been done.
+     * @see #createMatcher()
      */
-    final public MatchStrategy<VarNodeEdgeMap> getMatchStrategy() {
+    final public MatchStrategy<VarNodeEdgeMap> getMatcher() {
         if (matchStrategy == null) {
-            matchStrategy = createMatchStrategy();
+            matchStrategy = createMatcher();
         }
         return matchStrategy;
     }
 
     /**
      * Callback method to create a matching factory.
-     * Typically invoked once, at the first invocation of {@link #getMatchStrategy()}.
+     * Typically invoked once, at the first invocation of {@link #getMatcher()}.
      * This implementation retrieves its value from {@link #getMatcherFactory()}.
      */
-    protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy() {
+    protected MatchStrategy<VarNodeEdgeMap> createMatcher() {
         setFixed();
         return getMatcherFactory().createMatcher(this);
     }
@@ -299,24 +334,24 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
      * The name of this condition. May be <code>code</code> null.
      */
-    protected NameLabel name;
+    private final NameLabel name;
     /**
      * The fixed matching strategy for this graph condition.
-     * Initially <code>null</code>; set by {@link #getMatchStrategy()} upon its
+     * Initially <code>null</code>; set by {@link #getMatcher()} upon its
      * first invocation.
      */
     private MatchStrategy<VarNodeEdgeMap> matchStrategy;
-    /** The variables occurring in edges of the target (i.e., the codomain). */
-    private Set<String> targetVars;
     /** The collection of sub-conditions of this condition. */
     private Collection<AbstractCondition<?>> subConditions;
     /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
-    boolean fixed;
+    private boolean fixed;
     /** 
      * The pattern map of this condition, i.e., the element
      * map from the context graph to the target graph.
      */
-    private final NodeEdgeMap patternMap;
+    private final NodeEdgeMap rootMap;
+    /** Set of all variables occurring in root elements. */
+    private final Set<String> rootVars;
     /** The target graph of this morphism. */
     private final Graph target;
     /**

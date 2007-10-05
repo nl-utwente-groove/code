@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.12 2007-10-03 07:23:25 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.13 2007-10-05 11:44:39 rensink Exp $
  */
 package groove.match;
 
@@ -37,7 +37,7 @@ import java.util.List;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class OperatorEdgeSearchItem extends AbstractSearchItem {
+class OperatorEdgeSearchItem extends AbstractSearchItem {
 	/**
 	 * Creates a search item for a given edge, for which it is know
 	 * which edge ends have already been matched (in the search plan) before this one.

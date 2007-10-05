@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlledStrategy.java,v 1.8 2007-10-02 23:05:56 rensink Exp $
+ * $Id: ControlledStrategy.java,v 1.9 2007-10-05 11:44:56 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -33,7 +33,7 @@ import java.util.Stack;
  * Strategy that searches the state space in a depth-first fashion, using a list of rules
  * to control the search.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class ControlledStrategy extends AbstractStrategy {
     /** Name of this strategy. */
@@ -103,7 +103,7 @@ public class ControlledStrategy extends AbstractStrategy {
             Iterator<RuleMatch> matchingIter;
             if (forward) {
                 // make a new record
-                matchingIter = program.get(pc).getMatches(currentState.getGraph(), null).iterator();
+                matchingIter = program.get(pc).getMatchIter(currentState.getGraph(), null);
                 images.push(matchingIter);
             } else {
                 // take it from the existing records

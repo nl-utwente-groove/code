@@ -12,45 +12,107 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchItem.java,v 1.8 2007-10-05 08:31:45 rensink Exp $
+ * $Id: ConditionSearchItem.java,v 1.9 2007-10-05 11:44:40 rensink Exp $
  */
 package groove.match;
 
+import groove.graph.Edge;
+import groove.graph.Node;
+import groove.graph.NodeEdgeMap;
 import groove.match.SearchPlanStrategy.Search;
+import groove.rel.VarNodeEdgeHashMap;
+import groove.rel.VarNodeEdgeMap;
+import groove.rel.VarSupport;
+import groove.trans.Condition;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Abstract search plan item that only checks for a condition,
- * without affecting the match if the condition holds.
+ * Search item to test for the satisfaction of a graph condition.
  * @author Arend Rensink
  * @version $Revision $
- * @deprecated no longer in use
  */
-@Deprecated
-public abstract class ConditionSearchItem extends AbstractSearchItem {
-    /** 
-     * Since the order of condition search items does not influence the match,
-     * all of them have the same rating.
-     * @return <code>0</code> always
+class ConditionSearchItem extends AbstractSearchItem {
+    /**
+     * Constructs a search item for a given condition.
+     * @param condition the condition to be matched
      */
+    public ConditionSearchItem(Condition condition) {
+        this.condition = condition;
+        this.rootMap = condition.getRootMap();
+        this.neededNodes = rootMap.nodeMap().keySet();
+        this.neededVars = new HashSet<String>();
+        for (Edge edge: rootMap.edgeMap().keySet()) {
+            neededVars.addAll(VarSupport.getAllVars(edge));
+        }
+    }
+
+    @Override
+    public Collection<Node> needsNodes() {
+        return neededNodes;
+    }
+
+    @Override
+    public Collection<String> needsVars() {
+        return neededVars;
+    }
+
     @Override
     int getRating() {
-        return 0;
+        return - condition.getTarget().nodeCount() - rootMap.size();
+    }
+
+    public void activate(SearchPlanStrategy strategy) {
+        nodeIxMap = new HashMap<Node,Integer>();
+        for (Node node: neededNodes) {
+            nodeIxMap.put(node, strategy.getNodeIx(node));
+        }
+        varIxMap = new HashMap<String,Integer>();
+        for (String var: neededVars) {
+            varIxMap.put(var, strategy.getVarIx(var));
+        }
     }
     
-	/**
-	 * Record for a {@link ConditionSearchItem}.
-	 * @author Arend Rensink
-	 * @version $Revision $
-	 */
-	abstract class ConditionRecord extends SingularRecord {
-        /** Constructs an instance for a given search. */
-        ConditionRecord(Search search) {
+    public Record getRecord(Search search) {
+        return new GraphRecord(search);
+    }
+
+    /** The graph condition that should be matched by this search item. */
+    private final Condition condition;
+    /** The root map of the graph condition. */
+    private final NodeEdgeMap rootMap;
+    /** The source nodes of the root map. */
+    private final Set<Node> neededNodes;
+    /** The variables occurring in edges of the root map. */
+    private final Set<String> neededVars;
+    /** Mapping from the needed nodes to indices in the matcher. */
+    private Map<Node,Integer> nodeIxMap;
+    /** Mapping from the needed nodes to indices in the matcher. */
+    private Map<String,Integer> varIxMap;
+
+    /**
+     * Search record for a graph condition.
+     */
+    public class GraphRecord extends SingularRecord {
+        /** Constructs a record for a given search. */
+        public GraphRecord(Search search) {
             super(search);
         }
 
         @Override
-        public String toString() {
-            return String.format("%s: %b", ConditionSearchItem.this.toString(), isFound());
+        boolean set() {
+            VarNodeEdgeMap contextMap = new VarNodeEdgeHashMap();
+            for (Map.Entry<Node,Integer> nodeIxEntry: nodeIxMap.entrySet()) {
+                contextMap.putNode(nodeIxEntry.getKey(), search.getNode(nodeIxEntry.getValue()));
+            }
+            for (Map.Entry<String,Integer> varIxEntry: varIxMap.entrySet()) {
+                contextMap.putVar(varIxEntry.getKey(), search.getVar(varIxEntry.getValue()));
+            }
+            return condition.getMatchIter(host, contextMap).hasNext();
         }
-	}
+    }    
 }

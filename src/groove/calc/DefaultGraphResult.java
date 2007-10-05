@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphResult.java,v 1.10 2007-10-05 08:31:43 rensink Exp $
+ * $Id: DefaultGraphResult.java,v 1.11 2007-10-05 11:44:58 rensink Exp $
  */
 package groove.calc;
 
@@ -94,7 +94,7 @@ public class DefaultGraphResult implements GraphResult {
 
 	public GraphResult getFirstAfter(String ruleName) {
         Rule rule = calculator.getRule(ruleName);
-        Iterator<RuleMatch> matches = rule.getMatches(state.getGraph(), null).iterator();
+        Iterator<RuleMatch> matches = rule.getMatchIter(state.getGraph(), null);
         if (!matches.hasNext()) {
         	return null;
         } else {
@@ -107,7 +107,7 @@ public class DefaultGraphResult implements GraphResult {
 	public Collection<GraphResult> getAllAfter(String ruleName) {
 		Collection<GraphResult> result = new ArrayList<GraphResult>();
         Rule rule = calculator.getRule(ruleName);
-        Iterator<RuleMatch> matchIter = rule.getMatches(state.getGraph(),null).iterator();
+        Iterator<RuleMatch> matchIter = rule.getMatchIter(state.getGraph(),null);
         while (matchIter.hasNext()) {
         	RuleMatch match = matchIter.next();
 			SystemRecord record = calculator.getGTS().getRecord();

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NegatedSearchItem.java,v 1.7 2007-10-05 08:31:45 rensink Exp $
+ * $Id: NegatedSearchItem.java,v 1.8 2007-10-05 11:44:39 rensink Exp $
  */
 package groove.match;
 
@@ -27,7 +27,7 @@ import java.util.HashSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NegatedSearchItem extends AbstractSearchItem {
+class NegatedSearchItem extends AbstractSearchItem {
 	/** 
 	 * Constructs a new search item. The item will match (precisely once)
 	 * if and only the underlying item does not match.

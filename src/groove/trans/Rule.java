@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.22 2007-10-05 08:31:38 rensink Exp $
- * $Date: 2007-10-05 08:31:38 $
+ * $Id: Rule.java,v 1.23 2007-10-05 11:44:55 rensink Exp $
+ * $Date: 2007-10-05 11:44:55 $
  */
 package groove.trans;
 
@@ -25,6 +25,7 @@ import groove.match.MatchStrategy;
 import groove.rel.VarNodeEdgeMap;
 
 import java.util.Comparator;
+import java.util.Iterator;
 
 /**
  * Interface of a production rule.
@@ -33,7 +34,7 @@ import java.util.Comparator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public interface Rule extends Comparable<Rule>, Condition {
 	/** Returns the name of this rule. */
@@ -78,16 +79,28 @@ public interface Rule extends Comparable<Rule>, Condition {
     public boolean hasMergers();
     
     /** 
-     * Returns the collection of all matches for a given host graph, given
-     * a matching of the pattern graph.
+     * Returns an iterator over the matches for a given host graph, given
+     * a matching of the root context.
      * @param host the graph in which the match is to be found
-     * @param patternMap a matching of the pattern of this condition; may
+     * @param contextMap a matching of the pattern of this condition; may
      * be <code>null</code> if the condition is ground.
-     * @throws IllegalArgumentException if <code>patternMatch</code> is <code>null</code>
-     * and the condition is not ground, or if <code>patternMatch</code> is not compatible
-     * with the pattern graph
+     * @throws IllegalArgumentException if <code>contextMap</code> is <code>null</code>
+     * and the condition is not ground, or if <code>contextMap</code> is not compatible
+     * with the root map
      */
-    public Iterable<RuleMatch> getMatches(Graph host, NodeEdgeMap patternMap);
+    public Iterator<RuleMatch> getMatchIter(Graph host, NodeEdgeMap contextMap);
+    
+    /** 
+     * Returns the collection of all matches for a given host graph, given
+     * a matching of the root context.
+     * @param host the graph in which the match is to be found
+     * @param contextMap a matching of the pattern of this condition; may
+     * be <code>null</code> if the condition is ground.
+     * @throws IllegalArgumentException if <code>contextMap</code> is <code>null</code>
+     * and the condition is not ground, or if <code>contextMap</code> is not compatible
+     * with the root map
+     */
+    public Iterable<RuleMatch> getMatches(Graph host, NodeEdgeMap contextMap);
 
     /**
      * Lazily creates and returns a matcher for rule events of this rule.

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Condition.java,v 1.1 2007-10-05 08:31:38 rensink Exp $
+ * $Id: Condition.java,v 1.2 2007-10-05 11:44:55 rensink Exp $
  */
 package groove.trans;
 
@@ -22,12 +22,13 @@ import groove.view.FormatException;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
 
 /**
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface Condition {
     /**
@@ -61,8 +62,16 @@ public interface Condition {
     
     /**
      * Element map from the context of this condition to the condition target.
+     * The root map identifies the elements of the target that are expected to be
+     * matched before the condition is tested.
      */
-    public NodeEdgeMap getPatternMap();
+    public NodeEdgeMap getRootMap();
+    
+    /**
+     * Set of variables in the target of this condition that also occur in root
+     * elements.
+     */
+    public Set<String> getRootVars();
     
     /**
      * The codomain of the pattern morphism.
@@ -115,9 +124,4 @@ public interface Condition {
      * with the pattern graph
      */
     public Iterator<? extends Match> getMatchIter(Graph host, NodeEdgeMap contextMap);
-    
-    /** 
-     * Returns an iterable wrapping a call to {@link #getMatchIter(Graph, NodeEdgeMap)}.
-     */
-    public Iterable<? extends Match> getMatches(Graph host, NodeEdgeMap contextMap);
 }

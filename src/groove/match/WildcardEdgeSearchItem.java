@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WildcardEdgeSearchItem.java,v 1.8 2007-09-26 21:04:25 rensink Exp $
+ * $Id: WildcardEdgeSearchItem.java,v 1.9 2007-10-05 11:44:39 rensink Exp $
  */
 package groove.match;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class WildcardEdgeSearchItem extends Edge2SearchItem {
+class WildcardEdgeSearchItem extends Edge2SearchItem {
 	/** 
 	 * Constructs a new search item.
 	 * The item will match any edge between the end images, and record

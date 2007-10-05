@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.11 2007-10-03 07:23:25 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.12 2007-10-05 11:44:39 rensink Exp $
  */
 package groove.match;
 
@@ -31,7 +31,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class VarEdgeSearchItem extends Edge2SearchItem {
+class VarEdgeSearchItem extends Edge2SearchItem {
 
 	/** 
 	 * Constructs a new search item.
