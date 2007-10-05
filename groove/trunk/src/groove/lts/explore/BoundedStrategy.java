@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BoundedStrategy.java,v 1.5 2007-04-27 22:06:58 rensink Exp $
+ * $Id: BoundedStrategy.java,v 1.6 2007-10-05 08:31:50 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -24,7 +24,7 @@ import groove.lts.ConditionalExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.State;
-import groove.trans.GraphTest;
+import groove.trans.Condition;
 import groove.trans.Rule;
 
 import java.util.Collection;
@@ -34,7 +34,7 @@ import java.util.Collection;
  * (the bounding condition) is violated; from such states no further exploration takes place.
  * Currently, the bounding condition is expressed by a graph transformation rule.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class BoundedStrategy extends BranchingStrategy implements ConditionalExploreStrategy {
 	/** Name of this exploration strategy. */
@@ -108,11 +108,11 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
         this.negated = negated;
     }
 
-    public GraphTest getCondition() {
+    public Condition getCondition() {
         return rule;
     }
 
-    public void setCondition(GraphTest rule) {
+    public void setCondition(Condition rule) {
         this.rule = rule;
     }
 
@@ -135,13 +135,13 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
      */
     @Override
     protected boolean isExplorable(GraphState state) {
-        return rule.matches(state.getGraph()) != negated;
+        return rule.hasMatch(state.getGraph()) != negated;
     }
 
     /**
      * The bounding rule of this strategy.
      */
-    private GraphTest rule;
+    private Condition rule;
     /**
      * Flag that signals whether the condition should be negated before being applied.
      */

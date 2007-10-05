@@ -12,20 +12,20 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphPredicate.java,v 1.5 2007-10-02 23:06:23 rensink Exp $
+ * $Id: GraphPredicate.java,v 1.6 2007-10-05 08:31:42 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.Graph;
-import groove.graph.NodeEdgeMap;
+import groove.rel.VarMorphism;
 
 import java.util.Set;
 
 /**
  * Interface for predicates over graphs.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
+@Deprecated
 public interface GraphPredicate extends GraphTest {    
     /**
      * Adds a graph condition to this predicate.
@@ -49,5 +49,5 @@ public interface GraphPredicate extends GraphTest {
     /**
      * Specialises the return type.
      */
-    public GraphPredicateOutcome getOutcome(Graph host, NodeEdgeMap map);
+    public GraphPredicateOutcome getOutcome(VarMorphism subject);
 }

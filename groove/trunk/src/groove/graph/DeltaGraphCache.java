@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaGraphCache.java,v 1.7 2007-10-02 23:06:28 rensink Exp $
+ * $Id: DeltaGraphCache.java,v 1.8 2007-10-05 08:31:47 rensink Exp $
  */
 package groove.graph;
 
 import groove.util.CollectionOfCollections;
-import groove.util.Condition;
 import groove.util.DeltaSet;
 import groove.util.StackedSet;
 
@@ -30,7 +29,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class DeltaGraphCache extends GraphCache {
     /**
@@ -702,21 +701,22 @@ public class DeltaGraphCache extends GraphCache {
     /**
      * The distance between the checkpoint and the underlying graph of this cache.
      * If <code>distance == 0</code>, the underlying graph is itself a checkpoint.
-     * The initial value is set to negative, to indicate that the distance has not been initializd.
+     * The initial value is set to negative, to indicate that the distance has not been initialised.
      */
     private FreezeCondition freezeCondition;
     /** Flag indicating that the underlying graph is frozen. */
     private boolean frozen;
     
     /** Condition testing if a given graph is eligible for freezing. */
-    protected class FreezeCondition implements Condition<DeltaGraphCache> {
+    protected class FreezeCondition {
+        /** Indicates if the freeze condition is satisfied for a given cache. */
 		public boolean isSatisfied(DeltaGraphCache subject) {
 			return getFreezeDistance() < 0;
 		}    	
 		
 		/**
 		 * Returns the checkpoint distance of this cache.
-		 * The checpoint distance is a measure used to determine whether the underlying
+		 * The checkpoint distance is a measure used to determine whether the underlying
 		 * graph should be checkpointed. The lower the measure, the more urgent the
 		 * need to checkpoint the graph; if it is <code>0</code>, checkpointing is in order.
 		 */
@@ -733,8 +733,8 @@ public class DeltaGraphCache extends GraphCache {
 		}
 		
 		/**
-		 * Initializes the origin and origin distance.
-		 * Callback mathod from {@link #isFrozen()} and {@link #getFreezeDistance()}.
+		 * Initialises the origin and origin distance.
+		 * Callback method from {@link #isFrozen()} and {@link #getFreezeDistance()}.
 		 */
 		private int computeFreezeDistance() {
 			int result;

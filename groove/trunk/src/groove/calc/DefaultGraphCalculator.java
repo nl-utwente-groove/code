@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.9 2007-05-06 10:47:54 rensink Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.10 2007-10-05 08:31:43 rensink Exp $
  */
 package groove.calc;
 
@@ -23,8 +23,8 @@ import groove.lts.GraphNextState;
 import groove.lts.GraphState;
 import groove.lts.State;
 import groove.lts.explore.LinearStrategy;
+import groove.trans.Condition;
 import groove.trans.GraphGrammar;
-import groove.trans.GraphTest;
 import groove.trans.Rule;
 import groove.view.FormatException;
 
@@ -157,12 +157,12 @@ public class DefaultGraphCalculator implements GraphCalculator {
         return result;
     }
 
-    public GraphResult getFirst(GraphTest condition) {
+    public GraphResult getFirst(Condition condition) {
         testPrototype();
         return getGenerator().get(getMatcher(condition), toResult);
     }
 
-    public Collection<GraphResult> getAll(final GraphTest condition) {
+    public Collection<GraphResult> getAll(final Condition condition) {
         testPrototype();
         return getGenerator().getAll(getMatcher(condition), toResult);
     }
@@ -286,11 +286,11 @@ public class DefaultGraphCalculator implements GraphCalculator {
     }
 
     /** Returns a property that tests for the matching of a graph to a test. */
-    private final Property<GraphState> getMatcher(final GraphTest test) {
+    private final Property<GraphState> getMatcher(final Condition test) {
     	return new Property<GraphState>() {
         	@Override
 			public boolean isSatisfied(GraphState state) {
-				return test.matches(state.getGraph());
+				return test.hasMatch(state.getGraph());
 			}
         };
     }

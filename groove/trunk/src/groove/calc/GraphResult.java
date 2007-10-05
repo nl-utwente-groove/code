@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphResult.java,v 1.2 2007-04-27 22:07:00 rensink Exp $
+ * $Id: GraphResult.java,v 1.3 2007-10-05 08:31:43 rensink Exp $
  */
 package groove.calc;
 
@@ -22,14 +22,14 @@ import java.util.List;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.lts.GraphState;
-import groove.trans.GraphTest;
+import groove.trans.Condition;
 import groove.trans.RuleSystem;
 
 /**
  * Class wrapping the outcome of a graph calculation.
  * @see groove.calc.GraphCalculator
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface GraphResult {
     /**
@@ -111,9 +111,9 @@ public interface GraphResult {
      * @param condition the graph condition that should be satisfied
      * @return A result wrapping a graph such that <code>condition.hasMatching(result)</code>, or 
      * <code>null</code> if there is no such graph.
-     * @see GraphCalculator#getFirst(GraphTest)
+     * @see GraphCalculator#getFirst(Condition)
      */
-    GraphResult getFirst(RuleSystem rules, GraphTest condition);
+    GraphResult getFirst(RuleSystem rules, Condition condition);
     
     /**
      * Given a set of transformation rules,
@@ -124,9 +124,9 @@ public interface GraphResult {
      * @param condition the graph condition that should be satisfied
      * @return A set of {@link GraphResult}s such that <code>condition.hasMatching(result)</code>
      * for each <code>result</code> in the set.
-     * @see GraphCalculator#getAll(GraphTest)
+     * @see GraphCalculator#getAll(Condition)
      */
-    Collection<GraphResult> getAll(RuleSystem rules, GraphTest condition);
+    Collection<GraphResult> getAll(RuleSystem rules, Condition condition);
 
     /**
      * Returns a new calculator, with the same set of rules, that takes the graph

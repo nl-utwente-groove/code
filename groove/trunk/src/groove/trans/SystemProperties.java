@@ -308,6 +308,26 @@ public class SystemProperties extends java.util.Properties {
      */
     private boolean fixed;
     
+    /** 
+     * Returns a default, fixed properties object, with a given value for
+     * attribute support.
+     * @param attributed <code>true</code> if the attributed property of the
+     * returned properties object is to be set
+     */
+    static public SystemProperties getInstance(boolean attributed) {
+        return instances.get(attributed);
+    }
+
+    /** 
+     * Tests whether {@link #isCheckDangling()} holds for a given properties object.
+     * If the properties object is <code>null</code>, the method returns <code>false</code>.
+     * @param properties the properties to be tested; may be <code>null</code>
+     * @return <true> if <code>properties</code> is not <code>null</code> and satisfies {@link #isCheckDangling()}
+     */
+    static public boolean isCheckDangling(SystemProperties properties) {
+        return properties != null && properties.isCheckDangling();
+    }
+    
     /**
      * Name of the file containing the used control program. 
      * Will only be loaded when the file exists in the grammar directory.
@@ -422,16 +442,6 @@ public class SystemProperties extends java.util.Properties {
 			properties.setFixed();
 			instances.put(attributed, properties);
 		}
-	}
-	
-	/** 
-	 * Returns a default, fixed properties object, with a given value for
-	 * attribute support.
-	 * @param attributed <code>true</code> if the attributed property of the
-	 * returned properties object is to be set
-	 */
-	static public SystemProperties getInstance(boolean attributed) {
-		return instances.get(attributed);
 	}
 
 	/** 

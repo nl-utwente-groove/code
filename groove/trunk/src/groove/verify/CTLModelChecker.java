@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLModelChecker.java,v 1.11 2007-06-21 12:47:51 fladder Exp $
+ * $Id: CTLModelChecker.java,v 1.12 2007-10-05 08:31:48 rensink Exp $
  */
 package groove.verify;
 
@@ -23,7 +23,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
-import groove.trans.GraphCondition;
+import groove.trans.Condition;
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
@@ -53,7 +53,7 @@ import java.util.Set;
  * Command-line tool directing the model checking process.
  *  
  * @author Harmen Kastenberg
- * @version $Revision: 1.11 $ $Date: 2007-06-21 12:47:51 $
+ * @version $Revision: 1.12 $ $Date: 2007-10-05 08:31:48 $
  */
 public class CTLModelChecker extends CommandLineTool {
 
@@ -182,7 +182,7 @@ public class CTLModelChecker extends CommandLineTool {
      * @param name the name of the rule to be returned
      * @return the graph condition with the given name
      */
-    public GraphCondition getGraphCondition(String name) {
+    public Condition getGraphCondition(String name) {
         return grammar.getRule(new NameLabel(name));
     }
 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultMatching.java,v 1.18 2007-10-03 23:10:53 rensink Exp $
+ * $Id: DefaultMatching.java,v 1.19 2007-10-05 08:31:38 rensink Exp $
  */
 package groove.trans;
 
@@ -37,8 +37,7 @@ import java.util.Map;
  * Especially redefines the notion of a <i>total extension</i> to those that
  * also fail to satisfy the negated conjunct of this graph condition.
  * @author Arend Rensink
- * @version $Revision: 1.18 $
- * @deprecated directly use {@link GraphCondition#getMatches(Graph, NodeEdgeMap)}
+ * @version $Revision: 1.19 $
  */
 @Deprecated
 public class DefaultMatching extends RegExprMorphism implements Matching {
@@ -143,7 +142,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
         Map<Matching,GraphPredicateOutcome> matchMap = new HashMap<Matching,GraphPredicateOutcome>();
         while (matchIter.hasNext()) {
             Matching match = matchIter.next();
-            GraphPredicateOutcome negResultSet = condition.getNegConjunct().getOutcome(cod(), ((RuleMatch) match).getMatchMap());
+            GraphPredicateOutcome negResultSet = condition.getNegConjunct().getOutcome(match);
             matchMap.put(match, negResultSet);
         }
         return matchMap;
@@ -153,7 +152,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * This implementation delegates to {@link DefaultGraphCondition#getMatchStrategy()}.
      */
     @Override
-    protected MatchStrategy<VarNodeEdgeMap> createMatchStrategy() {
+    protected MatchStrategy createMatchStrategy() {
         return getCondition().getMatchStrategy();
     }
 
@@ -187,7 +186,7 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * @see #getTotalExtensionsIter()
      */
     protected boolean hasAC() {
-        return condition.hasComplexConjunct() || ac != null;
+        return condition.hasComplexNegConjunct() || ac != null;
     }
 
     /**
@@ -200,8 +199,8 @@ public class DefaultMatching extends RegExprMorphism implements Matching {
      * @see #getTotalExtensionsIter()
      */
     protected boolean satisfiesAC(VarMorphism candidate) {
-        DefaultGraphPredicate complexNegConjunct = condition.getComplexConjunct();
-        boolean result = complexNegConjunct == null || !complexNegConjunct.matches(candidate.cod(), candidate.elementMap());
+        DefaultGraphPredicate complexNegConjunct = condition.getComplexNegConjunct();
+        boolean result = complexNegConjunct == null || !complexNegConjunct.matches(candidate);
         if (result) {
         	result = ac == null || ac.isSatisfied(candidate);
         }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NegatedSearchItem.java,v 1.6 2007-09-25 15:12:34 rensink Exp $
+ * $Id: NegatedSearchItem.java,v 1.7 2007-10-05 08:31:45 rensink Exp $
  */
 package groove.match;
 
@@ -27,7 +27,7 @@ import java.util.HashSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NegatedSearchItem extends ConditionSearchItem {
+public class NegatedSearchItem extends AbstractSearchItem {
 	/** 
 	 * Constructs a new search item. The item will match (precisely once)
 	 * if and only the underlying item does not match.
@@ -65,6 +65,16 @@ public class NegatedSearchItem extends ConditionSearchItem {
     public Collection<String> needsVars() {
         return neededVars;
     }
+    
+    /** 
+     * Since the order of negated search items does not influence the match,
+     * all of them have the same rating.
+     * @return <code>0</code> always
+     */
+    @Override
+    int getRating() {
+        return 0;
+    }
 
     /** This implementation propagates the call to the inner item. */
     public void activate(SearchPlanStrategy strategy) {
@@ -81,7 +91,7 @@ public class NegatedSearchItem extends ConditionSearchItem {
     private final Collection<String> neededVars;
 
     /** Record for the negated search item. */
-    private class NegatedSearchRecord extends ConditionRecord {
+    private class NegatedSearchRecord extends SingularRecord {
         /** Constructs a new record, for a given matcher. */
         private NegatedSearchRecord(Search search) {
             super(search);

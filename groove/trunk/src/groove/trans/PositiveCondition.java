@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PositiveCondition.java,v 1.1 2007-10-03 23:10:54 rensink Exp $
+ * $Id: PositiveCondition.java,v 1.2 2007-10-05 08:31:38 rensink Exp $
  */
 package groove.trans;
 
@@ -30,16 +30,21 @@ import java.util.Iterator;
 import java.util.Set;
 
 /**
+ * Abstract superclass of conditions that test for the existence of a (sub)graph structure.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractCondition<M> {
     /**
-     * Constructs a (named) graph condition based on a given pattern morphism.
-     * The name may be <code>null</code>.
+     * Constructs a (named) graph condition based on a given target graph and root morphism.
+     * @param target the graph to be matched
+     * @param rootMap element map from the context to the anchor elements of <code>target</code>;
+     * may be <code>null</code> if the condition is ground
+     * @param name the name of the condition; may be <code>null</code>
+     * @param properties properties for matching the condition; may be <code>null</code>
      */
-    protected PositiveCondition(Graph target, NodeEdgeMap patternMap, NameLabel name, SystemProperties properties) {
-        super(target, patternMap, name, properties);
+    protected PositiveCondition(Graph target, NodeEdgeMap rootMap, NameLabel name, SystemProperties properties) {
+        super(target, rootMap, name, properties);
     }
     
     /**
@@ -62,7 +67,7 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
      * @see #addComplexSubCondition(AbstractCondition)
      */
     @Override
-    public void addSubCondition(GraphCondition condition) {
+    public void addSubCondition(Condition condition) {
         super.addSubCondition(condition);
         if (condition instanceof EdgeEmbargo) {
         	addNegation(((EdgeEmbargo) condition).getEmbargoEdge());
@@ -104,7 +109,6 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
 	 * are checking for those already in the simulation, the search for matchings only has to regard
 	 * the complex negated conjunct. May be <code>null</code>, if only simple negative conditions
 	 * were added.
-	 * @see #getNegConjunct()
 	 * @see #getInjections()
 	 * @see #getNegations()
 	 */
@@ -147,30 +151,24 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
 
     /** 
      * Returns a match on the basis of a mapping of this condition's target to a given graph.
-     * The mapping is checked for satisfaction {@link #satisfiesConstraints(Graph, VarNodeEdgeMap)},
-     * and matches of the sub-conditions are added; if either of these steps fails,
+     * The mapping is checked for matches of the sub-conditions; if this fails,
      * the method returns <code>null</code>.
-     * @param host the graph into which the mapping goes
+     * @param host the graph that is being matched
      * @param matchMap the mapping, which should go from the elements of {@link #getTarget()}
      * into <code>host</code>
-     * @return a match constructed on the basis of <code>matchMap</code>; or <code>null</code>
-     * if {@link #satisfiesConstraints(Graph, VarNodeEdgeMap)} returns <code>false</code>
-     * or any of the sub-conditions cannot be matched
+     * @return a match constructed on the basis of <code>matchMap</code>
      */
     protected M getMatch(Graph host, VarNodeEdgeMap matchMap) {
-        M result = null;
-		if (satisfiesConstraints(host, matchMap)) {
-	        result = createMatch(matchMap);
-	        for (AbstractCondition<?> condition: getComplexSubConditions()) {
-	            Iterable<? extends Match> subMatch = condition.getMatches(host, matchMap);
-	            if (subMatch.iterator().hasNext()) {
-	                result.addMatch(subMatch.iterator().next());
-	            } else {
-	                result = null;
-	                break;
-	            }
-	        }
-		} 
+        M result = createMatch(matchMap);
+        for (AbstractCondition< ? > condition : getComplexSubConditions()) {
+            Iterable< ? extends Match> subMatch = condition.getMatches(host, matchMap);
+            if (subMatch.iterator().hasNext()) {
+                result.addMatch(subMatch.iterator().next());
+            } else {
+                result = null;
+                break;
+            }
+        }
         return result;
     }
 

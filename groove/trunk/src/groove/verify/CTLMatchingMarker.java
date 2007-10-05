@@ -13,14 +13,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLMatchingMarker.java,v 1.4 2007-04-27 22:07:08 rensink Exp $
+ * $Id: CTLMatchingMarker.java,v 1.5 2007-10-05 08:31:48 rensink Exp $
  */
 package groove.verify;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.GraphCondition;
+import groove.trans.Condition;
 import groove.util.Reporter;
 import groove.verify.CTLStarFormula.Neg;
 import groove.verify.CTLStarFormula.Next;
@@ -40,7 +40,7 @@ import java.util.Set;
  * Visitor-implementation of {@link groove.verify.CTLFormulaMarker} using the matching-strategy on
  * the Atom-level.
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-04-27 22:07:08 $
+ * @version $Revision: 1.5 $ $Date: 2007-10-05 08:31:48 $
  */
 public class CTLMatchingMarker implements CTLFormulaMarker {
 
@@ -95,11 +95,11 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         reporter.start(MARK_ATOM);
         boolean specialAtom = markSpecialAtom(marking, property, gts);
         if (!specialAtom) {
-	        GraphCondition condition = ((CTLStarFormula.Atom) property).graphCondition();
+	        Condition condition = ((CTLStarFormula.Atom) property).graphCondition();
 	        Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
 	        while(stateIter.hasNext()) {
 	            GraphState nextState = stateIter.next();
-	            if (condition.matches(nextState.getGraph())) {
+	            if (condition.getMatchIter(nextState.getGraph(), null).hasNext()) {
 	                marking.set(nextState, property, true);
 	            }
 	            else {
@@ -111,9 +111,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
         reporter.stop();
     }
 
-    /* (non-Javadoc)
-     * @see groove.verify.CTLExprMarker#markNeg(groove.verify.Marking, groove.verify.CTLExpr, groove.lts.GTS)
-     */
     public void markNeg(Marking marking, TemporalFormula property, GTS gts) {
         reporter.start(MARK_NEG);
         TemporalFormula operand = (TemporalFormula) property.getOperands().get(0);

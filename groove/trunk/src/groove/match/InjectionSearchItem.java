@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: InjectionSearchItem.java,v 1.8 2007-09-26 08:30:24 rensink Exp $
+ * $Id: InjectionSearchItem.java,v 1.9 2007-10-05 08:31:45 rensink Exp $
  */
 package groove.match;
 
@@ -28,7 +28,7 @@ import java.util.Iterator;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class InjectionSearchItem extends ConditionSearchItem {
+public class InjectionSearchItem extends AbstractSearchItem {
 	/** 
 	 * Constructs an injection item, which checks for the injectivity
 	 * of the match found so far. That is, the item will match if and only if the
@@ -59,7 +59,17 @@ public class InjectionSearchItem extends ConditionSearchItem {
 	public String toString() {
 		return String.format("Separate %s and %s", node1, node2); 
 	}
-
+    
+    /** 
+     * Since the order of injection search items does not influence the match,
+     * all of them have the same rating.
+     * @return <code>0</code> always
+     */
+    @Override
+    int getRating() {
+        return 0;
+    }
+    
 	public void activate(SearchPlanStrategy strategy) {
         node1Ix = strategy.getNodeIx(node1);
         node2Ix = strategy.getNodeIx(node2);
@@ -81,7 +91,7 @@ public class InjectionSearchItem extends ConditionSearchItem {
     private int node2Ix;
     
     /** The record for this search item. */
-    private class InjectionRecord extends ConditionRecord {
+    private class InjectionRecord extends SingularRecord {
         /** Constructs a fresh record, for a given matcher. */
         private InjectionRecord(Search search) {
             super(search);

@@ -12,11 +12,10 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.34 2007-10-03 23:10:53 rensink Exp $
+ * $Id: SPORule.java,v 1.35 2007-10-05 08:31:42 rensink Exp $
  */
 package groove.trans;
 
-import groove.calc.Property;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -49,7 +48,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.34 $
+ * @version $Revision: 1.35 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -127,6 +126,21 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return result;
     }
 
+	/** 
+	 * Before calling the super method,
+	 * tests whether the match map is valid, using {@link #isValidMatchMap(Graph, VarNodeEdgeMap)}.
+	 * @return <code>null</code> if {@link #isValidMatchMap(Graph, VarNodeEdgeMap)} returns <code>false</code>,
+	 * otherwise the result of the super method.
+	 */
+    @Override
+    protected RuleMatch getMatch(Graph host, VarNodeEdgeMap matchMap) {
+        if (isValidMatchMap(host, matchMap)) {
+            return super.getMatch(host, matchMap);
+        } else {
+            return null;
+        }
+    }
+
     /** 
      * Callback factory method to create a match on the basis of
      * a mapping of this condition's target.
@@ -139,41 +153,22 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return new RuleMatch(this, matchMap);
     }
     
-	@Override
-	protected boolean satisfiesConstraints(Graph host, VarNodeEdgeMap match) {
-		boolean result = super.satisfiesConstraints(host, match);
-		if (result && getProperties().isCheckDangling()) {
-			result = satisfiesDangling(host, match);
-		}
-		return result;
-	}
-
-	@Override
-	@Deprecated
-	protected DefaultMatching newMatcher(Graph graph) {
-		DefaultMatching result = super.newMatcher(graph);
-		result.setAC(getDanglingEdgeCheck());
-		return result;
-	}
-
-	/** 
-	 * Returns the application condition imposed by the
-	 * rule system properties.
+	/**
+	 * Tests whether a given match map satisfies the additional constraints imposed by this
+	 * rule.
+	 * @param host the graph to be matched
+	 * @param matchMap the proposed map from {@link #getTarget()} to <code>host</code>
+	 * @return <code>true</code> if <code>matchMap</code> satisfies the constraints imposed
+	 * by the rule (if any).
 	 */
-	@Deprecated
-	private Property<groove.rel.VarMorphism> getDanglingEdgeCheck() {
-		if (getProperties().isCheckDangling()) {
-			return new Property<groove.rel.VarMorphism>() {
-				@Override
-				public boolean isSatisfied(groove.rel.VarMorphism value) {
-					return satisfiesDangling(value.cod(), value.elementMap());
-				}
-			};
-		} else {
-			return null;
+	protected boolean isValidMatchMap(Graph host, VarNodeEdgeMap matchMap) {
+		boolean result = true;
+		if (SystemProperties.isCheckDangling(getProperties())) {
+			result = satisfiesDangling(host, matchMap);
 		}
+		return result;
 	}
-	
+
 	/** Tests if a given (proposed) match into a host graph leaves dangling edges. */ 
 	private boolean satisfiesDangling(Graph host, VarNodeEdgeMap match) {
 		Set<Edge> danglingEdges = new HashSet<Edge>();
@@ -251,8 +246,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         }
         if (hasComplexSubConditions()) {
             res += "\nNegative application conditions:";
-            for (GraphCondition nextNac: getComplexSubConditions()) {
-                if (nextNac instanceof NegativeCondition) {
+            for (Condition nextNac: getComplexSubConditions()) {
+                if (nextNac instanceof NotCondition) {
                     res += "\n    " + nextNac.toString();
                 }
             }
@@ -330,8 +325,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 					}
 				}
 				if (getProperties().isRhsAsNac()) {
-					GraphCondition rhsNac = new NegativeCondition(
-							getMorphism(), getProperties());
+					Condition rhsNac = new NotCondition(getMorphism(), getProperties());
 					rhsNac.setFixed();
 					addSubCondition(rhsNac);
 				}
@@ -802,6 +796,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     private static AnchorFactory anchorFactory = MinimalAnchorFactory.getInstance(); 
     /** Debug flag for the constructor. */
     private static final boolean CONSTRUCTOR_DEBUG = false;
-    /** Handle for profiling {@link #matches(Graph)} and related methods. */
+    /** Handle for profiling {@link #newEvent(VarNodeEdgeMap, NodeFactory, boolean)} and related methods. */
     static public final int GET_EVENT = reporter.newMethod("getEvent");
 }

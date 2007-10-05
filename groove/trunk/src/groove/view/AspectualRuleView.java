@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.19 2007-10-03 23:10:55 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.20 2007-10-05 08:31:51 rensink Exp $
  */
 
 package groove.view;
@@ -39,10 +39,10 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
+import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
-import groove.trans.GraphCondition;
 import groove.trans.MergeEmbargo;
-import groove.trans.NegativeCondition;
+import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
 import groove.trans.SPORule;
@@ -78,7 +78,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -341,7 +341,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             }
         }
         // now add edges to lhs, rhs and morphism
-        Set<GraphCondition> embargoes = new HashSet<GraphCondition>();
+        Set<Condition> embargoes = new HashSet<Condition>();
         for (AspectEdge edge: graph.edgeSet()) {
         	try {
         	if (RuleAspect.inRule(edge)) {
@@ -378,7 +378,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 				result.addSubCondition(computeNac(result.lhs(), nacPair.first(), nacPair.second()));
 			}
 			// add the embargoes
-			for (GraphCondition embargo : embargoes) {
+			for (Condition embargo : embargoes) {
 				result.addSubCondition(embargo);
 			}
 			testVariableBinding(graph);
@@ -449,8 +449,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @param lhs the LHS graph
      * @param nacNodeSet set of graph elements that should be turned into a NAC target
      */
-    protected NegativeCondition computeNac(Graph lhs, Set<Node> nacNodeSet, Set<Edge> nacEdgeSet) {
-    	NegativeCondition result = null;
+    protected NotCondition computeNac(Graph lhs, Set<Node> nacNodeSet, Set<Edge> nacEdgeSet) {
+    	NotCondition result = null;
         // first check for merge end edge embargoes
         // they are characterised by the fact that there is precisely 1 element
         // in the nacElemSet, which is an edge
@@ -512,11 +512,11 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	/**
 	 * Callback method to create a general NAC on a given graph.
 	 * @param context the context-graph
-	 * @return the new {@link groove.trans.NegativeCondition}
+	 * @return the new {@link groove.trans.NotCondition}
 	 * @see #toRule()
 	 */
-	protected NegativeCondition createNAC(Graph context) {
-	    return new NegativeCondition(context, properties);
+	protected NotCondition createNAC(Graph context) {
+	    return new NotCondition(context, properties);
 	}
 
 	/**
@@ -658,7 +658,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			}
 		}
 		// now add the NACs
-		for (GraphCondition nac : rule.getSubConditions()) {
+		for (Condition nac : rule.getSubConditions()) {
 			NodeEdgeMap nacMorphism = nac.getPatternMap();
 			if (nac instanceof MergeEmbargo) {
 				result.addEdge(computeAspectEdge(images(lhsNodeMap,

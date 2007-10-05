@@ -12,15 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.2 2007-10-03 23:10:54 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.3 2007-10-05 08:31:38 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.AbstractMorphism;
-import groove.graph.DefaultMorphism;
 import groove.graph.Graph;
 import groove.graph.Label;
-import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
@@ -35,7 +33,6 @@ import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -43,15 +40,19 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-abstract public class AbstractCondition<M extends Match> implements GraphCondition {
+abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
-     * Constructs a (named) graph condition based on a given pattern morphism.
-     * The name may be <code>null</code>.
+     * Constructs a (named) graph condition based on a given graph to be matched and root map.
+     * @param target the graph to be matched
+     * @param rootMap element map from the context to the anchor elements of <code>target</code>;
+     * may be <code>null</code> if the condition is ground
+     * @param name the name of the condition; may be <code>null</code>
+     * @param properties properties for matching the condition
      */
-    protected AbstractCondition(Graph target, NodeEdgeMap patternMap, NameLabel name, SystemProperties properties) {
-        this.patternMap = patternMap;
+    protected AbstractCondition(Graph target, NodeEdgeMap rootMap, NameLabel name, SystemProperties properties) {
+        this.patternMap = rootMap;
         this.target = target;
 		this.properties = properties;
         this.name = name;
@@ -68,15 +69,6 @@ abstract public class AbstractCondition<M extends Match> implements GraphConditi
     public SystemProperties getProperties() {
 		return properties;
 	}
-
-    /**
-     * This implementation returns <code>this</code>.
-     * @deprecated use {@link #getPatternMap()} instead
-     */
-    @Deprecated
-    public Morphism getPattern() {
-        return new DefaultMorphism(getContext(), getTarget(), getPatternMap());
-    }
 
     /**
      * This implementation returns <code>this</code>.
@@ -104,14 +96,6 @@ abstract public class AbstractCondition<M extends Match> implements GraphConditi
      */
     public boolean isGround() {
         return getPatternMap().isEmpty();
-    }
-
-    /**
-     * Returns <code>getPattern().dom()</code>.
-     */
-    @Deprecated
-    public Graph getContext() {
-        return null;
     }
 
     /** 
@@ -180,7 +164,7 @@ abstract public class AbstractCondition<M extends Match> implements GraphConditi
         return subConditions;
     }
 
-    public void addSubCondition(GraphCondition condition) {
+    public void addSubCondition(Condition condition) {
         assert condition instanceof AbstractCondition : String.format("Condition %s should be an AbstractCondition", condition);
         getSubConditions().add((AbstractCondition<?>) condition);
     }
@@ -199,53 +183,10 @@ abstract public class AbstractCondition<M extends Match> implements GraphConditi
     public boolean isFixed() {
 		return fixed;
 	}
-
-	/**
-     * Calls <code>getNegPredicate().setOr(test)</code>,
-     * and for all the conditions in <code>test</code> calls
-     * {@link #addSubCondition(GraphCondition)}.
-     * @throws IllegalStateException if the condition is fixed at the time of invocation
-     * @see #isFixed()
-     */
-    @Deprecated
-    public void setAndNot(GraphTest test) throws IllegalStateException {
-        testFixed(false);
-        if (test instanceof GraphCondition) {
-            addSubCondition((GraphCondition) test);
-        } else {
-            for (GraphCondition condition: ((GraphPredicate) test).getConditions()) {
-                addSubCondition(condition);
-            }
-        }
-    }
-
-    @Deprecated
-    public GraphPredicate getNegConjunct() {
-        throw new IllegalStateException();
-    }
     
-    /**
-     * Delegates to {@link #matches(Graph, NodeEdgeMap)} with <code>null</code> as second parameter.
-     */
-    final public boolean matches(Graph graph) {
-    	return matches(graph, null);
+    final public boolean hasMatch(Graph host) {
+        return isGround() && getMatchIter(host, null).hasNext();
 	}
-
-    /**
-	 * @deprecated Use {@link #matches(Graph,NodeEdgeMap)} instead
-	 */
-    @Deprecated
-	final public boolean matches(groove.rel.VarMorphism subject) {
-		return matches(subject.cod(), subject.elementMap());
-	}
-
-	/**
-	 * Returns <code>true</code> if {@link #getMatches(Graph, NodeEdgeMap)}
-	 * reports a match.
-	 */
-    final public boolean matches(Graph host, NodeEdgeMap matchMap) {
-    	return getMatches(host, matchMap).iterator().hasNext();
-    }
 
     public Iterable<M> getMatches(final Graph host, final NodeEdgeMap contextMap) {
 		return new Iterable<M>() {
@@ -289,236 +230,6 @@ abstract public class AbstractCondition<M extends Match> implements GraphConditi
     	}
 		return result;
     }
-//    
-//    /**
-//	 * Returns an iterator over the mappings of this condition into a given host
-//	 * graph, given a pre-matching of the pattern image.
-//	 * 
-//	 * @param host
-//	 *            the host graph we are mapping into
-//	 * @param anchorMap
-//	 *            a mapping of the image of {@link #getPattern()} under this
-//	 *            condition's morphism, into <code>host</code>; may be 
-//	 *            <code>null</code> if the condition is ground.
-//	 * @return an iterator over the matches of this graph condition into
-//	 *         <code>host</code> that are consistent with
-//	 *         <code>preMatch</code>
-//	 */
-//    final protected Iterator<VarNodeEdgeMap> createMatchMapIter(Graph host, NodeEdgeMap anchorMap) {
-//        Iterator<VarNodeEdgeMap> result = getMatchStrategy().getMatchIter(host, anchorMap);
-//        return filterMapIter(result, host);
-//    }
-//
-//
-//    /**
-//     * Indicates whether this graph condition imposes further constraints on
-//     * the validity of a match map, besides embedding the condition's target graph.
-//     */
-//    protected boolean hasConstraints() {
-//    	return false;
-//    }
-    
-	/**
-	 * Tests if a given candidate match satisfies the additional constraints
-	 * of this graph condition.
-	 * This does <i>not</i> include the sub-conditions!
-	 * @param host the graph into which a match is sought
-	 * @param matchMap a candidate mapping from {@link #getTarget()} to <code>host</code>
-	 * @return <code>true</code> if <code>matchMap</code> satisfies the additional constraints
-	 */
-	protected boolean satisfiesConstraints(Graph host, VarNodeEdgeMap matchMap) {
-        return true;
-	}
-
-    /**
-	 * If the condition is ground, returns a total matching from a given graph
-	 * to this condition's target pattern, if one exists. Otherwise, throws an
-	 * exception as per contract.
-	 * @see #isGround()
-	 */
-    @Deprecated
-    final public Matching getMatching(Graph graph) {
-		Matching result;
-		reporter.start(GET_MATCHING);
-        testGround();
-        testFixed(true);
-        result = (Matching) newMatcher(graph).getTotalExtension();
-        reporter.stop();
-		return result;
-	}
-
-    /**
-	 * Creates an initial match using the inverse of <code>this</code>
-	 * followed by <code>morph</code>, and attempts to extend that to a total
-	 * morphism. The method reports success if there is no total extension that
-	 * satisfies the negated conjunct.
-	 * 
-	 * @see Matching#getTotalExtension()
-	 */
-    @Deprecated
-	final public Matching getMatching(groove.rel.VarMorphism subject) {
-		Matching result;
-		reporter.start(GET_MATCHING);
-        testFixed(true);
-		Matching partialMatch = newMatcher(subject);
-		result = partialMatch == null ? null
-				: (Matching) partialMatch.getTotalExtension();
-		reporter.stop();
-		return result;
-	}
-
-    /**
-	 * If the condition is ground, returns the set of total extensions of an
-	 * initially empty matching to the given graph. Otherwise, throws an
-	 * exception as per contract.
-	 * @see #isGround()
-	 * @see Matching#getTotalExtensions()
-	 */
-    @Deprecated
-    final public Collection<? extends Matching> getMatchingSet(Graph graph) {
-    	Collection <? extends Matching> result;
-        reporter.start(GET_MATCHING);
-		testGround();
-		testFixed(true);
-		result = newMatcher(graph).getTotalExtensions();
-		reporter.stop();
-		return result;
-    }
-
-    /**
-	 * Creates an initial match using the inverse of <code>this</code>
-	 * followed by <code>morph</code>, and constructs the set of total
-	 * extensions. Returns the set of those total extensions that do not
-	 * satisfies the sub-predicate.
-	 * 
-	 * @see Morphism#getTotalExtensions()
-	 */
-    @Deprecated
-    final public Collection<? extends Matching> getMatchingSet(groove.rel.VarMorphism subject) {
-    	Collection <? extends Matching> result;
-        reporter.start(GET_MATCHING);
-		testFixed(true);
-		Matching partialMatch = newMatcher(subject);
-		result = partialMatch == null ? Collections.<Matching> emptySet()
-				: partialMatch.getTotalExtensions();
-		reporter.stop();
-		return result;
-    }
-
-    /**
-	 * If the condition is ground, returns an iterator over the total extensions
-	 * of an initially empty matching to the given graph. Otherwise, throws an
-	 * exception as per contract.
-	 * 
-	 * @see #isGround()
-	 */
-    @Deprecated
-    final public Iterator<? extends Matching> getMatchingIter(Graph graph) {
-    	Iterator<? extends Matching> result;
-        reporter.start(GET_MATCHING);
-		testFixed(true);
-		testGround();
-		result = newMatcher(graph).getTotalExtensionsIter();
-		reporter.stop();
-		return result;
-	}
-
-    /**
-	 * Creates an initial match using the inverse of <code>this</code>
-	 * followed by <code>morph</code>, and constructs an iterator over the
-	 * total extensions. Filters out thos matchings that satisfy the
-	 * sub-predicate.
-	 * 
-	 * @see Morphism#getTotalExtensionsIter()
-	 */
-    @Deprecated
-    final public Iterator<? extends Matching> getMatchingIter(groove.rel.VarMorphism subject) {
-    	Iterator<? extends Matching> result;
-		reporter.start(GET_MATCHING);
-		testFixed(true);
-		Matching partialMatch = newMatcher(subject);
-		result = partialMatch == null ? Collections.<Matching>emptySet().iterator()
-				: partialMatch.getTotalExtensionsIter();
-		reporter.stop();
-		return result;
-	}
-
-    /**
-	 * Creates an outcome of this graph condition for a given host graph,
-	 * based on a given initial matching of the pattern graph.
-	 */
-    public GraphConditionOutcome getOutcome(Graph host, NodeEdgeMap patternMap) {
-    	throw new UnsupportedOperationException();
-//    	Iterator<? extends Match> matchIter = getMatches(host, patternMap).iterator();
-//    	Map<Match,GraphPredicateOutcome> matchMap = new HashMap<Match,GraphPredicateOutcome>();
-//    	while (matchIter.hasNext()) {
-//    		Match match = matchIter.next();
-//    		GraphPredicateOutcome negResultSet = getNegConjunct().getOutcome(host, ((ExistentialMatch) match).matchMap());
-//    		matchMap.put(match, negResultSet);
-//    	}
-//        return createOutcome(host, patternMap, matchMap);
-    }
-
-    /**
-     * Two conditions are equivalent if they have the same structure up to isomorphism.
-     * Since this is obviously too expensive to test here, we go the other way
-     * and call two conditions equal only if they are the same object.
-     */
-    @Override
-    public boolean equals(Object obj) {
-        return this == obj;
-    }
-    
-    /**
-     * In line with that choice for {@link #equals(Object)}, we defer
-     * to {@link System#identityHashCode(java.lang.Object)}.
-     */
-    @Override
-    public int hashCode() {
-    	if (! identityHashCodeSet) {
-    		identityHashCode = System.identityHashCode(this);
-    		identityHashCodeSet = true;
-    	}
-    	return identityHashCode;
-    }
-    
-    /**
-     * Callback method to create an initial (partial) matching for a given subject
-     * morphism. The matching goes from the target pattern of this condition to 
-     * the subject's codomain.
-     * This implementation builds the result upon a given subject matching of the context,
-     * by inverting the underlying morphism of this condition and concatenating the subject morphism.
-     * Returns <code>null</code> if this fails due to inconsistent injectivity constraints
-     * of <code>this</code> and <code>subject</code>.
-     */
-    @Deprecated
-    final protected Matching newMatcher(groove.rel.VarMorphism subject) {
-        try {
-            Matching result = newMatcher(subject.cod());
-            AbstractMorphism.constructInvertConcat(getPatternMap(), subject, result);
-            for (Map.Entry<String,Label> varEntry: subject.getValuation().entrySet()) {
-                String var = varEntry.getKey();
-                if (getTargetVars().contains(var)) {
-                    result.putVar(var, varEntry.getValue());
-                }
-            }
-            return result;
-        } catch (FormatException exc) {
-            return null;
-        }
-    }
-
-    /**
-     * Callback method to create an initial (empty) matching from this condition's
-     * target pattern to a given graph.
-     * This implementation returns a {@link DefaultMatching}.
-     * @see #newMatcher(groove.rel.VarMorphism)
-     * @deprecated use {@link #getMatchStrategy()}
-     */
-    @Deprecated
-    protected DefaultMatching newMatcher(Graph graph) {
-        throw new IllegalStateException();
-    }
     
     /** Returns the set of variables in the target graph. */
     private Set<String> getTargetVars() {
@@ -527,15 +238,6 @@ abstract public class AbstractCondition<M extends Match> implements GraphConditi
         }
         return targetVars;
     }
-    /**
-     * Creates and returns a failure result for a given subject morphism,
-     * based on a given mapping from matchings of this condition's pattern
-     * to successes of the sub-predicate.
-     */
-    protected GraphConditionOutcome createOutcome(Graph host, NodeEdgeMap elementMap, Map<Match, GraphPredicateOutcome> matchingMap) {
-        return new DefaultConditionOutcome(this, host, elementMap, matchingMap);
-    }
-
     /**
      * Returns the precomputed matching order for the elements of the target pattern. First creates
      * the order using {@link #createMatchStrategy()} if that has not been done.
@@ -608,16 +310,6 @@ abstract public class AbstractCondition<M extends Match> implements GraphConditi
     private Set<String> targetVars;
     /** The collection of sub-conditions of this condition. */
     private Collection<AbstractCondition<?>> subConditions;
-	/**
-	 * Flag indicating that {@link #identityHashCode} has been computed
-	 * and assigned.
-	 */
-	private boolean identityHashCodeSet;
-	/**
-	 * Hash code based on the identity, rather than the content, of
-	 * the event.
-	 */
-    private int identityHashCode;
     /** Flag indicating if this condition is now fixed, i.e., unchangeable. */
     boolean fixed;
     /** 
@@ -633,9 +325,7 @@ abstract public class AbstractCondition<M extends Match> implements GraphConditi
     private final SystemProperties properties;
     
     /** Reporter instance for profiling this class. */
-    static public final Reporter reporter = Reporter.register(GraphTest.class);
+    static public final Reporter reporter = Reporter.register(Condition.class);
     /** Handle for profiling {@link #getMatches(Graph,NodeEdgeMap)} and related methods. */
     static public final int GET_MATCHING = reporter.newMethod("getMatching...");
-    /** Handle for profiling {@link #matches(Graph)} and related methods. */
-    static public final int HAS_MATCHING = reporter.newMethod("hasMatching...");
 }
