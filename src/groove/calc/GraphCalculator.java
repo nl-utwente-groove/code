@@ -12,14 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphCalculator.java,v 1.3 2007-04-27 22:06:59 rensink Exp $
+ * $Id: GraphCalculator.java,v 1.4 2007-10-05 08:31:43 rensink Exp $
  */
 package groove.calc;
 
 import groove.graph.Graph;
 import groove.lts.GTS;
+import groove.trans.Condition;
 import groove.trans.GraphGrammar;
-import groove.trans.GraphTest;
 
 import java.util.Collection;
 
@@ -28,7 +28,7 @@ import java.util.Collection;
  * A graph calculator is loaded with a grammar, i.e., a rule system and a basis graph.
  * Essentially it gives an easier interface to the underlying GTS.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface GraphCalculator {
     /**
@@ -86,7 +86,7 @@ public interface GraphCalculator {
      * <code>null</code> if there is no such graph.
      * @throws IllegalStateException if the basis has not been initialised
      */
-    GraphResult getFirst(GraphTest condition);
+    GraphResult getFirst(Condition condition);
     
     /**
      * Returns the set of all graphs satisfying a certain condition.
@@ -110,7 +110,7 @@ public interface GraphCalculator {
      * for each <code>result</code> in the set.
      * @throws IllegalStateException if the basis has not been initialised
      */
-    Collection<GraphResult> getAll(GraphTest condition);
+    Collection<GraphResult> getAll(Condition condition);
     
     /** 
      * The original graph, i.e., the one on which the calculator is initialised.

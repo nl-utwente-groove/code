@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.21 2007-10-03 07:23:28 rensink Exp $
- * $Date: 2007-10-03 07:23:28 $
+ * $Id: Rule.java,v 1.22 2007-10-05 08:31:38 rensink Exp $
+ * $Date: 2007-10-05 08:31:38 $
  */
 package groove.trans;
 
@@ -33,9 +33,9 @@ import java.util.Comparator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
-public interface Rule extends Comparable<Rule>, GraphCondition {
+public interface Rule extends Comparable<Rule>, Condition {
 	/** Returns the name of this rule. */
 	public RuleNameLabel getName();
 	

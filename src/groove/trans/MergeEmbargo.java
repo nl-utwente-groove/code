@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MergeEmbargo.java,v 1.6 2007-10-03 23:10:53 rensink Exp $
+ * $Id: MergeEmbargo.java,v 1.7 2007-10-05 08:31:38 rensink Exp $
  */
 package groove.trans;
 
@@ -26,9 +26,9 @@ import groove.graph.Node;
  * by early enforcement (while searching for matchings of the enclosing graph condition).
  * A merge embargo may itself not have negative conditions.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
-public class MergeEmbargo extends NegativeCondition {
+public class MergeEmbargo extends NotCondition {
     /**
      * Constructs a merge embargo on a given graph, between two given nodes.
      * @param source the graph on which this embargo works

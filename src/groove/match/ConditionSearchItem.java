@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchItem.java,v 1.7 2007-09-25 15:12:34 rensink Exp $
+ * $Id: ConditionSearchItem.java,v 1.8 2007-10-05 08:31:45 rensink Exp $
  */
 package groove.match;
 
@@ -23,7 +23,9 @@ import groove.match.SearchPlanStrategy.Search;
  * without affecting the match if the condition holds.
  * @author Arend Rensink
  * @version $Revision $
+ * @deprecated no longer in use
  */
+@Deprecated
 public abstract class ConditionSearchItem extends AbstractSearchItem {
     /** 
      * Since the order of condition search items does not influence the match,

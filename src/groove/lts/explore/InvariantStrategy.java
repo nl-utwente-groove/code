@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: InvariantStrategy.java,v 1.4 2007-04-27 22:06:58 rensink Exp $
+ * $Id: InvariantStrategy.java,v 1.5 2007-10-05 08:31:50 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -22,15 +22,15 @@ import java.util.LinkedList;
 
 import groove.lts.ConditionalExploreStrategy;
 import groove.lts.GraphState;
-import groove.trans.GraphTest;
+import groove.trans.Condition;
 import groove.trans.Rule;
 
 /**
- * Continues exploration, in a breadth-firsth manner, until a given condition
+ * Continues exploration, in a breadth-first manner, until a given condition
  * (the invariant) is found to be violated somewhere; this halts the entire explorations.
  * Currently, the condition is expressed by the applicability of a rule.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class InvariantStrategy extends BranchingStrategy implements ConditionalExploreStrategy {
 	/** Name of this exploration strategy. */
@@ -74,11 +74,11 @@ public class InvariantStrategy extends BranchingStrategy implements ConditionalE
         this.negated = negated;
     }
 
-    public GraphTest getCondition() {
+    public Condition getCondition() {
         return rule;
     }
 
-    public void setCondition(GraphTest rule) {
+    public void setCondition(Condition rule) {
         this.rule = rule;
     }
 
@@ -127,14 +127,14 @@ public class InvariantStrategy extends BranchingStrategy implements ConditionalE
      */
     @Override
     protected boolean isExplorable(GraphState state) {
-        valid = valid && rule.matches(state.getGraph()) != isNegated();
+        valid = valid && rule.hasMatch(state.getGraph()) != isNegated();
         return valid;
     }
 
     /**
      * The rule that determines the invariant to be checked.
      */
-    private GraphTest rule;
+    private Condition rule;
     /**
      * Flag that signals whether the condition should be negated before being applied.
      */

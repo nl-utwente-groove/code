@@ -1,4 +1,4 @@
-/* $Id: Condition.java,v 1.1 2007-04-22 23:32:24 rensink Exp $ */
+/* $Id: Condition.java,v 1.2 2007-10-05 08:31:52 rensink Exp $ */
 package groove.util;
 
 /**
@@ -8,7 +8,9 @@ package groove.util;
  * isolated well.
  * @author Arend Rensink
  * @version $Revision $
+ * @deprecated due to name overlap with the (new) {@link groove.trans.Condition}, and lack of use
  */
+@Deprecated
 public interface Condition<S> {
 	/** 
 	 * Tests if this condition is satisfied on a given subject.

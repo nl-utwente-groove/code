@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.18 2007-10-04 08:24:09 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.19 2007-10-05 08:31:45 rensink Exp $
  */
 package groove.match;
 
@@ -53,7 +53,7 @@ import java.util.TreeSet;
  * The search plans include items for all graph nodes and edges, ordered
  * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -434,7 +434,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.18 $
+     * @version $Revision: 1.19 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -477,7 +477,7 @@ public class GraphSearchPlanFactory {
      * Search item comparator that gives higher priority to
      * items of which more parts have been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.18 $
+     * @version $Revision: 1.19 $
      */
     static class ConnectedPartsComparator implements Comparator<SearchItem> {
         ConnectedPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -522,7 +522,7 @@ public class GraphSearchPlanFactory {
      * Search item comparator that gives higher priority to
      * items with more unmatched parts.
      * @author Arend Rensink
-     * @version $Revision: 1.18 $
+     * @version $Revision: 1.19 $
      */
     static class BoundPartsComparator implements Comparator<SearchItem> {
         BoundPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -579,7 +579,8 @@ public class GraphSearchPlanFactory {
          * <li> {@link VarEdgeSearchItem}s
          * <li> {@link WildcardEdgeSearchItem}s
          * <li> {@link Edge2SearchItem}s
-         * <li> {@link ConditionSearchItem}s
+         * <li> {@link InjectionSearchItem}s
+         * <li> {@link NegatedSearchItem}s
          * <li> {@link OperatorEdgeSearchItem}s
          * <li> {@link ValueNodeSearchItem}s
          * <li> {@link PreMatchSearchItem}s
@@ -616,7 +617,11 @@ public class GraphSearchPlanFactory {
                 return result;
             } 
             result++;
-            if (ConditionSearchItem.class.isAssignableFrom(itemClass)) {
+            if (itemClass == InjectionSearchItem.class) {
+                return result;
+            } 
+            result++;
+            if (itemClass == NegatedSearchItem.class) {
                 return result;
             } 
             result++;
@@ -704,7 +709,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.18 $
+     * @version $Revision: 1.19 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 

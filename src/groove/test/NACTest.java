@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.16 2007-10-03 23:10:56 rensink Exp $
+ * $Id: NACTest.java,v 1.17 2007-10-05 08:31:52 rensink Exp $
  */
 package groove.test;
 
@@ -27,7 +27,7 @@ import groove.graph.Morphism;
 import groove.trans.DefaultRuleFactory;
 import groove.trans.EdgeEmbargo;
 import groove.trans.MergeEmbargo;
-import groove.trans.NegativeCondition;
+import groove.trans.NotCondition;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleMatch;
@@ -56,7 +56,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -68,7 +68,7 @@ public class NACTest extends TestCase {
     protected static final int G0_INDEX = 2;
 
     protected SPORule rule;
-    protected NegativeCondition[] NACs = new NegativeCondition[NR_NACS];
+    protected NotCondition[] NACs = new NotCondition[NR_NACS];
     protected Graph[] g = new Graph[NR_GRAPHS];
 
     protected DefaultNode[][] n = new DefaultNode[2+NR_NACS+NR_GRAPHS][];

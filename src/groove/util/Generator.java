@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.22 2007-10-02 23:06:45 rensink Exp $
+ * $Id: Generator.java,v 1.23 2007-10-05 08:31:52 rensink Exp $
  */
 package groove.util;
 
@@ -49,7 +49,6 @@ import groove.lts.explore.LiveStrategy;
 import groove.lts.explore.NodeBoundedStrategy;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
-import groove.trans.GraphTest;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
 import groove.trans.SPOEvent;
@@ -76,7 +75,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -552,7 +551,7 @@ public class Generator extends CommandLineTool {
 	 * Factory method for the grammar loader to be used by state space
 	 * generation. 
 	 */
-    protected GrammarViewXml createGrammarLoader() {
+    protected GrammarViewXml<?> createGrammarLoader() {
         return new AspectualViewGps();
 //        return new GpsGrammar(new UntypedGxl(graphFactory), SPORuleFactory.getInstance());
     }
@@ -649,7 +648,7 @@ public class Generator extends CommandLineTool {
     /**
      * The grammar loader.
      */
-    protected final GrammarViewXml loader = createGrammarLoader();
+    protected final GrammarViewXml<?> loader = createGrammarLoader();
     /**
      * Option to save all final states generated.
      */
@@ -779,7 +778,7 @@ public class Generator extends CommandLineTool {
          * Returns the condition determined by parsing, in case the strategy is conditional. Returns
          * <tt>null</tt> if no condition was specified.
          * @see #parse(String)
-         * @see ConditionalExploreStrategy#setCondition(GraphTest)
+         * @see ConditionalExploreStrategy#setCondition(groove.trans.Condition)
          */
         public String getCondition() {
             return parsedCondition;

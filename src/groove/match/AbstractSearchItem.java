@@ -30,7 +30,7 @@ import java.util.Iterator;
 /**
  * Abstract implementation of a search item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 abstract public class AbstractSearchItem implements SearchItem {
     /**
@@ -71,7 +71,7 @@ abstract public class AbstractSearchItem implements SearchItem {
     /**
      * This implementation compares items on the basis of their class names,
      * and after that, on the basis of their ratings.
-     * A lower rating means a "smaller" search item.
+     * A lower rating means a "smaller" search item, which is scheduled earlier.
      */
     public int compareTo(SearchItem other) {
         int result = getClass().getName().compareTo(other.getClass().getName());
@@ -96,6 +96,7 @@ abstract public class AbstractSearchItem implements SearchItem {
     
     /** 
      * Returns a rating for this search item, for the purpose of its natural ordering. 
+     * An item with higher rating gets scheduled first (failing more urgent criteria).
      */
     abstract int getRating();
     
@@ -172,7 +173,7 @@ abstract public class AbstractSearchItem implements SearchItem {
     /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.11 $
+     * @version $Revision: 1.12 $
      */
     abstract class SingularRecord extends BasicRecord {
         /** Constructs an instance for a given search. */
@@ -220,6 +221,11 @@ abstract public class AbstractSearchItem implements SearchItem {
             return found;
         }
         
+        @Override
+        public String toString() {
+            return String.format("%s: %b", AbstractSearchItem.this.toString(), isFound());
+        }
+
         /** Flag storing the last return value of {@link #find()}. */
         private boolean found;
     }
@@ -227,7 +233,7 @@ abstract public class AbstractSearchItem implements SearchItem {
      * Abstract implementation of a search item record expected to
      * have more than one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.11 $
+     * @version $Revision: 1.12 $
      */
     abstract class MultipleRecord<E extends Element> extends BasicRecord {
         /** Constructs a record for a given search. */

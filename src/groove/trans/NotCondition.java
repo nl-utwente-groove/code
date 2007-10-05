@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NegativeCondition.java,v 1.2 2007-10-03 23:10:54 rensink Exp $
+ * $Id: NotCondition.java,v 1.1 2007-10-05 08:31:42 rensink Exp $
  */
 package groove.trans;
 
@@ -33,18 +33,18 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NegativeCondition extends AbstractCondition<CompositeMatch> {
+public class NotCondition extends AbstractCondition<CompositeMatch> {
     /**
      * Creates a negative condition that attempts to match a given pattern morphism.
      */
-    public NegativeCondition(Morphism pattern, SystemProperties properties) {
+    public NotCondition(Morphism pattern, SystemProperties properties) {
         super(pattern.cod(), pattern.elementMap(), null, properties);
     }
 
     /**
      * Creates a NAC over a default context and an initially empty target pattern.
      */
-    public NegativeCondition(Graph pattern, SystemProperties properties) {
+    public NotCondition(Graph pattern, SystemProperties properties) {
         this(new DefaultMorphism(pattern, pattern.newGraph()), properties);
     }
 
@@ -53,7 +53,7 @@ public class NegativeCondition extends AbstractCondition<CompositeMatch> {
      * @throws UnsupportedOperationException
      */
     @Override
-    final public void addSubCondition(GraphCondition condition) {
+    final public void addSubCondition(Condition condition) {
         throw new UnsupportedOperationException();
     }
 
@@ -64,13 +64,9 @@ public class NegativeCondition extends AbstractCondition<CompositeMatch> {
         testFixed(true);
         // lift the pattern match to a pre-match of this condition's target
         final VarNodeEdgeMap anchorMap = getAnchorMap(contextMap);
-        Iterator<VarNodeEdgeMap> matchMapIter = getMatchStrategy().getMatchIter(host, anchorMap);
-        while (result == null && matchMapIter.hasNext()) {
-        	if (satisfiesConstraints(host, matchMapIter.next())) {
-        		result = Collections.<CompositeMatch>emptySet().iterator();
-        	}
-        }
-        if (result == null) {
+        if (getMatchStrategy().getMatchIter(host, anchorMap).hasNext()) {
+        	result = Collections.<CompositeMatch>emptySet().iterator();
+        } else {
         	result = WRAPPED_EMPTY_MATCH.iterator();
         }
         reporter.stop();

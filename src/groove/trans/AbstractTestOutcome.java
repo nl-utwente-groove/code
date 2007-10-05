@@ -12,12 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractTestOutcome.java,v 1.2 2007-10-02 23:06:20 rensink Exp $
+ * $Id: AbstractTestOutcome.java,v 1.3 2007-10-05 08:31:38 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.Graph;
-import groove.graph.NodeEdgeMap;
+import groove.graph.Morphism;
+import groove.rel.VarMorphism;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -32,20 +32,20 @@ import java.util.Set;
  * successful and should therefore be included in the {@link #getSuccessKeys()}.
  * A hook is provided in the form of the callback method {@link #isSuccessKey(GraphTestOutcome)}. 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
+@Deprecated
 abstract public class AbstractTestOutcome<Mine,Nested> extends HashMap<Mine,GraphTestOutcome<Nested,Mine>> implements GraphTestOutcome<Mine,Nested> {
     /**
-     * Constructs a test outcome from a given test, subject and mapping to be
+     * Constructs a test outcome from a given test, subject and mappping to be
      * copied to the underlying map.
      * The success keys are computed by iterating over the map and adding the 
      * key to the set of success keys if {@link #isSuccessKey(GraphTestOutcome)}
      * reports success.
      */
-    public AbstractTestOutcome(GraphTest test, Graph host, NodeEdgeMap map, Map<Mine,? extends GraphTestOutcome<Nested,Mine>> outcome) {
-        this.test = test;
-        this.host = host;
-        this.match = map;
+    public AbstractTestOutcome(GraphTest test, VarMorphism subject, Map<Mine,? extends GraphTestOutcome<Nested,Mine>> outcome) {
+        this.test =test;
+        this.subject = subject;
         putAll(outcome);
         for (Map.Entry<Mine,GraphTestOutcome<Nested,Mine>> entry: entrySet()) {
             if (isSuccessKey(entry.getValue())) {
@@ -54,12 +54,8 @@ abstract public class AbstractTestOutcome<Mine,Nested> extends HashMap<Mine,Grap
         }
     }
 
-    public Graph getHost() {
-        return host;
-    }
-
-    public NodeEdgeMap getElementMap() {
-        return match;
+    public Morphism getSubject() {
+        return subject;
     }
 
     public boolean isSuccess() {
@@ -87,10 +83,8 @@ abstract public class AbstractTestOutcome<Mine,Nested> extends HashMap<Mine,Grap
     
     /** The test of which this is an outcome. */
     private final GraphTest test;
-    /** The host graph of the test. */
-    private final Graph host;
-    /** The mapping into the host graph. */
-    private final NodeEdgeMap match;
+    /** The subject of the test. */
+    private final VarMorphism subject;
     /** The evidence for a successful outcome. */
     private final Set<Mine> successKeys = new HashSet<Mine>();
 }

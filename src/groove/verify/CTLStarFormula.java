@@ -13,17 +13,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLStarFormula.java,v 1.8 2007-06-29 07:15:57 kastenberg Exp $
+ * $Id: CTLStarFormula.java,v 1.9 2007-10-05 08:31:48 rensink Exp $
  */
 
 package groove.verify;
 
-import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
 import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphTransition;
 import groove.lts.State;
-import groove.trans.GraphCondition;
+import groove.trans.Condition;
 import groove.util.ExprParser;
 import groove.view.FormatException;
 
@@ -39,7 +38,7 @@ import java.util.Set;
  * Class parsing CTL* formulae.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.8 $ $Date: 2007-06-29 07:15:57 $
+ * @version $Revision: 1.9 $ $Date: 2007-10-05 08:31:48 $
  */
 public class CTLStarFormula {
     /** 
@@ -726,7 +725,7 @@ public class CTLStarFormula {
          * Returns the graph condition corresponding to this atom.
          * @return the graph condition corresponding to this atom
          */
-        public GraphCondition graphCondition() {
+        public Condition graphCondition() {
             return graphCondition;
         }
 
@@ -742,7 +741,7 @@ public class CTLStarFormula {
         /**
          * The graph-predicate representing this CTL-expression.
          */
-        protected GraphCondition graphCondition;
+        protected Condition graphCondition;
     }
 
     /**
