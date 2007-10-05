@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeMatch.java,v 1.2 2007-10-05 12:19:01 rensink Exp $
+ * $Id: CompositeMatch.java,v 1.3 2007-10-05 16:11:35 rensink Exp $
  */
 package groove.trans;
 
@@ -22,6 +22,7 @@ import groove.graph.Node;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -29,7 +30,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CompositeMatch implements Match {
+public class CompositeMatch implements Match, Cloneable {
     /** Constructs a match for a given {@link SPORule}. */
     public CompositeMatch() {
         this.matches = new HashSet<Match>();
@@ -69,15 +70,17 @@ public class CompositeMatch implements Match {
     /** 
      * Returns a set of copies of this composite match, each augmented with
      * an additional match taken from a given set of choices.
+     * For efficiency, the last match in the result is actually a (modified) alias of this object,
+     * meaning that no references to this object should be kept after invoking this method.
      */
     public Collection<CompositeMatch> getAnd(Collection<Match> choices) {
         Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
-        for (Match choice: choices) {
-            CompositeMatch conjunct = new CompositeMatch();
-            for (Match match: getMatches()) {
-                conjunct.addMatch(match);
-            }
+        Iterator<Match> choiceIter = choices.iterator();
+        while (choiceIter.hasNext()) {
+            Match choice = choiceIter.next();
+            CompositeMatch conjunct = choiceIter.hasNext() ? clone() : this;
             conjunct.addMatch(choice);
+            result.add(conjunct);
         }
         return result;
     }
@@ -101,6 +104,14 @@ public class CompositeMatch implements Match {
         return hashCode;
     }
     
+    @Override
+    protected CompositeMatch clone() {
+        CompositeMatch result = new CompositeMatch();
+        result.hashCode = this.hashCode;
+        result.matches.addAll(matches);
+        return result;
+    }
+
     /** Computes a value for the hash code. */
     protected int computeHashCode() {
         return getMatches().hashCode();
