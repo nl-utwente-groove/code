@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.6 2007-10-03 07:23:25 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.7 2007-10-05 11:44:39 rensink Exp $
  */
 package groove.match;
 
@@ -34,7 +34,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Edge2SearchItem extends AbstractSearchItem {
+class Edge2SearchItem extends AbstractSearchItem {
 	/**
 	 * Creates a search item for a given binary edge.
 	 * @param edge the edge to be matched

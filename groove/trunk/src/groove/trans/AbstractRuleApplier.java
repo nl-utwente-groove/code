@@ -91,8 +91,7 @@ abstract public class AbstractRuleApplier implements RuleApplier {
             protected boolean hasNextIterator() {
                 while (!atEnd && nextIter == null && ruleIter.hasNext()) {
                     final Rule nextRule = ruleIter.next();
-					nextIter = new TransformIterator<RuleMatch, RuleApplication>(nextRule
-							.getMatches(getGraph(), null).iterator()) {
+					nextIter = new TransformIterator<RuleMatch, RuleApplication>(nextRule.getMatchIter(getGraph(), null)) {
 						@Override
 						public RuleApplication toOuter(RuleMatch from) {
 							return record.getApplication(from, getGraph());

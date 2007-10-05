@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PreMatchSearchItem.java,v 1.3 2007-09-25 15:12:34 rensink Exp $
+ * $Id: AnchorSearchItem.java,v 1.1 2007-10-05 11:44:39 rensink Exp $
  */
 package groove.match;
 
@@ -36,13 +36,13 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class PreMatchSearchItem extends AbstractSearchItem {
+class AnchorSearchItem extends AbstractSearchItem {
 	/** 
 	 * Creates an instance with given sets of pre-matched nodes, edges and variables.
 	 * @param nodes the set of pre-matched nodes; not <code>null</code>
 	 * @param edges the set of pre-matched edges; not <code>null</code> 
 	 */
-	PreMatchSearchItem(Collection<? extends Node> nodes, Collection<? extends Edge> edges) {
+	AnchorSearchItem(Collection<? extends Node> nodes, Collection<? extends Edge> edges) {
 		this.nodes = new HashSet<Node>(nodes);
 		this.edges = new HashSet<Edge>(edges);
 		this.vars = new HashSet<String>();

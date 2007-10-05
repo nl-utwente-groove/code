@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.19 2007-10-05 08:31:45 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.20 2007-10-05 11:44:39 rensink Exp $
  */
 package groove.match;
 
@@ -34,7 +34,6 @@ import groove.util.Bag;
 import groove.util.HashBag;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -53,7 +52,7 @@ import java.util.TreeSet;
  * The search plans include items for all graph nodes and edges, ordered
  * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -181,7 +180,7 @@ public class GraphSearchPlanFactory {
             Set<Edge> unmatchedEdges = new HashSet<Edge>(remainingEdges);
             // first a single search item for the pre-matched elements
             if (anchorNodes != null && !(anchorNodes.isEmpty() && anchorEdges.isEmpty())) {
-            	SearchItem preMatchItem = new PreMatchSearchItem(anchorNodes, anchorEdges);
+            	SearchItem preMatchItem = new AnchorSearchItem(anchorNodes, anchorEdges);
             	result.add(preMatchItem);
             	unmatchedNodes.removeAll(preMatchItem.bindsNodes());
             	unmatchedEdges.removeAll(preMatchItem.bindsEdges());
@@ -267,7 +266,7 @@ public class GraphSearchPlanFactory {
             RegExpr negOperand = RegExprLabel.getNegOperand(label);
             if (negOperand instanceof RegExpr.Empty) {
                 if (! ignoreNeg) {
-                    return createInjectionSearchItem(Arrays.asList(edge.ends()));
+                    return createInjectionSearchItem(edge.source(), edge.opposite());
                 }
             } else if (negOperand != null) {
                 if (! ignoreNeg) {
@@ -322,11 +321,21 @@ public class GraphSearchPlanFactory {
 
         /**
          * Callback factory method for an injection search item.
-         * @param injection the first node to be matched injectively
+         * @param injection the set of nodes to be matched injectively
          * @return an instance of {@link InjectionSearchItem}
          */
         protected InjectionSearchItem createInjectionSearchItem(Collection<? extends Node> injection) {
             return new InjectionSearchItem(injection);
+        }
+
+        /**
+         * Callback factory method for an injection search item.
+         * @param node1 the first node to be matched injectively
+         * @param node2 the second node to be matched injectively
+         * @return an instance of {@link InjectionSearchItem}
+         */
+        protected InjectionSearchItem createInjectionSearchItem(Node node1, Node node2) {
+            return new InjectionSearchItem(node1, node2);
         }
 
         /**
@@ -434,7 +443,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.19 $
+     * @version $Revision: 1.20 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -477,7 +486,7 @@ public class GraphSearchPlanFactory {
      * Search item comparator that gives higher priority to
      * items of which more parts have been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.19 $
+     * @version $Revision: 1.20 $
      */
     static class ConnectedPartsComparator implements Comparator<SearchItem> {
         ConnectedPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -522,7 +531,7 @@ public class GraphSearchPlanFactory {
      * Search item comparator that gives higher priority to
      * items with more unmatched parts.
      * @author Arend Rensink
-     * @version $Revision: 1.19 $
+     * @version $Revision: 1.20 $
      */
     static class BoundPartsComparator implements Comparator<SearchItem> {
         BoundPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -575,6 +584,7 @@ public class GraphSearchPlanFactory {
          * be scheduled first. In order from worst to best:
          * <ul>
          * <li> {@link NodeSearchItem}s of a non-specialised type
+         * <li> {@link ConditionSearchItem}s
          * <li> {@link RegExprEdgeSearchItem}s
          * <li> {@link VarEdgeSearchItem}s
          * <li> {@link WildcardEdgeSearchItem}s
@@ -583,7 +593,7 @@ public class GraphSearchPlanFactory {
          * <li> {@link NegatedSearchItem}s
          * <li> {@link OperatorEdgeSearchItem}s
          * <li> {@link ValueNodeSearchItem}s
-         * <li> {@link PreMatchSearchItem}s
+         * <li> {@link AnchorSearchItem}s
          * </ul>
          */
         public int compare(SearchItem o1, SearchItem o2) {
@@ -598,6 +608,9 @@ public class GraphSearchPlanFactory {
             int result = 0;
             Class<?> itemClass = item.getClass();
             if (itemClass == NodeSearchItem.class) {
+                return result;
+            } 
+            if (itemClass == ConditionSearchItem.class) {
                 return result;
             } 
             result++;
@@ -633,7 +646,7 @@ public class GraphSearchPlanFactory {
                 return result;
             } 
             result++;
-            if (itemClass == PreMatchSearchItem.class) {
+            if (itemClass == AnchorSearchItem.class) {
                 return result;
             } 
             throw new IllegalArgumentException(String.format("Unrecognised search item %s", item));
@@ -709,7 +722,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.19 $
+     * @version $Revision: 1.20 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 

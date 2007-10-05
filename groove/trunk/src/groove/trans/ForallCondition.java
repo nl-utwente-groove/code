@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForallCondition.java,v 1.1 2007-10-03 23:10:53 rensink Exp $
+ * $Id: ForallCondition.java,v 1.2 2007-10-05 11:44:55 rensink Exp $
  */
 package groove.trans;
 
@@ -41,15 +41,6 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         super(pattern.cod(), pattern.elementMap(), name, properties);
     }
 
-    /**
-     * @param target
-     * @param name
-     * @param properties
-     */
-    public ForallCondition(Graph target, NameLabel name, SystemProperties properties) {
-        super(target, name, properties);
-    }
-
 	@Override
     public Iterator<CompositeMatch> getMatchIter(Graph host, NodeEdgeMap contextMap) {
         Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
@@ -60,7 +51,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
             subMatches.add(new ArrayList<Match>());
             matchSet.add(null);
         }
-        Iterator<VarNodeEdgeMap> matchMapIter = getMatchStrategy().getMatchIter(host, contextMap);
+        Iterator<VarNodeEdgeMap> matchMapIter = getMatcher().getMatchIter(host, contextMap);
         while (matchMapIter.hasNext()) {
             VarNodeEdgeMap matchMap = matchMapIter.next();
             for (AbstractCondition<?> condition: getSubConditions()) {

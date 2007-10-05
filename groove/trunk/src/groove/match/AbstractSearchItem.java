@@ -30,9 +30,9 @@ import java.util.Iterator;
 /**
  * Abstract implementation of a search item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
-abstract public class AbstractSearchItem implements SearchItem {
+abstract class AbstractSearchItem implements SearchItem {
     /**
      * This implementation returns the empty set.
      */
@@ -173,7 +173,7 @@ abstract public class AbstractSearchItem implements SearchItem {
     /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.12 $
+     * @version $Revision: 1.13 $
      */
     abstract class SingularRecord extends BasicRecord {
         /** Constructs an instance for a given search. */
@@ -233,7 +233,7 @@ abstract public class AbstractSearchItem implements SearchItem {
      * Abstract implementation of a search item record expected to
      * have more than one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.12 $
+     * @version $Revision: 1.13 $
      */
     abstract class MultipleRecord<E extends Element> extends BasicRecord {
         /** Constructs a record for a given search. */

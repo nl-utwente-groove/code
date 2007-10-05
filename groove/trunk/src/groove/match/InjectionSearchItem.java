@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: InjectionSearchItem.java,v 1.9 2007-10-05 08:31:45 rensink Exp $
+ * $Id: InjectionSearchItem.java,v 1.10 2007-10-05 11:44:40 rensink Exp $
  */
 package groove.match;
 
@@ -29,20 +29,35 @@ import java.util.Iterator;
  * @version $Revision $
  */
 public class InjectionSearchItem extends AbstractSearchItem {
-	/** 
-	 * Constructs an injection item, which checks for the injectivity
-	 * of the match found so far. That is, the item will match if and only if the
-	 * nodes in a given set have been matched injectively.
-	 * @param nodes the nodes that should be matched injectively
-	 */
-	public InjectionSearchItem(Collection<? extends Node> nodes) {
-		assert nodes.size() == 2: String.format("Injection %s should have size 2", nodes);
-		Iterator<? extends Node> nodeIter = nodes.iterator();
-		this.node1 = nodeIter.next();
-		this.node2 = nodeIter.next();
+    /** 
+     * Constructs an injection item, which checks for the injectivity
+     * of the match found so far. That is, the item will match if and only if 
+     * two given nodes are matched injectively. 
+     * @param node1 the first node that should be matched injectively
+     * @param node2 the second node that should be matched injectively
+     */
+    public InjectionSearchItem(Node node1, Node node2) {
+        this.node1 = node1;
+        this.node2 = node2;
+        this.neededNodes = new HashSet<Node>();
+        neededNodes.add(node1);
+        neededNodes.add(node2);
+    }
+    
+    /** 
+     * Constructs an injection item, which checks for the injectivity
+     * of the match found so far. That is, the item will match if and only if the
+     * nodes in a given set have been matched injectively.
+     * @param nodes the nodes that should be matched injectively
+     */
+    public InjectionSearchItem(Collection<? extends Node> nodes) {
+        assert nodes.size() == 2: String.format("Injection %s should have size 2", nodes);
+        Iterator<? extends Node> nodeIter = nodes.iterator();
+        this.node1 = nodeIter.next();
+        this.node2 = nodeIter.next();
         this.neededNodes = new HashSet<Node>(nodes);
-	}
-	
+    }
+    
 	public InjectionRecord getRecord(Search matcher) {
 		return new InjectionRecord(matcher);
 	}

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.20 2007-10-05 08:31:51 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.21 2007-10-05 11:45:00 rensink Exp $
  */
 
 package groove.view;
@@ -78,7 +78,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -467,7 +467,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			// if we're here it means we couldn't make an embargo
 			result = createNAC(lhs);
 			Graph nacTarget = result.getTarget();
-			NodeEdgeMap nacPatternMap = result.getPatternMap();
+			NodeEdgeMap nacPatternMap = result.getRootMap();
 			// add all nodes to nacTarget
 			nacTarget.addNodeSet(nacNodeSet);
 			// add edges and embargoes to nacTarget
@@ -659,7 +659,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 		}
 		// now add the NACs
 		for (Condition nac : rule.getSubConditions()) {
-			NodeEdgeMap nacMorphism = nac.getPatternMap();
+			NodeEdgeMap nacMorphism = nac.getRootMap();
 			if (nac instanceof MergeEmbargo) {
 				result.addEdge(computeAspectEdge(images(lhsNodeMap,
 						((MergeEmbargo) nac).getNodes()), MERGE_LABEL, EMBARGO, null));

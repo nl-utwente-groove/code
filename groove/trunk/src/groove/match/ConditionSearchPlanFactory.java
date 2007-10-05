@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.15 2007-10-05 08:31:45 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.16 2007-10-05 11:44:39 rensink Exp $
  */
 package groove.match;
 
@@ -20,6 +20,9 @@ import groove.graph.Edge;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.trans.Condition;
+import groove.trans.EdgeEmbargo;
+import groove.trans.MergeEmbargo;
+import groove.trans.NotCondition;
 import groove.trans.PositiveCondition;
 import groove.trans.SystemProperties;
 
@@ -31,7 +34,7 @@ import java.util.Set;
 /**
  * Factory that adds to a graph search plan the following items the search items for the simple negative conditions (edge and merge embargoes).
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 
@@ -63,7 +66,7 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
      * @param condition the condition for which a search plan is to be constructed
      */
     public SearchPlanStrategy createMatcher(Condition condition) {
-    	NodeEdgeMap patternMap = condition.getPatternMap();
+    	NodeEdgeMap patternMap = condition.getRootMap();
     	return createMatcher(condition, patternMap.nodeMap().values(), patternMap.edgeMap().values());
     }
 
@@ -148,14 +151,14 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
         @Override 
         Collection<SearchItem> computeSearchItems(Collection<? extends Node> anchorNodes, Collection<? extends Edge> anchorEdges) {
             Collection<SearchItem> result = super.computeSearchItems(anchorNodes, anchorEdges);
-            if (condition instanceof PositiveCondition) {
-                Set<Edge> negations = ((PositiveCondition<?>) condition).getNegations();
+            if (condition instanceof groove.trans.DefaultGraphCondition) {
+                Set<Edge> negations = ((groove.trans.DefaultGraphCondition) condition).getNegations();
                 if (negations != null) {
                     for (Edge embargoEdge : negations) {
                         result.add(createNegatedSearchItem(createEdgeSearchItem(embargoEdge)));
                     }
                 }
-                Set<Set<? extends Node>> injections = ((PositiveCondition<?>) condition).getInjections();
+                Set<Set<? extends Node>> injections = ((groove.trans.DefaultGraphCondition) condition).getInjections();
                 if (injections != null) {
                     for (Set<? extends Node> injection : injections) {
                         result.add(createInjectionSearchItem(injection));
@@ -212,16 +215,16 @@ public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
         Collection<SearchItem> computeSearchItems(Collection<? extends Node> anchorNodes, Collection<? extends Edge> anchorEdges) {
             Collection<SearchItem> result = super.computeSearchItems(anchorNodes, anchorEdges);
             if (condition instanceof PositiveCondition) {
-                Set<Edge> negations = ((PositiveCondition<?>) condition).getNegations();
-                if (negations != null) {
-                    for (Edge embargoEdge : negations) {
+                for (Condition subCondition: ((PositiveCondition<?>) condition).getSubConditions()) {
+                    if (subCondition instanceof MergeEmbargo) {
+                        Node node1 = ((MergeEmbargo) subCondition).node1();
+                        Node node2 = ((MergeEmbargo) subCondition).node2();
+                        result.add(createInjectionSearchItem(node1, node2));
+                    } else if (subCondition instanceof EdgeEmbargo) {
+                        Edge embargoEdge = ((EdgeEmbargo) subCondition).getEmbargoEdge();
                         result.add(createNegatedSearchItem(createEdgeSearchItem(embargoEdge)));
-                    }
-                }
-                Set<Set<? extends Node>> injections = ((PositiveCondition<?>) condition).getInjections();
-                if (injections != null) {
-                    for (Set<? extends Node> injection : injections) {
-                        result.add(createInjectionSearchItem(injection));
+                    } else if (subCondition instanceof NotCondition) {
+                        result.add(new ConditionSearchItem(subCondition));
                     }
                 }
             }

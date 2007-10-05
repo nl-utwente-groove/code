@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExistsCondition.java,v 1.1 2007-10-03 23:10:53 rensink Exp $
+ * $Id: ExistsCondition.java,v 1.2 2007-10-05 11:44:54 rensink Exp $
  */
 package groove.trans;
 
@@ -22,7 +22,7 @@ import groove.rel.VarNodeEdgeMap;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ExistsCondition extends PositiveCondition<ExistsMatch> {
     /**
@@ -33,15 +33,6 @@ public class ExistsCondition extends PositiveCondition<ExistsMatch> {
         super(target, patternMap, name, properties);
     }
     
-    /**
-     * Constructs a (named) ground graph condition based on a given pattern target.
-     * and initially empty nested predicate.
-     * The name may be <code>null</code>.
-     */
-    protected ExistsCondition(Graph target, NameLabel name, SystemProperties properties) {
-        super(target, name, properties);
-    }
-
     /** 
      * Callback factory method to create a match on the basis of
      * a mapping of this condition's target.

@@ -12,27 +12,23 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PositiveCondition.java,v 1.2 2007-10-05 08:31:38 rensink Exp $
+ * $Id: PositiveCondition.java,v 1.3 2007-10-05 11:44:55 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Set;
 
 /**
  * Abstract superclass of conditions that test for the existence of a (sub)graph structure.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractCondition<M> {
     /**
@@ -57,44 +53,33 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
     }
 
     /**
-     * If the condition is an edge embargo, calls
-     * {@link #addNegation(Edge)} with the embargo edge, and if it
-     * is a merge embargo, calls {@link #addInjection(Set)} with
-     * the injectively matchable nodes. If it is neither, adds the
-     * condition to the complex negated conjunct.
-     * @see #addInjection(Set)
-     * @see #addNegation(Edge)
+     * Apart from calling the super method, also maintains the subset of complex sub-conditions.
      * @see #addComplexSubCondition(AbstractCondition)
      */
     @Override
     public void addSubCondition(Condition condition) {
         super.addSubCondition(condition);
-        if (condition instanceof EdgeEmbargo) {
-        	addNegation(((EdgeEmbargo) condition).getEmbargoEdge());
-        } else if (condition instanceof MergeEmbargo) {
-            Set<? extends Node> injection = condition.getPatternMap().nodeMap().keySet();
-            addInjection(injection);
-        } else {
+        if (!(condition instanceof NotCondition)) {
             addComplexSubCondition((AbstractCondition<?>) condition);
         }
     }
-    
-    /** Adds a negative edge, i.e., an edge embargo, to this condition. */
-    protected void addNegation(Edge negativeEdge) {
-        if (negations == null) {
-            negations = new HashSet<Edge>();
-        }
-        negations.add(negativeEdge);
-    }
-
-    /** Adds an injection constraint, i.e., a merge embargo, to this condition. */
-    protected void addInjection(Set<? extends Node> injection) {
-    	assert injection.size() == 2 : String.format("Injection %s should have size 2", injection);
-        if (injections == null) {
-            injections = new HashSet<Set<? extends Node>>();
-        }
-        injections.add(injection);
-    }
+//    
+//    /** Adds a negative edge, i.e., an edge embargo, to this condition. */
+//    protected void addNegation(Edge negativeEdge) {
+//        if (negations == null) {
+//            negations = new HashSet<Edge>();
+//        }
+//        negations.add(negativeEdge);
+//    }
+//
+//    /** Adds an injection constraint, i.e., a merge embargo, to this condition. */
+//    protected void addInjection(Set<? extends Node> injection) {
+//    	assert injection.size() == 2 : String.format("Injection %s should have size 2", injection);
+//        if (injections == null) {
+//            injections = new HashSet<Set<? extends Node>>();
+//        }
+//        injections.add(injection);
+//    }
 
     /** 
 	 * Adds a graph condition to the complex sub-conditions, which are
@@ -105,12 +90,7 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
 	}
 
 	/**
-	 * Returns the fragment of the negated conjunct without the edge or merge embargoes. Since we
-	 * are checking for those already in the simulation, the search for matchings only has to regard
-	 * the complex negated conjunct. May be <code>null</code>, if only simple negative conditions
-	 * were added.
-	 * @see #getInjections()
-	 * @see #getNegations()
+	 * Returns the set of sub-conditions that are <i>not</i> {@link NotCondition}s.
 	 */
 	protected Collection<AbstractCondition<?>> getComplexSubConditions() {
 	    if (complexSubConditions == null) {
@@ -119,23 +99,14 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
 	    return complexSubConditions;
 	}
 
-	/**
-	 * Indicates if there are any negative conditions more complex than 
-	 * injections and negations.
-	 * Convenience method for <code>getComplexNegConjunct() != null</code>. 
-	 */
-	protected boolean hasComplexSubConditions() {
-	    return !getComplexSubConditions().isEmpty();
-	}
-
 	@Override
     public Iterator<M> getMatchIter(final Graph host, NodeEdgeMap contextMap) {
         Iterator<M> result = null;
         reporter.start(GET_MATCHING);
         testFixed(true);
         // lift the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap anchorMap = getAnchorMap(contextMap);
-        Iterator<VarNodeEdgeMap> matchMapIter = getMatchStrategy().getMatchIter(host, anchorMap);
+        final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
+        Iterator<VarNodeEdgeMap> matchMapIter = getMatcher().getMatchIter(host, anchorMap);
         while (result == null && matchMapIter.hasNext()) {
         	M match = getMatch(host, matchMapIter.next());
         	if (match != null) {
@@ -153,17 +124,21 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
      * Returns a match on the basis of a mapping of this condition's target to a given graph.
      * The mapping is checked for matches of the sub-conditions; if this fails,
      * the method returns <code>null</code>.
+     * TODO this is not correct if a sub-condition has more than one match
      * @param host the graph that is being matched
      * @param matchMap the mapping, which should go from the elements of {@link #getTarget()}
      * into <code>host</code>
-     * @return a match constructed on the basis of <code>matchMap</code>
+     * @return a match constructed on the basis of <code>matchMap</code>, or <code>null</code> if
+     * no match exists
      */
     protected M getMatch(Graph host, VarNodeEdgeMap matchMap) {
         M result = createMatch(matchMap);
         for (AbstractCondition< ? > condition : getComplexSubConditions()) {
-            Iterable< ? extends Match> subMatch = condition.getMatches(host, matchMap);
-            if (subMatch.iterator().hasNext()) {
-                result.addMatch(subMatch.iterator().next());
+            Iterator< ? extends Match> subMatchIter = condition.getMatchIter(host, matchMap);
+            if (subMatchIter.hasNext()) {
+                result.addMatch(subMatchIter.next());
+                // TODO remove check below as soon as method is generalised to sub-conditions with > 1 match
+                assert !subMatchIter.hasNext();
             } else {
                 result = null;
                 break;
@@ -175,40 +150,40 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
     /** 
      * Callback factory method to create a match on the basis of
      * a mapping of this condition's target.
-     * @param matchMap the mapping, presumably of the elements of {@link #getTarget()}
+     * @param matchMap the mapping, presumably from the elements of {@link #getTarget()}
      * into some host graph
      * @return a match constructed on the basis of <code>map</code>
      */
     abstract protected M createMatch(VarNodeEdgeMap matchMap);
-    
-	/**
-     * Returns the map from nodes to sets of injectively matchable nodes.
-     */
-    public Set<Set<? extends Node>> getInjections() {
-        return injections;
-    }
-
-    /**
-     * Returns the map from lhs nodes to incident negative edges.
-     */
-    public Set<Edge> getNegations() {
-        return negations;
-    }
+//    
+//	/**
+//     * Returns the map from nodes to sets of injectively matchable nodes.
+//     */
+//    public Set<Set<? extends Node>> getInjections() {
+//        return injections;
+//    }
+//
+//    /**
+//     * Returns the map from lhs nodes to incident negative edges.
+//     */
+//    public Set<Edge> getNegations() {
+//        return negations;
+//    }
     
     /** 
      * The sub-conditions that are not edge or merge embargoes.
      */
     private Collection<AbstractCondition<?>> complexSubConditions;
-
-    /**
-     * Mapping from codomain nodes to sets of other codomain nodes with which
-     * they must be matched injectively.
-     */
-    private Set<Set<? extends Node>> injections;
-    
-    /**
-     * Mapping from codomain nodes to single or sets of incident codomain edges
-     * that must be absent in the matching.
-     */
-    private Set<Edge> negations;
+//
+//    /**
+//     * Mapping from codomain nodes to sets of other codomain nodes with which
+//     * they must be matched injectively.
+//     */
+//    private Set<Set<? extends Node>> injections;
+//    
+//    /**
+//     * Mapping from codomain nodes to single or sets of incident codomain edges
+//     * that must be absent in the matching.
+//     */
+//    private Set<Edge> negations;
 }

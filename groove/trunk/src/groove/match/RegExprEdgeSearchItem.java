@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.11 2007-10-03 07:23:25 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.12 2007-10-05 11:44:40 rensink Exp $ */
 package groove.match;
 
 import groove.graph.BinaryEdge;
@@ -25,7 +25,7 @@ import java.util.Set;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RegExprEdgeSearchItem extends Edge2SearchItem {
+class RegExprEdgeSearchItem extends Edge2SearchItem {
 	/** 
 	 * Constructs a new search item. The item will match 
 	 * according to the regular expression on the edge label.

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NotCondition.java,v 1.1 2007-10-05 08:31:42 rensink Exp $
+ * $Id: NotCondition.java,v 1.2 2007-10-05 11:44:54 rensink Exp $
  */
 package groove.trans;
 
@@ -63,8 +63,8 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
         reporter.start(GET_MATCHING);
         testFixed(true);
         // lift the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap anchorMap = getAnchorMap(contextMap);
-        if (getMatchStrategy().getMatchIter(host, anchorMap).hasNext()) {
+        final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
+        if (getMatcher().getMatchIter(host, anchorMap).hasNext()) {
         	result = Collections.<CompositeMatch>emptySet().iterator();
         } else {
         	result = WRAPPED_EMPTY_MATCH.iterator();

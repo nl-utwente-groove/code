@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.10 2007-09-26 08:30:24 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.11 2007-10-05 11:44:39 rensink Exp $
  */
 package groove.match;
 
@@ -28,7 +28,7 @@ import groove.match.SearchPlanStrategy.Search;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class ValueNodeSearchItem extends AbstractSearchItem {
+class ValueNodeSearchItem extends AbstractSearchItem {
 	/**
 	 * Creates a search item for a value node.
 	 * The image is always the node itself.

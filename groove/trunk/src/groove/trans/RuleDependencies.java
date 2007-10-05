@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleDependencies.java,v 1.11 2007-10-05 08:31:38 rensink Exp $
+ * $Id: RuleDependencies.java,v 1.12 2007-10-05 11:44:54 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-10-05 08:31:38 $
+ * @version $Revision: 1.12 $ $Date: 2007-10-05 11:44:54 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */
@@ -346,7 +346,7 @@ public class RuleDependencies {
     }
     
     void collectConditionCharacteristics(Condition cond, Set<Label> positive, Set<Label> negative) {
-    	NodeEdgeMap pattern = cond.getPatternMap();
+    	NodeEdgeMap pattern = cond.getRootMap();
     	Graph target = cond.getTarget();
         // collected the isolated fresh nodes
         Set<Node> isolatedNodes = new HashSet<Node>(target.nodeSet());

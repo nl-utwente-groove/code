@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.35 2007-10-05 08:31:42 rensink Exp $
+ * $Id: SPORule.java,v 1.36 2007-10-05 11:44:55 rensink Exp $
  */
 package groove.trans;
 
@@ -48,7 +48,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.35 $
+ * @version $Revision: 1.36 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -115,8 +115,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         reporter.start(GET_MATCHING);
         testFixed(true);
         // lift the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap anchorMap = getAnchorMap(contextMap);
-        result = new TransformIterator<VarNodeEdgeMap,RuleMatch>(getMatchStrategy().getMatchIter(host, anchorMap)) {
+        final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
+        result = new TransformIterator<VarNodeEdgeMap,RuleMatch>(getMatcher().getMatchIter(host, anchorMap)) {
         	@Override
         	public RuleMatch toOuter(VarNodeEdgeMap matchMap) {
         		return getMatch(host, matchMap);
@@ -238,18 +238,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
                 + rhs()
                 + "\nRule morphism:\n    "
                 + getMorphism().elementMap();
-        if (getInjections() != null && !getInjections().isEmpty()) {
-            res += "\nInjection constraints: "+getInjections();
-        }
-        if (getNegations() != null && !getNegations().isEmpty()) {
-            res += "\nEmbargo edges "+getNegations();
-        }
-        if (hasComplexSubConditions()) {
-            res += "\nNegative application conditions:";
-            for (Condition nextNac: getComplexSubConditions()) {
-                if (nextNac instanceof NotCondition) {
-                    res += "\n    " + nextNac.toString();
-                }
+        if (!getSubConditions().isEmpty()) {
+            res += "\nSubconditions:";
+            for (Condition subCondition: getSubConditions()) {
+                res += "\n    " + subCondition.toString();
             }
         }
         return res;
@@ -267,7 +259,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     @Override
     public RuleNameLabel getName() {
-    	return (RuleNameLabel) name;
+    	return (RuleNameLabel) super.getName();
     }
     
     public int getPriority() {
