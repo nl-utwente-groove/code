@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphSearchPlanFactory.java,v 1.20 2007-10-05 11:44:39 rensink Exp $
+ * $Id: GraphSearchPlanFactory.java,v 1.21 2007-10-05 14:51:40 rensink Exp $
  */
 package groove.match;
 
@@ -52,7 +52,7 @@ import java.util.TreeSet;
  * The search plans include items for all graph nodes and edges, ordered
  * by a lexicographically applied sequence of search item comparators. 
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class GraphSearchPlanFactory {
     /** 
@@ -148,17 +148,17 @@ public class GraphSearchPlanFactory {
 
         /**
          * Creates and returns a search plan on the basis of the given data.
-         * @param preMatchedNodes the set of pre-matched nodes
-         * @param preMatchedEdges the set of pre-matched edges
+         * @param anchorNodes the set of pre-matched nodes; may be <code>null</code> for an empty set
+         * @param anchorEdges the set of pre-matched edges; may be <code>null</code> for an empty set
          */
-        public List<SearchItem> getPlan(Collection<? extends Node> preMatchedNodes, Collection<? extends Edge> preMatchedEdges) {
+        public List<SearchItem> getPlan(Collection<? extends Node> anchorNodes, Collection<? extends Edge> anchorEdges) {
             if (used) {
                 throw new IllegalStateException("Method getPlan() was already called");
             } else {
                 used = true;
             }
             List<SearchItem> result = new ArrayList<SearchItem>();
-            Collection<SearchItem> items = computeSearchItems(preMatchedNodes, preMatchedEdges);
+            Collection<SearchItem> items = computeSearchItems(anchorNodes, anchorEdges);
             while (!items.isEmpty()) {
                 SearchItem bestItem = Collections.max(items, this);
                 result.add(bestItem);
@@ -173,13 +173,23 @@ public class GraphSearchPlanFactory {
             return result;
         }
 
-        /** Callback method to compute the collection of search items for the plan. */
+        /** 
+         * Callback method to compute the collection of search items for the plan.
+         * @param anchorNodes the set of pre-matched nodes; may be <code>null</code> for an empty set
+         * @param anchorEdges the set of pre-matched edges; may be <code>null</code> for an empty set
+         */
         Collection<SearchItem> computeSearchItems(Collection<? extends Node> anchorNodes, Collection<? extends Edge> anchorEdges) {
             Collection<SearchItem> result = new ArrayList<SearchItem>();
             Set<Node> unmatchedNodes = new HashSet<Node>(remainingNodes);
             Set<Edge> unmatchedEdges = new HashSet<Edge>(remainingEdges);
             // first a single search item for the pre-matched elements
-            if (anchorNodes != null && !(anchorNodes.isEmpty() && anchorEdges.isEmpty())) {
+            if (anchorNodes == null) {
+                anchorNodes = Collections.emptySet();
+            }
+            if (anchorEdges == null) {
+                anchorEdges = Collections.emptySet();
+            }
+            if (!anchorNodes.isEmpty() || !anchorEdges.isEmpty()) {
             	SearchItem preMatchItem = new AnchorSearchItem(anchorNodes, anchorEdges);
             	result.add(preMatchItem);
             	unmatchedNodes.removeAll(preMatchItem.bindsNodes());
@@ -443,7 +453,7 @@ public class GraphSearchPlanFactory {
      * the comparator prefers those of which the most bound parts 
      * have also been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.20 $
+     * @version $Revision: 1.21 $
      */
     static class NeededPartsComparator implements Comparator<SearchItem> {
         NeededPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -486,7 +496,7 @@ public class GraphSearchPlanFactory {
      * Search item comparator that gives higher priority to
      * items of which more parts have been matched.
      * @author Arend Rensink
-     * @version $Revision: 1.20 $
+     * @version $Revision: 1.21 $
      */
     static class ConnectedPartsComparator implements Comparator<SearchItem> {
         ConnectedPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -531,7 +541,7 @@ public class GraphSearchPlanFactory {
      * Search item comparator that gives higher priority to
      * items with more unmatched parts.
      * @author Arend Rensink
-     * @version $Revision: 1.20 $
+     * @version $Revision: 1.21 $
      */
     static class BoundPartsComparator implements Comparator<SearchItem> {
         BoundPartsComparator(Set<Node> remainingNodes, Set<String> remainingVars) {
@@ -722,7 +732,7 @@ public class GraphSearchPlanFactory {
      * Comparators will be applied in increating order, so the comparators should be ordered
      * in decreasing priority.
      * @author Arend Rensink
-     * @version $Revision: 1.20 $
+     * @version $Revision: 1.21 $
      */
     static private class ItemComparatorComparator implements Comparator<Comparator<SearchItem>> {
         /** 
