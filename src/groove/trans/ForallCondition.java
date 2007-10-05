@@ -12,20 +12,19 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForallCondition.java,v 1.2 2007-10-05 11:44:55 rensink Exp $
+ * $Id: ForallCondition.java,v 1.3 2007-10-05 12:19:01 rensink Exp $
  */
 package groove.trans;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Stack;
 
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 /**
  * @author Arend Rensink
@@ -41,55 +40,86 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         super(pattern.cod(), pattern.elementMap(), name, properties);
     }
 
-	@Override
-    public Iterator<CompositeMatch> getMatchIter(Graph host, NodeEdgeMap contextMap) {
+    @Override
+    public Collection<CompositeMatch> getMatches(Graph host, NodeEdgeMap contextMap) {
         Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
-        List<Iterable<? extends Match>> subMatches = new ArrayList<Iterable<? extends Match>>();
-        int subConditionCount = getSubConditions().size();
-        List<Match> matchSet = new ArrayList<Match>();
-        for (int i = 0; i < subConditionCount; i++) {
-            subMatches.add(new ArrayList<Match>());
-            matchSet.add(null);
-        }
         Iterator<VarNodeEdgeMap> matchMapIter = getMatcher().getMatchIter(host, contextMap);
         while (matchMapIter.hasNext()) {
             VarNodeEdgeMap matchMap = matchMapIter.next();
-            for (AbstractCondition<?> condition: getSubConditions()) {
-                subMatches.add(condition.getMatches(host, matchMap));
-            }
-            Stack<Iterator<? extends Match>> subMatchIters = new Stack<Iterator<? extends Match>>();
-            int i = 0;
-            do {
-                while (i >= 0 && i < subConditionCount) {
-                    Iterator< ? extends Match> subMatchIter;
-                    if (subMatchIters.size() <= i) {
-                        subMatchIters.push(subMatchIter = subMatches.get(i).iterator());
-                    } else {
-                        subMatchIter = subMatchIters.peek();
-                    }
-                    if (subMatchIter.hasNext()) {
-                        matchSet.set(i, subMatchIters.get(i).next());
-                        i++;
-                    } else {
-                        subMatchIters.pop();
-                        i--;
-                    }
+            Collection<Match> subResults = new ArrayList<Match>();
+            for (Condition subCondition: getSubConditions()) {
+                Iterator<? extends Match> subResultIter = subCondition.getMatchIter(host, matchMap);
+                while (subResultIter.hasNext()) {
+                    subResults.add(subResultIter.next());
                 }
-                result.add(createMatch(matchSet));
-            } while (i >= 0);
-        }
-        return result.iterator();
-    }
-
-    /** Creates a composite match on the basis if a set of matches of sub-conditions. */
-    protected CompositeMatch createMatch(Collection<Match> subMatches) {
-        CompositeMatch result = new CompositeMatch();
-        for (Match match: subMatches) {
-            result.addMatch(match);
+            }
+            Collection<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
+            for (CompositeMatch current: result) {
+                newResult.addAll(current.getAnd(subResults));
+            }
+            result = newResult;
         }
         return result;
     }
     
+    
+//
+//    @Override
+//    public Iterator<CompositeMatch> getMatchIter(Graph host, NodeEdgeMap contextMap) {
+//        Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
+//        List<Iterable<? extends Match>> subMatches = new ArrayList<Iterable<? extends Match>>();
+//        int subConditionCount = getSubConditions().size();
+//        List<Match> matchSet = new ArrayList<Match>();
+//        for (int i = 0; i < subConditionCount; i++) {
+//            subMatches.add(new ArrayList<Match>());
+//            matchSet.add(null);
+//        }
+//        Iterator<VarNodeEdgeMap> matchMapIter = getMatcher().getMatchIter(host, contextMap);
+//        while (matchMapIter.hasNext()) {
+//            VarNodeEdgeMap matchMap = matchMapIter.next();
+//            for (AbstractCondition<?> condition: getSubConditions()) {
+//                subMatches.add(condition.getMatches(host, matchMap));
+//            }
+//            Stack<Iterator<? extends Match>> subMatchIters = new Stack<Iterator<? extends Match>>();
+//            int i = 0;
+//            do {
+//                while (i >= 0 && i < subConditionCount) {
+//                    Iterator< ? extends Match> subMatchIter;
+//                    if (subMatchIters.size() <= i) {
+//                        subMatchIters.push(subMatchIter = subMatches.get(i).iterator());
+//                    } else {
+//                        subMatchIter = subMatchIters.peek();
+//                    }
+//                    if (subMatchIter.hasNext()) {
+//                        matchSet.set(i, subMatchIters.get(i).next());
+//                        i++;
+//                    } else {
+//                        subMatchIters.pop();
+//                        i--;
+//                    }
+//                }
+//                result.add(createMatch(matchSet));
+//            } while (i >= 0);
+//        }
+//        return result.iterator();
+//    }
+//
+//    /** Creates a composite match on the basis if a set of matches of sub-conditions. */
+//    protected CompositeMatch createMatch(Collection<Match> subMatches) {
+//        CompositeMatch result = new CompositeMatch();
+//        for (Match match: subMatches) {
+//            result.addMatch(match);
+//        }
+//        return result;
+//    }
+    
+    /** This implementation iterates over the result of {@link #getMatches(Graph, NodeEdgeMap)}. */
+    @Override
+    public Iterator<CompositeMatch> getMatchIter(Graph host, NodeEdgeMap contextMap) {
+        return getMatches(host, contextMap).iterator();
+    }
+
+
     /** 
      * Turns a collection of iterators into an iterator of collections.
      * The collections returned by the resulting iterator are tuples of elements from the

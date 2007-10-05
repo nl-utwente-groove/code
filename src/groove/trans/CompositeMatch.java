@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeMatch.java,v 1.1 2007-10-03 16:08:40 rensink Exp $
+ * $Id: CompositeMatch.java,v 1.2 2007-10-05 12:19:01 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Edge;
 import groove.graph.Node;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -63,6 +64,22 @@ public class CompositeMatch implements Match {
         } else {
             matches.add(match);
         }
+    }
+
+    /** 
+     * Returns a set of copies of this composite match, each augmented with
+     * an additional match taken from a given set of choices.
+     */
+    public Collection<CompositeMatch> getAnd(Collection<Match> choices) {
+        Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
+        for (Match choice: choices) {
+            CompositeMatch conjunct = new CompositeMatch();
+            for (Match match: getMatches()) {
+                conjunct.addMatch(match);
+            }
+            conjunct.addMatch(choice);
+        }
+        return result;
     }
     
     /** Equality is determined by rule and element map. */
