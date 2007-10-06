@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.16 2007-09-10 19:13:30 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.17 2007-10-06 11:27:51 rensink Exp $
  */
 
 package groove.io;
@@ -21,15 +21,12 @@ import groove.control.ControlView;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphInfo;
-import groove.trans.DefaultRuleFactory;
-import groove.trans.RuleFactory;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
 import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
-import groove.view.GrammarView;
 import groove.view.aspect.AspectGraph;
 
 import java.io.File;
@@ -44,7 +41,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     /**
@@ -58,19 +55,11 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     }
 
     /**
-     * Constructs an instance based on the standard graph factory.
-     * @param ruleFactory the {@link groove.trans.RuleFactory} for this grammar
-     */
-    public AspectualViewGps(RuleFactory ruleFactory) {
-        this(GraphFactory.getInstance());
-    }
-
-    /**
      * Constructs an instance based on the standard 
      * graph and rule factories.
      */
     public AspectualViewGps() {
-        this(DefaultRuleFactory.getInstance());
+        this(GraphFactory.getInstance());
     }
 
     public ExtensionFilter getExtensionFilter() {
@@ -322,7 +311,7 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 	 * assumed to be a directory.
 	 * 
 	 */
-	private void saveProperties(GrammarView gg, File location) throws IOException, FileNotFoundException {
+	private void saveProperties(DefaultGrammarView gg, File location) throws IOException, FileNotFoundException {
 		// save properties
 		String grammarName = gg.getName();
 	    File propertiesFile = new File(location, PROPERTIES_FILTER.addExtension(grammarName));

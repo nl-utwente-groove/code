@@ -12,8 +12,8 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.23 2007-10-05 11:44:55 rensink Exp $
- * $Date: 2007-10-05 11:44:55 $
+ * $Id: Rule.java,v 1.24 2007-10-06 11:27:50 rensink Exp $
+ * $Date: 2007-10-06 11:27:50 $
  */
 package groove.trans;
 
@@ -34,7 +34,7 @@ import java.util.Iterator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public interface Rule extends Comparable<Rule>, Condition {
 	/** Returns the name of this rule. */
@@ -117,7 +117,9 @@ public interface Rule extends Comparable<Rule>, Condition {
 	 * @param reuse if <code>true</code>, the created event will store
 	 * data structures internally for reuse. This takes space, but saves space
 	 * if events are shared among transformations.
+	 * @deprecated use {@link #getMatches(Graph, NodeEdgeMap)} and {@link RuleMatch#newEvent(NodeFactory, boolean)}
 	 */
+    @Deprecated
 	public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse);
 	
 	/**

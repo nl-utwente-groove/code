@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Pair.java,v 1.2 2007-08-22 09:19:50 kastenberg Exp $
+ * $Id: Pair.java,v 1.3 2007-10-06 11:27:39 rensink Exp $
  */
 package groove.util;
 
@@ -44,7 +44,7 @@ public class Pair<T,U> {
 	/** Tests for the equality of the {@link #first()} and {@link #second()} fields. */
 	@Override
 	public boolean equals(Object obj) {
-		return obj instanceof Pair && equalsFirst((Pair) obj) && equalsSecond((Pair) obj);
+		return obj instanceof Pair && equalsFirst((Pair<?,?>) obj) && equalsSecond((Pair<?,?>) obj);
 	}
 
 	/** Tests if the {@link #first()} field of this pair equals that of another. */

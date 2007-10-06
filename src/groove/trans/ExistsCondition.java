@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExistsCondition.java,v 1.2 2007-10-05 11:44:54 rensink Exp $
+ * $Id: ExistsCondition.java,v 1.3 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
@@ -20,16 +20,19 @@ import groove.graph.Graph;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 
+import java.util.Collections;
+import java.util.Iterator;
+
 /**
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ExistsCondition extends PositiveCondition<ExistsMatch> {
     /**
      * Constructs a (named) graph condition based on a given pattern morphism.
      * The name may be <code>null</code>.
      */
-    protected ExistsCondition(Graph target, NodeEdgeMap patternMap, NameLabel name, SystemProperties properties) {
+    public ExistsCondition(Graph target, NodeEdgeMap patternMap, NameLabel name, SystemProperties properties) {
         super(target, patternMap, name, properties);
     }
     
@@ -41,7 +44,49 @@ public class ExistsCondition extends PositiveCondition<ExistsMatch> {
      * @return a match constructed on the basis of <code>map</code>
      */
 	@Override
-    protected ExistsMatch createMatch(VarNodeEdgeMap matchMap) {
+    ExistsMatch createMatch(VarNodeEdgeMap matchMap) {
         return new ExistsMatch(matchMap);
+    }
+
+	@Override
+    Iterator<ExistsMatch> getMatchIter(final Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
+        Iterator<ExistsMatch> result = null;
+        while (result == null && matchMapIter.hasNext()) {
+        	ExistsMatch match = getMatch(host, matchMapIter.next());
+        	if (match != null) {
+        		result = Collections.singleton(match).iterator();
+        	}
+        }
+        if (result == null) {
+        	result = Collections.<ExistsMatch>emptySet().iterator();
+        }
+        return result;
+    }
+
+    /** 
+     * Returns a match on the basis of a mapping of this condition's target to a given graph.
+     * The mapping is checked for matches of the sub-conditions; if this fails,
+     * the method returns <code>null</code>.
+     * TODO this is not correct if a sub-condition has more than one match
+     * @param host the graph that is being matched
+     * @param matchMap the mapping, which should go from the elements of {@link #getTarget()}
+     * into <code>host</code>
+     * @return a match constructed on the basis of <code>matchMap</code>, or <code>null</code> if
+     * no match exists
+     */
+    private ExistsMatch getMatch(Graph host, VarNodeEdgeMap matchMap) {
+    	ExistsMatch result = createMatch(matchMap);
+        for (AbstractCondition< ? > condition : getComplexSubConditions()) {
+            Iterator< ? extends Match> subMatchIter = condition.getMatchIter(host, matchMap);
+            if (subMatchIter.hasNext()) {
+                result.addSubMatch(subMatchIter.next());
+                // TODO remove check below as soon as method is generalised to sub-conditions with > 1 match
+                assert !subMatchIter.hasNext();
+            } else {
+                result = null;
+                break;
+            }
+        }
+        return result;
     }
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.4 2007-10-05 11:44:54 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.5 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
@@ -40,7 +40,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
@@ -135,7 +135,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	 * Returns <code>true</code> if the target graph of the condition
 	 * contains {@link ValueNode}s, or the negative conjunct is attributed.
 	 */
-	protected boolean hasAttributes() {
+	private boolean hasAttributes() {
 		boolean result = ValueNode.hasValueNodes(getTarget());
 		if (result) {
             Iterator<AbstractCondition<?>> subConditionIter = getSubConditions().iterator();
@@ -150,7 +150,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	 * Tests if the target graph of the condition
 	 * contains nodes without incident edges.
 	 */
-	protected boolean hasIsolatedNodes() {
+	private boolean hasIsolatedNodes() {
 		boolean result = false;
 		// first test if the pattern target has isolated nodes
 		Set<Node> freshTargetNodes = new HashSet<Node>(getTarget().nodeSet());
@@ -212,7 +212,22 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 		};
 	}
 
-    abstract public Iterator<M> getMatchIter(Graph host, NodeEdgeMap contextMap);
+    final public Iterator<M> getMatchIter(Graph host, NodeEdgeMap contextMap) {
+        Iterator<M> result = null;
+        reporter.start(GET_MATCHING);
+        testFixed(true);
+        // lift the pattern match to a pre-match of this condition's target
+        final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
+        result = getMatchIter(host, getMatcher().getMatchIter(host, anchorMap));
+        reporter.stop();
+        return result;
+    }
+
+    /** 
+     * Returns an iterator over the matches for a given graph, based on
+     * a series of match maps for this condition.
+     */
+    abstract Iterator<M> getMatchIter(Graph host, Iterator<VarNodeEdgeMap> matchMaps);
     
     /** 
      * Factors given matching of the condition context through this condition's
@@ -221,7 +236,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * is a sub-map of <code>contextMap</code>; or <code>null</code> if there is
      * no such mapping.
      */
-    final protected VarNodeEdgeMap createAnchorMap(NodeEdgeMap contextMap) {
+    final VarNodeEdgeMap createAnchorMap(NodeEdgeMap contextMap) {
     	VarNodeEdgeMap result = null;
     	if (contextMap == null) {
     		testGround();
@@ -290,13 +305,13 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * Typically invoked once, at the first invocation of {@link #getMatcher()}.
      * This implementation retrieves its value from {@link #getMatcherFactory()}.
      */
-    protected MatchStrategy<VarNodeEdgeMap> createMatcher() {
+    MatchStrategy<VarNodeEdgeMap> createMatcher() {
         setFixed();
         return getMatcherFactory().createMatcher(this);
     }
 
     /** Returns a matcher factory, tuned to the injectivity of this condition. */
-    protected ConditionSearchPlanFactory getMatcherFactory() {
+    ConditionSearchPlanFactory getMatcherFactory() {
         return groove.match.ConditionSearchPlanFactory.getInstance(getProperties().isInjective());
     }
 
@@ -306,7 +321,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * @param value the expected fixedness state
      * @throws IllegalStateException if {@link #isFixed()} does not yield <code>value</code>
      */
-    protected void testFixed(boolean value) throws IllegalStateException {
+    void testFixed(boolean value) throws IllegalStateException {
         if (isFixed() != value) {
         	String message;
         	if (value) {
@@ -325,7 +340,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * @throws IllegalStateException if this condition is not ground.
      * @see #isGround()
      */
-    private void testGround() throws IllegalStateException {
+    void testGround() throws IllegalStateException {
         if (! isGround()) {
             throw new IllegalStateException("Method only allowed on ground condition");
         }

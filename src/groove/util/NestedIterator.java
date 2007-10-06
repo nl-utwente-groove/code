@@ -12,20 +12,20 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NestedIterator.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: NestedIterator.java,v 1.3 2007-10-06 11:27:39 rensink Exp $
  */
 package groove.util;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 
 /**
  * An iterator obtained by <i>flattening</i> other iterators. The inner
  * iterators are accessed one by one, whenever the previous is 
  * exhausted.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NestedIterator<T> extends AbstractNestedIterator<T> {
     /**
@@ -33,7 +33,7 @@ public class NestedIterator<T> extends AbstractNestedIterator<T> {
      * @param iterList the list of iterators from which this nested iterator
      * is to be constructed
      */
-    public NestedIterator(List<? extends Iterator<? extends T>> iterList) {
+    public NestedIterator(Collection<? extends Iterator<? extends T>> iterList) {
         this(iterList.iterator());
     }
     

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExistsMatch.java,v 1.1 2007-10-03 23:10:53 rensink Exp $
+ * $Id: ExistsMatch.java,v 1.2 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
@@ -32,47 +32,38 @@ import java.util.Collection;
 public class ExistsMatch extends CompositeMatch {
     /** Constructs a match for a given {@link SPORule}. */
     public ExistsMatch(VarNodeEdgeMap matchMap) {
-        this.matchMap = matchMap;
+        super(matchMap);
     }
 
     @Override
     public Collection<Edge> getEdgeValues() {
         Collection<Edge> result = super.getEdgeValues();
-        result.addAll(getMatchMap().edgeMap().values());
+        result.addAll(getElementMap().edgeMap().values());
         return result;
     }
 
     @Override
     public Collection<Node> getNodeValues() {
         Collection<Node> result = super.getNodeValues();
-        result.addAll(getMatchMap().nodeMap().values());
+        result.addAll(getElementMap().nodeMap().values());
         return result;
     }
     
-    /** Returns the element map constituting the map. */
-    public VarNodeEdgeMap getMatchMap() {
-        return matchMap;
-    }
-
     /** Equality is determined by rule and element map. */
     @Override
     public boolean equals(Object obj) {
         return obj instanceof ExistsMatch
-                && ((ExistsMatch) obj).getMatchMap().equals(getMatchMap())
                 && super.equals(obj);
     }
     
     /** Computes a value for the hash code. */
     @Override
     protected int computeHashCode() {
-        return super.computeHashCode() ^ getMatchMap().hashCode();
+        return super.computeHashCode();
     }
 
     @Override
     public String toString() {
-        return String.format("Nodes %s, edges %s", getMatchMap().nodeMap(), getMatchMap().edgeMap());
+        return String.format("Nodes %s, edges %s", getElementMap().nodeMap(), getElementMap().edgeMap());
     }
-
-    /** The map constituting the match. */
-    private final VarNodeEdgeMap matchMap;
 }

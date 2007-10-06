@@ -445,8 +445,7 @@ public class SystemProperties extends java.util.Properties {
 	}
 
 	/** 
-	 * The default rule properties: not attributed, no control or common labels,
-	 * and a {@link DefaultRuleFactory}. 
+	 * The default rule properties: not attributed and no control or common labels.
 	 */
 	static public final SystemProperties DEFAULT_PROPERTIES = getInstance(false);
 }
