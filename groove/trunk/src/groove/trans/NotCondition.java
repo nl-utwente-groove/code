@@ -12,14 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NotCondition.java,v 1.2 2007-10-05 11:44:54 rensink Exp $
+ * $Id: NotCondition.java,v 1.3 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.DefaultMorphism;
 import groove.graph.Graph;
 import groove.graph.Morphism;
-import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 
 import java.util.Collections;
@@ -58,18 +57,13 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
     }
 
 	@Override
-    public Iterator<CompositeMatch> getMatchIter(final Graph host, NodeEdgeMap contextMap) {
+    Iterator<CompositeMatch> getMatchIter(final Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Iterator<CompositeMatch> result = null;
-        reporter.start(GET_MATCHING);
-        testFixed(true);
-        // lift the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
-        if (getMatcher().getMatchIter(host, anchorMap).hasNext()) {
+        if (matchMapIter.hasNext()) {
         	result = Collections.<CompositeMatch>emptySet().iterator();
         } else {
         	result = WRAPPED_EMPTY_MATCH.iterator();
         }
-        reporter.stop();
         return result;
     }
     

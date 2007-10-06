@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForallCondition.java,v 1.3 2007-10-05 12:19:01 rensink Exp $
+ * $Id: ForallCondition.java,v 1.4 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
@@ -41,9 +41,22 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     }
 
     @Override
-    public Collection<CompositeMatch> getMatches(Graph host, NodeEdgeMap contextMap) {
+    final public Collection<CompositeMatch> getMatches(Graph host, NodeEdgeMap contextMap) {
+    	Collection<CompositeMatch> result = null;
+    	reporter.start(GET_MATCHING);
+    	testFixed(true);
+    	// lift the pattern match to a pre-match of this condition's target
+    	final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
+    	result = getMatches(host, getMatcher().getMatchIter(host, anchorMap));
+    	reporter.stop();
+    	return result;
+    }
+    
+    /**
+     * Returns the matches of this condition, given an iterator of match maps.
+     */
+    Collection<CompositeMatch> getMatches(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
-        Iterator<VarNodeEdgeMap> matchMapIter = getMatcher().getMatchIter(host, contextMap);
         while (matchMapIter.hasNext()) {
             VarNodeEdgeMap matchMap = matchMapIter.next();
             Collection<Match> subResults = new ArrayList<Match>();
@@ -55,7 +68,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
             }
             Collection<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
             for (CompositeMatch current: result) {
-                newResult.addAll(current.getAnd(subResults));
+                newResult.addAll(current.addSubMatchChoice(subResults));
             }
             result = newResult;
         }
@@ -115,10 +128,9 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     
     /** This implementation iterates over the result of {@link #getMatches(Graph, NodeEdgeMap)}. */
     @Override
-    public Iterator<CompositeMatch> getMatchIter(Graph host, NodeEdgeMap contextMap) {
-        return getMatches(host, contextMap).iterator();
+    public Iterator<CompositeMatch> getMatchIter(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
+        return getMatches(host, matchMapIter).iterator();
     }
-
 
     /** 
      * Turns a collection of iterators into an iterator of collections.

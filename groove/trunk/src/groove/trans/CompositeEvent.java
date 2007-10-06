@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SetEvent.java,v 1.2 2007-10-01 21:53:07 rensink Exp $
+ * $Id: CompositeEvent.java,v 1.1 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
@@ -34,9 +34,9 @@ import java.util.SortedSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class SetEvent extends AbstractEvent<Rule> {
+public class CompositeEvent extends AbstractEvent<Rule> {
     /** Creates a new event on the basis of a given event set. */
-    public SetEvent(Rule rule, SortedSet<RuleEvent> eventSet) {
+    public CompositeEvent(Rule rule, SortedSet<? extends RuleEvent> eventSet) {
     	super(rule);
         this.eventSet = eventSet;
     }
@@ -126,8 +126,8 @@ public class SetEvent extends AbstractEvent<Rule> {
     	if (result != 0) {
     		return result;
     	}
-    	Iterator<RuleEvent> myEvents = eventSet.iterator();
-    	Iterator<RuleEvent> otherEvents = ((SetEvent) o).getEventSet().iterator();
+    	Iterator<? extends RuleEvent> myEvents = eventSet.iterator();
+    	Iterator<? extends RuleEvent> otherEvents = ((CompositeEvent) o).getEventSet().iterator();
     	while (result == 0 && myEvents.hasNext() && otherEvents.hasNext()) {
     		result = myEvents.next().compareTo(otherEvents.next());
     	}
@@ -135,7 +135,7 @@ public class SetEvent extends AbstractEvent<Rule> {
     }
 
     /** Returns the set of constituent events of this set event. */
-    public Set<RuleEvent> getEventSet() {
+    public Set<? extends RuleEvent> getEventSet() {
     	return eventSet;
     }
     
@@ -166,5 +166,5 @@ public class SetEvent extends AbstractEvent<Rule> {
 	}
 	
     /** The set of events constituting this event. */
-    private final SortedSet<RuleEvent> eventSet;
+    private final SortedSet<? extends RuleEvent> eventSet;
 }

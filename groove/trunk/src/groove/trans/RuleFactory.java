@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleFactory.java,v 1.8 2007-04-30 19:53:27 rensink Exp $
+ * $Id: RuleFactory.java,v 1.9 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
@@ -24,8 +24,10 @@ import groove.view.RuleView;
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-04-30 19:53:27 $
+ * @version $Revision: 1.9 $ $Date: 2007-10-06 11:27:50 $
+ * @deprecated use rule constructors
  */
+@Deprecated
 public interface RuleFactory {
 	/**
 	 * Creates a rule view of the correct kind for this rule factory.

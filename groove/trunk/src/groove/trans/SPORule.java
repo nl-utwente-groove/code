@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.36 2007-10-05 11:44:55 rensink Exp $
+ * $Id: SPORule.java,v 1.37 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
@@ -31,11 +31,14 @@ import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
 import groove.util.Groove;
+import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -48,7 +51,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.36 $
+ * @version $Revision: 1.37 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -66,17 +69,17 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     
     /**
      * @param morph the morphism on which this production is to be based
-     * @param patternMap pattern map leading into the LHS
-     * @param coPatternMap pattern map leading into the RHS
+     * @param rootMap pattern map leading into the LHS
+     * @param coRootMap pattern map leading into the RHS
      * @param name the name of the new rule
      * @param properties the factory this rule used to instantiate related classes
      * @throws FormatException if the rule system properties do not concur with the rule itself
      */
-    public SPORule(Morphism morph, NodeEdgeMap patternMap, NodeEdgeMap coPatternMap, RuleNameLabel name, SystemProperties properties) throws FormatException {
-        super(morph.dom(), patternMap, name, properties);
+    public SPORule(Morphism morph, NodeEdgeMap rootMap, NodeEdgeMap coRootMap, RuleNameLabel name, SystemProperties properties) throws FormatException {
+        super(morph.dom(), rootMap, name, properties);
         this.morphism = morph;
     	this.priority = DEFAULT_PRIORITY;
-    	this.coPatternMap = coPatternMap;
+    	this.coRootMap = coRootMap;
     }
     
     /**
@@ -97,6 +100,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     	}
     }
     
+    @Deprecated
     public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
         return new SPOEvent(this, anchorMap, nodeFactory, reuse);
     }
@@ -108,46 +112,50 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         }
         return eventMatcher;
     }
-	
+
 	@Override
-    public Iterator<RuleMatch> getMatchIter(final Graph host, NodeEdgeMap contextMap) {
+    public Iterator<RuleMatch> getMatchIter(final Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Iterator<RuleMatch> result = null;
-        reporter.start(GET_MATCHING);
-        testFixed(true);
-        // lift the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
-        result = new TransformIterator<VarNodeEdgeMap,RuleMatch>(getMatcher().getMatchIter(host, anchorMap)) {
+        result = new NestedIterator<RuleMatch>(new TransformIterator<VarNodeEdgeMap,Iterator<RuleMatch>>(matchMapIter) {
         	@Override
-        	public RuleMatch toOuter(VarNodeEdgeMap matchMap) {
-        		return getMatch(host, matchMap);
+        	public Iterator<RuleMatch> toOuter(VarNodeEdgeMap matchMap) {
+        		if (isValidMatchMap(host, matchMap)) {
+        			return addSubMatches(host, createMatch(matchMap)).iterator();
+        		} else {
+        			return null;
+        		}
         	}
-        };
-        reporter.stop();
+        });
         return result;
     }
 
 	/** 
-	 * Before calling the super method,
-	 * tests whether the match map is valid, using {@link #isValidMatchMap(Graph, VarNodeEdgeMap)}.
-	 * @return <code>null</code> if {@link #isValidMatchMap(Graph, VarNodeEdgeMap)} returns <code>false</code>,
-	 * otherwise the result of the super method.
+	 * Returns a collection of matches extending a given match with
+	 * matches for the sub-conditions.
 	 */
-    @Override
-    protected RuleMatch getMatch(Graph host, VarNodeEdgeMap matchMap) {
-        if (isValidMatchMap(host, matchMap)) {
-            return super.getMatch(host, matchMap);
-        } else {
-            return null;
-        }
+    private Collection<RuleMatch> addSubMatches(Graph host, RuleMatch simpleMatch) {
+    	Collection<RuleMatch> result = Collections.singleton(simpleMatch);
+		VarNodeEdgeMap matchMap = simpleMatch.getElementMap();
+		for (AbstractCondition<?> condition : getComplexSubConditions()) {
+			Iterable<? extends Match> subMatches = condition.getMatches(host, matchMap);
+			Collection<RuleMatch> oldResult = result;
+			result = new ArrayList<RuleMatch>();
+			for (RuleMatch oldMatch : oldResult) {
+				result.addAll(oldMatch.addSubMatchChoice(subMatches));
+			}
+		}
+		return result;
     }
 
-    /** 
-     * Callback factory method to create a match on the basis of
-     * a mapping of this condition's target.
-     * @param matchMap the mapping, presumably of the elements of {@link #getTarget()}
-     * into some host graph
-     * @return a match constructed on the basis of <code>map</code>
-     */
+    /**
+	 * Callback factory method to create a match on the basis of a mapping of
+	 * this condition's target.
+	 * 
+	 * @param matchMap
+	 *            the mapping, presumably of the elements of
+	 *            {@link #getTarget()} into some host graph
+	 * @return a match constructed on the basis of <code>map</code>
+	 */
 	@Override
     protected RuleMatch createMatch(VarNodeEdgeMap matchMap) {
         return new RuleMatch(this, matchMap);
@@ -266,42 +274,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 		return priority;
 	}
 
-    /**
-	 * Indicates if this rule has mergers.
-	 * @invariant <tt>result == ! getMergeMap().isEmpty()</tt>
-	 */
-	final public boolean hasMergers() {
-		return ! getMergeMap().isEmpty();
-	}
-	
-	/** Returns an array of nodes isolated in the left hand side. */
-	final public Node[] getIsolatedNodes() {
-		if (isolatedNodes == null) {
-			isolatedNodes = computeIsolatedNodes();
-		}
-		return isolatedNodes;
-	}
-
-	/** Computes the array of nodes isolated in the left hand side. */
-	private Node[] computeIsolatedNodes() {
-		List<Node> result = new ArrayList<Node>();
-		for (Node node: lhs().nodeSet()) {
-			if (lhs().edgeSet(node).isEmpty()) {
-				result.add(node);
-			}
-		}
-		return result.toArray(new Node[0]);
-	}
-
-	public boolean isModifying() {
-		if (! modifyingSet) {
-			modifying = computeModifying();
-			modifyingSet = true;
-		}
-	    return modifying;
-	}
-
-	/** 
+    /** 
 	 * In addition to calling the super method,
 	 * adds implicit NACs as dictated by {@link SystemProperties#isCheckCreatorEdges()}
 	 * and {@link SystemProperties#isRhsAsNac()}.
@@ -327,6 +300,42 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	}
 
 	/**
+	 * Indicates if this rule has mergers.
+	 * @invariant <tt>result == ! getMergeMap().isEmpty()</tt>
+	 */
+	final public boolean hasMergers() {
+		return ! getMergeMap().isEmpty();
+	}
+	
+	/** Returns an array of nodes isolated in the left hand side. */
+	final public Node[] getIsolatedNodes() {
+		if (isolatedNodes == null) {
+			isolatedNodes = computeIsolatedNodes();
+		}
+		return isolatedNodes;
+	}
+
+	/** Computes the array of nodes isolated in the left hand side. */
+	private Node[] computeIsolatedNodes() {
+		Set<Node> result = new HashSet<Node>();
+		for (Node node: lhs().nodeSet()) {
+			if (lhs().edgeSet(node).isEmpty()) {
+				result.add(node);
+			}
+		}
+		result.removeAll(getRootMap().nodeMap().values());
+		return result.toArray(new Node[0]);
+	}
+
+	public boolean isModifying() {
+		if (! modifyingSet) {
+			modifying = computeModifying();
+			modifyingSet = true;
+		}
+	    return modifying;
+	}
+
+	/**
 	 * Computes if the rule is modifying or not.
 	 */
 	private boolean computeModifying() {
@@ -347,6 +356,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	private Edge[] computeEraserEdges() {
 	    Set<Edge> eraserEdgeSet = new HashSet<Edge>(lhs().edgeSet());
 	    eraserEdgeSet.removeAll(getMorphism().edgeMap().keySet());
+	    eraserEdgeSet.removeAll(getRootMap().edgeMap().values());
 	    // also remove the incident edges of the lhs-only nodes
 	    for (Node eraserNode: getEraserNodes()) {
 	        eraserEdgeSet.removeAll(lhs().edgeSet(eraserNode));
@@ -388,6 +398,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 		// construct lhsOnlyNodes
 	    Set<Node> eraserNodeSet = new HashSet<Node>(lhs().nodeSet());
 	    eraserNodeSet.removeAll(getMorphism().nodeMap().keySet());
+	    eraserNodeSet.removeAll(getRootMap().nodeMap().values());
 	    return eraserNodeSet.toArray(new Node[0]);
 	}
 
@@ -402,6 +413,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 		return hasCreators;
 	}
 
+	NodeEdgeMap getCoRootMap() {
+		if (coRootMap == null) {
+			coRootMap = new NodeEdgeHashMap();
+		}
+		return coRootMap;
+	}
     /**
      * Returns the creator edges between reader nodes.
      */
@@ -462,7 +479,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     private Edge[] computeCreatorEdges() {
         Set<Edge> result = new HashSet<Edge>(rhs().edgeSet());
-        result.removeAll(getMorphism().edgeMap().values());
+        result.removeAll(getMorphism().edgeMap().values());   
+        result.removeAll(getCoRootMap().edgeMap().values());
         return result.toArray(new Edge[0]);
     }
 
@@ -481,7 +499,8 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 */
 	private Node[] computeCreatorNodes() {
 	    Set<Node> result = new HashSet<Node>(rhs().nodeSet());
-	    result.removeAll(getMorphism().nodeMap().values());
+	    result.removeAll(getMorphism().nodeMap().values());   
+        result.removeAll(getCoRootMap().nodeMap().values());
 		return result.toArray(new Node[0]);
 	}
 
@@ -677,7 +696,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     private Graph rhs;
     /** Mapping from the context of this rule to the RHS. */
-    private NodeEdgeMap coPatternMap;
+    private NodeEdgeMap coRootMap;
     /** 
      * Smallest subgraph of the left hand side that is necessary to
      * apply the rule.

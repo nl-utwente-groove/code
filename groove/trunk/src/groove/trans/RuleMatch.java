@@ -12,19 +12,25 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleMatch.java,v 1.2 2007-10-03 23:10:54 rensink Exp $
+ * $Id: RuleMatch.java,v 1.3 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
+import groove.graph.Edge;
+import groove.graph.Node;
 import groove.graph.NodeFactory;
 import groove.rel.VarNodeEdgeMap;
+
+import java.util.Collection;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Match of an {@link SPORule}.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RuleMatch extends ExistsMatch {
+public class RuleMatch extends CompositeMatch {
     /** Constructs a match for a given {@link SPORule}. */
     public RuleMatch(SPORule rule, VarNodeEdgeMap elementMap) {
     	super(elementMap);
@@ -36,12 +42,82 @@ public class RuleMatch extends ExistsMatch {
         return rule;
     }
 
-    /** Creates an event on the basis of this match. */
-    public SPOEvent newEvent(NodeFactory nodeFactory, boolean reuse) {
-        return new SPOEvent(getRule(), getMatchMap(), nodeFactory, reuse);
+    @Override
+    public Collection<Edge> getEdgeValues() {
+        Collection<Edge> result = super.getEdgeValues();
+        result.addAll(getElementMap().edgeMap().values());
+        return result;
+    }
+
+    @Override
+    public Collection<Node> getNodeValues() {
+        Collection<Node> result = super.getNodeValues();
+        result.addAll(getElementMap().nodeMap().values());
+        return result;
     }
     
-    /** Equality is determined by rule and element map. */
+    /** 
+     * Creates an event on the basis of this match. 
+     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
+     * @param reuse flag indicating that the events will be reused, so attempts
+     * should be made to gain time by sacrifying space
+     */
+    public RuleEvent newEvent(NodeFactory nodeFactory, boolean reuse) {
+    	SortedSet<SPOEvent> eventSet = new TreeSet<SPOEvent>();
+    	collectEvents(eventSet, null, nodeFactory, reuse);
+    	assert !eventSet.isEmpty();
+    	if (eventSet.size() == 1) {
+    		return eventSet.iterator().next();
+    	} else {
+    		return new CompositeEvent(rule, eventSet);
+    	}
+    }
+    
+    /** 
+     * Recursively collects the events of this match and all sub-matches
+     * into a given collection.
+     * @param events the resulting set of events
+     * @param rightContextMap mapping from the right hand side root nodes
+     * (i.e., the creator nodes of the parent rule) to host nodes; or <code>null</code>
+     * if the rule is the top-level rule
+     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
+     * @param reuse flag indicating that the events will be reused, so attempts
+     * should be made to gain time by sacrifying space
+     */
+    private void collectEvents(Collection<SPOEvent> events, VarNodeEdgeMap rightContextMap, NodeFactory nodeFactory, boolean reuse) {
+    	SPOEvent myEvent = createEvent(rightContextMap, nodeFactory, reuse);
+    	events.add(myEvent);
+    	for (Match subMatch: getSubMatches()) {
+    		if (subMatch instanceof RuleMatch) {
+    			((RuleMatch) subMatch).collectEvents(events, myEvent.getCoanchorMap(), nodeFactory, reuse);
+    		}
+    	}
+    }
+
+    /** 
+     * Callback factory method for an event based on this match. 
+     * @param rightContextMap mapping from the right hand side root nodes
+     * (i.e., the creator nodes of the parent rule) to host nodes; or <code>null</code>
+     * if the rule is the top-level rule
+     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
+     * @param reuse flag indicating that the events will be reused, so attempts
+     * should be made to gain time by sacrifying space
+     */
+    private SPOEvent createEvent(VarNodeEdgeMap rightContextMap, NodeFactory nodeFactory, boolean reuse) {
+        return new SPOEvent(getRule(), getElementMap(), nodeFactory, reuse);
+    }
+
+	@Override
+	public Collection<RuleMatch> addSubMatchChoice(Iterable<? extends Match> choices) {
+		return (Collection<RuleMatch>) super.addSubMatchChoice(choices);
+	}
+    
+    @Override
+	protected RuleMatch createMatch() {
+    	return new RuleMatch(rule, getElementMap());
+	}
+
+	/** Equality is determined by rule and element map. */
     @Override
     public boolean equals(Object obj) {
         return obj instanceof RuleMatch
@@ -57,7 +133,7 @@ public class RuleMatch extends ExistsMatch {
 
     @Override
     public String toString() {
-        return String.format("Match of %s: Nodes %s, edges %s", getRule(), getMatchMap().nodeMap(), getMatchMap().edgeMap());
+        return String.format("Match of %s: Nodes %s, edges %s", getRule(), getElementMap().nodeMap(), getElementMap().edgeMap());
     }
     
     /** The fixed rule of which this is a match. */

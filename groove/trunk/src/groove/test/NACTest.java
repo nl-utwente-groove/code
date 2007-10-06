@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.17 2007-10-05 08:31:52 rensink Exp $
+ * $Id: NACTest.java,v 1.18 2007-10-06 11:27:52 rensink Exp $
  */
 package groove.test;
 
@@ -24,7 +24,6 @@ import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.Morphism;
-import groove.trans.DefaultRuleFactory;
 import groove.trans.EdgeEmbargo;
 import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
@@ -56,7 +55,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -93,7 +92,7 @@ public class NACTest extends TestCase {
         ruleMorphism.cod().addNode(n[1][0]);
         ruleMorphism.putNode(n[0][0], n[1][0]);
         try {
-			rule = (SPORule) DefaultRuleFactory.getInstance().createRule(ruleMorphism, new RuleNameLabel("test"), 0, SystemProperties.DEFAULT_PROPERTIES);
+			rule = new SPORule(ruleMorphism, new RuleNameLabel("test"), 0, SystemProperties.DEFAULT_PROPERTIES);
 		} catch (FormatException exc) {
 			throw new IllegalStateException(exc);
 		}

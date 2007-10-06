@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PositiveCondition.java,v 1.3 2007-10-05 11:44:55 rensink Exp $
+ * $Id: PositiveCondition.java,v 1.4 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
@@ -22,15 +22,13 @@ import groove.rel.VarNodeEdgeMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
 
 /**
  * Abstract superclass of conditions that test for the existence of a (sub)graph structure.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
-abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractCondition<M> {
+abstract public class PositiveCondition<M extends Match> extends AbstractCondition<M> {
     /**
      * Constructs a (named) graph condition based on a given target graph and root morphism.
      * @param target the graph to be matched
@@ -39,7 +37,7 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
      * @param name the name of the condition; may be <code>null</code>
      * @param properties properties for matching the condition; may be <code>null</code>
      */
-    protected PositiveCondition(Graph target, NodeEdgeMap rootMap, NameLabel name, SystemProperties properties) {
+    PositiveCondition(Graph target, NodeEdgeMap rootMap, NameLabel name, SystemProperties properties) {
         super(target, rootMap, name, properties);
     }
     
@@ -48,7 +46,7 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
      * and initially empty nested predicate.
      * The name may be <code>null</code>.
      */
-    protected PositiveCondition(Graph target, NameLabel name, SystemProperties properties) {
+    PositiveCondition(Graph target, NameLabel name, SystemProperties properties) {
         super(target, name, properties);
     }
 
@@ -85,67 +83,19 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
 	 * Adds a graph condition to the complex sub-conditions, which are
 	 * those that are not edge or merge embargoes. 
 	 */
-	protected void addComplexSubCondition(AbstractCondition<?> condition) {
+	void addComplexSubCondition(AbstractCondition<?> condition) {
 	    getComplexSubConditions().add(condition);        
 	}
 
 	/**
 	 * Returns the set of sub-conditions that are <i>not</i> {@link NotCondition}s.
 	 */
-	protected Collection<AbstractCondition<?>> getComplexSubConditions() {
+	Collection<AbstractCondition<?>> getComplexSubConditions() {
 	    if (complexSubConditions == null) {
 	        complexSubConditions = new ArrayList<AbstractCondition<?>>();
 	    }
 	    return complexSubConditions;
 	}
-
-	@Override
-    public Iterator<M> getMatchIter(final Graph host, NodeEdgeMap contextMap) {
-        Iterator<M> result = null;
-        reporter.start(GET_MATCHING);
-        testFixed(true);
-        // lift the pattern match to a pre-match of this condition's target
-        final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
-        Iterator<VarNodeEdgeMap> matchMapIter = getMatcher().getMatchIter(host, anchorMap);
-        while (result == null && matchMapIter.hasNext()) {
-        	M match = getMatch(host, matchMapIter.next());
-        	if (match != null) {
-        		result = Collections.singleton(match).iterator();
-        	}
-        }
-        if (result == null) {
-        	result = Collections.<M>emptySet().iterator();
-        }
-        reporter.stop();
-        return result;
-    }
-
-    /** 
-     * Returns a match on the basis of a mapping of this condition's target to a given graph.
-     * The mapping is checked for matches of the sub-conditions; if this fails,
-     * the method returns <code>null</code>.
-     * TODO this is not correct if a sub-condition has more than one match
-     * @param host the graph that is being matched
-     * @param matchMap the mapping, which should go from the elements of {@link #getTarget()}
-     * into <code>host</code>
-     * @return a match constructed on the basis of <code>matchMap</code>, or <code>null</code> if
-     * no match exists
-     */
-    protected M getMatch(Graph host, VarNodeEdgeMap matchMap) {
-        M result = createMatch(matchMap);
-        for (AbstractCondition< ? > condition : getComplexSubConditions()) {
-            Iterator< ? extends Match> subMatchIter = condition.getMatchIter(host, matchMap);
-            if (subMatchIter.hasNext()) {
-                result.addMatch(subMatchIter.next());
-                // TODO remove check below as soon as method is generalised to sub-conditions with > 1 match
-                assert !subMatchIter.hasNext();
-            } else {
-                result = null;
-                break;
-            }
-        }
-        return result;
-    }
 
     /** 
      * Callback factory method to create a match on the basis of
@@ -154,7 +104,7 @@ abstract public class PositiveCondition<M extends ExistsMatch> extends AbstractC
      * into some host graph
      * @return a match constructed on the basis of <code>map</code>
      */
-    abstract protected M createMatch(VarNodeEdgeMap matchMap);
+    abstract M createMatch(VarNodeEdgeMap matchMap);
 //    
 //	/**
 //     * Returns the map from nodes to sets of injectively matchable nodes.

@@ -76,7 +76,9 @@ public class SystemRecord implements NodeFactory {
 	 * Returns an event for a given rule and matching of that rule.
 	 * The events are stored internally; an event is reused if it has the
 	 * correct rule and anchor map.
+	 * @deprecated use {@link #getEvent(RuleMatch)} instead
 	 */
+	@Deprecated
     public RuleEvent getEvent(Rule rule, VarNodeEdgeMap elementMap) {
     	RuleEvent result;
     	reporter.start(GET_EVENT);

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Reporter.java,v 1.2 2007-04-22 23:32:24 rensink Exp $
+ * $Id: Reporter.java,v 1.3 2007-10-06 11:27:39 rensink Exp $
  */
 package groove.util;
 
@@ -27,144 +27,16 @@ import java.util.TreeMap;
  * Class used to generate performance reports.
  * Performance reports concern number of calls made and time taken.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Reporter {
-    // ------------------------------- switches ----------------------------------
-    static private final boolean REPORT = true;
-
-    // ---------------------------- other constants ------------------------------
-    /** Length of a count field */
-    static public final int COUNT_LENGTH = 7;
-    /** Length of a time field */
-    static public final int TIME_LENGTH = 6;
-    /** Indentation before every method line */
-    static public final String INDENT = "  ";
-    /** Field name of the method identifier */
-    static public final String METHOD_FIELD = "m";
-    /** Field name of the top method count */
-    static public final String TOP_COUNT_FIELD = "#top";
-    /** Field name of the nesded method count */
-    static public final String NESTED_COUNT_FIELD = "#nest";
-    /** Field name of the total duration */
-    static public final String TOT_TIME_FIELD = "tot(m)";
-    /** Field name of the average duration */
-    static public final String AVG_TIME_FIELD = "avg(mu)";
-
-    /** Returns a reporter for a given type. */
-    static public Reporter register(Class<?> type) {
-    	Reporter result = reporters.get(type);
-    	if (result == null) {
-    		result = new Reporter(type);
-            reporters.put(type, result);
-    	}
-        return result;
-    }
-
-    /**
-     * Collects the reports from all <tt>Reporter</tt> instances and
-     * writes them to a specified output.
-     * The combined report consists of a list of method data from each
-     * individual reporter, followed by the total time measured by the
-     * reporters.
-     * @param out the output to which the report is to be written.
-     */
-    static public void report(PrintWriter out) {
-        if (REPORT) {
-            // first we compute the required (maximum) field widths for the method reports
-            int methodNameLength = 0;
-            int topCountLength = 0;
-            int nestedCountLength = 0;
-            int totTimeLength = 0;
-            int avgTimeLength = 0;
-            int classNameLength = 0;
-            for (Reporter reporter: reporters.values()) {
-                reporter.calculateFieldWidths();
-                methodNameLength = Math.max(reporter.methodNameLength, methodNameLength);
-                topCountLength = Math.max(reporter.topCountLength, topCountLength);
-                nestedCountLength = Math.max(reporter.nestedCountLength, nestedCountLength);
-                totTimeLength = Math.max(reporter.totTimeLength, totTimeLength);
-                avgTimeLength = Math.max(reporter.avgTimeLength, avgTimeLength);
-                classNameLength = Math.max(reporter.type.toString().length(), classNameLength);
-            }
-            // print the report title
-            String title = "Method call reporting: " + new java.util.Date();
-            StringBuffer line = new StringBuffer();
-            for (int i = 0; i < title.length(); i++) {
-                line.append("=");
-            }
-            out.println(title);
-            out.println(line);
-            out.println();
-            // print the method reports from the individual reporters
-            for (Reporter reporter: reporters.values()) {
-                reporter.myReport(
-                    out,
-                    methodNameLength,
-                    topCountLength,
-                    nestedCountLength,
-                    totTimeLength,
-                    avgTimeLength);
-                out.println();
-            }
-            // print the total amounts of time measured by the reporters
-            out.println("Total measured time spent in");
-            for (Reporter reporter: reporters.values()) {
-                out.println(INDENT + Groove.pad(reporter.type.toString(), classNameLength, false) + ": " + reporter.totalTime + " ms");
-            }
-            out.println();
-
-            // print the time spent inside the reporters, i.e., the time spent reporting
-            if (TIME_METHODS) {
-                out.println("Time spent collection information: " + getTotalTime() + " ms");
-            }
-            out.flush();
-        } else {
-            out.println("Method call reporting has been switched off");
-        }
-    }
-
-    /**
-     * Returns the total time spent in measuring.
-     */
-    static public long getTotalTime() {
-        return reportTime;
-    }
-
-    /**
-     * Prints a report of the measured data on the standard output.
-     * @see #report(PrintWriter)
-     */
-    static public void report() {
-        report(new PrintWriter(System.out));
-    }
-
-    /** The expected maximal nesting depth. */
-    static private final int MAX_NESTING = 50;
-    /** The expected maximal nesting depth. */
-    static private final int MAX_METHODS = 200;
-    /** Flag to control whether execution times are reported. */
-    static private final boolean TIME_METHODS = true;
-    /** Flag to control whether all executions or just top-level ones are reported. */
-    static private final boolean TIME_TOP_ONLY = TIME_METHODS && false;
-    /** Sorted map of all registered reporters */
-    static private Map<Class,Reporter> reporters = new TreeMap<Class,Reporter>(new Comparator<Class>() {
-		public int compare(Class o1, Class o2) {
-			return o1.getName().compareTo(o2.getName());
-		}
-    });
-    /** System time spent reporting */
-    static private long reportTime;
-
-    // ------------------------------- instance methods --------------------------
-
-    /** Constructor for a new instance. */
+    //     /** Constructor for a new instance. */
     private Reporter(Class<?> type) {
         this.type = type;
     }
 
     /**
-     * Generates some reports on standard output, for the purpose of optimization.
+     * Generates some reports on standard output, for the purpose of optimisation.
      * Reports include:<ul>
      * <li> Counts of (top-level and nested) calls of various methods
      * <li> Total and average time spent executing various methods
@@ -390,4 +262,127 @@ public class Reporter {
     private int totTimeLength;
     private int avgTimeLength;
 
+    /** Returns a reporter for a given type. */
+    static public Reporter register(Class<?> type) {
+    	Reporter result = reporters.get(type);
+    	if (result == null) {
+    		result = new Reporter(type);
+            reporters.put(type, result);
+    	}
+        return result;
+    }
+
+    /**
+     * Collects the reports from all <tt>Reporter</tt> instances and
+     * writes them to a specified output.
+     * The combined report consists of a list of method data from each
+     * individual reporter, followed by the total time measured by the
+     * reporters.
+     * @param out the output to which the report is to be written.
+     */
+    static public void report(PrintWriter out) {
+        if (REPORT) {
+            // first we compute the required (maximum) field widths for the method reports
+            int methodNameLength = 0;
+            int topCountLength = 0;
+            int nestedCountLength = 0;
+            int totTimeLength = 0;
+            int avgTimeLength = 0;
+            int classNameLength = 0;
+            for (Reporter reporter: reporters.values()) {
+                reporter.calculateFieldWidths();
+                methodNameLength = Math.max(reporter.methodNameLength, methodNameLength);
+                topCountLength = Math.max(reporter.topCountLength, topCountLength);
+                nestedCountLength = Math.max(reporter.nestedCountLength, nestedCountLength);
+                totTimeLength = Math.max(reporter.totTimeLength, totTimeLength);
+                avgTimeLength = Math.max(reporter.avgTimeLength, avgTimeLength);
+                classNameLength = Math.max(reporter.type.toString().length(), classNameLength);
+            }
+            // print the report title
+            String title = "Method call reporting: " + new java.util.Date();
+            StringBuffer line = new StringBuffer();
+            for (int i = 0; i < title.length(); i++) {
+                line.append("=");
+            }
+            out.println(title);
+            out.println(line);
+            out.println();
+            // print the method reports from the individual reporters
+            for (Reporter reporter: reporters.values()) {
+                reporter.myReport(
+                    out,
+                    methodNameLength,
+                    topCountLength,
+                    nestedCountLength,
+                    totTimeLength,
+                    avgTimeLength);
+                out.println();
+            }
+            // print the total amounts of time measured by the reporters
+            out.println("Total measured time spent in");
+            for (Reporter reporter: reporters.values()) {
+                out.println(INDENT + Groove.pad(reporter.type.toString(), classNameLength, false) + ": " + reporter.totalTime + " ms");
+            }
+            out.println();
+
+            // print the time spent inside the reporters, i.e., the time spent reporting
+            if (TIME_METHODS) {
+                out.println("Time spent collection information: " + getTotalTime() + " ms");
+            }
+            out.flush();
+        } else {
+            out.println("Method call reporting has been switched off");
+        }
+    }
+
+    /**
+     * Returns the total time spent in measuring.
+     */
+    static public long getTotalTime() {
+        return reportTime;
+    }
+
+    /**
+     * Prints a report of the measured data on the standard output.
+     * @see #report(PrintWriter)
+     */
+    static public void report() {
+        report(new PrintWriter(System.out));
+    }
+
+    // ---------------------------- other constants ------------------------------
+    /** Length of a count field */
+    static public final int COUNT_LENGTH = 7;
+    /** Length of a time field */
+    static public final int TIME_LENGTH = 6;
+    /** Indentation before every method line */
+    static public final String INDENT = "  ";
+    /** Field name of the method identifier */
+    static public final String METHOD_FIELD = "m";
+    /** Field name of the top method count */
+    static public final String TOP_COUNT_FIELD = "#top";
+    /** Field name of the nesded method count */
+    static public final String NESTED_COUNT_FIELD = "#nest";
+    /** Field name of the total duration */
+    static public final String TOT_TIME_FIELD = "tot(m)";
+    /** Field name of the average duration */
+    static public final String AVG_TIME_FIELD = "avg(mu)";
+
+    /** The expected maximal nesting depth. */
+    static private final int MAX_NESTING = 50;
+    /** The expected maximal nesting depth. */
+    static private final int MAX_METHODS = 200;
+    /** Flag to control whether execution times are reported. */
+    static private final boolean TIME_METHODS = true;
+    /** Flag to control whether all executions or just top-level ones are reported. */
+    static private final boolean TIME_TOP_ONLY = TIME_METHODS && false;
+    static private final boolean REPORT = true;
+	/** Sorted map of all registered reporters */
+    static private Map<Class<?>,Reporter> reporters = new TreeMap<Class<?>,Reporter>(new Comparator<Class<?>>() {
+		public int compare(Class<?> o1, Class<?> o2) {
+			return o1.getName().compareTo(o2.getName());
+		}
+    });
+    /** System time spent reporting */
+    static private long reportTime;
 }

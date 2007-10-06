@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.44 2007-10-03 23:10:53 rensink Exp $
+ * $Id: SPOEvent.java,v 1.45 2007-10-06 11:27:50 rensink Exp $
  */
 package groove.trans;
 
@@ -51,7 +51,7 @@ import java.util.Set;
  * Class representing an instance of a {@link groove.trans.SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.44 $ $Date: 2007-10-03 23:10:53 $
+ * @version $Revision: 1.45 $ $Date: 2007-10-06 11:27:50 $
  */
 public class SPOEvent extends AbstractEvent<SPORule> {
     /**
@@ -155,7 +155,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      * Constructs a map from the reader nodes of the RHS that are endpoints of
      * creator edges, to the target graph nodes.
      */
-    private VarNodeEdgeMap getCoanchorMap() {
+    public VarNodeEdgeMap getCoanchorMap() {
         if (reuse) {
             if (coanchorMap == null) {
                 coanchorMap = computeCoanchorMap();
@@ -286,18 +286,11 @@ public class SPOEvent extends AbstractEvent<SPORule> {
     public Morphism getMatching(Graph host) {
     	Morphism result = null;
         if (isCorrectFor(host)) {
-            Iterator<VarNodeEdgeMap> matchMapIter = getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
-        	if (matchMapIter.hasNext()) {
-                RuleMatch match = getRule().getMatch(host, matchMapIter.next());
-				if (match != null) {
-					final VarNodeEdgeMap matchMap = match.getMatchMap();
-					result = new DefaultMorphism(getRule().getTarget(), host) {
-						@Override
-						protected VarNodeEdgeMap createElementMap() {
-							return matchMap;
-						}
-					};
-				}
+    		Iterator<VarNodeEdgeMap> eventMatchMapIter = getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
+        	Iterator<RuleMatch> matchIter = getRule().getMatchIter(host, eventMatchMapIter);
+        	if (matchIter.hasNext()) {
+                RuleMatch match = matchIter.next();
+                result = new DefaultMorphism(getRule().getTarget(), host, match.getElementMap());
         	}
         }
         return result;
@@ -310,7 +303,12 @@ public class SPOEvent extends AbstractEvent<SPORule> {
 	 * fulfilled.
 	 */
 	public boolean hasMatching(Graph host) {
-        return getMatching(host) != null;
+        if (isCorrectFor(host)) {
+        	Iterator<VarNodeEdgeMap> eventMatchMapIter = getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
+        	return getRule().getMatchIter(host, eventMatchMapIter).hasNext();
+        } else {
+        	return false;
+        }
 //        if (isCorrectFor(host)) {
 //            return getRule().getEventMatcher().getMatch(host, getAnchorMap()) != null;
 //        } else {
