@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultApplication.java,v 1.4 2007-10-02 23:06:21 rensink Exp $
+ * $Id: DefaultApplication.java,v 1.5 2007-10-07 07:56:48 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-10-02 23:06:21 $
+ * @version $Revision: 1.5 $ $Date: 2007-10-07 07:56:48 $
  */
 public class DefaultApplication implements RuleApplication, Derivation {
     /**
@@ -69,7 +69,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
         if (event instanceof SPOEvent) {
         this.anchorMap = ((SPOEvent) event).getAnchorMap();
         }
-        assert event.hasMatching(source): String.format("Rule event %s has no matching in %s", event, AbstractGraph.toString(source));
+        assert event.hasMatch(source): String.format("Rule event %s has no matching in %s", event, AbstractGraph.toString(source));
     }
 
     public Graph getSource() {
@@ -110,19 +110,27 @@ public class DefaultApplication implements RuleApplication, Derivation {
 		return target;
 	}
 
+	/**
+	 * @deprecated Use {@link #getMatch()} instead
+	 */
+	@Deprecated
 	public Morphism getMatching() {
+    	return getEvent().getMatching(source);
+    }
+
+	public RuleMatch getMatch() {
     	if (match == null) {
-    		match = computeMatching(); 
+    		match = computeMatch(); 
     	}
     	return match;
     }
 
 	/**
 	 * Callback method to create the matching from the rule's LHS to the source graph. 
-	 * @see #getMatching()
+	 * @see #getMatch()
 	 */
-	private Morphism computeMatching() {
-		return getEvent().getMatching(source);
+	private RuleMatch computeMatch() {
+		return getEvent().getMatch(source);
 	}
 
     public Morphism getMorphism() {
@@ -641,9 +649,9 @@ public class DefaultApplication implements RuleApplication, Derivation {
     protected Graph target;
     /**
      * Matching from the rule's LHS to the source.
-     * Created lazily in {@link #getMatching()}.
+     * Created lazily in {@link #getMatch()}.
      */
-    protected Morphism match;
+    protected RuleMatch match;
     /**
      * Underlying morphism from the source to the target.
      */

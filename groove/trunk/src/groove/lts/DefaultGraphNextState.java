@@ -25,11 +25,12 @@ import groove.trans.DefaultApplication;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
+import groove.trans.RuleMatch;
 
 /**
  * 
  * @author Arend
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
@@ -82,15 +83,36 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	 * rule, the anchor images, and the basis graph.
 	 * @see #getRule()
 	 * @see RuleEvent#getMatching(Graph)
+	 * @deprecated Use {@link #getMatch()} instead
 	 */
+	@Deprecated
 	public Morphism matching() {
-    	return getEvent().getMatching(source().getGraph());
+		return getEvent().getMatching(source().getGraph());
+	}
+
+	/**
+	 * This implementation reconstructs the matching using the
+	 * rule, the anchor images, and the basis graph.
+	 * @see #getRule()
+	 * @see RuleEvent#getMatching(Graph)
+	 */
+	public RuleMatch getMatch() {
+    	return getEvent().getMatch(source().getGraph());
 	}
     
     /**
+	 * Constructs an underlying morphism for the transition from the stored footprint.
+	 * @deprecated Use {@link #getMorphism()} instead
+	 */
+	@Deprecated
+	public Morphism morphism() {
+		return getMorphism();
+	}
+
+	/**
      * Constructs an underlying morphism for the transition from the stored footprint.
      */
-    public Morphism morphism() {
+    public Morphism getMorphism() {
         RuleApplication appl = getEvent().newApplication(source().getGraph());
         Graph derivedTarget = appl.getTarget();
         Graph realTarget = target().getGraph();

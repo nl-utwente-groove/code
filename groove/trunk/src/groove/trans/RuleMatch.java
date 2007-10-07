@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleMatch.java,v 1.3 2007-10-06 11:27:50 rensink Exp $
+ * $Id: RuleMatch.java,v 1.4 2007-10-07 07:56:48 rensink Exp $
  */
 package groove.trans;
 
@@ -77,15 +77,15 @@ public class RuleMatch extends CompositeMatch {
      * Recursively collects the events of this match and all sub-matches
      * into a given collection.
      * @param events the resulting set of events
-     * @param rightContextMap mapping from the right hand side root nodes
+     * @param coContextMap mapping from the right hand side root nodes
      * (i.e., the creator nodes of the parent rule) to host nodes; or <code>null</code>
      * if the rule is the top-level rule
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      * @param reuse flag indicating that the events will be reused, so attempts
      * should be made to gain time by sacrifying space
      */
-    private void collectEvents(Collection<SPOEvent> events, VarNodeEdgeMap rightContextMap, NodeFactory nodeFactory, boolean reuse) {
-    	SPOEvent myEvent = createEvent(rightContextMap, nodeFactory, reuse);
+    private void collectEvents(Collection<SPOEvent> events, VarNodeEdgeMap coContextMap, NodeFactory nodeFactory, boolean reuse) {
+    	SPOEvent myEvent = createEvent(coContextMap, nodeFactory, reuse);
     	events.add(myEvent);
     	for (Match subMatch: getSubMatches()) {
     		if (subMatch instanceof RuleMatch) {
@@ -96,15 +96,15 @@ public class RuleMatch extends CompositeMatch {
 
     /** 
      * Callback factory method for an event based on this match. 
-     * @param rightContextMap mapping from the right hand side root nodes
+     * @param coContextMap mapping from the right hand side root nodes
      * (i.e., the creator nodes of the parent rule) to host nodes; or <code>null</code>
      * if the rule is the top-level rule
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      * @param reuse flag indicating that the events will be reused, so attempts
      * should be made to gain time by sacrifying space
      */
-    private SPOEvent createEvent(VarNodeEdgeMap rightContextMap, NodeFactory nodeFactory, boolean reuse) {
-        return new SPOEvent(getRule(), getElementMap(), nodeFactory, reuse);
+    private SPOEvent createEvent(VarNodeEdgeMap coContextMap, NodeFactory nodeFactory, boolean reuse) {
+        return new SPOEvent(getRule(), getElementMap(), coContextMap, nodeFactory, reuse);
     }
 
 	@Override

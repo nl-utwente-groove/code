@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractTestOutcome.java,v 1.3 2007-10-05 08:31:38 rensink Exp $
+ * $Id: AbstractTestOutcome.java,v 1.4 2007-10-07 07:56:45 rensink Exp $
  */
 package groove.trans;
 
@@ -32,12 +32,13 @@ import java.util.Set;
  * successful and should therefore be included in the {@link #getSuccessKeys()}.
  * A hook is provided in the form of the callback method {@link #isSuccessKey(GraphTestOutcome)}. 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
+ * @deprecated the GraphTestOutcome hierarchy is no longer in use
  */
 @Deprecated
 abstract public class AbstractTestOutcome<Mine,Nested> extends HashMap<Mine,GraphTestOutcome<Nested,Mine>> implements GraphTestOutcome<Mine,Nested> {
     /**
-     * Constructs a test outcome from a given test, subject and mappping to be
+     * Constructs a test outcome from a given test, subject and mapping to be
      * copied to the underlying map.
      * The success keys are computed by iterating over the map and adding the 
      * key to the set of success keys if {@link #isSuccessKey(GraphTestOutcome)}

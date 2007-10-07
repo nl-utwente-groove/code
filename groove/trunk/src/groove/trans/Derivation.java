@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Derivation.java,v 1.2 2007-04-19 11:33:50 rensink Exp $
+ * $Id: Derivation.java,v 1.3 2007-10-07 07:56:48 rensink Exp $
  */
 package groove.trans;
 
@@ -28,7 +28,7 @@ import groove.graph.Morphism;
  * (typically from the source or target graph) that, together with the source
  * graph, allow to reconstruct the derivation up to node and edge set equality.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface Derivation {
     /**
@@ -53,35 +53,14 @@ public interface Derivation {
     public Rule getRule();
 
     /**
-     * Returns the matching of the rule's LHS in the source graph.
+	 * Returns the matching of the rule's LHS in the source graph.
+	 * @deprecated Use {@link #getMatch()} instead
+	 */
+    @Deprecated
+	public Morphism getMatching();
+
+	/**
+     * Returns the match of the rule's LHS in the source graph of this derivation.
      */
-    public Morphism getMatching();
-    
-//    /**
-//     * Returns a footprint for this derivation.
-//     * From the footprint, together with the producation rule and source graph,
-//     * the derivation can be reconstructed up to node and edge set equality of
-//     * the target. 
-//     */
-//    public Element[] getFootprint();
-//    
-//    /**
-//     * Applies the derivation for a given matching.
-//     * This sets the match, source, morphism and target.
-//     * It is an error to invoke this or {@link #apply(Graph, Element[], GraphChangeCommand)}
-//     * more than once.
-//     * @see #apply(Graph, Element[], GraphChangeCommand)
-//     */
-//    public void apply(Matching match);
-//    
-//    /**
-//     * Reconstructs the derivation from a given source graph and footprint.
-//     * The target structure is provided in the form of an interface to add and
-//     * remove elements.
-//     * Does not set the target graph as returned in {@link #getTarget()}.
-//     * It is an error to invoke this or {@link #apply(Matching)}
-//     * more than once.
-//     * @see #apply(Matching)
-//     */
-//    public void apply(Graph source, Element[] footprint, GraphChangeCommand target);
+    public RuleMatch getMatch();
 }

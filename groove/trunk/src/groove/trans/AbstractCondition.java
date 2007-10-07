@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.5 2007-10-06 11:27:50 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.6 2007-10-07 07:56:48 rensink Exp $
  */
 package groove.trans;
 
@@ -40,7 +40,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
@@ -52,15 +52,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * @param properties properties for matching the condition
      */
     protected AbstractCondition(Graph target, NodeEdgeMap rootMap, NameLabel name, SystemProperties properties) {
-        this.rootMap = new VarNodeEdgeHashMap();
-        this.rootVars = new HashSet<String>();
-        if (rootMap != null) {
-            this.rootMap.nodeMap().putAll(rootMap.nodeMap());
-            for (Map.Entry<Edge,Edge> edgeEntry: rootMap.edgeMap().entrySet()) {
-                this.rootMap.edgeMap().put(edgeEntry.getKey(), edgeEntry.getValue());
-                this.rootVars.addAll(VarSupport.getAllVars(edgeEntry.getKey()));
-            }
-        }
+        this.rootMap = rootMap;
         this.target = target;
 		this.properties = properties;
         this.name = name;
@@ -71,7 +63,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * The name may be <code>null</code>.
      */
     protected AbstractCondition(Graph target, NameLabel name, SystemProperties properties) {
-    	this(target, new NodeEdgeHashMap(), name, properties);
+    	this(target, null, name, properties);
     }
 
     /** 
@@ -81,17 +73,34 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 		return properties;
 	}
 
+    /** Sets the root map of this condition. */
+    void setRootMap(NodeEdgeMap rootMap) {
+    	testFixed(false);
+    	assert rootMap != null : String.format("Root map already set to %s", rootMap);
+    	this.rootMap = rootMap;
+    }
+    
     public NodeEdgeMap getRootMap() {
+    	if (rootMap == null) {
+        	testFixed(true);
+        	rootMap = new NodeEdgeHashMap();
+    	}
         return rootMap;
     }
 
     public Set<String> getRootVars() {
+    	if (rootVars == null) {
+            rootVars = new HashSet<String>();
+			for (Edge rootEdge : getRootMap().edgeMap().keySet()) {
+				rootVars.addAll(VarSupport.getAllVars(rootEdge));
+			}
+		}
         return rootVars;
     }
     
-    /** 
-     * Returns the target set at construction time.
-     */
+    /**
+	 * Returns the target set at construction time.
+	 */
     public Graph getTarget() {
         return target;
     }
@@ -321,7 +330,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * @param value the expected fixedness state
      * @throws IllegalStateException if {@link #isFixed()} does not yield <code>value</code>
      */
-    void testFixed(boolean value) throws IllegalStateException {
+    public void testFixed(boolean value) throws IllegalStateException {
         if (isFixed() != value) {
         	String message;
         	if (value) {
@@ -364,9 +373,9 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
      * The pattern map of this condition, i.e., the element
      * map from the context graph to the target graph.
      */
-    private final NodeEdgeMap rootMap;
+    private NodeEdgeMap rootMap;
     /** Set of all variables occurring in root elements. */
-    private final Set<String> rootVars;
+    private Set<String> rootVars;
     /** The target graph of this morphism. */
     private final Graph target;
     /**
