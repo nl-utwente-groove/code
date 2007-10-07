@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.13 2007-09-28 12:46:00 rensink Exp $
+ * $Id: DefaultGraphTransition.java,v 1.14 2007-10-07 07:56:43 rensink Exp $
  */
 package groove.lts;
 
@@ -25,12 +25,13 @@ import groove.graph.Node;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
+import groove.trans.RuleMatch;
 
 
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2007-09-28 12:46:00 $
+ * @version $Revision: 1.14 $ $Date: 2007-10-07 07:56:43 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,GraphState> implements GraphTransitionStub, GraphTransition {
     /** The total number of anchor images created. */
@@ -124,8 +125,16 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,GraphS
 		}
 	}
 
+	/**
+	 * @deprecated Use {@link #getMatch()} instead
+	 */
+	@Deprecated
 	public Morphism matching() {
     	return getEvent().getMatching(source().getGraph());
+	}
+
+	public RuleMatch getMatch() {
+    	return getEvent().getMatch(source().getGraph());
     }
 
 	/**
@@ -168,10 +177,20 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,GraphS
 	}
 
 	/**
+	 * This implementation reconstructs the rule application from the stored footprint,
+	 * and appends an isomorphism to the actual target if necessary.
+	 * @deprecated Use {@link #getMorphism()} instead
+	 */
+	@Deprecated
+	public Morphism morphism() {
+		return getMorphism();
+	}
+
+	/**
      * This implementation reconstructs the rule application from the stored footprint,
      * and appends an isomorphism to the actual target if necessary.
 	 */
-    public Morphism morphism() {
+    public Morphism getMorphism() {
         if (morphism == null) {
             morphism = computeMorphism();
         }

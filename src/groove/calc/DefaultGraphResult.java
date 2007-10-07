@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphResult.java,v 1.11 2007-10-05 11:44:58 rensink Exp $
+ * $Id: DefaultGraphResult.java,v 1.12 2007-10-07 07:56:49 rensink Exp $
  */
 package groove.calc;
 
@@ -83,7 +83,7 @@ public class DefaultGraphResult implements GraphResult {
         // now concatenate the morphisms underlying the next transitions
         while (graphIter.hasNext()) {
             GraphTransition next = (GraphNextState) graphIter.next();
-            result = next.morphism().after(result);
+            result = next.getMorphism().after(result);
         }
         return result;
     }

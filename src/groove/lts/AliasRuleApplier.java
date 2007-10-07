@@ -127,7 +127,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
         while (iter.hasNext()) {
         	GraphTransitionStub stub = iter.next();
             RuleEvent event = stub.getEvent(state.source());
-            if (isUseDependencies() && !disabledRules.contains(event.getRule()) || event.hasMatching(getGraph())) {
+            if (isUseDependencies() && !disabledRules.contains(event.getRule()) || event.hasMatch(getGraph())) {
                 result.add(createAlias(event, state, stub));
         	}
         }

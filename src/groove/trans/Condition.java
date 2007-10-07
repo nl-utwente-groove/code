@@ -12,12 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Condition.java,v 1.2 2007-10-05 11:44:55 rensink Exp $
+ * $Id: Condition.java,v 1.3 2007-10-07 07:56:48 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
 import groove.graph.NodeEdgeMap;
+import groove.util.Fixable;
 import groove.view.FormatException;
 
 import java.util.Collection;
@@ -28,24 +29,9 @@ import java.util.Set;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-public interface Condition {
-    /**
-     * Called to indicate that this predicate is fixed from now on.
-     * This means no more graph conditions may be added to it.
-     * The conditions themselves are also set to fixed.
-     * @see #isFixed()
-     */
-    public void setFixed();
-    
-    /**
-     * Indicates whether the predicate has been fixed.
-     * @return <code>true</code> if the predicate has been fixed
-     * @see #setFixed()
-     */
-    public boolean isFixed();
-    
+public interface Condition extends Fixable {
     /** 
      * Returns the name of this predicate.
      * A return value of <code>null</code> indicates that the predicate is unnamed.

@@ -21,11 +21,12 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
+import groove.trans.RuleMatch;
 
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public interface GraphTransition extends Transition {
 	/** Overrides the method to specialise the result type. */
@@ -52,13 +53,27 @@ public interface GraphTransition extends Transition {
 	
 	/**
 	 * Returns the matching of the LHS into the source graph.
+	 * @deprecated Use {@link #getMatch()} instead
 	 */
-    public Morphism matching();
+	@Deprecated
+	public Morphism matching();
+
+	/**
+	 * Returns the matching of the LHS into the source graph.
+	 */
+    public RuleMatch getMatch();
+
+	/**
+	 * Returns the (partial) morphism from the source to the target graph.
+	 * @deprecated Use {@link #getMorphism()} instead
+	 */
+    @Deprecated
+	public Morphism morphism();
 
 	/**
 	 * Returns the (partial) morphism from the source to the target graph.
 	 */
-	public Morphism morphism();
+	public Morphism getMorphism();
 	
 	/** 
 	 * Indicates if the transition involves a non-trivial symmetry.
@@ -66,7 +81,7 @@ public interface GraphTransition extends Transition {
 	 * the directly derived target of the event applied to the source, to the
 	 * actual (stored) target.
 	 * @return <code>true</code> if the transition involves a non-trivial symmetry 
-	 * @see #morphism()
+	 * @see #getMorphism()
 	 */
 	public boolean isSymmetry();
 	

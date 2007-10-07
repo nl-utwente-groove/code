@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.14 2007-10-01 21:53:08 rensink Exp $
+ * $Id: RuleEvent.java,v 1.15 2007-10-07 07:56:48 rensink Exp $
  */
 package groove.trans;
 
@@ -34,7 +34,7 @@ import groove.rel.VarNodeEdgeMap;
  * The event does not store information specific to the host graph. To apply it to 
  * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2007-10-01 21:53:08 $
+ * @version $Revision: 1.15 $ $Date: 2007-10-07 07:56:48 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -115,14 +115,29 @@ public interface RuleEvent extends Comparable<RuleEvent> {
     
     /**
 	 * Indicates if a matching of this event's rule exists, based on the anchor map in this event.
+	 * @deprecated Use {@link #hasMatch(Graph)} instead
 	 */
+    @Deprecated
 	public boolean hasMatching(Graph source);
+
+	/**
+	 * Indicates if a matching of this event's rule exists, based on the anchor map in this event.
+	 */
+	public boolean hasMatch(Graph source);
 
     /**
 	 * Returns a matching of this event's rule, based on the anchor map in this event, if a matching exists.
 	 * Returns <code>null</code> otherwise.
+	 * @deprecated use {@link #getMatch(Graph)} instead
 	 */
+	@Deprecated
 	public Morphism getMatching(Graph source);
+
+    /**
+	 * Returns a match of this event's rule, based on the anchor map in this event.
+	 * Returns <code>null</code> if no match exists.
+	 */
+	public RuleMatch getMatch(Graph source);
 
     /** 
      * Tests if this event conflicts with another,
@@ -136,7 +151,7 @@ public interface RuleEvent extends Comparable<RuleEvent> {
     /**
      * Factory method to create a rule application on a given source graph.
      * The method does <i>not</i> check if the event is actually applicable to the host graph;
-     * for that, use {@link #hasMatching(Graph)} first.
+     * for that, use {@link #hasMatch(Graph)} first.
      */
     public RuleApplication newApplication(Graph source);
 

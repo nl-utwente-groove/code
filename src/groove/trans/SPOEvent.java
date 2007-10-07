@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.45 2007-10-06 11:27:50 rensink Exp $
+ * $Id: SPOEvent.java,v 1.46 2007-10-07 07:56:47 rensink Exp $
  */
 package groove.trans;
 
@@ -21,7 +21,6 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.GraphShape;
 import groove.graph.MergeMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
@@ -48,34 +47,39 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Class representing an instance of a {@link groove.trans.SPORule} for a given
+ * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.45 $ $Date: 2007-10-06 11:27:50 $
+ * @version $Revision: 1.46 $ $Date: 2007-10-07 07:56:47 $
  */
 public class SPOEvent extends AbstractEvent<SPORule> {
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
+     * A further parameter determines whether information should be stored for reuse.
+     * This constructor is only meant for rules without co-roots map.
      * @param rule the production rule involved
-     * @param anchorMap the match of the rule's LHS elements to the host graph
+     * @param anchorMap the match of the rule's anchors to the host graph
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
+     * @param reuse if <code>true</code>, the event should store diverse data structures to optimise for reuse
      */
-    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory) {
-    	this(rule, anchorMap, nodeFactory, true);
+    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
+    	this(rule, anchorMap, null, nodeFactory, reuse);
     }
 
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
      * A further parameter determines whether information should be stored for reuse.
      * @param rule the production rule involved
-     * @param anchorMap the match of the rule's LHS elements to the host graph
+     * @param anchorMap map from the rule's LHS elements to the host graph
+     * @param coContextMap map from the rule's co-roots to the host graph
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      * @param reuse if <code>true</code>, the event should store diverse data structures to optimise for reuse
      */
-    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
+    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, VarNodeEdgeMap coContextMap, NodeFactory nodeFactory, boolean reuse) {
     	super(rule);
     	rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
+        this.coContextMap = coContextMap;
     	this.nodeFactory = nodeFactory;
     	this.reuse = reuse;
     }
@@ -183,6 +187,9 @@ public class SPOEvent extends AbstractEvent<SPORule> {
 			}
 			result.putNode(creatorKey, creatorValue);
 		}
+		for (Map.Entry<Node,Node> coRootEntry: getRule().getCoRootMap().nodeMap().entrySet()) {
+			result.putNode(coRootEntry.getValue(), coContextMap.getNode(coRootEntry.getKey()));
+		}
 		// add variable images
 		for (String var: getRule().getCreatorVars()) {
 			result.putVar(var, anchorMap.getVar(var));
@@ -206,7 +213,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
     /**
      * Callback method to compute the hash code.
      */
-    protected int computeHashCode() {
+    private int computeHashCode() {
     	reporter.start(HASHCODE);
         int result = getRule().hashCode();
         // we don't use getAnchorImage() because the events are often
@@ -252,7 +259,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      * Tests if the rules of two rule applications coincide.
      * Callback method from {@link #equals(Object)}.
      */
-    protected boolean equalsRule(RuleEvent other) {
+    private boolean equalsRule(RuleEvent other) {
         return getRule().equals(other.getRule());
     }
     
@@ -260,7 +267,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      * Tests if anchor images of two rule applications coincide.
      * Callback method from {@link #equals(Object)}.
      */
-    protected boolean equalsAnchorImage(SPOEvent other) {
+    private boolean equalsAnchorImage(SPOEvent other) {
 //        boolean result = true;
 //        Element[] anchorImage = getAnchorImage();
 //        Element[] otherAnchorImage = other.getAnchorImage();
@@ -278,19 +285,26 @@ public class SPOEvent extends AbstractEvent<SPORule> {
 	    return result.toString();
 	}
 
-	/**
-     * Computes a matching to a given graph,
-     * based on the precomputed anchor map.
-     * Returns <code>null</code> if a matching does not exist.
-     */
+	@Deprecated
     public Morphism getMatching(Graph host) {
     	Morphism result = null;
+    	RuleMatch match = getMatch(host);
+    	if (match != null) {
+    		result = new DefaultMorphism(getRule().getTarget(), host, match.getElementMap());
+        }
+        return result;
+    }
+
+	/**
+     * Computes a match based on the precomputed anchor map.
+     */
+    public RuleMatch getMatch(Graph host) {
+    	RuleMatch result = null;
         if (isCorrectFor(host)) {
     		Iterator<VarNodeEdgeMap> eventMatchMapIter = getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
         	Iterator<RuleMatch> matchIter = getRule().getMatchIter(host, eventMatchMapIter);
         	if (matchIter.hasNext()) {
-                RuleMatch match = matchIter.next();
-                result = new DefaultMorphism(getRule().getTarget(), host, match.getElementMap());
+        		result = matchIter.next();
         	}
         }
         return result;
@@ -301,8 +315,20 @@ public class SPOEvent extends AbstractEvent<SPORule> {
 	 * matching may fail to exist because the anchor map does not map into the
 	 * host graph, or because conditions outside the anchor map are not
 	 * fulfilled.
+	 * @deprecated Use {@link #hasMatch(Graph)} instead
 	 */
+    @Deprecated
 	public boolean hasMatching(Graph host) {
+		return hasMatch(host);
+	}
+
+	/**
+	 * Tests if there is a matching of this event to a given host graph. A
+	 * matching may fail to exist because the anchor map does not map into the
+	 * host graph, or because conditions outside the anchor map are not
+	 * fulfilled.
+	 */
+	public boolean hasMatch(Graph host) {
         if (isCorrectFor(host)) {
         	Iterator<VarNodeEdgeMap> eventMatchMapIter = getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
         	return getRule().getMatchIter(host, eventMatchMapIter).hasNext();
@@ -347,40 +373,29 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      * @param host the graph to be tested
      * @return <code>true</code> if the anchor map images are all in <code>host</code>
      */
-    protected boolean isCorrectFor(Graph host) {
+    private boolean isCorrectFor(Graph host) {
         reporter.start(GET_PARTIAL_MATCH);
         VarNodeEdgeMap anchorMap = getAnchorMap();
         boolean correct = true;
         Iterator<Edge> edgeImageIter = anchorMap.edgeMap().values().iterator();
         while (correct && edgeImageIter.hasNext()) {
-            correct = virtuallyContains(host, edgeImageIter.next());
+            correct = host.containsElement(edgeImageIter.next());
         }
         if (correct) {
             Iterator<Node> nodeImageIter = anchorMap.nodeMap().values().iterator();
             while (correct && nodeImageIter.hasNext()) {
-                correct = virtuallyContains(host, nodeImageIter.next());
+            	Node nodeImage = nodeImageIter.next();
+                correct = nodeImage instanceof ValueNode || host.containsElement(nodeImage);
             }
         }
         reporter.stop();
         return correct;
     }
 
-	/** 
-	 * Tests if a graph contains a given element, 
-	 * either explicitly (through {@link GraphShape#containsElement(Element)}) 
-	 * or implicitly (because it is a {@link ValueNode}). 
-	 */
-	protected boolean virtuallyContains(Graph graph, Element element) {
-		return element instanceof ValueNode || graph.containsElement(element);
-	}
-	
     /**
      * Returns the set of source elements that form the anchor image.
      */
-    protected Element[] getAnchorImage() {
-//        if (anchorImage == null) {
-//            anchorImage = computeAnchorImage();
-//        }
+    private Element[] getAnchorImage() {
         return anchorImage;
     }
     
@@ -388,7 +403,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      * Callback method to lazily compute 
      * the set of source elements that form the anchor image.
      */
-    protected Element[] computeAnchorImage(VarNodeEdgeMap anchorMap) {
+    private Element[] computeAnchorImage(VarNodeEdgeMap anchorMap) {
     	reporter.start(GET_ANCHOR_IMAGE);
         Element[] anchor = getRule().anchor();
         int anchorSize = anchor.length;
@@ -404,18 +419,6 @@ public class SPOEvent extends AbstractEvent<SPORule> {
         return result;
     }
     
-    /**
-     * Returns the set of source elements that form the anchor image.
-     */
-    protected Set<Element> getAnchorImageSet() {
-        if (anchorImageSet == null) {
-        	NodeEdgeMap anchorMap = getAnchorMap();
-            anchorImageSet = new HashSet<Element>(anchorMap.nodeMap().values());
-            anchorImageSet.addAll(anchorMap.edgeMap().values());
-        }
-        return anchorImageSet;
-    }
-
     public boolean conflicts(RuleEvent other) {
     	boolean result;
     	if (other instanceof SPOEvent) {
@@ -462,6 +465,18 @@ public class SPOEvent extends AbstractEvent<SPORule> {
         }
         return result;
     }
+
+	/**
+	 * Returns the set of source elements that form the anchor image.
+	 */
+	private Set<Element> getAnchorImageSet() {
+	    if (anchorImageSet == null) {
+	    	NodeEdgeMap anchorMap = getAnchorMap();
+	        anchorImageSet = new HashSet<Element>(anchorMap.nodeMap().values());
+	        anchorImageSet.addAll(anchorMap.edgeMap().values());
+	    }
+	    return anchorImageSet;
+	}
 
 	/**
 	 * Returns the set of explicitly erased nodes, i.e., the images of the LHS
@@ -618,7 +633,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
 	 * Creates an array of lists to store the fresh nodes
 	 * created by this rule.
 	 */
-	protected List<List<Node>> createFreshNodeList() {
+	private List<List<Node>> createFreshNodeList() {
 		int creatorNodeCount = getRule().getCreatorNodes().length;
 		List<List<Node>> result = new ArrayList<List<Node>>();
         for (int i = 0; i < creatorNodeCount; i++) {
@@ -632,7 +647,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      * {@link #computeMergeMap()}.
      * @return a fresh instance of {@link MergeMap}
      */
-    protected MergeMap createMergeMap() {
+    private MergeMap createMergeMap() {
 		return new MergeMap();
 	}
     
@@ -641,7 +656,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      * {@link #computeCoanchorMap()}.
      * @return a fresh instance of {@link VarNodeEdgeHashMap}
      */
-    protected VarNodeEdgeMap createVarMap() {
+    private VarNodeEdgeMap createVarMap() {
     	return new VarNodeEdgeHashMap();
     }
 
@@ -751,10 +766,15 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      */
     private Reference<VarNodeEdgeMap> anchorMap;
     /**
-     * Mapping from selected RHS elements to target graph. 
-     * The comatch is constructed in the course of rule application.
+     * Mapping from selected RHS elements to host graph. 
+     * The coanchorMap is constructed in the course of rule application.
      */
     private VarNodeEdgeMap coanchorMap;
+    /**
+     * Mapping from RHS root elements to host graph. 
+     * The co-contextmap is provided at construction time, if the rule has co-roots.
+     */
+    private VarNodeEdgeMap coContextMap;
     /**
      * Minimal mapping from the source graph to target graph to reconstruct the underlying morphism. 
      * The merge map is constructed in the course of rule application.

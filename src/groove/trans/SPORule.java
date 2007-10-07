@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.37 2007-10-06 11:27:50 rensink Exp $
+ * $Id: SPORule.java,v 1.38 2007-10-07 07:56:47 rensink Exp $
  */
 package groove.trans;
 
@@ -51,7 +51,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.37 $
+ * @version $Revision: 1.38 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -68,18 +68,61 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
     
     /**
+     * Constructs a rule that is a sub-condition of another rule.
+     * The information should be completed lated by a call to {@link #setParent(Rule, int[], NodeEdgeMap)}.
      * @param morph the morphism on which this production is to be based
      * @param rootMap pattern map leading into the LHS
-     * @param coRootMap pattern map leading into the RHS
      * @param name the name of the new rule
      * @param properties the factory this rule used to instantiate related classes
      * @throws FormatException if the rule system properties do not concur with the rule itself
      */
-    public SPORule(Morphism morph, NodeEdgeMap rootMap, NodeEdgeMap coRootMap, RuleNameLabel name, SystemProperties properties) throws FormatException {
+    public SPORule(Morphism morph, NodeEdgeMap rootMap, RuleNameLabel name, SystemProperties properties) throws FormatException {
         super(morph.dom(), rootMap, name, properties);
         this.morphism = morph;
     	this.priority = DEFAULT_PRIORITY;
+    }
+    
+    /**
+     * Sets the parent rule of this rule, together with the nesting level
+     * and the co-root map.
+     * @param parent the parent rule for this rule; not <code>null</code>
+     * @param level nesting level of this rule within the condition tree
+     * @param coRootMap map from the RHS of <code>parent</code> to the RHS of this rule
+     */
+    public void setParent(Rule parent, int[] level, NodeEdgeMap coRootMap) {
+    	testFixed(false);
+    	assert parent.rhs().nodeSet().containsAll(coRootMap.nodeMap().keySet()); 
+    	assert this.rhs().nodeSet().containsAll(coRootMap.nodeMap().values()); 
+    	this.parent = parent;
+    	this.level = level;
     	this.coRootMap = coRootMap;
+    }
+    
+    /** 
+     * Returns the parent rule of this rule.
+     * The parent may be this rule itself. 
+     */
+    public Rule getParent() {
+    	if (parent == null) {
+        	testFixed(true);
+        	parent = this;
+    	}
+    	return parent;
+    }
+    
+    /** 
+     * Returns the nesting position of this rule in the rule hierarchy.
+     * Each array element indicates a next level of the tree; the value 
+     * is the order index within the level.
+     * Thus, an empty array indicates this is a top-level rule.
+     * Parent rule and level uniquely identify a rule.
+     */
+    public int[] getLevel() {
+    	if (level == null) {
+    		testFixed(true);
+    		level = new int[0];
+    	}
+    	return level;
     }
     
     /**
@@ -169,7 +212,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * @return <code>true</code> if <code>matchMap</code> satisfies the constraints imposed
 	 * by the rule (if any).
 	 */
-	protected boolean isValidMatchMap(Graph host, VarNodeEdgeMap matchMap) {
+	private boolean isValidMatchMap(Graph host, VarNodeEdgeMap matchMap) {
 		boolean result = true;
 		if (SystemProperties.isCheckDangling(getProperties())) {
 			result = satisfiesDangling(host, matchMap);
@@ -255,9 +298,42 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         return res;
     }
     
-    /** Compares two rules on the basis of their names. */
-    public int compareTo(Rule o) {
-        return getName().compareTo(o.getName());
+    /** 
+     * Compares two rules on the basis of their nesting level,
+     * or failing that, their names. 
+     */
+    public int compareTo(Rule other) {
+    	int result = 0;
+    	if (!(other instanceof SPORule)) {
+        	// SPO rules come before others
+    		result = -1;
+    	}
+    	if (result == 0) {
+        	// compare parent rules
+    		Rule otherParent = ((SPORule) other).getParent();
+			if (equals(getParent())) {
+				other = otherParent;
+			} else {
+				result = getParent().compareTo(otherParent);
+			}
+    	}
+    	if (result == 0) {
+        	// compare levels
+			int[] level = getLevel();
+			int[] otherLevel = ((SPORule) other).getLevel();
+			for (int depth = 0; result == 0 && depth < level.length; depth++) {
+				if (depth == otherLevel.length) {
+					result = -1;
+				} else {
+					result = level[depth] - otherLevel[depth];
+				}
+			}
+		}
+    	if (result == 0 && !equals(other)) {
+    		// we have to rely on names, so they'd better be non-null
+    		result = getName().compareTo(other.getName());
+    	}
+    	return result;
     }
 
     // ------------------- commands --------------------------
@@ -317,6 +393,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
 	/** Computes the array of nodes isolated in the left hand side. */
 	private Node[] computeIsolatedNodes() {
+		testFixed(true);
 		Set<Node> result = new HashSet<Node>();
 		for (Node node: lhs().nodeSet()) {
 			if (lhs().edgeSet(node).isEmpty()) {
@@ -354,6 +431,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * Computes the eraser (i.e., LHS-only) edges.
 	 */
 	private Edge[] computeEraserEdges() {
+		testFixed(true);
 	    Set<Edge> eraserEdgeSet = new HashSet<Edge>(lhs().edgeSet());
 	    eraserEdgeSet.removeAll(getMorphism().edgeMap().keySet());
 	    eraserEdgeSet.removeAll(getRootMap().edgeMap().values());
@@ -395,7 +473,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * Computes the eraser (i.e., lhs-only) nodes.
 	 */
 	private Node[] computeEraserNodes() {
-		// construct lhsOnlyNodes
+		testFixed(true);
 	    Set<Node> eraserNodeSet = new HashSet<Node>(lhs().nodeSet());
 	    eraserNodeSet.removeAll(getMorphism().nodeMap().keySet());
 	    eraserNodeSet.removeAll(getRootMap().nodeMap().values());
@@ -415,6 +493,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
 	NodeEdgeMap getCoRootMap() {
 		if (coRootMap == null) {
+			testFixed(true);
 			coRootMap = new NodeEdgeHashMap();
 		}
 		return coRootMap;
@@ -601,6 +680,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * to the LHS node it is merged with.
 	 */
 	private Map<Node, Node> computeMergeMap() {
+		testFixed(true);
 		Map<Node,Node> result = new HashMap<Node,Node>();
 		Map<Node,Node> rhsToLhsMap = new HashMap<Node,Node>();
 		for (Map.Entry<Node,Node> nodeEntry: getMorphism().elementMap().nodeMap().entrySet()) {
@@ -665,6 +745,13 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 		return result;
 	}
 
+	/** 
+	 * The parent rule of this rule; may be <code>null</code>, if this
+	 * is a top-level rule.
+	 */
+	private Rule parent;
+	/** The nesting level of this rule. */
+	private int[] level;
 	/**
      * Indicates if this rule has creator edges or nodes.
      * @invariant <tt>hasCreators == ! ruleMorph.isSurjective()</tt>

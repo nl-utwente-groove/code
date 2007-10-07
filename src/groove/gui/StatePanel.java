@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StatePanel.java,v 1.24 2007-10-01 14:48:16 rensink Exp $
+ * $Id: StatePanel.java,v 1.25 2007-10-07 07:56:35 rensink Exp $
  */
 package groove.gui;
 
@@ -37,6 +37,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.trans.NameLabel;
+import groove.trans.RuleMatch;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
 import groove.view.AspectualGraphView;
@@ -60,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -168,7 +169,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      * Emphasis is by fat lines.
      */
     public synchronized void setTransitionUpdate(GraphTransition trans) {
-        jGraph.getLabelList().clearSelection();
+//        jGraph.getLabelList().clearSelection();
         Set<Element> emphElems = new HashSet<Element>();
         if (selectedTransition != trans) {
             selectedTransition = trans;
@@ -179,14 +180,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
                 jGraph.setModel(getStateJModel(trans.source()));
             }
             // now emphasize at will
-            Morphism match = selectedTransition.matching();
+            RuleMatch match = selectedTransition.getMatch();
             assert match != null: "Transition "+selectedTransition+" should have valid matching";
-            assert match.nodeMap() != null : "Matching "+match+" has no node map";
-            for (Node matchedNode: match.nodeMap().values()) {
+            for (Node matchedNode: match.getNodeValues()) {
                 emphElems.add(matchedNode);
             }
-            assert match.edgeMap() != null : "Matching "+match+" has no edge map";
-            for (Edge matchedEdge: match.edgeMap().values()) {
+            for (Edge matchedEdge: match.getEdgeValues()) {
                 emphElems.add(matchedEdge);
             }
             if (!emphElems.isEmpty()) {
@@ -213,7 +212,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         GraphState newState = transition.target();
         GraphJModel newModel = getStateJModel(newState);
         GraphState oldState = transition.source();
-        Morphism morphism = transition.morphism();
+        Morphism morphism = transition.getMorphism();
         copyLayout(getStateJModel(oldState), newModel, morphism);
         // set the graph model to the new state
         jGraph.setModel(newModel);
@@ -273,12 +272,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 		// try to find layout information for the model
 		if (state instanceof GraphNextState) {
 			GraphState oldState = ((GraphNextState) state).source();
-			Morphism morphism = ((GraphNextState) state).morphism();
+			Morphism morphism = ((GraphNextState) state).getMorphism();
 			// walk back along the derivation chain to find one for
 			// which we have a state model (and hence layout information)
 			while (!stateJModelMap.containsKey(oldState)
 					&& oldState instanceof GraphNextState) {
-		        morphism = ((GraphNextState) oldState).morphism().then(morphism);
+		        morphism = ((GraphNextState) oldState).getMorphism().then(morphism);
 				oldState = ((GraphNextState) oldState).source();
 			}
 			GraphJModel oldJModel = getStateJModel(oldState);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.17 2007-05-29 21:36:07 rensink Exp $
+ * $Id: JModel.java,v 1.18 2007-10-07 07:56:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -61,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -459,8 +459,8 @@ abstract public class JModel extends DefaultGraphModel {
     }
 
     /**
-     * Sets the set of emphasized jcells. First de-emphasizes the currently emphasized cells.
-     * @param jCellSet the set of jcells to be emphasized. Should not be <tt>null</tt>.
+     * Sets the set of emphasised jcells. 
+     * @param jCellSet the set of jcells to be emphasised. Should not be <tt>null</tt>.
      */
     public void setEmphasized(Set<JCell> jCellSet) {
         Set<JCell> changedEmphJCells = new HashSet<JCell>(emphJCells);
@@ -469,23 +469,9 @@ abstract public class JModel extends DefaultGraphModel {
         emphJCells.addAll(jCellSet);
         refresh(changedEmphJCells);
     }
-//
-//    /**
-//     * Changes the emphasis of a set of jcells.
-//     * @param jCellSet the cet of cells to change
-//     * @param emph a switch determining whether the cells are to be emphasized or deemphasized
-//     */
-//    public void changeEmphasized(Set<JCell> jCellSet, boolean emph) {
-//        if (emph) {
-//            emphJCells.addAll(jCellSet);
-//        } else {
-//            emphJCells.removeAll(jCellSet);
-//        }
-//        refresh(jCellSet);
-//    }
 
     /**
-     * Clears the currently emphasized nodes.
+     * Clears the currently emphasised nodes.
      */
     public void clearEmphasized() {
         Set<JCell> oldEmphSet = new HashSet<JCell>(emphJCells);
@@ -680,7 +666,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.17 $
+     * @version $Revision: 1.18 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**
