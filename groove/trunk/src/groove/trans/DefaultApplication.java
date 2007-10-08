@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultApplication.java,v 1.6 2007-10-08 00:59:20 rensink Exp $
+ * $Id: DefaultApplication.java,v 1.7 2007-10-08 12:17:34 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.6 $ $Date: 2007-10-08 00:59:20 $
+ * @version $Revision: 1.7 $ $Date: 2007-10-08 12:17:34 $
  */
 public class DefaultApplication implements RuleApplication, Derivation {
     /**
@@ -68,8 +68,10 @@ public class DefaultApplication implements RuleApplication, Derivation {
         this.coanchorImage = coanchorImage;
         if (event instanceof SPOEvent) {
         	this.anchorMap = ((SPOEvent) event).getAnchorMap();
+            assert event.hasMatch(source): String.format("Rule event %s has no matching in %s", event, AbstractGraph.toString(source));
+        } else {
+            assert event instanceof CompositeEvent && ((CompositeEvent) event).hasSubMatches(source): String.format("Composite event %s has no matching in %s", event, AbstractGraph.toString(source));
         }
-        assert event.hasMatch(source): String.format("Rule event %s has no matching in %s", event, AbstractGraph.toString(source));
     }
 
     public Graph getSource() {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RulePanel.java,v 1.17 2007-10-01 21:53:16 rensink Exp $
+ * $Id: RulePanel.java,v 1.18 2007-10-08 12:17:55 rensink Exp $
  */
 package groove.gui;
 
@@ -29,6 +29,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
+import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
 import groove.trans.SPORule;
 import groove.util.Converter;
@@ -37,6 +38,8 @@ import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -45,7 +48,7 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -154,10 +157,10 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
     		text.append("Rule ");
     		text.append(Converter.STRONG_TAG.on(view.getNameLabel().name()));
 			try {
-				groove.trans.Rule rule = view.toRule();
+				Rule rule = view.toRule();
 				if (rule instanceof SPORule && getOptionsItem(SHOW_ANCHORS_OPTION).isSelected()) {
 					text.append(", anchor ");
-					text.append(Groove.toString(((SPORule) rule).anchor(), "(", ")", ","));
+					text.append(getAnchorString((SPORule) rule));
 				}
 			} catch (FormatException exc) {
 				// don't add the anchor
@@ -171,6 +174,19 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
     		text.append(INITIAL_FRAME_NAME);
     	}
     	return Converter.HTML_TAG.on(text).toString();
+    }
+    
+    /** Returns a string description of the anchors of a given rule. */
+    private String getAnchorString(SPORule rule) {
+    	if (rule.getSubRules(false).isEmpty()) {
+    		return Groove.toString(rule.anchor(), "(", ")", ",");
+    	} else {
+        	List<String> result = new ArrayList<String>();
+        	for (SPORule subRule: rule.getSubRules(true)) {
+        		result.add(subRule.getName().name()+Groove.toString(subRule.anchor(), "(", ")", ","));
+        	}
+        	return Groove.toString(result.toArray());
+    	}
     }
 
     /**

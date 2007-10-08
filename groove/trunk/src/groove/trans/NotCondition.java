@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NotCondition.java,v 1.4 2007-10-08 00:59:20 rensink Exp $
+ * $Id: NotCondition.java,v 1.5 2007-10-08 12:17:34 rensink Exp $
  */
 package groove.trans;
 
@@ -57,7 +57,7 @@ public class NotCondition extends AbstractCondition<CompositeMatch> {
     }
 
 	@Override
-    Iterator<CompositeMatch> getMatchIter(final Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
+    Iterator<CompositeMatch> computeMatchIter(final Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Iterator<CompositeMatch> result = null;
         if (matchMapIter.hasNext()) {
         	result = Collections.<CompositeMatch>emptySet().iterator();

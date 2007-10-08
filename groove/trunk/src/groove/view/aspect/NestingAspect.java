@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.4 2007-10-08 00:59:25 rensink Exp $
+ * $Id: NestingAspect.java,v 1.5 2007-10-08 12:17:49 rensink Exp $
  */
 package groove.view.aspect;
 
+import groove.view.DefaultLabelParser;
 import groove.view.FormatException;
 
 import java.util.HashSet;
@@ -26,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.4 $ $Date: 2007-10-08 00:59:25 $
+ * @version 0.1 $Revision: 1.5 $ $Date: 2007-10-08 12:17:49 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -89,7 +90,7 @@ public class NestingAspect extends AbstractAspect {
 	 */
 	public static boolean isLevelEdge(AspectEdge element) {
 		AspectValue value = getNestingValue(element);
-		return value != null && value.equals(LEVEL_EDGE);
+		return value != null && value.equals(NESTED) && element.label().text().equals(AT_LABEL);
 	}
 	
 	/**
@@ -97,7 +98,7 @@ public class NestingAspect extends AbstractAspect {
 	 */
 	public static boolean isParentEdge(AspectEdge element) {
 		AspectValue value = getNestingValue(element);
-		return value != null && value.equals(PARENT_EDGE);
+		return value != null && value.equals(NESTED) && element.label().text().equals(IN_LABEL);
 	}	
 
 	/**
@@ -116,12 +117,9 @@ public class NestingAspect extends AbstractAspect {
 	
 	/** Returns the name of a nesting level identified by a given aspect element. */
 	public static String getLevelName(AspectElement element) {
-		NestingAspectValue value = (NestingAspectValue) getNestingValue(element);
-		return value != null ? (value.getContent()) : null;
+		AspectValue value = getNestingValue(element);
+		return value instanceof NestingAspectValue ? ((NestingAspectValue) value).getContent() : null;
 	}
-	
-	/** Separator for level strings */
-	public static final char LEVEL_SEPARATOR = '.';
 	
 	/** The name of the nesting aspect */
 	public static final String NESTING_ASPECT_NAME = "nesting";
@@ -134,8 +132,8 @@ public class NestingAspect extends AbstractAspect {
 	/** Name of a nesting edge aspect */
 	public static final String PARENT_EDGE_NAME = "parent";
 	/** The NAC aspect value */
-	public static final String LEVEL_EDGE_NAME = "level";
-	/** Name of the generic nesting edge aspect value. */
+//	public static final String LEVEL_EDGE_NAME = "level";
+//	/** Name of the generic nesting edge aspect value. */
 	public static final String NESTED_NAME = "nested";
 	/** The set of aspect value names that are content values. */
 	private static final Set<String> contentValues;
@@ -153,10 +151,10 @@ public class NestingAspect extends AbstractAspect {
 	public static final AspectValue EXISTS;
 	/** The forall aspect value */
 	public static final AspectValue FORALL;
-	/** Parent edge aspect value */
-	public static final AspectValue PARENT_EDGE;
-	/** Name of a level allocation edge aspect */
-	public static final AspectValue LEVEL_EDGE;
+//	/** Parent edge aspect value */
+//	public static final AspectValue PARENT_EDGE;
+//	/** Name of a level allocation edge aspect */
+//	public static final AspectValue LEVEL_EDGE;
 	/** Nested edge aspect value. */
 	public static final AspectValue NESTED;
 	
@@ -168,12 +166,42 @@ public class NestingAspect extends AbstractAspect {
 			EXISTS = instance.addValue(EXISTS_NAME);
 			NAC = instance.addValue(NAC_NAME);
 			FORALL = instance.addValue(FORALL_NAME);
-			PARENT_EDGE = instance.addEdgeValue(PARENT_EDGE_NAME);
-			LEVEL_EDGE = instance.addEdgeValue(LEVEL_EDGE_NAME);
+//			PARENT_EDGE = instance.addEdgeValue(PARENT_EDGE_NAME);
+//			LEVEL_EDGE = instance.addEdgeValue(LEVEL_EDGE_NAME);
 			NESTED = instance.addEdgeValue(NESTED_NAME);
 		} catch( FormatException exc ) {
 			throw new Error("Aspect '" + NESTING_ASPECT_NAME
 					+ "' cannot be initialised due to name conflict", exc);
+		}
+	}
+	
+	/** Label used for parent edges (between meta-nodes). */
+	public static final String IN_LABEL = "in";
+	/** Label used for level edges (from rule nodes to meta-nodes). */
+	public static final String AT_LABEL = "at";
+	/** Label used for the to-level meta-node. */
+	public static final String TOP_LABEL = "top";
+	/** The set of all allowed nesting labels. */
+	private static final Set<String> ALLOWED_LABELS = new HashSet<String>();
+	
+	static {
+		ALLOWED_LABELS.add(IN_LABEL);
+		ALLOWED_LABELS.add(AT_LABEL);
+		ALLOWED_LABELS.add(TOP_LABEL);
+		NESTED.setLabelParser(new NestingLabelParser());
+	}
+	
+	/** 
+	 * Class that attempts to parse a string as the operation of a given
+	 * algebra, and returns the result as a DefaultLabel if successful.
+	 */
+	private static class NestingLabelParser extends DefaultLabelParser {
+        /** This implementation tests if the text corresponds to an operation of the associated algebra. */
+        @Override
+		protected void testFormat(String text) throws FormatException {
+        	if (!ALLOWED_LABELS.contains(text)) {
+        		throw new FormatException("Label %s on nesting edge should be one of %s", text, ALLOWED_LABELS);
+        	}
 		}
 	}
 }

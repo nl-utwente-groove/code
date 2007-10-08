@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeEvent.java,v 1.3 2007-10-08 00:59:19 rensink Exp $
+ * $Id: CompositeEvent.java,v 1.4 2007-10-08 12:17:34 rensink Exp $
  */
 package groove.trans;
 
@@ -22,28 +22,32 @@ import groove.graph.MergeMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.rel.VarNodeEdgeMap;
+import groove.util.CacheReference;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
+import java.util.TreeSet;
 
 /**
  * Rule event consisting of a set of events.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CompositeEvent extends AbstractEvent<Rule> {
+public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.EventCache> {
     /** Creates a new event on the basis of a given event set. */
     public CompositeEvent(Rule rule, SortedSet<SPOEvent> eventSet) {
-    	super(rule);
-        this.eventSet = eventSet;
+    	super(reference, rule);
+    	this.eventArray = new SPOEvent[eventSet.size()];
+        eventSet.toArray(this.eventArray);
     }
 
     public boolean conflicts(RuleEvent other) {
-        for (RuleEvent event: eventSet) {
+        for (RuleEvent event: eventArray) {
             if (event.conflicts(other)) {
                 return true;
             }
@@ -52,12 +56,12 @@ public class CompositeEvent extends AbstractEvent<Rule> {
     }
 
     public String getAnchorImageString() {
-        return "";
+        return Arrays.toString(eventArray);
     }
 
     public List<Node> getCreatedNodes(Set<? extends Node> hostNodes) {
     	List<Node> result = new ArrayList<Node>();
-    	for (RuleEvent event: getEventSet()) {
+    	for (RuleEvent event: eventArray) {
     		result.addAll(event.getCreatedNodes(hostNodes));
     	}
     	return result;
@@ -65,7 +69,7 @@ public class CompositeEvent extends AbstractEvent<Rule> {
 
     public Set<Node> getErasedNodes() {
         Set<Node> result = createNodeSet();
-        for (RuleEvent event: eventSet) {
+        for (RuleEvent event: eventArray) {
             result.addAll(event.getErasedNodes());
         }
         return result;
@@ -80,7 +84,7 @@ public class CompositeEvent extends AbstractEvent<Rule> {
     	// the events are ordered according to rule level
     	// so we can build a stack of corresponding matches
     	Stack<RuleMatch> matchStack = new Stack<RuleMatch>();
-    	for (SPOEvent event: getEventSet()) {
+    	for (SPOEvent event: eventArray) {
     		RuleMatch match = new RuleMatch(event.getRule(), event.getMatch(source).getElementMap());
     		int[] eventLevel = event.getRule().getLevel();
     		int eventDepth = eventLevel.length;
@@ -104,7 +108,7 @@ public class CompositeEvent extends AbstractEvent<Rule> {
 
 	public MergeMap getMergeMap() {
         MergeMap result = new MergeMap();
-        for (RuleEvent event: eventSet) {
+        for (RuleEvent event: eventArray) {
             result.putAll(event.getMergeMap());
         }
         return result;
@@ -117,7 +121,7 @@ public class CompositeEvent extends AbstractEvent<Rule> {
 
     public Set<Edge> getSimpleCreatedEdges() {
         Set<Edge> result = createEdgeSet();
-        for (RuleEvent event: eventSet) {
+        for (RuleEvent event: eventArray) {
             result.addAll(event.getSimpleCreatedEdges());
         }
         return result;
@@ -125,7 +129,7 @@ public class CompositeEvent extends AbstractEvent<Rule> {
 
 	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
         Set<Edge> result = createEdgeSet();
-        for (RuleEvent event: eventSet) {
+        for (RuleEvent event: eventArray) {
             result.addAll(event.getComplexCreatedEdges(createdNodes));
         }
         return result;
@@ -133,7 +137,7 @@ public class CompositeEvent extends AbstractEvent<Rule> {
 
 	public Set<Edge> getSimpleErasedEdges() {
         Set<Edge> result = createEdgeSet();
-        for (RuleEvent event: eventSet) {
+        for (RuleEvent event: eventArray) {
             result.addAll(event.getSimpleErasedEdges());
         }
         return result;
@@ -147,8 +151,21 @@ public class CompositeEvent extends AbstractEvent<Rule> {
 		return hasMatch(source);
 	}
 
+	/** 
+	 * This method always returns <code>false</code> because it is quite hard 
+	 * to check universally matched sub-events against a new graph, especially
+	 * since the universal information was lost in the conversion from rule match to rule event.
+	 */
 	public boolean hasMatch(Graph source) {
-        for (RuleEvent event: getEventSet()) {
+        return false;
+    }
+
+	/** 
+	 * Checks if the sub-events have matches in the given graph.
+	 * This is <code>not</code> sufficient to make sure that the event as a whole matches!
+	 */
+	boolean hasSubMatches(Graph source) {
+        for (RuleEvent event: eventArray) {
             if (!event.hasMatch(source)) {
                 return false;
             }
@@ -160,16 +177,19 @@ public class CompositeEvent extends AbstractEvent<Rule> {
     	int result = getRule().compareTo(other.getRule());
     	if (result == 0) {
     		// the same rule, so the other is also a composite event
-			Set<? extends RuleEvent> myEvents = getEventSet();
-			Set<? extends RuleEvent> otherEvents = ((CompositeEvent) other).getEventSet();
+			SPOEvent[] myEventArray = eventArray;
+			SPOEvent[] otherEventArray;
+			if (other instanceof CompositeEvent) {
+				otherEventArray = ((CompositeEvent) other).eventArray;
+			} else {
+				otherEventArray = new SPOEvent[] { (SPOEvent) other };
+			}
 			// more events = larger
-			result = myEvents.size() - otherEvents.size();
+			result = myEventArray.length - otherEventArray.length;
 			if (result == 0) {
 				// compare the individual events lexicographically
-				Iterator<? extends RuleEvent> myEventIter = myEvents.iterator();
-				Iterator<? extends RuleEvent> otherEventIter = otherEvents.iterator();
-				while (result == 0 && myEventIter.hasNext()) {
-					result = myEventIter.next().compareTo(otherEventIter.next());
+				for (int i = 0; result == 0 && i < myEventArray.length; i++) {
+					result = myEventArray[i].compareTo(otherEventArray[i]);
 				}
 			}
 		}
@@ -178,10 +198,9 @@ public class CompositeEvent extends AbstractEvent<Rule> {
 
     /** Returns the set of constituent events of this set event. */
     public Set<SPOEvent> getEventSet() {
-    	return eventSet;
+    	return getCache().getEventSet();
     }
     
-
     /**
      * The hash code is based on that of the rule and an initial fragment of the
      * anchor images.
@@ -198,7 +217,7 @@ public class CompositeEvent extends AbstractEvent<Rule> {
     }
 	
 	private int computeHashCode() {
-		return getEventSet().hashCode();
+		return Arrays.hashCode(eventArray);
 	}
     
     /**
@@ -212,26 +231,39 @@ public class CompositeEvent extends AbstractEvent<Rule> {
     	if (!(obj instanceof CompositeEvent)) {
     		return false;
     	}
-    	if (getEventSet().size() != ((CompositeEvent) obj).getEventSet().size()) {
-    		return false;
-    	}
-    	Iterator<SPOEvent> myEventIter = getEventSet().iterator();
-    	Iterator<SPOEvent> otherEventIter = ((CompositeEvent) obj).getEventSet().iterator();
-    	while (myEventIter.hasNext()) {
-    		if (!myEventIter.next().equals(otherEventIter.next())) {
-    			return false;
-    		}
-    	}
-    	return true;
+    	return Arrays.equals(eventArray, ((CompositeEvent) obj).eventArray);
     }
     
 	@Override
 	public String toString() {
-	    return eventSet.toString();
+	    return Arrays.toString(eventArray);
 	}
 	
-    /** The set of events constituting this event. */
-    private final SortedSet<SPOEvent> eventSet;
+    @Override
+	protected EventCache createCache() {
+		return new EventCache();
+	}
+
+	/** The set of events constituting this event. */
+    private final SPOEvent[] eventArray;
     /** The hash code of this event. */
     private int hashCode;
+    /** Cache reference instance for initialisation. */
+    static private final CacheReference<EventCache> reference = CacheReference.<EventCache>newInstance(false);
+    
+    private class EventCache {
+    	/** Reconstructs a set of events from the array stored in the composite event. */
+    	SortedSet<SPOEvent> getEventSet() {
+    		if (eventSet == null) {
+    			eventSet = new TreeSet<SPOEvent>(Arrays.asList(CompositeEvent.this.eventArray));
+    		}
+    		return eventSet;
+    	}
+    	
+    	void setEventSet(SortedSet<SPOEvent> eventSet) {
+    		this.eventSet = eventSet;
+    	}
+    	
+    	private SortedSet<SPOEvent> eventSet;
+    }
 }

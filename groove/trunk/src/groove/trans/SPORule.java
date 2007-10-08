@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.39 2007-10-08 00:59:20 rensink Exp $
+ * $Id: SPORule.java,v 1.40 2007-10-08 12:17:34 rensink Exp $
  */
 package groove.trans;
 
@@ -45,13 +45,14 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 /**
  * Default model of a graph production rule.
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.39 $
+ * @version $Revision: 1.40 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -69,7 +70,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     
     /**
      * Constructs a rule that is a sub-condition of another rule.
-     * The information should be completed lated by a call to {@link #setParent(Rule, int[])}.
+     * The information should be completed lated by a call to {@link #setParent(SPORule, int[])}.
      * @param morph the morphism on which this production is to be based
      * @param rootMap pattern map leading into the LHS
      * @param name the name of the new rule
@@ -81,7 +82,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         this.coRootMap = coRootMap;
         this.morphism = morph;
     	this.priority = DEFAULT_PRIORITY;
-    	assert this.rhs().nodeSet().containsAll(coRootMap.nodeMap().values()); 
+    	assert this.rhs().nodeSet().containsAll(coRootMap.nodeMap().values()) : String.format("RHS nodes %s do not contain all co-root values %s", rhs().nodeSet(), coRootMap.nodeMap().values()); 
     }
     
     /** Sets the priority of this rule. */
@@ -96,10 +97,10 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @param parent the parent rule for this rule; not <code>null</code>
      * @param level nesting level of this rule within the condition tree
      */
-    public void setParent(Rule parent, int[] level) {
+    public void setParent(SPORule parent, int[] level) {
     	testFixed(false);
     	assert coRootMap != null : String.format("Sub-rule at level %s must have a non-trivial co-root map", Arrays.toString(level));
-    	assert parent.rhs().nodeSet().containsAll(coRootMap.nodeMap().keySet()); 
+    	assert parent.rhs().nodeSet().containsAll(coRootMap.nodeMap().keySet()) : String.format("Parent nodes %s do not contain all co-roots %s", parent.rhs().nodeSet(), coRootMap.nodeMap().keySet()); 
     	this.parent = parent;
     	this.level = level;
     }
@@ -108,12 +109,21 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * Returns the parent rule of this rule.
      * The parent may be this rule itself. 
      */
-    public Rule getParent() {
+    public SPORule getParent() {
     	if (parent == null) {
         	testFixed(true);
         	parent = this;
     	}
     	return parent;
+    }
+    
+    /** Returns the top rule of the hierarchy in which this rule is nested. */
+    public SPORule getTop() {
+    	if (getParent() == this) {
+    		return this;
+    	} else {
+    		return getParent().getTop();
+    	}
     }
     
     /** 
@@ -129,6 +139,50 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     		level = new int[0];
     	}
     	return level;
+    }
+    
+    /** 
+     * Returns the direct sub-rules of this rule, or the entire rule hierarchy.
+     * @param recursive if <code>true</code>, returns the entire rule hierarch (including this rule);
+     * otherwise, only returns the direct sub-rules.
+     */
+    public Collection<SPORule> getSubRules(boolean recursive) {
+    	Collection<SPORule> result = new TreeSet<SPORule>();
+    	if (recursive) {
+    		result.add(this);
+    	}
+    	for (SPORule subRule: getDirectSubRules()) {
+    		result.add(subRule);
+    		if (recursive) {
+    			result.addAll(subRule.getSubRules(true));
+    		}
+    	}
+    	return result;
+    }
+    
+    /**
+     * Indicates if this rule has sub-rules.
+     */
+    public boolean hasSubRules() {
+    	return !getDirectSubRules().isEmpty();
+    }
+    
+    /** 
+     * Returns the direct sub-rules of this rule,
+     * i.e., the sub-rules that have this rule as their parent.
+     */
+    private Collection<SPORule> getDirectSubRules() {
+    	if (directSubRules == null) {
+    		directSubRules = new TreeSet<SPORule>();
+        	for (AbstractCondition<?> condition: getSubConditions()) {
+        		for (AbstractCondition<?> subCondition: condition.getSubConditions()) {
+        			assert subCondition instanceof SPORule : String.format("Sub-sub-condition %s is not a rule", subCondition.getName());
+        			SPORule subRule = (SPORule) subCondition;
+        			directSubRules.add(subRule);
+        		}
+        	}
+    	}
+    	return directSubRules;
     }
     
     /**
@@ -163,7 +217,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
 	@Override
-    public Iterator<RuleMatch> getMatchIter(final Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
+    public Iterator<RuleMatch> computeMatchIter(final Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Iterator<RuleMatch> result = null;
         result = new NestedIterator<RuleMatch>(new TransformIterator<VarNodeEdgeMap,Iterator<RuleMatch>>(matchMapIter) {
         	@Override
@@ -266,17 +320,49 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
 	public Element[] anchor() {
         if (anchor == null) {
-            anchor = computeAnchor();
+            getTop().setAnchor(null);
         }
         return anchor;
     }
 
+	/** 
+	 * Sets the anchor of this rule recursively.
+	 * Anchors of sub-rules that have roots in this rule are added.
+	 * @param parentAnchor the collection of anchors from the parent rule; may be <code>null</code>
+	 * if this rule is the top rule.
+	 */
+	private void setAnchor(Collection<Element> parentAnchor) {
+		Collection<Element> myAnchor = new TreeSet<Element>(Arrays.asList(computeNestedAnchor()));
+		for (SPORule subRule: getSubRules(false)) {
+			subRule.setAnchor(myAnchor);
+		}
+		if (parentAnchor != null) {
+			for (Map.Entry<Node, Node> rootNodeEntry : getRootMap().nodeMap().entrySet()) {
+				// TODO the following selects a node in the universal condition, not the parent rule!
+				// This goes right because node identities are actually the same, but...
+				Node myNode = rootNodeEntry.getValue();
+				Node parentNode = rootNodeEntry.getKey();
+				if (myAnchor.contains(myNode) && getParent().lhs().containsElement(parentNode)) {
+					parentAnchor.add(parentNode);
+				}
+			}
+			for (Map.Entry<Edge, Edge> rootEdgeEntry : getRootMap().edgeMap().entrySet()) {
+				Edge myEdge = rootEdgeEntry.getValue();
+				Edge parentEdge = rootEdgeEntry.getKey();
+				if (myAnchor.contains(myEdge) && getParent().lhs().containsElement(parentEdge)) {
+					parentAnchor.add(parentEdge);
+				}
+			}
+		}
+		this.anchor = myAnchor.toArray(new Element[0]);
+	}
+	
 	/**
 	 * Callback method creating the anchors of this rule.
 	 * Called from the constructor.
 	 * This implementation delegates to {@link #getAnchorFactory()}.
 	 */
-	protected Element[] computeAnchor() {
+	private Element[] computeNestedAnchor() {
 	    return anchorFactory.newAnchors(this);
 	}
 
@@ -287,7 +373,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
 	@Override
     public String toString() {
-        StringBuilder res = new StringBuilder(String.format("Rule %s, level %s%n", getName(), Arrays.toString(getLevel())));
+        StringBuilder res = new StringBuilder(String.format("Rule %s, level %s, anchor %s%n", getName(), Groove.toString(Groove.toArray(getLevel())), Groove.toString(anchor())));
         res.append(String.format("LHS: %s%nRHS: %s%nMap: %s", lhs(), rhs(), getMorphism().elementMap()));
         if (!getRootMap().isEmpty()) {
         	res.append(String.format("%nRoot map: %s", getRootMap()));
@@ -834,7 +920,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * The parent rule of this rule; may be <code>null</code>, if this
 	 * is a top-level rule.
 	 */
-	private Rule parent;
+	private SPORule parent;
+	/** 
+	 * The collection of direct sub-rules of this rules.
+	 * Lazily created by {@link #getDirectSubRules()}.
+	 */
+	private Collection<SPORule> directSubRules;
 	/** The nesting level of this rule. */
 	private int[] level;
 	/**
