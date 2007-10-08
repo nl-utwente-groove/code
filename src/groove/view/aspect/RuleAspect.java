@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.8 2007-10-02 11:59:25 rensink Exp $
+ * $Id: RuleAspect.java,v 1.9 2007-10-08 12:17:50 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -29,7 +29,7 @@ import groove.view.FormatException;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class RuleAspect extends AbstractAspect {
     /**
@@ -156,7 +156,7 @@ public class RuleAspect extends AbstractAspect {
 	 * value that equals {@link #EMBARGO}.
 	 */
 	public static boolean inNAC(AspectElement element) {
-		return (getRuleValue(element) == EMBARGO);
+		return hasRole(element) && (getRuleValue(element) == EMBARGO);
 	}
 
 	/**
@@ -168,7 +168,7 @@ public class RuleAspect extends AbstractAspect {
 	 * value that equals {@link #CREATOR}.
 	 */
 	public static boolean isCreator(AspectElement element) {
-		return getRuleValue(element) == CREATOR;
+		return hasRole(element) && getRuleValue(element) == CREATOR;
 	}
 
 	/**
@@ -178,7 +178,7 @@ public class RuleAspect extends AbstractAspect {
 	 */
 	public static boolean inRule(AspectElement elem) {
 		// JHK: Nesting Meta-nodes and edges are not in the rule
-		return (inLHS(elem) || inRHS(elem) || inNAC(elem));
+		return hasRole(elem) && (inLHS(elem) || inRHS(elem) || inNAC(elem));
 	}
 	
 	/**

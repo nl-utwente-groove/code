@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.46 2007-10-07 07:56:47 rensink Exp $
+ * $Id: SPOEvent.java,v 1.47 2007-10-08 12:17:34 rensink Exp $
  */
 package groove.trans;
 
@@ -30,6 +30,7 @@ import groove.graph.algebra.ValueNode;
 import groove.rel.RegExprLabel;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
+import groove.util.CacheReference;
 import groove.util.Groove;
 import groove.util.Reporter;
 
@@ -50,9 +51,9 @@ import java.util.Set;
  * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.46 $ $Date: 2007-10-07 07:56:47 $
+ * @version $Revision: 1.47 $ $Date: 2007-10-08 12:17:34 $
  */
-public class SPOEvent extends AbstractEvent<SPORule> {
+public class SPOEvent extends AbstractEvent<SPORule, Object> {
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
      * A further parameter determines whether information should be stored for reuse.
@@ -76,7 +77,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
      * @param reuse if <code>true</code>, the event should store diverse data structures to optimise for reuse
      */
     public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, VarNodeEdgeMap coContextMap, NodeFactory nodeFactory, boolean reuse) {
-    	super(rule);
+    	super(reference, rule);
     	rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
         this.coContextMap = coContextMap;
@@ -247,7 +248,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
     	} else if (obj instanceof SPOEvent) {
         	reporter.start(EQUALS);
         	SPOEvent other = (SPOEvent) obj;
-            result = equalsRule(other) && equalsAnchorImage(other);
+            result = equalsRule(other) && equalsAnchorImage(other) && equalsCoContextMap(other);
             reporter.stop();
         } else {
             result = false;
@@ -264,7 +265,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
     }
     
     /**
-     * Tests if anchor images of two rule applications coincide.
+     * Tests if anchor images of two rule events coincide.
      * Callback method from {@link #equals(Object)}.
      */
     private boolean equalsAnchorImage(SPOEvent other) {
@@ -276,6 +277,18 @@ public class SPOEvent extends AbstractEvent<SPORule> {
 //            result = anchorImage[i].equals(otherAnchorImage[i]);
 //        }
         return Arrays.equals(getAnchorImage(), other.getAnchorImage());
+    }
+    
+    /**
+     * Tests if co-context maps of two rule events coincide.
+     * Callback method from {@link #equals(Object)}.
+     */
+    private boolean equalsCoContextMap(SPOEvent other) {
+    	if (coContextMap == null) {
+    		return other.coContextMap == null;
+    	} else {
+    		return coContextMap.equals(other.coContextMap);
+    	}
     }
     
 	@Override
@@ -302,7 +315,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
     	RuleMatch result = null;
         if (isCorrectFor(host)) {
     		Iterator<VarNodeEdgeMap> eventMatchMapIter = getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
-        	Iterator<RuleMatch> matchIter = getRule().getMatchIter(host, eventMatchMapIter);
+        	Iterator<RuleMatch> matchIter = getRule().computeMatchIter(host, eventMatchMapIter);
         	if (matchIter.hasNext()) {
         		result = matchIter.next();
         	}
@@ -331,15 +344,10 @@ public class SPOEvent extends AbstractEvent<SPORule> {
 	public boolean hasMatch(Graph host) {
         if (isCorrectFor(host)) {
         	Iterator<VarNodeEdgeMap> eventMatchMapIter = getRule().getEventMatcher().getMatchIter(host, getAnchorMap());
-        	return getRule().getMatchIter(host, eventMatchMapIter).hasNext();
+        	return getRule().computeMatchIter(host, eventMatchMapIter).hasNext();
         } else {
         	return false;
         }
-//        if (isCorrectFor(host)) {
-//            return getRule().getEventMatcher().getMatch(host, getAnchorMap()) != null;
-//        } else {
-//            return false;
-//        }
 	}
     
 	/**
@@ -414,6 +422,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
         	} else {
         		result[i] = anchorMap.getEdge((Edge) anchor[i]);
         	}
+        	assert result[i] != null : String.format("No image for %s in anchor map %s", anchor[i], anchorMap);
         }
         reporter.stop();
         return result;
@@ -759,7 +768,13 @@ public class SPOEvent extends AbstractEvent<SPORule> {
         }
     }
 
-    /** The derivation record that has created this event, if any. */
+    /** Returns dummy object. */
+    @Override
+	protected Object createCache() {
+		return new Object();
+	}
+
+	/** The derivation record that has created this event, if any. */
     private final NodeFactory nodeFactory;
     /**
      * Matching from the rule's lhs to the source graph.
@@ -859,7 +874,7 @@ public class SPOEvent extends AbstractEvent<SPORule> {
 	static private final Set<Node> EMPTY_NODE_SET = Collections.<Node>emptySet();
     /** Global empty list of nodes. */
     static private final List<Node> EMPTY_COANCHOR_IMAGE = Collections.emptyList();
-
+    static private final CacheReference<Object> reference = CacheReference.<Object>newInstance(false);
 	static private Reporter reporter = Reporter.register(RuleEvent.class);
 	static private int HASHCODE = reporter.newMethod("computeHashCode()");
 	static private int EQUALS = reporter.newMethod("equals()");

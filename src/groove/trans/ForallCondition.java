@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForallCondition.java,v 1.5 2007-10-08 00:59:20 rensink Exp $
+ * $Id: ForallCondition.java,v 1.6 2007-10-08 12:17:34 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     	testFixed(true);
     	// lift the pattern match to a pre-match of this condition's target
     	final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
-    	result = getMatches(host, getMatcher().getMatchIter(host, anchorMap));
+    	result = computeMatches(host, getMatcher().getMatchIter(host, anchorMap));
     	reporter.stop();
     	return result;
     }
@@ -50,7 +50,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     /**
      * Returns the matches of this condition, given an iterator of match maps.
      */
-    Collection<CompositeMatch> getMatches(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
+    Collection<CompositeMatch> computeMatches(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
         result.add(new CompositeMatch());
         while (matchMapIter.hasNext()) {
@@ -124,8 +124,8 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     
     /** This implementation iterates over the result of {@link #getMatches(Graph, NodeEdgeMap)}. */
     @Override
-    public Iterator<CompositeMatch> getMatchIter(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
-        return getMatches(host, matchMapIter).iterator();
+    public Iterator<CompositeMatch> computeMatchIter(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
+        return computeMatches(host, matchMapIter).iterator();
     }
 
     @Override

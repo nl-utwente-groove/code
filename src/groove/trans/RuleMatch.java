@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleMatch.java,v 1.5 2007-10-08 00:59:20 rensink Exp $
+ * $Id: RuleMatch.java,v 1.6 2007-10-08 12:17:34 rensink Exp $
  */
 package groove.trans;
 
@@ -50,7 +50,7 @@ public class RuleMatch extends CompositeMatch {
     	SortedSet<SPOEvent> eventSet = new TreeSet<SPOEvent>();
     	collectEvents(eventSet, null, nodeFactory, reuse);
     	assert !eventSet.isEmpty();
-    	if (eventSet.size() == 1) {
+    	if (eventSet.size() == 1 && !getRule().hasSubRules()) {
     		return eventSet.iterator().next();
     	} else {
     		return new CompositeEvent(rule, eventSet);

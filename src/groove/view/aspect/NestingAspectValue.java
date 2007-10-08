@@ -12,9 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspectValue.java,v 1.2 2007-09-30 21:50:15 rensink Exp $
+ * $Id: NestingAspectValue.java,v 1.3 2007-10-08 12:17:50 rensink Exp $
  */
 package groove.view.aspect;
+
+import java.util.Set;
 
 import groove.view.FormatException;
 
@@ -63,12 +65,34 @@ public class NestingAspectValue extends ContentAspectValue<String> {
 	/** Level of nesting within the rule. Determined on runtime, not stored */
 	private String nestingLevel;
 	
+	/** 
+	 * Indicates if a given character is allowed in level names.
+	 * Currently allowed are: letters, digits, currency symbols, 
+	 * underscores and periods.
+	 * @param c the character to be tested
+	 */
+	static public boolean isValidLevelNameChar(char c) {
+		if (Character.isJavaIdentifierPart(c)) {
+			return true;
+		} else {
+			return (c == PERIOD);
+		}
+	}
+	
+	static private final char PERIOD = '.';
 	/** ContentParser used for this AspectValue */
 	static private final ContentParser<String> parser = new NestingContentParser();
+
 	
 	/** Content parser which acts as the identity function on strings. */
 	static private class NestingContentParser implements ContentParser<String> {
 		public String toContent(String value) throws FormatException {
+			for (int i = 0; i < value.length(); i++) {
+				char c = value.charAt(i);
+				if (!isValidLevelNameChar(c)) {
+					throw new FormatException("Invalid characterlevel name '%c'", c, value);
+				}
+			}
 			return value;
 		}
 		

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.20 2007-07-25 08:44:41 kastenberg Exp $
+ * $Id: Groove.java,v 1.21 2007-10-08 12:17:51 rensink Exp $
  */
 package groove.util;
 
@@ -21,8 +21,8 @@ import groove.calc.GraphCalculator;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.io.AspectualViewGps;
-import groove.io.ExtensionFilter;
 import groove.io.DefaultGxl;
+import groove.io.ExtensionFilter;
 import groove.io.Xml;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemProperties;
@@ -45,7 +45,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.20 $ 
+ * @version $Revision: 1.21 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -352,7 +352,7 @@ public class Groove {
      * @return the rule system contained in <code>dirname</code>
      * @throws IOException if <code>dirname</code> does not exist or is wrongly formatted
      */
-    static public GrammarView loadGrammar(String dirname) throws IOException, FormatException {
+    static public GrammarView<?,?> loadGrammar(String dirname) throws IOException, FormatException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
         return gpsLoader.unmarshal(dir);
     }
@@ -577,12 +577,21 @@ public class Groove {
      */
     static public final String ARRAY_SEPARATOR = ",";
     
+    /** Converts an array of <code>int</code>s to an array of <code>Integer</code>s. */
+    static public Integer[] toArray(int[] array) {
+    	Integer[] result = new Integer[array.length];
+    	for (int i = 0; i < array.length; i++) {
+    		result[i] = array[i];
+    	}
+    	return result;
+    }
+    
     /**
      * Returns a string representation of a given array, starting
-     * with {@link #ARRAY_START}, ending with {@link #ARRAY_END} and
-     * with elements separated by {@link #ARRAY_SEPARATOR}.
+     * with {@value #ARRAY_START}, ending with {@value #ARRAY_END} and
+     * with elements separated by {@value #ARRAY_SEPARATOR}.
      */
-    static public String toString(Object[] array) {
+    static public <T> String toString(T[] array) {
     	return toString(array, ARRAY_START, ARRAY_END, ARRAY_SEPARATOR);
     }
 
@@ -594,7 +603,7 @@ public class Groove {
      * @param end the end symbol of the resulting text representation
      * @param separator the symbol separating the elements in the resulting text representation
      */
-    static public String toString(Object[] array, String start, String end, String separator) {
+    static public <T> String toString(T[] array, String start, String end, String separator) {
     	return toString(array, start, end, separator, separator);
     }
     
