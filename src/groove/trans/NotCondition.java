@@ -12,13 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NotCondition.java,v 1.3 2007-10-06 11:27:50 rensink Exp $
+ * $Id: NotCondition.java,v 1.4 2007-10-08 00:59:20 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.DefaultMorphism;
 import groove.graph.Graph;
-import groove.graph.Morphism;
+import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 
 import java.util.Collections;
@@ -34,17 +34,17 @@ import java.util.Set;
  */
 public class NotCondition extends AbstractCondition<CompositeMatch> {
     /**
-     * Creates a negative condition that attempts to match a given pattern morphism.
+     * Creates a negative condition that attempts to match a given graph, with given root map.
      */
-    public NotCondition(Morphism pattern, SystemProperties properties) {
-        super(pattern.cod(), pattern.elementMap(), null, properties);
+    public NotCondition(Graph target, NodeEdgeMap rootMap, SystemProperties properties) {
+        super(target, rootMap, null, properties);
     }
 
     /**
      * Creates a NAC over a default context and an initially empty target pattern.
      */
     public NotCondition(Graph pattern, SystemProperties properties) {
-        this(new DefaultMorphism(pattern, pattern.newGraph()), properties);
+        this(pattern, new NodeEdgeHashMap(), properties);
     }
 
     /**

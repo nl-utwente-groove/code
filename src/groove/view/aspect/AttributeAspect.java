@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.9 2007-10-02 07:56:04 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.10 2007-10-08 00:59:25 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -45,7 +45,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -199,13 +199,11 @@ public class AttributeAspect extends AbstractAspect {
      * resulting edge depends on the {@link AttributeAspect} value of the given edge. 
      * The result is a {@link ProductEdge} or {@link AlgebraEdge}, or <code>null</code> if
      * the edge contains no special {@link AttributeAspect} value.
-     * An exception is thrown if the context of the edge in the graph is incorrect.
      * @param edge the edge for which we want an attribute-related edge
-     * @param graph the graph containing <code>edge</code>
      * @return a {@link ProductEdge} or {@link AlgebraEdge} corresponding to <code>edge</code>, or <code>null</code>
      * @throws FormatException if attribute-related errors are found in <code>graph</code> 
      */
-    public static Edge createAttributeEdge(AspectEdge edge, AspectGraph graph, Node[] ends) throws FormatException {
+    public static Edge createAttributeEdge(AspectEdge edge, Node[] ends) throws FormatException {
     	Edge result;
     	AspectValue attributeValue = getAttributeValue(edge);
     	if (attributeValue == null) {
@@ -216,22 +214,21 @@ public class AttributeAspect extends AbstractAspect {
     		result = argEdge;
     	} else {
     		assert algebraMap.containsKey(attributeValue);
-    		result = createOperatorEdge(edge, graph, ends);
+    		result = createOperatorEdge(edge, ends);
     	}
     	return result;
     }
-	
-    /**
+    
+	/**
      * Creates and returns a fresh {@link ProductEdge} derived from 
      * a given aspect edge (which should have attribute value {@link #PRODUCT}).
      * @param edge the edge for which the image is to be created
-     * @param graph
      * @param ends the end nodes of the edge to be created
      * @return a fresh {@link ProductEdge}
      * @throws FormatException if <code>edge</code> does not have a correct 
      * set of outgoing attribute edges in <code>graph</code>
      */
-	private static Edge createOperatorEdge(AspectEdge edge, AspectGraph graph, Node[] ends) throws FormatException {
+	private static Edge createOperatorEdge(AspectEdge edge, Node[] ends) throws FormatException {
 		try {
 			Algebra algebra = algebraMap.get(getAttributeValue(edge));
 			Operation operator = algebra.getOperation(edge.label().text());

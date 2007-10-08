@@ -12,12 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleMatch.java,v 1.4 2007-10-07 07:56:48 rensink Exp $
+ * $Id: RuleMatch.java,v 1.5 2007-10-08 00:59:20 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.Edge;
-import groove.graph.Node;
 import groove.graph.NodeFactory;
 import groove.rel.VarNodeEdgeMap;
 
@@ -42,20 +40,6 @@ public class RuleMatch extends CompositeMatch {
         return rule;
     }
 
-    @Override
-    public Collection<Edge> getEdgeValues() {
-        Collection<Edge> result = super.getEdgeValues();
-        result.addAll(getElementMap().edgeMap().values());
-        return result;
-    }
-
-    @Override
-    public Collection<Node> getNodeValues() {
-        Collection<Node> result = super.getNodeValues();
-        result.addAll(getElementMap().nodeMap().values());
-        return result;
-    }
-    
     /** 
      * Creates an event on the basis of this match. 
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>

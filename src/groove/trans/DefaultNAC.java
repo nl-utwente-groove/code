@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultNAC.java,v 1.8 2007-10-05 08:31:38 rensink Exp $
+ * $Id: DefaultNAC.java,v 1.9 2007-10-08 00:59:20 rensink Exp $
  */
 package groove.trans;
 
@@ -21,7 +21,7 @@ import groove.graph.Graph;
 import groove.graph.Morphism;
 
 /**
- * @version $Revision: 1.8 $ $Date: 2007-10-05 08:31:38 $
+ * @version $Revision: 1.9 $ $Date: 2007-10-08 00:59:20 $
  */
 @Deprecated
 public class DefaultNAC extends NotCondition {
@@ -29,7 +29,7 @@ public class DefaultNAC extends NotCondition {
      * Creates a NAC based on a given (partial) morphism.
      */
     public DefaultNAC(Morphism partial, SystemProperties properties) {
-        super(partial, properties);
+        super(partial.cod(), partial.elementMap(), properties);
     }
 
     /**

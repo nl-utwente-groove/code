@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.6 2007-10-07 07:56:48 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.7 2007-10-08 00:59:20 rensink Exp $
  */
 package groove.trans;
 
@@ -40,7 +40,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
     /**
@@ -112,6 +112,16 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         return name;
     }
 
+    /** 
+     * Sets the name of this condition, if the condition is not fixed.
+     * The name is assumed to be as yet unset.
+     */
+    public void setName(NameLabel name) {
+    	testFixed(false);
+    	assert this.name == null : String.format("Condition name already set to %s", name);
+    	this.name = name;
+    }
+    
     /**
      * Delegates to <code>getRootMap().isEmpty()</code> as per contract.
      */
@@ -355,10 +365,26 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
         }
     }
     
+	@Override
+    public String toString() {
+        StringBuilder res = new StringBuilder(String.format("Condition %s: ", getName()));
+        res.append(String.format("Target: %s", getTarget()));
+        if (!getRootMap().isEmpty()) {
+        	res.append(String.format("%nRoot map: %s", getRootMap()));
+        }
+        if (!getSubConditions().isEmpty()) {
+            res.append(String.format("%nSubconditions:"));
+            for (Condition subCondition: getSubConditions()) {
+                res.append(String.format("%n    %s", subCondition));
+            }
+        }
+        return res.toString();
+    }
+
     /**
      * The name of this condition. May be <code>code</code> null.
      */
-    private final NameLabel name;
+    private NameLabel name;
     /**
      * The fixed matching strategy for this graph condition.
      * Initially <code>null</code>; set by {@link #getMatcher()} upon its

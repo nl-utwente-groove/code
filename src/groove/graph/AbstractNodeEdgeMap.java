@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractNodeEdgeMap.java,v 1.1.1.2 2007-03-20 10:42:40 kastenberg Exp $
+ * $Id: AbstractNodeEdgeMap.java,v 1.2 2007-10-08 00:59:27 rensink Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
  * Abstract implementation of a generic node-edge-map.
  * The underlying node and edge maps are left abstract.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public abstract class AbstractNodeEdgeMap<NS,NT,ES,ET> implements GenericNodeEdgeMap<NS, NT, ES, ET> {
 	public void clear() {
@@ -106,7 +106,7 @@ public abstract class AbstractNodeEdgeMap<NS,NT,ES,ET> implements GenericNodeEdg
 	public String toString() {
 		String result;
 		result = "Node map: "+nodeMap();
-		result += "\nEdge map: "+edgeMap();
+		result += "; Edge map: "+edgeMap();
 		return result;
 	}
 }

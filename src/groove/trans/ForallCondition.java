@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForallCondition.java,v 1.4 2007-10-06 11:27:50 rensink Exp $
+ * $Id: ForallCondition.java,v 1.5 2007-10-08 00:59:20 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
-import groove.graph.Morphism;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 
@@ -31,13 +30,9 @@ import java.util.List;
  * @version $Revision $
  */
 public class ForallCondition extends AbstractCondition<CompositeMatch> {
-    /**
-     * @param pattern
-     * @param name
-     * @param properties
-     */
-    public ForallCondition(Morphism pattern, NameLabel name, SystemProperties properties) {
-        super(pattern.cod(), pattern.elementMap(), name, properties);
+	/** Constructs an instance based on a given target and root map. */
+    public ForallCondition(Graph target, NodeEdgeMap rootMap, NameLabel name, SystemProperties properties) {
+        super(target, rootMap, name, properties);
     }
 
     @Override
@@ -57,6 +52,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
      */
     Collection<CompositeMatch> getMatches(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
+        result.add(new CompositeMatch());
         while (matchMapIter.hasNext()) {
             VarNodeEdgeMap matchMap = matchMapIter.next();
             Collection<Match> subResults = new ArrayList<Match>();
@@ -132,7 +128,12 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         return getMatches(host, matchMapIter).iterator();
     }
 
-    /** 
+    @Override
+	public String toString() {
+		return "Universal "+super.toString();
+	}
+
+	/** 
      * Turns a collection of iterators into an iterator of collections.
      * The collections returned by the resulting iterator are tuples of elements from the
      * original iterators.

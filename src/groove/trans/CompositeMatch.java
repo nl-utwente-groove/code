@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeMatch.java,v 1.4 2007-10-06 11:27:50 rensink Exp $
+ * $Id: CompositeMatch.java,v 1.5 2007-10-08 00:59:19 rensink Exp $
  */
 package groove.trans;
 
@@ -50,7 +50,7 @@ public class CompositeMatch implements Match, Cloneable {
 
 
     public Collection<Edge> getEdgeValues() {
-        Set<Edge> result = new HashSet<Edge>();
+        Set<Edge> result = new HashSet<Edge>(getElementMap().edgeMap().values());
         for (Match subMatch: subMatches) {
             result.addAll(subMatch.getEdgeValues());
         }
@@ -58,7 +58,7 @@ public class CompositeMatch implements Match, Cloneable {
     }
 
     public Collection<Node> getNodeValues() {
-        Set<Node> result = new HashSet<Node>();
+        Set<Node> result = new HashSet<Node>(getElementMap().nodeMap().values());
         for (Match subMatch: subMatches) {
             result.addAll(subMatch.getNodeValues());
         }
@@ -102,7 +102,7 @@ public class CompositeMatch implements Match, Cloneable {
     @Override
     public boolean equals(Object obj) {
         return obj instanceof CompositeMatch                
-        	&& ((ExistsMatch) obj).getElementMap().equals(getElementMap())
+        	&& ((CompositeMatch) obj).getElementMap().equals(getElementMap())
         	&& ((CompositeMatch) obj).getSubMatches().equals(getSubMatches());
     }
 
