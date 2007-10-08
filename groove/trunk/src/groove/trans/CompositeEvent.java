@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeEvent.java,v 1.2 2007-10-07 07:56:47 rensink Exp $
+ * $Id: CompositeEvent.java,v 1.3 2007-10-08 00:59:19 rensink Exp $
  */
 package groove.trans;
 
@@ -81,18 +81,19 @@ public class CompositeEvent extends AbstractEvent<Rule> {
     	// so we can build a stack of corresponding matches
     	Stack<RuleMatch> matchStack = new Stack<RuleMatch>();
     	for (SPOEvent event: getEventSet()) {
-    		RuleMatch match = new RuleMatch(event.getRule(), event.getAnchorMap());
+    		RuleMatch match = new RuleMatch(event.getRule(), event.getMatch(source).getElementMap());
     		int[] eventLevel = event.getRule().getLevel();
     		int eventDepth = eventLevel.length;
+    		assert eventDepth/2 <= matchStack.size();
     		// pop the stack until the right nesting depth
-    		while (eventDepth < matchStack.size()) {
+    		while (eventDepth/2 < matchStack.size()) {
     			matchStack.pop();
     		}
     		// add this match to the match of the parent event
     		// (which is now on the top of the stack)
     		if (eventDepth > 0) {
     			RuleMatch parentMatch = matchStack.peek();
-    			assert parentMatch.getRule().getLevel()[eventDepth-2] == eventLevel[eventDepth-1];
+    			assert eventDepth <= 2 || parentMatch.getRule().getLevel()[eventDepth-3] == eventLevel[eventDepth-3];
     			parentMatch.addSubMatch(match);
     		}
     		// add this match to the stack, to receive its sub-matches
@@ -147,7 +148,7 @@ public class CompositeEvent extends AbstractEvent<Rule> {
 	}
 
 	public boolean hasMatch(Graph source) {
-        for (RuleEvent event: eventSet) {
+        for (RuleEvent event: getEventSet()) {
             if (!event.hasMatch(source)) {
                 return false;
             }
@@ -187,25 +188,50 @@ public class CompositeEvent extends AbstractEvent<Rule> {
      */
 	@Override
     public int hashCode() {
-    	return identityHashCode();
+		if (hashCode == 0) {
+			hashCode = computeHashCode();
+			if (hashCode == 0) {
+				hashCode = 1;
+			}
+		}
+		return hashCode;
     }
+	
+	private int computeHashCode() {
+		return getEventSet().hashCode();
+	}
     
     /**
-     * Two rule applications are equal if they have the same rule and anchor images.
-     * Note that the source is not tested; do not collect rule applications for different sources!
+     * Two composite events are equal if they contain the same primitive events.
      */
 	@Override
     public boolean equals(Object obj) {
-    	return this == obj;
+    	if (this == obj) {
+    		return true;
+    	}
+    	if (!(obj instanceof CompositeEvent)) {
+    		return false;
+    	}
+    	if (getEventSet().size() != ((CompositeEvent) obj).getEventSet().size()) {
+    		return false;
+    	}
+    	Iterator<SPOEvent> myEventIter = getEventSet().iterator();
+    	Iterator<SPOEvent> otherEventIter = ((CompositeEvent) obj).getEventSet().iterator();
+    	while (myEventIter.hasNext()) {
+    		if (!myEventIter.next().equals(otherEventIter.next())) {
+    			return false;
+    		}
+    	}
+    	return true;
     }
     
 	@Override
 	public String toString() {
-	    StringBuffer result = new StringBuffer(getRule().getName().name());
-	    result.append(getAnchorImageString());
-	    return result.toString();
+	    return eventSet.toString();
 	}
 	
     /** The set of events constituting this event. */
     private final SortedSet<SPOEvent> eventSet;
+    /** The hash code of this event. */
+    private int hashCode;
 }

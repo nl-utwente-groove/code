@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.21 2007-10-05 11:45:00 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.22 2007-10-08 00:59:04 rensink Exp $
  */
 
 package groove.view;
@@ -39,8 +39,11 @@ import groove.graph.NodeEdgeMap;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
+import groove.rel.RegExprLabel;
+import groove.trans.AbstractCondition;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
+import groove.trans.ForallCondition;
 import groove.trans.MergeEmbargo;
 import groove.trans.NotCondition;
 import groove.trans.Rule;
@@ -54,6 +57,7 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
+import groove.view.aspect.NestingAspect;
 import groove.view.aspect.RuleAspect;
 
 import java.io.File;
@@ -67,6 +71,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 
 /**
@@ -78,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -288,80 +293,226 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         if (TO_RULE_DEBUG) {
             System.out.println("");
         }
+        TreeIndex topLevel = new TreeIndex();
+        // mapping from rule nodes to nesting levels
+        Map<AspectNode,TreeIndex> metaLevelMap = new HashMap<AspectNode,TreeIndex>();
+        Map<String,TreeIndex> nameLevelMap = new HashMap<String,TreeIndex>();
+        Map<TreeIndex,Integer> subLevelCountMap = new HashMap<TreeIndex,Integer>();
+        subLevelCountMap.put(topLevel,0);
+        // mapping from nesting meta-nodes nodes to nesting levels
+        createLevelMap(graph, metaLevelMap, nameLevelMap, subLevelCountMap);
+        // mapping from rule nodes to nesting levels
+        Map<AspectNode,TreeIndex> nodeLevelMap = new HashMap<AspectNode,TreeIndex>();
+        // mapping from nesting levels to sets of elements on the corresponding level
+        // (the inverse of nodeLevelMap)
+        Map<TreeIndex,Map<AspectNode,Boolean>> nestedNodesMap = new TreeMap<TreeIndex,Map<AspectNode,Boolean>>();
+        Map<TreeIndex,Map<AspectEdge,Boolean>> nestedEdgesMap = new TreeMap<TreeIndex,Map<AspectEdge,Boolean>>();
+        for (TreeIndex level: subLevelCountMap.keySet()) {
+        	nestedNodesMap.put(level, new HashMap<AspectNode,Boolean>());
+        	nestedEdgesMap.put(level, new HashMap<AspectEdge,Boolean>());
+        }
+        // add nodes to nesting data structures
+        for (AspectNode node: graph.nodeSet()) {
+        	if (RuleAspect.inRule(node)) {
+        		AspectNode nestingNode = getNestingNode(graph, node);
+        		TreeIndex level = nestingNode == null ? topLevel : metaLevelMap.get(nestingNode);
+        		nodeLevelMap.put(node, level);
+        		nestedNodesMap.get(level).put(node,true);
+        		if (level.isUniversal()) {
+        			// add the node as stale to the next (rule) level
+        			for (int child = 0; child < subLevelCountMap.get(level); child++) {
+        				nestedNodesMap.get(level.getChild(child)).put(node,false);
+        			}
+        		}
+        		viewToRuleMap.putNode(node, computeNodeImage(node, graph));
+        	}
+        }
+        // add edges to nesting data structures
+        for (AspectEdge edge: graph.edgeSet()) {
+        	if (RuleAspect.inRule(edge)) {
+        		TreeIndex sourceLevel = nodeLevelMap.get(edge.source());
+        		TreeIndex targetLevel = nodeLevelMap.get(edge.opposite());
+        		TreeIndex level = sourceLevel.max(targetLevel);
+        		if (level == null) {
+        			throw new FormatException("Source and target of edge %s have incompatible nesting", edge);
+        		}
+        		String levelName = NestingAspect.getLevelName(edge);
+        		if (levelName != null) {
+        			TreeIndex edgeLevel = nameLevelMap.get(levelName);
+        			if (edgeLevel == null) {
+        				throw new FormatException("Nesting level %s in edge %s is not defined", levelName, edge);
+        			}
+        			level = level.max(edgeLevel);
+        			if (level == null || !level.equals(edgeLevel)) {
+        				throw new FormatException("Nesting level %s in edge %s is incompatible with end nodes", levelName, edge);
+        			}
+        		}
+        		nestedEdgesMap.get(level).put(edge,true);  
+        		// add end nodes as stale, if they are not already there as fresh
+        		for (Node end: edge.ends()) {
+        			Map<AspectNode,Boolean> nestedNodes = nestedNodesMap.get(level);
+        			if (!nestedNodes.containsKey(end)) {
+        				nestedNodes.put((AspectNode) end, false);
+        			}
+        		}
+        		if (level.isUniversal() && hasConcreteImage(createRuleLabel(edge.label()))) {
+        			// add the edge and its end nodes as stale to the next (rule) level
+        			for (int child = 0; child < subLevelCountMap.get(level); child++) {
+        				TreeIndex childLevel = level.getChild(child);
+        				nestedEdgesMap.get(childLevel).put(edge,false);
+                		for (Node end: edge.ends()) {
+                			nestedNodesMap.get(childLevel).put((AspectNode) end, false);
+                		}
+        			}
+        		}
+				Edge edgeImage = computeEdgeImage(edge, viewToRuleMap.nodeMap());
+				viewToRuleMap.putEdge(edge, edgeImage);
+			}
+        }
+        SPORule result;
+        try {
+			testVariableBinding(graph);
+        	Map<TreeIndex,Condition> levelRuleMap = new HashMap<TreeIndex,Condition>();
+        	for (TreeIndex level: nestedNodesMap.keySet()) {
+				TreeIndex parentLevel = level.isTopLevel() ? null : level.getParent();
+        		Map<AspectNode,Boolean> levelNodes = nestedNodesMap.get(level);
+        		Map<AspectEdge,Boolean> levelEdges = nestedEdgesMap.get(level);
+        		AbstractCondition<?> levelCondition;
+        		if (level.isExistential()) {
+					SPORule flatRule = computeFlatRule(viewToRuleMap, levelNodes, levelEdges);
+					if (!level.isTopLevel()) {
+						flatRule.setParent((SPORule) levelRuleMap.get(parentLevel.getParent()), level.getIntArray());
+					}
+					levelCondition = flatRule;
+				} else {
+					boolean universal = subLevelCountMap.get(level) > 0;
+					levelCondition = computeCondition(viewToRuleMap, levelNodes, levelEdges, universal);
+        		}
+        		levelRuleMap.put(level, levelCondition);
+        		if (level.isTopLevel()) {
+        			levelCondition.setName(name);
+        		} else {
+        			levelCondition.setName(new RuleNameLabel(name, level.toString()));
+        			levelRuleMap.get(parentLevel).addSubCondition(levelCondition);
+        		}
+        	}
+        	result = (SPORule) levelRuleMap.get(topLevel);
+			result.setPriority(priority);
+			result.setFixed();
+			if (TO_RULE_DEBUG) {
+				System.out.println("Constructed rule: " + result);
+			}
+		} catch (FormatException e) {
+			result = null;
+			errors.addAll(e.getErrors());
+		}
+		if (errors.isEmpty()) {
+			return new Pair<Rule,NodeEdgeMap>(result,viewToRuleMap);
+		} else {
+			throw new FormatException(new ArrayList<String>(errors));
+		}
+    }
+    
+	/**
+     * Callback method to compute a rule (on a given nesting level)
+     * from sets of aspect nodes and edges that appear new on this level.
+     * Note that the end nodes of the edges may fail to be new on this level.
+     * @param newNodes the nodes that are new on this level
+     * @param newEdges the edges that are new on this level
+     * @return a pair consisting of the resulting rule and a mapping from the
+     * aspect nodes and edges to the corresponding rule elements
+     */
+    private SPORule computeFlatRule(NodeEdgeMap viewToRuleMap, Map<AspectNode,Boolean> newNodes, Map<AspectEdge,Boolean> newEdges) throws FormatException {
+    	Set<String> errors = new TreeSet<String>();
         // create the new lhs
         Graph lhs = createGraph();
-        // also create a graph for all left elements, i.e., LHS and NAC
-        Graph left = createGraph();
-        // create the new rhs
-        Graph rhs = createGraph();
-        // mapping from aspect nodes to RHS nodes
-        Map<AspectNode,Node> toRight = new HashMap<AspectNode,Node>();
-        // we create a single graph containing all NAC nodes and edges
-        // as a supergraph of the lhs graph
-        // this will be partitioned later
-        // for the partitioning, we separately keep a set of NAC-only elements
+        // we separately keep a set of NAC-only elements
         Set<Node> nacNodeSet = new HashSet<Node>();
         Set<Edge> nacEdgeSet = new HashSet<Edge>();
+        // create the new rhs
+        Graph rhs = createGraph();
+        // copy of the node map for the RHS to account for mergers 
+        Map<AspectNode,Node> toRight = new HashMap<AspectNode,Node>();
+        for (Map.Entry<Node,Node> nodeEntry: viewToRuleMap.nodeMap().entrySet()) {
+        	toRight.put((AspectNode) nodeEntry.getKey(), nodeEntry.getValue());
+        }
+        // such end nodes are either roots or co-roots of the rule
+        NodeEdgeMap rootMap = new NodeEdgeHashMap();
+        NodeEdgeMap coRootMap = new NodeEdgeHashMap();
+        for (Map.Entry<AspectNode,Boolean> nodeEntry: newNodes.entrySet()) {
+        	if (!nodeEntry.getValue()) {
+    			Node nodeImage = viewToRuleMap.getNode(nodeEntry.getKey());
+    			if (RuleAspect.inLHS(nodeEntry.getKey())) {
+    				rootMap.putNode(nodeImage, nodeImage);
+    			} else {
+    				coRootMap.putNode(nodeImage, nodeImage);
+    			}
+        	}
+        }
+        for (Map.Entry<AspectEdge,Boolean> edgeEntry: newEdges.entrySet()) {
+        	if (!edgeEntry.getValue()) {
+    			Edge edgeImage = viewToRuleMap.getEdge(edgeEntry.getKey());
+    			if (RuleAspect.inLHS(edgeEntry.getKey())) {
+    				rootMap.putEdge(edgeImage, edgeImage);
+    			} else {
+    				coRootMap.putEdge(edgeImage, edgeImage);
+    			}
+        	}
+        }
         // rule morphism for the resulting production rule
         Morphism ruleMorph = createMorphism(lhs, rhs);
-        // first add nodes to lhs, rhs, morphism and NAC graph
-        for (AspectNode node: graph.nodeSet()) {
-        	try {
+        // first add nodes to lhs, rhs, morphism and left graph
+        for (AspectNode node: newNodes.keySet()) {
         	if (RuleAspect.inRule(node)) {
-				Node nodeImage = computeNodeImage(node, graph);
-				viewToRuleMap.putNode(node, nodeImage);
+				Node nodeImage = viewToRuleMap.getNode(node);
 				if (RuleAspect.inLHS(node)) {
-					left.addNode(nodeImage);
 					lhs.addNode(nodeImage);
 				}
 				if (RuleAspect.inRHS(node)) {
 					rhs.addNode(nodeImage);
-					toRight.put(node, nodeImage);
 					if (RuleAspect.inLHS(node)) {
 						ruleMorph.putNode(nodeImage, nodeImage);
 					}
 				} else if (RuleAspect.inNAC(node)) {
-					left.addNode(nodeImage);
 					nacNodeSet.add(nodeImage);
 				}
 			}
-        	} catch (FormatException exc) {
-        		errors.addAll(exc.getErrors());
-        	}
         }
         // add merger edges
-        for (AspectEdge edge: graph.edgeSet()) {
+        for (AspectEdge edge: newEdges.keySet()) {
         	if (RuleAspect.isCreator(edge) && isMergeLabel(edge.label())) {
                 // it's a merger; it's bound to be binary
                 assert edge.endCount() == 2 : "Merger edge "+edge+" should be binary";
                 // existing edges will automatically be redirected
                 rhs.mergeNodes(toRight.get(edge.source()), toRight.get(edge.opposite()));
-                // make that sure edges to be added later also get the correct end nodes
+                // make sure that edges to be added later also get the correct end nodes
                 toRight.put(edge.source(), toRight.get(edge.opposite()));
             }
         }
         // now add edges to lhs, rhs and morphism
         Set<Condition> embargoes = new HashSet<Condition>();
-        for (AspectEdge edge: graph.edgeSet()) {
+        for (AspectEdge edge: newEdges.keySet()) {
         	try {
         	if (RuleAspect.inRule(edge)) {
-				Edge edgeImage = computeEdgeImage(edge, graph, viewToRuleMap.nodeMap());
-				viewToRuleMap.putEdge(edge, edgeImage);
+				Edge edgeImage = viewToRuleMap.getEdge(edge);
 				if (RuleAspect.inLHS(edge)) {
-					left.addEdge(edgeImage);
 					lhs.addEdge(edgeImage);
+					if (!RuleAspect.inRHS(edge) && !hasConcreteImage(edgeImage.label())) {
+						throw new FormatException("Regular label %s may not be used on erasers", edgeImage.label());
+					}
 				}
 				if (RuleAspect.inRHS(edge)
 						&& !(RuleAspect.isCreator(edge) && isMergeLabel(edge.label()))) {
 					// use the toRight map because we may have merged nodes
-					Edge rhsEdgeImage = computeEdgeImage(edge, graph, toRight);
+					Edge rhsEdgeImage = computeEdgeImage(edge, toRight);
 					rhs.addEdge(rhsEdgeImage);
 					if (RuleAspect.inLHS(edge)) {
 						ruleMorph.putEdge(edgeImage, rhsEdgeImage);
+					} else if (!hasConcreteImage(edgeImage.label())) {
+						throw new FormatException("Regular label %s may not be used on creators", edgeImage.label());
 					}
 				}
 				if (RuleAspect.inNAC(edge)) {
-					left.addEdge(edgeImage);
 					nacEdgeSet.add(edgeImage);
 				}
 			}
@@ -371,7 +522,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         }
         try {
 			// the resulting rule
-			Rule result = createRule(ruleMorph, name, priority);
+			SPORule result = createRule(ruleMorph, rootMap, coRootMap, null);
 			// add the nacs to the rule
 			for (Pair<Set<Node>, Set<Edge>> nacPair : AbstractGraph.getConnectedSets(nacNodeSet,
 					nacEdgeSet)) {
@@ -381,20 +532,175 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			for (Condition embargo : embargoes) {
 				result.addSubCondition(embargo);
 			}
-			testVariableBinding(graph);
-			result.setFixed();
-			if (TO_RULE_DEBUG) {
-				System.out.println("Constructed rule: " + result);
-			}
 			if (errors.isEmpty()) {
-				return new Pair<Rule,NodeEdgeMap>(result,viewToRuleMap);
+				return result;
 			}
 		} catch (FormatException e) {
 			errors.addAll(e.getErrors());
 		}
 		throw new FormatException(new ArrayList<String>(errors));
     }
+	/**
+     * Callback method to compute a rule on a given nesting level
+     * from sets of aspect nodes and edges that appear new on this level.
+     * Note that the end nodes of the edges may fail to be new on this level.
+     * @param newNodes the nodes that are new on this level
+     * @param newEdges the edges that are new on this level
+     * @return a pair consisting of the resulting rule and a mapping from the
+     * aspect nodes and edges to the corresponding rule elements
+     */
+    private AbstractCondition<?> computeCondition(NodeEdgeMap viewToRuleMap, Map<AspectNode,Boolean> newNodes, Map<AspectEdge,Boolean> newEdges, boolean forall) throws FormatException {
+    	Set<String> errors = new TreeSet<String>();
+        // create the new condition target
+        Graph target = createGraph();
+        // such end nodes are roots of the condition
+        NodeEdgeMap rootMap = new NodeEdgeHashMap();
+        for (Map.Entry<AspectNode,Boolean> nodeEntry: newNodes.entrySet()) {
+        	if (!nodeEntry.getValue()) {
+    			Node nodeImage = viewToRuleMap.getNode(nodeEntry.getKey());
+    			rootMap.putNode(nodeImage, nodeImage);
+        	}
+        }
+        for (Map.Entry<AspectEdge,Boolean> edgeEntry: newEdges.entrySet()) {
+        	if (!edgeEntry.getValue()) {
+    			Edge edgeImage = viewToRuleMap.getEdge(edgeEntry.getKey());
+    			rootMap.putEdge(edgeImage, edgeImage);
+        	}
+        }
+        // first add nodes to lhs, rhs, morphism and left graph
+        for (AspectNode node: newNodes.keySet()) {
+        	if (RuleAspect.inRule(node)) {
+				Node nodeImage = viewToRuleMap.getNode(node);
+				target.addNode(nodeImage);
+			}
+        }
+        // now add edges to lhs
+        for (AspectEdge edge: newEdges.keySet()) {
+        	if (RuleAspect.inRule(edge)) {
+				Edge edgeImage = viewToRuleMap.getEdge(edge);
+				target.addEdge(edgeImage);
+			}
+        }
+        AbstractCondition<?> result;
+        try {
+			// the resulting rule
+        	if (forall) {
+        		result = createForall(target, rootMap, null);
+        	} else {
+        		result = createNeg(target, rootMap);
+        	}
+		} catch (FormatException e) {
+			result = null;
+			errors.addAll(e.getErrors());
+		}
+		if (errors.isEmpty()) {
+			return result;
+		} else {
+			throw new FormatException(new ArrayList<String>(errors));
+		}
+    }
 
+    /** Returns the aspect node indicating the nesting level of a given node. */
+    private AspectNode getNestingNode(AspectGraph graph, AspectNode node) {
+    	AspectEdge levelEdge = null;
+    	for (AspectEdge edge: graph.outEdgeSet(node)) {
+    		if (NestingAspect.isLevelEdge(edge)) {
+    			levelEdge = edge;
+    			break;
+    		}
+    	}
+    	return levelEdge == null ? null : levelEdge.opposite();
+    }
+
+    /** 
+     * Computes various level-related structures.
+     * The parameters are expected to be empty structures, which are filled
+     * in by the method (serving as output parameters).
+     * @param graph the graph from which to construct the information
+     * @param metaLevelMap mapping from aspect meta-nodes to the corresponding level
+     * @param nameLevelMap mapping from level names to levels
+     * @param subLevelCountMap mapping from levels to the number of sub-levels 
+     */
+    private void createLevelMap(AspectGraph graph, Map<AspectNode,TreeIndex> metaLevelMap, Map<String,TreeIndex> nameLevelMap, Map<TreeIndex,Integer> subLevelCountMap) {
+    	Map<AspectNode,AspectNode> parentMap = new HashMap<AspectNode,AspectNode>();
+    	// compute the level parent map
+    	for (AspectNode node: graph.nodeSet()) {
+    		if (NestingAspect.isMetaElement(node)) {
+    			Set<AspectEdge> outEdges = graph.outEdgeSet(node);
+    			if (!outEdges.isEmpty()) {
+    				AspectNode parentNode = outEdges.iterator().next().opposite();
+    				parentMap.put(node, parentNode);
+    			}
+    		}
+    	}
+    	for (AspectNode node: graph.nodeSet()) {
+    		if (NestingAspect.isMetaElement(node) && !metaLevelMap.containsKey(node)) {
+    			addLevel(metaLevelMap, nameLevelMap, subLevelCountMap, parentMap, node);
+    		}
+    	}
+    	// add sub-levels for universal levels that do not have a sub-level yet
+    	Set<TreeIndex> implicitLevels = new HashSet<TreeIndex>();
+    	for (Map.Entry<TreeIndex,Integer> levelEntry: subLevelCountMap.entrySet()) {
+    		TreeIndex level = levelEntry.getKey();
+    		if (level.isUniversal() && levelEntry.getValue().equals(0)) {
+    			boolean universal = true;
+    			for (Map.Entry<AspectNode,TreeIndex> metaLevelEntry: metaLevelMap.entrySet()) {
+    				if (metaLevelEntry.getValue().equals(level)) {
+    					universal = NestingAspect.isForall(metaLevelEntry.getKey());
+    					break;
+    				}
+    			}
+    			if (universal) {
+    				implicitLevels.add(levelEntry.getKey().getChild(0));
+    			}
+    		}
+    	}
+    	for (TreeIndex implicitLevel: implicitLevels) {
+    		subLevelCountMap.put(implicitLevel.getParent(),1);
+    		subLevelCountMap.put(implicitLevel,0);
+    	}
+    }
+    
+    /**
+     * Adds a nesting level for a given node to an existing level map.
+     * Recursively ascends from the node to the top level.
+     * @param nodeLevelMap mapping from aspect meta-nodes to levels (output parameter)
+     * @param nameLevelMap mapping from level names to levels (output parameter)
+     * @param childCountMap mapping to the nodes of which we have already
+     * computed the level, to their number of children encountered so far (output parameter)
+     * @param parentMap mapping from aspect meta-nodes to their parents
+     * @param node the node to be added to <code>levelMap</code> and <code>childCountMap</code>
+     * @return the level assigned to <code>node</code>
+     */
+    private TreeIndex addLevel(Map<AspectNode,TreeIndex> nodeLevelMap, Map<String,TreeIndex> nameLevelMap, Map<TreeIndex,Integer> childCountMap, Map<AspectNode,AspectNode> parentMap, AspectNode node) {
+    	TreeIndex result;
+    	AspectNode parentNode = parentMap.get(node);
+    	// find the tree index of parentNode
+    	TreeIndex parentLevel;
+    	if (parentNode == null) {
+    		// this node is top level
+    		parentLevel = new TreeIndex();
+    	} else {
+    		// this node is a child node
+    		// maybe the parent is known
+    		parentLevel = nodeLevelMap.get(parentNode);
+    		if (parentLevel == null) {
+    			// recursively add the parent
+    			parentLevel = addLevel(nodeLevelMap, nameLevelMap, childCountMap, parentMap, parentNode);
+    		}
+		}
+		int childNr = childCountMap.get(parentLevel);
+		result = parentLevel.getChild(childNr);
+		childCountMap.put(parentLevel, childNr + 1);
+		String name = NestingAspect.getLevelName(node);
+		if (name != null && name.length() > 0) {
+			nameLevelMap.put(name, result);
+		}
+		nodeLevelMap.put(node, result);
+		childCountMap.put(result, 0);
+    	return result;
+    }
+    
     /**
 	 * Creates an image for a given aspect node.
 	 * Node numbers are copied.
@@ -417,14 +723,12 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Creates a an edge by copying a given edge under a given node mapping.
      * The mapping is assumed to have images for all end nodes.
      * @param edge the edge for which an image is to be created
-	 * @param context the graph in which the original edge occurs;
-	 * may be necessary to determine the type of the image.
 	 * @param elementMap the mapping of the end nodes
-     * @return the newly added edge, if any
+	 * @return the newly added edge, if any
 	 * @throws FormatException if <code>edge</code> does not
      * occur in a correct way in <code>context</code>
      */
-    protected Edge computeEdgeImage(AspectEdge edge, AspectGraph context, Map<? extends Node, Node> elementMap) throws FormatException {
+    protected Edge computeEdgeImage(AspectEdge edge, Map<? extends Node, Node> elementMap) throws FormatException {
     	Node[] ends = new Node[edge.endCount()];
     	for (int i = 0; i < ends.length; i++) {
     		Node endImage = elementMap.get(edge.end(i));
@@ -437,7 +741,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     	if (getAttributeValue(edge) == null) {
     		return createEdge(ends, createRuleLabel(edge.label()));
     	} else {
-    		return AttributeAspect.createAttributeEdge(edge, context, ends);
+    		return AttributeAspect.createAttributeEdge(edge, ends);
     	}
     }
 
@@ -516,7 +820,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @see #toRule()
 	 */
 	protected NotCondition createNAC(Graph context) {
-	    return new NotCondition(context, properties);
+	    return new NotCondition(context.newGraph(), properties);
 	}
 
 	/**
@@ -528,6 +832,37 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 */
 	protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name, int priority) throws FormatException {
 	    return new SPORule(ruleMorphism, name, priority, properties);
+	}
+
+	/**
+	 * Factory method for rules.
+	 * @param ruleMorphism morphism of the new rule to be created
+	 * @param name name of the new rule to be created
+	 * @return the fresh rule created by the factory
+	 */
+	protected SPORule createRule(Morphism ruleMorphism, NodeEdgeMap rootMap, NodeEdgeMap coRootMap, RuleNameLabel name) throws FormatException {
+	    return new SPORule(ruleMorphism, rootMap, coRootMap, name, properties);
+	}
+
+	/**
+	 * Factory method for universal conditions.
+	 * @param target target graph of the new condition
+	 * @param rootMap root map of the new condition
+	 * @param name name of the new condition to be created
+	 * @return the fresh condition
+	 */
+	protected ForallCondition createForall(Graph target, NodeEdgeMap rootMap, RuleNameLabel name) throws FormatException {
+	    return new ForallCondition(target, rootMap, name, properties);
+	}
+
+	/**
+	 * Factory method for universal conditions.
+	 * @param target target graph of the new condition
+	 * @param rootMap root map of the new condition
+	 * @return the fresh condition
+	 */
+	protected NotCondition createNeg(Graph target, NodeEdgeMap rootMap) throws FormatException {
+	    return new NotCondition(target, rootMap, properties);
 	}
 
 	/**
@@ -558,7 +893,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * @return the converted label; not <code>null</code>
      * @throws FormatException if the label text is not a well-formed regular expression
      */
-    protected Label createRuleLabel(Label label) throws FormatException {
+    private Label createRuleLabel(Label label) throws FormatException {
         String text = label.text();
         RegExpr expr = RegExpr.parse(text);
         if (expr.isAtom()) {
@@ -566,6 +901,14 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         } else {
             return expr.toLabel();
         }
+    }
+    
+    /** 
+     * Indicates if an edge with a given label has a concrete image in
+     * a match, which can be deleted or created.
+     */
+    private boolean hasConcreteImage(Label label) {
+    	return (label instanceof DefaultLabel) || RegExprLabel.getWildcardId(label) != null;
     }
     
     /** 
@@ -937,5 +1280,116 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /** Graph factory used for building a graph view of this rule graph.*/
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = false;
+    static private final boolean TO_RULE_DEBUG = true;
+    
+    /** 
+     * Class encoding an index in a 
+     * tree, consisting of a list of indices at every level of the tree.
+     */
+    private static class TreeIndex extends ArrayList<Integer> implements Comparable<TreeIndex> {
+    	/** Constructs the tree index of the root. */
+    	public TreeIndex() {
+    		// empty
+    	}
+    	
+    	/** Constructs a tree index of a single level. */
+    	public TreeIndex(int top) {
+    		add(top);
+    	}
+    	
+    	/** 
+    	 * Constructs a copy of a given tree index.
+    	 * @param level the index to be copied
+    	 */
+    	private TreeIndex(TreeIndex level) {
+    		super(level);
+    	}
+    	
+    	/** Returns the parent level of this tree index. */
+    	public TreeIndex getParent() {
+    		TreeIndex result = new TreeIndex(this);
+    		result.remove(result.size()-1);
+    		return result;
+    	}
+    	
+    	/** Returns a child level of this index. */
+    	public TreeIndex getChild(int childNr) {
+    		TreeIndex result = new TreeIndex(this);
+    		result.add(childNr);
+    		return result;
+    	}
+    	
+    	/** Lexicographically compares the tree indices. */
+		public int compareTo(TreeIndex o) {
+			int result = 0;
+			int upper = Math.min(size(), o.size());
+			for (int i = 0; result == 0 && i < upper; i++) {
+				result = get(i) - o.get(i);
+			}
+			if (result == 0) {
+				if (upper < size()) {
+					result = +1;
+				} else if (upper < o.size()) {
+					result = -1;
+				}
+			}
+			return result;
+		}
+		
+		/** 
+		 * Tests if this level is smaller (i.e., higher up in the nesting tree) 
+		 * than another. This is the case if the depth of this nesting does not 
+		 * exceed that of the other, and the indices at every (common) level coincide.
+		 */
+		public boolean smallerThan(TreeIndex other) {
+			boolean result = size() <= other.size();
+			for (int i = 0; result && i < size(); i++) {
+				result = get(i).equals(other.get(i));
+			}
+			return result;
+		}
+		
+		/** 
+		 * Returns the maximum of this tree index and a list of other, w.r.t.
+		 * the ordering imposed by {@link #smallerThan(TreeIndex)}. 
+		 * Returns <code>null</code> if there is no maximum, i.e., some of the indices are unordered.
+		 */
+		public TreeIndex max(TreeIndex... others) {
+			TreeIndex result = this;
+			for (TreeIndex other : others) {
+				if (result.smallerThan(other)) {
+					result = other;
+				} else if (!other.smallerThan(result)) {
+					result = null;
+					break;
+				}
+			}
+			return result;
+		}
+		
+		/** Converts this level to an array of ints. */
+		public int[] getIntArray() {
+			int[] result = new int[size()];
+			for (int i = 0; i < size(); i++) {
+				result[i] = get(i);
+			}
+			return result;
+			
+		}
+		
+		/** Indicates whether this is the top level. */
+		public boolean isTopLevel() {
+			return isEmpty();
+		}
+		
+		/** Indicates whether this level is universal (i.e., of odd depth). */
+		public boolean isUniversal() {
+			return size() % 2 == 1;
+		}
+		
+		/** Indicates whether this level is existential (i.e., of even depth). */
+		public boolean isExistential() {
+			return size() % 2 == 0;
+		}
+    }
 }

@@ -12,15 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExistsMatch.java,v 1.2 2007-10-06 11:27:50 rensink Exp $
+ * $Id: ExistsMatch.java,v 1.3 2007-10-08 00:59:21 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.Edge;
-import groove.graph.Node;
 import groove.rel.VarNodeEdgeMap;
-
-import java.util.Collection;
 
 /**
  * Match of an existential condition.
@@ -35,20 +31,6 @@ public class ExistsMatch extends CompositeMatch {
         super(matchMap);
     }
 
-    @Override
-    public Collection<Edge> getEdgeValues() {
-        Collection<Edge> result = super.getEdgeValues();
-        result.addAll(getElementMap().edgeMap().values());
-        return result;
-    }
-
-    @Override
-    public Collection<Node> getNodeValues() {
-        Collection<Node> result = super.getNodeValues();
-        result.addAll(getElementMap().nodeMap().values());
-        return result;
-    }
-    
     /** Equality is determined by rule and element map. */
     @Override
     public boolean equals(Object obj) {

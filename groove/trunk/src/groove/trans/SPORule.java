@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.38 2007-10-07 07:56:47 rensink Exp $
+ * $Id: SPORule.java,v 1.39 2007-10-08 00:59:20 rensink Exp $
  */
 package groove.trans;
 
@@ -51,7 +51,7 @@ import java.util.Set;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.38 $
+ * @version $Revision: 1.39 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -69,17 +69,25 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     
     /**
      * Constructs a rule that is a sub-condition of another rule.
-     * The information should be completed lated by a call to {@link #setParent(Rule, int[], NodeEdgeMap)}.
+     * The information should be completed lated by a call to {@link #setParent(Rule, int[])}.
      * @param morph the morphism on which this production is to be based
      * @param rootMap pattern map leading into the LHS
      * @param name the name of the new rule
      * @param properties the factory this rule used to instantiate related classes
      * @throws FormatException if the rule system properties do not concur with the rule itself
      */
-    public SPORule(Morphism morph, NodeEdgeMap rootMap, RuleNameLabel name, SystemProperties properties) throws FormatException {
+    public SPORule(Morphism morph, NodeEdgeMap rootMap, NodeEdgeMap coRootMap, RuleNameLabel name, SystemProperties properties) throws FormatException {
         super(morph.dom(), rootMap, name, properties);
+        this.coRootMap = coRootMap;
         this.morphism = morph;
     	this.priority = DEFAULT_PRIORITY;
+    	assert this.rhs().nodeSet().containsAll(coRootMap.nodeMap().values()); 
+    }
+    
+    /** Sets the priority of this rule. */
+    public void setPriority(int priority) {
+    	testFixed(false);
+    	this.priority = priority;
     }
     
     /**
@@ -87,15 +95,13 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * and the co-root map.
      * @param parent the parent rule for this rule; not <code>null</code>
      * @param level nesting level of this rule within the condition tree
-     * @param coRootMap map from the RHS of <code>parent</code> to the RHS of this rule
      */
-    public void setParent(Rule parent, int[] level, NodeEdgeMap coRootMap) {
+    public void setParent(Rule parent, int[] level) {
     	testFixed(false);
+    	assert coRootMap != null : String.format("Sub-rule at level %s must have a non-trivial co-root map", Arrays.toString(level));
     	assert parent.rhs().nodeSet().containsAll(coRootMap.nodeMap().keySet()); 
-    	assert this.rhs().nodeSet().containsAll(coRootMap.nodeMap().values()); 
     	this.parent = parent;
     	this.level = level;
-    	this.coRootMap = coRootMap;
     }
     
     /** 
@@ -281,21 +287,20 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
 	@Override
     public String toString() {
-        String res = "Rule " + getName();
-        res +=
-            "\nLeft hand side:\n    "
-                + lhs()
-                + "\nRight hand side:\n    "
-                + rhs()
-                + "\nRule morphism:\n    "
-                + getMorphism().elementMap();
+        StringBuilder res = new StringBuilder(String.format("Rule %s, level %s%n", getName(), Arrays.toString(getLevel())));
+        res.append(String.format("LHS: %s%nRHS: %s%nMap: %s", lhs(), rhs(), getMorphism().elementMap()));
+        if (!getRootMap().isEmpty()) {
+        	res.append(String.format("%nRoot map: %s", getRootMap()));
+        } else if (!getCoRootMap().isEmpty()) {
+        	res.append(String.format("%nCo-root map: %s", getCoRootMap()));
+        }
         if (!getSubConditions().isEmpty()) {
-            res += "\nSubconditions:";
+            res.append(String.format("%nSubconditions:"));
             for (Condition subCondition: getSubConditions()) {
-                res += "\n    " + subCondition.toString();
+                res.append(String.format("%n%s", subCondition));
             }
         }
-        return res;
+        return res.toString();
     }
     
     /** 
@@ -323,7 +328,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 			int[] otherLevel = ((SPORule) other).getLevel();
 			for (int depth = 0; result == 0 && depth < level.length; depth++) {
 				if (depth == otherLevel.length) {
-					result = -1;
+					result = +1;
 				} else {
 					result = level[depth] - otherLevel[depth];
 				}
@@ -366,7 +371,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 					}
 				}
 				if (getProperties().isRhsAsNac()) {
-					Condition rhsNac = new NotCondition(getMorphism(), getProperties());
+					Condition rhsNac = new NotCondition(rhs(), getMorphism().elementMap(), getProperties());
 					rhsNac.setFixed();
 					addSubCondition(rhsNac);
 				}
@@ -375,14 +380,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 		}
 	}
 
-	/**
-	 * Indicates if this rule has mergers.
-	 * @invariant <tt>result == ! getMergeMap().isEmpty()</tt>
-	 */
-	final public boolean hasMergers() {
-		return ! getMergeMap().isEmpty();
-	}
-	
 	/** Returns an array of nodes isolated in the left hand side. */
 	final public Node[] getIsolatedNodes() {
 		if (isolatedNodes == null) {
@@ -404,9 +401,50 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 		return result.toArray(new Node[0]);
 	}
 
+	/**
+	 * Indicates if this rule has mergers.
+	 * @invariant <tt>result == ! getMergeMap().isEmpty()</tt>
+	 */
+	final public boolean hasMergers() {
+		if (! hasMergersSet) {
+			hasMergers = computeHasMergers();
+			hasMergersSet = true;
+		}
+		return hasMergers;
+	}
+	
+	/**
+	 * Computes if the rule has mergers or not.
+	 */
+	private boolean computeHasMergers() {
+		boolean result = ! getMergeMap().isEmpty();
+		if (!result) {
+			result = hasMergingSubRules(this);
+		}
+		return result;
+	}
+	
+	/**
+	 * Computes if a given condition has merging rules as sub-conditions.
+	 */
+	private boolean hasMergingSubRules(Condition condition) {
+		boolean result = false;		
+		for (Condition subCondition : condition.getSubConditions()) {
+			if (subCondition instanceof Rule) {
+				result = ((Rule) subCondition).hasMergers();
+			} else {
+				result = hasMergingSubRules(subCondition);
+			}
+			if (result) {
+				break;
+			}
+		}
+		return result;
+	}
+	
 	public boolean isModifying() {
 		if (! modifyingSet) {
-			modifying = computeModifying();
+			modifying = computeIsModifying();
 			modifyingSet = true;
 		}
 	    return modifying;
@@ -415,11 +453,70 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	/**
 	 * Computes if the rule is modifying or not.
 	 */
-	private boolean computeModifying() {
-		return this.getEraserEdges().length > 0 || this.getEraserNodes().length > 0 || hasMergers() || hasCreators();
+	private boolean computeIsModifying() {
+		boolean result = this.getEraserEdges().length > 0 || this.getEraserNodes().length > 0 || hasMergers() || hasCreators();
+		if (!result) {
+			result = hasModifyingSubRules(this);
+		}
+		return result;
 	}
 
-    /** Returns the eraser (i.e., LHS-only) edges. */
+	/**
+	 * Computes if a given condition has modifying rules as sub-conditions.
+	 */
+	private boolean hasModifyingSubRules(Condition condition) {
+		boolean result = false;
+		for (Condition subCondition : condition.getSubConditions()) {
+			if (subCondition instanceof Rule) {
+				result = ((Rule) subCondition).isModifying();
+			} else {
+				result = hasModifyingSubRules(subCondition);
+			}
+			if (result) {
+				break;
+			}
+		}
+		return result;
+	}
+
+    /**
+	 * Indicates if the rule creates any nodes or edges.
+	 */
+	public boolean hasCreators() {
+		if (! hasCreatorsSet) {
+			hasCreators = computeHasCreators();
+			hasCreatorsSet = true;
+		}
+		return hasCreators;
+	}
+
+	private boolean computeHasCreators() {
+		boolean result = getCreatorNodes().length + getCreatorEdges().length > 0;
+		if (!result) {
+			result = hasCreatingSubRules(this);
+		}
+		return result;
+	}
+
+	/**
+	 * Computes if a given condition has creating rules as sub-conditions.
+	 */
+	private boolean hasCreatingSubRules(Condition condition) {
+		boolean result = false;
+		for (Condition subCondition: condition.getSubConditions()) {
+			if (subCondition instanceof Rule) {
+				result = ((Rule) subCondition).hasCreators();
+			} else {
+				result = hasCreatingSubRules(subCondition);
+			}
+			if (result) {
+				break;
+			}
+		}
+		return result;
+	}
+
+	/** Returns the eraser (i.e., LHS-only) edges. */
     final Edge[] getEraserEdges() {
     	if (eraserEdges == null) {
     		eraserEdges = computeEraserEdges();
@@ -434,7 +531,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 		testFixed(true);
 	    Set<Edge> eraserEdgeSet = new HashSet<Edge>(lhs().edgeSet());
 	    eraserEdgeSet.removeAll(getMorphism().edgeMap().keySet());
-	    eraserEdgeSet.removeAll(getRootMap().edgeMap().values());
 	    // also remove the incident edges of the lhs-only nodes
 	    for (Node eraserNode: getEraserNodes()) {
 	        eraserEdgeSet.removeAll(lhs().edgeSet(eraserNode));
@@ -478,17 +574,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	    eraserNodeSet.removeAll(getMorphism().nodeMap().keySet());
 	    eraserNodeSet.removeAll(getRootMap().nodeMap().values());
 	    return eraserNodeSet.toArray(new Node[0]);
-	}
-
-	/**
-	 * Indicates if the rule creates any nodes or edges.
-	 */
-	public boolean hasCreators() {
-		if (! creatorsSet) {
-			hasCreators = getCreatorNodes().length + getCreatorEdges().length > 0;
-			creatorsSet = true;
-		}
-		return hasCreators;
 	}
 
 	NodeEdgeMap getCoRootMap() {
@@ -753,12 +838,18 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	/** The nesting level of this rule. */
 	private int[] level;
 	/**
+     * Indicates if this rule has node mergers.
+     */
+    private boolean hasMergers;
+    /** Flag indicating if the {@link #hasMergers} has been computed. */
+    private boolean hasMergersSet;
+	/**
      * Indicates if this rule has creator edges or nodes.
      * @invariant <tt>hasCreators == ! ruleMorph.isSurjective()</tt>
      */
     private boolean hasCreators;
     /** Flag indicating if the {@link #hasCreators} has been computed. */
-    private boolean creatorsSet;
+    private boolean hasCreatorsSet;
     /**
      * Indicates if this rule makes changes to a graph at all.
      */

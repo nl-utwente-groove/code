@@ -12,13 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.3 2007-10-02 07:56:04 rensink Exp $
+ * $Id: NestingAspect.java,v 1.4 2007-10-08 00:59:25 rensink Exp $
  */
 package groove.view.aspect;
 
 import groove.view.FormatException;
 
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -27,7 +26,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.3 $ $Date: 2007-10-02 07:56:04 $
+ * @version 0.1 $Revision: 1.4 $ $Date: 2007-10-08 00:59:25 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -64,37 +63,6 @@ public class NestingAspect extends AbstractAspect {
     public static AspectValue getNestingValue(AspectElement elem) {
     	return elem.getValue(getInstance());
     }
-    
-	/**
-	 * Retrieve the level of an element as a String
-	 * @param element the element to retrieve the level of
-	 * @return the level of the element, or null if it the element does not have a
-	 *   NestingAspectValue, or if its level has not yet been assigned
-	 */
-	public static String getLevel(AspectElement element) {
-		NestingAspectValue value = (NestingAspectValue) getNestingValue(element);
-		if( value == null ) {
-			return null; // No Nesting Aspect
-		}
-		return value.getLevel();
-	}
-
-	/**
-	 * Retrieve the parent level of an element as a String.
-	 * @return the level of the parent of this element, or null if the element does
-	 *   not have a NestingAspectValue, or if its level has not yet been assigned, 
-	 *   or it is a toplevel element
-	 */
-	public static String getParentLevel(String level) {
-		if( level == null ) {
-			return null;
-		} else if( level.lastIndexOf(LEVEL_SEPARATOR) > 0 ) {
-			level = level.substring(0, level.lastIndexOf(LEVEL_SEPARATOR));
-		} else {
-			level = null; // No parent
-		}
-		return level;
-	}
 	
 	/**
 	 * Determine whether a certain AspectElement is a meta element with respect
@@ -133,52 +101,25 @@ public class NestingAspect extends AbstractAspect {
 	}	
 
 	/**
-	 * Determine whether a level is universal or not (NAC levels are also universal).
-	 * The level is universal if the depth is odd, i.e., the corresponding
-	 * string contains an even number of separating periods.
+	 * Determine whether an aspect edge carries the {@link #FORALL} nesting value.
 	 */
-	public static boolean isUniversalLevel(String level) {
-		return nestingDepth(level) % 2 == 0;
+	public static boolean isForall(AspectElement element) {
+		return getNestingValue(element).equals(FORALL);
 	}
 	
 	/**
-	 * Determine whether a nesting level is existential or not.
-	 * The level is existential if the depth is even, i.e., the corresponding
-	 * string contains an odd number of separating periods.
+	 * Determine whether an aspect edge carries the {@link #EXISTS} nesting value.
 	 */
-	public static boolean isExistentialLevel(String level) {
-		return nestingDepth(level) % 2 == 1;
+	public static boolean isExists(AspectElement element) {
+		return getNestingValue(element).equals(EXISTS);
 	}
 	
-	/** Returns the nesting depth of a certain string-encoded nesting level. */
-	static private int nestingDepth(String level) {
-		int result = 0;
-		for (int i = 0; i < level.length(); i++) {
-			if (level.charAt(i) == LEVEL_SEPARATOR) {
-				result++;
-			}
-		}
-		return result+1;
-	}
 	/** Returns the name of a nesting level identified by a given aspect element. */
 	public static String getLevelName(AspectElement element) {
 		NestingAspectValue value = (NestingAspectValue) getNestingValue(element);
 		return value != null ? (value.getContent()) : null;
 	}
 	
-	/** 
-	 * Returns a period-separated string identifying the position in the
-	 * nesting tree identified with a given node of an aspect graph.
-	 */
-	public static String getLevelOfNode(AspectGraph context, AspectNode node) {
-		for (AspectEdge edge : context.outEdgeSet(node)) {
-			if (isLevelEdge(edge)) {
-				return getLevel(edge.target());
-			}
-		}
-		// Top level is now implicit
-		return "1";
-	}
 	/** Separator for level strings */
 	public static final char LEVEL_SEPARATOR = '.';
 	
@@ -221,8 +162,6 @@ public class NestingAspect extends AbstractAspect {
 	
 	/** Singleton instance of this class */
 	private static final NestingAspect instance = new NestingAspect();
-	/** Comparator for AspectNodes with a nesting value */
-	public static final Comparator<AspectNode> comparator = new NestingComparator();
 	
 	static {
 		try {
@@ -235,23 +174,6 @@ public class NestingAspect extends AbstractAspect {
 		} catch( FormatException exc ) {
 			throw new Error("Aspect '" + NESTING_ASPECT_NAME
 					+ "' cannot be initialised due to name conflict", exc);
-		}
-	}
-	
-	/** 
-	 * Comparator of aspect nodes, which considers one node to
-	 * be smaller if the string description of its nesting level is smaller.
-	 */
-	public static class NestingComparator implements Comparator<AspectNode> {
-		public int compare(AspectNode arg0, AspectNode arg1) {
-			String level0 = NestingAspect.getLevel(arg0);
-			String level1 = NestingAspect.getLevel(arg1);
-			if( level0 == null && level1 != null )
-				return -1; // No level implicitly means top level
-			if( level0 != null && level1 == null )
-				return 1;
-			int cmp = level0.compareTo(level1);
-			return cmp != 0 ? cmp : arg0.compareTo(arg1);
 		}
 	}
 }

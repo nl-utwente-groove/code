@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGraphView.java,v 1.13 2007-10-02 07:58:39 rensink Exp $
+ * $Id: AspectualGraphView.java,v 1.14 2007-10-08 00:59:04 rensink Exp $
  */
 package groove.view;
 
@@ -189,7 +189,6 @@ public class AspectualGraphView extends AspectualView<Graph> {
 				try {
 					// create an image for the view edge
 					Edge edgeImage = AttributeAspect.createAttributeEdge(viewEdge,
-							view,
 							endImages);
 					if (edgeImage == null) {
 						edgeImage = model.addEdge(endImages, viewEdge.label());
