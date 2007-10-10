@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HashBag.java,v 1.3 2007-10-06 11:27:39 rensink Exp $
+ * $Id: HashBag.java,v 1.4 2007-10-10 08:59:42 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Set;
 /**
  * A bag (= multiset) of elements, based on an underlying hash map.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<T> {
     /**
@@ -41,7 +41,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
          */
         protected MyMultiplicity() {
             value = 1;
-            size++;
+            incSize();
         }
 
         /**
@@ -95,7 +95,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
          */
         protected int inc() {
             value++;
-            size++;
+            incSize();
             assert value > 0;
             return value;
         }
@@ -107,7 +107,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         protected int dec() {
             assert value > 0;
             value--;
-            size--;
+            decSize();
             return value;
         }
 
@@ -323,7 +323,7 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
 
     /**
      * Internal method to compute the total number of elements (i.e., occurrences)
-     * in this mutliset.
+     * in this multiset.
      */
     private int computeSize() {
         int result = 0;
@@ -333,9 +333,19 @@ public class HashBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         }
         return result;
     }
+    
+    /** Increments the size variable. */
+    final void incSize() {
+    	size++;
+    }
+    
+    /** Decrements the size variable. */
+    final void decSize() {
+    	size--;
+    }
 
     /**
-     * The underying mapping from elements to multiplicites.
+     * The underlying mapping from elements to multiplicities.
      * @invariant <tt>bag : Object --> Multiplicity</tt>
      */
     protected final Map<T,MyMultiplicity> bag = new HashMap<T,MyMultiplicity>();

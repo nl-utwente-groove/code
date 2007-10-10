@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.13 2007-10-03 07:23:26 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.14 2007-10-10 08:59:50 rensink Exp $
  */
 package groove.match;
 
@@ -39,7 +39,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 	/**
@@ -240,9 +240,9 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /**
 	 * A list of domain elements, in the order in which they are to be matched.
 	 */
-	private final List<SearchItem> plan;
+	final List<SearchItem> plan;
     /** Flag indicating that the matching should be injective. */
-	private final boolean injective;
+	final boolean injective;
     /** 
      * Map from source graph nodes to (distinct) indices.
      */
@@ -256,11 +256,11 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
      */
     private final Map<String,Integer> varIxMap;
     /** Array of source graph nodes, which is the inverse of {@link #nodeIxMap} .*/
-    private Node[] nodeKeys;
+    Node[] nodeKeys;
     /** Array of source graph edges, which is the inverse of {@link #edgeIxMap} .*/
-    private Edge[] edgeKeys;
+    Edge[] edgeKeys;
     /** Array of source graph variables, which is the inverse of {@link #varIxMap} .*/
-    private String[] varKeys;
+    String[] varKeys;
 	/** 
 	 * Flag to indicate that the construction of the object has finished,
 	 * so that it can now be used for searching.

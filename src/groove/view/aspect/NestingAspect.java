@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.5 2007-10-08 12:17:49 rensink Exp $
+ * $Id: NestingAspect.java,v 1.6 2007-10-10 08:59:37 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.5 $ $Date: 2007-10-08 12:17:49 $
+ * @version 0.1 $Revision: 1.6 $ $Date: 2007-10-10 08:59:37 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -37,6 +37,69 @@ public class NestingAspect extends AbstractAspect {
 		super(NESTING_ASPECT_NAME);
 	}
 	
+	/**
+	 * Tests whether the nesting value of an aspect edge is correct in the context of the edge.
+	 */
+	@Override
+	public void testEdge(AspectEdge edge, AspectGraph graph) throws FormatException {
+		if (isLevelEdge(edge)) {
+			// source nodes should be non-meta with only this level edge
+			if (isMetaElement(edge.source())) {
+				throw new FormatException("Level edge %s has a meta-node as source", edge);
+			}
+			for (AspectEdge outEdge: graph.outEdgeSet(edge.source())) {
+				if (isMetaElement(outEdge) && !outEdge.equals(edge)) {
+					throw new FormatException("Ambiguous level edges at %s", edge.source());
+				}
+			}
+			// target nodes should be meta
+			if (!isMetaElement(edge.opposite())) {
+				throw new FormatException("Level edge %s should have a meta-node as target", edge);
+			}
+		} else if (isParentEdge(edge)) {
+			// source and target nodes should be inversely universal and existential
+			if (!isMetaElement(edge.source())) {
+				throw new FormatException("Parent edge %s should have a meta-node as source", edge);
+			}
+			if (!isMetaElement(edge.opposite())) {
+				throw new FormatException("Parent edge %s should have a meta-node as target", edge);
+			}
+			if (isExists(edge.source()) == isExists(edge.target())) {
+				throw new FormatException("Parent edge %s should be between distinct quantifiers", edge);
+			}
+		} else if (isExists(edge) || isForall(edge)) {
+			// source and target nodes should be inversely universal and existential
+			if (isMetaElement(edge.source())) {
+				throw new FormatException("Quantified edge %s has a meta-node as source", edge);
+			}
+			if (isMetaElement(edge.opposite())) {
+				throw new FormatException("Quantified edge %s has a meta-node as target", edge);
+			}
+			AspectValue value = getNestingValue(edge);
+			if (!(value instanceof NestingAspectValue) || ((NestingAspectValue) value).getContent().length() == 0) {
+				throw new FormatException("Quantified edge %s has non-empty level name");
+			}
+		}
+	}
+
+	@Override
+	public void testNode(AspectNode node, AspectGraph graph) throws FormatException {
+		Set<AspectEdge> outEdgeSet = graph.outEdgeSet(node);
+		if (outEdgeSet.size() > 1) {
+			throw new FormatException("Meta-node %s has ambiguous parentage", node);
+		}
+		// test for cyclic parentage
+		Set<AspectNode> parents = new HashSet<AspectNode>();
+		parents.add(node);
+		while (!outEdgeSet.isEmpty()) {
+			AspectNode current = outEdgeSet.iterator().next().opposite();
+			if (!parents.add(current)) {
+				throw new FormatException("Parent edge cycle starting at %s", node);
+			}
+			outEdgeSet = graph.outEdgeSet(current);
+		}
+	}
+
 	@Override
 	protected AspectValue createValue(String name) throws FormatException {
 		AspectValue result;
@@ -100,7 +163,7 @@ public class NestingAspect extends AbstractAspect {
 		AspectValue value = getNestingValue(element);
 		return value != null && value.equals(NESTED) && element.label().text().equals(IN_LABEL);
 	}	
-
+	
 	/**
 	 * Determine whether an aspect edge carries the {@link #FORALL} nesting value.
 	 */
@@ -123,17 +186,17 @@ public class NestingAspect extends AbstractAspect {
 	
 	/** The name of the nesting aspect */
 	public static final String NESTING_ASPECT_NAME = "nesting";
-	/** Name of the NAC aspect value */
-	public static final String NAC_NAME = "nac";
+//	/** Name of the NAC aspect value */
+//	public static final String NAC_NAME = "nac";
 	/** Name of the exists aspect value */
 	public static final String EXISTS_NAME = "exists";
 	/** Name of the forall aspect value */
 	public static final String FORALL_NAME = "forall";
-	/** Name of a nesting edge aspect */
-	public static final String PARENT_EDGE_NAME = "parent";
-	/** The NAC aspect value */
+//	/** Name of a nesting edge aspect */
+//	public static final String PARENT_EDGE_NAME = "parent";
+//	/** The NAC aspect value */
 //	public static final String LEVEL_EDGE_NAME = "level";
-//	/** Name of the generic nesting edge aspect value. */
+	/** Name of the generic nesting edge aspect value. */
 	public static final String NESTED_NAME = "nested";
 	/** The set of aspect value names that are content values. */
 	private static final Set<String> contentValues;
@@ -142,11 +205,11 @@ public class NestingAspect extends AbstractAspect {
 		contentValues = new HashSet<String>();
 		contentValues.add(EXISTS_NAME);
 		contentValues.add(FORALL_NAME);
-		contentValues.add(NAC_NAME);		
+//		contentValues.add(NAC_NAME);		
 	}
 
-	/** Level edge aspect value */
-	public static final AspectValue NAC;
+//	/** Level edge aspect value */
+//	public static final AspectValue NAC;
 	/** The exists aspect value */
 	public static final AspectValue EXISTS;
 	/** The forall aspect value */
@@ -164,11 +227,15 @@ public class NestingAspect extends AbstractAspect {
 	static {
 		try {
 			EXISTS = instance.addValue(EXISTS_NAME);
-			NAC = instance.addValue(NAC_NAME);
+//			NAC = instance.addValue(NAC_NAME);
 			FORALL = instance.addValue(FORALL_NAME);
 //			PARENT_EDGE = instance.addEdgeValue(PARENT_EDGE_NAME);
 //			LEVEL_EDGE = instance.addEdgeValue(LEVEL_EDGE_NAME);
 			NESTED = instance.addEdgeValue(NESTED_NAME);
+			EXISTS.setSourceToEdge(NESTED);
+			EXISTS.setTargetToEdge(NESTED);
+			FORALL.setSourceToEdge(NESTED);
+			FORALL.setTargetToEdge(NESTED);
 		} catch( FormatException exc ) {
 			throw new Error("Aspect '" + NESTING_ASPECT_NAME
 					+ "' cannot be initialised due to name conflict", exc);
@@ -182,7 +249,7 @@ public class NestingAspect extends AbstractAspect {
 	/** Label used for the to-level meta-node. */
 	public static final String TOP_LABEL = "top";
 	/** The set of all allowed nesting labels. */
-	private static final Set<String> ALLOWED_LABELS = new HashSet<String>();
+	static final Set<String> ALLOWED_LABELS = new HashSet<String>();
 	
 	static {
 		ALLOWED_LABELS.add(IN_LABEL);
@@ -196,7 +263,12 @@ public class NestingAspect extends AbstractAspect {
 	 * algebra, and returns the result as a DefaultLabel if successful.
 	 */
 	private static class NestingLabelParser extends DefaultLabelParser {
-        /** This implementation tests if the text corresponds to an operation of the associated algebra. */
+		/** Empty constructor with the correct visibility. */
+		NestingLabelParser() {
+			// empty
+		}
+
+		/** This implementation tests if the text corresponds to an operation of the associated algebra. */
         @Override
 		protected void testFormat(String text) throws FormatException {
         	if (!ALLOWED_LABELS.contains(text)) {

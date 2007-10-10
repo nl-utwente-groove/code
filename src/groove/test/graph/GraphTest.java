@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.13 2007-09-25 22:57:51 rensink Exp $
+ * $Id: GraphTest.java,v 1.14 2007-10-10 08:59:48 rensink Exp $
  */
 package groove.test.graph;
 
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -668,6 +668,11 @@ public class GraphTest extends TestCase {
     }
 
     private class GraphListener implements groove.graph.GraphListener {
+    	/** Empty constructor with the correct visibility. */
+    	GraphListener() {
+    		// empty
+    	}
+    	
         public void addUpdate(GraphShape graph, Node node) {
             assertTrue(listeningTo.contains(graph));
             added.get(graph).add(node);
@@ -709,11 +714,11 @@ public class GraphTest extends TestCase {
             replacedBy.put(graph, new LinkedList<Element>());
         }
 
-        private Map<Graph,List<Element>> added = new HashMap<Graph,List<Element>>();
-        private Map<Graph,List<Element>> removed = new HashMap<Graph,List<Element>>();
-        private Map<Graph,List<Element>> replacedFrom = new HashMap<Graph,List<Element>>(); 
-        private Map<Graph,List<Element>> replacedBy = new HashMap<Graph,List<Element>>(); 
-        private Set<Graph> listeningTo = added.keySet();
+        Map<Graph,List<Element>> added = new HashMap<Graph,List<Element>>();
+        Map<Graph,List<Element>> removed = new HashMap<Graph,List<Element>>();
+        Map<Graph,List<Element>> replacedFrom = new HashMap<Graph,List<Element>>(); 
+        Map<Graph,List<Element>> replacedBy = new HashMap<Graph,List<Element>>(); 
+        Set<Graph> listeningTo = added.keySet();
     }
     
     private final Xml xml;

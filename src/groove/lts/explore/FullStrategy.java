@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: FullStrategy.java,v 1.4 2007-04-27 22:06:58 rensink Exp $
+ * $Id: FullStrategy.java,v 1.5 2007-10-10 08:59:49 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -30,29 +30,9 @@ import java.util.Collection;
 /**
  * Recursively explores all open states of the LTS, in a breadth first manner.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class FullStrategy extends AbstractStrategy {
-	/** Name of this exploration strategy. */
-    static public final String STRATEGY_NAME = "Full";
-    /** Short description of this exploration strategy. */
-    static public final String STRATEGY_DESCRIPTION = "At each pass, asks the LTS for all remaining open states, and explores them";
-//    
-//    /**
-//     * Constructs a strategy without setting an LTS.
-//     */
-//    public FullStrategy() {
-//    	// empty constructor
-//    }
-//    
-//    /**
-//     * Constructs an exploration strategy for a given LTS.
-//     * @param generator
-//     */
-//    public FullStrategy(StateGenerator generator) {
-//    	setSubject(generator);
-//    }
-//    
     /**
      * Initializes the set of open states, then calls the super method.
      */
@@ -101,7 +81,10 @@ public class FullStrategy extends AbstractStrategy {
         return getName();
     }
 
-    /**
+	/** Name of this exploration strategy. */
+    static public final String STRATEGY_NAME = "Full";
+    /** Short description of this exploration strategy. */
+    static public final String STRATEGY_DESCRIPTION = "At each pass, asks the LTS for all remaining open states, and explores them";    /**
      * Callback method to create the (initially empty) collection of open states 
      * for a given LTS.
      */
@@ -126,6 +109,13 @@ public class FullStrategy extends AbstractStrategy {
     }
 
     /**
+	 * @return Returns the openStateSet.
+	 */
+	final Collection<GraphState> getOpenStateSet() {
+		return this.openStateSet;
+	}
+
+    /**
      * The current set of open states.
      */
     private Collection<GraphState> openStateSet;
@@ -139,7 +129,7 @@ public class FullStrategy extends AbstractStrategy {
         /** This method adds the element to the open states. */
         @Override
         public void addUpdate(GraphShape graph, Node node) {
-        	openStateSet.add((GraphState) node);
+        	getOpenStateSet().add((GraphState) node);
         }
     };
 }

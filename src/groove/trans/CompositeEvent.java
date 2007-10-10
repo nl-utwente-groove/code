@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeEvent.java,v 1.4 2007-10-08 12:17:34 rensink Exp $
+ * $Id: CompositeEvent.java,v 1.5 2007-10-10 08:59:47 rensink Exp $
  */
 package groove.trans;
 
@@ -245,13 +245,13 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.EventCache
 	}
 
 	/** The set of events constituting this event. */
-    private final SPOEvent[] eventArray;
+    final SPOEvent[] eventArray;
     /** The hash code of this event. */
     private int hashCode;
     /** Cache reference instance for initialisation. */
     static private final CacheReference<EventCache> reference = CacheReference.<EventCache>newInstance(false);
     
-    private class EventCache {
+    class EventCache {
     	/** Reconstructs a set of events from the array stored in the composite event. */
     	SortedSet<SPOEvent> getEventSet() {
     		if (eventSet == null) {

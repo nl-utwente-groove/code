@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CommandLineTool.java,v 1.2 2007-04-27 22:07:02 rensink Exp $
+ * $Id: CommandLineTool.java,v 1.3 2007-10-10 08:59:40 rensink Exp $
  */
 package groove.util;
 
@@ -39,7 +39,7 @@ import java.util.Map;
  * Each of these options can be enabled or disabled in subclasses by overwriting 
  * the respective <tt>supports...Option</tt> methods.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class CommandLineTool {
     /**
@@ -261,7 +261,7 @@ public class CommandLineTool {
      * Only allowed if the verbosity option is supported.
      * @param verbosity the verbosity level; should be a legal verbosity value.
      */
-    protected void setVerbosity(int verbosity) {
+    public void setVerbosity(int verbosity) {
         this.verbosity = verbosity;
     }
 
@@ -269,7 +269,7 @@ public class CommandLineTool {
      * Returns the verbosity level.
      * The default level is <tt>MEDIUM_VERBOSITY</tt>
      */
-    protected int getVerbosity() {
+    public int getVerbosity() {
         return verbosity;
     }
     
@@ -436,7 +436,7 @@ public class CommandLineTool {
 	}
 
 	/**
-     * Time of invocations, initialized at construction time.
+     * Time of invocations, initialised at construction time.
      */
     protected final Date invocationTime = new Date();
     /**

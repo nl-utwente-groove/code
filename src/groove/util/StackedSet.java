@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StackedSet.java,v 1.3 2007-09-25 22:57:51 rensink Exp $
+ * $Id: StackedSet.java,v 1.4 2007-10-10 08:59:42 rensink Exp $
  */
 package groove.util;
 
@@ -30,7 +30,7 @@ import java.util.NoSuchElementException;
  * The implementation is based on a lower set, and sets of added and removed
  * elements with respect to this lower set.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class StackedSet<T> extends AbstractSet<T> {
 	/**
@@ -106,7 +106,7 @@ public class StackedSet<T> extends AbstractSet<T> {
                     // look for the first acceptable element
                     while (next == null && lowerIter.hasNext()) {
                         next = lowerIter.next();
-                        // only aceptable if not in the removed set
+                        // only acceptable if not in the removed set
                         if (removed.contains(next)) {
                             next = null;
                         }
@@ -133,10 +133,6 @@ public class StackedSet<T> extends AbstractSet<T> {
             /**
              * Copy from the enclosing class
              */
-            private final Set<? extends T> lower = StackedSet.this.lower;
-            /**
-             * Copy from the enclosing class
-             */
             private final Set<T> removed = StackedSet.this.removed;
             /**
              * The current inner iterator; i.e., the latest element returned by
@@ -147,7 +143,7 @@ public class StackedSet<T> extends AbstractSet<T> {
             /**
              * Iterator over the lower set.
              */
-            private Iterator<? extends T> lowerIter = lower.iterator();
+            private Iterator<? extends T> lowerIter = StackedSet.this.lower.iterator();
 
             /**
              * Next element to be retrieved from the lower set. Guaranteed not to be in the removed
@@ -246,13 +242,13 @@ public class StackedSet<T> extends AbstractSet<T> {
     /**
      * The lower set, on top of which this one is stacked.
      */
-    private final Set<? extends T> lower;
+    final Set<? extends T> lower;
     /**
      * The set of elements added w.r.t. the lower set.
      */
-    private final Set<T> added;
+    final Set<T> added;
     /**
      * The set of elements removed w.r.t. the lower set.
      */
-    private final Set<T> removed;
+    final Set<T> removed;
 }

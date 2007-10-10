@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ReflectedAlgebra.java,v 1.3 2007-08-26 07:24:19 rensink Exp $
+ * $Id: ReflectedAlgebra.java,v 1.4 2007-10-10 08:59:59 rensink Exp $
  */
 package groove.algebra;
 
@@ -23,7 +23,7 @@ import java.util.List;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ReflectedAlgebra<T> extends Algebra {
     /**
@@ -49,10 +49,10 @@ public class ReflectedAlgebra<T> extends Algebra {
         return alg.getSymbol(value);
     }
     
-    private final RealAlgebra alg;
+    final RealAlgebra alg;
 
     static private Operation createOperation(Method method) {
-        final Class[] parameterTypes = method.getParameterTypes();
+        final Class<?>[] parameterTypes = method.getParameterTypes();
         return new Operation() {
 
             /* (non-Javadoc)
@@ -163,6 +163,6 @@ public class ReflectedAlgebra<T> extends Algebra {
         }
 
         private final Method method;
-        private final Class[] parameterTypes;
+        private final Class<?>[] parameterTypes;
     }
 }

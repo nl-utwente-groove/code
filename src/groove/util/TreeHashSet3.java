@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TreeHashSet3.java,v 1.3 2007-09-16 21:44:29 rensink Exp $
+ * $Id: TreeHashSet3.java,v 1.4 2007-10-10 08:59:42 rensink Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.3 $ $Date: 2007-09-16 21:44:29 $
+ * @version $Revision: 1.4 $ $Date: 2007-10-10 08:59:42 $
  */
 public class TreeHashSet3<T> extends AbstractSet<T> {
 	/**
@@ -841,7 +841,7 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
     /**
      * The number of elements in the store.
      */
-    private int size;
+    int size;
     /**
      * The key codes.
      */
@@ -849,7 +849,7 @@ public class TreeHashSet3<T> extends AbstractSet<T> {
     /**
      * The array of current keys.
      */
-    private Object[] keys;
+    Object[] keys;
     /**
      * Number of bits involved in a single branch.
      */

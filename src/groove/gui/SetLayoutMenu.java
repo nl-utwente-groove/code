@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SetLayoutMenu.java,v 1.3 2007-08-26 07:24:02 rensink Exp $
+ * $Id: SetLayoutMenu.java,v 1.4 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -32,7 +32,7 @@ import javax.swing.JMenuItem;
  * A menu to choose between layout actions,
  * and offering a menu item that displays the currently set action.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class SetLayoutMenu extends JMenu {
     /**
@@ -102,25 +102,7 @@ public class SetLayoutMenu extends JMenu {
         return new LayoutItem(prototypeLayout);
     }
 
-    /**
-     * Menu item class to select a layouter.
-     */
-    private class LayoutItem extends JCheckBoxMenuItem {
-    	/** Constructs a new instance with a given layouter. */
-        private LayoutItem(Layouter layouter) {
-            this.layouter = layouter;
-            setAction(new AbstractAction(layouter.getName()) {
-                public void actionPerformed(ActionEvent evt) {
-                    selectLayoutAction(LayoutItem.this.layouter).actionPerformed(null);
-                }
-            });
-        }
-
-        /** The layouter to be set by this item. */
-        private final Layouter layouter;
-    }
-
-    /** The j-graph to be layoed out. */
+    /** The j-graph to be laid out. */
     private final JGraph jgraph;
     
     /** Menu item whose label reflects the currently selected layouter. */
@@ -135,4 +117,22 @@ public class SetLayoutMenu extends JMenu {
             }
         }
     };
+
+    /**
+     * Menu item class to select a layouter.
+     */
+    private class LayoutItem extends JCheckBoxMenuItem {
+    	/** Constructs a new instance with a given layouter. */
+        LayoutItem(Layouter layouter) {
+            this.layouter = layouter;
+            setAction(new AbstractAction(layouter.getName()) {
+                public void actionPerformed(ActionEvent evt) {
+                    selectLayoutAction(LayoutItem.this.layouter).actionPerformed(null);
+                }
+            });
+        }
+
+        /** The layouter to be set by this item. */
+        final Layouter layouter;
+    }
 }

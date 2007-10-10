@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleNameDialog.java,v 1.4 2007-08-26 07:23:59 rensink Exp $
+ * $Id: RuleNameDialog.java,v 1.5 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -74,13 +74,9 @@ class RuleNameDialog {
 	 * Lazily creates and returns the option pane that is to form the content
 	 * of the dialog.
 	 */
-	private JOptionPane getOptionPane() {
+	JOptionPane getOptionPane() {
 		if (optionPane == null) {
-//			JPanel editPane = new JPanel();
-//			editPane.setLayout(new BorderLayout());
-//			editPane.add(new JLabel("Rule name: "), BorderLayout.NORTH);
 			JTextField nameField = getNameField();
-//			editPane.add(nameField);
 			optionPane = new JOptionPane(nameField, JOptionPane.PLAIN_MESSAGE,
 					JOptionPane.OK_CANCEL_OPTION, null, new Object[] {
 							getOkButton(), getCancelButton() });
@@ -91,7 +87,7 @@ class RuleNameDialog {
 	/**
 	 * Returns the OK button on the dialog.
 	 */
-	private JButton getOkButton() {
+	JButton getOkButton() {
 		if (okButton == null) {
 			okButton = new JButton("OK");
 			okButton.addActionListener(new CloseListener());
@@ -102,7 +98,7 @@ class RuleNameDialog {
 	/**
 	 * Returns the OK button on the dialog.
 	 */
-	private JButton getCancelButton() {
+	JButton getCancelButton() {
 		if (cancelButton == null) {
 			cancelButton = new JButton("Cancel");
 			cancelButton.addActionListener(new CloseListener());
@@ -148,7 +144,7 @@ class RuleNameDialog {
 	 * @return <code>true</code> if {@link #getChosenName()} was found to be
 	 * a correct value
 	 */
-	private boolean isNameFieldValid() {
+	boolean isNameFieldValid() {
 		RuleNameLabel label = getChosenName();
 		return suggestion.equals(label) || ! existingNames.contains(label) && label.name().length() != 0;
 	}
@@ -180,6 +176,10 @@ class RuleNameDialog {
 	 * is the cancel button, or the value of the text field is a valid rule name.
 	 */
 	private class CloseListener implements ActionListener {
+		/** Empty constructor with the right visibility. */
+		CloseListener() {
+			// empty
+		}
 		public void actionPerformed(ActionEvent e) {
 			if (e.getSource() == getCancelButton() || isNameFieldValid()) {
 				getOptionPane().setValue(e.getSource());
@@ -196,6 +196,13 @@ class RuleNameDialog {
 	 * depending on whether {@link #isNameFieldValid()} returns <code>true</code>.
 	 */
 	private class OverlapListener implements DocumentListener {
+		/**
+		 * Empty constructor with the right visibility.
+		 */
+		OverlapListener() {
+			// empty
+		}
+		
 		public void changedUpdate(DocumentEvent e) {
 			testNameField();
 		}

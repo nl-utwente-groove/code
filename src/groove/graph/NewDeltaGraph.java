@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NewDeltaGraph.java,v 1.4 2007-09-25 22:57:53 rensink Exp $
+ * $Id: NewDeltaGraph.java,v 1.5 2007-10-10 08:59:58 rensink Exp $
  */
 package groove.graph;
 
@@ -246,7 +246,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	 * Creates a copy of an existing set of edges, or an empty set if the
 	 * given set is <code>null</code>.
 	 */
-	private EdgeSet createEdgeSet(EdgeSet edgeSet) {
+	EdgeSet createEdgeSet(EdgeSet edgeSet) {
 	    if (edgeSet == null) {
 	        return new EdgeSet();
 	    } else {
@@ -259,7 +259,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 //		return result;
 	}
 	
-	private NodeSet createNodeSet(NodeSet nodeSet) {
+	NodeSet createNodeSet(NodeSet nodeSet) {
 		if (nodeSet == null) {
 			return new NodeSet();
 		} else {
@@ -276,18 +276,18 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	}
 
 	/** The fixed (possibly <code>null</code> basis of this graph. */
-	private NewDeltaGraph basis;
+	NewDeltaGraph basis;
 	/** The fixed delta of this graph. */
-	private DeltaApplier delta;
+	DeltaApplier delta;
 	
 	/** The (initially null) edge set of this graph. */
-	private EdgeSet edgeSet;
+	EdgeSet edgeSet;
 //	/** The (initially null) node set of this graph. */
 //	private NodeSet nodeSet;
 	/** The map from nodes to sets of incident edges. */
-	private Map<Node,Set<Edge>> nodeEdgeMap;
+	Map<Node,Set<Edge>> nodeEdgeMap;
 	/** List of maps from labels to sets of edges with that label and arity. */
-	private List<Map<Label,Set<Edge>>> labelEdgeMaps;
+	List<Map<Label,Set<Edge>>> labelEdgeMaps;
 	/** The certificate strategy of this graph, set on demand. */
 	private Reference<CertificateStrategy> certifier;
 	/** Flag indicating that data should be copied rather than shared in {@link #getDataTarget()}. */ 
@@ -330,6 +330,10 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	 * @version $Revision $
 	 */
 	static abstract private class DataTarget implements DeltaTarget {
+		/** Empty constructor with correct visibility. */
+		DataTarget() {
+			// empty
+		}
 		/** 
 		 * Assigns the data structures computed in this data object
 		 * to a given delta graph.

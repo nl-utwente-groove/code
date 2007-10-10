@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExpr.java,v 1.15 2007-09-06 07:36:41 rensink Exp $
+ * $Id: RegExpr.java,v 1.16 2007-10-10 08:59:46 rensink Exp $
  */
 package groove.rel;
 
@@ -33,7 +33,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 abstract public class RegExpr { //implements VarSetSupport {
     /** 
@@ -429,7 +429,7 @@ abstract public class RegExpr { //implements VarSetSupport {
         /**
          * Creates a prototye regular expression.
          */
-        private Constant(String operator, String symbol) {
+        Constant(String operator, String symbol) {
             super(operator, symbol);
         }
 
@@ -482,7 +482,7 @@ abstract public class RegExpr { //implements VarSetSupport {
         }
 
         /** Creates a prototype instance. */
-        private Seq() {
+        Seq() {
             this(null);
         }
 
@@ -511,7 +511,7 @@ abstract public class RegExpr { //implements VarSetSupport {
         }
 
         /** Creates a prototype instance. */
-        private Choice() {
+        Choice() {
             this(null);
         }
 
@@ -668,7 +668,7 @@ abstract public class RegExpr { //implements VarSetSupport {
         /**
          * Creates a prototye regular expression.
          */
-        private Atom() {
+        Atom() {
             this("");
         }
 
@@ -774,7 +774,7 @@ abstract public class RegExpr { //implements VarSetSupport {
         }
 
         /** Creates a prototype instance. */
-        private Star() {
+        Star() {
             this(null);
         }
 
@@ -804,7 +804,7 @@ abstract public class RegExpr { //implements VarSetSupport {
             }
     
             /** Creates a prototype instance. */
-            private Plus() {
+            Plus() {
                 this(null);
             }
     
@@ -834,7 +834,7 @@ abstract public class RegExpr { //implements VarSetSupport {
         }
 
         /** Creates a prototype instance. */
-        private Inv() {
+        Inv() {
             this(null);
         }
 
@@ -864,7 +864,7 @@ abstract public class RegExpr { //implements VarSetSupport {
         }
 
         /** Creates a prototype instance. */
-        private Neg() {
+        Neg() {
             this(null);
         }
 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ShowHideMenu.java,v 1.11 2007-09-25 22:57:49 rensink Exp $
+ * $Id: ShowHideMenu.java,v 1.12 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -21,7 +21,6 @@ import groove.graph.Element;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphListener;
 import groove.graph.GraphShape;
-import groove.graph.Label;
 import groove.gui.jgraph.GraphJEdge;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.GraphJVertex;
@@ -37,10 +36,8 @@ import groove.view.FormatException;
 import java.awt.event.ActionEvent;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 
 import javax.swing.AbstractAction;
@@ -55,7 +52,7 @@ import org.jgraph.graph.DefaultPort;
 /**
  * Menu to control the visibility of nodes and edges in a jgraph.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class ShowHideMenu extends JMenu {
     /**
@@ -221,6 +218,14 @@ public class ShowHideMenu extends JMenu {
         return new LabelMenu(showMode);
     }
 
+    /** Returns the jgraph for which this menu works. */
+    JGraph getJGraph() {
+    	return jgraph;
+    }
+    
+    /** The jgraph upon which this menu works. */
+    private final JGraph jgraph;
+    
     /**
      * Abstract class that supports showing and hiding actions based on two criteria:
      * <ul>
@@ -549,6 +554,11 @@ public class ShowHideMenu extends JMenu {
             protected void unregister() {
                 getGraph().removeGraphListener(listener);
             }
+            
+            /** Returns a map from the text to the corresponding edges. */
+            KeyPartition<String,Edge> getTextEdgeMap() {
+            	return textEdgeMap;
+            }
 //            
 //            /**
 //             * Returns the set associated with a given string from the {@link #textEdgeMap}.
@@ -568,12 +578,12 @@ public class ShowHideMenu extends JMenu {
             private GraphListener listener = new GraphAdapter() {
                 @Override
                 public void addUpdate(GraphShape graph, Edge edge) {
-                	textEdgeMap.add(edge);
+                	getTextEdgeMap().add(edge);
                 }
                 
                 @Override
                 public void removeUpdate(GraphShape graph, Edge edge) {
-                	textEdgeMap.remove(edge);
+                	getTextEdgeMap().remove(edge);
                 }
             };
         }
@@ -640,7 +650,7 @@ public class ShowHideMenu extends JMenu {
      * Show/hide action based on the currently emphasized cells. The action adds the selection to
      * the shown or hidden cells
      * @author Arend Rensink
-     * @version $Revision: 1.11 $
+     * @version $Revision: 1.12 $
      */
     static protected class EmphasizedAction extends ShowHideAction {
     	/** 
@@ -695,8 +705,8 @@ public class ShowHideMenu extends JMenu {
             if (isIncluded) {
                 // now (re-)fill the menu
                 removeAll();
-                for (String labelAction: jgraph.getLabelList().getLabels()) {
-                    add(new LabelAction(jgraph, showMode, labelAction));
+                for (String labelAction: getJGraph().getLabelList().getLabels()) {
+                    add(new LabelAction(getJGraph(), showMode, labelAction));
                 }
             }
             super.menuSelectionChanged(isIncluded);
@@ -707,6 +717,4 @@ public class ShowHideMenu extends JMenu {
         private final int showMode;
     }
 
-    /** The jgraph upon which this menu works. */
-    private final JGraph jgraph;
 }

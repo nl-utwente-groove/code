@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: KeyPartition.java,v 1.3 2007-09-25 22:57:51 rensink Exp $
+ * $Id: KeyPartition.java,v 1.4 2007-10-10 08:59:42 rensink Exp $
  */
 package groove.util;
 
@@ -188,6 +188,13 @@ abstract public class KeyPartition<T,U> {
 	 */
 	abstract protected T getKey(Object value);
 	
+	/**
+	 * @return Returns the partitionMap.
+	 */
+	final Map<T, Set<U>> getPartitionMap() {
+		return this.partitionMap;
+	}
+
 	/** The underlying partition map. */
 	private final Map<T,Set<U>> partitionMap;
 	/** View on the values of the partition map as a modifiable set. */
@@ -201,7 +208,7 @@ abstract public class KeyPartition<T,U> {
 	private class ValueSetView extends SetOfDisjointSets<U> {
 		/** Creates a fresh instance of the view. */
 		public ValueSetView() {
-			super(partitionMap.values());
+			super(getPartitionMap().values());
 		}
 
 		@Override
@@ -216,7 +223,7 @@ abstract public class KeyPartition<T,U> {
 
 		@Override
 		public int size() {
-			return size;
+			return KeyPartition.this.size();
 		}
 	}
 }

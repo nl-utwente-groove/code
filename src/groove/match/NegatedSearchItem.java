@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NegatedSearchItem.java,v 1.8 2007-10-05 11:44:39 rensink Exp $
+ * $Id: NegatedSearchItem.java,v 1.9 2007-10-10 08:59:50 rensink Exp $
  */
 package groove.match;
 
@@ -84,7 +84,7 @@ class NegatedSearchItem extends AbstractSearchItem {
     /**
 	 * The inner search item, for which we test for the negation.
 	 */
-	private final SearchItem inner;
+	final SearchItem inner;
     /** Union of the needed and bound nodes of the inner condition. */
     private final Collection<Node> neededNodes;
     /** Union of the needed and bound variables of the inner condition. */
@@ -93,7 +93,7 @@ class NegatedSearchItem extends AbstractSearchItem {
     /** Record for the negated search item. */
     private class NegatedSearchRecord extends SingularRecord {
         /** Constructs a new record, for a given matcher. */
-        private NegatedSearchRecord(Search search) {
+        NegatedSearchRecord(Search search) {
             super(search);
             this.innerRecord = inner.getRecord(search);
         }

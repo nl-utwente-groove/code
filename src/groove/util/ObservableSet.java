@@ -14,7 +14,7 @@ import java.util.Set;
  * Provides a view upon a given set that sends notifications of
  * additions and removals.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ObservableSet<T> extends Observable implements Set<T> {
     /** 
@@ -218,18 +218,27 @@ public class ObservableSet<T> extends Observable implements Set<T> {
         return set.toArray(a);
     }
     
-    /** The underlying set. */
+    /** 
+     * Just calls the super method.
+     * This is there for the sake of visibility from the inner Iterator class. 
+     */
+    @Override
+	final protected synchronized void setChanged() {
+		super.setChanged();
+	}
+
+	/** The underlying set. */
     private final Set<T> set;
 
     /** Class wrapping an update that has added one or more elements. */
     static public class AddUpdate<T> {
         /** Constructs an instance for a given set of added elements. */
-        private AddUpdate(Set<T> addedSet) {
+        AddUpdate(Set<T> addedSet) {
             this.addedSet = Collections.unmodifiableSet(addedSet);
         }
         
         /** Constructs an instance for a given singleton element. */
-        private AddUpdate(T element) {
+        AddUpdate(T element) {
             this.addedSet = Collections.singleton(element);
         }
         
@@ -245,12 +254,12 @@ public class ObservableSet<T> extends Observable implements Set<T> {
     /** Class wrapping an update that has removed one or more elements. */
     static public class RemoveUpdate<T> {
         /** Constructs an instance for a given set of removed elements. */
-        private RemoveUpdate(Set<T> removedSet) {
+        RemoveUpdate(Set<T> removedSet) {
             this.removedSet = Collections.unmodifiableSet(removedSet);
         }
         
         /** Constructs an instance for a given singleton element. */
-        private RemoveUpdate(T element) {
+        RemoveUpdate(T element) {
             this.removedSet = Collections.singleton(element);
         }
         

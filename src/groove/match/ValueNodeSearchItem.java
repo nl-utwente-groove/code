@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.11 2007-10-05 11:44:39 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.12 2007-10-10 08:59:50 rensink Exp $
  */
 package groove.match;
 
@@ -82,12 +82,13 @@ class ValueNodeSearchItem extends AbstractSearchItem {
     }
 
 
-    /** The value node to be matched. */
-	private final ValueNode node;
     /** Singleton set consisting of <code>node</code>. */
     private final Collection<Node> boundNodes;
+    /** The value node to be matched. */
+	final ValueNode node;
     /** The index of the value node (in the result. */
-    private int nodeIx;
+    int nodeIx;
+    
     /**
      * Record of a value node search item.
      * @author Arend Rensink

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeEdgeSetGraph.java,v 1.7 2007-08-26 07:23:44 rensink Exp $
+ * $Id: NodeEdgeSetGraph.java,v 1.8 2007-10-10 08:59:58 rensink Exp $
  */
 package groove.graph;
 
@@ -26,13 +26,13 @@ import java.util.Set;
 /**
  * Graph implementation based on a single set of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @deprecated Use {@link NodeSetEdgeSetGraph} instead
  */
 @Deprecated
 public class NodeEdgeSetGraph extends AbstractGraph<GraphCache> {
-    private class ElementSet<E extends Element> extends UnmodifiableSetView<E> {
-        private ElementSet(Class<E> type) {
+    class ElementSet<E extends Element> extends UnmodifiableSetView<E> {
+        ElementSet(Class<E> type) {
             super(elementSet);
             this.type = type;
         }
@@ -61,7 +61,7 @@ public class NodeEdgeSetGraph extends AbstractGraph<GraphCache> {
      * Extension of <tt>Set</tt> that invokes the notify methods of the graph
      * when elements are added or deleted
      */
-    private class NotifySet extends HashSet<Element> {
+    class NotifySet extends HashSet<Element> {
         /**
          * Overwrites the method from <tt>Set</tt> to ensure
          * proper notification in case of removal from the iterator.
@@ -85,11 +85,16 @@ public class NodeEdgeSetGraph extends AbstractGraph<GraphCache> {
                     }
                 }
 
-                private Iterator<Element> iterator = NotifySet.super.iterator();
+                private Iterator<Element> iterator = superIterator();
                 private Element last;
             };
         }
 
+        /** Returns <code>super.iterator()</code>. */
+        Iterator<Element> superIterator() {
+        	return super.iterator();
+        }
+        
         /**
          * Overwrites the method from <tt>Set</tt> to ensure
          * proper observer notification in all cases. 

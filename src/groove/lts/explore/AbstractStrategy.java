@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractStrategy.java,v 1.12 2007-09-30 15:52:49 rensink Exp $
+ * $Id: AbstractStrategy.java,v 1.13 2007-10-10 08:59:49 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -32,7 +32,7 @@ import java.util.Collection;
 /**
  * Abstract LTS exploration strategy.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public abstract class AbstractStrategy extends StateGenerator implements ExploreStrategy {
 //	/** 
@@ -185,7 +185,7 @@ public abstract class AbstractStrategy extends StateGenerator implements Explore
 	 */
 	static protected class FreshStateCollector extends GTSListener {
 		/** Empty constructor declaration to restrict visibility. */
-		private FreshStateCollector() {
+		FreshStateCollector() {
 			// empty
 		}
 		/**

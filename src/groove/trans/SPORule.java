@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.40 2007-10-08 12:17:34 rensink Exp $
+ * $Id: SPORule.java,v 1.41 2007-10-10 08:59:47 rensink Exp $
  */
 package groove.trans;
 
@@ -52,7 +52,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.40 $
+ * @version $Revision: 1.41 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -176,9 +176,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     		directSubRules = new TreeSet<SPORule>();
         	for (AbstractCondition<?> condition: getSubConditions()) {
         		for (AbstractCondition<?> subCondition: condition.getSubConditions()) {
-        			assert subCondition instanceof SPORule : String.format("Sub-sub-condition %s is not a rule", subCondition.getName());
-        			SPORule subRule = (SPORule) subCondition;
-        			directSubRules.add(subRule);
+        			if (subCondition instanceof SPORule) {
+        				directSubRules.add((SPORule) subCondition);
+        			} 
         		}
         	}
     	}
@@ -236,7 +236,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * Returns a collection of matches extending a given match with
 	 * matches for the sub-conditions.
 	 */
-    private Collection<RuleMatch> addSubMatches(Graph host, RuleMatch simpleMatch) {
+    Collection<RuleMatch> addSubMatches(Graph host, RuleMatch simpleMatch) {
     	Collection<RuleMatch> result = Collections.singleton(simpleMatch);
 		VarNodeEdgeMap matchMap = simpleMatch.getElementMap();
 		for (AbstractCondition<?> condition : getComplexSubConditions()) {
@@ -272,7 +272,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * @return <code>true</code> if <code>matchMap</code> satisfies the constraints imposed
 	 * by the rule (if any).
 	 */
-	private boolean isValidMatchMap(Graph host, VarNodeEdgeMap matchMap) {
+	boolean isValidMatchMap(Graph host, VarNodeEdgeMap matchMap) {
 		boolean result = true;
 		if (SystemProperties.isCheckDangling(getProperties())) {
 			result = satisfiesDangling(host, matchMap);
@@ -374,17 +374,18 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	@Override
     public String toString() {
         StringBuilder res = new StringBuilder(String.format("Rule %s, level %s, anchor %s%n", getName(), Groove.toString(Groove.toArray(getLevel())), Groove.toString(anchor())));
-        res.append(String.format("LHS: %s%nRHS: %s%nMap: %s", lhs(), rhs(), getMorphism().elementMap()));
+        res.append(String.format("LHS: %s%nRHS: %s%nMorphism: %s", lhs(), rhs(), getMorphism().elementMap()));
         if (!getRootMap().isEmpty()) {
         	res.append(String.format("%nRoot map: %s", getRootMap()));
         } else if (!getCoRootMap().isEmpty()) {
         	res.append(String.format("%nCo-root map: %s", getCoRootMap()));
         }
         if (!getSubConditions().isEmpty()) {
-            res.append(String.format("%nSubconditions:"));
+            res.append(String.format("%n----Subconditions of %s:", getName()));
             for (Condition subCondition: getSubConditions()) {
                 res.append(String.format("%n%s", subCondition));
             }
+            res.append(String.format("%n----End of %s", getName()));
         }
         return res.toString();
     }

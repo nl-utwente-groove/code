@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSetEdgeSetGraph.java,v 1.7 2007-09-25 22:57:53 rensink Exp $
+ * $Id: NodeSetEdgeSetGraph.java,v 1.8 2007-10-10 08:59:55 rensink Exp $
  */
 package groove.graph;
 
@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * Graph implementation based on distinct sets of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class NodeSetEdgeSetGraph
     extends AbstractGraph<GraphCache>
@@ -275,7 +275,7 @@ public class NodeSetEdgeSetGraph
                 }
             }
             
-            private final Iterator<E> setIterator = NotifySet.super.iterator();
+            private final Iterator<E> setIterator = superIterator();
             E latest;
         }
         
@@ -300,6 +300,11 @@ public class NodeSetEdgeSetGraph
         @Override
         public Iterator<E> iterator() {
             return new NotifySetIterator();
+        }
+        
+        /** Returns <code>super.iterator()</code>. */
+        Iterator<E> superIterator() {
+        	return super.iterator();
         }
         
         /**

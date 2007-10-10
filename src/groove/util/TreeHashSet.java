@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class TreeHashSet<T> extends AbstractSet<T> {
 	/**
@@ -640,7 +640,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     /**
      * The number of elements in the store.
      */
-    private int size;
+    int size;
     /**
      * The key codes.
      */
@@ -648,7 +648,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     /**
      * The array of current keys.
      */
-    private Object[] keys;
+    Object[] keys;
     /**
      * Number of bits involved in the root branch.
      */

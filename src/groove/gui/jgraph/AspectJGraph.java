@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJGraph.java,v 1.8 2007-05-29 06:52:36 rensink Exp $
+ * $Id: AspectJGraph.java,v 1.9 2007-10-10 08:59:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -79,6 +79,18 @@ public class AspectJGraph extends JGraph {
     }
 
 	/**
+	 * @return Returns the simulator.
+	 */
+	final Simulator getSimulator() {
+		return this.simulator;
+	}
+
+	/**
+	 * The simulator with which this j-graph is associated.
+	 */
+	private final Simulator simulator;
+
+	/**
 	 * Computes and returns a menu that allows setting the display to another
 	 * rule.
 	 */
@@ -90,7 +102,7 @@ public class AspectJGraph extends JGraph {
                 super.menuSelectionChanged(selected);
                 if (selected) {
                     removeAll();
-                    for (RuleNameLabel ruleName: simulator.getCurrentGrammar().getRuleMap().keySet()) {
+                    for (RuleNameLabel ruleName: getSimulator().getCurrentGrammar().getRuleMap().keySet()) {
                         add(createSetRuleAction(ruleName));                        
                     }
                 }
@@ -103,13 +115,8 @@ public class AspectJGraph extends JGraph {
     protected Action createSetRuleAction(final RuleNameLabel ruleName) {
         return new AbstractAction(ruleName.toString()) {
             public void actionPerformed(ActionEvent evt) {
-                simulator.setRule(ruleName);
+                getSimulator().setRule(ruleName);
             }
         };
     }
-
-    /**
-     * The simulator with which this j-graph is associated.
-     */
-    private final Simulator simulator;
 }

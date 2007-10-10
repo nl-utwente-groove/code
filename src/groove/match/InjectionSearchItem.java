@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: InjectionSearchItem.java,v 1.10 2007-10-05 11:44:40 rensink Exp $
+ * $Id: InjectionSearchItem.java,v 1.11 2007-10-10 08:59:50 rensink Exp $
  */
 package groove.match;
 
@@ -93,22 +93,22 @@ public class InjectionSearchItem extends AbstractSearchItem {
     /**
 	 * First node which may not be merged.
 	 */
-	private final Node node1;
+	final Node node1;
 	/**
 	 * Second node which may not be merged.
 	 */
-    private final Node node2;
+    final Node node2;
     /** Collection consisting of <code>node1</code> and <code>node2</code>. */
     private final Collection<Node> neededNodes;
     /** Node index (in the result) of {@link #node1}. */
-    private int node1Ix;
+    int node1Ix;
     /** Node index (in the result) of {@link #node2}. */
-    private int node2Ix;
+    int node2Ix;
     
     /** The record for this search item. */
     private class InjectionRecord extends SingularRecord {
         /** Constructs a fresh record, for a given matcher. */
-        private InjectionRecord(Search search) {
+        InjectionRecord(Search search) {
             super(search);
             assert search.getNode(node1Ix) != null : String.format("Merge embargo node %s not yet matched", node1);
             assert search.getNode(node2Ix) != null: String.format("Merge embargo node %s not yet matched", node2);

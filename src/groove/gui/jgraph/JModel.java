@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.18 2007-10-07 07:56:49 rensink Exp $
+ * $Id: JModel.java,v 1.19 2007-10-10 08:59:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -42,6 +42,7 @@ import java.util.Set;
 
 import javax.swing.SwingUtilities;
 
+import org.jgraph.event.GraphModelEvent;
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.DefaultGraphModel;
@@ -61,7 +62,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -286,7 +287,7 @@ abstract public class JModel extends DefaultGraphModel {
 				// otherwise, defer to avoid concurrency problems
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						fireGraphChanged(JModel.this, new RefreshEdit(jCellSet));
+						fireGraphChanged(new RefreshEdit(jCellSet));
 					}
 				});
 			}
@@ -626,6 +627,13 @@ abstract public class JModel extends DefaultGraphModel {
         return result;
     }
     
+    /** Calls {@link DefaultGraphModel}{@link #fireGraphChanged(Object, org.jgraph.event.GraphModelEvent.GraphModelChange)}
+     * with <code>this</code> as first parameter.
+     */
+	void fireGraphChanged(GraphModelEvent.GraphModelChange edit) {
+    	super.fireGraphChanged(this, edit);
+    }
+    
     /**
      * Standard node attributes used in this graph model.
      * Set in the constructor.
@@ -666,7 +674,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.18 $
+     * @version $Revision: 1.19 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**

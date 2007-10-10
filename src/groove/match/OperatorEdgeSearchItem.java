@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OperatorEdgeSearchItem.java,v 1.13 2007-10-05 11:44:39 rensink Exp $
+ * $Id: OperatorEdgeSearchItem.java,v 1.14 2007-10-10 08:59:50 rensink Exp $
  */
 package groove.match;
 
@@ -130,23 +130,23 @@ class OperatorEdgeSearchItem extends AbstractSearchItem {
     }
 
     /** The product edge for which we seek an image. */
-	private final ProductEdge edge;
+	final ProductEdge edge;
 	/** The operation of the product edge. */
-	private final Operation operation;
+	final Operation operation;
 	/** List of operands of the product edge's source node. */
-	private final List<ValueNode> arguments;
+	final List<ValueNode> arguments;
 	/** The target node of the product edge. */
-	private final ValueNode target;
+	final ValueNode target;
     /** Singleton set consisting of <code>target</code>. */
-    private final Collection<Node> boundNodes;
+    final Collection<Node> boundNodes;
     /** Set of the nodes in <code>arguments</code>. */
-    private final Collection<Node> neededNodes;
+    final Collection<Node> neededNodes;
     /** Indices of the argument nodes in the result. */
-    private int[] argumentIxs;
+    int[] argumentIxs;
     /** Flag indicating if the target node has been found at search time. */
-    private boolean targetFound;
+    boolean targetFound;
     /** Index of {@link #target} in the result. */
-    private int targetIx;
+    int targetIx;
     
     /**
      * Record of an edge search item, storing an iterator over the

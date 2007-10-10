@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MultiLinedEditor.java,v 1.4 2007-05-28 21:32:44 rensink Exp $
+ * $Id: MultiLinedEditor.java,v 1.5 2007-10-10 08:59:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -44,7 +44,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Multiline jcell editor, essentially taken from <code>org.jgraph.cellview.JGraphMultilineView</code>.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class MultiLinedEditor extends DefaultGraphCellEditor {
     /**
@@ -78,12 +78,17 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
     }
 
     /**
-     * Overriting this so that I could modify an eiditor container. see
+     * Overwriting this so that I could modify an editor container. see
      * http://sourceforge.net/forum/forum.php?thread_id=781479&forum_id=140880
      */
     @Override
     protected Container createContainer() {
         return new ModifiedEditorContainer();
+    }
+    
+    /** Returns the editing component. */
+    final Component getEditingComponent() {
+    	return editingComponent;
     }
     
 	/** Internal editor implementation. */
@@ -153,13 +158,18 @@ public class MultiLinedEditor extends DefaultGraphCellEditor {
 
     /** Specialisation of the editor container that adapts the size. */
     private class ModifiedEditorContainer extends EditorContainer {
+    	/** Empty constructor with the correct visibility. */
+    	ModifiedEditorContainer() {
+    		// empty
+    	}
+    	
         @Override
         public void doLayout() {
             super.doLayout();
-            // substract 2 pixels that were added to the preferred size of the container for the
+            // subtract 2 pixels that were added to the preferred size of the container for the
             // border.
-            Dimension dim = editingComponent.getSize();
-            editingComponent.setSize(dim.width - 2, dim.height);
+            Dimension dim = getEditingComponent().getSize();
+            getEditingComponent().setSize(dim.width - 2, dim.height);
 
             // reset container's size based on a potentially new preferred size of a real
             // editor.

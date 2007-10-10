@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaSet.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: DeltaSet.java,v 1.3 2007-10-10 08:59:42 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.NoSuchElementException;
  * Implements a set whose operations work on an underlying (lower) set, but store 
  * the elements added to and removed from that lower set.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:28 $
+ * @version $Revision: 1.3 $ $Date: 2007-10-10 08:59:42 $
  */
 public class DeltaSet<T> extends AbstractSet<T> {
     /**
@@ -102,15 +102,15 @@ public class DeltaSet<T> extends AbstractSet<T> {
             /**
              * Copy from the enclosing class
              */
-            private final Set<T> removed = DeltaSet.this.removed;
+            private final Set<T> removed = removed();
             /**
              * Copy from the enclosing class
              */
-            private final Set<T> added = DeltaSet.this.added;
+            private final Set<T> added = added();
             /**
              * Iterator over the inner set.
              */
-            private final Iterator<T> iter = lower.iterator();
+            private final Iterator<T> iter = lower().iterator();
             /**
              * Latest element returned by <code>next()</code>.
              * This is the element removed by {@link #remove()}.

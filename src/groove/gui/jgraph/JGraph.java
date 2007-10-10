@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.21 2007-09-07 19:13:24 rensink Exp $
+ * $Id: JGraph.java,v 1.22 2007-10-10 08:59:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -79,7 +79,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.21 $ $Date: 2007-09-07 19:13:24 $
+ * @version $Revision: 1.22 $ $Date: 2007-10-10 08:59:51 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -329,7 +329,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 			jModel.setFilteredLabels(getFilteredLabels());
 			getLabelList().updateModel();
 			jModel.addGraphModelListener(this);
-			jModel.refresh();
+//			jModel.refresh();
 			if (initialized) {
 				if (layouter != null && !jModel.isLayedOut()) {
 					if (jModel.freeze()) {
@@ -1064,7 +1064,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 			for (Object cell: cells) {
 				labels.addAll(((JCell) cell).getListLabels());
 			}
-			filteredLabels.addAll(labels);
+			getFilteredLabels().addAll(labels);
 		}
 
 		/** The array of cells upon which this action works. */
@@ -1116,7 +1116,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         public void actionPerformed(ActionEvent evt) {
         	for (JCell jCell : jCells) {
 				setLineStyle((JEdge) jCell, lineStyle);
-				List points = GraphConstants.getPoints(jCell.getAttributes());
+				List<?> points = GraphConstants.getPoints(jCell.getAttributes());
 				if (points == null || points.size() == 2) {
 					addPoint((JEdge) jCell, location);
 				}
@@ -1236,6 +1236,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	 * the rule panel on double-clicks.
 	 */
 	private class MyMouseListener extends MouseAdapter {
+    	/** Empty constructor wit the correct visibility. */
+		MyMouseListener() {
+    		// empty
+    	}
+    	
         @Override
         public void mousePressed(MouseEvent evt) {
             if (isAddPointEvent(evt)) {
@@ -1259,6 +1264,11 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
     }
     /** Observer that calls {@link JModel#refresh()} whenever it receives an update event. */
     private class RefreshListener implements Observer {
+    	/** Empty constructor wit the correct visibility. */
+    	RefreshListener() {
+    		// empty
+    	}
+    	
     	/** The method is called when a filtered set is changed. */
 		public void update(Observable o, Object arg) {
 			Set<String> changedLabelSet = null;

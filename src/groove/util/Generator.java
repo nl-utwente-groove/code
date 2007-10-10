@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.23 2007-10-05 08:31:52 rensink Exp $
+ * $Id: Generator.java,v 1.24 2007-10-10 08:59:42 rensink Exp $
  */
 package groove.util;
 
@@ -75,7 +75,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -924,6 +924,11 @@ public class Generator extends CommandLineTool {
     
     /** Listener to an LTS that counts the nodes and edges of the states. */
     private static class StatisticsListener extends GraphAdapter {
+    	/** Empty constructor with the correct visibility. */
+		StatisticsListener() {
+			// Auto-generated constructor stub
+		}
+		
 		@Override
 		public void addUpdate(GraphShape graph, Node node) {
 			GraphState state = (GraphState) node;

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSearchItem.java,v 1.11 2007-10-05 11:44:39 rensink Exp $
+ * $Id: NodeSearchItem.java,v 1.12 2007-10-10 08:59:50 rensink Exp $
  */
 package groove.match;
 
@@ -84,7 +84,7 @@ class NodeSearchItem extends AbstractSearchItem {
 	/** Flag indicating if the node is pre-matched. */
 	private boolean nodeMatched;
     /** The index of {@link #node} in the result. */
-	private int nodeIx;
+	int nodeIx;
     /** Singleton set consisting only of <code>node</code>. */
     private final Collection<Node> boundNodes;
     

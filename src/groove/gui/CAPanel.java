@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CAPanel.java,v 1.12 2007-08-26 07:24:04 rensink Exp $
+ * $Id: CAPanel.java,v 1.13 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -44,16 +44,6 @@ import javax.swing.JToolBar;
 
 public class CAPanel extends JPanel  implements SimulationListener {
 
-	private Options options;
-	private ControlAutomaton control; 
-	private Simulator simulator;
-
-	AutomatonPanel autPanel;
-	JTextPane textPanel;
-	
-	private DefaultGrammarView grammar;
-	
-	
 	public CAPanel(Simulator simulator)
 	{
 		super();
@@ -99,7 +89,7 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	 * Needed by Simulator because this is not a JGraphPanel
 	 * @return the JGraphPanel in the JSplitPane
 	 */
-	public JGraphPanel getJGraphPanel() {
+	public JGraphPanel<?> getJGraphPanel() {
 		return autPanel;
 	}
 
@@ -128,7 +118,6 @@ public class CAPanel extends JPanel  implements SimulationListener {
 			
 			GraphJModel model = new ControlJModel(cv.getAutomaton(), autPanel.getOptions());
 			
-			int i = model.getRootCount();
 			jGraph.setModel(model);
 
 			autPanel.refreshStatus();
@@ -175,7 +164,11 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	public void startSimulationUpdate(GTS gts) {
 		// TODO Auto-generated method stub
 	}
-	
+
+	Simulator simulator;
+	AutomatonPanel autPanel;
+	JTextPane textPanel;
+	DefaultGrammarView grammar;	
 }
 	
 class AutomatonPanel extends JGraphPanel<JGraph> 

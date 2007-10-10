@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LabelList.java,v 1.17 2007-09-10 19:13:40 rensink Exp $
+ * $Id: LabelList.java,v 1.18 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -55,7 +55,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /**
@@ -178,10 +178,10 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 	 * not a {@link JModel.RefreshEdit}.
 	 */
 	private boolean processRegularEdit(GraphModelEvent.GraphModelChange change, boolean changed) {
-		Map changeMap = change.getAttributes();
+		Map<?,?> changeMap = change.getAttributes();
 		if (changeMap != null) {
 			for (Object changeEntry : changeMap.entrySet()) {
-				Object obj = ((Map.Entry) changeEntry).getKey();
+				Object obj = ((Map.Entry<?,?>) changeEntry).getKey();
 				if (isListable(obj)) { //&& attributes.containsKey(GraphConstants.VALUE)) {
 					changed |= modifyLabels((JCell) obj);
 				}
@@ -429,7 +429,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     protected final Map<String,Set<JCell>> labels = new TreeMap<String,Set<JCell>>();
 
     /** Set of filtered labels. */
-    private final ObservableSet<String> filteredLabels;
+    final ObservableSet<String> filteredLabels;
     
     /**
      * The background colour of this component when it is enabled.
@@ -441,6 +441,11 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
      * filtered labels.
      */
     private class MyCellRenderer extends DefaultListCellRenderer {
+    	/** Empty constructor with the correct visibility. */
+    	MyCellRenderer() {
+    		// empty
+    	}
+    	
 		@Override
         public void setText(String label) {
         	StringBuilder text = new StringBuilder();
@@ -475,6 +480,11 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     
     /** Class to deal with mouse events over the label list. */
     private class MyMouseListener extends MouseAdapter {
+    	/** Empty constructor with the correct visibility. */
+    	MyMouseListener() {
+    		// empty
+    	}
+    	
         @Override
         public void mousePressed(MouseEvent evt) {
         	if (evt.getButton() == MouseEvent.BUTTON3) {
@@ -540,7 +550,7 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
     }
 
     /** Border to put some space to the left and right of the labels inside the list. */
-    static private final Border INSET_BORDER = new EmptyBorder(0,3,0,3);
-    /** Color HTML tag for the foreground color of special labels. */
-    static private final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
+    static final Border INSET_BORDER = new EmptyBorder(0,3,0,3);
+    /** Colour HTML tag for the foreground colour of special labels. */
+    static final Color SPECIAL_COLOR = Color.LIGHT_GRAY;
 }
