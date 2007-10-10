@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TreeBag.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: TreeBag.java,v 1.3 2007-10-10 08:59:42 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.TreeMap;
 /**
  * A bag (= multiset) of elements, based on an underlying tree map.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<T> {
     /**
@@ -41,7 +41,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
          */
         protected MyMultiplicity() {
             value = 1;
-            size++;
+            incSize();
         }
 
         /**
@@ -91,7 +91,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
          */
         protected int inc() {
             value++;
-            size++;
+            incSize();
             assert value > 0;
             return value;
         }
@@ -103,7 +103,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         protected int dec() {
             assert value > 0;
             value--;
-            size--;
+            decSize();
             return value;
         }
 
@@ -301,7 +301,7 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
      */
     @Override
     public boolean equals(Object obj) {
-        return obj instanceof Bag && ((TreeBag) obj).bag.equals(bag);
+        return obj instanceof Bag && ((TreeBag<?>) obj).bag.equals(bag);
     }
     
     /**
@@ -334,11 +334,21 @@ public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<
         return result;
     }
 
+    /** Increases the size variable. */
+    final void incSize() {
+    	size++;
+    }
+
+    /** Increases the size variable. */
+    final void decSize() {
+    	size--;
+    }
+    
     /**
      * The underying mapping from elements to multiplicites.
      * @invariant <tt>bag : Object --> Multiplicity</tt>
      */
-    protected final Map<T, MyMultiplicity> bag = new TreeMap<T, MyMultiplicity>();
+    final Map<T, MyMultiplicity> bag = new TreeMap<T, MyMultiplicity>();
     /**
      * The number of element (occurrences) in this bag.
      * @invariant <tt>size == computeSize()</tt>

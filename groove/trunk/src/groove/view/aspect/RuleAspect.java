@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.9 2007-10-08 12:17:50 rensink Exp $
+ * $Id: RuleAspect.java,v 1.10 2007-10-10 08:59:37 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -29,7 +29,7 @@ import groove.view.FormatException;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class RuleAspect extends AbstractAspect {
     /**
@@ -172,6 +172,32 @@ public class RuleAspect extends AbstractAspect {
 	}
 
 	/**
+	 * Tests if a given aspect element is an eraser.
+	 * This is the case if there is an aspect value in the element which
+	 * equals {@link #ERASER}.
+	 * @param element the element to be tested
+	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
+	 * value that equals {@link #ERASER}.
+	 */
+	public static boolean isEraser(AspectElement element) {
+		return hasRole(element) && getRuleValue(element) == ERASER;
+	}
+
+	/**
+	 * Tests if a given aspect edge is a merger.
+	 * This is the case if it is a creator with a merge label.
+	 * @param edge the edge to be tested
+	 * @return <code>true</code> if <code>edge</code> is a merger
+	 */
+	public static boolean isMerger(AspectEdge edge) throws FormatException {
+		if (isCreator(edge)) {
+			return RegExpr.parse(edge.label().text()).isEmpty();
+		} else {
+			return false;
+		}
+	}
+
+	/**
 	 * Convenience method to test if a given aspectual element stands
 	 * for an actual rule element. If not, this means that it provides
 	 * information <i>about</i> the rule.
@@ -297,6 +323,11 @@ public class RuleAspect extends AbstractAspect {
 	 * @version $Revision $
 	 */
 	private static class RuleContentParser implements ContentParser<Pair<NameLabel,Integer>> {
+		/** Empty constructor with the correct visibility. */
+		RuleContentParser() {
+			// empty
+		}
+
 		/** 
 		 * Value used to signal that the priority is not explicitly given
 		 * (meaning that the rule has default priority). 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.25 2007-10-02 08:02:51 rensink Exp $
+ * $Id: AspectJModel.java,v 1.26 2007-10-10 08:59:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -67,7 +67,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -243,13 +243,13 @@ public class AspectJModel extends GraphJModel {
 	}
 
 	/** Retrieves a node's image according to the view. */
-	private Node getModelNode(AspectNode node) {
+	Node getModelNode(AspectNode node) {
 		NodeEdgeMap viewMap = view.getMap();
 		return viewMap == null ? null : viewMap.getNode(node);
 	}
 
 	/** Retrieves an edge's image according to the view. */
-	private Edge getModelEdge(AspectEdge edge) {
+	Edge getModelEdge(AspectEdge edge) {
 		NodeEdgeMap viewMap = view.getMap();
 		return viewMap == null ? null : viewMap.getEdge(edge);
 	}
@@ -276,7 +276,7 @@ public class AspectJModel extends GraphJModel {
     }
     
     /** Helper method to return the rule aspect value of an aspect node. */
-	static private AspectValue role(AspectElement node) {
+	static AspectValue role(AspectElement node) {
 		return getRuleValue(node);
 	}
 
@@ -284,9 +284,9 @@ public class AspectJModel extends GraphJModel {
     static public final AspectJModel EMPTY_ASPECT_JMODEL = new AspectJModel();
 
     /** Role names (for the tool tips). */
-    static private final Map<AspectValue,String> ROLE_NAMES = new HashMap<AspectValue,String>(); 
+    static final Map<AspectValue,String> ROLE_NAMES = new HashMap<AspectValue,String>(); 
     /** Role descriptions (for the tool tips). */
-	static private final Map<AspectValue,String> ROLE_DESCRIPTIONS = new HashMap<AspectValue,String>(); 
+	static final Map<AspectValue,String> ROLE_DESCRIPTIONS = new HashMap<AspectValue,String>(); 
     
     static {
         ROLE_NAMES.put(EMBARGO,"Embargo");
@@ -377,11 +377,8 @@ public class AspectJModel extends GraphJModel {
 			StringBuilder result = new StringBuilder();
 			if (NestingAspect.FORALL.equals(nesting)) {
 				result.append(Converter.HTML_FORALL);
-			} else if (NestingAspect.EXISTS.equals(nesting)) {
-				result.append(Converter.HTML_EXISTS);
 			} else {
-				assert NestingAspect.NAC.equals(nesting);
-				result.append(Converter.HTML_NOT);
+				assert NestingAspect.EXISTS.equals(nesting);
 				result.append(Converter.HTML_EXISTS);
 			}
 			String level = nesting.getContent();

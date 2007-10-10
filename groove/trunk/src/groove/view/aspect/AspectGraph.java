@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.10 2007-09-30 21:23:10 rensink Exp $
+ * $Id: AspectGraph.java,v 1.11 2007-10-10 08:59:37 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -126,6 +126,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
      * The method never throws an exception, but the resulting graph
      * may have format errors, reported in {@link #getErrors()}.
 	 * @param graph the graph to take as input.
+	 * @return an aspect graph whose format errors are recorded in {@link #getErrors()}
 	 */
 	public AspectGraph fromPlainGraph(GraphShape graph) {
 		// map from original graph elements to aspect graph elements
@@ -203,6 +204,25 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 				elementMap.putEdge(edge, edgeImage);
 			} catch (FormatException e) {
 				errors.addAll(e.getErrors());
+			}
+		}
+		// now test all nodes and edges for context correctness w.r.t. all their aspect values
+		for (AspectNode node : result.nodeSet()) {
+			try {
+				for (Aspect aspect : node.getAspectMap().keySet()) {
+					aspect.testNode(node, result);
+				}
+			} catch (FormatException exc) {
+				errors.addAll(exc.getErrors());
+			}
+		}
+		for (AspectEdge edge : result.edgeSet()) {
+			try {
+				for (Aspect aspect : edge.getAspectMap().keySet()) {
+					aspect.testEdge(edge, result);
+				}
+			} catch (FormatException exc) {
+				errors.addAll(exc.getErrors());
 			}
 		}
 		GraphInfo.transfer(graph, result, elementMap);

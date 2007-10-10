@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.12 2007-06-19 08:25:39 rensink Exp $
+ * $Id: Imager.java,v 1.13 2007-10-10 08:59:45 rensink Exp $
  */
 package groove.io;
 
@@ -62,7 +62,7 @@ import javax.swing.JTextField;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class Imager extends CommandLineTool {
     /**
@@ -316,8 +316,8 @@ public class Imager extends CommandLineTool {
         }
     }
 
-    /** The image exporter used. */
-    private final Exporter exporter = new Exporter();
+	/** The image exporter used. */
+    final Exporter exporter = new Exporter();
     /** Name of the image format to which the imager converts. */
     private String imageFormat = exporter.getDefaultFormat().getFilter().getExtension();
     /** The imager frame if the invocation is gui-based; <tt>null</tt> if it is command-line based. */
@@ -355,22 +355,22 @@ public class Imager extends CommandLineTool {
     static public final String BROWSE_LABEL = "Browse...";
 
     /** The loader used for the xml files. */
-    static private final Xml graphLoader = new LayedOutXml();
+    static final Xml<?> graphLoader = new LayedOutXml();
 
     /** The rule filter. */
-    static private final ExtensionFilter ruleFilter = Groove.createRuleFilter();
+    static final ExtensionFilter ruleFilter = Groove.createRuleFilter();
 
     /** The state filter. */
-    static private final ExtensionFilter stateFilter = Groove.createStateFilter();
+    static final ExtensionFilter stateFilter = Groove.createStateFilter();
 
     /** The gxl filter. */
-    static private final ExtensionFilter gxlFilter = Groove.createGxlFilter();
+    static final ExtensionFilter gxlFilter = Groove.createGxlFilter();
 
     /** The production system filter. */
-    static private final ExtensionFilter gpsFilter = Groove.createRuleSystemFilter();
+    static final ExtensionFilter gpsFilter = Groove.createRuleSystemFilter();
 
     /** An array of all filters identifying files that can be imaged. */
-    static private final ExtensionFilter[] acceptFilters = new ExtensionFilter[] {
+    static final ExtensionFilter[] acceptFilters = new ExtensionFilter[] {
             gpsFilter, ruleFilter, stateFilter, gxlFilter };
 
 
@@ -447,7 +447,7 @@ public class Imager extends CommandLineTool {
             initComponents();
             initActions();
             setContentPane(createContentPane());
-            setVerbosity(HIGH_VERBOSITY);
+            Imager.this.setVerbosity(HIGH_VERBOSITY);
         }
 
         /**
@@ -686,16 +686,16 @@ public class Imager extends CommandLineTool {
         }
 
         /** Textfield to contain the name of the input file. */
-        private final JTextField inFileField = new JTextField();
+        final JTextField inFileField = new JTextField();
 
         /** Textfield to contain the name of the output file. */
-        private final JTextField outFileField = new JTextField();
+        final JTextField outFileField = new JTextField();
 
         /** Button to browse for the input file. */
-        private final JButton inFileBrowseButton = new JButton(BROWSE_LABEL);
+        final JButton inFileBrowseButton = new JButton(BROWSE_LABEL);
 
         /** Button to browse for the output file. */
-        private final JButton outFileBrowseButton = new JButton(BROWSE_LABEL);
+        final JButton outFileBrowseButton = new JButton(BROWSE_LABEL);
 
         /** Button to start the imaging. */
         private final JButton imageButton = new JButton(Options.IMAGE_ACTION_NAME);
@@ -704,15 +704,15 @@ public class Imager extends CommandLineTool {
         private final JButton closeButton = new JButton(Options.CLOSE_ACTION_NAME);
 
         /** Checkbox to enable the out file. */
-        private final JCheckBox outFileEnabler = new JCheckBox();
+        final JCheckBox outFileEnabler = new JCheckBox();
 
         /** File chooser for the browse actions. */
-        private final JFileChooser browseChooser = new GrooveFileChooser();
+        final JFileChooser browseChooser = new GrooveFileChooser();
 
         /** File chooser for the browse actions. */
         private final JTextArea logArea = new JTextArea();
 
         /** Combo box for the available image formats. */
-        private final JComboBox formatBox = new JComboBox(exporter.getExtensions().toArray());
+        final JComboBox formatBox = new JComboBox(exporter.getExtensions().toArray());
     }
 }

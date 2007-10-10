@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.25 2007-10-02 23:06:27 rensink Exp $
+ * $Id: StateGenerator.java,v 1.26 2007-10-10 08:59:48 rensink Exp $
  */
 package groove.lts;
 
@@ -399,6 +399,11 @@ public class StateGenerator {
 	 * Listener that collects the fresh states into a set.
 	 */
 	static private class AddTransitionListener extends GTSListener {
+		/** Empty constructor with correct functionality. */
+		AddTransitionListener() {
+			// empty
+		}
+		
 		/**
 		 * Sets the result set to the empty set.
 		 */

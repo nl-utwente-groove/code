@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.15 2007-09-30 21:45:12 rensink Exp $
+ * $Id: JVertexView.java,v 1.16 2007-10-10 08:59:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -60,7 +60,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class JVertexView extends VertexView {
     /**
@@ -192,17 +192,17 @@ public class JVertexView extends VertexView {
 	}
 	
 	/** Returns the insets computed for this vertex view. */
-	private final Insets getInsets() {
+	final Insets getInsets() {
 		return insets;
 	}
 
 	/** Returns the (html formatted) text to be displayed in this vertex view. */
-	private final String getText() {
+	final String getText() {
 		return text;
 	}
 
 	/** Indicates if the underlying cell is currently emphasized in the model. */
-	private boolean isEmphasized() {
+	boolean isEmphasized() {
 		return jGraph.getModel().isEmphasized(getCell());
 	}
 

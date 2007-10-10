@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSPanel.java,v 1.16 2007-09-05 14:12:42 rensink Exp $
+ * $Id: LTSPanel.java,v 1.17 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -43,7 +43,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2007-09-05 14:12:42 $
+ * @version $Revision: 1.17 $ $Date: 2007-10-10 08:59:44 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -100,42 +100,37 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
 //	}
 
     /**
-     * Sets the LTS emphasis attributes for the LTS node curresponding to the
-     * new state. Also removes the emphasis from the currently emphasized node
-     * and edge, if any. Scrolls the view to the newly emphasized node.
+     * Sets the LTS emphasis attributes for the LTS node corresponding to the
+     * new state. Also removes the emphasis from the currently emphasised node
+     * and edge, if any. Scrolls the view to the newly emphasised node.
      */
     public synchronized void setStateUpdate(GraphState state) {
-        // first deemphasize the currently emphasized edge, if any
-    	getJModel().setActiveTransition(null);
-        // emphasize state if it isn't already done
-        getJModel().setActiveState(state);
+    	getJModel().setActive(state,null);
         // we do layouting here because it's too expensive to do it
         // every time a new state is added
         if (getJGraph().getLayouter() != null) {
         	getJModel().freeze();
         	getJGraph().getLayouter().start(false);
         }
-        // addUpdate(lts, state);
         getJGraph().scrollTo(state);
     }
 
     /**
      * Sets the LTS emphasis attributes for the LTS edge and its source node
      * corresponding to the new derivation. Also removes the current emphasis,
-     * if any. Scrolls the view to the newly emphasized edge.
+     * if any. Scrolls the view to the newly emphasised edge.
      */
     public synchronized void setTransitionUpdate(GraphTransition transition) {
-    	getJModel().setActiveState(transition.source());
-        getJModel().setActiveTransition(transition);
+    	getJModel().setActive(transition.source(), transition);
         getJGraph().scrollTo(getJModel().getActiveTransition());
     }
 
     /**
-     * Removes the emphasis from the currently emphasized edge, if any.
+     * Removes the emphasis from the currently emphasised edge, if any.
      */
     public synchronized void setRuleUpdate(NameLabel name) {
         if (isGTSactivated()) {
-        	getJModel().setActiveTransition(null);
+        	getJModel().setActive(getJModel().getActiveState(), null);
         }
     }
 
@@ -167,6 +162,20 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     }
     
     /**
+	 * @return Returns the gts.
+	 */
+	final GTS getGts() {
+		return this.gts;
+	}
+
+	/**
+	 * @return Returns the simulator.
+	 */
+	final Simulator getSimulator() {
+		return this.simulator;
+	}
+
+	/**
      * Indicates if an LTS is currently loaded.
      * This may fail to be the case if there is no grammar loaded,
      * or if the loaded grammar has no start state.
@@ -223,13 +232,18 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
      * LYS is extended.
      */
     private class MyLTSListener extends LTSAdapter {
-        /**
+    	/** Empty constructor with the correct visibility. */
+    	MyLTSListener() {
+    		// empty
+    	}
+
+    	/**
          * May only be called with the current lts as first parameter. Updates the
          * frame title by showing the number of nodes and edges.
          */
     	@Override
         public void addUpdate(GraphShape graph, Node node) {
-            assert graph == gts : "I want to listen only to my lts";
+            assert graph == getGts() : "I want to listen only to my lts";
             refreshStatus();
         }
 
@@ -239,7 +253,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
          */
     	@Override
         public void addUpdate(GraphShape graph, Edge edge) {
-            assert graph == gts : "I want to listen only to my lts";
+            assert graph == getGts() : "I want to listen only to my lts";
             refreshStatus();
         }
 
@@ -262,13 +276,18 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
 	 * the rule panel on double-clicks.
 	 */
 	private class MyMouseListener extends MouseAdapter {
+    	/** Empty constructor with the correct visibility. */
+		MyMouseListener() {
+    		// empty
+    	}
+    	
         @Override
         public void mouseClicked(MouseEvent evt) {
             if (evt.getButton() == MouseEvent.BUTTON1) {
-            	if (! isEnabled() && simulator.getStartSimulationAction().isEnabled()) {
-            		simulator.startSimulation(simulator.getCurrentGrammar());
+            	if (! isEnabled() && getSimulator().getStartSimulationAction().isEnabled()) {
+            		getSimulator().startSimulation(getSimulator().getCurrentGrammar());
             	} else if (evt.getClickCount() == 2) {
-            		simulator.setGraphPanel(simulator.getStatePanel());
+            		getSimulator().setGraphPanel(getSimulator().getStatePanel());
             	} 
             }
         }

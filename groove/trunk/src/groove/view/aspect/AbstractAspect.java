@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractAspect.java,v 1.8 2007-09-30 21:29:08 rensink Exp $
+ * $Id: AbstractAspect.java,v 1.9 2007-10-10 08:59:37 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -240,6 +240,20 @@ public abstract class AbstractAspect implements Aspect {
 		} else {
 			throw new FormatException("Incompatible aspect values '%s' and '%s'", value1, value2);
 		}
+	}
+
+	/**
+	 * This default implementation never throws the exception.
+	 */
+	public void testEdge(AspectEdge edge, AspectGraph graph) throws FormatException {
+		// empty
+	}
+
+	/**
+	 * This default implementation never throws the exception.
+	 */
+	public void testNode(AspectNode node, AspectGraph graph) throws FormatException {
+		// empty
 	}
 
 	/**

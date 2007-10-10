@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.14 2007-09-28 10:27:27 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.15 2007-10-10 08:59:46 rensink Exp $
  */
 package groove.io;
 
@@ -55,7 +55,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -484,17 +484,9 @@ public class DefaultGxl extends AbstractXml {
             this(ends[SOURCE_INDEX], label, ends[TARGET_INDEX]);
         }
 
-        private AttributeEdge2(Node source, AttributeLabel label, Node target) {
+        AttributeEdge2(Node source, AttributeLabel label, Node target) {
             super(source, label, target);
         }
-//
-//        @Override
-//        @Deprecated
-//        public BinaryEdge newEdge(Node source, Label label, Node target) {
-//            return new AttributeEdge2(source, (AttributeLabel) label, target);
-//        }
-//        
-//        
     }
 
     /** Edge carrying an attribute map on its label, with an unknown end count. */ 
@@ -504,16 +496,8 @@ public class DefaultGxl extends AbstractXml {
             this(ends[SOURCE_INDEX], label);
         }
 
-        private AttributeEdge1(Node source, AttributeLabel label) {
+        AttributeEdge1(Node source, AttributeLabel label) {
             super(source, label);
         }
-//        
-//        @Override
-//        @Deprecated
-//        public UnaryEdge newEdge(Node source, Label label) {
-//            return new AttributeEdge1(source, (AttributeLabel) label);
-//        }
-//        
-//        
     }
 }

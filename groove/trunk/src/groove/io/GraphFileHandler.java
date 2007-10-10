@@ -12,22 +12,21 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphFileHandler.java,v 1.2 2007-04-24 10:06:47 rensink Exp $
+ * $Id: GraphFileHandler.java,v 1.3 2007-10-10 08:59:46 rensink Exp $
  */
 package groove.io;
 
+import groove.util.Groove;
+
 import java.io.File;
 import java.io.FileFilter;
-import java.util.Iterator;
 import java.util.List;
-
-import groove.util.Groove;
 
 /**
  * Class to facilitate operations that have to be performed upon a 
  * set of graph files, such as validation or transformation.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class GraphFileHandler {
     /** Lowest verbosity setting. */
@@ -95,10 +94,8 @@ public class GraphFileHandler {
      * by calling <code>handle(File)</code> upon each element of the list.
      * @param list the list of files and directory to be handled
      */
-    public void handle(List list) {
-        Iterator iter = list.iterator();
-        while (iter.hasNext()) {
-            File file = (File) iter.next();
+    public void handle(List<File> list) {
+    	for (File file: list) {
             handle(file);
         }
     }

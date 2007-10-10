@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.20 2007-10-01 14:48:23 rensink Exp $
+ * $Id: LTSJModel.java,v 1.21 2007-10-10 08:59:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -41,7 +41,7 @@ import org.jgraph.graph.AttributeMap;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -80,48 +80,98 @@ public class LTSJModel extends GraphJModel {
     }
 
     /**
+     * Sets the active state and transition to a new value.
+     * Both old and new values may be <tt>null</tt>.
+     * @param state the new active state
+     * @param trans the new active transition
+     */
+    public void setActive(State state, Transition trans) {
+		Set<JCell> changedCells = new HashSet<JCell>();
+        Transition previousTrans = activeTransition;
+        if (previousTrans != trans) {
+			activeTransition = trans;
+			if (trans != null) {
+				JCell jCell = getJCell(trans);
+				assert jCell != null : String.format("No image for %s in jModel",
+						trans);
+				changedCells.add(jCell);
+			}
+			if (previousTrans != null) {
+				JCell jCell = getJCell(previousTrans);
+				assert jCell != null : String.format("No image for %s in jModel",
+						previousTrans);
+				changedCells.add(jCell);
+			}
+		}
+        State previousState = activeState;
+		if (state != previousState) {
+			activeState = state;
+			if (state != null) {
+				changedCells.add(getJCell(state));
+			}
+			if (previousState != null) {
+				changedCells.add(getJCell(previousState));
+			}
+		}
+		if (!changedCells.isEmpty()) {
+			refresh(changedCells);
+		}
+    }
+
+    /**
      * Sets the active transition to a new value, 
      * and returns the previous value.
      * Both old and new transitions may be <tt>null</tt>.
      * @param trans the new active transition
      * @return the old active transition
+     * @deprecated use {@link #setActive(State, Transition)} instead
      */
+    @Deprecated
     public Transition setActiveTransition(Transition trans) {
         Transition result = activeTransition;
-        activeTransition = trans;
-        Set<JCell> changedCells = new HashSet<JCell>();
-        if (trans != null) {
-        	JCell jCell = getJCell(trans);
-        	assert jCell != null : String.format("No image for %s in jModel", trans);
-            changedCells.add(jCell);
-        }
-        if (result != null) {
-        	JCell jCell = getJCell(result);
-        	assert jCell != null : String.format("No image for %s in jModel", result);
-            changedCells.add(jCell);
-        }
-        refresh(changedCells);
+        if (activeTransition != trans) {
+			activeTransition = trans;
+			Set<JCell> changedCells = new HashSet<JCell>();
+			if (trans != null) {
+				JCell jCell = getJCell(trans);
+				assert jCell != null : String.format("No image for %s in jModel",
+						trans);
+				changedCells.add(jCell);
+			}
+			if (result != null) {
+				JCell jCell = getJCell(result);
+				assert jCell != null : String.format("No image for %s in jModel",
+						result);
+				changedCells.add(jCell);
+			}
+			refresh(changedCells);
+		}
         return result;
     }
 
     /**
-     * Sets the active state to a new value, 
-     * and returns the previous value.
-     * Both old and new states may be <tt>null</tt>.
-     * @param state the new active state
-     * @return the old active state
-     */
+	 * Sets the active state to a new value, and returns the previous value.
+	 * Both old and new states may be <tt>null</tt>.
+	 * 
+	 * @param state
+	 *            the new active state
+	 * @return the old active state
+     * @deprecated use {@link #setActive(State, Transition)} instead
+	 */
+    @Deprecated
     public State setActiveState(State state) {
         State result = activeState;
-        activeState = state;
-        Set<JCell> changedCells = new HashSet<JCell>();
-        if (state != null) {
-            changedCells.add(getJCell(state));
-        }
-        if (result != null) {
-            changedCells.add(getJCell(result));
-        }
-        refresh(changedCells);
+		if (state != activeState) {
+			activeState = state;
+			Set<JCell> changedCells = new HashSet<JCell>();
+			if (state != null) {
+				changedCells.add(getJCell(state));
+			}
+			if (result != null) {
+				changedCells.add(getJCell(result));
+			}
+			refresh(changedCells);
+		}
         return result;
     }
 

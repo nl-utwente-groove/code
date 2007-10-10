@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForallCondition.java,v 1.6 2007-10-08 12:17:34 rensink Exp $
+ * $Id: ForallCondition.java,v 1.7 2007-10-10 08:59:47 rensink Exp $
  */
 package groove.trans;
 
@@ -56,11 +56,13 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         while (matchMapIter.hasNext()) {
             VarNodeEdgeMap matchMap = matchMapIter.next();
             Collection<Match> subResults = new ArrayList<Match>();
-            for (Condition subCondition: getSubConditions()) {
-                Iterator<? extends Match> subResultIter = subCondition.getMatchIter(host, matchMap);
-                while (subResultIter.hasNext()) {
-                    subResults.add(subResultIter.next());
-                }
+            for (Condition subCondition : getSubConditions()) {
+				if (subCondition instanceof PositiveCondition) {
+					Iterator<? extends Match> subResultIter = subCondition.getMatchIter(host, matchMap);
+					while (subResultIter.hasNext()) {
+						subResults.add(subResultIter.next());
+					}
+				}
             }
             Collection<CompositeMatch> newResult = new ArrayList<CompositeMatch>();
             for (CompositeMatch current: result) {

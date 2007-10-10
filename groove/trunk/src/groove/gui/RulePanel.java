@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RulePanel.java,v 1.18 2007-10-08 12:17:55 rensink Exp $
+ * $Id: RulePanel.java,v 1.19 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -48,7 +48,7 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -111,16 +111,18 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
         if (! ruleJModelMap.containsKey(name)) {
             throw new IllegalArgumentException("Unknown rule: "+name);
         }
-        JModel ruleJModel = ruleJModelMap.get(name);
-        // display new rule
-        jGraph.setModel(ruleJModel);
-        displayedRule = name;
-        refresh();
+        if (displayedRule != name) {
+			JModel ruleJModel = ruleJModelMap.get(name);
+			// display new rule
+			jGraph.setModel(ruleJModel);
+			displayedRule = name;
+			refresh();
+		}
     }
 
     /**
-     * Has no effect.
-     */
+	 * Has no effect.
+	 */
     public synchronized void setStateUpdate(GraphState state) {
     	// nothing happens here
     }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExploreStrategyMenu.java,v 1.10 2007-08-26 07:24:03 rensink Exp $
+ * $Id: ExploreStrategyMenu.java,v 1.11 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -31,7 +31,6 @@ import groove.lts.explore.BoundedStrategy;
 import groove.lts.explore.BranchingStrategy;
 import groove.lts.explore.FullStrategy;
 import groove.lts.explore.LinearStrategy;
-import groove.lts.explore.PartialOrderStrategy;
 import groove.trans.NameLabel;
 import groove.view.DefaultGrammarView;
 
@@ -44,7 +43,7 @@ import javax.swing.JMenu;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     /**
@@ -151,6 +150,13 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     }
 
     /**
+	 * @return Returns the disableOnFinish.
+	 */
+	final boolean isDisableOnFinish() {
+		return this.disableOnFinish;
+	}
+
+	/**
      * The simulator with which this menu is associated.
      */
     private final Simulator simulator;
@@ -164,6 +170,10 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     private final GTSListener gtsListener = new GTSListener();
     /** Listener that can be refreshed with the current GTS. */
     private class GTSListener extends LTSAdapter {
+    	/** Empty constructor with the correct visibility. */
+    	GTSListener() {
+    		// empty
+    	}
     	/** Sets the GTS to listen to. */
     	public void set(GTS newGTS) {
     		if (gts != null) {
@@ -182,7 +192,7 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
             assert graph == gts;
             openStateCount--;
             assert openStateCount == gts.openStateCount();
-            if (openStateCount == 0 && ! disableOnFinish) {
+            if (openStateCount == 0 && ! isDisableOnFinish()) {
             	setEnabled(false);
             }
         }

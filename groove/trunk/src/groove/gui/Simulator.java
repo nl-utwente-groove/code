@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.58 2007-09-07 19:13:31 rensink Exp $
+ * $Id: Simulator.java,v 1.59 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -69,7 +69,6 @@ import groove.view.AspectualGraphView;
 import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
-import groove.view.GrammarView;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -123,7 +122,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.58 $
+ * @version $Revision: 1.59 $
  */
 public class Simulator {
     /**
@@ -562,14 +561,14 @@ public class Simulator {
      * @param graph the input graph for the editor
      * @return the dialog object, which can be queried as to the result of editing
      */
-    private EditorDialog showEditorDialog(Graph graph) {
+    EditorDialog showEditorDialog(Graph graph) {
         EditorDialog result = new EditorDialog(getFrame(), getOptions(), graph);
         result.setVisible(true);
         return result;
     }
 
     /** Inverts the enabledness of the current rule, and stores the result. */
-    private void doEnableRule() {
+    void doEnableRule() {
     	AspectGraph ruleGraph = getCurrentRule().getAspectGraph();
     	GraphProperties properties = GraphInfo.getProperties(ruleGraph, true);
     	properties.setEnabled(!properties.isEnabled());
@@ -580,7 +579,7 @@ public class Simulator {
 	 * Applies a given exploration strategy to the current GTS.
 	 * The application is done concurrently, and can be cancelled from the GUI.
 	 */
-	private void doGenerate(ExploreStrategy strategy) {
+	void doGenerate(ExploreStrategy strategy) {
 	    GraphJModel ltsJModel = getLtsPanel().getJModel();
 	    synchronized (ltsJModel) {
 	        // unhook the lts' jmodel from the lts, for efficiency's sake
@@ -616,7 +615,7 @@ public class Simulator {
      *        start state name is used
      * @see GrammarViewXml#DEFAULT_START_GRAPH_NAME
      */
-    private void doLoadGrammar(AspectualViewGps grammarLoader, File grammarFile, String startStateName) {
+    void doLoadGrammar(AspectualViewGps grammarLoader, File grammarFile, String startStateName) {
         try {
         	DefaultGrammarView grammar = grammarLoader.unmarshal(grammarFile, startStateName);
         	setGrammar(grammar);
@@ -641,7 +640,7 @@ public class Simulator {
      * @param grammarLoader the loader to be used
      * @param grammarFile the grammar file to be used
      */
-    private void doSaveGrammar(AspectualViewGps grammarLoader, File grammarFile) {
+    void doSaveGrammar(AspectualViewGps grammarLoader, File grammarFile) {
         try {
         	grammarLoader.marshal(getCurrentGrammar(), grammarFile);
         	String grammarName = currentGrammarLoader.getExtensionFilter().stripExtension(grammarFile.getName());
@@ -666,7 +665,7 @@ public class Simulator {
 	/**
      * Sets the contents of a given file as start state. This results in a reset of the LTS.
      */
-    private void doLoadStartGraph(File file) {
+    void doLoadStartGraph(File file) {
     	try {
             AspectGraph aspectStartGraph = graphLoader.unmarshalGraph(file);
             AspectualGraphView startGraph = new AspectualGraphView(aspectStartGraph);
@@ -686,7 +685,7 @@ public class Simulator {
 	 * @param grammarFile
 	 *            the grammar file to be used
 	 */
-	private void doNewGrammar(AspectualViewGps grammarLoader, File grammarFile) {
+	void doNewGrammar(AspectualViewGps grammarLoader, File grammarFile) {
 		grammarFile.mkdir();
 		String grammarName = grammarLoader.getExtensionFilter().stripExtension(grammarFile.getName());
 		DefaultGrammarView grammar = new DefaultGrammarView(grammarName);
@@ -699,7 +698,7 @@ public class Simulator {
 		getGrammarFileChooser().setSelectedFile(grammarFile);
 	}
 
-	private RuleNameLabel generateNewRuleName(String basis) {
+	RuleNameLabel generateNewRuleName(String basis) {
     	RuleNameLabel result = new RuleNameLabel(basis);
     	Set<RuleNameLabel> existingNames = getCurrentGrammar().getRuleMap().keySet();
     	for (int i = 1; existingNames.contains(result); i++) {
@@ -711,7 +710,7 @@ public class Simulator {
     /**
      * Ends the program.
      */
-    private void doQuit() {
+    void doQuit() {
         if (confirmAbandon(false)) {
             if (REPORT) {
                 try {
@@ -737,7 +736,7 @@ public class Simulator {
      * @param ruleName the name of the new rule
      * @param ruleAsGraph the new rule, given as an aspect graph
 	 */
-	private void doAddRule(RuleNameLabel ruleName, AspectGraph ruleAsGraph) {
+	void doAddRule(RuleNameLabel ruleName, AspectGraph ruleAsGraph) {
 		try {
 		    GraphInfo.setName(ruleAsGraph, ruleName.name());
 			AspectualRuleView ruleView = new AspectualRuleView(
@@ -755,7 +754,7 @@ public class Simulator {
     /**
 	 * Deletes a rule from the grammar and the file system, and resets the grammar view. 
 	 */
-	private void doDeleteRule(RuleNameLabel name) {
+	void doDeleteRule(RuleNameLabel name) {
 		AspectualRuleView rule = getCurrentGrammar().removeRule(name);
 		if (rule != null) {
 			currentGrammarLoader.deleteRule(name, currentGrammarFile);
@@ -767,7 +766,7 @@ public class Simulator {
      * Refreshes the currently loaded grammar, if any. Does not ask for confirmation. Has no effect
      * if no grammar is currently loaded.
      */
-    private void doRefreshGrammar() {
+    void doRefreshGrammar() {
         if (currentGrammarFile != null) {
         	AspectualGraphView startGraph = getCurrentGrammar().getStartGraph();
             try {
@@ -785,7 +784,7 @@ public class Simulator {
     /**
      * Saves the contents of a given j-model to a given file.
      */
-    private void doSaveGraph(Graph graph, File file) {
+    void doSaveGraph(Graph graph, File file) {
         try {
         	AspectGraph saveGraph = AspectGraph.getFactory().fromPlainGraph(graph);
         	if (saveGraph.hasErrors()) {
@@ -798,7 +797,7 @@ public class Simulator {
         }
     }
 
-    private void doSaveControl(String controlProgram, File file) {
+    void doSaveControl(String controlProgram, File file) {
     	try {
     		
     		ControlView.saveFile(controlProgram, file);
@@ -806,10 +805,7 @@ public class Simulator {
     	} catch( IOException exc) {
     		showErrorDialog("Error while saving to " + file, exc);
     	}
-    	
-    	
     }
-    
     
     /**
 	 * Sets a new graph transition system. Invokes
@@ -974,7 +970,7 @@ public class Simulator {
     /**
      * Lazily creates and returns the frame of this simulator.
      */
-    private JFrame getFrame() {
+    JFrame getFrame() {
         if (frame == null) {
         	// force the LAF to be set
         	groove.gui.Options.initLookAndFeel();
@@ -1103,6 +1099,11 @@ public class Simulator {
         return ruleJTree;
     }
 
+    /** Returns the exporter of the simulator. */
+    Exporter getExporter() {
+    	return exporter;
+    }
+    
     /**
 	 * Returns the currently selected graph view component. This is be the state, rule or LTS view.
 	 * @see #getStatePanel()
@@ -1115,7 +1116,7 @@ public class Simulator {
     	Component c = getGraphViewsPanel().getSelectedComponent();
 	    if( c instanceof CAPanel )
 	    	c = ((CAPanel)c).getJGraphPanel();
-    	return (JGraphPanel) c; 
+    	return (JGraphPanel<?>) c; 
 	}
 
 	/**
@@ -1136,7 +1137,7 @@ public class Simulator {
      * @param component the panel to change
      * @param enabled the new enabledness status
      */
-    void setGraphPanelEnabled(JGraphPanel component, boolean enabled) {
+    void setGraphPanelEnabled(JGraphPanel<?> component, boolean enabled) {
 		int index = getGraphViewsPanel().indexOfComponent(component);
     	getGraphViewsPanel().setEnabledAt(index, enabled);
 		if (component == getLtsPanel()) {
@@ -1158,7 +1159,7 @@ public class Simulator {
      * Adds an element to the set of refreshables.
      * Also calls {@link Refreshable#refresh()} on the element. 
      */
-    private void addRefreshable(Refreshable element) {
+    void addRefreshable(Refreshable element) {
     	if (refreshables.add(element)) {
     		element.refresh();
     	}
@@ -1168,7 +1169,7 @@ public class Simulator {
      * Is called after a change to current state, rule or derivation or to the currently selected
      * view panel to allow registered refreshable elements to refresh themselves.
      */
-    private void refreshActions() {
+    void refreshActions() {
     	for (Refreshable action: refreshables) {
     		action.refresh();
     	}
@@ -1180,7 +1181,7 @@ public class Simulator {
      * @param action the action to be added
      * @require <tt>frame.getContentPane()</tt> should be initialised
      */
-    private void addAccelerator(Action action) {
+    void addAccelerator(Action action) {
         JComponent contentPane = (JComponent) getFrame().getContentPane();
         ActionMap am = contentPane.getActionMap();
         am.put(action.getValue(Action.NAME), action);
@@ -1259,7 +1260,7 @@ public class Simulator {
 	 * Returns the menu item in the file menu that specifies
 	 * saving the currently displayed graph (in the currently selected graph panel).
 	 */
-	private JMenuItem getEditItem() {
+	JMenuItem getEditItem() {
 		if (editGraphItem == null) {
 			editGraphItem = new JMenuItem();
 			// load the rule edit action, even though it is not user here
@@ -1295,7 +1296,7 @@ public class Simulator {
 	/**
 	 * Creates and returns an options menu for the menu bar.
 	 */
-	private JMenu createOptionsMenu() {
+	JMenu createOptionsMenu() {
         JMenu result = new JMenu(OPTIONS_MENU_NAME);
         result.add(getOptions().getItem(SHOW_NODE_IDS_OPTION));
         result.add(getOptions().getItem(SHOW_ANCHORS_OPTION));
@@ -1369,7 +1370,7 @@ public class Simulator {
 	/**
 	 * Returns the file chooser for grammar (GPR) files, lazily creating it first.
 	 */
-	private JFileChooser getGrammarFileChooser() {
+	JFileChooser getGrammarFileChooser() {
 		if (grammarFileChooser == null) {
 			grammarFileChooser = new GrooveFileChooser();
 			grammarFileChooser.setAcceptAllFileFilterUsed(false);
@@ -1382,10 +1383,20 @@ public class Simulator {
 		return grammarFileChooser;
 	}
 
+	/** Returns the grammar loader map of this simulator. */
+	Map<ExtensionFilter,AspectualViewGps> getGrammarLoaderMap() {
+		return grammarLoaderMap;
+	}
+	
+	/** Returns the current grmmar file of this simulator. */
+	File getCurrentGrammarFile() {
+		return currentGrammarFile;
+	}
+	
 	/**
 	 * Returns the file chooser for state (GST or GXL) files, lazily creating it first.
 	 */
-	private JFileChooser getStateFileChooser() {
+	JFileChooser getStateFileChooser() {
 		if (stateFileChooser == null) {
 			stateFileChooser = new GrooveFileChooser();
 			stateFileChooser.addChoosableFileFilter(stateFilter);
@@ -1630,7 +1641,7 @@ public class Simulator {
      * is to be called with the current grammar, in case the simulation is abandoned
      * @return <tt>true</tt> if the current grammar may be abandoned
      */
-    private boolean confirmAbandon(boolean setGrammar) {
+    boolean confirmAbandon(boolean setGrammar) {
     	boolean result;
         if (getCurrentGTS() != null) {
             result = confirmBehaviourOption(STOP_SIMULATION_OPTION);
@@ -1646,7 +1657,7 @@ public class Simulator {
     /**
      * Asks whether the current start graph should be replaced by the edited version.
      */
-    private boolean confirmLoadStartState(String stateName) {
+    boolean confirmLoadStartState(String stateName) {
     	if (getCurrentGrammar().getStartGraph() == null) {
     		return true;
     	} else {
@@ -1659,7 +1670,7 @@ public class Simulator {
     /**
      * Asks whether a given existing file should be overwritten by a new grammar.
      */
-    private boolean confirmOverwriteGrammar(File grammarFile) {
+    boolean confirmOverwriteGrammar(File grammarFile) {
     	if (grammarFile.exists()) {
     		int response = JOptionPane.showConfirmDialog(getFrame(), "Overwrite existing grammar?", null, JOptionPane.OK_CANCEL_OPTION);
     		return response == JOptionPane.OK_OPTION;
@@ -1673,7 +1684,7 @@ public class Simulator {
 	 * Creates and shows an {@link ErrorDialog} for a given message and
 	 * exception.
 	 */
-    private void showErrorDialog(String message, Throwable exc) {
+    void showErrorDialog(String message, Throwable exc) {
         new ErrorDialog(getFrame(), message, exc).setVisible(true);
     }
 
@@ -1687,7 +1698,7 @@ public class Simulator {
      * distinct from the existing rule names
      * @return a rule name not occurring in the current grammar, or <code>null</code>
      */
-    private RuleNameLabel askNewRuleName(String title, String name, boolean mustBeFresh) {
+    RuleNameLabel askNewRuleName(String title, String name, boolean mustBeFresh) {
     	RuleNameLabel suggestion = mustBeFresh ? generateNewRuleName(name) : new RuleNameLabel(name);
     	RuleNameDialog ruleNameDialog = new RuleNameDialog(getCurrentGrammar().getRuleMap().keySet(), suggestion);
     	ruleNameDialog.showDialog(getFrame(), title);
@@ -1698,7 +1709,7 @@ public class Simulator {
      * Checks if a given option is confirmed.
      * The question can be set explicitly.
      */
-    private boolean confirmBehaviour(String option, String question) {
+    boolean confirmBehaviour(String option, String question) {
     	BehaviourOption menu = (BehaviourOption) getOptions().getItem(option);
     	return menu.confirm(getFrame(), question);
     }
@@ -1706,7 +1717,7 @@ public class Simulator {
     /** 
      * Checks if a given option is confirmed.
      */
-    private boolean confirmBehaviourOption(String option) {
+    boolean confirmBehaviourOption(String option) {
     	return confirmBehaviour(option, null);
     }
 
@@ -2224,7 +2235,7 @@ public class Simulator {
 		/**
 		 * Displays the number of lts states and transitions in the message dialog.
 		 */
-		private void displayProgress(GraphShape graph) {
+		void displayProgress(GraphShape graph) {
 		    getStateCountLabel().setText("States: " + graph.nodeCount());
 		    getTransitionCountLabel().setText("Transitions: " + graph.edgeCount());
 		}
@@ -2386,7 +2397,7 @@ public class Simulator {
 					true);
 			PropertiesDialog dialog = new PropertiesDialog(ruleProperties,
 					GraphProperties.DEFAULT_KEYS, true);
-			if (dialog.showDialog(frame) && confirmAbandon(false)) {
+			if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
 				ruleProperties.clear();
 				ruleProperties.putAll(dialog.getProperties());
 				doAddRule(rule.getNameLabel(), ruleGraph);
@@ -2460,7 +2471,7 @@ public class Simulator {
         		newProperties.putAll(dialog.getProperties());
         		try {
             		String outputFileName = Groove.createPropertyFilter().addExtension(grammar.getName());
-            		File outputFile = new File(currentGrammarFile, outputFileName);
+            		File outputFile = new File(getCurrentGrammarFile(), outputFileName);
             		outputFile.createNewFile();
             		OutputStream writer = new FileOutputStream(outputFile);
 					newProperties.store(writer, String.format(SystemProperties.DESCRIPTION, grammar.getName()));
@@ -2477,8 +2488,7 @@ public class Simulator {
          * system properties.
          */
         public void refresh() {
-        	GrammarView grammar = getCurrentGrammar();
-        	setEnabled(grammar != null);
+        	setEnabled(getCurrentGrammar() != null);
         }
     }
     
@@ -2507,12 +2517,12 @@ public class Simulator {
                 fileName = getCurrentRule().getNameLabel().toString();
                 jGraph = getRulePanel().getJGraph();
             }
-            exporter.getFileChooser().setSelectedFile(new File(fileName));
-            File selectedFile = ExtensionFilter.showSaveDialog(exporter.getFileChooser(), getFrame());
+            getExporter().getFileChooser().setSelectedFile(new File(fileName));
+            File selectedFile = ExtensionFilter.showSaveDialog(getExporter().getFileChooser(), getFrame());
             // now save, if so required
             if (selectedFile != null) {
                 try {
-                    exporter.export(jGraph, selectedFile); 
+                	getExporter().export(jGraph, selectedFile); 
                 } catch (IOException exc) {
                     new ErrorDialog(getFrame(), "Error while exporting to " + selectedFile, exc);
                 }
@@ -2668,7 +2678,7 @@ public class Simulator {
             if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
                 FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
-                doLoadGrammar(grammarLoaderMap.get(filterUsed), selectedFile, null);
+                doLoadGrammar(getGrammarLoaderMap().get(filterUsed), selectedFile, null);
             }
         }
     }
@@ -2681,14 +2691,14 @@ public class Simulator {
         
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(true)) {
-            	File newGrammar = new File(currentGrammarFile.getParentFile(), NEW_GRAMMAR_NAME);
+            	File newGrammar = new File(getCurrentGrammarFile().getParentFile(), NEW_GRAMMAR_NAME);
             	getGrammarFileChooser().setSelectedFile(newGrammar);
             	boolean ok = false;
             	while (!ok) {
                 if (getGrammarFileChooser().showOpenDialog(getFrame()) == JFileChooser.APPROVE_OPTION) {
                     File selectedFile = getGrammarFileChooser().getSelectedFile();
                     FileFilter filter = getGrammarFileChooser().getFileFilter();
-                    AspectualViewGps grammarLoader = grammarLoaderMap.get(filter);
+                    AspectualViewGps grammarLoader = getGrammarLoaderMap().get(filter);
                     if (filter instanceof ExtensionFilter) {
                         String extendedName = ((ExtensionFilter) filter).addExtension(selectedFile.getPath());
                         selectedFile = new File(extendedName);
@@ -2881,7 +2891,7 @@ public class Simulator {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
                 if (confirmOverwriteGrammar(selectedFile)) {
                 	FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
-                	doSaveGrammar(grammarLoaderMap.get(filterUsed), selectedFile);
+                	doSaveGrammar(getGrammarLoaderMap().get(filterUsed), selectedFile);
                 }
             }
         }

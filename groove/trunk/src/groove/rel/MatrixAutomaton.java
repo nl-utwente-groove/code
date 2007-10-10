@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MatrixAutomaton.java,v 1.7 2007-09-10 19:13:33 rensink Exp $
+ * $Id: MatrixAutomaton.java,v 1.8 2007-10-10 08:59:46 rensink Exp $
  */
 package groove.rel;
 
@@ -811,14 +811,14 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
      */
     static private final int BACKWARD = 1;
     /** Constant wildcard label serving as a key in label-to-edge-sets maps. */
-    static private final RegExprLabel WILDCARD_LABEL = RegExpr.wildcard().toLabel();
+    static final RegExprLabel WILDCARD_LABEL = RegExpr.wildcard().toLabel();
     /**
      * Class to encapsulate the algorithm used to compute the result of
      * {@link VarAutomaton#getMatches(Graph, Set, Set, Map)}.
      */
     protected class MatchingAlgorithm {
         /** Dummy object used in matching. */
-        private final MatchingComputation MATCH_DUMMY = new MatchingComputation(0, null, null);
+        final MatchingComputation MATCH_DUMMY = new MatchingComputation(0, null, null);
         /** 
          * Wraps a single computation of the enclosing {@link MatchingAlgorithm}.
          * An object of this class is a one-shot affair, computing the end images
@@ -1371,7 +1371,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * Automaton node where the matching ends. This may be the automaton's end or start node,
          * depending on whether we do forward or backward matching.
          */
-        private final int endIndex;
+        final int endIndex;
 
         /**
          * Mapping from automaton nodes to label-to-opposite-node-ends maps. May reflect the
@@ -1399,13 +1399,13 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         /**
          * Set of potential end images for the current matching computation.
          */
-        private transient Set<? extends Node> endImages;
+        transient Set<? extends Node> endImages;
 
         /**
          * Number of images yet to add.
          * Only used if non-negative.
          */
-        private transient int remainingImageCount;
+        transient int remainingImageCount;
 
         /**
          * Relation where the result of the current matching computation is built.
@@ -1420,6 +1420,6 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * {@link #isStoringIntermediates()} holds, a set of end images reachable from the
          * automaton key/graph image pairs.
          */
-        private final Map<Node,MatchingComputation>[] auxResults = new Map[indexedNodeCount()];
+        final Map<Node,MatchingComputation>[] auxResults = new Map[indexedNodeCount()];
     }
 }

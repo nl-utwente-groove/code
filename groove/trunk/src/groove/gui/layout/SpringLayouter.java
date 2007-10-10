@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SpringLayouter.java,v 1.4 2007-05-20 07:17:56 rensink Exp $
+ * $Id: SpringLayouter.java,v 1.5 2007-10-10 08:59:49 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -29,7 +29,6 @@ import java.util.TimerTask;
 
 import org.jgraph.graph.DefaultGraphCell;
 import org.jgraph.graph.EdgeView;
-import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.PortView;
 
@@ -37,72 +36,28 @@ import org.jgraph.graph.PortView;
  * Action to set up the standard touchgraph layout algorithm on a given MyJGraph. Adapted from
  * <tt>jgraph.com.pad.Touch</tt>
  * @author Gaudenz Alder and Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class SpringLayouter extends AbstractLayouter {
-	/** Name of this layouter. */
-    public static final String ACTION_NAME = "Spring layout";
-
-    /** Text for stopping this layouter. */
-    public static final String STOP_ACTION_NAME = "Stop layout";
-
-    /**
-     * Layout rigidity value in case none is provided.
-     */
-    public static final float DEFAULT_RIGIDITY = 2.0f;
-
-    /**
-     * Default time interval for this layout action (in ms).
-     */
-    public static final int DEFAULT_DURATION = 2000;
-
-    /**
-     * The timer that schedules the stopping of layout processes.
-     */
-    private static final java.util.Timer layoutTimer = new java.util.Timer(true);
-
-    /**
-     * An epsilon float value, used as border case to decide whether a value is "almost zero".
-     */
-    static private final float SMALL_VALUE = 0.1f;
-
-    /** The damper decrease when we're damping slowly */
-    static private final float SLOW_DAMPING = 0.0001f;
-
-    /** The damper decrease when we're damping medium fast */
-    static private final float MEDIUM_DAMPING = 0.003f;
-
-    /** The damper decrease when we're damping fast */
-    static private final float FAST_DAMPING = 0.01f;
-
-    /** Bound for <tt>maxMotion</tt> below which we start damping medium */
-    static private final float MEDIUM_DAMPING_MOTION_TRESHHOLD = 0.8f; // was 0.4
-
-    /** Bound for <tt>maxMotion</tt> below which we start damping fast */
-    static private final float FAST_DAMPING_MOTION_TRESHHOLD = 0.4f; // was 0.2
-
-    /** Bound for <tt>damper</tt> below which we start damping fast */
-    static private final float FAST_DAMPING_DAMPER_TRESHHOLD = 0.9f;
-
-    // ---------------------- INSTANCE DEFINITIONS --------------------------
-
+    /** Constructs a template spring layouter. */
     public SpringLayouter() {
-        this(ACTION_NAME);
+        super(ACTION_NAME);
     }
-
-    public SpringLayouter(int duration) {
-        this(ACTION_NAME, duration);
-    }
-
-    public SpringLayouter(String name) {
-        this(name, DEFAULT_DURATION);
-    }
-
-    public SpringLayouter(String name, int duration) {
-        super(name);
-        setName(duration);
-        setDuration(duration);
-    }
+//
+//    public SpringLayouter(int duration) {
+//        this(ACTION_NAME, duration);
+//    }
+//
+//    /** Construct a layouter with a given name. */
+//    public SpringLayouter(String name) {
+//        this(name, DEFAULT_DURATION);
+//    }
+//
+//    public SpringLayouter(String name, int duration) {
+//        super(name);
+//        setName(duration);
+//        setDuration(duration);
+//    }
 
     /**
      * Constructs a new, named layout action on a given graph, with given layout rigidity.
@@ -113,37 +68,37 @@ public class SpringLayouter extends AbstractLayouter {
      * @require name != null, jgraph != null, rigidity > 0 jgraph.getModel() instanceof
      *          jgraph.GraphJModel
      */
-    private SpringLayouter(String name, int duration, JGraph jgraph, float rigidity) {
+    private SpringLayouter(String name, JGraph jgraph, float rigidity) {
         super(name, jgraph);
         // setEnabled(true);
-        setDuration(duration);
+//        setDuration(duration);
         setRigidity(rigidity);
     }
 
     public Layouter newInstance(JGraph jgraph) {
-        return new SpringLayouter(name, duration, jgraph, rigidity);
+        return new SpringLayouter(name, jgraph, rigidity);
     }
-
-    /**
-     * Sets the duration of the temporary layout action, in milliseconds. A value of 0 means to
-     * layout until stable.
-     * @param duration the duration of the temporary layout action, in milliseconds
-     * @require <tt>duration >= 0</tt>
-     */
-    public void setDuration(int duration) {
-        if (duration >= 0) {
-            this.duration = duration;
-        }
-    }
-
-    /**
-     * Returns the duration of the temporary layout action, in milliseconds.
-     * @return the duration of the temporary layout action, in milliseconds
-     * @ensure <tt>result >= 0</tt>
-     */
-    public int getDuration() {
-        return duration;
-    }
+//
+//    /**
+//     * Sets the duration of the temporary layout action, in milliseconds. A value of 0 means to
+//     * layout until stable.
+//     * @param duration the duration of the temporary layout action, in milliseconds
+//     * @require <tt>duration >= 0</tt>
+//     */
+//    public void setDuration(int duration) {
+//        if (duration >= 0) {
+//            this.duration = duration;
+//        }
+//    }
+//
+//    /**
+//     * Returns the duration of the temporary layout action, in milliseconds.
+//     * @return the duration of the temporary layout action, in milliseconds
+//     * @ensure <tt>result >= 0</tt>
+//     */
+//    public int getDuration() {
+//        return duration;
+//    }
 
     /**
      * @require rigidity > 0
@@ -153,10 +108,10 @@ public class SpringLayouter extends AbstractLayouter {
             this.rigidity = rigidity;
         }
     }
-
-    public float getRigidity() {
-        return rigidity;
-    }
+//
+//    public float getRigidity() {
+//        return rigidity;
+//    }
 
     /**
      * Starts layouting in a parallel thread; or stops the current layouter thread if one is
@@ -229,22 +184,22 @@ public class SpringLayouter extends AbstractLayouter {
         }
     }
 
-    public boolean isRunning() {
+    private boolean isRunning() {
         return relaxer != null && relaxer.isAlive();
     }
-
-    protected int getLineStyle(EdgeView edgeView) {
-        // the number of extra points, besides start and end
-        int extraPointCount = edgeView.getPoints().size() - 2;
-        switch (extraPointCount) {
-        case 0:
-            return GraphConstants.STYLE_ORTHOGONAL;
-        case 2:
-            return GraphConstants.STYLE_BEZIER;
-        default:
-            return GraphConstants.STYLE_SPLINE;
-        }
-    }
+//
+//    protected int getLineStyle(EdgeView edgeView) {
+//        // the number of extra points, besides start and end
+//        int extraPointCount = edgeView.getPoints().size() - 2;
+//        switch (extraPointCount) {
+//        case 0:
+//            return GraphConstants.STYLE_ORTHOGONAL;
+//        case 2:
+//            return GraphConstants.STYLE_BEZIER;
+//        default:
+//            return GraphConstants.STYLE_SPLINE;
+//        }
+//    }
 
     /**
      * Sets the action name to reflect the duration.
@@ -268,7 +223,7 @@ public class SpringLayouter extends AbstractLayouter {
         if (DEBUG)
             System.out.println("Starting automatic layout");
         // 
-        // initialize the layoutables, positions and deltas
+        // initialise the layoutables, positions and deltas
         deltaMap.clear();
         int layoutableIndex = 0;
         layoutables = new Layoutable[toLayoutableMap.size()];
@@ -289,7 +244,7 @@ public class SpringLayouter extends AbstractLayouter {
             positions[layoutableIndex] = new Point2D.Double(p2X, p2Y);
             layoutableIndex++;
         }
-        // initialize the edge fragment arrays
+        // initialise the edge fragment arrays
         GraphLayoutCache layoutCache = jgraph.getGraphLayoutCache();
         // Object[] graphEdges = jgraph.getEdges(jgraph.getRoots());
         List<Layoutable> edgeFragmentSourceList = new LinkedList<Layoutable>();
@@ -452,7 +407,7 @@ public class SpringLayouter extends AbstractLayouter {
         damp();
     }
 
-    private synchronized void relax() {
+    synchronized void relax() {
         for (int i = 0; i < 10; i++) {
             relaxEdges();
             avoidLabels();
@@ -525,7 +480,7 @@ public class SpringLayouter extends AbstractLayouter {
     // private boolean frozen = true;
     private boolean repaintNeeded = false;
 
-    private double damper = 1.0; // A low damper value causes the graph to move slowly
+    double damper = 1.0; // A low damper value causes the graph to move slowly
 
     private double maxMotion = 0; // Keep an eye on the fastest moving node to see if the graph is
                                     // stabilizing
@@ -542,19 +497,65 @@ public class SpringLayouter extends AbstractLayouter {
      * @invariant rigidity > 0
      */
     private float rigidity = DEFAULT_RIGIDITY;
-
-    /**
-     * The currently set duration of the temporary layout action. A value of 0 means to layout untol
-     * stable.
-     * @invariant duration >= 0
-     */
-    private int duration;
+//
+//    /**
+//     * The currently set duration of the temporary layout action. A value of 0 means to layout untol
+//     * stable.
+//     * @invariant duration >= 0
+//     */
+//    private int duration;
 
     /**
      * Timer task for ending the current layout process. If null, no such task is scheduled.
      * @invariant stopTask == null || running
      */
     private transient TimerTask stopTask;
+	/** Name of this layouter. */
+    public static final String ACTION_NAME = "Spring layout";
+
+    /** Text for stopping this layouter. */
+    public static final String STOP_ACTION_NAME = "Stop layout";
+
+    /**
+     * Layout rigidity value in case none is provided.
+     */
+    public static final float DEFAULT_RIGIDITY = 2.0f;
+
+    /**
+     * Default time interval for this layout action (in ms).
+     */
+    public static final int DEFAULT_DURATION = 2000;
+//
+//    /**
+//     * The timer that schedules the stopping of layout processes.
+//     */
+//    private static final java.util.Timer layoutTimer = new java.util.Timer(true);
+
+    /**
+     * An epsilon float value, used as border case to decide whether a value is "almost zero".
+     */
+    static private final float SMALL_VALUE = 0.1f;
+
+    /** The damper decrease when we're damping slowly */
+    static private final float SLOW_DAMPING = 0.0001f;
+
+    /** The damper decrease when we're damping medium fast */
+    static private final float MEDIUM_DAMPING = 0.003f;
+
+    /** The damper decrease when we're damping fast */
+    static private final float FAST_DAMPING = 0.01f;
+
+    /** Bound for <tt>maxMotion</tt> below which we start damping medium */
+    static private final float MEDIUM_DAMPING_MOTION_TRESHHOLD = 0.8f; // was 0.4
+
+    /** Bound for <tt>maxMotion</tt> below which we start damping fast */
+    static private final float FAST_DAMPING_MOTION_TRESHHOLD = 0.4f; // was 0.2
+
+    /** Bound for <tt>damper</tt> below which we start damping fast */
+    static private final float FAST_DAMPING_DAMPER_TRESHHOLD = 0.9f;
+
+    // ---------------------- INSTANCE DEFINITIONS --------------------------
+
 
     private static final boolean DEBUG = false;
 

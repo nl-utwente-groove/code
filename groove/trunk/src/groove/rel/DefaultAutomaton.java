@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultAutomaton.java,v 1.5 2007-10-02 23:06:34 rensink Exp $
+ * $Id: DefaultAutomaton.java,v 1.6 2007-10-10 08:59:46 rensink Exp $
  */
 package groove.rel;
 
@@ -36,320 +36,6 @@ import java.util.Set;
  * A default implementation of regular automata.
  */
 public class DefaultAutomaton extends DefaultGraph implements Automaton {
-    /**
-     * Indication of forward matching direction.
-     */
-    static private final int FORWARD = 0;
-    /**
-     * Indication of backward matching direction.
-     */
-    static private final int BACKWARD = 1;
-    /** Constant wildcard label serving as a key in label-to-edge-sets maps. */
-    static private final RegExprLabel WILDCARD_LABEL = RegExpr.wildcard().toLabel();
-    
-    /**
-     * Class to encapsulate the algorithm used to compute the result of
-     * {@link Automaton#getMatches(Graph, Set, Set)}.
-     */
-    protected class MatchingAlgorithm {
-    	/** Creates an instance of the algorithm that matches in a given direction
-    	 * ({@link #FORWARD} or {@link #BACKWARD}).
-    	 */
-        public MatchingAlgorithm(int direction) {
-            switch (direction) {
-            case FORWARD :
-                this.start = getStartNode();
-                this.end = getEndNode();
-                break;
-            case BACKWARD :
-                this.start = getEndNode();
-                this.end = getStartNode();
-                break;
-            default :
-                throw new IllegalArgumentException("Illegal matching direction value"+direction);
-            }
-            this.nodePosLabelEdgeMap = getNodePosLabelEdgeMap(direction);
-            this.nodeInvLabelEdgeMap = getNodeInvLabelEdgeMap(direction);
-            this.direction = direction;
-        }
-
-        /**
-         * Computes the matches according to this algorithm, for a given graph and a given set of
-         * images for the start node (set at construction time). A second parameter gives the option
-         * of passing in a set of potential end images; if not <code>null</code>, the computation
-         * will terminate when it has found all the end images.
-         * @param graph the graph in which we are trying to find matches
-         * @param startImages the allowed images of the start node of the algorithm;
-         * may not be <code>null</code>
-         * @param endImages the allowed images for the end node of the algorithm; 
-         * may be <code>null</code> if all end images are allowed
-         */
-        public NodeRelation computeMatches(Graph graph, Set<? extends Node> startImages, Set<? extends Node> endImages) {
-            this.graph = graph;
-            this.endImages = endImages;
-            this.result = createRelation(graph);
-            for (Node startImage: startImages) {
-                addMatches(startImage);
-            }
-            return result;
-        }
-
-        /**
-         * Indicats if a match can be found between two nodes of a graph.
-         * @param graph the graph in which we are trying to find matches
-         * @param startImage the required image of the start node
-         * @param endImage the required image of the end node
-         */
-        public boolean hasMatch(Graph graph, Node startImage, Node endImage) {
-            this.graph = graph;
-            this.result = createRelation(graph);
-                addMatches(startImage);
-            return remainingImageCount == 0;
-        }
-
-        /**
-         * Adds matches for a given image of the start node (set at construction time). A second
-         * parameter gives the option of passing in a set of potential end images; if not
-         * <code>null</code>, the computation will terminate when it has found all the end
-         * images.
-         */
-        public void addMatches(Node startImage) {
-//            this.matchMap = new HashMap();
-            this.startImage = startImage;
-            // if the set of end images is not null, count the number of remaining images
-            if (endImages == null || hasWildcards()) {
-                // it makes no sense to try and count images
-                remainingImageCount = -1;
-            } else {
-                remainingImageCount = endImages.size();
-            }
-            if (isAcceptsEmptyWord()) {
-                result.addSelfRelated(startImage);
-            }
-            matched = new SetNodeRelation(graph);
-            extend(start, startImage);
-        }
-
-        /**
-         * Extends the matchings found so far with a given key-image pair. If this is a real
-         * extension, it is subsequently propagated.
-         * @param key the node from the automaton that has been matched
-         * @param image the node from the graph that has been found as a new image
-         */
-        private void extend(Node key, Node image) {
-            if (key == end) {
-                if ((endImages == null || endImages.contains(image)) && addRelated(result, startImage, image)) {
-                    if (remainingImageCount > 0) {
-                        remainingImageCount--;
-                    }
-                }
-            } else {
-                // test if this is a new key-image pair that deserves to be propagated
-                // if the key is not cyclic, the match is certainly new
-                boolean isNew = !isCyclic(key);
-                if (!isNew) {
-                    // a cyclic key is new if we did not see it before
-                    if (matched == null) {
-                        matched = new SetNodeRelation(graph);
-                    }
-//                    Set imageSet = (Set) matchMap.get(key);
-//                    if (imageSet == null) {
-//                        matchMap.put(key, imageSet = new HashSet());
-//                    }
-//                    isNew = imageSet.add(image);  
-                    isNew = matched.addRelated(key, image);
-                }
-                if (isNew) {
-                    propagate(key, image);
-                }
-            }
-        }
-
-        /**
-         * Propagates a previously made extension to the matchings, by also matching the "outgoing"
-         * edges of the key-image pair.
-         * @param key the node from the automaton that has been matched
-         * @param image the node from the graph that has been added as a new image
-         * @see #getPosEdgeSet(Graph, Node)
-         * @see #getOpposite(Edge)
-         */
-        private void propagate(Node key, Node image) {
-            extend(getPosLabelEdgeMap(key), getPosEdgeSet(graph, image), true);
-            extend(getInvLabelEdgeMap(key), getInvEdgeSet(graph, image), false);
-        }
-        
-        /**
-         * Extends the match map with key-image pairs derived from the
-         * end points of equi-labelled edges from automaton and graph.
-         * Also takes wildcard labels into account.
-         */
-        private void extend(Map<Label, Set<Edge>> keyLabelEdgeMap, Collection<? extends Edge> imageEdgeSet, boolean positive) {
-            if (keyLabelEdgeMap != null) {
-                Iterator<? extends Edge> imageEdgeIter = imageEdgeSet.iterator();
-                while (remainingImageCount != 0 && imageEdgeIter.hasNext()) {
-                    Edge imageEdge = imageEdgeIter.next();
-                    extend(keyLabelEdgeMap.get(imageEdge.label()), imageEdge, positive);
-                    extend(keyLabelEdgeMap.get(WILDCARD_LABEL), imageEdge, positive);
-                }
-            }
-        }
-        
-        /**
-         * Extends the match map with key-image pairs derived from the
-         * end points of equi-labelled edges from automaton and graph.
-         */
-        private void extend(Set<Edge> keyEdgeSet, Edge imageEdge, boolean positive) {
-            if (keyEdgeSet != null) {
-            	for (Edge keyEdge: keyEdgeSet) {
-                    Node imageNode = positive ? getOpposite(imageEdge) : getThisEnd(imageEdge);
-                    extend(getOpposite(keyEdge), imageNode);
-                }
-            }
-        }
-
-        /**
-         * Callback factory method. Creates a relation over a given graph. This implementation
-         * returns a {@link SetNodeRelation}.
-         */
-        protected NodeRelation createRelation(Graph graph) {
-            return new SetNodeRelation(graph);
-        }
-
-        /**
-         * Retrieves the label-to-node-sets mapping for a given automaton node.
-         */
-        protected Map<Label, Set<Edge>> getPosLabelEdgeMap(Node node) {
-            return nodePosLabelEdgeMap.get(node);
-        }
-
-        /**
-         * Retrieves the inverse-label-to-node-sets mapping for a given automaton node.
-         */
-        protected Map<Label, Set<Edge>> getInvLabelEdgeMap(Node node) {
-            return nodeInvLabelEdgeMap.get(node);
-        }
-
-        /**
-         * Returns the "outgoing" edge set for a given graph node. This may be implemented either by
-         * the outgoing or by the incoming edges, depending on whether we do forward or backward
-         * matching.
-         * @see #getInvEdgeSet(Graph, Node)
-         */
-        protected Collection<? extends Edge> getPosEdgeSet(Graph graph, Node node) {
-            switch (direction) {
-            case FORWARD : return graph.outEdgeSet(node);
-            default : return graph.edgeSet(node, Edge.TARGET_INDEX);
-            }
-        }
-
-        /**
-         * Returns the "incoming" edge set for a given graph node. This may be implemented either by
-         * the incoming or by the outgoing edges, depending on whether we do forward or backward
-         * matching.
-         * @see #getPosEdgeSet(Graph, Node)
-         */
-        protected Collection<? extends Edge> getInvEdgeSet(Graph graph, Node node)  {
-            switch (direction) {
-            case FORWARD : return graph.edgeSet(node, Edge.TARGET_INDEX);
-            default : return graph.outEdgeSet(node);
-            }
-        }
-
-        /**
-         * Returns the "opposite" end of a graph edge. This may be either the target or the source,
-         * depending on whether we do forward or backward matching.
-         */
-        protected Node getThisEnd(Edge edge) {
-            switch (direction) {
-            case FORWARD : return edge.source();
-            default : return edge.opposite();
-            }
-        }
-
-        /**
-         * Returns the "opposite" end of a graph edge. This may be either the target or the source,
-         * depending on whether we do forward or backward matching.
-         */
-        protected Node getOpposite(Edge edge) {
-            switch (direction) {
-            case FORWARD : return edge.opposite();
-            default : return edge.source();
-            }
-        }
-
-        /**
-         * Adds a related pair to the result relation, with
-         * given pre- and post-images or swapped, depending on whether we do
-         * forward or backward matching.
-         */
-        protected boolean addRelated(NodeRelation result, Node startImage, Node endImage) {
-            switch (direction) {
-            case FORWARD : 
-                return result.addRelated(startImage, endImage);
-            default : 
-                return result.addRelated(endImage, startImage);
-            }
-        }
-
-        /**
-         * Automaton node where the matching starts. This may be the automaton's start or end node,
-         * depending on whether we do forward or backward matching.
-         */
-        private final Node start;
-
-        /**
-         * Automaton node where the matching ends. This may be the automaton's end or start node,
-         * depending on whether we do forward or backward matching.
-         */
-        private final Node end;
-
-        /**
-         * Mapping from automaton nodes to label-to-opposite-node-ends maps. May reflect the
-         * automaton's outgoing or incoming edge structure, depending on whether we do forward or
-         * backward matching.
-         */
-        private final Map<Node,Map<Label,Set<Edge>>> nodePosLabelEdgeMap;
-
-        /**
-         * Mapping from automaton nodes to inverse label-to-opposite-node-ends maps. May reflect the
-         * automaton's outgoing or incoming edge structure, depending on whether we do forward or
-         * backward matching.
-         */
-        private final Map<Node,Map<Label,Set<Edge>>> nodeInvLabelEdgeMap;
-        /**
-         * Flag indicating if we are doing forward or backward matching.
-         */
-        private final int direction;
-
-        /**
-         * Graph on which the current matching computation is performed.
-         */
-        private transient Graph graph;
-
-        /**
-         * Start image for the current matching computation.
-         */
-        private transient Node startImage;
-
-        /**
-         * Set of potential end images for the current matching computation.
-         */
-        private transient Set<? extends Node> endImages;
-
-        /**
-         * Number of images yet to add.
-         * Only used if non-negative.
-         */
-        private transient int remainingImageCount;
-
-        /**
-         * Relation where the result of the current matching computation is built.
-         */
-        private transient NodeRelation result;
-
-        private transient NodeRelation matched;
-    }
-
     /**
      * Creates an automaton with a fresh start and end node,
      * which does not accept the empty word.
@@ -705,4 +391,317 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
      * Array of algorithm for matching, indexed by the matching direction.
      */
     private MatchingAlgorithm[] algorithm;
+    /**
+     * Indication of forward matching direction.
+     */
+    static private final int FORWARD = 0;
+    /**
+     * Indication of backward matching direction.
+     */
+    static private final int BACKWARD = 1;
+    /** Constant wildcard label serving as a key in label-to-edge-sets maps. */
+    static final RegExprLabel WILDCARD_LABEL = RegExpr.wildcard().toLabel();
+    
+    /**
+     * Class to encapsulate the algorithm used to compute the result of
+     * {@link Automaton#getMatches(Graph, Set, Set)}.
+     */
+    protected class MatchingAlgorithm {
+    	/** Creates an instance of the algorithm that matches in a given direction
+    	 * ({@link #FORWARD} or {@link #BACKWARD}).
+    	 */
+        public MatchingAlgorithm(int direction) {
+            switch (direction) {
+            case FORWARD :
+                this.start = getStartNode();
+                this.end = getEndNode();
+                break;
+            case BACKWARD :
+                this.start = getEndNode();
+                this.end = getStartNode();
+                break;
+            default :
+                throw new IllegalArgumentException("Illegal matching direction value"+direction);
+            }
+            this.nodePosLabelEdgeMap = getNodePosLabelEdgeMap(direction);
+            this.nodeInvLabelEdgeMap = getNodeInvLabelEdgeMap(direction);
+            this.direction = direction;
+        }
+
+        /**
+         * Computes the matches according to this algorithm, for a given graph and a given set of
+         * images for the start node (set at construction time). A second parameter gives the option
+         * of passing in a set of potential end images; if not <code>null</code>, the computation
+         * will terminate when it has found all the end images.
+         * @param graph the graph in which we are trying to find matches
+         * @param startImages the allowed images of the start node of the algorithm;
+         * may not be <code>null</code>
+         * @param endImages the allowed images for the end node of the algorithm; 
+         * may be <code>null</code> if all end images are allowed
+         */
+        public NodeRelation computeMatches(Graph graph, Set<? extends Node> startImages, Set<? extends Node> endImages) {
+            this.graph = graph;
+            this.endImages = endImages;
+            this.result = createRelation(graph);
+            for (Node startImage: startImages) {
+                addMatches(startImage);
+            }
+            return result;
+        }
+
+        /**
+         * Indicats if a match can be found between two nodes of a graph.
+         * @param graph the graph in which we are trying to find matches
+         * @param startImage the required image of the start node
+         * @param endImage the required image of the end node
+         */
+        public boolean hasMatch(Graph graph, Node startImage, Node endImage) {
+            this.graph = graph;
+            this.result = createRelation(graph);
+                addMatches(startImage);
+            return remainingImageCount == 0;
+        }
+
+        /**
+         * Adds matches for a given image of the start node (set at construction time). A second
+         * parameter gives the option of passing in a set of potential end images; if not
+         * <code>null</code>, the computation will terminate when it has found all the end
+         * images.
+         */
+        public void addMatches(Node startImage) {
+//            this.matchMap = new HashMap();
+            this.startImage = startImage;
+            // if the set of end images is not null, count the number of remaining images
+            if (endImages == null || hasWildcards()) {
+                // it makes no sense to try and count images
+                remainingImageCount = -1;
+            } else {
+                remainingImageCount = endImages.size();
+            }
+            if (isAcceptsEmptyWord()) {
+                result.addSelfRelated(startImage);
+            }
+            matched = new SetNodeRelation(graph);
+            extend(start, startImage);
+        }
+
+        /**
+         * Extends the matchings found so far with a given key-image pair. If this is a real
+         * extension, it is subsequently propagated.
+         * @param key the node from the automaton that has been matched
+         * @param image the node from the graph that has been found as a new image
+         */
+        private void extend(Node key, Node image) {
+            if (key == end) {
+                if ((endImages == null || endImages.contains(image)) && addRelated(result, startImage, image)) {
+                    if (remainingImageCount > 0) {
+                        remainingImageCount--;
+                    }
+                }
+            } else {
+                // test if this is a new key-image pair that deserves to be propagated
+                // if the key is not cyclic, the match is certainly new
+                boolean isNew = !isCyclic(key);
+                if (!isNew) {
+                    // a cyclic key is new if we did not see it before
+                    if (matched == null) {
+                        matched = new SetNodeRelation(graph);
+                    }
+//                    Set imageSet = (Set) matchMap.get(key);
+//                    if (imageSet == null) {
+//                        matchMap.put(key, imageSet = new HashSet());
+//                    }
+//                    isNew = imageSet.add(image);  
+                    isNew = matched.addRelated(key, image);
+                }
+                if (isNew) {
+                    propagate(key, image);
+                }
+            }
+        }
+
+        /**
+         * Propagates a previously made extension to the matchings, by also matching the "outgoing"
+         * edges of the key-image pair.
+         * @param key the node from the automaton that has been matched
+         * @param image the node from the graph that has been added as a new image
+         * @see #getPosEdgeSet(Graph, Node)
+         * @see #getOpposite(Edge)
+         */
+        private void propagate(Node key, Node image) {
+            extend(getPosLabelEdgeMap(key), getPosEdgeSet(graph, image), true);
+            extend(getInvLabelEdgeMap(key), getInvEdgeSet(graph, image), false);
+        }
+        
+        /**
+         * Extends the match map with key-image pairs derived from the
+         * end points of equi-labelled edges from automaton and graph.
+         * Also takes wildcard labels into account.
+         */
+        private void extend(Map<Label, Set<Edge>> keyLabelEdgeMap, Collection<? extends Edge> imageEdgeSet, boolean positive) {
+            if (keyLabelEdgeMap != null) {
+                Iterator<? extends Edge> imageEdgeIter = imageEdgeSet.iterator();
+                while (remainingImageCount != 0 && imageEdgeIter.hasNext()) {
+                    Edge imageEdge = imageEdgeIter.next();
+                    extend(keyLabelEdgeMap.get(imageEdge.label()), imageEdge, positive);
+                    extend(keyLabelEdgeMap.get(WILDCARD_LABEL), imageEdge, positive);
+                }
+            }
+        }
+        
+        /**
+         * Extends the match map with key-image pairs derived from the
+         * end points of equi-labelled edges from automaton and graph.
+         */
+        private void extend(Set<Edge> keyEdgeSet, Edge imageEdge, boolean positive) {
+            if (keyEdgeSet != null) {
+            	for (Edge keyEdge: keyEdgeSet) {
+                    Node imageNode = positive ? getOpposite(imageEdge) : getThisEnd(imageEdge);
+                    extend(getOpposite(keyEdge), imageNode);
+                }
+            }
+        }
+
+        /**
+         * Callback factory method. Creates a relation over a given graph. This implementation
+         * returns a {@link SetNodeRelation}.
+         */
+        protected NodeRelation createRelation(Graph graph) {
+            return new SetNodeRelation(graph);
+        }
+
+        /**
+         * Retrieves the label-to-node-sets mapping for a given automaton node.
+         */
+        protected Map<Label, Set<Edge>> getPosLabelEdgeMap(Node node) {
+            return nodePosLabelEdgeMap.get(node);
+        }
+
+        /**
+         * Retrieves the inverse-label-to-node-sets mapping for a given automaton node.
+         */
+        protected Map<Label, Set<Edge>> getInvLabelEdgeMap(Node node) {
+            return nodeInvLabelEdgeMap.get(node);
+        }
+
+        /**
+         * Returns the "outgoing" edge set for a given graph node. This may be implemented either by
+         * the outgoing or by the incoming edges, depending on whether we do forward or backward
+         * matching.
+         * @see #getInvEdgeSet(Graph, Node)
+         */
+        protected Collection<? extends Edge> getPosEdgeSet(Graph graph, Node node) {
+            switch (direction) {
+            case FORWARD : return graph.outEdgeSet(node);
+            default : return graph.edgeSet(node, Edge.TARGET_INDEX);
+            }
+        }
+
+        /**
+         * Returns the "incoming" edge set for a given graph node. This may be implemented either by
+         * the incoming or by the outgoing edges, depending on whether we do forward or backward
+         * matching.
+         * @see #getPosEdgeSet(Graph, Node)
+         */
+        protected Collection<? extends Edge> getInvEdgeSet(Graph graph, Node node)  {
+            switch (direction) {
+            case FORWARD : return graph.edgeSet(node, Edge.TARGET_INDEX);
+            default : return graph.outEdgeSet(node);
+            }
+        }
+
+        /**
+         * Returns the "opposite" end of a graph edge. This may be either the target or the source,
+         * depending on whether we do forward or backward matching.
+         */
+        protected Node getThisEnd(Edge edge) {
+            switch (direction) {
+            case FORWARD : return edge.source();
+            default : return edge.opposite();
+            }
+        }
+
+        /**
+         * Returns the "opposite" end of a graph edge. This may be either the target or the source,
+         * depending on whether we do forward or backward matching.
+         */
+        protected Node getOpposite(Edge edge) {
+            switch (direction) {
+            case FORWARD : return edge.opposite();
+            default : return edge.source();
+            }
+        }
+
+        /**
+         * Adds a related pair to the result relation, with
+         * given pre- and post-images or swapped, depending on whether we do
+         * forward or backward matching.
+         */
+        protected boolean addRelated(NodeRelation result, Node startImage, Node endImage) {
+            switch (direction) {
+            case FORWARD : 
+                return result.addRelated(startImage, endImage);
+            default : 
+                return result.addRelated(endImage, startImage);
+            }
+        }
+
+        /**
+         * Automaton node where the matching starts. This may be the automaton's start or end node,
+         * depending on whether we do forward or backward matching.
+         */
+        private final Node start;
+
+        /**
+         * Automaton node where the matching ends. This may be the automaton's end or start node,
+         * depending on whether we do forward or backward matching.
+         */
+        private final Node end;
+
+        /**
+         * Mapping from automaton nodes to label-to-opposite-node-ends maps. May reflect the
+         * automaton's outgoing or incoming edge structure, depending on whether we do forward or
+         * backward matching.
+         */
+        private final Map<Node,Map<Label,Set<Edge>>> nodePosLabelEdgeMap;
+
+        /**
+         * Mapping from automaton nodes to inverse label-to-opposite-node-ends maps. May reflect the
+         * automaton's outgoing or incoming edge structure, depending on whether we do forward or
+         * backward matching.
+         */
+        private final Map<Node,Map<Label,Set<Edge>>> nodeInvLabelEdgeMap;
+        /**
+         * Flag indicating if we are doing forward or backward matching.
+         */
+        private final int direction;
+
+        /**
+         * Graph on which the current matching computation is performed.
+         */
+        private transient Graph graph;
+
+        /**
+         * Start image for the current matching computation.
+         */
+        private transient Node startImage;
+
+        /**
+         * Set of potential end images for the current matching computation.
+         */
+        private transient Set<? extends Node> endImages;
+
+        /**
+         * Number of images yet to add.
+         * Only used if non-negative.
+         */
+        private transient int remainingImageCount;
+
+        /**
+         * Relation where the result of the current matching computation is built.
+         */
+        private transient NodeRelation result;
+
+        private transient NodeRelation matched;
+    }
 }

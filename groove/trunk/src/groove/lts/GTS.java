@@ -13,9 +13,9 @@
 // language governing permissions and limitations under the License.
 /* 
 <<<<<<< GTS.java
- * $Id: GTS.java,v 1.30 2007-09-30 15:52:37 rensink Exp $
+ * $Id: GTS.java,v 1.31 2007-10-10 08:59:48 rensink Exp $
 =======
- * $Id: GTS.java,v 1.30 2007-09-30 15:52:37 rensink Exp $
+ * $Id: GTS.java,v 1.31 2007-10-10 08:59:48 rensink Exp $
 >>>>>>> 1.26
  */
 package groove.lts;
@@ -48,7 +48,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.30 $ $Date: 2007-09-30 15:52:37 $
+ * @version $Revision: 1.31 $ $Date: 2007-10-10 08:59:48 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**
@@ -56,7 +56,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     private static int spuriousTransitionCount;
     
-    /**
+	/**
      * Returns the number of confluent diamonds found during generation.
      */
     public static int getSpuriousTransitionCount() {
@@ -334,9 +334,16 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         }
     }
     
-    private boolean isCheckIsomorphism() {
+    boolean isCheckIsomorphism() {
         return checkIsomrophism;
     }
+
+    /**
+	 * @return Returns the transitionCount.
+	 */
+	final int getTransitionCount() {
+		return this.transitionCount;
+	}
 
     /**
      * The start state of this LTS.
@@ -429,6 +436,11 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * transitions as stored in the states.
      */
     private class TransitionSet extends AbstractSet<GraphTransition> {
+    	/** Empty constructor with the correct visibility. */
+    	TransitionSet() {
+    		// empty
+    	}
+    	
         /**
          * To determine whether a transition is in the set,
          * we look if the source state is known and if the 
@@ -463,7 +475,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     	@Override
         public int size() {
-            return transitionCount;
+            return getTransitionCount();
         }
     }
 
@@ -473,6 +485,11 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * transitions as stored in the states.
      */
     private class NextStateSet extends AbstractSet<GraphTransition> {
+    	/** Empty constructor with the correct visibility. */
+    	NextStateSet() {
+    		// empty
+    	}
+    	
         /**
          * To determine whether a transition is in the set,
          * we look if the target state (which is typically a {@link GraphNextState})

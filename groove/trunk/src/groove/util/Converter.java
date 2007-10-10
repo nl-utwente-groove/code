@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Converter.java,v 1.6 2007-09-30 21:38:55 rensink Exp $
+ * $Id: Converter.java,v 1.7 2007-10-10 08:59:42 rensink Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Performs conversions to and from groove.graph.Graph.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class Converter {
 	/** Main method to test this class. */
@@ -217,12 +217,12 @@ public class Converter {
      * Class that allows some handling of HTML text.
      */
     static public class HTMLTag {
-        private HTMLTag(String tag) {
+        HTMLTag(String tag) {
             this.tagBegin = String.format("<%s>", tag);
             this.tagEnd = String.format("</%s>", tag);
         }
 
-        private HTMLTag(String tag, String attrName, String attrValue) {
+        HTMLTag(String tag, String attrName, String attrValue) {
             this.tagBegin = String.format("<%s %s=\"%s\">", tag, attrName, toHtml(attrValue));
             this.tagEnd = String.format("</%s>", tag);
         }
@@ -285,8 +285,8 @@ public class Converter {
         }
 
         /** Start text of this tag. */
-        private final String tagBegin;
+        final String tagBegin;
         /** End text of this tag. */
-        private final String tagEnd;
+        final String tagEnd;
     }
 }

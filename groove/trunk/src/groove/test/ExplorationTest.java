@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.13 2007-06-05 15:32:31 iovka Exp $
+ * $Id: ExplorationTest.java,v 1.14 2007-10-10 08:59:58 rensink Exp $
  */
 
 package groove.test;
@@ -44,7 +44,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -348,5 +348,5 @@ public class ExplorationTest extends TestCase {
     /**
      * Grammar loader used in this test case.
      */
-    protected GrammarViewXml loader = new AspectualViewGps();
+    protected GrammarViewXml<?> loader = new AspectualViewGps();
 }

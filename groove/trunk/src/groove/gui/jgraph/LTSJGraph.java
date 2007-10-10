@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJGraph.java,v 1.7 2007-05-29 06:52:36 rensink Exp $
+ * $Id: LTSJGraph.java,v 1.8 2007-10-10 08:59:51 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -141,6 +141,11 @@ public class LTSJGraph extends JGraph {
 		return this.exploreMenu;
 	}
 
+	/** Returns the simulator of this LTS jgraph. */
+	Simulator getSimulator() {
+		return simulator;
+	}
+	
 	/**
      * The simulator to which this j-graph is associated.
      */
@@ -160,10 +165,10 @@ public class LTSJGraph extends JGraph {
 	 */
 	public class ScrollToCurrentAction extends AbstractAction {
 	    public void actionPerformed(ActionEvent evt) {
-	        if (simulator.getCurrentState() == null)
-	            scrollTo(simulator.getCurrentTransition());
+	        if (getSimulator().getCurrentState() == null)
+	            scrollTo(getSimulator().getCurrentTransition());
 	        else
-	            scrollTo(simulator.getCurrentState());
+	            scrollTo(getSimulator().getCurrentState());
 	    }
 	
 	    /** 
@@ -189,6 +194,11 @@ public class LTSJGraph extends JGraph {
      * switches to the state panel on a double click.
      */
     private class MyMouseListener extends MouseAdapter {
+    	/** Empty constructor with correct visibility. */
+    	MyMouseListener() {
+    		// empty
+    	}
+    	
 		@Override
 		public void mousePressed(MouseEvent evt) {
 			if (evt.getButton() == MouseEvent.BUTTON1) {
@@ -199,11 +209,11 @@ public class LTSJGraph extends JGraph {
 						loc.y);
 				if (cell instanceof GraphJEdge) {
 					GraphTransition edge = (GraphTransition) ((GraphJEdge) cell).getEdge();
-					simulator.setTransition(edge);
+					getSimulator().setTransition(edge);
 				} else if (cell instanceof GraphJVertex) {
 					GraphState node = (GraphState) ((GraphJVertex) cell).getNode();
-					if (!simulator.getCurrentState().equals(node)) {
-						simulator.setState(node);
+					if (!getSimulator().getCurrentState().equals(node)) {
+						getSimulator().setState(node);
 					}
 				}
 			}
@@ -211,7 +221,7 @@ public class LTSJGraph extends JGraph {
 	}
 
 	/**
-	 * A specialization of the forest layouter that takes the LTS start graph
+	 * A specialisation of the forest layouter that takes the LTS start graph
 	 * as its suggested root.
 	 */
 	private class MyForestLayouter extends groove.gui.layout.ForestLayouter {

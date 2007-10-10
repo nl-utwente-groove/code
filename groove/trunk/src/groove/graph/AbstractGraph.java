@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraph.java,v 1.22 2007-10-02 23:06:29 rensink Exp $
+ * $Id: AbstractGraph.java,v 1.23 2007-10-10 08:59:58 rensink Exp $
  */
 package groove.graph;
 
@@ -35,7 +35,7 @@ import java.util.Set;
  * Adds to the AbstractGraphShape the ability to add nodes and edges,
  * and some morphism capabilities.
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphShape<C> implements InternalGraph {
     public Morphism getIsomorphismTo(final Graph to) {
@@ -494,7 +494,7 @@ public abstract class AbstractGraph<C extends GraphCache> extends AbstractGraphS
         /**
          * The empty graph to which no elements can be added.
          */
-        private EmptyGraph() {
+        EmptyGraph() {
             setFixed();
         }
 

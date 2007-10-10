@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchItem.java,v 1.9 2007-10-05 11:44:40 rensink Exp $
+ * $Id: ConditionSearchItem.java,v 1.10 2007-10-10 08:59:50 rensink Exp $
  */
 package groove.match;
 
@@ -82,7 +82,7 @@ class ConditionSearchItem extends AbstractSearchItem {
     }
 
     /** The graph condition that should be matched by this search item. */
-    private final Condition condition;
+    final Condition condition;
     /** The root map of the graph condition. */
     private final NodeEdgeMap rootMap;
     /** The source nodes of the root map. */
@@ -90,9 +90,9 @@ class ConditionSearchItem extends AbstractSearchItem {
     /** The variables occurring in edges of the root map. */
     private final Set<String> neededVars;
     /** Mapping from the needed nodes to indices in the matcher. */
-    private Map<Node,Integer> nodeIxMap;
+    Map<Node,Integer> nodeIxMap;
     /** Mapping from the needed nodes to indices in the matcher. */
-    private Map<String,Integer> varIxMap;
+    Map<String,Integer> varIxMap;
 
     /**
      * Search record for a graph condition.

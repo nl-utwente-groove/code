@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StackedMap.java,v 1.3 2007-04-27 22:07:02 rensink Exp $
+ * $Id: StackedMap.java,v 1.4 2007-10-10 08:59:42 rensink Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * The stacked map does not support <tt>null</tt> values, and
  * currently also does not support removal of elements.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class StackedMap<T,U> extends AbstractMap<T,U> {
     /**
@@ -117,20 +117,21 @@ public class StackedMap<T,U> extends AbstractMap<T,U> {
      * Factory method for the delta map.
      * This implementation returns a {@link HashMap}.
      */
-    protected Map<T,U> createDeltaMap() {
+    private Map<T,U> createDeltaMap() {
         return new HashMap<T,U>();
     }
     
-    protected Set<Map.Entry<T,U>> createEntrySet() {
+    /** Factory method for the entry set of the map. */
+    private Set<Map.Entry<T,U>> createEntrySet() {
     	return new StackedSet<Map.Entry<T,U>>(new UnmodifiableSetView<Map.Entry<T,U>>(lower.entrySet()) {
     	    @Override
             public boolean approves(Object obj) {
-                return !delta.containsKey(((Map.Entry) obj).getKey());
+                return !getDelta().containsKey(((Map.Entry<?,?>) obj).getKey());
             }
         }) {
     	    @Override
             protected Set<Map.Entry<T,U>> createAddedSet() {
-                return delta.entrySet();
+                return getDelta().entrySet();
             }
         };
     }

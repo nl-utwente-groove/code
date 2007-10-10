@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RichDeltaGraph.java,v 1.2 2007-10-02 23:06:29 rensink Exp $
+ * $Id: RichDeltaGraph.java,v 1.3 2007-10-10 08:59:58 rensink Exp $
  */
 package groove.graph;
 
@@ -308,26 +308,13 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGr
 	 * Creates a copy of an existing set of edges, or an empty set if the
 	 * given set is <code>null</code>.
 	 */
-	private <E extends Edge> EdgeSet<E> createEdgeSet(EdgeSet<E> edgeSet) {
+	<E extends Edge> EdgeSet<E> createEdgeSet(EdgeSet<E> edgeSet) {
 	    if (edgeSet == null) {
 	        return new EdgeSet<E>();
 	    } else {
 	        return new EdgeSet<E>(edgeSet);
 	    }
-//	    EdgeSet result = new TreeHashSet<Edge>();
-//		if (edgeSet != null) {
-//		    result.addAll(edgeSet);
-//		}
-//		return result;
 	}
-//	
-//	private KeyPartition<Node,BinaryEdge> createNodeSet(NodeSet nodeSet) {
-//		if (nodeSet == null) {
-//			return new NodeSet();
-//		} else {
-//			return new NodeSet(nodeSet);
-//		}
-//	}
 
 	@Override
 	public CertificateStrategy getCertifier() {
@@ -338,19 +325,19 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGr
 	}
 
 	/** The fixed (possibly <code>null</code> basis of this graph. */
-	private RichDeltaGraph basis;
+	RichDeltaGraph basis;
 	/** The fixed delta of this graph. */
-	private DeltaApplier delta;
+	DeltaApplier delta;
 	
 	/** The (initially null) edge set of this graph. */
-	private EdgeSet<Edge> edgeSet;
+	EdgeSet<Edge> edgeSet;
 	/** The map from nodes to sets of incident edges. */
-	private KeyPartition<Node,BinaryEdge> outEdgeMap;
+	KeyPartition<Node,BinaryEdge> outEdgeMap;
 	/** The map from nodes to sets of incident edges. */
-	private KeyPartition<Node,BinaryEdge> inEdgeMap;
+	KeyPartition<Node,BinaryEdge> inEdgeMap;
 	/** List of maps from labels to sets of edges with that label and arity. */
-	private List<Map<Label,Set<Edge>>> labelEdgeMaps;
-	private Map<Label,Map<Node,Set<Edge>>> labelMap;
+	List<Map<Label,Set<Edge>>> labelEdgeMaps;
+	Map<Label,Map<Node,Set<Edge>>> labelMap;
 	/** The certificate strategy of this graph, set on demand. */
 	private Reference<CertificateStrategy> certifier;
 	/** Factory instance of this class. */
@@ -362,7 +349,7 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGr
 		return instance;
 	}
 	
-	static private void addEdge(Map<Label,Map<Node,Set<Edge>>> map, Edge edge) {
+	static void addEdge(Map<Label,Map<Node,Set<Edge>>> map, Edge edge) {
 		Map<Node,Set<Edge>> nodeEdgeMap = map.get(edge.label());
 		if (nodeEdgeMap == null) {
 			map.put(edge.label(), nodeEdgeMap = new HashMap<Node,Set<Edge>>());
@@ -384,7 +371,7 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGr
 		}
 	}
 	
-	static private void removeEdge(Map<Label,Map<Node,Set<Edge>>> map, Edge edge) {
+	static void removeEdge(Map<Label,Map<Node,Set<Edge>>> map, Edge edge) {
 		Map<Node,Set<Edge>> nodeEdgeMap = map.get(edge.label());
 		Node source = edge.source();
 		nodeEdgeMap.get(source).remove(edge);
@@ -417,6 +404,10 @@ public class RichDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGr
 	 * @version $Revision $
 	 */
 	static abstract private class DataTarget implements DeltaTarget {
+		/** Empty constructor with correct visibility. */
+		DataTarget() {
+			// empty
+		}
 		/** 
 		 * Assigns the data structures computed in this data object
 		 * to a given delta graph.

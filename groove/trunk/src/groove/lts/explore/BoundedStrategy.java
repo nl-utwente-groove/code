@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: BoundedStrategy.java,v 1.6 2007-10-05 08:31:50 rensink Exp $
+ * $Id: BoundedStrategy.java,v 1.7 2007-10-10 08:59:49 rensink Exp $
  */
 package groove.lts.explore;
 
@@ -34,7 +34,7 @@ import java.util.Collection;
  * (the bounding condition) is violated; from such states no further exploration takes place.
  * Currently, the bounding condition is expressed by a graph transformation rule.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class BoundedStrategy extends BranchingStrategy implements ConditionalExploreStrategy {
 	/** Name of this exploration strategy. */
@@ -139,6 +139,13 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
     }
 
     /**
+	 * @return Returns the openStateSet.
+	 */
+	final Collection<GraphState> getOpenStateSet() {
+		return this.openStateSet;
+	}
+
+	/**
      * The bounding rule of this strategy.
      */
     private Condition rule;
@@ -151,12 +158,13 @@ public class BoundedStrategy extends BranchingStrategy implements ConditionalExp
      * The current set of open states.
      */
     private Collection<GraphState> openStateSet;
-    /** The graph lisener permanently associated with this exploration strategy. */
+    
+    /** The graph listener permanently associated with this exploration strategy. */
     private final GraphShapeListener graphListener = new GraphAdapter() {
         /** This method adds the element to the open states, if it is a state. */
         @Override
         public void addUpdate(GraphShape graph, Node node) {
-        	openStateSet.add((GraphState) node);
+        	getOpenStateSet().add((GraphState) node);
         }
     };
 }

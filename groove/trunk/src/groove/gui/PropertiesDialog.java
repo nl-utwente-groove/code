@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PropertiesDialog.java,v 1.7 2007-08-26 07:24:00 rensink Exp $
+ * $Id: PropertiesDialog.java,v 1.8 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -71,7 +71,7 @@ public class PropertiesDialog {
 				this.properties.put(key, "");
 			}
 		}
-		for (Map.Entry property: properties.entrySet()) {
+		for (Map.Entry<?,?> property: properties.entrySet()) {
 			this.properties.put((String) property.getKey(), (String) property.getValue());
 		}
 	}
@@ -147,7 +147,7 @@ public class PropertiesDialog {
 		return DIALOG_TITLE;
 	}
 
-	private JOptionPane getContentPane() {
+	JOptionPane getContentPane() {
 		if (pane == null) {
 			int mode;
 			Object[] buttons;
@@ -169,7 +169,7 @@ public class PropertiesDialog {
 	 * editors to stop editing. This makes sure that any partially edited
 	 * result is not lost.
 	 */
-	private JButton getOkButton() {
+	JButton getOkButton() {
 		if (okButton == null) {
 			okButton = new JButton("OK");
 			okButton.addActionListener(new CloseListener() {
@@ -217,10 +217,10 @@ public class PropertiesDialog {
 	
 	/**
 	 * Creates a table of properties, which is editable according to
-	 * the ediability of the dialog, set at constuction time.
+	 * the editability of the dialog, set at construction time.
 	 * @see #isEditable()
 	 */
-	private JTable getTable() {
+	JTable getTable() {
 		if (table == null) {
 			final TableModel model = getTableModel();
 			table = new JTable(model) {
@@ -245,7 +245,7 @@ public class PropertiesDialog {
 			tableModel = new TableModel();
 			tableModel.addTableModelListener(new TableModelListener() {
 				public void tableChanged(TableModelEvent e) {
-					changed = true;
+					setChanged(true);
 //					changed = e.getColumn() == VALUE_COLUMN || e.getType() == TableModelEvent.DELETE;
 				}
 			});
@@ -253,11 +253,15 @@ public class PropertiesDialog {
 		return tableModel;
 	}
 	
+	/** Sets the value of the changed field. */
+	void setChanged(boolean changed) {
+		this.changed = changed;
+	}
 	/** 
 	 * Returns a (fixed) editor that tests if the value entered is a well-formed 
 	 * property key. This is the case if and only if it matches {@link #IDENTIFIER_REGEXPR}.
 	 */
-	private CellEditor getKeyEditor() {
+	CellEditor getKeyEditor() {
 		if (cellEditor == null) {
 			cellEditor = createCellEditor();
 		}
@@ -265,10 +269,24 @@ public class PropertiesDialog {
 		return cellEditor;
 	}
 
+	/**
+	 * Returns a map from default property keys to the properties they should satisfy.
+	 */
+	final Map<String, Property<String>> getDefaultKeys() {
+		return this.defaultKeys;
+	}
+
+	/**
+	 * Returns the cell editor of the dialog.
+	 */
+	final CellEditor getCellEditor() {
+		return this.cellEditor;
+	}
+
 	/** 
 	 * Returns a (fixed) editor for values of a given key.
 	 */
-	private TableCellEditor getValueEditor(String key) {
+	TableCellEditor getValueEditor(String key) {
 		if (cellEditor == null) {
 			cellEditor = new CellEditor();
 		}
@@ -281,7 +299,7 @@ public class PropertiesDialog {
 	 * Creates an editor that tests if the value entered is a well-formed 
 	 * property key. This is the case if and only if it matches {@link #IDENTIFIER_REGEXPR}.
 	 */
-	private CellEditor createCellEditor() {
+	CellEditor createCellEditor() {
 		if (cellEditor == null) {
 			cellEditor = new CellEditor();
 		}
@@ -324,6 +342,13 @@ public class PropertiesDialog {
 	 * value to the source of the event.
 	 */
 	private class CloseListener implements ActionListener {
+		/**
+		 * Empty constructor with the correct visibility.
+		 */
+		public CloseListener() {
+			// empty
+		}
+		
 		public void actionPerformed(ActionEvent e) {
 			getContentPane().setValue(e.getSource());
 			getContentPane().setVisible(false);
@@ -342,7 +367,7 @@ public class PropertiesDialog {
 		public JTextField getComponent() {
 			JTextField result = (JTextField) super.getComponent();
 			if (editingValueForKey != null) {
-				Property<String> test = defaultKeys.get(editingValueForKey);
+				Property<String> test = getDefaultKeys().get(editingValueForKey);
 				result.setToolTipText(test.toString());
 			}
 			return result;
@@ -373,7 +398,7 @@ public class PropertiesDialog {
 			if (editingValueForKey == null) {
 				return value.matches(IDENTIFIER_REGEXPR);
 			} else {
-				Property<String> test = defaultKeys.get(editingValueForKey);
+				Property<String> test = getDefaultKeys().get(editingValueForKey);
 				return test == null || test.isSatisfied(value);
 			}
 		}
@@ -396,7 +421,7 @@ public class PropertiesDialog {
 				return "Property keys must be identifiers. Continue?";
 			} else {
 				// editing a value
-				Property<String> test = defaultKeys.get(editingValueForKey);
+				Property<String> test = getDefaultKeys().get(editingValueForKey);
 				String description = test == null ? null : test.getDescription();
 				if (description == null) {
 					return String.format("Incorrect value for key '%s'. Continue?", editingValueForKey);
@@ -426,12 +451,19 @@ public class PropertiesDialog {
 	
 	/** Renderer class that returns appropriate tool tips. */
 	private class CellRenderer extends DefaultTableCellRenderer {
+		/**
+		 * Empty constructor with the correct visibility.
+		 */
+		public CellRenderer() {
+			// empty
+		}
+		
 		@Override
 		public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-			if (defaultKeys != null && column == PROPERTY_COLUMN && row < table.getRowCount()) {
+			if (getDefaultKeys() != null && column == PROPERTY_COLUMN && row < table.getRowCount()) {
 				String key = (String) table.getValueAt(row, column);
-				if (key != null && defaultKeys.get(key) != null) {
-					setToolTipText(defaultKeys.get(key).getComment());
+				if (key != null && getDefaultKeys().get(key) != null) {
+					setToolTipText(getDefaultKeys().get(key).getComment());
 				}
 			}
 			return super.getTableCellRendererComponent(table,
@@ -446,13 +478,20 @@ public class PropertiesDialog {
 	
 	/** Table model with key and value columns. */
 	private class TableModel extends AbstractTableModel {
+		/**
+		 * Empty constructor with the correct visibility.
+		 */
+		public TableModel() {
+			// empty
+		}
+		
 		public int getColumnCount() {
 			return 2;
 		}
 
 		public int getRowCount() {
-			int size = properties.size();
-			return editable ? size + 1 : size;
+			int size = getProperties().size();
+			return isEditable() ? size + 1 : size;
 		}
 
 		@Override
@@ -465,12 +504,12 @@ public class PropertiesDialog {
 		}
 
 		public Object getValueAt(int rowIndex, int columnIndex) {
-			if (rowIndex == properties.size()) {
+			if (rowIndex == getProperties().size()) {
 				return "";
 			} else if (columnIndex == PROPERTY_COLUMN) {
 				return getPropertyKey(rowIndex);
 			} else {
-				return properties.get(getPropertyKey(rowIndex));
+				return getProperties().get(getPropertyKey(rowIndex));
 			}
 		}
 
@@ -479,29 +518,29 @@ public class PropertiesDialog {
 			if (! isEditable()) {
 				return false; 
 			} else if (columnIndex == PROPERTY_COLUMN) {
-				return defaultKeys == null || rowIndex >= defaultKeys.size();
+				return getDefaultKeys() == null || rowIndex >= getDefaultKeys().size();
 			} else {
-				return rowIndex < properties.size();
+				return rowIndex < getProperties().size();
 			}
 		}
 
 		@Override
 		public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
-			if (rowIndex == properties.size()) {
+			if (rowIndex == getProperties().size()) {
 				// key added
 				if (aValue instanceof String && ((String) aValue).length() > 0) {
-					properties.put((String) aValue, "");
+					getProperties().put((String) aValue, "");
 					refreshPropertyKeys();
 				}
 			} else if (columnIndex == VALUE_COLUMN) {
 				// value changed
-				properties.put(getPropertyKey(rowIndex), (String) aValue);
+				getProperties().put(getPropertyKey(rowIndex), (String) aValue);
 				fireTableCellUpdated(rowIndex, columnIndex);
 			} else {
 				// key changed
-				String value = properties.remove(getPropertyKey(rowIndex));
+				String value = getProperties().remove(getPropertyKey(rowIndex));
 				if (aValue instanceof String && ((String) aValue).length() > 0) {
-					properties.put((String) aValue, value);
+					getProperties().put((String) aValue, value);
 				}
 				fireTableCellUpdated(rowIndex, columnIndex);
 				refreshPropertyKeys();
@@ -534,7 +573,7 @@ public class PropertiesDialog {
 		 * state of the property map.
 		 */
 		private void initPropertyKeys() {
-			propertyKeyList = new ArrayList<String>(properties.keySet());
+			propertyKeyList = new ArrayList<String>(getProperties().keySet());
 		}
 		
 		/** Retrieves a property key by index. */

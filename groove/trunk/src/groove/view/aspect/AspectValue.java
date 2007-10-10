@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectValue.java,v 1.5 2007-09-30 21:29:08 rensink Exp $
+ * $Id: AspectValue.java,v 1.6 2007-10-10 08:59:37 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -42,7 +42,9 @@ public class AspectValue {
      * @throws groove.view.FormatException if the value name is already used
      */
     public AspectValue(Aspect aspect, String name) throws FormatException {
-    	this(aspect, name, new HashSet<AspectValue>());
+    	this.aspect = aspect;
+    	this.name = name;
+    	this.incompatibles = new HashSet<AspectValue>();
         registerValue(this);
     }
     
@@ -50,14 +52,16 @@ public class AspectValue {
      * Creates a new aspect value, for a given aspect and with a given name
      * and set of incompatible values. This is a local constructor, not to be
      * invoked directly.
-     * @param aspect the aspect for which this is a value
-     * @param name the name of the aspect value
-     * @param incompatibles the set of aspect values that are incompatible with this one
+     * @param original the aspect value that we copy.
      */
-    AspectValue(Aspect aspect, String name, Set<AspectValue> incompatibles) {
-        this.aspect = aspect;
-        this.name = name;
-        this.incompatibles = incompatibles;
+    AspectValue(AspectValue original) {
+        this.aspect = original.getAspect();
+        this.name = original.getName();
+        this.incompatibles = original.getIncompatibles();
+        this.sourceToEdge = original.sourceToEdge();
+        this.targetToEdge = original.targetToEdge();
+        this.edgeToSource = original.edgeToSource();
+        this.edgeToTarget = original.edgeToTarget();
 //        this.freeText = freeText;
     }
     

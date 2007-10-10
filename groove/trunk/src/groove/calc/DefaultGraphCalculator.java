@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.10 2007-10-05 08:31:43 rensink Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.11 2007-10-10 08:59:53 rensink Exp $
  */
 package groove.calc;
 
@@ -190,7 +190,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
     }
     
     /** Lazily constructs and returns a state generator for the GTS. */
-	private Explorer getGenerator() {
+	Explorer getGenerator() {
 		if (generator == null) {
 			generator = new Explorer();
 			generator.setGTS(getGTS());
@@ -329,7 +329,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
     /**
      * The transition system underlying this calculator.
      */
-    private final GTS gts;
+    final GTS gts;
     /** The state explorer for the transition system. */
     private Explorer generator;
     /**

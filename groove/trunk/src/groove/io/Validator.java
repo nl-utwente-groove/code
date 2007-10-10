@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Validator.java,v 1.8 2007-05-14 18:52:03 rensink Exp $
+ * $Id: Validator.java,v 1.9 2007-10-10 08:59:46 rensink Exp $
  */
 package groove.io;
 
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Application to check graph and rule file formats.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class Validator {
     /** Prefix for command line options. */
@@ -142,7 +142,7 @@ public class Validator {
     }
 
     /** Validates a file supposedly containing a graph. */
-    static private GraphShape validateGraph(File file) {
+    static GraphShape validateGraph(File file) {
         try {
             graphsValidated++;
             String name = verbosity == GraphFileHandler.VERBOSE_MODE ? file.getName() : file.toString();
@@ -163,7 +163,7 @@ public class Validator {
     }
 
     /** Validates a file supposedly containing a rule. */
-    static private void validateRule(File file) {
+    static void validateRule(File file) {
         rulesValidated++;
         GraphShape graph = validateGraph(file);
         if (graph == null)
@@ -205,5 +205,5 @@ public class Validator {
     /** The number of validation errors found. */
     static private int errorsFound;
     /** The GXL transformer used in validation. */
-    static private Xml gxl = new DefaultGxl();
+    static private Xml<?> gxl = new DefaultGxl();
 }

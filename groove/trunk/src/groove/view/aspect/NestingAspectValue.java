@@ -12,11 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspectValue.java,v 1.3 2007-10-08 12:17:50 rensink Exp $
+ * $Id: NestingAspectValue.java,v 1.4 2007-10-10 08:59:37 rensink Exp $
  */
 package groove.view.aspect;
-
-import java.util.Set;
 
 import groove.view.FormatException;
 
@@ -86,6 +84,11 @@ public class NestingAspectValue extends ContentAspectValue<String> {
 	
 	/** Content parser which acts as the identity function on strings. */
 	static private class NestingContentParser implements ContentParser<String> {
+		/** Empty constructor with the correct visibility. */
+		NestingContentParser() {
+			// empty
+		}
+
 		public String toContent(String value) throws FormatException {
 			for (int i = 0; i < value.length(); i++) {
 				char c = value.charAt(i);

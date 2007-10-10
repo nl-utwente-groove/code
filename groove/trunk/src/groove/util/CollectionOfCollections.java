@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CollectionOfCollections.java,v 1.3 2007-09-25 22:57:51 rensink Exp $
+ * $Id: CollectionOfCollections.java,v 1.4 2007-10-10 08:59:42 rensink Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Iterator;
  * which is expensive!
  * Equality is deferred to <tt>Object</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class CollectionOfCollections<T> extends AbstractCollection<T> {
     /**
@@ -67,7 +67,7 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
                 return true;
             }
 
-            private Iterator<? extends Collection<? extends T>> collectionIter = collections.iterator();
+            private Iterator<? extends Collection<? extends T>> collectionIter = getCollections().iterator();
             private Iterator<? extends T> elemIter;
             private T latest;
         };
@@ -84,15 +84,22 @@ public class CollectionOfCollections<T> extends AbstractCollection<T> {
     }
 
     /** 
-     * Callback method that signals the removal of an element
-     * by an inner iterator.
-     * This implementation does nothing.
-     */
-    protected void updateRemove(T elem) {
-    	// empty
-    }
+	 * Callback method that signals the removal of an element
+	 * by an inner iterator.
+	 * This implementation does nothing.
+	 */
+	protected void updateRemove(T elem) {
+		// empty
+	}
 
-    /**
+	/**
+	 * @return Returns the collections.
+	 */
+	final Collection<? extends Collection<? extends T>> getCollections() {
+		return this.collections;
+	}
+
+	/**
      * The collection of collections that is the basis of this class.
      * @invariant <tt>collections \subseteq Collection</tt>
      */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StatePanel.java,v 1.25 2007-10-07 07:56:35 rensink Exp $
+ * $Id: StatePanel.java,v 1.26 2007-10-10 08:59:43 rensink Exp $
  */
 package groove.gui;
 
@@ -61,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -86,8 +86,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         // cause any selected transition to be deselected first
         getJGraph().getLabelList().addListSelectionListener(new ListSelectionListener() {
             public void valueChanged(ListSelectionEvent e) {
-                if (selectedTransition != null) {
-                    simulator.setRule(selectedTransition.getEvent().getRule().getName());
+                if (getSelectedTransition() != null) {
+                    simulator.setRule(getSelectedTransition().getEvent().getRule().getName());
                 }
             }
         });
@@ -173,9 +173,8 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         Set<Element> emphElems = new HashSet<Element>();
         if (selectedTransition != trans) {
             selectedTransition = trans;
-            Graph sourceGraph = trans.source().getGraph();
             // check if we're in the right state to display the derivation
-            if (!getJModel().getGraph().equals(sourceGraph)) {
+            if (getJModel() != getStateJModel(trans.source())) {
                 // get a model for the new graph and set it
                 jGraph.setModel(getStateJModel(trans.source()));
             }
@@ -195,9 +194,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
             	}
             }
             refreshStatus();
+            GraphJModel currentModel = getJModel();
+            currentModel.setEmphasized(currentModel.getJCellSet(emphElems));
         }
-        GraphJModel currentModel = getJModel();
-        currentModel.setEmphasized(currentModel.getJCellSet(emphElems));
     }
 
     /**
@@ -207,7 +206,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     public synchronized void applyTransitionUpdate(GraphTransition transition) {
         // first normalize currently displayed graph
         // (note that the requirements of this method guarantee that there is one)
-    	getJModel().clearEmphasized();
+//    	getJModel().clearEmphasized();
         // get a graph model for the target state
         GraphState newState = transition.target();
         GraphJModel newModel = getStateJModel(newState);
@@ -221,6 +220,13 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
     }
     
     /**
+	 * @return Returns the selectedTransition.
+	 */
+	final GraphTransition getSelectedTransition() {
+		return this.selectedTransition;
+	}
+
+	/**
      * Text to indicate which state is chosen and which match is emphasised.
      */
     @Override
@@ -243,6 +249,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         }
     }
 
+    
     /**
      * Returns a graph model for a given state graph. The graph model is retrieved from
      * stateJModelMap; if there is no image for the requested state then one is created.

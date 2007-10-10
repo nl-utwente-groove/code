@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.12 2007-10-05 11:44:40 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.13 2007-10-10 08:59:50 rensink Exp $ */
 package groove.match;
 
 import groove.graph.BinaryEdge;
@@ -103,17 +103,17 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
     /**
 	 * The automaton that computes the matches for the underlying edge.
 	 */
-	private final Automaton labelAutomaton;
+	final Automaton labelAutomaton;
     /** The regular expression on the edge. */
-    private final RegExpr edgeExpr;
+    final RegExpr edgeExpr;
     /** Collection of all variables occurring in the regular expression. */
-    private final Set<String> allVars;
+    final Set<String> allVars;
     /** Collection of variables bound by the regular expression. */
-    private final Set<String> boundVars;
+    final Set<String> boundVars;
     /** Collection of variables used in the regular expression but not bound by it. */
-    private final Set<String> neededVars;
+    final Set<String> neededVars;
     /** Mapping from variables to the corresponding indices in the result. */
-    private Map<String,Integer> varIxMap;
+    Map<String,Integer> varIxMap;
     /** 
      * Mapping indicating is all variables in the regular expression have
      * been found before the search item is invoked.
@@ -126,7 +126,7 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
             super(search);
             this.sourcePreMatch = search.getNodeAnchor(sourceIx);
             this.targetPreMatch = search.getNodeAnchor(targetIx);
-            assert varIxMap.keySet().containsAll(neededVars);
+            assert varIxMap.keySet().containsAll(needsVars());
         }
 
         @Override

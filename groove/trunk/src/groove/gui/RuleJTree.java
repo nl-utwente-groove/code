@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJTree.java,v 1.25 2007-10-02 23:06:31 rensink Exp $
+ * $Id: RuleJTree.java,v 1.26 2007-10-10 08:59:44 rensink Exp $
  */
 package groove.gui;
 
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -258,7 +258,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         }
     }
 
-    private void refresh() {
+    void refresh() {
     	boolean oldListenToSelectionChanges = listenToSelectionChanges;
         listenToSelectionChanges = false;
     	if (getCurrentState() == null) {
@@ -401,6 +401,13 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
 
     /**
+	 * Indicates if the rule tree is at the moment should react to selection changes.
+	 */
+	final boolean isListenToSelectionChanges() {
+		return this.listenToSelectionChanges;
+	}
+
+	/**
 	 * Directory of production rules and their matchings to the current state.
 	 * Alias to the underlying model of this <tt>JTree</tt>.
 	 * 
@@ -439,13 +446,13 @@ public class RuleJTree extends JTree implements SimulationListener {
     protected final Map<Transition,MatchTreeNode> matchNodeMap = new HashMap<Transition,MatchTreeNode>();
 
     /**
-     * Switch to determine wheter chnges in the tree selection model
+     * Switch to determine whether changes in the tree selection model
      * should trigger any actions right now.
      */
     private transient boolean listenToSelectionChanges;
 
     /**
-     * The background color of this component when it is enabled.
+     * The background colour of this component when it is enabled.
      */
     private Color enabledBackground;
     /** Flag to indicate that the anchor image option listener has been set. */
@@ -481,9 +488,16 @@ public class RuleJTree extends JTree implements SimulationListener {
 	 * @see Simulator#setTransition
 	 */
 	private class RuleSelectionListener implements TreeSelectionListener {
+		/**
+		 * Empty constructor with the correct visibility.
+		 */
+		public RuleSelectionListener() {
+			// Empty
+		}
+		
 	    public void valueChanged(TreeSelectionEvent evt) {
 	        // only do something if a path was added to the selection
-	        if (listenToSelectionChanges && evt.isAddedPath()) {
+	        if (isListenToSelectionChanges() && evt.isAddedPath()) {
 	            Object selectedNode = evt.getPath().getLastPathComponent();
 	            if (selectedNode instanceof RuleTreeNode) {
 	                // selected tree node is a production rule (level 1 node)
@@ -504,6 +518,13 @@ public class RuleJTree extends JTree implements SimulationListener {
 	 * the rule panel on double-clicks.
 	 */
 	private class MyMouseListener extends MouseAdapter {
+		/**
+		 * Empty constructor with the correct visibility.
+		 */
+		public MyMouseListener() {
+			// empty
+		}
+		
         @Override
         public void mousePressed(MouseEvent evt) {
         	if (evt.getButton() == MouseEvent.BUTTON3) {
@@ -702,6 +723,13 @@ public class RuleJTree extends JTree implements SimulationListener {
 	 * Class to provide proper icons for directory nodes
 	 */
 	private class MyTreeCellRenderer extends DefaultTreeCellRenderer {
+		/**
+		 * Empty constructor with the correct visibility.
+		 */
+		public MyTreeCellRenderer() {
+			// empty
+		}
+		
 	    @Override
 	    public Component getTreeCellRendererComponent(
 	        JTree tree,
