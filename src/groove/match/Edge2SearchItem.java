@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.7 2007-10-05 11:44:39 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.8 2007-10-11 11:42:08 rensink Exp $
  */
 package groove.match;
 
@@ -99,7 +99,11 @@ class Edge2SearchItem extends AbstractSearchItem {
     }
 
     public void activate(SearchPlanStrategy strategy) {
-    	assert !strategy.isEdgeFound(edge);
+    	// one would like the following assertion, 
+    	// but since negative search items for the same edge also reserve the
+    	// index, the assertion may fail in case of a positive and negative test
+    	// on the same edge (stupid!)
+    	// assert !strategy.isEdgeFound(edge);
         edgeIx = strategy.getEdgeIx(edge);
         sourceFound = strategy.isNodeFound(source);
         sourceIx = strategy.getNodeIx(source);

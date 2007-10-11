@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.41 2007-10-10 08:59:47 rensink Exp $
+ * $Id: SPORule.java,v 1.42 2007-10-11 11:42:39 rensink Exp $
  */
 package groove.trans;
 
@@ -52,7 +52,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.41 $
+ * @version $Revision: 1.42 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -313,10 +313,11 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
     /** 
      * Returns the array of elements that should be matched to
-     * have an unambiguous rule application.
+     * have an unambiguous rule event.
      * This includes the eraser nodes (or incident edges thereof),
      * the eraser edges (or end nodes thereof) and the end nodes of 
-     * creator edges (insofar they are not creator nodes).
+     * creator edges (insofar they are not creator nodes), as well as
+     * root node images.
      */
 	public Element[] anchor() {
         if (anchor == null) {
@@ -913,6 +914,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 				result.addEdge((Edge) elem);
 			}
 		}
+//		for (Node rootImage: getRootMap().nodeMap().values()) {
+//			result.addNode(rootImage);
+//		}
+//		for (Edge rootImage: getRootMap().edgeMap().values()) {
+//			result.addEdge(rootImage);
+//		}
 		result.addEdgeSet(Arrays.asList(getEraserEdges()));
 		return result;
 	}
