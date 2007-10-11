@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForallCondition.java,v 1.7 2007-10-10 08:59:47 rensink Exp $
+ * $Id: ForallCondition.java,v 1.8 2007-10-11 11:42:39 rensink Exp $
  */
 package groove.trans;
 
@@ -22,6 +22,7 @@ import groove.rel.VarNodeEdgeMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 
@@ -41,8 +42,18 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     	reporter.start(GET_MATCHING);
     	testFixed(true);
     	// lift the pattern match to a pre-match of this condition's target
-    	final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
-    	result = computeMatches(host, getMatcher().getMatchIter(host, anchorMap));
+    	final VarNodeEdgeMap anchorMap;
+    	if (contextMap == null) {
+    		testGround();
+    		anchorMap = EMPTY_ANCHOR_MAP;
+    	} else {
+    		anchorMap = createAnchorMap(contextMap);
+    	}
+    	if (anchorMap == null) {
+    		result = Collections.emptySet();
+    	} else {
+    		result = computeMatches(host, getMatcher().getMatchIter(host, anchorMap));
+    	}
     	reporter.stop();
     	return result;
     }

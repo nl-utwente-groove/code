@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.8 2007-10-08 12:17:34 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.9 2007-10-11 11:42:39 rensink Exp $
  */
 package groove.trans;
 
@@ -33,6 +33,7 @@ import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -40,7 +41,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
 	/**
@@ -81,14 +82,14 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	public SystemProperties getProperties() {
 		return properties;
 	}
-
-	/** Sets the root map of this condition. */
-	void setRootMap(NodeEdgeMap rootMap) {
-		testFixed(false);
-		assert rootMap != null : String.format("Root map already set to %s",
-				rootMap);
-		this.rootMap = rootMap;
-	}
+//
+//	/** Sets the root map of this condition. */
+//	void setRootMap(NodeEdgeMap rootMap) {
+//		testFixed(false);
+//		assert rootMap != null : String.format("Root map already set to %s",
+//				rootMap);
+//		this.rootMap = rootMap;
+//	}
 
 	public NodeEdgeMap getRootMap() {
 		if (rootMap == null) {
@@ -257,8 +258,19 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 		reporter.start(GET_MATCHING);
 		testFixed(true);
 		// lift the pattern match to a pre-match of this condition's target
-		final VarNodeEdgeMap anchorMap = createAnchorMap(contextMap);
-		result = computeMatchIter(host, getMatcher().getMatchIter(host, anchorMap));
+		final VarNodeEdgeMap anchorMap;
+		if (contextMap == null) {
+			testGround();
+			anchorMap = EMPTY_ANCHOR_MAP;
+		} else {
+			anchorMap = createAnchorMap(contextMap);
+		}
+		if (anchorMap == null) {
+			// the context map could not be lifted to this condition
+			result = Collections.<M>emptySet().iterator();
+		} else {
+			result = computeMatchIter(host, getMatcher().getMatchIter(host, anchorMap));
+		}
 		reporter.stop();
 		return result;
 	}
@@ -278,53 +290,54 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	 *         if there is no such mapping.
 	 */
 	final VarNodeEdgeMap createAnchorMap(NodeEdgeMap contextMap) {
-		VarNodeEdgeMap result = null;
-		if (contextMap == null) {
-			testGround();
-		} else {
-			result = new VarNodeEdgeHashMap();
-			for (Map.Entry<Node, Node> entry : getRootMap().nodeMap().entrySet()) {
-				Node image = contextMap.getNode(entry.getKey());
-				if (image == null) {
-					return null;
-				} else {
-					Node key = entry.getValue();
-					// result already contains an image for nodeKey
-					// if it is not the same as the one we want to insert now,
-					// stop the whole thing; otherwise we're fine
-					Node oldImage = result.putNode(key, image);
-					if (oldImage != null && !oldImage.equals(image)) {
-						return null;
-					}
-				}
-			}
-			for (Map.Entry<Edge, Edge> entry : getRootMap().edgeMap().entrySet()) {
-				Edge image = contextMap.getEdge(entry.getKey());
-				if (image == null) {
-					return null;
-				} else {
-					Edge key = entry.getValue();
-					// result already contains an image for nodeKey
-					// if it is not the same as the one we want to insert now,
-					// stop the whole thing; otherwise we're fine
-					Edge oldImage = result.putEdge(key, image);
-					if (oldImage != null && !oldImage.equals(image)) {
-						return null;
-					}
-				}
-			}
-			if (contextMap instanceof VarNodeEdgeMap) {
-				for (String var : getRootVars()) {
-					Label image = ((VarNodeEdgeMap) contextMap).getVar(var);
-					if (image == null) {
-						return null;
-					} else {
-						result.putVar(var, image);
-					}
-				}
-			} else if (!getRootVars().isEmpty()) {
+		VarNodeEdgeMap result = new VarNodeEdgeHashMap();
+		for (Map.Entry<Node, Node> entry : getRootMap().nodeMap().entrySet()) {
+			Node image = contextMap.getNode(entry.getKey());
+			assert image != null : String.format("Context map %s does not contain image for root %s",
+					contextMap,
+					entry.getKey());
+			if (image == null) {
 				return null;
+			} else {
+				Node key = entry.getValue();
+				// result already contains an image for nodeKey
+				// if it is not the same as the one we want to insert now,
+				// stop the whole thing; otherwise we're fine
+				Node oldImage = result.putNode(key, image);
+				if (oldImage != null && !oldImage.equals(image)) {
+					return null;
+				}
 			}
+		}
+		for (Map.Entry<Edge, Edge> entry : getRootMap().edgeMap().entrySet()) {
+			Edge image = contextMap.getEdge(entry.getKey());
+			assert image != null : String.format("Context map %s does not contain image for root %s",
+					contextMap,
+					entry.getKey());
+			if (image == null) {
+				return null;
+			} else {
+				Edge key = entry.getValue();
+				// result already contains an image for nodeKey
+				// if it is not the same as the one we want to insert now,
+				// stop the whole thing; otherwise we're fine
+				Edge oldImage = result.putEdge(key, image);
+				if (oldImage != null && !oldImage.equals(image)) {
+					return null;
+				}
+			}
+		}
+		if (contextMap instanceof VarNodeEdgeMap) {
+			for (String var : getRootVars()) {
+				Label image = ((VarNodeEdgeMap) contextMap).getVar(var);
+				if (image == null) {
+					return null;
+				} else {
+					result.putVar(var, image);
+				}
+			}
+		} else if (!getRootVars().isEmpty()) {
+			return null;
 		}
 		return result;
 	}
@@ -455,4 +468,6 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	 * methods.
 	 */
 	static public final int GET_MATCHING = reporter.newMethod("getMatching...");
+	/** Constant empty anchor map. */
+	static final VarNodeEdgeMap EMPTY_ANCHOR_MAP = new VarNodeEdgeHashMap();
 }

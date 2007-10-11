@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.24 2007-10-10 08:59:52 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.25 2007-10-11 11:42:40 rensink Exp $
  */
 
 package groove.view;
@@ -83,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -379,29 +379,21 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         		if (level.isUniversal() && hasConcreteImage(createRuleLabel(edge.label()))) {
         			// add the edge and its end nodes as stale to the next (rule) level
         			for (int child = 0; child < subLevelCountMap.get(level); child++) {
-        				TreeIndex childLevel = level.getChild(child);
-        				nestedEdgesMap.get(childLevel).put(edge,isNextLevelCreator);
-                		for (Node end: edge.ends()) {
-                			Map<AspectNode,Boolean> nestedNodes = nestedNodesMap.get(childLevel);
-                			if (!nestedNodes.containsKey(end)) {
-                				nestedNodes.put((AspectNode) end, false);
-                			}
-                		}
+        				addEdgeToLevel(edge,
+								isNextLevelCreator,
+								level.getChild(child),
+								nestedNodesMap,
+								nestedEdgesMap);
         			}
         		}
         		if (!isNextLevelCreator) {
         			if (level.isNegated()) {
-        				// actually add the edge to the level above
+        				// this is an artificial (auxiliary) level
+        				// the matching detects negative application conditions,
+        				// so actually add the edge to the level above
         				level = level.getParent();
         			}
-					nestedEdgesMap.get(level).put(edge, true);
-					// add end nodes as stale, if they are not already there as fresh
-					for (Node end : edge.ends()) {
-						Map<AspectNode, Boolean> nestedNodes = nestedNodesMap.get(level);
-						if (!nestedNodes.containsKey(end)) {
-							nestedNodes.put((AspectNode) end, false);
-						}
-					}
+    				addEdgeToLevel(edge, true, level, nestedNodesMap, nestedEdgesMap);
 				}
 				Edge edgeImage = computeEdgeImage(edge, viewToRuleMap.nodeMap());
 				viewToRuleMap.putEdge(edge, edgeImage);
@@ -452,6 +444,35 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			throw new FormatException(new ArrayList<String>(errors));
 		}
     }
+
+	/**
+	 * Adds an edge and, if necessary, its end nodes, to the maps of nested
+	 * element.
+	 * @param edge the edge to be added
+	 * @param fresh indicates if <code>edge</code> is fresh on this level
+	 * @param level the level to which the edge should be added
+	 * @param nestedNodesMap mapping from levels to maps of nodes on that level,
+	 * to flags indicating if the nodes are fresh here
+	 * @param nestedEdgesMap mapping from levels to maps of edges on that level,
+	 * to flags indicating if the edges are fresh here
+	 */
+	private void addEdgeToLevel(AspectEdge edge, boolean fresh,
+			TreeIndex level,
+			Map<TreeIndex, Map<AspectNode, Boolean>> nestedNodesMap,
+			Map<TreeIndex, Map<AspectEdge, Boolean>> nestedEdgesMap) {
+		nestedEdgesMap.get(level).put(edge,fresh);
+		for (Node end: edge.ends()) {
+			TreeIndex nodeLevel = new TreeIndex(level);
+			Map<AspectNode,Boolean> nestedNodes = nestedNodesMap.get(nodeLevel);
+			while (!nestedNodes.containsKey(end)) {
+				nestedNodes.put((AspectNode) end, false);
+				if (!nodeLevel.isTopLevel()) {
+					nodeLevel = nodeLevel.getParent();
+					nestedNodes = nestedNodesMap.get(nodeLevel);
+				}
+			}
+		}
+	}
     
 	/**
      * Callback method to compute a rule (on a given nesting level)
@@ -1322,7 +1343,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     	 * Constructs a copy of a given tree index.
     	 * @param level the index to be copied
     	 */
-    	private TreeIndex(TreeIndex level) {
+    	TreeIndex(TreeIndex level) {
     		super(level);
     	}
     	

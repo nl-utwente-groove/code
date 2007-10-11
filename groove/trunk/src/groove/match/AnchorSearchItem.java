@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AnchorSearchItem.java,v 1.1 2007-10-05 11:44:39 rensink Exp $
+ * $Id: AnchorSearchItem.java,v 1.2 2007-10-11 11:42:08 rensink Exp $
  */
 package groove.match;
 
@@ -111,20 +111,22 @@ class AnchorSearchItem extends AbstractSearchItem {
 	}
 
 	private boolean allElementsMatched(Search search) {
-		unmatched = new HashSet<Object>();
-		for (Map.Entry<Node,Integer> nodeEntry: nodeIxMap.entrySet()) {
-			if (search.getNode(nodeEntry.getValue()) == null) {
-				unmatched.add(nodeEntry.getKey());
+		if (unmatched == null) {
+			unmatched = new HashSet<Object>();
+			for (Map.Entry<Node, Integer> nodeEntry : nodeIxMap.entrySet()) {
+				if (search.getNode(nodeEntry.getValue()) == null) {
+					unmatched.add(nodeEntry.getKey());
+				}
 			}
-		}
-		for (Map.Entry<Edge,Integer> edgeEntry: edgeIxMap.entrySet()) {
-			if (search.getEdge(edgeEntry.getValue()) == null) {
-				unmatched.add(edgeEntry.getKey());
+			for (Map.Entry<Edge, Integer> edgeEntry : edgeIxMap.entrySet()) {
+				if (search.getEdge(edgeEntry.getValue()) == null) {
+					unmatched.add(edgeEntry.getKey());
+				}
 			}
-		}
-		for (Map.Entry<String,Integer> varEntry: varIxMap.entrySet()) {
-			if (search.getVar(varEntry.getValue()) == null) {
-				unmatched.add(varEntry.getKey());
+			for (Map.Entry<String, Integer> varEntry : varIxMap.entrySet()) {
+				if (search.getVar(varEntry.getValue()) == null) {
+					unmatched.add(varEntry.getKey());
+				}
 			}
 		}
 		return unmatched.isEmpty();

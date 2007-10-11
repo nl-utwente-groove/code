@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleDependencies.java,v 1.14 2007-10-10 08:59:47 rensink Exp $
+ * $Id: RuleDependencies.java,v 1.15 2007-10-11 11:42:39 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2007-10-10 08:59:47 $
+ * @version $Revision: 1.15 $ $Date: 2007-10-11 11:42:39 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */
@@ -348,8 +348,6 @@ public class RuleDependencies {
     		for (Condition subRule: negCond.getSubConditions()) {
     			if (subRule instanceof Rule) {
     				collectRuleCharacteristics((Rule) subRule, consumed, produced);
-    			} else {
-        			collectConditionCharacteristics(subRule, consumed, produced);
     			}
     		}
 		}
@@ -409,12 +407,17 @@ public class RuleDependencies {
         if (!isolatedNodes.isEmpty()) {
             positive.add(ANY_NODE);
         }
-    	// now investigate the negative conjunct, taking care to swap positive and negative
     	for (Condition negCond: cond.getSubConditions()) {
-    		if (negCond instanceof PositiveCondition == cond instanceof PositiveCondition) {
-    			collectConditionCharacteristics(negCond, positive, negative);
-    		} else {
-    			collectConditionCharacteristics(negCond, negative, positive);
+    		Set<Label> subPositives = new HashSet<Label>();
+    		Set<Label> subNegatives = new HashSet<Label>();
+			collectConditionCharacteristics(negCond, subPositives, subNegatives);
+    		if (negCond instanceof PositiveCondition == cond instanceof PositiveCondition || negCond instanceof ForallCondition) {
+    			positive.addAll(subPositives);
+    			negative.addAll(subNegatives);
+    		}
+    		if (negCond instanceof PositiveCondition != cond instanceof PositiveCondition || negCond instanceof ForallCondition) {
+    			negative.addAll(subPositives);
+    			positive.addAll(subNegatives);
     		}
 		}
     }

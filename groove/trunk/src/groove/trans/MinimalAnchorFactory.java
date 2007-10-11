@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MinimalAnchorFactory.java,v 1.4 2007-08-22 15:04:48 rensink Exp $
+ * $Id: MinimalAnchorFactory.java,v 1.5 2007-10-11 11:42:39 rensink Exp $
  */
 package groove.trans;
 
@@ -33,7 +33,7 @@ import groove.graph.Node;
  * matching: only mergers, eraser nodes and edges (the later only if they are 
  * not incident to an eraser node) and the incident nodes of creator edges are stored.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class MinimalAnchorFactory implements AnchorFactory {
 	/**
@@ -66,6 +66,7 @@ public class MinimalAnchorFactory implements AnchorFactory {
         		anchors.add(ruleMorphNodeEntry.getKey());
         	}
         }
+        anchors.addAll(rule.getRootMap().nodeMap().values());
         // set of endpoints that we will remove again
         Set<Node> removableEnds = new HashSet<Node>();
         for (Edge lhsVarEdge: rule.getVarEdges()) {
@@ -73,11 +74,18 @@ public class MinimalAnchorFactory implements AnchorFactory {
             // if we have the edge in the anchors, its end nodes need not be there
             removableEnds.addAll(Arrays.asList(lhsVarEdge.ends()));
         }
-        Edge[] eraserEdges = rule.getEraserEdges();
-        for (Edge eraserEdge: eraserEdges) {
+        for (Edge eraserEdge: rule.getEraserEdges()) {
             Collection<Node> eraserEdgeEnds = Arrays.asList(eraserEdge.ends()); 
             if (!anchors.containsAll(eraserEdgeEnds)) {
                 anchors.add(eraserEdge);
+                // if we have the edge in the anchors, its end nodes need not be there
+                removableEnds.addAll(eraserEdgeEnds);
+            }
+        }
+        for (Edge rootEdge: rule.getRootMap().edgeMap().values()) {
+            Collection<Node> eraserEdgeEnds = Arrays.asList(rootEdge.ends()); 
+            if (!anchors.containsAll(eraserEdgeEnds)) {
+                anchors.add(rootEdge);
                 // if we have the edge in the anchors, its end nodes need not be there
                 removableEnds.addAll(eraserEdgeEnds);
             }
