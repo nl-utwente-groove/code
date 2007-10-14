@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ContentAspectValue.java,v 1.8 2007-10-10 08:59:36 rensink Exp $
+ * $Id: ContentAspectValue.java,v 1.9 2007-10-14 11:17:35 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -37,9 +37,8 @@ abstract public class ContentAspectValue<C> extends AspectValue {
      * @param name the name of the aspect value.
      * @throws groove.view.FormatException if the value name is already used
      */
-    public ContentAspectValue(Aspect aspect, String name, ContentParser<C> parser) throws FormatException {
+    public ContentAspectValue(Aspect aspect, String name) throws FormatException {
     	super(aspect, name);
-    	this.parser = parser;
     	this.content = null;
     }
 
@@ -49,10 +48,9 @@ abstract public class ContentAspectValue<C> extends AspectValue {
      * @param original the aspect value being copied
      * @param content the content of the specialised value
      */
-    protected ContentAspectValue(AspectValue original, ContentParser<C> parser, C content) {
+    protected ContentAspectValue(AspectValue original, C content) {
     	super(original);
     	this.content = content;
-    	this.parser = parser;
     }
 
 	/**
@@ -70,8 +68,14 @@ abstract public class ContentAspectValue<C> extends AspectValue {
 	 * acts as a factory; <code>null</code> otherwise. 
 	 */
 	public final ContentParser<C> getParser() {
+		if (parser == null) {
+			parser = createParser();
+		}
 		return this.parser;
 	}
+	
+	/** Callback method to create a parser for this value. */
+	abstract ContentParser<C> createParser();
 
 	/**
      * Creates a new, specialised instance of this value with content
@@ -89,7 +93,7 @@ abstract public class ContentAspectValue<C> extends AspectValue {
     public String toString() {
     	StringBuilder result = new StringBuilder(super.toString());
     	String content = getParser().toString(getContent());
-    	if (content.length() != 0) {
+    	if (content != null && content.length() != 0) {
     		result.append(CONTENT_ASSIGN);
     		result.append(content);
     	}
@@ -97,7 +101,7 @@ abstract public class ContentAspectValue<C> extends AspectValue {
     }
     
     /** Flag indicating that content is optional for actual values. */
-    private final ContentParser<C> parser;
+    private ContentParser<C> parser;
     /** The (further) content of this value. */
     private final C content;
 }

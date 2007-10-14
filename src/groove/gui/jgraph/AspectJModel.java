@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.27 2007-10-11 11:42:42 rensink Exp $
+ * $Id: AspectJModel.java,v 1.28 2007-10-14 11:18:10 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -49,7 +49,7 @@ import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.NestingAspect;
-import groove.view.aspect.NestingAspectValue;
+import groove.view.aspect.NamedAspectValue;
 import groove.view.aspect.RuleAspect;
 
 import java.awt.Rectangle;
@@ -67,7 +67,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -367,13 +367,13 @@ public class AspectJModel extends GraphJModel {
 			List<StringBuilder> result = super.getLines();
 			AspectValue nesting = getNestingValue(getNode());
 			if (nesting != null) {
-				result.add(0, getQuantifierLine((NestingAspectValue) nesting));
+				result.add(0, getQuantifierLine((NamedAspectValue) nesting));
 			}
 			return result;
 		}
 
 		/** Returns an HTML-formatted line describing a given quantifier value. */
-		private StringBuilder getQuantifierLine(NestingAspectValue nesting) {
+		private StringBuilder getQuantifierLine(NamedAspectValue nesting) {
 			StringBuilder result = new StringBuilder();
 			if (NestingAspect.FORALL.equals(nesting)) {
 				result.append(Converter.HTML_FORALL);

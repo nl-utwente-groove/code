@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.59 2007-10-10 08:59:44 rensink Exp $
+ * $Id: Simulator.java,v 1.60 2007-10-14 11:18:08 rensink Exp $
  */
 package groove.gui;
 
@@ -122,7 +122,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.59 $
+ * @version $Revision: 1.60 $
  */
 public class Simulator {
     /**
@@ -2399,7 +2399,7 @@ public class Simulator {
 					GraphProperties.DEFAULT_KEYS, true);
 			if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
 				ruleProperties.clear();
-				ruleProperties.putAll(dialog.getProperties());
+				ruleProperties.putAll(dialog.getEditedProperties());
 				doAddRule(rule.getNameLabel(), ruleGraph);
 			}
 		}
@@ -2468,7 +2468,7 @@ public class Simulator {
         	PropertiesDialog dialog = new PropertiesDialog(systemProperties, SystemProperties.DEFAULT_KEYS, true);
         	if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
         		SystemProperties newProperties = new SystemProperties();
-        		newProperties.putAll(dialog.getProperties());
+        		newProperties.putAll(dialog.getEditedProperties());
         		try {
             		String outputFileName = Groove.createPropertyFilter().addExtension(grammar.getName());
             		File outputFile = new File(getCurrentGrammarFile(), outputFileName);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspectValue.java,v 1.4 2007-10-10 08:59:37 rensink Exp $
+ * $Id: NamedAspectValue.java,v 1.1 2007-10-14 11:17:37 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -24,24 +24,24 @@ import groove.view.FormatException;
  * @author kramor
  * @version $Revision $
  */
-public class NestingAspectValue extends ContentAspectValue<String> {
+public class NamedAspectValue extends ContentAspectValue<String> {
 	/**
 	 * Constructs a new nesting level-containing aspect value.
 	 * @param name the aspect value name
 	 * @throws FormatException if <code>name</code> is an already existing aspect value
 	 */
-	public NestingAspectValue(String name) throws FormatException {
-		super(NestingAspect.getInstance(), name, parser);
+	public NamedAspectValue(Aspect aspect, String name) throws FormatException {
+		super(aspect, name);
 	}
 	
 	/** Creates an instance of a given nesting aspect value, with a given level. */
-	NestingAspectValue(NestingAspectValue original, String level) {
-		super(original, parser, level);
+	NamedAspectValue(NamedAspectValue original, String level) {
+		super(original, level);
 	}
 
 	@Override
 	public ContentAspectValue<String> newValue(String value) throws FormatException {
-		return new NestingAspectValue(this, parser.toContent(value));
+		return new NamedAspectValue(this, parser.toContent(value));
 	}
 	
 	/**
@@ -60,40 +60,60 @@ public class NestingAspectValue extends ContentAspectValue<String> {
 		return nestingLevel;
 	}
 
-	/** Level of nesting within the rule. Determined on runtime, not stored */
-	private String nestingLevel;
-	
 	/** 
 	 * Indicates if a given character is allowed in level names.
 	 * Currently allowed are: letters, digits, currency symbols, 
 	 * underscores and periods.
 	 * @param c the character to be tested
 	 */
-	static public boolean isValidLevelNameChar(char c) {
-		if (Character.isJavaIdentifierPart(c)) {
-			return true;
-		} else {
-			return (c == PERIOD);
-		}
+	public boolean isValidFirstChar(char c) {
+		return Character.isJavaIdentifierStart(c);
 	}
-	
-	static private final char PERIOD = '.';
-	/** ContentParser used for this AspectValue */
-	static private final ContentParser<String> parser = new NestingContentParser();
 
-	
+	/** 
+	 * Indicates if a given character is allowed in level names.
+	 * Currently allowed are: letters, digits, currency symbols, 
+	 * underscores and periods.
+	 * @param c the character to be tested
+	 */
+	public boolean isValidNextChar(char c) {
+		return Character.isJavaIdentifierPart(c);
+	}
+ 
+	/** 
+	 * This implementation returns a parser which
+	 * insists that the content value starts with a character satisfying
+	 * {@link #isValidNextChar(char)} and with all next characters satisfying 
+	 * {@link #isValidNextChar(char)}.
+	 */
+	@Override
+	ContentParser<String> createParser() {
+		return new NameParser();
+	}
+
+	/** ContentParser used for this AspectValue */
+	private final ContentParser<String> parser = new NameParser();
+	/** Level of nesting within the rule. Determined on runtime, not stored */
+	private String nestingLevel;
+
 	/** Content parser which acts as the identity function on strings. */
-	static private class NestingContentParser implements ContentParser<String> {
+	private class NameParser implements ContentParser<String> {
 		/** Empty constructor with the correct visibility. */
-		NestingContentParser() {
+		NameParser() {
 			// empty
 		}
 
 		public String toContent(String value) throws FormatException {
-			for (int i = 0; i < value.length(); i++) {
+			if (value.length() == 0) {
+				return value;
+			}
+			if (!isValidFirstChar(value.charAt(0))) {
+				throw new FormatException("Invalid start character '%c' in name '%s'", value.charAt(0), value);
+			}
+			for (int i = 1; i < value.length(); i++) {
 				char c = value.charAt(i);
-				if (!isValidLevelNameChar(c)) {
-					throw new FormatException("Invalid characterlevel name '%c'", c, value);
+				if (!isValidNextChar(c)) {
+					throw new FormatException("Invalid character '%c' in name '%s'", c, value);
 				}
 			}
 			return value;

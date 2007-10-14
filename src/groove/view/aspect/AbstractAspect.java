@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractAspect.java,v 1.9 2007-10-10 08:59:37 rensink Exp $
+ * $Id: AbstractAspect.java,v 1.10 2007-10-14 11:17:36 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -163,18 +163,6 @@ public abstract class AbstractAspect implements Aspect {
     protected AspectValue createValue(String name) throws FormatException {
         return new AspectValue(this, name);
     }
-//
-//	/**
-//     * Factory method for aspect values with free text labels.
-//     * This implementation returns an {@link AspectValue}.
-//     * @param name the name of the new aspect value
-//     * @return an aspect value such that <code>result.getAspect().equals(this))</code>
-//     * and <code>result.getName().equals(name)</code>
-//     * @throws FormatException if <code>name</code> is the name of an already existing aspect value
-//     */
-//    protected AspectValue createFreeValue(String name) throws FormatException {
-//        return new AspectValue(this, name);
-//    }
 
     /**
      * Method to test the validity of an aspect value for use as a node value.
@@ -235,7 +223,11 @@ public abstract class AbstractAspect implements Aspect {
 	 * cannot be ordered
 	 */
 	protected AspectValue getMaxValue(AspectValue value1, AspectValue value2) throws FormatException {
-		if (value1 == value2 && value1 != null) {
+		if (value1 == null) {
+			throw new FormatException("Illegal null aspect value", value1);
+		} else if (value2 == null) {
+			throw new FormatException("Illegal null aspect value", value2);
+		} else if (value1.equals(value2)) {
 			return value1;
 		} else {
 			throw new FormatException("Incompatible aspect values '%s' and '%s'", value1, value2);
@@ -263,6 +255,28 @@ public abstract class AbstractAspect implements Aspect {
 		// does nothing
 	}
 
+    /**
+     * Adds an incompatibility between all (currently registered) values of this aspect
+     * and all values of another aspect.
+     * @param other the incompatible aspect
+     */
+    void setIncompatible(Aspect other) {
+    	for (AspectValue value: getValues()) {
+    		value.setIncompatible(other);
+    	}
+    }
+
+    /**
+     * Adds an incompatibility between all (currently registered) values of this aspect
+     * and a given value of another aspect.
+     * @param value the incompatible aspect value
+     */
+    void setIncompatible(AspectValue value) {
+    	for (AspectValue myValue: getValues()) {
+    		myValue.setIncompatible(value);
+    	}
+    }
+    
 	/**
      * The name of this aspect.
      */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.10 2007-10-10 08:59:37 rensink Exp $
+ * $Id: RuleAspect.java,v 1.11 2007-10-14 11:17:36 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -29,9 +29,250 @@ import groove.view.FormatException;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class RuleAspect extends AbstractAspect {
+
+	/** Private constructor to create the singleton instance. */
+    private RuleAspect() {
+		super(RULE_ASPECT_NAME);
+	}
+
+	/**
+	 * This implementation considers {@link #EMBARGO} to be more
+	 * demanding than {@link #ERASER}.
+	 */
+	@Override
+	protected AspectValue getMaxValue(AspectValue value1, AspectValue value2) throws FormatException {
+		if (EMBARGO.equals(value1) && ERASER.equals(value2)) {
+			return EMBARGO;
+		} else if (EMBARGO.equals(value1) && ERASER.equals(value2)) {
+			return EMBARGO;
+		} else if (REMARK.equals(value1) || REMARK.equals(value2)) {
+			return REMARK;
+		} else {
+			return super.getMaxValue(value1, value2);
+		}
+	}
+
+	/**
+	 * This implementation tests for certain regular expressions.
+	 * No declared eraser may carry a regular expression label other
+	 * than a wildcard or variable, and no inferred creator may have 
+	 * a regular expression other than a wildcard, merger or variable.
+	 */
+	@Override
+	public void testLabel(Label label, AspectValue declaredValue, AspectValue inferredValue) throws FormatException {
+		// if the label is not a regular expression, it is in any case fine
+		if (label instanceof RegExprLabel) {
+			testLabel(((RegExprLabel) label).getRegExpr(), declaredValue, inferredValue);
+		}
+	}
+
+	/**
+	 * Callback method to test the label with the knowledge that it is 
+	 * a regular expression.
+	 * @see #testLabel(Label, AspectValue, AspectValue)
+	 */
+	private void testLabel(RegExpr expr, AspectValue declaredValue,
+			AspectValue inferredValue) throws FormatException {
+		// check if negation occurs anywhere except on top level
+		if (expr.containsOperator(RegExpr.NEG_OPERATOR)) {
+			throw new FormatException("Negation may only occur on top level in %s", expr);
+		}
+		// check the expression is a regular eraser pattern
+		if (declaredValue == ERASER) {
+			if (! expr.isWildcard()) {
+				throw new FormatException("Regular expression %s not allowed on an eraser edge", expr);
+			}
+		}
+		// check the expression is a regular creator pattern
+		if (inferredValue == CREATOR) {
+			if (! (expr.isWildcard() || expr.isEmpty())) {
+				throw new FormatException("Regular expression %s not allowed on a creator edge", expr);
+			}
+		}
+	}
+
+	/**
+	 * Returns a {@link NamedAspectValue} with the given name.
+	 * @param name the name content
+	 * @throws FormatException if <code>name</code> is not correctly formatted
+	 * as an identifier 
+	 */
+	@Override
+	protected AspectValue createValue(String name) throws FormatException {
+		if (name.equals(READER_NAME) || name.equals(RULE_NAME)) {
+			return super.createValue(name);
+		} else {
+			return new NamedAspectValue(getInstance(),name);
+		}
+	}
+	
+	/** 
+	 * Returns the name content of the rule aspect value of a given,
+	 * aspect element, if it is a {@link NamedAspectValue}.
+	 * @param elem the aspect element to retrieve the name from
+	 * @return the name in <code>value</code>, or <code>null</code> if
+	 * <code>value</code> is not a {@link NamedAspectValue}.
+	 */
+	static public String getName(AspectElement elem) {
+		String result = null;
+		AspectValue value = elem.getValue(getInstance());
+		if (value instanceof NamedAspectValue) {
+			result = ((NamedAspectValue) value).getContent();
+			if (result != null && result.length() == 0) {
+				result = null;
+			}
+		}
+		return result;
+	}
+	
+    /**
+     * Returns the singleton instance of this aspect.
+     */
+    public static RuleAspect getInstance() {
+        return instance;
+    }
+    
+    /** 
+     * Returns the rule aspect value associated with a given aspect element.
+     * Convenience method for {@link AspectElement#getValue(Aspect)} with {@link #getInstance()}
+     * as parameter.
+     */
+    public static AspectValue getRuleValue(AspectElement elem) {
+    	return elem.getValue(getInstance());
+    }
+    
+    /**
+	 * Tests if a given aspect element contains a {@link RuleAspect} value
+	 * that indicates presence in the left hand side.
+	 * This is the case if there is an aspect value in the element which
+	 * equals either {@link #READER} or {@link #ERASER}.
+	 * @param element the element to be tested
+	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
+	 * value that equals either  {@link #READER} or {@link #ERASER}.
+	 */
+	public static boolean inLHS(AspectElement element) {
+		AspectValue role = getRuleValue(element);
+		return (READER.equals(role) || ERASER.equals(role)) && hasRole(element);
+	}
+
+	/**
+	 * Tests if a given aspect element contains a {@link RuleAspect} value
+	 * that indicates presence in the right hand side.
+	 * This is the case if there is an aspect value in the element which
+	 * equals either {@link #READER} or {@link #CREATOR}.
+	 * @param element the element to be tested
+	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
+	 * value that equals either  {@link #READER} or {@link #CREATOR}.
+	 */
+	public static boolean inRHS(AspectElement element) {
+		AspectValue role = getRuleValue(element);
+		return (READER.equals(role) || CREATOR.equals(role)) && hasRole(element);
+	}
+
+	/** 
+	 * Tests if a given element has no rule aspect value, 
+	 * and no other aspect values that prevent it from being interpreted as reader.
+	 */
+	private static boolean hasRole(AspectElement element) {
+		return ! NestingAspect.isMetaElement(element);
+	}
+	
+	/**
+	 * Tests if a given aspect element contains a {@link RuleAspect} value
+	 * that indicates presence a negative application condition.
+	 * This is the case if there is an aspect value in the element which
+	 * equals {@link #EMBARGO}.
+	 * @param element the element to be tested
+	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
+	 * value that equals {@link #EMBARGO}.
+	 */
+	public static boolean inNAC(AspectElement element) {
+		return hasRole(element) && (EMBARGO.equals(getRuleValue(element)));
+	}
+
+	/**
+	 * Tests if a given aspect element is a creator.
+	 * This is the case if there is an aspect value in the element which
+	 * equals {@link #CREATOR}.
+	 * @param element the element to be tested
+	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
+	 * value that equals {@link #CREATOR}.
+	 */
+	public static boolean isCreator(AspectElement element) {
+		return hasRole(element) && CREATOR.equals(getRuleValue(element));
+	}
+
+	/**
+	 * Tests if a given aspect element is an eraser.
+	 * This is the case if there is an aspect value in the element which
+	 * equals {@link #ERASER}.
+	 * @param element the element to be tested
+	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
+	 * value that equals {@link #ERASER}.
+	 */
+	public static boolean isEraser(AspectElement element) {
+		return hasRole(element) && ERASER.equals(getRuleValue(element));
+	}
+
+	/**
+	 * Tests if a given aspect edge is a merger.
+	 * This is the case if it is a creator with a merge label.
+	 * @param edge the edge to be tested
+	 * @return <code>true</code> if <code>edge</code> is a merger
+	 */
+	public static boolean isMerger(AspectEdge edge) throws FormatException {
+		if (isCreator(edge)) {
+			return RegExpr.parse(edge.label().text()).isEmpty();
+		} else {
+			return false;
+		}
+	}
+
+	/**
+	 * Convenience method to test if a given aspectual element stands
+	 * for an actual rule element. If not, this means that it provides
+	 * information <i>about</i> the rule.
+	 */
+	public static boolean inRule(AspectElement elem) {
+		// JHK: Nesting Meta-nodes and edges are not in the rule
+		return hasRole(elem) && (inLHS(elem) || inRHS(elem) || inNAC(elem));
+	}
+	
+	/**
+	 * Tests if a given aspect element is a remark.
+	 * This is the case if there is an aspect value in the element which
+	 * equals {@link #REMARK}.
+	 * @param element the element to be tested
+	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
+	 * value that equals {@link #REMARK}.
+	 */
+	public static boolean isRemark(AspectElement element) {
+		AspectValue role = getRuleValue(element);
+		return (REMARK.equals(role));
+	}
+
+	/** 
+	 * Convenience method to retrieve the content of a {@link #RULE} aspect value
+	 * of a given node.
+	 * @return the content of the {@link #RULE} aspect value of <code>node</code>,
+	 * or <code>null</code> if <code>node</code> does not have this aspect value. 
+	 */
+	public static Pair<NameLabel,Integer> getRuleContent(AspectNode node) {
+		AspectValue ruleValue = getRuleValue(node);
+		if (ruleValue instanceof RuleAspectValue) {
+			return ((RuleAspectValue) ruleValue).getContent();
+		} else {
+			return null;
+		}
+	}
+	
+	/** Static fixed parser for rule content. */
+	static final ContentParser<Pair<NameLabel,Integer>> parser = new RuleContentParser();
+	
+	
     /**
      * The name of the rule aspect.
      */
@@ -87,6 +328,8 @@ public class RuleAspect extends AbstractAspect {
 			EMBARGO.setTargetToEdge(EMBARGO);
 			REMARK.setSourceToEdge(REMARK);
 			REMARK.setTargetToEdge(REMARK);
+			// incompatibilities
+			instance.setIncompatible(NestingAspect.getInstance());
 			VALUE_COUNT = instance.getValues().size();
 		} catch (FormatException exc) {
 			throw new Error("Aspect '" + RULE_ASPECT_NAME
@@ -94,218 +337,21 @@ public class RuleAspect extends AbstractAspect {
 		}
     }
 	
-    /**
-     * Returns the singleton instance of this aspect.
-     */
-    public static RuleAspect getInstance() {
-        return instance;
-    }
-    
-    /** 
-     * Returns the rule aspect value associated with a given aspect element.
-     * Convenience method for {@link AspectElement#getValue(Aspect)} with {@link #getInstance()}
-     * as parameter.
-     */
-    public static AspectValue getRuleValue(AspectElement elem) {
-    	return elem.getValue(getInstance());
-    }
-    
-    /**
-	 * Tests if a given aspect element contains a {@link RuleAspect} value
-	 * that indicates presence in the left hand side.
-	 * This is the case if there is an aspect value in the element which
-	 * equals either {@link #READER} or {@link #ERASER}.
-	 * @param element the element to be tested
-	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
-	 * value that equals either  {@link #READER} or {@link #ERASER}.
-	 */
-	public static boolean inLHS(AspectElement element) {
-		AspectValue role = getRuleValue(element);
-		return (role == READER || role == ERASER) && hasRole(element);
-	}
-
-	/**
-	 * Tests if a given aspect element contains a {@link RuleAspect} value
-	 * that indicates presence in the right hand side.
-	 * This is the case if there is an aspect value in the element which
-	 * equals either {@link #READER} or {@link #CREATOR}.
-	 * @param element the element to be tested
-	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
-	 * value that equals either  {@link #READER} or {@link #CREATOR}.
-	 */
-	public static boolean inRHS(AspectElement element) {
-		AspectValue role = getRuleValue(element);
-		return (role == READER || role == CREATOR) && hasRole(element);
-	}
-
-	/** 
-	 * Tests if a given element has no rule aspect value, and no other aspect values that 
-	 * prevent it from being interpreted as reader.
-	 */
-	private static boolean hasRole(AspectElement element) {
-		return ! NestingAspect.isMetaElement(element);
-	}
-	
-	/**
-	 * Tests if a given aspect element contains a {@link RuleAspect} value
-	 * that indicates presence a negative application condition.
-	 * This is the case if there is an aspect value in the element which
-	 * equals {@link #EMBARGO}.
-	 * @param element the element to be tested
-	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
-	 * value that equals {@link #EMBARGO}.
-	 */
-	public static boolean inNAC(AspectElement element) {
-		return hasRole(element) && (getRuleValue(element) == EMBARGO);
-	}
-
-	/**
-	 * Tests if a given aspect element is a creator.
-	 * This is the case if there is an aspect value in the element which
-	 * equals {@link #CREATOR}.
-	 * @param element the element to be tested
-	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
-	 * value that equals {@link #CREATOR}.
-	 */
-	public static boolean isCreator(AspectElement element) {
-		return hasRole(element) && getRuleValue(element) == CREATOR;
-	}
-
-	/**
-	 * Tests if a given aspect element is an eraser.
-	 * This is the case if there is an aspect value in the element which
-	 * equals {@link #ERASER}.
-	 * @param element the element to be tested
-	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
-	 * value that equals {@link #ERASER}.
-	 */
-	public static boolean isEraser(AspectElement element) {
-		return hasRole(element) && getRuleValue(element) == ERASER;
-	}
-
-	/**
-	 * Tests if a given aspect edge is a merger.
-	 * This is the case if it is a creator with a merge label.
-	 * @param edge the edge to be tested
-	 * @return <code>true</code> if <code>edge</code> is a merger
-	 */
-	public static boolean isMerger(AspectEdge edge) throws FormatException {
-		if (isCreator(edge)) {
-			return RegExpr.parse(edge.label().text()).isEmpty();
-		} else {
-			return false;
-		}
-	}
-
-	/**
-	 * Convenience method to test if a given aspectual element stands
-	 * for an actual rule element. If not, this means that it provides
-	 * information <i>about</i> the rule.
-	 */
-	public static boolean inRule(AspectElement elem) {
-		// JHK: Nesting Meta-nodes and edges are not in the rule
-		return hasRole(elem) && (inLHS(elem) || inRHS(elem) || inNAC(elem));
-	}
-	
-	/**
-	 * Tests if a given aspect element is a remark.
-	 * This is the case if there is an aspect value in the element which
-	 * equals {@link #REMARK}.
-	 * @param element the element to be tested
-	 * @return <code>true</code> if <code>element</code> contains a {@link RuleAspect}
-	 * value that equals {@link #REMARK}.
-	 */
-	public static boolean isRemark(AspectElement element) {
-		AspectValue role = getRuleValue(element);
-		return (role == REMARK);
-	}
-
-	/** 
-	 * Convenience method to retrieve the content of a {@link #RULE} aspect value
-	 * of a given node.
-	 * @return the content of the {@link #RULE} aspect value of <code>node</code>,
-	 * or <code>null</code> if <code>node</code> does not have this aspect value. 
-	 */
-	public static Pair<NameLabel,Integer> getRuleContent(AspectNode node) {
-		AspectValue ruleValue = getRuleValue(node);
-		if (ruleValue instanceof RuleAspectValue) {
-			return ((RuleAspectValue) ruleValue).getContent();
-		} else {
-			return null;
-		}
-	}
-	
-	/** Private constructor to create the singleton instance. */
-    private RuleAspect() {
-		super(RULE_ASPECT_NAME);
-	}
-
-	/**
-	 * This implementation considers {@link #EMBARGO} to be more
-	 * demanding than {@link #ERASER}.
-	 */
-	@Override
-	protected AspectValue getMaxValue(AspectValue value1, AspectValue value2) throws FormatException {
-		if (value1 == ERASER && value2 == EMBARGO) {
-			return EMBARGO;
-		} else if (value1 == EMBARGO && value2 == ERASER) {
-			return EMBARGO;
-		} else if (value1 == REMARK || value2 == REMARK) {
-			return REMARK;
-		} else {
-			return super.getMaxValue(value1, value2);
-		}
-	}
-
-	/**
-	 * This implementation tests for certain regular expressions.
-	 * No declared eraser may carry a regular expression label other
-	 * than a wildcard or variable, and no inferred creator may have 
-	 * a regular expression other than a wildcard, merger or variable.
-	 */
-	@Override
-	public void testLabel(Label label, AspectValue declaredValue, AspectValue inferredValue) throws FormatException {
-		// if the label is not a regular expression, it is in any case fine
-		if (label instanceof RegExprLabel) {
-			testLabel(((RegExprLabel) label).getRegExpr(), declaredValue, inferredValue);
-		}
-	}
-
-	/**
-	 * Callback method to test the label with the knowledge that it is 
-	 * a regular expression.
-	 * @see #testLabel(Label, AspectValue, AspectValue)
-	 */
-	private void testLabel(RegExpr expr, AspectValue declaredValue,
-			AspectValue inferredValue) throws FormatException {
-		// check if negation occurs anywhere except on top level
-		if (expr.containsOperator(RegExpr.NEG_OPERATOR)) {
-			throw new FormatException("Negation may only occur on top level in %s", expr);
-		}
-		// check the expression is a regular eraser pattern
-		if (declaredValue == ERASER) {
-			if (! expr.isWildcard()) {
-				throw new FormatException("Regular expression %s not allowed on an eraser edge", expr);
-			}
-		}
-		// check the expression is a regular creator pattern
-		if (inferredValue == CREATOR) {
-			if (! (expr.isWildcard() || expr.isEmpty())) {
-				throw new FormatException("Regular expression %s not allowed on a creator edge", expr);
-			}
-		}
-	}
-	
 	/** Type for the content of a {@link RuleAspect#RULE} aspect value. */
 	public static class RuleAspectValue extends ContentAspectValue<Pair<NameLabel,Integer>> {
 		/** Constructs a factory instance. */
 		public RuleAspectValue() throws FormatException {
-			super(getInstance(), RULE_NAME, new RuleContentParser());
+			super(getInstance(), RULE_NAME);
 		}
 
 		/** Creates an instance with actual content. */
 		public RuleAspectValue(RuleAspectValue original, Pair<NameLabel,Integer> content) {
-			super(original, original.getParser(), content);
+			super(original, content);
+		}
+
+		@Override
+		ContentParser<Pair<NameLabel, Integer>> createParser() {
+			return parser;
 		}
 
 		@Override

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.10 2007-10-08 00:59:25 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.11 2007-10-14 11:17:35 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -45,7 +45,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -374,12 +374,10 @@ public class AttributeAspect extends AbstractAspect {
 		    INTEGER.setEdgeToTarget(VALUE);
 		    BOOLEAN.setEdgeToTarget(VALUE);
 		    STRING.setEdgeToTarget(VALUE);
-		    // no AttributeAspect values can be combined with creators or erasers
-		    for (AspectValue value: instance.getValues()) {
-		    	value.setIncompatible(RuleAspect.CREATOR);
-		    	value.setIncompatible(RuleAspect.ERASER);
-//		    	value.setIncompatible(RuleAspect.EMBARGO);
-		    }
+		    // incompatibilities
+		    instance.setIncompatible(RuleAspect.CREATOR);
+		    instance.setIncompatible(RuleAspect.ERASER);
+		    instance.setIncompatible(NestingAspect.getInstance());
 		    // initialise the algebra map
 		    addAlgebra(DefaultIntegerAlgebra.getInstance(), INTEGER);
 		    addAlgebra(DefaultBooleanAlgebra.getInstance(), BOOLEAN);
