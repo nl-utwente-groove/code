@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectValue.java,v 1.6 2007-10-10 08:59:37 rensink Exp $
+ * $Id: AspectValue.java,v 1.7 2007-10-14 11:17:36 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -187,14 +187,24 @@ public class AspectValue {
     public boolean isCompatible(AspectValue other) {
     	return other == null || ! incompatibles.contains(other) && ! other.incompatibles.contains(this);
     }
-    
+
     /**
-     * Adds an incompatibility with an aspectvalue of another aspect.
-     * @param other
+     * Adds an incompatibility with a value of another aspect.
+     * @param other the incompatible value
      */
     void setIncompatible(AspectValue other) {
     	assert other.getAspect() != getAspect() : String.format("Incompatible values %s and %s are of the same aspect", this, other);
     	incompatibles.add(other);
+    }
+
+    /**
+     * Adds an incompatibility with all values of another aspect.
+     * @param other the incompatible aspect
+     */
+    void setIncompatible(Aspect other) {
+    	for (AspectValue value: other.getValues()) {
+    		setIncompatible(value);
+    	}
     }
     
     /**

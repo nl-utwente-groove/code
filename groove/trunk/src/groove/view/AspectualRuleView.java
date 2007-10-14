@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.25 2007-10-11 11:42:40 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.26 2007-10-14 11:18:16 rensink Exp $
  */
 
 package groove.view;
@@ -83,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -321,19 +321,19 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         		AspectNode nestingNode = getNestingNode(graph, node);
         		TreeIndex level = nestingNode == null ? topLevel : metaLevelMap.get(nestingNode);
         		assert level != null : String.format("No valid nesting level found for %s", node);
-//        		String levelName = NestingAspect.getLevelName(node);
-//        		if (levelName != null) {
-//        			TreeIndex namedLevel = nameLevelMap.get(levelName);
-//        			if (namedLevel == null) {
-//        				throw new FormatException("Undefined node nesting level '%s'", levelName);
-//        			}
-//        			level = level.max(namedLevel);
-//        			if (level.smallerThan(namedLevel)) {
-//        				level = namedLevel;
-//        			} else {
-//        				throw new FormatException("Node nesting level '%s' incompatible with actual nesting", levelName);
-//        			}
-//        		}
+        		String levelName = RuleAspect.getName(node);
+        		if (levelName != null) {
+        			TreeIndex namedLevel = nameLevelMap.get(levelName);
+        			if (namedLevel == null) {
+        				throw new FormatException("Undefined node nesting level '%s'", levelName);
+        			}
+        			level = level.max(namedLevel);
+        			if (level.smallerThan(namedLevel)) {
+        				level = namedLevel;
+        			} else {
+        				throw new FormatException("Node nesting level '%s' incompatible with actual nesting", levelName);
+        			}
+        		}
         		// add the node to the appropriate level where it should be processed
         		boolean isNextLevelCreator = RuleAspect.isCreator(node) && level.isUniversal();
         		if (!isNextLevelCreator) {
@@ -364,10 +364,13 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         			throw new FormatException("Source and target of edge %s have incompatible nesting", edge);
         		}
         		String levelName = NestingAspect.getLevelName(edge);
+        		if (levelName == null) {
+        			levelName = RuleAspect.getName(edge);
+        		}
         		if (levelName != null) {
         			TreeIndex edgeLevel = nameLevelMap.get(levelName);
         			if (edgeLevel == null) {
-        				throw new FormatException("Undefined nesting level %s in edge %s", levelName, edge);
+        				throw new FormatException("Undefined nesting level '%s' in edge %s", levelName, edge);
         			}
         			if (level.smallerThan(edgeLevel)) {
         				level = edgeLevel;
@@ -595,59 +598,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			throw new FormatException(new ArrayList<String>(errors));
 		}
     }
-//	/**
-//     * Callback method to compute a rule on a given nesting level
-//     * from sets of aspect nodes and edges that appear new on this level.
-//     * Note that the end nodes of the edges may fail to be new on this level.
-//     * @param newNodes the nodes that are new on this level
-//     * @param newEdges the edges that are new on this level
-//     * @return a pair consisting of the resulting rule and a mapping from the
-//     * aspect nodes and edges to the corresponding rule elements
-//     */
-//    private AbstractCondition<?> computeCondition(NodeEdgeMap viewToRuleMap, Map<AspectNode,Boolean> newNodes, Map<AspectEdge,Boolean> newEdges, boolean forall) throws FormatException {
-//    	Set<String> errors = new TreeSet<String>();
-//        // create the new condition target
-//        Graph target = createGraph();
-//        // such stale end nodes are roots of the condition
-//        NodeEdgeMap rootMap = new NodeEdgeHashMap();
-//        // add the nodes to the target graph and root map
-//        for (Map.Entry<AspectNode,Boolean> nodeEntry: newNodes.entrySet()) {
-//        	AspectNode node = nodeEntry.getKey();
-//        	assert RuleAspect.inRule(node);
-//        	Node nodeImage = viewToRuleMap.getNode(node);
-//        	target.addNode(nodeImage);
-//        	if (!nodeEntry.getValue()) {
-//    			rootMap.putNode(nodeImage, nodeImage);
-//        	}
-//        }
-//        // add the edges to the target graph and root map
-//        for (Map.Entry<AspectEdge,Boolean> edgeEntry: newEdges.entrySet()) {
-//        	AspectEdge edge = edgeEntry.getKey();
-//        	assert RuleAspect.inRule(edge);
-//        	Edge edgeImage = viewToRuleMap.getEdge(edge);
-//        	target.addEdge(edgeImage);
-//        	if (!edgeEntry.getValue()) {
-//    			rootMap.putEdge(edgeImage, edgeImage);
-//        	}
-//        }
-//        AbstractCondition<?> result;
-//        try {
-//			// the resulting rule
-//        	if (forall) {
-//        		result = createForall(target, rootMap, null);
-//        	} else {
-//        		result = createNeg(target, rootMap);
-//        	}
-//		} catch (FormatException e) {
-//			result = null;
-//			errors.addAll(e.getErrors());
-//		}
-//		if (errors.isEmpty()) {
-//			return result;
-//		} else {
-//			throw new FormatException(new ArrayList<String>(errors));
-//		}
-//    }
 
     /** Returns the aspect node indicating the nesting level of a given node. */
     private AspectNode getNestingNode(AspectGraph graph, AspectNode node) throws FormatException {

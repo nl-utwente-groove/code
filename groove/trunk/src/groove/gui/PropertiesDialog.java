@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PropertiesDialog.java,v 1.8 2007-10-10 08:59:44 rensink Exp $
+ * $Id: PropertiesDialog.java,v 1.9 2007-10-14 11:18:08 rensink Exp $
  */
 package groove.gui;
 
@@ -25,7 +25,6 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -133,13 +132,20 @@ public class PropertiesDialog {
 	/**
 	 * Returns the (possibly edited) properties in the dialog.
 	 */
-	public final Map<String, String> getProperties() {
-		Iterator<Map.Entry<String,String>> propertyIter = properties.entrySet().iterator();
-		while (propertyIter.hasNext()) {
-			if (propertyIter.next().getValue().length() == 0) {
-				propertyIter.remove();
+	public final Map<String, String> getEditedProperties() {
+		Map<String,String> result = new TreeMap<String,String>();
+		for (Map.Entry<String,String> propertyEntry: properties.entrySet()) {
+			if (propertyEntry.getValue().length() != 0) {
+				result.put(propertyEntry.getKey(), propertyEntry.getValue());
 			}
 		}
+		return result;
+	}
+
+	/**
+	 * Returns an alias to the properties object in the dialog.
+	 */
+	final Map<String, String> getProperties() {
 		return properties;
 	}
 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.6 2007-10-10 08:59:37 rensink Exp $
+ * $Id: NestingAspect.java,v 1.7 2007-10-14 11:17:36 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.6 $ $Date: 2007-10-10 08:59:37 $
+ * @version 0.1 $Revision: 1.7 $ $Date: 2007-10-14 11:17:36 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -76,7 +76,7 @@ public class NestingAspect extends AbstractAspect {
 				throw new FormatException("Quantified edge %s has a meta-node as target", edge);
 			}
 			AspectValue value = getNestingValue(edge);
-			if (!(value instanceof NestingAspectValue) || ((NestingAspectValue) value).getContent().length() == 0) {
+			if (!(value instanceof NamedAspectValue) || ((NamedAspectValue) value).getContent().length() == 0) {
 				throw new FormatException("Quantified edge %s has non-empty level name");
 			}
 		}
@@ -104,7 +104,7 @@ public class NestingAspect extends AbstractAspect {
 	protected AspectValue createValue(String name) throws FormatException {
 		AspectValue result;
 		if (contentValues.contains(name)) {
-			result = new NestingAspectValue(name);
+			result = new NamedAspectValue(getInstance(), name);
 		} else {
 			result = super.createValue(name);
 		}
@@ -181,7 +181,7 @@ public class NestingAspect extends AbstractAspect {
 	/** Returns the name of a nesting level identified by a given aspect element. */
 	public static String getLevelName(AspectElement element) {
 		AspectValue value = getNestingValue(element);
-		return value instanceof NestingAspectValue ? ((NestingAspectValue) value).getContent() : null;
+		return value instanceof NamedAspectValue ? ((NamedAspectValue) value).getContent() : null;
 	}
 	
 	/** The name of the nesting aspect */
