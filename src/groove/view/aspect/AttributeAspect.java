@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.11 2007-10-14 11:17:35 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.12 2007-10-18 14:57:42 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -45,7 +45,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -209,9 +209,14 @@ public class AttributeAspect extends AbstractAspect {
     	if (attributeValue == null) {
     		result = null;
     	} else if (attributeValue == ARGUMENT) {
-    		AlgebraEdge argEdge = createArgumentEdge(edge, ends);
-    		argEdge.source().setArgument(argEdge.getNumber(), argEdge.target());
-    		result = argEdge;
+    		try {
+				int argNumber = Integer.parseInt(edge.label().text());
+				AlgebraEdge argEdge = createArgumentEdge(argNumber, ends);
+				argEdge.source().setArgument(argEdge.getNumber(), argEdge.target());
+				result = argEdge;
+			} catch (NumberFormatException exc) {
+				throw new FormatException("Edge label '%s' should be natural number", edge.label());
+			}
     	} else {
     		assert algebraMap.containsKey(attributeValue);
     		result = createOperatorEdge(edge, ends);
@@ -251,25 +256,25 @@ public class AttributeAspect extends AbstractAspect {
 	/**
 	 * Returns an {@link AlgebraEdge} derived from a given 
 	 * aspect edge (which should have attribute aspect value {@link #ARGUMENT}).
-	 * @param edge the edge of which the image is to be created
+	 * @param argNumber the argument number on the edge to be created
 	 * @param ends the end nodes of the edge to be created
 	 * @return a fresh {@link AlgebraEdge}
 	 * @throws FormatException if one of the ends is <code>null</code>
 	 */
-	private static AlgebraEdge createArgumentEdge(AspectEdge edge, Node[] ends) throws FormatException {
+	private static AlgebraEdge createArgumentEdge(int argNumber, Node[] ends) throws FormatException {
 		Node source = ends[Edge.SOURCE_INDEX];
 		if (source == null) {
-			throw new FormatException("Source of '%s'-edge has no image", edge.label());
+			throw new FormatException("Source of '%d'-edge has no image", argNumber);
 		} else if (! (source instanceof ProductNode)) {
-			throw new FormatException("Target of '%s'-edge should be product node", edge.label());
+			throw new FormatException("Target of '%d'-edge should be product node", argNumber);
 		}
 		Node target = ends[Edge.TARGET_INDEX];
 		if (target == null) {
-			throw new FormatException("Target of '%s'-edge has no image", edge.label());
+			throw new FormatException("Target of '%d'-edge has no image", argNumber);
 		} else if (! (target instanceof ValueNode)) {
-			throw new FormatException("Target of '%s'-edge should be value node", edge.label());
+			throw new FormatException("Target of '%d'-edge should be value node", argNumber);
 		}
-		return new AlgebraEdge((ProductNode) source, edge.label(), (ValueNode) target);
+		return new AlgebraEdge((ProductNode) source, argNumber, (ValueNode) target);
 	}
 	
 	/**

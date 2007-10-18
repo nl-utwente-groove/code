@@ -12,54 +12,31 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AlgebraEdge.java,v 1.7 2007-09-28 10:20:55 rensink Exp $
+ * $Id: AlgebraEdge.java,v 1.8 2007-10-18 14:57:42 rensink Exp $
  */
 package groove.graph.algebra;
 
 import groove.graph.AbstractBinaryEdge;
-import groove.graph.Label;
+import groove.graph.WrapperLabel;
 
 /**
  * Instances of this class are edges between {@link groove.graph.algebra.ProductNode}s
  * and {@link groove.graph.algebra.ValueNode}s.
  * 
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-09-28 10:20:55 $
+ * @version $Revision 1.0$ $Date: 2007-10-18 14:57:42 $
  */
 // AREND I would call this ArgumentEdge, and include the 
 // number (as derived from the label); in fact, I think a constructor 
 // with an int rather than a label would be more appropriate
-public class AlgebraEdge extends AbstractBinaryEdge<ProductNode,ValueNode> {
+public class AlgebraEdge extends AbstractBinaryEdge<ProductNode,WrapperLabel<Integer>,ValueNode> {
 	/** Constructs a fresh edge. */
-    public AlgebraEdge(ProductNode source, Label label, ValueNode target) {
-        super(source, label, target);
-        number = Integer.parseInt(label.text());
+    public AlgebraEdge(ProductNode source, int number, ValueNode target) {
+        super(source, new WrapperLabel<Integer>(number), target);
     }
-//
-//    /** Overrides the super method to return an {@link AlgebraEdge}. */
-//    @Override
-//    @Deprecated
-//    public AlgebraEdge newEdge(Node source, Label label, Node target) {
-//        return new AlgebraEdge((ProductNode) source, label, (ValueNode) target);
-//    }
-//
-//    /** Specialises the return type. */
-//	@Override
-//	public ValueNode target() {
-//		return (ValueNode) super.target();
-//	}
-//
-//    /** Specialises the return type. */
-//	@Override
-//	public ProductNode source() {
-//		return (ProductNode) super.source();
-//	}
-//	
+    
 	/** Returns the argument number of this edge. */
 	public int getNumber() {
-		return number;
+		return label().getContent();
 	}
-	
-	/** The argument number of this edge. */
-	private final int number;
 }

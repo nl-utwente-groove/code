@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectEdge.java,v 1.7 2007-09-28 12:50:25 rensink Exp $
+ * $Id: AspectEdge.java,v 1.8 2007-10-18 14:57:42 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,9 +27,9 @@ import java.util.List;
 /**
  * Edge enriched with aspect data.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
-public class AspectEdge extends AbstractBinaryEdge<AspectNode,AspectNode> implements AspectElement {
+public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode> implements AspectElement {
 	/**
 	 * Constructs a new edge from an array of end nodes, a label,
 	 * and a collection of aspect values.

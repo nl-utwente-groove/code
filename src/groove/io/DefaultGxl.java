@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.15 2007-10-10 08:59:46 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.16 2007-10-18 14:57:45 rensink Exp $
  */
 package groove.io;
 
@@ -55,7 +55,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -478,7 +478,7 @@ public class DefaultGxl extends AbstractXml {
 	}
 
     /** Edge carrying an attribute map on its label, with an unknown end count. */ 
-    static private class AttributeEdge2 extends AbstractBinaryEdge<Node,Node> {
+    static private class AttributeEdge2 extends AbstractBinaryEdge<Node,AttributeLabel,Node> {
         /** Constructs in instance for given ends and label. */
         public AttributeEdge2(Node[] ends, AttributeLabel label) {
             this(ends[SOURCE_INDEX], label, ends[TARGET_INDEX]);
@@ -490,7 +490,7 @@ public class DefaultGxl extends AbstractXml {
     }
 
     /** Edge carrying an attribute map on its label, with an unknown end count. */ 
-    static private class AttributeEdge1 extends AbstractUnaryEdge<Node> {
+    static private class AttributeEdge1 extends AbstractUnaryEdge<Node,AttributeLabel> {
         /** Constructs in instance for given ends and label. */
         public AttributeEdge1(Node[] ends, AttributeLabel label) {
             this(ends[SOURCE_INDEX], label);

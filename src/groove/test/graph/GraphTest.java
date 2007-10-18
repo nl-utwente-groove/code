@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.14 2007-10-10 08:59:48 rensink Exp $
+ * $Id: GraphTest.java,v 1.15 2007-10-18 14:57:43 rensink Exp $
  */
 package groove.test.graph;
 
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -70,11 +70,11 @@ public class GraphTest extends TestCase {
      */
     public Graph graph;
     /** An a-label */
-    public Label aLabel;
+    public DefaultLabel aLabel;
     /** A b-label */
-    public Label bLabel;
+    public DefaultLabel bLabel;
     /** A c-label */
-    public Label cLabel;
+    public DefaultLabel cLabel;
     /** The a-edge of <tt>graph</tt>. */
     public BinaryEdge aEdge;
     /** The b-edge of <tt>graph</tt>. */

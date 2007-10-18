@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RelationEdge.java,v 1.5 2007-09-28 12:49:21 rensink Exp $
+ * $Id: RelationEdge.java,v 1.6 2007-10-18 14:57:48 rensink Exp $
  */
 package groove.rel;
 
 import groove.graph.AbstractBinaryEdge;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
+import groove.graph.Label;
 import groove.graph.Node;
 
 /**
@@ -28,7 +29,7 @@ import groove.graph.Node;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class RelationEdge<V> extends AbstractBinaryEdge<Node,Node> {
+public class RelationEdge<V> extends AbstractBinaryEdge<Node,Label,Node> {
 	/** Yields a string description of a {@link RelationType} value. */
 	public static String typeToString(RelationType type) {
 		return "["+type.getText()+"]";
