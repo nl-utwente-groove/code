@@ -12,18 +12,26 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExpr.java,v 1.16 2007-10-10 08:59:46 rensink Exp $
+ * $Id: RegExpr.java,v 1.17 2007-10-18 14:12:28 rensink Exp $
  */
 package groove.rel;
 
-import static groove.util.ExprParser.*;
+import static groove.util.ExprParser.DOUBLE_QUOTE_CHAR;
+import static groove.util.ExprParser.LANGLE_CHAR;
+import static groove.util.ExprParser.LPAR_CHAR;
+import static groove.util.ExprParser.PLACEHOLDER;
+import static groove.util.ExprParser.RPAR_CHAR;
+import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
+import groove.calc.Property;
 import groove.util.ExprParser;
+import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -33,7 +41,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 abstract public class RegExpr { //implements VarSetSupport {
     /** 
@@ -545,9 +553,10 @@ abstract public class RegExpr { //implements VarSetSupport {
          * Currently not supported.
          * @param identifier the wildcard identifier
          */
-        public Wildcard(String identifier) {
+        public Wildcard(String identifier, Property<String> constraint) {
             this();
             this.identifier = identifier;
+            this.constraint = constraint;
         }
         
         /**
@@ -565,11 +574,14 @@ abstract public class RegExpr { //implements VarSetSupport {
          */
         @Override
         public String toString() {
-            if (getIdentifier() == null) {
-                return super.toString();
-            } else {
-                return getOperator()+getIdentifier();
+        	StringBuilder result = new StringBuilder(super.toString());
+            if (getIdentifier() != null) {
+            	result.append(getIdentifier());
             }
+            if (getConstraint() != null) {
+            	result.append(getConstraint());
+            }
+            return result.toString();
         }
 
         /**
@@ -578,6 +590,13 @@ abstract public class RegExpr { //implements VarSetSupport {
         @Override
         public String getDescription() {
             return toString();
+        }
+
+        /**
+         * Returns the optional identifier of this wildcard expression.
+         */
+        public Property<String> getConstraint() {
+            return constraint;
         }
 
         /**
@@ -601,29 +620,124 @@ abstract public class RegExpr { //implements VarSetSupport {
                     ExprParser.PREFIX_POSITION);
                 if (operands == null) {
                     return null;
-                } else if (isIdentifier(operands[0])) {
-                    return newInstance(operands[0]);
                 } else {
-                    throw new FormatException("Wildcard operand "+operands[0]+" is not a valied identifier");
-                }
-            } else {
-                return result;
+                	Pair<String,List<String>> operand = ExprParser.parseExpr(operands[0]);
+                	int subStringCount = operand.second().size();
+                	String identifier = operand.first();
+                	Property<String> constraint = null;
+                	if (subStringCount > 1) {
+                		throw new FormatException("Invalid wildcard parameter '%s'", operands[0]);
+                	} else if (subStringCount == 1) {
+                		String parameter = operand.second().iterator().next();
+                		if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length()-1) {
+                    		throw new FormatException("Invalid wildcard parameter '%s'", operands[0]);
+                		} else {
+                			constraint = getConstraint(parameter);
+                		}
+                		identifier = identifier.substring(0, identifier.length()-1);                		
+                	}
+					if (isIdentifier(identifier)) {
+						result = newInstance(identifier, constraint);
+					} else if (identifier.length() == 0) {
+						result = newInstance(null, constraint);
+					} else {
+						throw new FormatException("Wildcard operand '%s' is not a valied identifier", operands[0]);
+					}
+				}
             }
+            return result;
+        }
+
+        /** 
+         * Turns a given string into a constraint on edge labels.
+         * @param parameter the string to be converted
+         * @return the property on edge labels encoded by <code>parameter</code>
+         * @throws FormatException if <code>parameter</code> is not correctly formed as a constraint.
+         */
+        private Property<String> getConstraint(String parameter) throws FormatException {
+        	String constraintList = ExprParser.toTrimmed(parameter, CONSTRAINT_OPEN, CONSTRAINT_CLOSE);
+        	if (constraintList == null) {
+        		throw new FormatException("Invalid constraint parameter '%s'", parameter);
+        	}
+        	boolean negated = constraintList.indexOf(CONSTRAINT_NEGATOR) == 0;
+        	if (negated) {
+        		constraintList = constraintList.substring(1);
+        	}
+        	String[] constraintParts = ExprParser.splitExpr(constraintList,""+CONSTRAINT_SEPARATOR, ExprParser.INFIX_POSITION);
+        	if (constraintParts.length == 0) {
+        		throw new FormatException("Invalid constraint parameter '%s'", parameter);
+        	}
+        	final Set<String> constrainedLabels = new HashSet<String>();
+        	for (String part: constraintParts) {
+        		RegExpr atom;
+        		try {
+        			atom = parse(part);
+				} catch (FormatException exc) {
+        			throw new FormatException("Constraint string '%s' cannot be parsed", part);
+        		}
+				if (atom instanceof Atom) {
+					constrainedLabels.add(((Atom) atom).getAtomText());
+				} else {
+					throw new FormatException("Constraint string '%s' should be an atom", part);
+				}
+        	}
+        	return new LabelConstraint(constrainedLabels, negated);
         }
 
         /** Returns a {@link Wildcard} with a given identifier. */
-        protected Wildcard newInstance(String identifier) {
-            return new Wildcard(identifier);
+        protected Wildcard newInstance(String identifier, Property<String> constraint) {
+            return new Wildcard(identifier, constraint);
         }
 
-        /** This implementation retrns a {@link Wildcard}. */
+        /** This implementation returns a {@link Wildcard}. */
         @Override
         protected Constant newInstance() {
             return new Wildcard();
         }
         
-        /** The (optional) identifier for this wildvard. */
+        /** The (optional) constraint for this wildcard. */
+        private Property<String> constraint;
+        
+        /** The (optional) identifier for this wildcard. */
         private String identifier;
+        
+        /** Opening bracket of a wildcard constraint. */
+        static private final char CONSTRAINT_OPEN = '[';
+        /** Closing bracket of a wildcard constraint. */
+        static private final char CONSTRAINT_CLOSE = ']';
+        /** Character to indicate negation of a constraint. */
+        static private final char CONSTRAINT_NEGATOR = '^';
+        /** Character to separate constraint parts. */
+        static private final char CONSTRAINT_SEPARATOR = ',';
+        
+        /** Constraint testing if a string is or is not in a set of strings. */
+		private static class LabelConstraint extends Property<String> {
+			LabelConstraint(Set<String> constrainedLabels, boolean negated) {
+				this.constrainedLabels = constrainedLabels;
+				this.negated = negated;
+			}
+			
+			@Override
+			public boolean isSatisfied(String value) {
+				return negated != constrainedLabels.contains(value);
+			}
+			
+			@Override
+			public String toString() {
+				String start;
+				if (negated) {
+					start = ""+CONSTRAINT_OPEN+CONSTRAINT_NEGATOR;
+				} else {
+					start = ""+CONSTRAINT_OPEN;
+				}
+				return Groove.toString(constrainedLabels.toArray(new String[0]), start, ""+CONSTRAINT_CLOSE, ""+CONSTRAINT_SEPARATOR);
+			}
+
+			/** The set of strings to be tested for inclusion. */
+			private final Set<String> constrainedLabels;
+			/** Flag indicating if we are testing for absence or presence. */
+			private final boolean negated;
+		}
     }
 
     /**
@@ -635,7 +749,7 @@ abstract public class RegExpr { //implements VarSetSupport {
             super("" + EMPTY_OPERATOR, EMPTY_SYMBOLIC_NAME);
         }
 
-        /** This implementation retrns a {@link Empty}. */
+        /** This implementation returns a {@link Empty}. */
         @Override
         protected Constant newInstance() {
             return new Empty();
@@ -701,9 +815,9 @@ abstract public class RegExpr { //implements VarSetSupport {
 
         /**
          * This implementation never returns <tt>null</tt>, since it is assumed to be at the end
-         * of the chain of prototyes tried out during parsing.
+         * of the chain of prototypes tried out during parsing.
          * @throws FormatException if <tt>tokenList</tt> is not a singleton or its element is
-         *         not recognized as a nested expression or atom
+         *         not recognised as a nested expression or atom
          */
         @Override
         public RegExpr parseOperator(String expr) throws FormatException {
@@ -920,7 +1034,16 @@ abstract public class RegExpr { //implements VarSetSupport {
      * Creates and returns a named wildcard regular expression.
      */
     public static Wildcard wildcard(String text) {
-        return new Wildcard(text);
+        return wildcard(text, null);
+    }
+
+
+    /**
+     * Creates and returns a named wildcard regular expression with
+     * a constraint on the label.
+     */
+    public static Wildcard wildcard(String text, Property<String> constraint) {
+        return new Wildcard(text, constraint);
     }
 
     /**

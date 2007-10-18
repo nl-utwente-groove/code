@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExprParser.java,v 1.7 2007-06-27 11:54:59 rensink Exp $
+ * $Id: ExprParser.java,v 1.8 2007-10-18 14:12:30 rensink Exp $
  */
 package groove.util;
 
@@ -29,7 +29,7 @@ import java.util.Stack;
  * A class that helps parse an expression.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class ExprParser {
     /** The single quote character, to control parsing. */
@@ -95,11 +95,11 @@ public class ExprParser {
     static public final char PLACEHOLDER = '\uFFFF';
 
     /**
-     * Parses a given string by recognizing quoted and bracketed substrings.
+     * Parses a given string by recognising quoted and bracketed substrings.
      * The quote characters are<tt>'</tt> and <tt>"</tt>;
-     * recognized bracket pairs are <tt>()</tt>, <tt>{}</tt>, <tt>&lt;&gt;</tt>
+     * recognised bracket pairs are <tt>()</tt>, <tt>{}</tt>, <tt>&lt;&gt;</tt>
      * and <tt>[]</tt>.
-     * Within quoted strings, escape codes are intepreted as in Java.
+     * Within quoted strings, escape codes are interpreted as in Java.
      * Brackets are required to be properly nested.
      * The result is given as a pair of objects: the first is the string with all
      * quoted and bracketed substrings replaced by the character <tt>PLACEHOLDER</tt>,
@@ -117,7 +117,7 @@ public class ExprParser {
      * Puts together a string from a base string, which may contain
      * {@link #PLACEHOLDER} characters, and a list of replacements for the
      * {@link #PLACEHOLDER}s.
-     * This is the inverse operaiton of {@link #parseExpr(String)}.
+     * This is the inverse operation of {@link #parseExpr(String)}.
      */
     static public String unparseExpr(String basis, List<String> replacements) {
     	return prototype.unparse(basis, replacements.iterator());
@@ -167,7 +167,7 @@ public class ExprParser {
      * Splits a given expression according to a string (note: <i>not</i> a 
      * regular expression).
      * Quoted strings and bracketed sub-expressions are treated as atomic, and 
-     * whitespaces are trimmed from the result. A wgitespace character as 
+     * whitespaces are trimmed from the result. A whitespace character as 
      * <tt>split</tt> expression will therefore stand for a sequence of whitespaces,
      * with at least one occurrence of the precise <tt>split</tt> expression.
      * Convenience method; abbreviates <tt>new ExprParser().split(expr,split)</tt>.

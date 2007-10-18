@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.8 2007-10-11 11:42:08 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.9 2007-10-18 14:12:31 rensink Exp $
  */
 package groove.match;
 
@@ -149,12 +149,12 @@ class Edge2SearchItem extends AbstractSearchItem {
 
     /** Creates a record for the case the image is singular. */
     SingularRecord createSingularRecord(Search search) {
-    	return new Edge2SingularRecord(search);
+    	return new Edge2SingularRecord(search, edgeIx, sourceIx, targetIx);
     }
     
     /** Creates a record for the case the image is not singular. */
     MultipleRecord<Edge> createMultipleRecord(Search search) {
-    	return new Edge2MultipleRecord(search);
+    	return new Edge2MultipleRecord(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
     }
 	/**
 	 * The edge for which this search item is to find an image.
@@ -198,27 +198,29 @@ class Edge2SearchItem extends AbstractSearchItem {
      */
     class Edge2SingularRecord extends SingularRecord {
     	/** Constructs an instance for a given search. */
-		public Edge2SingularRecord(Search search) {
+		public Edge2SingularRecord(Search search, int edgeIx, int sourceIx, int targetIx) {
 			super(search);
+			this.edgeIx = edgeIx;
+			this.sourceIx = sourceIx;
+			this.targetIx = targetIx;
 			this.sourcePreMatch = search.getNodeAnchor(sourceIx);
 			this.targetPreMatch = search.getNodeAnchor(targetIx);
 		}
-//
-//		@Override
-//		public void reset() {
-//			super.reset();
-//			getSearch().putEdge(edgeIx, null);
-//		}
 
 		@Override
 		final boolean set() {
 			Edge image = getEdgeImage();
 			assert image != null;
-			boolean result = host.containsElement(image);
+			boolean result = isImageCorrect(image);
 			if (result) {
 				search.putEdge(edgeIx, image);
 			}
 			return result;
+		}
+		
+		/** Tests if the (uniquely determined) edge image can be used. */
+		boolean isImageCorrect(Edge image) {
+			return host.containsElement(image);
 		}
 		
 		/** 
@@ -253,6 +255,12 @@ class Edge2SearchItem extends AbstractSearchItem {
 		private final Node sourcePreMatch;
 		/** The pre-matched (fixed) target image, if any. */
 		private final Node targetPreMatch;
+	    /** The index of the edge in the search. */
+	    private final int edgeIx;
+	    /** The index of the source in the search. */
+	    private final int sourceIx;
+	    /** The index of the target in the search. */
+	    private final int targetIx;
     }
     
     /**
@@ -265,10 +273,15 @@ class Edge2SearchItem extends AbstractSearchItem {
         /**
          * Creates a record based on a given search.
          */
-        Edge2MultipleRecord(Search search) {
+        Edge2MultipleRecord(Search search, int edgeIx, int sourceIx, int targetIx, boolean sourceFound, boolean targetFound) {
             super(search);
-            sourcePreMatch = search.getNodeAnchor(sourceIx);
-            targetPreMatch = search.getNodeAnchor(targetIx);
+            this.edgeIx = edgeIx;
+            this.sourceIx = sourceIx;
+            this.targetIx = targetIx;
+            this.sourceFound = sourceFound;
+            this.targetFound = targetFound;
+            this.sourcePreMatch = search.getNodeAnchor(sourceIx);
+            this.targetPreMatch = search.getNodeAnchor(targetIx);
             assert search.getEdge(edgeIx) == null : String.format("Edge %s already in %s", edge, search);
         }
 
@@ -379,7 +392,7 @@ class Edge2SearchItem extends AbstractSearchItem {
          * @param checkTarget if <code>true</code>, the sources of potential images 
          * have to be compared with #label.
          */
-        void initImages(Set<? extends Edge> imageSet, boolean checkSource, boolean checkTarget, boolean checkLabel, boolean setEdge) {
+        final void initImages(Set<? extends Edge> imageSet, boolean checkSource, boolean checkTarget, boolean checkLabel, boolean setEdge) {
         	this.imageIter = imageSet.iterator();
         	this.checkSource = checkSource;
         	this.checkTarget = checkTarget;
@@ -581,6 +594,17 @@ class Edge2SearchItem extends AbstractSearchItem {
             return Edge2SearchItem.this.toString()+" = "+selected;
         }
 
+        /** The index of the edge in the search. */
+        final private int edgeIx;
+        /** The index of the source in the search. */
+        final int sourceIx;
+        /** The index of the target in the search. */
+        final int targetIx;
+        /** Indicates if the source is found before this item is invoked. */
+        final private boolean sourceFound;
+        /** Indicates if the target is found before this item is invoked. */
+        final private boolean targetFound;
+        
         private final Node sourcePreMatch;
         private final Node targetPreMatch;
         /**
@@ -595,8 +619,6 @@ class Edge2SearchItem extends AbstractSearchItem {
          * for the target, or the target was pre-matched.
          */
         Node targetFind;
-//        /** The intended label of the edge image. */
-//        private Label label;
         /** 
          * Flag indicating the if sources of images returned by {@link #initImages()} 
          * have to be checked against the found source image.

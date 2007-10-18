@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParseData.java,v 1.5 2007-06-27 16:00:28 rensink Exp $
+ * $Id: AspectParseData.java,v 1.6 2007-10-18 14:12:11 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -83,7 +83,7 @@ class AspectParseData {
 			AspectValue targetValue = targetMap.get(aspect);
 			AspectValue targetInference = targetValue == null ? null : targetValue.targetToEdge();
 			AspectValue result = aspect.getMax(edgeValue, sourceInference, targetInference);
-			if (edgeValue != null && edgeValue != result) {
+			if (edgeValue != null && !edgeValue.equals(result)) {
 				throw new FormatException("Inferred %s value '%s' differs from declared value '%s'", aspect, result, edgeValue);
 			}
 			if (result != null) {

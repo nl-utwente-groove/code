@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.12 2007-10-05 11:44:39 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.13 2007-10-18 14:12:31 rensink Exp $
  */
 package groove.match;
 
@@ -41,6 +41,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 	public VarEdgeSearchItem(BinaryEdge edge) {
 		super(edge);
 		this.var = RegExprLabel.getWildcardId(edge.label());
+		this.labelConstraint = RegExprLabel.getWildcardConstraint(edge.label());
         this.boundVars = Collections.singleton(var);
 		assert this.var != null : String.format("Edge %s is not a variable edge", edge);
 		assert edge.endCount() <= BinaryEdge.END_COUNT : String.format("Search item undefined for hyperedge", edge);
@@ -69,12 +70,12 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
 	@Override
 	SingularRecord createSingularRecord(Search search) {
-		return new VarEdgeSingularRecord(search);
+		return new VarEdgeSingularRecord(search, edgeIx, sourceIx, targetIx, varIx);
 	}
 
     @Override
 	MultipleRecord<Edge> createMultipleRecord(Search search) {
-		return new VarEdgeMultipleRecord(search);
+		return new VarEdgeMultipleRecord(search, edgeIx, sourceIx, targetIx, varIx, sourceFound, targetFound, varFound);
 	}
 
 	/** The variable bound in the wildcard (not <code>null</code>). */
@@ -85,14 +86,18 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     int varIx;
     /** Flag indicating that {@link #var} is matched before this item is invoked. */
     boolean varFound;
+
+	/** The constraint on the variable valuation, if any. */
+	final groove.calc.Property<String> labelConstraint; 
     
     class VarEdgeSingularRecord extends Edge2SingularRecord {
     	/** 
     	 * Constructs a record from a given search, and 
     	 * (possibly <code>null</code>) pre-matched end node and variable images.
     	 */
-		VarEdgeSingularRecord(Search search) {
-			super(search);
+		VarEdgeSingularRecord(Search search, int edgeIx, int sourceIx, int targetIx, int varIx) {
+			super(search, edgeIx, sourceIx, targetIx);
+			this.varIx = varIx;
 			this.varPreMatch = search.getVarAnchor(varIx);
 		}
 
@@ -105,16 +110,26 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 			}
 			return result;
 		}
-		
-		private final Label varPreMatch;
+
+		/** Tests the label constraint, in addition to calling the super method. */
+		@Override
+		boolean isImageCorrect(Edge image) {
+			return (labelConstraint == null || labelConstraint.isSatisfied(edge.label().text())) && super.isImageCorrect(image);
+		}
+
+		private final Label varPreMatch;    
+	    /** The index of {@link #var} in the result. */
+	    private final int varIx;
     }
     
     /** Record for this type of search item. */
     class VarEdgeMultipleRecord extends Edge2MultipleRecord {
         /** Constructs a new record, for a given matcher. */
-        VarEdgeMultipleRecord(Search search) {
-            super(search);
-            varPreMatch = search.getVarAnchor(varIx);
+        VarEdgeMultipleRecord(Search search, int edgeIx, int sourceIx, int targetIx, int varIx, boolean sourceFound, boolean targetFound, boolean varFound) {
+            super(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
+            this.varFound = varFound;	
+            this.varIx = varIx;
+            this.varPreMatch = search.getVarAnchor(varIx);
         }
 
         @Override
@@ -147,7 +162,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
         @Override
 		boolean setImage(Edge image) {
-			boolean result = super.setImage(image);
+			boolean result = (labelConstraint == null || labelConstraint.isSatisfied(image.label().text())) && super.setImage(image);
 			if (result && varFind == null) {
 				search.putVar(varIx, image.label());
 			}
@@ -165,7 +180,11 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 		/**
          * The pre-matched variable image, if any.
          */
-        private final Label varPreMatch;
+        private final Label varPreMatch;    
+	    /** The index of {@link #var} in the result. */
+	    private final int varIx;
+        /** Flag indicating that {@link #var} is matched before this item is invoked. */
+        private final boolean varFound;
         /** 
          * The found variable image, if any.
          */

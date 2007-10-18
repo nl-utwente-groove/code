@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MatrixAutomaton.java,v 1.8 2007-10-10 08:59:46 rensink Exp $
+ * $Id: MatrixAutomaton.java,v 1.9 2007-10-18 14:12:28 rensink Exp $
  */
 package groove.rel;
 
+import groove.calc.Property;
 import groove.graph.BinaryEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
@@ -201,7 +202,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
 
     /**
      * Returns the set of wildcard variables bound in this automaton.
-     * A variable is bound if it occurrs on every path from start to end node.
+     * A variable is bound if it occurs on every path from start to end node.
      */
     public Set<String> boundVarSet() {
         if (boundVarSet == null) {
@@ -928,28 +929,33 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                 if (keyEdgeIndices != null) {
                     for (int i = 0; remainingImageCount != 0 && i < keyEdgeIndices.length; i++) {
                         int keyEdgeIndex = keyEdgeIndices[i];
-                        boolean labelOk;
-                        String id = RegExprLabel.getWildcardId(getLabel(keyEdgeIndex));
-                        if (id != null) {
-                            // we have a wildcard id; let's look it up
-                            Label oldLabel = valuation.get(id);
-                            if (oldLabel == null) {
-                                // it's a new id; store it
-                                labelOk = true;
-                                if (valuation == null) {
-                                    valuation = Collections.singletonMap(id, label);
-                                } else {
-                                    valuation = new HashMap<String,Label>(valuation);
-                                    valuation.put(id, label);
-                                }
-                            } else {
-                                // it's a know id; check its value
-                                labelOk = oldLabel.equals(label);
+                        Label edgeLabel = getLabel(keyEdgeIndex);
+                        boolean labelOk = true;
+                        if (RegExprLabel.isWildcard(edgeLabel)) {
+                            Property<String> constraint = RegExprLabel.getWildcardConstraint(edgeLabel);
+                            if (constraint != null) {
+                            	labelOk = constraint.isSatisfied(label.text());
                             }
-                        } else {
-                            // this is not a wildcard id; just go on
-                            labelOk = true;
-                        }
+							String id = RegExprLabel.getWildcardId(edgeLabel);
+							if (labelOk && id != null) {
+								// we have a wildcard id; let's look it up
+								Label oldLabel = valuation.get(id);
+								if (oldLabel == null) {
+									// it's a new id; store it
+									if (valuation == null) {
+										valuation = Collections.singletonMap(id,
+												label);
+									} else {
+										valuation = new HashMap<String, Label>(
+												valuation);
+										valuation.put(id, label);
+									}
+								} else {
+									// it's a know id; check its value
+									labelOk = oldLabel.equals(label);
+								}
+							}
+						}
                         if (labelOk) {
                             extend(getOpposite(keyEdgeIndex), imageNode, valuation);
                         }
@@ -958,12 +964,17 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             }
             
             /**
-             * Extends the matchings found so far with a given key-image pair. If this is a real
-             * extension, it is subsequently propagated.
-             * @param keyIndex the node from the automaton that has been matched
-             * @param image the node from the graph that has been found as a new image
-             * @param valuation the valuation of the wildcard names encountered so far
-             */
+			 * Extends the matchings found so far with a given key-image pair.
+			 * If this is a real extension, it is subsequently propagated.
+			 * 
+			 * @param keyIndex
+			 *            the node from the automaton that has been matched
+			 * @param image
+			 *            the node from the graph that has been found as a new
+			 *            image
+			 * @param valuation
+			 *            the valuation of the wildcard names encountered so far
+			 */
             private void extend(int keyIndex, Node image, Map<String,Label> valuation) {
                 if (keyIndex == endIndex) {
                     add(image, valuation);
