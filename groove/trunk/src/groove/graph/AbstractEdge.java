@@ -12,20 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractEdge.java,v 1.8 2007-09-28 10:23:59 rensink Exp $
+ * $Id: AbstractEdge.java,v 1.9 2007-10-18 14:57:41 rensink Exp $
  */
 package groove.graph;
 
 /**
  * Defines an abstract edge class by extending the abstract composite.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
-public abstract class AbstractEdge<N extends Node> implements Edge {
+public abstract class AbstractEdge<N extends Node, L extends Label> implements Edge {
     /**
      * Creates an edge with a given source node and label.
      */
-    protected AbstractEdge(N source, Label label) {
+    protected AbstractEdge(N source, L label) {
 		this.source = source;
 		this.label = label;
 	}
@@ -34,7 +34,7 @@ public abstract class AbstractEdge<N extends Node> implements Edge {
         return source;
     }
 	
-	public final Label label() {
+	public final L label() {
 		return label;
 	}
 
@@ -93,7 +93,7 @@ public abstract class AbstractEdge<N extends Node> implements Edge {
      * Since all composites are immutable, the method just returns <code>this</code>.
      */
     @Override
-    public AbstractEdge<N> clone() {
+    public AbstractEdge<N,L> clone() {
         return this;
     }
     
@@ -207,7 +207,7 @@ public abstract class AbstractEdge<N extends Node> implements Edge {
      */
 	protected final N source;
     /** The label of this edge. @invariant label != null */
-    protected final Label label;
+    protected final L label;
     /** The pre-computed hash code. */
     private int hashCode;
     

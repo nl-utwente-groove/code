@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.14 2007-10-07 07:56:43 rensink Exp $
+ * $Id: DefaultGraphTransition.java,v 1.15 2007-10-18 14:57:49 rensink Exp $
  */
 package groove.lts;
 
@@ -22,6 +22,7 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.WrapperLabel;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
@@ -31,60 +32,9 @@ import groove.trans.RuleMatch;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2007-10-07 07:56:43 $
+ * @version $Revision: 1.15 $ $Date: 2007-10-18 14:57:49 $
  */
-public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,GraphState> implements GraphTransitionStub, GraphTransition {
-    /** The total number of anchor images created. */
-    static private int anchorImageCount = 0;
-    
-    /**
-     * Flag to indicate whether transitions should be labelled by rule name only.
-     */
-    static private boolean ruleLabelled = true;
-    
-    /**
-     * Sets the transition labelling policy.
-     * If <code>true</code>, transition labels are based on rule names only.
-     * If <code>false</code>, event information is also included.
-     * The standard value is <code>true</code>.
-     * @see #isRuleLabelled()
-     * @see #label()
-     */
-    static public void setRuleLabelled(boolean ruleLabelled) {
-        DefaultGraphTransition.ruleLabelled = ruleLabelled;
-    }
-    
-    /**
-     * Returns  the current transition labelling policy.
-     * If <code>true</code>, transition labels are based on rule names only.
-     * If <code>false</code>, event information is also included.
-     * The standard value is <code>true</code>.
-     * @see #setRuleLabelled(boolean)
-     */
-    static public boolean isRuleLabelled() {
-        return ruleLabelled;
-    }
-    
-    /**
-     * Retrieves the label from a rule event.
-     * The label is either the event label or the rule name, depending
-     * on the labelling policy as determined by {@link #isRuleLabelled()}.
-     * @see RuleEvent#getLabel()
-     * @see Rule#getName()
-     */
-    static public Label getLabel(RuleEvent event) {
-        if (isRuleLabelled()) {
-            return event.getRule().getName();
-        } else {
-            return event.getLabel();
-        }
-    }
-
-    /** Returns the total number of anchor images created. */
-    static public int getAnchorImageCount() {
-        return anchorImageCount;
-    }
-
+public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,WrapperLabel<RuleEvent>,GraphState> implements GraphTransitionStub, GraphTransition {
     /**
      * Constructs a GraphTransition on the basis of a given rule event, 
      * between a given source and target state.
@@ -293,4 +243,53 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,GraphS
     private Morphism morphism;
     /** Flag indicating that the underlying morphism is a partial identity. */
     private final boolean symmetry;
+    /**
+     * Sets the transition labelling policy.
+     * If <code>true</code>, transition labels are based on rule names only.
+     * If <code>false</code>, event information is also included.
+     * The standard value is <code>true</code>.
+     * @see #isRuleLabelled()
+     * @see #label()
+     */
+    static public void setRuleLabelled(boolean ruleLabelled) {
+        DefaultGraphTransition.ruleLabelled = ruleLabelled;
+    }
+    
+    /**
+     * Returns  the current transition labelling policy.
+     * If <code>true</code>, transition labels are based on rule names only.
+     * If <code>false</code>, event information is also included.
+     * The standard value is <code>true</code>.
+     * @see #setRuleLabelled(boolean)
+     */
+    static public boolean isRuleLabelled() {
+        return ruleLabelled;
+    }
+    
+    /**
+     * Retrieves the label from a rule event.
+     * The label is either the event label or the rule name, depending
+     * on the labelling policy as determined by {@link #isRuleLabelled()}.
+     * @see RuleEvent#getLabel()
+     * @see Rule#getName()
+     */
+    static public Label getLabel(RuleEvent event) {
+        if (isRuleLabelled()) {
+            return event.getRule().getName();
+        } else {
+            return event.getLabel();
+        }
+    }
+
+    /** Returns the total number of anchor images created. */
+    static public int getAnchorImageCount() {
+        return anchorImageCount;
+    }
+    /** The total number of anchor images created. */
+    static private int anchorImageCount = 0;
+    
+    /**
+     * Flag to indicate whether transitions should be labelled by rule name only.
+     */
+    static private boolean ruleLabelled = true;
 }

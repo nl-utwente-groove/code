@@ -12,21 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractEvent.java,v 1.3 2007-10-08 12:17:34 rensink Exp $
+ * $Id: AbstractEvent.java,v 1.4 2007-10-18 14:57:47 rensink Exp $
  */
 package groove.trans;
 
-import java.util.Set;
-
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSet;
 import groove.graph.WrapperLabel;
 import groove.util.AbstractCacheHolder;
 import groove.util.CacheReference;
 import groove.util.TreeHashSet;
+
+import java.util.Set;
 
 /**
  * Abstract class providing basic rule event functionality.
@@ -40,7 +39,7 @@ public abstract class AbstractEvent<R extends Rule,C> extends AbstractCacheHolde
 		this.rule = rule;
 	}
 
-	public Label getLabel() {
+	public WrapperLabel<RuleEvent> getLabel() {
 		return new WrapperLabel<RuleEvent>(this);
 	}
 

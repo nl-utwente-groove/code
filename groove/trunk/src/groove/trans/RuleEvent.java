@@ -12,21 +12,21 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.15 2007-10-07 07:56:48 rensink Exp $
+ * $Id: RuleEvent.java,v 1.16 2007-10-18 14:57:47 rensink Exp $
  */
 package groove.trans;
+
+import groove.graph.Edge;
+import groove.graph.Graph;
+import groove.graph.MergeMap;
+import groove.graph.Morphism;
+import groove.graph.Node;
+import groove.graph.WrapperLabel;
+import groove.rel.VarNodeEdgeMap;
 
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-
-import groove.graph.Edge;
-import groove.graph.Graph;
-import groove.graph.Label;
-import groove.graph.MergeMap;
-import groove.graph.Morphism;
-import groove.graph.Node;
-import groove.rel.VarNodeEdgeMap;
 
 /**
  * Interface to encode a rule instantiation that provides images to the rule anchors.
@@ -34,7 +34,7 @@ import groove.rel.VarNodeEdgeMap;
  * The event does not store information specific to the host graph. To apply it to 
  * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2007-10-07 07:56:48 $
+ * @version $Revision: 1.16 $ $Date: 2007-10-18 14:57:47 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -45,7 +45,7 @@ public interface RuleEvent extends Comparable<RuleEvent> {
     /**
      * Returns a label that uniquely identifies this event.
      */
-    public Label getLabel();
+    public WrapperLabel<RuleEvent> getLabel();
 
     /**
      * Returns a label that globally describes this event.

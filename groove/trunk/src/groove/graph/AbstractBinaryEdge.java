@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractBinaryEdge.java,v 1.9 2007-09-28 10:23:59 rensink Exp $
+ * $Id: AbstractBinaryEdge.java,v 1.10 2007-10-18 14:57:41 rensink Exp $
  */
 package groove.graph;
 
@@ -21,23 +21,19 @@ package groove.graph;
  * Abstract implementation of an (immutable) binary graph edge, as a tuple consisting of source and
  * target nodes.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-09-28 10:23:59 $
+ * @version $Revision: 1.10 $ $Date: 2007-10-18 14:57:41 $
  */
-abstract public class AbstractBinaryEdge<SN extends Node, TN extends Node> extends AbstractEdge<SN> implements BinaryEdge {
-    static {
-        AbstractEdge.setMaxEndCount(END_COUNT);
-    }
-
+abstract public class AbstractBinaryEdge<SN extends Node, L extends Label, TN extends Node> extends AbstractEdge<SN,L> implements BinaryEdge {
     /**
      * Constructs a new edge on the basis of a given source and target. The label has to be provided
-     * by ths subclass.
+     * by this subclass.
      * @param source source node of the new edge
      * @param label label of the new edge
      * @param target target node of the new edge
      * @require <tt>source != null && target != null</tt>
      * @ensure <tt>source()==source</tt>, <tt>target()==target </tt>
      */
-    protected AbstractBinaryEdge(SN source, Label label, TN target) {
+    protected AbstractBinaryEdge(SN source, L label, TN target) {
     	super(source, label);
         this.target = target;
     }
@@ -206,6 +202,10 @@ abstract public class AbstractBinaryEdge<SN extends Node, TN extends Node> exten
 
     /** The target node of this edge. */
     protected final TN target;
+
+    static {
+        AbstractEdge.setMaxEndCount(END_COUNT);
+    }
 
     // constants for hash code computation
 	static private final int SOURCE_SHIFT = 1;
