@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractAspect.java,v 1.10 2007-10-14 11:17:36 rensink Exp $
+ * $Id: AbstractAspect.java,v 1.11 2007-10-18 14:12:11 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Abstract implementation of an aspect, provinding all functionality.
+ * Abstract implementation of an aspect, providing all functionality.
  * Implementers should only statically call {@link #addNodeValue(AspectValue)} and
  * {@link #addEdgeValue(AspectValue)}.
  * @author Arend Rensink

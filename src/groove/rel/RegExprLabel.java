@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprLabel.java,v 1.10 2007-10-02 23:06:34 rensink Exp $
+ * $Id: RegExprLabel.java,v 1.11 2007-10-18 14:12:28 rensink Exp $
  */
 package groove.rel;
 
+import groove.calc.Property;
 import groove.graph.AbstractLabel;
 import groove.graph.Label;
 
@@ -24,7 +25,7 @@ import java.util.List;
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-10-02 23:06:34 $
+ * @version $Revision: 1.11 $ $Date: 2007-10-18 14:12:28 $
  */
 public class RegExprLabel extends AbstractLabel {
     /**
@@ -111,6 +112,21 @@ public class RegExprLabel extends AbstractLabel {
             RegExpr expr = ((RegExprLabel) label).getRegExpr();
             if (expr instanceof RegExpr.Wildcard) {
                 return ((RegExpr.Wildcard) expr).getIdentifier();
+            }
+        }
+        return null;
+    }
+    
+    /** 
+     * If a given label is a {@link RegExprLabel} wrapping a {@link RegExpr.Wildcard},
+     * returns the constraint of the wildcard, if any.
+     * Returns <code>null</code> in all other cases.
+     */
+    public static Property<String> getWildcardConstraint(Label label) {
+        if (label instanceof RegExprLabel) {
+            RegExpr expr = ((RegExprLabel) label).getRegExpr();
+            if (expr instanceof RegExpr.Wildcard) {
+                return ((RegExpr.Wildcard) expr).getConstraint();
             }
         }
         return null;

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectMap.java,v 1.2 2007-05-09 22:53:33 rensink Exp $
+ * $Id: AspectMap.java,v 1.3 2007-10-18 14:12:11 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -44,7 +44,7 @@ public class AspectMap extends LinkedHashMap<Aspect, AspectValue> {
     		}
     	}
 		AspectValue oldValue = put(value.getAspect(), value);
-		if (oldValue != null && oldValue != value) {
+		if (oldValue != null && !oldValue.equals(value)) {
 			put(value.getAspect(), oldValue);
 			throw new FormatException("Aspect %s has duplicate values %s and %s", value.getAspect(), oldValue, value);
 		}

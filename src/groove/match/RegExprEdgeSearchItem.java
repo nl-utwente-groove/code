@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.13 2007-10-10 08:59:50 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.14 2007-10-18 14:12:31 rensink Exp $ */
 package groove.match;
 
 import groove.graph.BinaryEdge;
@@ -98,8 +98,9 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
 	
 	@Override
 	MultipleRecord<Edge> createMultipleRecord(Search search) {
-		return new RegExprEdgeMultipleRecord(search);
+		return new RegExprEdgeMultipleRecord(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
 	}
+	
     /**
 	 * The automaton that computes the matches for the underlying edge.
 	 */
@@ -172,8 +173,8 @@ class RegExprEdgeSearchItem extends Edge2SearchItem {
     
     class RegExprEdgeMultipleRecord extends Edge2MultipleRecord {
         /** Constructs a new record, for a given matcher. */
-        RegExprEdgeMultipleRecord(Search search) {
-            super(search);
+        RegExprEdgeMultipleRecord(Search search, int edgeIx, int sourceIx, int targetIx, boolean sourceFound, boolean targetFound) {
+            super(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
             assert varIxMap.keySet().containsAll(neededVars);
             freshVars = new HashSet<String>();
             for (String var: boundVars) {

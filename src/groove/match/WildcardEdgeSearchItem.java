@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WildcardEdgeSearchItem.java,v 1.9 2007-10-05 11:44:39 rensink Exp $
+ * $Id: WildcardEdgeSearchItem.java,v 1.10 2007-10-18 14:12:31 rensink Exp $
  */
 package groove.match;
 
@@ -36,6 +36,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
 	 */
 	public WildcardEdgeSearchItem(BinaryEdge edge) {
 		super(edge);
+		this.labelConstraint = RegExprLabel.getWildcardConstraint(edge.label());
 		assert RegExprLabel.isWildcard(edge.label()) && RegExprLabel.getWildcardId(edge.label()) == null: String.format("Edge %s is not a true wildcard edge", edge);
 		assert edge.endCount() <= BinaryEdge.END_COUNT : String.format("Search item undefined for hyperedge", edge);
 	}
@@ -49,14 +50,17 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
 	/** This implementation returns a {@link WildcardEdgeRecord}. */
 	@Override
 	MultipleRecord<Edge> createMultipleRecord(Search search) {
-		return new WildcardEdgeRecord(search);
+		return new WildcardEdgeRecord(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
 	}
+	
+	/** The constraint on the wildcard valuation, if any. */
+	final groove.calc.Property<String> labelConstraint; 
     
     /** Record for this type of search item. */
     class WildcardEdgeRecord extends Edge2MultipleRecord {
         /** Constructs a new record, for a given matcher. */
-        WildcardEdgeRecord(Search search) {
-            super(search);
+        WildcardEdgeRecord(Search search, int edgeIx, int sourceIx, int targetIx, boolean sourceFound, boolean targetFound) {
+            super(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
         }
 
         @Override
@@ -71,5 +75,18 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
             }
             initImages(edgeSet, true, true, false, true);
         }
+
+        /** 
+         * First tests the image label against {@link #labelConstraint};
+         * if <code>true</code>, calls the super method, otherwise returns <code>false</code>.
+         */
+		@Override
+		boolean setImage(Edge image) {
+			if (labelConstraint == null || labelConstraint.isSatisfied(image.label().text())) {
+				return super.setImage(image);
+			} else {
+				return false;
+			}
+		}
     }
 }
