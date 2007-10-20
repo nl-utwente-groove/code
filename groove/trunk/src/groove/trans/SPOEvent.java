@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.47 2007-10-08 12:17:34 rensink Exp $
+ * $Id: SPOEvent.java,v 1.48 2007-10-20 15:20:05 rensink Exp $
  */
 package groove.trans;
 
@@ -34,8 +34,6 @@ import groove.util.CacheReference;
 import groove.util.Groove;
 import groove.util.Reporter;
 
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -51,9 +49,9 @@ import java.util.Set;
  * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.47 $ $Date: 2007-10-08 12:17:34 $
+ * @version $Revision: 1.48 $ $Date: 2007-10-20 15:20:05 $
  */
-public class SPOEvent extends AbstractEvent<SPORule, Object> {
+public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
      * A further parameter determines whether information should be stored for reuse.
@@ -80,7 +78,21 @@ public class SPOEvent extends AbstractEvent<SPORule, Object> {
     	super(reference, rule);
     	rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
-        this.coContextMap = coContextMap;
+        if (coContextMap == null) {
+        	coRootImage = null;
+        } else {
+        	int coRootCount = getRule().getCoRootMap().size();
+        	if (coRootCount == 0) {
+        		coRootImage = EMPTY_ROOT_IMAGE;
+        	} else {
+				coRootImage = new Node[coRootCount];
+				int coRootIx = 0;
+				for (Node coRoot : getRule().getCoRootMap().nodeMap().keySet()) {
+					coRootImage[coRootIx] = coContextMap.getNode(coRoot);
+					coRootIx++;
+				}
+			}
+        }
     	this.nodeFactory = nodeFactory;
     	this.reuse = reuse;
     }
@@ -90,51 +102,8 @@ public class SPOEvent extends AbstractEvent<SPORule, Object> {
      * #see {@link SPORule#anchor()} 
      */
 	public VarNodeEdgeMap getAnchorMap() {
-		VarNodeEdgeMap result = anchorMap == null ? null : anchorMap.get();
-		if (result == null) {
-			anchorMap = new WeakReference<VarNodeEdgeMap>(result = computeAnchorMap());
-		} 
-	    return result;
+	    return getCache().getAnchorMap();
 	}
-
-	/**
-	 * Creates the normalised anchor map from the currently stored anchor map.
-	 * The resulting map contains images for the anchor and eraser edges 
-	 * and any variables on them.
-	 */
-    private VarNodeEdgeMap computeAnchorMap() {
-    	Element[] anchor = getRule().anchor();
-    	Element[] anchorImage = getAnchorImage();
-    	VarNodeEdgeMap result = createVarMap();
-    	for (int i = 0; i < anchor.length; i++) {
-    		Element key = anchor[i];
-    		Element image = anchorImage[i];
-            if (key instanceof Edge) {
-            	// store the endpoints and the variable valuations for the edges
-                Edge edgeKey = (Edge) key;
-            	Edge edgeImage = (Edge) image;
-            	assert edgeImage != null : String.format("Edge %s has no image in anchor map %s", edgeKey, anchorMap);
-                int arity = edgeKey.endCount();
-                for (int end = 0; end < arity; end++) {
-                    result.putNode(edgeKey.end(end), edgeImage.end(end));
-                }
-                String var = RegExprLabel.getWildcardId(edgeKey.label());
-                if (var != null) {
-                    result.putVar(var, edgeImage.label());
-                }
-                result.putEdge(edgeKey, edgeImage);
-            } else {
-                result.putNode((Node) key, (Node) image);
-            }
-        }
-        // add the eraser edges
-        for (Edge eraserEdge: getRule().getEraserNonAnchorEdges()) {
-            Edge eraserImage = result.mapEdge(eraserEdge);
-            assert eraserImage != null : String.format("Eraser edge %s has no image in anchor map %s", eraserEdge, result);
-//            result.putEdge(eraserEdge, eraserImage);
-        }
-        return result;
-    }
 
     /**
      * Returns a string starting with {@link #ANCHOR_START}, separated by
@@ -146,14 +115,7 @@ public class SPOEvent extends AbstractEvent<SPORule, Object> {
 
     @Deprecated
     public VarNodeEdgeMap getSimpleCoanchorMap() {
-        if (reuse) {
-            if (coanchorMap == null) {
-                coanchorMap = computeCoanchorMap();
-            }
-            return coanchorMap;
-        } else {
-            return computeCoanchorMap();
-        }
+        return getCache().getCoanchorMap();
     }
     
     /**
@@ -161,43 +123,9 @@ public class SPOEvent extends AbstractEvent<SPORule, Object> {
      * creator edges, to the target graph nodes.
      */
     public VarNodeEdgeMap getCoanchorMap() {
-        if (reuse) {
-            if (coanchorMap == null) {
-                coanchorMap = computeCoanchorMap();
-            }
-            return coanchorMap;
-        } else {
-            return computeCoanchorMap();
-        }
+        return getCache().getCoanchorMap();
     }
     
-	/**
-	 * Constructs a map from the reader nodes of the RHS that are endpoints of
-	 * creator edges, to the target graph nodes.
-	 */
-	private VarNodeEdgeMap computeCoanchorMap() {
-		final VarNodeEdgeMap result = createVarMap();
-		VarNodeEdgeMap anchorMap = getAnchorMap();
-		NodeEdgeMap mergeMap = getRule().hasMergers() ? getMergeMap() : null;
-		// add reader node images
-		for (Map.Entry<Node,Node> creatorEntry: getRule().getCreatorMap().nodeMap().entrySet()) {
-			Node creatorKey = creatorEntry.getKey();
-			Node creatorValue = anchorMap.getNode(creatorEntry.getValue());
-			if (mergeMap != null) {
-				creatorValue = mergeMap.getNode(creatorValue);
-			}
-			result.putNode(creatorKey, creatorValue);
-		}
-		for (Map.Entry<Node,Node> coRootEntry: getRule().getCoRootMap().nodeMap().entrySet()) {
-			result.putNode(coRootEntry.getValue(), coContextMap.getNode(coRootEntry.getKey()));
-		}
-		// add variable images
-		for (String var: getRule().getCreatorVars()) {
-			result.putVar(var, anchorMap.getVar(var));
-		}
-		return result;
-	}
-
     /**
      * The hash code is based on that of the rule and an initial fragment of the
      * anchor images.
@@ -284,11 +212,7 @@ public class SPOEvent extends AbstractEvent<SPORule, Object> {
      * Callback method from {@link #equals(Object)}.
      */
     private boolean equalsCoContextMap(SPOEvent other) {
-    	if (coContextMap == null) {
-    		return other.coContextMap == null;
-    	} else {
-    		return coContextMap.equals(other.coContextMap);
-    	}
+    	return Arrays.equals(coRootImage, other.coRootImage);
     }
     
 	@Override
@@ -403,7 +327,7 @@ public class SPOEvent extends AbstractEvent<SPORule, Object> {
     /**
      * Returns the set of source elements that form the anchor image.
      */
-    private Element[] getAnchorImage() {
+    Element[] getAnchorImage() {
         return anchorImage;
     }
     
@@ -607,35 +531,7 @@ public class SPOEvent extends AbstractEvent<SPORule, Object> {
 	 * source that are merged away to their merged images, and deleted nodes to <code>null</code>.
 	 */
 	public MergeMap getMergeMap() {
-	    if (reuse) {
-            if (mergeMap == null) {
-                mergeMap = computeMergeMap();
-            }
-            return mergeMap;
-        } else {
-            return computeMergeMap();
-        }
-    }
-
-    /**
-     * Callback method from {@link #getMergeMap()} to compute the merge map. This is constructed on
-     * the basis of matching and rule, without reference to the actual target graph, which indeed
-     * may not yet be constructed at the time of invoking this method. The map is an
-     * {@link MergeMap} to improve performance.
-     */
-    private MergeMap computeMergeMap() {
-    	VarNodeEdgeMap anchorMap = getAnchorMap();
-        MergeMap mergeMap = createMergeMap();
-        for (Map.Entry<Node,Node> ruleMergeEntry: getRule().getMergeMap().entrySet()) {
-            Node mergeKey = anchorMap.getNode(ruleMergeEntry.getKey());
-            Node mergeImage = anchorMap.getNode(ruleMergeEntry.getValue());
-            mergeMap.putNode(mergeKey, mergeImage);
-        }
-        // now map the erased nodes to null
-        for (Node node: getErasedNodes()) {
-            mergeMap.removeNode(node);
-        }
-        return mergeMap;
+	    return getCache().getMergeMap();
     }
 
 	/**
@@ -651,24 +547,7 @@ public class SPOEvent extends AbstractEvent<SPORule, Object> {
         return result;
 	}
 
-    /**
-     * Callback factory method to create the merge map object for 
-     * {@link #computeMergeMap()}.
-     * @return a fresh instance of {@link MergeMap}
-     */
-    private MergeMap createMergeMap() {
-		return new MergeMap();
-	}
     
-    /**
-     * Callback factory method to create the map object for 
-     * {@link #computeCoanchorMap()}.
-     * @return a fresh instance of {@link VarNodeEdgeHashMap}
-     */
-    private VarNodeEdgeMap createVarMap() {
-    	return new VarNodeEdgeHashMap();
-    }
-
     public List<Node> getCreatedNodes(Set<? extends Node> hostNodes) {
 		List<Node> result = computeCreatedNodes(hostNodes);
 		if (reuse) {
@@ -768,33 +647,17 @@ public class SPOEvent extends AbstractEvent<SPORule, Object> {
         }
     }
 
-    /** Returns dummy object. */
     @Override
-	protected Object createCache() {
-		return new Object();
+	protected EventCache createCache() {
+		return new EventCache();
 	}
 
 	/** The derivation record that has created this event, if any. */
     private final NodeFactory nodeFactory;
     /**
-     * Matching from the rule's lhs to the source graph.
+     * Images for the RHS root elements in the target graph. 
      */
-    private Reference<VarNodeEdgeMap> anchorMap;
-    /**
-     * Mapping from selected RHS elements to host graph. 
-     * The coanchorMap is constructed in the course of rule application.
-     */
-    private VarNodeEdgeMap coanchorMap;
-    /**
-     * Mapping from RHS root elements to host graph. 
-     * The co-contextmap is provided at construction time, if the rule has co-roots.
-     */
-    private VarNodeEdgeMap coContextMap;
-    /**
-     * Minimal mapping from the source graph to target graph to reconstruct the underlying morphism. 
-     * The merge map is constructed in the course of rule application.
-     */
-    private MergeMap mergeMap;
+    final Node[] coRootImage;
     /**
      * Set of nodes from the source that are to be erased in the target.
      */
@@ -874,10 +737,170 @@ public class SPOEvent extends AbstractEvent<SPORule, Object> {
 	static private final Set<Node> EMPTY_NODE_SET = Collections.<Node>emptySet();
     /** Global empty list of nodes. */
     static private final List<Node> EMPTY_COANCHOR_IMAGE = Collections.emptyList();
-    static private final CacheReference<Object> reference = CacheReference.<Object>newInstance(false);
+    /** Global empty list of nodes. */
+    static private final Node[] EMPTY_ROOT_IMAGE = new Node[0];
+    static private final CacheReference<EventCache> reference = CacheReference.<EventCache>newInstance(false);
 	static private Reporter reporter = Reporter.register(RuleEvent.class);
 	static private int HASHCODE = reporter.newMethod("computeHashCode()");
 	static private int EQUALS = reporter.newMethod("equals()");
 	static private int GET_PARTIAL_MATCH = reporter.newMethod("getPartialMatch()");
 	static private int GET_ANCHOR_IMAGE = reporter.newMethod("getAnchorImage()");
+	
+    /** Cache holding the anchor map. */
+    final class EventCache {
+		/**
+		 * @return Returns the anchorMap.
+		 */
+		public final VarNodeEdgeMap getAnchorMap() {
+			if (anchorMap == null) {
+				anchorMap = computeAnchorMap();
+			}
+			return anchorMap;
+		}
+
+		/**
+		 * Creates the normalised anchor map from the currently stored anchor map.
+		 * The resulting map contains images for the anchor and eraser edges 
+		 * and any variables on them.
+		 */
+	    private VarNodeEdgeMap computeAnchorMap() {
+	    	Element[] anchor = getRule().anchor();
+	    	Element[] anchorImage = getAnchorImage();
+	    	VarNodeEdgeMap result = createVarMap();
+	    	for (int i = 0; i < anchor.length; i++) {
+	    		Element key = anchor[i];
+	    		Element image = anchorImage[i];
+	            if (key instanceof Edge) {
+	            	// store the endpoints and the variable valuations for the edges
+	                Edge edgeKey = (Edge) key;
+	            	Edge edgeImage = (Edge) image;
+	                int arity = edgeKey.endCount();
+	                for (int end = 0; end < arity; end++) {
+	                    result.putNode(edgeKey.end(end), edgeImage.end(end));
+	                }
+	                String var = RegExprLabel.getWildcardId(edgeKey.label());
+	                if (var != null) {
+	                    result.putVar(var, edgeImage.label());
+	                }
+	                result.putEdge(edgeKey, edgeImage);
+	            } else {
+	                result.putNode((Node) key, (Node) image);
+	            }
+	        }
+	        // add the eraser edges
+	        for (Edge eraserEdge: getRule().getEraserNonAnchorEdges()) {
+	            Edge eraserImage = result.mapEdge(eraserEdge);
+	            assert eraserImage != null : String.format("Eraser edge %s has no image in anchor map %s", eraserEdge, result);
+//	            result.putEdge(eraserEdge, eraserImage);
+	        }
+	        return result;
+	    }
+
+	    /**
+	     * Constructs a map from the reader nodes of the RHS that are endpoints of
+	     * creator edges, to the target graph nodes.
+	     */
+	    public final VarNodeEdgeMap getCoanchorMap() {
+			if (coanchorMap == null) {
+				coanchorMap = computeCoanchorMap();
+			}
+			return coanchorMap;
+		}
+	    
+		/**
+		 * Constructs a map from the reader nodes of the RHS that are endpoints
+		 * of creator edges, to the target graph nodes.
+		 */
+		private VarNodeEdgeMap computeCoanchorMap() {
+			final VarNodeEdgeMap result = createVarMap();
+			VarNodeEdgeMap anchorMap = getAnchorMap();
+			NodeEdgeMap mergeMap = getRule().hasMergers() ? getMergeMap() : null;
+			// add reader node images
+			for (Map.Entry<Node,Node> creatorEntry: getRule().getCreatorMap().nodeMap().entrySet()) {
+				Node creatorKey = creatorEntry.getKey();
+				Node creatorValue = anchorMap.getNode(creatorEntry.getValue());
+				if (mergeMap != null) {
+					creatorValue = mergeMap.getNode(creatorValue);
+				}
+				result.putNode(creatorKey, creatorValue);
+			}
+			int coRootIx = 0;
+			for (Map.Entry<Node,Node> coRootEntry: getRule().getCoRootMap().nodeMap().entrySet()) {
+				result.putNode(coRootEntry.getValue(), coRootImage[coRootIx]);
+				coRootIx++;
+			}
+			// add variable images
+			for (String var: getRule().getCreatorVars()) {
+				result.putVar(var, anchorMap.getVar(var));
+			}
+			return result;
+		}
+
+		/**
+		 * Returns a mapping from source to target graph nodes, dictated by
+		 * the merger and eraser nodes in the rules. 
+		 * @return an {@link MergeMap} that maps nodes of the
+		 * source that are merged away to their merged images, and deleted nodes to <code>null</code>.
+		 */
+		public final MergeMap getMergeMap() {
+			if (mergeMap == null) {
+				mergeMap = computeMergeMap();
+			}
+			return mergeMap;
+		}
+
+	    /**
+		 * Callback method from {@link #getMergeMap()} to compute the merge map.
+		 * This is constructed on the basis of matching and rule, without
+		 * reference to the actual target graph, which indeed may not yet be
+		 * constructed at the time of invoking this method. The map is an
+		 * {@link MergeMap} to improve performance.
+		 */
+	    private MergeMap computeMergeMap() {
+	    	VarNodeEdgeMap anchorMap = getAnchorMap();
+	        MergeMap mergeMap = createMergeMap();
+	        for (Map.Entry<Node,Node> ruleMergeEntry: getRule().getMergeMap().entrySet()) {
+	            Node mergeKey = anchorMap.getNode(ruleMergeEntry.getKey());
+	            Node mergeImage = anchorMap.getNode(ruleMergeEntry.getValue());
+	            mergeMap.putNode(mergeKey, mergeImage);
+	        }
+	        // now map the erased nodes to null
+	        for (Node node: getErasedNodes()) {
+	            mergeMap.removeNode(node);
+	        }
+	        return mergeMap;
+	    }
+
+	    /**
+	     * Callback factory method to create the merge map object for 
+	     * {@link #computeMergeMap()}.
+	     * @return a fresh instance of {@link MergeMap}
+	     */
+	    private MergeMap createMergeMap() {
+			return new MergeMap();
+		}
+	    /**
+	     * Callback factory method to create the map object for 
+	     * {@link #computeCoanchorMap()}.
+	     * @return a fresh instance of {@link VarNodeEdgeHashMap}
+	     */
+	    private VarNodeEdgeMap createVarMap() {
+	    	return new VarNodeEdgeHashMap();
+	    }
+
+        /**
+         * Matching from the rule's lhs to the source graph.
+         */
+    	private VarNodeEdgeMap anchorMap;
+        /**
+         * Matching from the rule's rhs to the target graph.
+         */
+    	private VarNodeEdgeMap coanchorMap;
+        /**
+         * Minimal mapping from the source graph to target graph to reconstruct the underlying morphism. 
+         * The merge map is constructed in the course of rule application.
+         */
+        private MergeMap mergeMap;
+
+    }
 }

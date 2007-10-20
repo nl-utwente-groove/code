@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultEdge.java,v 1.10 2007-10-18 14:57:41 rensink Exp $
+ * $Id: DefaultEdge.java,v 1.11 2007-10-20 15:19:59 rensink Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import groove.util.TreeHashSet;
  * Default implementation of an (immutable) graph edge, as a triple consisting of
  * source and target nodes and an arbitrary label.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2007-10-18 14:57:41 $
+ * @version $Revision: 1.11 $ $Date: 2007-10-20 15:19:59 $
  */
 final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
 	/**
@@ -138,17 +138,20 @@ final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
      * A identity map, mapping previously created instances of {@link DefaultEdge}
      * to themselves. Used to ensure that edge objects are reused.
      */
-    static private final TreeHashSet<DefaultEdge> edgeSet = new TreeHashSet<DefaultEdge>(new Equator<DefaultEdge>() {
-		public boolean areEqual(DefaultEdge o1, DefaultEdge o2) {
+    static private final TreeHashSet<DefaultEdge> edgeSet = new TreeHashSet<DefaultEdge>() {
+    	@Override
+		final protected boolean areEqual(DefaultEdge o1, DefaultEdge o2) {
 			return o1.source().equals(o2.source()) && o1.target().equals(o2.target()) && o1.label().equals(o2.label());
 		}
 
-		public int getCode(DefaultEdge key) {
+    	@Override
+    	final protected int getCode(DefaultEdge key) {
 			return key.hashCode();
 		}
 
-        public boolean allEqual() {
+    	@Override
+    	final protected  boolean allEqual() {
             return false;
         }
-    });
+    };
 }

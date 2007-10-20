@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultLabel.java,v 1.9 2007-09-26 08:30:21 rensink Exp $
+ * $Id: DefaultLabel.java,v 1.10 2007-10-20 15:19:59 rensink Exp $
  */
 package groove.graph;
 
@@ -28,7 +28,7 @@ import java.util.Map;
  * Provides a standard implementation of the Label interface.
  * An instance contains just an index into a global list.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ 
+ * @version $Revision: 1.10 $ 
  */
 public final class DefaultLabel extends AbstractLabel {
     /**
@@ -197,6 +197,7 @@ public final class DefaultLabel extends AbstractLabel {
      */
     private DefaultLabel(String text) {
         this.index = newLabelIndex(text);
+        this.hashCode = computeHashCode();
     }
     
     /**
@@ -208,6 +209,7 @@ public final class DefaultLabel extends AbstractLabel {
      */
     private DefaultLabel(char index) {
         this.index = index;
+        this.hashCode = computeHashCode();
     }
 
     public String text() {
@@ -229,21 +231,29 @@ public final class DefaultLabel extends AbstractLabel {
      */
     @Override
     public int hashCode() {
-        return index;
+        return hashCode;
     }
 
+    /** Computes a hash code for this label. */
+    private int computeHashCode() {
+    	return text().hashCode() + index + 1;
+    }
+    
     /**
      * Returns the index of this default label.
-     * The inverse operation is {@link #getLabel(char)}; that ls, 
+     * The inverse operation is {@link #getLabel(char)}; that is, 
      * <tt>getLabel(getIndex()).equals(this)</tt>.
      * @see #getLabel(char)
      */
     public char getIndex() {
         return index;
     }
+    
     /**
      * Index of the text making up this label.
      * @invariant <tt>text != null</tt>
      */
     private final char index;
+    /** The hash code of this label. */
+    private final int hashCode;
 }

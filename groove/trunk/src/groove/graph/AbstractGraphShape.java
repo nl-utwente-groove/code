@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphShape.java,v 1.13 2007-09-30 11:20:36 rensink Exp $
+ * $Id: AbstractGraphShape.java,v 1.14 2007-10-20 15:19:58 rensink Exp $
  */
 
 package groove.graph;
@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Partial implementation of a graph. Records a set of <tt>GraphListener</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public abstract class AbstractGraphShape<C extends GraphShapeCache> extends AbstractCacheHolder<C> implements GraphShape {
     /**
@@ -92,7 +92,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
      * and looks up the required set in the image for <tt>node</tt>.
      */
     public Set<? extends Edge> edgeSet(Node node) {
-        Set<Edge> result = nodeEdgeMap().get(node);
+        Set<? extends Edge> result = nodeEdgeMap().get(node);
         if (result == null) {
             return Collections.emptySet();
         } else {
@@ -120,7 +120,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
     /**
      * Returns a mapping from nodes to sets of edges of this graph.
      */
-    protected Map<Node, Set<Edge>> nodeEdgeMap() {
+    protected Map<Node, ? extends Set<? extends Edge>> nodeEdgeMap() {
         return Collections.unmodifiableMap(getCache().getNodeEdgeMap());
     }
 
@@ -139,7 +139,7 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
      * elements) of all edges with that label and arity in this graph.
      * @param arity the number of endpoints of the required edges
      */
-    protected Map<Label, ? extends Set<Edge>> labelEdgeMap(int arity) {
+    protected Map<Label, ? extends Set<? extends Edge>> labelEdgeMap(int arity) {
         return Collections.unmodifiableMap(getLabelEdgeMaps().get(arity));
     }
 
@@ -147,49 +147,9 @@ public abstract class AbstractGraphShape<C extends GraphShapeCache> extends Abst
      * Returns the array of label-to-edge maps from the graph cache.
      * @return the array of label-to-edge maps from the graph cache
      */
-    protected List<Map<Label,Set<Edge>>> getLabelEdgeMaps() {
+    protected List<? extends Map<Label,? extends Set<? extends Edge>>> getLabelEdgeMaps() {
         return getCache().getLabelEdgeMaps();
     }
-//    
-//    /**
-//     * Computes an array containing mappings from a label to the set of edges
-//     * with that label, indexed by the arity of the edges.
-//     * @return the computed mapping
-//     */
-//    protected Map<Label, Set<Edge>>[] computeArityLabelEdgeMap() {
-//        Map<Label, Set<Edge>>[] result = new Map[AbstractEdge.getMaxEndCount()];
-//        for (int arity = 0; arity < result.length; arity++) {
-//            result[arity] = new HashMap<Label, Set<Edge>>();
-//        }
-//        for (Edge edge: edgeSet()) {
-//            Map<Label, Set<Edge>> labelEdgeMap = result[edge.endCount() - 1];
-//            Set<Edge> labelEdgeSet = labelEdgeMap.get(edge.label());
-//            if (labelEdgeSet == null) {
-//                labelEdgeSet = new HashSet<Edge>();
-//                labelEdgeMap.put(edge.label(), labelEdgeSet);
-//            }
-//            labelEdgeSet.add(edge);
-//        }
-//        return result;
-//    }
-//
-//    /** 
-//     * Computes and returns a mapping from nodes to sets of outgoing edges for that node.
-//     * The map returns <tt>null</tt> for nodes without outgoing edges.
-//     * @return the computed mapping
-//     */
-//    protected Map<Node, Set<Edge>> computeOutEdgeMap() {
-//        Map<Node,Set<Edge>> result = new HashMap<Node,Set<Edge>>();
-//        for (Edge edge: edgeSet()) {
-//            Node source = edge.source();
-//            Set<Edge> outEdgeSet = result.get(source);
-//            if (outEdgeSet == null) {
-//                result.put(source, outEdgeSet = new HashSet<Edge>());
-//            }
-//            outEdgeSet.add(edge);
-//        }
-//        return result;
-//    }
 
     public GraphInfo getInfo() {
         return graphInfo;

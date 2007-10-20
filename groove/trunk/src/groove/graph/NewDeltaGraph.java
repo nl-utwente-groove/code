@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NewDeltaGraph.java,v 1.5 2007-10-10 08:59:58 rensink Exp $
+ * $Id: NewDeltaGraph.java,v 1.6 2007-10-20 15:19:59 rensink Exp $
  */
 package groove.graph;
 
 import groove.graph.iso.CertificateStrategy;
-import groove.util.TreeHashSet;
 
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
@@ -129,7 +128,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 		return nodeEdgeMap.keySet();
 	}
 	
-	public Set<Edge> edgeSet() {
+	public Set<DefaultEdge> edgeSet() {
 		if (edgeSet == null) {
 			initData();
 		}
@@ -137,12 +136,12 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	}
 	
 	@Override
-	public Map<Label, Set<Edge>> labelEdgeMap(int i) {
+	public Map<Label, DefaultEdgeSet> labelEdgeMap(int i) {
 		return getLabelEdgeMaps().get(i);
 	}
 	
 	@Override
-	protected List<Map<Label, Set<Edge>>> getLabelEdgeMaps() {
+	protected List<Map<Label, DefaultEdgeSet>> getLabelEdgeMaps() {
 		if (labelEdgeMaps == null) {
 		    initData();
 			if (labelEdgeMaps == null) {
@@ -156,15 +155,15 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	 * Computes the label-to-edgeset map from the node and edge sets.
 	 * This method is only used if the map could not be obtained from the basis.
 	 */
-	private List<Map<Label,Set<Edge>>> computeLabelEdgeMaps() {
-		List<Map<Label,Set<Edge>>> result = new ArrayList<Map<Label,Set<Edge>>>();
+	private List<Map<Label,DefaultEdgeSet>> computeLabelEdgeMaps() {
+		List<Map<Label,DefaultEdgeSet>> result = new ArrayList<Map<Label,DefaultEdgeSet>>();
 		result.add(null);
 		for (int i = 0; i <= AbstractEdge.getMaxEndCount(); i++) {
-			result.add(new HashMap<Label,Set<Edge>>());
+			result.add(new HashMap<Label,DefaultEdgeSet>());
 		}
-		for (Edge edge: edgeSet()) {
-			Map<Label,Set<Edge>> labelEdgeMap = result.get(edge.endCount());
-			Set<Edge> edges = labelEdgeMap.get(edge.label());
+		for (DefaultEdge edge: edgeSet()) {
+			Map<Label,DefaultEdgeSet> labelEdgeMap = result.get(edge.endCount());
+			DefaultEdgeSet edges = labelEdgeMap.get(edge.label());
 			if (edges == null) {
 				labelEdgeMap.put(edge.label(), edges = createEdgeSet(null));
 			}
@@ -174,7 +173,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	}
 	
 	@Override
-	public Map<Node, Set<Edge>> nodeEdgeMap() {
+	public Map<Node, DefaultEdgeSet> nodeEdgeMap() {
 		if (nodeEdgeMap == null) {
 		    initData();
 //			if (nodeEdgeMap == null) { 
@@ -216,7 +215,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
             assert labelEdgeMaps == null;
             if (basis == null) {
                 edgeSet = createEdgeSet(null);
-        		nodeEdgeMap = new HashMap<Node,Set<Edge>>();
+        		nodeEdgeMap = new HashMap<Node,DefaultEdgeSet>();
                 // apply the delta to fill the structures
                 delta.applyDelta(new SwingTarget());
             } else {
@@ -246,11 +245,11 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	 * Creates a copy of an existing set of edges, or an empty set if the
 	 * given set is <code>null</code>.
 	 */
-	EdgeSet createEdgeSet(EdgeSet edgeSet) {
+	DefaultEdgeSet createEdgeSet(DefaultEdgeSet edgeSet) {
 	    if (edgeSet == null) {
-	        return new EdgeSet();
+	        return new DefaultEdgeSet();
 	    } else {
-	        return new EdgeSet(edgeSet);
+	        return new DefaultEdgeSet(edgeSet);
 	    }
 //	    EdgeSet result = new TreeHashSet<Edge>();
 //		if (edgeSet != null) {
@@ -281,13 +280,13 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	DeltaApplier delta;
 	
 	/** The (initially null) edge set of this graph. */
-	EdgeSet edgeSet;
+	DefaultEdgeSet edgeSet;
 //	/** The (initially null) node set of this graph. */
 //	private NodeSet nodeSet;
 	/** The map from nodes to sets of incident edges. */
-	Map<Node,Set<Edge>> nodeEdgeMap;
+	Map<Node,DefaultEdgeSet> nodeEdgeMap;
 	/** List of maps from labels to sets of edges with that label and arity. */
-	List<Map<Label,Set<Edge>>> labelEdgeMaps;
+	List<Map<Label,DefaultEdgeSet>> labelEdgeMaps;
 	/** The certificate strategy of this graph, set on demand. */
 	private Reference<CertificateStrategy> certifier;
 	/** Flag indicating that data should be copied rather than shared in {@link #getDataTarget()}. */ 
@@ -305,20 +304,6 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	 */
 	static public NewDeltaGraph getInstance(boolean copyData) {
 		return copyData ? copyInstance : swingInstance;
-	}
-	
-	/** 
-	 * Specialisation of a set of edges, for use inside this class.
-	 */
-	static private class EdgeSet extends TreeHashSet<Edge> {
-	    /** Creates an empty edge set. */
-        public EdgeSet() {
-            super();
-        }
-        /** Creates a copy of an existing edge set. */
-        public EdgeSet(EdgeSet other) {
-            super(other);
-        }	    
 	}
 	
 	/**
@@ -340,7 +325,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 		 * @param child the graph to which the data structures should be installed
 		 */
 		void install(NewDeltaGraph child) {
-			child.edgeSet = (EdgeSet) edgeSet;
+			child.edgeSet = edgeSet;
 			child.nodeEdgeMap = nodeEdgeMap;
 			child.labelEdgeMaps = labelEdgeMaps;
 			child.delta = null;
@@ -348,11 +333,11 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 		}
 		
 		/** Edge set to be filled by this target. */
-		Set<Edge> edgeSet;
+		DefaultEdgeSet edgeSet;
 		/** Node/edge map to be filled by this target. */
-		Map<Node,Set<Edge>> nodeEdgeMap;
+		Map<Node,DefaultEdgeSet> nodeEdgeMap;
 		/** Label/edge map to be filled by this target. */
-		List<Map<Label,Set<Edge>>> labelEdgeMaps;
+		List<Map<Label,DefaultEdgeSet>> labelEdgeMaps;
 	}
 	
 	/** Delta target to initialise the data structures. */
@@ -371,38 +356,38 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 		 * and the label-edge maps (if it is set). 
 		 */
 		public boolean addEdge(Edge elem) {
-			boolean result = edgeSet.add(elem);
+			boolean result = edgeSet.add((DefaultEdge) elem);
 			assert result;
 			int arity = elem.endCount();
 			// adapt node-edge map
-			EdgeSet outEdgeSet = (EdgeSet) nodeEdgeMap.get(elem.source());
+			DefaultEdgeSet outEdgeSet = nodeEdgeMap.get(elem.source());
 			if (outEdgeSet == null) {
 				nodeEdgeMap.put(elem.source(), outEdgeSet = createEdgeSet(null));
 			}
-			outEdgeSet.add(elem);
+			outEdgeSet.add((DefaultEdge) elem);
 			if (elem.source() != elem.opposite()) {
-				EdgeSet inEdgeSet = (EdgeSet) nodeEdgeMap.get(elem.opposite());
+				DefaultEdgeSet inEdgeSet = nodeEdgeMap.get(elem.opposite());
 				if (inEdgeSet == null) {
 					nodeEdgeMap.put(elem.opposite(), inEdgeSet = createEdgeSet(null));
 				}
-				inEdgeSet.add(elem);
+				inEdgeSet.add((DefaultEdge) elem);
 			}
 			// adapt label-edge map
 			if (labelEdgeMaps != null) {
 				Label label = elem.label();
-				Map<Label,Set<Edge>> arityLabelEdgeMap = labelEdgeMaps.get(arity);
-				EdgeSet edgeSet = (EdgeSet) arityLabelEdgeMap.get(label);
+				Map<Label,DefaultEdgeSet> arityLabelEdgeMap = labelEdgeMaps.get(arity);
+				DefaultEdgeSet edgeSet = arityLabelEdgeMap.get(label);
 				if (edgeSet == null) {
 					arityLabelEdgeMap.put(label, edgeSet = createEdgeSet(edgeSet));
 				}
-				edgeSet.add(elem);
+				edgeSet.add((DefaultEdge) elem);
 			}
 			return result;
 		}
 
 		/** Adds the node to the node set and the node-edge map. */
 		public boolean addNode(Node elem) {
-			Set<Edge> edges = nodeEdgeMap.put(elem, createEdgeSet(null));
+			Set<DefaultEdge> edges = nodeEdgeMap.put(elem, createEdgeSet(null));
 			assert edges == null;
 			return true;
 		}
@@ -430,7 +415,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 
 		/** Removes the node from the node set and the node-edge map. */
 		public boolean removeNode(Node elem) {
-			Set<Edge> edges = nodeEdgeMap.remove(elem);
+			Set<DefaultEdge> edges = nodeEdgeMap.remove(elem);
 			assert edges.isEmpty();
 			return true;
 		}
@@ -455,17 +440,17 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
         public CopyTarget() {
         	NewDeltaGraph graph = NewDeltaGraph.this;
         	edgeSet = createEdgeSet(graph.edgeSet);
-            nodeEdgeMap = new HashMap<Node,Set<Edge>>(graph.nodeEdgeMap);
+            nodeEdgeMap = new HashMap<Node,DefaultEdgeSet>(graph.nodeEdgeMap);
             freshNodeKeys = createNodeSet(null);
             if (graph.labelEdgeMaps != null) {
-                labelEdgeMaps = new ArrayList<Map<Label, Set<Edge>>>();
+                labelEdgeMaps = new ArrayList<Map<Label, DefaultEdgeSet>>();
                 freshLabelKeys = new ArrayList<Set<Label>>();
-                for (Map<Label, Set<Edge>> arityLabelEdgeMap : graph.labelEdgeMaps) {
+                for (Map<Label, DefaultEdgeSet> arityLabelEdgeMap : graph.labelEdgeMaps) {
                     if (arityLabelEdgeMap == null) {
                     	labelEdgeMaps.add(null);
                         freshLabelKeys.add(null);
                     } else {
-                    	labelEdgeMaps.add(new HashMap<Label, Set<Edge>>(arityLabelEdgeMap));
+                    	labelEdgeMaps.add(new HashMap<Label, DefaultEdgeSet>(arityLabelEdgeMap));
                         freshLabelKeys.add(new HashSet<Label>());
                     }
                 }
@@ -479,41 +464,41 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
          * and the label-edge maps (if it is set). 
          */
         public boolean addEdge(Edge elem) {
-            boolean result = edgeSet.add(elem);
+            boolean result = edgeSet.add((DefaultEdge) elem);
             assert result;
             int arity = elem.endCount();
 			// adapt node-edge map
 			Node source = elem.source();
 			Node opposite = elem.opposite();
-			EdgeSet outEdgeSet = (EdgeSet) nodeEdgeMap.get(source);
+			DefaultEdgeSet outEdgeSet = nodeEdgeMap.get(source);
 			if (freshNodeKeys.add(source)) {
 				nodeEdgeMap.put(source, outEdgeSet = createEdgeSet(outEdgeSet));
 			}
-			outEdgeSet.add(elem);
+			outEdgeSet.add((DefaultEdge) elem);
 			if (source != opposite) {
-				EdgeSet inEdgeSet = (EdgeSet) nodeEdgeMap.get(opposite);
+				DefaultEdgeSet inEdgeSet = nodeEdgeMap.get(opposite);
 				if (freshNodeKeys.add(opposite)) {
 					nodeEdgeMap.put(opposite, inEdgeSet = createEdgeSet(inEdgeSet));
 				}
-				inEdgeSet.add(elem);
+				inEdgeSet.add((DefaultEdge) elem);
 			}
 			// adapt label-edge map
             if (labelEdgeMaps != null) {
                 Label label = elem.label();
-                Map<Label,Set<Edge>> arityLabelEdgeMap = labelEdgeMaps.get(arity);
-                EdgeSet edgeSet = (EdgeSet) arityLabelEdgeMap.get(label);
+                Map<Label,DefaultEdgeSet> arityLabelEdgeMap = labelEdgeMaps.get(arity);
+                DefaultEdgeSet edgeSet = arityLabelEdgeMap.get(label);
                 Set<Label> freshArityLabelKeys = freshLabelKeys.get(arity);
                 if (freshArityLabelKeys.add(label)) {
                     arityLabelEdgeMap.put(label, edgeSet = createEdgeSet(edgeSet));
                 }
-                edgeSet.add(elem);
+                edgeSet.add((DefaultEdge) elem);
             }
             return result;
         }
 
         /** Adds the node to the node set and the node-edge map. */
         public boolean addNode(Node elem) {
-        	Set<Edge> edges = nodeEdgeMap.put(elem, createEdgeSet(null));
+        	DefaultEdgeSet edges = nodeEdgeMap.put(elem, createEdgeSet(null));
         	assert edges == null : String.format("Node %s already has incident edges %s", elem, edges);
         	freshNodeKeys.add(elem);
             return true;
@@ -530,13 +515,13 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
             // adapt node-edge map
             Node source = elem.source();
 			Node opposite = elem.opposite();
-			EdgeSet outEdgeSet = (EdgeSet) nodeEdgeMap.get(source);
+			DefaultEdgeSet outEdgeSet = nodeEdgeMap.get(source);
 			if (freshNodeKeys.add(source)) {
 				nodeEdgeMap.put(source, outEdgeSet = createEdgeSet(outEdgeSet));
 			}
 			outEdgeSet.remove(elem);
 			if (source != opposite) {
-				EdgeSet inEdgeSet = (EdgeSet) nodeEdgeMap.get(opposite);
+				DefaultEdgeSet inEdgeSet = nodeEdgeMap.get(opposite);
 				if (freshNodeKeys.add(opposite)) {
 					nodeEdgeMap.put(opposite, inEdgeSet = createEdgeSet(inEdgeSet));
 				}
@@ -545,8 +530,8 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
             // adapt label-edge map
             if (labelEdgeMaps != null) {
                 Label label = elem.label();
-                Map<Label,Set<Edge>> arityLabelEdgeMap = labelEdgeMaps.get(arity);
-                EdgeSet labelEdgeSet = (EdgeSet) arityLabelEdgeMap.get(label);
+                Map<Label,DefaultEdgeSet> arityLabelEdgeMap = labelEdgeMaps.get(arity);
+                DefaultEdgeSet labelEdgeSet = arityLabelEdgeMap.get(label);
                 Set<Label> freshArityLabelKeys = freshLabelKeys.get(arity);
                 if (freshArityLabelKeys.add(label)) {
                     arityLabelEdgeMap.put(label, labelEdgeSet = createEdgeSet(labelEdgeSet));
@@ -558,7 +543,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 
         /** Removes the node from the node set and the node-edge map. */
         public boolean removeNode(Node elem) {
-        	Set<Edge> edges = nodeEdgeMap.remove(elem);
+        	DefaultEdgeSet edges = nodeEdgeMap.remove(elem);
         	assert edges.isEmpty();
         	freshNodeKeys.remove(elem);
             return true;

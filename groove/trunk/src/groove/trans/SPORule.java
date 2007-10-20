@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.42 2007-10-11 11:42:39 rensink Exp $
+ * $Id: SPORule.java,v 1.43 2007-10-20 15:20:05 rensink Exp $
  */
 package groove.trans;
 
@@ -52,7 +52,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.42 $
+ * @version $Revision: 1.43 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -400,33 +400,32 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     	if (!(other instanceof SPORule)) {
         	// SPO rules come before others
     		result = -1;
-    	}
-    	if (result == 0) {
+    	} else if (! equals(other)) {
         	// compare parent rules
-    		Rule otherParent = ((SPORule) other).getParent();
+			Rule otherParent = ((SPORule) other).getParent();
 			if (equals(getParent())) {
 				other = otherParent;
 			} else {
 				result = getParent().compareTo(otherParent);
 			}
-    	}
-    	if (result == 0) {
-        	// compare levels
-			int[] level = getLevel();
-			int[] otherLevel = ((SPORule) other).getLevel();
-			for (int depth = 0; result == 0 && depth < level.length; depth++) {
-				if (depth == otherLevel.length) {
-					result = +1;
-				} else {
-					result = level[depth] - otherLevel[depth];
+			if (result == 0) {
+				// compare levels
+				int[] level = getLevel();
+				int[] otherLevel = ((SPORule) other).getLevel();
+				for (int depth = 0; result == 0 && depth < level.length; depth++) {
+					if (depth == otherLevel.length) {
+						result = +1;
+					} else {
+						result = level[depth] - otherLevel[depth];
+					}
 				}
 			}
+			if (result == 0) {
+				// we have to rely on names, so they'd better be non-null
+				result = getName().compareTo(other.getName());
+			}
 		}
-    	if (result == 0 && !equals(other)) {
-    		// we have to rely on names, so they'd better be non-null
-    		result = getName().compareTo(other.getName());
-    	}
-    	return result;
+		return result;
     }
 
     // ------------------- commands --------------------------

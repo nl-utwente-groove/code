@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.16 2007-10-18 14:57:47 rensink Exp $
+ * $Id: RuleEvent.java,v 1.17 2007-10-20 15:20:05 rensink Exp $
  */
 package groove.trans;
 
@@ -24,6 +24,7 @@ import groove.graph.Node;
 import groove.graph.WrapperLabel;
 import groove.rel.VarNodeEdgeMap;
 
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -34,7 +35,7 @@ import java.util.Set;
  * The event does not store information specific to the host graph. To apply it to 
  * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2007-10-18 14:57:47 $
+ * @version $Revision: 1.17 $ $Date: 2007-10-20 15:20:05 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -104,14 +105,14 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      * This is delegated to the event because here we can indeed keep a map of such 
      * images, and so save memory. 
      */
-    public List<Node> getCreatedNodes(Set<? extends Node> hostNodes);
+    public List<? extends Node> getCreatedNodes(Set<? extends Node> hostNodes);
 
     /** 
      * Returns a coanchor image suitable for a given host graph.
      * This is delegated to the event because here we can indeed keep a map of such 
      * images, and so save memory. 
      */
-    public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes);
+    public Collection<? extends Edge> getComplexCreatedEdges(Iterator<Node> createdNodes);
     
     /**
 	 * Indicates if a matching of this event's rule exists, based on the anchor map in this event.
