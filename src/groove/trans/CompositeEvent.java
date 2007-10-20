@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeEvent.java,v 1.5 2007-10-10 08:59:47 rensink Exp $
+ * $Id: CompositeEvent.java,v 1.6 2007-10-20 15:20:05 rensink Exp $
  */
 package groove.trans;
 
@@ -258,10 +258,6 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.EventCache
     			eventSet = new TreeSet<SPOEvent>(Arrays.asList(CompositeEvent.this.eventArray));
     		}
     		return eventSet;
-    	}
-    	
-    	void setEventSet(SortedSet<SPOEvent> eventSet) {
-    		this.eventSet = eventSet;
     	}
     	
     	private SortedSet<SPOEvent> eventSet;

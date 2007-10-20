@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchItem.java,v 1.10 2007-10-10 08:59:50 rensink Exp $
+ * $Id: ConditionSearchItem.java,v 1.11 2007-10-20 15:20:06 rensink Exp $
  */
 package groove.match;
 
@@ -23,6 +23,7 @@ import groove.match.SearchPlanStrategy.Search;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.rel.VarSupport;
+import groove.trans.AbstractCondition;
 import groove.trans.Condition;
 
 import java.util.Collection;
@@ -78,10 +79,15 @@ class ConditionSearchItem extends AbstractSearchItem {
     }
     
     public Record getRecord(Search search) {
-        return new GraphRecord(search);
+        return new ConditionRecord(search);
     }
 
-    /** The graph condition that should be matched by this search item. */
+    @Override
+	public String toString() {
+		return String.format("NAC %s", ((SearchPlanStrategy) ((AbstractCondition<?>) condition).getMatcher()).getPlan()); 
+	}
+
+	/** The graph condition that should be matched by this search item. */
     final Condition condition;
     /** The root map of the graph condition. */
     private final NodeEdgeMap rootMap;
@@ -97,9 +103,9 @@ class ConditionSearchItem extends AbstractSearchItem {
     /**
      * Search record for a graph condition.
      */
-    public class GraphRecord extends SingularRecord {
+    public class ConditionRecord extends SingularRecord {
         /** Constructs a record for a given search. */
-        public GraphRecord(Search search) {
+        public ConditionRecord(Search search) {
             super(search);
         }
 

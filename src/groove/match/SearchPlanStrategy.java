@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.14 2007-10-10 08:59:50 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.15 2007-10-20 15:20:07 rensink Exp $
  */
 package groove.match;
 
@@ -39,7 +39,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 	/**
@@ -118,7 +118,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 
     @Override
     public String toString() {
-        return plan.toString() + (isInjective() ? "(injective)" : "(non-injective)");
+        return plan.toString() + (isInjective() ? " (injective)" : " (non-injective)");
     }
     
     /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.12 2007-09-28 10:23:59 rensink Exp $
+ * $Id: DefaultNode.java,v 1.13 2007-10-20 15:19:59 rensink Exp $
  */
 package groove.graph;
 
@@ -23,18 +23,9 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-09-28 10:23:59 $
+ * @version $Revision: 1.13 $ $Date: 2007-10-20 15:19:59 $
  */
 public class DefaultNode implements Node {
-//    /**
-//     * Constructs a fresh node, with a number determined by an internally kept count.
-//     * @deprecated use {@link #createNode()} instead
-//     */
-//    @Deprecated
-//    public DefaultNode() {
-//        this(nextNodeNr());
-//    }
-//
     /**
      * Constructs a fresh node, with an explicitly given number.
      * Note that node equality is determined by identity, but it is assumed
@@ -153,12 +144,20 @@ public class DefaultNode implements Node {
      * @return the hashcode for this node.
      */
     protected int computeHashCode() {
-        // for the sake of non-determinism we use the node number as hash code
+        // for the sake of determinism we base the hash code on the node number
 //    	return System.identityHashCode(this);
 //    	return nodeNr;
-    	int code = nodeNr;
-    	code ^= (code << 8);
-    	return code ^ (code << 16);
+//    	int code = nodeNr+2;
+//    	code *= code-1;
+//    	return (code << 16) + 3*code;
+    	// the following is taken from java.util.HashMap
+    	int h = nodeNr + 2;
+    	h *= h;
+        h += ~(h << 14);
+        h ^=  (h >>> 19);
+        h +=  (h << 9);
+        h ^=  (h >>> 15);
+        return h;
     }
     
     /**

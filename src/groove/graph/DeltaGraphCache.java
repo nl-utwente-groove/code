@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaGraphCache.java,v 1.8 2007-10-05 08:31:47 rensink Exp $
+ * $Id: DeltaGraphCache.java,v 1.9 2007-10-20 15:19:59 rensink Exp $
  */
 package groove.graph;
 
@@ -29,7 +29,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class DeltaGraphCache extends GraphCache {
     /**
@@ -237,7 +237,7 @@ public class DeltaGraphCache extends GraphCache {
 		// otherwise, we can use the cache delta
 		reporter.start(COMPUTE_LABEL_EDGE_MAP);
 		DeltaApplier delta = getCacheDelta();
-		final List<Map<Label, Set<Edge>>> basisMaps = basis.getLabelEdgeMaps();
+		final List<Map<Label, Set<Edge>>> basisMaps = (List) basis.getLabelEdgeMaps();
 		final List<Map<Label, Set<Edge>>> result = new ArrayList<Map<Label, Set<Edge>>>();// [basisMaps.length];
 		result.add(null);
 		for (int i = 1; i < basisMaps.size(); i++) {
@@ -288,7 +288,7 @@ public class DeltaGraphCache extends GraphCache {
         	return super.computeNodeEdgeMap();
     	} else {
 			reporter.start(COMPUTE_NODE_EDGE_MAP);
-			Map<Node, Set<Edge>> basisMap = basis.nodeEdgeMap();
+			Map<Node, Set<Edge>> basisMap = (Map) basis.nodeEdgeMap();
 			Map<Node, Set<Edge>> result = new HashMap<Node, Set<Edge>>(basisMap);
 			DeltaTarget target = createNodeEdgeMapTarget(basisMap, result);
 			getCacheDelta().applyDelta(target);

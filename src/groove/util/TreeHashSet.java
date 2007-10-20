@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class TreeHashSet<T> extends AbstractSet<T> {
 	/**
@@ -117,22 +117,22 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      */
     public TreeHashSet(TreeHashSet<T> other) {
         this(other.size(), other.resolution, other.rootResolution, other.equator);
-        int otherTreeSize = other.treeSize;
-        if (this.tree.length < otherTreeSize) {
-            this.tree = new int[otherTreeSize];
+        int otherTreeLength = other.tree.length;
+        if (this.tree.length < otherTreeLength) {
+            this.tree = new int[otherTreeLength];
         }
-        System.arraycopy(other.tree, 0, this.tree, 0, otherTreeSize);
-        int otherMaxKeyIndex = other.maxKeyIndex;
-        if (this.codes.length <= otherMaxKeyIndex) {
-            this.codes = new int[otherMaxKeyIndex + DEFAULT_RESOLUTION];
-            this.keys = new Object[otherMaxKeyIndex + DEFAULT_RESOLUTION];
+        System.arraycopy(other.tree, 0, this.tree, 0, otherTreeLength);
+        int otherCodesLength = other.codes.length;
+        if (this.codes.length < otherCodesLength) {
+            this.codes = new int[otherCodesLength];
+            this.keys = new Object[otherCodesLength];
         }
-        System.arraycopy(other.codes, 0, this.codes, 0, otherMaxKeyIndex + 1);
-        System.arraycopy(other.keys, 0, this.keys, 0, otherMaxKeyIndex + 1);
+        System.arraycopy(other.codes, 0, this.codes, 0, otherCodesLength);
+        System.arraycopy(other.keys, 0, this.keys, 0, otherCodesLength);
         this.size = other.size;
-        this.treeSize = otherTreeSize;
+        this.treeSize = other.treeSize;
         this.freeKeyIndex = other.freeKeyIndex;
-        this.maxKeyIndex = otherMaxKeyIndex;
+        this.maxKeyIndex = other.maxKeyIndex;
         assert this.equals(other) : String.format("Clone    %s does not equal%noriginal %s",
             this,
             other);
@@ -305,7 +305,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		if (index < 0) {
 			// the key is a new one
 			return false;
-		} else if (equator.allEqual()) {
+		} else if (allEqual()) {
 			// we've found an existing key code and we're only looking at codes
 			// so the key found at index should be removed
 			int keyIndex = -tree[index];
@@ -366,7 +366,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 			return false;
 		} else {
 			// we've found an existing key code
-			return equator.allEqual() || containsAt(key, -tree[index]);
+			return allEqual() || containsAt(key, -tree[index]);
 		}
 	}
 	
@@ -378,23 +378,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		int treeSpace = BYTES_PER_INT * tree.length;
 		int codesSpace = BYTES_PER_INT * codes.length;
 		int keysSpace = BYTES_PER_REF * keys.length;
-		return (treeSpace + codesSpace + keysSpace) / (double) size;
+		int myEntrySpace = (BYTES_PER_OBJECT + BYTES_PER_INT + BYTES_PER_REF) * getMyListEntryCount();
+		return (treeSpace + codesSpace + keysSpace + myEntrySpace) / (double) size;
 	}
 	
-	/*
-    *//**
-     * This implementation tries to make use of the internal structure,
-     * if <code>other</code> is a set of the same type as this one.
-     *//*
-	public boolean containsAll(Collection other) {
-	// the implementation does not pay off
-        if (equalsType(other)) {
-            return containsAll((TreeHashSet) other);
-        } else {
-            return super.containsAll(other);
-        }
-    }*/
-    
     /**
      * Determines whether two objects, that are already determined to have the
      * same key codes, are to be considered equal for the purpose of this set.
@@ -412,7 +399,17 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 	protected int getCode(T key) {
 	    return equator.getCode(key);
 	}
-	
+
+    /** 
+     * Signals if all objects with the same code are considered equal,
+     * i.e., if {@link #areEqual(Object, Object)} always returns <code>true</code>.
+     * If so, the equality test can be skipped.
+     * @return if <code>true</code>, {@link #areEqual(Object, Object)} always returns <code>true</code>
+     */
+    protected boolean allEqual() {
+    	return equator.allEqual();
+    }
+    
 	/**
 	 * Returns the index in {@link #tree} of a tree node pointing to (the first instance
 	 * of) a given code.
@@ -475,8 +472,11 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         int upper = result + (result == 0 ? rootMask+1 : mask+1);
         if (upper > tree.length) {
     		// extend the length of the next array
-    		int[] newTree = new int[(int) (1.5 * upper)];
+    		int[] newTree = new int[(int) (GROWTH_FACTOR * upper)];
     		System.arraycopy(tree, 0, newTree, 0, tree.length);
+    		if (SIZE_PRINT) {
+    			System.out.printf("Set %s (size %d) from %d to %d tree nodes %n", System.identityHashCode(this), size, tree.length, newTree.length);
+    		}
 			tree = newTree;
 		} else {
 			// clean the new fragment of the next array
@@ -505,10 +505,13 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		if (result == 0) {
 			result = (this.maxKeyIndex += 1);
 			if (result >= keys.length) {
-				Object[] newKeys = new Object[(int) (1.5 * result + 1)];
+				Object[] newKeys = new Object[(int) (GROWTH_FACTOR * result + 1)];
+	    		if (SIZE_PRINT) {
+	    			System.out.printf("Set %s (size %d) from %d to %d keys %n", System.identityHashCode(this), size, keys.length, newKeys.length);
+	    		}
 				System.arraycopy(keys, 0, newKeys, 0, keys.length);
 				keys = newKeys;
-				int[] newCodes = new int[(int) (1.5 * result + 1)];
+				int[] newCodes = new int[(int) (GROWTH_FACTOR * result + 1)];
 				System.arraycopy(codes, 0, newCodes, 0, codes.length);
 				codes = newCodes;
 			}
@@ -589,7 +592,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * to {@link #areEqual(Object, Object)}.
      */
     private T putEqualKey(int code, T newKey, int keyIndex) {
-        if (equator.allEqual()) {
+        if (allEqual()) {
             return (T) this.keys[keyIndex];
         } else {
             // get local copies for efficiency
@@ -685,6 +688,11 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     /** Returns an equator which uses object identity to determine equality. */
     static public <E> Equator<E> identityEquator() {
         return IDENTITY_EQUATOR;
+    }
+    
+    /** Returns the number of {@link MyListEntry} instances. */
+    static public int getMyListEntryCount() {
+    	return MyListEntry.instanceCount;
     }
     
     /**
@@ -788,7 +796,14 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * Number of bytes in an object reference.
      */
     static private final int BYTES_PER_REF = 4;
-    
+    /**
+     * Number of bytes in an object handle.
+     */
+    static private final int BYTES_PER_OBJECT = 12;
+    /** Factor by which the arrays grow if more space is needed. */
+    static private final double GROWTH_FACTOR = 1.5;
+    /** Flag indicating that some size statistics should be printed. */
+    static private final boolean SIZE_PRINT = false;
     /**
      * Auxiliary class to encode the linked list of distinct entries with the
      * same code.
@@ -800,6 +815,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         MyListEntry(T value, int next) {
             this.next = next;
             this.value = value;
+            instanceCount++;
         }
         
         /** Returns the index (in #key}s) of the next entry with the same code. */
@@ -816,5 +832,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         private final T value;
         /** The index of the next entry. */
         private final int next;
+        
+        /** Number of {@link MyListEntry} instances. */
+        static int instanceCount;
     }
 }

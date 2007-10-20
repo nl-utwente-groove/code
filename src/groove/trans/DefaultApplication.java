@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultApplication.java,v 1.7 2007-10-08 12:17:34 rensink Exp $
+ * $Id: DefaultApplication.java,v 1.8 2007-10-20 15:20:05 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-10-08 12:17:34 $
+ * @version $Revision: 1.8 $ $Date: 2007-10-20 15:20:05 $
  */
 public class DefaultApplication implements RuleApplication, Derivation {
     /**
@@ -217,7 +217,7 @@ public class DefaultApplication implements RuleApplication, Derivation {
 	// protected to allow subclassing by AliasSPOApplication
 	protected Node[] computeCreatedNodes() {
 		Node[] result;
-		List<Node> createdNodes = getEvent().getCreatedNodes(source.nodeSet());
+		List<? extends Node> createdNodes = getEvent().getCreatedNodes(source.nodeSet());
 		if (createdNodes.size() == 0) {
 			result = EMPTY_COANCHOR_IMAGE;
 		} else {

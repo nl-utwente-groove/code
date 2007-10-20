@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphShapeCache.java,v 1.5 2007-10-02 23:06:29 rensink Exp $
+ * $Id: GraphShapeCache.java,v 1.6 2007-10-20 15:19:58 rensink Exp $
  */
 package groove.graph;
 
@@ -32,7 +32,7 @@ import java.util.Set;
  * graph, for faster access.
  * Typically, the graph will have a graph cache as a <tt>{@link java.lang.ref.Reference}</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class GraphShapeCache implements GraphShapeListener {
     /**
@@ -156,13 +156,14 @@ public class GraphShapeCache implements GraphShapeListener {
      * @return the label-to-edge mapping for arity <tt>i</tt>
      * @see #computeLabelEdgeMaps()
      */
-    protected List<Map<Label, Set<Edge>>> getLabelEdgeMaps() {
-        List<Map<Label, Set<Edge>>> result = labelEdgeMaps;
+    protected List<Map<Label, ? extends Set<? extends Edge>>> getLabelEdgeMaps() {
+        List<Map<Label, ? extends Set<? extends Edge>>> result = (List) labelEdgeMaps;
         if (result == null) {
-            result = computeLabelEdgeMaps();
+        	List<Map<Label,Set<Edge>>> newMaps = computeLabelEdgeMaps();
             if (dynamic || graph.isFixed()) {
-                labelEdgeMaps = result;
+                labelEdgeMaps = newMaps;
             }
+            result = (List) newMaps;
         }
         return result;
     }
@@ -175,7 +176,7 @@ public class GraphShapeCache implements GraphShapeListener {
      * or the graph is fixed (see {@link Graph#isFixed()}) then the
      * fresh mapping is cached. 
      */
-    protected Map<Node, Set<Edge>> getNodeEdgeMap() {
+    protected Map<Node, ? extends Set<? extends Edge>> getNodeEdgeMap() {
         Map<Node, Set<Edge>> result;
         if (isNodeEdgeMapSet()) {
             result = nodeEdgeMap;
