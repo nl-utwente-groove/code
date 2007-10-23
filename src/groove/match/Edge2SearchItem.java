@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.9 2007-10-18 14:12:31 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.10 2007-10-23 16:08:01 iovka Exp $
  */
 package groove.match;
 
@@ -175,7 +175,7 @@ class Edge2SearchItem extends AbstractSearchItem {
 	/**
 	 * Flag indicating that {@link #edge} is a self-edge.
 	 */
-	private final boolean selfEdge;
+	final boolean selfEdge;
     /** The set of end nodes of this edge. */
     private final Set<Node> boundNodes;
 
@@ -312,17 +312,19 @@ class Edge2SearchItem extends AbstractSearchItem {
         			return false;
         		}
         	}
-        	if (targetFind == null) {
-        		if (! search.putNode(targetIx, image.opposite())) {
-        			return false;
-        		}
-        	} else if (checkTarget) {
-        		if (image.opposite() != targetFind) {
-        			return false;
+        	if (!selfEdge) {
+        		if (targetFind == null) {
+        			if (! search.putNode(targetIx, image.opposite())) { 
+        				return false;
+        			}
+        		} else if (checkTarget) {
+        			if (image.opposite() != targetFind) {
+        				return false;
+        			}
         		}
         	}
         	if (checkLabel) {
-            	if (image.label() != label) {
+        		if (image.label() != label) {
             		return false;
             	}
         	}
@@ -343,7 +345,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         		if (sourceFind == null) {
         			search.putNode(sourceIx, null);
         		}
-        		if (targetFind == null) {
+           		if (targetFind == null && !selfEdge) {
         			search.putNode(targetIx, null);
         		}
         	}
@@ -387,9 +389,9 @@ class Edge2SearchItem extends AbstractSearchItem {
          * @param imageSet the iterator over potential images
          * @param checkSource if <code>true</code>, the sources of potential images 
          * have to be compared with {@link #sourceFind}
-         * @param checkLabel if <code>true</code>, the sources of potential images 
-         * have to be compared with {@link #targetFind}
          * @param checkTarget if <code>true</code>, the sources of potential images 
+         * have to be compared with {@link #targetFind}
+         * @param checkLabel if <code>true</code>, the sources of potential images 
          * have to be compared with #label.
          */
         final void initImages(Set<? extends Edge> imageSet, boolean checkSource, boolean checkTarget, boolean checkLabel, boolean setEdge) {

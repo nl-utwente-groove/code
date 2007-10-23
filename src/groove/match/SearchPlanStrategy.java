@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.15 2007-10-20 15:20:07 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.16 2007-10-23 16:08:01 iovka Exp $
  */
 package groove.match;
 
@@ -39,7 +39,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 	/**
@@ -62,7 +62,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         final Search search = createSearch(host, anchorMap);
         result = new Iterator<VarNodeEdgeMap>() {
             public boolean hasNext() {
-                // test if there is an unreturned next or if we are done
+                // test if there is an unreturned next or if we are done 
                 if (next == null && !atEnd) {
                     // search for the next solution
                     if (search.find()) {
@@ -282,6 +282,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /** Handle for profiling {@link AbstractSearchItem.MultipleRecord#find()} */
     static final int RECORD_FIND_MULTIPLE = reporter.newMethod("Record.find()");
 
+  
     /** Class implementing an instantiation of the search plan algorithm for a given graph. */
     public class Search {
         /** Constructs a new record for a given graph and partial match. */
@@ -295,11 +296,19 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
             this.nodeAnchors = new Node[nodeKeys.length];
             this.edgeAnchors = new Edge[edgeKeys.length];
             this.varAnchors = new Label[varKeys.length];
+            this.noMatches = false;
             if (anchorMap != null) {
 				for (Map.Entry<Node, Node> nodeEntry : anchorMap.nodeMap().entrySet()) {
 					assert isNodeFound(nodeEntry.getKey());
 					int i = getNodeIx(nodeEntry.getKey());
 					nodeImages[i] = nodeAnchors[i] = nodeEntry.getValue();
+					if (injective) {
+						getUsedNodes().add(nodeEntry.getValue());
+					}
+				}
+				// In case of non injectivity of the anchorMap and injective strategy, ensure that no matches are found
+				if (injective && getUsedNodes().size() < anchorMap.nodeMap().size()) {
+					noMatches = true;
 				}
 				for (Map.Entry<Edge, Edge> edgeEntry : anchorMap.edgeMap().entrySet()) {
 					assert isEdgeFound(edgeEntry.getKey());
@@ -329,6 +338,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
          */
         public boolean find() {
             reporter.start(SEARCH_FIND);
+            if (noMatches) { return false; }
             final int planSize = plan.size();
             final boolean filtered = getFilter() != null;
             boolean found = this.found;
@@ -381,7 +391,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         	assert nodeAnchors[index] == null : String.format("Assignment %s=%s replaces pre-matched image %s", nodeKeys[index], image, nodeAnchors[index]);
         	if (injective) {
         		Set<Node> usedNodes = getUsedNodes();
-				if (image != null && !usedNodes.add(image)) {
+				if (image != null && !usedNodes.add(image)) { 
 					return false;
 				}
         		Node oldImage = nodeImages[index];
@@ -503,6 +513,8 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
          * The set of nodes already used as images, used for the injectivity test.
          */
         private Set<Node> usedNodes;
+        /** */
+        private boolean noMatches;
         /** Search stack. */
         private final SearchItem.Record[] records;
         /** 
@@ -511,4 +523,5 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
          */
         private VarNodeEdgeMap match;
     }
+
 }
