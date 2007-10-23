@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.9 2007-10-11 11:42:39 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.10 2007-10-23 22:44:05 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
 	/**
@@ -310,7 +310,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 			}
 		}
 		for (Map.Entry<Edge, Edge> entry : getRootMap().edgeMap().entrySet()) {
-			Edge image = contextMap.getEdge(entry.getKey());
+			Edge image = contextMap.mapEdge(entry.getKey());
 			assert image != null : String.format("Context map %s does not contain image for root %s",
 					contextMap,
 					entry.getKey());

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorDialog.java,v 1.12 2007-10-23 16:29:43 rensink Exp $
+ * $Id: EditorDialog.java,v 1.13 2007-10-23 22:43:49 rensink Exp $
  */
 package groove.gui;
 
@@ -39,7 +39,7 @@ import javax.swing.WindowConstants;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 abstract public class EditorDialog {
     /**
@@ -168,7 +168,7 @@ abstract public class EditorDialog {
      * Implements the effect of pressing the OK button.
      * Sets {@link #ok} to <code>true</code> and disposes the dialog.
      */
-    private void handleOk() {
+    void handleOk() {
     	if (options.isSelected(Options.PREVIEW_ON_CLOSE_OPTION) && !editor.handlePreview(null)) {
     		return;
     	} else if (hasErrors()) {
@@ -184,7 +184,7 @@ abstract public class EditorDialog {
      * Queries the user if he wants to abandon edits, 
      * sets the {@link #ok} field to <code>false</code> and disposes the dialog.
      */
-    private void handleCancel() {
+    void handleCancel() {
         ok = false;
         if (! hasErrors() && isModified()) {
             int confirm = JOptionPane.showConfirmDialog(parent,

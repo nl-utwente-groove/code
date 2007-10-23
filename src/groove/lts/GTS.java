@@ -13,9 +13,9 @@
 // language governing permissions and limitations under the License.
 /* 
 <<<<<<< GTS.java
- * $Id: GTS.java,v 1.31 2007-10-10 08:59:48 rensink Exp $
+ * $Id: GTS.java,v 1.32 2007-10-23 22:44:06 rensink Exp $
 =======
- * $Id: GTS.java,v 1.31 2007-10-10 08:59:48 rensink Exp $
+ * $Id: GTS.java,v 1.32 2007-10-23 22:44:06 rensink Exp $
 >>>>>>> 1.26
  */
 package groove.lts;
@@ -48,7 +48,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.31 $ $Date: 2007-10-10 08:59:48 $
+ * @version $Revision: 1.32 $ $Date: 2007-10-23 22:44:06 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**
@@ -400,7 +400,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 				if (isCheckIsomorphism()) {
 				    return checker.areIsomorphic(one, two);
 				} else {
-				    return one.equals(two);
+				    return one.nodeSet().equals(two.nodeSet()) && one.edgeSet().equals(two.edgeSet());
 				}
 			} else {
 				return false;
@@ -419,7 +419,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     		} else if (isCheckIsomorphism()) {
     		    result = stateKey.getGraph().getCertifier().getGraphCertificate().hashCode();
     		} else {
-    		    result = stateKey.getGraph().hashCode();
+    			Graph graph = stateKey.getGraph();
+    		    result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
     		}
     		Object control = stateKey.getControl();
     		result += control == null ? 0 : System.identityHashCode(control);

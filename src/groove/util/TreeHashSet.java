@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class TreeHashSet<T> extends AbstractSet<T> {
 	/**
@@ -53,7 +53,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		// initialise the keys and tree
 		this.codes = new int[capacity];
 		this.keys = new Object[capacity];
-		this.tree = new int[Math.max(capacity,rootMask+1)];
+		this.tree = new int[Math.max(capacity,getRecordSize(true))];
+		this.fill = new byte[getRecordNr(tree.length)];
+		this.recordCount = 1;
 	}
 
     /**
@@ -120,8 +122,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         int otherTreeLength = other.tree.length;
         if (this.tree.length < otherTreeLength) {
             this.tree = new int[otherTreeLength];
+            this.fill = new byte[other.fill.length];
         }
         System.arraycopy(other.tree, 0, this.tree, 0, otherTreeLength);
+        System.arraycopy(other.fill, 0, this.fill, 0, other.fill.length);
         int otherCodesLength = other.codes.length;
         if (this.codes.length < otherCodesLength) {
             this.codes = new int[otherCodesLength];
@@ -130,9 +134,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         System.arraycopy(other.codes, 0, this.codes, 0, otherCodesLength);
         System.arraycopy(other.keys, 0, this.keys, 0, otherCodesLength);
         this.size = other.size;
-        this.treeSize = other.treeSize;
-        this.freeKeyIndex = other.freeKeyIndex;
-        this.maxKeyIndex = other.maxKeyIndex;
+        this.freeRecordIx = other.freeRecordIx;
+        this.recordCount = other.recordCount;
+        this.freeKeyIx = other.freeKeyIx;
+        this.keyCount = other.keyCount;
         assert this.equals(other) : String.format("Clone    %s does not equal%noriginal %s",
             this,
             other);
@@ -144,11 +149,17 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 	 */
     @Override
 	public void clear() {
-    	treeSize = 0;
     	size = 0;
-    	Arrays.fill(keys, 0, maxKeyIndex+1, null);
-    	maxKeyIndex = 0;
-    	freeKeyIndex = 0;
+    	// clean the keys and codes arrays
+    	Arrays.fill(keys, 0, keyCount+1, null);
+    	Arrays.fill(codes, 0, keyCount+1, 0);
+    	keyCount = 0;
+    	freeKeyIx = 0;
+    	// clean the record tree
+    	Arrays.fill(tree, 0, getRecordIx(recordCount), 0);
+    	Arrays.fill(fill, 0, recordCount, (byte) 0);
+    	recordCount = 1;
+    	freeRecordIx = 0;
 	}
 
     @Override
@@ -237,8 +248,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         int code = getCode(key);
         if (size == 0) {
             // at the first key, we still have to create the root of the tree
-            int index = newBranchIndex();
-            tree[index + (code & rootMask)] = -newKeyIndex(code, key);
+//            int index = 0;//newRecordIx(0);
+//            assert index == 0;
+            tree[(code & rootMask) + 1] = -newKeyIx(code, key);
             return null;
         } else {
             // local copy of store, for efficiency
@@ -246,21 +258,22 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             int mask = this.mask;
             int resolution = this.resolution;
             // precise node where the current value of index was retrieved from
-            int indexPlusOffset = code & rootMask;
+            int indexPlusOffset = (code & rootMask) + 1;
             // current search position
             int index = tree[indexPlusOffset];
-            // remaining search key
-            int search = code >>> rootResolution;
             // current depth search, in number of bits
             int depth = rootResolution;
+            // remaining search key
+            int search = code >>> depth;
             while (index > 0) {
-                index = tree[indexPlusOffset = (index + (search & mask))];
+            	indexPlusOffset = index + (search & mask) + 1;
+                index = tree[indexPlusOffset];
                 search >>>= resolution;
                 depth += resolution;
             }
             if (index == 0) {
                 // we're at an empty place of the tree
-                tree[indexPlusOffset] = -newKeyIndex(code, key);
+                setTreeValue(indexPlusOffset, -newKeyIx(code, key));
                 return null;
             } else {
                 // we've found an existing key
@@ -273,22 +286,21 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                     // first store the position of the old key
                     int oldKeyIndex = index;
                     // create a new position
-                    int newIndex = newBranchIndex();
-                    index = (tree = this.tree)[indexPlusOffset] = newIndex;
+                    index = newRecord(indexPlusOffset);
                     // the old search value
                     int oldSearch = oldCode >>> depth;
                     // the old and new branch values
                     int oldOffset, newOffset;
                     // so long as old and new key coincide, keep relocating
                     while ((newOffset = (search & mask)) == (oldOffset = (oldSearch & mask))) {
-                        newIndex = newBranchIndex();
-                        index = (tree = this.tree)[index + newOffset] = newIndex;
+                        index = newRecord(index + newOffset + 1);
                         search >>>= resolution;
                         oldSearch >>>= resolution;
                     }
                     // we've found a difference, so store.
-                    tree[index + oldOffset] = oldKeyIndex;
-                    tree[index + newOffset] = -newKeyIndex(code, key);
+                    setTreeValue(index + oldOffset + 1, oldKeyIndex);
+                    setTreeValue(index + newOffset + 1, -newKeyIx(code, key));
+                    fill[getRecordNr(index)]++;
                     return null;
                 }
             }
@@ -309,8 +321,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 			// we've found an existing key code and we're only looking at codes
 			// so the key found at index should be removed
 			int keyIndex = -tree[index];
-			disposeBranchIndex(index);
-			disposeKeyIndex(keyIndex);
+			resetTreeValue(index);
+			disposeKey(keyIndex);
 			return true;
 		} else {
 			// we've found an existing key code but now we're going to compare
@@ -327,7 +339,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 				int nextKeyIndex = entry.getNext();
 				if (areEqual(key, entry.getValue())) {
 					keys[keyIndex] = keys[nextKeyIndex];
-					disposeKeyIndex(nextKeyIndex);
+					disposeKey(nextKeyIndex);
 					return true;
 				} else {
 					prevKeyIndex = keyIndex;
@@ -340,13 +352,13 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 				// maybe we have to adapt the tree
 				if (prevKeyIndex == 0) {
 					// there is no chain, so we have to adapt the tree
-					disposeBranchIndex(index);
+					resetTreeValue(index);
 				} else {
 					// the previous key has to be converted from a 
 					// MyListEntry to the object inside
 					keys[prevKeyIndex] = ((MyListEntry)keys[prevKeyIndex]).getValue();
 				}
-				disposeKeyIndex(keyIndex);
+				disposeKey(keyIndex);
 				return true;
 			} else {
 				return false;
@@ -421,16 +433,18 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		// local copy of store, for efficiency
 		int[] tree = this.tree;
 		// current search position
-		int oldIndexPlusOffset = code & rootMask;
+		int oldIndexPlusOffset = (code & rootMask) + 1;
 		int index = tree[oldIndexPlusOffset];
 		if (index > 0) {
 			int search = code >>> rootResolution;
 			int mask = this.mask;
 			int resolution = this.resolution;
-			index = tree[oldIndexPlusOffset = (index + (search & mask))];
+			oldIndexPlusOffset = (index + (search & mask)) + 1;
+			index = tree[oldIndexPlusOffset];
 			while (index > 0) {
 				search >>>= resolution;
-				index = tree[oldIndexPlusOffset = (index + (search & mask))];
+				oldIndexPlusOffset = (index + (search & mask)) + 1;
+				index = tree[oldIndexPlusOffset];
 			}
 		}
 		if (index == 0 || codes[-index] != code) {
@@ -463,31 +477,70 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     	return areEqual(newKey, (T) oldKey);
     }
     
-	/**
-	 * Reserves space for a new tree branch, and returns the index of the first
-	 * position of the new branch.
-	 */
-    private int newBranchIndex() {
-        int result = size == 0 ? 0 : this.treeSize;
-        int upper = result + (result == 0 ? rootMask+1 : mask+1);
-        if (upper > tree.length) {
-    		// extend the length of the next array
-    		int[] newTree = new int[(int) (GROWTH_FACTOR * upper)];
-    		System.arraycopy(tree, 0, newTree, 0, tree.length);
-    		if (SIZE_PRINT) {
-    			System.out.printf("Set %s (size %d) from %d to %d tree nodes %n", System.identityHashCode(this), size, tree.length, newTree.length);
-    		}
-			tree = newTree;
-		} else {
-			// clean the new fragment of the next array
-			Arrays.fill(tree, result, upper, 0);
-		}
-    	this.treeSize = upper;
-    	return result;
+    /** Sets the tree value at a given index. */
+    private void setTreeValue(int treeIx, int value) {
+    	int oldValue = tree[treeIx];
+    	tree[treeIx] = value;
+    	assert oldValue <= 0 : String.format("Tree value %d at index %d should not be overwritten by %d", oldValue, treeIx, value);
+    	assert oldValue == 0 || value > 0 : String.format("Tree value %d at index %d should not be overwritten by %d", oldValue, treeIx, value);
+    	if (oldValue == 0) {
+    		fill[getRecordNr(treeIx)]++;
+    	}
     }
     
-    private void disposeBranchIndex(int branchIndex) {
-    	tree[branchIndex] = 0;
+    /** Resets the tree value at a given index. */
+	private void resetTreeValue(int treeIx) {
+		assert tree[treeIx] < 0;
+		tree[treeIx] = 0;
+		int recordNr = getRecordNr(treeIx);
+		if (recordNr > 0) {
+			assert fill[recordNr] > 0 : String.format("Removing value at tree index %s, but fill=%d",
+					treeIx,
+					fill[recordNr]);
+			if ((fill[recordNr] -= 1) == 0) {
+
+			}
+		}
+	}
+
+	/**
+	 * Reserves space for a new tree branch, to be appended to a given leaf.
+	 * Returns the index of the first position of the new branch.
+	 * Also increases the record fill 
+	 * @param parentIx the index (in {@link #tree}) of the parent leaf
+	 * to which the new record is to be appended
+	 */
+    private int newRecord(int parentIx) {
+    	assert parentIx != 0;
+        int result = freeRecordIx;
+        if (result == 0) {
+			result = getRecordIx(recordCount);
+			recordCount++;
+			if (recordCount >= fill.length) {
+				// extend the length of the next array
+				int newLength = Math.max((int) (recordCount * GROWTH_FACTOR),recordCount+1);
+				int[] newTree = new int[getRecordIx(newLength)];
+				if (SIZE_PRINT) {
+					System.out.printf("Set %s (size %d, record count %d) from %d to %d tree nodes%n",
+							System.identityHashCode(this),
+							size, recordCount,
+							tree.length, newTree.length);
+				}
+				System.arraycopy(tree, 0, newTree, 0, tree.length);
+				byte[] newRecordFill = new byte[newLength];
+				System.arraycopy(fill, 0, newRecordFill, 0, fill.length);
+				tree = newTree;
+				fill = newRecordFill;
+			}
+		} else {
+			freeRecordIx = tree[freeRecordIx];
+//			// clean the new fragment of the tree
+//            int upper = result + getRecordSize(result == 0);
+//			Arrays.fill(tree, result, upper, 0);
+		}
+        tree[result] = parentIx;
+        setTreeValue(parentIx, result);
+    	return result;
     }
     
     /**
@@ -499,11 +552,11 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * @return the index in {@link #codes} where <code>code</code> is stored,
      * resp. in {@link #keys} where <code>key</code> is stored
      */
-    private int newKeyIndex(int code, T key) {
+    private int newKeyIx(int code, T key) {
     	assert code == getCode(key) : "Key "+key+" should have hash code "+code+", but has "+getCode(key);
-    	int result = freeKeyIndex;
+    	int result = freeKeyIx;
 		if (result == 0) {
-			result = (this.maxKeyIndex += 1);
+			result = (this.keyCount += 1);
 			if (result >= keys.length) {
 				Object[] newKeys = new Object[(int) (GROWTH_FACTOR * result + 1)];
 	    		if (SIZE_PRINT) {
@@ -516,7 +569,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 				codes = newCodes;
 			}
 		} else {
-			freeKeyIndex = codes[result];
+			freeKeyIx = codes[result];
 		}
 		codes[result] = code;
     	keys[result] = key;
@@ -526,59 +579,17 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     
     /**
      * Disposes the key at a given index, and adds the position to the free key chain.
-     * @param keyIndex the index that we want to free
+     * @param keyIx the index that we want to free
      */
-    private void disposeKeyIndex(int keyIndex) {
-    	keys[keyIndex] = null;
-    	codes[keyIndex] = freeKeyIndex;
-    	freeKeyIndex = keyIndex;
+    private void disposeKey(int keyIx) {
+    	keys[keyIx] = null;
+    	codes[keyIx] = freeKeyIx;
+    	freeKeyIx = keyIx;
     	size--;
     	if (size == 0) {
-    		treeSize = 0;
+    		recordCount = 1;
     	}
     }
-//    
-//    /**
-//     * Adds a key for an already existing code.
-//     * The key is not added if it equals one of the keys already stored
-//     * for this code
-//     * @param code the code of the key to be added; should equal <code>key.hashCode()</code>
-//     * @param key the key to be added
-//     * @param keyIndex the index in {@link #keys} where the first existing key
-//     * with code <code>code</code> is stored
-//     * @return <code>true</code> if no existing key was equal to <code>key</code>, according
-//     * to {@link #areEqual(Object, Object)}.
-//     */
-//    private boolean addEqualKey(int code, Object key, int keyIndex) {
-//        if (hashcodeEquator) {
-//            return false;
-//        } else {
-//            // get local copies for efficieny
-//            Object[] keys = this.keys;
-//            Object oldKey = keys[keyIndex];
-//            // as long as the key is a MyListEntry, walk through the list
-//            while (oldKey instanceof MyListEntry) {
-//                MyListEntry entry = (MyListEntry) oldKey;
-//                if (areEqual(entry.getValue(), key)) {
-//                    // the key existed already
-//                    return false;
-//                } else {
-//                    // walk on
-//                    oldKey = keys[keyIndex = entry.getNext()];
-//                }
-//            }
-//            assert oldKey != null;
-//            // we've reached the end of the list
-//            if (areEqual(oldKey, key)) {
-//                return false;
-//            } else {
-//                // it's really a new key
-//                MyListEntry newEntry = new MyListEntry(oldKey, newKeyIndex(code, key));
-//                this.keys[keyIndex] = newEntry;
-//                return true;
-//            }
-//        }
-//    }
     
     /**
      * Adds a key for an already existing code.
@@ -617,29 +628,51 @@ public class TreeHashSet<T> extends AbstractSet<T> {
                 return oldKey;
             } else {
                 // it's really a new key
-                MyListEntry<T> newEntry = new MyListEntry<T>(oldKey, newKeyIndex(code, newKey));
+                MyListEntry<T> newEntry = new MyListEntry<T>(oldKey, newKeyIx(code, newKey));
                 this.keys[keyIndex] = newEntry;
                 return null;
             }
         }
     }
+
+    /** Returns the start index of the tree record with a given number. */
+    private int getRecordIx(int recordNr) {
+    	return recordNr == 0 ? 0 : getRecordSize(true) + (recordNr-1)*getRecordSize(false);
+    }
+
+    /** Returns the record number of a given record index. */
+    private int getRecordNr(int recordIx) {
+    	int rootRecordSize = getRecordSize(true);
+    	return recordIx < rootRecordSize ? 0 : 1 + (recordIx-rootRecordSize) / getRecordSize(false);
+    }
+
+    /** Returns the size of the first and later tree records. */
+    private int getRecordSize(boolean first) {
+    	return first ? rootMask+2 : mask+2;
+    }
     
     /**
 	 * Array holding the tree structure.
 	 */
-    private int[] tree;
+    private int[] tree;   
+    /** Array storing for every tree record the number of elements in it. */
+    private byte[] fill;
+    /**
+     * The index of the first free record index in the free record chain.
+     */
+    private int freeRecordIx;
     /**
      * The currently reserved number of positions in the store.
      */
-    private int treeSize;
+    private int recordCount;
     /**
-     * The index of the first free key in the free key chain
+     * The index of the first free key in the free key chain.
      */
-    private int freeKeyIndex;
+    private int freeKeyIx;
     /**
      * The highest index in {@link #keys} that is currently in use.
      */
-    private int maxKeyIndex;
+    private int keyCount;
     /**
      * The number of elements in the store.
      */

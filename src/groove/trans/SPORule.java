@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.43 2007-10-20 15:20:05 rensink Exp $
+ * $Id: SPORule.java,v 1.44 2007-10-23 22:44:05 rensink Exp $
  */
 package groove.trans;
 
@@ -52,7 +52,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.43 $
+ * @version $Revision: 1.44 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -282,15 +282,19 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 
 	/** Tests if a given (proposed) match into a host graph leaves dangling edges. */ 
 	private boolean satisfiesDangling(Graph host, VarNodeEdgeMap match) {
-		Set<Edge> danglingEdges = new HashSet<Edge>();
+		boolean result = true;
 		for (Node eraserNode : getEraserNodes()) {
 			Node erasedNode = match.getNode(eraserNode);
-			danglingEdges.addAll(host.edgeSet(erasedNode));
+			Set<Edge> danglingEdges = new HashSet<Edge>(host.edgeSet(erasedNode));
+			for (Edge eraserEdge: lhs().edgeSet(eraserNode)) {
+				danglingEdges.remove(match.getEdge(eraserEdge));
+			}
+			if (!danglingEdges.isEmpty()) {
+				result = false;
+				break;
+			}
 		}
-		for (Edge eraserEdge : getEraserEdges()) {
-			danglingEdges.remove(match.getEdge(eraserEdge));
-		}
-		return danglingEdges.isEmpty();
+		return result;
 	}
 
     public Graph lhs() {
@@ -457,7 +461,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 								getCreatorMap().mapEdge(edge), getProperties()));
 					}
 				}
-				if (getProperties().isRhsAsNac()) {
+				if (getProperties().isRhsAsNac() && hasCreators()) {
 					Condition rhsNac = new NotCondition(rhs(), getMorphism().elementMap(), getProperties());
 					rhsNac.setFixed();
 					addSubCondition(rhsNac);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FormulaDialog.java,v 1.2 2007-10-23 13:59:54 kastenberg Exp $
+ * $Id: FormulaDialog.java,v 1.3 2007-10-23 22:43:49 rensink Exp $
  */
 package groove.gui;
 
@@ -36,7 +36,7 @@ import javax.swing.JTextField;
 /**
  * Dialog for entering temporal formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class FormulaDialog {
 
@@ -150,7 +150,7 @@ public class FormulaDialog {
 	 * Add an item to the history.
 	 * @param item the item to be added
 	 */
-	private void addItem(String item) {
+	void addItem(String item) {
 		if (!history.contains(item)) {
 			history.add(1, item);
 		}
@@ -161,9 +161,9 @@ public class FormulaDialog {
 	private JOptionPane pane;
 
 	private JLabel formulaLabel;
-	private JTextField formulaField;
+	JTextField formulaField;
 	/** The history box */
-	private JComboBox historyBox;
+	JComboBox historyBox;
 	/** The OK button on the option pane. */
 	private JButton okButton;
 	/** The CANCEL button on the option pane. */
@@ -173,9 +173,9 @@ public class FormulaDialog {
 
 	private List<String> history;
 
-	private String property;
+	String property;
 
-	private JDialog dialog;
+	JDialog dialog;
 
 	/** 
 	 * Action listener that closes the dialog and makes sure that the 

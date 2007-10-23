@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.14 2007-10-10 08:59:58 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.15 2007-10-23 22:44:07 rensink Exp $
  */
 
 package groove.test;
 
+import groove.graph.Graph;
 import groove.io.AspectualViewGps;
 import groove.io.GrammarViewXml;
 import groove.lts.ConditionalExploreStrategy;
@@ -28,6 +29,7 @@ import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
 import groove.util.Generator;
 import groove.view.FormatException;
+import groove.view.GrammarView;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -44,7 +46,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -160,6 +162,41 @@ public class ExplorationTest extends TestCase {
         testExploration("attributed-graphs.gps", 6, 16);
     }
 
+    /** Tests the attributes sample. */
+    public void testSierpinsky() {
+        GTS lts = testExploration("sierpinsky.gps", "start7", "linear", 8, 7);
+        assertEquals(1, lts.getFinalStates().size());
+        Graph finalGraph = lts.getFinalStates().iterator().next().getGraph();
+        assertEquals(3290, finalGraph.nodeCount());
+        assertEquals(6577, finalGraph.edgeCount());
+    }
+
+    /** Tests the petri net sample. */
+    public void testPetrinet() {
+        testExploration("petrinet.gps", 6, 9);
+    }
+    
+    /** Tests various parameters settable through the system properties. */
+    public void testSystemProperties() {
+    	GrammarView<?,?> gg = loadGrammar("simple.gps", null);
+    	testExploration(gg, null, 41, 300, 0);
+//    	GraphGrammar ggCopy = new GraphGrammar(gg);
+    	GrammarView<?,?> ggCopy = loadGrammar("simple.gps", null);
+    	ggCopy.getProperties().setCheckCreatorEdges(true);
+    	testExploration(ggCopy, null, 41, 188, 0);
+    	ggCopy = loadGrammar("simple.gps", null);
+    	ggCopy.getProperties().setCheckDangling(true);
+    	testExploration(ggCopy, null, 41, 230, 0);
+    	ggCopy = loadGrammar("simple.gps", null);
+    	ggCopy.getProperties().setInjective(true);
+    	testExploration(ggCopy, null, 13, 64, 0);
+    	ggCopy = loadGrammar("simple.gps", null);
+    	ggCopy.getProperties().setCheckIsomorphism(false);
+    	testExploration(ggCopy, null, 73, 536, 0);
+    	gg = loadGrammar("rhs-is-nac.gps", null);
+    	testExploration(gg, null, 21, 56, 0);
+    }
+
     /** 
      * Reads and executes the test cases specified in a given named file. 
      * The format is described in {@link #testExplorations(BufferedReader)}.
@@ -208,29 +245,26 @@ public class ExplorationTest extends TestCase {
     }
 
     /**
-     * Tests exploration according to a given test case record.
-     * @return the explored GTS
-     */
-    protected GTS testExploration(TestCaseRecord testCase) {
-        return testExploration(testCase.grammarName, testCase.startGraphName, testCase.strategy, testCase.nodeCount, testCase.edgeCount);
-    }
+	 * Tests exploration according to a given test case record.
+	 * @return the explored GTS
+	 */
+	protected GTS testExploration(TestCaseRecord testCase) {
+	    return testExploration(testCase.grammarName, testCase.startGraphName, testCase.strategy, testCase.nodeCount, testCase.edgeCount);
+	}
 
-    /**
-     * Tests exploration of a given grammar, starting at a given start graph,
-     * and using a given exploration strategy.
-     * @param grammarName name of the rule system to be tested
-     * @param startGraphName name of the start graph
+	/**
+     * Tests exploration of a given grammar.
+     * @param gg the graph grammar to be tested
      * @param strategyDescr description of the exploration strategy to be used, in the format of {@link Generator.ExploreOption} 
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
      */
-    protected GTS testExploration(String grammarName, String startGraphName, String strategyDescr, int nodeCount,
+    protected GTS testExploration(GrammarView<?,?> view, String strategyDescr, int nodeCount,
             int edgeCount, int openCount) {
         try {
-            GraphGrammar gg = loader.unmarshal(new File(INPUT_DIR, grammarName), startGraphName).toGrammar();
-            gg.setFixed();
+        	GraphGrammar gg = view.toGrammar();
             GTS lts = new GTS(gg);
             ExploreStrategy strategy;
             if (strategyDescr != null) {
@@ -261,11 +295,26 @@ public class ExplorationTest extends TestCase {
                 assertEquals(openCount, lts.openStateCount());
             }
             return lts;
-        } catch (IOException exc) {
-            throw new RuntimeException(exc);
         } catch (FormatException exc) {
             throw new RuntimeException(exc);
         }
+    }
+
+    /**
+     * Tests exploration of a given grammar, starting at a given start graph,
+     * and using a given exploration strategy.
+     * @param grammarName name of the rule system to be tested
+     * @param startGraphName name of the start graph
+     * @param strategyDescr description of the exploration strategy to be used, in the format of {@link Generator.ExploreOption} 
+     * @param nodeCount expected number of nodes; disregarded if < 0
+     * @param edgeCount expected number of edges; disregarded if < 0
+     * @param openCount expected number of open states; disregarded if < 0
+     * @return the explored GTS
+     */
+    protected GTS testExploration(String grammarName, String startGraphName, String strategyDescr, int nodeCount,
+            int edgeCount, int openCount) {
+    	GrammarView<?,?> gg = loadGrammar(grammarName, startGraphName);
+    	return testExploration(gg, strategyDescr, nodeCount, edgeCount, openCount);
     }
 
     /**
@@ -340,8 +389,18 @@ public class ExplorationTest extends TestCase {
         return result;
     }
 
+    private GrammarView<?,?> loadGrammar(String grammarName, String startGraphName) {
+        try {
+        	return loader.unmarshal(new File(INPUT_DIR, grammarName), startGraphName);
+        } catch (IOException exc) {
+            throw new RuntimeException(exc);
+        } catch (FormatException exc) {
+            throw new RuntimeException(exc);
+        }
+    }
+    
     /**
-     * Parser for the exploreation strategies.
+     * Parser for the exploration strategies.
      */
     private Generator.ExploreStrategyParser parser = new Generator.ExploreStrategyParser();
 

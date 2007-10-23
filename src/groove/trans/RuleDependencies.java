@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleDependencies.java,v 1.16 2007-10-20 15:20:05 rensink Exp $
+ * $Id: RuleDependencies.java,v 1.17 2007-10-23 22:44:05 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2007-10-20 15:20:05 $
+ * @version $Revision: 1.17 $ $Date: 2007-10-23 22:44:05 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */
@@ -63,7 +63,7 @@ public class RuleDependencies {
 	public static void main(String[] args) {
         try {
 			GraphGrammar grammar = Groove.loadGrammar(args[0]).toGrammar();
-			RuleDependencies data = new RuleDependencies(grammar.getRules());
+			RuleDependencies data = new RuleDependencies(grammar);
 			data.collectCharacteristics();
 			for (Rule rule: grammar.getRules()) {
 				System.out.println("Rule "+rule.getName()+":");
@@ -104,9 +104,15 @@ public class RuleDependencies {
 		}
 	}
 	
-	/** Constructs a new dependencies object, for a given set of rules. */
-    public RuleDependencies(Collection<Rule> rules) {
+	/** Constructs a new dependencies object, for a given set of rules and properties. */
+    public RuleDependencies(Collection<Rule> rules, SystemProperties properties) {
     	this.rules = rules;
+    	this.properties = properties;
+    }
+	
+	/** Constructs a new dependencies object, for a given rule system. */
+    public RuleDependencies(RuleSystem ruleSystem) {
+    	this(ruleSystem.getRules(), ruleSystem.getProperties());
     }
 
     /**
@@ -307,9 +313,9 @@ public class RuleDependencies {
 		Graph lhs = rule.lhs();
 		Graph rhs = rule.rhs();
 		Morphism ruleMorphism = rule.getMorphism();
-		// test if a node is consumed
+		// test if a node is consumed (and there is no dangling edge check)
 		Iterator<? extends Node> lhsNodeIter = lhs.nodeSet().iterator();
-		while (lhsNodeIter.hasNext() && !consumed.contains(ALL_LABEL)) {
+		while (lhsNodeIter.hasNext() && !consumed.contains(ALL_LABEL) && !properties.isCheckDangling()) {
 			Node lhsNode = lhsNodeIter.next();
 			if (!ruleMorphism.containsKey(lhsNode)) {
 				consumed.add(ALL_LABEL);
@@ -400,8 +406,12 @@ public class RuleDependencies {
 		}
     	// if the condition pattern is non-injective, it means merging is part
 		// of the condition
-    	if (pattern.nodeMap().size() > new HashSet<Node>(pattern.nodeMap().values()).size()) {
+    	if (properties.isInjective() || pattern.nodeMap().size() > new HashSet<Node>(pattern.nodeMap().values()).size()) {
     		positive.add(MERGE_LABEL);
+    	}
+    	// if there is a dangling edge check, all labels are negative conditions
+    	if (properties.isCheckDangling()) {
+    		negative.add(ALL_LABEL);
     	}
     	// does the condition test for an isolated node?
         if (!isolatedNodes.isEmpty()) {
@@ -471,6 +481,8 @@ public class RuleDependencies {
     
     /** The set of rules for which the analysis is done. */
     private final Collection<Rule> rules;
+    /** The system properties of the rules. */
+    private final SystemProperties properties;
     /** Mapping from rules to sets of enablers, i.e., rules that may increase their applicability. */
     private final Map<Rule,Set<Rule>> enablerMap = new HashMap<Rule,Set<Rule>>();
     /** Mapping from rules to sets of disablers, i.e., rules that may decrease their applicability. */
