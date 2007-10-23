@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorDialog.java,v 1.10 2007-10-10 08:59:44 rensink Exp $
+ * $Id: EditorDialog.java,v 1.11 2007-10-23 13:59:51 rensink Exp $
  */
 package groove.gui;
 
@@ -28,7 +28,6 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
@@ -39,9 +38,9 @@ import javax.swing.WindowConstants;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
-public class EditorDialog extends JDialog {
+public class EditorDialog extends JFrame {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param owner the parent frame for the dialog
@@ -49,12 +48,15 @@ public class EditorDialog extends JDialog {
      * @throws HeadlessException
      */
     public EditorDialog(Frame owner, Options options, Graph graph) throws HeadlessException {
-        super(owner, true);
+//        super(owner, true);
+//        setResizable(true);
         this.options = options;
         this.editor = new Editor(options);
         this.editor.setPlainGraph(graph);
+        this.owner = owner;
         JFrame editorFrame = editor.getFrame();
         setJMenuBar(createMenuBar());
+        setIconImage(editorFrame.getIconImage());
         setContentPane(editor.createContentPanel(createToolBar(GraphInfo.hasGraphRole(graph))));
         // set the title from the editor frame
         setTitle(editorFrame.getTitle());
@@ -66,6 +68,7 @@ public class EditorDialog extends JDialog {
                 handleCancel();
             }
         });
+        owner.setEnabled(false);
         pack();
     }
 
@@ -207,6 +210,8 @@ public class EditorDialog extends JDialog {
 	public void dispose() {
 		super.dispose();
 		editor.doQuit();
+		owner.setEnabled(true);
+		owner.setVisible(true);
 	}
 
 	/** Flag recording the decision of the user on exit. */
@@ -215,4 +220,6 @@ public class EditorDialog extends JDialog {
     private final Options options;
     /** The dialog wrapped in the editor. */
     private final Editor editor;
+    /** The owner frame. */
+    private final Frame owner;
 }
