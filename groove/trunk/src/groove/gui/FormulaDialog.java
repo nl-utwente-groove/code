@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FormulaDialog.java,v 1.1 2007-10-23 12:40:52 kastenberg Exp $
+ * $Id: FormulaDialog.java,v 1.2 2007-10-23 13:59:54 kastenberg Exp $
  */
 package groove.gui;
 
@@ -36,7 +36,7 @@ import javax.swing.JTextField;
 /**
  * Dialog for entering temporal formulae.
  * @author Harmen Kastenberg
- * @version $Revision $
+ * @version $Revision: 1.2 $
  */
 public class FormulaDialog {
 
