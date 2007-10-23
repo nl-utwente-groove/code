@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.64 2007-10-23 16:29:43 rensink Exp $
+ * $Id: Simulator.java,v 1.65 2007-10-23 22:43:45 rensink Exp $
  */
 package groove.gui;
 
@@ -122,7 +122,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.64 $
+ * @version $Revision: 1.65 $
  */
 public class Simulator {
     /**
@@ -1420,7 +1420,7 @@ public class Simulator {
         return stateFileChooser;
 	}
 
-	private FormulaDialog getFormulaDialog() {
+	FormulaDialog getFormulaDialog() {
 		if (formulaDialog == null)
 			formulaDialog = new FormulaDialog();
 		return formulaDialog;
@@ -1432,23 +1432,6 @@ public class Simulator {
 		}
 		return errorPanel;
 	}
-//	
-//	/**
-//	 * Returns the file chooser for exporting, lazily creating it first.
-//	 */
-//	private JFileChooser getExportChooser() {
-//		if (exportChooser == null) {
-//			exportChooser = new GrooveFileChooser();
-//			exportChooser.setAcceptAllFileFilterUsed(false);
-//            exportChooser.addChoosableFileFilter(lispFilter);
-//            exportChooser.addChoosableFileFilter(fsmFilter);
-//			exportChooser.addChoosableFileFilter(jpgFilter);
-//			exportChooser.addChoosableFileFilter(pngFilter);
-//			exportChooser.addChoosableFileFilter(epsFilter);
-//			exportChooser.setFileFilter(pngFilter);
-//		} 
-//		return exportChooser;
-//	}
 
 	/**
      * Adds all implemented grammar loaders to the menu.

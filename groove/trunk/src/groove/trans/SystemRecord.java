@@ -183,7 +183,7 @@ public class SystemRecord implements NodeFactory {
      */
     protected RuleDependencies getDependencies() {
     	if (dependencies == null) {
-    		dependencies = new RuleDependencies(ruleSystem.getRules());
+    		dependencies = new RuleDependencies(ruleSystem);
     	}
     	return dependencies;
     }
