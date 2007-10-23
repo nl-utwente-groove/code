@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorDialog.java,v 1.11 2007-10-23 13:59:51 rensink Exp $
+ * $Id: EditorDialog.java,v 1.12 2007-10-23 16:29:43 rensink Exp $
  */
 package groove.gui;
 
@@ -20,12 +20,13 @@ import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.view.aspect.AspectGraph;
 
-import java.awt.Frame;
+import java.awt.Container;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -38,38 +39,44 @@ import javax.swing.WindowConstants;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
-public class EditorDialog extends JFrame {
+abstract public class EditorDialog {
     /**
      * Constructs an instance of the dialog, for a given graph or rule.
      * @param owner the parent frame for the dialog
      * @param graph the input graph for the editor
      * @throws HeadlessException
      */
-    public EditorDialog(Frame owner, Options options, Graph graph) throws HeadlessException {
-//        super(owner, true);
-//        setResizable(true);
+    public EditorDialog(JFrame owner, Options options, Graph graph) throws HeadlessException {
+        this.parent = owner;
+        this.oldJMenuBar = parent.getJMenuBar();
+        this.oldContentPane = parent.getContentPane();
+        this.oldTitle = parent.getTitle();
+        this.oldDefaultCloseOperation = parent.getDefaultCloseOperation();
         this.options = options;
         this.editor = new Editor(options);
         this.editor.setPlainGraph(graph);
-        this.owner = owner;
-        JFrame editorFrame = editor.getFrame();
-        setJMenuBar(createMenuBar());
-        setIconImage(editorFrame.getIconImage());
-        setContentPane(editor.createContentPanel(createToolBar(GraphInfo.hasGraphRole(graph))));
-        // set the title from the editor frame
-        setTitle(editorFrame.getTitle());
-        // Set Close Operation to Exit
-        setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        addWindowListener(new WindowAdapter() {
+        this.newContentPane = editor.createContentPanel(createToolBar(GraphInfo.hasGraphRole(graph)));
+        this.newWindowListener = new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent evt) {
                 handleCancel();
             }
-        });
-        owner.setEnabled(false);
-        pack();
+        };
+    }
+
+    /** Starts the dialog. */
+    public void start() {
+        parent.setJMenuBar(createMenuBar());
+        parent.setContentPane(newContentPane);
+        // set the title from the editor frame
+        parent.setTitle(editor.getFrame().getTitle());
+        // Set Close Operation to Exit
+        parent.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        parent.addWindowListener(newWindowListener);
+        parent.repaint();
+        parent.setVisible(true);
     }
 
     /** Returns the resulting graph of the editor. */
@@ -84,16 +91,6 @@ public class EditorDialog extends JFrame {
         return result;
     }
     
-    /** Indicates if the resulting aspect graph has syntax errors. */
-    public boolean hasErrors() {
-        return toAspectGraph().hasErrors();
-    }
-    
-    /** Indicates if the underlying graph has been edited by the used during the dialog. */
-    public boolean isModified() {
-        return editor.isCurrentGraphModified();
-    }
-
     /** 
      * Returns the user decision leading to the end of the dialog.
      * @return <code>true</code> if the user OK-ed the dialog
@@ -105,7 +102,7 @@ public class EditorDialog extends JFrame {
     /**
      * Creates and returns the menu bar. Requires the actions to have been initialised first.
      */
-    protected JMenuBar createMenuBar() {
+    private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         menuBar.add(editor.createEditMenu());
         menuBar.add(editor.createPropertiesMenu());
@@ -171,11 +168,11 @@ public class EditorDialog extends JFrame {
      * Implements the effect of pressing the OK button.
      * Sets {@link #ok} to <code>true</code> and disposes the dialog.
      */
-    void handleOk() {
+    private void handleOk() {
     	if (options.isSelected(Options.PREVIEW_ON_CLOSE_OPTION) && !editor.handlePreview(null)) {
     		return;
     	} else if (hasErrors()) {
-        	JOptionPane.showMessageDialog(this, String.format("Cannot use %s with syntax errors", editor.getRole(false)));
+        	JOptionPane.showMessageDialog(parent, String.format("Cannot use %s with syntax errors", editor.getRole(false)));
         } else {
             ok = true;
         	dispose();
@@ -187,10 +184,10 @@ public class EditorDialog extends JFrame {
      * Queries the user if he wants to abandon edits, 
      * sets the {@link #ok} field to <code>false</code> and disposes the dialog.
      */
-    void handleCancel() {
+    private void handleCancel() {
         ok = false;
         if (! hasErrors() && isModified()) {
-            int confirm = JOptionPane.showConfirmDialog(this,
+            int confirm = JOptionPane.showConfirmDialog(parent,
                 String.format("Use edited %s?", editor.getRole(false)),
                 null,
                 JOptionPane.YES_NO_CANCEL_OPTION);
@@ -204,15 +201,34 @@ public class EditorDialog extends JFrame {
             dispose();
         }
     }
+
+    /** Indicates if the resulting aspect graph has syntax errors. */
+    private boolean hasErrors() {
+        return toAspectGraph().hasErrors();
+    }
     
+    /** Indicates if the underlying graph has been edited by the used during the dialog. */
+    private boolean isModified() {
+        return editor.isCurrentGraphModified();
+    }
+
     /** Besides calling the super method, also disposes the editor frame. */
-    @Override
-	public void dispose() {
-		super.dispose();
+	private void dispose() {
 		editor.doQuit();
-		owner.setEnabled(true);
-		owner.setVisible(true);
+		parent.setContentPane(oldContentPane);
+		parent.setDefaultCloseOperation(oldDefaultCloseOperation);
+		parent.removeWindowListener(newWindowListener);
+		parent.setTitle(oldTitle);
+		parent.setJMenuBar(oldJMenuBar);
+//		parent.invalidate();
+        parent.repaint();
+        if (isOK()) {
+            finish();
+        }
 	}
+    
+    /** Callback method invoked in case the editing finished with OK. */
+    abstract protected void finish();
 
 	/** Flag recording the decision of the user on exit. */
     private boolean ok;
@@ -220,6 +236,11 @@ public class EditorDialog extends JFrame {
     private final Options options;
     /** The dialog wrapped in the editor. */
     private final Editor editor;
-    /** The owner frame. */
-    private final Frame owner;
+    private final JFrame parent;
+    private final Container oldContentPane;
+    private final int oldDefaultCloseOperation;
+    private final String oldTitle;
+    private final JMenuBar oldJMenuBar;
+    private final Container newContentPane;
+    private final WindowListener newWindowListener;
 }
