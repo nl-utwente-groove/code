@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.63 2007-10-23 13:59:50 rensink Exp $
+ * $Id: Simulator.java,v 1.64 2007-10-23 16:29:43 rensink Exp $
  */
 package groove.gui;
 
@@ -122,7 +122,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.63 $
+ * @version $Revision: 1.64 $
  */
 public class Simulator {
     /**
@@ -555,17 +555,30 @@ public class Simulator {
     	
     	return selectedFile;
     }
-    
-    /**
-     * Creates and displays a modal dialog wrapping an editor.
-     * @param graph the input graph for the editor
-     * @return the dialog object, which can be queried as to the result of editing
-     */
-    EditorDialog showEditorDialog(Graph graph) {
-        EditorDialog result = new EditorDialog(getFrame(), getOptions(), graph);
-        result.setVisible(true);
-        return result;
-    }
+//    
+//    /**
+//     * Creates and displays a modal dialog wrapping an editor.
+//     * @param graph the input graph for the editor
+//     * @return the dialog object, which can be queried as to the result of editing
+//     */
+//    EditorDialog showEditorDialog(Graph graph) {
+//        final EditorDialog result = new EditorDialog(getFrame(), getOptions(), graph);
+//        result.setVisible(true);
+////        new Thread() {
+////            @Override
+////            public void run() {
+////                result.setVisible(true);
+////            }
+////        }.start();
+////        synchronized(getFrame()) {
+////            try {
+////                getFrame().wait();
+////            } catch (InterruptedException e) {
+////                // empty
+////            }
+////        }
+//        return result;
+//    }
 
     /** Inverts the enabledness of the current rule, and stores the result. */
     void doEnableRule() {
@@ -2381,14 +2394,17 @@ public class Simulator {
 		 */
         public void actionPerformed(ActionEvent e) {
         	GraphJModel stateModel = getStatePanel().getJModel();
-        	String stateName = stateModel.getName();
-            EditorDialog dialog = showEditorDialog(stateModel.toPlainGraph());
-            if (dialog.isOK()) {
-    			File saveFile = handleSaveGraph(true, dialog.toPlainGraph(), stateName);
-    			if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
-    				doLoadStartGraph(saveFile);
-    			}
-    		}
+        	final String stateName = stateModel.getName();
+            EditorDialog dialog = new EditorDialog(getFrame(), getOptions(), stateModel.toPlainGraph()) {
+                @Override
+                public void finish() {
+                    File saveFile = handleSaveGraph(true, toPlainGraph(), stateName);
+                    if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
+                        doLoadStartGraph(saveFile);
+                    }
+                }
+            };
+            dialog.start();
         }
     }
 
@@ -2450,15 +2466,20 @@ public class Simulator {
 		 * @require <tt>getCurrentRule != null</tt>.
 		 */
         public void actionPerformed(ActionEvent e) {
-        	RuleNameLabel ruleName = getCurrentRule().getNameLabel();
-            EditorDialog dialog = showEditorDialog(getRulePanel().getJModel().toPlainGraph());
-            if (dialog.isOK() && confirmAbandon(false)) {
-                AspectGraph ruleAsAspectGraph = dialog.toAspectGraph();
-                RuleNameLabel newRuleName = askNewRuleName("Name for edited rule", ruleName.name(), false);
-                if (newRuleName != null) {
-                    doAddRule(newRuleName, ruleAsAspectGraph);
+        	final RuleNameLabel ruleName = getCurrentRule().getNameLabel();
+            EditorDialog dialog = new EditorDialog(getFrame(), getOptions(), getRulePanel().getJModel().toPlainGraph()) {
+                @Override
+                public void finish() {
+                    if (confirmAbandon(false)) {
+                        AspectGraph ruleAsAspectGraph = toAspectGraph();
+                        RuleNameLabel newRuleName = askNewRuleName("Name for edited rule", ruleName.name(), false);
+                        if (newRuleName != null) {
+                            doAddRule(newRuleName, ruleAsAspectGraph);
+                        }
+                    }
                 }
-        	}
+            };
+            dialog.start();
         }
     }
 
@@ -2747,14 +2768,17 @@ public class Simulator {
             Graph newGraph = GraphFactory.getInstance().newGraph();
             GraphInfo.setName(newGraph, NEW_GRAPH_NAME);
             GraphInfo.setGraphRole(newGraph);
-            EditorDialog dialog = showEditorDialog(newGraph);
-            if (dialog.isOK()) {
-                newGraph = dialog.toPlainGraph();
-            }
-            File saveFile = handleSaveGraph(true, newGraph, NEW_GRAPH_NAME);
-            if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
-                doLoadStartGraph(saveFile);
-            }
+            EditorDialog dialog = new EditorDialog(getFrame(), getOptions(), newGraph) {
+                @Override
+                public void finish() {
+                    Graph newGraph = toPlainGraph();
+                    File saveFile = handleSaveGraph(true, newGraph, NEW_GRAPH_NAME);
+                    if (saveFile != null && confirmLoadStartState(saveFile.getName())) {
+                        doLoadStartGraph(saveFile);
+                    }
+                }
+            };
+            dialog.start();
         }
         
         /** Enabled if there is a grammar loaded. */
@@ -2771,15 +2795,18 @@ public class Simulator {
     	
 		public void actionPerformed(ActionEvent e) {
 			if (confirmAbandon(false)) {
-				RuleNameLabel ruleName = askNewRuleName(null, NEW_RULE_NAME, true);
+				final RuleNameLabel ruleName = askNewRuleName(null, NEW_RULE_NAME, true);
 				if (ruleName != null) {
                     Graph newRule = GraphFactory.getInstance().newGraph();
                     GraphInfo.setName(newRule, ruleName.name());
                     GraphInfo.setRuleRole(newRule);
-                    EditorDialog dialog = showEditorDialog(newRule);
-                    if (dialog.isOK()) {
-                        doAddRule(ruleName, dialog.toAspectGraph());
-                    }
+                    EditorDialog dialog = new EditorDialog(getFrame(), getOptions(), newRule) {
+                        @Override
+                        public void finish() {
+                            doAddRule(ruleName, toAspectGraph());
+                        }
+                    };
+                    dialog.start();
 				}
 			}
 		}
