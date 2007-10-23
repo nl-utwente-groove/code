@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.61 2007-10-23 07:52:45 fladder Exp $
+ * $Id: Simulator.java,v 1.62 2007-10-23 12:43:04 kastenberg Exp $
  */
 package groove.gui;
 
@@ -122,7 +122,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.61 $
+ * @version $Revision: 1.62 $
  */
 public class Simulator {
     /**
@@ -1407,6 +1407,12 @@ public class Simulator {
         return stateFileChooser;
 	}
 
+	private FormulaDialog getFormulaDialog() {
+		if (formulaDialog == null)
+			formulaDialog = new FormulaDialog();
+		return formulaDialog;
+	}
+
 	private ErrorListPanel getErrorPanel() {
 		if (errorPanel == null) {
 			errorPanel = new ErrorListPanel();
@@ -1818,6 +1824,11 @@ public class Simulator {
      * File chooser for state files and LTS.
      */
     private JFileChooser stateFileChooser;
+
+    /**
+     * Dialog for entering temporal formulae.
+     */
+    private FormulaDialog formulaDialog;
 
     /**
      * Graph exporter.
@@ -2793,11 +2804,11 @@ public class Simulator {
         		goOn = JOptionPane.showConfirmDialog(getFrame(), message, "Open states", JOptionPane.YES_NO_OPTION);
         	}
         	if (goOn == JOptionPane.YES_OPTION) {
-        		String property = JOptionPane.showInputDialog(null, "Enter the temporal formula to be verified by GROOVE.");
+        		FormulaDialog dialog = getFormulaDialog();
+        		dialog.showDialog(getFrame());
+        		String property = dialog.getProperty();
         		if (property != null) {
         			verifyProperty(property);
-        		} else {
-        			// do nothing
         		}
         	}
     	}
