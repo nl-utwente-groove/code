@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.10 2007-10-23 16:08:01 iovka Exp $
+ * $Id: Edge2SearchItem.java,v 1.11 2007-10-24 15:41:39 rensink Exp $
  */
 package groove.match;
 
@@ -21,6 +21,7 @@ import groove.graph.DefaultEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
 
 import java.util.Arrays;
@@ -371,7 +372,10 @@ class Edge2SearchItem extends AbstractSearchItem {
         		}
 			} else if (targetFind != null) {
         		Set<? extends Edge> nodeEdgeSet = host.edgeSet(targetFind);
-        		if (nodeEdgeSet.size() < labelEdgeSet.size()) {
+        		if (nodeEdgeSet == null) {
+                    assert targetFind instanceof ValueNode : String.format("Host graph does not contain edges for node %s", targetFind);
+        		    result = Collections.emptySet();
+        		} else if (nodeEdgeSet.size() < labelEdgeSet.size()) {
         			result = nodeEdgeSet;
         			checkLabel = true;
         		}
@@ -401,195 +405,6 @@ class Edge2SearchItem extends AbstractSearchItem {
         	this.checkLabel = checkLabel;
         	this.setEdge = setEdge;
         }
-//        
-//        /**
-//		 * Returns an iterator over the elements of a given image set, which
-//		 * filters the edges for which {@link #setEnds(Edge)} is successful. As
-//		 * a side effect, calls {@link #setEdge(Edge)} with the selected image
-//		 * before returning it.
-//		 * 
-//		 * @param images
-//		 *            the set of potential images
-//		 * @param checkLabel
-//		 *            flag to indicate if #selectLabel(Edge) should also be
-//		 *            called before selecting an edge
-//		 */
-//        Iterator<? extends Edge> filterImages(final Collection<? extends Edge> images, final boolean checkLabel) {
-//            return new FilterIterator<Edge>(images.iterator()) {
-//                @Override
-//                protected boolean approves(Object obj) {
-//                    Edge edge = (Edge) obj;
-//                    boolean result = !checkLabel || setLabel(edge);
-//                    if (result) {
-//                        result = setEnds(edge);
-//                        if (result) {
-//                            setEdge(edge);
-//                        } else if (checkLabel) {
-//                            resetLabel();
-//                        }
-//                    }
-//                    return result;
-//                }                
-//            };
-//        }
-//        
-//        /**
-//         * Selects the edge label.
-//         * In this case this just comes down to testing equality with the image label.
-//         */
-//        boolean setLabel(Edge image) {
-//            return label == image.label();
-//        }
-//
-//        /** 
-//         * Select the edge end images, if they are compatible with
-//         * the pre-matched ends. 
-//         */
-//        boolean setEnds(Edge image) {
-//            boolean result = setSource(image);
-//            if (result && !setTarget(image)) {
-//            	resetSource();
-//            	result = false;
-//            }
-//            return result;
-//        }
-//
-//        /**
-//         * Tests or selects the image of a given edge end.
-//         */
-//        final boolean setSource(Edge image) {
-//            boolean result;
-//            Node imageSource = image.source();
-//            if (sourceFind != null) {
-//                // test if the intended image has the correct end
-//                result = imageSource == sourceFind;
-//            } else if (isAvailable(imageSource)) {
-//                // put the end image in the result map
-//                Node sourceImage = getSearch().putNode(sourceIx, imageSource);
-//                assert sourceImage == null : String
-//                        .format("Node %s already has image %s when selecting %s (map: %s)",
-//                            source,
-//                            sourceImage,
-//                            imageSource,
-//                            getSearch());
-//                result = true;
-//            } else {
-//                result = false;
-//            }
-//            return result;
-//        }
-//
-//        /**
-//         * Tests or selects the image of a given edge end.
-//         */
-//        final boolean setTarget(Edge image) {
-//            boolean result;
-//            Node imageTarget = image.opposite();
-//            if (targetFind != null) {
-//                // test if the intended image has the correct end
-//                result = imageTarget == targetFind;
-//            } else if (selfEdge) {
-//                // test if the intended image has the same duplication
-//                result = imageTarget == image.source();
-//            } else if (isAvailable(imageTarget)) {
-//                // put the end image in the result map
-//                Node targetImage = getSearch().putNode(targetIx, imageTarget);
-//                assert targetImage == null : String
-//                        .format("Node %s already has image %s when selecting %s (map: %s)",
-//                            target,
-//                            targetImage,
-//                            imageTarget,
-//                            getSearch());
-//                result = true;
-//            } else {
-//                result = false;
-//            }
-//            return result;
-//        }
-//        
-//        /**
-//         * Puts the actual edge image into the result map,
-//         * undo the assumption that the edge is not pre-matched.
-//         */
-//        void setEdge(Edge image) {
-//            Edge current = getSearch().putEdge(edgeIx, image);
-//            assert current == null : String
-//                    .format("Edge %s already has image %s when selecting %s (map: %s)",
-//                        edge,
-//                        current,
-//                        image,
-//                        getSearch());
-//        }
-//        
-//        /**
-//         * Successively calls {@link #resetEnds()} and {@link #resetEdge()}.
-//         */
-//        @Override
-//        final void undo() {
-//            if (!isSingular()) {
-//                resetEnds();
-//                resetLabel();
-//            }
-////            if (!isPreMatched()) {
-//                resetEdge();
-////            }
-//            selected = null;
-//        }
-//        
-//        /** 
-//         * Rolls back the effect of {@link #setLabel(Edge)}. 
-//         * For this implementation, there is nothing to roll back.
-//         */
-//        void resetLabel() {
-//            // empty
-//        }
-//
-//        /**
-//         * Callback method from {@link #undo()} to undo the selection of the edge ends.
-//         * Reverses the effect of {@link #setEnds(Edge)} if that method returned <code>true</code>.
-//         */
-//        final void resetEnds() {
-//            resetSource();
-//            resetTarget();
-//        }
-//
-//        final void resetSource() {
-//            if (sourceFind == null) {
-//                Node endImage = getSearch().putNode(sourceIx, null);
-//                assert selected == null || endImage == selected.source() : String
-//                        .format("Node %s had image %s instead of expected %s (map: %s)",
-//                            source,
-//                            endImage,
-//                            selected.source(),
-//                            getSearch());
-//            }
-//        }
-//
-//        final void resetTarget() {
-//            if (targetFind == null && !selfEdge) {
-//                Node endImage = getSearch().putNode(targetIx, null);
-//                assert selected == null || endImage == selected.opposite() : String
-//                        .format("Node %s had image %s instead of expected %s (map: %s)",
-//                            target,
-//                            endImage,
-//                            selected.opposite(),
-//                            getSearch());
-//            }
-//        }
-//        
-//        /**
-//         * Callback method from {@link #undo()} to undo the selection of the edge itself. Reverses
-//         * the effect of {@link #setEdge(Edge)} if that method returned <code>true</code>.
-//         */
-//        void resetEdge() {
-//            Edge image = getSearch().putEdge(edgeIx, null);
-//            assert image.equals(selected) : String
-//                    .format("Edge %s had image %s instead of expected %s (map: %s)",
-//                        edge,
-//                        image,
-//                        selected,
-//                        getSearch());
-//        }
 
         @Override
         public String toString() {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Editor.java,v 1.46 2007-10-14 11:18:07 rensink Exp $
+ * $Id: Editor.java,v 1.47 2007-10-24 15:41:40 rensink Exp $
  */
 package groove.gui;
 
@@ -91,7 +91,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.46 $ $Date: 2007-10-14 11:18:07 $
+ * @version $Revision: 1.47 $ $Date: 2007-10-24 15:41:40 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -99,12 +99,17 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * and a given display options setting.
      * @param options the display options object; may be <code>null</code>
      */
-    Editor(Options options) {
+    Editor(JFrame frame, Options options) {
         // force the LAF to be set
         groove.gui.Options.initLookAndFeel();
         // Construct the main components
         this.options = options;
-        this.frame = new JFrame(EDITOR_NAME);
+        if (frame == null) {
+            this.frame = new JFrame(EDITOR_NAME);
+        } else {
+            this.frame = frame;
+            this.frame.setTitle(EDITOR_NAME);
+        }
         this.jgraph = new EditorJGraph(this);
         initListeners();
         initGUI();
@@ -116,7 +121,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * It is not configured as an auxiliary component.
      */
     public Editor() {
-        this(null);
+        this(null, null);
     }
 
     /** Returns the frame in which the editor is displayed. */
@@ -1765,7 +1770,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.46 $
+     * @version $Revision: 1.47 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

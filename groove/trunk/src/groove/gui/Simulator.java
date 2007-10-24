@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.65 2007-10-23 22:43:45 rensink Exp $
+ * $Id: Simulator.java,v 1.66 2007-10-24 15:41:40 rensink Exp $
  */
 package groove.gui;
 
@@ -78,6 +78,8 @@ import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -115,6 +117,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JTree;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
@@ -122,7 +125,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.65 $
+ * @version $Revision: 1.66 $
  */
 public class Simulator {
     /**
@@ -993,7 +996,13 @@ public class Simulator {
             // small icon doesn't look nice due to shadow
             frame.setIconImage(Groove.GROOVE_ICON_16x16.getImage());
             // frame.setSize(500,300);
-            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    doQuit();
+                }
+            });
 //            frame.setContentPane(splitPane);
             frame.setJMenuBar(createMenuBar());
             
@@ -2360,7 +2369,7 @@ public class Simulator {
          * {@link #setEnabled(boolean)}.
          */
         public void refresh() {
-        	boolean enabled = getGraphPanel() == getStatePanel();
+        	boolean enabled = getGraphPanel() == getStatePanel() && getCurrentGrammar() != null && getCurrentGrammar().getStartGraph() != null;
         	if (enabled != isEnabled()) {
 				setEnabled(enabled);
         	}
