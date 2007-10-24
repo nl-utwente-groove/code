@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNodeSearchItem.java,v 1.12 2007-10-10 08:59:50 rensink Exp $
+ * $Id: ValueNodeSearchItem.java,v 1.13 2007-10-24 15:41:39 rensink Exp $
  */
 package groove.match;
 
@@ -108,7 +108,7 @@ class ValueNodeSearchItem extends AbstractSearchItem {
          */
         @Override
         boolean set() {
-        	return search.putNode(nodeIx, node);
+            return search.putNode(nodeIx, node);
         }
         
         @Override

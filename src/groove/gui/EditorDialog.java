@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorDialog.java,v 1.13 2007-10-23 22:43:49 rensink Exp $
+ * $Id: EditorDialog.java,v 1.14 2007-10-24 15:41:40 rensink Exp $
  */
 package groove.gui;
 
@@ -24,8 +24,6 @@ import java.awt.Container;
 import java.awt.HeadlessException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 import javax.swing.JButton;
@@ -34,12 +32,11 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
 import javax.swing.JToolBar;
-import javax.swing.WindowConstants;
 
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 abstract public class EditorDialog {
     /**
@@ -53,17 +50,17 @@ abstract public class EditorDialog {
         this.oldJMenuBar = parent.getJMenuBar();
         this.oldContentPane = parent.getContentPane();
         this.oldTitle = parent.getTitle();
-        this.oldDefaultCloseOperation = parent.getDefaultCloseOperation();
+        this.oldWindowListeners = parent.getWindowListeners();
+//        this.oldDefaultCloseOperation = parent.getDefaultCloseOperation();
         this.options = options;
-        this.editor = new Editor(options);
-        this.editor.setPlainGraph(graph);
-        this.newContentPane = editor.createContentPanel(createToolBar(GraphInfo.hasGraphRole(graph)));
-        this.newWindowListener = new WindowAdapter() {
+        this.editor = new Editor(parent, options) {
             @Override
-            public void windowClosing(WindowEvent evt) {
+            protected void doQuit() {
                 handleCancel();
             }
         };
+        this.editor.setPlainGraph(graph);
+        this.newContentPane = editor.createContentPanel(createToolBar(GraphInfo.hasGraphRole(graph)));
     }
 
     /** Starts the dialog. */
@@ -72,11 +69,10 @@ abstract public class EditorDialog {
         parent.setContentPane(newContentPane);
         // set the title from the editor frame
         parent.setTitle(editor.getFrame().getTitle());
-        // Set Close Operation to Exit
-        parent.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        parent.addWindowListener(newWindowListener);
-        parent.repaint();
-        parent.setVisible(true);
+        for (WindowListener listener: oldWindowListeners) {
+            parent.removeWindowListener(listener);
+        }
+        parent.validate();
     }
 
     /** Returns the resulting graph of the editor. */
@@ -214,14 +210,19 @@ abstract public class EditorDialog {
 
     /** Besides calling the super method, also disposes the editor frame. */
 	private void dispose() {
-		editor.doQuit();
 		parent.setContentPane(oldContentPane);
-		parent.setDefaultCloseOperation(oldDefaultCloseOperation);
-		parent.removeWindowListener(newWindowListener);
+//		parent.setDefaultCloseOperation(oldDefaultCloseOperation);
+		for (WindowListener listener: parent.getWindowListeners()) {
+		    parent.removeWindowListener(listener);
+		}
 		parent.setTitle(oldTitle);
 		parent.setJMenuBar(oldJMenuBar);
-//		parent.invalidate();
-        parent.repaint();
+		for (WindowListener listener: oldWindowListeners) {
+		    parent.addWindowListener(listener);
+		}
+        parent.invalidate();
+        parent.validate();
+//        parent.pack();
         if (isOK()) {
             finish();
         }
@@ -238,9 +239,10 @@ abstract public class EditorDialog {
     private final Editor editor;
     private final JFrame parent;
     private final Container oldContentPane;
-    private final int oldDefaultCloseOperation;
+//    private final int oldDefaultCloseOperation;
     private final String oldTitle;
     private final JMenuBar oldJMenuBar;
+    private final WindowListener[] oldWindowListeners;
     private final Container newContentPane;
-    private final WindowListener newWindowListener;
+//    private final WindowListener newWindowListener;
 }
