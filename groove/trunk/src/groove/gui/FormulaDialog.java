@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FormulaDialog.java,v 1.3 2007-10-23 22:43:49 rensink Exp $
+ * $Id: FormulaDialog.java,v 1.4 2007-10-25 12:56:15 kastenberg Exp $
  */
 package groove.gui;
 
@@ -36,7 +36,7 @@ import javax.swing.JTextField;
 /**
  * Dialog for entering temporal formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class FormulaDialog {
 
@@ -104,6 +104,7 @@ public class FormulaDialog {
 		// editing formula
 		formulaLabel = new JLabel("Formula:");
 		formulaField = new JTextField(30);
+		formulaField.addActionListener(new CloseListener());
 		panel.add(formulaLabel);
 		panel.add(formulaField);
 
@@ -190,7 +191,7 @@ public class FormulaDialog {
 		}
 
 		public void actionPerformed(ActionEvent e) {
-			if (e.getSource() == getOkButton()) {
+			if (e.getSource() == getOkButton() || e.getSource() == formulaField || e.getSource() == historyBox) {
 				if (!formulaField.getText().equals("")) {
 					property = formulaField.getText();
 					addItem(property);
