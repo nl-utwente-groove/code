@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.67 2007-10-26 07:07:14 rensink Exp $
+ * $Id: Simulator.java,v 1.68 2007-10-26 15:38:02 rensink Exp $
  */
 package groove.gui;
 
@@ -125,7 +125,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.67 $
+ * @version $Revision: 1.68 $
  */
 public class Simulator {
     /**
@@ -773,7 +773,7 @@ public class Simulator {
 	void doDeleteRule(RuleNameLabel name) {
 		AspectualRuleView rule = getCurrentGrammar().removeRule(name);
 		if (rule != null) {
-			currentGrammarLoader.deleteRule(name, currentGrammarFile);
+			currentGrammarLoader.deleteRule(rule, currentGrammarFile);
 			setGrammar(getCurrentGrammar());
 		}
 	}
@@ -2424,6 +2424,7 @@ public class Simulator {
 			if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
 				ruleProperties.clear();
 				ruleProperties.putAll(dialog.getEditedProperties());
+				doDeleteRule(rule.getNameLabel());
 				doAddRule(rule.getNameLabel(), ruleGraph);
 			}
 		}
