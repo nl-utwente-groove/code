@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.17 2007-10-06 11:27:51 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.18 2007-10-26 15:37:59 rensink Exp $
  */
 
 package groove.io;
@@ -41,7 +41,7 @@ import java.util.Properties;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
     /**
@@ -321,38 +321,71 @@ public class AspectualViewGps implements GrammarViewXml<DefaultGrammarView> {
 
 	/**
      * Marshals a single rule, given in graph input format, to a given location.
-     * Creates the necessary subdirectories if the rule has a structured rule name.
+     * Creates the necessary sub-directories if the rule has a structured rule name.
      * @param ruleGraph the rule to be marshalled
      * @param location the location to which the rule is to be marshalled
      * @throws IOException if {@link Xml#marshalGraph(Graph, File)} throws an exception
      */
     public void marshalRule(AspectualRuleView ruleGraph, File location) throws IOException {
-		graphMarshaller.marshalGraph(ruleGraph.getAspectGraph(), getFile(location, ruleGraph.getNameLabel()));
+		graphMarshaller.marshalGraph(ruleGraph.getAspectGraph(), getFile(location, ruleGraph, true));
     }
 
 	/**
      * Removes a rule file from the file system
-     * @param ruleName the name of the rule to be removed
+     * @param ruleGraph the rule to be removed
      * @param location the basis location of the GPS 
      */
-    public void deleteRule(RuleNameLabel ruleName, File location) {
-        getGraphMarshaller().deleteGraph(getFile(location, ruleName));
+    public void deleteRule(AspectualRuleView ruleGraph, File location) {
+        File deletedFile = getFile(location, ruleGraph, false);
+        if (deletedFile != null) {
+            getGraphMarshaller().deleteGraph(deletedFile);
+        }
     }
 
     /** 
      * Constructs a rule file from the combination of a basis location (the
      * directory where the GPS is stored), a rule name, and the {@link #RULE_FILTER} extension.
+     * The method looks for an existing file; if there is none, a further parameter determines if
+     * it should be created (including any enclosing directories)
+     * @param create if <code>true</code>, a file is created if none is found
      */
-    public File getFile(File location, RuleNameLabel name) {
-        File ruleLocation = location;
-        // if the rule name is structured, go to the relevant subdirectory
-		String[] tokens = name.tokens();
-		for (int i = 0; i < tokens.length - 1; i++) {
-			ruleLocation.mkdir();
-			ruleLocation = new File(ruleLocation, tokens[i]);
+    private File getFile(File location, AspectualRuleView ruleGraph, boolean create) {
+        File result = null;
+        // if the rule name is structured, go to the relevant sub-directory
+		String remainingName = ruleGraph.getName();
+		int priority = ruleGraph.getPriority();
+		boolean searching = true;
+		while (searching) {
+		    File candidate = new File(location, RULE_FILTER.addExtension(remainingName));
+		    if (! candidate.exists()) {
+		        PriorityFileName priorityName = new PriorityFileName(remainingName, priority, true);
+		        candidate = new File(location, RULE_FILTER.addExtension(priorityName.toString()));
+		    }
+		    if (candidate.exists()) {
+		        result = candidate;
+		    } 
+		    int separator = remainingName.indexOf(RuleNameLabel.SEPARATOR);
+		    searching = result == null && separator >= 0;
+		    if (searching) {
+		        // descend into sub-directory if no file is found and the name specifies a further hierarchy
+		        String subDir = remainingName.substring(0, separator);
+		        remainingName = remainingName.substring(separator+1);
+		        location = new File(location, subDir);
+		        // if the sub-directory does not exist, create it or stop the search
+		        if (!location.exists()) {
+                    if (create) {
+                        location.mkdir();
+                    } else {
+                        searching = false;
+                    }
+                }
+		    } 
 		}
-		String coreRuleName = tokens[tokens.length - 1];
-        return new File(ruleLocation, RULE_FILTER.addExtension(coreRuleName));
+		// create a file if none is found and the create parameter says so
+		if (result == null && create) {
+		    result = new File(location, RULE_FILTER.addExtension(remainingName));
+		}
+        return result;
     }
     
     /**

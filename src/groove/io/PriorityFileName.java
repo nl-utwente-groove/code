@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: PriorityFileName.java,v 1.4 2007-05-11 08:21:59 rensink Exp $
+ * $Id: PriorityFileName.java,v 1.5 2007-10-26 15:37:59 rensink Exp $
  */
 package groove.io;
 
@@ -23,7 +23,7 @@ import groove.trans.Rule;
 /**
  * Encoding of a rule name plus priority as a string
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class PriorityFileName {
     /** Default priority value, copied from {@link Rule#DEFAULT_PRIORITY}. */
@@ -75,14 +75,21 @@ public class PriorityFileName {
     }
 
     /**
+     * Creates a file name from a given rule name and (possibly explicit) priority.
+     */
+    PriorityFileName(String ruleName, int priority, boolean explicitPriority) {
+        this.ruleName = ruleName;
+        this.priority = priority;
+        this.explicitPriority = explicitPriority;
+    }
+
+    /**
      * Creates a file name from a given rule name and priority.
      * The priority is taken to be explicit if and only if it does not equal
      * {@link #DEFAULT_PRIORITY}.
      */
     PriorityFileName(String ruleName, int priority) {
-        this.ruleName = ruleName;
-        this.priority = priority;
-        this.explicitPriority = priority != DEFAULT_PRIORITY;
+        this(ruleName, priority, priority != DEFAULT_PRIORITY);
     }
     
     /**

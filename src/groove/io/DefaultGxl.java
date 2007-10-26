@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.16 2007-10-18 14:57:45 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.17 2007-10-26 15:37:59 rensink Exp $
  */
 package groove.io;
 
@@ -55,7 +55,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -83,7 +83,7 @@ public class DefaultGxl extends AbstractXml {
 		// create the file, if necessary
 		file.getParentFile().mkdirs();
 		if (file.getParentFile().exists()) {
-			deleteVariants(file);
+//			deleteVariants(file);
 			file.createNewFile();
 			Graph attrGraph = normToAttrGraph(graph);
 			if (Groove.isRuleFile(file)) {
