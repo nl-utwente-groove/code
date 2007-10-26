@@ -12,38 +12,37 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NamedAspectValue.java,v 1.2 2007-10-26 07:07:16 rensink Exp $
+ * $Id: NumberedAspectValue.java,v 1.1 2007-10-26 07:07:16 rensink Exp $
  */
 package groove.view.aspect;
 
 import groove.view.FormatException;
 
 /**
- * Aspect value encoding the nesting level within a nested rule or condition. 
- * The nesting level is a string interpreted as an identifier of the level.
- * @author kramor
+ * Aspect value encoding wrapping a number value.
+ * @author Arend Rensink
  * @version $Revision $
  */
-public class NamedAspectValue extends ContentAspectValue<String> {
+public class NumberedAspectValue extends ContentAspectValue<Integer> {
 	/**
 	 * Constructs a new nesting level-containing aspect value.
 	 * @param name the aspect value name
 	 * @throws FormatException if <code>name</code> is an already existing aspect value
 	 */
-	public NamedAspectValue(Aspect aspect, String name) throws FormatException {
+	public NumberedAspectValue(Aspect aspect, String name) throws FormatException {
 		super(aspect, name);
 	}
 	
 	/** Creates an instance of a given nesting aspect value, with a given level. */
-	NamedAspectValue(NamedAspectValue original, String level) {
-		super(original, level);
+	NumberedAspectValue(NumberedAspectValue original, Integer number) {
+		super(original, number);
 	}
 
 	@Override
-	public ContentAspectValue<String> newValue(String value) throws FormatException {
-		return new NamedAspectValue(this, parser.toContent(value));
+	public ContentAspectValue<Integer> newValue(String value) throws FormatException {
+		return new NumberedAspectValue(this, parser.toContent(value));
 	}
-	
+
 	/** 
 	 * Indicates if a given character is allowed in level names.
 	 * Currently allowed are: letters, digits, currency symbols, 
@@ -71,38 +70,30 @@ public class NamedAspectValue extends ContentAspectValue<String> {
 	 * {@link #isValidNextChar(char)}.
 	 */
 	@Override
-	ContentParser<String> createParser() {
-		return new NameParser();
+	ContentParser<Integer> createParser() {
+		return new NumberParser();
 	}
 
 	/** ContentParser used for this AspectValue */
-	private final ContentParser<String> parser = new NameParser();
+	private final ContentParser<Integer> parser = new NumberParser();
 
 	/** Content parser which acts as the identity function on strings. */
-	private class NameParser implements ContentParser<String> {
+	private class NumberParser implements ContentParser<Integer> {
 		/** Empty constructor with the correct visibility. */
-		NameParser() {
+		NumberParser() {
 			// empty
 		}
 
-		public String toContent(String value) throws FormatException {
-			if (value.length() == 0) {
-				return value;
+		public Integer toContent(String value) throws FormatException {
+			try {
+				return Integer.parseInt(value);
+			} catch (NumberFormatException exc) {
+				throw new FormatException("Value '%s' cannot be parsed as number", value);
 			}
-			if (!isValidFirstChar(value.charAt(0))) {
-				throw new FormatException("Invalid start character '%c' in name '%s'", value.charAt(0), value);
-			}
-			for (int i = 1; i < value.length(); i++) {
-				char c = value.charAt(i);
-				if (!isValidNextChar(c)) {
-					throw new FormatException("Invalid character '%c' in name '%s'", c, value);
-				}
-			}
-			return value;
 		}
 		
-		public String toString(String content) {
-			return content;
+		public String toString(Integer content) {
+			return content.toString();
 		}
 	}
 }

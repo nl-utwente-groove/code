@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.14 2007-05-30 21:30:26 rensink Exp $
+ * $Id: LayedOutXml.java,v 1.15 2007-10-26 07:06:57 rensink Exp $
  */
 package groove.io;
 
@@ -53,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class LayedOutXml extends AbstractXml implements Xml<Graph> {
     /** 
@@ -517,8 +517,8 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
      */
     private String toString(List<Point2D> points) {
         StringBuffer pointsText = new StringBuffer();
-        for (Point2D p: points) {
-            pointsText.append(toString(p));
+        for (Object p: points) {
+            pointsText.append(toString((Point2D) p));
         }
         return pointsText.toString();
     }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.7 2007-10-14 11:17:36 rensink Exp $
+ * $Id: NestingAspect.java,v 1.8 2007-10-26 07:07:16 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.7 $ $Date: 2007-10-14 11:17:36 $
+ * @version 0.1 $Revision: 1.8 $ $Date: 2007-10-26 07:07:16 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -41,7 +41,7 @@ public class NestingAspect extends AbstractAspect {
 	 * Tests whether the nesting value of an aspect edge is correct in the context of the edge.
 	 */
 	@Override
-	public void testEdge(AspectEdge edge, AspectGraph graph) throws FormatException {
+	public void checkEdge(AspectEdge edge, AspectGraph graph) throws FormatException {
 		if (isLevelEdge(edge)) {
 			// source nodes should be non-meta with only this level edge
 			if (isMetaElement(edge.source())) {
@@ -83,7 +83,7 @@ public class NestingAspect extends AbstractAspect {
 	}
 
 	@Override
-	public void testNode(AspectNode node, AspectGraph graph) throws FormatException {
+	public void checkNode(AspectNode node, AspectGraph graph) throws FormatException {
 		Set<AspectEdge> outEdgeSet = graph.outEdgeSet(node);
 		if (outEdgeSet.size() > 1) {
 			throw new FormatException("Meta-node %s has ambiguous parentage", node);
@@ -130,7 +130,9 @@ public class NestingAspect extends AbstractAspect {
 	
 	/**
 	 * Determine whether a certain AspectElement is a meta element with respect
-	 * to rule nesting
+	 * to rule nesting.
+	 * The element is assumed to be checked (see {@link #checkNode(AspectNode, AspectGraph)}
+	 * and {@link #checkEdge(AspectEdge, AspectGraph)}).
 	 * @param element the element to test
 	 * @return <code>true</code> if the element is a meta element wrt rule nesting,
 	 *   <code>false</code> if not
@@ -150,6 +152,8 @@ public class NestingAspect extends AbstractAspect {
 	
 	/**
 	 * Determine whether a certain AspectElement is a Level-indicating edge.
+	 * The element is assumed to be checked (see {@link #checkNode(AspectNode, AspectGraph)}
+	 * and {@link #checkEdge(AspectEdge, AspectGraph)}).
 	 */
 	public static boolean isLevelEdge(AspectEdge element) {
 		AspectValue value = getNestingValue(element);
@@ -158,6 +162,8 @@ public class NestingAspect extends AbstractAspect {
 	
 	/**
 	 * Determine whether a certain AspectElement is a parent-indicating edge.
+	 * The element is assumed to be checked (see {@link #checkNode(AspectNode, AspectGraph)}
+	 * and {@link #checkEdge(AspectEdge, AspectGraph)}).
 	 */
 	public static boolean isParentEdge(AspectEdge element) {
 		AspectValue value = getNestingValue(element);
@@ -166,6 +172,8 @@ public class NestingAspect extends AbstractAspect {
 	
 	/**
 	 * Determine whether an aspect edge carries the {@link #FORALL} nesting value.
+	 * The element is assumed to be checked (see {@link #checkNode(AspectNode, AspectGraph)}
+	 * and {@link #checkEdge(AspectEdge, AspectGraph)}).
 	 */
 	public static boolean isForall(AspectElement element) {
 		return getNestingValue(element).equals(FORALL);
@@ -173,12 +181,16 @@ public class NestingAspect extends AbstractAspect {
 	
 	/**
 	 * Determine whether an aspect edge carries the {@link #EXISTS} nesting value.
+	 * The element is assumed to be checked (see {@link #checkNode(AspectNode, AspectGraph)}
+	 * and {@link #checkEdge(AspectEdge, AspectGraph)}).
 	 */
 	public static boolean isExists(AspectElement element) {
 		return getNestingValue(element).equals(EXISTS);
 	}
 	
-	/** Returns the name of a nesting level identified by a given aspect element. */
+	/** 
+	 * Returns the name of a nesting level identified by a given aspect element. 
+	 */
 	public static String getLevelName(AspectElement element) {
 		AspectValue value = getNestingValue(element);
 		return value instanceof NamedAspectValue ? ((NamedAspectValue) value).getContent() : null;

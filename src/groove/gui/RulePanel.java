@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RulePanel.java,v 1.19 2007-10-10 08:59:44 rensink Exp $
+ * $Id: RulePanel.java,v 1.20 2007-10-26 07:07:15 rensink Exp $
  */
 package groove.gui;
 
@@ -48,7 +48,7 @@ import java.util.TreeMap;
  * Window that displays and controls the current rule graph.
  * Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationListener {
 	/** Frame name when no rule is selected. */
@@ -87,7 +87,8 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
 		// reset the display
 		if (displayedRule != null) {
 			if (ruleJModelMap.containsKey(displayedRule)) {
-				setRuleUpdate(displayedRule);
+				jGraph.setModel(ruleJModelMap.get(displayedRule));
+				refresh();
 			} else {
 				jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
 				displayedRule = null;

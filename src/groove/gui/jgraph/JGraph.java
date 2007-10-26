@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.22 2007-10-10 08:59:51 rensink Exp $
+ * $Id: JGraph.java,v 1.23 2007-10-26 07:07:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -79,7 +79,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.22 $ $Date: 2007-10-10 08:59:51 $
+ * @version $Revision: 1.23 $ $Date: 2007-10-26 07:07:17 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -1279,11 +1279,14 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 			}
 			Set<JCell> changedCellSet = new HashSet<JCell>();
 			for (String label : changedLabelSet) {
-				for (JCell cell: getLabelList().getJCells(label)) {
-					changedCellSet.add(cell);
-					if (cell instanceof JEdge) {
-						changedCellSet.add(((JEdge) cell).getSourceVertex());
-						changedCellSet.add(((JEdge) cell).getTargetVertex());
+				Set<JCell> labelledCells = getLabelList().getJCells(label);
+				if (labelledCells != null) {
+					for (JCell cell : labelledCells) {
+						changedCellSet.add(cell);
+						if (cell instanceof JEdge) {
+							changedCellSet.add(((JEdge) cell).getSourceVertex());
+							changedCellSet.add(((JEdge) cell).getTargetVertex());
+						}
 					}
 				}
 			}
