@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class TreeHashSet<T> extends AbstractSet<T> {
 	/**
@@ -138,7 +138,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         this.recordCount = other.recordCount;
         this.freeKeyIx = other.freeKeyIx;
         this.keyCount = other.keyCount;
-        assert this.equals(other) : String.format("Clone    %s does not equal%noriginal %s",
+        assert this.containsAll(other) : String.format("Clone    %s does not equal%noriginal %s",
             this,
             other);
     }
@@ -531,6 +531,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 				System.arraycopy(fill, 0, newRecordFill, 0, fill.length);
 				tree = newTree;
 				fill = newRecordFill;
+//			} else {
+//			    // clean the new fragment of the tree
+//	            int upper = result + getRecordSize(result == 0);
+//	            Arrays.fill(tree, result, upper, 0);
 			}
 		} else {
 			freeRecordIx = tree[freeRecordIx];
@@ -587,7 +591,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     	freeKeyIx = keyIx;
     	size--;
     	if (size == 0) {
-    		recordCount = 1;
+    		clear();
     	}
     }
     
