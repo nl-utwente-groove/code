@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.10 2007-10-23 22:44:05 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.11 2007-10-26 11:10:30 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
 	/**
@@ -225,11 +225,11 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	/** Fixes the sub-predicate and this morphism. */
 	public void setFixed() {
 		if (!isFixed()) {
+            fixed = true;
 			getTarget().setFixed();
 			for (AbstractCondition<?> subCondition : getSubConditions()) {
 				subCondition.setFixed();
 			}
-			fixed = true;
 		}
 	}
 

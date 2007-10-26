@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.44 2007-10-23 22:44:05 rensink Exp $
+ * $Id: SPORule.java,v 1.45 2007-10-26 11:10:29 rensink Exp $
  */
 package groove.trans;
 
@@ -52,7 +52,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.44 $
+ * @version $Revision: 1.45 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -117,13 +117,18 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     	return parent;
     }
     
+    /** Indicates if this is a top-level rule. */
+    public boolean isTop() {
+        return getParent() == this;
+    }
+    
     /** Returns the top rule of the hierarchy in which this rule is nested. */
     public SPORule getTop() {
-    	if (getParent() == this) {
-    		return this;
-    	} else {
-    		return getParent().getTop();
-    	}
+        if (isTop()) {
+            return this;
+        } else {
+            return getParent().getTop();
+        }
     }
     
     /** 
@@ -469,6 +474,9 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 			}
 			super.setFixed();
 		}
+        if (PRINT && isTop()) {
+            System.out.println(toString());
+        }
 	}
 
 	/** Returns an array of nodes isolated in the left hand side. */
@@ -663,7 +671,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 		testFixed(true);
 	    Set<Node> eraserNodeSet = new HashSet<Node>(lhs().nodeSet());
 	    eraserNodeSet.removeAll(getMorphism().nodeMap().keySet());
-	    eraserNodeSet.removeAll(getRootMap().nodeMap().values());
+//	    eraserNodeSet.removeAll(getCoRootMap().nodeMap().values());
 	    return eraserNodeSet.toArray(new Node[0]);
 	}
 
@@ -804,9 +812,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 		Graph result = rhs().newGraph();
 		result.addNodeSet(Arrays.asList(this.getCreatorNodes()));
 		result.addEdgeSet(Arrays.asList(this.getCreatorEdges()));
-	    if (CONSTRUCTOR_DEBUG) {
-	        Groove.message("RHS-only graph: " + result);
-	    }
 	    return result;
 	}
 
@@ -1086,7 +1091,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      */
     private static AnchorFactory anchorFactory = MinimalAnchorFactory.getInstance(); 
     /** Debug flag for the constructor. */
-    private static final boolean CONSTRUCTOR_DEBUG = false;
+    private static final boolean PRINT = false;
     /** Handle for profiling {@link #newEvent(VarNodeEdgeMap, NodeFactory, boolean)} and related methods. */
     static public final int GET_EVENT = reporter.newMethod("getEvent");
 }
