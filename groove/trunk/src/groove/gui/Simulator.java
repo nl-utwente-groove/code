@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.66 2007-10-24 15:41:40 rensink Exp $
+ * $Id: Simulator.java,v 1.67 2007-10-26 07:07:14 rensink Exp $
  */
 package groove.gui;
 
@@ -125,7 +125,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.66 $
+ * @version $Revision: 1.67 $
  */
 public class Simulator {
     /**
@@ -786,10 +786,14 @@ public class Simulator {
         if (currentGrammarFile != null) {
         	AspectualGraphView startGraph = getCurrentGrammar().getStartGraph();
             try {
-            	if (startGraph != null) {
+            	File currentStateFile = getStateFileChooser().getSelectedFile();
+            	if (startGraph != null && currentStateFile == null) {
             		setGrammar(currentGrammarLoader.unmarshal(currentGrammarFile, startGraph.getName()));
             	} else {
                     setGrammar(currentGrammarLoader.unmarshal(currentGrammarFile));
+                    if (currentStateFile != null) {
+                    	doLoadStartGraph(currentStateFile);
+                    }
             	}
             } catch (IOException exc) {
                 showErrorDialog("Error while loading grammar from " + currentGrammarFile, exc);

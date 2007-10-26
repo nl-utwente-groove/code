@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.29 2007-10-22 16:08:11 rensink Exp $
+ * $Id: AspectJModel.java,v 1.30 2007-10-26 07:07:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -22,6 +22,7 @@ import static groove.gui.jgraph.JAttr.RULE_EDGE_ATTR;
 import static groove.gui.jgraph.JAttr.RULE_EDGE_EMPH_CHANGE;
 import static groove.gui.jgraph.JAttr.RULE_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.RULE_NODE_EMPH_CHANGE;
+import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import static groove.view.aspect.NestingAspect.getNestingValue;
 import static groove.view.aspect.RuleAspect.CREATOR;
 import static groove.view.aspect.RuleAspect.EMBARGO;
@@ -29,7 +30,6 @@ import static groove.view.aspect.RuleAspect.ERASER;
 import static groove.view.aspect.RuleAspect.READER;
 import static groove.view.aspect.RuleAspect.REMARK;
 import static groove.view.aspect.RuleAspect.getRuleValue;
-import static groove.view.aspect.AttributeAspect.getAttributeValue;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
@@ -67,7 +67,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  */
 public class AspectJModel extends GraphJModel {
 

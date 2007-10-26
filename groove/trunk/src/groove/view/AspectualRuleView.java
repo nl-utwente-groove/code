@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.26 2007-10-14 11:18:16 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.27 2007-10-26 07:07:18 rensink Exp $
  */
 
 package groove.view;
@@ -83,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -553,7 +553,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 					if (!edgeEntry.getValue()) {
 						rootMap.putEdge(edgeImage, edgeImage);
 					} 
-				} else if (!RuleAspect.inRHS(edge)) {
+				} else if (!RuleAspect.inRHS(edge) && !RegExprLabel.isNeg(edge.label())) {
 					throw new FormatException(
 							"Regular label '%s' may not be used on erasers",
 							edgeImage.label());

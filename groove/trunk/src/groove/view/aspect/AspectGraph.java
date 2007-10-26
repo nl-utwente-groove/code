@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.11 2007-10-10 08:59:37 rensink Exp $
+ * $Id: AspectGraph.java,v 1.12 2007-10-26 07:07:16 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -210,7 +210,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 		for (AspectNode node : result.nodeSet()) {
 			try {
 				for (Aspect aspect : node.getAspectMap().keySet()) {
-					aspect.testNode(node, result);
+					aspect.checkNode(node, result);
 				}
 			} catch (FormatException exc) {
 				errors.addAll(exc.getErrors());
@@ -219,7 +219,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 		for (AspectEdge edge : result.edgeSet()) {
 			try {
 				for (Aspect aspect : edge.getAspectMap().keySet()) {
-					aspect.testEdge(edge, result);
+					aspect.checkEdge(edge, result);
 				}
 			} catch (FormatException exc) {
 				errors.addAll(exc.getErrors());

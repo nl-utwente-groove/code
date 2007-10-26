@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractAspect.java,v 1.11 2007-10-18 14:12:11 rensink Exp $
+ * $Id: AbstractAspect.java,v 1.12 2007-10-26 07:07:16 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -20,6 +20,7 @@ import groove.graph.Label;
 import groove.view.DefaultLabelParser;
 import groove.view.FormatException;
 import groove.view.LabelParser;
+import groove.view.NumberLabelParser;
 import groove.view.RegExprLabelParser;
 
 import java.util.Collections;
@@ -237,14 +238,14 @@ public abstract class AbstractAspect implements Aspect {
 	/**
 	 * This default implementation never throws the exception.
 	 */
-	public void testEdge(AspectEdge edge, AspectGraph graph) throws FormatException {
+	public void checkEdge(AspectEdge edge, AspectGraph graph) throws FormatException {
 		// empty
 	}
 
 	/**
 	 * This default implementation never throws the exception.
 	 */
-	public void testNode(AspectNode node, AspectGraph graph) throws FormatException {
+	public void checkNode(AspectNode node, AspectGraph graph) throws FormatException {
 		// empty
 	}
 
@@ -303,6 +304,11 @@ public abstract class AbstractAspect implements Aspect {
 //    /** Target inference rules, as a mapping from edge aspect values to node aspect values. */
 //    private final Map<AspectValue,AspectValue> targetInference = new HashMap<AspectValue,AspectValue>();
 
+	/** Returns a parser that turns a string into a number. */
+	static LabelParser getNumberLabelParser() {
+		return NUMBER_PARSER;
+	}
+
 	/** Returns a parser that turns a string into a regular expression label. */
 	static LabelParser getRegExprLabelParser() {
 		return REG_EXPR_PARSER;
@@ -319,6 +325,10 @@ public abstract class AbstractAspect implements Aspect {
 	 * Instance of the regular expression parser. 
 	 */
 	static private final LabelParser REG_EXPR_PARSER = new RegExprLabelParser();
+	/**
+	 * Instance of the default label parser. 
+	 */
+	static private final LabelParser NUMBER_PARSER = new NumberLabelParser();
 	/**
 	 * Instance of the default label parser. 
 	 */

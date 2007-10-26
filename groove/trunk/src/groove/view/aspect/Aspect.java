@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Aspect.java,v 1.7 2007-10-10 08:59:37 rensink Exp $
+ * $Id: Aspect.java,v 1.8 2007-10-26 07:07:16 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * Examples of aspects are: the roles in a rule, typing information, or
  * graph condition information.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public interface Aspect {
 	/**
@@ -76,7 +76,7 @@ public interface Aspect {
      * @param node the node to be tested for correctness
      * @param graph aspect graph in which the node occurs
      */ 
-    void testNode(AspectNode node, AspectGraph graph) throws FormatException;
+    void checkNode(AspectNode node, AspectGraph graph) throws FormatException;
     
     /** 
      * Tests the local correctness of a given aspect edge, in terms of
@@ -85,7 +85,7 @@ public interface Aspect {
      * @param edge the edge to be tested for correctness
      * @param graph aspect graph in which the node occurs
      */ 
-    void testEdge(AspectEdge edge, AspectGraph graph) throws FormatException;
+    void checkEdge(AspectEdge edge, AspectGraph graph) throws FormatException;
 
     /**
      * Tests if an edge label is allowed, given a declared and an inferred aspect value

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.12 2007-10-18 14:57:42 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.13 2007-10-26 07:07:16 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -35,6 +35,7 @@ import groove.util.Groove;
 import groove.view.DefaultLabelParser;
 import groove.view.FormatException;
 
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,14 +46,80 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
     private AttributeAspect() {
         super(ATTRIBUTE_ASPECT_NAME);
     }
-    /**
+
+    /** 
+     * Checks if the context of an attribute-valued aspect node in an 
+     * aspect graph is correct, in the sense.
+     * For a {@link #PRODUCT} node, correctness means all incident edges are
+     * outgoing, and the {@link #ARGUMENT} edges are numbered in the range
+     * <code>0..arity</code>, where <code>arity</code> is the number of arguments
+     * expected by the outgoing operation edges.
+     * For a {@link #VALUE} node, correctness
+     * means all incident edges are incoming, and of equal type if they
+     * are operation edges.
+     */
+	@Override
+	public void checkNode(AspectNode node, AspectGraph graph)
+			throws FormatException {
+		AspectValue value = getAttributeValue(node);
+		Set<AspectEdge> edges = graph.edgeSet(node);
+		if (PRODUCT.equals(value)) {
+			int arity = 0;
+			BitSet arguments = new BitSet();
+			for (AspectEdge edge: edges) {
+				if (!edge.source().equals(node)) {
+					throw new FormatException("Product node '%s' has incoming edge '%s'", node, edge);
+				}
+				AspectValue edgeValue = getAttributeValue(edge);
+				if (edgeValue == null) {
+					throw new FormatException("Product node '%s' has non-attribute edge '%s'", node, edge);
+				} else if (ARGUMENT.equals(edgeValue)) {
+					// label is know to represent a natural number
+					int nr = Integer.parseInt(edge.label().text());
+					arity = Math.max(arity, nr+1);
+					if (arguments.get(nr)) {
+						throw new FormatException("Duplicate argument edge index '%d'", nr);
+					}
+					arguments.set(nr);
+				}
+			}
+			if (arguments.cardinality() != arity) {
+				throw new FormatException("Argument edge indices %s do not constiture valid range", arguments);
+			}
+			for (AspectEdge edge: edges) {
+				Operation operation = getOperation(edge);
+				if (operation != null && operation.arity() != arity) {
+					throw new FormatException("Operation '%s' is incompatible with product node arity %d", operation, arity);
+				}
+			}
+		} else {
+			// the value is VALUE; try to establish the algebra
+			Algebra type = null;
+			for (AspectEdge edge: edges) {
+				if (!edge.target().equals(node)) {
+					throw new FormatException("Value node '%s' has outgoing edge '%s'", node, edge);
+				}
+				Operation operation = getOperation(edge);
+				if (operation != null) {
+					Algebra edgeType = operation.getResultType();
+					if (type == null) {
+						type = edgeType;
+					} else if (!type.equals(edgeType)) {
+						throw new FormatException("Incompatible types '%s' and '%s' for value node '%s'", type, edgeType, node);
+					}
+				}
+			}
+		}
+	}
+
+	/**
      * Returns the singleton instance of this aspect.
      */
     public static AttributeAspect getInstance() {
@@ -195,11 +262,14 @@ public class AttributeAspect extends AbstractAspect {
     
     /** 
      * Creates an attribute-related edge from a given
-     * {@link AspectEdge} found in a given {@link AspectGraph}. The type of the
+     * {@link AspectEdge} found in a given {@link AspectGraph}, between given
+     * end nodes. The type of the
      * resulting edge depends on the {@link AttributeAspect} value of the given edge. 
      * The result is a {@link ProductEdge} or {@link AlgebraEdge}, or <code>null</code> if
      * the edge contains no special {@link AttributeAspect} value.
+     * The edge is assumed to ave passed {@link #checkEdge(AspectEdge, AspectGraph)}.
      * @param edge the edge for which we want an attribute-related edge
+     * @param ends the end nodes for the new edge
      * @return a {@link ProductEdge} or {@link AlgebraEdge} corresponding to <code>edge</code>, or <code>null</code>
      * @throws FormatException if attribute-related errors are found in <code>graph</code> 
      */
@@ -209,17 +279,12 @@ public class AttributeAspect extends AbstractAspect {
     	if (attributeValue == null) {
     		result = null;
     	} else if (attributeValue == ARGUMENT) {
-    		try {
-				int argNumber = Integer.parseInt(edge.label().text());
-				AlgebraEdge argEdge = createArgumentEdge(argNumber, ends);
-				argEdge.source().setArgument(argEdge.getNumber(), argEdge.target());
-				result = argEdge;
-			} catch (NumberFormatException exc) {
-				throw new FormatException("Edge label '%s' should be natural number", edge.label());
-			}
+    		int argNumber = Integer.parseInt(edge.label().text());
+    		AlgebraEdge argEdge = createArgumentEdge(argNumber, ends);
+    		result = argEdge;
     	} else {
     		assert algebraMap.containsKey(attributeValue);
-    		result = createOperatorEdge(edge, ends);
+    		result = createOperatorEdge(getOperation(edge), ends);
     	}
     	return result;
     }
@@ -227,30 +292,24 @@ public class AttributeAspect extends AbstractAspect {
 	/**
      * Creates and returns a fresh {@link ProductEdge} derived from 
      * a given aspect edge (which should have attribute value {@link #PRODUCT}).
-     * @param edge the edge for which the image is to be created
+     * @param operator the edge for which the image is to be created
      * @param ends the end nodes of the edge to be created
      * @return a fresh {@link ProductEdge}
      * @throws FormatException if <code>edge</code> does not have a correct 
      * set of outgoing attribute edges in <code>graph</code>
      */
-	private static Edge createOperatorEdge(AspectEdge edge, Node[] ends) throws FormatException {
-		try {
-			Algebra algebra = algebraMap.get(getAttributeValue(edge));
-			Operation operator = algebra.getOperation(edge.label().text());
-			Node source = ends[Edge.SOURCE_INDEX];
-			if (!(source instanceof ProductNode)) {
-				throw new FormatException("Source of '%s'-edge should be a product node", operator);
-			} else if (operator.arity() != ((ProductNode) source).arity()) {
-				throw new FormatException("Source arity of '%s'-edge should be %d", operator, operator.arity());
-			}
-			Node target = ends[Edge.TARGET_INDEX];
-			if (!(target instanceof ValueNode)) {
-				throw new FormatException("Target of '%s'-edge should be a value node", operator);
-			}
-			return new ProductEdge((ProductNode) source, (ValueNode) target, operator);
-		} catch (UnknownSymbolException exc) {
-			throw new FormatException(exc.getMessage());
+	private static Edge createOperatorEdge(Operation operator, Node[] ends) throws FormatException {
+		Node source = ends[Edge.SOURCE_INDEX];
+		if (!(source instanceof ProductNode)) {
+			throw new FormatException("Source of '%s'-edge should be a product node", operator);
+		} else if (operator.arity() != ((ProductNode) source).arity()) {
+			throw new FormatException("Source arity of '%s'-edge should be %d", operator, operator.arity());
 		}
+		Node target = ends[Edge.TARGET_INDEX];
+		if (!(target instanceof ValueNode)) {
+			throw new FormatException("Target of '%s'-edge should be a value node", operator);
+		}
+		return new ProductEdge((ProductNode) source, (ValueNode) target, operator);
 	}
 	
 	/**
@@ -274,7 +333,9 @@ public class AttributeAspect extends AbstractAspect {
 		} else if (! (target instanceof ValueNode)) {
 			throw new FormatException("Target of '%d'-edge should be value node", argNumber);
 		}
-		return new AlgebraEdge((ProductNode) source, argNumber, (ValueNode) target);
+		AlgebraEdge result = new AlgebraEdge((ProductNode) source, argNumber, (ValueNode) target);
+		result.source().setArgument(argNumber, result.target());
+		return result;
 	}
 	
 	/**
@@ -318,6 +379,24 @@ public class AttributeAspect extends AbstractAspect {
     		throw new IllegalStateException(String.format("Duplicate algebra %s", algebra));
     	}
     	value.setLabelParser(new OperationLabelParser(algebra));
+    }
+    
+    /** 
+     * Extracts an algebra operation from an aspect edge.
+     * Returns <code>null</code> if the edge is not a (valid) operation edge. 
+     */
+    public static Operation getOperation(AspectEdge edge) {
+    	Operation result = null;
+		AspectValue edgeValue = getAttributeValue(edge);
+		if (edgeValue != null && !ARGUMENT.equals(edgeValue)) {
+			OperationLabelParser parser = (OperationLabelParser) edgeValue.getLabelParser();
+			try {
+				result = parser.getOperation(edge.label().text());
+			} catch (FormatException exc) {
+				// no valid operation
+			}
+		}
+		return result;
     }
 
     /**
@@ -363,12 +442,11 @@ public class AttributeAspect extends AbstractAspect {
      * Map from algebras to aspect values that represent them. 
      */
     private static final Map<Algebra, AspectValue> aspectValueMap = new HashMap<Algebra, AspectValue>();
-//    /** Map from algebras to label parsers for those algebras. */
-//    private static final Map<Algebra,LabelParser> parserMap = new HashMap<Algebra,LabelParser>();
     
 	static {
 		try {
 		    ARGUMENT = instance.addEdgeValue(ARGUMENT_NAME);
+		    ARGUMENT.setLabelParser(getNumberLabelParser());
 		    VALUE = instance.addNodeValue(VALUE_NAME);
 		    PRODUCT = instance.addNodeValue(PRODUCT_NAME);
 		    INTEGER = instance.addEdgeValue(INTEGER_NAME);
@@ -406,13 +484,23 @@ public class AttributeAspect extends AbstractAspect {
         /** This implementation tests if the text corresponds to an operation of the associated algebra. */
         @Override
 		protected void testFormat(String text) throws FormatException {
+        	getOperation(text);
+		}
+		
+        /** 
+         * Extracts an operation of this algebra from a given string,
+         * if the string indeed represents such an operation.
+         * @throws FormatException if <code>text</code> does not represent an operation
+         * of this algebra.
+         */
+        public Operation getOperation(String text) throws FormatException {
 			try {
-				algebra.getOperation(text);
+				return algebra.getOperation(text);
 			} catch (UnknownSymbolException exc) {
 				throw new FormatException(exc.getMessage());
 			}
-		}
-		
+        }
+        
 		/** The algebra that should understand the operation. */
 		private final Algebra algebra;
 	}

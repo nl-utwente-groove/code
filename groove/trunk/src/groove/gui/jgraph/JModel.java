@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.19 2007-10-10 08:59:51 rensink Exp $
+ * $Id: JModel.java,v 1.20 2007-10-26 07:07:17 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -62,7 +62,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -346,25 +346,24 @@ abstract public class JModel extends DefaultGraphModel {
     public boolean isGrayedOut(JCell cell) {
         return grayedOutJCells.contains(cell);
     }
-
-    /**
-     * Changes the grayed-out status of a given jgraph cell. Graying out a cell means making it
-     * uneditable etc. The grayed-out status of cells can be tested
-     * using {@link #isGrayedOut(JCell)}.
-     * @param cell the cell whose grayed-out status is to be changed
-     * @param hidden the new grayed-out status of the cell
-     * @see #changeGrayedOut(JCell, boolean)
-     * @see #isGrayedOut(JCell)
-     */
-    public void changeGrayedOut(JCell cell, boolean hidden) {
-        changeGrayedOut(Collections.singleton(cell), hidden);
-    }
+//
+//    /**
+//     * Changes the grayed-out status of a given jgraph cell. Graying out a cell means making it
+//     * uneditable etc. The grayed-out status of cells can be tested
+//     * using {@link #isGrayedOut(JCell)}.
+//     * @param cell the cell whose grayed-out status is to be changed
+//     * @param hidden the new grayed-out status of the cell
+//     * @see #changeGrayedOut(JCell, boolean)
+//     * @see #isGrayedOut(JCell)
+//     */
+//    public void changeGrayedOut(JCell cell, boolean hidden) {
+//        changeGrayedOut(Collections.singleton(cell), hidden);
+//    }
 
     /**
      * Changes the grayed-out status of a given set of jgraph cells.
      * @param jCells the cells whose hiding status is to be changed
      * @param grayedOut the new grayed-out status of the cell
-     * @see #changeGrayedOut(JCell,boolean)
      * @see #isGrayedOut(JCell)
      */
     public void changeGrayedOut(Set<JCell> jCells, boolean grayedOut) {
@@ -408,7 +407,6 @@ abstract public class JModel extends DefaultGraphModel {
     /**
      * Sets the grayed-out cells to a given set.
      * @param jCells the cells to be grayed out
-     * @see #changeGrayedOut(JCell,boolean)
      * @see #isGrayedOut(JCell)
      */
     public void setGrayedOut(Set<JCell> jCells) {
@@ -674,7 +672,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.19 $
+     * @version $Revision: 1.20 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**

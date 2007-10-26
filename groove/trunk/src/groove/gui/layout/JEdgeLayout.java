@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeLayout.java,v 1.3 2007-05-25 07:42:53 rensink Exp $
+ * $Id: JEdgeLayout.java,v 1.4 2007-10-26 07:07:19 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -20,6 +20,7 @@ import groove.gui.jgraph.JAttr;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
@@ -44,7 +45,19 @@ public class JEdgeLayout implements JCellLayout {
      * @param attr the attribute map
      */
     static public JEdgeLayout newInstance(AttributeMap attr) {
-        return new JEdgeLayout(GraphConstants.getPoints(attr), GraphConstants.getLabelPosition(attr), GraphConstants.getLineStyle(attr));
+    	List<Point2D> points = new ArrayList<Point2D>();
+    	List<?> attrPoints = GraphConstants.getPoints(attr);
+    	if (attrPoints == null) {
+    		points.add(new Point());
+    		points.add(new Point());
+    	} else {
+    		for (Object p : attrPoints) {
+				if (p instanceof Point2D) {
+					points.add((Point2D) p);
+				}
+			}
+    	}
+    	return new JEdgeLayout(points, GraphConstants.getLabelPosition(attr), GraphConstants.getLineStyle(attr));
     }
 
     /**
@@ -69,7 +82,7 @@ public class JEdgeLayout implements JCellLayout {
     /**
      * Constructs an edge layout with a given list of intermediate points,
      * a given label position and a given linestyle.
-     * @param points the list of intermediate points
+     * @param points the list of intermediate points; not <code>null</code>
      * @param labelPosition the label position
      * @param lineStyle the line style
      * @ensure <code>getPoints().equals(points)</code> and
@@ -77,14 +90,7 @@ public class JEdgeLayout implements JCellLayout {
      * <code>getLineStyle() == lineStyle</code>
      */
     public JEdgeLayout(List<Point2D> points, Point2D labelPosition, int lineStyle) {
-        if (points == null || points.isEmpty()) {
-            // make a list of at least two points
-            this.points = new LinkedList<Point2D>();
-            this.points.add(new Point());
-            this.points.add(new Point());
-        } else {
-            this.points = new LinkedList<Point2D>(points);
-        }
+    	this.points = new LinkedList<Point2D>(points);
         if (labelPosition == null) {
             this.labelPosition = defaultLabelPosition;
         } else {
@@ -104,29 +110,6 @@ public class JEdgeLayout implements JCellLayout {
      */
     public JEdgeLayout(List<Point2D> points, Point labelPosition) {
         this(points, labelPosition, JAttr.DEFAULT_LINE_STYLE);
-    }
-
-    /**
-     * Constructs an edge layout with a given list of intermediate points,
-     * an unspecified label position and unspecified line style.
-     * @param points the list of intermediate points
-     * @ensure <code>getPoints().equals(points)</code> and
-     * <code>isDefaultLabelPosition(getLabelPosition())</code> and
-     * <code>isDefaultLineStyle(getLineStyle())</code>
-     */
-    public JEdgeLayout(List<Point2D> points) {
-        this(points, defaultLabelPosition);
-    }
-
-    /**
-     * Constructs an edge layout with no intermediate points,
-     * an unspecified label position and unspecified line style.
-     * @ensure <code>getPoints().size() == 0</code> and
-     * <code>getLabelPosition() == null</code> and
-     * <code>getLineStyle() == STYLE_UNKNOWN</code>
-     */
-    public JEdgeLayout() {
-        this(new LinkedList<Point2D>());
     }
 
     /**
