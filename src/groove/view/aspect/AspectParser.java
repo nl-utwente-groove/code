@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.10 2007-09-30 21:29:08 rensink Exp $
+ * $Id: AspectParser.java,v 1.11 2007-10-26 09:38:21 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -31,7 +31,7 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class AspectParser {
 	/** 
@@ -151,7 +151,7 @@ public class AspectParser {
 		boolean stopParsing = false;
 		AspectValue value = AspectValue.getValue(valueText);
 		if (value == null) {
-			throw new FormatException(String.format("Unknown aspect value '%s'", valueText));
+			throw new FormatException(String.format("Unknown aspect value '%s' (precede label text with ':' to avoid aspect parsing)", valueText));
 		} else if (value instanceof ContentAspectValue) {
 			// use the value as a factory to get a correct instance
 			value = ((ContentAspectValue<?>) value).newValue(contentText == null ? "" : contentText);
@@ -236,7 +236,7 @@ public class AspectParser {
 		for (AspectValue value: values) {
 			result.append(AspectParser.toString(value));
 		}
-		if (values.size() > 0 && (labelText.length() == 0 || labelText.indexOf(VALUE_SEPARATOR) >= 0)) {
+		if (labelText.length() == 0 || labelText.indexOf(VALUE_SEPARATOR) >= 0) {
 			result.append(VALUE_SEPARATOR);
 		}
 		result.append(labelText);
