@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeLayout.java,v 1.4 2007-10-26 07:07:19 rensink Exp $
+ * $Id: JEdgeLayout.java,v 1.5 2007-10-26 09:38:11 rensink Exp $
  */
 package groove.gui.layout;
 
@@ -27,6 +27,7 @@ import java.util.List;
 
 import org.jgraph.graph.AttributeMap;
 import org.jgraph.graph.GraphConstants;
+import org.jgraph.graph.PortView;
 
 
 /**
@@ -54,6 +55,8 @@ public class JEdgeLayout implements JCellLayout {
     		for (Object p : attrPoints) {
 				if (p instanceof Point2D) {
 					points.add((Point2D) p);
+				} else if (p instanceof PortView) {
+				    points.add(((PortView) p).getLocation());
 				}
 			}
     	}
