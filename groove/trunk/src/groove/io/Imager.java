@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.14 2007-10-22 16:08:12 rensink Exp $
+ * $Id: Imager.java,v 1.15 2007-10-27 08:53:20 rensink Exp $
  */
 package groove.io;
 
@@ -62,7 +62,7 @@ import javax.swing.JTextField;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class Imager extends CommandLineTool {
     /**
@@ -536,9 +536,7 @@ public class Imager extends CommandLineTool {
                 }
             });
             // make central panel
-            JPanel central = new JPanel();
-            GridBagLayout layout = new GridBagLayout();
-            central.setLayout(layout);
+            JPanel central = new JPanel(new GridBagLayout(), false);
             GridBagConstraints constraint = new GridBagConstraints();
             constraint.ipadx = 1;
             constraint.ipady = 2;

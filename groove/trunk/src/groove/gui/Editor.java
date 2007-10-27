@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Editor.java,v 1.48 2007-10-27 08:45:32 rensink Exp $
+ * $Id: Editor.java,v 1.49 2007-10-27 08:53:19 rensink Exp $
  */
 package groove.gui;
 
@@ -93,7 +93,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.48 $ $Date: 2007-10-27 08:45:32 $
+ * @version $Revision: 1.49 $ $Date: 2007-10-27 08:53:19 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -629,12 +629,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * Creates a panel showing a given toolbar, and the graph and status panels of the editor.
      */
     JPanel createContentPanel(JToolBar toolBar) {
-        JPanel result = new JPanel();
+        JPanel result = new JPanel(new BorderLayout(),false);
         // initialize the main editor panel
-        // Use Border Layout
-        result.setLayout(new BorderLayout());
-        // Add the main pane as Center Component
-        // initEditorPane(createSplitEditorPane());
         // Add a ToolBar
         result.add(toolBar, BorderLayout.NORTH);
         result.add(getGraphPanel(), BorderLayout.CENTER);
@@ -1241,7 +1237,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         jGraph.setToolTipEnabled(true);
         JScrollPane jGraphPane = new JScrollPane(jGraph);
         jGraphPane.setBorder(new BevelBorder(BevelBorder.LOWERED));
-        JComponent previewContent = new JPanel();
+        JComponent previewContent = new JPanel(false);
         previewContent.setLayout(new BorderLayout());
         previewContent.add(jGraphPane);
         if (!previewModel.getProperties().isEmpty()) {
@@ -1785,7 +1781,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.48 $
+     * @version $Revision: 1.49 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */
