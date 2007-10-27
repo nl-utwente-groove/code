@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.23 2007-10-26 07:07:17 rensink Exp $
+ * $Id: JGraph.java,v 1.24 2007-10-27 08:45:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -79,7 +79,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.23 $ $Date: 2007-10-26 07:07:17 $
+ * @version $Revision: 1.24 $ $Date: 2007-10-27 08:45:29 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -105,7 +105,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         // Save edits to a cell whenever something else happens
         setInvokesStopCellEditing(true);
         // Turn off double buffering for speed
-        // setDoubleBuffered(false);
+         setDoubleBuffered(false);
         addMouseListener(new MyMouseListener());
     }
 

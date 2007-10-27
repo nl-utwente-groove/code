@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Editor.java,v 1.47 2007-10-24 15:41:40 rensink Exp $
+ * $Id: Editor.java,v 1.48 2007-10-27 08:45:32 rensink Exp $
  */
 package groove.gui;
 
@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -86,12 +87,13 @@ import org.jgraph.event.GraphModelEvent;
 import org.jgraph.event.GraphModelListener;
 import org.jgraph.event.GraphSelectionEvent;
 import org.jgraph.event.GraphSelectionListener;
+import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphUndoManager;
 
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.47 $ $Date: 2007-10-24 15:41:40 $
+ * @version $Revision: 1.48 $ $Date: 2007-10-27 08:45:32 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -215,11 +217,24 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     }
 
     /** 
-     * Refreshes the status bar.
+     * Refreshes the status bar and the errors, if the 
+     * text on any of the cells has changed.
      */
     public void graphChanged(GraphModelEvent e) {
-    	setErrors(null);
-        updateStatus();
+    	boolean changed = false;
+    	Map<?,?> changes = e.getChange().getAttributes();
+    	if (changes != null) {
+			for (Object change : changes.values()) {
+				changed = ((Map<?, ?>) change).keySet().contains(GraphConstants.VALUE);
+				if (changed) {
+					break;
+				}
+			}
+		}
+		if (changed) {
+			setErrors(null);
+			updateStatus();
+		}
     }
     
     /**
@@ -1770,7 +1785,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.47 $
+     * @version $Revision: 1.48 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

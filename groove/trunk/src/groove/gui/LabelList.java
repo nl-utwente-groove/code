@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LabelList.java,v 1.18 2007-10-10 08:59:44 rensink Exp $
+ * $Id: LabelList.java,v 1.19 2007-10-27 08:45:31 rensink Exp $
  */
 package groove.gui;
 
@@ -55,7 +55,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /**
@@ -241,18 +241,20 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 	 * selection.
 	 */
     public void valueChanged(ListSelectionEvent e) {
-		Set<JCell> emphSet = new HashSet<JCell>();
-		int i = getMinSelectionIndex();
-		if (i >= 0) {
-			while (i <= getMaxSelectionIndex()) {
-				String label = (String) listModel.getElementAt(i);
-				if (isSelectedIndex(i)) {
-					emphSet.addAll(labels.get(label));
+    	if (!e.getValueIsAdjusting()) {
+			Set<JCell> emphSet = new HashSet<JCell>();
+			int i = getMinSelectionIndex();
+			if (i >= 0) {
+				while (i <= getMaxSelectionIndex()) {
+					String label = (String) listModel.getElementAt(i);
+					if (isSelectedIndex(i)) {
+						emphSet.addAll(labels.get(label));
+					}
+					i++;
 				}
-				i++;
 			}
+			jmodel.setEmphasized(emphSet);
 		}
-		jmodel.setEmphasized(emphSet);
 	}
 
     /**
