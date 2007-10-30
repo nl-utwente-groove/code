@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JCellViewFactory.java,v 1.3 2007-05-28 21:32:44 rensink Exp $
+ * $Id: JCellViewFactory.java,v 1.4 2007-10-30 17:21:20 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -25,7 +25,7 @@ import org.jgraph.graph.VertexView;
  * -objects. For this purpose, the graph on which the views are to be displayed is stored in the
  * factory.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class JCellViewFactory extends DefaultCellViewFactory {
     /**
@@ -44,7 +44,7 @@ public class JCellViewFactory extends DefaultCellViewFactory {
     protected VertexView createVertexView(Object cell) {
         if (cell instanceof JVertex) {
             JVertexView result = new JVertexView((JVertex) cell, jGraph);	
-            result.refresh(jGraph.getModel(), jGraph.getGraphLayoutCache(), false);
+            result.refresh(jGraph.getGraphLayoutCache(), jGraph.getGraphLayoutCache(), false);
             jGraph.updateAutoSize(result);
             return result;
         } else {

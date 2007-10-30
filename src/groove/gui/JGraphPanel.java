@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraphPanel.java,v 1.16 2007-10-27 08:53:19 rensink Exp $
+ * $Id: JGraphPanel.java,v 1.17 2007-10-30 17:21:15 rensink Exp $
  */
 package groove.gui;
 
@@ -40,7 +40,7 @@ import javax.swing.JSplitPane;
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
@@ -134,6 +134,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
     protected JComponent createSoloPane() {
         // set up the real editor pane
         JScrollPane result = new JScrollPane(jGraph);
+        result.setDoubleBuffered(false);
         result.setPreferredSize(new Dimension(500, 400));
         return result;
     }
@@ -143,8 +144,7 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      * list are shown.
      */
     protected JComponent createSplitPane() {
-        JPanel labelPane = new JPanel();
-        labelPane.setLayout(new BorderLayout());
+        JPanel labelPane = new JPanel(new BorderLayout(), false);
         labelPane.add(new JLabel(" " + Options.LABEL_PANE_TITLE + " "),
                 BorderLayout.NORTH);
         JScrollPane scrollPane = new JScrollPane(jGraph.getLabelList()) {
