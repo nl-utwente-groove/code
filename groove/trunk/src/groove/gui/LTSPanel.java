@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSPanel.java,v 1.17 2007-10-10 08:59:44 rensink Exp $
+ * $Id: LTSPanel.java,v 1.18 2007-10-30 17:21:16 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import groove.graph.Edge;
+import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.jgraph.JCell;
@@ -43,7 +44,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.17 $ $Date: 2007-10-10 08:59:44 $
+ * @version $Revision: 1.18 $ $Date: 2007-10-30 17:21:16 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
     /** Creates a LTS panel for a given simulator. */
@@ -108,10 +109,11 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     	getJModel().setActive(state,null);
         // we do layouting here because it's too expensive to do it
         // every time a new state is added
-        if (getJGraph().getLayouter() != null) {
+		if (ltsListener.stateAdded && getJGraph().getLayouter() != null) {
         	getJModel().freeze();
         	getJGraph().getLayouter().start(false);
-        }
+        	ltsListener.stateAdded = false;
+		}
         getJGraph().scrollTo(state);
     }
 
@@ -225,7 +227,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     private final Simulator simulator;
     
     /** The graph lisener permanently associated with this exploration strategy. */
-    private final LTSListener ltsListener = new MyLTSListener(); 
+    private final MyLTSListener ltsListener = new MyLTSListener(); 
     
     /**
      * Listener that makes sure the panel status gets updated when the
@@ -244,6 +246,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     	@Override
         public void addUpdate(GraphShape graph, Node node) {
             assert graph == getGts() : "I want to listen only to my lts";
+            stateAdded = true;
             refreshStatus();
         }
 
@@ -269,6 +272,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
             }
             refreshStatus();
         }
+    	
+		boolean stateAdded;
     }
     
 	/** 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Editor.java,v 1.49 2007-10-27 08:53:19 rensink Exp $
+ * $Id: Editor.java,v 1.50 2007-10-30 17:21:15 rensink Exp $
  */
 package groove.gui;
 
@@ -93,7 +93,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.49 $ $Date: 2007-10-27 08:53:19 $
+ * @version $Revision: 1.50 $ $Date: 2007-10-30 17:21:15 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -108,6 +108,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         this.options = options;
         if (frame == null) {
             this.frame = new JFrame(EDITOR_NAME);
+//            this.frame.getRootPane().setDoubleBuffered(false);
         } else {
             this.frame = frame;
             this.frame.setTitle(EDITOR_NAME);
@@ -115,7 +116,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         this.jgraph = new EditorJGraph(this);
         initListeners();
         initGUI();
-        this.frame.pack();
     }
 
     /** 
@@ -126,6 +126,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         this(null, null);
     }
 
+    /** Creates the frame and makes it visible. */
+    public void start() {
+    	getFrame().pack();
+    	getFrame().setVisible(true);
+    }
+    
     /** Returns the frame in which the editor is displayed. */
     public final JFrame getFrame() {
 		return frame;
@@ -1430,7 +1436,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             } else {
                 editor.doOpenGraph(new File(args[0]));
             }
-            editor.getFrame().setVisible(true);
+            editor.start();
         } catch (IOException exc) {
             System.out.println("Error: " + exc.getMessage());
         }
@@ -1781,7 +1787,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.49 $
+     * @version $Revision: 1.50 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

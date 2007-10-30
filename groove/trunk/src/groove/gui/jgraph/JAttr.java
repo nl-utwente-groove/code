@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.18 2007-09-30 21:45:12 rensink Exp $
+ * $Id: JAttr.java,v 1.19 2007-10-30 17:21:20 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -40,11 +40,12 @@ import javax.swing.border.LineBorder;
 
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphConstants;
+import org.jgraph.graph.GraphLayoutCache;
 
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class JAttr {
 	/** Creates a stroke with a given line width and dash pattern. */
@@ -269,13 +270,9 @@ public class JAttr {
 				return NO_PREFERENCE;
 			}
 
-			/**
-			 * Returns <code>null</code>
-			 */
-			public List<?> route(EdgeView edge) {
+			public List<?> route(GraphLayoutCache cache, EdgeView edge) {
 				return null;
 			}
-        	
         });
         DEFAULT_EDGE_ATTR = defaultEdgeAttr;
 

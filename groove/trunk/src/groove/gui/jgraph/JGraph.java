@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.24 2007-10-27 08:45:29 rensink Exp $
+ * $Id: JGraph.java,v 1.25 2007-10-30 17:21:20 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -21,12 +21,15 @@ import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
 import groove.gui.ShowHideMenu;
 import groove.gui.ZoomMenu;
+import groove.gui.jgraph.JModel.RefreshEdit;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.Layouter;
 import groove.util.ObservableSet;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Graphics2D;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -76,10 +79,11 @@ import org.jgraph.graph.GraphSelectionModel;
 import org.jgraph.graph.PortView;
 import org.jgraph.plaf.basic.BasicGraphUI;
 
+
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.24 $ $Date: 2007-10-27 08:45:29 $
+ * @version $Revision: 1.25 $ $Date: 2007-10-30 17:21:20 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -236,7 +240,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 	} else {
                 	    visibleCells.add(jCell);
                     }
-                    jView.changeAttributes(transientAttributes);
+                    jView.changeAttributes(getGraphLayoutCache(),transientAttributes);
                 } else {
                 	if (jCell.isVisible()) {
                 		visibleCells.add(jCell);
@@ -378,13 +382,6 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 //	}
 
 	/**
-     * Completely refreshes the view of the graph.
-     */
-    public void refreshView() {
-    	getGraphLayoutCache().setModel(getModel());
-    }
-
-	/**
 	 * Sets a graph UI that speeds up preferred size checking
 	 * by caching previous values.
 	 */
@@ -399,53 +396,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	 * by caching previously computed values.
 	 */
 	protected BasicGraphUI createGraphUI() {
-		return new org.jgraph.plaf.basic.BasicGraphUI() {
-			@Override
-			public Dimension2D getPreferredSize(org.jgraph.JGraph graph, CellView view) {
-				Dimension2D result = null;
-				if (view instanceof JVertexView) {
-					JVertexView vertexView = (JVertexView) view;
-					String text = convertDigits(vertexView.getCell().getText());
-					result = sizeMap.get(text);
-					if (result == null) {
-						if (text.length() == 0) {
-							result = JAttr.DEFAULT_NODE_SIZE;
-						} else {
-							result = super.getPreferredSize(graph, vertexView);
-						}
-//						// normalize for linewidth of the border
-//						float linewidth = GraphConstants.getLineWidth(vertexView.getAllAttributes());
-//						result.setSize(result.getWidth()-linewidth, result.getHeight()-linewidth);
-						sizeMap.put(text, result);
-					}
-//					// adjust for linewidth of the border
-//					float linewidth = GraphConstants.getLineWidth(vertexView.getAllAttributes());
-//					result = new Dimension((int) Math.round(result.getWidth()+linewidth), (int) Math.round(result.getHeight()+linewidth));
-				} else {
-					result = super.getPreferredSize(graph, view);
-				}
-				assert result != null;
-				return result;
-			}
-			
-			/** 
-			 * Converts all digits in a string in the range 2-9 to 0.
-			 * The idea is that this will not affect the size of the string,
-			 * but will unify many keys in the size map.
-			 */
-			private String convertDigits(String original) {
-				char[] array = original.toCharArray();
-				for (int i = 0; i < array.length; i++) {
-					char c = array[i];
-					if ('2' <= c && c <= '9') {
-						array[i] = '0';
-					}
-				}
-				return String.valueOf(array);
-			}
-			
-			private Map<String,Dimension2D> sizeMap = new HashMap<String,Dimension2D>();
-		};
+		return new MyGraphUI();
 	}
 
 	/**
@@ -1143,12 +1094,134 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
         }
     }
     
+    private class MyGraphUI extends org.jgraph.plaf.basic.BasicGraphUI {
+    	MyGraphUI() {
+    		// empty
+    	}
+    	
+		@Override
+		public Dimension2D getPreferredSize(org.jgraph.JGraph graph,
+				CellView view) {
+			Dimension2D result = null;
+			if (view instanceof JVertexView) {
+				JVertexView vertexView = (JVertexView) view;
+				String text = convertDigits(vertexView.getCell().getText());
+				result = sizeMap.get(text);
+				if (result == null) {
+					if (text.length() == 0) {
+						result = JAttr.DEFAULT_NODE_SIZE;
+					} else {
+						result = super.getPreferredSize(graph, vertexView);
+					}
+					// // normalize for linewidth of the border
+					// float linewidth =
+					// GraphConstants.getLineWidth(vertexView.getAllAttributes());
+					// result.setSize(result.getWidth()-linewidth,
+					// result.getHeight()-linewidth);
+					sizeMap.put(text, result);
+				}
+				// // adjust for linewidth of the border
+				// float linewidth =
+				// GraphConstants.getLineWidth(vertexView.getAllAttributes());
+				// result = new Dimension((int)
+				// Math.round(result.getWidth()+linewidth), (int)
+				// Math.round(result.getHeight()+linewidth));
+			} else {
+				result = super.getPreferredSize(graph, view);
+			}
+			assert result != null;
+			return result;
+		}
+
+		/**
+		 * Converts all digits in a string in the range 2-9 to 0. The idea is
+		 * that this will not affect the size of the string, but will unify many
+		 * keys in the size map.
+		 */
+		private String convertDigits(String original) {
+			char[] array = original.toCharArray();
+			for (int i = 0; i < array.length; i++) {
+				char c = array[i];
+				if ('2' <= c && c <= '9') {
+					array[i] = '0';
+				}
+			}
+			return String.valueOf(array);
+		}
+
+		/**
+		 * Taken from {@link com.jgraph.example.fastgraph.FastGraphUI}. Updates
+		 * the <code>preferredSize</code> instance variable, which is returned
+		 * from <code>getPreferredSize()</code>. Ignores edges for
+		 * performance
+		 */
+		@Override
+		protected void updateCachedPreferredSize() {
+			CellView[] views = graphLayoutCache.getRoots();
+			Rectangle2D size = null;
+			if (views != null && views.length > 0) {
+				for (int i = 0; i < views.length; i++) {
+					if (views[i] != null && !(views[i] instanceof JEdgeView)) {
+						Rectangle2D r = views[i].getBounds();
+						if (r != null) {
+							if (size == null)
+								size = new Rectangle2D.Double(r.getX(),
+										r.getY(), r.getWidth(), r.getHeight());
+							else
+								Rectangle2D.union(size, r, size);
+						}
+					}
+				}
+			}
+			if (size == null)
+				size = new Rectangle2D.Double();
+			Point2D psize = new Point2D.Double(size.getX() + size.getWidth(),
+					size.getY() + size.getHeight());
+			Dimension d = graph.getMinimumSize();
+			Point2D min = (d != null) ? graph.toScreen(new Point(d.width,
+					d.height)) : new Point(0, 0);
+			Point2D scaled = graph.toScreen(psize);
+			preferredSize = new Dimension((int) Math.max(min.getX(),
+					scaled.getX()), (int) Math.max(min.getY(), scaled.getY()));
+			Insets in = graph.getInsets();
+			if (in != null) {
+				preferredSize.setSize(preferredSize.getWidth() + in.left
+						+ in.right, preferredSize.getHeight() + in.top
+						+ in.bottom);
+			}
+			validCachedPreferredSize = true;
+		}
+
+		/**
+		 * Returns a listener that can update the graph when the model changes.
+		 */
+		@Override
+		protected GraphModelListener createGraphModelListener() {
+			return new MyGraphModelHandler();
+		}
+
+		private Map<String, Dimension2D> sizeMap = new HashMap<String, Dimension2D>();
+
+	    private class MyGraphModelHandler extends GraphModelHandler {
+	    	MyGraphModelHandler() {
+	    		// empty
+	    	}
+
+			@Override
+			public void graphChanged(GraphModelEvent e) {
+				if (! (e.getChange() instanceof RefreshEdit)) {
+					super.graphChanged(e);
+				}
+			}
+	    }
+	}
+    
     /**
-     * A layout cache that, for efficiency, does not pass on all change events,
-     * and sets a {@link JCellViewFactory}.
-     * It should be possible to use the partiality of the cache to 
-     * hide elements, but this seems unnecessarily complicated.
-     */
+	 * A layout cache that, for efficiency, does not pass on all change events,
+	 * and sets a {@link JCellViewFactory}. It should be possible to use the
+	 * partiality of the cache to hide elements, but this seems unnecessarily
+	 * complicated.
+	 */
     private class MyGraphLayoutCache extends GraphLayoutCache {   
     	/** Constructs an instance of the cache. */
         MyGraphLayoutCache() {
@@ -1197,6 +1270,28 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 super.graphChanged(change);
             }
         }
+
+		/**
+		 * Completely reloads all roots from the model in the order returned by
+		 * DefaultGraphModel.getAll. This uses the current visibleSet and mapping to
+		 * fetch the cell views for the cells.
+		 */
+		@Override
+		protected void reloadRoots() {
+			// Reorder roots
+			Object[] orderedCells = DefaultGraphModel.getAll(graphModel);
+			List<CellView> newRoots = new ArrayList<CellView>();
+			for (int i = 0; i < orderedCells.length; i++) {
+				CellView view = getMapping(orderedCells[i], true);
+				if (view != null) {
+//					view.refresh(this, this, true);
+					if (view.getParentView() == null) {
+						newRoots.add(view);
+					}
+				}
+			}
+			roots = newRoots;
+		}
     }
     
     /**

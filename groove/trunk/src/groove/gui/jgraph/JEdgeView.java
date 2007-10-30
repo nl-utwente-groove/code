@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeView.java,v 1.8 2007-10-26 09:38:17 rensink Exp $
+ * $Id: JEdgeView.java,v 1.9 2007-10-30 17:21:20 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -40,14 +40,14 @@ import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphCellEditor;
 import org.jgraph.graph.GraphConstants;
 import org.jgraph.graph.GraphContext;
-import org.jgraph.graph.GraphModel;
+import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.PortView;
 
 /**
  * An edge view that uses the <tt>getText()</tt> of the underlying edge as a label. Moreover, new
  * views take care to bend to avoid overlap, and offer functionality to add and remove points.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class JEdgeView extends EdgeView {
 
@@ -94,13 +94,21 @@ public class JEdgeView extends EdgeView {
 	public JEdge getCell() {
 		return (JEdge) super.getCell();
 	}
+//
+//    @Override
+//	public Rectangle2D getBounds() {
+//    	if (bounds == null) {
+//    		bounds = super.getBounds();
+//    	}
+//		return bounds;
+//	}
 
-    /**
+	/**
      * Does some routing of self-edges and overlapping edges.
      */
     @Override
-    public void refresh(GraphModel model, CellMapper mapper, boolean createDependentViews) {
-        super.refresh(model, mapper, createDependentViews);
+    public void refresh(GraphLayoutCache cache, CellMapper mapper, boolean createDependentViews) {
+        super.refresh(cache, mapper, createDependentViews);
         assert target != null : "Target port of "+this+" is null despite our best efforts";
         if (source == target) {
         	routeSelfEdge();
@@ -108,7 +116,15 @@ public class JEdgeView extends EdgeView {
         	routeParallelEdge(mapper);
         }
     }
-    
+//    
+//    
+//    /** In addition to calling the super methods, invalidates the pre-computed edge bounds. */
+//	@Override
+//	public void update() {
+//		bounds = null;
+//		super.update();
+//	}
+
 	/**
      * Adds a point between the first and second points of the underlying j-edge. The point is
      * offset from the straight edge between the current first and second points. Does not update
@@ -394,7 +410,10 @@ public class JEdgeView extends EdgeView {
 
     /** The j-model underlying this edge view. */
     private final JModel jModel;
-
+//
+//    /** Internally stored bounds. */
+//    
+//    private Rectangle2D bounds;
     static {
     	renderer = new MyEdgeRenderer();
     }

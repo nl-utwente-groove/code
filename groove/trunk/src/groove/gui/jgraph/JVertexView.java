@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.16 2007-10-10 08:59:51 rensink Exp $
+ * $Id: JVertexView.java,v 1.17 2007-10-30 17:21:20 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -36,7 +36,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.util.Map;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -49,7 +48,7 @@ import org.jgraph.graph.CellViewRenderer;
 import org.jgraph.graph.EdgeView;
 import org.jgraph.graph.GraphCellEditor;
 import org.jgraph.graph.GraphConstants;
-import org.jgraph.graph.GraphModel;
+import org.jgraph.graph.GraphLayoutCache;
 import org.jgraph.graph.PortView;
 import org.jgraph.graph.VertexRenderer;
 import org.jgraph.graph.VertexView;
@@ -60,7 +59,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class JVertexView extends VertexView {
     /**
@@ -98,10 +97,11 @@ public class JVertexView extends VertexView {
     }
     
 	@Override
-	public void refresh(GraphModel model, CellMapper mapper, boolean createDependentViews) {
-		super.refresh(model, mapper, createDependentViews);
+	public void refresh(GraphLayoutCache cache, CellMapper mapper, boolean createDependentViews) {
+		super.refresh(cache, mapper, createDependentViews);
 		// modify the bounds to make room for the border
 		text = computeText();
+//		jGraph.updateAutoSize(this);
 		insets = computeInsets(text.length() == 0);
 		adjustBounds(insets);
 	}
@@ -507,17 +507,17 @@ public class JVertexView extends VertexView {
     	return String.format("Vertex view for %s", getCell());
     }
 	
-    /**
-     * In addition to calling the super method, calls {@link JGraph#updateAutoSize(CellView)}
-     * for this view.
-	 */
-	@Override
-	public Map<?,?> changeAttributes(Map change) {
-		Map<?,?> result = super.changeAttributes(change);
-		text = computeText();
-		jGraph.updateAutoSize(this);
-		return result;
-	}
+//    /**
+//     * In addition to calling the super method, calls {@link JGraph#updateAutoSize(CellView)}
+//     * for this view.
+//	 */
+//	@Override
+//	public Map<?,?> changeAttributes(Map change) {
+//		Map<?,?> result = super.changeAttributes(change);
+//		text = computeText();
+//		jGraph.updateAutoSize(this);
+//		return result;
+//	}
 
 	/**
      * The following is a rather awful hack to ensure the same kind of vertex
