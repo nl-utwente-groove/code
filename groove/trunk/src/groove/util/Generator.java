@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.24 2007-10-10 08:59:42 rensink Exp $
+ * $Id: Generator.java,v 1.25 2007-11-01 16:48:53 rensink Exp $
  */
 package groove.util;
 
@@ -75,7 +75,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -537,12 +537,12 @@ public class Generator extends CommandLineTool {
         	if (result.isEmpty()) {
         		System.out.println("No resulting graphs");
         	} else {
-				for (State finalState : result) {
+				for (State finalState : getGTS().getFinalStates()) {
 					String outFileName = getFinalSaveName() + "-" + finalState;
 					outFileName = gstFilter.addExtension(outFileName);
 					Groove.saveGraph(((GraphState) finalState).getGraph(), outFileName);
 				}
-				System.out.printf("Resulting graphs saved: %s%n", result);
+				System.out.printf("Resulting graphs saved: %s%n", getGTS().getFinalStates());
 			}
         }
     }

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: ExtensionFilter.java,v 1.5 2007-05-14 19:52:22 rensink Exp $
+ * $Id: ExtensionFilter.java,v 1.6 2007-11-01 16:48:37 rensink Exp $
  */
 package groove.io;
 
@@ -24,7 +24,7 @@ import javax.swing.JOptionPane;
 /**
  * Implements a file filter based on filename extension.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-05-14 19:52:22 $
+ * @version $Revision: 1.6 $ $Date: 2007-11-01 16:48:37 $
  */
 public class ExtensionFilter extends javax.swing.filechooser.FileFilter 
                              implements java.io.FileFilter {
@@ -115,10 +115,19 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
      * @param filename the filename to be provided with an extension
      */
     public String addExtension(String filename) {
-        if (filename.endsWith(extension))
+        if (hasExtension(filename))
             return filename;
         else
             return filename+extension;
+    }
+
+    /** 
+     * Tests if a given filename has the extension of this filter.
+     * @param filename the filename to be tested
+     * @return <code>true</code> if <code>filename</code> has the extension of this filter
+     */
+    public boolean hasExtension(String filename) {
+        return filename.endsWith(extension);
     }
 
     /**
