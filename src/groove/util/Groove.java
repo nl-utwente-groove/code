@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.21 2007-10-08 12:17:51 rensink Exp $
+ * $Id: Groove.java,v 1.22 2007-11-01 16:48:53 rensink Exp $
  */
 package groove.util;
 
@@ -45,7 +45,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.21 $ 
+ * @version $Revision: 1.22 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -318,7 +318,10 @@ public class Groove {
      * @throws IOException if saving ran into problems
      */
     static public void saveGraph(Graph graph, String filename) throws IOException, FormatException {
-        File file = new File(createGxlFilter().addExtension(filename));
+        if (!createStateFilter().hasExtension(filename)) {
+            filename = createGxlFilter().addExtension(filename);
+        }
+        File file = new File(filename);
         graphLoader.marshalGraph(graph, file);
     }
 
