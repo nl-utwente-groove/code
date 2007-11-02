@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeEvent.java,v 1.6 2007-10-20 15:20:05 rensink Exp $
+ * $Id: CompositeEvent.java,v 1.7 2007-11-02 08:42:36 rensink Exp $
  */
 package groove.trans;
 
@@ -38,7 +38,7 @@ import java.util.TreeSet;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.EventCache> {
+public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeEventCache> {
     /** Creates a new event on the basis of a given event set. */
     public CompositeEvent(Rule rule, SortedSet<SPOEvent> eventSet) {
     	super(reference, rule);
@@ -60,17 +60,18 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.EventCache
     }
 
     public List<Node> getCreatedNodes(Set<? extends Node> hostNodes) {
-    	List<Node> result = new ArrayList<Node>();
-    	for (RuleEvent event: eventArray) {
-    		result.addAll(event.getCreatedNodes(hostNodes));
+    	List<Node> result = new ArrayList<Node>(eventArray.length);
+    	for (SPOEvent event: eventArray) {
+    		event.collectCreatedNodes(hostNodes, result);
     	}
     	return result;
     }
 
-    public Set<Node> getErasedNodes() {
-        Set<Node> result = createNodeSet();
-        for (RuleEvent event: eventArray) {
-            result.addAll(event.getErasedNodes());
+    @Override
+    Set<Node> computeErasedNodes() {
+        Set<Node> result = createNodeSet(eventArray.length);
+        for (SPOEvent event: eventArray) {
+            event.collectErasedNodes(result);
         }
         return result;
     }
@@ -120,25 +121,25 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.EventCache
     }
 
     public Set<Edge> getSimpleCreatedEdges() {
-        Set<Edge> result = createEdgeSet();
-        for (RuleEvent event: eventArray) {
-            result.addAll(event.getSimpleCreatedEdges());
+        Set<Edge> result = createEdgeSet(eventArray.length * 2);
+        for (SPOEvent event: eventArray) {
+            event.collectSimpleCreatedEdges(result);
         }
         return result;
     }
 
 	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
-        Set<Edge> result = createEdgeSet();
-        for (RuleEvent event: eventArray) {
-            result.addAll(event.getComplexCreatedEdges(createdNodes));
+        Set<Edge> result = createEdgeSet(eventArray.length * 2);
+        for (SPOEvent event: eventArray) {
+            event.collectComplexCreatedEdges(createdNodes, result);
         }
         return result;
 	}
 
 	public Set<Edge> getSimpleErasedEdges() {
-        Set<Edge> result = createEdgeSet();
-        for (RuleEvent event: eventArray) {
-            result.addAll(event.getSimpleErasedEdges());
+        Set<Edge> result = createEdgeSet(eventArray.length * 2);
+        for (SPOEvent event: eventArray) {
+            event.collectSimpleErasedEdges(result);
         }
         return result;
     }
@@ -240,8 +241,8 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.EventCache
 	}
 	
     @Override
-	protected EventCache createCache() {
-		return new EventCache();
+	protected CompositeEventCache createCache() {
+		return new CompositeEventCache();
 	}
 
 	/** The set of events constituting this event. */
@@ -249,9 +250,9 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.EventCache
     /** The hash code of this event. */
     private int hashCode;
     /** Cache reference instance for initialisation. */
-    static private final CacheReference<EventCache> reference = CacheReference.<EventCache>newInstance(false);
+    static private final CacheReference<CompositeEventCache> reference = CacheReference.<CompositeEventCache>newInstance(false);
     
-    class EventCache {
+    class CompositeEventCache extends AbstractEvent<Rule,CompositeEventCache>.AbstractEventCache {
     	/** Reconstructs a set of events from the array stored in the composite event. */
     	SortedSet<SPOEvent> getEventSet() {
     		if (eventSet == null) {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NewDeltaGraph.java,v 1.6 2007-10-20 15:19:59 rensink Exp $
+ * $Id: NewDeltaGraph.java,v 1.7 2007-11-02 08:42:22 rensink Exp $
  */
 package groove.graph;
 
@@ -21,6 +21,7 @@ import groove.graph.iso.CertificateStrategy;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -49,7 +50,16 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 		if (delta == null || delta instanceof DeltaStore || delta instanceof FrozenDeltaApplier) {
 			this.delta = delta;
 		} else {
-			this.delta = new DeltaStore(delta);
+			this.delta = new DeltaStore(delta) {
+				@Override
+				protected Set<Edge> createEdgeSet(Collection<? extends Edge> set) {
+					Set result = new DefaultEdgeSet();
+					if (set != null) {
+						result.addAll(set);
+					}
+					return result;
+				}
+			};
 		}
 		setFixed();
 	}

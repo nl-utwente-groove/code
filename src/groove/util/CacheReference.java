@@ -270,7 +270,7 @@ public class CacheReference<C> extends SoftReference<C> {
 	/** The singleton null instance for strong references. */
 	static private final CacheReference strongInstance = new CacheReference(true, 0, null);
 	/** The singleton null instance for weak references. */
-	static private final CacheReference softInstance = new CacheReference(true, 0, null);
+	static private final CacheReference softInstance = new CacheReference(false, 0, null);
 	
 	/**
 	 * Global counter of the total number of cache reincarnations.

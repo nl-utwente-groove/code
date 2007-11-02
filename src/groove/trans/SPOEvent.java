@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.48 2007-10-20 15:20:05 rensink Exp $
+ * $Id: SPOEvent.java,v 1.49 2007-11-02 08:42:36 rensink Exp $
  */
 package groove.trans;
 
@@ -49,9 +49,9 @@ import java.util.Set;
  * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.48 $ $Date: 2007-10-20 15:20:05 $
+ * @version $Revision: 1.49 $ $Date: 2007-11-02 08:42:36 $
  */
-public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
+final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCache> {
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
      * A further parameter determines whether information should be stored for reuse.
@@ -132,9 +132,11 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
      */
 	@Override
     public int hashCode() {
-    	if (!hashCodeSet) {
+    	if (hashCode == 0) {
     		hashCode = computeHashCode();
-    		hashCodeSet = true;
+    		if (hashCode == 0) {
+    			hashCode = 1;
+    		}
     	}
     	return hashCode;
     }
@@ -415,15 +417,13 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
 	 * Returns the set of explicitly erased nodes, i.e., the images of the LHS
 	 * eraser nodes.
 	 */
+	@Override
     public Set<Node> getErasedNodes() {
-        if (reuse) {
-            if (erasedNodeSet == null) {
-                erasedNodeSet = computeErasedNodes();
-            }
-            return erasedNodeSet;
-        } else {
-            return computeErasedNodes();
-        }
+		if (reuse) {
+			return getCache().getErasedNodes();
+		} else {
+			return computeErasedNodes();
+		}
     }
 
 	/**
@@ -431,34 +431,41 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
 	 * images of the LHS eraser nodes.
 	 * Callback method from {@link #getErasedNodes()}.
 	 */
-	private Set<Node> computeErasedNodes() {
+    @Override
+	Set<Node> computeErasedNodes() {
         Node[] eraserNodes = getRule().getEraserNodes();
         if (eraserNodes.length == 0) {
             return EMPTY_NODE_SET;
         } else {
-            NodeEdgeMap anchorMap = getAnchorMap();
-            Set<Node> erasedNodes = createNodeSet();
-            // register the node erasures
-            for (Node node: eraserNodes) {
-                erasedNodes.add(anchorMap.getNode(node));
-            }
-            return erasedNodes;
+            Set<Node> result = createNodeSet();
+            collectErasedNodes(result);
+            return result;
         }
 	}
 
+	/**
+	 * Adds the set of explicitly erased nodes, i.e., the
+	 * images of the LHS eraser nodes, to a given result set.
+	 * Callback method from {@link #computeErasedNodes()}.
+	 */
+	void collectErasedNodes(Set<Node> result) {
+		NodeEdgeMap anchorMap = getAnchorMap();
+		// register the node erasures
+		for (Node node : getRule().getEraserNodes()) {
+			result.add(anchorMap.getNode(node));
+		}
+	}
+
     /**
-     * Returns the set of explicitly erased edges, i.e., the
-     * images of the LHS eraser edges.
-     */
+	 * Returns the set of explicitly erased edges, i.e., the images of the LHS
+	 * eraser edges.
+	 */
     public Set<Edge> getSimpleErasedEdges() {
-        if (reuse) {
-            if (erasedEdgeSet == null) {
-                erasedEdgeSet = computeSimpleErasedEdges();
-            }
-            return erasedEdgeSet;
-        } else {
-            return computeSimpleErasedEdges();
-        }
+    	if (reuse) {
+    		return getCache().getSimpleErasedEdges();
+    	} else {
+    		return computeSimpleErasedEdges();
+    	}
     }
 
     /**
@@ -466,8 +473,18 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
      * images of the LHS eraser edges.
      * Callback method from {@link #getSimpleErasedEdges()}.
      */
-    private Set<Edge> computeSimpleErasedEdges() {
+    Set<Edge> computeSimpleErasedEdges() {
         Set<Edge> result = createEdgeSet();
+        collectSimpleErasedEdges(result);
+        return result;
+    }
+
+    /**
+     * Collects the set of explicitly erased edges, i.e., the
+     * images of the LHS eraser edges, into a given result set.
+     * Callback method from {@link #computeSimpleErasedEdges()}.
+     */
+    void collectSimpleErasedEdges(Set<Edge> result) {
         VarNodeEdgeMap anchorMap = getAnchorMap();
         Edge[] eraserEdges = getRule().getEraserEdges();
         for (Edge edge: eraserEdges) {
@@ -475,18 +492,14 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
             assert edgeImage != null : "Image of "+edge+" cannot be deduced from "+anchorMap;
             result.add(edgeImage);
         }
-        return result;
     }
 
     public Set<Edge> getSimpleCreatedEdges() {
-        if (reuse) {
-            if (simpleCreatedEdgeSet == null) {
-                simpleCreatedEdgeSet = computeSimpleCreatedEdges();
-            }
-            return simpleCreatedEdgeSet;
-        } else {
-            return computeSimpleCreatedEdges();
-        }
+    	if (reuse) {
+    		return getCache().getSimpleCreatedEdges();
+    	} else {
+    		return computeSimpleCreatedEdges();
+    	}
     }
 
     /**
@@ -494,8 +507,18 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
      * images of the LHS eraser edges.
      * Callback method from {@link #getSimpleErasedEdges()}.
      */
-    private Set<Edge> computeSimpleCreatedEdges() {
+    Set<Edge> computeSimpleCreatedEdges() {
         Set<Edge> result = createEdgeSet();
+        collectSimpleCreatedEdges(result);
+        return result;
+    }
+
+    /**
+     * Collects the set of explicitly erased edges, i.e., the
+     * images of the LHS eraser edges, into a given set.
+     * Callback method from {@link #computeSimpleErasedEdges()}.
+     */
+     void collectSimpleCreatedEdges(Set<Edge> result) {
         VarNodeEdgeMap coAnchorMap = getCoanchorMap();
         for (Edge edge: getRule().getSimpleCreatorEdges()) {
             Edge edgeImage = coAnchorMap.mapEdge(edge);
@@ -503,11 +526,15 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
                 result.add(edgeImage);
             }
         }
-        return result;
     }
 
-	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
-    	Set<Edge> result = createEdgeSet();
+ 	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
+     	Set<Edge> result = createEdgeSet();
+ 		collectComplexCreatedEdges(createdNodes, result);
+ 		return result;
+ 	}
+
+	void collectComplexCreatedEdges(Iterator<Node> createdNodes, Set<Edge> result) {
 		VarNodeEdgeMap coanchorMap = getCoanchorMap().clone();
 		// add creator node images
 		for (Node creatorNode: getRule().getCreatorNodes()) {
@@ -521,7 +548,6 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
                 result.add(image);
             }
         }
-		return result;
 	}
 
 	/**
@@ -546,7 +572,6 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
         }
         return result;
 	}
-
     
     public List<Node> getCreatedNodes(Set<? extends Node> hostNodes) {
 		List<Node> result = computeCreatedNodes(hostNodes);
@@ -573,11 +598,16 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
 			result = EMPTY_COANCHOR_IMAGE;
 		} else {
 			result = new ArrayList<Node>(coanchorSize);
-			for (int i = 0; i < coanchorSize; i++) {
-				result.add(getFreshNode(i, currentNodes));
-			}
+			collectCreatedNodes(currentNodes, result);
 		}
 		return result;
+    }
+
+    void collectCreatedNodes(Set<? extends Node> currentNodes, List<Node> result) {
+		int coanchorSize = getRule().getCreatorNodes().length;
+		for (int i = 0; i < coanchorSize; i++) {
+			result.add(getFreshNode(i, currentNodes));
+		}
     }
 
     /**
@@ -648,8 +678,8 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
     }
 
     @Override
-	protected EventCache createCache() {
-		return new EventCache();
+	protected SPOEventCache createCache() {
+		return new SPOEventCache();
 	}
 
 	/** The derivation record that has created this event, if any. */
@@ -658,28 +688,12 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
      * Images for the RHS root elements in the target graph. 
      */
     final Node[] coRootImage;
-    /**
-     * Set of nodes from the source that are to be erased in the target.
-     */
-    private Set<Node> erasedNodeSet;
-    /**
-     * Set of edges from the source that are to be erased in the target.
-     */
-    private Set<Edge> erasedEdgeSet;
-    /**
-     * Images of the simple creator edges.
-     */
-    private Set<Edge> simpleCreatedEdgeSet;
 //    /**
 //     * The footprint of a derivation consists of the anchor images of the match
 //     * together with the images of the creator nodes.
 //     * This corresponds to is the information needed to (re)construct the derivation target.
 //     */
 //    private Element[] anchorImage;
-    /**
-     * Flag to indicate that the {@link #hashCode} variable has been initialised.
-     */
-    private boolean hashCodeSet;
     /**
      * The set of source elements that form the anchor image.
      */
@@ -739,7 +753,7 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
     static private final List<Node> EMPTY_COANCHOR_IMAGE = Collections.emptyList();
     /** Global empty list of nodes. */
     static private final Node[] EMPTY_ROOT_IMAGE = new Node[0];
-    static private final CacheReference<EventCache> reference = CacheReference.<EventCache>newInstance(false);
+    static private final CacheReference<SPOEventCache> reference = CacheReference.<SPOEventCache>newInstance(false);
 	static private Reporter reporter = Reporter.register(RuleEvent.class);
 	static private int HASHCODE = reporter.newMethod("computeHashCode()");
 	static private int EQUALS = reporter.newMethod("equals()");
@@ -747,7 +761,7 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
 	static private int GET_ANCHOR_IMAGE = reporter.newMethod("getAnchorImage()");
 	
     /** Cache holding the anchor map. */
-    final class EventCache {
+    final class SPOEventCache extends AbstractEvent<SPORule,SPOEventCache>.AbstractEventCache {
 		/**
 		 * @return Returns the anchorMap.
 		 */
@@ -872,10 +886,31 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
 	    }
 
 	    /**
-	     * Callback factory method to create the merge map object for 
-	     * {@link #computeMergeMap()}.
-	     * @return a fresh instance of {@link MergeMap}
+	     * Returns the pre-computed and cached set of explicitly erased edges.
 	     */
+	    public Set<Edge> getSimpleErasedEdges() {
+			if (erasedEdgeSet == null) {
+				erasedEdgeSet = computeSimpleErasedEdges();
+			}
+			return erasedEdgeSet;
+		}
+
+	    /**
+	     * Returns the pre-computed and cached set of explicitly erased edges.
+	     */
+	    final public Set<Edge> getSimpleCreatedEdges() {
+			if (simpleCreatedEdgeSet == null) {
+				simpleCreatedEdgeSet = computeSimpleCreatedEdges();
+			}
+			return simpleCreatedEdgeSet;
+		}
+
+	    /**
+		 * Callback factory method to create the merge map object for
+		 * {@link #computeMergeMap()}.
+		 * 
+		 * @return a fresh instance of {@link MergeMap}
+		 */
 	    private MergeMap createMergeMap() {
 			return new MergeMap();
 		}
@@ -901,6 +936,13 @@ public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.EventCache> {
          * The merge map is constructed in the course of rule application.
          */
         private MergeMap mergeMap;
-
+        /**
+         * Set of edges from the source that are to be erased in the target.
+         */
+        private Set<Edge> erasedEdgeSet;
+        /**
+         * Images of the simple creator edges.
+         */
+        private Set<Edge> simpleCreatedEdgeSet;
     }
 }

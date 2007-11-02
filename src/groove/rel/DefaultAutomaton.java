@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultAutomaton.java,v 1.6 2007-10-10 08:59:46 rensink Exp $
+ * $Id: DefaultAutomaton.java,v 1.7 2007-11-02 08:42:35 rensink Exp $
  */
 package groove.rel;
 
@@ -20,6 +20,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 
@@ -111,7 +112,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
         }
     }
 
-    public NodeRelation getMatches(Graph graph, Set<? extends Node> startImages, Set<? extends Node> endImages) {
+    public NodeRelation getMatches(GraphShape graph, Set<? extends Node> startImages, Set<? extends Node> endImages) {
         if (startImages != null) {
             // do forward maching from the start images
             return getMatchingAlgorithm(FORWARD).computeMatches(graph, startImages, endImages);
@@ -128,9 +129,9 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
     /**
      * Creates a set of start nodes to be used in the search for matches
      * if no explicit start nodes are provided.
-     * @see #getMatches(Graph, Set, Set)
+     * @see #getMatches(GraphShape, Set, Set)
      */
-    protected Set<Node> createStartImages(Graph graph) {
+    protected Set<Node> createStartImages(GraphShape graph) {
         Set<Node> result = new HashSet<Node>();
         if (isAcceptsEmptyWord() || isInitWildcard()) {
             // too bad, all graph nodes can be start images
@@ -142,7 +143,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
         return result;
     }
     
-    private void addStartImages(Set<Node> result, Graph graph, boolean positive) {
+    private void addStartImages(Set<Node> result, GraphShape graph, boolean positive) {
         Set<Label> initLabelSet = positive ? getInitPosLabels() : getInitInvLabels();
         for (Label initLabel: initLabelSet) {
         	for (Edge graphEdge: graph.labelEdgeSet(2, initLabel)) {
@@ -404,7 +405,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
     
     /**
      * Class to encapsulate the algorithm used to compute the result of
-     * {@link Automaton#getMatches(Graph, Set, Set)}.
+     * {@link Automaton#getMatches(GraphShape, Set, Set)}.
      */
     protected class MatchingAlgorithm {
     	/** Creates an instance of the algorithm that matches in a given direction
@@ -439,7 +440,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
          * @param endImages the allowed images for the end node of the algorithm; 
          * may be <code>null</code> if all end images are allowed
          */
-        public NodeRelation computeMatches(Graph graph, Set<? extends Node> startImages, Set<? extends Node> endImages) {
+        public NodeRelation computeMatches(GraphShape graph, Set<? extends Node> startImages, Set<? extends Node> endImages) {
             this.graph = graph;
             this.endImages = endImages;
             this.result = createRelation(graph);
@@ -525,7 +526,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
          * edges of the key-image pair.
          * @param key the node from the automaton that has been matched
          * @param image the node from the graph that has been added as a new image
-         * @see #getPosEdgeSet(Graph, Node)
+         * @see #getPosEdgeSet(GraphShape, Node)
          * @see #getOpposite(Edge)
          */
         private void propagate(Node key, Node image) {
@@ -566,7 +567,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
          * Callback factory method. Creates a relation over a given graph. This implementation
          * returns a {@link SetNodeRelation}.
          */
-        protected NodeRelation createRelation(Graph graph) {
+        protected NodeRelation createRelation(GraphShape graph) {
             return new SetNodeRelation(graph);
         }
 
@@ -588,9 +589,9 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
          * Returns the "outgoing" edge set for a given graph node. This may be implemented either by
          * the outgoing or by the incoming edges, depending on whether we do forward or backward
          * matching.
-         * @see #getInvEdgeSet(Graph, Node)
+         * @see #getInvEdgeSet(GraphShape, Node)
          */
-        protected Collection<? extends Edge> getPosEdgeSet(Graph graph, Node node) {
+        protected Collection<? extends Edge> getPosEdgeSet(GraphShape graph, Node node) {
             switch (direction) {
             case FORWARD : return graph.outEdgeSet(node);
             default : return graph.edgeSet(node, Edge.TARGET_INDEX);
@@ -601,9 +602,9 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
          * Returns the "incoming" edge set for a given graph node. This may be implemented either by
          * the incoming or by the outgoing edges, depending on whether we do forward or backward
          * matching.
-         * @see #getPosEdgeSet(Graph, Node)
+         * @see #getPosEdgeSet(GraphShape, Node)
          */
-        protected Collection<? extends Edge> getInvEdgeSet(Graph graph, Node node)  {
+        protected Collection<? extends Edge> getInvEdgeSet(GraphShape graph, Node node)  {
             switch (direction) {
             case FORWARD : return graph.edgeSet(node, Edge.TARGET_INDEX);
             default : return graph.outEdgeSet(node);
@@ -679,7 +680,7 @@ public class DefaultAutomaton extends DefaultGraph implements Automaton {
         /**
          * Graph on which the current matching computation is performed.
          */
-        private transient Graph graph;
+        private transient GraphShape graph;
 
         /**
          * Start image for the current matching computation.

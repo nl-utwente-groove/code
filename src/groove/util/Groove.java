@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.22 2007-11-01 16:48:53 rensink Exp $
+ * $Id: Groove.java,v 1.23 2007-11-02 08:42:34 rensink Exp $
  */
 package groove.util;
 
@@ -20,6 +20,7 @@ import groove.calc.DefaultGraphCalculator;
 import groove.calc.GraphCalculator;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.graph.GraphShape;
 import groove.io.AspectualViewGps;
 import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
@@ -45,7 +46,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.22 $ 
+ * @version $Revision: 1.23 $ 
  * @version Arend Rensink
  */
 public class Groove {

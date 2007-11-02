@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.15 2007-10-27 08:53:20 rensink Exp $
+ * $Id: Imager.java,v 1.16 2007-11-02 08:42:39 rensink Exp $
  */
 package groove.io;
 
+import groove.graph.GraphShape;
 import groove.gui.Exporter;
 import groove.gui.Options;
 import groove.gui.jgraph.AspectJModel;
@@ -62,7 +63,7 @@ import javax.swing.JTextField;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class Imager extends CommandLineTool {
     /**
@@ -142,7 +143,7 @@ public class Imager extends CommandLineTool {
                 try {
                     String outFileName = acceptingFilter.stripExtension(outFile.getPath());
                     outFile = new File(new ExtensionFilter(imageFormat).addExtension(outFileName));
-                    groove.graph.Graph graph = graphLoader.unmarshalGraph(inFile);
+                    GraphShape graph = graphLoader.unmarshalGraph(inFile);
                     JModel model;
                     if (acceptingFilter == ruleFilter) {
                         String ruleName = ruleFilter.stripExtension(inFile.getName());

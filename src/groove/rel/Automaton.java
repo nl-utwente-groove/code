@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Automaton.java,v 1.2 2007-08-26 07:23:55 rensink Exp $
+ * $Id: Automaton.java,v 1.3 2007-11-02 08:42:35 rensink Exp $
  */
 package groove.rel;
 
 import groove.graph.Graph;
+import groove.graph.GraphShape;
 import groove.graph.Node;
 
 import java.util.List;
@@ -51,5 +52,5 @@ public interface Automaton extends Graph {
      * @param endImages set of nodes in <code>graph</code> at which the
      * matching paths should end; if <code>null</code>, there is no constraint
      */
-    NodeRelation getMatches(Graph graph, Set<? extends Node> startImages, Set<? extends Node> endImages);
+    NodeRelation getMatches(GraphShape graph, Set<? extends Node> startImages, Set<? extends Node> endImages);
 }
