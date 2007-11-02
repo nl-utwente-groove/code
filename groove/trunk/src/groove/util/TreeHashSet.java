@@ -18,15 +18,17 @@ package groove.util;
 
 import java.util.AbstractSet;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Set;
 
 /**
  * Set implementation that uses a search tree over "hash" code.
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class TreeHashSet<T> extends AbstractSet<T> {
 	/**
@@ -40,10 +42,13 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 	 */
 	public TreeHashSet(int capacity, int resolution, int rootResolution, Equator<T> equator) {
         if (resolution < 1) {
-            throw new IllegalArgumentException("Resolution should be at least 1");
+            throw new IllegalArgumentException(String.format("Invalid resolution %d (max %d)", resolution, 1));
         }
         if (rootResolution < 1) {
-            throw new IllegalArgumentException("Root resolution should be at least 1");
+            throw new IllegalArgumentException(String.format("Invalid root resolution %d (min %d)", rootResolution, 1));
+        }
+        if (resolution > MAX_RESOLUTION) {
+        	throw new IllegalArgumentException(String.format("Invalid resolution %d (max %d)", resolution, MAX_RESOLUTION));
         }
 		this.resolution = resolution;
 		this.mask = (1 << resolution) - 1;
@@ -53,8 +58,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		// initialise the keys and tree
 		this.codes = new int[capacity];
 		this.keys = new Object[capacity];
-		this.tree = new int[Math.max(capacity,getRecordSize(true))];
-		this.fill = new byte[getRecordNr(tree.length)];
+		this.freeKeyIx = -1;
+		int maxRecordCount = Math.max(capacity >> resolution,1);
+		this.tree = new int[getRecordIx(maxRecordCount)+maxRecordCount];
+		this.fill = new byte[maxRecordCount];
 		this.recordCount = 1;
 	}
 
@@ -109,7 +116,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * Creates an instance of a tree store set.
      */
 	public TreeHashSet() {
-		this(DEFAULT_RESOLUTION);
+		this(DEFAULT_CAPACITY);
 	}
     
     /**
@@ -134,7 +141,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         System.arraycopy(other.codes, 0, this.codes, 0, otherCodesLength);
         System.arraycopy(other.keys, 0, this.keys, 0, otherCodesLength);
         this.size = other.size;
-        this.freeRecordIx = other.freeRecordIx;
+        this.freeRecordNr = other.freeRecordNr;
         this.recordCount = other.recordCount;
         this.freeKeyIx = other.freeKeyIx;
         this.keyCount = other.keyCount;
@@ -151,15 +158,19 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 	public void clear() {
     	size = 0;
     	// clean the keys and codes arrays
-    	Arrays.fill(keys, 0, keyCount+1, null);
-    	Arrays.fill(codes, 0, keyCount+1, 0);
+    	Arrays.fill(keys, 0, keyCount, null);
+    	Arrays.fill(codes, 0, keyCount, 0);
     	keyCount = 0;
-    	freeKeyIx = 0;
+    	freeKeyIx = -1;
     	// clean the record tree
     	Arrays.fill(tree, 0, getRecordIx(recordCount), 0);
+    	Arrays.fill(tree, getRecordIx(fill.length), getRecordIx(fill.length)+recordCount, 0);
     	Arrays.fill(fill, 0, recordCount, (byte) 0);
     	recordCount = 1;
-    	freeRecordIx = 0;
+    	freeRecordNr = 0;
+        if (DEBUG) {
+        	testConsistent();
+        }
 	}
 
     @Override
@@ -217,7 +228,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 			 * The index in {@link TreeHashSet#keys} where we're currently at.
 			 * @invariant <code>index <= maxKeyIndex</code>
 			 */
-			private int index = 1;
+			private int index = 0;
 			/**
 			 * The next object; if <code>null</code>, the next yet has to be found.
 			 */
@@ -245,20 +256,21 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * that was already present, such that <code>areEqual(key, result)</code>.
      */
     public T put(T key) {
+    	T result;
         int code = getCode(key);
         if (size == 0) {
             // at the first key, we still have to create the root of the tree
 //            int index = 0;//newRecordIx(0);
 //            assert index == 0;
-            tree[(code & rootMask) + 1] = -newKeyIx(code, key);
-            return null;
+            tree[code & rootMask] = -newKeyIx(code, key)-1;
+            result = null;
         } else {
             // local copy of store, for efficiency
             int[] tree = this.tree;
             int mask = this.mask;
             int resolution = this.resolution;
             // precise node where the current value of index was retrieved from
-            int indexPlusOffset = (code & rootMask) + 1;
+            int indexPlusOffset = code & rootMask;
             // current search position
             int index = tree[indexPlusOffset];
             // current depth search, in number of bits
@@ -266,49 +278,53 @@ public class TreeHashSet<T> extends AbstractSet<T> {
             // remaining search key
             int search = code >>> depth;
             while (index > 0) {
-            	indexPlusOffset = index + (search & mask) + 1;
+            	indexPlusOffset = index + (search & mask);
                 index = tree[indexPlusOffset];
                 search >>>= resolution;
                 depth += resolution;
             }
             if (index == 0) {
                 // we're at an empty place of the tree
-                setTreeValue(indexPlusOffset, -newKeyIx(code, key));
-                return null;
+                setTreeSlot(indexPlusOffset, -newKeyIx(code, key)-1);
+                result = null;
             } else {
                 // we've found an existing key
-                int oldCode = codes[-index];
+                int oldCode = codes[-index-1];
                 if (oldCode == code) {
                     // the old code is the same as the one we're inserting
-                    return putEqualKey(code, key, -index);
+                    result = putEqualKey(code, key, -index-1);
                 } else {
                     // we have a new key, so we have to relocate
                     // first store the position of the old key
                     int oldKeyIndex = index;
                     // create a new position
-                    index = newRecord(indexPlusOffset);
+                    index = newRecordIx(indexPlusOffset);
                     // the old search value
                     int oldSearch = oldCode >>> depth;
                     // the old and new branch values
                     int oldOffset, newOffset;
                     // so long as old and new key coincide, keep relocating
                     while ((newOffset = (search & mask)) == (oldOffset = (oldSearch & mask))) {
-                        index = newRecord(index + newOffset + 1);
+                        index = newRecordIx(index + newOffset);
                         search >>>= resolution;
                         oldSearch >>>= resolution;
                     }
                     // we've found a difference, so store.
-                    setTreeValue(index + oldOffset + 1, oldKeyIndex);
-                    setTreeValue(index + newOffset + 1, -newKeyIx(code, key));
-                    fill[getRecordNr(index)]++;
-                    return null;
+                    setTreeSlot(index + oldOffset, oldKeyIndex);
+                    setTreeSlot(index + newOffset, -newKeyIx(code, key)-1);
+                    result = null;
                 }
             }
         }
+        if (DEBUG) {
+        	testConsistent();
+        }
+        return result;
     }
     
     @Override
 	public boolean remove(Object obj) {
+    	boolean result;
 		if (size == 0) {
 			return false;
 		}
@@ -316,23 +332,23 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		int index = indexOf(getCode(key));
 		if (index < 0) {
 			// the key is a new one
-			return false;
+			result = false;
 		} else if (allEqual()) {
 			// we've found an existing key code and we're only looking at codes
 			// so the key found at index should be removed
-			int keyIndex = -tree[index];
-			resetTreeValue(index);
+			int keyIndex = -tree[index]-1;
+			disposeTreeSlot(index);
 			disposeKey(keyIndex);
-			return true;
+			result = true;
 		} else {
 			// we've found an existing key code but now we're going to compare
 			Object[] keys = this.keys;
 			// the current position in the key list
-			int keyIndex = -tree[index];
+			int keyIndex = -tree[index]-1;
 			// the key retrieved from the key list
 			Object knownKey = keys[keyIndex];
 			// index of the previous key in the chain, if any (0 means none)
-			int prevKeyIndex = 0;
+			int prevKeyIndex = -1;
 			// walk the list of MyListEntries, if any
 			while (knownKey instanceof MyListEntry) {
 				MyListEntry<T> entry = (MyListEntry) knownKey;
@@ -350,20 +366,27 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 			// we're at a key that is not a MyListEntry
 			if (areEqual(key, (T) knownKey)) {
 				// maybe we have to adapt the tree
-				if (prevKeyIndex == 0) {
+				if (prevKeyIndex < 0) {
 					// there is no chain, so we have to adapt the tree
-					resetTreeValue(index);
+					disposeTreeSlot(index);
 				} else {
 					// the previous key has to be converted from a 
 					// MyListEntry to the object inside
 					keys[prevKeyIndex] = ((MyListEntry)keys[prevKeyIndex]).getValue();
 				}
 				disposeKey(keyIndex);
-				return true;
+				result = true;
+		        if (DEBUG) {
+		        	testConsistent();
+		        }
 			} else {
-				return false;
+				result = false;
 			}
 		}
+        if (DEBUG) {
+        	testConsistent();
+        }
+        return result;
 	}
 	
     @Override
@@ -378,7 +401,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 			return false;
 		} else {
 			// we've found an existing key code
-			return allEqual() || containsAt(key, -tree[index]);
+			return allEqual() || containsAt(key, -tree[index]-1);
 		}
 	}
 	
@@ -423,7 +446,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     }
     
 	/**
-	 * Returns the index in {@link #tree} of a tree node pointing to (the first instance
+	 * Returns the tree index of a tree node pointing to (the first instance
 	 * of) a given code.
 	 * @param code the code we are looking for
 	 * @return either <code>-1</code> if <code>code</code> does not occur in
@@ -433,21 +456,21 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		// local copy of store, for efficiency
 		int[] tree = this.tree;
 		// current search position
-		int oldIndexPlusOffset = (code & rootMask) + 1;
+		int oldIndexPlusOffset = code & rootMask;
 		int index = tree[oldIndexPlusOffset];
 		if (index > 0) {
 			int search = code >>> rootResolution;
 			int mask = this.mask;
 			int resolution = this.resolution;
-			oldIndexPlusOffset = (index + (search & mask)) + 1;
+			oldIndexPlusOffset = index + (search & mask);
 			index = tree[oldIndexPlusOffset];
 			while (index > 0) {
 				search >>>= resolution;
-				oldIndexPlusOffset = (index + (search & mask)) + 1;
+				oldIndexPlusOffset = index + (search & mask);
 				index = tree[oldIndexPlusOffset];
 			}
 		}
-		if (index == 0 || codes[-index] != code) {
+		if (index == 0 || codes[-index-1] != code) {
 			// the code is a new one
 			return -1;
 		} else {
@@ -477,99 +500,149 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     	return areEqual(newKey, (T) oldKey);
     }
     
-    /** Sets the tree value at a given index. */
-    private void setTreeValue(int treeIx, int value) {
-    	int oldValue = tree[treeIx];
+    /** 
+     * Sets the tree value at a given index.
+     * The value can be negative if it is an index into {@link #codes},
+     * or positive if it is a further tree index. 
+     * The value should not be <code>null</code>.
+     */
+    private void setTreeSlot(int treeIx, int value) {
+    	assert tree[treeIx] == 0 : String.format("Tree value %d at index %d overwritten by %d", tree[treeIx], treeIx, value); 
+    	assert value < 0 : String.format("Tree value at %d set to positive value %d", treeIx, value);
     	tree[treeIx] = value;
-    	assert oldValue <= 0 : String.format("Tree value %d at index %d should not be overwritten by %d", oldValue, treeIx, value);
-    	assert oldValue == 0 || value > 0 : String.format("Tree value %d at index %d should not be overwritten by %d", oldValue, treeIx, value);
-    	if (oldValue == 0) {
-    		fill[getRecordNr(treeIx)]++;
-    	}
+    	setFilled(treeIx);
     }
     
-    /** Resets the tree value at a given index. */
-	private void resetTreeValue(int treeIx) {
-		assert tree[treeIx] < 0;
+    /** 
+     * Resets the tree slot at a given index to 0. 
+     * If this means that the entire tree record is reduced to a single 
+     * value, which is a code and not a reference to another tree record,
+     * then the record is freed.
+     */
+	private void disposeTreeSlot(int treeIx) {
+		assert tree[treeIx] < 0 : String.format("tree[%d] == %d cannot be disposed", treeIx, tree[treeIx]);
 		tree[treeIx] = 0;
-		int recordNr = getRecordNr(treeIx);
-		if (recordNr > 0) {
-			assert fill[recordNr] > 0 : String.format("Removing value at tree index %s, but fill=%d",
-					treeIx,
-					fill[recordNr]);
-			if ((fill[recordNr] -= 1) == 0) {
-
+		resetFilled(treeIx);
+		// dispose records
+		int recordNr;
+		while ((recordNr = getRecordNr(treeIx)) > 0) {
+			int offset = fill[recordNr];
+			int lastIx = getRecordIx(recordNr)+(offset & 0xFF)-1;
+			int lastValue;
+			if (offset <= mask+1 && offset > 0 && (lastValue = tree[lastIx]) < 0) {
+				tree[lastIx] = 0;
+				fill[recordNr] = 0;
+				treeIx = disposeRecord(recordNr);
+				tree[treeIx] = lastValue;
+			} else {
+				break;
 			}
 		}
+	}
+
+	private void setFilled(int treeIx) {
+		int recordNr = getRecordNr(treeIx);
+		fill[recordNr] += getOffset(treeIx)+1;
+	}
+
+	private void resetFilled(int treeIx) {
+		int recordNr = getRecordNr(treeIx);
+		fill[recordNr] -= getOffset(treeIx)+1;
 	}
 
 	/**
 	 * Reserves space for a new tree branch, to be appended to a given leaf.
 	 * Returns the index of the first position of the new branch.
 	 * Also increases the record fill 
-	 * @param parentIx the index (in {@link #tree}) of the parent leaf
+	 * @param parentIx the tree index of the parent slot
 	 * to which the new record is to be appended
 	 */
-    private int newRecord(int parentIx) {
-    	assert parentIx != 0;
-        int result = freeRecordIx;
-        if (result == 0) {
-			result = getRecordIx(recordCount);
+    private int newRecordIx(int parentIx) {
+        int resultNr = freeRecordNr;
+        if (resultNr == 0) {
+        	resultNr = recordCount;
 			recordCount++;
-			if (recordCount >= fill.length) {
+			int oldMaxRecordCount = fill.length;
+			if (recordCount >= oldMaxRecordCount) {
 				// extend the length of the next array
-				int newLength = Math.max((int) (recordCount * GROWTH_FACTOR),recordCount+1);
-				int[] newTree = new int[getRecordIx(newLength)];
+				int newMaxRecordCount = (int) (recordCount * GROWTH_FACTOR);
+				int newTreeSize = getRecordIx(newMaxRecordCount);
+				int[] newTree = new int[newTreeSize + newMaxRecordCount];
 				if (SIZE_PRINT) {
 					System.out.printf("Set %s (size %d, record count %d) from %d to %d tree nodes%n",
 							System.identityHashCode(this),
 							size, recordCount,
 							tree.length, newTree.length);
 				}
-				System.arraycopy(tree, 0, newTree, 0, tree.length);
-				byte[] newRecordFill = new byte[newLength];
-				System.arraycopy(fill, 0, newRecordFill, 0, fill.length);
+				int oldTreeSize = getRecordIx(oldMaxRecordCount);
+				System.arraycopy(tree, 0, newTree, 0, oldTreeSize);
+				System.arraycopy(tree, oldTreeSize, newTree, newTreeSize, oldMaxRecordCount);
+				byte[] newFill = new byte[newMaxRecordCount];
+				System.arraycopy(fill, 0, newFill, 0, oldMaxRecordCount);
 				tree = newTree;
-				fill = newRecordFill;
-//			} else {
-//			    // clean the new fragment of the tree
-//	            int upper = result + getRecordSize(result == 0);
-//	            Arrays.fill(tree, result, upper, 0);
+				fill = newFill;
+				if (FILL_PRINT) {
+					System.out.printf("Extending: %d records (%d slots) for %d keys (average %f)%n", recordCount, getRecordIx(recordCount), size+1, getAverageFill(getRecordIx(recordCount), size+1));
+				}
 			}
+	        setParentIx(resultNr, parentIx);
 		} else {
-			freeRecordIx = tree[freeRecordIx];
-//			// clean the new fragment of the tree
-//            int upper = result + getRecordSize(result == 0);
-//			Arrays.fill(tree, result, upper, 0);
+			// take a previously used, disposed record
+			freeRecordNr = setParentIx(resultNr, parentIx);
 		}
-        tree[result] = parentIx;
-        setTreeValue(parentIx, result);
-    	return result;
+        if (tree[parentIx] == 0) {
+        	setFilled(parentIx);
+        }
+        int resultIx = getRecordIx(resultNr);
+        tree[parentIx] = resultIx;
+    	return resultIx;
     }
     
     /**
-     * Inserts a new code/key pair at the next available place in the {@link #codes} 
-     * and {@link #keys} arrays, and returns the index of the new position.
-     * The index is always positive.
-     * @param code the code to be inserted
-     * @param key the key to be inserted; it is assumed that <code>code == key.hashCode()</code>.
-     * @return the index in {@link #codes} where <code>code</code> is stored,
-     * resp. in {@link #keys} where <code>key</code> is stored
+     * Disposes the record with a given (positive) record number, adjust the
+     * parent record index, and returns the parent record number (so that it can
+     * be disposed in turn, if appropriate).
+     * This should occur when the fill degree of the record has decreased to 0.
+     * @param recordNr the number of the record to be disposed; should be positive
      */
+    private int disposeRecord(int recordNr) {
+//    	System.out.printf("Disposing record %d (next free record %d) of %s%n", recordNr, freeRecordNr, this.hashCode());
+		assert recordNr > 0;
+		int parentIx = setParentIx(recordNr, freeRecordNr);
+		freeRecordNr = recordNr;
+		return parentIx;
+	}
+    
+    /**
+	 * Inserts a new code/key pair at the next available place in the
+	 * {@link #codes} and {@link #keys} arrays, and returns the index of the new
+	 * position. The index is always positive.
+	 * 
+	 * @param code
+	 *            the code to be inserted
+	 * @param key
+	 *            the key to be inserted; it is assumed that
+	 *            <code>code == key.hashCode()</code>.
+	 * @return the index in {@link #codes} where <code>code</code> is stored,
+	 *         resp. in {@link #keys} where <code>key</code> is stored
+	 */
     private int newKeyIx(int code, T key) {
     	assert code == getCode(key) : "Key "+key+" should have hash code "+code+", but has "+getCode(key);
     	int result = freeKeyIx;
-		if (result == 0) {
-			result = (this.keyCount += 1);
-			if (result >= keys.length) {
-				Object[] newKeys = new Object[(int) (GROWTH_FACTOR * result + 1)];
+		if (result < 0) {
+			result = this.keyCount;
+			keyCount++;
+			int oldLength = keys.length;
+			if (result >= oldLength) {
+				int newLength = (int) (GROWTH_FACTOR * keyCount + 1);
+				Object[] newKeys = new Object[newLength];
 	    		if (SIZE_PRINT) {
 	    			System.out.printf("Set %s (size %d) from %d to %d keys %n", System.identityHashCode(this), size, keys.length, newKeys.length);
 	    		}
-				System.arraycopy(keys, 0, newKeys, 0, keys.length);
+				System.arraycopy(keys, 0, newKeys, 0, oldLength);
 				keys = newKeys;
-				int[] newCodes = new int[(int) (GROWTH_FACTOR * result + 1)];
-				System.arraycopy(codes, 0, newCodes, 0, codes.length);
+				int[] newCodes = new int[newLength];
+				System.arraycopy(codes, 0, newCodes, 0, oldLength);
 				codes = newCodes;
 			}
 		} else {
@@ -590,9 +663,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     	codes[keyIx] = freeKeyIx;
     	freeKeyIx = keyIx;
     	size--;
-    	if (size == 0) {
-    		clear();
-    	}
+//    	if (size == 0) {
+//    		clear();
+//    	}
     }
     
     /**
@@ -641,18 +714,93 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 
     /** Returns the start index of the tree record with a given number. */
     private int getRecordIx(int recordNr) {
-    	return recordNr == 0 ? 0 : getRecordSize(true) + (recordNr-1)*getRecordSize(false);
+    	return recordNr == 0 ? 0 : ((recordNr-1) << resolution) + rootSize();
     }
 
     /** Returns the record number of a given record index. */
-    private int getRecordNr(int recordIx) {
-    	int rootRecordSize = getRecordSize(true);
-    	return recordIx < rootRecordSize ? 0 : 1 + (recordIx-rootRecordSize) / getRecordSize(false);
+    private int getRecordNr(int treeIx) {
+    	return treeIx < rootSize() ? 0 : ((treeIx-rootSize()) >>> resolution) + 1;
     }
 
-    /** Returns the size of the first and later tree records. */
-    private int getRecordSize(boolean first) {
-    	return first ? rootMask+2 : mask+2;
+    /** 
+     * Returns the index of the first real (non-parent) element in the record
+     * where a given tree index is pointing.
+     */
+    private int getOffset(int treeIx) {
+    	return treeIx < rootSize() ? treeIx : (treeIx-rootSize()) & mask;
+    }
+
+    /** Returns the size of root record. */
+    private int rootSize() {
+    	return rootMask+1;
+    }
+
+    /** 
+     * Returns the parent index for a given record number.  
+     * The parent may either be the parent in the tree,
+     * or the parent in the free record chain.
+     */
+    private int getParentIx(int recordNr) {
+    	return tree[getRecordIx(fill.length) + recordNr];
+    }
+    /** 
+     * Sets a parent index for a given record number.
+     * The parent may either be the parent in the tree,
+     * or the parent in the free record chain.
+     * @param recordNr the record for which the parent index is to be set
+     * @param parentIx the new parent index
+     * @return the old parent index
+     */
+    private int setParentIx(int recordNr, int parentIx) {
+    	int recordIx = getRecordIx(fill.length) + recordNr;
+    	int oldParentIx = tree[recordIx];
+    	tree[recordIx] = parentIx;
+    	return oldParentIx;
+    }
+    
+    private void testConsistent() {
+    	Set<Integer> freeRecordNrs = new HashSet<Integer>();
+    	int freeRecordNr = this.freeRecordNr;
+    	while (freeRecordNr > 0) {
+    		if (freeRecordNr >= recordCount) {
+    			throw new IllegalStateException(String.format("Free record %d > record count %d", freeRecordNr, recordCount));
+    		}
+    		freeRecordNrs.add(freeRecordNr);
+    		freeRecordNr = getParentIx(freeRecordNr);
+    	}
+    	for (int recordNr = 1; recordNr < recordCount; recordNr++) {
+    		if (!freeRecordNrs.contains(recordNr)) {
+    			int recordIx = getRecordIx(recordNr);
+    			byte recordFill = 0;
+    			for (int treeIx = recordIx; treeIx < getRecordIx(recordNr+1); treeIx++) {
+    				int value = tree[treeIx];
+    				if (value > 0) {
+    					if (getOffset(value) != 0) {
+    						throw new IllegalStateException(String.format("Child record index %d at %d is not at record boundary", value, treeIx, getParentIx(getRecordNr(value))));
+    					} else if (getParentIx(getRecordNr(value)) != treeIx) {
+    						throw new IllegalStateException(String.format("Child record index %d at %d points back to %d", value, treeIx, getParentIx(getRecordNr(value))));
+        				}
+    				}    				
+    				if (value != 0) {
+    					recordFill += 1 + getOffset(treeIx);
+    				}
+    			}
+    			if (recordFill == 0) {
+    				throw new IllegalStateException(String.format("Non-empty record %d has no entries", recordNr));
+    			} else if (fill[recordNr] != recordFill) {
+    				throw new IllegalStateException(String.format("Record fill of %d should be %d rather than %d", recordNr, recordFill, fill[recordNr]));
+    			}
+    			int parentIx = getParentIx(recordNr);
+    			int parentNr = getRecordNr(parentIx);
+    			if (parentNr >= recordCount) {
+    				throw new IllegalStateException(String.format("Parent %d of record %d larger than count %d", parentNr, recordNr, recordCount));
+    			} else if (freeRecordNrs.contains(parentNr)) {
+    				throw new IllegalStateException(String.format("Parent %d of record %d is free record", parentNr, recordNr));
+    			} else if (getRecordNr(tree[parentIx]) != recordNr) {
+    				throw new IllegalStateException(String.format("Parent index %d of record %d points to record %d", parentIx, recordNr, getRecordNr(tree[parentIx])));
+    			}
+    		}
+    	}
     }
     
     /**
@@ -662,9 +810,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     /** Array storing for every tree record the number of elements in it. */
     private byte[] fill;
     /**
-     * The index of the first free record index in the free record chain.
+     * The record number of the first element in the free record chain.
      */
-    private int freeRecordIx;
+    private int freeRecordNr;
     /**
      * The currently reserved number of positions in the store.
      */
@@ -732,6 +880,20 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     	return MyListEntry.instanceCount;
     }
     
+    /** Maintains an average fill degree. */
+    static private float getAverageFill(int recordCount, int size) {
+    	sum += size / (double) recordCount;
+    	count++;
+    	return (float) sum/count;
+    }
+    
+    /** Sum of fill ratios summed over all invocations of {@link #getAverageFill(int, int)}. */
+    static private double sum;
+    /** Number of invocations of {@link #getAverageFill(int, int)}. */
+    static private int count;
+    
+    /** The maximum record resolution supported. */
+    static public final int MAX_RESOLUTION = 4;
     /**
      * The default initial capacity of the set.
      */
@@ -839,6 +1001,10 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     static private final int BYTES_PER_OBJECT = 12;
     /** Factor by which the arrays grow if more space is needed. */
     static private final double GROWTH_FACTOR = 1.5;
+    /** Flag indicating that some fill statistics should be printed. */
+    static private final boolean FILL_PRINT = false;
+    /** Flag indicating that extra asserts should be used. */
+    static private final boolean DEBUG = false;
     /** Flag indicating that some size statistics should be printed. */
     static private final boolean SIZE_PRINT = false;
     /**

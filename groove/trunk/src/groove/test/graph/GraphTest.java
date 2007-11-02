@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.15 2007-10-18 14:57:43 rensink Exp $
+ * $Id: GraphTest.java,v 1.16 2007-11-02 08:42:38 rensink Exp $
  */
 package groove.test.graph;
 
@@ -50,7 +50,7 @@ import junit.framework.TestCase;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class GraphTest extends TestCase {
     static public final String MATCH_DOM_NAME = "match-dom-";
@@ -721,5 +721,5 @@ public class GraphTest extends TestCase {
         Set<Graph> listeningTo = added.keySet();
     }
     
-    private final Xml xml;
+    private final Xml<Graph> xml;
 }

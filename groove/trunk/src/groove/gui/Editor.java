@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Editor.java,v 1.50 2007-10-30 17:21:15 rensink Exp $
+ * $Id: Editor.java,v 1.51 2007-11-02 08:42:41 rensink Exp $
  */
 package groove.gui;
 
@@ -93,7 +93,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.50 $ $Date: 2007-10-30 17:21:15 $
+ * @version $Revision: 1.51 $ $Date: 2007-11-02 08:42:41 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -1237,6 +1237,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * Returns a j-model if the edited model should be replaced, <code>null</code> otherwise.
      */
     private AspectJModel showPreviewDialog(AspectualView<?> view, String okOption) {
+    	if (previewSize == null) {
+    		previewSize = DEFAULT_PREVIEW_SIZE;
+    	}
     	boolean partial = view.getAspectGraph().hasErrors();
     	AspectJModel previewModel = AspectJModel.newInstance(view, getOptions());
         JGraph jGraph = new JGraph(previewModel, false);
@@ -1262,10 +1265,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         JOptionPane previewPane = new JOptionPane(previewContent, JOptionPane.PLAIN_MESSAGE);
         previewPane.setOptions(new String[] { okOption, Options.CANCEL_BUTTON });
         JDialog dialog = previewPane.createDialog(getFrame(), String.format("%s preview", getRole(true)));
-        dialog.setSize(PREVIEW_SIZE);
+        dialog.setSize(previewSize);
         dialog.setResizable(true);
         dialog.setVisible(true);
         Object response = previewPane.getValue();
+        previewSize = dialog.getSize();
         return okOption.equals(response) ? previewModel : null;
     }
 
@@ -1336,6 +1340,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private JPanel statusPanel;
     /** Panel displaying format error messages. */
     private ErrorListPanel errorPanel;
+    /** The size of the (previous) preview dialog. */
+    private Dimension previewSize;
 //
 //    /** Text area containing error messages. */
 //    private JTextArea errorArea;
@@ -1451,7 +1457,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     /** The indication displayed in the frame title for a modified graph. */
     public static final String MODIFIED_INDICATOR = "> ";
     /** Size of the preview dialog window. */
-    private static final Dimension PREVIEW_SIZE = new Dimension(500, 500);
+    private static final Dimension DEFAULT_PREVIEW_SIZE = new Dimension(500, 500);
     /** 
      * Property name of the edit type of the editor.
      * The edit type is the kind of object being edited.
@@ -1787,7 +1793,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.50 $
+     * @version $Revision: 1.51 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

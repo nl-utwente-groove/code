@@ -12,35 +12,34 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultEdge.java,v 1.11 2007-10-20 15:19:59 rensink Exp $
+ * $Id: DefaultEdge.java,v 1.12 2007-11-02 08:42:22 rensink Exp $
  */
 package groove.graph;
 
-import groove.util.Equator;
 import groove.util.TreeHashSet;
 
 /**
  * Default implementation of an (immutable) graph edge, as a triple consisting of
  * source and target nodes and an arbitrary label.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-10-20 15:19:59 $
+ * @version $Revision: 1.12 $ $Date: 2007-11-02 08:42:22 $
  */
 final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
-	/**
-     * Constructs a new edge on the basis of a given source, label text and target.
-     * The label created will be a {@link DefaultLabel}.
-     * @param source source node of the new edge
-     * @param text label text of the new edge
-     * @param target target node of the new edge
-     * @require <tt>source != null && text != null && target != null</tt>
-     * @ensure <tt>source()==source</tt>,
-     *         <tt>label().text().equals(text)</tt>,
-     *         <tt>target()==target </tt>
-     */
-    private DefaultEdge(Node source, String text, Node target) {
-        this(source,DefaultLabel.createLabel(text),target);
-    }
-
+//	/**
+//     * Constructs a new edge on the basis of a given source, label text and target.
+//     * The label created will be a {@link DefaultLabel}.
+//     * @param source source node of the new edge
+//     * @param text label text of the new edge
+//     * @param target target node of the new edge
+//     * @require <tt>source != null && text != null && target != null</tt>
+//     * @ensure <tt>source()==source</tt>,
+//     *         <tt>label().text().equals(text)</tt>,
+//     *         <tt>target()==target </tt>
+//     */
+//    private DefaultEdge(Node source, String text, Node target) {
+//        this(source,DefaultLabel.createLabel(text),target);
+//    }
+//
     /**
      * Constructs a new edge on the basis of a given source, label and target.
      * @param source source node of the new edge
@@ -51,20 +50,10 @@ final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
      *         <tt>label()==label</tt>,
      *         <tt>target()==target </tt>
      */
-    private DefaultEdge(Node source, Label label, Node target) {
+    private DefaultEdge(Node source, Label label, Node target, int nr) {
         super(source, label, target);
+        this.nr = nr;
     }
-
-    // ----------------- Element methods ----------------------------
-//
-//    /**
-//     * This implementation returns a {@link DefaultEdge}.
-//     */
-//    @Override
-//    @Deprecated
-//    public BinaryEdge newEdge(Node source, Label label, Node target) {
-//        return DefaultEdge.createEdge(source, label, target);
-//    }
 
     /** 
      * For efficiency, this implementation tests for object equality.
@@ -78,6 +67,20 @@ final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
         return result;
     }
 
+    /** 
+     * Returns a fixed sequence number for the edge.
+     * The numbers are chosen consecutively and uniquely identify the edge.
+     */
+    public int getNumber() {
+    	return nr;
+    }
+    
+    /** 
+     * The fixed edge number. This is guaranteed to be unique for all
+     * {@link DefaultEdge}s.
+     */
+    final int nr;
+    
     /**
      * Creates an default edge from a given source node, label text and target node.
      * To save space, a set of standard instances is kept internally, and consulted
@@ -109,7 +112,7 @@ final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
         assert source != null : "Source node of default edge should not be null";
         assert target != null : "Target node of default edge should not be null";
         assert label != null : "Label of default edge should not be null";
-        DefaultEdge edge = new DefaultEdge(source, label, target);
+        DefaultEdge edge = new DefaultEdge(source, label, target, edgeSet.size());
         DefaultEdge result = DefaultEdge.edgeSet.put(edge);
         if (result == null) {
             result = edge;

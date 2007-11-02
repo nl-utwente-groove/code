@@ -27,9 +27,9 @@ import junit.framework.TestCase;
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.1 $
  */
-public class SetTest extends TestCase {
+public class TreeHashSetTest extends TestCase {
 	static final int INT_LIST_COUNT = 1000;
 	final Integer[] intList1 = new Integer[INT_LIST_COUNT];
 	final Integer[] intList2 = new Integer[INT_LIST_COUNT];

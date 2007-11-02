@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractBinaryEdge.java,v 1.11 2007-10-20 15:19:58 rensink Exp $
+ * $Id: AbstractBinaryEdge.java,v 1.12 2007-11-02 08:42:22 rensink Exp $
  */
 package groove.graph;
 
@@ -21,7 +21,7 @@ package groove.graph;
  * Abstract implementation of an (immutable) binary graph edge, as a tuple consisting of source and
  * target nodes.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-10-20 15:19:58 $
+ * @version $Revision: 1.12 $ $Date: 2007-11-02 08:42:22 $
  */
 abstract public class AbstractBinaryEdge<SN extends Node, L extends Label, TN extends Node> extends AbstractEdge<SN,L> implements BinaryEdge {
     /**
@@ -193,10 +193,10 @@ abstract public class AbstractBinaryEdge<SN extends Node, L extends Label, TN ex
     @Override
     protected int computeHashCode() {
     	int labelCode = label().hashCode();
-    	int sourceCode = source.hashCode();
-    	int targetCode = target.hashCode();
+    	int sourceCode = 3 * source.hashCode();
+    	int targetCode = (labelCode+2) * target.hashCode();
         return labelCode //+ 3 * sourceCode - 2 * targetCode;
-				^ (3*((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT)))
+				^ ((sourceCode << SOURCE_SHIFT) + (sourceCode >>> SOURCE_RIGHT_SHIFT))
 				+ ((targetCode << TARGET_SHIFT) + (targetCode >>> TARGET_RIGHT_SHIFT));
     }
 

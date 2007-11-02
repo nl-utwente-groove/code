@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MatrixAutomaton.java,v 1.9 2007-10-18 14:12:28 rensink Exp $
+ * $Id: MatrixAutomaton.java,v 1.10 2007-11-02 08:42:35 rensink Exp $
  */
 package groove.rel;
 
@@ -22,7 +22,7 @@ import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.Graph;
+import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 
@@ -140,7 +140,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         }
     }
 
-    public NodeRelation getMatches(Graph graph, Set<? extends Node> startImages, Set<? extends Node> endImages, Map<String,Label> valuation) {
+    public NodeRelation getMatches(GraphShape graph, Set<? extends Node> startImages, Set<? extends Node> endImages, Map<String,Label> valuation) {
         if (valuation == null) {
             valuation = Collections.emptyMap();
         }
@@ -158,16 +158,16 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         }
     }
 
-    public NodeRelation getMatches(Graph graph, Set<? extends Node> startImages, Set<? extends Node> endImages) {
+    public NodeRelation getMatches(GraphShape graph, Set<? extends Node> startImages, Set<? extends Node> endImages) {
         return getMatches(graph, startImages, endImages, null);
     }
     
     /**
      * Creates a set of start nodes to be used in the search for matches
      * if no explicit start nodes are provided.
-     * @see #getMatches(Graph, Set, Set, Map)
+     * @see #getMatches(GraphShape, Set, Set, Map)
      */
-    protected Set<Node> createStartImages(Graph graph) {
+    protected Set<Node> createStartImages(GraphShape graph) {
         Set<Node> result = new HashSet<Node>();
         if (isAcceptsEmptyWord() || isInitWildcard()) {
             // too bad, all graph nodes can be start images
@@ -179,7 +179,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         return result;
     }
     
-    private void addStartImages(Set<Node> result, Graph graph, boolean positive) {
+    private void addStartImages(Set<Node> result, GraphShape graph, boolean positive) {
         Label[] initLabels = positive ? getInitPosLabels() : getInitInvLabels();
         for (int i = 0; i < initLabels.length; i++) {
             Label initLabel = initLabels[i];
@@ -815,7 +815,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
     static final RegExprLabel WILDCARD_LABEL = RegExpr.wildcard().toLabel();
     /**
      * Class to encapsulate the algorithm used to compute the result of
-     * {@link VarAutomaton#getMatches(Graph, Set, Set, Map)}.
+     * {@link VarAutomaton#getMatches(GraphShape, Set, Set, Map)}.
      */
     protected class MatchingAlgorithm {
         /** Dummy object used in matching. */
@@ -1171,7 +1171,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * may be <code>null</code> if all end images are allowed
          * @param valuation initial mapping from variables to labels
          */
-        public NodeRelation computeMatches(Graph graph, Set<? extends Node> startImages, Set<? extends Node> endImages, Map<String, Label> valuation) {
+        public NodeRelation computeMatches(GraphShape graph, Set<? extends Node> startImages, Set<? extends Node> endImages, Map<String, Label> valuation) {
             if (graph != this.graph) {
                 // we're working on a different graph, so the previous matchings are no good
                 cleanOldMatches();
@@ -1216,7 +1216,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
          * Callback factory method. Creates a relation over a given graph. This implementation
          * returns a {@link SetNodeRelation}.
          */
-        protected NodeRelation createRelation(Graph graph) {
+        protected NodeRelation createRelation(GraphShape graph) {
             return new SetNodeRelation(graph);
         }
 
@@ -1348,7 +1348,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         }
         
         /**
-         * Tests if a given node is in the pre-set set of allowd end images.
+         * Tests if a given node is in the pre-set set of allowed end images.
          * Always returns <code>true</code> if there is no such set.
          */
         protected boolean isAllowedResult(Node image) {
@@ -1405,7 +1405,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
         /**
          * Graph on which the current matching computation is performed.
          */
-        private transient Graph graph;
+        private transient GraphShape graph;
 
         /**
          * Set of potential end images for the current matching computation.

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AutomatonTest.java,v 1.7 2007-09-10 19:13:36 rensink Exp $
+ * $Id: AutomatonTest.java,v 1.8 2007-11-02 08:42:39 rensink Exp $
  */
 package groove.test;
 
@@ -20,6 +20,7 @@ import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
+import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.io.DefaultGxl;
@@ -50,7 +51,7 @@ import junit.framework.TestCase;
 /**
  * Tests the available {@link Automaton} interface.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class AutomatonTest extends TestCase {
 	/** Directory with test files (relative to the project) */
@@ -64,7 +65,7 @@ public class AutomatonTest extends TestCase {
      */
     Xml loader = new DefaultGxl(GraphFactory.getInstance());
     String testGraphName = "regexpr-test-graph";
-    Graph testGraph;
+    GraphShape testGraph;
     
     Node nList, nC1, nC2, nC3, nC4, nI0, nI1, nI2, nI3;
     Set<Node> nC12, nC34;

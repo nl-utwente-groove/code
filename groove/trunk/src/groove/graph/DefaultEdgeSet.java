@@ -5,10 +5,15 @@ import groove.util.TreeHashSet;
 /** 
  * Specialisation of a set of edges, for use inside this class.
  */
-class DefaultEdgeSet extends TreeHashSet<DefaultEdge> {
+public class DefaultEdgeSet extends TreeHashSet<DefaultEdge> {
     /** Creates an empty edge set. */
     public DefaultEdgeSet() {
-        super();
+        super(DEFAULT_CAPACITY);
+    }
+    
+    /** Creates an empty edge set with a given initial capacity. */
+    public DefaultEdgeSet(int capacity) {
+        super(capacity);
     }
     
     /** Creates a copy of an existing edge set. */
@@ -18,16 +23,16 @@ class DefaultEdgeSet extends TreeHashSet<DefaultEdge> {
 
 	@Override
 	protected boolean allEqual() {
-		return false;
+		return true;
 	}
 
 	@Override
 	protected boolean areEqual(DefaultEdge newKey, DefaultEdge oldKey) {
-		return newKey == oldKey;
+		return true;
 	}
 
 	@Override
 	protected int getCode(DefaultEdge key) {
-		return key.hashCode();
+		return key.getNumber();
 	}	    
 }

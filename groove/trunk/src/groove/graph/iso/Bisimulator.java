@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Bisimulator.java,v 1.15 2007-10-10 08:59:59 rensink Exp $
+ * $Id: Bisimulator.java,v 1.16 2007-11-02 08:42:38 rensink Exp $
  */
 package groove.graph.iso;
 
+import groove.graph.DefaultLabel;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
@@ -38,7 +39,7 @@ import java.util.Map;
  * The result is available as a mapping from graph elements to "certificate" objects;
  * two edges are bisimilar if they map to the same (i.e., <tt>equal</tt>) certificate.  
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class Bisimulator implements CertificateStrategy {
     /**
@@ -532,7 +533,7 @@ public class Bisimulator implements CertificateStrategy {
     /**
      * Class of nodes that carry (and are identified with) an integer certificate value.
      * @author Arend Rensink
-     * @version $Revision: 1.15 $
+     * @version $Revision: 1.16 $
      */
     static private class NodeCertificate extends Certificate<Node> {
     	/** Initial node value to provide a better spread of hash codes. */
@@ -597,7 +598,7 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.15 $
+     * @version $Revision: 1.16 $
      */
     static private class Edge2Certificate extends Certificate<Edge> {
         /**
@@ -610,7 +611,7 @@ public class Bisimulator implements CertificateStrategy {
         	super(edge);
             this.source = source;
             this.target = target;
-            this.labelIndex = edge.label().hashCode();
+            this.labelIndex = ((DefaultLabel) edge.label()).getIndex();
             initValue();
             source.addValue(value);
             target.addValue(value << 1);
@@ -681,14 +682,14 @@ public class Bisimulator implements CertificateStrategy {
      * The hash code is computed dynamically, on the basis of the current
      * certificate node value.
      * @author Arend Rensink
-     * @version $Revision: 1.15 $
+     * @version $Revision: 1.16 $
      */
     static private class Edge1Certificate extends Certificate<Edge> {
         /** Constructs a certificate edge for a predicate (i.e., a unary edge). */
         public Edge1Certificate(Edge edge, NodeCertificate source) {
         	super(edge);
             this.source = source;
-            this.labelIndex = edge.label().hashCode();
+            this.labelIndex = ((DefaultLabel) edge.label()).getIndex();
             initValue();
             source.addValue(value);
         }

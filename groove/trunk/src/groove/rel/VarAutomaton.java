@@ -12,11 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarAutomaton.java,v 1.3 2007-08-31 10:23:21 rensink Exp $
+ * $Id: VarAutomaton.java,v 1.4 2007-11-02 08:42:35 rensink Exp $
  */
 package groove.rel;
 
-import groove.graph.Graph;
+import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 
@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Extends the automation interface with support for variables.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface VarAutomaton extends Automaton {//, VarSetSupport {
     /**
@@ -42,5 +42,5 @@ public interface VarAutomaton extends Automaton {//, VarSetSupport {
      * @param valuation mapping from variables to edge labels that should be 
      * adhered to in the matching; if <code>null</code>, there is no constraint 
      */
-    NodeRelation getMatches(Graph graph, Set<? extends Node> startImages, Set<? extends Node> endImages, Map<String,Label> valuation);
+    NodeRelation getMatches(GraphShape graph, Set<? extends Node> startImages, Set<? extends Node> endImages, Map<String,Label> valuation);
 }

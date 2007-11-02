@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.15 2007-10-23 22:44:07 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.16 2007-11-02 08:42:39 rensink Exp $
  */
 
 package groove.test;
@@ -23,11 +23,13 @@ import groove.io.GrammarViewXml;
 import groove.lts.ConditionalExploreStrategy;
 import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
+import groove.lts.LTSGraph;
 import groove.lts.explore.FullStrategy;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
 import groove.util.Generator;
+import groove.util.Groove;
 import groove.view.FormatException;
 import groove.view.GrammarView;
 
@@ -46,7 +48,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -253,8 +255,8 @@ public class ExplorationTest extends TestCase {
 	}
 
 	/**
-     * Tests exploration of a given grammar.
-     * @param gg the graph grammar to be tested
+     * Tests exploration of a given grammar, saving the GTS if required.
+     * @param view the graph grammar to be tested
      * @param strategyDescr description of the exploration strategy to be used, in the format of {@link Generator.ExploreOption} 
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
@@ -262,7 +264,7 @@ public class ExplorationTest extends TestCase {
      * @return the explored GTS
      */
     protected GTS testExploration(GrammarView<?,?> view, String strategyDescr, int nodeCount,
-            int edgeCount, int openCount) {
+            int edgeCount, int openCount, boolean save) {
         try {
         	GraphGrammar gg = view.toGrammar();
             GTS lts = new GTS(gg);
@@ -285,6 +287,12 @@ public class ExplorationTest extends TestCase {
             	strategy.explore();
             } catch (InterruptedException exc) { // proceed
             }
+            if (save) {
+				try {
+					Groove.saveGraph(new LTSGraph(lts), view.getName());
+				} catch (IOException exc) { // proceed
+				}
+			}
             if (nodeCount >= 0) {
                 assertEquals(nodeCount, lts.nodeCount());
             }
@@ -298,6 +306,27 @@ public class ExplorationTest extends TestCase {
         } catch (FormatException exc) {
             throw new RuntimeException(exc);
         }
+    }
+
+	/**
+	 * Tests exploration of a given grammar.
+	 * 
+	 * @param view
+	 *            the graph grammar to be tested
+	 * @param strategyDescr
+	 *            description of the exploration strategy to be used, in the
+	 *            format of {@link Generator.ExploreOption}
+	 * @param nodeCount
+	 *            expected number of nodes; disregarded if < 0
+	 * @param edgeCount
+	 *            expected number of edges; disregarded if < 0
+	 * @param openCount
+	 *            expected number of open states; disregarded if < 0
+	 * @return the explored GTS
+	 */
+	protected GTS testExploration(GrammarView<?, ?> view, String strategyDescr,
+			int nodeCount, int edgeCount, int openCount) {
+        return testExploration(view, strategyDescr, nodeCount, edgeCount, openCount, false);
     }
 
     /**

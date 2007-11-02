@@ -12,11 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSet.java,v 1.7 2007-09-19 14:57:31 rensink Exp $
+ * $Id: NodeSet.java,v 1.8 2007-11-02 08:42:22 rensink Exp $
  */
 package groove.graph;
 
-import groove.util.Equator;
 import groove.util.TreeHashSet;
 
 import java.util.Collection;
@@ -28,10 +27,15 @@ import java.util.Collection;
  * @author Arend Rensink
  * @version $Revision $
  */
-public class NodeSet extends TreeHashSet<Node> {
+final public class NodeSet extends TreeHashSet<Node> {
+	/** Constructs an empty set with a given initial capacity. */
+	public NodeSet(int capacity) {
+        super(capacity, NODE_RESOLUTION, NODE_RESOLUTION);
+	}
+	
     /** Constructs an empty set. */
 	public NodeSet() {
-        super(DEFAULT_CAPACITY, NODE_RESOLUTION, NODE_RESOLUTION, NODE_EQUATOR);
+		this(DEFAULT_CAPACITY);
 //        super(DefaultNode.getNodeCount(), HASHCODE_EQUATOR);
 		//            super(NODE_SET_RESOLUTION, DefaultNode.getNodeCount(), HASHCODE_EQUATOR);
 		//            super(NODE_SET_RESOLUTION, HASHCODE_EQUATOR);
@@ -39,7 +43,7 @@ public class NodeSet extends TreeHashSet<Node> {
 
     /** Constructs a copy of an existing set. */
     public NodeSet(Collection<? extends Node> other) {
-        super(other.size(), NODE_RESOLUTION, NODE_RESOLUTION, NODE_EQUATOR);
+        this(other.size());
         addAll(other);
     }
 
@@ -47,25 +51,45 @@ public class NodeSet extends TreeHashSet<Node> {
     public NodeSet(NodeSet other) {
         super(other);
     }
+    
+    @Override
+    protected boolean allEqual() {
+		return true;
+	}
 
-    /** The resolution of the tree for a node set. */
+	@Override
+	protected boolean areEqual(Node newKey, Node oldKey) {
+		return true;
+	}
+
+	@Override
+	protected int getCode(Node key) {
+        if (key instanceof DefaultNode) {
+            return ((DefaultNode) key).getNumber();
+        } else {
+            return key.hashCode();
+        }
+	}
+
+
+	/** The resolution of the tree for a node set. */
     static private final int NODE_RESOLUTION = 4;
-    /** The equator for nodes, which looks at the node number. */
-	static private final Equator<Node> NODE_EQUATOR = new Equator<Node>() {
-        public boolean allEqual() {
-            return true;
-        }
-
-        public boolean areEqual(Node newKey, Node oldKey) {
-            return true;
-        }
-
-        public int getCode(Node key) {
-            if (key instanceof DefaultNode) {
-                return ((DefaultNode) key).getNumber();
-            } else {
-                return key.hashCode();
-            }
-        }	    
-	};
+//    /** The equator for nodes, which looks at the node number. */
+//	static private final Equator<Node> NODE_EQUATOR = new Equator<Node>() {
+//        public boolean allEqual() {
+//            return true;
+//        }
+//
+//        public boolean areEqual(Node newKey, Node oldKey) {
+//            return true;
+//        }
+//
+//        public int getCode(Node key) {
+//            if (key instanceof DefaultNode) {
+//                return ((DefaultNode) key).getNumber();
+//            } else {
+//                return key.hashCode();
+//            }
+//        }	    
+//	};
 }
