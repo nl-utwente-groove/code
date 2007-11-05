@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.19 2007-11-02 08:42:37 rensink Exp $
+ * $Id: StateCache.java,v 1.20 2007-11-05 14:16:27 rensink Exp $
  */
 package groove.lts;
 
@@ -36,7 +36,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 class StateCache {
     /**
@@ -73,6 +73,11 @@ class StateCache {
     		graph = computeGraph();
     	}
     	return graph;
+    }
+    
+    /** Indicates if this cache currently stores a graph. */
+    boolean hasGraph() {
+        return graph != null;
     }
     
     DeltaApplier getDelta() {

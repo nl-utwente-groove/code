@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForallCondition.java,v 1.8 2007-10-11 11:42:39 rensink Exp $
+ * $Id: ForallCondition.java,v 1.9 2007-11-05 14:16:25 rensink Exp $
  */
 package groove.trans;
 
@@ -31,7 +31,7 @@ import java.util.List;
  * @version $Revision $
  */
 public class ForallCondition extends AbstractCondition<CompositeMatch> {
-	/** Constructs an instance based on a given target and root map. */
+    /** Constructs an instance based on a given target and root map. */
     public ForallCondition(Graph target, NodeEdgeMap rootMap, NameLabel name, SystemProperties properties) {
         super(target, rootMap, name, properties);
     }
@@ -63,8 +63,17 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
      */
     Collection<CompositeMatch> computeMatches(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
-        result.add(new CompositeMatch());
-        while (matchMapIter.hasNext()) {
+        // add the empty match if the condition is not positive
+        if (!positive) {
+            result.add(new CompositeMatch());
+        }
+        boolean first = positive;
+        while (matchMapIter.hasNext() && (first || !result.isEmpty())) {
+            // add the empty match if the condition is positive
+            if (first) {
+                result.add(new CompositeMatch());
+                first = false;
+            }
             VarNodeEdgeMap matchMap = matchMapIter.next();
             Collection<Match> subResults = new ArrayList<Match>();
             for (Condition subCondition : getSubConditions()) {
@@ -83,58 +92,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         }
         return result;
     }
-    
-    
-//
-//    @Override
-//    public Iterator<CompositeMatch> getMatchIter(Graph host, NodeEdgeMap contextMap) {
-//        Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
-//        List<Iterable<? extends Match>> subMatches = new ArrayList<Iterable<? extends Match>>();
-//        int subConditionCount = getSubConditions().size();
-//        List<Match> matchSet = new ArrayList<Match>();
-//        for (int i = 0; i < subConditionCount; i++) {
-//            subMatches.add(new ArrayList<Match>());
-//            matchSet.add(null);
-//        }
-//        Iterator<VarNodeEdgeMap> matchMapIter = getMatcher().getMatchIter(host, contextMap);
-//        while (matchMapIter.hasNext()) {
-//            VarNodeEdgeMap matchMap = matchMapIter.next();
-//            for (AbstractCondition<?> condition: getSubConditions()) {
-//                subMatches.add(condition.getMatches(host, matchMap));
-//            }
-//            Stack<Iterator<? extends Match>> subMatchIters = new Stack<Iterator<? extends Match>>();
-//            int i = 0;
-//            do {
-//                while (i >= 0 && i < subConditionCount) {
-//                    Iterator< ? extends Match> subMatchIter;
-//                    if (subMatchIters.size() <= i) {
-//                        subMatchIters.push(subMatchIter = subMatches.get(i).iterator());
-//                    } else {
-//                        subMatchIter = subMatchIters.peek();
-//                    }
-//                    if (subMatchIter.hasNext()) {
-//                        matchSet.set(i, subMatchIters.get(i).next());
-//                        i++;
-//                    } else {
-//                        subMatchIters.pop();
-//                        i--;
-//                    }
-//                }
-//                result.add(createMatch(matchSet));
-//            } while (i >= 0);
-//        }
-//        return result.iterator();
-//    }
-//
-//    /** Creates a composite match on the basis if a set of matches of sub-conditions. */
-//    protected CompositeMatch createMatch(Collection<Match> subMatches) {
-//        CompositeMatch result = new CompositeMatch();
-//        for (Match match: subMatches) {
-//            result.addMatch(match);
-//        }
-//        return result;
-//    }
-    
+        
     /** This implementation iterates over the result of {@link #getMatches(Graph, NodeEdgeMap)}. */
     @Override
     public Iterator<CompositeMatch> computeMatchIter(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
@@ -146,6 +104,26 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
 		return "Universal "+super.toString();
 	}
 
+    /** Sets this universal condition to positive. */
+    public void setPositive() {
+        positive = true;
+    }
+    
+    /**
+     * Indicates if this condition is positive.
+     * A universal condition is positive if it cannot be vacuously fulfilled;
+     * i.e., there must always be at least one match.
+     */
+    public boolean isPositive() {
+        return positive;
+    }
+    
+    /** 
+     * Flag indicating whether the condition is positive, i.e.,
+     * cannot be vacuously true.
+     */
+    private boolean positive;
+    
 	/** 
      * Turns a collection of iterators into an iterator of collections.
      * The collections returned by the resulting iterator are tuples of elements from the

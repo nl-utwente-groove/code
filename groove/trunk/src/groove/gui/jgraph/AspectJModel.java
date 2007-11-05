@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.30 2007-10-26 07:07:17 rensink Exp $
+ * $Id: AspectJModel.java,v 1.31 2007-11-05 14:16:18 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -67,7 +67,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -377,14 +377,17 @@ public class AspectJModel extends GraphJModel {
 		private StringBuilder getQuantifierLine(NamedAspectValue nesting) {
 			StringBuilder result = new StringBuilder();
 			if (NestingAspect.FORALL.equals(nesting)) {
-				result.append(Converter.HTML_FORALL);
-			} else {
+                result.append(Converter.HTML_FORALL);
+            } else if (NestingAspect.FORALL_POS.equals(nesting)) {
+                result.append(Converter.HTML_FORALL);
+                result.append(Converter.SUPER_TAG.on(Converter.HTML_GT+"0"));
+            } else {
 				assert NestingAspect.EXISTS.equals(nesting);
 				result.append(Converter.HTML_EXISTS);
 			}
 			String level = nesting.getContent();
 			if (level.length() != 0) {
-				result.append(Converter.SUPER_TAG.on(level));
+				result.insert(0, level+LEVEL_NAME_SEPARATOR);
 			}
 			return result;
 		}
@@ -401,24 +404,6 @@ public class AspectJModel extends GraphJModel {
 			}
 			return result;
 		}
-//
-//		/**
-//		 * On demand adds the node aspects to the label set.
-//		 */
-//		@Override
-//		public Collection<String> getListLabels() {
-//			if (isShowAspects()) {
-//				Collection<String> result = new ArrayList<String>();
-//				for (AspectValue value : getNode().getDeclaredValues()) {
-//					result.add(AspectParser.toString(value));
-//				}
-//				result.addAll(super.getListLabels());
-//				return result;
-//			} else {
-//				return super.getListLabels();
-//			}
-//		}
-
 	    /**
 		 * This implementation adds node and edge aspects.
 		 */
@@ -475,6 +460,9 @@ public class AspectJModel extends GraphJModel {
 
 		/** The role of the underlying rule node. */
         private final AspectValue role;
+        
+        /** Separator between level name and edge label. */
+        private static final char LEVEL_NAME_SEPARATOR = ':';
     }
 
     /**
@@ -584,6 +572,7 @@ public class AspectJModel extends GraphJModel {
 		
 		private final AspectValue role;
 		
+		/** Separator between level name and edge label. */
 		private static final char LEVEL_NAME_SEPARATOR = ':';
     }
 }
