@@ -8,12 +8,12 @@ import groove.util.TreeHashSet;
 public class DefaultEdgeSet extends TreeHashSet<DefaultEdge> {
     /** Creates an empty edge set. */
     public DefaultEdgeSet() {
-        super(DEFAULT_CAPACITY);
+        this(DEFAULT_CAPACITY);
     }
     
     /** Creates an empty edge set with a given initial capacity. */
     public DefaultEdgeSet(int capacity) {
-        super(capacity);
+        super(capacity, 2, 3);
     }
     
     /** Creates a copy of an existing edge set. */
