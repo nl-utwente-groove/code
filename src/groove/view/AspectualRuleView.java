@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.27 2007-10-26 07:07:18 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.28 2007-11-05 14:16:39 rensink Exp $
  */
 
 package groove.view;
@@ -83,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -412,6 +412,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         	TreeIndex parentLevel = level.isTopLevel() ? null : level.getParent();
         	if (level.isExistential() && !level.isTopLevel()) {
         		((SPORule) condition).setParent((SPORule) levelRuleMap.get(parentLevel.getParent()), level.getIntArray());
+        	} else if (level.isPositive()) {
+        	    ((ForallCondition) condition).setPositive();
         	}
         	if (level.isTopLevel()) {
         		condition.setName(name);
@@ -704,6 +706,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 		}
 		nodeLevelMap.put(node, result);
 		childCountMap.put(result, 0);
+		result.setPositive(NestingAspect.isPositive(node));
     	return result;
     }
     
@@ -1278,8 +1281,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Class encoding an index in a 
      * tree, consisting of a list of indices at every level of the tree.
      */
-    private static class TreeIndex extends ArrayList<Integer> implements Comparable<TreeIndex> {
-    	/** Constructs the tree index of the root. */
+    private static class TreeIndex extends ArrayList<Integer> implements Comparable<TreeIndex> {        /** Constructs the tree index of the root. */
     	public TreeIndex() {
     		// empty
     	}
@@ -1395,5 +1397,25 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 		public boolean isExistential() {
 			return size() % 2 == 0 && !isNegated();
 		}
+
+        /**
+         * Indicates, for a universal level, if the level is positive.
+         */
+        public boolean isPositive() {
+            return positive;
+        }
+
+        /**
+         * Sets the positive flag of a universal level.
+         */
+        public void setPositive(boolean positive) {
+            if (positive && ! isUniversal()) {
+                throw new IllegalStateException("Only universal levels can be positive");
+            }
+            this.positive = positive;
+        }
+
+		/** Flag indicating, for a universal level, if it is positive. */
+		private boolean positive;
     }
 }

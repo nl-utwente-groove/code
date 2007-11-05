@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Converter.java,v 1.7 2007-10-10 08:59:42 rensink Exp $
+ * $Id: Converter.java,v 1.8 2007-11-05 14:16:20 rensink Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Performs conversions to and from groove.graph.Graph.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class Converter {
 	/** Main method to test this class. */
@@ -163,7 +163,9 @@ public class Converter {
     	text.replace(0, 1, firstChar.toString());
     	return text;
     }
-    
+
+    /** HTML greater than symbol. */
+    static public final String HTML_GT = "&gt;";
     /** HTML forall symbol. */
     static public final String HTML_FORALL = "&forall;";
     /** HTML exists symbol. */

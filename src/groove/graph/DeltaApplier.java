@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaApplier.java,v 1.2 2007-08-26 07:23:36 rensink Exp $
+ * $Id: DeltaApplier.java,v 1.3 2007-11-05 14:16:23 rensink Exp $
  */
 package groove.graph;
 
@@ -21,16 +21,9 @@ package groove.graph;
  * its {@link DeltaTarget#addNode(Node)} and {@link DeltaTarget#removeNode(Node)}
  * and the corresponding <code>Edge</code> methods multiple times.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface DeltaApplier {
-	/** Mode for {@link #applyDelta(DeltaTarget, int)} indicating that all elements should be processed. */
-	static public final int ALL_ELEMENTS = 0;
-	/** Mode for {@link #applyDelta(DeltaTarget, int)} indicating that only nodes should be processed. */
-	static public final int NODES_ONLY = 1;
-	/** Mode for {@link #applyDelta(DeltaTarget, int)} indicating that only edges should be processed. */
-	static public final int EDGES_ONLY = 2;
-
 	/**
 	 * When invoked, will call {@link DeltaTarget#addNode(Node)} and 
 	 * {@link DeltaTarget#removeNode(Node)} and the corresponding <code>Edge</code>
@@ -51,4 +44,11 @@ public interface DeltaApplier {
 	 * only edges will be processed; if {@link #ALL_ELEMENTS}, both nodes and edges will be processed.
 	 */
 	void applyDelta(DeltaTarget target, int mode);
+	
+	/** Mode for {@link #applyDelta(DeltaTarget, int)} indicating that all elements should be processed. */
+    static public final int ALL_ELEMENTS = 0;
+    /** Mode for {@link #applyDelta(DeltaTarget, int)} indicating that only nodes should be processed. */
+    static public final int NODES_ONLY = 1;
+    /** Mode for {@link #applyDelta(DeltaTarget, int)} indicating that only edges should be processed. */
+    static public final int EDGES_ONLY = 2;
 }

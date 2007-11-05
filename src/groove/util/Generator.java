@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.25 2007-11-01 16:48:53 rensink Exp $
+ * $Id: Generator.java,v 1.26 2007-11-05 14:16:21 rensink Exp $
  */
 package groove.util;
 
@@ -68,6 +68,8 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.TreeMap;
 
 /**
@@ -75,7 +77,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -195,16 +197,36 @@ public class Generator extends CommandLineTool {
      */
     public GraphGrammar getGrammar() {
         if (grammar == null) {
-            try {
-                grammar = loader.unmarshal(new File(grammarLocation), startStateName).toGrammar();
-                grammar.setFixed();
-            } catch (IOException exc) {
-                printError("Can't load grammar: " + exc.getMessage());
-            } catch (FormatException exc) {
-                printError("Grammar format error: " + exc.getMessage());
-            }
+            computeGrammar();
         }
         return grammar;
+    }
+
+    /** Loads in and returns a grammar. */
+    private void computeGrammar() {
+        Observer loadObserver = new Observer() {
+            public void update(Observable o, Object arg) {
+                if (getVerbosity() > MEDIUM_VERBOSITY) {
+                    if (arg instanceof String) {
+                        printf("%s .", arg);
+                    } else if (arg == null) {
+                        println(" done");
+                    } else {
+                        print(".");
+                    }
+                }
+            }
+        };
+        loader.addObserver(loadObserver);
+        try {
+            grammar = loader.unmarshal(new File(grammarLocation), startStateName).toGrammar();
+            grammar.setFixed();
+        } catch (IOException exc) {
+            printError("Can't load grammar: " + exc.getMessage());
+        } catch (FormatException exc) {
+            printError("Grammar format error: " + exc.getMessage());
+        }
+        loader.deleteObserver(loadObserver);
     }
     
     /**
@@ -551,7 +573,7 @@ public class Generator extends CommandLineTool {
 	 * Factory method for the grammar loader to be used by state space
 	 * generation. 
 	 */
-    protected GrammarViewXml<?> createGrammarLoader() {
+    protected AspectualViewGps createGrammarLoader() {
         return new AspectualViewGps();
 //        return new GpsGrammar(new UntypedGxl(graphFactory), SPORuleFactory.getInstance());
     }
@@ -648,7 +670,7 @@ public class Generator extends CommandLineTool {
     /**
      * The grammar loader.
      */
-    protected final GrammarViewXml<?> loader = createGrammarLoader();
+    protected final AspectualViewGps loader = createGrammarLoader();
     /**
      * Option to save all final states generated.
      */

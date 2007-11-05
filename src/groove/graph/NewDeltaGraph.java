@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NewDeltaGraph.java,v 1.7 2007-11-02 08:42:22 rensink Exp $
+ * $Id: NewDeltaGraph.java,v 1.8 2007-11-05 14:16:22 rensink Exp $
  */
 package groove.graph;
 
@@ -53,10 +53,15 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 			this.delta = new DeltaStore(delta) {
 				@Override
 				protected Set<Edge> createEdgeSet(Collection<? extends Edge> set) {
-					Set result = new DefaultEdgeSet();
-					if (set != null) {
-						result.addAll(set);
-					}
+				    Set result;
+				    if (set instanceof DefaultEdgeSet) {
+				        result = new DefaultEdgeSet((DefaultEdgeSet) set);
+				    } else {
+				        result = new DefaultEdgeSet();
+                        if (set != null) {
+                            result.addAll(set);
+                        }
+                    }
 					return result;
 				}
 			};

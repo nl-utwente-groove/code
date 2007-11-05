@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultDeltaApplier.java,v 1.5 2007-09-19 21:15:16 rensink Exp $
+ * $Id: DefaultDeltaApplier.java,v 1.6 2007-11-05 14:16:22 rensink Exp $
  */
 package groove.graph;
 
@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Default implementation of a delta applier.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class DefaultDeltaApplier implements DeltaApplier {
 	/**
@@ -81,7 +81,7 @@ public class DefaultDeltaApplier implements DeltaApplier {
 		applyDelta(target, ALL_ELEMENTS);
 	}
 	
-	/** Returns an alias of the set of added nodes of this delta. */
+    /** Returns an alias of the set of added nodes of this delta. */
 	public Set<Node> getAddedNodeSet() {
 		return addedNodeSet;
 	}

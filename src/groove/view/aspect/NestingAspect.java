@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.8 2007-10-26 07:07:16 rensink Exp $
+ * $Id: NestingAspect.java,v 1.9 2007-11-05 14:16:31 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.8 $ $Date: 2007-10-26 07:07:16 $
+ * @version 0.1 $Revision: 1.9 $ $Date: 2007-11-05 14:16:31 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -169,16 +169,25 @@ public class NestingAspect extends AbstractAspect {
 		AspectValue value = getNestingValue(element);
 		return value != null && value.equals(NESTED) && element.label().text().equals(IN_LABEL);
 	}	
-	
-	/**
-	 * Determine whether an aspect edge carries the {@link #FORALL} nesting value.
-	 * The element is assumed to be checked (see {@link #checkNode(AspectNode, AspectGraph)}
-	 * and {@link #checkEdge(AspectEdge, AspectGraph)}).
-	 */
-	public static boolean isForall(AspectElement element) {
-		return getNestingValue(element).equals(FORALL);
-	}
-	
+
+    /**
+     * Determine whether an aspect edge carries the {@link #FORALL} or {@link #FORALL_POS} nesting value.
+     * The element is assumed to be checked (see {@link #checkNode(AspectNode, AspectGraph)}
+     * and {@link #checkEdge(AspectEdge, AspectGraph)}).
+     */
+    public static boolean isForall(AspectElement element) {
+        return getNestingValue(element).equals(FORALL) || getNestingValue(element).equals(FORALL_POS);
+    }
+
+    /**
+     * Determine whether an aspect edge carries the {@link #FORALL_POS} nesting value.
+     * The element is assumed to be checked (see {@link #checkNode(AspectNode, AspectGraph)}
+     * and {@link #checkEdge(AspectEdge, AspectGraph)}).
+     */
+    public static boolean isPositive(AspectElement element) {
+        return getNestingValue(element).equals(FORALL_POS);
+    }
+    
 	/**
 	 * Determine whether an aspect edge carries the {@link #EXISTS} nesting value.
 	 * The element is assumed to be checked (see {@link #checkNode(AspectNode, AspectGraph)}
@@ -202,12 +211,10 @@ public class NestingAspect extends AbstractAspect {
 //	public static final String NAC_NAME = "nac";
 	/** Name of the exists aspect value */
 	public static final String EXISTS_NAME = "exists";
-	/** Name of the forall aspect value */
-	public static final String FORALL_NAME = "forall";
-//	/** Name of a nesting edge aspect */
-//	public static final String PARENT_EDGE_NAME = "parent";
-//	/** The NAC aspect value */
-//	public static final String LEVEL_EDGE_NAME = "level";
+    /** Name of the forall aspect value */
+    public static final String FORALL_NAME = "forall";
+    /** Name of the positive forall aspect value */
+    public static final String FORALL_POS_NAME = "forallx";
 	/** Name of the generic nesting edge aspect value. */
 	public static final String NESTED_NAME = "nested";
 	/** The set of aspect value names that are content values. */
@@ -216,20 +223,16 @@ public class NestingAspect extends AbstractAspect {
 	static {
 		contentValues = new HashSet<String>();
 		contentValues.add(EXISTS_NAME);
-		contentValues.add(FORALL_NAME);
-//		contentValues.add(NAC_NAME);		
+        contentValues.add(FORALL_NAME);
+        contentValues.add(FORALL_POS_NAME);
 	}
 
-//	/** Level edge aspect value */
-//	public static final AspectValue NAC;
 	/** The exists aspect value */
 	public static final AspectValue EXISTS;
-	/** The forall aspect value */
-	public static final AspectValue FORALL;
-//	/** Parent edge aspect value */
-//	public static final AspectValue PARENT_EDGE;
-//	/** Name of a level allocation edge aspect */
-//	public static final AspectValue LEVEL_EDGE;
+    /** The forall aspect value */
+    public static final AspectValue FORALL;
+    /** The positive forall aspect value */
+    public static final AspectValue FORALL_POS;
 	/** Nested edge aspect value. */
 	public static final AspectValue NESTED;
 	
@@ -239,15 +242,15 @@ public class NestingAspect extends AbstractAspect {
 	static {
 		try {
 			EXISTS = instance.addValue(EXISTS_NAME);
-//			NAC = instance.addValue(NAC_NAME);
-			FORALL = instance.addValue(FORALL_NAME);
-//			PARENT_EDGE = instance.addEdgeValue(PARENT_EDGE_NAME);
-//			LEVEL_EDGE = instance.addEdgeValue(LEVEL_EDGE_NAME);
+            FORALL = instance.addValue(FORALL_NAME);
+            FORALL_POS = instance.addValue(FORALL_POS_NAME);
 			NESTED = instance.addEdgeValue(NESTED_NAME);
 			EXISTS.setSourceToEdge(NESTED);
 			EXISTS.setTargetToEdge(NESTED);
-			FORALL.setSourceToEdge(NESTED);
-			FORALL.setTargetToEdge(NESTED);
+            FORALL.setSourceToEdge(NESTED);
+            FORALL.setTargetToEdge(NESTED);
+            FORALL_POS.setSourceToEdge(NESTED);
+            FORALL_POS.setTargetToEdge(NESTED);
 		} catch( FormatException exc ) {
 			throw new Error("Aspect '" + NESTING_ASPECT_NAME
 					+ "' cannot be initialised due to name conflict", exc);

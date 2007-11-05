@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FrozenDeltaApplier.java,v 1.1 2007-09-18 16:47:57 rensink Exp $
+ * $Id: FrozenDeltaApplier.java,v 1.2 2007-11-05 14:16:23 rensink Exp $
  */
 package groove.graph;
 
@@ -28,6 +28,7 @@ public class FrozenDeltaApplier implements DeltaApplier {
     public FrozenDeltaApplier(Element[] elements) {
         this.elements = elements;
     }
+    
     public void applyDelta(DeltaTarget target, int mode) {
         for (Element elem : elements) {
             if (elem instanceof Node && mode != EDGES_ONLY) {

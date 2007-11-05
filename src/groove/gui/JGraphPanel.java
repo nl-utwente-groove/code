@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraphPanel.java,v 1.17 2007-10-30 17:21:15 rensink Exp $
+ * $Id: JGraphPanel.java,v 1.18 2007-11-05 14:16:35 rensink Exp $
  */
 package groove.gui;
 
@@ -40,7 +40,7 @@ import javax.swing.JSplitPane;
  * {@link groove.gui.LabelList}.
  * 
  * @author Arend Rensink, updated by Carel van Leeuwen
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class JGraphPanel<JG extends JGraph> extends JPanel {
     /**
@@ -264,7 +264,8 @@ public class JGraphPanel<JG extends JGraph> extends JPanel {
      */
     protected void refresh() {
     	JModel jModel = getJModel();
-    	if (jModel != null) {
+    	getJGraph().setEnabled(jModel != null);
+    	if (jModel == null) {
     		getJModel().refresh();
     	}
     	getJGraph().clearSelection();
