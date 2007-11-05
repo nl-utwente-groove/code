@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultLabel.java,v 1.10 2007-10-20 15:19:59 rensink Exp $
+ * $Id: DefaultLabel.java,v 1.11 2007-11-05 15:47:30 rensink Exp $
  */
 package groove.graph;
 
@@ -28,7 +28,7 @@ import java.util.Map;
  * Provides a standard implementation of the Label interface.
  * An instance contains just an index into a global list.
  * @author Arend Rensink
- * @version $Revision: 1.10 $ 
+ * @version $Revision: 1.11 $ 
  */
 public final class DefaultLabel extends AbstractLabel {
     /**
@@ -236,7 +236,7 @@ public final class DefaultLabel extends AbstractLabel {
 
     /** Computes a hash code for this label. */
     private int computeHashCode() {
-    	return text().hashCode() + index + 1;
+    	return text().hashCode() * (index + 1);
     }
     
     /**
