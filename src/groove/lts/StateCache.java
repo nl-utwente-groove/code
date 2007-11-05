@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.20 2007-11-05 14:16:27 rensink Exp $
+ * $Id: StateCache.java,v 1.21 2007-11-05 15:43:26 rensink Exp $
  */
 package groove.lts;
 
@@ -29,6 +29,8 @@ import groove.trans.SystemRecord;
 import groove.util.TreeHashSet;
 
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -36,7 +38,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 class StateCache {
     /**
@@ -108,14 +110,25 @@ class StateCache {
 		} else if (!(state instanceof GraphNextState)) {
 			throw new IllegalStateException("Underlying state does not have information to reconstruct the graph");
 		} else {
-			DefaultGraphNextState state = (DefaultGraphNextState) this.state;
+		    DefaultGraphNextState state = (DefaultGraphNextState) this.state;
+		    // make sure states get reconstructed sequentially rather than recursively
+			if (state.source().isCacheCleared()) {
+			    AbstractGraphState backward = state.source();
+			    List<AbstractGraphState> stateChain = new LinkedList<AbstractGraphState>();
+			    while (backward instanceof GraphNextState && backward.isCacheCleared() && frozenGraph == null) {
+	                stateChain.add(0, backward);
+			        backward = ((DefaultGraphNextState) backward).source();
+			        frozenGraph = backward.getFrozenGraph();
+			    }
+			    for (AbstractGraphState forward: stateChain) {
+			        forward.getGraph();
+			    }
+			}
 			result = graphFactory.newGraph(state.source().getGraph(), getDelta());
 			// If the state is closed, then we are reconstructing the graph
 			// for the second time at least; see if we should freeze it
-			// on the other hand, the stack of derived next states should not grow so large
-			// that (re)constructing the graph gives a stack overflow!
-			// so the closedness test should be skipped
-			if (isFreezeGraph()) {
+            if (getState().isClosed() && isFreezeGraph()) {
+//			if (isFreezeGraph()) {
 				state.setFrozenGraph(computeFrozenGraph(result));
 			}
 		}
