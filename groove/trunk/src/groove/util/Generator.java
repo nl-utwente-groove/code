@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.26 2007-11-05 14:16:21 rensink Exp $
+ * $Id: Generator.java,v 1.27 2007-11-05 15:43:36 rensink Exp $
  */
 package groove.util;
 
@@ -77,7 +77,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -206,7 +206,7 @@ public class Generator extends CommandLineTool {
     private void computeGrammar() {
         Observer loadObserver = new Observer() {
             public void update(Observable o, Object arg) {
-                if (getVerbosity() > MEDIUM_VERBOSITY) {
+                if (getVerbosity() > LOW_VERBOSITY) {
                     if (arg instanceof String) {
                         printf("%s .", arg);
                     } else if (arg == null) {
