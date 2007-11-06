@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.11 2007-10-24 15:41:39 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.12 2007-11-06 16:07:30 rensink Exp $
  */
 package groove.match;
 
@@ -313,7 +313,11 @@ class Edge2SearchItem extends AbstractSearchItem {
         			return false;
         		}
         	}
-        	if (!selfEdge) {
+        	if (selfEdge) {
+        	    if (image.opposite() != image.source()) {
+        	        return false;
+        	    }
+        	} else {
         		if (targetFind == null) {
         			if (! search.putNode(targetIx, image.opposite())) { 
         				return false;

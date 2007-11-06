@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateJGraph.java,v 1.6 2007-05-29 06:52:36 rensink Exp $
+ * $Id: StateJGraph.java,v 1.7 2007-11-06 16:07:25 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -58,20 +58,20 @@ public class StateJGraph extends JGraph {
 		result.add(simulator.getEditGraphAction());
 		super.fillPopupMenu(result);
     }
-
-    /**
-	 * Returns the bounds of a set of graph elements.
-	 */
-    public Rectangle2D getElementBounds(Set<Element> elemSet) {
-        Set<JCell> jCellSet = new HashSet<JCell>();
-        for (Element elem: elemSet) {
-        	JCell jCell = getModel().getJCell(elem);
-        	if (jCell != null) {
-        		jCellSet.add(jCell);
-        	}
-        }
-        return getCellBounds(jCellSet.toArray());
-    }
+//
+//    /**
+//	 * Returns the bounds of a set of graph elements.
+//	 */
+//    public Rectangle2D getElementBounds(Set<Element> elemSet) {
+//        Set<JCell> jCellSet = new HashSet<JCell>();
+//        for (Element elem: elemSet) {
+//        	JCell jCell = getModel().getJCell(elem);
+//        	if (jCell != null) {
+//        		jCellSet.add(jCell);
+//        	}
+//        }
+//        return getCellBounds(jCellSet.toArray());
+//    }
 
     /**
      * The simulator to which this j-graph is associated.

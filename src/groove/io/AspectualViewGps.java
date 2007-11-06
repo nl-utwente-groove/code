@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.19 2007-11-05 14:16:29 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.20 2007-11-06 16:07:33 rensink Exp $
  */
 
 package groove.io;
@@ -44,9 +44,11 @@ import java.util.Properties;
  * containing graph rules, from a given location --- presumably the top level directory containing the
  * rule files.
  * The class is an observable to enable the use of progress information. 
- * Updates consist of a string update, followed by a number of rule or graph views, followed by a null update.
+ * Updates consist of a <code>String</code> update indicating the type of object loaded, 
+ * followed by an <code>Integer</code> indicating the number of number of objects of this type,
+ * followed by a null update to indicate the end of this type of load.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class AspectualViewGps extends Observable implements GrammarViewXml<DefaultGrammarView> {
     /**
@@ -148,9 +150,11 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
 	 */
 	private void loadRules(DefaultGrammarView result, File location) throws IOException {
         Map<RuleNameLabel,File> ruleMap = new HashMap<RuleNameLabel,File>();
+        collectRuleNames(ruleMap, location, null);
         setChanged();
         notifyObservers(LOADING_RULES);
-        collectRuleNames(ruleMap, location, null);
+        setChanged();
+        notifyObservers(ruleMap.size());
         for (Map.Entry<RuleNameLabel,File> ruleEntry: ruleMap.entrySet()) {
             try {
                 result.addRule(loadRule(ruleEntry.getValue(), ruleEntry.getKey(), result.getProperties()));
@@ -231,6 +235,8 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
 	        try {
 	            setChanged();
 	            notifyObservers(LOADING_START_GRAPH);
+	            setChanged();
+	            notifyObservers(1);
 	            AspectGraph unmarshalledStartGraph = getGraphMarshaller().unmarshalGraph(startGraphFile);
                 GraphInfo.setRole(unmarshalledStartGraph, Groove.GRAPH_ROLE);
 	            AspectualGraphView startGraph = new AspectualGraphView(unmarshalledStartGraph);
