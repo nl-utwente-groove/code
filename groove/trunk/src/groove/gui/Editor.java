@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Editor.java,v 1.51 2007-11-02 08:42:41 rensink Exp $
+ * $Id: Editor.java,v 1.52 2007-11-06 13:02:29 kastenberg Exp $
  */
 package groove.gui;
 
@@ -93,7 +93,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.51 $ $Date: 2007-11-02 08:42:41 $
+ * @version $Revision: 1.52 $ $Date: 2007-11-06 13:02:29 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -254,7 +254,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	}
 
     /**
-	 * Handler method to execute a {@link OpenGraphAction}. Invokes a file
+	 * Handler method to execute a {@link Editor.OpenGraphAction}. Invokes a file
 	 * chooser dialog, and calls {@link #doOpenGraph(File)} if a file is
 	 * selected.
 	 */
@@ -271,7 +271,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     }
 
     /**
-     * Handler method to execute a {@link SaveGraphAction}.
+     * Handler method to execute a {@link Editor.SaveGraphAction}.
      * Invokes a file chooser dialog, and calls {@link #doSaveGraph(File)} 
      * if a file is selected. 
      * The return value is the save file, or <code>null</code> if nothing was saved.
@@ -1793,7 +1793,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.51 $
+     * @version $Revision: 1.52 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */
