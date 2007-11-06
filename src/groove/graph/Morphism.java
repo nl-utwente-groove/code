@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Morphism.java,v 1.4 2007-10-02 23:06:29 rensink Exp $
+ * $Id: Morphism.java,v 1.5 2007-11-06 12:54:48 kastenberg Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import java.util.Iterator;
  * Interface of a partial graph morphism.
  * Extends <tt>NodeEdgeMap</tt> with a fixed source and target graph.
  * @author Arend Rensink
- * @version $Revision: 1.4 $ $Date: 2007-10-02 23:06:29 $
+ * @version $Revision: 1.5 $ $Date: 2007-11-06 12:54:48 $
  */
 public interface Morphism extends NodeEdgeMap, GraphListener {
     /**
@@ -232,7 +232,7 @@ public interface Morphism extends NodeEdgeMap, GraphListener {
      * @param image the element whose inverse images are requested
      * @return the set of keys mapped to <tt>image</tt>
      * @ensure <tt>result: 2^Element</tt>
-     * @deprecared this method is too expensive; program it yourself
+     * @deprecated this method is too expensive; program it yourself
      */
     @Deprecated
     Collection<Element> getInverseElementSet(Element image);
