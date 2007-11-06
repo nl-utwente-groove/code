@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StatePanel.java,v 1.27 2007-10-26 07:07:14 rensink Exp $
+ * $Id: StatePanel.java,v 1.28 2007-11-06 16:07:32 rensink Exp $
  */
 package groove.gui;
 
@@ -61,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.27 $
+ * @version $Revision: 1.28 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -188,12 +188,12 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
             for (Edge matchedEdge: match.getEdgeValues()) {
                 emphElems.add(matchedEdge);
             }
-            if (!emphElems.isEmpty()) {
-            	Rectangle scope = Groove.toRectangle(getJGraph().getElementBounds(emphElems));
-            	if (scope != null) {
-            		jGraph.scrollRectToVisible(scope);
-            	}
-            }
+//            if (!emphElems.isEmpty()) {
+//            	Rectangle scope = Groove.toRectangle(getJGraph().getElementBounds(emphElems));
+//            	if (scope != null) {
+//            		jGraph.scrollRectToVisible(scope);
+//            	}
+//            }
             refreshStatus();
             GraphJModel currentModel = getJModel();
             currentModel.setEmphasized(currentModel.getJCellSet(emphElems));

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.28 2007-11-05 14:16:39 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.29 2007-11-06 16:07:37 rensink Exp $
  */
 
 package groove.view;
@@ -83,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -126,6 +126,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         this.enabled = GraphProperties.isEnabled(graph);
         this.properties = properties;
         this.graph = graph;
+        if (!graph.getErrors().isEmpty()) {
+            errors = graph.getErrors();
+        }
         // we fix the view; is it conceptually right to do that here?
         graph.setFixed();
     }
@@ -220,6 +223,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Creates and returns the production rule corresponding to this rule graph.
      */
     public Rule toRule() throws FormatException {
+        if (errors != null) {
+            throw new FormatException(errors);
+        }
     	if (rule == null) {
     		Pair<Rule,NodeEdgeMap> ruleMapPair = computeRule(graph);
             rule = ruleMapPair.first();

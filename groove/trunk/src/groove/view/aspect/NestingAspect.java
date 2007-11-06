@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.9 2007-11-05 14:16:31 rensink Exp $
+ * $Id: NestingAspect.java,v 1.10 2007-11-06 16:07:35 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.9 $ $Date: 2007-11-05 14:16:31 $
+ * @version 0.1 $Revision: 1.10 $ $Date: 2007-11-06 16:07:35 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -45,7 +45,7 @@ public class NestingAspect extends AbstractAspect {
 		if (isLevelEdge(edge)) {
 			// source nodes should be non-meta with only this level edge
 			if (isMetaElement(edge.source())) {
-				throw new FormatException("Level edge %s has a meta-node as source", edge);
+				throw new FormatException("Level edge %s should not have meta-node as source", edge);
 			}
 			for (AspectEdge outEdge: graph.outEdgeSet(edge.source())) {
 				if (isMetaElement(outEdge) && !outEdge.equals(edge)) {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.26 2007-11-06 13:21:35 kastenberg Exp $
+ * $Id: JGraph.java,v 1.27 2007-11-06 16:07:25 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -24,6 +24,7 @@ import groove.gui.ZoomMenu;
 import groove.gui.jgraph.JModel.RefreshEdit;
 import groove.gui.layout.JCellLayout;
 import groove.gui.layout.Layouter;
+import groove.util.Groove;
 import groove.util.ObservableSet;
 
 import java.awt.Color;
@@ -83,7 +84,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.26 $ $Date: 2007-11-06 13:21:35 $
+ * @version $Revision: 1.27 $ $Date: 2007-11-06 16:07:25 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -230,6 +231,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
             Collection<JCell> refreshedJCells = ((JModel.RefreshEdit) evt.getChange()).getRefreshedJCells();
             Collection<JCell> visibleCells = new ArrayList<JCell>();
             Collection<JCell> invisibleCells = new ArrayList<JCell>();
+            Set<JCell> emphElems = new HashSet<JCell>();
             for (JCell jCell: refreshedJCells) {
             	AttributeMap transientAttributes = getModel().createTransientJAttr(jCell);
                 CellView jView = getGraphLayoutCache().getMapping(jCell, false);
@@ -249,8 +251,17 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
                 if (getModel().isGrayedOut(jCell)) {
                     getSelectionModel().removeSelectionCell(jCell);
                 }
+                if (getModel().isEmphasized(jCell)) {
+                    emphElems.add(jCell);
+                }
             }
         	getGraphLayoutCache().setVisible(visibleCells.toArray(), invisibleCells.toArray());
+            if (!emphElems.isEmpty()) {
+                Rectangle scope = Groove.toRectangle(getCellBounds(emphElems.toArray()));
+                if (scope != null) {
+                    scrollRectToVisible(scope);
+                }
+            }
         }
     }
 

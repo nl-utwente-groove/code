@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.69 2007-11-06 13:21:56 kastenberg Exp $
+ * $Id: Simulator.java,v 1.70 2007-11-06 16:07:31 rensink Exp $
  */
 package groove.gui;
 
@@ -92,6 +92,8 @@ import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Observable;
+import java.util.Observer;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
@@ -125,7 +127,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.69 $
+ * @version $Revision: 1.70 $
  */
 public class Simulator {
     /**
@@ -631,24 +633,49 @@ public class Simulator {
      *        start state name is used
      * @see GrammarViewXml#DEFAULT_START_GRAPH_NAME
      */
-    void doLoadGrammar(AspectualViewGps grammarLoader, File grammarFile, String startStateName) {
-        try {
-        	DefaultGrammarView grammar = grammarLoader.unmarshal(grammarFile, startStateName);
-        	setGrammar(grammar);
-            // now we know loading succeeded, we can set the current names & files
-            currentGrammarFile = grammarFile;
-            currentGrammarLoader = grammarLoader;
-        	getStateFileChooser().setCurrentDirectory(currentGrammarFile);
-            if (grammar.getStartGraph() != null) {
-            	startStateName = grammar.getStartGraph().getName();
-            	getStateFileChooser().setSelectedFile(new File(startStateName));
-            } else {
-            	getStateFileChooser().setSelectedFile(new File(""));
+    void doLoadGrammar(final AspectualViewGps grammarLoader, final File grammarFile, final String startStateName) {
+        final ProgressBarDialog dialog = new ProgressBarDialog(getFrame(), "Load Progress");
+        final Observer loadListener = new Observer() {
+            public void update(Observable o, Object arg) {
+                if (arg instanceof String) {
+                    dialog.setMessage((String) arg);
+                } else if (arg instanceof Integer) {
+                    if (size == 0) {
+                        size = ((Integer) arg) + 1;
+                        dialog.setRange(0, size);
+                    }
+                } else {
+                    if (size > 0) {
+                        dialog.incProgress();
+                    }
+                }
             }
-            getGrammarFileChooser().setSelectedFile(grammarFile);
-        } catch (IOException exc) {
-            showErrorDialog(exc.getMessage(), exc.getCause());
-        } 
+            
+            private int size;
+        };
+        dialog.pack();
+        dialog.setVisible(true);
+        grammarLoader.addObserver(loadListener);
+        new Thread() {
+            @Override
+            public void run() {
+                try {
+                    DefaultGrammarView grammar = grammarLoader.unmarshal(grammarFile, startStateName);
+                    setGrammar(grammar);
+                    // now we know loading succeeded, we can set the current names & files
+                    currentGrammarFile = grammarFile;
+                    currentGrammarLoader = grammarLoader;
+                    getStateFileChooser().setCurrentDirectory(currentGrammarFile);
+                    String startFileName = grammar.getStartGraph() == null ? "" : grammar.getStartGraph().getName(); 
+                    getStateFileChooser().setSelectedFile(new File(startFileName));
+                    getGrammarFileChooser().setSelectedFile(grammarFile);
+                } catch (IOException exc) {
+                    showErrorDialog(exc.getMessage(), exc.getCause());
+                }
+                dialog.setVisible(false);
+                grammarLoader.deleteObserver(loadListener);
+            }
+        }.start();
     }
 
 	/**
@@ -2133,7 +2160,7 @@ public class Simulator {
 	    /**
 	     * Hook to give subclasses the opportunity to put something on the
 	     * cancel dialog.
-	     * Note that this callback mathod is invoked at construction time,
+	     * Note that this callback method is invoked at construction time,
 	     * so should not make reference to instance variables.
 	     */
 	    protected Object createCancelDialogContent() {
