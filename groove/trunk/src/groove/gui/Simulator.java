@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.68 2007-10-26 15:38:02 rensink Exp $
+ * $Id: Simulator.java,v 1.69 2007-11-06 13:21:56 kastenberg Exp $
  */
 package groove.gui;
 
@@ -125,7 +125,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.68 $
+ * @version $Revision: 1.69 $
  */
 public class Simulator {
     /**
@@ -476,7 +476,7 @@ public class Simulator {
 	    return renameRuleAction;
 	}
 
-	/** Lazily creates and returns an instance of {@link StartSimulationAction}. */
+	/** Lazily creates and returns an instance of {@link Simulator.StartSimulationAction}. */
 	public Action getStartSimulationAction() {
 		// lazily create the action
 		if (startSimulationAction == null) {

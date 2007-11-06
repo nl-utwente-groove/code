@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.25 2007-10-30 17:21:20 rensink Exp $
+ * $Id: JGraph.java,v 1.26 2007-11-06 13:21:35 kastenberg Exp $
  */
 package groove.gui.jgraph;
 
@@ -83,7 +83,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.25 $ $Date: 2007-10-30 17:21:20 $
+ * @version $Revision: 1.26 $ $Date: 2007-11-06 13:21:35 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -685,7 +685,7 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 
     /**
      * Factory method for the graph selection model.
-     * This implementation returns a {@link MyGraphSelectionModel}.
+     * This implementation returns a {@link JGraph.MyGraphSelectionModel}.
      * @return the new graph selection model
      */
     protected GraphSelectionModel createSelectionModel() {

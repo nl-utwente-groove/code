@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlJModel.java,v 1.5 2007-09-30 21:45:14 rensink Exp $
+ * $Id: ControlJModel.java,v 1.6 2007-11-06 13:14:01 kastenberg Exp $
  */
 package groove.gui.jgraph;
 
@@ -147,7 +147,7 @@ public class ControlJModel extends GraphJModel {
     }
     
 	/**
-     * This implementation returns a {@link TransitionJEdge}.
+     * This implementation returns a {@link ControlJModel.TransitionJEdge}.
      */
 
     @Override
@@ -156,7 +156,7 @@ public class ControlJModel extends GraphJModel {
 	}
 
     /**
-     * This implementation returns a {@link StateJVertex}.
+     * This implementation returns a {@link ControlJModel.StateJVertex}.
      */
 	@Override
 	protected StateJVertex createJVertex(Node node) {
@@ -166,11 +166,11 @@ public class ControlJModel extends GraphJModel {
 	/** 
 	 * This implementation adds special attributes for the start state,
 	 * open states, final states, and the active state.
-	 * @see #LTS_NODE_ATTR
-	 * @see #LTS_START_NODE_ATTR
-	 * @see #LTS_OPEN_NODE_ATTR
-	 * @see #LTS_FINAL_NODE_ATTR
-	 * @see #LTS_NODE_ACTIVE_CHANGE
+	 * @see JAttr#LTS_NODE_ATTR
+	 * @see JAttr#LTS_START_NODE_ATTR
+	 * @see JAttr#LTS_OPEN_NODE_ATTR
+	 * @see JAttr#LTS_FINAL_NODE_ATTR
+	 * @see JAttr#LTS_NODE_ACTIVE_CHANGE
 	 */
 	@Override
 	protected AttributeMap createJVertexAttr(Node node) {
@@ -193,8 +193,8 @@ public class ControlJModel extends GraphJModel {
 
 	/**
 	 * This implementation adds special attributes for the active transition.
-	 * @see #LTS_EDGE_ATTR
-	 * @see #LTS_EDGE_ACTIVE_CHANGE
+	 * @see JAttr#LTS_EDGE_ATTR
+	 * @see JAttr#LTS_EDGE_ACTIVE_CHANGE
 	 */
 	@Override
     protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
