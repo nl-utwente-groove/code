@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FormulaDialog.java,v 1.5 2007-10-31 06:59:57 kastenberg Exp $
+ * $Id: FormulaDialog.java,v 1.6 2007-11-06 13:08:24 kastenberg Exp $
  */
 package groove.gui;
 
@@ -36,7 +36,23 @@ import javax.swing.JTextField;
 /**
  * Dialog for entering temporal formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
+ */
+/**
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+/**
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+/**
+ * @author Arend Rensink
+ * @version $Revision $
+ */
+/**
+ * @author Arend Rensink
+ * @version $Revision $
  */
 public class FormulaDialog {
 
@@ -68,16 +84,11 @@ public class FormulaDialog {
 		dialog.setVisible(true);
 	}
 
+	/**
+	 * @return the title of the dialog
+	 */
 	private String createTitle() {
 		return DIALOG_TITLE;
-	}
-
-	/**
-	 * Checks whether 
-	 * @return
-	 */
-	public boolean propertySet() {
-		return property != null;
 	}
 
 	/**
@@ -88,12 +99,19 @@ public class FormulaDialog {
 		return property;
 	}
 
+	/**
+	 * @return the contentpane
+	 */
 	JOptionPane getContentPane() {
 		Object[] buttons = new Object[] {getOkButton(), getCancelButton()};
 		pane = new JOptionPane(createPanel(),JOptionPane.PLAIN_MESSAGE,JOptionPane.OK_CANCEL_OPTION, null, buttons);
 		return pane;
 	}
 
+	/**
+	 * Create and return the main panel.
+	 * @return the main panel.
+	 */
 	private JPanel createPanel() {
 		JPanel result = new JPanel();
 		JPanel panel = new JPanel();
@@ -128,6 +146,7 @@ public class FormulaDialog {
 
 	/**
 	 * Lazily creates and returns a button labelled OK.
+	 * @return the ok button
 	 */
 	JButton getOkButton() {
 		if (okButton == null) {
@@ -139,6 +158,7 @@ public class FormulaDialog {
 
 	/**
 	 * Lazily creates and returns a button labelled CANCEL.
+	 * @return the cancel button
 	 */
 	JButton getCancelButton(){
 		if (cancelButton == null) {
@@ -158,11 +178,12 @@ public class FormulaDialog {
 		}
 	}
 
-	Container contentPane = null;
 	/** The option pane creating the dialog. */
 	private JOptionPane pane;
 
+	/** The formula label */
 	private JLabel formulaLabel;
+	/** The formula field */
 	JTextField formulaField;
 	/** The history box */
 	JComboBox historyBox;
@@ -173,8 +194,10 @@ public class FormulaDialog {
 	/** Title of the dialog. */
 	public static final String DIALOG_TITLE = "Enter Temporal Formula";
 
+	/** The history list */
 	private List<String> history;
 
+	/** The field in which to store the provided data */
 	String property;
 
 	JDialog dialog;
