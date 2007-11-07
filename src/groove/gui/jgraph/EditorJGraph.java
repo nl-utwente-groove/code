@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorJGraph.java,v 1.7 2007-05-30 21:30:11 rensink Exp $
+ * $Id: EditorJGraph.java,v 1.8 2007-11-07 17:17:14 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -45,7 +45,7 @@ import org.jgraph.graph.AttributeMap.SerializableRectangle2D;
  * In particular, provides a method to add and remove points
  * from edges.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
   */
 public class EditorJGraph extends JGraph {           
     /**
@@ -143,10 +143,10 @@ public class EditorJGraph extends JGraph {
     protected void addEdge(Point2D screenFrom, Point2D screenTo) {
         stopEditing();       
         // translate screen coordinates to real coordinates
-        Point2D from = fromScreen(screenFrom);
-        Point2D to = fromScreen(screenTo);
-        PortView fromPortView = getPortViewAt(from.getX(), from.getY());
-        PortView toPortView = getPortViewAt(to.getX(), to.getY());
+        PortView fromPortView = getPortViewAt(screenFrom.getX(), screenFrom.getY());
+        PortView toPortView = getPortViewAt(screenTo.getX(), screenTo.getY());
+        Point2D from = fromScreen((Point2D) screenFrom.clone());
+        Point2D to = fromScreen((Point2D) screenTo.clone());
         assert fromPortView != null : "addEdge should not be called with dangling source "+from;
         DefaultPort fromPort = (DefaultPort) fromPortView.getCell();
         DefaultPort toPort = toPortView == null ? fromPort : (DefaultPort) toPortView.getCell(); 

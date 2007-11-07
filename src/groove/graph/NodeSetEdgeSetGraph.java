@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSetEdgeSetGraph.java,v 1.8 2007-10-10 08:59:55 rensink Exp $
+ * $Id: NodeSetEdgeSetGraph.java,v 1.9 2007-11-07 17:17:15 rensink Exp $
  */
 package groove.graph;
 
@@ -25,7 +25,7 @@ import java.util.Set;
 /**
  * Graph implementation based on distinct sets of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class NodeSetEdgeSetGraph
     extends AbstractGraph<GraphCache>
@@ -75,9 +75,6 @@ public class NodeSetEdgeSetGraph
         reporter.start(ADD_NODE);
 		assert !isFixed() : "Trying to add " + node + " to unmodifiable graph";
 		result = graphNodeSet.add(node);
-		assert nodeCount() == new HashSet<Node>(nodeSet()).size() : String.format("Overlapping node number for %s in %s",
-				node,
-				nodeSet());
 		reporter.stop();
 		return result;
 	}

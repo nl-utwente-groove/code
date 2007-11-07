@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.13 2007-10-18 14:12:31 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.14 2007-11-07 17:17:03 rensink Exp $
  */
 package groove.match;
 
@@ -145,7 +145,11 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         void initImages() {
             Set<? extends Edge> edgeSet;
             if (varFind != null) {
-            	edgeSet = host.labelEdgeSet(arity, varFind);
+                if (isLabelOk(varFind)) {
+                    edgeSet = host.labelEdgeSet(arity, varFind);
+                } else {
+                    edgeSet = EMPTY_IMAGE_SET;
+                }
             } else {
             	// take the incident edges of the pre-matched source or target, if any
             	// otherwise, the set of all edges
@@ -157,18 +161,26 @@ class VarEdgeSearchItem extends Edge2SearchItem {
                     edgeSet = host.edgeSet();
                 }
             }
-            initImages(edgeSet, true, true, false, true);
+            initImages(edgeSet, sourceFind == null, sourceFind != null || targetFind == null, varFind == null, true);
         }
 
         @Override
 		boolean setImage(Edge image) {
-			boolean result = (labelConstraint == null || labelConstraint.isSatisfied(image.label().text())) && super.setImage(image);
-			if (result && varFind == null) {
-				search.putVar(varIx, image.label());
-			}
+            boolean result = super.setImage(image);
+            if (result) {
+                if (checkLabel) {
+                    result = isLabelOk(image.label());
+                } else {
+                    result = search.putVar(varIx, image.label());
+                }
+            }
 			return result;
 		}
 
+        private boolean isLabelOk(Label label) {
+            return labelConstraint == null || labelConstraint.isSatisfied(label.text());
+        }
+        
         @Override
 		public void reset() {
 			super.reset();
@@ -190,4 +202,6 @@ class VarEdgeSearchItem extends Edge2SearchItem {
          */
         private Label varFind;
     }
+    
+    private static final Set<Edge> EMPTY_IMAGE_SET = Collections.emptySet();
 }
