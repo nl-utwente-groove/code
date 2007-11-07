@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.27 2007-11-06 16:07:25 rensink Exp $
+ * $Id: JGraph.java,v 1.28 2007-11-07 11:25:39 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -50,6 +50,8 @@ import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 import java.util.Set;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -60,6 +62,7 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.event.GraphModelEvent;
@@ -84,7 +87,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.27 $ $Date: 2007-11-06 16:07:25 $
+ * @version $Revision: 1.28 $ $Date: 2007-11-07 11:25:39 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**
@@ -348,8 +351,18 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 			if (initialized) {
 				if (layouter != null && !jModel.isLayedOut()) {
 					if (jModel.freeze()) {
-						layouter.start(false);
-					}
+//					    SwingUtilities.invokeLater(new Runnable() {
+//					        public void run() {
+		                        layouter.start(false);
+		                        new Timer().schedule(new TimerTask() {
+                                    @Override
+                                    public void run() {
+                                        layouter.stop();
+                                    }
+		                        }, MAX_LAYOUT_DURATION);
+					        }
+//					    });
+//					}
 				}
 				setEnabled(true);
 			}
@@ -916,6 +929,9 @@ public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
      * that this is the last (non-static) variable declared in the class.
      */
     private boolean initialized = true;
+    
+    /** Maximum duration for layouting a new model. */
+    static private final long MAX_LAYOUT_DURATION = 1000;
     
     /**
      * Abstract class for j-cell edit actions.
