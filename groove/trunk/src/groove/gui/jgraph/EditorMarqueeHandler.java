@@ -1,5 +1,5 @@
 /*
- * $Id: EditorMarqueeHandler.java,v 1.5 2007-05-28 21:32:44 rensink Exp $
+ * $Id: EditorMarqueeHandler.java,v 1.6 2007-11-07 17:17:14 rensink Exp $
  *
  * Derived from: @(#)GPGraph.java	1.0 1/1/02
  *
@@ -37,7 +37,7 @@ import org.jgraph.graph.VertexView;
  * different implementations of those actions. Lobotomized from jgrappad.
  * 
  * @author Gaudenz Alder; adapted by Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-05-28 21:32:44 $
+ * @version $Revision: 1.6 $ $Date: 2007-11-07 17:17:14 $
  */
 public class EditorMarqueeHandler extends BasicMarqueeHandler {
     static private final Color ADDING_EDGE_COLOR = Color.black;
@@ -102,9 +102,9 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
         assert evt.getSource() == getJGraph() : "Marquee handler can only deal with " + getJGraph()
                 + ", not with " + evt.getSource();
         if (!evt.isConsumed() && isMyMarqueeEvent(evt) && isAddingEdge()) {
-            currentVertex = vertexAt(evt.getX(), evt.getY());
+            currentVertex = vertexAt(evt.getPoint());
             setEmphVertex(currentVertex != startVertex ? currentVertex : null);
-            setAddingEdgeEndPoint(currentVertex == null ? evt.getPoint() : VertexView.getCenterPoint(currentVertex));
+            setAddingEdgeEndPoint(currentVertex == null ? evt.getPoint() : getJGraph().toScreen(VertexView.getCenterPoint(currentVertex)));
             redrawOverlay();
             evt.consume();
         } else  {
@@ -125,7 +125,7 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
                 + ", not with " + evt.getSource();
         if (!evt.isConsumed() && isMyMarqueeEvent(evt)) {
             if (isAddingEdge() && currentVertex != startVertex) {
-                Point2D endPoint = currentVertex == null ? addingEdgeEndPoint : VertexView.getCenterPoint(currentVertex);
+                Point2D endPoint = currentVertex == null ? addingEdgeEndPoint : getJGraph().toScreen(VertexView.getCenterPoint(currentVertex));
                 getJGraph().addEdge(addingEdgeStartPoint, endPoint);
             }
             setAddingEdge(null);
@@ -154,7 +154,7 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
             getJGraph().setCursor(new Cursor(Cursor.CROSSHAIR_CURSOR));
             evt.consume();
             if (getJGraph().isEdgeMode(evt)) {
-                currentVertex = vertexAt(evt.getX(), evt.getY());
+                currentVertex = vertexAt(evt.getPoint());
                 setEmphVertex(currentVertex);
                 redrawOverlay();
             }
@@ -234,7 +234,7 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
         if (startPort == null) {
             setAddingEdgeStartPoint(null);
         } else {
-            setAddingEdgeStartPoint(VertexView.getCenterPoint(startPort));
+            setAddingEdgeStartPoint(getJGraph().toScreen(VertexView.getCenterPoint(startPort)));
         }
     }
 
@@ -280,8 +280,8 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
     }
 
     /**
-     * Sets the <i>emphasized vertex</i> element on the overlay.
-     * If <tt>null</tt>, no vertex is emphasized emphasized.
+     * Sets the <i>emphasised vertex</i> element on the overlay.
+     * If <tt>null</tt>, no vertex is emphasised.
      * The change will be realized on the next invocation of {@link #redrawOverlay()}.
      */
     private void setEmphVertex(VertexView newEmphVertex) {
@@ -318,8 +318,8 @@ public class EditorMarqueeHandler extends BasicMarqueeHandler {
      * Returns the current vertex view at a given x- and y-coordinate,
      * or <tt>null</tt> if there is no vertex there.
      */
-    private VertexView vertexAt(double x, double y) {
-        JCell jCell = (JCell) getJGraph().getFirstCellForLocation(x, y);
+    private VertexView vertexAt(Point2D p) {
+        JCell jCell = (JCell) getJGraph().getFirstCellForLocation(p.getX(), p.getY());
         if (jCell instanceof JVertex) {
             return (VertexView) getJGraph().getGraphLayoutCache().getMapping(jCell, false);
         } else {
