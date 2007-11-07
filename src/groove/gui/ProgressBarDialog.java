@@ -12,17 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProgressBarDialog.java,v 1.1 2007-11-06 16:07:31 rensink Exp $
+ * $Id: ProgressBarDialog.java,v 1.2 2007-11-07 09:31:19 rensink Exp $
  */
 package groove.gui;
 
 import java.awt.Dimension;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import javax.swing.Box;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 
 /**
@@ -37,8 +40,45 @@ public class ProgressBarDialog extends JDialog {
         super(parent, title);
         setLocationRelativeTo(parent);
         getContentPane().add(getPanel());
+        pack();
     }
 
+    /** 
+     * Tells the dialog to make itself visible after a given delay,
+     * unless it is deactivated before the delay expires.
+     * @param millis the delay, measured in milliseconds
+     */
+    synchronized public void activate(long millis) {
+        deactivate();
+        activation = new Timer();
+        activation.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() {
+                        setVisible(true);
+                    }
+                });
+            }
+        }, millis);
+    }
+    
+    /** 
+     * Cancels the scheduled activation, if any,
+     * and sets the visibility of the dialog to false. 
+     */
+    synchronized public void deactivate() {
+        if (activation != null) {
+            activation.cancel();
+            activation = null;
+        }
+        SwingUtilities.invokeLater(new Runnable() {
+            public void run() {
+                setVisible(false);
+            }
+        });
+    }
+    
     /** Sets the text message in the label to a certain value. */
     public void setMessage(String text) {
         getLabel().setText(text);
@@ -110,6 +150,8 @@ public class ProgressBarDialog extends JDialog {
     private JLabel label;
     /** The progress bar of the dialog. */
     private JProgressBar bar;
+    /*8 The activation timer. */
+    private Timer activation;
     
     static private final int BORDER_WIDTH = 20;
     static private final int DIALOG_WIDTH = 200;
