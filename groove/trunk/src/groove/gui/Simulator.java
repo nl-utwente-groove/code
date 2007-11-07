@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.70 2007-11-06 16:07:31 rensink Exp $
+ * $Id: Simulator.java,v 1.71 2007-11-07 09:31:20 rensink Exp $
  */
 package groove.gui;
 
@@ -127,7 +127,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.70 $
+ * @version $Revision: 1.71 $
  */
 public class Simulator {
     /**
@@ -653,15 +653,18 @@ public class Simulator {
             
             private int size;
         };
-        dialog.pack();
-        dialog.setVisible(true);
+        dialog.activate(1000);
         grammarLoader.addObserver(loadListener);
         new Thread() {
             @Override
             public void run() {
                 try {
-                    DefaultGrammarView grammar = grammarLoader.unmarshal(grammarFile, startStateName);
-                    setGrammar(grammar);
+                    final DefaultGrammarView grammar = grammarLoader.unmarshal(grammarFile, startStateName);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            setGrammar(grammar);
+                        }
+                    });
                     // now we know loading succeeded, we can set the current names & files
                     currentGrammarFile = grammarFile;
                     currentGrammarLoader = grammarLoader;
@@ -669,10 +672,14 @@ public class Simulator {
                     String startFileName = grammar.getStartGraph() == null ? "" : grammar.getStartGraph().getName(); 
                     getStateFileChooser().setSelectedFile(new File(startFileName));
                     getGrammarFileChooser().setSelectedFile(grammarFile);
-                } catch (IOException exc) {
-                    showErrorDialog(exc.getMessage(), exc.getCause());
+                } catch (final IOException exc) {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        public void run() {
+                            showErrorDialog(exc.getMessage(), exc.getCause());
+                        }
+                    });
                 }
-                dialog.setVisible(false);
+                dialog.deactivate();
                 grammarLoader.deleteObserver(loadListener);
             }
         }.start();
