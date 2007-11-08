@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.14 2007-11-07 17:17:03 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.15 2007-11-08 11:35:45 rensink Exp $
  */
 package groove.match;
 
@@ -134,11 +134,12 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
         @Override
         void init() {
-            super.init();
+            // first initialise varFind, otherwise the images will not be set correctly
             varFind = varPreMatch;
             if (varFind == null && varFound) {
             	varFind = search.getVar(varIx);
             }
+            super.init();
         }
 
         @Override
@@ -161,18 +162,14 @@ class VarEdgeSearchItem extends Edge2SearchItem {
                     edgeSet = host.edgeSet();
                 }
             }
-            initImages(edgeSet, sourceFind == null, sourceFind != null || targetFind == null, varFind == null, true);
+            initImages(edgeSet, true, true, false, true);
         }
 
         @Override
 		boolean setImage(Edge image) {
             boolean result = super.setImage(image);
-            if (result) {
-                if (checkLabel) {
-                    result = isLabelOk(image.label());
-                } else {
-                    result = search.putVar(varIx, image.label());
-                }
+            if (result && varFind == null && isLabelOk(image.label())) {
+                result = search.putVar(varIx, image.label());
             }
 			return result;
 		}
