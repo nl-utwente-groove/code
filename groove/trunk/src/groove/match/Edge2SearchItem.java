@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.13 2007-11-07 17:17:02 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.14 2007-11-08 11:35:45 rensink Exp $
  */
 package groove.match;
 
@@ -454,7 +454,7 @@ class Edge2SearchItem extends AbstractSearchItem {
          * Flag indicating the if labels of images returned by {@link #initImages()} 
          * have to be checked against the edge label.
          */
-        boolean checkLabel;
+        private boolean checkLabel;
         /** Flag indicating if the edge image should actually be set in the search. */
         private boolean setEdge;
         /** Image found by the latest call to {@link #find()}, if any. */ 

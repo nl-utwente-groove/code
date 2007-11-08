@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExprParser.java,v 1.8 2007-10-18 14:12:30 rensink Exp $
+ * $Id: ExprParser.java,v 1.9 2007-11-08 11:36:08 rensink Exp $
  */
 package groove.util;
 
@@ -29,7 +29,7 @@ import java.util.Stack;
  * A class that helps parse an expression.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class ExprParser {
     /** The single quote character, to control parsing. */
@@ -590,7 +590,7 @@ public class ExprParser {
 				// we have a closing bracket; see if it is expected
 				if (bracketStack.isEmpty()) {
 					throw new FormatException(
-							"Unbalanced brackets in expression \"%s\": \'%c\' is not opened", expr,
+							"Unbalanced brackets in expression '%s': '%c' is not opened", expr,
 							nextTokenChar);
 				}
 				Character openBracket = bracketStack.pop();
@@ -598,7 +598,7 @@ public class ExprParser {
 				int closeBracketIndex = closeBrackets.indexOf(nextTokenChar);
 				if (openBracketIndex != closeBracketIndex) {
 					throw new FormatException(
-							"Unbalanced brackets in expression \"%s\": '%c' closed by '%c'", expr,
+							"Unbalanced brackets in expression '%s': '%c' closed by '%c'", expr,
 							openBracket, nextTokenChar);
 				}
 				current.append(nextTokenChar);
@@ -614,11 +614,11 @@ public class ExprParser {
 			}
 		}
 		if (escaped) {
-			throw new FormatException("Expression \"%s\" ends on escape character", expr);
+			throw new FormatException("Expression '%s' ends on escape character", expr);
 		} else if (quoted) {
-			throw new FormatException("Unbalanced quotes in expression \"%s\": '%c' is not closed", expr, quoteChar);
+			throw new FormatException("Unbalanced quotes in expression '%s': %c is not closed", expr, quoteChar);
 		} else if (!bracketStack.isEmpty()) {
-			throw new FormatException("Unbalanced brackets in expression \"%s\": '%c' is not closed", expr, bracketStack.pop());
+			throw new FormatException("Unbalanced brackets in expression '%s': '%c' is not closed", expr, bracketStack.pop());
 		}
 		return new Pair<String, List<String>>(strippedExpr.toString(), Collections
 				.unmodifiableList(replacements));
