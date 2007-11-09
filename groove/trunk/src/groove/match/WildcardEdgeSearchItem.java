@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WildcardEdgeSearchItem.java,v 1.10 2007-10-18 14:12:31 rensink Exp $
+ * $Id: WildcardEdgeSearchItem.java,v 1.11 2007-11-09 13:17:07 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
+import groove.graph.Label;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.RegExprLabel;
 
@@ -52,9 +53,13 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
 	MultipleRecord<Edge> createMultipleRecord(Search search) {
 		return new WildcardEdgeRecord(search, edgeIx, sourceIx, targetIx, sourceFound, targetFound);
 	}
-	
+
+    boolean isLabelConstraintSatisfied(Label label) {
+        return labelConstraint == null || labelConstraint.isSatisfied(label.text());
+    }
+    
 	/** The constraint on the wildcard valuation, if any. */
-	final groove.calc.Property<String> labelConstraint; 
+	private final groove.calc.Property<String> labelConstraint; 
     
     /** Record for this type of search item. */
     class WildcardEdgeRecord extends Edge2MultipleRecord {

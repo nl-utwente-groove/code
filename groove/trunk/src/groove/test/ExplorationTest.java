@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.16 2007-11-02 08:42:39 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.17 2007-11-09 13:17:05 rensink Exp $
  */
 
 package groove.test;
@@ -48,7 +48,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -176,6 +176,11 @@ public class ExplorationTest extends TestCase {
     /** Tests the petri net sample. */
     public void testPetrinet() {
         testExploration("petrinet.gps", 6, 9);
+    }
+
+    /** Tests the wildcards sample. */
+    public void testWildcards() {
+        testExploration("wildcards.gps", 8, 12);
     }
     
     /** Tests various parameters settable through the system properties. */
