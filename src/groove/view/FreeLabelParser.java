@@ -12,32 +12,34 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultLabelParser.java,v 1.3 2007-08-26 07:24:10 rensink Exp $
+ * $Id: FreeLabelParser.java,v 1.1 2007-11-09 13:01:09 rensink Exp $
  */
 package groove.view;
-
-import java.io.IOException;
-import java.io.StreamTokenizer;
-import java.io.StringReader;
 
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
 
 /** 
  * Parser that turns a string into a default label,
- * after testing the string for correct formatting using a 
- * callback method that can be overridden by subclasses. 
+ * without (un)quoting or (un)escaping.
  */
-public class DefaultLabelParser implements LabelParser {
+public class FreeLabelParser implements LabelParser {
+    /** 
+     * Calls {@link #testFormat(String)} to test the string for correctness.
+     * If this succeeds, returns a {@link DefaultLabel} with <code>text</code> as label text.
+     */ 
 	public Label parse(String text) throws FormatException {
-        StreamTokenizer tokenizer = new StreamTokenizer(new StringReader(QUOTE_CHAR+text));
-        tokenizer.quoteChar(QUOTE_CHAR);
-        try {
-            tokenizer.nextToken();
-        } catch (IOException exc) {
-            assert false;
-        }
-        text = tokenizer.sval;
+//        StreamTokenizer tokenizer = new StreamTokenizer(new StringReader(QUOTE_CHAR+text));
+//        tokenizer.quoteChar(QUOTE_CHAR);
+//        try {
+//            tokenizer.nextToken();
+//        } catch (IOException exc) {
+//            assert false;
+//        }
+//        String unquoted = ExprParser.toUnquoted(text, ExprParser.SINGLE_QUOTE_CHAR);
+//        if (unquoted != null) {
+//            text = unquoted;
+//        }
 		testFormat(text);
 		return DefaultLabel.createLabel(text);
 	}
@@ -55,11 +57,15 @@ public class DefaultLabelParser implements LabelParser {
 		// empty
 	}
 
-    /** This implementation just takes the label text. */
+    /** This implementation just returns the label text. */
     public String unparse(Label label) {
-        return label.text();
+        String result = label.text();
+//        if (!RegExpr.isAtom(result)) {
+//            result = RegExpr.atom(result).toString();
+//        }
+        return result;
     }
-
-    /** Dummy quote character for parsing the string. */
-    static private final char QUOTE_CHAR = '\u0000';
+//
+//    /** Dummy quote character for parsing the string. */
+//    static private final char QUOTE_CHAR = '\u0000';
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectValue.java,v 1.7 2007-10-14 11:17:36 rensink Exp $
+ * $Id: AspectValue.java,v 1.8 2007-11-09 13:00:43 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -62,6 +62,7 @@ public class AspectValue {
         this.targetToEdge = original.targetToEdge();
         this.edgeToSource = original.edgeToSource();
         this.edgeToTarget = original.edgeToTarget();
+        this.labelParser = original.getLabelParser();
 //        this.freeText = freeText;
     }
     

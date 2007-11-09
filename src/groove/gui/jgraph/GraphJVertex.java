@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.21 2007-10-02 08:02:51 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.22 2007-11-09 13:01:11 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -181,7 +181,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 	 * Callback method from {@link #getListLabels()}.
 	 */
 	public String getListLabel(Edge edge) {
-		return getLabel(edge).text();
+		return getLabelParser().unparse(getLabel(edge));
 	}
 	
     /**

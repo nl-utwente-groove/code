@@ -12,11 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.10 2007-11-06 16:07:35 rensink Exp $
+ * $Id: NestingAspect.java,v 1.11 2007-11-09 13:00:43 rensink Exp $
  */
 package groove.view.aspect;
 
-import groove.view.DefaultLabelParser;
+import groove.view.FreeLabelParser;
 import groove.view.FormatException;
 
 import java.util.HashSet;
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.10 $ $Date: 2007-11-06 16:07:35 $
+ * @version 0.1 $Revision: 1.11 $ $Date: 2007-11-09 13:00:43 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -277,7 +277,7 @@ public class NestingAspect extends AbstractAspect {
 	 * Class that attempts to parse a string as the operation of a given
 	 * algebra, and returns the result as a DefaultLabel if successful.
 	 */
-	private static class NestingLabelParser extends DefaultLabelParser {
+	private static class NestingLabelParser extends FreeLabelParser {
 		/** Empty constructor with the correct visibility. */
 		NestingLabelParser() {
 			// empty

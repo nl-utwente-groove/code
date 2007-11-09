@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.13 2007-10-26 07:07:16 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.14 2007-11-09 13:00:43 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -32,7 +32,7 @@ import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.util.Groove;
-import groove.view.DefaultLabelParser;
+import groove.view.FreeLabelParser;
 import groove.view.FormatException;
 
 import java.util.BitSet;
@@ -46,7 +46,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -475,7 +475,7 @@ public class AttributeAspect extends AbstractAspect {
 	 * Class that attempts to parse a string as the operation of a given
 	 * algebra, and returns the result as a DefaultLabel if successful.
 	 */
-	private static class OperationLabelParser extends DefaultLabelParser {
+	private static class OperationLabelParser extends FreeLabelParser {
 		/** Constructs an instance of this parser class for a given algebra. */
 		OperationLabelParser(Algebra algebra) {
 			this.algebra = algebra;
