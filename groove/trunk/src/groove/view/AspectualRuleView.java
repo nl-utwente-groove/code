@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.29 2007-11-06 16:07:37 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.30 2007-11-09 13:01:09 rensink Exp $
  */
 
 package groove.view;
@@ -83,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -385,7 +385,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         			}
         		}
         		boolean isNextLevelCreator = RuleAspect.isCreator(edge) && level.isUniversal();
-        		if (level.isUniversal() && hasConcreteImage(createRuleLabel(edge.label()))) {
+        		if (level.isUniversal() && hasConcreteImage(edge.label())) { //createRuleLabel(edge.label()))) {
         			// add the edge and its end nodes as stale to the next (rule) level
         			for (int child = 0; child < subLevelCountMap.get(level); child++) {
         				addEdgeToLevel(edge,
@@ -754,7 +754,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     	}
     	// compute the label; either a DefaultLabel or a RegExprLabel
     	if (getAttributeValue(edge) == null) {
-    		return createEdge(ends, createRuleLabel(edge.label()));
+    		return createEdge(ends, edge.label());//createRuleLabel(edge.label()));
     	} else {
     		return AttributeAspect.createAttributeEdge(edge, ends);
     	}
@@ -900,23 +900,23 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     	Node target = ends[Edge.TARGET_INDEX];
     	return DefaultEdge.createEdge(source, label, target);
     }
-
-    /** 
-     * Turns a label of the aspect graph into a rule label.
-     * This especially involves recognising regular expressions on the label. 
-     * @param label the original label; should not be <code>null</code>
-     * @return the converted label; not <code>null</code>
-     * @throws FormatException if the label text is not a well-formed regular expression
-     */
-    private Label createRuleLabel(Label label) throws FormatException {
-        String text = label.text();
-        RegExpr expr = RegExpr.parse(text);
-        if (expr.isAtom()) {
-            return DefaultLabel.createLabel(expr.getAtomText());
-        } else {
-            return expr.toLabel();
-        }
-    }
+//
+//    /** 
+//     * Turns a label of the aspect graph into a rule label.
+//     * This especially involves recognising regular expressions on the label. 
+//     * @param label the original label; should not be <code>null</code>
+//     * @return the converted label; not <code>null</code>
+//     * @throws FormatException if the label text is not a well-formed regular expression
+//     */
+//    private Label createRuleLabel(Label label) throws FormatException {
+//        String text = label.text();
+//        RegExpr expr = RegExpr.parse(text);
+//        if (expr.isAtom()) {
+//            return DefaultLabel.createLabel(expr.getAtomText());
+//        } else {
+//            return expr.toLabel();
+//        }
+//    }
     
     /** 
      * Indicates if an edge with a given label has a concrete image in

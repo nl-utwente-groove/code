@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.13 2007-09-30 21:45:10 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.14 2007-11-09 13:01:11 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -171,7 +171,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
 	 * This implementation returns the text of the label returned by {@link #getLabel(Edge)}.
 	 */
 	public String getListLabel(Edge edge) {
-		return getLabel(edge).text();
+		return getLabelParser().unparse(getLabel(edge));
 	}
 	
     /**

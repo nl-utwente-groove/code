@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.12 2007-10-26 07:07:16 rensink Exp $
+ * $Id: AspectGraph.java,v 1.13 2007-11-09 13:00:43 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -350,7 +350,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	
 	/** 
 	 * Creates a label from a string. 
-	 * @see DefaultLabel#parseLabel(String) 
+	 * @see DefaultLabel#createLabel(String) 
 	 */
 	private Label createLabel(String text) {
 		return DefaultLabel.createLabel(text);

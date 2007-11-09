@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExpr.java,v 1.17 2007-10-18 14:12:28 rensink Exp $
+ * $Id: RegExpr.java,v 1.18 2007-11-09 13:01:14 rensink Exp $
  */
 package groove.rel;
 
@@ -41,1077 +41,9 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 abstract public class RegExpr { //implements VarSetSupport {
-    /** 
-     * Sequential operator.
-     * @see Seq
-     */
-    static public final char SEQ_OPERATOR = '.';
-    /**
-     * Symbolic name of the sequential operator. 
-     * @see Seq
-     */
-    static public final String SEQ_SYMBOLIC_NAME = "Seq";
-    /** 
-     * Kleene star operator.
-     * @see Star
-     */
-    static public final char STAR_OPERATOR = '*';
-    /**
-     * Symbolic name of the Kleene star operator. 
-     * @see Star
-     */
-    static public final String STAR_SYMBOLIC_NAME = "Some";
-    /** 
-     * Choice operator.
-     * @see Choice
-     */
-    static public final char CHOICE_OPERATOR = '|';
-    /**
-     * Symbolic name of the choice operator. 
-     * @see Choice
-     */
-    static public final String CHOICE_SYMBOLIC_NAME = "Or";
-
-    /** 
-     * Plus ("at least one occurence") operator.
-     * @see Plus
-     */
-    static public final char PLUS_OPERATOR = '+';
-    /**
-     * Symbolic name of the plus ("at least one occurrence") operator. 
-     * @see Plus
-     */
-    static public final String PLUS_SYMBOLIC_NAME = "More";
-
-    /** 
-     * Empty constant.
-     * @see Empty
-     */
-    static public final char EMPTY_OPERATOR = '=';
-    /**
-     * Symbolic name of the empty constant. 
-     * @see Empty
-     */
-    static public final String EMPTY_SYMBOLIC_NAME = "Empty";
-    /** 
-     * Woldcard constant.
-     * @see Wildcard
-     */
-    static public final char WILDCARD_OPERATOR = '?';
-    /**
-     * Symbolic name of the wildcard constant. 
-     * @see Wildcard
-     */
-    static public final String WILDCARD_SYMBOLIC_NAME = "Any";
-    /** 
-     * Inverse operator.
-     * @see Inv
-     */
-    static public final char INV_OPERATOR = '-';
-    /**
-     * Symbolic name of the inverse operator. 
-     * @see Inv
-     */
-    static public final String INV_SYMBOLIC_NAME = "Back";
-
-    /** 
-     * Negation operator.
-     * @see Neg
-     */
-    static public final String NEG_OPERATOR = "!";
-
-    /**
-     * Symbolic name of the negation operator. 
-     * @see Neg
-     */
-    static public final String NEG_SYMBOLIC_NAME = "Not";
-
-    /**
-     * Symbolic name of the atomic constant. 
-     * @see Atom
-     */
-    static public final String ATOM_SYMBOLIC_NAME = "Atom";
-
-    /**
-     * The characters allowed in a regular expression atom, apart from letters and digits.
-     * @see #isIdentifier(String)
-     */
-    static public final String ATOM_CHARS = "_$:";
-
-    /**
-     * The characters allowed in a wildcard identifier, apart from letters and digits.
-     * @see #isIdentifier(String)
-     */
-    static public final String IDENTIFIER_CHARS = "_$";
-    
-    /** 
-     * Abstract superclass for all regular expressions that are not constants.
-     */
-    abstract static protected class Composite extends RegExpr {
-    	/** 
-    	 * Constructs an instance of a composite regular expression
-    	 * with a given operator name and operator symbol.
-    	 * This constructor is there only for subclassing purposes.
-    	 */
-        protected Composite(String operator, String symbol) {
-            super(operator, symbol);
-        }
-    }
-    
-    /**
-     * Abstract class modelling a sequence of (more than one)
-     * operand separated by a given operator string.
-     */
-    abstract static protected class Infix extends Composite {
-        /**
-         * Creates a regular expression from an infix operator and a list of operands. The operands
-         * are themselves regular expressions.
-         */
-        public Infix(String operator, String symbol, List<RegExpr> operands) {
-            super(operator, symbol);
-            this.operandList = operands;
-        }
-
-        /**
-         * Returns (a clone of) the operands of this regular expression.
-         * @return a clone of the operands of this regular expression
-         */
-        @Override
-        public List<RegExpr> getOperands() {
-            return Collections.unmodifiableList(operandList);
-        }
-
-        @Override
-        public RegExpr parseOperator(String expr) throws FormatException {
-            String[] operands = ExprParser
-                    .splitExpr(expr, getOperator(), ExprParser.INFIX_POSITION);
-            if (operands.length < 2) {
-                return null;
-            }
-            List<RegExpr> operandList = new LinkedList<RegExpr>();
-            for (int i = 0; i < operands.length; i++) {
-                operandList.add(parse(operands[i]));
-            }
-            return newInstance(operandList);
-        }
-
-        /**
-         * Returns the operands, parenthesized if so required by the priority, separated by the
-         * operator of this infix expression.
-         */
-        @Override
-        public String toString() {
-            StringBuffer result = new StringBuffer();
-            Iterator<RegExpr> operandIter = getOperands().iterator();
-            while (operandIter.hasNext()) {
-                RegExpr operand = operandIter.next();
-                if (bindsWeaker(operand, this)) {
-                    result.append("" + LPAR_CHAR + operand + RPAR_CHAR);
-                } else {
-                    result.append(operand);
-                }
-                if (operandIter.hasNext()) {
-                    result.append(getOperator());
-                }
-            }
-            return result.toString();
-        }
-        
-        /**
-         * This implementation first calls the calculator on the operands
-         * and then on the operator itself with the resulting arguments.
-         * @see #applyInfix(RegExprCalculator, List)
-         */
-        @Override
-        public <Result >Result apply(RegExprCalculator<Result> calculator) {
-            List<Result> argsList = new ArrayList<Result>();
-            for (RegExpr operand: getOperands()) {
-                argsList.add(operand.apply(calculator));
-            }
-            return applyInfix(calculator, argsList);
-        }
-
-        /**
-         * Factory method for an infix expression. The number of operands is guaranteed to be at
-         * least 2.
-         * @param operandList the list of operands of the infix expression
-         * @return a new infix expression based on <tt>operands</tt>
-         * @require <tt>operandList.size() >= 2</tt>
-         */
-        abstract protected Infix newInstance(List<RegExpr> operandList);
-        
-        /**
-         * Calculation of the actual operation, given precalculated argumants.
-         * @see #apply(RegExprCalculator)
-         */
-        abstract protected <Result> Result applyInfix(RegExprCalculator<Result> visitor, List<Result> argsList);
-
-        /**
-         * The operands of this infix expression.
-         */
-        private final List<RegExpr> operandList;
-    }
-
-    /**
-     * Abstract class modelling a postfix operatior.
-     * This corresponds to one operand followed by a 
-     * operator string, fixed in the specializing class.
-     */
-    abstract static protected class Postfix extends Composite {
-        /**
-         * Creates a prototye regular expression.
-         */
-        public Postfix(String operator, String symbol, RegExpr operand) {
-            super(operator, symbol);
-            this.operand = operand;
-            this.operandList = Collections.singletonList(operand);
-        }
-
-        /** Returns the single operand of this postfix expression. */
-        public RegExpr getOperand() {
-            return operand;
-        }
-        
-        /**
-         * Returns a singular list consisting of the single operand of this
-         * postfix expression.
-         */
-        @Override
-        public List<RegExpr> getOperands() {
-            return operandList;
-        }
-
-        @Override
-        public String toString() {
-            if (bindsWeaker(operand, this)) {
-                return "" + LPAR_CHAR + getOperand() + RPAR_CHAR
-                        + getOperator();
-            } else {
-                return "" + getOperand() + getOperator();
-            }
-        }
-
-        /**
-         * @return <tt>null</tt> if the postfix operator (given by <tt>operator()</tt>) does
-         *         not occur in <tt>tokenList</tt>
-         * @throws FormatException of the operator does occur in the list, but not as the last
-         *         element
-         */
-        @Override
-        protected RegExpr parseOperator(String expr) throws FormatException {
-            String[] operands = ExprParser.splitExpr(expr,
-                getOperator(),
-                ExprParser.POSTFIX_POSITION);
-            if (operands == null) {
-                return null;
-            }
-            return newInstance(parse(operands[0]));
-        }
-        
-        /**
-         * This implementation first calls the calculator on the operand
-         * and then on the operator itself with the resulting argument.
-         * @see #applyPostfix(RegExprCalculator, Object)
-         */
-        @Override
-        public <Result> Result apply(RegExprCalculator<Result> calculator) {
-            return applyPostfix(calculator, getOperand().apply(calculator));
-        }
-
-        /**
-         * Factory method for a postfix expression.
-         * @param operand the operand of the postfix expression
-         * @return a new postfix expression based on <tt>operand</tt>
-         */
-        abstract protected Postfix newInstance(RegExpr operand);
-        /**
-         * Calculation of the actual operation, given a precalculated argumant.
-         * @see #apply(RegExprCalculator)
-         */
-        abstract protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor, Result arg);
-
-        /**
-         * The (single) operand of the postfix operator.
-         */
-        private final RegExpr operand;
-        /**
-         * The single operand wrapped in a list.
-         */
-        private final List<RegExpr> operandList;
-    }
-
-    /**
-     * Abstract class modelling a postfix operatior.
-     * This corresponds to an operator string, fixed in the specializing class,
-     * followed by one operand.
-     */
-    abstract static protected class Prefix extends Composite {
-        /**
-         * Creates a prototye regular expression.
-         */
-        public Prefix(String operator, String symbol, RegExpr operand) {
-            super(operator, symbol);
-            this.operand = operand;
-            this.operandList = Collections.singletonList(operand);
-        }
-
-        /** Returns the single operand of this prefix expression. */
-        public RegExpr getOperand() {
-            return operand;
-        }
-
-        /**
-         * Returns a singular list consisting of the single operand of this
-         * postfix expression.
-         */
-        @Override
-        public List<RegExpr> getOperands() {
-            return operandList;
-        }
-
-        @Override
-        public String toString() {
-            if (bindsWeaker(operand, this)) {
-                return "" + getOperator() + LPAR_CHAR + getOperand() + RPAR_CHAR;
-            } else {
-                return "" + getOperator() + getOperand();
-            }
-        }
-
-        /**
-         * @return <tt>null</tt> if the prefix operator (given by <tt>operator()</tt>) does
-         *         not occur in <tt>tokenList</tt>
-         * @throws FormatException of the operator does occur in the list, but not as the first
-         *         element
-         */
-        @Override
-        protected RegExpr parseOperator(String expr) throws FormatException {
-            String[] operands = ExprParser.splitExpr(expr,
-                getOperator(),
-                ExprParser.PREFIX_POSITION);
-            if (operands == null) {
-                return null;
-            }
-            return newInstance(parse(operands[0]));
-        }
-        
-        /**
-         * This implementation first calls the calculator on the operand
-         * and then on the operator itself with the resulting argument.
-         * @see #applyPrefix(RegExprCalculator, Object)
-         */
-        @Override
-        public <Result> Result apply(RegExprCalculator<Result> calculator) {
-            return applyPrefix(calculator, getOperand().apply(calculator));
-        }
-
-        /**
-         * Factory method for a prefix expression.
-         * @param operand the operand of the prefix expression
-         * @return a new prefix expression based on <tt>operand</tt>
-         */
-        abstract protected Prefix newInstance(RegExpr operand);
-        /**
-         * Calculation of the actual operation, given a precalculated argumant.
-         * @see #apply(RegExprCalculator)
-         */
-        abstract protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg);
-
-        /**
-         * The (single) operand of the prefix operator.
-         */
-        private final RegExpr operand;
-        /**
-         * The single operand wrapped in a list.
-         */
-        private final List<RegExpr> operandList;
-    }
-
-    /**
-     * Abstract class modelling a constant regular expression.
-     */
-    abstract static protected class Constant extends RegExpr {
-        /**
-         * Creates a prototye regular expression.
-         */
-        Constant(String operator, String symbol) {
-            super(operator, symbol);
-        }
-
-        /**
-         * This implementation returns an empty list.
-         */
-        @Override
-        public List<RegExpr> getOperands() {
-            return Collections.emptyList();
-        }
-        
-        /**
-         * This implementation returns the operator, as determined by {@link #getOperator()}.
-         */
-        @Override
-        public String toString() {
-            return getOperator();
-        }
-
-        /**
-         * @return <tt>null</tt> if the postfix operator (given by <tt>operator()</tt>) does
-         *         not occur in <tt>tokenList</tt>
-         * @throws FormatException of the operator does occur in the list, but not as the last
-         *         element
-         */
-        @Override
-        protected RegExpr parseOperator(String expr) throws FormatException {
-            if (expr.equals(getOperator())) {
-                return newInstance();
-            } else {
-                return null;
-            }
-        }
-
-        /**
-         * Factory method for a postfix expression.
-         * @return a new postfix expression based on <tt>operand</tt>
-         */
-        abstract protected Constant newInstance();
-    }
-
-    /**
-     * Sequential composition operator.
-     * This is an infix operator that concatenates its operands sequentially.
-     */
-    static public class Seq extends Infix {
-    	/** Creates a sequential composition of a list of expressions. */
-        public Seq(List<RegExpr> innerRegExps) {
-            super("" + SEQ_OPERATOR, SEQ_SYMBOLIC_NAME, innerRegExps);
-        }
-
-        /** Creates a prototype instance. */
-        Seq() {
-            this(null);
-        }
-
-        @Override
-        protected Infix newInstance(List<RegExpr> operandList) {
-            return new Seq(operandList);
-        }
-        
-        /**
-         * Calls {@link RegExprCalculator#computeSeq(RegExpr.Seq, List)} on the visitor.
-         */
-        @Override
-        protected <Result> Result applyInfix(RegExprCalculator<Result> visitor, List<Result> argsList) {
-            return visitor.computeSeq(this, argsList);
-        }
-    }
-
-    /**
-     * Choice operator.
-     * This is an infix operator that offers a choice among its operands.
-     */
-    static public class Choice extends Infix {
-    	/** Creates a choice between a list of expressions. */
-        public Choice(List<RegExpr> tokenList) {
-            super("" + CHOICE_OPERATOR, CHOICE_SYMBOLIC_NAME, tokenList);
-        }
-
-        /** Creates a prototype instance. */
-        Choice() {
-            this(null);
-        }
-
-        @Override
-        protected Infix newInstance(List<RegExpr> operandList) {
-            return new Choice(operandList);
-        }
-        
-        /**
-         * Calls {@link RegExprCalculator#computeChoice(RegExpr.Choice, List)} on the visitor.
-         */
-        @Override
-        protected <Result> Result applyInfix(RegExprCalculator<Result> visitor, List<Result> argsList) {
-            return visitor.computeChoice(this, argsList);
-        }
-    }
-
-    /**
-     * Constant expression that stands for all edges existing in the graph.
-     * The wildcard may contain an identifier, which then acts as a variable
-     * that may be bound to a value when the expression is matched.
-     */
-    static public class Wildcard extends Constant {
-    	/** Creates an instance without variable identifier. */
-        public Wildcard() {
-            super("" + WILDCARD_OPERATOR, WILDCARD_SYMBOLIC_NAME);
-        }
-
-        /**
-         * Constructs a wildcard expression with a given identifier.
-         * Currently not supported.
-         * @param identifier the wildcard identifier
-         */
-        public Wildcard(String identifier, Property<String> constraint) {
-            this();
-            this.identifier = identifier;
-            this.constraint = constraint;
-        }
-        
-        /**
-         * Calls {@link RegExprCalculator#computeWildcard(RegExpr.Wildcard)} on the visitor.
-         */
-        @Override
-        public <Result> Result apply(RegExprCalculator<Result> calculator) {
-            return calculator.computeWildcard(this);
-        }
-
-        /**
-         * This implementation delegates to <code>super</code> if {@link #getDescription()}
-         * returns <code>null</code>, otherwise it returns the concatenation of the
-         * operator and the identifier.
-         */
-        @Override
-        public String toString() {
-        	StringBuilder result = new StringBuilder(super.toString());
-            if (getIdentifier() != null) {
-            	result.append(getIdentifier());
-            }
-            if (getConstraint() != null) {
-            	result.append(getConstraint());
-            }
-            return result.toString();
-        }
-
-        /**
-         * This implementation delegates to {@link #toString()}.
-         */
-        @Override
-        public String getDescription() {
-            return toString();
-        }
-
-        /**
-         * Returns the optional identifier of this wildcard expression.
-         */
-        public Property<String> getConstraint() {
-            return constraint;
-        }
-
-        /**
-         * Returns the optional identifier of this wildcard expression.
-         */
-        public String getIdentifier() {
-            return identifier;
-        }
-
-        /**
-         * First tries the super implementation, but if that does not work,
-         * tries to parse <code>expr</code> as a prefix expression where
-         * the operand is an identifier (according to {@link #isIdentifier(String)}).
-         */
-        @Override
-        protected RegExpr parseOperator(String expr) throws FormatException {
-            RegExpr result = super.parseOperator(expr);
-            if (result == null) {
-                String[] operands = ExprParser.splitExpr(expr,
-                    getOperator(),
-                    ExprParser.PREFIX_POSITION);
-                if (operands == null) {
-                    return null;
-                } else {
-                	Pair<String,List<String>> operand = ExprParser.parseExpr(operands[0]);
-                	int subStringCount = operand.second().size();
-                	String identifier = operand.first();
-                	Property<String> constraint = null;
-                	if (subStringCount > 1) {
-                		throw new FormatException("Invalid wildcard parameter '%s'", operands[0]);
-                	} else if (subStringCount == 1) {
-                		String parameter = operand.second().iterator().next();
-                		if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length()-1) {
-                    		throw new FormatException("Invalid wildcard parameter '%s'", operands[0]);
-                		} else {
-                			constraint = getConstraint(parameter);
-                		}
-                		identifier = identifier.substring(0, identifier.length()-1);                		
-                	}
-					if (isIdentifier(identifier)) {
-						result = newInstance(identifier, constraint);
-					} else if (identifier.length() == 0) {
-						result = newInstance(null, constraint);
-					} else {
-						throw new FormatException("Wildcard operand '%s' is not a valied identifier", operands[0]);
-					}
-				}
-            }
-            return result;
-        }
-
-        /** 
-         * Turns a given string into a constraint on edge labels.
-         * @param parameter the string to be converted
-         * @return the property on edge labels encoded by <code>parameter</code>
-         * @throws FormatException if <code>parameter</code> is not correctly formed as a constraint.
-         */
-        private Property<String> getConstraint(String parameter) throws FormatException {
-        	String constraintList = ExprParser.toTrimmed(parameter, CONSTRAINT_OPEN, CONSTRAINT_CLOSE);
-        	if (constraintList == null) {
-        		throw new FormatException("Invalid constraint parameter '%s'", parameter);
-        	}
-        	boolean negated = constraintList.indexOf(CONSTRAINT_NEGATOR) == 0;
-        	if (negated) {
-        		constraintList = constraintList.substring(1);
-        	}
-        	String[] constraintParts = ExprParser.splitExpr(constraintList,""+CONSTRAINT_SEPARATOR, ExprParser.INFIX_POSITION);
-        	if (constraintParts.length == 0) {
-        		throw new FormatException("Invalid constraint parameter '%s'", parameter);
-        	}
-        	final Set<String> constrainedLabels = new HashSet<String>();
-        	for (String part: constraintParts) {
-        		RegExpr atom;
-        		try {
-        			atom = parse(part);
-				} catch (FormatException exc) {
-        			throw new FormatException("Constraint string '%s' cannot be parsed", part);
-        		}
-				if (atom instanceof Atom) {
-					constrainedLabels.add(((Atom) atom).getAtomText());
-				} else {
-					throw new FormatException("Constraint string '%s' should be an atom", part);
-				}
-        	}
-        	return new LabelConstraint(constrainedLabels, negated);
-        }
-
-        /** Returns a {@link Wildcard} with a given identifier. */
-        protected Wildcard newInstance(String identifier, Property<String> constraint) {
-            return new Wildcard(identifier, constraint);
-        }
-
-        /** This implementation returns a {@link Wildcard}. */
-        @Override
-        protected Constant newInstance() {
-            return new Wildcard();
-        }
-        
-        /** The (optional) constraint for this wildcard. */
-        private Property<String> constraint;
-        
-        /** The (optional) identifier for this wildcard. */
-        private String identifier;
-        
-        /** Opening bracket of a wildcard constraint. */
-        static private final char CONSTRAINT_OPEN = '[';
-        /** Closing bracket of a wildcard constraint. */
-        static private final char CONSTRAINT_CLOSE = ']';
-        /** Character to indicate negation of a constraint. */
-        static private final char CONSTRAINT_NEGATOR = '^';
-        /** Character to separate constraint parts. */
-        static private final char CONSTRAINT_SEPARATOR = ',';
-        
-        /** Constraint testing if a string is or is not in a set of strings. */
-		private static class LabelConstraint extends Property<String> {
-			LabelConstraint(Set<String> constrainedLabels, boolean negated) {
-				this.constrainedLabels = constrainedLabels;
-				this.negated = negated;
-			}
-			
-			@Override
-			public boolean isSatisfied(String value) {
-				return negated != constrainedLabels.contains(value);
-			}
-			
-			@Override
-			public String toString() {
-				String start;
-				if (negated) {
-					start = ""+CONSTRAINT_OPEN+CONSTRAINT_NEGATOR;
-				} else {
-					start = ""+CONSTRAINT_OPEN;
-				}
-				return Groove.toString(constrainedLabels.toArray(new String[0]), start, ""+CONSTRAINT_CLOSE, ""+CONSTRAINT_SEPARATOR);
-			}
-
-			/** The set of strings to be tested for inclusion. */
-			private final Set<String> constrainedLabels;
-			/** Flag indicating if we are testing for absence or presence. */
-			private final boolean negated;
-		}
-    }
-
-    /**
-     * Constant expression that stands for all reflexive pairs.
-     */
-    static public class Empty extends Constant {
-    	/** Creates an instance of this expression. */
-        public Empty() {
-            super("" + EMPTY_OPERATOR, EMPTY_SYMBOLIC_NAME);
-        }
-
-        /** This implementation returns a {@link Empty}. */
-        @Override
-        protected Constant newInstance() {
-            return new Empty();
-        }
-        
-        /**
-         * Calls {@link RegExprCalculator#computeEmpty(RegExpr.Empty)} on the visitor.
-         */
-        @Override
-        public <Result> Result apply(RegExprCalculator<Result> calculator) {
-            return calculator.computeEmpty(this);
-        }
-    }
-
-    /**
-     * Constant expression that stands for a fixed symbol.
-     * The symbol is know as the <i>text</i> of the atom.
-     */
-    static public class Atom extends Constant {
-        /**
-         * Creates a new atomic expression, based on a given text.
-         * @param token the text to create the atom from
-         * @require <tt>isAtom(token)</tt>
-         */
-        public Atom(String token) {
-            super("", ATOM_SYMBOLIC_NAME);
-            this.text = token;
-        }
-
-        /**
-         * Creates a prototye regular expression.
-         */
-        Atom() {
-            this("");
-        }
-
-        /**
-         * Puts single quotes around the atom text if it could otherwise be parsed as something
-         * else.
-         */
-        @Override
-        public String toString() {
-            if (isAtom(text())) {
-                // the atom text can be understood as is
-                return text();
-            } else {
-                // the atom text looks like something else if we parse it as is
-                return ExprParser.toQuoted(text(), SINGLE_QUOTE_CHAR);
-            }
-        }
-
-        @Override
-        public String getDescription() {
-            return text;
-        }
-
-        /**
-         * Returns the bare text of the atom.
-         */
-        public String text() {
-            return text;
-        }
-
-        /**
-         * This implementation never returns <tt>null</tt>, since it is assumed to be at the end
-         * of the chain of prototypes tried out during parsing.
-         * @throws FormatException if <tt>tokenList</tt> is not a singleton or its element is
-         *         not recognised as a nested expression or atom
-         */
-        @Override
-        public RegExpr parseOperator(String expr) throws FormatException {
-        	expr = expr.trim();
-        	if (expr.length() == 0) {
-        		throw new FormatException("Empty string not allowed in expression");
-        	} else if (isAtom(expr)) {
-                return newInstance(expr);
-            } else {
-                // the only hope is that the expression is quoted or bracketed
-                Pair<String, List<String>> parseResult = ExprParser.parseExpr(expr);
-                if (parseResult.first().length() == 1
-                        && parseResult.first().charAt(0) == PLACEHOLDER) {
-                    String parsedExpr = parseResult.second().get(0);
-                    switch (parsedExpr.charAt(0)) {
-                    case LPAR_CHAR:
-                        return parse(parsedExpr.substring(1, expr.length() - 1));
-                    case SINGLE_QUOTE_CHAR:
-                        return newInstance(ExprParser.toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
-                    default:
-                        return null;
-                    }
-                } else {
-                    // the expression is not atomic when parsed
-                    return null;
-                }
-            }
-        }
-
-        /**
-         * Required factory method from {@link Constant}.
-         * @throws UnsupportedOperationException always
-         */
-        @Override
-        protected Constant newInstance() {
-            throw new UnsupportedOperationException("Atom instances must have a parameter");
-        }
-
-        /**
-         * Factory method: creates a new atomic regular expression, from a given text. Does not test
-         * for proper atom format.
-         */
-        protected Atom newInstance(String text) throws FormatException {
-            return new Atom(text);
-        }
-        
-        /**
-         * Calls {@link RegExprCalculator#computeAtom(RegExpr.Atom)} on the visitor.
-         */
-        @Override
-        public <Result> Result apply(RegExprCalculator<Result> calculator) {
-            return calculator.computeAtom(this);
-        }
-
-        /** The text of the atom. */
-        private final String text;
-    }
-
-    /**
-     * Postfix operator standing for a repetition of its
-     * operand of zero or more occurrences.
-     * @see Plus
-     */
-    static public class Star extends Postfix {
-    	/** Creates the repetition of a given regular expression. */
-        public Star(RegExpr operand) {
-            super("" + STAR_OPERATOR, STAR_SYMBOLIC_NAME, operand);
-        }
-
-        /** Creates a prototype instance. */
-        Star() {
-            this(null);
-        }
-
-        @Override
-        protected Postfix newInstance(RegExpr operand) {
-            return new Star(operand);
-        }
-
-        /**
-         * Calls {@link RegExprCalculator#computeStar(RegExpr.Star, Object)} on the visitor.
-         */
-        @Override
-        protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor, Result arg) {
-            return visitor.computeStar(this, arg);
-        }
-    }
-
-    /**
-     * Postfix operator standing for a repetition of its
-     * operand of at least one occurrence.
-     * @see Star
-     */
-    static public class Plus extends Postfix {
-    	/** Creates a non-empty repetition of a given regular expression. */
-            public Plus(RegExpr operand) {
-                super("" + PLUS_OPERATOR, PLUS_SYMBOLIC_NAME, operand);
-            }
-    
-            /** Creates a prototype instance. */
-            Plus() {
-                this(null);
-            }
-    
-            @Override
-            protected Postfix newInstance(RegExpr operand) {
-                return new Plus(operand);
-            }
-    
-            /**
-             * Calls {@link RegExprCalculator#computePlus(RegExpr.Plus, Object)} on the visitor.
-             */
-            @Override
-            protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor, Result arg) {
-                return visitor.computePlus(this, arg);
-            }
-        }
-
-    /**
-     * Inversion is a prefix operator standing for a backwards
-     * interpretation of its operand.
-     * @see Neg
-     */
-    static public class Inv extends Prefix {
-    	/** Creates the inversion of a given regular expression. */
-        public Inv(RegExpr operand) {
-            super("" + INV_OPERATOR, INV_SYMBOLIC_NAME, operand);
-        }
-
-        /** Creates a prototype instance. */
-        Inv() {
-            this(null);
-        }
-
-        @Override
-        protected Prefix newInstance(RegExpr operand) {
-            return new Inv(operand);
-        }
-
-        /**
-         * Calls {@link RegExprCalculator#computeInv(RegExpr.Inv, Object)} on the visitor.
-         */
-        @Override
-        protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg) {
-            return visitor.computeInv(this, arg);
-        }
-    }
-
-    /**
-     * Negation is a prefix operator; the resulting expression applies
-     * everywhere where the operand does not apply.
-     * @see Inv
-     */
-    static public class Neg extends Prefix {
-    	/** Creates the negation of a given regular expression. */
-        public Neg(RegExpr operand) {
-            super(NEG_OPERATOR, NEG_SYMBOLIC_NAME, operand);
-        }
-
-        /** Creates a prototype instance. */
-        Neg() {
-            this(null);
-        }
-
-        @Override
-        protected Prefix newInstance(RegExpr operand) {
-            return new Neg(operand);
-        }
-
-        /**
-         * Calls {@link RegExprCalculator#computeNeg(RegExpr.Neg, Object)} on the visitor.
-         */
-        @Override
-        protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg) {
-            return visitor.computeNeg(this, arg);
-        }
-    }
-
-    /**
-     * Parses a given string as a regular expression.
-     * Throws an exception if the parsing does not succeed.
-     * @param expr the string to be parsed 
-     * @return a regular expression which, when turned back into a string,
-     * equals <code>expr</code>
-     * @throws FormatException if <code>expr</code> cannot be parsed
-     */
-    static public RegExpr parse(String expr) throws FormatException {
-    	// first test if the quoting and bracketing is correct
-    	ExprParser.parseExpr(expr);
-        // try to parse the expression using each of the available operators in turn
-        for (RegExpr prototype: prototypes) {
-            RegExpr result = prototype.parseOperator(expr);
-            // if the result is non-null, we are done
-            if (result != null) {
-                return result;
-            }
-        }
-        throw new FormatException("Unable to parse expression %s as regular expression", expr);
-    }
-
-    /** Creates and returns an atomic regular expression with a given atom text. */
-    public static Atom atom(String text) {
-        return new Atom(text);
-    }
-
-    /**
-     * Creates and returns a wildcard regular expression.
-     */
-    public static Wildcard wildcard() {
-        return new Wildcard();
-    }
-
-    /**
-     * Creates and returns a named wildcard regular expression.
-     */
-    public static Wildcard wildcard(String text) {
-        return wildcard(text, null);
-    }
-
-
-    /**
-     * Creates and returns a named wildcard regular expression with
-     * a constraint on the label.
-     */
-    public static Wildcard wildcard(String text, Property<String> constraint) {
-        return new Wildcard(text, constraint);
-    }
-
-    /**
-     * Creates and returns an empty regular expression.
-     */
-    public static Empty empty() {
-        return new Empty();
-    }
-    
-    /** Helper method for a test if this class. */
-    static private void test(String text) {
-        try {
-            System.out.println("Input: " + text);
-            System.out.println("Output: " + parse(text));
-            System.out.println("Description: " + parse(text).getDescription());
-        } catch (FormatException e) {
-            System.out.println("Error:  " + e.getMessage());
-        }
-    }
-
-    /** Tests this class. */
-    static public void main(String[] args) {
-        test("");
-        test("?");
-        test("a|b");
-        test("|b");
-        test("*");
-        test("((a).(b))*");
-        test("((a)*|b)+");
-        test("?.'b.c'. 'b'. \"c\". (d*)");
-        test("a+*");
-        test("a.?*");
-        test("((a)");
-        test("(<a)");
-        test("(a . b)* .c. d|e*");
-        test("=. b|c*");
-        test("!a*");
-        test("!a.b | !(a.!b)");
-        test("?ab");
-    }
-
-    /**
-     * An array of propotype regular expressions, in order of increasing priority. In particular,
-     * atoms that have special meaning should come before the {@link Atom}.
-     */
-    static private final RegExpr[] prototypes = new RegExpr[] { new Atom(), new Choice(),
-        new Seq(),
-        new Neg(),
-            new Star(), new Plus(), new Wildcard(), new Empty(), 
-            new Inv()};
-
-    /**
-     * The list of operators into which a regular expression will be parsed, in order of increasing
-     * priority.
-     */
-    static private final List<String> operators;
-
-    static {
-        List<String> result = new LinkedList<String>();
-        for (int op = 0; op < prototypes.length; op++) {
-            RegExpr prototype = prototypes[op];
-            if (!(prototype instanceof Atom)) {
-                result.add(prototype.getOperator());
-            }
-        }
-        operators = result;
-    }
-
     /** 
      * Constructs a regular expression with a given operator name
      * and operator symbol.
@@ -1623,4 +555,1073 @@ abstract public class RegExpr { //implements VarSetSupport {
      * A regular expression label based on this expression.
      */
     private RegExprLabel label;
+    
+    /**
+     * Parses a given string as a regular expression.
+     * Throws an exception if the parsing does not succeed.
+     * @param expr the string to be parsed 
+     * @return a regular expression which, when turned back into a string,
+     * equals <code>expr</code>
+     * @throws FormatException if <code>expr</code> cannot be parsed
+     */
+    static public RegExpr parse(String expr) throws FormatException {
+        // first test if the quoting and bracketing is correct
+        ExprParser.parseExpr(expr);
+        // try to parse the expression using each of the available operators in turn
+        for (RegExpr prototype: prototypes) {
+            RegExpr result = prototype.parseOperator(expr);
+            // if the result is non-null, we are done
+            if (result != null) {
+                return result;
+            }
+        }
+        throw new FormatException("Unable to parse expression %s as regular expression", expr);
+    }
+
+    /** Creates and returns an atomic regular expression with a given atom text. */
+    public static Atom atom(String text) {
+        return new Atom(text);
+    }
+
+    /**
+     * Creates and returns a wildcard regular expression.
+     */
+    public static Wildcard wildcard() {
+        return new Wildcard();
+    }
+
+    /**
+     * Creates and returns a named wildcard regular expression.
+     */
+    public static Wildcard wildcard(String text) {
+        return wildcard(text, null);
+    }
+
+
+    /**
+     * Creates and returns a named wildcard regular expression with
+     * a constraint on the label.
+     */
+    public static Wildcard wildcard(String text, Property<String> constraint) {
+        return new Wildcard(text, constraint);
+    }
+
+    /**
+     * Creates and returns an empty regular expression.
+     */
+    public static Empty empty() {
+        return new Empty();
+    }
+    
+    /** Helper method for a test if this class. */
+    static private void test(String text) {
+        try {
+            System.out.println("Input: " + text);
+            System.out.println("Output: " + parse(text));
+            System.out.println("Description: " + parse(text).getDescription());
+        } catch (FormatException e) {
+            System.out.println("Error:  " + e.getMessage());
+        }
+    }
+
+    /** Tests this class. */
+    static public void main(String[] args) {
+        test("");
+        test("?");
+        test("a|b");
+        test("|b");
+        test("*");
+        test("((a).(b))*");
+        test("((a)*|b)+");
+        test("?.'b.c'. 'b'. \"c\". (d*)");
+        test("a+*");
+        test("a.?*");
+        test("((a)");
+        test("(<a)");
+        test("(a . b)* .c. d|e*");
+        test("=. b|c*");
+        test("!a*");
+        test("!a.b | !(a.!b)");
+        test("?ab");
+    }
+    
+    /** 
+     * Sequential operator.
+     * @see Seq
+     */
+    static public final char SEQ_OPERATOR = '.';
+    /**
+     * Symbolic name of the sequential operator. 
+     * @see Seq
+     */
+    static public final String SEQ_SYMBOLIC_NAME = "Seq";
+    /** 
+     * Kleene star operator.
+     * @see Star
+     */
+    static public final char STAR_OPERATOR = '*';
+    /**
+     * Symbolic name of the Kleene star operator. 
+     * @see Star
+     */
+    static public final String STAR_SYMBOLIC_NAME = "Some";
+    /** 
+     * Choice operator.
+     * @see Choice
+     */
+    static public final char CHOICE_OPERATOR = '|';
+    /**
+     * Symbolic name of the choice operator. 
+     * @see Choice
+     */
+    static public final String CHOICE_SYMBOLIC_NAME = "Or";
+
+    /** 
+     * Plus ("at least one occurence") operator.
+     * @see Plus
+     */
+    static public final char PLUS_OPERATOR = '+';
+    /**
+     * Symbolic name of the plus ("at least one occurrence") operator. 
+     * @see Plus
+     */
+    static public final String PLUS_SYMBOLIC_NAME = "More";
+
+    /** 
+     * Empty constant.
+     * @see Empty
+     */
+    static public final char EMPTY_OPERATOR = '=';
+    /**
+     * Symbolic name of the empty constant. 
+     * @see Empty
+     */
+    static public final String EMPTY_SYMBOLIC_NAME = "Empty";
+    /** 
+     * Woldcard constant.
+     * @see Wildcard
+     */
+    static public final char WILDCARD_OPERATOR = '?';
+    /**
+     * Symbolic name of the wildcard constant. 
+     * @see Wildcard
+     */
+    static public final String WILDCARD_SYMBOLIC_NAME = "Any";
+    /** 
+     * Inverse operator.
+     * @see Inv
+     */
+    static public final char INV_OPERATOR = '-';
+    /**
+     * Symbolic name of the inverse operator. 
+     * @see Inv
+     */
+    static public final String INV_SYMBOLIC_NAME = "Back";
+
+    /** 
+     * Negation operator.
+     * @see Neg
+     */
+    static public final String NEG_OPERATOR = "!";
+
+    /**
+     * Symbolic name of the negation operator. 
+     * @see Neg
+     */
+    static public final String NEG_SYMBOLIC_NAME = "Not";
+
+    /**
+     * Symbolic name of the atomic constant. 
+     * @see Atom
+     */
+    static public final String ATOM_SYMBOLIC_NAME = "Atom";
+
+    /**
+     * The characters allowed in a regular expression atom, apart from letters and digits.
+     * @see #isIdentifier(String)
+     */
+    static public final String ATOM_CHARS = "_$:";
+
+    /**
+     * The characters allowed in a wildcard identifier, apart from letters and digits.
+     * @see #isIdentifier(String)
+     */
+    static public final String IDENTIFIER_CHARS = "_$";
+    
+    /**
+     * An array of propotype regular expressions, in order of increasing priority. In particular,
+     * atoms that have special meaning should come before the {@link Atom}.
+     */
+    static private final RegExpr[] prototypes = new RegExpr[] { new Atom(), new Choice(),
+        new Seq(),
+        new Neg(),
+            new Star(), new Plus(), new Wildcard(), new Empty(), 
+            new Inv()};
+
+    /**
+     * The list of operators into which a regular expression will be parsed, in order of increasing
+     * priority.
+     */
+    static private final List<String> operators;
+
+    static {
+        List<String> result = new LinkedList<String>();
+        for (int op = 0; op < prototypes.length; op++) {
+            RegExpr prototype = prototypes[op];
+            if (!(prototype instanceof Atom)) {
+                result.add(prototype.getOperator());
+            }
+        }
+        operators = result;
+    }
+
+
+    /** 
+     * Abstract superclass for all regular expressions that are not constants.
+     */
+    abstract static protected class Composite extends RegExpr {
+        /** 
+         * Constructs an instance of a composite regular expression
+         * with a given operator name and operator symbol.
+         * This constructor is there only for subclassing purposes.
+         */
+        protected Composite(String operator, String symbol) {
+            super(operator, symbol);
+        }
+    }
+    
+    /**
+     * Abstract class modelling a sequence of (more than one)
+     * operand separated by a given operator string.
+     */
+    abstract static protected class Infix extends Composite {
+        /**
+         * Creates a regular expression from an infix operator and a list of operands. The operands
+         * are themselves regular expressions.
+         */
+        public Infix(String operator, String symbol, List<RegExpr> operands) {
+            super(operator, symbol);
+            this.operandList = operands;
+        }
+
+        /**
+         * Returns (a clone of) the operands of this regular expression.
+         * @return a clone of the operands of this regular expression
+         */
+        @Override
+        public List<RegExpr> getOperands() {
+            return Collections.unmodifiableList(operandList);
+        }
+
+        @Override
+        public RegExpr parseOperator(String expr) throws FormatException {
+            String[] operands = ExprParser
+                    .splitExpr(expr, getOperator(), ExprParser.INFIX_POSITION);
+            if (operands.length < 2) {
+                return null;
+            }
+            List<RegExpr> operandList = new LinkedList<RegExpr>();
+            for (int i = 0; i < operands.length; i++) {
+                operandList.add(parse(operands[i]));
+            }
+            return newInstance(operandList);
+        }
+
+        /**
+         * Returns the operands, parenthesized if so required by the priority, separated by the
+         * operator of this infix expression.
+         */
+        @Override
+        public String toString() {
+            StringBuffer result = new StringBuffer();
+            Iterator<RegExpr> operandIter = getOperands().iterator();
+            while (operandIter.hasNext()) {
+                RegExpr operand = operandIter.next();
+                if (bindsWeaker(operand, this)) {
+                    result.append("" + LPAR_CHAR + operand + RPAR_CHAR);
+                } else {
+                    result.append(operand);
+                }
+                if (operandIter.hasNext()) {
+                    result.append(getOperator());
+                }
+            }
+            return result.toString();
+        }
+        
+        /**
+         * This implementation first calls the calculator on the operands
+         * and then on the operator itself with the resulting arguments.
+         * @see #applyInfix(RegExprCalculator, List)
+         */
+        @Override
+        public <Result >Result apply(RegExprCalculator<Result> calculator) {
+            List<Result> argsList = new ArrayList<Result>();
+            for (RegExpr operand: getOperands()) {
+                argsList.add(operand.apply(calculator));
+            }
+            return applyInfix(calculator, argsList);
+        }
+
+        /**
+         * Factory method for an infix expression. The number of operands is guaranteed to be at
+         * least 2.
+         * @param operandList the list of operands of the infix expression
+         * @return a new infix expression based on <tt>operands</tt>
+         * @require <tt>operandList.size() >= 2</tt>
+         */
+        abstract protected Infix newInstance(List<RegExpr> operandList);
+        
+        /**
+         * Calculation of the actual operation, given precalculated argumants.
+         * @see #apply(RegExprCalculator)
+         */
+        abstract protected <Result> Result applyInfix(RegExprCalculator<Result> visitor, List<Result> argsList);
+
+        /**
+         * The operands of this infix expression.
+         */
+        private final List<RegExpr> operandList;
+    }
+
+    /**
+     * Abstract class modelling a postfix operatior.
+     * This corresponds to one operand followed by a 
+     * operator string, fixed in the specializing class.
+     */
+    abstract static protected class Postfix extends Composite {
+        /**
+         * Creates a prototye regular expression.
+         */
+        public Postfix(String operator, String symbol, RegExpr operand) {
+            super(operator, symbol);
+            this.operand = operand;
+            this.operandList = Collections.singletonList(operand);
+        }
+
+        /** Returns the single operand of this postfix expression. */
+        public RegExpr getOperand() {
+            return operand;
+        }
+        
+        /**
+         * Returns a singular list consisting of the single operand of this
+         * postfix expression.
+         */
+        @Override
+        public List<RegExpr> getOperands() {
+            return operandList;
+        }
+
+        @Override
+        public String toString() {
+            if (bindsWeaker(operand, this)) {
+                return "" + LPAR_CHAR + getOperand() + RPAR_CHAR
+                        + getOperator();
+            } else {
+                return "" + getOperand() + getOperator();
+            }
+        }
+
+        /**
+         * @return <tt>null</tt> if the postfix operator (given by <tt>operator()</tt>) does
+         *         not occur in <tt>tokenList</tt>
+         * @throws FormatException of the operator does occur in the list, but not as the last
+         *         element
+         */
+        @Override
+        protected RegExpr parseOperator(String expr) throws FormatException {
+            String[] operands = ExprParser.splitExpr(expr,
+                getOperator(),
+                ExprParser.POSTFIX_POSITION);
+            if (operands == null) {
+                return null;
+            }
+            return newInstance(parse(operands[0]));
+        }
+        
+        /**
+         * This implementation first calls the calculator on the operand
+         * and then on the operator itself with the resulting argument.
+         * @see #applyPostfix(RegExprCalculator, Object)
+         */
+        @Override
+        public <Result> Result apply(RegExprCalculator<Result> calculator) {
+            return applyPostfix(calculator, getOperand().apply(calculator));
+        }
+
+        /**
+         * Factory method for a postfix expression.
+         * @param operand the operand of the postfix expression
+         * @return a new postfix expression based on <tt>operand</tt>
+         */
+        abstract protected Postfix newInstance(RegExpr operand);
+        /**
+         * Calculation of the actual operation, given a precalculated argumant.
+         * @see #apply(RegExprCalculator)
+         */
+        abstract protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor, Result arg);
+
+        /**
+         * The (single) operand of the postfix operator.
+         */
+        private final RegExpr operand;
+        /**
+         * The single operand wrapped in a list.
+         */
+        private final List<RegExpr> operandList;
+    }
+
+    /**
+     * Abstract class modelling a postfix operatior.
+     * This corresponds to an operator string, fixed in the specializing class,
+     * followed by one operand.
+     */
+    abstract static protected class Prefix extends Composite {
+        /**
+         * Creates a prototye regular expression.
+         */
+        public Prefix(String operator, String symbol, RegExpr operand) {
+            super(operator, symbol);
+            this.operand = operand;
+            this.operandList = Collections.singletonList(operand);
+        }
+
+        /** Returns the single operand of this prefix expression. */
+        public RegExpr getOperand() {
+            return operand;
+        }
+
+        /**
+         * Returns a singular list consisting of the single operand of this
+         * postfix expression.
+         */
+        @Override
+        public List<RegExpr> getOperands() {
+            return operandList;
+        }
+
+        @Override
+        public String toString() {
+            if (bindsWeaker(operand, this)) {
+                return "" + getOperator() + LPAR_CHAR + getOperand() + RPAR_CHAR;
+            } else {
+                return "" + getOperator() + getOperand();
+            }
+        }
+
+        /**
+         * @return <tt>null</tt> if the prefix operator (given by <tt>operator()</tt>) does
+         *         not occur in <tt>tokenList</tt>
+         * @throws FormatException of the operator does occur in the list, but not as the first
+         *         element
+         */
+        @Override
+        protected RegExpr parseOperator(String expr) throws FormatException {
+            String[] operands = ExprParser.splitExpr(expr,
+                getOperator(),
+                ExprParser.PREFIX_POSITION);
+            if (operands == null) {
+                return null;
+            }
+            return newInstance(parse(operands[0]));
+        }
+        
+        /**
+         * This implementation first calls the calculator on the operand
+         * and then on the operator itself with the resulting argument.
+         * @see #applyPrefix(RegExprCalculator, Object)
+         */
+        @Override
+        public <Result> Result apply(RegExprCalculator<Result> calculator) {
+            return applyPrefix(calculator, getOperand().apply(calculator));
+        }
+
+        /**
+         * Factory method for a prefix expression.
+         * @param operand the operand of the prefix expression
+         * @return a new prefix expression based on <tt>operand</tt>
+         */
+        abstract protected Prefix newInstance(RegExpr operand);
+        /**
+         * Calculation of the actual operation, given a precalculated argumant.
+         * @see #apply(RegExprCalculator)
+         */
+        abstract protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg);
+
+        /**
+         * The (single) operand of the prefix operator.
+         */
+        private final RegExpr operand;
+        /**
+         * The single operand wrapped in a list.
+         */
+        private final List<RegExpr> operandList;
+    }
+
+    /**
+     * Abstract class modelling a constant regular expression.
+     */
+    abstract static protected class Constant extends RegExpr {
+        /**
+         * Creates a prototye regular expression.
+         */
+        Constant(String operator, String symbol) {
+            super(operator, symbol);
+        }
+
+        /**
+         * This implementation returns an empty list.
+         */
+        @Override
+        public List<RegExpr> getOperands() {
+            return Collections.emptyList();
+        }
+        
+        /**
+         * This implementation returns the operator, as determined by {@link #getOperator()}.
+         */
+        @Override
+        public String toString() {
+            return getOperator();
+        }
+
+        /**
+         * @return <tt>null</tt> if the postfix operator (given by <tt>operator()</tt>) does
+         *         not occur in <tt>tokenList</tt>
+         * @throws FormatException of the operator does occur in the list, but not as the last
+         *         element
+         */
+        @Override
+        protected RegExpr parseOperator(String expr) throws FormatException {
+            if (expr.equals(getOperator())) {
+                return newInstance();
+            } else {
+                return null;
+            }
+        }
+
+        /**
+         * Factory method for a postfix expression.
+         * @return a new postfix expression based on <tt>operand</tt>
+         */
+        abstract protected Constant newInstance();
+    }
+
+    /**
+     * Sequential composition operator.
+     * This is an infix operator that concatenates its operands sequentially.
+     */
+    static public class Seq extends Infix {
+        /** Creates a sequential composition of a list of expressions. */
+        public Seq(List<RegExpr> innerRegExps) {
+            super("" + SEQ_OPERATOR, SEQ_SYMBOLIC_NAME, innerRegExps);
+        }
+
+        /** Creates a prototype instance. */
+        Seq() {
+            this(null);
+        }
+
+        @Override
+        protected Infix newInstance(List<RegExpr> operandList) {
+            return new Seq(operandList);
+        }
+        
+        /**
+         * Calls {@link RegExprCalculator#computeSeq(RegExpr.Seq, List)} on the visitor.
+         */
+        @Override
+        protected <Result> Result applyInfix(RegExprCalculator<Result> visitor, List<Result> argsList) {
+            return visitor.computeSeq(this, argsList);
+        }
+    }
+
+    /**
+     * Choice operator.
+     * This is an infix operator that offers a choice among its operands.
+     */
+    static public class Choice extends Infix {
+        /** Creates a choice between a list of expressions. */
+        public Choice(List<RegExpr> tokenList) {
+            super("" + CHOICE_OPERATOR, CHOICE_SYMBOLIC_NAME, tokenList);
+        }
+
+        /** Creates a prototype instance. */
+        Choice() {
+            this(null);
+        }
+
+        @Override
+        protected Infix newInstance(List<RegExpr> operandList) {
+            return new Choice(operandList);
+        }
+        
+        /**
+         * Calls {@link RegExprCalculator#computeChoice(RegExpr.Choice, List)} on the visitor.
+         */
+        @Override
+        protected <Result> Result applyInfix(RegExprCalculator<Result> visitor, List<Result> argsList) {
+            return visitor.computeChoice(this, argsList);
+        }
+    }
+
+    /**
+     * Constant expression that stands for all edges existing in the graph.
+     * The wildcard may contain an identifier, which then acts as a variable
+     * that may be bound to a value when the expression is matched.
+     */
+    static public class Wildcard extends Constant {
+        /** Creates an instance without variable identifier. */
+        public Wildcard() {
+            super("" + WILDCARD_OPERATOR, WILDCARD_SYMBOLIC_NAME);
+        }
+
+        /**
+         * Constructs a wildcard expression with a given identifier.
+         * Currently not supported.
+         * @param identifier the wildcard identifier
+         */
+        public Wildcard(String identifier, Property<String> constraint) {
+            this();
+            this.identifier = identifier;
+            this.constraint = constraint;
+        }
+        
+        /**
+         * Calls {@link RegExprCalculator#computeWildcard(RegExpr.Wildcard)} on the visitor.
+         */
+        @Override
+        public <Result> Result apply(RegExprCalculator<Result> calculator) {
+            return calculator.computeWildcard(this);
+        }
+
+        /**
+         * This implementation delegates to <code>super</code> if {@link #getDescription()}
+         * returns <code>null</code>, otherwise it returns the concatenation of the
+         * operator and the identifier.
+         */
+        @Override
+        public String toString() {
+            StringBuilder result = new StringBuilder(super.toString());
+            if (getIdentifier() != null) {
+                result.append(getIdentifier());
+            }
+            if (getConstraint() != null) {
+                result.append(getConstraint());
+            }
+            return result.toString();
+        }
+
+        /**
+         * This implementation delegates to {@link #toString()}.
+         */
+        @Override
+        public String getDescription() {
+            return toString();
+        }
+
+        /**
+         * Returns the optional identifier of this wildcard expression.
+         */
+        public Property<String> getConstraint() {
+            return constraint;
+        }
+
+        /**
+         * Returns the optional identifier of this wildcard expression.
+         */
+        public String getIdentifier() {
+            return identifier;
+        }
+
+        /**
+         * First tries the super implementation, but if that does not work,
+         * tries to parse <code>expr</code> as a prefix expression where
+         * the operand is an identifier (according to {@link #isIdentifier(String)}).
+         */
+        @Override
+        protected RegExpr parseOperator(String expr) throws FormatException {
+            RegExpr result = super.parseOperator(expr);
+            if (result == null) {
+                String[] operands = ExprParser.splitExpr(expr,
+                    getOperator(),
+                    ExprParser.PREFIX_POSITION);
+                if (operands == null) {
+                    return null;
+                } else {
+                    Pair<String,List<String>> operand = ExprParser.parseExpr(operands[0]);
+                    int subStringCount = operand.second().size();
+                    String identifier = operand.first();
+                    Property<String> constraint = null;
+                    if (subStringCount > 1) {
+                        throw new FormatException("Invalid wildcard parameter '%s'", operands[0]);
+                    } else if (subStringCount == 1) {
+                        String parameter = operand.second().iterator().next();
+                        if (identifier.indexOf(ExprParser.PLACEHOLDER) != identifier.length()-1) {
+                            throw new FormatException("Invalid wildcard parameter '%s'", operands[0]);
+                        } else {
+                            constraint = getConstraint(parameter);
+                        }
+                        identifier = identifier.substring(0, identifier.length()-1);                        
+                    }
+                    if (isIdentifier(identifier)) {
+                        result = newInstance(identifier, constraint);
+                    } else if (identifier.length() == 0) {
+                        result = newInstance(null, constraint);
+                    } else {
+                        throw new FormatException("Wildcard operand '%s' is not a valied identifier", operands[0]);
+                    }
+                }
+            }
+            return result;
+        }
+
+        /** 
+         * Turns a given string into a constraint on edge labels.
+         * @param parameter the string to be converted
+         * @return the property on edge labels encoded by <code>parameter</code>
+         * @throws FormatException if <code>parameter</code> is not correctly formed as a constraint.
+         */
+        private Property<String> getConstraint(String parameter) throws FormatException {
+            String constraintList = ExprParser.toTrimmed(parameter, CONSTRAINT_OPEN, CONSTRAINT_CLOSE);
+            if (constraintList == null) {
+                throw new FormatException("Invalid constraint parameter '%s'", parameter);
+            }
+            boolean negated = constraintList.indexOf(CONSTRAINT_NEGATOR) == 0;
+            if (negated) {
+                constraintList = constraintList.substring(1);
+            }
+            String[] constraintParts = ExprParser.splitExpr(constraintList,""+CONSTRAINT_SEPARATOR, ExprParser.INFIX_POSITION);
+            if (constraintParts.length == 0) {
+                throw new FormatException("Invalid constraint parameter '%s'", parameter);
+            }
+            final Set<String> constrainedLabels = new HashSet<String>();
+            for (String part: constraintParts) {
+                RegExpr atom;
+                try {
+                    atom = parse(part);
+                } catch (FormatException exc) {
+                    throw new FormatException("Constraint string '%s' cannot be parsed", part);
+                }
+                if (atom instanceof Atom) {
+                    constrainedLabels.add(((Atom) atom).getAtomText());
+                } else {
+                    throw new FormatException("Constraint string '%s' should be an atom", part);
+                }
+            }
+            return new LabelConstraint(constrainedLabels, negated);
+        }
+
+        /** Returns a {@link Wildcard} with a given identifier. */
+        protected Wildcard newInstance(String identifier, Property<String> constraint) {
+            return new Wildcard(identifier, constraint);
+        }
+
+        /** This implementation returns a {@link Wildcard}. */
+        @Override
+        protected Constant newInstance() {
+            return new Wildcard();
+        }
+        
+        /** The (optional) constraint for this wildcard. */
+        private Property<String> constraint;
+        
+        /** The (optional) identifier for this wildcard. */
+        private String identifier;
+        
+        /** Opening bracket of a wildcard constraint. */
+        static private final char CONSTRAINT_OPEN = '[';
+        /** Closing bracket of a wildcard constraint. */
+        static private final char CONSTRAINT_CLOSE = ']';
+        /** Character to indicate negation of a constraint. */
+        static private final char CONSTRAINT_NEGATOR = '^';
+        /** Character to separate constraint parts. */
+        static private final char CONSTRAINT_SEPARATOR = ',';
+        
+        /** Constraint testing if a string is or is not in a set of strings. */
+        private static class LabelConstraint extends Property<String> {
+            LabelConstraint(Set<String> constrainedLabels, boolean negated) {
+                this.constrainedLabels = constrainedLabels;
+                this.negated = negated;
+            }
+            
+            @Override
+            public boolean isSatisfied(String value) {
+                return negated != constrainedLabels.contains(value);
+            }
+            
+            @Override
+            public String toString() {
+                String start;
+                if (negated) {
+                    start = ""+CONSTRAINT_OPEN+CONSTRAINT_NEGATOR;
+                } else {
+                    start = ""+CONSTRAINT_OPEN;
+                }
+                return Groove.toString(constrainedLabels.toArray(new String[0]), start, ""+CONSTRAINT_CLOSE, ""+CONSTRAINT_SEPARATOR);
+            }
+
+            /** The set of strings to be tested for inclusion. */
+            private final Set<String> constrainedLabels;
+            /** Flag indicating if we are testing for absence or presence. */
+            private final boolean negated;
+        }
+    }
+
+    /**
+     * Constant expression that stands for all reflexive pairs.
+     */
+    static public class Empty extends Constant {
+        /** Creates an instance of this expression. */
+        public Empty() {
+            super("" + EMPTY_OPERATOR, EMPTY_SYMBOLIC_NAME);
+        }
+
+        /** This implementation returns a {@link Empty}. */
+        @Override
+        protected Constant newInstance() {
+            return new Empty();
+        }
+        
+        /**
+         * Calls {@link RegExprCalculator#computeEmpty(RegExpr.Empty)} on the visitor.
+         */
+        @Override
+        public <Result> Result apply(RegExprCalculator<Result> calculator) {
+            return calculator.computeEmpty(this);
+        }
+    }
+
+    /**
+     * Constant expression that stands for a fixed symbol.
+     * The symbol is know as the <i>text</i> of the atom.
+     */
+    static public class Atom extends Constant {
+        /**
+         * Creates a new atomic expression, based on a given text.
+         * @param token the text to create the atom from
+         * @require <tt>isAtom(token)</tt>
+         */
+        public Atom(String token) {
+            super("", ATOM_SYMBOLIC_NAME);
+            this.text = token;
+        }
+
+        /**
+         * Creates a prototype regular expression.
+         */
+        Atom() {
+            this("");
+        }
+
+        /**
+         * Puts single quotes around the atom text if it could otherwise be parsed as something
+         * else.
+         */
+        @Override
+        public String toString() {
+            if (isAtom(text())) {
+                // the atom text can be understood as is
+                return text();
+            } else {
+                // the atom text looks like something else if we parse it as is
+                return ExprParser.toQuoted(text(), SINGLE_QUOTE_CHAR);
+            }
+        }
+
+        @Override
+        public String getDescription() {
+            return text;
+        }
+
+        /**
+         * Returns the bare text of the atom.
+         */
+        public String text() {
+            return text;
+        }
+
+        /**
+         * This implementation never returns <tt>null</tt>, since it is assumed to be at the end
+         * of the chain of prototypes tried out during parsing.
+         * @throws FormatException if <tt>tokenList</tt> is not a singleton or its element is
+         *         not recognised as a nested expression or atom
+         */
+        @Override
+        public RegExpr parseOperator(String expr) throws FormatException {
+            expr = expr.trim();
+            if (expr.length() == 0) {
+                throw new FormatException("Empty string not allowed in expression");
+            } else if (isAtom(expr)) {
+                return newInstance(expr);
+            } else {
+                // the only hope is that the expression is quoted or bracketed
+                Pair<String, List<String>> parseResult = ExprParser.parseExpr(expr);
+                if (parseResult.first().length() == 1
+                        && parseResult.first().charAt(0) == PLACEHOLDER) {
+                    String parsedExpr = parseResult.second().get(0);
+                    switch (parsedExpr.charAt(0)) {
+                    case LPAR_CHAR:
+                        return parse(parsedExpr.substring(1, expr.length() - 1));
+                    case SINGLE_QUOTE_CHAR:
+                        return newInstance(ExprParser.toUnquoted(parsedExpr, SINGLE_QUOTE_CHAR));
+                    default:
+                        return null;
+                    }
+                } else {
+                    // the expression is not atomic when parsed
+                    return null;
+                }
+            }
+        }
+
+        /**
+         * Required factory method from {@link Constant}.
+         * @throws UnsupportedOperationException always
+         */
+        @Override
+        protected Constant newInstance() {
+            throw new UnsupportedOperationException("Atom instances must have a parameter");
+        }
+
+        /**
+         * Factory method: creates a new atomic regular expression, from a given text. Does not test
+         * for proper atom format.
+         */
+        protected Atom newInstance(String text) throws FormatException {
+            return new Atom(text);
+        }
+        
+        /**
+         * Calls {@link RegExprCalculator#computeAtom(RegExpr.Atom)} on the visitor.
+         */
+        @Override
+        public <Result> Result apply(RegExprCalculator<Result> calculator) {
+            return calculator.computeAtom(this);
+        }
+
+        /** The text of the atom. */
+        private final String text;
+    }
+
+    /**
+     * Postfix operator standing for a repetition of its
+     * operand of zero or more occurrences.
+     * @see Plus
+     */
+    static public class Star extends Postfix {
+        /** Creates the repetition of a given regular expression. */
+        public Star(RegExpr operand) {
+            super("" + STAR_OPERATOR, STAR_SYMBOLIC_NAME, operand);
+        }
+
+        /** Creates a prototype instance. */
+        Star() {
+            this(null);
+        }
+
+        @Override
+        protected Postfix newInstance(RegExpr operand) {
+            return new Star(operand);
+        }
+
+        /**
+         * Calls {@link RegExprCalculator#computeStar(RegExpr.Star, Object)} on the visitor.
+         */
+        @Override
+        protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor, Result arg) {
+            return visitor.computeStar(this, arg);
+        }
+    }
+
+    /**
+     * Postfix operator standing for a repetition of its
+     * operand of at least one occurrence.
+     * @see Star
+     */
+    static public class Plus extends Postfix {
+        /** Creates a non-empty repetition of a given regular expression. */
+            public Plus(RegExpr operand) {
+                super("" + PLUS_OPERATOR, PLUS_SYMBOLIC_NAME, operand);
+            }
+    
+            /** Creates a prototype instance. */
+            Plus() {
+                this(null);
+            }
+    
+            @Override
+            protected Postfix newInstance(RegExpr operand) {
+                return new Plus(operand);
+            }
+    
+            /**
+             * Calls {@link RegExprCalculator#computePlus(RegExpr.Plus, Object)} on the visitor.
+             */
+            @Override
+            protected <Result> Result applyPostfix(RegExprCalculator<Result> visitor, Result arg) {
+                return visitor.computePlus(this, arg);
+            }
+        }
+
+    /**
+     * Inversion is a prefix operator standing for a backwards
+     * interpretation of its operand.
+     * @see Neg
+     */
+    static public class Inv extends Prefix {
+        /** Creates the inversion of a given regular expression. */
+        public Inv(RegExpr operand) {
+            super("" + INV_OPERATOR, INV_SYMBOLIC_NAME, operand);
+        }
+
+        /** Creates a prototype instance. */
+        Inv() {
+            this(null);
+        }
+
+        @Override
+        protected Prefix newInstance(RegExpr operand) {
+            return new Inv(operand);
+        }
+
+        /**
+         * Calls {@link RegExprCalculator#computeInv(RegExpr.Inv, Object)} on the visitor.
+         */
+        @Override
+        protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg) {
+            return visitor.computeInv(this, arg);
+        }
+    }
+
+    /**
+     * Negation is a prefix operator; the resulting expression applies
+     * everywhere where the operand does not apply.
+     * @see Inv
+     */
+    static public class Neg extends Prefix {
+        /** Creates the negation of a given regular expression. */
+        public Neg(RegExpr operand) {
+            super(NEG_OPERATOR, NEG_SYMBOLIC_NAME, operand);
+        }
+
+        /** Creates a prototype instance. */
+        Neg() {
+            this(null);
+        }
+
+        @Override
+        protected Prefix newInstance(RegExpr operand) {
+            return new Neg(operand);
+        }
+
+        /**
+         * Calls {@link RegExprCalculator#computeNeg(RegExpr.Neg, Object)} on the visitor.
+         */
+        @Override
+        protected <Result> Result applyPrefix(RegExprCalculator<Result> visitor, Result arg) {
+            return visitor.computeNeg(this, arg);
+        }
+    }
 }

@@ -12,12 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractAspect.java,v 1.12 2007-10-26 07:07:16 rensink Exp $
+ * $Id: AbstractAspect.java,v 1.13 2007-11-09 13:00:43 rensink Exp $
  */
 package groove.view.aspect;
 
 import groove.graph.Label;
-import groove.view.DefaultLabelParser;
+import groove.view.FreeLabelParser;
 import groove.view.FormatException;
 import groove.view.LabelParser;
 import groove.view.NumberLabelParser;
@@ -332,5 +332,5 @@ public abstract class AbstractAspect implements Aspect {
 	/**
 	 * Instance of the default label parser. 
 	 */
-	static private final LabelParser FREE_PARSER = new DefaultLabelParser();
+	static private final LabelParser FREE_PARSER = new FreeLabelParser();
 }

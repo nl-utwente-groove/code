@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGraphView.java,v 1.14 2007-10-08 00:59:04 rensink Exp $
+ * $Id: AspectualGraphView.java,v 1.15 2007-11-09 13:01:09 rensink Exp $
  */
 package groove.view;
 
@@ -250,7 +250,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	 * Tests if a certain aspect value causes a graph element to be virtual.
 	 */
 	private boolean isVirtualValue(AspectValue value) {
-		return value == RuleAspect.REMARK;
+		return RuleAspect.REMARK.equals(value);
 	}
 
 	/**
