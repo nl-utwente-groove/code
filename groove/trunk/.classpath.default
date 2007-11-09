@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="resources"/>
 	<classpathentry kind="lib" path="lib/antlr.jar"/>
 	<classpathentry kind="lib" path="lib/epsgraphics-1.0.0.jar"/>
-	<classpathentry kind="lib" path="lib/jgraph-5_9_2.jar"/>
+	<classpathentry kind="lib" path="lib/jgraph-5_10_1.jar"/>
 	<classpathentry kind="lib" path="lib/jgraphaddons-1_0_4.jar"/>
 	<classpathentry kind="lib" path="lib/xerces-2_6_0-xercesImpl.jar"/>
 	<classpathentry kind="lib" path="lib/castor-0_9_5_2.jar"/>
