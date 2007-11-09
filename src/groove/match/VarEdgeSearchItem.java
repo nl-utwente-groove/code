@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.15 2007-11-08 11:35:45 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.16 2007-11-09 13:17:08 rensink Exp $
  */
 package groove.match;
 
@@ -78,6 +78,10 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 		return new VarEdgeMultipleRecord(search, edgeIx, sourceIx, targetIx, varIx, sourceFound, targetFound, varFound);
 	}
 
+    boolean isLabelConstraintSatisfied(Label label) {
+        return labelConstraint == null || labelConstraint.isSatisfied(label.text());
+    }
+    
 	/** The variable bound in the wildcard (not <code>null</code>). */
 	private final String var;
     /** Singleton set consisting of <code>var</code>. */
@@ -88,7 +92,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     boolean varFound;
 
 	/** The constraint on the variable valuation, if any. */
-	final groove.calc.Property<String> labelConstraint; 
+	private final groove.calc.Property<String> labelConstraint; 
     
     class VarEdgeSingularRecord extends Edge2SingularRecord {
     	/** 
@@ -114,7 +118,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 		/** Tests the label constraint, in addition to calling the super method. */
 		@Override
 		boolean isImageCorrect(Edge image) {
-			return (labelConstraint == null || labelConstraint.isSatisfied(edge.label().text())) && super.isImageCorrect(image);
+			return isLabelConstraintSatisfied(edge.label()) && super.isImageCorrect(image);
 		}
 
 		private final Label varPreMatch;    
@@ -146,7 +150,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
         void initImages() {
             Set<? extends Edge> edgeSet;
             if (varFind != null) {
-                if (isLabelOk(varFind)) {
+                if (isLabelConstraintSatisfied(varFind)) {
                     edgeSet = host.labelEdgeSet(arity, varFind);
                 } else {
                     edgeSet = EMPTY_IMAGE_SET;
@@ -167,17 +171,13 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 
         @Override
 		boolean setImage(Edge image) {
-            boolean result = super.setImage(image);
-            if (result && varFind == null && isLabelOk(image.label())) {
+            boolean result = isLabelConstraintSatisfied(image.label()) && super.setImage(image);
+            if (result && varFind == null) {
                 result = search.putVar(varIx, image.label());
             }
 			return result;
 		}
 
-        private boolean isLabelOk(Label label) {
-            return labelConstraint == null || labelConstraint.isSatisfied(label.text());
-        }
-        
         @Override
 		public void reset() {
 			super.reset();
