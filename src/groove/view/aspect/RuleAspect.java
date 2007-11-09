@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.12 2007-11-09 13:00:43 rensink Exp $
+ * $Id: RuleAspect.java,v 1.13 2007-11-09 13:35:33 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -29,7 +29,7 @@ import groove.view.FormatException;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class RuleAspect extends AbstractAspect {
 
@@ -81,14 +81,14 @@ public class RuleAspect extends AbstractAspect {
 			throw new FormatException("Negation may only occur on top level in %s", expr);
 		}
 		// check the expression is a regular eraser pattern
-		if (declaredValue == ERASER) {
+		if (ERASER.equals(declaredValue)) {
 			if (! expr.isWildcard()) {
 				throw new FormatException("Regular expression %s not allowed on an eraser edge", expr);
 			}
 		}
 		// check the expression is a regular creator pattern
-		if (inferredValue == CREATOR) {
-			if (! (expr.isWildcard() || expr.isEmpty())) {
+		if (CREATOR.equals(inferredValue)) {
+			if (! (expr.getWildcardId() != null || expr.isEmpty())) {
 				throw new FormatException("Regular expression %s not allowed on a creator edge", expr);
 			}
 		}

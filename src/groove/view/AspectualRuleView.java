@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.30 2007-11-09 13:01:09 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.31 2007-11-09 13:35:21 rensink Exp $
  */
 
 package groove.view;
@@ -83,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -561,10 +561,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 					if (!edgeEntry.getValue()) {
 						rootMap.putEdge(edgeImage, edgeImage);
 					} 
-				} else if (!RuleAspect.inRHS(edge) && !RegExprLabel.isNeg(edge.label())) {
-					throw new FormatException(
-							"Regular label '%s' may not be used on erasers",
-							edgeImage.label());
+//				} else if (!RuleAspect.inRHS(edge) && !RegExprLabel.isNeg(edge.label())) {
+//					throw new FormatException(
+//							"Regular label '%s' may not be used on erasers",
+//							edgeImage.label());
 				}
 			} 
 			if (RuleAspect.inRHS(edge) && !RuleAspect.isMerger(edge)) {
@@ -574,10 +574,10 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 				assert existential || RuleAspect.inLHS(edge);
 				if (RuleAspect.inLHS(edge)) {
 					ruleMorph.putEdge(edgeImage, rhsEdgeImage);
-				} else if (!hasConcreteImage(edgeImage.label())) {
-					throw new FormatException(
-							"Regular label '%s' may not be used on creators",
-							edgeImage.label());
+//				} else if (!hasConcreteImage(edgeImage.label())) {
+//					throw new FormatException(
+//							"Regular label '%s' may not be used on creators",
+//							edgeImage.label());
 				} else if (!edgeEntry.getValue()) {
 					coRootMap.putEdge(edgeImage, rhsEdgeImage);
 				}
@@ -617,9 +617,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     		}
     	}
     	AspectNode result = levelEdge == null ? null : levelEdge.opposite();
-    	if (result != null && !NestingAspect.isMetaElement(result)) {
-    		throw new FormatException("Nesting level edge %s does not have proper meta-node target", levelEdge);
-    	}
+//    	if (result != null && !NestingAspect.isMetaElement(result)) {
+//    		throw new FormatException("Nesting level edge %s does not have proper meta-node target", levelEdge);
+//    	}
     	return result;
     }
 
