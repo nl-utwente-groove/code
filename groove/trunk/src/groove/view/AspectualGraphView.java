@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGraphView.java,v 1.15 2007-11-09 13:01:09 rensink Exp $
+ * $Id: AspectualGraphView.java,v 1.16 2007-11-09 13:35:21 rensink Exp $
  */
 package groove.view;
 
@@ -28,6 +28,7 @@ import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ValueNode;
+import groove.rel.RegExprLabel;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -178,6 +179,9 @@ public class AspectualGraphView extends AspectualView<Graph> {
 							"Edge aspect value '%s' not allowed in graphs",
 							value);
 				}
+			}
+			if (viewEdge.label() instanceof RegExprLabel) {
+			    throw new FormatException("Regular expression label %s not allowed in graphs", viewEdge.label());
 			}
 			// include the edge in the model if it is not virtual
 			Node[] endImages = new Node[viewEdge.endCount()];
