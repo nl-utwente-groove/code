@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExpr.java,v 1.18 2007-11-09 13:01:14 rensink Exp $
+ * $Id: RegExpr.java,v 1.19 2007-11-12 10:24:38 rensink Exp $
  */
 package groove.rel;
 
@@ -30,6 +30,7 @@ import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -41,7 +42,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 abstract public class RegExpr { //implements VarSetSupport {
     /** 
@@ -367,7 +368,7 @@ abstract public class RegExpr { //implements VarSetSupport {
     }
 
     /**
-     * Returns the symbolc name for the type of expression in this class, as set in the
+     * Returns the symbolic name for the type of expression in this class, as set in the
      * constructor.
      */
     public String getSymbol() {
@@ -1296,7 +1297,7 @@ abstract public class RegExpr { //implements VarSetSupport {
             if (constraintParts.length == 0) {
                 throw new FormatException("Invalid constraint parameter '%s'", parameter);
             }
-            final Set<String> constrainedLabels = new HashSet<String>();
+            final Collection<String> constrainedLabels = new ArrayList<String>();
             for (String part: constraintParts) {
                 RegExpr atom;
                 try {
@@ -1341,14 +1342,15 @@ abstract public class RegExpr { //implements VarSetSupport {
         
         /** Constraint testing if a string is or is not in a set of strings. */
         private static class LabelConstraint extends Property<String> {
-            LabelConstraint(Set<String> constrainedLabels, boolean negated) {
-                this.constrainedLabels = constrainedLabels;
+            LabelConstraint(Collection<String> constrainedLabels, boolean negated) {
+                this.constrainedLabelSet = new HashSet<String>(constrainedLabels);
+                this.constrainedLabels = constrainedLabels.toArray(new String[0]);
                 this.negated = negated;
             }
             
             @Override
             public boolean isSatisfied(String value) {
-                return negated != constrainedLabels.contains(value);
+                return negated != constrainedLabelSet.contains(value);
             }
             
             @Override
@@ -1359,11 +1361,13 @@ abstract public class RegExpr { //implements VarSetSupport {
                 } else {
                     start = ""+CONSTRAINT_OPEN;
                 }
-                return Groove.toString(constrainedLabels.toArray(new String[0]), start, ""+CONSTRAINT_CLOSE, ""+CONSTRAINT_SEPARATOR);
+                return Groove.toString(constrainedLabels, start, ""+CONSTRAINT_CLOSE, ""+CONSTRAINT_SEPARATOR);
             }
 
             /** The set of strings to be tested for inclusion. */
-            private final Set<String> constrainedLabels;
+            private final Set<String> constrainedLabelSet;
+            /** The set of strings to be tested for inclusion, as an array for {@link #toString()}. */
+            private final String[] constrainedLabels;
             /** Flag indicating if we are testing for absence or presence. */
             private final boolean negated;
         }
