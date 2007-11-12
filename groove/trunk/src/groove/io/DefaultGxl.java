@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.18 2007-11-01 16:48:37 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.19 2007-11-12 09:34:50 rensink Exp $
  */
 package groove.io;
 
@@ -21,6 +21,7 @@ import groove.graph.AbstractLabel;
 import groove.graph.AbstractUnaryEdge;
 import groove.graph.BinaryEdge;
 import groove.graph.DefaultLabel;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.GraphFactory;
@@ -55,7 +56,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -223,8 +224,13 @@ public class DefaultGxl extends AbstractXml {
                 // get graph node from map or create it
                 Node node = nodeIds.get(nodeId);
                 if (node == null) {
+                    // attempt to construct a node from the GXL node ID
+                    node = createNode(nodeId);
                     // Add Node to Graph
-                    node = graph.addNode();
+                    if (node == null || !graph.addNode(node)) {
+                        // create a fresh node instead
+                        node = graph.addNode();
+                    }
                     // Add ID, groove.graph.Node pair to Map
                     nodeIds.put(nodeId, node);
                 }
@@ -279,6 +285,26 @@ public class DefaultGxl extends AbstractXml {
         GraphInfo.setName(graph, gxlGraph.getId());
         GraphInfo.setRole(graph, gxlGraph.getRole());
         return new Pair<Graph,Map<String,Node>>(graph, nodeIds);
+    }
+
+    /** 
+     * Creates a GROOVE node from a GXL node ID, attempting to retain any node number
+     * that appears as a suffix in the GXL node ID.
+     * @return A GROOVE node with the number in <code>nodeId</code>, or <code>null</code> if
+     * <code>nodeId</code> does not end on a number.
+     */
+    private Node createNode(String nodeId) {
+        // attempt to construct node number from gxl node
+        boolean digitFound = false;
+        int nodeNr = 0;
+        int unit = 1;
+        for (int charIx = nodeId.length() - 1; charIx >= 0
+                && Character.isDigit(nodeId.charAt(charIx)); charIx--) {
+            nodeNr += unit * (nodeId.charAt(charIx) - '0');
+            unit *= 10;
+            digitFound = true;
+        }
+        return digitFound ? DefaultNode.createNode(nodeNr) : null;
     }
 
     /**
