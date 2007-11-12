@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprLabel.java,v 1.11 2007-10-18 14:12:28 rensink Exp $
+ * $Id: RegExprLabel.java,v 1.12 2007-11-12 10:23:04 rensink Exp $
  */
 package groove.rel;
 
@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.11 $ $Date: 2007-10-18 14:12:28 $
+ * @version $Revision: 1.12 $ $Date: 2007-11-12 10:23:04 $
  */
 public class RegExprLabel extends AbstractLabel {
     /**
@@ -63,6 +63,21 @@ public class RegExprLabel extends AbstractLabel {
         }
         return automaton;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof RegExprLabel) {
+            return getRegExpr().equals(((RegExprLabel) obj).getRegExpr());
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public int hashCode() {
+        return getRegExpr().hashCode();
+    }
+
 
     /** The underlying regular expression. */
     private final RegExpr regExpr;
