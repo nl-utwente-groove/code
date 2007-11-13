@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.17 2007-11-09 13:17:05 rensink Exp $
+ * $Id: ExplorationTest.java,v 1.18 2007-11-13 14:23:26 kastenberg Exp $
  */
 
 package groove.test;
@@ -48,7 +48,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -262,7 +262,7 @@ public class ExplorationTest extends TestCase {
 	/**
      * Tests exploration of a given grammar, saving the GTS if required.
      * @param view the graph grammar to be tested
-     * @param strategyDescr description of the exploration strategy to be used, in the format of {@link Generator.ExploreOption} 
+     * @param strategyDescr description of the exploration strategy to be used, in the format of {@link groove.util.Generator.ExploreOption} 
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
@@ -320,7 +320,7 @@ public class ExplorationTest extends TestCase {
 	 *            the graph grammar to be tested
 	 * @param strategyDescr
 	 *            description of the exploration strategy to be used, in the
-	 *            format of {@link Generator.ExploreOption}
+	 *            format of {@link groove.util.Generator.ExploreOption}
 	 * @param nodeCount
 	 *            expected number of nodes; disregarded if < 0
 	 * @param edgeCount
@@ -356,7 +356,7 @@ public class ExplorationTest extends TestCase {
      * and using a given exploration strategy.
      * @param grammarName name of the rule system to be tested
      * @param startGraphName name of the start graph
-     * @param strategyDescr description of the exploration strategy to be used, in the format of {@link Generator.ExploreOption} 
+     * @param strategyDescr description of the exploration strategy to be used, in the format of {@link groove.util.Generator.ExploreOption} 
      * @param nodeCount expected number of nodes; disregarded if < 0
      * @param edgeCount expected number of edges; disregarded if < 0
      * @return the explored GTS

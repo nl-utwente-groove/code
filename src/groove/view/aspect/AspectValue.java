@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectValue.java,v 1.8 2007-11-09 13:00:43 rensink Exp $
+ * $Id: AspectValue.java,v 1.9 2007-11-13 14:18:21 kastenberg Exp $
  */
 package groove.view.aspect;
 
@@ -93,7 +93,7 @@ public class AspectValue {
      * Returns the prefix of the aspect value.
      * The prefix consists of the name followed by the separator.
      * @see #getName()
-     * @see #VALUE_SEPARATOR
+     * @see Aspect#VALUE_SEPARATOR
      */
     public String getPrefix() {
         return name + VALUE_SEPARATOR;
