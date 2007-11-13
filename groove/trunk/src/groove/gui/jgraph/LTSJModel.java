@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.21 2007-10-10 08:59:51 rensink Exp $
+ * $Id: LTSJModel.java,v 1.22 2007-11-13 14:16:22 kastenberg Exp $
  */
 package groove.gui.jgraph;
 
@@ -41,7 +41,7 @@ import org.jgraph.graph.AttributeMap;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -181,7 +181,7 @@ public class LTSJModel extends GraphJModel {
 	}
 
 	/**
-     * This implementation returns a {@link TransitionJEdge}.
+     * This implementation returns a {@link LTSJModel.TransitionJEdge}.
      */
     @Override
 	protected TransitionJEdge createJEdge(BinaryEdge edge) {
@@ -189,7 +189,7 @@ public class LTSJModel extends GraphJModel {
 	}
 
     /**
-     * This implementation returns a {@link StateJVertex}.
+     * This implementation returns a {@link LTSJModel.StateJVertex}.
      */
 	@Override
 	protected StateJVertex createJVertex(Node node) {
@@ -199,11 +199,11 @@ public class LTSJModel extends GraphJModel {
 	/** 
 	 * This implementation adds special attributes for the start state,
 	 * open states, final states, and the active state.
-	 * @see #LTS_NODE_ATTR
-	 * @see #LTS_START_NODE_ATTR
-	 * @see #LTS_OPEN_NODE_ATTR
-	 * @see #LTS_FINAL_NODE_ATTR
-	 * @see #LTS_NODE_ACTIVE_CHANGE
+	 * @see JAttr#LTS_NODE_ATTR
+	 * @see JAttr#LTS_START_NODE_ATTR
+	 * @see JAttr#LTS_OPEN_NODE_ATTR
+	 * @see JAttr#LTS_FINAL_NODE_ATTR
+	 * @see JAttr#LTS_NODE_ACTIVE_CHANGE
 	 */
 	@Override
 	protected AttributeMap createJVertexAttr(Node node) {
@@ -226,8 +226,8 @@ public class LTSJModel extends GraphJModel {
 
 	/**
 	 * This implementation adds special attributes for the active transition.
-	 * @see #LTS_EDGE_ATTR
-	 * @see #LTS_EDGE_ACTIVE_CHANGE
+	 * @see JAttr#LTS_EDGE_ATTR
+	 * @see JAttr#LTS_EDGE_ACTIVE_CHANGE
 	 */
 	@Override
     protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {

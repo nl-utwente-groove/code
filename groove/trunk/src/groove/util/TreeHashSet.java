@@ -28,7 +28,7 @@ import java.util.Set;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class TreeHashSet<T> extends AbstractSet<T> {
 	/**
@@ -875,7 +875,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
         return IDENTITY_EQUATOR;
     }
     
-    /** Returns the number of {@link MyListEntry} instances. */
+    /** Returns the number of {@link TreeHashSet.MyListEntry} instances. */
     static public int getMyListEntryCount() {
     	return MyListEntry.instanceCount;
     }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.13 2007-11-09 13:35:33 rensink Exp $
+ * $Id: RuleAspect.java,v 1.14 2007-11-13 14:21:42 kastenberg Exp $
  */
 package groove.view.aspect;
 
@@ -29,7 +29,7 @@ import groove.view.FormatException;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class RuleAspect extends AbstractAspect {
 
@@ -255,9 +255,9 @@ public class RuleAspect extends AbstractAspect {
 	}
 
 	/** 
-	 * Convenience method to retrieve the content of a {@link #RULE} aspect value
+	 * Convenience method to retrieve the content of a rule aspect value
 	 * of a given node.
-	 * @return the content of the {@link #RULE} aspect value of <code>node</code>,
+	 * @return the content of the rule aspect value of <code>node</code>,
 	 * or <code>null</code> if <code>node</code> does not have this aspect value. 
 	 */
 	public static Pair<NameLabel,Integer> getRuleContent(AspectNode node) {
@@ -337,7 +337,7 @@ public class RuleAspect extends AbstractAspect {
 		}
     }
 	
-	/** Type for the content of a {@link RuleAspect#RULE} aspect value. */
+	/** Type for the content of a rule aspect value. */
 	public static class RuleAspectValue extends ContentAspectValue<Pair<NameLabel,Integer>> {
 		/** Constructs a factory instance. */
 		public RuleAspectValue() throws FormatException {
