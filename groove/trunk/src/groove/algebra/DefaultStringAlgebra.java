@@ -13,12 +13,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultStringAlgebra.java,v 1.8 2007-07-21 20:07:43 rensink Exp $
+ * $Id: DefaultStringAlgebra.java,v 1.9 2007-11-19 12:19:32 rensink Exp $
  */
 package groove.algebra;
 
 import groove.util.ExprParser;
 import groove.util.Groove;
+import groove.view.FormatException;
 
 import java.util.List;
 /**
@@ -26,7 +27,7 @@ import java.util.List;
  * on strings.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.8 $ $Date: 2007-07-21 20:07:43 $
+ * @version $Revision: 1.9 $ $Date: 2007-11-19 12:19:32 $
  */
 public class DefaultStringAlgebra extends Algebra {	/**
 	 * Constructor.
@@ -37,12 +38,11 @@ public class DefaultStringAlgebra extends Algebra {	/**
 
 	@Override
 	public Constant getConstant(String text) {
-		String unquotedText = ExprParser.toUnquoted(text, ExprParser.DOUBLE_QUOTE_CHAR);
-		if (unquotedText == null) {
-			return null;
-		} else {
-			return new StringConstant(unquotedText);
-		}
+        try {
+            return new StringConstant(ExprParser.toUnquoted(text, ExprParser.DOUBLE_QUOTE_CHAR));
+        } catch (FormatException e) {
+            return null;
+        }
 	}
     
     @Override

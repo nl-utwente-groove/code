@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlJModel.java,v 1.6 2007-11-06 13:14:01 kastenberg Exp $
+ * $Id: ControlJModel.java,v 1.7 2007-11-19 12:18:46 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -373,7 +373,7 @@ public class ControlJModel extends GraphJModel {
 
 		@Override
 		public StringBuilder getLine(Edge edge) {
-			return Converter.toHtml(new StringBuilder(getListLabel(edge)));
+			return Converter.toHtml(new StringBuilder(getLabel(edge).text()));
 		}
 	}
 }

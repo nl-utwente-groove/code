@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectEdge.java,v 1.8 2007-10-18 14:57:42 rensink Exp $
+ * $Id: AspectEdge.java,v 1.9 2007-11-19 12:19:14 rensink Exp $
  */
 package groove.view.aspect;
 
 import groove.graph.AbstractBinaryEdge;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.view.FormatException;
@@ -26,10 +27,11 @@ import java.util.List;
 
 /**
  * Edge enriched with aspect data.
+ * Aspect edge labels are interpreted as {@link DefaultLabel}s.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
-public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode> implements AspectElement {
+public class AspectEdge extends AbstractBinaryEdge<AspectNode,DefaultLabel,AspectNode> implements AspectElement {
 	/**
 	 * Constructs a new edge from an array of end nodes, a label,
 	 * and a collection of aspect values.
@@ -38,7 +40,7 @@ public class AspectEdge extends AbstractBinaryEdge<AspectNode,Label,AspectNode> 
 	 * @param values the aspect values for the new edge
 	 * @throws FormatException
 	 */
-	public AspectEdge(List<AspectNode> ends, Label label, AspectValue... values) throws FormatException {
+	public AspectEdge(List<AspectNode> ends, DefaultLabel label, AspectValue... values) throws FormatException {
 		super(ends.get(SOURCE_INDEX), label, ends.get(TARGET_INDEX));
 		this.parseData = createParseData(label, values);
 		testLabel();

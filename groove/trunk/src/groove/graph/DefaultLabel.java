@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultLabel.java,v 1.12 2007-11-09 13:01:19 rensink Exp $
+ * $Id: DefaultLabel.java,v 1.13 2007-11-19 12:19:10 rensink Exp $
  */
 package groove.graph;
 
@@ -26,7 +26,7 @@ import java.util.Map;
  * Provides a standard implementation of the Label interface.
  * An instance contains just an index into a global list.
  * @author Arend Rensink
- * @version $Revision: 1.12 $ 
+ * @version $Revision: 1.13 $ 
  */
 public final class DefaultLabel extends AbstractLabel {
     /**
@@ -63,7 +63,7 @@ public final class DefaultLabel extends AbstractLabel {
      */
     @Override
     public boolean equals(Object obj) {
-        return (obj instanceof DefaultLabel && ((DefaultLabel) obj).index == index) || super.equals(obj);
+        return (obj instanceof DefaultLabel && ((DefaultLabel) obj).index == index); // || super.equals(obj);
     }
 
     /**

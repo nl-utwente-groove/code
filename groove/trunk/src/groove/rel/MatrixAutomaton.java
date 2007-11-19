@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MatrixAutomaton.java,v 1.10 2007-11-02 08:42:35 rensink Exp $
+ * $Id: MatrixAutomaton.java,v 1.11 2007-11-19 12:19:26 rensink Exp $
  */
 package groove.rel;
 
@@ -932,7 +932,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                         Label edgeLabel = getLabel(keyEdgeIndex);
                         boolean labelOk = true;
                         if (RegExprLabel.isWildcard(edgeLabel)) {
-                            Property<String> constraint = RegExprLabel.getWildcardConstraint(edgeLabel);
+                            Property<String> constraint = RegExprLabel.getWildcardGuard(edgeLabel);
                             if (constraint != null) {
                             	labelOk = constraint.isSatisfied(label.text());
                             }

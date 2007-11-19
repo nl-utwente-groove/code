@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.19 2007-11-12 09:34:50 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.20 2007-11-19 12:19:16 rensink Exp $
  */
 package groove.io;
 
@@ -33,6 +33,7 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.util.Version;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -42,6 +43,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
 import java.io.Writer;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
@@ -56,7 +58,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -94,6 +96,7 @@ public class DefaultGxl extends AbstractXml {
 			} else if (Groove.isStateFile(file)) {
 				GraphInfo.setGraphRole(attrGraph);
 			}
+			GraphInfo.setVersion(attrGraph, Version.GXL_VERSION);
 			groove.gxl.Graph gxlGraph = attrToGxlGraph(attrGraph);
 			// now marshal the attribute graph
 			marshalGxlGraph(gxlGraph, file);
@@ -125,6 +128,9 @@ public class DefaultGxl extends AbstractXml {
 			GraphInfo.setRuleRole(result);
 		} else if (Groove.isStateFile(file)) {
 			GraphInfo.setGraphRole(result);
+		}
+		if (!Version.isKnownGxlVersion(GraphInfo.getVersion(result))) {
+		    GraphInfo.addErrors(result, Arrays.asList(new String[] { String.format("GXL file format version '%s' is higher than supported version '%s'", GraphInfo.getVersion(result), Version.GXL_VERSION) }));
 		}
 		return new Pair<Graph,Map<String,Node>>(result, conversion);
 	}
@@ -181,20 +187,42 @@ public class DefaultGxl extends AbstractXml {
             gxlGraphTypeItem.setEdge(gxlEdge);
             gxlGraph.addGraphTypeItem(gxlGraphTypeItem);
         }
-        // add the graph attributes
-        GraphProperties properties = GraphInfo.getProperties(graph, false);
-        if (properties != null) {
-			for (Map.Entry<Object, Object> entry : properties.entrySet()) {
-				String attrName = ((String) entry.getKey()).toLowerCase();
-				String value = (String) entry.getValue();
-				groove.gxl.Value gxlValue = new groove.gxl.Value();
-				gxlValue.setString(value);
-				groove.gxl.Attr gxlLabelAttr = new groove.gxl.Attr();
-				gxlLabelAttr.setName(attrName);
-				gxlLabelAttr.setValue(gxlValue);
-				gxlGraph.addAttr(gxlLabelAttr);
-			}
-		}
+        // add the graph info
+        GraphInfo info = GraphInfo.getInfo(graph, false);
+        if (info != null) {
+            if (info.hasName()) {
+                gxlGraph.setId(info.getName());
+            }
+            if (info.hasRole()) {
+                gxlGraph.setRole(info.getRole());
+            }
+//            for (Map.Entry<String,Object> infoEntry: info.getData().entrySet()) {
+//                if (!GraphInfo.KNOWN_KEYS.contains(infoEntry.getKey())) {
+//                    String attrName = GraphInfo.INFO_KEY_START + infoEntry.getKey();
+//                    String value = (String) infoEntry.getValue();
+//                    groove.gxl.Value gxlValue = new groove.gxl.Value();
+//                    gxlValue.setString(value);
+//                    groove.gxl.Attr gxlLabelAttr = new groove.gxl.Attr();
+//                    gxlLabelAttr.setName(attrName);
+//                    gxlLabelAttr.setValue(gxlValue);
+//                    gxlGraph.addAttr(gxlLabelAttr);
+//                }
+//            }
+            // add the graph attributes, if any
+            GraphProperties properties = info.getProperties(false);
+            if (properties != null) {
+                for (Map.Entry<Object, Object> entry : properties.entrySet()) {
+                    String attrName = ((String) entry.getKey()).toLowerCase();
+                    String value = (String) entry.getValue();
+                    groove.gxl.Value gxlValue = new groove.gxl.Value();
+                    gxlValue.setString(value);
+                    groove.gxl.Attr gxlLabelAttr = new groove.gxl.Attr();
+                    gxlLabelAttr.setName(attrName);
+                    gxlLabelAttr.setValue(gxlValue);
+                    gxlGraph.addAttr(gxlLabelAttr);
+                }
+            }
+        }
         return gxlGraph;
     }
 
@@ -264,20 +292,18 @@ public class DefaultGxl extends AbstractXml {
         while (attrEnum.hasMoreElements()) {
             groove.gxl.Attr attr = (groove.gxl.Attr) attrEnum.nextElement();
             String attrName = attr.getName().toLowerCase();
-//            if (isKnownPropertyKey(attrName)) {
-            	groove.gxl.Value attrValue = attr.getValue();
-            	Object dataValue;
-            	if (attrValue.hasBool()) {
-            		dataValue = attrValue.getBool();
-            	} else if (attrValue.hasInt()) {
-            		dataValue = attrValue.getInt();
-            	} else if (attrValue.hasFloat()) {
-            		dataValue = attrValue.getFloat();
-            	} else {
-            		dataValue = attrValue.getString();
-            	}
-            	properties.setProperty(attrName, dataValue.toString());
-//            }
+            groove.gxl.Value attrValue = attr.getValue();
+            Object dataValue;
+            if (attrValue.hasBool()) {
+                dataValue = attrValue.getBool();
+            } else if (attrValue.hasInt()) {
+                dataValue = attrValue.getInt();
+            } else if (attrValue.hasFloat()) {
+                dataValue = attrValue.getFloat();
+            } else {
+                dataValue = attrValue.getString();
+            }
+            properties.setProperty(attrName, dataValue.toString());
         }
         if (!properties.isEmpty()) {
         	GraphInfo.setProperties(graph, properties);
@@ -323,7 +349,7 @@ public class DefaultGxl extends AbstractXml {
             labelAttr.put(LABEL_ATTR_NAME, edge.label().text());
             attrGraph.addEdge(createEdge(edge.ends(), labelAttr));
         }
-        transferGraphProperties(graph, attrGraph);
+        transferGraphInfo(graph, attrGraph);
         attrGraph.setFixed();
         return attrGraph;
     }
@@ -341,9 +367,14 @@ public class DefaultGxl extends AbstractXml {
         // Take the label value of the attribute labels
         for (Edge edge: attrGraph.edgeSet()) {
             Map<String,String> attributes = ((AttributeLabel) edge.label()).getAttributes();
-            graph.addEdge(edge.ends(), DefaultLabel.createLabel(attributes.get(LABEL_ATTR_NAME)));
+            String labelText = attributes.get(LABEL_ATTR_NAME).trim();
+            if (labelText.length() == 0) {
+                GraphInfo.addErrors(graph, Arrays.asList("Empty label in graph"));
+            } else {
+                graph.addEdge(edge.ends(), DefaultLabel.createLabel(labelText));
+            }
         }
-        transferGraphProperties(attrGraph, graph);
+        transferGraphInfo(attrGraph, graph);
         return graph;
     }
 
@@ -353,8 +384,11 @@ public class DefaultGxl extends AbstractXml {
 	 * @param source the source graph
 	 * @param target the target graph
 	 */
-	private void transferGraphProperties(GraphShape source, Graph target) {
-		GraphInfo.setProperties(target, GraphInfo.getProperties(source, false));
+	private void transferGraphInfo(GraphShape source, Graph target) {
+	    GraphInfo info = GraphInfo.getInfo(source, false);
+	    if (info != null) {
+	        GraphInfo.getInfo(target, true).load(info);
+	    }
 	}
 
 	/**

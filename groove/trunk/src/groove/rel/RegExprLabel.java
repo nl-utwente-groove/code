@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprLabel.java,v 1.12 2007-11-12 10:23:04 rensink Exp $
+ * $Id: RegExprLabel.java,v 1.13 2007-11-19 12:19:26 rensink Exp $
  */
 package groove.rel;
 
@@ -25,7 +25,7 @@ import java.util.List;
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-11-12 10:23:04 $
+ * @version $Revision: 1.13 $ $Date: 2007-11-19 12:19:26 $
  */
 public class RegExprLabel extends AbstractLabel {
     /**
@@ -137,12 +137,9 @@ public class RegExprLabel extends AbstractLabel {
      * returns the constraint of the wildcard, if any.
      * Returns <code>null</code> in all other cases.
      */
-    public static Property<String> getWildcardConstraint(Label label) {
+    public static Property<String> getWildcardGuard(Label label) {
         if (label instanceof RegExprLabel) {
-            RegExpr expr = ((RegExprLabel) label).getRegExpr();
-            if (expr instanceof RegExpr.Wildcard) {
-                return ((RegExpr.Wildcard) expr).getConstraint();
-            }
+            return ((RegExprLabel) label).getRegExpr().getWildcardGuard();
         }
         return null;
     }

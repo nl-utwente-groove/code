@@ -1,4 +1,4 @@
-/* $Id: AspectGxl.java,v 1.3 2007-05-14 18:52:03 rensink Exp $ */
+/* $Id: AspectGxl.java,v 1.4 2007-11-19 12:19:16 rensink Exp $ */
 package groove.io;
 
 import groove.graph.Graph;
@@ -39,9 +39,9 @@ public class AspectGxl implements Xml<AspectGraph> {
 	 * @see AspectGraph#fromPlainGraph(GraphShape)
 	 */
 	public AspectGraph unmarshalGraph(File file) throws IOException {
-		return AspectGraph.getFactory().fromPlainGraph(marshaller.unmarshalGraph(file));
+	    Graph plainGraph = marshaller.unmarshalGraph(file);
+		return AspectGraph.getFactory().fromPlainGraph(plainGraph);
 	}
-	
 	
 	/** Calls {@link #deleteGraph(File)} on the internal marshaller. */
 	public void deleteGraph(File file) {

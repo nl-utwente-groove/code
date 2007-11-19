@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualGraphView.java,v 1.16 2007-11-09 13:35:21 rensink Exp $
+ * $Id: AspectualGraphView.java,v 1.17 2007-11-19 12:19:18 rensink Exp $
  */
 package groove.view;
 
@@ -28,7 +28,6 @@ import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ValueNode;
-import groove.rel.RegExprLabel;
 import groove.util.Pair;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
@@ -124,7 +123,12 @@ public class AspectualGraphView extends AspectualView<Graph> {
 		return viewToModelMap;
 	}
 	
-	/**
+	@Override
+    protected LabelParser getDefaultLabelParser() {
+        return FreeLabelParser.getInstance();
+    }
+
+    /**
 	 * Computes a fresh model from a given aspect graph,
 	 * together with a mapping from the aspect graph's node to the
 	 * (fresh) graph nodes. 
@@ -180,9 +184,6 @@ public class AspectualGraphView extends AspectualView<Graph> {
 							value);
 				}
 			}
-			if (viewEdge.label() instanceof RegExprLabel) {
-			    throw new FormatException("Regular expression label %s not allowed in graphs", viewEdge.label());
-			}
 			// include the edge in the model if it is not virtual
 			Node[] endImages = new Node[viewEdge.endCount()];
 			for (int i = 0; edgeInModel && i < endImages.length; i++) {
@@ -195,7 +196,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 					Edge edgeImage = AttributeAspect.createAttributeEdge(viewEdge,
 							endImages);
 					if (edgeImage == null) {
-						edgeImage = model.addEdge(endImages, viewEdge.label());
+						edgeImage = model.addEdge(endImages, parse(viewEdge));
 					} else if (!isAllowedEdge(edgeImage)) {
 						throw new FormatException(
 								"Edge aspect value '%s' not allowed in graphs",
@@ -237,7 +238,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 	}
 
 	/**
-	 * Tests if a certain attribute node is of the type allowed in graphs.
+	 * Tests if a certain attribute edge is of the type allowed in graphs.
 	 */
 	private boolean isAllowedEdge(Edge edge) {
 		return edge instanceof ProductEdge && ((ProductEdge) edge).getOperation() instanceof Constant;
@@ -293,7 +294,7 @@ public class AspectualGraphView extends AspectualView<Graph> {
 				for (int i = 0; i < edge.endCount(); i++) {
 					endImages.add(modelToViewMap.get(edge.end(i)));
 				}
-				AspectEdge edgeImage = new AspectEdge(endImages, edge.label(), AttributeAspect.getAttributeValueFor(edge));
+				AspectEdge edgeImage = new AspectEdge(endImages, unparse(edge), AttributeAspect.getAttributeValueFor(edge));
 				view.addEdge(edgeImage);
 				// update the model-to-view element map
 				elementMap.edgeMap().put(edge, edgeImage);

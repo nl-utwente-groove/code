@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FreeLabelParser.java,v 1.1 2007-11-09 13:01:09 rensink Exp $
+ * $Id: FreeLabelParser.java,v 1.2 2007-11-19 12:19:18 rensink Exp $
  */
 package groove.view;
 
@@ -24,48 +24,56 @@ import groove.graph.Label;
  * without (un)quoting or (un)escaping.
  */
 public class FreeLabelParser implements LabelParser {
+    /** Empty constructor with limited visibility, for creating the singleton instance. */
+    protected FreeLabelParser() {
+        // Empty
+    }
+    
     /** 
-     * Calls {@link #testFormat(String)} to test the string for correctness.
+     * Calls {@link #isCorrect(String)} to test the string for correctness.
      * If this succeeds, returns a {@link DefaultLabel} with <code>text</code> as label text.
+     * If it fails, throws an exception determined by {@link #getExceptionText(String)}.
+     * @throws FormatException if <code>text</code> is not correctly
+     * formatted. The message of the exception should make clear what the
+     * mismatch is.
      */ 
-	public Label parse(String text) throws FormatException {
-//        StreamTokenizer tokenizer = new StreamTokenizer(new StringReader(QUOTE_CHAR+text));
-//        tokenizer.quoteChar(QUOTE_CHAR);
-//        try {
-//            tokenizer.nextToken();
-//        } catch (IOException exc) {
-//            assert false;
-//        }
-//        String unquoted = ExprParser.toUnquoted(text, ExprParser.SINGLE_QUOTE_CHAR);
-//        if (unquoted != null) {
-//            text = unquoted;
-//        }
-		testFormat(text);
-		return DefaultLabel.createLabel(text);
+	final public Label parse(DefaultLabel label) throws FormatException {
+		if (! isCorrect(label.text())) {
+		    throw new FormatException(getExceptionText(label.text()));
+		}
+		return label;
 	}
 
 	/** 
-	 * Callback method to test if a given text adheres to the formatting
+	 * Callback method to test if a given label text adheres to the formatting
 	 * standards of this class.
 	 * To be overridden by subclasses; this implementation is empty.
 	 * @param text the string to be tested
-	 * @throws FormatException if <code>text</code> is not correctly
-	 * formatted. The message of the exception should make clear what the
-	 * mismatch is.
+	 * @return <code>true</code> if the label text is correct.
 	 */
-	protected void testFormat(String text) throws FormatException {
-		// empty
+	protected boolean isCorrect(String text) {
+		return true;
+	}
+	
+	/** Returns the text of the exception to be thrown in case the label format is incorrect. */
+	protected String getExceptionText(String text) {
+	    return String.format("Incorrectly formatted label %s", text);
 	}
 
-    /** This implementation just returns the label text. */
-    public String unparse(Label label) {
-        String result = label.text();
-//        if (!RegExpr.isAtom(result)) {
-//            result = RegExpr.atom(result).toString();
-//        }
-        return result;
+    /** This implementation returns a default label for the label text. */
+    final public DefaultLabel unparse(Label label) {
+        String text = label.text();
+        assert isCorrect(text);
+        return DefaultLabel.createLabel(text);
     }
-//
-//    /** Dummy quote character for parsing the string. */
-//    static private final char QUOTE_CHAR = '\u0000';
+
+    /**
+     * Returns the singleton instance of this class.
+     */
+    public static FreeLabelParser getInstance() {
+        return instance;
+    }
+    
+    /** Singleton instance of this class. */
+    static private final FreeLabelParser instance = new FreeLabelParser();
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.31 2007-11-09 13:35:21 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.32 2007-11-19 12:19:18 rensink Exp $
  */
 
 package groove.view;
@@ -83,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -170,8 +170,11 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	        AspectEdge edge = (AspectEdge) edgeIter.next();
 	        if (getRuleValue(edge) == role) {
 	            try {
-                    RegExpr expr = RegExpr.parse(edge.label().text());
-                    result.addAll(bound ? expr.boundVarSet() : expr.allVarSet());
+	                Label varLabel = getDefaultLabelParser().parse(edge.label());
+	                if (varLabel instanceof RegExprLabel) {
+	                    RegExpr expr = ((RegExprLabel) varLabel).getRegExpr();
+	                    result.addAll(bound ? expr.boundVarSet() : expr.allVarSet());
+	                }
                 } catch (FormatException e) {
                     // not a regular expression; do nothing
                 }
@@ -280,6 +283,11 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	protected final SystemProperties getProperties() {
 		return this.properties;
 	}
+
+    @Override
+    protected LabelParser getDefaultLabelParser() {
+        return RegExprLabelParser.getInstance();
+    }
 
 	/**
 	 * Invalidates any previous construction of the underlying rule.
@@ -754,7 +762,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     	}
     	// compute the label; either a DefaultLabel or a RegExprLabel
     	if (getAttributeValue(edge) == null) {
-    		return createEdge(ends, edge.label());//createRuleLabel(edge.label()));
+    		return createEdge(ends, parse(edge));//createRuleLabel(edge.label()));
     	} else {
     		return AttributeAspect.createAttributeEdge(edge, ends);
     	}
@@ -956,7 +964,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			AspectValue edgeRole = rule.getMorphism().containsKey(lhsEdge) ? READER
 					: ERASER;
 			AspectEdge edgeImage = computeAspectEdge(images(lhsNodeMap,
-					lhsEdge.ends()), lhsEdge.label(), edgeRole, lhsEdge);
+					lhsEdge.ends()), unparse(lhsEdge), edgeRole, lhsEdge);
 			result.addEdge(edgeImage);
 			viewToRuleMap.putEdge(edgeImage, lhsEdge);
 		}
@@ -973,7 +981,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 					// yes, it's a merger
 					List<AspectNode> ends = Arrays.asList(new AspectNode[] {
 							lhsNodeMap.get(lhsNode), rhsNodeMap.get(rhsNode) });
-					result.addEdge(computeAspectEdge(ends, MERGE_LABEL, CREATOR, null));
+					result.addEdge(computeAspectEdge(ends, unparse(MERGE_LABEL), CREATOR, null));
 				} else {
 					// no, it's a "fresh" reader node
 					rhsNodeMap.put(rhsNode, lhsNodeMap.get(lhsNode));
@@ -995,7 +1003,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			if (!rule.getMorphism().containsValue(rhsEdge)) {
 				List<AspectNode> endImages = images(rhsNodeMap, rhsEdge.ends());
 				Edge edgeImage = (computeAspectEdge(endImages,
-						rhsEdge.label(),
+						unparse(rhsEdge),
 						CREATOR, rhsEdge));
 				result.addEdge(edgeImage);
 				viewToRuleMap.putEdge(edgeImage, rhsEdge);
@@ -1006,7 +1014,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			NodeEdgeMap nacMorphism = nac.getRootMap();
 			if (nac instanceof MergeEmbargo) {
 				result.addEdge(computeAspectEdge(images(lhsNodeMap,
-						((MergeEmbargo) nac).getNodes()), MERGE_LABEL, EMBARGO, null));
+						((MergeEmbargo) nac).getNodes()), unparse(MERGE_LABEL), EMBARGO, null));
 			} else {
 				// NOTE: we're assuming the NAC is injective and connected,
 				// otherwise no rule graph can be given
@@ -1037,7 +1045,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 				for (Edge nacEdge : nacEdgeSet) {
 					List<AspectNode> endImages = images(nacNodeMap, nacEdge.ends());
 					AspectEdge nacEdgeImage = computeAspectEdge(endImages,
-							nacEdge.label(),
+							unparse(nacEdge),
 							EMBARGO, nacEdge);
 					result.addEdge(nacEdgeImage);
 					viewToRuleMap.putEdge(nacEdgeImage, nacEdge);
@@ -1099,7 +1107,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
      * Used to determine the attribute aspect value of the result; may be <code>null</code>
 	 * @return the fresh rule-edge
 	 */
-    protected AspectEdge computeAspectEdge(List<AspectNode> ends, Label label, AspectValue role, Edge edge) {
+    protected AspectEdge computeAspectEdge(List<AspectNode> ends, DefaultLabel label, AspectValue role, Edge edge) {
     	AspectValue attributeValue = edge == null ? null : AttributeAspect.getAttributeValueFor(edge); 
     	try {
     		if (attributeValue == null) {
@@ -1274,8 +1282,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
             System.out.println(newRuleGraph.getAspectGraph());
         }
     }
+	
 	/** Label for merges (merger edges and merge embargoes) */
-    static public final Label MERGE_LABEL = RegExpr.empty().toLabel();
+    static public final RegExprLabel MERGE_LABEL = RegExpr.empty().toLabel();
     /** Isomorphism checker (used for testing purposes). */
     static private final IsoChecker isoChecker = DefaultIsoChecker.getInstance();
     /** Graph factory used for building a graph view of this rule graph.*/

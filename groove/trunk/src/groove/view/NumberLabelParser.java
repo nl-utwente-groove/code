@@ -12,34 +12,49 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NumberLabelParser.java,v 1.1 2007-10-26 07:07:18 rensink Exp $
+ * $Id: NumberLabelParser.java,v 1.2 2007-11-19 12:19:18 rensink Exp $
  */
 package groove.view;
 
-import groove.graph.DefaultLabel;
-import groove.graph.Label;
 
 /** 
  * Parser that turns a string into a default label,
  * after testing the string for correct formatting using a 
  * callback method that can be overridden by subclasses. 
  */
-public class NumberLabelParser implements LabelParser {
-	public Label parse(String text) throws FormatException {
-		int nr;
-		try {
-			nr = Integer.parseInt(text);
-		} catch (NumberFormatException exc) {
-			throw new FormatException("String '%s' cannot be parsed as a number");
-		}
-		if (nr < 0) {
-			throw new FormatException("String '%s' is a negative number");
-		}
-		return DefaultLabel.createLabel(text);
-	}
-
-    /** This implementation just takes the label text. */
-    public String unparse(Label label) {
-        return label.text();
+public class NumberLabelParser extends FreeLabelParser {
+    /** Empty constructor for the singleton instance. */
+    private NumberLabelParser() {
+        // Empty
     }
+    
+    @Override
+    protected String getExceptionText(String text) {
+        try {
+            Integer.parseInt(text);
+            // if this succeeds, the problem was a negative number
+            return String.format("String '%s' is a negative number", text);
+        } catch (NumberFormatException exc) {
+            return String.format("String '%s' cannot be parsed as a number", text);
+        }
+    }
+
+    @Override
+    protected boolean isCorrect(String text) {
+        try {
+            return Integer.parseInt(text) >= 0;
+        } catch (NumberFormatException exc) {
+            return false;
+        }
+    }
+
+    /**
+     * Returns the singleton instance of this class.
+     */
+    public static NumberLabelParser getInstance() {
+        return instance;
+    }
+
+    /** The singleton instance of this parser. */
+    private static final NumberLabelParser instance = new NumberLabelParser();
 }

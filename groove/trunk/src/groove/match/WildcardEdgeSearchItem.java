@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WildcardEdgeSearchItem.java,v 1.11 2007-11-09 13:17:07 rensink Exp $
+ * $Id: WildcardEdgeSearchItem.java,v 1.12 2007-11-19 12:19:28 rensink Exp $
  */
 package groove.match;
 
@@ -37,7 +37,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
 	 */
 	public WildcardEdgeSearchItem(BinaryEdge edge) {
 		super(edge);
-		this.labelConstraint = RegExprLabel.getWildcardConstraint(edge.label());
+		this.labelConstraint = RegExprLabel.getWildcardGuard(edge.label());
 		assert RegExprLabel.isWildcard(edge.label()) && RegExprLabel.getWildcardId(edge.label()) == null: String.format("Edge %s is not a true wildcard edge", edge);
 		assert edge.endCount() <= BinaryEdge.END_COUNT : String.format("Search item undefined for hyperedge", edge);
 	}

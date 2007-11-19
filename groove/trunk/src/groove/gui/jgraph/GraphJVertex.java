@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.22 2007-11-09 13:01:11 rensink Exp $
+ * $Id: GraphJVertex.java,v 1.23 2007-11-19 12:18:47 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -124,12 +124,12 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     		}
     	}
     	for (Edge edge: getSelfEdges()) {
-    		if (! jModel.isFiltering(getListLabel(edge))) {
+    		if (! jModel.isFiltering(getLabel(edge).text())) {
     			result.add(getLine(edge));
     		}
     	}
     	for (Edge edge: getDataEdges()) {
-    		if (! jModel.isFiltering(getListLabel(edge))) {
+    		if (! jModel.isFiltering(getLabel(edge).text())) {
     			result.add(getLine(edge));
     		}
     	}
@@ -145,7 +145,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 	 */
 	public StringBuilder getLine(Edge edge) {
 		StringBuilder result = new StringBuilder();
-		result.append(getListLabel(edge));
+		result.append(getLabel(edge));
 		if (edge.opposite() != getNode()) {
 			GraphJVertex oppositeVertex = jModel.getJVertex(edge.opposite());
 			result.append(ASSIGN_TEXT);
@@ -165,10 +165,10 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 			result.add(getValueSymbol());
     	}
 		for (Edge edge : getSelfEdges()) {
-			result.add(getListLabel(edge));
+			result.add(getLabel(edge).text());
 		}
 		for (Edge edge : getDataEdges()) {
-			result.add(getListLabel(edge));
+			result.add(getLabel(edge).text());
 		}
 		if (result.isEmpty()) {
 			result.add(NO_LABEL);
@@ -180,8 +180,9 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 	 * Returns the label of the edge as to be displayed in the label list.
 	 * Callback method from {@link #getListLabels()}.
 	 */
+	@Deprecated
 	public String getListLabel(Edge edge) {
-		return getLabelParser().unparse(getLabel(edge));
+		return getLabelParser().unparse(getLabel(edge)).text();
 	}
 	
     /**
@@ -207,18 +208,17 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     }
     
     /**
-     * This implementation calls {@link LabelParser#unparse(Label)} on the 
-     * parser returned by {@link #getLabelParser()}, with the label returned by
-     * {@link #getLabel(Edge)}.
+     * This implementation returns <code>edge.label().text()</code>
      */
     public String getPlainLabel(Edge edge) {
-        return getLabelParser().unparse(getLabel(edge));
+        return edge.label().text();
     }
     
     /** 
      * Returns a label parser for this jnode.
      * The label parser is used to obtain the plain labels. 
      */
+    @Deprecated
     public LabelParser getLabelParser() {
         if (labelParser == null) {
             labelParser = createLabelParser();
@@ -228,7 +228,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     
     /** Callback factory method to create a label parser for this jnode. */
     LabelParser createLabelParser() {
-        return new RegExprLabelParser();
+        return RegExprLabelParser.getInstance();
     }
 
 	/**

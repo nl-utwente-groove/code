@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.14 2007-11-13 14:21:42 kastenberg Exp $
+ * $Id: RuleAspect.java,v 1.15 2007-11-19 12:19:13 rensink Exp $
  */
 package groove.view.aspect;
 
+import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
@@ -24,12 +25,15 @@ import groove.trans.RuleNameLabel;
 import groove.util.Groove;
 import groove.util.Pair;
 import groove.view.FormatException;
+import groove.view.FreeLabelParser;
+import groove.view.LabelParser;
+import groove.view.RegExprLabelParser;
 
 /**
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class RuleAspect extends AbstractAspect {
 
@@ -225,7 +229,7 @@ public class RuleAspect extends AbstractAspect {
 	 */
 	public static boolean isMerger(AspectEdge edge) throws FormatException {
 		if (isCreator(edge)) {
-			return RegExpr.parse(edge.label().text()).isEmpty();
+			return RegExprLabel.isEmpty(CREATOR.getLabelParser().parse(edge.label()));
 		} else {
 			return false;
 		}
@@ -315,7 +319,11 @@ public class RuleAspect extends AbstractAspect {
 			EMBARGO = instance.addValue(EMBARGO_NAME);
 			READER = instance.addValue(READER_NAME);
 			REMARK = instance.addValue(REMARK_NAME);
-			REMARK.setLabelParser(getFreeLabelParser());
+			ERASER.setLabelParser(EraserParser.getInstance());
+			CREATOR.setLabelParser(CreatorParser.getInstance());
+            EMBARGO.setLabelParser(RegExprLabelParser.getInstance());
+            READER.setLabelParser(RegExprLabelParser.getInstance());
+            REMARK.setLabelParser(FreeLabelParser.getInstance());
 //			instance.addNodeValue(REMARK);
 //			instance.addEdgeValue(REMARK);
 //			RULE = null; //new RuleAspectValue(); // currently not added to values!
@@ -426,4 +434,102 @@ public class RuleAspect extends AbstractAspect {
 			return new RuleNameLabel(text);
 		}
 	}
+    
+    /** 
+     * Label parser for eraser edges.
+     * Recognises atoms and wildcards.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    static private class EraserParser implements LabelParser {
+        /** Empty constructor to ensure a singleton class. */
+        private EraserParser() {
+            // empty
+        }
+        
+        /** 
+         * This implementation tries to parse the label text as a regular expression,
+         * but throws an exception if the result is anything other than a wildcard or an atom.
+         */
+        public Label parse(DefaultLabel label) throws FormatException {
+            Label result = preParser.parse(label);
+            if (!(result instanceof DefaultLabel || RegExprLabel.isWildcard(result))) {
+                throw new FormatException("Eraser label %s should be wildcard or atom", label);
+            }
+            return result;
+        }
+
+        /** This implementation returns a default label based on the label text. */
+        public DefaultLabel unparse(Label label) {
+            if (label instanceof DefaultLabel) {
+                return (DefaultLabel) label;
+            } else {
+                return DefaultLabel.createLabel(label.text());
+            }
+        }
+        
+        /** The parser used to decompose the label, after which a selection follows. */
+        private final LabelParser preParser = RegExprLabelParser.getInstance();
+        
+        /** Returns the singleton instance of this class. */
+        static public EraserParser getInstance() {
+            return instance;
+        }
+        
+        /** Singleton instance of this class. */
+        static private EraserParser instance = new EraserParser();
+    }
+    
+    /** 
+     * Label parser for creator edges.
+     * Recognises atoms, named unguarded wildcards, and mergers.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    static private class CreatorParser implements LabelParser {
+        /** Empty constructor to ensure a singleton class. */
+        private CreatorParser() {
+            // empty
+        }
+        
+        /** 
+         * This implementation tries to parse the label text as a regular expression,
+         * but throws an exception if the result is anything other than an unguarded named wildcard,
+         * a merger, or an atom.
+         */
+        public Label parse(DefaultLabel label) throws FormatException {
+            Label result = preParser.parse(label);
+            boolean allowed;
+            if (result instanceof DefaultLabel) {
+                allowed = true;
+            } else {
+                RegExpr expr = ((RegExprLabel) result).getRegExpr();
+                allowed = expr.getWildcardId() != null && expr.getWildcardGuard() == null || expr.isEmpty();
+            }
+            if (!allowed) {
+                throw new FormatException("Creator label %s should be named unguarded wildcard, merger or atom", label);
+            }
+            return result;
+        }
+
+        /** This implementation returns a default label based on the label text. */
+        public DefaultLabel unparse(Label label) {
+            if (label instanceof DefaultLabel) {
+                return (DefaultLabel) label;
+            } else {
+                return DefaultLabel.createLabel(label.text());
+            }
+        }
+        
+        /** The parser used to decompose the label, after which a selection follows. */
+        private final LabelParser preParser = RegExprLabelParser.getInstance();
+        
+        /** Returns the singleton instance of this class. */
+        static public CreatorParser getInstance() {
+            return instance;
+        }
+        
+        /** Singleton instance of this class. */
+        static private CreatorParser instance = new CreatorParser();
+    }
 }
