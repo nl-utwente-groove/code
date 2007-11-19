@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PropertiesDialog.java,v 1.9 2007-10-14 11:18:08 rensink Exp $
+ * $Id: PropertiesDialog.java,v 1.10 2007-11-19 12:19:24 rensink Exp $
  */
 package groove.gui;
 
 import groove.calc.Property;
+import groove.graph.GraphProperties;
 import groove.util.ListComparator;
 
 import java.awt.Component;
@@ -63,15 +64,21 @@ public class PropertiesDialog {
 		this.defaultKeys = defaultKeys;
 		this.editable = editable;
 		if (defaultKeys == null) {
-			this.properties = new TreeMap<String,String>();
+            this.userProperties = new TreeMap<String,String>();
 		} else {
-			this.properties = new TreeMap<String,String>(new ListComparator<String>(defaultKeys.keySet()));
+			this.userProperties = new TreeMap<String,String>(new ListComparator<String>(defaultKeys.keySet()));
 			for (String key: defaultKeys.keySet()) {
-				this.properties.put(key, "");
+				this.userProperties.put(key, "");
 			}
 		}
+        this.systemProperties = new TreeMap<String,String>();
 		for (Map.Entry<?,?> property: properties.entrySet()) {
-			this.properties.put((String) property.getKey(), (String) property.getValue());
+		    String key = (String) property.getKey();
+		    if (GraphProperties.isValidUserKey(key)) {
+		        this.userProperties.put(key, (String) property.getValue());
+		    } else {
+                this.systemProperties.put(key, (String) property.getValue());
+		    }
 		}
 	}
 	
@@ -134,11 +141,14 @@ public class PropertiesDialog {
 	 */
 	public final Map<String, String> getEditedProperties() {
 		Map<String,String> result = new TreeMap<String,String>();
-		for (Map.Entry<String,String> propertyEntry: properties.entrySet()) {
-			if (propertyEntry.getValue().length() != 0) {
-				result.put(propertyEntry.getKey(), propertyEntry.getValue());
-			}
-		}
+        for (Map.Entry<String,String> propertyEntry: systemProperties.entrySet()) {
+            result.put(propertyEntry.getKey(), propertyEntry.getValue());
+        }
+        for (Map.Entry<String,String> propertyEntry: userProperties.entrySet()) {
+            if (propertyEntry.getValue().length() != 0) {
+                result.put(propertyEntry.getKey(), propertyEntry.getValue());
+            }
+        }
 		return result;
 	}
 
@@ -146,7 +156,7 @@ public class PropertiesDialog {
 	 * Returns an alias to the properties object in the dialog.
 	 */
 	final Map<String, String> getProperties() {
-		return properties;
+		return userProperties;
 	}
 
 	private String createTitle() {
@@ -282,34 +292,23 @@ public class PropertiesDialog {
 		return this.defaultKeys;
 	}
 
-	/**
-	 * Returns the cell editor of the dialog.
-	 */
-	final CellEditor getCellEditor() {
-		return this.cellEditor;
-	}
-
 	/** 
 	 * Returns a (fixed) editor for values of a given key.
 	 */
 	TableCellEditor getValueEditor(String key) {
 		if (cellEditor == null) {
-			cellEditor = new CellEditor();
+			cellEditor = createCellEditor();
 		}
 		cellEditor.setEditingValueForKey(key);
 		return cellEditor;
 	}
 
-	
 	/** 
 	 * Creates an editor that tests if the value entered is a well-formed 
 	 * property key. This is the case if and only if it matches {@link #IDENTIFIER_REGEXPR}.
 	 */
 	CellEditor createCellEditor() {
-		if (cellEditor == null) {
-			cellEditor = new CellEditor();
-		}
-		return cellEditor;
+	    return new CellEditor();
 	}
 
 	/** The table component. */
@@ -322,8 +321,10 @@ public class PropertiesDialog {
 	private final boolean editable;
 	/** A list of default property keys; possibly <code>null</code>. */
 	private final Map<String,Property<String>> defaultKeys;
-	/** The actual properties map. */
-	private final SortedMap<String,String> properties;
+    /** The actual user properties map. */
+    private final SortedMap<String,String> userProperties;
+    /** The system properties map. */
+    private final SortedMap<String,String> systemProperties;
 	/** Underlying data model for any table created in this dialog. */
 	private TableModel tableModel;
 	/** Returns the cell editor used for cell values. */
@@ -402,7 +403,7 @@ public class PropertiesDialog {
 		 */
 		private boolean isEditedValueCorrect(String value) {
 			if (editingValueForKey == null) {
-				return value.matches(IDENTIFIER_REGEXPR);
+				return GraphProperties.isValidUserKey(value);
 			} else {
 				Property<String> test = getDefaultKeys().get(editingValueForKey);
 				return test == null || test.isSatisfied(value);

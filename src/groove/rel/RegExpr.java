@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExpr.java,v 1.19 2007-11-12 10:24:38 rensink Exp $
+ * $Id: RegExpr.java,v 1.20 2007-11-19 12:19:26 rensink Exp $
  */
 package groove.rel;
 
@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 abstract public class RegExpr { //implements VarSetSupport {
     /** 
@@ -91,6 +91,19 @@ abstract public class RegExpr { //implements VarSetSupport {
     public String getWildcardId() {
         if (this instanceof Wildcard) {
             return ((Wildcard) this).getIdentifier();
+        } else {
+            return null;
+        }
+    }
+
+    /** 
+     * If this is a {@link RegExpr.Wildcard},
+     * returns the guard of the wildcard, if any; 
+     * otherwise returns <code>null</code>.
+     */
+    public Property<String> getWildcardGuard() {
+        if (this instanceof Wildcard) {
+            return ((Wildcard) this).getGuard();
         } else {
             return null;
         }
@@ -428,7 +441,7 @@ abstract public class RegExpr { //implements VarSetSupport {
     /**
      * Tests whether a given text may be regarded as an atom, according to the rules of regular
      * expressions. (If not, then it should be single-quoted.) This implementation throws an
-     * exception if the text is empty contains any characters not allowed by {@link #isIdentifierChar(char)}.
+     * exception if the text is empty contains any characters not allowed by {@link ExprParser#isIdentifierChar(char)}.
      * @param text the text to be tested
      * @throws FormatException if the text contains a special character
      * @see #isAtom(String)
@@ -484,40 +497,13 @@ abstract public class RegExpr { //implements VarSetSupport {
         }
     }
 
-    /**
-     * Tests whether a given text can serve as a wildcard identifier.
-     * This implementation returns <code>true</code> if <code>text</code> is non-empty
-     * and contains
-     * only letters or digits (accordingto {@link Character#isLetterOrDigit(char)})
-     * and characters from {@link #IDENTIFIER_CHARS}.
-     * @param text the text to be tested
-     * @return <tt>true</tt> if the text does not contain any special characters
-     */
-    static public boolean isIdentifier(String text) {
-        if (text.length() == 0) {
-            return false;
-        }
-        for (int i = 0; i < text.length(); i++) {
-            char nextChar = text.charAt(i);
-            if (!isIdentifierChar(nextChar)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
     /** Tests if a character may occur in an atom. */
     static public boolean isAtomChar(char c) {
     	return Character.isLetterOrDigit(c) || ATOM_CHARS.indexOf(c) >= 0;
     }
 
-    /** Tests if a character may occur in a wildcard identifier. */
-    static public boolean isIdentifierChar(char c) {
-    	return Character.isLetterOrDigit(c) || IDENTIFIER_CHARS.indexOf(c) >= 0;
-    }
-    
     /**
-     * Tests if a given opject equals the operator of this regular expression class.
+     * Tests if a given object equals the operator of this regular expression class.
      */
     protected boolean isMyOperator(Object token) {
         return getOperator().equals(token);
@@ -739,18 +725,12 @@ abstract public class RegExpr { //implements VarSetSupport {
 
     /**
      * The characters allowed in a regular expression atom, apart from letters and digits.
-     * @see #isIdentifier(String)
+     * @see ExprParser#isIdentifier(String)
      */
     static public final String ATOM_CHARS = "_$:";
 
     /**
-     * The characters allowed in a wildcard identifier, apart from letters and digits.
-     * @see #isIdentifier(String)
-     */
-    static public final String IDENTIFIER_CHARS = "_$";
-    
-    /**
-     * An array of propotype regular expressions, in order of increasing priority. In particular,
+     * An array of prototype regular expressions, in order of increasing priority. In particular,
      * atoms that have special meaning should come before the {@link Atom}.
      */
     static private final RegExpr[] prototypes = new RegExpr[] { new Atom(), new Choice(),
@@ -1186,7 +1166,7 @@ abstract public class RegExpr { //implements VarSetSupport {
         public Wildcard(String identifier, Property<String> constraint) {
             this();
             this.identifier = identifier;
-            this.constraint = constraint;
+            this.guard = constraint;
         }
         
         /**
@@ -1208,8 +1188,8 @@ abstract public class RegExpr { //implements VarSetSupport {
             if (getIdentifier() != null) {
                 result.append(getIdentifier());
             }
-            if (getConstraint() != null) {
-                result.append(getConstraint());
+            if (getGuard() != null) {
+                result.append(getGuard());
             }
             return result.toString();
         }
@@ -1223,10 +1203,10 @@ abstract public class RegExpr { //implements VarSetSupport {
         }
 
         /**
-         * Returns the optional identifier of this wildcard expression.
+         * Returns the optional guard of this wildcard expression.
          */
-        public Property<String> getConstraint() {
-            return constraint;
+        public Property<String> getGuard() {
+            return guard;
         }
 
         /**
@@ -1239,7 +1219,7 @@ abstract public class RegExpr { //implements VarSetSupport {
         /**
          * First tries the super implementation, but if that does not work,
          * tries to parse <code>expr</code> as a prefix expression where
-         * the operand is an identifier (according to {@link #isIdentifier(String)}).
+         * the operand is an identifier (according to {@link ExprParser#isIdentifier(String)}).
          */
         @Override
         protected RegExpr parseOperator(String expr) throws FormatException {
@@ -1266,7 +1246,7 @@ abstract public class RegExpr { //implements VarSetSupport {
                         }
                         identifier = identifier.substring(0, identifier.length()-1);                        
                     }
-                    if (isIdentifier(identifier)) {
+                    if (ExprParser.isIdentifier(identifier)) {
                         result = newInstance(identifier, constraint);
                     } else if (identifier.length() == 0) {
                         result = newInstance(null, constraint);
@@ -1303,12 +1283,12 @@ abstract public class RegExpr { //implements VarSetSupport {
                 try {
                     atom = parse(part);
                 } catch (FormatException exc) {
-                    throw new FormatException("Constraint string '%s' cannot be parsed", part);
+                    throw new FormatException("Option '%s' in constraint '%s' cannot be parsed", part, parameter);
                 }
                 if (atom instanceof Atom) {
                     constrainedLabels.add(((Atom) atom).getAtomText());
                 } else {
-                    throw new FormatException("Constraint string '%s' should be an atom", part);
+                    throw new FormatException("Option '%s' in constraint '%s' should be an atom", part, parameter);
                 }
             }
             return new LabelConstraint(constrainedLabels, negated);
@@ -1326,7 +1306,7 @@ abstract public class RegExpr { //implements VarSetSupport {
         }
         
         /** The (optional) constraint for this wildcard. */
-        private Property<String> constraint;
+        private Property<String> guard;
         
         /** The (optional) identifier for this wildcard. */
         private String identifier;

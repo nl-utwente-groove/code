@@ -12,15 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractAspect.java,v 1.13 2007-11-09 13:00:43 rensink Exp $
+ * $Id: AbstractAspect.java,v 1.14 2007-11-19 12:19:13 rensink Exp $
  */
 package groove.view.aspect;
 
 import groove.graph.Label;
-import groove.view.FreeLabelParser;
 import groove.view.FormatException;
 import groove.view.LabelParser;
-import groove.view.NumberLabelParser;
 import groove.view.RegExprLabelParser;
 
 import java.util.Collections;
@@ -303,34 +301,14 @@ public abstract class AbstractAspect implements Aspect {
 //    private final Map<AspectValue,AspectValue> sourceInference = new HashMap<AspectValue,AspectValue>();
 //    /** Target inference rules, as a mapping from edge aspect values to node aspect values. */
 //    private final Map<AspectValue,AspectValue> targetInference = new HashMap<AspectValue,AspectValue>();
-
-	/** Returns a parser that turns a string into a number. */
-	static LabelParser getNumberLabelParser() {
-		return NUMBER_PARSER;
-	}
-
-	/** Returns a parser that turns a string into a regular expression label. */
-	static LabelParser getRegExprLabelParser() {
-		return REG_EXPR_PARSER;
-	}
-
-	/** 
-	 * Returns a parser that turns a string into a default label, without checking
-	 * for any format constraints.
-	 */
-	static LabelParser getFreeLabelParser() {
-		return FREE_PARSER;
-	}
-	/**
-	 * Instance of the regular expression parser. 
-	 */
-	static private final LabelParser REG_EXPR_PARSER = new RegExprLabelParser();
-	/**
-	 * Instance of the default label parser. 
-	 */
-	static private final LabelParser NUMBER_PARSER = new NumberLabelParser();
-	/**
-	 * Instance of the default label parser. 
-	 */
-	static private final LabelParser FREE_PARSER = new FreeLabelParser();
+//
+//	/** Returns a parser that turns a string into a regular expression label. */
+//	static LabelParser getRegExprLabelParser() {
+//		return REG_EXPR_PARSER;
+//	}
+//
+//	/**
+//	 * Instance of the regular expression parser. 
+//	 */
+//	static private final LabelParser REG_EXPR_PARSER = RegExprLabelParser.getInstance(false);
 }

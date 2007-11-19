@@ -12,26 +12,27 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LabelParser.java,v 1.2 2007-08-26 07:24:10 rensink Exp $
+ * $Id: LabelParser.java,v 1.3 2007-11-19 12:19:18 rensink Exp $
  */
 package groove.view;
 
+import groove.graph.DefaultLabel;
 import groove.graph.Label;
 
 /** Interface for parsers from strings to labels. */
 public interface LabelParser {
 	/** 
-	 * Method turning a string into a label.
-	 * @param text the string to be parsed into a label
-	 * @return the label constructed from <code>text</code>
-	 * @throws FormatException if <code>text</code> is not correctly formatted
+	 * Method turning a default label into a possibly structured label.
+	 * @param label the default label to be parsed
+	 * @return the label constructed from <code>label</code>
+	 * @throws FormatException if <code>label</code> is not correctly formatted
 	 * according to this parser. 
 	 */
-	Label parse(String text) throws FormatException;
+	Label parse(DefaultLabel label) throws FormatException;
     
     /** 
-     * Method turning a label into a string from which the label can be resonstructed by this parser,
-     * or <code>null</code> if no such string can be found.
+     * Method turning a structured label into a default label from which the original
+     * label can be reconstructed by this parser, or <code>null</code> if no such default label can be found.
      */
-    String unparse(Label label);
+    DefaultLabel unparse(Label label);
 }

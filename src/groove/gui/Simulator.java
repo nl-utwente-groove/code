@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.71 2007-11-07 09:31:20 rensink Exp $
+ * $Id: Simulator.java,v 1.72 2007-11-19 12:19:21 rensink Exp $
  */
 package groove.gui;
 
@@ -127,7 +127,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.71 $
+ * @version $Revision: 1.72 $
  */
 public class Simulator {
     /**
@@ -2454,7 +2454,7 @@ public class Simulator {
 			GraphProperties ruleProperties = GraphInfo.getProperties(ruleGraph,
 					true);
 			PropertiesDialog dialog = new PropertiesDialog(ruleProperties,
-					GraphProperties.DEFAULT_KEYS, true);
+					GraphProperties.DEFAULT_USER_KEYS, true);
 			if (dialog.showDialog(getFrame()) && confirmAbandon(false)) {
 				ruleProperties.clear();
 				ruleProperties.putAll(dialog.getEditedProperties());

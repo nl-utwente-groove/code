@@ -12,15 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualView.java,v 1.6 2007-08-26 07:24:09 rensink Exp $
+ * $Id: AspectualView.java,v 1.7 2007-11-19 12:19:18 rensink Exp $
  */
 package groove.view;
 
+import groove.graph.DefaultLabel;
+import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
+import groove.graph.Label;
 import groove.graph.NodeEdgeMap;
 import groove.trans.RuleNameLabel;
+import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectGraph;
+import groove.view.aspect.AspectValue;
 
 
 /**
@@ -45,9 +50,61 @@ abstract public class AspectualView<Model> implements View<Model> {
 	 */
 	abstract public NodeEdgeMap getMap();
 
+	/**
+	 * Returns a parsed label for the aspect edge.
+	 * The aspect edge has a {@link DefaultLabel}, which can be turned into a special label
+	 * depending on the aspect values associated with the edge.
+	 * If the aspect values do not determine a label parser (through {@link AspectValue#getLabelParser()})
+	 * then the default parser for this view is used (see {@link #getDefaultLabelParser()}).
+	 * @param aspectEdge the edge for which we want the parsed label; not <code>null</code>
+	 * @return the parsed label for <code>aspectEdge</code>; not <code>null</code>
+	 * @throws FormatException if the aspect values yield conflicting parsers, or the parser throws an exception
+	 */
+	protected Label parse(AspectEdge aspectEdge) throws FormatException {
+	    AspectValue parsingValue = null;
+	    LabelParser parser = null;
+	    for (AspectValue value: aspectEdge.getAspectMap().values()) {
+	        // find the parser for this aspect value
+	        LabelParser valueParser = value.getLabelParser();
+	        // set it as the label parser, or compare it with the previously found parser
+	        if (parser == null) {
+	            parser = valueParser;
+	            parsingValue = value;
+	        } else if (valueParser != null && !valueParser.equals(parser)) {
+	            throw new FormatException("Conflicting aspect values '%s' and '%s' on edge %s", parsingValue, value, aspectEdge);
+	        }
+	    }
+	    // use the default parser if none is found
+	    if (parser == null) {
+	        parser = getDefaultLabelParser();
+	    }
+	    // parse the label
+	    return parser.parse(aspectEdge.label());
+	}
+
+    /** 
+     * Returns a default label that is the unparsed version of a given label, according to
+     * this view's default parser.
+     */
+    public DefaultLabel unparse(Label label) {
+        return getDefaultLabelParser().unparse(label);
+    }
+
+    /** 
+     * Returns a default label that is the unparsed version of a given edge's label, according to
+     * this view's default parser.
+     * Convenience method for <code>unparseLabel(edge.label())</code>.
+     */
+    protected DefaultLabel unparse(Edge edge) {
+        return unparse(edge.label());
+    }
+    
+	/** Returns the default label parser for this particular view. */
+	abstract protected LabelParser getDefaultLabelParser();
+	
 	/** 
 	 * Creates a view from a given aspect graph.
-	 * Depending on the role fo the graph, the result is an {@link AspectualRuleView} or
+	 * Depending on the role of the graph, the result is an {@link AspectualRuleView} or
 	 * an {@link AspectualGraphView}.
 	 * @param aspectGraph the graph to create the view from
 	 * @return a graph or rule view based on <code>aspectGraph</code>

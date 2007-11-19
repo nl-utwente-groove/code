@@ -12,15 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParseData.java,v 1.6 2007-10-18 14:12:11 rensink Exp $
+ * $Id: AspectParseData.java,v 1.7 2007-11-19 12:19:13 rensink Exp $
  */
 package groove.view.aspect;
 
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
-import groove.rel.RegExpr;
-import groove.rel.RegExprLabel;
 import groove.view.FormatException;
 
 import java.util.Collection;
@@ -38,7 +36,7 @@ class AspectParseData {
 	 * @param label the existing label 
 	 */
 	AspectParseData(AspectMap values, Label label) {
-		this(values, label.text().contains(VALUE_SEPARATOR), label.text());
+		this(values, label.text().indexOf(VALUE_SEPARATOR) >= 0, label.text());
 	}
 	
 	/**
@@ -104,21 +102,17 @@ class AspectParseData {
 	 * Returns the actual label text
 	 * (which may be <code>null</code> if the plain label was a node decorator).
 	 */
-	public String getText() {
+	private String getText() {
 		return text;
 	}
 
     /**
      * Creates a label from the parse data, based on the text and the aspect values.
-     * This implementation parses the string as a regular expression, using
-     * {@link RegExpr#parse(String)}, except if one of the aspect values implies free text.
-     * If the regular expression yields an atom, or free text is used, a {@link DefaultLabel}
-     * is returned, otherwise a {@link RegExprLabel} is returned.
-     * @throws FormatException if {@link RegExpr#parse(String)} throws an exception
+     * This implementation always returns a {@link DefaultLabel}.
      */
-	public Label getLabel() throws FormatException {
+	public DefaultLabel getLabel() {
 		if (label == null && hasText()) {
-            label = AspectParser.getLabelParser(getAspectMap().values()).parse(getText());
+            label = DefaultLabel.createLabel(getText());
         }
 		return label;
 	}
@@ -162,5 +156,5 @@ class AspectParseData {
 	/** The actual label. */
 	private final String text;
 	/** The label, either set at construction time or to be computed by {@link #getLabel()}. */
-	private Label label;
+	private DefaultLabel label;
 }

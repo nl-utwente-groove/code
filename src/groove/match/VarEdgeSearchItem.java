@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.16 2007-11-09 13:17:08 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.17 2007-11-19 12:19:28 rensink Exp $
  */
 package groove.match;
 
@@ -41,7 +41,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
 	public VarEdgeSearchItem(BinaryEdge edge) {
 		super(edge);
 		this.var = RegExprLabel.getWildcardId(edge.label());
-		this.labelConstraint = RegExprLabel.getWildcardConstraint(edge.label());
+		this.labelConstraint = RegExprLabel.getWildcardGuard(edge.label());
         this.boundVars = Collections.singleton(var);
 		assert this.var != null : String.format("Edge %s is not a variable edge", edge);
 		assert edge.endCount() <= BinaryEdge.END_COUNT : String.format("Search item undefined for hyperedge", edge);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.13 2007-11-09 13:00:43 rensink Exp $
+ * $Id: AspectGraph.java,v 1.14 2007-11-19 12:19:14 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -171,12 +171,12 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
                 AspectNode sourceImage = nodeMap.get(edge.source());
                 AspectNode targetImage = nodeMap.get(edge.opposite());
                 String labelText = edge.label().text();
-                AspectValue nodeValue = getNodeValue(edge);
+                AspectValue nodeValue = getNodeValue(edge, getAspectParser(graph));
                 if (nodeValue != null) {
                 	// the edge encodes a node aspect
                 	sourceImage.setDeclaredValue(nodeValue);
                 } else {
-                	AspectParseData aspectLabel = parser.getParseData(labelText);
+                	AspectParseData aspectLabel = getAspectParser(graph).getParseData(labelText);
                 	edgeDataMap.put(edge, aspectLabel);
                 	// add inferred aspect values to the source and target
                 	for (AspectValue edgeValue : aspectLabel.getAspectMap().values()) {
@@ -228,6 +228,15 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 		GraphInfo.transfer(graph, result, elementMap);
         result.setErrors(errors);
 		return result;
+	}
+	
+	/** 
+	 * Returns the correct aspect parser for a given graph.
+	 * This may take version information into account. 
+	 */
+	private AspectParser getAspectParser(GraphShape graph) {
+	    boolean convertToCurly = Groove.RULE_ROLE.equals(GraphInfo.getRole(graph)) && GraphInfo.getVersion(graph) == null;
+	    return AspectParser.getInstance(convertToCurly);
 	}
 
 	/**
@@ -293,12 +302,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * and throws an exception if the edge is not a self-edge or contains more than 
 	 * one aspect value.
 	 * @param edge the edge to be tested
+	 * @param parser TODO
 	 * @return a node aspect value for the (unique) endpoint of the edge, or
 	 * <code>null</code> if <code>edge</code> does not encode a node aspect value.
 	 * @throws FormatException if <code>edge</code> does ancode a node aspect
 	 * value, but is not a self-edge or contains more than one aspect value
 	 */
-	private AspectValue getNodeValue(Edge edge) throws FormatException {
+	private AspectValue getNodeValue(Edge edge, AspectParser parser) throws FormatException {
 		AspectValue result;	
 		String labelText = edge.label().text();
 		AspectParseData parseData = parser.getParseData(labelText);
@@ -465,7 +475,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     	}
     	for (Edge plainEdge: plainGraph.edgeSet()) {
     		Edge aspectEdge = fromPlainToAspect.getEdge(plainEdge);
-    		if (aspectGraph.getNodeValue(plainEdge) == null) {
+    		if (aspectGraph.getNodeValue(plainEdge, aspectGraph.getAspectParser(plainGraph)) == null) {
     			if (aspectEdge == null) {
     				throw new FormatException(
     						"Edge %s not translated to aspect edge", plainEdge);
@@ -490,18 +500,13 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
     private static Set<AspectValue> getNodeValues(Graph graph, Node node) throws FormatException {
     	Set<AspectValue> result = new HashSet<AspectValue>();
     	for (Edge outEdge: graph.outEdgeSet(node)) {
-    		AspectValue nodeValue = getFactory().getNodeValue(outEdge);
+    		AspectValue nodeValue = getFactory().getNodeValue(outEdge, getFactory().getAspectParser(graph));
     		if (nodeValue != null) {
     			result.add(nodeValue);
     		}
     	}
     	return result;
     }
-
-    /**
-     * The singleton aspect parser. 
-     */
-    private static final AspectParser parser = AspectParser.getInstance();
 
     /**
      * The static instance serving as a factory. 

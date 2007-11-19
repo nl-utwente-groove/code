@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.31 2007-11-05 14:16:18 rensink Exp $
+ * $Id: AspectJModel.java,v 1.32 2007-11-19 12:18:46 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -33,6 +33,7 @@ import static groove.view.aspect.RuleAspect.getRuleValue;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
@@ -42,6 +43,7 @@ import groove.util.Converter;
 import groove.util.Groove;
 import groove.view.AspectualView;
 import groove.view.LabelParser;
+import groove.view.RegExprLabelParser;
 import groove.view.aspect.AspectEdge;
 import groove.view.aspect.AspectElement;
 import groove.view.aspect.AspectGraph;
@@ -67,7 +69,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -432,8 +434,15 @@ public class AspectJModel extends GraphJModel {
         }
 
         @Override
+        public Label getLabel(Edge edge) {
+            return edge.label();
+//            return getView().unparse(edge.label());
+        }
+
+        @Override
+        @Deprecated
         LabelParser createLabelParser() {
-            return AspectParser.getLabelParser(getNode().getAspectMap().values());
+            return RegExprLabelParser.getInstance();
         }
 
 		/** 
@@ -506,7 +515,14 @@ public class AspectJModel extends GraphJModel {
 			return getModelEdge(getEdge());
 		}
 
-		/**
+        /** This implementation returns the (unparsed) label of the model edge. */
+		@Override
+        public Label getLabel(Edge edge) {
+		    return edge.label();
+//            return getView().unparse(edge.label());
+        }
+
+        /**
          * Returns <tt>true</tt> only if the aspect values of the edge to be added
          * equal those of this j-edge, and the superclass is also willing.
          * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
@@ -548,8 +564,9 @@ public class AspectJModel extends GraphJModel {
 		}
         
 		@Override
+		@Deprecated
         LabelParser createLabelParser() {
-            return AspectParser.getLabelParser(getEdge().getAspectMap().values());
+            return RegExprLabelParser.getInstance();
         }
 
 		/** 

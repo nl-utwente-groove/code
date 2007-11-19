@@ -12,28 +12,6 @@ import javax.swing.JOptionPane;
  * @version $Revision$
  */
 public class Version {
-	/** Build number (timestamp with format yyyyMMddHHmmssSSS). */
-	public static final String BUILD = "2007"; //eventually automatically set during Ant compilation!
-
-	/** Release date of this version (date format dd.MM.yyyy). */
-	public static final String DATE = "18.04.2007"; //eventually automatically set during Ant compilation!
-
-	/**
-	 * Version number of format x.y.z, with
-	 * <ul>
-	 * <li>x = major version
-	 * <li>y = minor version
-	 * <li>z = bug fix version
-	 * </ul>
-	 */
-	public static final String NUMBER = "1.6.0";
-
-	/** Minimum Java JRE version required. */
-	static public final String NUMBER_JAVAMIN = "1.5";
-
-	/** Title of this project. */
-	static public final String TITLE = "GROOVE";
-
 	/**
 	 * Print version information to system console (System.out).
 	 * @param args Not required.
@@ -75,4 +53,52 @@ public class Version {
 
 		return sb.toString();
 	}
+	
+	/** Tests if a given string represents a known GXL file format. */
+	static public boolean isKnownGxlVersion(String version) {
+	    return version == null || GXL_VERSION.equals(version);
+	}
+    //	/** 
+    //	 * The set of known info keys.
+    //	 * These keys are the ones <i>not</i> stored as part of the graph properties.
+    //	 */
+    //	public static final Set<String> KNOWN_KEYS = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList(ERRORS_KEY, FILE_KEY, ROLE_KEY, NAME_KEY, PROPERTIES_KEY, LAYOUT_KEY)));
+    //	/** 
+    //	 * Start character that distinguishes user-defined property keys from graph info keys.
+    //	 * Any string starting with this character is a graph info key. 
+    //	 * @see #getInfoKey(String)
+    //	 */ 
+    //	static public final char INFO_KEY_START = '$';
+    /** Build number (timestamp with format yyyyMMddHHmmssSSS). */
+    public static final String BUILD = "2007"; //eventually automatically set during Ant compilation!
+
+    /** Release date of this version (date format dd.MM.yyyy). */
+    public static final String DATE = "18.04.2007"; //eventually automatically set during Ant compilation!
+
+    /**
+     * Version number of format x.y.z, with
+     * <ul>
+     * <li>x = major version
+     * <li>y = minor version
+     * <li>z = bug fix version
+     * </ul>
+     */
+    public static final String NUMBER = "1.6.0";
+
+    /** Minimum Java JRE version required. */
+    static public final String NUMBER_JAVAMIN = "1.5";
+
+    /** Title of this project. */
+    static public final String TITLE = "GROOVE";
+
+    /** 
+     * Version number of the GXL format used for storing rules and graphs.
+     * Known version are:
+     * <ul>
+     * <li> <b>null</b>: no version info.
+     * <li> <b>curly</b>: use curly braces for regular expressions; quotes are taken literally in
+     * graphs, but surround atoms in rules.
+     * </ul>
+     */
+    static public final String GXL_VERSION = "curly";
 }

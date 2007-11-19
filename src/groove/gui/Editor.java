@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Editor.java,v 1.52 2007-11-06 13:02:29 kastenberg Exp $
+ * $Id: Editor.java,v 1.53 2007-11-19 12:19:24 rensink Exp $
  */
 package groove.gui;
 
@@ -25,12 +25,13 @@ import groove.gui.jgraph.EditorJGraph;
 import groove.gui.jgraph.EditorJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.JGraph;
+import groove.io.AspectGxl;
 import groove.io.ExtensionFilter;
 import groove.io.GrooveFileChooser;
 import groove.io.LayedOutXml;
 import groove.io.PriorityFileName;
-import groove.io.Xml;
 import groove.util.Groove;
+import groove.util.Version;
 import groove.view.AspectualView;
 import groove.view.FormatException;
 import groove.view.aspect.AspectGraph;
@@ -93,7 +94,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.52 $ $Date: 2007-11-06 13:02:29 $
+ * @version $Revision: 1.53 $ $Date: 2007-11-19 12:19:24 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -159,19 +160,20 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      */
     public void setPlainGraph(Graph graph) {
         if (graph == null) {
-        	setErrors(null);
-        	setModel(new EditorJModel(getOptions()));
+            setErrors(null);
+            setModel(new EditorJModel(getOptions()));
         } else {
-			setErrors(GraphInfo.getErrors(graph));
-			setModel(new EditorJModel(GraphJModel.newInstance(graph, getOptions())));
-			setRole(GraphInfo.getRole(graph));
-		}
+            setErrors(GraphInfo.getErrors(graph));
+            setModel(new EditorJModel(GraphJModel.newInstance(graph, getOptions())));
+            setRole(GraphInfo.getRole(graph));
+        }
     }
     
     /** Returns a plain graph constructed from the editor j-model and role. */
     public Graph getPlainGraph() {
     	Graph result = getModel().toPlainGraph();
     	GraphInfo.setRole(result, getRole(false));
+    	GraphInfo.setVersion(result, Version.GXL_VERSION);
     	return result;
     }
 
@@ -227,9 +229,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * text on any of the cells has changed.
      */
     public void graphChanged(GraphModelEvent e) {
-    	boolean changed = false;
+    	boolean changed = e.getChange().getInserted() != null || e.getChange().getRemoved() != null;
     	Map<?,?> changes = e.getChange().getAttributes();
-    	if (changes != null) {
+    	if (!changed && changes != null) {
 			for (Object change : changes.values()) {
 				changed = ((Map<?, ?>) change).keySet().contains(GraphConstants.VALUE);
 				if (changed) {
@@ -354,7 +356,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private void doOpenGraph(final File fromFile) throws IOException {
     	currentFile = fromFile;
     	// first create a graph from the gxl file
-    	final Graph graph = layoutGxl.unmarshalGraph(fromFile);
+    	final AspectGraph graph = layoutGxl.unmarshalGraph(fromFile);
     	// load the model in the event dispatch thread, to avoid concurrency
     	// issues
     	SwingUtilities.invokeLater(new Runnable() {
@@ -370,7 +372,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
      */
     private void doSaveGraph(File toFile) throws FormatException, IOException { 
-        Graph saveGraph = getPlainGraph();
+        AspectGraph saveGraph = toAspectGraph();
         layoutGxl.marshalGraph(saveGraph, toFile);
         setGraphSaved();
     }
@@ -1119,7 +1121,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	 * Callback factory method for a properties dialog for the currently edited model. 
 	 */
 	PropertiesDialog createPropertiesDialog(boolean editable) {
-		return new PropertiesDialog(getModel().getProperties(), GraphProperties.DEFAULT_KEYS, editable);
+		return new PropertiesDialog(getModel().getProperties(), GraphProperties.DEFAULT_USER_KEYS, editable);
 	}
 
     /** 
@@ -1370,7 +1372,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     /**
      * The GXL converter used for marshalling and unmarshalling layouted graphs.
      */
-    private final Xml<Graph> layoutGxl = new LayedOutXml();
+    private final AspectGxl layoutGxl = new AspectGxl(new LayedOutXml());
 
     /**
      * File chooser for graph opening.
@@ -1793,7 +1795,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.52 $
+     * @version $Revision: 1.53 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

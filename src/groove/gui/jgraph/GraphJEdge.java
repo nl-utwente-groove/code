@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.14 2007-11-09 13:01:11 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.15 2007-11-19 12:18:46 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -141,7 +141,7 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     public List<StringBuilder> getLines() {
     	List<StringBuilder> result = new ArrayList<StringBuilder>();
 		for (Edge edge: getUserObject()) {
-			if (! jModel.isFiltering(getListLabel(edge))) {
+			if (! jModel.isFiltering(getLabel(edge).text())) {
 				result.add(getLine(edge));
 			}
 		}
@@ -152,17 +152,20 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      * This implementation returns the text from {@link #getLabel(Edge)} wrapped in a StringBuilder.
      */
 	public StringBuilder getLine(Edge edge) {
-		return new StringBuilder(getListLabel(edge));
+		return new StringBuilder(getLabel(edge).text());
 	}
 
     /**
-     * This implementation calls {@link #getListLabel(Edge)} on all edges in 
+     * This implementation calls {@link #getLabel(Edge)} on all edges in 
      * {@link #getUserObject()}.
      */
 	public Collection<String> getListLabels() {
 		List<String> result = new ArrayList<String>();
 		for (Edge edge: getUserObject()) {
-			result.add(getListLabel(edge));
+		    String label = getLabel(edge).text();
+		    if (label != null) {
+		        result.add(label);
+		    }
 		}
 		return result;
 	}
@@ -170,8 +173,9 @@ public class GraphJEdge extends JEdge implements GraphJCell {
 	/** 
 	 * This implementation returns the text of the label returned by {@link #getLabel(Edge)}.
 	 */
+	@Deprecated
 	public String getListLabel(Edge edge) {
-		return getLabelParser().unparse(getLabel(edge));
+		return getLabelParser().unparse(getLabel(edge)).text();
 	}
 	
     /**
@@ -187,18 +191,17 @@ public class GraphJEdge extends JEdge implements GraphJCell {
 	}
     
     /**
-     * This implementation calls {@link LabelParser#unparse(Label)} on the 
-     * parser returned by {@link #getLabelParser()}, with the label returned by
-     * {@link #getLabel(Edge)}.
+     * This implementation returns <code>edge.label().text()</code>.
      */
     public String getPlainLabel(Edge edge) {
-        return getLabelParser().unparse(getLabel(edge));
+        return edge.label().text();
     }
 
     /** 
      * Returns a label parser for this jnode.
      * The label parser is used to obtain the plain labels. 
      */
+    @Deprecated
     public LabelParser getLabelParser() {
         if (labelParser == null) {
             labelParser = createLabelParser();
@@ -207,8 +210,9 @@ public class GraphJEdge extends JEdge implements GraphJCell {
     }
     
     /** Callback factory method to create a label parser for this jnode. */
+    @Deprecated
     LabelParser createLabelParser() {
-        return new RegExprLabelParser();
+        return RegExprLabelParser.getInstance();
     }
 
 	/** Specialises the return type of the method. */

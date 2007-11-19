@@ -12,47 +12,40 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.12 2007-11-09 13:00:43 rensink Exp $
+ * $Id: AspectParser.java,v 1.13 2007-11-19 12:19:14 rensink Exp $
  */
 package groove.view.aspect;
 
 import static groove.view.aspect.Aspect.CONTENT_ASSIGN;
 import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
-import groove.view.ComposedLabelParser;
+import groove.rel.RegExpr;
+import groove.util.ExprParser;
 import groove.view.FormatException;
-import groove.view.LabelParser;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class AspectParser {
-	/** 
-     * Creates a lenient parser. 
-     * #see {@link #AspectParser(boolean)} 	
-     */
-    private AspectParser() {
-    	this(true);
-    }
-
     /** 
      * Constructs a parser with given leniency.
      * If the parser is lenient, then certain errors in the labels
      * are disregarded. 
+     * @param convertToCurly flag indicating that label text should be converted to curly-bracketed format
      * @see #isLenient()
      */
-    private AspectParser(boolean lenient) {
+    private AspectParser(boolean convertToCurly, boolean lenient) {
     	for (Aspect aspect: Aspect.allAspects) {
     		registerAspect(aspect);
     	}
     	this.lenient = lenient;
+    	this.convertToCurly = convertToCurly;
     }
     
     /**
@@ -88,15 +81,17 @@ public class AspectParser {
     		return createParseData(parsedValues, false, null);
     	}*/
 		boolean stopParsing = false;
-		boolean endFound = false;
+		boolean explicitEnd = false;
 		int prevIndex = 0;
 		int nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
 		while (!stopParsing && nextIndex >= prevIndex) {
 			// look for the next aspect value between prevIndex and nextIndex
 			String valueText = plainText.substring(prevIndex, nextIndex);
-			prevIndex = nextIndex + VALUE_SEPARATOR.length();
-			stopParsing = endFound = valueText.length() == 0;
-			if (! endFound) {
+			explicitEnd = valueText.length() == 0;
+			if (explicitEnd) {
+			    // update prevIndex but not nextIndex, to ensure the end
+	            prevIndex = nextIndex + 1;
+			} else if (ExprParser.isIdentifierStartChar(valueText.charAt(0))) {
 	            try {
 	            	String contentText;
 	            	int assignIndex = valueText.indexOf(CONTENT_ASSIGN);
@@ -110,16 +105,47 @@ public class AspectParser {
 				} catch (FormatException exc) {
 					throw new FormatException("%s in '%s'", exc.getMessage(), plainText);
 				}
+                prevIndex = nextIndex + 1;
+	            nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
+			} else {
+			    // the currently parsed substring is not an aspect value, so leave it in the text 
+			    nextIndex = prevIndex - 1;
 			}
-			nextIndex = plainText.indexOf(VALUE_SEPARATOR, prevIndex);
 		}
 		String text = plainText.substring(prevIndex);
-		if (text.length() == 0 && ! endFound) {
+		if (text.length() == 0 && ! explicitEnd) {
 			text = null;
+		} else if (convertToCurly) {
+		    text = toCurly(text);
+		    // insert value separator if ambiguity may arise
+		    explicitEnd = text.indexOf(VALUE_SEPARATOR) >= 0 && ExprParser.isIdentifierStartChar(text.charAt(0));
 		}
-		return createParseData(parsedValues, endFound, text);
+		return createParseData(parsedValues, explicitEnd, text);
     }
 
+    /** 
+     * Converts a given text to curly-bracketed regular expression format,
+     * if it is an unquoted regular expression.
+     * If it is a quoted atom, removes the quotes.
+     */
+    private String toCurly(String text) {
+        try {
+            RegExpr expr = RegExpr.parse(text);
+            if (expr.isAtom()) {
+                text = expr.getAtomText();
+            } else if (expr.isEmpty()) {
+                // do nothing
+            } else if (expr.isNeg()) {
+                text = RegExpr.NEG_OPERATOR+toCurly(expr.getNegOperand().toString());
+            } else {
+                text = ExprParser.LCURLY_CHAR+text+ExprParser.RCURLY_CHAR;
+            }
+        } catch (FormatException exc) {
+            // the text should be treated as an atom; do nothing
+        }
+        return text;
+    }
+    
 	/**
 	 * Indicates if parsing is lenient.
 	 * If the parser is lenient, certain errors are disregarded;
@@ -185,25 +211,27 @@ public class AspectParser {
      * i.e., some errors are glossed over.
      */
     private final boolean lenient;
+    /**
+     * Indicates that label text should be converted to curly-bracketed format.
+     */
+    private final boolean convertToCurly;
     
     /**
      * Returns a strict or lenient parser instance.
+     * @param convertToCurly flag indicating that label text should be converted to curly-bracketed format
      * @see #isLenient()
      */
-    public static AspectParser getInstance(boolean lenient) {
-        if (lenient) {
-            return lenientParser;
-        } else {
-            return strictParser;
-        }
+    public static AspectParser getInstance(boolean convertToCurly, boolean lenient) {
+        return instances[convertToCurly ? 1 : 0][lenient ? 1 : 0];
     }
 
     /**
      * Returns a strict parser instance.
-     * @see #getInstance(boolean)
+     * @param convertToCurly flag indicating that label text should be converted to curly-bracketed format
+     * @see #getInstance(boolean, boolean)
      */
-    public static AspectParser getInstance() {
-        return getInstance(false);
+    public static AspectParser getInstance(boolean convertToCurly) {
+        return getInstance(convertToCurly, false);
     }
     
     /**
@@ -216,7 +244,7 @@ public class AspectParser {
      * @see #getParseData(String)
      */
     public static String normalize(String plainText) throws FormatException {
-    	return getInstance().getParseData(plainText).toString();
+    	return getInstance(false).getParseData(plainText).toString();
     }
 
     /**
@@ -236,31 +264,35 @@ public class AspectParser {
 		for (AspectValue value: values) {
 			result.append(AspectParser.toString(value));
 		}
-		if (labelText.length() == 0 || labelText.indexOf(VALUE_SEPARATOR) >= 0) {
+		if (labelText.length() == 0 || labelText.indexOf(""+VALUE_SEPARATOR) >= 0) {
 			result.append(VALUE_SEPARATOR);
 		}
 		result.append(labelText);
 		return result;
 	}
-    
-    /** Returns the label parsers induced by a set of aspect values. */
-    static public LabelParser getLabelParser(Collection<AspectValue> values) {
-        Collection<LabelParser> parsers = new LinkedHashSet<LabelParser>();
-        for (AspectValue value: values) {
-            LabelParser parser = value.getLabelParser();
-            if (parser != null) {
-                parsers.add(parser);
-            }
-        }
-        // if none was induced, get the default parser
-        if (parsers.isEmpty()) {
-            parsers.add(AbstractAspect.getRegExprLabelParser());
-        }
-        return new ComposedLabelParser(parsers);
-    }
-
-    /** The singleton lenient parser instance. */
-    private static AspectParser lenientParser = new AspectParser(true);
-    /** The singleton strict parser instance. */
-    private static AspectParser strictParser = new AspectParser(false);
+//    
+//    /** Returns the label parsers induced by a set of aspect values. */
+//	@Deprecated
+//    static public LabelParser getLabelParser(Collection<AspectValue> values) {
+//        Collection<LabelParser> parsers = new LinkedHashSet<LabelParser>();
+//        for (AspectValue value: values) {
+//            LabelParser parser = value.getLabelParser();
+//            if (parser != null) {
+//                parsers.add(parser);
+//            }
+//        }
+//        // if none was induced, get the default parser
+//        if (parsers.isEmpty()) {
+//            parsers.add(DEFAULT_LABEL_PARSER);
+//        }
+//        return new groove.view.ComposedLabelParser(parsers);
+//    }
+//
+//    /** The default label parser for the proper label part of aspect labels. */
+//	@Deprecated
+//    private static final LabelParser DEFAULT_LABEL_PARSER = QuoteLabelParser.getInstance();
+    /** Default parser instances. */
+    private static final AspectParser[][] instances = new AspectParser[][] {
+            new AspectParser[] { new AspectParser(false, false), new AspectParser(false, true) },
+            new AspectParser[] { new AspectParser(true, false), new AspectParser(true, true) } };
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Aspect.java,v 1.8 2007-10-26 07:07:16 rensink Exp $
+ * $Id: Aspect.java,v 1.9 2007-11-19 12:19:14 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * Examples of aspects are: the roles in a rule, typing information, or
  * graph condition information.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public interface Aspect {
 	/**
@@ -100,7 +100,7 @@ public interface Aspect {
 	/**
 	 * String used to separate the textual representation of aspect values in a label.  When the separator occurs twice in direct succession, this denotes the end of the aspect prefix.
 	 */
-	public static final String VALUE_SEPARATOR = Groove.getXMLProperty("label.aspect.separator");
+	public static final char VALUE_SEPARATOR = Groove.getXMLProperty("label.aspect.separator").charAt(0);
 	/**
 	 * String used to separate the name and content of aspect values.
 	 */

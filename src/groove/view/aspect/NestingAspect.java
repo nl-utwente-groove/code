@@ -12,12 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.11 2007-11-09 13:00:43 rensink Exp $
+ * $Id: NestingAspect.java,v 1.12 2007-11-19 12:19:14 rensink Exp $
  */
 package groove.view.aspect;
 
-import groove.view.FreeLabelParser;
 import groove.view.FormatException;
+import groove.view.FreeLabelParser;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.11 $ $Date: 2007-11-09 13:00:43 $
+ * @version 0.1 $Revision: 1.12 $ $Date: 2007-11-19 12:19:14 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -283,12 +283,16 @@ public class NestingAspect extends AbstractAspect {
 			// empty
 		}
 
-		/** This implementation tests if the text corresponds to an operation of the associated algebra. */
+        /** This implementation tests if the text corresponds to an operation of the associated algebra. */
         @Override
-		protected void testFormat(String text) throws FormatException {
-        	if (!ALLOWED_LABELS.contains(text)) {
-        		throw new FormatException("Label %s on nesting edge should be one of %s", text, ALLOWED_LABELS);
-        	}
-		}
+        protected boolean isCorrect(String text) {
+            return ALLOWED_LABELS.contains(text);
+        }
+
+        /** This implementation tests if the text corresponds to an operation of the associated algebra. */
+        @Override
+        protected String getExceptionText(String text) {
+            return String.format("Label %s on nesting edge should be one of %s", text, ALLOWED_LABELS);
+        }
 	}
 }

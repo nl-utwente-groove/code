@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.14 2007-11-09 13:00:43 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.15 2007-11-19 12:19:12 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -32,8 +32,9 @@ import groove.graph.algebra.ProductEdge;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.util.Groove;
-import groove.view.FreeLabelParser;
 import groove.view.FormatException;
+import groove.view.FreeLabelParser;
+import groove.view.NumberLabelParser;
 
 import java.util.BitSet;
 import java.util.Collection;
@@ -46,7 +47,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -446,7 +447,7 @@ public class AttributeAspect extends AbstractAspect {
 	static {
 		try {
 		    ARGUMENT = instance.addEdgeValue(ARGUMENT_NAME);
-		    ARGUMENT.setLabelParser(getNumberLabelParser());
+		    ARGUMENT.setLabelParser(NumberLabelParser.getInstance());
 		    VALUE = instance.addNodeValue(VALUE_NAME);
 		    PRODUCT = instance.addNodeValue(PRODUCT_NAME);
 		    INTEGER = instance.addEdgeValue(INTEGER_NAME);
@@ -483,9 +484,25 @@ public class AttributeAspect extends AbstractAspect {
 
         /** This implementation tests if the text corresponds to an operation of the associated algebra. */
         @Override
-		protected void testFormat(String text) throws FormatException {
-        	getOperation(text);
-		}
+        protected boolean isCorrect(String text) {
+            try {
+                getOperation(text);
+                return true;
+            } catch (FormatException e) {
+                return false;
+            }
+        }
+
+        /** This implementation tests if the text corresponds to an operation of the associated algebra. */
+        @Override
+        protected String getExceptionText(String text) {
+            try {
+                getOperation(text);
+                return "";
+            } catch (FormatException exc) {
+                return exc.getMessage();
+            }
+        }
 		
         /** 
          * Extracts an operation of this algebra from a given string,

@@ -12,21 +12,23 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ComposedLabelParser.java,v 1.2 2007-08-26 07:24:09 rensink Exp $
+ * $Id: ComposedLabelParser.java,v 1.3 2007-11-19 12:19:18 rensink Exp $
  */
 package groove.view;
 
 import java.util.Collection;
 import java.util.LinkedHashSet;
 
+import groove.graph.DefaultLabel;
 import groove.graph.Label;
 
 /**
  * Label parser consisting of a collection of parser, which are consecutively applied.
  * Parsing only succeeds if all parsers agree on the result.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
+@Deprecated
 public class ComposedLabelParser implements LabelParser {
     /** Constructs a new parser from a given collection of parsers. */
     public ComposedLabelParser(final Collection<LabelParser> parsers) {
@@ -34,17 +36,17 @@ public class ComposedLabelParser implements LabelParser {
     }
 
     /**
-     * Iterates over the stored parsers, and compares thei results for the label text.
+     * Iterates over the stored parsers, and compares their results for the label text.
      * Throws an exception if the parsers do not agree on the result.
      */
-    public Label parse(String text) throws FormatException {
+    public Label parse(DefaultLabel label) throws FormatException {
         Label result = null;
         for (LabelParser parser : parsers) {
-            Label newLabel = parser.parse(text);
+            Label newLabel = parser.parse(label);
             if (result == null) {
                 result = newLabel;
             } else if (!result.equals(newLabel)) {
-                throw new FormatException("label '%s' cannot be parsed unambiguously", text);
+                throw new FormatException("label '%s' cannot be parsed unambiguously", label);
             }
         }
         return result;
@@ -54,9 +56,9 @@ public class ComposedLabelParser implements LabelParser {
      * Tries each of the stored unparsers, and returns the result if all
      * stored parsers agree that it is parsed back to the original label.
      */
-    public String unparse(Label label) {
+    public DefaultLabel unparse(Label label) {
         for (LabelParser parser : parsers) {
-            String result = parser.unparse(label);
+            DefaultLabel result = parser.unparse(label);
             try {
                 if (parse(result).equals(label)) {
                     return result;
@@ -65,7 +67,7 @@ public class ComposedLabelParser implements LabelParser {
                 // go on to try the next unparser
             }
         }
-        // no sucess
+        // no success
         return null;
     }
 
