@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Converter.java,v 1.8 2007-11-05 14:16:20 rensink Exp $
+ * $Id: Converter.java,v 1.9 2007-11-22 15:47:13 fladder Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Map;
 /**
  * Performs conversions to and from groove.graph.Graph.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class Converter {
 	/** Main method to test this class. */
@@ -172,6 +172,12 @@ public class Converter {
     static public final String HTML_EXISTS = "&exist;";
     /** HTML negation symbol. */
     static public final String HTML_NOT = "&not;";
+    /** HTML lambda symbol. */
+    static public final String HTML_LAMBDA = "&lambda;";
+    /** HTML tau symbol. */
+    static public final String HTML_TAU = "&tau;";
+    /** HTML epsilon symbol. */
+    static public final String HTML_EPSILON = "&epsilon;";
     /** Name of the HTML tag (<code>html</code>). */
     static public final String HTML_TAG_NAME = "html";
     /** HTML tag. */

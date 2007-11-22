@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DepthFirstStrategy.java,v 1.2 2007-04-27 22:06:58 rensink Exp $
+ * $Id: DepthFirstStrategy.java,v 1.3 2007-11-22 15:47:13 fladder Exp $
  */
 package groove.lts.explore;
 
@@ -29,9 +29,9 @@ import java.util.Set;
  * LTS exploration strategy based on the principle of breadth first search.
  * The depth of the search can be set; a depth of 0 means unbounded depth.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
-@Deprecated
+
 public class DepthFirstStrategy extends AbstractStrategy {
 	/** Name of this exploration strategy. */
     static public final String STRATEGY_NAME = "DepthFirst";
