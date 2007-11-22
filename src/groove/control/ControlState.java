@@ -12,10 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlState.java,v 1.6 2007-09-28 12:48:08 rensink Exp $
+ * $Id: ControlState.java,v 1.7 2007-11-22 15:39:10 fladder Exp $
  */
 package groove.control;
 
+import groove.control.parse.Counter;
 import groove.graph.Element;
 import groove.graph.GenericNodeEdgeMap;
 import groove.graph.Node;
@@ -28,25 +29,29 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-public class ControlState implements State, Location {
+public class ControlState implements Location {
+
 
 	private int stateNumber;
+	private boolean success = false;
 	
-	//private Collection<ControlTransition> lambdas = new HashSet<ControlTransition>();
-
 	/** Store the Rules by priority **/
 	protected final SortedMap<Integer,Set<Rule>> priorityRuleMap = new TreeMap<Integer, Set<Rule>>(Rule.PRIORITY_COMPARATOR);
 	
-	/** Store the ControlTransitions by priority (not sure if this is needed **/
-	//protected final SortedMap<Integer,Set<ControlTransition>> priorityTransitionMap = new TreeMap<Integer,Set<ControlTransition>>(Rule.PRIORITY_COMPARATOR);
-
 	/** store all transitions in a set with the associated rule as key **/
 	private HashMap<Rule, Set<ControlTransition>> ruleTransitionMap = new HashMap<Rule, Set<ControlTransition>>();
 	
+	/**
+	 * The contructor needs a unique integer id which is used to compare to controlstates.
+	 * @param stateNumber
+	 */
 	
-	public ControlState(int stateNumber)
-	{
-		this.stateNumber = stateNumber;
+	private ControlShape parent;
+	
+	// a node has only a single 
+	public ControlState(ControlShape parent) {
+		this.parent = parent;
+		this.stateNumber = Counter.inc();
 	}
 	
 	public boolean isClosed() {
@@ -78,54 +83,26 @@ public class ControlState implements State, Location {
 //	}
 	
 	public void add(ControlTransition transition) {
-		int priority = transition.getPriority();
-		
-		Rule rule = transition.rule();
-		
-		// store transition by priority
-		/*
-		Set<ControlTransition> priorityTransitionSet = priorityTransitionMap.get(priority);
-		if (priorityTransitionSet == null) {
-			priorityTransitionMap.put(priority, priorityTransitionSet = createTransitionSet());
-		}
-		priorityTransitionSet.add(transition);
-		*/
+//		int priority = transition.getPriority();
+//		
+//		Rule rule = transition.rule();
 
 		// store rule by priority
-		Set<Rule> priorityRuleSet = priorityRuleMap.get(priority);
-		if( priorityRuleSet == null ) {
-			priorityRuleMap.put(priority, priorityRuleSet = createRuleSet());
-		}
-		priorityRuleSet.add(rule);
-
-		// store transition by rule
-		Set<ControlTransition> ruleTransitionSet = ruleTransitionMap.get(rule);
-		if( ruleTransitionSet == null ) {
-			ruleTransitionMap.put(rule, ruleTransitionSet = createTransitionSet());
-		}
-		ruleTransitionSet.add(transition);
+//		Set<Rule> priorityRuleSet = priorityRuleMap.get(priority);
+//		if( priorityRuleSet == null ) {
+//			priorityRuleMap.put(priority, priorityRuleSet = createRuleSet());
+//		}
+//		
+//		priorityRuleSet.add(rule);
+//
+//		// store transition by rule
+//		Set<ControlTransition> ruleTransitionSet = ruleTransitionMap.get(rule);
+//		if( ruleTransitionSet == null ) {
+//			ruleTransitionMap.put(rule, ruleTransitionSet = createTransitionSet());
+//		}
+//		ruleTransitionSet.add(transition);
 	}
 
-	
-    /**
-     * Returns an unmodifiable view upon the underlying collection of transitions.
-     * The result is ordered by descending priority, and within each priority,
-     * by alphabetical order of the names.
-     * Don't invoke {@link Object#equals} on the result!
-     * @ensure <tt>result: Label -> Rule</tt>
-     */
-    /*
-	public Collection<ControlTransition> getTransitions() {
-    	// TODO: Needs testing
-    	Collection<ControlTransition> result = null;
-    	//if (result == null) {
-    		result = Arrays.asList(new CollectionOfCollections<ControlTransition>(priorityTransitionMap.values()).toArray(new ControlTransition[0]));
-    			//ruleSet = result;
-    	//}
-    	return result;
-    }
-    */
-    
     public SortedMap<Integer, Set<Rule>> getRuleMap()
     {
     	return priorityRuleMap;
@@ -144,11 +121,24 @@ public class ControlState implements State, Location {
 	@Override
 	public String toString()
 	{
-		return "ControlState(" + stateNumber +")";
+		return "ControlState(" + stateNumber + (isSuccess()?"S":"") + ")";
 	}
 	
 	public Set<ControlTransition> getTransitions(Rule rule) {
 		return ruleTransitionMap.get(rule);
+	}
+
+	public boolean isSuccess() {
+		// TODO Auto-generated method stub
+		return this.success;
+	}
+
+	public void setSuccess() {
+		this.success = true;
+	}
+	
+	public ControlShape getParent() {
+		return this.parent;
 	}
 	
 }

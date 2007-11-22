@@ -12,10 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractControlTransition.java,v 1.3 2007-08-26 07:23:34 rensink Exp $
+ * $Id: AntlrParser.java,v 1.1 2007-11-22 15:39:12 fladder Exp $
  */
-package groove.control;
+package groove.control.parse;
 
-@Deprecated
-public abstract class AbstractControlTransition {
+public class AntlrParser {
+
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		antlr.Tool.main(new String[]{"gcl.g"});
+		antlr.Tool.main(new String[]{"builder.g"});
+	}
+
 }
