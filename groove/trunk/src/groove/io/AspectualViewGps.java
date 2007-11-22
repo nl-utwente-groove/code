@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.20 2007-11-06 16:07:33 rensink Exp $
+ * $Id: AspectualViewGps.java,v 1.21 2007-11-22 15:47:13 fladder Exp $
  */
 
 package groove.io;
@@ -48,7 +48,7 @@ import java.util.Properties;
  * followed by an <code>Integer</code> indicating the number of number of objects of this type,
  * followed by a null update to indicate the end of this type of load.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class AspectualViewGps extends Observable implements GrammarViewXml<DefaultGrammarView> {
     /**
@@ -141,6 +141,7 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
 			}
 			catch(IOException e) {
 				System.err.println("Error: unable to open control program " + controlProgramFile.getName());
+				System.err.println("Proceeding without control.");
 			}
 		}
 	}
