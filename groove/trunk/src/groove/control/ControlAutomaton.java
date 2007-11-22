@@ -12,11 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlAutomaton.java,v 1.6 2007-08-26 07:23:33 rensink Exp $
+ * $Id: ControlAutomaton.java,v 1.7 2007-11-22 15:39:10 fladder Exp $
  */
 package groove.control;
 
+import groove.graph.AbstractGraph;
 import groove.graph.AbstractGraphShape;
+import groove.graph.GraphCache;
 import groove.graph.GraphShapeCache;
 import groove.lts.LTS;
 import groove.lts.State;
@@ -28,118 +30,86 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public class ControlAutomaton extends AbstractGraphShape<GraphShapeCache> implements LTS {
+public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
 	
-	/** holds the (and and only) startState of the graphshape **/ 
-	private State startState;
+	private ControlShape shape;
 	
-	private Set nodeSet = new HashSet<State>();
-	private Set edgeSet = new HashSet<Transition>();
-	private Set<ControlState> finalStates = new HashSet<ControlState>();
 	
-	/** the current rulesystem, needed to fetch Rule's given a rulename **/
-	private Set<String> ruleNames;
-	private RuleSystem ruleSystem;
+	private Set<ControlShape> activeShapes = new HashSet<ControlShape>();
 	
-	public void clear()
-	{
-		this.nodeSet.clear();
-		this.edgeSet.clear();
-		this.startState = null;
-		this.finalStates.clear();
-	}
 	
-	public ControlAutomaton(Set<String> ruleNames) {
-		this.ruleNames = ruleNames;
+	public ControlAutomaton(ControlShape shape) {
+		this.shape = shape;
+		
+		
+		// if there is a procedure, toggle it active
+		if( shape.transitions().size() == 1 ) {
+			this.toggleActive((ControlShape)shape.transitions().iterator().next());
+		}
 	}
 	
 	/**
 	 * Return all edges in this graphshape 
 	 */
 	public Set<ControlTransition> edgeSet() {
+		Set<ControlTransition> tempSet = new HashSet<ControlTransition>();
+		tempSet.addAll(shape.transitions());
+		
+		Set<ControlTransition> edgeSet = new HashSet<ControlTransition>();
+		
+		while( tempSet.size() > 0 ) {
+			Set<ControlTransition> tempSet2 = new HashSet<ControlTransition>();
+			
+			for( ControlTransition edge: tempSet ) {
+				if( edge instanceof ControlShape && isActive((ControlShape) edge)) {
+					tempSet2.addAll(((ControlShape)edge).transitions());
+				} else {
+					edgeSet.add(edge);
+				}
+			}
+			
+			tempSet.clear();
+			tempSet.addAll(tempSet2);
+	    }
+		
 		return edgeSet;
 	}
 
-	/**
-	 * Set the startState of the automaton
-	 * @param cs 
-	 */
-	public void setStartState(ControlState cs)
-	{
-		this.startState = cs;
-	}
-	
-	public void addFinalState(ControlState cs)
-	{
-		this.finalStates.add(cs);
-	}
-	
 	public Set<ControlState> nodeSet() {
+		Set<ControlState> nodeSet = new HashSet<ControlState>();
+		nodeSet.addAll(shape.states());
+		
+		for( ControlShape shape : activeShapes ) {
+			nodeSet.addAll(shape.states());
+		}
 		return nodeSet;
 	}
 	
-	public Collection<ControlState> getFinalStates() {
-		return finalStates;
-	}
-
-	public boolean hasFinalStates() {
-		return !finalStates.isEmpty();
-	}
-
-	public boolean isFinal(State state) {
-		return finalStates.contains(state);
-	}
-
 	public boolean isOpen(State state) {
 		return false;
 	}
 
-	public State startState() {
-		return startState;
-	}
-
-	/**
-	 * 
-	 * The method to create new instances of Control State such that 
-	 * its stateNumber is unique in this ControlAutomaton.
-	 * This state will be added to the ControlAutomaton before it is returned.
-	 * 
-	 * @return a fresh control state
-	 */
-	protected ControlState newState()
-	{
-		return addState(new ControlState(nodeSet().size()));
+	public ControlState startState() {
+		return shape.getStart();
 	}
 	
-	/**
-	 * Stores a state and returns is.
-	 * @param state
-	 * @return
-	 */
-	public ControlState addState(ControlState state)
-	{
-		this.nodeSet.add(state);
-		return state;
+	public boolean isSuccess(ControlState state) {
+		return state.isSuccess();
 	}
 	
-	public Rule getRule(String name)
-	{
-		return this.ruleSystem.getRule(name);
+	public boolean isActive(ControlShape shape) {
+		return activeShapes.contains(shape);
 	}
 	
-	public void removeTransition(ControlTransition trans) {
-		this.edgeSet.remove(trans);
-	}
-	
-	public void addTransition(ControlTransition transition) {
-		this.edgeSet.add(transition);
-	}
-	
-	public void addTransition(ControlState source, ControlState target, String rulename)
-	{
-		ControlTransition ct = new ControlTransition(source, target, rulename);
-		this.edgeSet.add(ct);
-
-		//source.add(ct);
+	public void toggleActive(ControlShape shape) {
+		if( activeShapes.contains(shape)) {
+			activeShapes.remove(shape);
+			this.fireAddEdge(shape);
+			
+		}
+		else {
+			activeShapes.add(shape);
+			this.fireRemoveEdge(shape);
+		}
 	}
 }

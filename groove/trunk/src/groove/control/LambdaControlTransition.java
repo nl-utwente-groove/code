@@ -12,10 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LambdaControlTransition.java,v 1.3 2007-08-26 07:23:33 rensink Exp $
+ * $Id: LambdaControlTransition.java,v 1.4 2007-11-22 15:39:11 fladder Exp $
  */
 package groove.control;
 
-@Deprecated
-public class LambdaControlTransition extends AbstractControlTransition {
+public class LambdaControlTransition extends RuleControlTransition {
+	
+	public LambdaControlTransition(ControlState source, ControlState target)
+	{
+		super(source, target, ControlView.LAMBDA_LABEL);
+	}
 }

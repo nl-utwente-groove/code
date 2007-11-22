@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlTransition.java,v 1.6 2007-09-28 10:58:28 rensink Exp $
+ * $Id: ControlTransition.java,v 1.7 2007-11-22 15:39:11 fladder Exp $
  */
 package groove.control;
 
@@ -21,8 +21,7 @@ import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.lts.Transition;
-import groove.trans.Rule;
-import groove.trans.RuleNameLabel;
+import groove.trans.NameLabel;
 
 /**
  * @author Staijen
@@ -30,12 +29,11 @@ import groove.trans.RuleNameLabel;
  * Represents a transition in a control automaton, which is unique by its source, target and associated Rule.
  * 
  */
-public class ControlTransition implements Transition {
+public class ControlTransition implements LocationTransition {
 	
-	private Rule rule;
 	private ControlState source;
 	private ControlState target;
-	private String ruleName;
+	private String text;
 	
 	private ControlTransition visibleParent;
 	
@@ -48,40 +46,31 @@ public class ControlTransition implements Transition {
 	{
 		this.source = source;
 		this.target = target;
-		this.ruleName = ruleName;
+		this.text = ruleName;
 	}
 	
-	public String ruleName() {
-		return this.ruleName;
+	public String getText() {
+		return this.text;
 	}
 	
-	public void setRule(Rule rule)
-	{
-		this.rule = rule;
-	}
-	
-	/**
-	 * @return the Rule associated with this transition in the Control Automaton
-	 */
-	public Rule rule()
-	{
-		return rule;
-	}
-
 	public Label label() {
-		if( rule == null )
-			return new RuleNameLabel(this.ruleName);
-		else
-			return rule.getName();
+		return new NameLabel(this.getText());
 	}
+	
+//	public Label label() {
+//		if( rule == null )
+//			return new RuleNameLabel(this.ruleName);
+//		else
+//			return rule.getName();
+//	}
 	
 	/**
 	 * @return priority of this transition, which equals the priority of the associated rule
 	 */
-	public int getPriority()
-	{
-		return this.rule.getPriority();
-	}
+//	public int getPriority()
+//	{
+//		return this.rule.getPriority();
+//	}
 	
 	public ControlState source() {
 		// TODO Auto-generated method stub
@@ -163,5 +152,25 @@ public class ControlTransition implements Transition {
 	public ControlTransition getVisibleParent() {
 		return this.visibleParent;
 	}
-		
+	
+	/**
+	 * Modify the source. Ment to be used for merging states only.
+	 * @param source
+	 */
+	public void setSource(ControlState source) { 
+		this.source = source;
+	}
+
+	/**
+	 * Modify the target. Ment to be used for merging states only.
+	 * @param source
+	 */
+	public void setTarget(ControlState target) {
+		this.target = target;
+	}
+	
+	@Override
+	public String toString() {
+		return this.source + "--- " + text + " --->" + this.target; 
+	}
 }

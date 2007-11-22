@@ -12,15 +12,53 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleControlTransition.java,v 1.3 2007-08-26 07:23:33 rensink Exp $
+ * $Id: RuleControlTransition.java,v 1.4 2007-11-22 15:39:11 fladder Exp $
  */
 package groove.control;
+
+import groove.trans.Rule;
 
 /**
  * A ControlTransition associated with a Rule in a RuleSystem. 
  * @author Staijen
  *
  */
-@Deprecated
-public class RuleControlTransition extends AbstractControlTransition {
+public class RuleControlTransition extends ControlTransition {
+
+	private Rule rule;
+	
+	/**
+	 * Contstructor for a rulecontroltransition. Allows to set the associated rule later, but requires a label already.
+	 * @param source
+	 * @param target
+	 * @param label
+	 */
+	public RuleControlTransition(ControlState source, ControlState target, String label) {
+		super(source, target, label);
+	}
+
+	/**
+	 * setter method for the associated rule
+	 * @param rule
+	 */
+	public void setRule(Rule rule) {
+		this.rule = rule;
+	}
+	
+	/** 
+	 * getter method for the associated rule
+	 * @return (Rule) associated rule or (null) null.
+	 */
+	public Rule getRule() {
+		return this.rule;
+	}
+
+	/**
+	 * returns the priority of the associated rule
+	 * @return (int) the priority of the associated rule
+	 */
+	public int getPriority() {
+		return this.rule.getPriority();
+	}
 }
+

@@ -12,10 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlView.java,v 1.5 2007-08-31 10:23:32 rensink Exp $
+ * $Id: ControlView.java,v 1.6 2007-11-22 15:39:11 fladder Exp $
  */
 package groove.control;
 
+import groove.control.parse.AutomatonBuilder;
+import groove.control.parse.GCLBuilder;
+import groove.control.parse.GCLChecker;
+import groove.control.parse.GCLLexer;
+import groove.control.parse.GCLParser;
+import groove.control.parse.Namespace;
 import groove.graph.GraphFactory;
 import groove.graph.Morphism;
 import groove.trans.GraphGrammar;
@@ -34,11 +40,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * @author Staijen
@@ -68,9 +71,9 @@ public class ControlView {
 		{
 			Morphism m_l = factory.newMorphism(factory.newGraph(), factory.newGraph());
 			Morphism m_e = factory.newMorphism(factory.newGraph(), factory.newGraph());
-			LAMBDA_RULE = new SPORule(m_l, new RuleNameLabel(Control.LAMBDA_LABEL),ANY_RULE_PRORITY, new SystemProperties());
+			LAMBDA_RULE = new SPORule(m_l, new RuleNameLabel(ControlView.LAMBDA_LABEL),ANY_RULE_PRORITY, new SystemProperties());
 			LAMBDA_RULE.setFixed();
-			ELSE_RULE = new SPORule(m_e, new RuleNameLabel(Control.ELSE_LABEL),ELSE_RULE_PRIORITY, new SystemProperties());
+			ELSE_RULE = new SPORule(m_e, new RuleNameLabel(ControlView.ELSE_LABEL),ELSE_RULE_PRIORITY, new SystemProperties());
 			ELSE_RULE.setFixed();
 		}
 		catch(FormatException e){ /* this exception is most certainly never thrown*/ }
@@ -81,7 +84,13 @@ public class ControlView {
 	
 	private String controlProgram;
 	
+	private ControlShape programShape;
+	
 	private ControlAutomaton automaton;
+
+	public static final String LAMBDA_LABEL = "tau";
+
+	public static final String ELSE_LABEL = "else";
 	
 	/**
 	 * @param args
@@ -94,12 +103,23 @@ public class ControlView {
 		}
 		try
         {
-			automaton.clear();
 			GCLLexer lexer = new GCLLexer(new StringReader(this.controlProgram));
-            GCLParser parser = new GCLParser(lexer);
+            Namespace namespace = new Namespace();
+			GCLParser parser = new GCLParser(lexer);
             parser.program();
-            GCLBuilder builder = new GCLBuilder(this.automaton);
-            builder.program(parser.getAST());
+            
+            AutomatonBuilder b = new AutomatonBuilder();
+            
+            GCLChecker checker = new GCLChecker();
+            checker.setNamespace(b);
+            
+            checker.program(parser.getAST());
+            
+            GCLBuilder builder = new GCLBuilder();
+            builder.setBuilder(b);
+            
+            this.programShape = builder.program(parser.getAST());
+            this.automaton = new ControlAutomaton(this.programShape);
         }
 		catch(Exception e)
 		{
@@ -118,27 +138,19 @@ public class ControlView {
 		this.controlFile = controlFile;
 		
 		StringBuilder contents = new StringBuilder();
-		try
-		{
+		try {
 			BufferedReader br = new BufferedReader(new FileReader(controlFile));
-			
-		
 			String line;
 			while( ((line = br.readLine()) != null) )
 			{
 				contents.append(line);
 			}
-			
 			//ca.setProgram(contents.toString());
-
 		}
-		catch(Exception e)
-		{
+		catch(Exception e) {
 			e.printStackTrace();
 		}
-		
-		this.controlProgram = contents.toString();
-
+		setProgram(contents.toString());
 	}
 	
 	/**
@@ -164,7 +176,7 @@ public class ControlView {
 		for( RuleNameLabel rule : grammar.getRuleMap().keySet() ) {
 			this.scope.put(rule.text(), rule);
 		}
-		automaton = new ControlAutomaton(this.scope.keySet());
+		//automaton = new ControlAutomaton(this.scope.keySet());
 	}
 	
 	public ControlAutomaton getAutomaton() 
@@ -180,41 +192,49 @@ public class ControlView {
 		return this.controlFile;
 	}
 	
+	/**
+	 * This method should only be called from DefaultGrammarView.computeGrammar
+	 * 
+	 * @param grammar
+	 * @return
+	 * @throws FormatException
+	 */
 	public ControlAutomaton toAutomaton(GraphGrammar grammar) throws FormatException
 	{
-		List<String> errors = new ArrayList<String>();
-		
-		for( ControlTransition transition : automaton.edgeSet() )
-		{
-			Rule rule = grammar.getRule(transition.ruleName());
-			if( rule != null ) {
-				transition.setRule(rule);
-				transition.source().add(transition);
-			}
-			else
-			{
-				Set<Rule> rules = grammar.getChildRules(transition.ruleName());
-				if( !rules.isEmpty() ) {
-					ControlTransition childTrans;
-					for( Rule childRule : rules) {
-						//automaton.removeTransition(transition);
-						childTrans = new ControlTransition(transition.source(), transition.target(), childRule.getName().name());
-						childTrans.setRule(childRule);
-						transition.source().add(childTrans);
-						// this is for viewing purposes only
-						childTrans.setVisibleParent(transition);
-					}
-					// remove the original transition;
-				}
-				else
-					errors.add("Format error in control program: unable to find rule for label \"" +  transition.ruleName() + "\"");
-			}
-		}
-		
-		if( errors.size() > 0 )
-			throw new FormatException(errors);
-		
-		return automaton;
+//		List<String> errors = new ArrayList<String>();
+//		
+//		for( ControlTransition transition : automaton.edgeSet() )
+//		{
+//			Rule rule = grammar.getRule(transition.ruleName());
+//			if( rule != null ) {
+//				transition.setRule(rule);
+//				transition.source().add(transition);
+//			}
+//			else
+//			{
+//				// if the rulename is a group, this will return all child rules.
+//				Set<Rule> rules = grammar.getChildRules(transition.ruleName());
+//				if( !rules.isEmpty() ) {
+//					ControlTransition childTrans;
+//					for( Rule childRule : rules) {
+//						//automaton.removeTransition(transition);
+//						childTrans = new ControlTransition(transition.source(), transition.target(), childRule.getName().name());
+//						childTrans.setRule(childRule);
+//						transition.source().add(childTrans);
+//						// this is for viewing purposes only
+//						childTrans.setVisibleParent(transition);
+//					}
+//					// remove the original transition;
+//				}
+//				else
+//					errors.add("Format error in control program: unable to find rule for label \"" +  transition.ruleName() + "\"");
+//			}
+//		}
+//		
+//		if( errors.size() > 0 )
+//			throw new FormatException(errors);
+//		
+		return this.getAutomaton();
 	}
 	
 	/**

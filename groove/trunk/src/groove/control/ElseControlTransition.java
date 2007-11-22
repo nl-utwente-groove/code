@@ -12,12 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ElseControlTransition.java,v 1.3 2007-08-26 07:23:34 rensink Exp $
+ * $Id: ElseControlTransition.java,v 1.4 2007-11-22 15:39:11 fladder Exp $
  */
 package groove.control;
 
 
-@Deprecated
-public class ElseControlTransition extends AbstractControlTransition {
+public class ElseControlTransition extends RuleControlTransition {
 
+	public ElseControlTransition(ControlState source, ControlState target) {
+		super(source, target, ControlView.ELSE_LABEL);
+	}
 }

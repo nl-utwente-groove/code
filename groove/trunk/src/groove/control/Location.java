@@ -12,17 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Location.java,v 1.3 2007-08-26 07:23:34 rensink Exp $
+ * $Id: Location.java,v 1.4 2007-11-22 15:39:11 fladder Exp $
  */
 package groove.control;
 
+import groove.graph.Node;
 import groove.trans.Rule;
 
-import java.util.Collection;
 import java.util.Set;
 
-public interface Location {
+public interface Location extends Node {
 	
 	public Set<ControlTransition> getTransitions(Rule rule);
-	
+	public boolean isSuccess();
 }
