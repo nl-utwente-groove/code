@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.12 2007-11-19 12:19:14 rensink Exp $
+ * $Id: NestingAspect.java,v 1.13 2007-11-23 08:20:10 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.12 $ $Date: 2007-11-19 12:19:14 $
+ * @version 0.1 $Revision: 1.13 $ $Date: 2007-11-23 08:20:10 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -77,7 +77,7 @@ public class NestingAspect extends AbstractAspect {
 			}
 			AspectValue value = getNestingValue(edge);
 			if (!(value instanceof NamedAspectValue) || ((NamedAspectValue) value).getContent().length() == 0) {
-				throw new FormatException("Quantified edge %s has non-empty level name");
+				throw new FormatException("Quantified edge %s has empty level name", edge);
 			}
 		}
 	}
