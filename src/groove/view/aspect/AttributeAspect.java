@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.15 2007-11-19 12:19:12 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.16 2007-11-23 08:39:56 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -36,6 +36,7 @@ import groove.view.FormatException;
 import groove.view.FreeLabelParser;
 import groove.view.NumberLabelParser;
 
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
@@ -47,7 +48,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -285,7 +286,11 @@ public class AttributeAspect extends AbstractAspect {
     		result = argEdge;
     	} else {
     		assert algebraMap.containsKey(attributeValue);
-    		result = createOperatorEdge(getOperation(edge), ends);
+    		Operation operation = getOperation(edge);
+    		if (operation == null) {
+    		    throw new FormatException("Unknown operator in edge label %s", edge.getLabelText());
+    		}
+    		result = createOperatorEdge(operation, ends);
     	}
     	return result;
     }
@@ -300,6 +305,7 @@ public class AttributeAspect extends AbstractAspect {
      * set of outgoing attribute edges in <code>graph</code>
      */
 	private static Edge createOperatorEdge(Operation operator, Node[] ends) throws FormatException {
+	    assert operator != null : String.format("Cannot create edge between nodes %s for empty operator", Arrays.toString(ends));
 		Node source = ends[Edge.SOURCE_INDEX];
 		if (!(source instanceof ProductNode)) {
 			throw new FormatException("Source of '%s'-edge should be a product node", operator);
