@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.16 2007-11-23 08:39:56 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.17 2007-11-23 08:58:41 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -48,7 +48,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -105,7 +105,7 @@ public class AttributeAspect extends AbstractAspect {
 			// the value is VALUE; try to establish the algebra
 			Algebra type = null;
 			for (AspectEdge edge: edges) {
-				if (!edge.target().equals(node)) {
+				if (!NestingAspect.isMetaElement(edge) && !edge.target().equals(node)) {
 					throw new FormatException("Value node '%s' has outgoing edge '%s'", node, edge);
 				}
 				Operation operation = getOperation(edge);
