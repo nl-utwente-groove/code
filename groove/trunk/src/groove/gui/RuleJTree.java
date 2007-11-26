@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJTree.java,v 1.28 2007-11-26 21:17:32 rensink Exp $
+ * $Id: RuleJTree.java,v 1.29 2007-11-26 21:45:32 rensink Exp $
  */
 package groove.gui;
 
@@ -66,7 +66,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -622,9 +622,9 @@ public class RuleJTree extends JTree implements SimulationListener {
         	GraphProperties properties = GraphInfo.getProperties(getRule().getAspectGraph(), false);
         	if (properties != null && !properties.isEmpty()) {
         	    boolean hasProperties;
-        	    result.append(": ");
         	    String remark = properties.getRemark();
         	    if (remark != null) {
+            	    result.append(": ");
                     result.append(Converter.toHtml(remark));
                     hasProperties = properties.size() > 1;
         	    } else {
