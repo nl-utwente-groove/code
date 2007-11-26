@@ -337,6 +337,14 @@ public class GraphProperties extends Properties {
 
     /** 
      * Tests if a given object is a valid user-defined property key.
+     * This returns <code>true</code> if the key starts with {@link #SYSTEM_KEY_START}.
+     */
+    static public boolean isSystemKey(String key) {
+        return key != null && key.length() > 0 && key.charAt(0) == SYSTEM_KEY_START;
+    }
+
+    /** 
+     * Tests if a given object is formatted as a system key.
      * This returns <code>true</code> if the key passes {@link ExprParser#isIdentifier(String)}.
      */
     static public boolean isValidUserKey(String key) {

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.45 2007-10-26 11:10:29 rensink Exp $
+ * $Id: SPORule.java,v 1.46 2007-11-26 21:17:27 rensink Exp $
  */
 package groove.trans;
 
@@ -24,6 +24,8 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
+import groove.graph.algebra.AlgebraEdge;
+import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
@@ -37,6 +39,7 @@ import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -52,7 +55,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.45 $
+ * @version $Revision: 1.46 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -352,14 +355,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 				// This goes right because node identities are actually the same, but...
 				Node myNode = rootNodeEntry.getValue();
 				Node parentNode = rootNodeEntry.getKey();
-				if (myAnchor.contains(myNode) && getParent().lhs().containsElement(parentNode)) {
+				if (myAnchor.contains(myNode) && getParent().lhs().containsElement(parentNode) && isAnchorable(myNode)) {
 					parentAnchor.add(parentNode);
 				}
 			}
 			for (Map.Entry<Edge, Edge> rootEdgeEntry : getRootMap().edgeMap().entrySet()) {
 				Edge myEdge = rootEdgeEntry.getValue();
 				Edge parentEdge = rootEdgeEntry.getKey();
-				if (myAnchor.contains(myEdge) && getParent().lhs().containsElement(parentEdge)) {
+				if (myAnchor.contains(myEdge) && getParent().lhs().containsElement(parentEdge) && isAnchorable(myEdge)) {
 					parentAnchor.add(parentEdge);
 				}
 			}
@@ -457,7 +460,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * and {@link SystemProperties#isRhsAsNac()}.
 	 */
 	@Override
-	public void setFixed() {
+	public void setFixed() throws FormatException {
 		if (!isFixed()) {
 			if (getProperties() != null) {
 				if (getProperties().isCheckCreatorEdges()) {
@@ -471,6 +474,23 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 					rhsNac.setFixed();
 					addSubCondition(rhsNac);
 				}
+			}
+			// test if product nodes have the required arguments
+			for (Node node: lhs().nodeSet()) {
+			    if (node instanceof ProductNode) {
+			        ProductNode product = (ProductNode) node;
+			        int arity = product.arity();
+			        BitSet arguments = new BitSet(arity);
+			        for (Edge edge: lhs().outEdgeSet(product)) {
+			            if (edge instanceof AlgebraEdge) {
+			                arguments.set(((AlgebraEdge) edge).getNumber());
+			            }
+			        }
+			        if (arguments.cardinality() != arity) {
+			            arguments.flip(0, arity);
+			            throw new FormatException("Arguments edges %s of product node %s missing in sub-rule", arguments, product);
+			        }
+			    }
 			}
 			super.setFixed();
 		}

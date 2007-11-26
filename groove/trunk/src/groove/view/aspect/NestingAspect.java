@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.13 2007-11-23 08:20:10 rensink Exp $
+ * $Id: NestingAspect.java,v 1.14 2007-11-26 21:17:24 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.13 $ $Date: 2007-11-23 08:20:10 $
+ * @version 0.1 $Revision: 1.14 $ $Date: 2007-11-26 21:17:24 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -176,7 +176,7 @@ public class NestingAspect extends AbstractAspect {
      * and {@link #checkEdge(AspectEdge, AspectGraph)}).
      */
     public static boolean isForall(AspectElement element) {
-        return getNestingValue(element).equals(FORALL) || getNestingValue(element).equals(FORALL_POS);
+        return FORALL.equals(getNestingValue(element)) || FORALL_POS.equals(getNestingValue(element));
     }
 
     /**
@@ -185,7 +185,7 @@ public class NestingAspect extends AbstractAspect {
      * and {@link #checkEdge(AspectEdge, AspectGraph)}).
      */
     public static boolean isPositive(AspectElement element) {
-        return getNestingValue(element).equals(FORALL_POS);
+        return FORALL_POS.equals(getNestingValue(element));
     }
     
 	/**
@@ -194,7 +194,7 @@ public class NestingAspect extends AbstractAspect {
 	 * and {@link #checkEdge(AspectEdge, AspectGraph)}).
 	 */
 	public static boolean isExists(AspectElement element) {
-		return getNestingValue(element).equals(EXISTS);
+		return EXISTS.equals(getNestingValue(element));
 	}
 	
 	/** 
@@ -243,7 +243,7 @@ public class NestingAspect extends AbstractAspect {
 		try {
 			EXISTS = instance.addValue(EXISTS_NAME);
             FORALL = instance.addValue(FORALL_NAME);
-            FORALL_POS = instance.addValue(FORALL_POS_NAME);
+            FORALL_POS = instance.addNodeValue(FORALL_POS_NAME);
 			NESTED = instance.addEdgeValue(NESTED_NAME);
 			EXISTS.setSourceToEdge(NESTED);
 			EXISTS.setTargetToEdge(NESTED);

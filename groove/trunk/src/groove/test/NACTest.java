@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NACTest.java,v 1.18 2007-10-06 11:27:52 rensink Exp $
+ * $Id: NACTest.java,v 1.19 2007-11-26 21:17:26 rensink Exp $
  */
 package groove.test;
 
@@ -55,7 +55,7 @@ import junit.framework.TestCase;
  * <li> g1: 0 --a--> 0 --c--> 1
  * <li> g2: 0 --a--> 1 --a--> 2 <--c-- 1
  * </ul>
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class NACTest extends TestCase {
     public NACTest(String name) {
@@ -148,7 +148,11 @@ public class NACTest extends TestCase {
     }
 
     public void testRule() {
-    	rule.setFixed();
+    	try {
+            rule.setFixed();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
         assertEquals(1, derivSet.size());
         Iterator<RuleApplication> derivIter = derivSet.iterator();
@@ -167,7 +171,11 @@ public class NACTest extends TestCase {
 
     public void testNAC0() {
         rule.addSubCondition(NACs[0]);
-        rule.setFixed();
+        try {
+            rule.setFixed();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
         assertEquals(1, derivSet.size());
@@ -211,7 +219,11 @@ public class NACTest extends TestCase {
 
     public void testNAC3() {
         rule.addSubCondition(NACs[3]);
-        rule.setFixed();
+        try {
+            rule.setFixed();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
         assertEquals(0, derivSet.size());
@@ -226,7 +238,11 @@ public class NACTest extends TestCase {
     public void testNAC03() {
         rule.addSubCondition(NACs[0]);
         rule.addSubCondition(NACs[3]);
-        rule.setFixed();
+        try {
+            rule.setFixed();
+        } catch (FormatException e) {
+            e.printStackTrace();
+        }
 
         Collection<RuleApplication> derivSet = getDerivations(rule, g[0]);
         assertEquals(0, derivSet.size());

@@ -12,9 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Fixable.java,v 1.1 2007-10-07 07:56:52 rensink Exp $
+ * $Id: Fixable.java,v 1.2 2007-11-26 21:17:30 rensink Exp $
  */
 package groove.util;
+
+import groove.view.FormatException;
 
 /**
  * Interface for objects that know a <i>fixing phase</i> before they can be used.
@@ -24,8 +26,11 @@ package groove.util;
  * @version $Revision $
  */
 public interface Fixable {
-	/** Sets the object to fixed. */
-	void setFixed();
+	/** 
+	 * Sets the object to fixed.
+	 * @throws FormatException if the object is found to be inconsistent in some way. 
+	 */
+	void setFixed() throws FormatException ;
 	
 	/** 
 	 * Indicates if the object is fixed, i.e., {@link #setFixed()}
