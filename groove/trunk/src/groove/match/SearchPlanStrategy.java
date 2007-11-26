@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.16 2007-10-23 16:08:01 iovka Exp $
+ * $Id: SearchPlanStrategy.java,v 1.17 2007-11-26 21:48:44 rensink Exp $
  */
 package groove.match;
 
@@ -39,7 +39,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 	/**
@@ -390,14 +390,14 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         final boolean putNode(int index, Node image) {
         	assert nodeAnchors[index] == null : String.format("Assignment %s=%s replaces pre-matched image %s", nodeKeys[index], image, nodeAnchors[index]);
         	if (injective) {
-        		Set<Node> usedNodes = getUsedNodes();
-				if (image != null && !usedNodes.add(image)) { 
-					return false;
-				}
         		Node oldImage = nodeImages[index];
         		if (oldImage != null) {
         			usedNodes.remove(oldImage);
         		}
+        		Set<Node> usedNodes = getUsedNodes();
+				if (image != null && !usedNodes.add(image)) { 
+					return false;
+				}
         	}
             nodeImages[index] = image;
             return true;
