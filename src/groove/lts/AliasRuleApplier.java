@@ -18,6 +18,7 @@ package groove.lts;
 
 import groove.control.ControlState;
 import groove.control.ControlView;
+import groove.control.Location;
 import groove.graph.Graph;
 import groove.trans.AbstractRuleApplier;
 import groove.trans.Rule;
@@ -79,7 +80,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	/** Sets this applier to work on a given state. */
 	public final void setState(GraphState state) {
 		this.graph = state.getGraph();
-		this.control = (ControlState) state.getControl();
+		this.control = state.getLocation();
 		if (state instanceof GraphNextState && ((GraphNextState) state).source().isClosed()) {
 			this.state = (GraphNextState) state;
 			this.rule = this.state.getEvent().getRule();
@@ -185,9 +186,8 @@ public class AliasRuleApplier extends AbstractRuleApplier {
     protected Iterator<Set<Rule>> getRuleSetIter()
     {
     	if( control != null  ) {
-    		return control.getRuleMap().values().iterator();
-    	}
-    	else {
+    		return control.ruleMap().values().iterator();
+    	} else {
     		return super.getRuleSetIter();
     	}
     }
@@ -203,7 +203,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	/** The (fixed) state of this deriver. */
     private GraphNextState state;
     /** Control location of the current the state on which this applier works **/
-    private ControlState control;
+    private Location control;
     /** The rule leading up to <code>state</code>. */
     private Rule rule;
     /** The priority of the rule leading to <code>state</code>. */

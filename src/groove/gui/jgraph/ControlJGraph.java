@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlJGraph.java,v 1.1 2007-11-22 15:42:50 fladder Exp $
+ * $Id: ControlJGraph.java,v 1.2 2007-11-26 08:58:39 fladder Exp $
  */
 package groove.gui.jgraph;
 
@@ -32,10 +32,8 @@ public class ControlJGraph extends JGraph {
     public ControlJGraph(Simulator simulator) {
     	super(ControlJModel.EMPTY_CONTROL_JMODEL, true);
         this.simulator = simulator;
-        //this.exploreMenu = new ExploreStrategyMenu(simulator);
         addMouseListener(new MyMouseListener());
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
-        //setLayoutMenu.selectLayoutAction(createInitialLayouter());
         setEnabled(false);
         
         

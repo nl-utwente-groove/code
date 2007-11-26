@@ -12,24 +12,25 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlTransition.java,v 1.7 2007-11-22 15:39:11 fladder Exp $
+ * $Id: ControlTransition.java,v 1.8 2007-11-26 08:58:11 fladder Exp $
  */
 package groove.control;
 
+import groove.graph.BinaryEdge;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.lts.Transition;
-import groove.trans.NameLabel;
 
 /**
  * @author Staijen
  * 
  * Represents a transition in a control automaton, which is unique by its source, target and associated Rule.
+ * This is a DefaultEdge to be able to visualize as GraphShape, and a LocationTransition to use for explocation.
  * 
  */
-public class ControlTransition implements LocationTransition {
+public class ControlTransition implements BinaryEdge, LocationTransition {
 	
 	private ControlState source;
 	private ControlState target;
@@ -38,35 +39,30 @@ public class ControlTransition implements LocationTransition {
 	private ControlTransition visibleParent;
 	
 	/**
+	 * Creates a labelled controltransition between two controlstates
 	 * @param source
 	 * @param target
-	 * @param rule is the Rule associated with this transition
+	 * @param label is the Rule associated with this transition
 	 */
-	public ControlTransition(ControlState source, ControlState target, String ruleName)
+	public ControlTransition(ControlState source, ControlState target, String label)
 	{
 		this.source = source;
 		this.target = target;
-		this.text = ruleName;
+		this.text = label;
 	}
 	
+	/** Returns the text on the label */
 	public String getText() {
 		return this.text;
 	}
 	
 	public Label label() {
-		return new NameLabel(this.getText());
+		return DefaultLabel.createLabel(this.getText());
 	}
 	
-//	public Label label() {
-//		if( rule == null )
-//			return new RuleNameLabel(this.ruleName);
-//		else
-//			return rule.getName();
-//	}
-	
-	/**
-	 * @return priority of this transition, which equals the priority of the associated rule
-	 */
+//	/**
+//	 * @return priority of this transition, which equals the priority of the associated rule
+//	 */
 //	public int getPriority()
 //	{
 //		return this.rule.getPriority();
@@ -145,10 +141,17 @@ public class ControlTransition implements LocationTransition {
         }
 	}
 	
+	/**
+	 * Some acutal control transitions are not visible in the control automaton.
+	 * @param parent the representing and visible parent element
+	 */
 	public void setVisibleParent(ControlTransition parent) {
 		this.visibleParent = parent;
 	}
-	
+	/**
+	 * Some acutal control transitions are not visible in the control automaton.
+	 * @return the representing and visible parent element
+	 */	
 	public ControlTransition getVisibleParent() {
 		return this.visibleParent;
 	}
@@ -163,7 +166,7 @@ public class ControlTransition implements LocationTransition {
 
 	/**
 	 * Modify the target. Ment to be used for merging states only.
-	 * @param source
+	 * @param target
 	 */
 	public void setTarget(ControlState target) {
 		this.target = target;

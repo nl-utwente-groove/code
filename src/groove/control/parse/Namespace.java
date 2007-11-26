@@ -12,16 +12,35 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Namespace.java,v 1.1 2007-11-22 15:39:13 fladder Exp $
+ * $Id: Namespace.java,v 1.2 2007-11-26 08:58:36 fladder Exp $
  */
 package groove.control.parse;
 
+import groove.trans.GraphGrammar;
+import groove.trans.Rule;
+import groove.trans.RuleNameLabel;
+import groove.view.DefaultGrammarView;
+
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import antlr.SemanticException;
 import antlr.collections.AST;
 
+/**
+ * Namespace class for the AutomatonBuilder (for checking).
+ * Can be used to store names with an optional referenced Object.
+ * 
+ * @author Tom Staijen
+ * @version $Revision $
+ */
 public class Namespace {
+
+	private Set<String> ruleNames = new HashSet();
+	
+	private GraphGrammar grammar;
+	private DefaultGrammarView view;
 
 	private HashMap<String, AST> procs = new HashMap<String, AST>();
 
@@ -37,7 +56,7 @@ public class Namespace {
 	/**
 	 * Returns the AST for a procedure
 	 * @param name
-	 * @return
+	 * @return AST
 	 * @throws SemanticException
 	 */
 	public AST getProc(String name) throws SemanticException {
@@ -45,6 +64,16 @@ public class Namespace {
 		if( ast == null )
 			throw new SemanticException("Procedure not found: \""+ name + "\"");
 		return ast;
+	}
+	
+	public boolean ruleExists(String name) throws SemanticException {
+		 return ruleNames.contains(name);
+	}
+	
+	public void setRuleNames(DefaultGrammarView grammarView) {
+		for( RuleNameLabel rule : grammarView.getRuleMap().keySet() ) {
+			this.ruleNames.add(rule.text());
+		}
 	}
 	
 }

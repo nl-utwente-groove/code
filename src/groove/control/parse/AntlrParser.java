@@ -12,13 +12,19 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AntlrParser.java,v 1.1 2007-11-22 15:39:12 fladder Exp $
+ * $Id: AntlrParser.java,v 1.2 2007-11-26 08:58:36 fladder Exp $
  */
 package groove.control.parse;
 
+/**
+ * Static function to parse the grammar files. 
+ * @author Arend Rensink
+ * @version $Revision $
+ */
 public class AntlrParser {
 
 	/**
+	 * Parse the grammar files. 
 	 * @param args
 	 */
 	public static void main(String[] args) {

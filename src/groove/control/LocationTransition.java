@@ -12,16 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LocationTransition.java,v 1.5 2007-11-22 15:39:11 fladder Exp $
+ * $Id: LocationTransition.java,v 1.6 2007-11-26 08:58:12 fladder Exp $
  */
 package groove.control;
 
-import groove.graph.BinaryEdge;
 
-
-//TODO: not sure if i need this interface
-public interface LocationTransition extends BinaryEdge {
-	public Location source();
-	public Location target(); 
+/**
+ * An outgoing transition of a Location
+ * 
+ * @author Tom Staijen
+ * @version $Revision $
+ */
+public interface LocationTransition {
+	// empty stub
 }
 

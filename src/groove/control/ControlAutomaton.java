@@ -12,35 +12,42 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlAutomaton.java,v 1.7 2007-11-22 15:39:10 fladder Exp $
+ * $Id: ControlAutomaton.java,v 1.8 2007-11-26 08:58:11 fladder Exp $
  */
 package groove.control;
 
-import groove.graph.AbstractGraph;
 import groove.graph.AbstractGraphShape;
 import groove.graph.GraphCache;
-import groove.graph.GraphShapeCache;
-import groove.lts.LTS;
-import groove.lts.State;
-import groove.lts.Transition;
-import groove.trans.Rule;
-import groove.trans.RuleSystem;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+
+/**
+ * Representation of a Control automaton that can be visualised in a JGraphPanel.
+ * This class is loosely coupled to a top-level GraphShape, which contains the actual model. 
+ *
+ * Through active shapres, child scopes can be toggled either visible as an edge, 
+ * or with it's node- and edge-content.
+ * 
+ * @author Tom Staijen
+ */
 public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
 	
+	/** the top-level ControlShape **/
 	private ControlShape shape;
 	
-	
+	/** container for the active shapres **/
 	private Set<ControlShape> activeShapes = new HashSet<ControlShape>();
 	
 	
+	/**
+	 * Construct a new ControlAutomaton for passed ControlShape.
+	 * The ControlShape should have a start-state and not have a parent.
+	 * @param shape
+	 */
 	public ControlAutomaton(ControlShape shape) {
 		this.shape = shape;
-		
 		
 		// if there is a procedure, toggle it active
 		if( shape.transitions().size() == 1 ) {
@@ -49,7 +56,7 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
 	}
 	
 	/**
-	 * Return all edges in this graphshape 
+	 * Return all edges in the active graphshapes dynamically. 
 	 */
 	public Set<ControlTransition> edgeSet() {
 		Set<ControlTransition> tempSet = new HashSet<ControlTransition>();
@@ -75,6 +82,9 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
 		return edgeSet;
 	}
 
+	/**
+	 * Return all nodes in the active graphshapes dynamically. 
+	 */
 	public Set<ControlState> nodeSet() {
 		Set<ControlState> nodeSet = new HashSet<ControlState>();
 		nodeSet.addAll(shape.states());
@@ -85,22 +95,32 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
 		return nodeSet;
 	}
 	
-	public boolean isOpen(State state) {
-		return false;
-	}
-
+	/**
+	 * Returns the startstate of the top-level GraphShape.
+	 * @return ControlState.
+	 */
 	public ControlState startState() {
 		return shape.getStart();
 	}
 	
+	/** 
+	 * Returns true if the given state is a success-state.
+	 * @param state
+	 * @return boolean
+	 */
 	public boolean isSuccess(ControlState state) {
 		return state.isSuccess();
 	}
-	
-	public boolean isActive(ControlShape shape) {
+
+	private boolean isActive(ControlShape shape) {
 		return activeShapes.contains(shape);
 	}
 	
+	/**
+	 * 
+	 * Toggles the activeness of the ControlShape.
+	 * @param shape
+	 */
 	public void toggleActive(ControlShape shape) {
 		if( activeShapes.contains(shape)) {
 			activeShapes.remove(shape);

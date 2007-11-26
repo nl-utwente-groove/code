@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.14 2007-09-30 15:52:36 rensink Exp $
+ * $Id: AbstractGraphState.java,v 1.15 2007-11-26 08:58:41 fladder Exp $
  */
 package groove.lts;
 
@@ -38,7 +38,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2007-09-30 15:52:36 $
+ * @version $Revision: 1.15 $ $Date: 2007-11-26 08:58:41 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
@@ -60,10 +60,22 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     
     abstract public Graph getGraph();
 
-	public final Location getControl() {
+	public Location getLocation() {
 		return this.location;
 	}
 
+	public boolean  addLocation(Location l) { 
+		if( l == null )
+			return false;
+		else if( this.location == null ) {
+			this.location = l;
+			return true;
+		} else {
+			return this.location.add(l);
+		}
+	}
+	
+	
 	/* (non-Javadoc)
      * @see groove.lts.GraphState#getOutTransitionIter()
      */
@@ -364,7 +376,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
     }
     
     /** The internally stored (optional) control location. */
-    private final Location location;
+    private Location location;
 
     /** Global constant empty stub array. */
     private GraphTransitionStub[] transitionStubs = EMPTY_TRANSITION_STUBS;

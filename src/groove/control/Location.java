@@ -12,17 +12,48 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Location.java,v 1.4 2007-11-22 15:39:11 fladder Exp $
+ * $Id: Location.java,v 1.5 2007-11-26 08:58:12 fladder Exp $
  */
 package groove.control;
 
-import groove.graph.Node;
 import groove.trans.Rule;
 
 import java.util.Set;
+import java.util.SortedMap;
 
-public interface Location extends Node {
+
+
+/**
+ * 
+ * The interface for control locations used for exploration of the state space.
+ * 
+ * @author Tom Staijen
+ * @version $Revision $
+ */
+public interface Location {
 	
-	public Set<ControlTransition> getTransitions(Rule rule);
+//	public Set<ControlTransition> getTransitions(Rule rule);
+	
+	/**
+	 * Returns whether this location is a success-state.
+	 */
 	public boolean isSuccess();
+	
+	/**
+	 * Returns the reacheable {@Location}s given a certain rule.
+	 * @param rule
+	 * @return Set<Location>
+	 */
+	public StateSet targetSet(Rule rule);
+	
+	
+	public SortedMap<Integer, Set<Rule>> ruleMap();
+	
+	
+	/**
+	 * Adds location to the current location (sort of merge).
+	 * Returns true if the original set changed.
+	 * @param location
+	 */
+	public boolean add(Location location);
 }
