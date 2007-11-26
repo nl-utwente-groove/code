@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.17 2007-11-23 08:58:41 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.18 2007-11-26 21:17:24 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -48,7 +48,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -80,7 +80,7 @@ public class AttributeAspect extends AbstractAspect {
 					throw new FormatException("Product node '%s' has incoming edge '%s'", node, edge);
 				}
 				AspectValue edgeValue = getAttributeValue(edge);
-				if (edgeValue == null) {
+				if (edgeValue == null && !NestingAspect.isMetaElement(edge)) {
 					throw new FormatException("Product node '%s' has non-attribute edge '%s'", node, edge);
 				} else if (ARGUMENT.equals(edgeValue)) {
 					// label is know to represent a natural number
@@ -104,19 +104,27 @@ public class AttributeAspect extends AbstractAspect {
 		} else {
 			// the value is VALUE; try to establish the algebra
 			Algebra type = null;
-			for (AspectEdge edge: edges) {
-				if (!NestingAspect.isMetaElement(edge) && !edge.target().equals(node)) {
-					throw new FormatException("Value node '%s' has outgoing edge '%s'", node, edge);
-				}
-				Operation operation = getOperation(edge);
-				if (operation != null) {
-					Algebra edgeType = operation.getResultType();
-					if (type == null) {
-						type = edgeType;
-					} else if (!type.equals(edgeType)) {
-						throw new FormatException("Incompatible types '%s' and '%s' for value node '%s'", type, edgeType, node);
-					}
-				}
+			for (AspectEdge edge : edges) {
+                if (!NestingAspect.isMetaElement(edge)) {
+                    if (!edge.target().equals(node)) {
+                        throw new FormatException("Outgoing %s-labelled edge on value node %s",
+                                edge, node);
+                    }
+                    Operation operation = getOperation(edge);
+                    if (operation != null) {
+                        Algebra edgeType = operation.getResultType();
+                        if (type == null) {
+                            type = edgeType;
+                        } else if (!type.equals(edgeType)) {
+                            throw new FormatException(
+                                    "Incompatible types '%s' and '%s' for value node '%s'", type,
+                                    edgeType, node);
+                        }
+                    } else if (edge.source().equals(node)) {
+                        throw new FormatException("Non-algebra label %s on value node %s", edge
+                            .label(), node);
+                    }
+                }
 			}
 		}
 	}

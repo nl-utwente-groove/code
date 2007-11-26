@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MinimalAnchorFactory.java,v 1.5 2007-10-11 11:42:39 rensink Exp $
+ * $Id: MinimalAnchorFactory.java,v 1.6 2007-11-26 21:17:27 rensink Exp $
  */
 package groove.trans;
 
@@ -26,6 +26,10 @@ import java.util.Set;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Node;
+import groove.graph.algebra.AlgebraEdge;
+import groove.graph.algebra.ProductEdge;
+import groove.graph.algebra.ProductNode;
+import groove.graph.algebra.ValueNode;
 
 /**
  * In this implementation, the anchors are the minimal set of nodes and edges 
@@ -33,7 +37,7 @@ import groove.graph.Node;
  * matching: only mergers, eraser nodes and edges (the later only if they are 
  * not incident to an eraser node) and the incident nodes of creator edges are stored.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class MinimalAnchorFactory implements AnchorFactory {
 	/**
@@ -66,7 +70,11 @@ public class MinimalAnchorFactory implements AnchorFactory {
         		anchors.add(ruleMorphNodeEntry.getKey());
         	}
         }
-        anchors.addAll(rule.getRootMap().nodeMap().values());
+        for (Node rootImage: rule.getRootMap().nodeMap().values()) {
+            if (isAnchorable(rootImage)) {
+                anchors.add(rootImage);
+            }
+        }
         // set of endpoints that we will remove again
         Set<Node> removableEnds = new HashSet<Node>();
         for (Edge lhsVarEdge: rule.getVarEdges()) {
@@ -83,15 +91,33 @@ public class MinimalAnchorFactory implements AnchorFactory {
             }
         }
         for (Edge rootEdge: rule.getRootMap().edgeMap().values()) {
-            Collection<Node> eraserEdgeEnds = Arrays.asList(rootEdge.ends()); 
-            if (!anchors.containsAll(eraserEdgeEnds)) {
-                anchors.add(rootEdge);
-                // if we have the edge in the anchors, its end nodes need not be there
-                removableEnds.addAll(eraserEdgeEnds);
+            if (isAnchorable(rootEdge)) {
+                Collection<Node> rootEdgeEnds = Arrays.asList(rootEdge.ends());
+                if (!anchors.containsAll(rootEdgeEnds)) {
+                    anchors.add(rootEdge);
+                    // if we have the edge in the anchors, its end nodes need not be there
+                    removableEnds.addAll(rootEdgeEnds);
+                }
             }
         }
         anchors.addAll(rule.getMergeMap().keySet());
         anchors.removeAll(removableEnds);
         return anchors.toArray(new Element[0]);
+    }
+    
+    /** 
+     * Tests if a given node can be an anchor. This fails to hold for 
+     * {@link ProductNode}s that are not {@link ValueNode}s.
+     */
+    private boolean isAnchorable(Node node) {
+        return !(node instanceof ProductNode) || node instanceof ValueNode;
+    }
+    
+    /** 
+     * Tests if a given edge can be an anchor. This fails to hold for 
+     * {@link ProductEdge}s that are not {@link AlgebraEdge}s.
+     */
+    private boolean isAnchorable(Edge edge) {
+        return !(edge instanceof AlgebraEdge || edge instanceof ProductEdge);
     }
 }

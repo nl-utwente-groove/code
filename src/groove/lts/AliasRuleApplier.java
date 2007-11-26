@@ -24,6 +24,7 @@ import groove.trans.AbstractRuleApplier;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
+import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 
 import java.util.Collection;
@@ -107,7 +108,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 
 	@Override
 	protected void collectApplications(Rule rule, Set<RuleApplication> result) {
-		if (state == null || !isUseDependencies() || enabledRules.contains(rule)) {
+		if (doApplyRule(rule)) {
 			super.collectApplications(rule, result);
 		}
 	}
@@ -166,11 +167,16 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 
 	@Override
 	protected boolean doApplications(Rule rule, Action action) {
-		if (state == null || !isUseDependencies() || enabledRules.contains(rule)) {
+		if (doApplyRule(rule)) {
 			return super.doApplications(rule, action);
 		} else {
 			return false;
 		}
+	}
+	
+	/** Indicates is the applications if a given rule should be developed. */
+	private boolean doApplyRule(Rule rule) {
+	    return state == null || !isUseDependencies() || (rule instanceof SPORule) && ((SPORule) rule).hasSubRules() || enabledRules.contains(rule);
 	}
 
 	/** Callback factory method to create an {@link AliasSPOApplication}. */
