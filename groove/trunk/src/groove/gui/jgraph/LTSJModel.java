@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.23 2007-11-19 12:18:46 rensink Exp $
+ * $Id: LTSJModel.java,v 1.24 2007-11-26 08:58:39 fladder Exp $
  */
 package groove.gui.jgraph;
 
@@ -41,7 +41,7 @@ import org.jgraph.graph.AttributeMap;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -444,6 +444,10 @@ public class LTSJModel extends GraphJModel {
 		StringBuilder getNodeDescription() {
 			StringBuilder result = new StringBuilder("State ");
 			result.append(Converter.UNDERLINE_TAG.on(getNode()));
+			// if a control location is available, add this to the tooltip
+			if( this.getNode().getLocation() != null ) {
+				result.append("ctrl: " + this.getNode().getLocation());
+			}
 			return result;
 		}
 

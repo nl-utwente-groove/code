@@ -13,14 +13,14 @@
 // language governing permissions and limitations under the License.
 /* 
 <<<<<<< GTS.java
- * $Id: GTS.java,v 1.32 2007-10-23 22:44:06 rensink Exp $
+ * $Id: GTS.java,v 1.33 2007-11-26 08:58:42 fladder Exp $
 =======
- * $Id: GTS.java,v 1.32 2007-10-23 22:44:06 rensink Exp $
+ * $Id: GTS.java,v 1.33 2007-11-26 08:58:42 fladder Exp $
 >>>>>>> 1.26
  */
 package groove.lts;
 
-import groove.control.Location;
+import groove.control.StateSet;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
@@ -48,7 +48,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.32 $ $Date: 2007-10-23 22:44:06 $
+ * @version $Revision: 1.33 $ $Date: 2007-11-26 08:58:42 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**
@@ -109,7 +109,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         // init the startstate with a control element if possible
     	if( this.ruleSystem.getControl() != null )
         {
-        	return new StartGraphState(getRecord(), startGraph, (Location) this.ruleSystem.getControl().startState() );
+    		StateSet location = new StateSet();
+    		location.addAll(this.ruleSystem.getControl().startState().asStateSet());
+    		return new StartGraphState(getRecord(), startGraph, location);
         }
         else
         {
@@ -394,7 +396,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
 			if (!getRecord().isReuse()) {
 			    return stateKey == otherStateKey;
-			} else if (stateKey.getControl() == otherStateKey.getControl()) {
+			} else { //if (stateKey.getControl() == otherStateKey.getControl()) {
 				Graph one = stateKey.getGraph();
 				Graph two = otherStateKey.getGraph();
 				if (isCheckIsomorphism()) {
@@ -402,9 +404,10 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 				} else {
 				    return one.nodeSet().equals(two.nodeSet()) && one.edgeSet().equals(two.edgeSet());
 				}
-			} else {
-				return false;
 			}
+//			else {
+//				return false;
+//			}
 		}
 
         /**
@@ -422,8 +425,8 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     			Graph graph = stateKey.getGraph();
     		    result = graph.nodeSet().hashCode() + graph.edgeSet().hashCode();
     		}
-    		Object control = stateKey.getControl();
-    		result += control == null ? 0 : System.identityHashCode(control);
+    		//Object control = stateKey.getControl();
+    		//result += control == null ? 0 : System.identityHashCode(control);
     		return result;
         }
         

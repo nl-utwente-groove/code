@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AutomatonBuilder.java,v 1.1 2007-11-22 15:39:12 fladder Exp $
+ * $Id: AutomatonBuilder.java,v 1.2 2007-11-26 08:58:36 fladder Exp $
  */
 package groove.control.parse;
 
@@ -22,34 +22,52 @@ import groove.control.ControlTransition;
 import groove.control.ElseControlTransition;
 import groove.control.LambdaControlTransition;
 import groove.control.RuleControlTransition;
+import groove.trans.GraphGrammar;
+import groove.trans.Rule;
 
 import java.util.HashSet;
+import java.util.Set;
 
 import antlr.SemanticException;
-import antlr.collections.AST;
 
+/**
+ * 
+ * The AutomatonBuilder is used by the parser, checker and builder (generated with antlr)
+ * to create the ControlShape's representing the control program.
+ * 
+ * This class can be used to create en automaton by calling the public methods.
+ * 
+ * @author Arend Rensink
+ * @version $Revision $
+ */
 public class AutomatonBuilder extends Namespace {
-	
-	private Namespace namespace;
-	
+
 	private HashSet<String> openScopes = new HashSet<String>();
 	
 	private ControlShape current;
 	private String currentName;
 	
+	/** container for all transitions, to be iterated when merging states. */
 	private HashSet<ControlTransition> transitions = new HashSet<ControlTransition>();
 	
-	
-	public AutomatonBuilder() {
-	}
-	
+	/** Holds the active start state, a local startstate for the next parsed block. */
 	private ControlState currentStart;
+	
+	/** Holds the active end state, a local endstate for the next parsed block */
 	private ControlState currentEnd;
 	
+	/**
+	 * Returns the current ControlState.
+	 * @return ControlState
+	 */
 	public ControlState getStart() {
 		return currentStart;
 	}
 	
+	/**
+	 * Returns the current ControlState.
+	 * @return ControlState
+	 */
 	public ControlState getEnd() {
 		return currentEnd;
 	}
@@ -179,5 +197,52 @@ public class AutomatonBuilder extends Namespace {
 		}
 		rmState(currentStart);
 		currentStart = currentEnd;
+	}
+	
+	
+	/**
+	 * TODO: Remove stupid automaton stuff, e.g. lambda's (by merging).
+	 * 
+	 */
+	public void optimize() {
+		// empty stub
+	}
+	
+	/**
+	 * Adds a rule instance to the RuleControlTransitions and then adds the transitions
+	 * to the source states of the transitions.
+	 * 
+	 * @param grammar
+	 */
+	public void finalize(GraphGrammar grammar) {
+		for( ControlTransition transition : this.transitions )
+		{
+			if( transition instanceof RuleControlTransition ) {
+				RuleControlTransition RT = (RuleControlTransition) transition;
+				
+				Rule rule = grammar.getRule(RT.getText());
+				if( rule != null ) {
+					RT.setRule(rule);
+					transition.source().add(transition);
+				}
+				else
+				{
+					// if the rulename is a group, this will add all child rules.
+					Set<Rule> rules = grammar.getChildRules(RT.getText());
+					if( !rules.isEmpty() ) {
+						RuleControlTransition childTrans;
+						for( Rule childRule : rules) {
+							//automaton.removeTransition(transition);
+							childTrans = new RuleControlTransition(transition.source(), transition.target(), childRule.getName().name());
+							childTrans.setRule(childRule);
+							transition.source().add(childTrans);
+							// this is for viewing purposes only
+							childTrans.setVisibleParent(transition);
+						}
+						// remove the original transition;
+					}
+				}
+			}
+		}
 	}
 }

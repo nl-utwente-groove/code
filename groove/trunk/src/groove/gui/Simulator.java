@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.72 2007-11-19 12:19:21 rensink Exp $
+ * $Id: Simulator.java,v 1.73 2007-11-26 08:58:37 fladder Exp $
  */
 package groove.gui;
 
@@ -127,7 +127,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.72 $
+ * @version $Revision: 1.73 $
  */
 public class Simulator {
     /**
@@ -1067,7 +1067,7 @@ public class Simulator {
             graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON, getStatePanel(), "Current graph state");
             graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(), "Selected rule");
             graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, getLtsPanel(), "Labelled transition system");
-            //graphViewsPanel.addTab(null, Groove.CTRL_FRAME_ICON , getControlPanel(), "Control specification" );
+            graphViewsPanel.addTab(null, Groove.CTRL_FRAME_ICON , getControlPanel(), "Control specification" );
             // add this simulator as a listener so that the actions are updated regularly
             graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
@@ -1117,7 +1117,6 @@ public class Simulator {
     	if( controlPanel == null ) {
     		controlPanel = new CAPanel(this);
     		controlPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
-    		System.err.println("ControlPanel Initialized...");
     	}
     	return controlPanel;
     }

@@ -12,12 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.26 2007-10-10 08:59:48 rensink Exp $
+ * $Id: StateGenerator.java,v 1.27 2007-11-26 08:58:42 fladder Exp $
  */
 package groove.lts;
 
-import groove.control.ControlState;
-import groove.control.ControlTransition;
 import groove.control.Location;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
@@ -89,11 +87,23 @@ public class StateGenerator {
             //}
         	
         	// new test, just look if there are any transitions stored for this state
-        	if (state.getTransitionSet().isEmpty()) {
+
+        	// should this change when there is control? let's see what happens :)
+        	if( state.getLocation() != null ) {
+        		// thus, if there is control, red means the state is a success-state
+        		if( state.getLocation().isSuccess() ) {
+        			getGTS().setFinal(state);
+        		}
+        	}
+        	else if (state.getTransitionSet().isEmpty()) {
         		getGTS().setFinal(state);
         	}
             
-            getGTS().setClosed(state);
+        	// not closing when there's control available...
+        	// TODO: fix this somehow..
+        	if( state.getLocation() == null ) {
+        		getGTS().setClosed(state);
+        	}
         }
         reporter.stop();
     }
@@ -151,22 +161,22 @@ public class StateGenerator {
     }
     
     
-    public GraphState addTransition(GraphState source, RuleApplication app)
-    {
-    	if( source.getControl() == null )
-    		return addTransition(source, app, null);
-    	else
-    	{
-    		GraphState result = null;
-    		ControlState cs = (ControlState) source.getControl();
-
-    		for( Iterator<ControlTransition> it = cs.getTransitions(app.getRule()).iterator(); it.hasNext(); ) 
-    		{
-    			result = addTransition(source, app, it.next().target());
-    		}
-    		return result;
-    	}
-    }
+//    public GraphState addTransition(GraphState source, RuleApplication app)
+//    {
+//    	if( source.getControl() == null )
+//    		return addTransition(source, app, null);
+//    	else
+//    	{
+//    		GraphState result = null;
+//    		ControlState cs = (ControlState) source.getControl();
+//
+//    		for( Iterator<ControlTransition> it = cs.getTransitions(app.getRule()).iterator(); it.hasNext(); ) 
+//    		{
+//    			result = addTransition(source, app, it.next().target());
+//    		}
+//    		return result;
+//    	}
+//    }
     
     /**
      * Adds a transition to the GTS, constructed from a given rule application.
@@ -178,34 +188,21 @@ public class StateGenerator {
      * @param appl the derivation underlying the transition to be added
      * @return the target state of the resulting transition
      */
-    public GraphState addTransition(GraphState source, RuleApplication appl, Location target) {
+    public GraphState addTransition(GraphState source, RuleApplication appl) {
         reporter.start(ADD_TRANSITION);
         
-        Location sourceLocation = source.getControl();
-   
         GraphTransition result;
         if (!appl.getRule().isModifying()) {
-        	if( target != sourceLocation )
-           	{
-           		GraphNextState freshTarget = createState(appl, source, target);
-           		GraphState isoTarget = getGTS().addState(freshTarget);
-           		if( isoTarget == null )
-           			result = freshTarget;
-           		else	
-           			result = createTransition(appl, source, isoTarget, false);
-           	} else {
            		result = createTransition(appl, source, source, false);
-            }
         } else {
             // check for confluent diamond
             GraphState confluentTarget = getConfluentTarget(source, appl);
             if (confluentTarget == null) {
-                
             	// graph part is not confluent
-            	GraphNextState freshTarget = createState(appl, source, target);
+            	GraphNextState freshTarget = createState(appl, source);
                 GraphState isoTarget = getGTS().addState(freshTarget);
                 if (isoTarget == null) {
-                    result = freshTarget;
+                	result = freshTarget;
                 } else {
                     // the following line is to ensure the cache is cleared
                     // even if the state is still used as the basis of another
@@ -213,21 +210,26 @@ public class StateGenerator {
                     result = createTransition(appl, source, isoTarget, true);
                 }
             } else {
-            	// graph part and control part is confluent
-            	if( confluentTarget.getControl() == target ) {
-            		result = createTransition(appl, source, confluentTarget, false);
-            	}
-            	else {
-            		GraphNextState freshTarget = createState(appl, source, target);
-            		GraphState isoTarget = getGTS().addState(freshTarget);
-            		if( isoTarget == null )
-            			result = freshTarget;
-            		else
-            			result = createTransition(appl, source, isoTarget, false);
-            	}
+           		result = createTransition(appl, source, confluentTarget, false);
             }
         }
+
+        // fetch the control-target Locations
+        Location srcLoc = source.getLocation();
+        if( srcLoc != null ) {
+        	Location tgtLoc = srcLoc.targetSet(appl.getRule());
+        	assert tgtLoc != null;
+        	// add target locations to target
+        	if( result.target().addLocation(tgtLoc) )
+        	{
+        		// the location of the target changed so we have to re-open the state
+        		// currently not possible. 
+        	}
+        }
+
+        // add transition to gts
         getGTS().addTransition(result);
+        
         reporter.stop();
         return result.target();
     }
@@ -298,8 +300,8 @@ public class StateGenerator {
 	/**
 	 * Creates a fresh graph state, based on a given rule application and source state.
 	 */
-	protected GraphNextState createState(RuleApplication appl, GraphState source, Location location) {
-		return new DefaultGraphNextState((AbstractGraphState) source, appl, location);
+	protected GraphNextState createState(RuleApplication appl, GraphState source) {
+		return new DefaultGraphNextState((AbstractGraphState) source, appl, null);
 //		return new DefaultGraphNextState((AbstractGraphState) source, appl.getEvent(), appl.getCoanchorImage(), location);
 	}
 
@@ -307,8 +309,7 @@ public class StateGenerator {
      * Creates a fresh graph transition, based on a given rule application and source state.
      */
     protected GraphTransition createTransition(RuleApplication appl, GraphState source) {
-    	// TODO: fix for control
-    	return createTransition(appl, source, createState(appl, source, null), false);
+    	return createTransition(appl, source, createState(appl, source), false);
     }
     
     /**
