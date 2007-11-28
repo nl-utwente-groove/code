@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: CTLFormula.java,v 1.5 2007-04-29 09:22:36 rensink Exp $
+ * $Id: CTLFormula.java,v 1.6 2007-11-28 13:58:23 kastenberg Exp $
  */
 
 package groove.verify;
@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Specific class for parsing CTL formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-04-29 09:22:36 $
+ * @version $Revision: 1.6 $ $Date: 2007-11-28 13:58:23 $
  */
 public class CTLFormula extends CTLStarFormula {
 
@@ -105,7 +105,11 @@ public class CTLFormula extends CTLStarFormula {
 	 * @throws FormatException if the formula is not formatted correctly
 	 */
 	protected TemporalFormula createAllGlobally(TemporalFormula operand) throws FormatException {
-    	// AG(phi) <==> !(EF(!phi))
+		if (operand instanceof TemporalOperator) {
+			throw new FormatException("Temporal operators should be proceeded by a path quantifier: " + operand.getOperator());
+		}
+
+		// AG(phi) <==> !(EF(!phi))
 		CTLStarFormula factory = TemporalFormula.getFactory();
 		TemporalFormula negFormula = factory.createNeg(operand);
 		TemporalFormula finallyFormula = factory.createFinally(negFormula);
@@ -147,7 +151,12 @@ public class CTLFormula extends CTLStarFormula {
 	static public TemporalFormula parseFormula(String expr) throws FormatException {
     	CTLStarFormula parser = CTLFormula.getInstance();
     	TemporalFormula.setFactory(parser);
-    	return parser.parse(expr);
+    	TemporalFormula result = parser.parse(expr);
+    	if (result instanceof TemporalOperator) {
+    		throw new FormatException("Temporal operator should always be preceeded by a path quantifier: " + result.getOperator());
+    	} else {
+    		return result;
+    	}
     }
 
     static public CTLStarFormula getInstance() {
