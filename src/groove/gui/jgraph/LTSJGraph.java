@@ -12,11 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJGraph.java,v 1.8 2007-10-10 08:59:51 rensink Exp $
+ * $Id: LTSJGraph.java,v 1.9 2007-11-28 16:08:19 iovka Exp $
  */
 package groove.gui.jgraph;
 
+import groove.abs.Abstraction;
 import groove.graph.Element;
+import groove.gui.AbstrExploreStrategyMenu;
 import groove.gui.ExploreStrategyMenu;
 import groove.gui.Options;
 import groove.gui.SetLayoutMenu;
@@ -50,9 +52,15 @@ import org.jgraph.graph.DefaultGraphCell;
  * after all global final variables have been set.
  */
 public class LTSJGraph extends JGraph {
-    /** Constructs an instance of tje j-graph for a given simulator. */
+	
+    /** Constructs an instance of the j-graph for a given simulator. */
     public LTSJGraph(Simulator simulator) {
-    	super(LTSJModel.EMPTY_LTS_JMODEL, true);
+    	this(simulator, LTSJModel.EMPTY_LTS_JMODEL); 
+    }
+
+    /** Constructs an instance for a given simulator, with pre-defined model. */
+    protected LTSJGraph (Simulator simulator, LTSJModel ltsModel) {
+    	super(ltsModel, true);
         this.simulator = simulator;
         this.exploreMenu = new ExploreStrategyMenu(simulator);
         addMouseListener(new MyMouseListener());
@@ -68,7 +76,7 @@ public class LTSJGraph extends JGraph {
 		return new MyForestLayouter();
 	}
     
-    /** Specialises the return type to a {@link JModel}. */
+    /** Specialises the return type to a {@link LTSJModel}. */
     @Override
     public LTSJModel getModel() {
     	return (LTSJModel) graphModel;
@@ -135,10 +143,14 @@ public class LTSJGraph extends JGraph {
 	 * Lazily creates and returns the exploration menu.
 	 */
 	protected final JMenu getExploreMenu() {
-		if (exploreMenu == null) {
-			exploreMenu = new ExploreStrategyMenu(simulator);
+		if (this.simulator.isAbstractSimulation() && this.abstrExploreMenu == null) {
+			this.abstrExploreMenu = new AbstrExploreStrategyMenu(simulator);
+		} else if (this.exploreMenu == null) {
+			this.exploreMenu = new ExploreStrategyMenu(simulator);
 		}
-		return this.exploreMenu;
+		return this.simulator.isAbstractSimulation() ?
+				this.abstrExploreMenu :
+				this.exploreMenu;
 	}
 
 	/** Returns the simulator of this LTS jgraph. */
@@ -154,6 +166,11 @@ public class LTSJGraph extends JGraph {
      * The exploration menu for this jgraph.
      */
     private JMenu exploreMenu;
+    
+    /**
+     * The abstract exploration menu for this jgraph.
+     */
+    private JMenu abstrExploreMenu;
     /**
      * Action to scroll the JGraph to the current state or derivation.
      */

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExploreStrategyMenu.java,v 1.11 2007-10-10 08:59:44 rensink Exp $
+ * $Id: ExploreStrategyMenu.java,v 1.12 2007-11-28 16:07:41 iovka Exp $
  */
 package groove.gui;
 
@@ -43,7 +43,7 @@ import javax.swing.JMenu;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.11 $
+ * @version $Revision: 1.12 $
  */
 public class ExploreStrategyMenu extends JMenu implements SimulationListener {
     /**
@@ -110,8 +110,9 @@ public class ExploreStrategyMenu extends JMenu implements SimulationListener {
 				((ConditionalExploreStrategy) strategy).setCondition(null);
 				generateAction.putValue(Action.NAME, strategy.toString());
 				generateAction.setEnabled(false);
-			} else {
-				generateAction.setEnabled(true);
+			}  
+			else {
+				generateAction.setEnabled(! this.simulator.isAbstractSimulation());
 			}
 		}
 		setStateUpdate(gts.startState());

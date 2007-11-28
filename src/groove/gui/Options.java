@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.32 2007-09-07 19:13:31 rensink Exp $
+ * $Id: Options.java,v 1.33 2007-11-28 16:07:41 iovka Exp $
  */
 package groove.gui;
 
@@ -40,7 +40,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.32 $
+ * @version $Revision: 1.33 $
  */
 public class Options {
     /** 
@@ -555,4 +555,10 @@ public class Options {
      * Map from option names to menu items.
      */
     private Map<String,JMenuItem> itemMap = new LinkedHashMap<String,JMenuItem>();
+    
+    /**
+	 * Start abstract simulation action name 
+	 */
+	public static final String START_ABSTR_SIMULATION_ACTION_NAME = "Run Abstract Simulation";
+    
 }

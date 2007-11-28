@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.73 2007-11-26 08:58:37 fladder Exp $
+ * $Id: Simulator.java,v 1.74 2007-11-28 16:07:41 iovka Exp $
  */
 package groove.gui;
 
@@ -30,6 +30,10 @@ import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import static groove.gui.Options.START_SIMULATION_OPTION;
 import static groove.gui.Options.STOP_SIMULATION_OPTION;
+import groove.abs.AbstrSimulationProperties;
+import groove.abs.Abstraction;
+import groove.abs.lts.AGTS;
+import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
@@ -123,11 +127,12 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.AbstractTableModel;
 
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.73 $
+ * @version $Revision: 1.74 $
  */
 public class Simulator {
     /**
@@ -487,6 +492,15 @@ public class Simulator {
 	    return startSimulationAction;    	
 	}
 
+	/** A variant of {@link #getStartSimulationAction()} for abstract simulation. */
+	public Action getStartAbstrSimulationAction() {
+		// lazily create the action
+		if (startAbstrSimulationAction == null) {
+			startAbstrSimulationAction = new StartAbstrSimulationAction();
+		}
+	    return startAbstrSimulationAction;    	
+	}
+	
 	/** Returns the graph save action permanently associated with this simulator. */
     public SaveGraphAction getSaveGraphAction() {
     	// lazily create the action
@@ -878,7 +892,11 @@ public class Simulator {
 		boolean grammarCorrect = grammarErrors.isEmpty();
 		getErrorPanel().setErrors(grammarErrors);
 		if (grammarCorrect && confirmBehaviourOption(START_SIMULATION_OPTION)) {
-			startSimulation(grammar);
+			if (this.isAbstractSimulation()) {
+				startAbstrSimulation(grammar);
+			} else {
+				startSimulation(grammar);
+			}
 		}
     }
 
@@ -920,6 +938,32 @@ public class Simulator {
 		}
     }
 
+    /** A variant of the {@link #startSimulation(DefaultGrammarView)} method for 
+     * starting an abstract simulation.
+     */
+    public synchronized void startAbstrSimulation(DefaultGrammarView grammar) {
+    	try {
+    		AbstrSimulationProperties properties = new AbstrSimulationProperties();
+    		PropertiesDialog dialog = new PropertiesDialog(properties, AbstrSimulationProperties.DEFAULT_KEYS, true);
+    		boolean changed = dialog.showDialog(getFrame());
+    		properties.update(dialog.getEditedProperties());
+    		int precision = properties.getPrecision();
+			int radius = properties.getRadius();
+			boolean symred = properties.getSymmetryReduction();
+			this.abstrSimulationOptions = new Abstraction.Options(symred);
+			AGTS agts = new AGTS(getCurrentGrammar().toGrammar(), precision, radius, 10);		
+			setCurrentGTS(agts);
+			// IOVKA to be uncommented when abstrExploreMenu items are enabled
+			// this.abstrExploreMenu.refreshOptions();
+			getGenerator().explore(getCurrentState());
+			fireStartSimulation(getCurrentGTS());
+			refresh();
+		} catch (FormatException exc) {
+			showErrorDialog("Error while starting simulation", exc);
+		}
+	}
+    
+    
     /**
 	 * Sets the current state graph to a given state. Adds the previous state or
 	 * active derivation to the history. Invokes <tt>notifySetState(state)</tt>
@@ -1106,7 +1150,7 @@ public class Simulator {
     StatePanel getStatePanel() {
         if (statePanel == null) {
             // panel for state display
-            statePanel = new StatePanel(this);
+        	statePanel = new StatePanel(this);
             statePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return statePanel;
@@ -1143,7 +1187,8 @@ public class Simulator {
      */
     LTSPanel getLtsPanel() {
         if (ltsPanel == null) {
-            ltsPanel = new LTSPanel(this);
+            //ltsPanel = LTSPanel.getInstance(this);
+        	ltsPanel = new LTSPanel(this);
             ltsPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return ltsPanel;
@@ -1384,14 +1429,24 @@ public class Simulator {
         result.add(new JMenuItem(getUndoAction()));
         result.add(new JMenuItem(getRedoAction()));
         result.addSeparator();
-        result.add(new JMenuItem(getStartSimulationAction()));
+        result.add(new JMenuItem(getStartSimulationAction()));       
+        result.add(new JMenuItem(getStartAbstrSimulationAction()));
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
         result.addSeparator();
-        // copy the exploration meny
+        // copy the exploration menu
         for (Component menuComponent: exploreMenu.getMenuComponents()) {
         	result.add(menuComponent);
         }
+
+        // IOVKA to be uncommented to get abstract exploration strategy menu items
+        // create the abstract exploration menu
+//        result.addSeparator();
+//        this.abstrExploreMenu = new AbstrExploreStrategyMenu(this, false);
+//        for (Component menuComponent : abstrExploreMenu.getMenuComponents()) {
+//        	result.add(menuComponent);
+//        }
+        
         return result;
 	}
 
@@ -1679,7 +1734,8 @@ public class Simulator {
 
     /** Callback factory method for the state generator. */
     protected StateGenerator createStateGenerator(GTS gts) {
-    	StateGenerator result = new StateGenerator();
+    	StateGenerator result = isAbstractSimulation() ? new AbstrStateGenerator(getAbstrSimulationOptions()) : new StateGenerator();
+    	
     	result.setGTS(gts);
     	return result;
     }
@@ -1784,6 +1840,18 @@ public class Simulator {
     	}
     	return options;
     }
+    
+    /** Returns true if the current simulation is abstract. */
+	public boolean isAbstractSimulation() {
+		return this.abstrSimulationOptions != null;
+	}
+	
+	/** The options associated with the current abstract simulation. 
+	 * Is null when the current simulation is not abstract. 
+	 */
+	public Abstraction.Options getAbstrSimulationOptions() {
+		return this.abstrSimulationOptions;
+	}
     
     /**
      * The options object of this simulator.
@@ -2028,11 +2096,19 @@ public class Simulator {
 
 	/** The action to start a new simulation. */
     private StartSimulationAction startSimulationAction;
+    /** The action to start a new abstract simulation. */
+    private StartAbstrSimulationAction startAbstrSimulationAction;
     /** The undo action permanently associated with this simulator. */
     private Action undoAction;
 
     /** The ctl formula providing action permanently associated with this simulator. */
     private ProvideCTLFormulaAction provideCTLFormulaAction;
+    
+	
+	/** Initialized when an abstract simulation is started, and set to null when a normal simulation is started. */
+	private Abstraction.Options abstrSimulationOptions = null;
+	/** A menu containing abstract exploration strategies. */
+	private AbstrExploreStrategyMenu abstrExploreMenu = null;
     
 	/** Starts a simulator, optionally setting the graph production system and start state. */
 	public static void main(String[] args) {
@@ -2329,7 +2405,7 @@ public class Simulator {
 
     /**
      * Action for applying the current derivation to the current state.
-     * @see Simulator#applyTransition()
+     * @see _Simulator#applyTransition()
      */
     private class ApplyTransitionAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -2678,7 +2754,7 @@ public class Simulator {
     /**
      * Action for setting the initial state of the LTS as current state.
      * @see GTS#startState()
-     * @see Simulator#setState(GraphState)
+     * @see _Simulator#setState(GraphState)
      */
     private class GotoStartStateAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -2699,7 +2775,7 @@ public class Simulator {
     
     /**
      * Action for loading and setting a new initial state.
-     * @see Simulator#doLoadStartGraph(File)
+     * @see _Simulator#doLoadStartGraph(File)
      */
     private class LoadStartGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -2725,7 +2801,7 @@ public class Simulator {
 
     /**
      * Action for loading a new rule system.
-     * @see Simulator#doLoadGrammar(AspectualViewGps, File, String)
+     * @see _Simulator#doLoadGrammar(AspectualViewGps, File, String)
      */
     private class LoadGrammarAction extends AbstractAction {
     	/** Constructs an instance of the action. */
@@ -2741,6 +2817,7 @@ public class Simulator {
             if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
                 FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
+                Simulator.this.abstrSimulationOptions = null;
                 doLoadGrammar(getGrammarLoaderMap().get(filterUsed), selectedFile, null);
             }
         }
@@ -2883,7 +2960,7 @@ public class Simulator {
 
     /**
      * Action for quitting the simulator.
-     * @see Simulator#doQuit()
+     * @see _Simulator#doQuit()
      */
     private class QuitAction extends AbstractAction {
     	/** Constructs an instance of the action. */
@@ -2899,7 +2976,7 @@ public class Simulator {
     
     /**
      * Action for refreshing the rule system. Reloads the current rule system and start graph.
-     * @see Simulator#doRefreshGrammar()
+     * @see _Simulator#doRefreshGrammar()
      */
     private class RefreshGrammarAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -2978,8 +3055,8 @@ public class Simulator {
 
     /**
      * Action to save the state or LTS as a graph.
-     * @see Simulator#handleSaveGraph(boolean, Graph, String)
-     * @see Simulator#doSaveGraph(Graph, File)
+     * @see _Simulator#handleSaveGraph(boolean, Graph, String)
+     * @see _Simulator#doSaveGraph(Graph, File)
      */
     private class SaveGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -3027,6 +3104,7 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
+            	Simulator.this.abstrSimulationOptions = null;
                 startSimulation(getCurrentGrammar());
             }
         }
@@ -3040,4 +3118,33 @@ public class Simulator {
             return KeyEvent.getKeyText(Options.START_SIMULATION_KEY.getKeyCode());
         }
     }
+    
+    /** A variant of {@link Simulator.StartSimulationAction} for abstract simulation. */
+    private class StartAbstrSimulationAction extends AbstractAction implements Refreshable {
+        /** Constructs an instance of the action. */
+        StartAbstrSimulationAction() {
+            super(Options.START_ABSTR_SIMULATION_ACTION_NAME);
+            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent e) {
+            if (confirmAbandon(false)) {
+                startAbstrSimulation(getCurrentGrammar());
+            }
+        }
+
+        public void refresh() {
+        	//IOVKA to be changed in order to activate the menu item for abstract simulation
+        	boolean enabled = false;
+//            boolean enabled = getCurrentGrammar() != null && getCurrentGrammar().getErrors().isEmpty();
+        	setEnabled(enabled);
+        }
+        
+        String getKeyText() { return null; }
+    }
+    
+
+
+ 
+
 }
