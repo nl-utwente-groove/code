@@ -13,9 +13,9 @@
 // language governing permissions and limitations under the License.
 /* 
 <<<<<<< GTS.java
- * $Id: GTS.java,v 1.33 2007-11-26 08:58:42 fladder Exp $
+ * $Id: GTS.java,v 1.34 2007-11-28 16:08:50 iovka Exp $
 =======
- * $Id: GTS.java,v 1.33 2007-11-26 08:58:42 fladder Exp $
+ * $Id: GTS.java,v 1.34 2007-11-28 16:08:50 iovka Exp $
 >>>>>>> 1.26
  */
 package groove.lts;
@@ -48,7 +48,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.33 $ $Date: 2007-11-26 08:58:42 $
+ * @version $Revision: 1.34 $ $Date: 2007-11-28 16:08:50 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**
@@ -84,12 +84,23 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * <tt>nodeSet().contains(startState())</tt> 
      */
     private GTS(GraphGrammar grammar, boolean storeTransitions) {
+    	this(grammar, storeTransitions, grammar.getProperties().isCheckIsomorphism());
+    }
+
+    /**
+     * Constructs a GTS with an option to avoid storing transitions, and
+     * additionally specifying whether isomorphism check should be performed.
+     * @require startGraph != null
+     * @ensure startState().equals(startGraph)</tt> and
+     * <tt>nodeSet().contains(startState())</tt> 
+     */
+    protected GTS(GraphGrammar grammar, boolean storeTransitions, boolean checkIsomorphism) {
     	grammar.testFixed(true);
         this.ruleSystem = grammar;
         this.storeTransitions = storeTransitions;
-        this.checkIsomrophism = getGrammar().getProperties().isCheckIsomorphism();
+        this.checkIsomrophism = checkIsomorphism;
     }
-
+    
     /**
      * Callback factory method to create and initialise the start graph of the GTS,
      * on the basis of a given graph.
@@ -336,7 +347,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         }
     }
     
-    boolean isCheckIsomorphism() {
+    private boolean isCheckIsomorphism() {
         return checkIsomrophism;
     }
 
@@ -549,4 +560,14 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     static public final int ADD_STATE = reporter.newMethod("addState");
     /** Profiling aid for adding transitions. */
     static public final int ADD_TRANSITION_STOP = reporter.newMethod("addTransition  - stop");
+    
+    /** An accessor for the start state. */
+    protected GraphState getStartState() {
+    	return this.startState;
+    }
+    /** A setter for the start state. */
+    protected void setStartState(GraphState state) {
+    	this.startState = state;
+    }
+    
 }

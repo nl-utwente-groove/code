@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.27 2007-11-26 08:58:42 fladder Exp $
+ * $Id: StateGenerator.java,v 1.28 2007-11-28 16:08:50 iovka Exp $
  */
 package groove.lts;
 
@@ -343,7 +343,7 @@ public class StateGenerator {
 	/** The underlying GTS. */
 	private GTS gts;
 	/** Collector instance that listens to the underlying GTS. */
-	private final AddTransitionListener collector;
+	protected final AddTransitionListener collector;
 	/** The fixed rule applier for this generator. */
 	private AliasRuleApplier applier;
 	/**
@@ -365,7 +365,7 @@ public class StateGenerator {
 	}
 
 	/** Reporter for profiling information; aliased to {@link GTS#reporter}. */
-    static private final Reporter reporter = Reporter.register(StateGenerator.class);
+    static protected final Reporter reporter = Reporter.register(StateGenerator.class);
     /** Profiling aid for adding states. */
     static public final int ADD_STATE = reporter.newMethod("addState");
     /** Profiling aid for adding transitions. */
@@ -373,7 +373,7 @@ public class StateGenerator {
     /** Profiling aid for adding transitions. */
     static public final int ADD_TRANSITION_START = reporter.newMethod("addTransition - start");
     /** Profiling aid for adding transitions. */
-    static private final int SUCC = reporter.newMethod("computing successors");
+    static protected final int SUCC = reporter.newMethod("computing successors");
 	/**
 	 * Listener that collects the fresh states into a set.
 	 */
@@ -399,7 +399,7 @@ public class StateGenerator {
 	/**
 	 * Listener that collects the fresh states into a set.
 	 */
-	static private class AddTransitionListener extends GTSListener {
+	static protected class AddTransitionListener extends GTSListener {
 		/** Empty constructor with correct functionality. */
 		AddTransitionListener() {
 			// empty
