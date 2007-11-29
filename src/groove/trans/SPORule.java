@@ -12,13 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.46 2007-11-26 21:17:27 rensink Exp $
+ * $Id: SPORule.java,v 1.47 2007-11-29 12:52:08 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.GraphShape;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
@@ -55,7 +56,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.46 $
+ * @version $Revision: 1.47 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -225,7 +226,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
 	@Override
-    public Iterator<RuleMatch> computeMatchIter(final Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
+    public Iterator<RuleMatch> computeMatchIter(final GraphShape host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Iterator<RuleMatch> result = null;
         result = new NestedIterator<RuleMatch>(new TransformIterator<VarNodeEdgeMap,Iterator<RuleMatch>>(matchMapIter) {
         	@Override
@@ -244,7 +245,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * Returns a collection of matches extending a given match with
 	 * matches for the sub-conditions.
 	 */
-    Collection<RuleMatch> addSubMatches(Graph host, RuleMatch simpleMatch) {
+    Collection<RuleMatch> addSubMatches(GraphShape host, RuleMatch simpleMatch) {
     	Collection<RuleMatch> result = Collections.singleton(simpleMatch);
 		VarNodeEdgeMap matchMap = simpleMatch.getElementMap();
 		for (AbstractCondition<?> condition : getComplexSubConditions()) {
@@ -280,7 +281,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * @return <code>true</code> if <code>matchMap</code> satisfies the constraints imposed
 	 * by the rule (if any).
 	 */
-	boolean isValidMatchMap(Graph host, VarNodeEdgeMap matchMap) {
+	boolean isValidMatchMap(GraphShape host, VarNodeEdgeMap matchMap) {
 		boolean result = true;
 		if (SystemProperties.isCheckDangling(getProperties())) {
 			result = satisfiesDangling(host, matchMap);
@@ -289,7 +290,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	}
 
 	/** Tests if a given (proposed) match into a host graph leaves dangling edges. */ 
-	private boolean satisfiesDangling(Graph host, VarNodeEdgeMap match) {
+	private boolean satisfiesDangling(GraphShape host, VarNodeEdgeMap match) {
 		boolean result = true;
 		for (Node eraserNode : getEraserNodes()) {
 			Node erasedNode = match.getNode(eraserNode);
