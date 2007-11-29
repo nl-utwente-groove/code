@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IsoChecker.java,v 1.2 2007-08-26 07:23:10 rensink Exp $
+ * $Id: IsoChecker.java,v 1.3 2007-11-29 12:44:42 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -21,14 +21,19 @@ import groove.graph.Graph;
 /**
  * Interface for strategies that check isomorphism between graphs.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface IsoChecker {
 	/**
 	 * Tests if two graphs are isomorphic.
+	 * Implementations of this method are allowed to be incomplete, in the sense
+	 * that a <code>false</code> answer does not guarantee non-isomorphism, but a <code>true</code>
+	 * answer goes guarantee isomorphism.
+	 * Although a complete algorithm is optimal, for the purpose of collapsing states
+	 * an "almost" complete but faster algorithm is better than a complete, slow one.
 	 * @param dom First graph to be tested
 	 * @param cod Second graph to be tested
-	 * @return <code>true</code> if and only if <code>dom</code> and <code>cod</code> are isomorphic
+	 * @return <code>true</code> only if <code>dom</code> and <code>cod</code> are isomorphic
 	 */
 	public boolean areIsomorphic(Graph dom, Graph cod);
 }
