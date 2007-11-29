@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MatrixAutomaton.java,v 1.11 2007-11-19 12:19:26 rensink Exp $
+ * $Id: MatrixAutomaton.java,v 1.12 2007-11-29 12:48:46 rensink Exp $
  */
 package groove.rel;
 
@@ -844,8 +844,17 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                 this.image = image;
                 this.valuation = valuation;
                 if (dependent != null) {
-                    dependents = new ArrayList<MatchingComputation>();
-                    dependents.add(dependent);
+                    dependents = new HashSet<MatchingComputation>();
+                    addDependents(dependent);
+                }
+            }
+            
+            /** Recursively adds all dependants of a given computation to the dependants of this computation. */
+            private void addDependents(MatchingComputation dependent) {
+                if (dependent != this && dependents.add(dependent) && dependent.dependents != null) {
+                    for (MatchingComputation subDependent : dependent.dependents) {
+                        addDependents(subDependent);
+                    }
                 }
             }
             
@@ -1108,7 +1117,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
              */
             protected void copyTo(MatchingComputation other) {
                 if (isBusy()) {
-                    dependents.add(other);
+                    addDependents(other);
                 } else {
                     other.addAll(this);
                 }
@@ -1121,6 +1130,20 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             protected boolean isBusy() {
                 return dependents != null;
             }
+            
+            /** This implementation tests for object equality. */
+            @Override
+            public boolean equals(Object o) {
+                return this == o;
+            }
+
+            /** This implementation returns the system identity of this object. */
+            @Override
+            public int hashCode() {
+                return System.identityHashCode(this);
+            }
+
+
 
             /**
              * The collection of dependent sets.
