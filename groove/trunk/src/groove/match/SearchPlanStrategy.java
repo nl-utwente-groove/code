@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SearchPlanStrategy.java,v 1.17 2007-11-26 21:48:44 rensink Exp $
+ * $Id: SearchPlanStrategy.java,v 1.18 2007-11-29 12:49:37 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -39,7 +40,7 @@ import java.util.Set;
  * a search plan, in which the matching order of the domain elements
  * is determined.
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 	/**
@@ -48,7 +49,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
 	 * @param plan the search items that make up the search plan
 	 * @param injective flag to indicate that the matching should be injective
      */
-    public SearchPlanStrategy(Graph source, List<SearchItem> plan, boolean injective) {
+    public SearchPlanStrategy(GraphShape source, List<SearchItem> plan, boolean injective) {
         this.nodeIxMap = new HashMap<Node,Integer>();
         this.edgeIxMap = new HashMap<Edge,Integer>();
         this.varIxMap = new HashMap<String,Integer>();
@@ -56,7 +57,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         this.injective = injective;
     }
 
-    public Iterator<VarNodeEdgeMap> getMatchIter(Graph host, NodeEdgeMap anchorMap) {
+    public Iterator<VarNodeEdgeMap> getMatchIter(GraphShape host, NodeEdgeMap anchorMap) {
         Iterator<VarNodeEdgeMap> result;
         reporter.start(GET_MATCH_ITER);
         final Search search = createSearch(host, anchorMap);
@@ -124,7 +125,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /**
      * Callback factory method for an auxiliary {@link Search} object.
      */
-    protected Search createSearch(Graph host, NodeEdgeMap anchorMap) {
+    protected Search createSearch(GraphShape host, NodeEdgeMap anchorMap) {
         testFixed(true);
         return new Search(host, anchorMap);
     }
@@ -273,7 +274,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     static final int GET_MATCH = reporter.newMethod("getMatch()");
     /** Handle for profiling {@link #getMatchSet(Graph, NodeEdgeMap)} */
     static final int GET_MATCH_SET = reporter.newMethod("getMatchSet()");
-    /** Handle for profiling {@link #getMatchIter(Graph, NodeEdgeMap)} */
+    /** Handle for profiling {@link #getMatchIter(GraphShape, NodeEdgeMap)} */
     static final int GET_MATCH_ITER = reporter.newMethod("getMatchIter()");
     /** Handle for profiling {@link Search#find()} */
     static public final int SEARCH_FIND = reporter.newMethod("Search.find()");
@@ -286,7 +287,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
     /** Class implementing an instantiation of the search plan algorithm for a given graph. */
     public class Search {
         /** Constructs a new record for a given graph and partial match. */
-        public Search(Graph host, NodeEdgeMap anchorMap) {
+        public Search(GraphShape host, NodeEdgeMap anchorMap) {
             this.host = host;
             this.records = new SearchItem.Record[plan.size()];
             this.lastSingular = -1;
@@ -477,7 +478,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         }
         
         /** Returns the target graph of the search. */
-        public Graph getHost() {
+        public GraphShape getHost() {
             return host;
         }
         /** 
@@ -508,7 +509,7 @@ public class SearchPlanStrategy extends AbstractMatchStrategy<VarNodeEdgeMap> {
         /** Index of the last search record known to be singular. */
         private int lastSingular;
         /** The host graph of the search. */
-        private final Graph host;
+        private final GraphShape host;
         /** 
          * The set of nodes already used as images, used for the injectivity test.
          */

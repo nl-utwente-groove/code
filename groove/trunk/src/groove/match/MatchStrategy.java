@@ -19,6 +19,7 @@ package groove.match;
 
 import groove.calc.Property;
 import groove.graph.Graph;
+import groove.graph.GraphShape;
 import groove.graph.NodeEdgeMap;
 
 import java.util.Collection;
@@ -29,7 +30,7 @@ import java.util.Iterator;
  * A class implementing this interface will generate element maps given
  * a target graph, together with and a partial (initial) map to that target graph.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface MatchStrategy<Result> {
     /** 
@@ -41,7 +42,7 @@ public interface MatchStrategy<Result> {
      * the solution should respect. May be <code>null</code> if there is no predefined mapping
      * @return a mapping to the elements of <code>host</code> that augments <code>preMatch</code>
      * and fulfils the requirements to be a total match
-     * @deprecated use {@link #getMatchIter(Graph, NodeEdgeMap)} instead
+     * @deprecated use {@link #getMatchIter(GraphShape, NodeEdgeMap)} instead
      */
     @Deprecated
     public Result getMatch(Graph host, NodeEdgeMap anchorMap);
@@ -69,7 +70,7 @@ public interface MatchStrategy<Result> {
      * @return an iterator over all mappings to the elements of <code>host</code> that
      * augment <code>preMatch</code> and fulfil the requirements to be total matches
      */
-    public Iterator<Result> getMatchIter(Graph host, NodeEdgeMap anchorMap);
+    public Iterator<Result> getMatchIter(GraphShape host, NodeEdgeMap anchorMap);
 
     /** 
      * Returns the collection of all matches to a given graph that extend a given partial match. 
