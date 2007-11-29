@@ -12,11 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Condition.java,v 1.3 2007-10-07 07:56:48 rensink Exp $
+ * $Id: Condition.java,v 1.4 2007-11-29 12:52:08 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
+import groove.graph.GraphShape;
 import groove.graph.NodeEdgeMap;
 import groove.util.Fixable;
 import groove.view.FormatException;
@@ -29,7 +30,7 @@ import java.util.Set;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface Condition extends Fixable {
     /** 
@@ -97,7 +98,7 @@ public interface Condition extends Fixable {
      * Tests if this condition is ground and has a match to a given host graph.
      * Convenience method for <code>getMatchIter(host, null).hasNext()</code> 
      */
-    public boolean hasMatch(Graph host);
+    public boolean hasMatch(GraphShape host);
     
 	/** 
      * Returns an iterator over all matches for a given host graph, given
@@ -109,5 +110,5 @@ public interface Condition extends Fixable {
      * and the condition is not ground, or if <code>patternMatch</code> is not compatible
      * with the pattern graph
      */
-    public Iterator<? extends Match> getMatchIter(Graph host, NodeEdgeMap contextMap);
+    public Iterator<? extends Match> getMatchIter(GraphShape host, NodeEdgeMap contextMap);
 }

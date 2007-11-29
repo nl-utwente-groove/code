@@ -19,6 +19,7 @@ package groove.rel;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.GraphShape;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -29,7 +30,7 @@ import java.util.Set;
  * Variables are <code>String</code>s, evaluated to <code>Label</code>s, used in
  * some types of regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class VarSupport {
     /** 
@@ -63,7 +64,7 @@ public class VarSupport {
      * This is the union of the variables involved in the edges.
      * @see #getAllVars(Edge)
      */
-    static public Set<String> getAllVars(Graph graph) {
+    static public Set<String> getAllVars(GraphShape graph) {
         Set<String> result = new HashSet<String>();
         for (Edge edge: graph.edgeSet()) {
             result.addAll(getAllVars(edge));

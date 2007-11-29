@@ -12,12 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Rule.java,v 1.24 2007-10-06 11:27:50 rensink Exp $
- * $Date: 2007-10-06 11:27:50 $
+ * $Id: Rule.java,v 1.25 2007-11-29 12:52:09 rensink Exp $
+ * $Date: 2007-11-29 12:52:09 $
  */
 package groove.trans;
 
 import groove.graph.Graph;
+import groove.graph.GraphShape;
 import groove.graph.Morphism;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
@@ -34,7 +35,7 @@ import java.util.Iterator;
  * [AR: In the future the interface might provide less functionality;
  *  instead there will be a sub-interface GraphRule or similar. ]
  * @author Arend Rensink
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public interface Rule extends Comparable<Rule>, Condition {
 	/** Returns the name of this rule. */
@@ -88,7 +89,7 @@ public interface Rule extends Comparable<Rule>, Condition {
      * and the condition is not ground, or if <code>contextMap</code> is not compatible
      * with the root map
      */
-    public Iterator<RuleMatch> getMatchIter(Graph host, NodeEdgeMap contextMap);
+    public Iterator<RuleMatch> getMatchIter(GraphShape host, NodeEdgeMap contextMap);
     
     /** 
      * Returns the collection of all matches for a given host graph, given
@@ -100,7 +101,7 @@ public interface Rule extends Comparable<Rule>, Condition {
      * and the condition is not ground, or if <code>contextMap</code> is not compatible
      * with the root map
      */
-    public Iterable<RuleMatch> getMatches(Graph host, NodeEdgeMap contextMap);
+    public Iterable<RuleMatch> getMatches(GraphShape host, NodeEdgeMap contextMap);
 
     /**
      * Lazily creates and returns a matcher for rule events of this rule.
@@ -117,7 +118,7 @@ public interface Rule extends Comparable<Rule>, Condition {
 	 * @param reuse if <code>true</code>, the created event will store
 	 * data structures internally for reuse. This takes space, but saves space
 	 * if events are shared among transformations.
-	 * @deprecated use {@link #getMatches(Graph, NodeEdgeMap)} and {@link RuleMatch#newEvent(NodeFactory, boolean)}
+	 * @deprecated use {@link #getMatches(GraphShape, NodeEdgeMap)} and {@link RuleMatch#newEvent(NodeFactory, boolean)}
 	 */
     @Deprecated
 	public RuleEvent newEvent(VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse);
