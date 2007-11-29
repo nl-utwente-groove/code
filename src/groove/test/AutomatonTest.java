@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AutomatonTest.java,v 1.8 2007-11-02 08:42:39 rensink Exp $
+ * $Id: AutomatonTest.java,v 1.9 2007-11-29 12:50:08 rensink Exp $
  */
 package groove.test;
 
@@ -51,7 +51,7 @@ import junit.framework.TestCase;
 /**
  * Tests the available {@link Automaton} interface.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class AutomatonTest extends TestCase {
 	/** Directory with test files (relative to the project) */
@@ -380,10 +380,16 @@ public class AutomatonTest extends TestCase {
             assertTrue(aut.accepts(wordEmpty));
             aut = createAutomaton("(A|B)*");
             assertTrue(aut.accepts(wordEmpty));
+            assertTrue(aut.accepts(wordAB));
+            assertTrue(aut.accepts(wordBB));
+            assertFalse(aut.accepts(wordABC));
             aut = createAutomaton("(A|=)*");            
             assertTrue(aut.accepts(wordEmpty));
             aut = createAutomaton("(A|B.B)*");            
-            assertTrue(aut.accepts(wordEmpty));
+            assertTrue(aut.accepts(wordEmpty));         
+            assertTrue(aut.accepts(wordBB));       
+            assertTrue(aut.accepts(wordAA));       
+            assertFalse(aut.accepts(wordAB));
         } catch (FormatException exc) {
             fail("Regular expression parse error: "+exc.getMessage());
         }
