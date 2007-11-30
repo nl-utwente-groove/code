@@ -16,19 +16,19 @@ public class MultiplicityImpl implements Multiplicity {
 			throw new RuntimeException("Multiplicity should be singleton");
 		}
 		this.setOf = new HashMap<MultiplicityInformation, MultSetImpl>();
-		this.sets = new MultSetImpl[Abstraction.MAX_ALLOWED_PRECISION];
+		this.sets = new MultSetImpl[Abstraction.MAX_ALLOWED_PRECISION+1];
 		for (int i = 0; i < this.sets.length; i++) {
-			this.sets[i] = new MultSetImpl(i+1);
+			this.sets[i] = new MultSetImpl(i);
 		}
 		MultiplicityImpl.singleton = true;
 	}
 	
 	
 	public MultiplicityInformation getElement(int card, int precision) {
-		if (precision < 1 || precision > Abstraction.MAX_ALLOWED_PRECISION || card < 0) {
+		if (precision < 0 || precision > Abstraction.MAX_ALLOWED_PRECISION || card < 0) {
 			throw new RuntimeException("Impossible cardinality or precision");
 		}
-		return this.sets[precision-1].getElement(card);
+		return this.sets[precision].getElement(card);
 	}
 	
 	public MultiplicityInformation add(MultiplicityInformation mult, int nb) {
@@ -90,7 +90,7 @@ public class MultiplicityImpl implements Multiplicity {
 	/** The different multiplicity sets. */
 	private MultSetImpl[] sets;
 	/** Makes correspond to each MultiplicityInformation ins containing set.*/
-	private Map<MultiplicityInformation,MultSetImpl> setOf;
+	Map<MultiplicityInformation,MultSetImpl> setOf;
 	/** Set to true when first initialised. */
 	private static boolean singleton = false;
 	
@@ -119,12 +119,12 @@ public class MultiplicityImpl implements Multiplicity {
 			this.iValues = new MultInfoImpl[precision + 2];
 			for (int i = 0; i < precision+1; i++) {
 				this.pValues[i] = new MultInfoImpl();
-				setOf.put(this.pValues[i], this);
+				MultiplicityImpl.this.setOf.put(this.pValues[i], this);
 				this.iValues[i] = new MultInfoImpl();
-				setOf.put(this.iValues[i], this);
+				MultiplicityImpl.this.setOf.put(this.iValues[i], this);
 			}
 			this.iValues[precision+1] = new MultInfoImpl();
-			setOf.put(this.iValues[precision+1], this);
+			MultiplicityImpl.this.setOf.put(this.iValues[precision+1], this);
 		}
 
 		/**  
@@ -137,7 +137,7 @@ public class MultiplicityImpl implements Multiplicity {
 			if (i > this.precision()) {
 				return this.omega();
 			}
-			else return this.pValues[i];
+			return this.pValues[i];
 		}
 		
 		/** Adds nb to element
@@ -359,7 +359,7 @@ public class MultiplicityImpl implements Multiplicity {
 
 	
 	/** An implementation for MultiplicityInformation. */
-	private class MultInfoImpl implements MultiplicityInformation {
+	class MultInfoImpl implements MultiplicityInformation {
 		
 		public String toString () {
 			MultiplicityImpl impl= (MultiplicityImpl) Abstraction.MULTIPLICITY;
