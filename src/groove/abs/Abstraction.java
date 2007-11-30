@@ -48,7 +48,7 @@ public class Abstraction {
 	}	
 	
 	/** The multiplicity factory to be used */
-	public static final Multiplicity MULTIPLICITY = new _MultiplicityImpl();
+	public static final Multiplicity MULTIPLICITY = new MultiplicityImpl();
 	
 	/** A global constant. The maximal allowed precision. */
 	public static final int MAX_ALLOWED_PRECISION = 5;
