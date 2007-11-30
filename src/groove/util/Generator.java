@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.28 2007-11-29 12:51:23 rensink Exp $
+ * $Id: Generator.java,v 1.29 2007-11-30 08:28:52 rensink Exp $
  */
 package groove.util;
 
@@ -76,7 +76,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -98,9 +98,9 @@ public class Generator extends CommandLineTool {
     static public final String LOAD_ERROR = "Can't load graph grammar";
     /** Usage message for the generator. */
     static public final String USAGE_MESSAGE = "Usage: Generator [options] <grammar-location> [<start-graph-name> | <start-graphs-dir>]";
-
-    static private final String VAR_START_REGEXPR = "\\$\\{";
-    static private final String VAR_END_REGEXPR = "\\}";
+//
+//    static private final String VAR_START_REGEXPR = "\\$\\{";
+//    static private final String VAR_END_REGEXPR = "\\}";
     /** 
      * Value for the output file name to indicate that the name should be computed from the grammar name.
      * @see #getOutputFileName()
@@ -216,11 +216,11 @@ public class Generator extends CommandLineTool {
             public void update(Observable o, Object arg) {
                 if (getVerbosity() > LOW_VERBOSITY) {
                     if (arg instanceof String) {
-                        printf("%s .", arg);
+                        System.out.printf("%s .", arg);
                     } else if (arg == null) {
-                        println(" done");
+                        System.out.println(" done");
                     } else {
-                        print(".");
+                        System.out.print(".");
                     }
                 }
             }
@@ -556,14 +556,10 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * The finalization phase of state space generation. Called from <tt>{@link #start}</tt>.
+     * The finalisation phase of state space generation. Called from <tt>{@link #start}</tt>.
      * 
      */
     protected void exit(Collection<? extends State> result) throws IOException, FormatException {
-        
-        if (getOutputFileName() != null) {
-            Groove.saveGraph(new LTSGraph(getGTS()), getOutputFileName());
-        }
         if (getFinalSaveName() != null) {
         	if (result.isEmpty()) {
         		System.out.println("No resulting graphs");
@@ -575,6 +571,12 @@ public class Generator extends CommandLineTool {
 				}
 				System.out.printf("Resulting graphs saved: %s%n", getGTS().getFinalStates());
 			}
+        }
+        if (getOutputFileName() != null) {
+            if (getVerbosity() == HIGH_VERBOSITY) {
+                print(GraphReporter.createInstance().getReport(getGTS()).toString());
+            }
+                Groove.saveGraph(new LTSGraph(getGTS()), getOutputFileName());
         }
     }
 
