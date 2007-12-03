@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: TestingTransforming.java,v 1.3 2007-12-03 17:02:03 iovka Exp $
+ * $Id: TestingTransforming.java,v 1.4 2007-12-03 20:52:29 iovka Exp $
  */
 package groove.abs;
 
@@ -23,9 +23,11 @@ import java.util.Collection;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
+import groove.graph.DefaultLabel;
 import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.Edge;
@@ -504,17 +506,100 @@ public class TestingTransforming extends TestCase {
 		
 	}
 	
-	public void testTransformBinaryTree1 () {
+	public void testTransformBinaryTree1 () throws ExceptionIncompatibleWithMaxIncidence {
 		// Construct a problematic graph
 		PatternFamily pf = new PatternFamily(1, 10);
 		DefaultAbstrGraph.AbstrGraphCreator creator =  DefaultAbstrGraph.getAbstrGraphCreatorInstance();
 		creator.init(pf, 1);
 		MultiplicityInformation one = Abstraction.MULTIPLICITY.getElement(1, 1);
 		MultiplicityInformation omega = Abstraction.MULTIPLICITY.getElement(2, 1);
+		Label laba = DefaultLabel.createLabel("a");
+		Label labm = DefaultLabel.createLabel("m");
+		Label labl = DefaultLabel.createLabel("l");
+
+		
 		// create the patterns
+		Graph gA = new DefaultGraph();
+		Graph gB = new DefaultGraph();
+		Graph gC = new DefaultGraph();
+		Graph gD = new DefaultGraph();
+		Graph gL = new DefaultGraph();
+		initGraphs(gA, gB, gC, gD, gL);
+		GraphPattern pA, pB, pC, pD, pL;
+		pA = pf.computeAddPattern(gA, nodes[0]);
+		pB = pf.computeAddPattern(gB, nodes[0]);
+		pC = pf.computeAddPattern(gC, nodes[0]);
+		pD = pf.computeAddPattern(gD, nodes[0]);
+		pL = pf.computeAddPattern(gL, nodes[0]);
+		
+		Node nA = creator.addNode(one, pA);
+		Node nC = creator.addNode(omega, pC);		
+		Node nB = creator.addNode(one, pB);
+		Node nL = creator.addNode(omega, pL);
+		creator.addEdge(nA, labm, nA);
+		creator.addEdge(nC, labm, nC);
+		creator.addEdge(nC, laba, nC);
+		creator.addEdge(nB, labm, nB);
+		creator.addEdge(nL, labl, nL);//
+		creator.addEdge(nA, laba, nC);
+		creator.addEdge(nC, laba, nB);
+		creator.addEdge(nB, laba, nL);
+		creator.addEdge(nA, laba, nL);
+		creator.addEdge(nC, laba, nL);
+		
+		creator.setFixed();
+		AbstrGraph ag = creator.getConstructedGraph();
+		
+		
+		
 	}
 		
-	
+	private void initGraphs(Graph gA, Graph gB, Graph gC, Graph gD, Graph gL) {
+		
+		Label laba = DefaultLabel.createLabel("a");
+		Label labm = DefaultLabel.createLabel("m");
+		Label labl = DefaultLabel.createLabel("l");
+
+		for (int i = 0; i < 3; i++) { gA.addNode(nodes[i]); }
+		gA.addEdge(DefaultEdge.createEdge(nodes[0], labm, nodes[0]));
+		gA.addEdge(DefaultEdge.createEdge(nodes[1], labm, nodes[1]));
+		gA.addEdge(DefaultEdge.createEdge(nodes[2], labm, nodes[2]));//
+		gA.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[1]));
+		gA.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[2]));
+
+		for (int i = 0; i < 4; i++) { gB.addNode(nodes[i]); }
+		gB.addEdge(DefaultEdge.createEdge(nodes[0], labm, nodes[0]));
+		gB.addEdge(DefaultEdge.createEdge(nodes[1], labl, nodes[1]));
+		gB.addEdge(DefaultEdge.createEdge(nodes[2], labl, nodes[2]));
+		gB.addEdge(DefaultEdge.createEdge(nodes[3], labm, nodes[3]));//
+		gB.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[1]));
+		gB.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[2]));
+		gB.addEdge(DefaultEdge.createEdge(nodes[3], laba, nodes[0]));
+		
+		for (int i = 0; i < 4; i++) { gC.addNode(nodes[i]); }
+		gC.addEdge(DefaultEdge.createEdge(nodes[0], labm, nodes[0]));
+		gC.addEdge(DefaultEdge.createEdge(nodes[1], labm, nodes[1]));
+		gC.addEdge(DefaultEdge.createEdge(nodes[2], labl, nodes[2]));
+		gC.addEdge(DefaultEdge.createEdge(nodes[3], labm, nodes[3]));//
+		gC.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[1]));
+		gC.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[2]));
+		gC.addEdge(DefaultEdge.createEdge(nodes[3], laba, nodes[0]));
+		
+		for (int i = 0; i < 4; i++) { gD.addNode(nodes[i]); }
+		gD.addEdge(DefaultEdge.createEdge(nodes[0], labm, nodes[0]));
+		gD.addEdge(DefaultEdge.createEdge(nodes[1], labm, nodes[1]));
+		gD.addEdge(DefaultEdge.createEdge(nodes[2], labm, nodes[2]));
+		gD.addEdge(DefaultEdge.createEdge(nodes[3], labm, nodes[3]));//
+		gD.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[1]));
+		gD.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[2]));
+		gD.addEdge(DefaultEdge.createEdge(nodes[3], laba, nodes[0]));
+		
+		for (int i = 0; i < 2; i++) { gL.addNode(nodes[i]); }
+		gL.addEdge(DefaultEdge.createEdge(nodes[0], labl, nodes[0]));
+		gL.addEdge(DefaultEdge.createEdge(nodes[1], labm, nodes[1]));
+		gL.addEdge(DefaultEdge.createEdge(nodes[1], laba, nodes[0]));
+	}
+
 	public static void main (String[] args) {
 		TestingTransforming test = new TestingTransforming();
 		test.setUp();
