@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultGxl.java,v 1.20 2007-11-19 12:19:16 rensink Exp $
+ * $Id: DefaultGxl.java,v 1.21 2007-12-03 08:55:18 rensink Exp $
  */
 package groove.io;
 
@@ -58,7 +58,7 @@ import org.exolab.castor.xml.ValidationException;
  * Currently the conversion only supports binary edges.
  * This class is implemented using data binding.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class DefaultGxl extends AbstractXml {
     /**
@@ -344,7 +344,7 @@ public class DefaultGxl extends AbstractXml {
         // just copy the nodes
         attrGraph.addNodeSet(graph.nodeSet());
         // turn the edges into attribute maps and store those
-        Map<String,String> labelAttr = new HashMap<String,String>();
+        Map<String,String> labelAttr = new HashMap<String,String>(1);
         for (Edge edge: graph.edgeSet()) {
             labelAttr.put(LABEL_ATTR_NAME, edge.label().text());
             attrGraph.addEdge(createEdge(edge.ends(), labelAttr));
