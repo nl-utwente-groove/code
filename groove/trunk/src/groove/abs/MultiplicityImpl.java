@@ -360,7 +360,7 @@ public class MultiplicityImpl implements Multiplicity {
 	
 	/** An implementation for MultiplicityInformation. */
 	class MultInfoImpl implements MultiplicityInformation {
-		
+		@Override
 		public String toString () {
 			MultiplicityImpl impl= (MultiplicityImpl) Abstraction.MULTIPLICITY;
 			MultSetImpl mult = impl.getSetFor(this);
