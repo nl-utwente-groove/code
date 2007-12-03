@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AlgebraConstants.java,v 1.10 2007-11-30 14:35:11 kastenberg Exp $
+ * $Id: AlgebraConstants.java,v 1.11 2007-12-03 08:53:54 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -25,7 +25,7 @@ import groove.util.Groove;
 /**
  * Class containing all the constant values used for dealing with attributed graphs.
  * @author Harmen Kastenberg
- * @version $Revision: 1.10 $ $Date: 2007-11-30 14:35:11 $
+ * @version $Revision: 1.11 $ $Date: 2007-12-03 08:53:54 $
  */
 public class AlgebraConstants {
 	/** Code for attributes of type integer. */
@@ -70,6 +70,7 @@ public class AlgebraConstants {
      * @return the singleton {@link groove.graph.algebra.AlgebraGraph}-instance
      * @deprecated use {@link AlgebraGraph#getInstance()} instead
      */
+    @Deprecated
     static private AlgebraGraph getAlgebraGraph() {
     	if (algebraGraph == null)
     		algebraGraph = AlgebraGraph.getInstance();
