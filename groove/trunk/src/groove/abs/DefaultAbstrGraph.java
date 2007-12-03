@@ -9,6 +9,8 @@ import java.util.Set;
 
 import groove.abs.Abstraction.AbstrGraphsRelation;
 import groove.abs.Abstraction.MultInfoRelation;
+import groove.graph.BinaryEdge;
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
@@ -273,7 +275,6 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	// ----------------------------------------------------------------------------------
 	// SUBTYPES
 	// ----------------------------------------------------------------------------------
-	
 	
 	/** Computes a map indicating the maximal allowed number of nodes of given type, whenever this number is finite.
 	 * @return A map from GraphPatterns that are types that are types in this abstract graph into their multiplicity, 
@@ -571,7 +572,6 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 		return false;
 	}
 	
-	
 	// ////////////////////////////////////////////////////////
 	// Checking invariants
 	// ////////////////////////////////////////////////////////
@@ -613,4 +613,73 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 			assert this.type.get(entry.getValue()).getPattern().equals(entry.getKey());
 		}
 	}
+
+	// DEBUGGING CLASS
+	
+	public static AbstrGraphCreator getAbstrGraphCreatorInstance() {
+		return (new DefaultAbstrGraph()).new AbstrGraphCreator();
+	}
+	
+	/** Allows to construct an abstract graph by giving directly nodes with their multiplicity and type.
+	 * 
+	 */
+	class AbstrGraphCreator {
+			
+		/** */
+		public void init(PatternFamily family, int precision) {
+			this.graph = new DefaultAbstrGraph(family, precision);
+		}
+		
+		/**
+		 * Adds a node with given multiplicity and type. If a node with the given type already exists,
+		 * then the graph under construction is not modified.
+		 * @param mult
+		 * @param type
+		 * @return The node that has been added (or the one with the same type that already existed).
+		 */
+		public Node addNode(MultiplicityInformation mult, GraphPattern type) {
+			Node result = this.graph.nodeFor(type);
+			if (result == null) { 
+				result = this.graph.addNode();
+				this.graph.type.put(result, new NodeType(type, mult));
+				this.graph.invType.put(type, result);
+			}
+			return result;
+		}
+		
+		/**
+		 * Adds an edge between two nodes.
+		 * @param source
+		 * @param label
+		 * @param target
+		 * @require source and target nodes are already in the graph
+		 * @return the added edge, or the one that already existed, if any
+		 */
+		public BinaryEdge addEdge(Node source, Label label, Node target) {
+			if (! this.graph.containsElement(source) || ! this.graph.containsElement(target)) {
+				throw new UnsupportedOperationException("Adding edge only possible between existing nodes.");
+			}
+			BinaryEdge result = DefaultEdge.createEdge(source, label, target);
+			this.graph.addEdge(result);
+			return result;
+		}
+		
+		/** */
+		public AbstrGraph getConstructedGraph () {
+			return this.graph;
+		}
+		
+		/** */
+		public void setFixed() {
+			this.graph.setFixed();
+		}
+		
+		DefaultAbstrGraph graph;
+		
+	}
+	
+	
+	
+
+
 }

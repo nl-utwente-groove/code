@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: TestingTransforming.java,v 1.2 2007-12-03 09:42:24 iovka Exp $
+ * $Id: TestingTransforming.java,v 1.3 2007-12-03 17:02:03 iovka Exp $
  */
 package groove.abs;
 
@@ -504,8 +504,14 @@ public class TestingTransforming extends TestCase {
 		
 	}
 	
-	public void testTransformBinaryTree () {
-		// empty
+	public void testTransformBinaryTree1 () {
+		// Construct a problematic graph
+		PatternFamily pf = new PatternFamily(1, 10);
+		DefaultAbstrGraph.AbstrGraphCreator creator =  DefaultAbstrGraph.getAbstrGraphCreatorInstance();
+		creator.init(pf, 1);
+		MultiplicityInformation one = Abstraction.MULTIPLICITY.getElement(1, 1);
+		MultiplicityInformation omega = Abstraction.MULTIPLICITY.getElement(2, 1);
+		// create the patterns
 	}
 		
 	
@@ -529,6 +535,7 @@ public class TestingTransforming extends TestCase {
 		System.out.println(g3);
 		
 	}
+	
 	
 	
 	private class TypingImpl implements ConcretePart.Typing {
