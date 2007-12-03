@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AGTS.java,v 1.1 2007-11-28 15:35:50 iovka Exp $
+ * $Id: AGTS.java,v 1.2 2007-12-03 09:42:01 iovka Exp $
  */
 package groove.abs.lts;
 
@@ -38,6 +38,7 @@ import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.Transition;
 import groove.trans.GraphGrammar;
+import groove.trans.SystemRecord;
 import groove.util.CollectionView;
 
 /** An Abstract graph transition system. 
@@ -129,6 +130,10 @@ public class AGTS extends GTS {
         return Collections.unmodifiableSet(this.stateSet);
     }
 	
+	@Override
+	protected SystemRecord createRecord() {
+		return new SystemRecord(getGrammar(), true);
+	}
 	// ---------------------------------------------------------------
 	// NON IMPLEMENTED PUBLIC METHODS
 	// ---------------------------------------------------------------
