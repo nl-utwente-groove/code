@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
 
- * $Id: PatternFamily.java,v 1.1 2007-11-28 15:35:07 iovka Exp $
+ * $Id: PatternFamily.java,v 1.2 2007-12-03 09:42:24 iovka Exp $
  */
 package groove.abs;
 
@@ -54,8 +54,6 @@ public class PatternFamily implements Iterable<GraphPattern> {
 	final int RADIUS;
 	/** The maximal allowed incidence for nodes in the patterns */
 	private final int MAX_INCIDENCE;
-	/** The set of allowed labels. */
-	private final Set<Label> labelsSet;
 	/** Used to contain the set of patterns already in this family */
 	private MyHashSet<GraphPattern> thePatterns;
 	/** Used in case of symmetry reduction. */
@@ -69,24 +67,11 @@ public class PatternFamily implements Iterable<GraphPattern> {
 	 * @require radius should be positive (>= 1)
 	 * @require max_incidence should be positie (>=1)
 	 */
-	public PatternFamily(final int radius, final int max_incidence, final Set<Label> labelsSet) {
+	public PatternFamily(final int radius, final int max_incidence) {
 		assert radius > 0 && max_incidence > 0: "A radius and max_incidence should be positive." ;
 		this.RADIUS = radius;
 		this.MAX_INCIDENCE = max_incidence;
-		this.labelsSet = labelsSet;
 		this.thePatterns = new MyHashSet<GraphPattern>(new DefaultGraphPatternHasher());
-	}
-	
-	/** Creates a family of patterns with unbounded set of labels */
-	public PatternFamily(final int radius, final int max_incidence) {
-		this(radius, max_incidence, null);
-	}
-	
-	/** The set of allowed labels.
-	  * @return  the set of allowed labels 
-	  */
-	public Set<Label> getLabels() {
-		return this.labelsSet;
 	}
 	/** The maximal allowed incidence. 
 	 * @return  the maximal allowed incidence 

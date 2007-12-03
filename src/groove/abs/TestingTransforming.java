@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: TestingTransforming.java,v 1.1 2007-11-28 15:35:03 iovka Exp $
+ * $Id: TestingTransforming.java,v 1.2 2007-12-03 09:42:24 iovka Exp $
  */
 package groove.abs;
 
@@ -80,7 +80,6 @@ public class TestingTransforming extends TestCase {
 	@SuppressWarnings("unqualified-field-access")
 	@Override
 	protected void setUp () {
-		/*
 		// Initialise the list graphs and the cell graph
 		for (int i = 0; i < nodes.length; i++) {
 			nodes[i] = DefaultNode.createNode(i);
@@ -137,7 +136,6 @@ public class TestingTransforming extends TestCase {
 			e1.printStackTrace();
 			System.exit(1);
 		} 
-		*/
 		try {
 			binaryTreeGrammar = (new AspectualViewGps()).unmarshal(new File(PATH_PREFIX+"generate-binary-tree.gps"), "start").toGrammar();
 		} catch (FormatException e1) {
@@ -163,7 +161,7 @@ public class TestingTransforming extends TestCase {
 	/** */
 	@SuppressWarnings("unqualified-field-access")
 	public void testConstructionConcrPart () throws AssertionError {
- 		PatternFamily pf = new PatternFamily(1, 10, Util.labelSet(list5));
+ 		PatternFamily pf = new PatternFamily(1, 10);
  		
 		DefaultAbstrGraph s = null;
 		try {
@@ -189,7 +187,7 @@ public class TestingTransforming extends TestCase {
 		morph = Util.getTotalExtension(morph);
 
 		// Constuct concrete parts
-		Collection<ConcretePart> ext = ConcretePart.extensions(cell, new TypingImpl(s, morph), pf, false);	
+		Collection<ConcretePart> ext = ConcretePart.extensions(cell, new TypingImpl(s, morph), pf, false, null);	
 		assertEquals(1, ext.size());
 	}
 	
@@ -202,7 +200,7 @@ public class TestingTransforming extends TestCase {
 	 */
 	@SuppressWarnings("unqualified-field-access")
 	public void testSetMaterialisations1 () throws AssertionError {
- 		PatternFamily pf = new PatternFamily(1, 10, Util.labelSet(listGrammar4.getStartGraph()));
+ 		PatternFamily pf = new PatternFamily(1, 10);
 		DefaultAbstrGraph s = null;
 		try {
 			s = DefaultAbstrGraph.factory(pf,2).getShapeGraphFor(listGrammar4.getStartGraph());
@@ -228,14 +226,13 @@ public class TestingTransforming extends TestCase {
 		morph = Util.getTotalExtension(morph);
 		
 		// Constuct concrete parts
+		SystemRecord syst = new SystemRecord(listGrammar4, true);
 		ConcretePart.Typing typing = new TypingImpl(s, morph);
-		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false);
+		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
 		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
 
-		SystemRecord syst = new SystemRecord(listGrammar4);
-		
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
 		for (Node n : morph.nodeMap().keySet()){
@@ -247,7 +244,7 @@ public class TestingTransforming extends TestCase {
 		
 		RuleEvent event = new SPOEvent(rule, new VarNodeEdgeHashMap(match), syst, false);
 		RuleApplication appl = new DefaultApplication(event, cp.graph());
-		Collection<AbstrGraph> result = smat.transform(appl);
+		Collection<AbstrGraph> result = smat.transform(appl, syst);
 		assertEquals(2, result.size());	
 	}
 	
@@ -260,7 +257,7 @@ public class TestingTransforming extends TestCase {
 	 */
 	@SuppressWarnings("unqualified-field-access")
 	public void testSetMaterialisations2 () throws AssertionError {
- 		PatternFamily pf = new PatternFamily(1, 10, Util.labelSet(listGrammar4.getStartGraph()));
+ 		PatternFamily pf = new PatternFamily(1, 10);
 		DefaultAbstrGraph s = null;
 		try {
 			s = DefaultAbstrGraph.factory(pf,1).getShapeGraphFor(listGrammar4.getStartGraph());
@@ -286,13 +283,12 @@ public class TestingTransforming extends TestCase {
 		morph = Util.getTotalExtension(morph);
 		
 		// Constuct concrete parts
+		SystemRecord syst = new SystemRecord(listGrammar4, true);
 		ConcretePart.Typing typing = new TypingImpl(s, morph);
-		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false);
+		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
 		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
-
-		SystemRecord syst = new SystemRecord(listGrammar4);
 		
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
@@ -305,7 +301,7 @@ public class TestingTransforming extends TestCase {
 		
 		RuleEvent event = new SPOEvent(rule, new VarNodeEdgeHashMap(match), syst, false);
 		RuleApplication appl = new DefaultApplication(event, cp.graph());
-		Collection<AbstrGraph> result = smat.transform(appl);
+		Collection<AbstrGraph> result = smat.transform(appl, syst);
 		
 		String fileNameBase = "../tests/out3/graph";
 		int i = 1;
@@ -333,7 +329,7 @@ public class TestingTransforming extends TestCase {
 	 */
 	@SuppressWarnings("unqualified-field-access")
 	public void testSetMaterialisations3 () throws AssertionError {
- 		PatternFamily pf = new PatternFamily(2, 10, Util.labelSet(listGrammar10.getStartGraph()));
+ 		PatternFamily pf = new PatternFamily(2, 10);
 		DefaultAbstrGraph s = null;
 		try {
 			s = DefaultAbstrGraph.factory(pf,1).getShapeGraphFor(listGrammar10.getStartGraph());
@@ -359,14 +355,13 @@ public class TestingTransforming extends TestCase {
 		morph = Util.getTotalExtension(morph);
 		
 		// Constuct concrete parts
+		SystemRecord syst = new SystemRecord(listGrammar10, true);
 		ConcretePart.Typing typing = new TypingImpl(s, morph);
-		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false);
+		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
 		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
 
-		SystemRecord syst = new SystemRecord(listGrammar10);
-		
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
 		for (Node n : morph.nodeMap().keySet()){
@@ -378,7 +373,7 @@ public class TestingTransforming extends TestCase {
 		
 		RuleEvent event = new SPOEvent(rule, new VarNodeEdgeHashMap(match), syst, false);
 		RuleApplication appl = new DefaultApplication(event, cp.graph());
-		Collection<AbstrGraph> result = smat.transform(appl);
+		Collection<AbstrGraph> result = smat.transform(appl, syst);
 		
 		String fileNameBase = "../tests/out4/graph";
 		int i = 1;
@@ -403,7 +398,7 @@ public class TestingTransforming extends TestCase {
 	  */
 	@SuppressWarnings("unqualified-field-access")
 	public void testSetMaterialisations4() throws AssertionError {
-		PatternFamily pf = new PatternFamily(1, 10, Util.labelSet(listGrammar4.getStartGraph()));
+		PatternFamily pf = new PatternFamily(1, 10);
 		DefaultAbstrGraph s = null;
 		try {
 			s = DefaultAbstrGraph.factory(pf,2).getShapeGraphFor(listGrammar4.getStartGraph());
@@ -418,14 +413,14 @@ public class TestingTransforming extends TestCase {
 		for (VarNodeEdgeMap match : Util.getMatchesIter(rule.lhs(), s, new NodeEdgeHashMap())) {
 			if (! s.isInjectiveMap(match)) { continue; }
 			
+			SystemRecord syst = new SystemRecord(listGrammar4, true);
 			ConcretePart.Typing typing = new TypingImpl(s, match);
-			Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false);
+			Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 			for (ConcretePart cp : ext) {
 				SetMaterialisations smat = new SetMaterialisations(cp, s, match, this.options);
-				SystemRecord syst = new SystemRecord(listGrammar4);
 				RuleEvent event = new SPOEvent(rule, smat.updateMatch(match), syst, false);
 				RuleApplication appl = new DefaultApplication(event, cp.graph());
-				Collection<AbstrGraph> result = smat.transform(appl);
+				Collection<AbstrGraph> result = smat.transform(appl, syst);
 				all.addAll(result);
 			}
 		}
@@ -436,9 +431,9 @@ public class TestingTransforming extends TestCase {
 	@SuppressWarnings("unqualified-field-access")
 	public void testTransformCircularList () throws AssertionError {
 		// common variables
-		SystemRecord syst = new SystemRecord(circularListGrammar4);
+		SystemRecord syst = new SystemRecord(circularListGrammar4, true);
 		SPORule rule = (SPORule) listGrammar4.getRule("add");
-		PatternFamily pf = new PatternFamily(1, 10, Util.labelSet(circularListGrammar4.getStartGraph()));
+		PatternFamily pf = new PatternFamily(1, 10);
 		
 		
 		// The first abstract graph
@@ -460,11 +455,11 @@ public class TestingTransforming extends TestCase {
 		{
 			VarNodeEdgeMap match = Util.getMatchesIter(rule.lhs(), s, new NodeEdgeHashMap()).iterator().next();
 			ConcretePart.Typing typing = new TypingImpl(s, match);
-			ConcretePart cp = ConcretePart.extensions(rule.lhs(), typing, pf, false).iterator().next();
+			ConcretePart cp = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst).iterator().next();
 			SetMaterialisations smat = new SetMaterialisations(cp, s, match, this.options);
 			RuleEvent event = new SPOEvent(rule, smat.updateMatch(match), syst, false);
 			RuleApplication appl = new DefaultApplication(event, cp.graph());
-			s2 = smat.transform(appl).iterator().next();
+			s2 = smat.transform(appl, syst).iterator().next();
 			assertEquals(5, s2.nodeCount());
 		}
 		
@@ -489,14 +484,14 @@ public class TestingTransforming extends TestCase {
 		
 		{
 			TypingImpl typing2 = new TypingImpl((DefaultAbstrGraph) s2, match2);
-			ConcretePart cp2 = ConcretePart.extensions(rule.lhs(), typing2, pf, false).iterator().next();
+			ConcretePart cp2 = ConcretePart.extensions(rule.lhs(), typing2, pf, false, syst).iterator().next();
 			smat2 = new SetMaterialisations(cp2, (DefaultAbstrGraph) s2, match2, this.options);
 			RuleEvent event2 = new SPOEvent(rule, smat2.updateMatch(match2), syst, false);
 			appl2 = new DefaultApplication(event2, cp2.graph());
 		}
 		
 		// Transform
-		Collection<AbstrGraph> result = smat2.transform(appl2);
+		Collection<AbstrGraph> result = smat2.transform(appl2, syst);
 
 //		for (AbstrGraph ag : result) {
 //			System.out.println(ag + "\n");
@@ -510,42 +505,7 @@ public class TestingTransforming extends TestCase {
 	}
 	
 	public void testTransformBinaryTree () {
-		// common variables
-		SystemRecord syst = new SystemRecord(binaryTreeGrammar);
-		SPORule rule = (SPORule) binaryTreeGrammar.getRule("expand");
-		PatternFamily pf = new PatternFamily(1, 10, null);
-		DefaultAbstrGraph s = null;
-		try {
-			s = DefaultAbstrGraph.factory(pf,1).getShapeGraphFor(binaryTreeGrammar.getStartGraph());
-		} catch (ExceptionIncompatibleWithMaxIncidence e) {
-			e.printStackTrace();
-		}
-		
-		// Compute the unique match
-		VarNodeEdgeMap match = Util.getMatchesIter(rule.lhs(), s, new NodeEdgeHashMap()).iterator().next();
-		
-		// The unique concrete part
-		ConcretePart cp = ConcretePart.extensions(rule.lhs(), new TypingImpl(s,match), pf, false).iterator().next();
-		SetMaterialisations smat = new SetMaterialisations(cp, s, match, this.options);
-		VarNodeEdgeMap updatedMatch = smat.updateMatch(match);
-		RuleEvent event = new SPOEvent(rule, updatedMatch, syst, false);
-		RuleApplication appl = new DefaultApplication(event, cp.graph());
-		Collection<AbstrGraph> result = smat.transform(appl);
-
-		for (AbstrGraph graph : result) {
-			System.out.println(graph);
-		}
-		
-		// --------------------------
-		Graph g = rule.lhs().clone();
-		Node n = g.nodeSet().iterator().next();
-		VarNodeEdgeMap match2 = new VarNodeEdgeHashMap();
-		match2.putNode(n, n);
-		RuleEvent event2 = new SPOEvent(rule, match2, syst, false);
-		RuleApplication appl2 = new DefaultApplication(event2, g);
-		appl2.applyDelta(g);
-		Graph g3 = appl2.getTarget();
-		System.out.println(g3);
+		// empty
 	}
 		
 	
@@ -556,7 +516,7 @@ public class TestingTransforming extends TestCase {
 		
 		// --------------------------
 		SPORule rule = (SPORule) test.binaryTreeGrammar.getRule("expand");
-		SystemRecord syst = new SystemRecord(test.binaryTreeGrammar);
+		SystemRecord syst = new SystemRecord(test.binaryTreeGrammar, true);
 		Graph g = rule.lhs().clone();
 		Node n = g.nodeSet().iterator().next();
 		VarNodeEdgeMap match2 = new VarNodeEdgeHashMap();

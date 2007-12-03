@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConcretePart.java,v 1.1 2007-11-28 15:35:08 iovka Exp $
+ * $Id: ConcretePart.java,v 1.2 2007-12-03 09:42:24 iovka Exp $
  */
 package groove.abs;
 
@@ -24,7 +24,9 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.NodeFactory;
 import groove.rel.VarNodeEdgeMap;
+import groove.trans.SystemRecord;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -114,7 +116,7 @@ public class ConcretePart {
 	 * @return The set of extensions of <code>center</code>
 	 * @require typing.get(n) != null for all n in center.nodeSet()
 	 */
-	public static Collection<ConcretePart> extensions (Graph center, Typing typing, PatternFamily family, boolean symmetryReduction) {
+	public static Collection<ConcretePart> extensions (Graph center, Typing typing, PatternFamily family, boolean symmetryReduction, NodeFactory nodeFactory) {
 		ArrayList<ConcretePart> result = new ArrayList<ConcretePart>();
 		ArrayList<ConcretePart> temp;
 	
@@ -123,7 +125,7 @@ public class ConcretePart {
 		for (Node n : center.nodeSet()) {
 			temp = new ArrayList<ConcretePart>();
 			for (ConcretePart cp : result) {
-				temp.addAll(cp.extension(n, typing.typeOf(n), null, family, symmetryReduction));
+				temp.addAll(cp.extension(n, typing.typeOf(n), null, family, symmetryReduction, nodeFactory));
 			}
 			result = temp;
 		}
@@ -150,7 +152,7 @@ public class ConcretePart {
 	 * @require typing.get(n) != null for all n in center.nodeSet()
 	 * TODO this method is not optimal, as it computes concrete parts first
 	 */
-	static Collection<Graph> extensions (ConcretePart concrPart, Collection<Node> nodes, SubTyping typing, PatternFamily family, boolean symmetryReduction) {
+	static Collection<Graph> extensions (ConcretePart concrPart, Collection<Node> nodes, SubTyping typing, PatternFamily family, boolean symmetryReduction, NodeFactory nodeFactory) {
 		ArrayList<ConcretePart> concrParts = new ArrayList<ConcretePart>();
 		ArrayList<ConcretePart> temp;
 	
@@ -160,7 +162,7 @@ public class ConcretePart {
 			temp = new ArrayList<ConcretePart>();
 			for (ConcretePart cp : concrParts) {
 				assert typing.typeMapOf(n) != null : "Something's wrong.";
-				temp.addAll(cp.extension(n, typing.typeOf(n), typing.typeMapOf(n), family, symmetryReduction));
+				temp.addAll(cp.extension(n, typing.typeOf(n), typing.typeMapOf(n), family, symmetryReduction, nodeFactory));
 			}
 			concrParts = temp;
 		}
@@ -191,7 +193,7 @@ public class ConcretePart {
 	 * @require n is a node in this.graph() 
 	 * @ensure all concrete parts in the result have this.concrPart as common subgraph
 	 */
-	private Collection<ConcretePart> extension (Node n, GraphPattern typeN, NodeEdgeMap preTyping, PatternFamily family, boolean symmetryReduction) {
+	private Collection<ConcretePart> extension (Node n, GraphPattern typeN, NodeEdgeMap preTyping, PatternFamily family, boolean symmetryReduction, NodeFactory nodeFactory) {
 		assert this.graph.containsElement(n) : "Incorrect node";
 		checkInvariants();
 		
@@ -215,7 +217,7 @@ public class ConcretePart {
 			baseMatch.putNode(n, typeN.central());
 		} 
 		for (NodeEdgeMap m : typeN.possibleTypings(neighN, baseMatch, symmetryReduction)) {
-			result.addAll(this.extensionsByMorphism(m, typeN, n, family));
+			result.addAll(this.extensionsByMorphism(m, typeN, n, family, nodeFactory));
 		}		
 //		for (NodeEdgeMap m : Util.getInjMatchesIter(neighN, typeN, baseMatch)) {
 //			result.addAll(this.extensionsByMorphism(m, typeN, n, family));
@@ -245,12 +247,12 @@ public class ConcretePart {
 	 * @require morph is a total injective morphism
 	 * @see #extension(Node, GraphPattern, PatternFamily)
 	 */
-	private Collection<ConcretePart> extensionsByMorphism (NodeEdgeMap morph, Graph cod, Node node, PatternFamily family) {
+	private Collection<ConcretePart> extensionsByMorphism (NodeEdgeMap morph, Graph cod, Node node, PatternFamily family, NodeFactory nodeFactory) {
 		checkInvariants();
 		
 		Graph baseGraph = this.graph.clone();
 		NodeEdgeMap baseMorphMap = morph.clone();
-		Util.dunion(baseGraph, cod, baseMorphMap);
+		Util.dunion(baseGraph, cod, baseMorphMap, nodeFactory);
 		
 		// possible merges of node in the baseConcrPartGraph : 
 		// all newly added node in baseGraph wrt this.graph() may be 
