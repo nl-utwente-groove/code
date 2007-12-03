@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SetMaterialisations.java,v 1.1 2007-11-28 15:35:04 iovka Exp $
+ * $Id: SetMaterialisations.java,v 1.2 2007-12-03 09:42:24 iovka Exp $
  */
 package groove.abs;
 
@@ -32,6 +32,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.NodeFactory;
 import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.RuleApplication;
@@ -49,10 +50,10 @@ public class SetMaterialisations {
 	 * @return The set of resulting abstract graphs.
 	 * This method can be called immediately after the creation of the object.
 	 */
-	public Collection<AbstrGraph> transform (RuleApplication appl) {
+	public Collection<AbstrGraph> transform (RuleApplication appl, NodeFactory nodeFactory) {
 		this.computeSet();
-		this.transformAux(appl);
-		return this._transfResults();
+		this.transformAux(appl, nodeFactory);
+		return this._transfResults(nodeFactory);
 	}
 	
 	// --------------------------------------------------------------------------------------
@@ -103,7 +104,7 @@ public class SetMaterialisations {
 	 * @ensure {@link #transformed} is set to true
 	 * @require {@link #computeSet()} should have been called before
 	 */
-	void transformAux (RuleApplication appl) {
+	void transformAux (RuleApplication appl, NodeFactory nodeFactory) {
 		this.centerType = new HashMap<Node, GraphPattern>(this.concrPart.graph().nodeSet().size() - this.concrPart.neigh().size());
 		// IOVKA if not cloning, the source graph is modified
 		Graph clone = this.concrPart.graph().clone();
@@ -118,7 +119,8 @@ public class SetMaterialisations {
 				mp.setPattern(this.newType(entry.getKey().n1(),
 						                    this.concrPart.neigh().get(entry.getKey().n1()),
 						                    this.abstrPart.typeOf(entry.getKey().n2()),
-						                    mp.getMap()));
+						                    mp.getMap(),
+						     				nodeFactory));
 			}
 		}
 		
@@ -146,7 +148,7 @@ public class SetMaterialisations {
 		checkFullTyping();
 	}
 	
-	Collection<AbstrGraph> _transfResults() {
+	Collection<AbstrGraph> _transfResults(NodeFactory nodeFactory) {
 		Collection<AbstrGraph> result = new ArrayList<AbstrGraph>();
 		
 		Collection<Node> dist1Nodes = this.concrPart.nodesAtDist(1);  // pre-computed, needed later
@@ -173,7 +175,7 @@ public class SetMaterialisations {
 				ArrayList<Set<Edge>> possibleTgtLinks = new ArrayList<Set<Edge>>();
 				ArrayList<Set<Node>> zeroMultNodes = new ArrayList<Set<Node>>();
 				ArrayList<Set<Edge>> linkConsumedEdges = new ArrayList<Set<Edge>>();
-				possibleLinks(origin, mapNodePattern, dist1Nodes, linkableNodes, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges);
+				possibleLinks(origin, mapNodePattern, dist1Nodes, linkableNodes, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, nodeFactory);
 			
 				// # For all possible links
 				for (int i = 0; i < possibleSrcLinks.size(); i++) {
@@ -247,7 +249,7 @@ public class SetMaterialisations {
 	 * @require {@link #computeSet()} and {@link #transformAux(RuleApplication)} have been called previously.
 	 * @return The set of abstract graphs result of the transformation.
 	 */
-	Collection<AbstrGraph> transfResults () {
+	Collection<AbstrGraph> transfResults (NodeFactory nodeFactory) {
 		// for all possible origin
 		//    for all possible combination of typings
 		// 		  construct the new abstract part by updating multiplicities
@@ -288,7 +290,7 @@ public class SetMaterialisations {
 			TupleIterator<Node, MapPattern> it = new TupleIterator<Node, MapPattern>(mappingIt);
 			
 			while (it.hasNext()) {
-				transformResultForTyping(it.next(), origin, newAbstrPart, collectZeroMult, dist1Nodes, result);
+				transformResultForTyping(it.next(), origin, newAbstrPart, collectZeroMult, dist1Nodes, result, nodeFactory);
 			}
 		}
 		return result;
@@ -307,7 +309,8 @@ public class SetMaterialisations {
 											DefaultAbstrGraph newAbstrPart,
 											Collection<Node> collectZeroMult,
 											Collection<Node> dist1Nodes,
-											Collection<AbstrGraph> accuResult) {
+											Collection<AbstrGraph> accuResult,
+											NodeFactory nodeFactory) {
 		// 		  construct the new abstract part by updating multiplicities
 		//        construct links (several link configurations per combination of typings are possible)
 		//        update the new abstract part, by adding the new summary nodes
@@ -335,7 +338,7 @@ public class SetMaterialisations {
 		ArrayList<Set<Edge>> possibleTgtLinks = new ArrayList<Set<Edge>>();
 		ArrayList<Set<Node>> zeroMultNodes = new ArrayList<Set<Node>>();
 		ArrayList<Set<Edge>> linkConsumedEdges = new ArrayList<Set<Edge>>();
-		possibleLinks(origin, mapPat, dist1Nodes, null, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges);
+		possibleLinks(origin, mapPat, dist1Nodes, null, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, nodeFactory);
 		
 		// Now 0 multiplicity nodes can be removed from the abstract part
 		
@@ -414,7 +417,7 @@ public class SetMaterialisations {
 	 * @require n is not deleted by the rule application
 	 * @return The new pattern for the node n.
 	 */
-	private GraphPattern newType (Node n, Graph neighN, GraphPattern typeN, NodeEdgeMap typeMorph) {
+	private GraphPattern newType (Node n, Graph neighN, GraphPattern typeN, NodeEdgeMap typeMorph, NodeFactory nodeFactory) {
 		// For an injective morphism
 		// oldNeigh, newNeigh, t: oldNeigh -> oldType, 
 		// - remove nodes/edges from oldType :
@@ -445,7 +448,7 @@ public class SetMaterialisations {
 				mm.putEdge(this.morph.getEdge(ee), typeMorph.getEdge(ee));
 			}
 		}
-		Util.dunion(newNeigh, modTypeN, mm);
+		Util.dunion(newNeigh, modTypeN, mm, nodeFactory);
 		try {
 			return this.abstrPart.family().computeAddPattern(newNeigh, this.morph.getNode(n));
 		} catch (ExceptionIncompatibleWithMaxIncidence e) {
@@ -491,7 +494,8 @@ public class SetMaterialisations {
 			                     ArrayList<Set<Edge>> srcLinks,
 			                     ArrayList<Set<Edge>> tgtLinks,
 			                     ArrayList<Set<Node>> zeroNodes,
-			                     ArrayList<Set<Edge>> consumedEdges) 
+			                     ArrayList<Set<Edge>> consumedEdges,
+			                     NodeFactory nodeFactory) 
 	{
 		assert srcLinks.size() == 0 && tgtLinks.size() == 0 : "The out parameter sets are not empty.";
 	
@@ -501,7 +505,7 @@ public class SetMaterialisations {
 		};
 		
 		// First compute all the extensions, and for each extension its possible embeddings
-		for (Graph g : ConcretePart.extensions(this.concrPart, dist1nodes, subTyping, this.abstrPart.family(), this.options.SYMMETRY_REDUCTION)) {
+		for (Graph g : ConcretePart.extensions(this.concrPart, dist1nodes, subTyping, this.abstrPart.family(), this.options.SYMMETRY_REDUCTION, nodeFactory)) {
 		
 			// Determine the new nodes, common to all possible embeddings
 			Collection<Node> newNodes = new ArrayList<Node>();
@@ -598,12 +602,13 @@ public class SetMaterialisations {
             ArrayList<Set<Edge>> srcLinks,
             ArrayList<Set<Edge>> tgtLinks,
             ArrayList<Set<Node>> zeroNodes,
-            ArrayList<Set<Edge>> consumedEdges) 
+            ArrayList<Set<Edge>> consumedEdges,
+            NodeFactory nodeFactory) 
 	{
 		if (this.abstrPart.family().getRadius() == 0 || this.options.LINK_PRECISION == Abstraction.LinkPrecision.LOW) {
 			possibleLinksLow(origin, linkableNodes, srcLinks, tgtLinks, consumedEdges);
 		} else {
-			possibleLinksHigh(origin, typing, dist1nodes, srcLinks, tgtLinks, zeroNodes, consumedEdges);
+			possibleLinksHigh(origin, typing, dist1nodes, srcLinks, tgtLinks, zeroNodes, consumedEdges, nodeFactory);
 		}
 	}
 	

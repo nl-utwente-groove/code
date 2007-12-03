@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Testing.java,v 1.1 2007-11-28 15:35:03 iovka Exp $
+ * $Id: Testing.java,v 1.2 2007-12-03 09:42:24 iovka Exp $
  */
 package groove.abs;
 
@@ -134,7 +134,7 @@ public class Testing  extends TestCase {
 
 	
 	public void _testConstructionConcrPart () {
- 		PatternFamily pf = new PatternFamily(1, 10, Util.labelSet(list5));
+ 		PatternFamily pf = new PatternFamily(1, 10);
  		
 		DefaultAbstrGraph s = null;
 		try {
@@ -174,7 +174,7 @@ public class Testing  extends TestCase {
 			}			
 		}
 		
-		Collection<ConcretePart> ext = ConcretePart.extensions(cell, new Toto(s, morph), pf, false);	
+		Collection<ConcretePart> ext = ConcretePart.extensions(cell, new Toto(s, morph), pf, false, null);	
 		assertEquals(1, ext.size());
 	}
 	
@@ -186,7 +186,7 @@ public class Testing  extends TestCase {
 	 * - radius 1
 	 */
 	public void _testSetMaterialisations1 () {
- 		PatternFamily pf = new PatternFamily(1, 10, Util.labelSet(listGrammar4.getStartGraph()));
+ 		PatternFamily pf = new PatternFamily(1, 10);
 		DefaultAbstrGraph s = null;
 		try {
 			s = DefaultAbstrGraph.factory(pf,2).getShapeGraphFor(listGrammar4.getStartGraph());
@@ -225,14 +225,13 @@ public class Testing  extends TestCase {
 				return this.sg.typeOf(this.m.getNode(n));
 			}			
 		}
+		SystemRecord syst = new SystemRecord(listGrammar4, true);
 		Toto typing = new Toto(s, morph);
-		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false);
+		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
 		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
-
-		SystemRecord syst = new SystemRecord(listGrammar4);
-		
+	
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
 		for (Node n : morph.nodeMap().keySet()){
@@ -244,7 +243,7 @@ public class Testing  extends TestCase {
 		
 		RuleEvent event = new SPOEvent(rule, new VarNodeEdgeHashMap(match), syst, false);
 		RuleApplication appl = new DefaultApplication(event, cp.graph());
-		Collection<AbstrGraph> result = smat.transform(appl);
+		Collection<AbstrGraph> result = smat.transform(appl, syst);
 		assertEquals(result.size(), 3);	
 	}
 	
@@ -256,7 +255,7 @@ public class Testing  extends TestCase {
 	 * - radius 1
 	 */
 	public void _testSetMaterialisations2 () {
- 		PatternFamily pf = new PatternFamily(1, 10, Util.labelSet(listGrammar4.getStartGraph()));
+ 		PatternFamily pf = new PatternFamily(1, 10);
 		DefaultAbstrGraph s = null;
 		try {
 			s = DefaultAbstrGraph.factory(pf,1).getShapeGraphFor(listGrammar4.getStartGraph());
@@ -296,12 +295,13 @@ public class Testing  extends TestCase {
 			}			
 		}
 		Toto typing = new Toto(s, morph);
-		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false);
+		SystemRecord syst = new SystemRecord(listGrammar4, true);
+		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
 		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
 
-		SystemRecord syst = new SystemRecord(listGrammar4);
+		
 		
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
@@ -314,7 +314,7 @@ public class Testing  extends TestCase {
 		
 		RuleEvent event = new SPOEvent(rule, new VarNodeEdgeHashMap(match), syst, false);
 		RuleApplication appl = new DefaultApplication(event, cp.graph());
-		Collection<AbstrGraph> result = smat.transform(appl);
+		Collection<AbstrGraph> result = smat.transform(appl, syst);
 		
 		String fileNameBase = "../tests/out3/graph";
 		int i = 1;
@@ -341,7 +341,7 @@ public class Testing  extends TestCase {
 	 * - radius 2
 	 */
 	public void _testSetMaterialisations3 () {
- 		PatternFamily pf = new PatternFamily(2, 10, Util.labelSet(listGrammar10.getStartGraph()));
+ 		PatternFamily pf = new PatternFamily(2, 10);
 		DefaultAbstrGraph s = null;
 		try {
 			s = DefaultAbstrGraph.factory(pf,1).getShapeGraphFor(listGrammar10.getStartGraph());
@@ -381,13 +381,12 @@ public class Testing  extends TestCase {
 			}			
 		}
 		Toto typing = new Toto(s, morph);
-		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false);
+		SystemRecord syst = new SystemRecord(listGrammar10, true);
+		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
 		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
 
-		SystemRecord syst = new SystemRecord(listGrammar10);
-		
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
 		for (Node n : morph.nodeMap().keySet()){
@@ -399,7 +398,7 @@ public class Testing  extends TestCase {
 		
 		RuleEvent event = new SPOEvent(rule, new VarNodeEdgeHashMap(match), syst, false);
 		RuleApplication appl = new DefaultApplication(event, cp.graph());
-		Collection<AbstrGraph> result = smat.transform(appl);
+		Collection<AbstrGraph> result = smat.transform(appl, syst);
 		
 		String fileNameBase = "../tests/out4/graph";
 		int i = 1;
@@ -423,7 +422,7 @@ public class Testing  extends TestCase {
 	  * - radius 1
 	  */
 	public void testSetMaterialisations4() {
- 		PatternFamily pf = new PatternFamily(1, 10, Util.labelSet(listGrammar4.getStartGraph()));
+ 		PatternFamily pf = new PatternFamily(1, 10);
 		DefaultAbstrGraph s = null;
 		try {
 			s = DefaultAbstrGraph.factory(pf,2).getShapeGraphFor(listGrammar4.getStartGraph());
@@ -451,12 +450,12 @@ public class Testing  extends TestCase {
 					return this.sg.typeOf(this.m.getNode(n));
 				}			
 			}
+			SystemRecord syst = new SystemRecord(listGrammar4, true);
 			Toto typing = new Toto(s, match);
-			Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false);
+			Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 			for (ConcretePart cp : ext) {
 				SetMaterialisations smat = new SetMaterialisations(cp, s, match, this.options);
-				SystemRecord syst = new SystemRecord(listGrammar4);
-			
+
 				// remap the initial mapping into the concrete part
 				NodeEdgeMap m = new NodeEdgeHashMap();
 				for (Node n : match.nodeMap().keySet()){
@@ -468,7 +467,7 @@ public class Testing  extends TestCase {
 			
 				RuleEvent event = new SPOEvent(rule, smat.updateMatch(match), syst, false);
 				RuleApplication appl = new DefaultApplication(event, cp.graph());
-				Collection<AbstrGraph> result = smat.transform(appl);
+				Collection<AbstrGraph> result = smat.transform(appl, syst);
 				all.addAll(result);
 				for (AbstrGraph g : result) {
 					System.out.println(g);
@@ -481,7 +480,7 @@ public class Testing  extends TestCase {
 	
 	public void _testDefaultAbstractGraph () {
 		// Test isomorphism check
- 		PatternFamily pf1 = new PatternFamily(1, 10, Util.labelSet(listGrammar10.getStartGraph()));
+ 		PatternFamily pf1 = new PatternFamily(1, 10);
  		PatternFamily pf2 = pf1; //new PatternFamily(1, 10, Util.labelSet(listGrammar10.getStartGraph()));
  		
  		DefaultAbstrGraph s_l4_1 = null; // list with 4 cells, precision 1

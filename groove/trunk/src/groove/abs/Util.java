@@ -14,6 +14,7 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
+import groove.graph.NodeFactory;
 import groove.match.GraphSearchPlanFactory;
 import groove.match.SearchPlanStrategy;
 import groove.rel.VarNodeEdgeMap;
@@ -32,7 +33,7 @@ public class Util {
 	 * @require sync.nodeMap().values() \subseteq addGraph.nodeSet()
 	 * @require sync in an injective map
 	 */
-	static public void dunion (Graph baseGraph, Graph addGraph, NodeEdgeMap sync) {
+	static public void dunion (Graph baseGraph, Graph addGraph, NodeEdgeMap sync, NodeFactory nodeFactory) {
 		assert baseGraph.nodeSet().containsAll(sync.nodeMap().keySet());
 		assert addGraph.nodeSet().containsAll(sync.nodeMap().values());
 		
@@ -43,7 +44,7 @@ public class Util {
 		Map<Node,Node> inverseRenaming = new HashMap<Node,Node>(addCopy.nodeCount()); 
 		for (Node n : addGraph.nodeSet()) {
 			if (baseGraph.containsElement(n)) {
-				Node newN = DefaultNode.createNode(); 
+				Node newN = nodeFactory != null ? nodeFactory.newNode() : DefaultNode.createNode(); 
 				addCopy.addNode(newN);
 				addCopy.mergeNodes(n, newN);
 				renaming.put(n, newN);
