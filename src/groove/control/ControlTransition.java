@@ -12,61 +12,76 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlTransition.java,v 1.8 2007-11-26 08:58:11 fladder Exp $
+ * $Id: ControlTransition.java,v 1.6 2007-09-28 10:58:28 rensink Exp $
  */
 package groove.control;
 
-import groove.graph.BinaryEdge;
-import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.lts.Transition;
+import groove.trans.Rule;
+import groove.trans.RuleNameLabel;
 
 /**
  * @author Staijen
  * 
  * Represents a transition in a control automaton, which is unique by its source, target and associated Rule.
- * This is a DefaultEdge to be able to visualize as GraphShape, and a LocationTransition to use for explocation.
  * 
  */
-public class ControlTransition implements BinaryEdge, LocationTransition {
+public class ControlTransition implements Transition {
 	
+	private Rule rule;
 	private ControlState source;
 	private ControlState target;
-	private String text;
+	private String ruleName;
 	
 	private ControlTransition visibleParent;
 	
 	/**
-	 * Creates a labelled controltransition between two controlstates
 	 * @param source
 	 * @param target
-	 * @param label is the Rule associated with this transition
+	 * @param rule is the Rule associated with this transition
 	 */
-	public ControlTransition(ControlState source, ControlState target, String label)
+	public ControlTransition(ControlState source, ControlState target, String ruleName)
 	{
 		this.source = source;
 		this.target = target;
-		this.text = label;
+		this.ruleName = ruleName;
 	}
 	
-	/** Returns the text on the label */
-	public String getText() {
-		return this.text;
+	public String ruleName() {
+		return this.ruleName;
 	}
 	
+	public void setRule(Rule rule)
+	{
+		this.rule = rule;
+	}
+	
+	/**
+	 * @return the Rule associated with this transition in the Control Automaton
+	 */
+	public Rule rule()
+	{
+		return rule;
+	}
+
 	public Label label() {
-		return DefaultLabel.createLabel(this.getText());
+		if( rule == null )
+			return new RuleNameLabel(this.ruleName);
+		else
+			return rule.getName();
 	}
 	
-//	/**
-//	 * @return priority of this transition, which equals the priority of the associated rule
-//	 */
-//	public int getPriority()
-//	{
-//		return this.rule.getPriority();
-//	}
+	/**
+	 * @return priority of this transition, which equals the priority of the associated rule
+	 */
+	public int getPriority()
+	{
+		return this.rule.getPriority();
+	}
 	
 	public ControlState source() {
 		// TODO Auto-generated method stub
@@ -141,39 +156,12 @@ public class ControlTransition implements BinaryEdge, LocationTransition {
         }
 	}
 	
-	/**
-	 * Some acutal control transitions are not visible in the control automaton.
-	 * @param parent the representing and visible parent element
-	 */
 	public void setVisibleParent(ControlTransition parent) {
 		this.visibleParent = parent;
 	}
-	/**
-	 * Some acutal control transitions are not visible in the control automaton.
-	 * @return the representing and visible parent element
-	 */	
+	
 	public ControlTransition getVisibleParent() {
 		return this.visibleParent;
 	}
-	
-	/**
-	 * Modify the source. Ment to be used for merging states only.
-	 * @param source
-	 */
-	public void setSource(ControlState source) { 
-		this.source = source;
-	}
-
-	/**
-	 * Modify the target. Ment to be used for merging states only.
-	 * @param target
-	 */
-	public void setTarget(ControlState target) {
-		this.target = target;
-	}
-	
-	@Override
-	public String toString() {
-		return this.source + "--- " + text + " --->" + this.target; 
-	}
+		
 }

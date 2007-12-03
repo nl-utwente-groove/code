@@ -12,15 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlView.java,v 1.7 2007-11-26 08:58:11 fladder Exp $
+ * $Id: ControlView.java,v 1.5 2007-08-31 10:23:32 rensink Exp $
  */
 package groove.control;
 
-import groove.control.parse.AutomatonBuilder;
-import groove.control.parse.GCLBuilder;
-import groove.control.parse.GCLChecker;
-import groove.control.parse.GCLLexer;
-import groove.control.parse.GCLParser;
 import groove.graph.GraphFactory;
 import groove.graph.Morphism;
 import groove.trans.GraphGrammar;
@@ -39,11 +34,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * 
- * The Control part of the GrammarView. For loading, saving, getting an actual representation, etc.
- * 
  * @author Staijen
  * Loads a control program into a given ControlAutomaton
  */
@@ -51,39 +48,43 @@ public class ControlView {
 	
 	/** currently used file **/
 	private File controlFile;
-
+	
+	/** priority for a lamba Rule , that can be applied anytime **/
+	public static final int ANY_RULE_PRORITY = Integer.MAX_VALUE-1;
+	
+	/** priority for an Else Rule **/
+	public static final int ELSE_RULE_PRIORITY = -1;
+	
+	/** the Rule object used for Lambda Transitions **/
+	public static Rule LAMBDA_RULE;
+	
+	/** the RUle object used for Else Transitions **/
+	public static Rule ELSE_RULE;
+	
     private static GraphFactory factory = GraphFactory.getInstance();
     
+	static {
+		try
+		{
+			Morphism m_l = factory.newMorphism(factory.newGraph(), factory.newGraph());
+			Morphism m_e = factory.newMorphism(factory.newGraph(), factory.newGraph());
+			LAMBDA_RULE = new SPORule(m_l, new RuleNameLabel(Control.LAMBDA_LABEL),ANY_RULE_PRORITY, new SystemProperties());
+			LAMBDA_RULE.setFixed();
+			ELSE_RULE = new SPORule(m_e, new RuleNameLabel(Control.ELSE_LABEL),ELSE_RULE_PRIORITY, new SystemProperties());
+			ELSE_RULE.setFixed();
+		}
+		catch(FormatException e){ /* this exception is most certainly never thrown*/ }
+	}
 	
-	private AutomatonBuilder builder = new AutomatonBuilder();
+	
+	private Map<String, RuleNameLabel> scope = new HashMap<String, RuleNameLabel>();
 	
 	private String controlProgram;
 	
-	private ControlShape programShape;
-	
 	private ControlAutomaton automaton;
-
-	/**
-	 * Constructor, needs a gramamrview and a filename to a controlprogram.
-	 * 
-	 * Afterwards, programShape and automaton should have a value.
-	 * 
-	 * @param result
-	 * @param controlProgramFile
-	 * @throws IOException
-	 */
-	public ControlView(DefaultGrammarView result, File controlProgramFile) throws IOException  {
-		this.initNamespace(result);
-		this.loadFile(controlProgramFile);
-		this.loadProgram();
-		
-		assert programShape != null;
-		assert automaton != null;
-		
-	}
 	
 	/**
-	 * load the program currently in controlProgram
+	 * @param args
 	 */
 	public void loadProgram() {
 
@@ -91,30 +92,19 @@ public class ControlView {
 			System.err.println("Error in control: no program available");
 			return;
 		}
-		if( builder == null ) {
-			System.err.println("Error in control: trying to parse before the scope is initialized");
-			return;
-		}
 		try
         {
+			automaton.clear();
 			GCLLexer lexer = new GCLLexer(new StringReader(this.controlProgram));
-			GCLParser parser = new GCLParser(lexer);
+            GCLParser parser = new GCLParser(lexer);
             parser.program();
-            
-            GCLChecker checker = new GCLChecker();
-            checker.setNamespace(this.builder);
-            checker.program(parser.getAST());
-            
-            GCLBuilder gclb = new GCLBuilder();
-            gclb.setBuilder(this.builder);
-            this.programShape = gclb.program(parser.getAST());
-            builder.optimize();
-            
-            this.automaton = new ControlAutomaton(this.programShape);
+            GCLBuilder builder = new GCLBuilder(this.automaton);
+            builder.program(parser.getAST());
         }
 		catch(Exception e)
 		{
-			System.err.println(e.getMessage());
+			e.printStackTrace();
+			System.err.println("Parse error loading control program: " + e.getMessage());
 		}
 	}
 
@@ -127,22 +117,28 @@ public class ControlView {
 	public void loadFile(File controlFile) throws IOException, FileNotFoundException {
 		this.controlFile = controlFile;
 		
-		//System.out.println("Loading control from file: " + controlFile.getName());
-		
 		StringBuilder contents = new StringBuilder();
-		try {
+		try
+		{
 			BufferedReader br = new BufferedReader(new FileReader(controlFile));
+			
+		
 			String line;
 			while( ((line = br.readLine()) != null) )
 			{
-				contents.append(line+ "\r\n"); 
+				contents.append(line);
 			}
+			
 			//ca.setProgram(contents.toString());
+
 		}
-		catch(Exception e) {
+		catch(Exception e)
+		{
 			e.printStackTrace();
 		}
-		setProgram(contents.toString());
+		
+		this.controlProgram = contents.toString();
+
 	}
 	
 	/**
@@ -150,10 +146,10 @@ public class ControlView {
 	 * Can only be called once and must be called before any other method is used.
 	 * @param grammar
 	 */
-	public void initNamespace(DefaultGrammarView grammar)
+	public void initScope(DefaultGrammarView grammar)
 	{
-		
-		//System.out.println("Initializing Control NameSpace");
+		if( this.scope.size() > 0 )
+			throw new RuntimeException("Error: ControlView::initScope can only be called once");
 		
 		try
 		{
@@ -161,43 +157,64 @@ public class ControlView {
 			AspectualRuleView elseRV = new AspectualRuleView(ControlView.ELSE_RULE);
 			grammar.addRule(lambdaRV);
 			grammar.addRule(elseRV);
-			
 		} catch(FormatException e) {
 			// will not happen
 		}
 		
-		this.builder = new AutomatonBuilder();
-		this.builder.setRuleNames(grammar);
+		for( RuleNameLabel rule : grammar.getRuleMap().keySet() ) {
+			this.scope.put(rule.text(), rule);
+		}
+		automaton = new ControlAutomaton(this.scope.keySet());
 	}
 	
-	/** returns the control automaton */
 	public ControlAutomaton getAutomaton() 
 	{
 		return this.automaton;
 	}
 	
-	/** returns the textual control program */
 	public String program() {
 		return this.controlProgram;
 	}
 	
-	/** returns the File containing the current control program */
 	public File getFile() {
-		// TODO: can this be null?
 		return this.controlFile;
 	}
 	
-	/**
-	 * This method should only be called from DefaultGrammarView.computeGrammar
-	 * Create the automaton once, then, use getAutomaton() to get the automaton.
-	 * @param grammar
-	 * @return ControlAutomaton
-	 * @throws FormatException
-	 */
 	public ControlAutomaton toAutomaton(GraphGrammar grammar) throws FormatException
 	{
-		builder.finalize(grammar);
-		return this.getAutomaton();
+		List<String> errors = new ArrayList<String>();
+		
+		for( ControlTransition transition : automaton.edgeSet() )
+		{
+			Rule rule = grammar.getRule(transition.ruleName());
+			if( rule != null ) {
+				transition.setRule(rule);
+				transition.source().add(transition);
+			}
+			else
+			{
+				Set<Rule> rules = grammar.getChildRules(transition.ruleName());
+				if( !rules.isEmpty() ) {
+					ControlTransition childTrans;
+					for( Rule childRule : rules) {
+						//automaton.removeTransition(transition);
+						childTrans = new ControlTransition(transition.source(), transition.target(), childRule.getName().name());
+						childTrans.setRule(childRule);
+						transition.source().add(childTrans);
+						// this is for viewing purposes only
+						childTrans.setVisibleParent(transition);
+					}
+					// remove the original transition;
+				}
+				else
+					errors.add("Format error in control program: unable to find rule for label \"" +  transition.ruleName() + "\"");
+			}
+		}
+		
+		if( errors.size() > 0 )
+			throw new FormatException(errors);
+		
+		return automaton;
 	}
 	
 	/**
@@ -211,37 +228,6 @@ public class ControlView {
 		PrintWriter pw = new PrintWriter(file);
 		pw.write(controlProgram);
 		pw.close();
-	}
-
-	/** label for lambda transitions */
-	public static final String LAMBDA_LABEL = "tau";
-
-	/** label for else transitions */
-	public static final String ELSE_LABEL = "else";
-	
-	/** priority for a lamba Rule , that can be applied anytime **/
-	public static final int ANY_RULE_PRORITY = Integer.MAX_VALUE-1;
-	
-	/** priority for an Else Rule **/
-	public static final int ELSE_RULE_PRIORITY = -1;
-	
-	/** the Rule object used for Lambda Transitions **/
-	public static Rule LAMBDA_RULE;
-	
-	/** the RUle object used for Else Transitions **/
-	public static Rule ELSE_RULE;
-
-	static {
-		try
-		{
-			Morphism m_l = factory.newMorphism(factory.newGraph(), factory.newGraph());
-			Morphism m_e = factory.newMorphism(factory.newGraph(), factory.newGraph());
-			LAMBDA_RULE = new SPORule(m_l, new RuleNameLabel(ControlView.LAMBDA_LABEL),ANY_RULE_PRORITY, new SystemProperties());
-			LAMBDA_RULE.setFixed();
-			ELSE_RULE = new SPORule(m_e, new RuleNameLabel(ControlView.ELSE_LABEL),ELSE_RULE_PRIORITY, new SystemProperties());
-			ELSE_RULE.setFixed();
-		}
-		catch(FormatException e){ /* this exception is most certainly never thrown :) */ }
 	}
 	
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIsoChecker.java,v 1.21 2007-11-29 12:44:41 rensink Exp $
+ * $Id: DefaultIsoChecker.java,v 1.20 2007-11-02 08:42:38 rensink Exp $
  */
 package groove.graph.iso;
 
@@ -37,7 +37,7 @@ import java.util.Set;
  * Implementation of an isomorphism checking algorithm that first tries to
  * decide isomorphism directly on the basis of a {@link groove.graph.iso.CertificateStrategy}. 
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.20 $
  */
 public class DefaultIsoChecker implements IsoChecker {
     /** Empty constructor, for the singleton in stance of this class. */
@@ -131,8 +131,9 @@ public class DefaultIsoChecker implements IsoChecker {
 					} else {
 						// find an unused node
 						for (Node nodeImage: nodeImages) {
-							if (usedNodeImages.add(nodeImage)) {
+							if (!usedNodeImages.contains(nodeImage)) {
 								result.putNode(node, nodeImage);
+								usedNodeImages.add(nodeImage);
 								break;
 							}
 						}
@@ -144,8 +145,8 @@ public class DefaultIsoChecker implements IsoChecker {
 	}
 
 	/**
-	 * Tries to construct an isomorphism between the two given graphs, using only the edges.
-	 * The result is a bijective mapping from the non-isolated nodes and edges
+	 * Tries to construct an isomorphism between the two given graphs.
+	 * The result is a bijective mapping from the nodes and edges
 	 * of the source graph to those of the target graph, or <code>null</code>
 	 * if no such mapping could be found. 
 	 * @param dom the first graph to be compared

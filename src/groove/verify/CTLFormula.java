@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: CTLFormula.java,v 1.8 2007-11-28 14:27:34 kastenberg Exp $
+ * $Id: CTLFormula.java,v 1.5 2007-04-29 09:22:36 rensink Exp $
  */
 
 package groove.verify;
@@ -26,7 +26,7 @@ import java.util.List;
 /**
  * Specific class for parsing CTL formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.8 $ $Date: 2007-11-28 14:27:34 $
+ * @version $Revision: 1.5 $ $Date: 2007-04-29 09:22:36 $
  */
 public class CTLFormula extends CTLStarFormula {
 
@@ -37,7 +37,7 @@ public class CTLFormula extends CTLStarFormula {
 	        // AX(phi) <==> !EX(!phi)
 			return createAllNext(operand.getOperands().get(0));
 		} else if (operand instanceof Until) {
-			return createAllUntil(operand.getOperands().get(0));
+			return All.createInstance(operand);
 		} else if (operand instanceof Finally) {
 	    	// AF(phi) <==> A(true U phi)
 			return createAllFinally(operand.getOperands().get(0));
@@ -53,9 +53,9 @@ public class CTLFormula extends CTLStarFormula {
 	protected TemporalFormula createExists(TemporalFormula operand) throws FormatException {
 		// the path quantifier all must be followed by a temporal operator
 		if (operand instanceof Next) {
-			return createExistsNext(operand.getOperands().get(0));
+			return Exists.createInstance(operand);
 		} else if (operand instanceof Until) {
-			return createExistsUntil(operand.getOperands().get(0));
+			return Exists.createInstance(operand);
 		} else if (operand instanceof Finally) {
 	    	// EF(phi) <==> E(true U phi)
 			return createExistsFinally(operand.getOperands().get(0));
@@ -67,46 +67,13 @@ public class CTLFormula extends CTLStarFormula {
 		}
 	}
 
-    /**
-	 * Creates an exists-formula with a check for correct nesting of operators.
-	 * @param operand the operand of the formula
-	 * @return the freshly created formula
-	 * @throws FormatException if the formula is not formatted correctly
-	 */
-    protected TemporalFormula createExistsNext(TemporalFormula operand) throws FormatException {
-		if (operand instanceof TemporalOperator) {
-			throw new FormatException("Temporal operators should be proceeded by a path quantifier: " + operand.getOperator());
-		}
-		CTLStarFormula factory = TemporalFormula.getFactory();
-		TemporalFormula next = factory.createNext(operand);
-		return Exists.createInstance(next);
-    }
-
-    /**
-	 * Creates an exists-formula with a check for correct nesting of operators.
-	 * @param operand the operand of the formula
-	 * @return the freshly created formula
-	 * @throws FormatException if the formula is not formatted correctly
-	 */
-    protected TemporalFormula createExistsUntil(TemporalFormula operand) throws FormatException {
-		if (operand instanceof TemporalOperator) {
-			throw new FormatException("Temporal operators should be proceeded by a path quantifier: " + operand.getOperator());
-		}
-		CTLStarFormula factory = TemporalFormula.getFactory();
-		TemporalFormula until = factory.createNext(operand);
-		return Exists.createInstance(until);
-    }
-
-    /**
+	/**
 	 * Creates an equivalent exists-formula from the current all-formula.
 	 * @param operand the operand of the equivalent formula
 	 * @return the freshly created formula
 	 * @throws FormatException if the formula is not formatted correctly
 	 */
 	protected TemporalFormula createAllNext(TemporalFormula operand) throws FormatException {
-		if (operand instanceof TemporalOperator) {
-			throw new FormatException("Temporal operators should be proceeded by a path quantifier: " + operand.getOperator());
-		}
         // AX(phi) <==> !EX(!phi)
 		CTLStarFormula factory = TemporalFormula.getFactory();
 		TemporalFormula neg = factory.createNeg(operand);
@@ -122,9 +89,6 @@ public class CTLFormula extends CTLStarFormula {
 	 * @throws FormatException if the formula is not formatted correctly
 	 */
 	protected TemporalFormula createAllFinally(TemporalFormula operand) throws FormatException {
-		if (operand instanceof TemporalOperator) {
-			throw new FormatException("Temporal operators should be proceeded by a path quantifier: " + operand.getOperator());
-		}
     	// AF(phi) <==> A(true U phi)
     	List<TemporalFormula> operandList = new ArrayList<TemporalFormula>();
     	operandList.add(new True());
@@ -141,11 +105,7 @@ public class CTLFormula extends CTLStarFormula {
 	 * @throws FormatException if the formula is not formatted correctly
 	 */
 	protected TemporalFormula createAllGlobally(TemporalFormula operand) throws FormatException {
-		if (operand instanceof TemporalOperator) {
-			throw new FormatException("Temporal operators should be proceeded by a path quantifier: " + operand.getOperator());
-		}
-
-		// AG(phi) <==> !(EF(!phi))
+    	// AG(phi) <==> !(EF(!phi))
 		CTLStarFormula factory = TemporalFormula.getFactory();
 		TemporalFormula negFormula = factory.createNeg(operand);
 		TemporalFormula finallyFormula = factory.createFinally(negFormula);
@@ -153,31 +113,13 @@ public class CTLFormula extends CTLStarFormula {
 		return factory.createNeg(existsFormula);
 	}
 
-    /**
-	 * Creates an all-formula with a check for correct nesting of operators.
-	 * @param operand the operand of the formula
-	 * @return the freshly created formula
-	 * @throws FormatException if the formula is not formatted correctly
-	 */
-    protected TemporalFormula createAllUntil(TemporalFormula operand) throws FormatException {
-		if (operand instanceof TemporalOperator) {
-			throw new FormatException("Temporal operators should be proceeded by a path quantifier: " + operand.getOperator());
-		}
-		CTLStarFormula factory = TemporalFormula.getFactory();
-		TemporalFormula until = factory.createNext(operand);
-		return All.createInstance(until);
-    }
-
-    /**
+	/**
 	 * Creates an equivalent exists-formula from the current exists-formula.
 	 * @param operand the operand for the equivalent formula
 	 * @return the freshly created formula
 	 * @throws FormatException if the formula is not formatted correctly
 	 */
 	protected TemporalFormula createExistsFinally(TemporalFormula operand) throws FormatException {
-		if (operand instanceof TemporalOperator) {
-			throw new FormatException("Temporal operators should be proceeded by a path quantifier: " + operand.getOperator());
-		}
     	// EF(phi) <==> E(true U phi)
     	List<TemporalFormula> operandList = new ArrayList<TemporalFormula>();
     	operandList.add(new True());
@@ -194,9 +136,6 @@ public class CTLFormula extends CTLStarFormula {
 	 * @throws FormatException if the formula is not formatted correctly
 	 */
 	protected TemporalFormula createExistsGlobally(TemporalFormula operand) throws FormatException {
-		if (operand instanceof TemporalOperator) {
-			throw new FormatException("Temporal operators should be proceeded by a path quantifier: " + operand.getOperator());
-		}
     	// EG(phi) <==> !(AF(!phi))
 		CTLStarFormula factory = TemporalFormula.getFactory();
 		TemporalFormula negFormula = factory.createNeg(operand);
@@ -208,12 +147,7 @@ public class CTLFormula extends CTLStarFormula {
 	static public TemporalFormula parseFormula(String expr) throws FormatException {
     	CTLStarFormula parser = CTLFormula.getInstance();
     	TemporalFormula.setFactory(parser);
-    	TemporalFormula result = parser.parse(expr);
-    	if (result instanceof TemporalOperator) {
-    		throw new FormatException("Temporal operator should always be preceeded by a path quantifier: " + result.getOperator());
-    	} else {
-    		return result;
-    	}
+    	return parser.parse(expr);
     }
 
     static public CTLStarFormula getInstance() {

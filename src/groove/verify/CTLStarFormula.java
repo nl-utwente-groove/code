@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLStarFormula.java,v 1.10 2007-11-28 13:58:23 kastenberg Exp $
+ * $Id: CTLStarFormula.java,v 1.9 2007-10-05 08:31:48 rensink Exp $
  */
 
 package groove.verify;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Class parsing CTL* formulae.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.10 $ $Date: 2007-11-28 13:58:23 $
+ * @version $Revision: 1.9 $ $Date: 2007-10-05 08:31:48 $
  */
 public class CTLStarFormula {
     /** 
@@ -146,9 +146,6 @@ public class CTLStarFormula {
      * false predicate name.
      */
     static public final String FALSE = "false";
-
-    public interface TemporalOperator{
-    }
 
     /**
      * Abstract class for prefix CTL operators.
@@ -395,7 +392,7 @@ public class CTLStarFormula {
      * Temporal next operator.
      * Example syntax: given phi, then "next phi" is denoted by "X(phi)"
      */
-    static public class Next extends Prefix implements TemporalOperator {
+    static public class Next extends Prefix {
 
     	/**
     	 * Creates a new instance of the temporal next operator given the 
@@ -437,7 +434,7 @@ public class CTLStarFormula {
      * Temporal until operator.
      * Example syntax: given phi and psi, then "phi until psi" is denoted by "phi U psi"
      */
-    static public class Until extends Infix implements TemporalOperator {
+    static public class Until extends Infix {
 
     	/**
     	 * Creates a new instance of the temporal until operator given the list
@@ -481,7 +478,7 @@ public class CTLStarFormula {
      * Temporal globally operator.
      * Example syntax: given phi, then "globally phi" is denoted by "G(phi)"
      */
-    static public class Globally extends Prefix implements TemporalOperator {
+    static public class Globally extends Prefix {
 
     	/**
     	 * Creates a new instance of the temporal globally operator given the
@@ -523,7 +520,7 @@ public class CTLStarFormula {
      * Temporal finally operator.
      * Example syntax: given phi, then "finally phi" is denoted by "F(phi)"
      */
-    static public class Finally extends Prefix implements TemporalOperator {
+    static public class Finally extends Prefix {
 
     	/**
     	 * Creates a new instance of the temporal finally operator given the

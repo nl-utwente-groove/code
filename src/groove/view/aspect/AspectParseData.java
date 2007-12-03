@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParseData.java,v 1.8 2007-11-26 21:17:24 rensink Exp $
+ * $Id: AspectParseData.java,v 1.7 2007-11-19 12:19:13 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -20,7 +20,6 @@ import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
 import groove.graph.DefaultLabel;
 import groove.graph.Label;
 import groove.view.FormatException;
-import groove.view.LabelParser;
 
 import java.util.Collection;
 
@@ -87,11 +86,6 @@ class AspectParseData {
 			}
 			if (result != null) {
 				allAspectMap.add(result);
-				// check if the edge label complies with the inferred aspect value
-				LabelParser parser = result.getLabelParser();
-				if (parser != null) {
-				    parser.parse(getLabel());
-				}
 			}
 		}
 	}

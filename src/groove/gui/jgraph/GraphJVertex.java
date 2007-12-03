@@ -12,28 +12,22 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.24 2007-11-28 16:08:18 iovka Exp $
+ * $Id: GraphJVertex.java,v 1.23 2007-11-19 12:18:47 rensink Exp $
  */
 package groove.gui.jgraph;
 
 import static groove.util.Converter.ITALIC_TAG;
-import static groove.util.Converter.UNDERLINE_TAG;
-import groove.abs.AbstrGraph;
-import groove.abs.GraphPattern;
 import groove.algebra.Algebra;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
-import groove.gui.GraphPatternPopupWindow;
 import groove.util.Converter;
 import groove.view.LabelParser;
 import groove.view.RegExprLabelParser;
 import groove.view.aspect.AttributeAspect;
 
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,8 +36,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
-
-import org.jgraph.graph.DefaultGraphCell;
 
 /**
  * Extends DefaultGraphCell to use a Node as user object but
@@ -131,13 +123,6 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     			result.add(ITALIC_TAG.on(new StringBuilder(id)));
     		}
     	}
-    	// add the multiplicity information if appropriate
-    	if (this.jModel instanceof AbstrGraphJModel) {
-    		AbstrGraph graph = (AbstrGraph) this.jModel.getGraph();
-    		String mult = graph.multiplicityOf(this.node).toString();
-    		result.add(Converter.createSpanTag("color: rgb(50,50,255)").on(ITALIC_TAG.on(new StringBuilder(mult))));
-    	}
-    	
     	for (Edge edge: getSelfEdges()) {
     		if (! jModel.isFiltering(getLabel(edge).text())) {
     			result.add(getLine(edge));
@@ -432,11 +417,4 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     private final Node node;
     
     static private final String ASSIGN_TEXT = " = ";
-
-    /** Returns the underlying GraphJModel. */
-    GraphJModel getGraphJModel () {
-    	return this.jModel;
-    }
-    
-    
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.18 2007-11-26 21:17:24 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.15 2007-11-19 12:19:12 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -36,7 +36,6 @@ import groove.view.FormatException;
 import groove.view.FreeLabelParser;
 import groove.view.NumberLabelParser;
 
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashMap;
@@ -48,7 +47,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.15 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -80,7 +79,7 @@ public class AttributeAspect extends AbstractAspect {
 					throw new FormatException("Product node '%s' has incoming edge '%s'", node, edge);
 				}
 				AspectValue edgeValue = getAttributeValue(edge);
-				if (edgeValue == null && !NestingAspect.isMetaElement(edge)) {
+				if (edgeValue == null) {
 					throw new FormatException("Product node '%s' has non-attribute edge '%s'", node, edge);
 				} else if (ARGUMENT.equals(edgeValue)) {
 					// label is know to represent a natural number
@@ -104,27 +103,19 @@ public class AttributeAspect extends AbstractAspect {
 		} else {
 			// the value is VALUE; try to establish the algebra
 			Algebra type = null;
-			for (AspectEdge edge : edges) {
-                if (!NestingAspect.isMetaElement(edge)) {
-                    if (!edge.target().equals(node)) {
-                        throw new FormatException("Outgoing %s-labelled edge on value node %s",
-                                edge, node);
-                    }
-                    Operation operation = getOperation(edge);
-                    if (operation != null) {
-                        Algebra edgeType = operation.getResultType();
-                        if (type == null) {
-                            type = edgeType;
-                        } else if (!type.equals(edgeType)) {
-                            throw new FormatException(
-                                    "Incompatible types '%s' and '%s' for value node '%s'", type,
-                                    edgeType, node);
-                        }
-                    } else if (edge.source().equals(node)) {
-                        throw new FormatException("Non-algebra label %s on value node %s", edge
-                            .label(), node);
-                    }
-                }
+			for (AspectEdge edge: edges) {
+				if (!edge.target().equals(node)) {
+					throw new FormatException("Value node '%s' has outgoing edge '%s'", node, edge);
+				}
+				Operation operation = getOperation(edge);
+				if (operation != null) {
+					Algebra edgeType = operation.getResultType();
+					if (type == null) {
+						type = edgeType;
+					} else if (!type.equals(edgeType)) {
+						throw new FormatException("Incompatible types '%s' and '%s' for value node '%s'", type, edgeType, node);
+					}
+				}
 			}
 		}
 	}
@@ -294,11 +285,7 @@ public class AttributeAspect extends AbstractAspect {
     		result = argEdge;
     	} else {
     		assert algebraMap.containsKey(attributeValue);
-    		Operation operation = getOperation(edge);
-    		if (operation == null) {
-    		    throw new FormatException("Unknown operator in edge label %s", edge.getLabelText());
-    		}
-    		result = createOperatorEdge(operation, ends);
+    		result = createOperatorEdge(getOperation(edge), ends);
     	}
     	return result;
     }
@@ -313,7 +300,6 @@ public class AttributeAspect extends AbstractAspect {
      * set of outgoing attribute edges in <code>graph</code>
      */
 	private static Edge createOperatorEdge(Operation operator, Node[] ends) throws FormatException {
-	    assert operator != null : String.format("Cannot create edge between nodes %s for empty operator", Arrays.toString(ends));
 		Node source = ends[Edge.SOURCE_INDEX];
 		if (!(source instanceof ProductNode)) {
 			throw new FormatException("Source of '%s'-edge should be a product node", operator);

@@ -18,13 +18,11 @@ package groove.lts;
 
 import groove.control.ControlState;
 import groove.control.ControlView;
-import groove.control.Location;
 import groove.graph.Graph;
 import groove.trans.AbstractRuleApplier;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
-import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 
 import java.util.Collection;
@@ -81,7 +79,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	/** Sets this applier to work on a given state. */
 	public final void setState(GraphState state) {
 		this.graph = state.getGraph();
-		this.control = state.getLocation();
+		this.control = (ControlState) state.getControl();
 		if (state instanceof GraphNextState && ((GraphNextState) state).source().isClosed()) {
 			this.state = (GraphNextState) state;
 			this.rule = this.state.getEvent().getRule();
@@ -108,7 +106,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 
 	@Override
 	protected void collectApplications(Rule rule, Set<RuleApplication> result) {
-		if (doApplyRule(rule)) {
+		if (state == null || !isUseDependencies() || enabledRules.contains(rule)) {
 			super.collectApplications(rule, result);
 		}
 	}
@@ -167,16 +165,11 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 
 	@Override
 	protected boolean doApplications(Rule rule, Action action) {
-		if (doApplyRule(rule)) {
+		if (state == null || !isUseDependencies() || enabledRules.contains(rule)) {
 			return super.doApplications(rule, action);
 		} else {
 			return false;
 		}
-	}
-	
-	/** Indicates is the applications if a given rule should be developed. */
-	private boolean doApplyRule(Rule rule) {
-	    return state == null || !isUseDependencies() || (rule instanceof SPORule) && ((SPORule) rule).hasSubRules() || enabledRules.contains(rule);
 	}
 
 	/** Callback factory method to create an {@link AliasSPOApplication}. */
@@ -192,8 +185,9 @@ public class AliasRuleApplier extends AbstractRuleApplier {
     protected Iterator<Set<Rule>> getRuleSetIter()
     {
     	if( control != null  ) {
-    		return control.ruleMap().values().iterator();
-    	} else {
+    		return control.getRuleMap().values().iterator();
+    	}
+    	else {
     		return super.getRuleSetIter();
     	}
     }
@@ -209,7 +203,7 @@ public class AliasRuleApplier extends AbstractRuleApplier {
 	/** The (fixed) state of this deriver. */
     private GraphNextState state;
     /** Control location of the current the state on which this applier works **/
-    private Location control;
+    private ControlState control;
     /** The rule leading up to <code>state</code>. */
     private Rule rule;
     /** The priority of the rule leading to <code>state</code>. */

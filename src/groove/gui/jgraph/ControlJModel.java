@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlJModel.java,v 1.9 2007-11-26 08:58:39 fladder Exp $
+ * $Id: ControlJModel.java,v 1.7 2007-11-19 12:18:46 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -22,12 +22,11 @@ import static groove.gui.jgraph.JAttr.LTS_EDGE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_FINAL_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_NODE_ACTIVE_CHANGE;
 import static groove.gui.jgraph.JAttr.LTS_NODE_ATTR;
+import static groove.gui.jgraph.JAttr.LTS_OPEN_NODE_ATTR;
 import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
 import groove.control.ControlAutomaton;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
-import groove.control.ElseControlTransition;
-import groove.control.LambdaControlTransition;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
@@ -35,9 +34,10 @@ import groove.graph.Node;
 import groove.gui.Options;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
+import groove.lts.State;
+import groove.lts.Transition;
 import groove.util.Converter;
 import groove.util.Groove;
-import groove.view.aspect.AspectNode;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -52,14 +52,14 @@ public class ControlJModel extends GraphJModel {
      * Is null if there is no active state.
      * @invariant activeState == null || ltsJModel.graph().contains(activeState)
      */
-    private ControlState activeState;
+    private State activeState;
     /**
      * The currently active transition of the LTS.
      * The source node of emphasizedEdge (if non-null) is also emphasized.
      * Is null if there is no currently emphasized edge.
      * @invariant activeTransition == null || ltsJModel.graph().contains(activeTransition)
      */
-    private ControlTransition activeTransition;
+    private Transition activeTransition;
 	
 	/**
 	 *  Creates an empty ControlJModel
@@ -71,7 +71,7 @@ public class ControlJModel extends GraphJModel {
 	
 	public ControlJModel(GraphShape shape, Options options)
 	{
-		super(shape, JAttr.NESTING_NODE_ATTR, JAttr.NESTING_EDGE_ATTR, options);
+		super(shape, LTS_NODE_ATTR, LTS_EDGE_ATTR, options);
 		this.reload();
 	}
 
@@ -86,7 +86,7 @@ public class ControlJModel extends GraphJModel {
      * The active transition is the one currently selected in the simulator.
      * Returns <tt>null</tt> if no transition is selected.
      */
-    public ControlTransition getActiveTransition() {
+    public Transition getActiveTransition() {
         return activeTransition;
     }
 
@@ -96,7 +96,7 @@ public class ControlJModel extends GraphJModel {
      * Returns <tt>null</tt> if no state is active (which should occur only
      * if no grammar is loaded and hence the LTS is empty).
      */
-    public ControlState getActiveState() {
+    public State getActiveState() {
         return activeState;
     }
 	
@@ -107,8 +107,8 @@ public class ControlJModel extends GraphJModel {
      * @param trans the new active transition
      * @return the old active transition
      */
-    public ControlTransition setActiveTransition(ControlTransition trans) {
-        ControlTransition result = activeTransition;
+    public Transition setActiveTransition(Transition trans) {
+        Transition result = activeTransition;
         activeTransition = trans;
         Set<JCell> changedCells = new HashSet<JCell>();
         if (trans != null) {
@@ -132,8 +132,8 @@ public class ControlJModel extends GraphJModel {
      * @param state the new active state
      * @return the old active state
      */
-    public ControlState setActiveState(ControlState state) {
-        ControlState result = activeState;
+    public State setActiveState(State state) {
+        State result = activeState;
         activeState = state;
         Set<JCell> changedCells = new HashSet<JCell>();
         if (state != null) {
@@ -145,12 +145,6 @@ public class ControlJModel extends GraphJModel {
         refresh(changedCells);
         return result;
     }
-    
-    @Override
-    public boolean isShowNodeIdentities() {
-    	return true;
-    }
-    
     
 	/**
      * This implementation returns a {@link ControlJModel.TransitionJEdge}.
@@ -181,10 +175,12 @@ public class ControlJModel extends GraphJModel {
 	@Override
 	protected AttributeMap createJVertexAttr(Node node) {
         AttributeMap result;
-        ControlState state = (ControlState) node;
+        State state = (State) node;
         if (state.equals(getGraph().startState())) {
             result = LTS_START_NODE_ATTR.clone();
-        } else if (getGraph().isSuccess(state)) {
+        } else if (!state.isClosed()) {
+            result = LTS_OPEN_NODE_ATTR.clone();
+        } else if (getGraph().isFinal(state)) {
             result = LTS_FINAL_NODE_ATTR.clone();
         } else {
             result = LTS_NODE_ATTR.clone();
@@ -213,7 +209,7 @@ public class ControlJModel extends GraphJModel {
 	@Override
 	protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
 		AttributeMap result;
-        ControlState state = ((StateJVertex) jCell).getNode();
+        State state = (State) ((GraphJVertex) jCell).getNode();
         if (state.equals(getActiveState())) {
         	result = LTS_ACTIVE_EMPH_NODE_CHANGE;
         } else {
@@ -224,7 +220,58 @@ public class ControlJModel extends GraphJModel {
 
 	/** Dummy LTS model. */
 	static public final ControlJModel EMPTY_CONTROL_JMODEL = new ControlJModel();
-
+//    /** The default node attributes of the LTS */
+//    private static final AttributeMap LTS_NODE_ATTR;
+//    /** The start node attributes of the LTS */
+//    private static final AttributeMap LTS_START_NODE_ATTR;
+//    /** Unexplored node attributes */
+//    private static final AttributeMap LTS_OPEN_NODE_ATTR;
+//    /** Final node attributes */
+//    private static final AttributeMap LTS_FINAL_NODE_ATTR;
+//    /** The default edge attributes of the LTS */
+//    private static final AttributeMap LTS_EDGE_ATTR;
+//
+//    /** Active node attributes of the LTS */
+//    private static final AttributeMap LTS_NODE_ACTIVE_CHANGE;
+//    /** Active edge attributes of the LTS */
+//    private static final AttributeMap LTS_EDGE_ACTIVE_CHANGE;
+//    /** Emphasized active node attributes of the LTS */
+//    private static final AttributeMap LTS_ACTIVE_EMPH_NODE_CHANGE;
+//
+//    // set the emphasis attributes
+//    static {
+//        // active LTS nodes
+//        LTS_NODE_ACTIVE_CHANGE = new AttributeMap();
+//        GraphConstants.setBorder(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_BORDER);
+//        GraphConstants.setLineColor(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
+//        GraphConstants.setLineWidth(LTS_NODE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
+//        // active LTS edges
+//        LTS_EDGE_ACTIVE_CHANGE = new AttributeMap();
+//        GraphConstants.setForeground(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
+//        GraphConstants.setLineColor(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_COLOR);
+//        GraphConstants.setLineWidth(LTS_EDGE_ACTIVE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
+//
+//        // LTS nodes
+//        LTS_NODE_ATTR = (AttributeMap) JAttr.DEFAULT_NODE_ATTR.clone();
+////        GraphConstants.setFont(LTS_NODE_ATTR, italicFont);
+//        // LTS start node
+//        LTS_START_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
+//        GraphConstants.setBackground(LTS_START_NODE_ATTR, JAttr.LTS_START_BACKGROUND);
+//        // LTS unexplored nodes
+//        LTS_OPEN_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
+//        GraphConstants.setBackground(LTS_OPEN_NODE_ATTR, JAttr.LTS_OPEN_BACKGROUND);
+//        // LTS final nodes
+//        LTS_FINAL_NODE_ATTR = (AttributeMap) LTS_NODE_ATTR.clone();
+//        GraphConstants.setBackground(LTS_FINAL_NODE_ATTR, JAttr.LTS_FINAL_BACKGROUND);
+//        LTS_ACTIVE_EMPH_NODE_CHANGE = new AttributeMap();
+//        GraphConstants.setBorder(LTS_ACTIVE_EMPH_NODE_CHANGE, JAttr.LTS_ACTIVE_EMPH_BORDER);
+//        GraphConstants.setLineWidth(LTS_ACTIVE_EMPH_NODE_CHANGE, JAttr.LTS_ACTIVE_WIDTH);
+//        // LTS edges
+//        LTS_EDGE_ATTR = (AttributeMap) JAttr.DEFAULT_EDGE_ATTR.clone();
+//        GraphConstants.setConnectable(LTS_EDGE_ATTR, false);
+//        GraphConstants.setDisconnectable(LTS_EDGE_ATTR, false);
+//        GraphConstants.setLineEnd(LTS_EDGE_ATTR, GraphConstants.ARROW_SIMPLE);
+//    }
     /**
 	 * JEdge class that describes the underlying edge as a graph transition.
 	 * @author Arend Rensink
@@ -240,20 +287,7 @@ public class ControlJModel extends GraphJModel {
 		StringBuilder getEdgeKindDescription() {
 			return new StringBuilder("transition");
 		}
-		
-		@Override
-		public StringBuilder getLine(Edge edge) {
-			if( edge instanceof LambdaControlTransition ) {
-				return new StringBuilder("\u03BB");
-			}
-			else if( edge instanceof ElseControlTransition) {
-				return new StringBuilder("\u03B5");
-			}
-			else {
-				return super.getLine(edge);
-			}
-		}
-		
+
 		@Override
 		String getLabelDescription() {
 			StringBuffer result = new StringBuffer(", generated by ");
@@ -286,8 +320,21 @@ public class ControlJModel extends GraphJModel {
     	 * in an LTS model.
     	 */
 		StateJVertex(ControlJModel jModel, Node node) {
-			super(jModel, node, true);
+			super(jModel, node, false);
 		}
+
+        /** A state is also visible if it is open, final, or the start state. */
+        @Override
+        public boolean isVisible() {
+            return isSpecialNode() || super.isVisible();
+        }
+
+        /** Tests if the state is the start state, a final state, or not yet closed. */
+        private boolean isSpecialNode() {
+            LTS lts = getGraph();
+            State state = getNode();
+            return lts.startState().equals(state) || !state.isClosed() || lts.isFinal(state);
+        }
 
         /**
 		 * Specialises the return type to {@link ControlState}.
@@ -295,6 +342,38 @@ public class ControlJModel extends GraphJModel {
 		@Override
 		public ControlState getNode() {
 			return (ControlState) super.getNode();
+		}
+
+		@Override
+		StringBuilder getNodeDescription() {
+			StringBuilder result = new StringBuilder("State ");
+			result.append(Converter.UNDERLINE_TAG.on(getNode()));
+			return result;
+		}
+
+		/**
+	     * This implementation adds a label to the set if
+	     * the j-vertex is the start state, an open state or a final state.
+	     * @see LTS#START_LABEL_TEXT
+	     * @see LTS#OPEN_LABEL_TEXT
+	     * @see LTS#FINAL_LABEL_TEXT
+	     */
+		@Override
+		public Collection<String> getPlainLabels() {
+			ControlAutomaton lts = getGraph();
+			Set<String> result = new HashSet<String>();
+			if (lts.startState().equals(getNode())) {
+				result.add(LTS.START_LABEL_TEXT);
+			}
+			if (lts.isFinal(getNode())) {
+				result.add(LTS.FINAL_LABEL_TEXT);
+			}
+			return result;
+		}
+
+		@Override
+		public StringBuilder getLine(Edge edge) {
+			return Converter.toHtml(new StringBuilder(getLabel(edge).text()));
 		}
 	}
 }

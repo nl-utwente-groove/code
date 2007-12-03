@@ -12,31 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateSet.java,v 1.2 2007-08-26 07:23:33 rensink Exp $
+ * $Id: Control.java,v 1.2 2007-08-26 07:23:34 rensink Exp $
  */
 package groove.control;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+public class Control {
 
-public class StateSet {
-	
-	private Set<ControlState> states;
-	
-	
-	public StateSet()
-	{
-		this.states = new HashSet<ControlState>();
-	}
-	
-	public void add(ControlState state)
-	{
-		this.states.add(state);
-	}
-	
-	public Iterator iterator() 
-	{
-		return states.iterator();
-	}
+	public static final String ELSE_LABEL = "else";
+	public static final String LAMBDA_LABEL = "tau";
 }

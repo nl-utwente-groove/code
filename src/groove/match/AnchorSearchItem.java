@@ -12,16 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AnchorSearchItem.java,v 1.3 2007-11-26 21:17:21 rensink Exp $
+ * $Id: AnchorSearchItem.java,v 1.2 2007-10-11 11:42:08 rensink Exp $
  */
 package groove.match;
 
 import groove.graph.Edge;
 import groove.graph.Node;
-import groove.graph.algebra.AlgebraEdge;
-import groove.graph.algebra.ProductEdge;
-import groove.graph.algebra.ProductNode;
-import groove.graph.algebra.ValueNode;
 import groove.match.SearchPlanStrategy.Search;
 import groove.rel.VarSupport;
 
@@ -86,16 +82,12 @@ class AnchorSearchItem extends AbstractSearchItem {
 		nodeIxMap = new HashMap<Node,Integer>();
 		for (Node node: nodes) {
 			assert !strategy.isNodeFound(node) : String.format("Node %s is not fresh", node);
-			if (isAnchorable(node)) {
-			    nodeIxMap.put(node, strategy.getNodeIx(node));
-			}
+			nodeIxMap.put(node, strategy.getNodeIx(node));
 		}
 		edgeIxMap = new HashMap<Edge,Integer>();
 		for (Edge edge: edges) {
 			assert !strategy.isEdgeFound(edge) : String.format("Edge %s is not fresh", edge);
-			if (isAnchorable(edge)) {
-			    edgeIxMap.put(edge, strategy.getEdgeIx(edge));
-			}
+			edgeIxMap.put(edge, strategy.getEdgeIx(edge));
 		}
 		varIxMap = new HashMap<String,Integer>();
 		for (String var: vars) {
@@ -103,22 +95,6 @@ class AnchorSearchItem extends AbstractSearchItem {
 			varIxMap.put(var, strategy.getVarIx(var));
 		}
 	}
-
-    /** 
-     * Tests is a give node can serve proper anchor, in the sense that it is matched to an actual host graph node.
-     * This fails to hold for {@link ProductNode}s that are not {@link ValueNode}s.
-     */
-    private boolean isAnchorable(Node node) {
-        return !(node instanceof ProductNode) || node instanceof ValueNode;
-    }
-    
-    /** 
-     * Tests is a give edge is a proper anchor, in the sense that it is matched to an actual host graph edge.
-     * This fails to hold for {@link AlgebraEdge}s and {@link ProductEdge}s.
-     */
-    private boolean isAnchorable(Edge edge) {
-        return !(edge instanceof AlgebraEdge || edge instanceof ProductEdge);
-    }
 
 	@Override
 	public String toString() {

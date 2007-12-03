@@ -19,7 +19,7 @@ package groove.match;
 
 import groove.graph.Edge;
 import groove.graph.Element;
-import groove.graph.GraphShape;
+import groove.graph.Graph;
 import groove.graph.Node;
 import groove.match.SearchPlanStrategy.Search;
 
@@ -30,7 +30,7 @@ import java.util.Iterator;
 /**
  * Abstract implementation of a search item, offering some basic search functionality.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.13 $
  */
 abstract class AbstractSearchItem implements SearchItem {
     /**
@@ -167,13 +167,13 @@ abstract class AbstractSearchItem implements SearchItem {
         /** The underlying search for this record. */
         final Search search;
         /** The underlying search for this record. */
-        final GraphShape host;
+        final Graph host;
     }
 
     /**
      * Record type for a search item known to yield at most one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.14 $
+     * @version $Revision: 1.13 $
      */
     abstract class SingularRecord extends BasicRecord {
         /** Constructs an instance for a given search. */
@@ -233,7 +233,7 @@ abstract class AbstractSearchItem implements SearchItem {
      * Abstract implementation of a search item record expected to
      * have more than one solution.
      * @author Arend Rensink
-     * @version $Revision: 1.14 $
+     * @version $Revision: 1.13 $
      */
     abstract class MultipleRecord<E extends Element> extends BasicRecord {
         /** Constructs a record for a given search. */

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.29 2007-11-30 08:28:52 rensink Exp $
+ * $Id: Generator.java,v 1.27 2007-11-05 15:43:36 rensink Exp $
  */
 package groove.util;
 
@@ -26,6 +26,7 @@ import groove.graph.iso.Bisimulator;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
+import groove.io.GrammarViewXml;
 import groove.io.RuleList;
 import groove.lts.AbstractGraphState;
 import groove.lts.ConditionalExploreStrategy;
@@ -76,7 +77,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.27 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -98,16 +99,7 @@ public class Generator extends CommandLineTool {
     static public final String LOAD_ERROR = "Can't load graph grammar";
     /** Usage message for the generator. */
     static public final String USAGE_MESSAGE = "Usage: Generator [options] <grammar-location> [<start-graph-name> | <start-graphs-dir>]";
-//
-//    static private final String VAR_START_REGEXPR = "\\$\\{";
-//    static private final String VAR_END_REGEXPR = "\\}";
-    /** 
-     * Value for the output file name to indicate that the name should be computed from the grammar name.
-     * @see #getOutputFileName()
-     */
-    static public final String GRAMMAR_NAME_VAR = "@";
-    /** Separator between grammar name and start state name in reporting. */
-    static public final char START_STATE_SEPARATOR = '@';
+
     /** Indentation used when printing help. */
     static private final String INDENT = "    ";
 
@@ -115,7 +107,7 @@ public class Generator extends CommandLineTool {
     static private final int BYTES_PER_KB = 1024;
 
     /**
-     * Attempts to load a graph grammar from a given location provided as a parameter with either
+     * Attempts to load a graph grammar from a given location provided as a paramter with either
      * default start state or a start state provided as a second parameter.
      * @param args the first argument is the grammar location name; if provided, the second argument
      *        is the start graph filename.
@@ -182,7 +174,7 @@ public class Generator extends CommandLineTool {
 
     /** Computes an ID from the grammar location and the time. */
     protected String computeId() {
-        return ID_PREFIX + ID_SEPARATOR + getGrammarName() + ID_SEPARATOR + super.getId();
+        return ID_PREFIX + ID_SEPARATOR + getGrammarName(grammarLocation) + ID_SEPARATOR + super.getId();
     }
     
     /**
@@ -216,11 +208,11 @@ public class Generator extends CommandLineTool {
             public void update(Observable o, Object arg) {
                 if (getVerbosity() > LOW_VERBOSITY) {
                     if (arg instanceof String) {
-                        System.out.printf("%s .", arg);
+                        printf("%s .", arg);
                     } else if (arg == null) {
-                        System.out.println(" done");
+                        println(" done");
                     } else {
-                        System.out.print(".");
+                        print(".");
                     }
                 }
             }
@@ -556,10 +548,13 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * The finalisation phase of state space generation. Called from <tt>{@link #start}</tt>.
+     * The finalization phase of state space generation. Called from <tt>{@link #start}</tt>.
      * 
      */
     protected void exit(Collection<? extends State> result) throws IOException, FormatException {
+        if (getOutputFileName() != null) {
+            Groove.saveGraph(new LTSGraph(getGTS()), getOutputFileName());
+        }
         if (getFinalSaveName() != null) {
         	if (result.isEmpty()) {
         		System.out.println("No resulting graphs");
@@ -572,28 +567,8 @@ public class Generator extends CommandLineTool {
 				System.out.printf("Resulting graphs saved: %s%n", getGTS().getFinalStates());
 			}
         }
-        if (getOutputFileName() != null) {
-            if (getVerbosity() == HIGH_VERBOSITY) {
-                print(GraphReporter.createInstance().getReport(getGTS()).toString());
-            }
-                Groove.saveGraph(new LTSGraph(getGTS()), getOutputFileName());
-        }
     }
 
-    /** 
-     * This implementation expands any occurrence of {@link #GRAMMAR_NAME_VAR}
-     * into the grammar name.
-     */
-    @Override
-    protected String getOutputFileName() {
-        String result = super.getOutputFileName();
-        if (result != null) {
-            String grammarNameRegExpr = GRAMMAR_NAME_VAR;
-            result = result.replaceAll(grammarNameRegExpr, getGrammarName());
-        }
-        return result;
-    }
-    
     /**
 	 * Factory method for the grammar loader to be used by state space
 	 * generation. 
@@ -607,13 +582,8 @@ public class Generator extends CommandLineTool {
      * Convenience method to derive the name of a grammar from its location. Strips the directory
      * and extension.
      */
-    protected String getGrammarName() {
-        StringBuilder result = new StringBuilder(new File(ruleSystemFilter.stripExtension(grammarLocation)).getName());
-        if (startStateName != null) {
-            result.append(START_STATE_SEPARATOR);
-            result.append(startStateName);
-        }
-        return result.toString();
+    protected String getGrammarName(String grammarLocation) {
+        return new File(ruleSystemFilter.stripExtension(grammarLocation)).getName();
     }
 
     /** This implementation returns <tt>getId()</tt>. */

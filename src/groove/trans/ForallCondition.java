@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ForallCondition.java,v 1.10 2007-11-29 12:52:09 rensink Exp $
+ * $Id: ForallCondition.java,v 1.9 2007-11-05 14:16:25 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
-import groove.graph.GraphShape;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 
@@ -38,7 +37,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     }
 
     @Override
-    final public Collection<CompositeMatch> getMatches(GraphShape host, NodeEdgeMap contextMap) {
+    final public Collection<CompositeMatch> getMatches(Graph host, NodeEdgeMap contextMap) {
     	Collection<CompositeMatch> result = null;
     	reporter.start(GET_MATCHING);
     	testFixed(true);
@@ -62,7 +61,7 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
     /**
      * Returns the matches of this condition, given an iterator of match maps.
      */
-    Collection<CompositeMatch> computeMatches(GraphShape host, Iterator<VarNodeEdgeMap> matchMapIter) {
+    Collection<CompositeMatch> computeMatches(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Collection<CompositeMatch> result = new ArrayList<CompositeMatch>();
         // add the empty match if the condition is not positive
         if (!positive) {
@@ -94,9 +93,9 @@ public class ForallCondition extends AbstractCondition<CompositeMatch> {
         return result;
     }
         
-    /** This implementation iterates over the result of {@link #getMatches(GraphShape, NodeEdgeMap)}. */
+    /** This implementation iterates over the result of {@link #getMatches(Graph, NodeEdgeMap)}. */
     @Override
-    public Iterator<CompositeMatch> computeMatchIter(GraphShape host, Iterator<VarNodeEdgeMap> matchMapIter) {
+    public Iterator<CompositeMatch> computeMatchIter(Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         return computeMatches(host, matchMapIter).iterator();
     }
 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.24 2007-11-29 12:50:36 rensink Exp $
+ * $Id: Groove.java,v 1.23 2007-11-02 08:42:34 rensink Exp $
  */
 package groove.util;
 
@@ -21,14 +21,10 @@ import groove.calc.GraphCalculator;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
 import groove.graph.GraphShape;
-import groove.graph.NodeEdgeMap;
-import groove.graph.iso.DefaultIsoChecker;
 import groove.io.AspectualViewGps;
 import groove.io.DefaultGxl;
 import groove.io.ExtensionFilter;
 import groove.io.Xml;
-import groove.match.GraphSearchPlanFactory;
-import groove.rel.VarNodeEdgeMap;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemProperties;
 import groove.view.AspectualRuleView;
@@ -42,7 +38,6 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -51,7 +46,7 @@ import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
- * @version $Revision: 1.24 $ 
+ * @version $Revision: 1.23 $ 
  * @version Arend Rensink
  */
 public class Groove {
@@ -367,20 +362,6 @@ public class Groove {
     }
     
     /**
-     * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory,
-     * with an explicitly given start graph name, and return it.
-     * Adds the <tt>.gps</tt> extension if the file has no extension.
-     * @param dirname the name of the directory to load the graph grammar from
-     * @param startfilename the name of the start graph
-     * @return the graph grammar made up by <code>dirname</code> and <code>startfilename</code>
-     * @throws IOException if <code>dirname</code> or <code>startfilename</code> do not exist or are wrongly formatted
-     */
-    static public DefaultGrammarView loadGrammar(String dirname, String startfilename) throws IOException, FormatException {
-        File dir = new File(createRuleSystemFilter().addExtension(dirname));
-        return gpsLoader.unmarshal(dir, startfilename);
-    }
-
-    /**
      * Creates and returns a calculator on the basis of a graph grammar given by
      * a filename.
      * @param filename the name of the file where the grammar is located
@@ -411,57 +392,21 @@ public class Groove {
     static public GraphCalculator createCalculator(GraphGrammar grammar) {
         return new DefaultGraphCalculator(grammar);
     }
-
-    /**
-     * Returns an iterator over all (non-injective) embeddings of one graph into another.
-     * The source graph may contain regular expression edges, as well as variable edges.
-     * @param source the graph to be embedded
-     * @param target the graph into which it is to be embedded
-     * @return an iterator over maps from the source to the target graph.
-     * @see #getEmbeddings(GraphShape, GraphShape)
-     */
-    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source, GraphShape target) {
-        return getEmbeddings(source, target, false);
-    }
-
-    /**
-     * Returns an iterator over all (injective or non-injective) embeddings of one graph into another.
-     * The source graph may contain regular expression edges, as well as variable edges.
-     * @param source the graph to be embedded
-     * @param target the graph into which it is to be embedded
-     * @param injective flag to indicate whether the embeddings should be injective
-     * @return an iterator over maps from the source to the target graph.
-     */
-    static public Iterator<VarNodeEdgeMap> getEmbeddings(GraphShape source, GraphShape target, boolean injective) {
-        return GraphSearchPlanFactory.getInstance(injective, false).createMatcher(source, null, null).getMatchIter(target, null);
-    }
     
     /**
-     * Test is two graphs are isomorphic.
-     * The test is incomplete, in the sense that, though a <code>true</code> answer guarantees 
-     * isomorphism, a <code>false</code> answer does not absolutely guarantee non-isomorphism.
-     * (Currently, the test may fail if the graphs have very similar yet non-symmetric substructures.)
-     * If the graphs are isomorphic, the actual isomorphism may be retrieved using {@link #getIsomorphism(Graph, Graph)}.
-     * @param source the first graph to be compared
-     * @param target the second graph to be compared
-     * @return if <code>true</code>, <code>source</code> and <code>target</code> are isomorphic
-     * @see #getIsomorphism(Graph, Graph)
+     * Attempts to load in a graph grammar from a given <tt>.gps</tt> directory,
+     * with an explicitly given start graph name, and return it.
+     * Adds the <tt>.gps</tt> extension if the file has no extension.
+     * @param dirname the name of the directory to load the graph grammar from
+     * @param startfilename the name of the start graph
+     * @return the graph grammar made up by <code>dirname</code> and <code>startfilename</code>
+     * @throws IOException if <code>dirname</code> or <code>startfilename</code> do not exist or are wrongly formatted
      */
-    static public boolean areIsomorphic(Graph source, Graph target) {
-        return DefaultIsoChecker.getInstance().areIsomorphic(source, target);
+    static public DefaultGrammarView loadGrammar(String dirname, String startfilename) throws IOException, FormatException {
+        File dir = new File(createRuleSystemFilter().addExtension(dirname));
+        return gpsLoader.unmarshal(dir, startfilename);
     }
 
-    /**
-     * Constructs an isomorphism between two graphs, in the form of a mapping between their nodes and edges.
-     * @param source the first graph to be compared
-     * @param target the second graph to be compared
-     * @return an isomorphism from <code>source</code> to <code>target</code>, or <code>null</code> if 
-     * {@link #areIsomorphic(Graph, Graph)} fails.
-     */
-    static public NodeEdgeMap getIsomorphism(Graph source, Graph target) {
-        return DefaultIsoChecker.getInstance().getIsomorphism(source, target);
-    }
-    
     /**
      * Gives the current time as a number-formatted string with given parameters.
      * @param lossfactor the multiple of milliseconds by which time should be measured;

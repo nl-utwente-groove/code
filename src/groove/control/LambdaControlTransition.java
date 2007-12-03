@@ -12,23 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LambdaControlTransition.java,v 1.5 2007-11-26 08:58:12 fladder Exp $
+ * $Id: LambdaControlTransition.java,v 1.3 2007-08-26 07:23:33 rensink Exp $
  */
 package groove.control;
 
-/**
- * A controltransition that can always be taken (internal transition, tau-transition).
- * 
- * @author Tom Staijen
- * @version $Revision $
- */
-public class LambdaControlTransition extends RuleControlTransition {
-	
-	/**
-	 *  The public constructor calls the super constructor with the default label for lambda transitions.
-	 */
-	public LambdaControlTransition(ControlState source, ControlState target)
-	{
-		super(source, target, ControlView.LAMBDA_LABEL);
-	}
+@Deprecated
+public class LambdaControlTransition extends AbstractControlTransition {
 }

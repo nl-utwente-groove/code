@@ -12,31 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateSet.java,v 1.2 2007-08-26 07:23:33 rensink Exp $
+ * $Id: AntlrParser.java,v 1.2 2007-08-26 07:23:33 rensink Exp $
  */
 package groove.control;
 
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Set;
+public class AntlrParser {
 
-public class StateSet {
-	
-	private Set<ControlState> states;
-	
-	
-	public StateSet()
-	{
-		this.states = new HashSet<ControlState>();
+	/**
+	 * @param args
+	 */
+	public static void main(String[] args) {
+		antlr.Tool.main(new String[]{"gcl.g"});
 	}
-	
-	public void add(ControlState state)
-	{
-		this.states.add(state);
-	}
-	
-	public Iterator iterator() 
-	{
-		return states.iterator();
-	}
+
 }

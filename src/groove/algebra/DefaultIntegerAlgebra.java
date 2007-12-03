@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIntegerAlgebra.java,v 1.8 2007-11-29 12:43:46 rensink Exp $
+ * $Id: DefaultIntegerAlgebra.java,v 1.7 2007-08-26 07:24:19 rensink Exp $
  */
 
 package groove.algebra;
@@ -25,7 +25,7 @@ import java.util.List;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.8 $ $Date: 2007-11-29 12:43:46 $
+ * @version $Revision: 1.7 $ $Date: 2007-08-26 07:24:19 $
  */
 public class DefaultIntegerAlgebra extends Algebra {
 	/**
@@ -142,14 +142,6 @@ public class DefaultIntegerAlgebra extends Algebra {
      */
     public static final String MOD_SYMBOL = "mod";
     /**
-     * Integer minimum symbol.
-     */
-    public static final String MIN_SYMBOL = "min";
-    /**
-     * Integer maximum symbol.
-     */
-    public static final String MAX_SYMBOL = "max";
-    /**
      * Integer less than operation symbol.
      */
     public static final String LT_SYMBOL = "lt";
@@ -179,7 +171,7 @@ public class DefaultIntegerAlgebra extends Algebra {
         }
     };
     /**
-     * Integer subtraction operation.
+     * Integer substraction operation.
      */
     private static final Operation SUB_OPERATION = new IntInt2IntOperation(SUB_SYMBOL) {
         @Override
@@ -259,34 +251,13 @@ public class DefaultIntegerAlgebra extends Algebra {
             return arg1==arg2;
         }
     };
-    
-    /**
-     * Integer minimum operation.
-     */
-    private static final Operation MIN_OPERATION = new IntInt2IntOperation(MIN_SYMBOL) {
-        @Override
-        int apply(int arg1, int arg2) {
-            return Math.min(arg1,arg2);
-        }
-    };
-    /**
-     * Integer subtraction operation.
-     */
-    private static final Operation MAX_OPERATION = new IntInt2IntOperation(MAX_SYMBOL) {
-        @Override
-        int apply(int arg1, int arg2) {
-            return Math.max(arg1,arg2);
-        }
-    };
 
 	static {
 		instance.addOperation(ADD_OPERATION);
 		instance.addOperation(SUB_OPERATION);
 		instance.addOperation(MUL_OPERATION);
-        instance.addOperation(DIV_OPERATION);
-        instance.addOperation(MOD_OPERATION);
-        instance.addOperation(MIN_OPERATION);
-        instance.addOperation(MAX_OPERATION);
+		instance.addOperation(DIV_OPERATION);
+		instance.addOperation(MOD_OPERATION);
 		instance.addOperation(LT_OPERATION);
 		instance.addOperation(LE_OPERATION);
 		instance.addOperation(GT_OPERATION);

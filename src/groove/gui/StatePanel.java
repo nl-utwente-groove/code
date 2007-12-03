@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StatePanel.java,v 1.29 2007-11-28 16:07:41 iovka Exp $
+ * $Id: StatePanel.java,v 1.28 2007-11-06 16:07:32 rensink Exp $
  */
 package groove.gui;
 
@@ -21,18 +21,14 @@ import static groove.gui.Options.SHOW_ASPECTS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
-import groove.abs.AbstrGraph;
-import groove.abs.GraphPattern;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
-import groove.gui.jgraph.AbstrGraphJModel;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.StateJGraph;
 import groove.lts.GTS;
@@ -47,8 +43,6 @@ import groove.view.DefaultGrammarView;
 import groove.view.AspectualGraphView;
 
 import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
@@ -67,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.28 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
@@ -217,13 +211,9 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
         // get a graph model for the target state
         GraphState newState = transition.target();
         GraphJModel newModel = getStateJModel(newState, false);
-        
-    	if (!simulator.isAbstractSimulation()) {
-    		GraphState oldState = transition.source();
-    		Morphism morphism = transition.getMorphism();
-    		copyLayout(getStateJModel(oldState, true), newModel, morphism);
-    	}
-    	
+        GraphState oldState = transition.source();
+        Morphism morphism = transition.getMorphism();
+        copyLayout(getStateJModel(oldState, true), newModel, morphism);
         // set the graph model to the new state
         jGraph.setModel(newModel);
         selectedTransition = null;
@@ -267,8 +257,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      */
     private GraphJModel getStateJModel(GraphState state, boolean copyLayout) {
         GraphJModel result = stateJModelMap.get(state);
-        // IOVKA : added additional condition here, and additional condition for abstract simulation
-    	if (state == simulator.getCurrentGTS().startState() && ! simulator.isAbstractSimulation()) {
+    	if (state == simulator.getCurrentGTS().startState()) {
     		result = startGraphJModel;
     	} else {
     		result = stateJModelMap.get(state);
@@ -312,9 +301,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 
 	/** Creates a j-model for a given graph. */
 	private GraphJModel createGraphJModel(Graph graph) {
-		return this.simulator.isAbstractSimulation() ?
-			AbstrGraphJModel.newInstance((AbstrGraph) graph, getOptions()) :
-			GraphJModel.newInstance(graph, getOptions());
+		return GraphJModel.newInstance(graph, getOptions());
 	}
 
     /**
@@ -381,5 +368,5 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
      */
     private GraphTransition selectedTransition;
     /** The simulator to which this panel belongs. */
-	private final Simulator simulator;
+    private final Simulator simulator;
 }

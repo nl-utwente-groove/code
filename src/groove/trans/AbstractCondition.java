@@ -12,20 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.13 2007-11-29 12:52:09 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.11 2007-10-26 11:10:30 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
-import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
-import groove.graph.algebra.AlgebraEdge;
-import groove.graph.algebra.ProductEdge;
-import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.match.ConditionSearchPlanFactory;
 import groove.match.MatchStrategy;
@@ -45,7 +41,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.11 $
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
 	/**
@@ -227,7 +223,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	}
 
 	/** Fixes the sub-predicate and this morphism. */
-	public void setFixed() throws FormatException {
+	public void setFixed() {
 		if (!isFixed()) {
             fixed = true;
 			getTarget().setFixed();
@@ -241,15 +237,15 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 		return fixed;
 	}
 
-	final public boolean hasMatch(GraphShape host) {
+	final public boolean hasMatch(Graph host) {
 		return isGround() && getMatchIter(host, null).hasNext();
 	}
 
 	/**
 	 * Returns an iterable wrapping a call to
-	 * {@link #getMatchIter(GraphShape, NodeEdgeMap)}.
+	 * {@link #getMatchIter(Graph, NodeEdgeMap)}.
 	 */
-	public Iterable<M> getMatches(final GraphShape host, final NodeEdgeMap contextMap) {
+	public Iterable<M> getMatches(final Graph host, final NodeEdgeMap contextMap) {
 		return new Iterable<M>() {
 			public Iterator<M> iterator() {
 				return getMatchIter(host, contextMap);
@@ -257,7 +253,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 		};
 	}
 
-	final public Iterator<M> getMatchIter(GraphShape host, NodeEdgeMap contextMap) {
+	final public Iterator<M> getMatchIter(Graph host, NodeEdgeMap contextMap) {
 		Iterator<M> result = null;
 		reporter.start(GET_MATCHING);
 		testFixed(true);
@@ -283,7 +279,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	 * Returns an iterator over the matches for a given graph, based on a series
 	 * of match maps for this condition.
 	 */
-	abstract Iterator<M> computeMatchIter(GraphShape host, Iterator<VarNodeEdgeMap> matchMaps);
+	abstract Iterator<M> computeMatchIter(Graph host, Iterator<VarNodeEdgeMap> matchMaps);
 
 	/**
 	 * Factors given matching of the condition context through this condition's
@@ -296,9 +292,6 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	final VarNodeEdgeMap createAnchorMap(NodeEdgeMap contextMap) {
 		VarNodeEdgeMap result = new VarNodeEdgeHashMap();
 		for (Map.Entry<Node, Node> entry : getRootMap().nodeMap().entrySet()) {
-		    if (!isAnchorable(entry.getKey())) {
-		        continue;
-		    }
 			Node image = contextMap.getNode(entry.getKey());
 			assert image != null : String.format("Context map %s does not contain image for root %s",
 					contextMap,
@@ -317,9 +310,6 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 			}
 		}
 		for (Map.Entry<Edge, Edge> entry : getRootMap().edgeMap().entrySet()) {
-		    if (!isAnchorable(entry.getKey())) {
-                continue;
-            }
 			Edge image = contextMap.mapEdge(entry.getKey());
 			assert image != null : String.format("Context map %s does not contain image for root %s",
 					contextMap,
@@ -351,22 +341,6 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 		}
 		return result;
 	}
-    
-	/** 
-	 * Tests is a give node can serve proper anchor, in the sense that it is matched to an actual host graph node.
-	 * This fails to hold for {@link ProductNode}s that are not {@link ValueNode}s.
-	 */
-    boolean isAnchorable(Node node) {
-        return !(node instanceof ProductNode) || node instanceof ValueNode;
-    }
-    
-    /** 
-     * Tests is a give edge is a proper anchor, in the sense that it is matched to an actual host graph edge.
-     * This fails to hold for {@link AlgebraEdge}s and {@link ProductEdge}s.
-     */
-    boolean isAnchorable(Edge edge) {
-        return !(edge instanceof AlgebraEdge || edge instanceof ProductEdge);
-    }
 
 	/**
 	 * Returns the precomputed matching order for the elements of the target
@@ -388,7 +362,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	 * retrieves its value from {@link #getMatcherFactory()}.
 	 */
 	MatchStrategy<VarNodeEdgeMap> createMatcher() {
-		testFixed(true);
+		setFixed();
 		return getMatcherFactory().createMatcher(this);
 	}
 
@@ -490,7 +464,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	static public final Reporter reporter = Reporter.register(Condition.class);
 
 	/**
-	 * Handle for profiling {@link #getMatches(GraphShape,NodeEdgeMap)} and related
+	 * Handle for profiling {@link #getMatches(Graph,NodeEdgeMap)} and related
 	 * methods.
 	 */
 	static public final int GET_MATCHING = reporter.newMethod("getMatching...");

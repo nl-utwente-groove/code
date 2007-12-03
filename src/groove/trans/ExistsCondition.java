@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExistsCondition.java,v 1.5 2007-11-29 12:52:02 rensink Exp $
+ * $Id: ExistsCondition.java,v 1.4 2007-10-08 12:17:34 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Graph;
-import groove.graph.GraphShape;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 
@@ -26,7 +25,7 @@ import java.util.Iterator;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.4 $
  */
 public class ExistsCondition extends PositiveCondition<ExistsMatch> {
     /**
@@ -50,7 +49,7 @@ public class ExistsCondition extends PositiveCondition<ExistsMatch> {
     }
 
 	@Override
-    Iterator<ExistsMatch> computeMatchIter(final GraphShape host, Iterator<VarNodeEdgeMap> matchMapIter) {
+    Iterator<ExistsMatch> computeMatchIter(final Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Iterator<ExistsMatch> result = null;
         while (result == null && matchMapIter.hasNext()) {
         	ExistsMatch match = getMatch(host, matchMapIter.next());
@@ -75,7 +74,7 @@ public class ExistsCondition extends PositiveCondition<ExistsMatch> {
      * @return a match constructed on the basis of <code>matchMap</code>, or <code>null</code> if
      * no match exists
      */
-    private ExistsMatch getMatch(GraphShape host, VarNodeEdgeMap matchMap) {
+    private ExistsMatch getMatch(Graph host, VarNodeEdgeMap matchMap) {
     	ExistsMatch result = createMatch(matchMap);
         for (AbstractCondition< ? > condition : getComplexSubConditions()) {
             Iterator< ? extends Match> subMatchIter = condition.getMatchIter(host, matchMap);

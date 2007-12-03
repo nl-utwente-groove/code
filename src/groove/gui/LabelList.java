@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LabelList.java,v 1.20 2007-12-03 08:56:08 rensink Exp $
+ * $Id: LabelList.java,v 1.19 2007-10-27 08:45:31 rensink Exp $
  */
 package groove.gui;
 
@@ -55,7 +55,7 @@ import org.jgraph.event.GraphModelListener;
 /**
  * Scroll pane showing the list of labels currently appearing in the graph model.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.19 $
  */
 public class LabelList extends JList implements GraphModelListener, ListSelectionListener {
     /**
@@ -451,7 +451,6 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
 		@Override
         public void setText(String label) {
         	StringBuilder text = new StringBuilder();
-            StringBuilder toolTipText = new StringBuilder();
         	Color foreground = getForeground();
             if (label.equals(JVertex.NO_LABEL)) {
                 text.append(Options.NO_LABEL_TEXT);
@@ -461,29 +460,17 @@ public class LabelList extends JList implements GraphModelListener, ListSelectio
                 foreground = SPECIAL_COLOR;
             } else {
             	text.append(label);
-            	int count = labels.get(label).size();
-            	toolTipText.append(count);
-            	toolTipText.append(" occurrence");
-            	if (count > 1) {
-            	    toolTipText.append("s");
-            	}
             }
             Converter.toHtml(text);
             if (filteredLabels != null) {
-                if (toolTipText.length()!= 0) {
-                    toolTipText.append(Converter.HTML_LINEBREAK);
-                }
                 if (filteredLabels.contains(label)) {
                     Converter.STRIKETHROUGH_TAG.on(text);
-                    toolTipText.append("Filtered label; doubleclick to show");
+                    setToolTipText("Filtered label; doubleclick to show");
                 } else {
-                    toolTipText.append("Visible label; doubleclick to filter");
+                    setToolTipText("Visible label; doubleclick to filter");
                 }
             }
             Converter.createColorTag(foreground).on(text);
-            if (toolTipText.length() != 0) {
-                setToolTipText(Converter.HTML_TAG.on(toolTipText).toString());
-            }
             super.setText(Converter.HTML_TAG.on(text).toString());
         }
 

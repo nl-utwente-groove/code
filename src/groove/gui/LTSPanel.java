@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSPanel.java,v 1.19 2007-11-28 16:07:41 iovka Exp $
+ * $Id: LTSPanel.java,v 1.18 2007-10-30 17:21:16 rensink Exp $
  */
 package groove.gui;
 
@@ -22,8 +22,6 @@ import groove.graph.Edge;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
-import groove.gui.jgraph.AbstrLTSJGraph;
-import groove.gui.jgraph.AbstrLTSJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.LTSJGraph;
 import groove.gui.jgraph.LTSJModel;
@@ -46,10 +44,9 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.19 $ $Date: 2007-11-28 16:07:41 $
+ * @version $Revision: 1.18 $ $Date: 2007-10-30 17:21:16 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
-
     /** Creates a LTS panel for a given simulator. */
     public LTSPanel(Simulator simulator) {
         super(new LTSJGraph(simulator), true, simulator.getOptions());
@@ -59,7 +56,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         addRefreshListener(SHOW_STATE_IDS_OPTION);
         simulator.addSimulationListener(this);
         getJGraph().setToolTipEnabled(true);
-    }   
+    }
 
     /**
      * Specialises the return type to a {@link LTSJModel}.
@@ -89,12 +86,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
 
 	public synchronized void startSimulationUpdate(GTS gts) {
         setGTS(gts);
-        if (getSimulator().isAbstractSimulation()) {
-        	getJGraph().setModel(AbstrLTSJModel.newInstance(gts, getOptions()));
-        } else {
-        	getJGraph().setModel(LTSJModel.newInstance(gts, getOptions()));
-        }
-        
+		getJGraph().setModel(LTSJModel.newInstance(gts, getOptions()));
 		setStateUpdate(gts.startState());
 		setEnabled(true);
 		refreshStatus();
@@ -132,11 +124,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
      */
     public synchronized void setTransitionUpdate(GraphTransition transition) {
     	getJModel().setActive(transition.source(), transition);
-    	if (getSimulator().isAbstractSimulation()) {
-    		getJGraph().scrollTo(getJModel().getActiveState());
-    	} else {
-    		getJGraph().scrollTo(getJModel().getActiveTransition());
-    	}
+        getJGraph().scrollTo(getJModel().getActiveTransition());
     }
 
     /**
@@ -302,11 +290,7 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         public void mouseClicked(MouseEvent evt) {
             if (evt.getButton() == MouseEvent.BUTTON1) {
             	if (! isEnabled() && getSimulator().getStartSimulationAction().isEnabled()) {
-            		if (getSimulator().isAbstractSimulation()) {
-            			getSimulator().startAbstrSimulation(getSimulator().getCurrentGrammar());
-            		} else {
-            			getSimulator().startSimulation(getSimulator().getCurrentGrammar());
-            		}
+            		getSimulator().startSimulation(getSimulator().getCurrentGrammar());
             	} else if (evt.getClickCount() == 2) {
             		getSimulator().setGraphPanel(getSimulator().getStatePanel());
             	} 

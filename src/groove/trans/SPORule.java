@@ -12,21 +12,18 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.47 2007-11-29 12:52:08 rensink Exp $
+ * $Id: SPORule.java,v 1.45 2007-10-26 11:10:29 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
-import groove.graph.GraphShape;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
-import groove.graph.algebra.AlgebraEdge;
-import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
@@ -40,7 +37,6 @@ import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,7 +52,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.47 $
+ * @version $Revision: 1.45 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -226,7 +222,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     }
 
 	@Override
-    public Iterator<RuleMatch> computeMatchIter(final GraphShape host, Iterator<VarNodeEdgeMap> matchMapIter) {
+    public Iterator<RuleMatch> computeMatchIter(final Graph host, Iterator<VarNodeEdgeMap> matchMapIter) {
         Iterator<RuleMatch> result = null;
         result = new NestedIterator<RuleMatch>(new TransformIterator<VarNodeEdgeMap,Iterator<RuleMatch>>(matchMapIter) {
         	@Override
@@ -245,7 +241,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * Returns a collection of matches extending a given match with
 	 * matches for the sub-conditions.
 	 */
-    Collection<RuleMatch> addSubMatches(GraphShape host, RuleMatch simpleMatch) {
+    Collection<RuleMatch> addSubMatches(Graph host, RuleMatch simpleMatch) {
     	Collection<RuleMatch> result = Collections.singleton(simpleMatch);
 		VarNodeEdgeMap matchMap = simpleMatch.getElementMap();
 		for (AbstractCondition<?> condition : getComplexSubConditions()) {
@@ -281,7 +277,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * @return <code>true</code> if <code>matchMap</code> satisfies the constraints imposed
 	 * by the rule (if any).
 	 */
-	boolean isValidMatchMap(GraphShape host, VarNodeEdgeMap matchMap) {
+	boolean isValidMatchMap(Graph host, VarNodeEdgeMap matchMap) {
 		boolean result = true;
 		if (SystemProperties.isCheckDangling(getProperties())) {
 			result = satisfiesDangling(host, matchMap);
@@ -290,7 +286,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	}
 
 	/** Tests if a given (proposed) match into a host graph leaves dangling edges. */ 
-	private boolean satisfiesDangling(GraphShape host, VarNodeEdgeMap match) {
+	private boolean satisfiesDangling(Graph host, VarNodeEdgeMap match) {
 		boolean result = true;
 		for (Node eraserNode : getEraserNodes()) {
 			Node erasedNode = match.getNode(eraserNode);
@@ -356,14 +352,14 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 				// This goes right because node identities are actually the same, but...
 				Node myNode = rootNodeEntry.getValue();
 				Node parentNode = rootNodeEntry.getKey();
-				if (myAnchor.contains(myNode) && getParent().lhs().containsElement(parentNode) && isAnchorable(myNode)) {
+				if (myAnchor.contains(myNode) && getParent().lhs().containsElement(parentNode)) {
 					parentAnchor.add(parentNode);
 				}
 			}
 			for (Map.Entry<Edge, Edge> rootEdgeEntry : getRootMap().edgeMap().entrySet()) {
 				Edge myEdge = rootEdgeEntry.getValue();
 				Edge parentEdge = rootEdgeEntry.getKey();
-				if (myAnchor.contains(myEdge) && getParent().lhs().containsElement(parentEdge) && isAnchorable(myEdge)) {
+				if (myAnchor.contains(myEdge) && getParent().lhs().containsElement(parentEdge)) {
 					parentAnchor.add(parentEdge);
 				}
 			}
@@ -461,7 +457,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 	 * and {@link SystemProperties#isRhsAsNac()}.
 	 */
 	@Override
-	public void setFixed() throws FormatException {
+	public void setFixed() {
 		if (!isFixed()) {
 			if (getProperties() != null) {
 				if (getProperties().isCheckCreatorEdges()) {
@@ -475,23 +471,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 					rhsNac.setFixed();
 					addSubCondition(rhsNac);
 				}
-			}
-			// test if product nodes have the required arguments
-			for (Node node: lhs().nodeSet()) {
-			    if (node instanceof ProductNode) {
-			        ProductNode product = (ProductNode) node;
-			        int arity = product.arity();
-			        BitSet arguments = new BitSet(arity);
-			        for (Edge edge: lhs().outEdgeSet(product)) {
-			            if (edge instanceof AlgebraEdge) {
-			                arguments.set(((AlgebraEdge) edge).getNumber());
-			            }
-			        }
-			        if (arguments.cardinality() != arity) {
-			            arguments.flip(0, arity);
-			            throw new FormatException("Arguments edges %s of product node %s missing in sub-rule", arguments, product);
-			        }
-			    }
 			}
 			super.setFixed();
 		}

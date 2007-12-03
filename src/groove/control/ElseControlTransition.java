@@ -12,23 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ElseControlTransition.java,v 1.5 2007-11-26 08:58:12 fladder Exp $
+ * $Id: ElseControlTransition.java,v 1.3 2007-08-26 07:23:34 rensink Exp $
  */
 package groove.control;
 
-/**
- * A ControlTransition with lower priority then then any other transition.
- * 
- * @author Tom Staijen
- */
-public class ElseControlTransition extends RuleControlTransition {
 
-	/**
-	 * The public contructor, which calls the super contructor with the default label for else transitions
-	 * @param source
-	 * @param target
-	 */
-	public ElseControlTransition(ControlState source, ControlState target) {
-		super(source, target, ControlView.ELSE_LABEL);
-	}
+@Deprecated
+public class ElseControlTransition extends AbstractControlTransition {
+
 }

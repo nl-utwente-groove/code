@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.14 2007-11-26 21:17:24 rensink Exp $
+ * $Id: NestingAspect.java,v 1.12 2007-11-19 12:19:14 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.14 $ $Date: 2007-11-26 21:17:24 $
+ * @version 0.1 $Revision: 1.12 $ $Date: 2007-11-19 12:19:14 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -77,7 +77,7 @@ public class NestingAspect extends AbstractAspect {
 			}
 			AspectValue value = getNestingValue(edge);
 			if (!(value instanceof NamedAspectValue) || ((NamedAspectValue) value).getContent().length() == 0) {
-				throw new FormatException("Quantified edge %s has empty level name", edge);
+				throw new FormatException("Quantified edge %s has non-empty level name");
 			}
 		}
 	}
@@ -176,7 +176,7 @@ public class NestingAspect extends AbstractAspect {
      * and {@link #checkEdge(AspectEdge, AspectGraph)}).
      */
     public static boolean isForall(AspectElement element) {
-        return FORALL.equals(getNestingValue(element)) || FORALL_POS.equals(getNestingValue(element));
+        return getNestingValue(element).equals(FORALL) || getNestingValue(element).equals(FORALL_POS);
     }
 
     /**
@@ -185,7 +185,7 @@ public class NestingAspect extends AbstractAspect {
      * and {@link #checkEdge(AspectEdge, AspectGraph)}).
      */
     public static boolean isPositive(AspectElement element) {
-        return FORALL_POS.equals(getNestingValue(element));
+        return getNestingValue(element).equals(FORALL_POS);
     }
     
 	/**
@@ -194,7 +194,7 @@ public class NestingAspect extends AbstractAspect {
 	 * and {@link #checkEdge(AspectEdge, AspectGraph)}).
 	 */
 	public static boolean isExists(AspectElement element) {
-		return EXISTS.equals(getNestingValue(element));
+		return getNestingValue(element).equals(EXISTS);
 	}
 	
 	/** 
@@ -243,7 +243,7 @@ public class NestingAspect extends AbstractAspect {
 		try {
 			EXISTS = instance.addValue(EXISTS_NAME);
             FORALL = instance.addValue(FORALL_NAME);
-            FORALL_POS = instance.addNodeValue(FORALL_POS_NAME);
+            FORALL_POS = instance.addValue(FORALL_POS_NAME);
 			NESTED = instance.addEdgeValue(NESTED_NAME);
 			EXISTS.setSourceToEdge(NESTED);
 			EXISTS.setTargetToEdge(NESTED);

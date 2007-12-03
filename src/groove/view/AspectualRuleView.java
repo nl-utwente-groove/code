@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.33 2007-11-26 21:17:34 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.32 2007-11-19 12:19:18 rensink Exp $
  */
 
 package groove.view;
@@ -83,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.32 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -822,7 +822,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @see #toRule()
 	 */
 	protected MergeEmbargo createMergeEmbargo(Graph context, Node[] embargoNodes) {
-	    return new MergeEmbargo(context, embargoNodes, getProperties());
+	    return new MergeEmbargo(context, embargoNodes, properties);
 	}
 
 	/**
@@ -833,7 +833,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @see #toRule()
 	 */
 	protected EdgeEmbargo createEdgeEmbargo(Graph context, Edge embargoEdge) {
-	    return new EdgeEmbargo(context, embargoEdge, getProperties());
+	    return new EdgeEmbargo(context, embargoEdge, properties);
 	}
 
 	/**
@@ -843,7 +843,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @see #toRule()
 	 */
 	protected NotCondition createNAC(Graph context) {
-	    return new NotCondition(context.newGraph(), getProperties());
+	    return new NotCondition(context.newGraph(), properties);
 	}
 
 	/**
@@ -854,7 +854,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @return the fresh rule created by the factory
 	 */
 	protected Rule createRule(Morphism ruleMorphism, RuleNameLabel name, int priority) throws FormatException {
-	    return new SPORule(ruleMorphism, name, priority, getProperties());
+	    return new SPORule(ruleMorphism, name, priority, properties);
 	}
 
 	/**
@@ -864,7 +864,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @return the fresh rule created by the factory
 	 */
 	protected SPORule createRule(Morphism ruleMorphism, NodeEdgeMap rootMap, NodeEdgeMap coRootMap, RuleNameLabel name) throws FormatException {
-	    return new SPORule(ruleMorphism, rootMap, coRootMap, name, getProperties());
+	    return new SPORule(ruleMorphism, rootMap, coRootMap, name, properties);
 	}
 
 	/**
@@ -875,7 +875,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @return the fresh condition
 	 */
 	protected ForallCondition createForall(Graph target, NodeEdgeMap rootMap, RuleNameLabel name) throws FormatException {
-	    return new ForallCondition(target, rootMap, name, getProperties());
+	    return new ForallCondition(target, rootMap, name, properties);
 	}
 
 	/**
@@ -885,7 +885,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	 * @return the fresh condition
 	 */
 	protected NotCondition createNeg(Graph target, NodeEdgeMap rootMap) throws FormatException {
-	    return new NotCondition(target, rootMap, getProperties());
+	    return new NotCondition(target, rootMap, properties);
 	}
 
 	/**

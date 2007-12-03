@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Property.java,v 1.7 2007-11-28 15:37:41 iovka Exp $
+ * $Id: Property.java,v 1.6 2007-09-04 20:59:34 rensink Exp $
  */
 package groove.calc;
 
@@ -128,39 +128,4 @@ abstract public class Property<S> {
 		/** The property description. */
 		static private final String description = String.format("%s or %s", trueString, falseString);
 	}
-	
-	/**
-	 * Property subclass that tests whether a given string represents a postive (or zero)
-	 * integer.
-	 * @author Iovka Boneva
-	 * @version $Revision $
-	 */
-	static public class IsPositiveInteger extends Property<String> {
-		/** 
-		 * Constructs an instance with a flag to indicate if the empty
-		 * string should be approved.
-		 * @param emptyOk if <code>true</code>, the empty string is approved.
-		 */
-		public IsPositiveInteger(String comment, boolean emptyOk) {
-			super(description, comment);
-			this.emptyOk = emptyOk;
-		}
-		
-		/** A value is only correct if it is empty, or equals <code>true</code> or <code>false</code>. */
-		@Override
-		public boolean isSatisfied(String value) {
-			try {
-				int i = Integer.parseInt(value);
-				return i >= 0;
-			} catch (NumberFormatException e) {
-				return false;
-			}
-		}
-		
-		/** Flag indicating if the empty string is approved. */
-		private final boolean emptyOk;
-		
-		static private final String description = " a positive number";
-	}
-	
 }
