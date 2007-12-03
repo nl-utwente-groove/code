@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrStateGenerator.java,v 1.1 2007-11-28 15:35:50 iovka Exp $
+ * $Id: AbstrStateGenerator.java,v 1.2 2007-12-03 09:42:01 iovka Exp $
  */
 package groove.abs.lts;
 
@@ -87,7 +87,7 @@ public class AbstrStateGenerator extends StateGenerator {
 				ConcretePart.Typing typing = new ConcretePart.Typing() {
 					public GraphPattern typeOf(Node n) { return ag.typeOf(match.getNode(n)); }
 				};
-				Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, this.getGTS().getFamily(), this.options.SYMMETRY_REDUCTION);
+				Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, this.getGTS().getFamily(), this.options.SYMMETRY_REDUCTION, getGTS().getRecord());
 				// TODO nothing allows to determine whether a given concrete part is indeed possible (w.r.t. multiplicities)
 
 				// For all concrete part, generate the set of materialisations and transform
@@ -100,7 +100,7 @@ public class AbstrStateGenerator extends StateGenerator {
 					RuleEvent transitionEvent = new SPOEvent((SPORule) rule, match, this.getGTS().getRecord(), false);
 					RuleApplication appl = new DefaultApplication(transfEvent, cp.graph());
 					
-					Collection<AbstrGraph> transformations = smat.transform(appl);
+					Collection<AbstrGraph> transformations = smat.transform(appl, this.getGTS().getRecord());
 					
 					for (AbstrGraph transf : transformations) {
 						AbstrGraphState target = new AbstrGraphStateImpl(transf);
