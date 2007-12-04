@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.33 2007-11-26 21:17:34 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.34 2007-12-04 06:41:41 rensink Exp $
  */
 
 package groove.view;
@@ -83,7 +83,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.34 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -535,7 +535,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			}
 			if (RuleAspect.inRHS(node)) {
 				rhs.addNode(nodeImage);
-				assert existential || RuleAspect.inLHS(node);
+				// we may have creator nodes on universal levels, if they were actually created
+				// on the level above 
+				assert existential || RuleAspect.inLHS(node) || !nodeEntry.getValue() : String.format("Creator node %s should be existential", node);
 				if (RuleAspect.inLHS(node)) {
 					ruleMorph.putNode(nodeImage, nodeImage);
 				} else if (!nodeEntry.getValue()) {
@@ -1290,7 +1292,7 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /** Graph factory used for building a graph view of this rule graph.*/
     static private final GraphFactory graphFactory = GraphFactory.getInstance();
     /** Debug flag for creating rules. */
-    static private final boolean TO_RULE_DEBUG = false;
+    static private final boolean TO_RULE_DEBUG = true;
     
     /** 
      * Class encoding an index in a 
