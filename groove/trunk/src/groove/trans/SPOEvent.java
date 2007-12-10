@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.49 2007-11-02 08:42:36 rensink Exp $
+ * $Id: SPOEvent.java,v 1.50 2007-12-10 12:00:25 rensink Exp $
  */
 package groove.trans;
 
@@ -49,7 +49,7 @@ import java.util.Set;
  * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.49 $ $Date: 2007-11-02 08:42:36 $
+ * @version $Revision: 1.50 $ $Date: 2007-12-10 12:00:25 $
  */
 final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCache> {
     /**
@@ -829,14 +829,19 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 			final VarNodeEdgeMap result = createVarMap();
 			VarNodeEdgeMap anchorMap = getAnchorMap();
 			NodeEdgeMap mergeMap = getRule().hasMergers() ? getMergeMap() : null;
+			Set<Node> erasedNodes = getErasedNodes();
 			// add reader node images
 			for (Map.Entry<Node,Node> creatorEntry: getRule().getCreatorMap().nodeMap().entrySet()) {
 				Node creatorKey = creatorEntry.getKey();
 				Node creatorValue = anchorMap.getNode(creatorEntry.getValue());
 				if (mergeMap != null) {
 					creatorValue = mergeMap.getNode(creatorValue);
+				} else if (erasedNodes.contains(creatorValue)) {
+				    creatorValue = null;
 				}
-				result.putNode(creatorKey, creatorValue);
+				if (creatorValue != null) {
+				    result.putNode(creatorKey, creatorValue);
+				}
 			}
 			int coRootIx = 0;
 			for (Map.Entry<Node,Node> coRootEntry: getRule().getCoRootMap().nodeMap().entrySet()) {
