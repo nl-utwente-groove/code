@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NewDeltaGraph.java,v 1.8 2007-11-05 14:16:22 rensink Exp $
+ * $Id: NewDeltaGraph.java,v 1.9 2007-12-10 12:00:31 rensink Exp $
  */
 package groove.graph;
 
@@ -559,7 +559,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
         /** Removes the node from the node set and the node-edge map. */
         public boolean removeNode(Node elem) {
         	DefaultEdgeSet edges = nodeEdgeMap.remove(elem);
-        	assert edges.isEmpty();
+        	assert edges.isEmpty() : String.format("Removed node %s still has incident edges %s", elem, edges);
         	freshNodeKeys.remove(elem);
             return true;
         }
