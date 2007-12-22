@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultBooleanAlgebra.java,v 1.6 2007-07-21 20:07:43 rensink Exp $
+ * $Id: DefaultBooleanAlgebra.java,v 1.7 2007-12-22 10:11:21 kastenberg Exp $
  */
 package groove.algebra;
 
@@ -24,7 +24,7 @@ import java.util.List;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $ $Date: 2007-07-21 20:07:43 $
+ * @version $Revision: 1.7 $ $Date: 2007-12-22 10:11:21 $
  */
 public class DefaultBooleanAlgebra extends Algebra {
     /**
@@ -85,9 +85,9 @@ public class DefaultBooleanAlgebra extends Algebra {
     /** Description of the default boolean algebra. */
     public static final String DESCRIPTION = "Default Boolean Algebra";
     /** boolean AND-operator */
-	public static final String AND = "and";
+	public static final String AND_SYMBOL = "and";
 	/** boolean OR-operator */
-	public static final String OR = "or";
+	public static final String OR_SYMBOL = "or";
 	/** boolean NOT-operator */
 	public static final String NOT = "not";
 
@@ -140,7 +140,7 @@ public class DefaultBooleanAlgebra extends Algebra {
      */
     protected static class BooleanAndOperation extends BoolBool2BoolOperation {
         private BooleanAndOperation() {
-            super(AND);
+            super(AND_SYMBOL);
         }
 
         @Override
@@ -166,7 +166,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 	protected static class BooleanOrOperation extends BoolBool2BoolOperation {
 		/** Constructor for the singleton instance of this class. */
 		private BooleanOrOperation() {
-			super(OR);
+			super(OR_SYMBOL);
 		}
 
         @Override
