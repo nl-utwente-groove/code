@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultStringAlgebra.java,v 1.9 2007-11-19 12:19:32 rensink Exp $
+ * $Id: DefaultStringAlgebra.java,v 1.10 2007-12-22 10:11:21 kastenberg Exp $
  */
 package groove.algebra;
 
@@ -27,7 +27,7 @@ import java.util.List;
  * on strings.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.9 $ $Date: 2007-11-19 12:19:32 $
+ * @version $Revision: 1.10 $ $Date: 2007-12-22 10:11:21 $
  */
 public class DefaultStringAlgebra extends Algebra {	/**
 	 * Constructor.
@@ -79,9 +79,9 @@ public class DefaultStringAlgebra extends Algebra {	/**
     /** The quote character used for strings. */
     static public final char QUOTE = ExprParser.DOUBLE_QUOTE_CHAR;
     /** Name of the string concatenation operation */
-    public static final String CONCAT = "concat";
+    public static final String CONCAT_SYMBOL = "concat";
     /** Name of the string equals operation */
-    public static final String EQUALS = "eq";
+    public static final String EQ_SYMBOL = "eq";
 
 	/** Singleton instance of this class. */
     private final static DefaultStringAlgebra instance;
@@ -147,7 +147,7 @@ public class DefaultStringAlgebra extends Algebra {	/**
 		private static ConcatOperation operation = null;
 
 		private ConcatOperation() {
-			super(DefaultStringAlgebra.getInstance(), CONCAT, 2);
+			super(DefaultStringAlgebra.getInstance(), CONCAT_SYMBOL, 2);
 		}
 
 		/**
@@ -176,7 +176,7 @@ public class DefaultStringAlgebra extends Algebra {	/**
 		private static EqualsOperation operation = null;
 
 		private EqualsOperation() {
-			super(DefaultStringAlgebra.getInstance(), EQUALS, 2, DefaultBooleanAlgebra.getInstance());
+			super(DefaultStringAlgebra.getInstance(), EQ_SYMBOL, 2, DefaultBooleanAlgebra.getInstance());
 		}
 
 		/**
