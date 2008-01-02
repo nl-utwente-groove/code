@@ -48,8 +48,8 @@ public class AlgebraTest extends TestCase {
 		sAlgebra = algebraGraph.getAlgebra(AlgebraConstants.STRING);
 
 		try {
-			bAndOper = bAlgebra.getOperation(DefaultBooleanAlgebra.AND);
-			bOrOper = bAlgebra.getOperation(DefaultBooleanAlgebra.OR);
+			bAndOper = bAlgebra.getOperation(DefaultBooleanAlgebra.AND_SYMBOL);
+			bOrOper = bAlgebra.getOperation(DefaultBooleanAlgebra.OR_SYMBOL);
 			bTrueConst = (Constant) bAlgebra.getOperation(DefaultBooleanAlgebra.TRUE);
 			bFalseConst = (Constant) bAlgebra.getOperation(DefaultBooleanAlgebra.FALSE);
 		}
