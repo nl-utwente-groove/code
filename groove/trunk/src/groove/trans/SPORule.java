@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.47 2007-11-29 12:52:08 rensink Exp $
+ * $Id: SPORule.java,v 1.48 2008-01-04 17:07:35 rensink Exp $
  */
 package groove.trans;
 
@@ -56,7 +56,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.47 $
+ * @version $Revision: 1.48 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -475,23 +475,6 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 					rhsNac.setFixed();
 					addSubCondition(rhsNac);
 				}
-			}
-			// test if product nodes have the required arguments
-			for (Node node: lhs().nodeSet()) {
-			    if (node instanceof ProductNode) {
-			        ProductNode product = (ProductNode) node;
-			        int arity = product.arity();
-			        BitSet arguments = new BitSet(arity);
-			        for (Edge edge: lhs().outEdgeSet(product)) {
-			            if (edge instanceof AlgebraEdge) {
-			                arguments.set(((AlgebraEdge) edge).getNumber());
-			            }
-			        }
-			        if (arguments.cardinality() != arity) {
-			            arguments.flip(0, arity);
-			            throw new FormatException("Arguments edges %s of product node %s missing in sub-rule", arguments, product);
-			        }
-			    }
 			}
 			super.setFixed();
 		}
