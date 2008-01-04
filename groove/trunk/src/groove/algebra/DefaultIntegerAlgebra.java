@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIntegerAlgebra.java,v 1.8 2007-11-29 12:43:46 rensink Exp $
+ * $Id: DefaultIntegerAlgebra.java,v 1.9 2008-01-04 17:23:36 rensink Exp $
  */
 
 package groove.algebra;
@@ -25,7 +25,7 @@ import java.util.List;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.8 $ $Date: 2007-11-29 12:43:46 $
+ * @version $Revision: 1.9 $ $Date: 2008-01-04 17:23:36 $
  */
 public class DefaultIntegerAlgebra extends Algebra {
 	/**
@@ -170,6 +170,10 @@ public class DefaultIntegerAlgebra extends Algebra {
      */
     public static final String EQ_SYMBOL = "eq";
     /**
+     * Integer-to-string coercion operation symbol.
+     */
+    public static final String TO_STRING_SYMBOL = "toString";
+    /**
      * Integer addition operation.
      */
     private static final Operation ADD_OPERATION = new IntInt2IntOperation(ADD_SYMBOL) {
@@ -279,6 +283,16 @@ public class DefaultIntegerAlgebra extends Algebra {
         }
     };
 
+    /**
+     * Integer-to-string coercion operation.
+     */
+    private static final Operation TO_STRING_OPERATION = new Int2StringOperation(TO_STRING_SYMBOL) {
+        @Override
+        String apply(int arg1) {
+            return ""+arg1;
+        }
+    };
+
 	static {
 		instance.addOperation(ADD_OPERATION);
 		instance.addOperation(SUB_OPERATION);
@@ -292,6 +306,7 @@ public class DefaultIntegerAlgebra extends Algebra {
 		instance.addOperation(GT_OPERATION);
 		instance.addOperation(GE_OPERATION);
 		instance.addOperation(EQ_OPERATION);
+        instance.addOperation(TO_STRING_OPERATION);
 	}
     
 	/**
@@ -362,6 +377,29 @@ public class DefaultIntegerAlgebra extends Algebra {
         
         /** Applies the function encapsulated in this interface. */
         abstract boolean apply(int arg1, int arg2);
+    }
+    /** Binary integer operation of signature <code>int -> string</code>. */
+    private static abstract class Int2StringOperation extends DefaultOperation {
+        /** Constructs an operation in the current algebra, with arity 2 and a given symbol. */
+        protected Int2StringOperation(String symbol) {
+            super(getInstance(), symbol, 1, DefaultStringAlgebra.getInstance());
+        }
+
+        /** 
+         * Performs a binary operation of type <code>int, int -> bool</code>. 
+         * @throws IllegalArgumentException if the number or types of operands are incorrect.
+         */
+        public Object apply(List<Object> args) {
+            try {
+                Integer arg0 = (Integer) args.get(0);
+                return apply(arg0);
+            } catch (ClassCastException exc) {
+                throw new IllegalArgumentException(exc);
+            }
+        }
+        
+        /** Applies the function encapsulated in this interface. */
+        abstract String apply(int arg1);
     }
 //    
 //	/**
