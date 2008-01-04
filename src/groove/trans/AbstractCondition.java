@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.13 2007-11-29 12:52:09 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.14 2008-01-04 17:07:35 rensink Exp $
  */
 package groove.trans;
 
@@ -45,7 +45,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
 	/**
@@ -65,7 +65,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	 */
 	protected AbstractCondition(Graph target, NodeEdgeMap rootMap,
 			NameLabel name, SystemProperties properties) {
-		this.rootMap = rootMap;
+		this.rootMap = rootMap == null ? new NodeEdgeHashMap() : rootMap;
 		this.target = target;
 		this.properties = properties;
 		this.name = name;
@@ -96,10 +96,6 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 //	}
 
 	public NodeEdgeMap getRootMap() {
-		if (rootMap == null) {
-			testFixed(true);
-			rootMap = new NodeEdgeHashMap();
-		}
 		return rootMap;
 	}
 
@@ -473,7 +469,7 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	 * The pattern map of this condition, i.e., the element map from the context
 	 * graph to the target graph.
 	 */
-	private NodeEdgeMap rootMap;
+	private final NodeEdgeMap rootMap;
 
 	/** Set of all variables occurring in root elements. */
 	private Set<String> rootVars;
