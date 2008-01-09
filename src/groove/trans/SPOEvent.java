@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.50 2007-12-10 12:00:25 rensink Exp $
+ * $Id: SPOEvent.java,v 1.51 2008-01-09 16:22:40 rensink Exp $
  */
 package groove.trans;
 
@@ -49,7 +49,7 @@ import java.util.Set;
  * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.50 $ $Date: 2007-12-10 12:00:25 $
+ * @version $Revision: 1.51 $ $Date: 2008-01-09 16:22:40 $
  */
 final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCache> {
     /**
@@ -89,6 +89,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 				int coRootIx = 0;
 				for (Node coRoot : getRule().getCoRootMap().nodeMap().keySet()) {
 					coRootImage[coRootIx] = coContextMap.getNode(coRoot);
+					assert coRootImage[coRootIx] != null : String.format("Co-context map %s does not contain image for co-root %s", coContextMap, coRoot);
 					coRootIx++;
 				}
 			}
