@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific
 // language governing permissions and limitations under the License.
 /*
- * $Id: Imager.java,v 1.16 2007-11-02 08:42:39 rensink Exp $
+ * $Id: Imager.java,v 1.17 2008-01-09 16:21:36 rensink Exp $
  */
 package groove.io;
 
@@ -63,7 +63,7 @@ import javax.swing.JTextField;
 /**
  * Application to create jpeg or gif files for a state or rule graph, or a directory of them.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class Imager extends CommandLineTool {
     /**
@@ -119,8 +119,8 @@ public class Imager extends CommandLineTool {
         // but ensure:
         // --> output-file exists or can be created
         if (inFile.isDirectory()) {
+            File[] files = inFile.listFiles();
             if (outFile.exists() || outFile.mkdir()) {
-                File[] files = inFile.listFiles();
                 for (int i = 0; i < files.length; i++) {
                     makeImage(files[i], new File(outFile, files[i].getName()));
                 }
