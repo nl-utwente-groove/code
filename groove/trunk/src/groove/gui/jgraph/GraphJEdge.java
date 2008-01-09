@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJEdge.java,v 1.15 2007-11-19 12:18:46 rensink Exp $
+ * $Id: GraphJEdge.java,v 1.16 2008-01-09 16:16:06 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -32,6 +32,8 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+
+import org.jgraph.graph.GraphConstants;
 
 /**
  * Extends DefaultEdge to store a collection of graph Edges. The graph edges are stored as a Set in
@@ -62,9 +64,41 @@ public class GraphJEdge extends JEdge implements GraphJCell {
      */
     @Override
     public boolean isVisible() {
-        return super.isVisible() && !isFiltered();
+        return super.isVisible() && !isSourceLabel() && !isFiltered();
     }
     
+    /** 
+     * Indicates if this edge is shown as a label on its source node,
+     * instead of an explicit edge.
+     * This implementation returns <code>true</code> if either {@link #isSelfEdgeSourceLabel()}
+     * or {@link #isDataEdgeSourceLabel()} return <code>true</code>.
+     */
+    boolean isSourceLabel() {
+    	return isSelfEdgeSourceLabel() || isDataEdgeSourceLabel();
+    }
+    
+    /**
+     * Indicates if this edge is a self-edge that can be shown as a label on
+     * its source vertex.
+     * This is the case if the source and target of the edge coincide, and
+     * there are no explicit points stored for the edge.
+     * Callback method from {@link #isSourceLabel()}.
+     */
+    boolean isSelfEdgeSourceLabel() {
+    	return getSource() == getTarget() && GraphConstants.getPoints(getAttributes()) == null;
+    }
+
+    /** 
+     * Indicates if this edge has a value node target and can be
+     * used as a label on its source node.
+     * This is the case if {@link GraphJModel#isShowValueNodes()} holds, and
+     * {@link GraphJVertex#hasValue()} holds for the target node.
+     * Callback method from {@link #isSourceLabel()}.
+     */
+    boolean isDataEdgeSourceLabel() {
+    	return !jModel.isShowValueNodes() && getTargetVertex().hasValue();
+    }
+
     /** Indicates if this edge is filtered (and therefore invisible). */
     boolean isFiltered() {
         boolean result = true;

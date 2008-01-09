@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.24 2007-11-28 16:08:18 iovka Exp $
+ * $Id: GraphJVertex.java,v 1.25 2008-01-09 16:16:06 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -99,20 +99,13 @@ public class GraphJVertex extends JVertex implements GraphJCell {
     
     @Override
     public boolean isVisible() {
-        if (!hasValue() || jModel.isShowValueNodes()) {
-            boolean result = false;
-            Iterator<String> listLabelIter = getListLabels().iterator();
-            while (!result && listLabelIter.hasNext()) {
-                result = !jModel.isFiltering(listLabelIter.next());
-            }
-            Iterator<?> jEdgeIter = getPort().edges();
-            while (!result && jEdgeIter.hasNext()) {
-                result = !((GraphJEdge) jEdgeIter.next()).isFiltered();
-            }
-            return result;
-        } else {
-            return false;
+        boolean result = !hasValue() || jModel.isShowValueNodes();
+        Iterator<?> jEdgeIter = getPort().edges();
+        while (!result && jEdgeIter.hasNext()) {
+        	GraphJEdge jEdge = (GraphJEdge) jEdgeIter.next(); 
+            result = jEdge.getSource() == this || !jEdge.isSourceLabel();
         }
+        return result;
     }
     
     /** Constant nodes are only listable when data nodes are shown. */
@@ -254,7 +247,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 		if (!jModel.isShowValueNodes()) {
 			for (Object edgeObject : getPort().getEdges()) {
 				GraphJEdge jEdge = (GraphJEdge) edgeObject;
-				if (jEdge.getSourceVertex() == this && jEdge.getTargetVertex().hasValue()) {
+				if (jEdge.getSourceVertex() == this && jEdge.isDataEdgeSourceLabel()) {
 					for (Edge edge : jEdge.getEdges()) {
 						result.add(edge);
 					}
@@ -263,6 +256,15 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 		}
 		return result;
 	}
+//	
+//	/** 
+//	 * Tests if a given data edge (i.e., an edge with a value node as target)
+//	 * is allowed as node label.
+//	 * This implementation returns <code>true</code> always.
+//	 */
+//	boolean isAllowedNodeLabel(Edge dataEdge) {
+//		return !jModel.isShowValueNodes();
+//	}
 
 	/**
 	 * This implementation forwards the query to the underlying graph node.
@@ -313,7 +315,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */
     public boolean addSelfEdge(Edge edge) {
-        if (!vertexLabelled) {
+        if (!vertexLabelled && edge.source() == edge.opposite()) {
             getUserObject().add(edge);
             return true;
         } else {
