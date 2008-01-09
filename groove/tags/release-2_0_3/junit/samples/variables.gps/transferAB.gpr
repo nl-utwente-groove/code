@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="graph" role="graph" edgeids="false" edgemode="directed">
+        <node id="n44"/>
+        <node id="n43"/>
+        <node id="n42"/>
+        <edge from="n44" to="n44">
+            <attr name="label">
+                <string>not:?x</string>
+            </attr>
+        </edge>
+        <edge from="n44" to="n44">
+            <attr name="label">
+                <string>new:?x</string>
+            </attr>
+        </edge>
+        <edge from="n44" to="n44">
+            <attr name="label">
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge from="n43" to="n43">
+            <attr name="label">
+                <string>C</string>
+            </attr>
+        </edge>
+        <edge from="n42" to="n43">
+            <attr name="label">
+                <string>del:?x</string>
+            </attr>
+        </edge>
+        <edge from="n42" to="n44">
+            <attr name="label">
+                <string>new:transfer</string>
+            </attr>
+        </edge>
+        <edge from="n42" to="n42">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
