@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdge.java,v 1.12 2007-07-21 20:07:53 rensink Exp $
+ * $Id: JEdge.java,v 1.13 2008-01-09 16:17:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -31,7 +31,7 @@ import org.jgraph.graph.DefaultPort;
  * comma-separated list, since the edge view cannot handle
  * multiline labels.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 abstract public class JEdge extends DefaultEdge implements JCell {
     /**
@@ -83,7 +83,7 @@ abstract public class JEdge extends DefaultEdge implements JCell {
 		return target == null ? null : (JVertex) target.getParent();
     }
     
-    /** A j-edge is visible if its source and target nodes are visible. */
+    /** A j-edge is visible if it is not a source label, and its source and target nodes are visible. */
 	public boolean isVisible() {
 		JVertex sourceVertex = getSourceVertex();
 		if (sourceVertex == null) {
