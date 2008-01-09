@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.32 2007-11-19 12:18:46 rensink Exp $
+ * $Id: AspectJModel.java,v 1.33 2008-01-09 16:17:49 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -69,7 +69,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.32 $
+ * @version $Revision: 1.33 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -348,21 +348,21 @@ public class AspectJModel extends GraphJModel {
             }
             return res;
 		}
-
-		/**
-         * Returns <tt>true</tt> only if the role of the edge to be added
-         * equals the role of this j-vertex, and the superclass is also willing.
-         * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
-         */
-        @Override
-        public boolean addSelfEdge(Edge edge) {
-            AspectValue edgeRole = role((AspectEdge) edge);
-            if (edgeRole == null ? role == null : edgeRole.equals(role)) {
-                return super.addSelfEdge(edge);
-            } else {
-                return false;
-            }
-        }
+//
+//		/**
+//         * Returns <tt>true</tt> only if the role of the edge to be added
+//         * equals the role of this j-vertex, and the superclass is also willing.
+//         * @require <tt>edge instanceof RuleGraph.RuleEdge</tt>
+//         */
+//        @Override
+//        public boolean addSelfEdge(Edge edge) {
+//            AspectValue edgeRole = role((AspectEdge) edge);
+//            if (isAllowedNodeLabel((AspectEdge) edge)) {
+//                return super.addSelfEdge(edge);
+//            } else {
+//                return false;
+//            }
+//        }
         
         /** Adds a quantifier, if the nesting aspect justifies this. */
 		@Override
@@ -374,6 +374,26 @@ public class AspectJModel extends GraphJModel {
 			}
 			return result;
 		}
+//
+//		/** 
+//		 * This implementation tests if rule role and nesting label of
+//		 * the edge coincide with those of the node.
+//		 */
+//		@Override
+//		boolean isAllowedNodeLabel(Edge dataEdge) {
+//			boolean result;
+//			// test for equal rule roles
+//			AspectValue edgeRole = RuleAspect.getRuleValue((AspectEdge) dataEdge);
+//			AspectValue sourceRole = RuleAspect.getRuleValue(getNode());
+//			result = edgeRole == null ? sourceRole == null : edgeRole.equals(sourceRole);
+//			// test for equal nesting level
+//			if (result) {
+//				AspectValue edgeNesting = NestingAspect.getNestingValue((AspectEdge) dataEdge);
+//				AspectValue sourceNesting = NestingAspect.getNestingValue(getNode());
+//				result = edgeNesting == null ? sourceNesting == null : edgeNesting.equals(sourceNesting);
+//			}
+//			return result;
+//		}
 
 		/** Returns an HTML-formatted line describing a given quantifier value. */
 		private StringBuilder getQuantifierLine(NamedAspectValue nesting) {
@@ -510,7 +530,19 @@ public class AspectJModel extends GraphJModel {
 			return (AspectEdge) super.getEdge();
 		}
         
+		/** Specialises the return type. */
         @Override
+		public AspectNode getSourceNode() {
+			return (AspectNode) super.getSourceNode();
+		}
+
+		/** Specialises the return type. */
+		@Override
+		public AspectNode getTargetNode() {
+			return (AspectNode) super.getTargetNode();
+		}
+
+		@Override
 		Edge getActualEdge() {
 			return getModelEdge(getEdge());
 		}
@@ -587,6 +619,13 @@ public class AspectJModel extends GraphJModel {
 			return super.isListable() && RuleAspect.inRule(getEdge());
 		}
 		
+		
+		@Override
+		boolean isDataEdgeSourceLabel() {
+			return super.isDataEdgeSourceLabel() && getEdge().getAspectMap().equals(getSourceNode().getAspectMap());
+		}
+
+
 		private final AspectValue role;
 		
 		/** Separator between level name and edge label. */
