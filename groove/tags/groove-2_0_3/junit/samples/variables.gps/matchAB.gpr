@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gxl xmlns="http://www.gupro.de/GXL/gxl-1.0.dtd">
+    <graph id="graph" role="graph" edgeids="false" edgemode="directed">
+        <node id="n28"/>
+        <node id="n29"/>
+        <node id="n30"/>
+        <edge from="n28" to="n30">
+            <attr name="label">
+                <string>new:match</string>
+            </attr>
+        </edge>
+        <edge from="n28" to="n29">
+            <attr name="label">
+                <string>?x</string>
+            </attr>
+        </edge>
+        <edge from="n28" to="n28">
+            <attr name="label">
+                <string>A</string>
+            </attr>
+        </edge>
+        <edge from="n29" to="n29">
+            <attr name="label">
+                <string>C</string>
+            </attr>
+        </edge>
+        <edge from="n30" to="n30">
+            <attr name="label">
+                <string>B</string>
+            </attr>
+        </edge>
+        <edge from="n30" to="n30">
+            <attr name="label">
+                <string>?x</string>
+            </attr>
+        </edge>
+    </graph>
+</gxl>
