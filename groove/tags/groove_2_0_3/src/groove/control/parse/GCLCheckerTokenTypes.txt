@@ -1,0 +1,24 @@
+// $ANTLR 2.7.6 (2005-12-22): gcl.g -> GCLCheckerTokenTypes.txt$
+GCLChecker    // output token vocab name
+ALAP="alap"=4
+WHILE="while"=5
+TRY="try"=6
+ELSE="else"=7
+DO="do"=8
+IF="if"=9
+CHOICE="choice"=10
+OR="or"=11
+PROC="proc"=12
+PROCUSE=13
+PROGRAM=14
+BLOCK=15
+TRUE="true"=16
+LCURLY=17
+RCURLY=18
+IDENTIFIER=19
+LPAREN=20
+RPAREN=21
+SEMICOLON=22
+PLUS=23
+STAR=24
+SHARP=25
