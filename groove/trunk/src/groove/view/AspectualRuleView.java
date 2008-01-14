@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.35 2007-12-10 12:00:32 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.36 2008-01-14 14:40:50 rensink Exp $
  */
 
 package groove.view;
@@ -32,6 +32,7 @@ import groove.graph.Graph;
 import groove.graph.GraphFactory;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
+import groove.graph.MergeMap;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
@@ -83,7 +84,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.35 $
+ * @version $Revision: 1.36 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -513,11 +514,6 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         Set<Edge> nacEdgeSet = new HashSet<Edge>();
         // create the new rhs
         Graph rhs = createGraph();
-        // copy of the node map for the RHS to account for mergers 
-        Map<AspectNode,Node> toRight = new HashMap<AspectNode,Node>();
-        for (Map.Entry<Node,Node> nodeEntry: viewToRuleMap.nodeMap().entrySet()) {
-        	toRight.put((AspectNode) nodeEntry.getKey(), nodeEntry.getValue());
-        }
         // such end nodes are either roots or co-roots of the rule
         NodeEdgeMap rootMap = new NodeEdgeHashMap();
         NodeEdgeMap coRootMap = new NodeEdgeHashMap();
@@ -548,17 +544,25 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 				nacNodeSet.add(nodeImage);
 			}
         }
-        // add merger edges
+        // add mergers
+        // collect mergers in a merge map
+        MergeMap mergers = new MergeMap();
         for (AspectEdge edge: newEdges.keySet()) {
         	if (RuleAspect.isMerger(edge)) {
 				assert existential;
                 // it's a merger; it's bound to be binary
                 assert edge.endCount() == 2 : "Merger edge "+edge+" should be binary";
+                Node mergeSource = viewToRuleMap.getNode(edge.source());
+                Node mergeTarget = viewToRuleMap.getNode(edge.opposite());
+                mergers.putNode(mergeSource, mergeTarget);
                 // existing edges will automatically be redirected
-                rhs.mergeNodes(toRight.get(edge.source()), toRight.get(edge.opposite()));
-                // make sure that edges to be added later also get the correct end nodes
-                toRight.put(edge.source(), toRight.get(edge.opposite()));
+                rhs.mergeNodes(mergeSource, mergers.getNode(mergeTarget));
             }
+        }
+        // copy of the node map for the RHS to account for mergers 
+        Map<AspectNode,Node> toRight = new HashMap<AspectNode,Node>();
+        for (Map.Entry<Node,Node> nodeEntry: viewToRuleMap.nodeMap().entrySet()) {
+            toRight.put((AspectNode) nodeEntry.getKey(), mergers.getNode(nodeEntry.getValue()));
         }
     	try {
     	// now add edges to lhs, rhs and morphism
