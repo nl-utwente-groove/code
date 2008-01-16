@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultStringAlgebra.java,v 1.10 2007-12-22 10:11:21 kastenberg Exp $
+ * $Id: DefaultStringAlgebra.java,v 1.11 2008-01-16 08:40:00 rensink Exp $
  */
 package groove.algebra;
 
@@ -27,7 +27,7 @@ import java.util.List;
  * on strings.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.10 $ $Date: 2007-12-22 10:11:21 $
+ * @version $Revision: 1.11 $ $Date: 2008-01-16 08:40:00 $
  */
 public class DefaultStringAlgebra extends Algebra {	/**
 	 * Constructor.
@@ -76,24 +76,119 @@ public class DefaultStringAlgebra extends Algebra {	/**
     static public final String NAME = Groove.getXMLProperty("label.string.prefix");
     /** Description of the default string algebra. */
     static public final String DESCRIPTION = "Default String Algebra";
+    /** 
+     * Singleton instance of this class.
+     * This declaration needs to be here to solve circular dependencies. 
+     */
+    private final static DefaultStringAlgebra instance = new DefaultStringAlgebra();
+
     /** The quote character used for strings. */
     static public final char QUOTE = ExprParser.DOUBLE_QUOTE_CHAR;
     /** Name of the string concatenation operation */
     public static final String CONCAT_SYMBOL = "concat";
+    /**
+     * Integer less than operation symbol.
+     */
+    public static final String LT_SYMBOL = "lt";
+    /**
+     * Integer less-or-equal operation symbol.
+     */
+    public static final String LE_SYMBOL = "le";
+    /**
+     * Integer greater than operation symbol.
+     */
+    public static final String GT_SYMBOL = "gt";
+    /**
+     * Integer greater-or-equal operation symbol.
+     */
+    public static final String GE_SYMBOL = "ge";
     /** Name of the string equals operation */
     public static final String EQ_SYMBOL = "eq";
 
-	/** Singleton instance of this class. */
-    private final static DefaultStringAlgebra instance;
-
+    /**
+     * String less than operation.
+     */
+    private static final Operation LT_OPERATION = new StringString2BoolOperation(LT_SYMBOL) {
+        @Override
+        boolean apply(String arg1, String arg2) {
+            return arg1.compareTo(arg2) < 0;
+        }
+    };
+    /**
+     * String less-or-equal operation.
+     */
+    private static final Operation LE_OPERATION = new StringString2BoolOperation(LE_SYMBOL) {
+        @Override
+        boolean apply(String arg1, String arg2) {
+            return arg1.compareTo(arg2) <= 0;
+        }
+    };
+    /**
+     * String greater than operation.
+     */
+    private static final Operation GT_OPERATION = new StringString2BoolOperation(GT_SYMBOL) {
+        @Override
+        boolean apply(String arg1, String arg2) {
+            return arg1.compareTo(arg2) > 0;
+        }
+    };
+    
+    /**
+     * String greater-or-equal operation.
+     */
+    private static final Operation GE_OPERATION = new StringString2BoolOperation(GE_SYMBOL) {
+        @Override
+        boolean apply(String arg1, String arg2) {
+            return arg1.compareTo(arg2) >= 0;
+        }
+    };
+    
+    /**
+     * String equals operation.
+     */
+    private static final Operation EQ_OPERATION = new StringString2BoolOperation(EQ_SYMBOL) {
+        @Override
+        boolean apply(String arg1, String arg2) {
+            return arg1.equals(arg2);
+        }
+    };
+    
     static {
-    	instance = new DefaultStringAlgebra();
 //		operConcat = ConcatOperation.getInstance();
 //		operEquals = EqualsOperation.getInstance();
 //		operConcat.set(this, null, -1);
 //		operEquals.set(this, null, -1);
 		instance.addOperation(ConcatOperation.getInstance());
-		instance.addOperation(EqualsOperation.getInstance());
+        instance.addOperation(LT_OPERATION);
+        instance.addOperation(LE_OPERATION);
+        instance.addOperation(GT_OPERATION);
+        instance.addOperation(GE_OPERATION);
+        instance.addOperation(EQ_OPERATION);
+    }
+
+    /** Binary integer operation of signature <code>string, string -> bool</code>. */
+    private static abstract class StringString2BoolOperation extends DefaultOperation {
+        /** Constructs an operation in the current algebra, with arity 2 and a given symbol. */
+        protected StringString2BoolOperation(String symbol) {
+            super(getInstance(), symbol, 2, DefaultBooleanAlgebra.getInstance());
+        }
+
+        /** 
+         * Performs a binary operation of type <code>string, string -> bool</code>. 
+         * @throws IllegalArgumentException if the number or types of operands are incorrect.
+         */
+        public Object apply(List<Object> args) {
+            try {
+                String arg0 = (String) args.get(0);
+                String arg1 = (String) args.get(1);
+                return apply(arg0, arg1);
+            } catch (ClassCastException exc) {
+                throw new IllegalArgumentException(exc);
+            }
+        }
+        
+        /** Applies the function encapsulated in this interface. */
+        abstract boolean apply(String arg1, String arg2);
     }
     
     /** Class implementing string constants. */
@@ -169,33 +264,28 @@ public class DefaultStringAlgebra extends Algebra {	/**
             }
 		}
 	}
-
-	/** Class implementing the string equality operation. */
-	protected static class EqualsOperation extends DefaultOperation {
-	    /** Singleton instance. */
-		private static EqualsOperation operation = null;
-
-		private EqualsOperation() {
-			super(DefaultStringAlgebra.getInstance(), EQ_SYMBOL, 2, DefaultBooleanAlgebra.getInstance());
-		}
-
-		/**
-		 * @return the singleton instance
-		 */
-		public static Operation getInstance() {
-			if (operation == null)
-				operation = new EqualsOperation();
-			return operation;
-		}
-
-		public Object apply(List<Object> args) throws IllegalArgumentException {
-            try {
-                String arg0 = (String) args.get(0);
-                String arg1 = (String) args.get(1);
-                return arg0.equals(arg1);
-            } catch (ClassCastException exc) {
-                throw new IllegalArgumentException(exc);
-            }
-		}
-	}
+//
+//	/** Class implementing the string equality operation. */
+//	protected static class EqualsOperation extends StringString2BoolOperation {
+//		private EqualsOperation() {
+//			super(EQ_SYMBOL);
+//		}
+//
+//		/**
+//		 * @return the singleton instance
+//		 */
+//		public static Operation getInstance() {
+//			if (operation == null)
+//				operation = new EqualsOperation();
+//			return operation;
+//		}
+//
+//		@Override
+//		public boolean apply(String arg0, String arg1) throws IllegalArgumentException {
+//		    return arg0.equals(arg1);
+//		}
+//		
+//        /** Singleton instance. */
+//        private static EqualsOperation operation = null;
+//	}
 }
