@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.77 2008-01-09 16:14:45 rensink Exp $
+ * $Id: Simulator.java,v 1.78 2008-01-21 11:20:31 rensink Exp $
  */
 package groove.gui;
 
@@ -131,7 +131,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.77 $
+ * @version $Revision: 1.78 $
  */
 public class Simulator {
     /**
@@ -2754,7 +2754,7 @@ public class Simulator {
     /**
      * Action for setting the initial state of the LTS as current state.
      * @see GTS#startState()
-     * @see _Simulator#setState(GraphState)
+     * @see Simulator#setState(GraphState)
      */
     private class GotoStartStateAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -2801,7 +2801,7 @@ public class Simulator {
 
     /**
      * Action for loading a new rule system.
-     * @see _Simulator#doLoadGrammar(AspectualViewGps, File, String)
+     * @see Simulator#doLoadGrammar(AspectualViewGps, File, String)
      */
     private class LoadGrammarAction extends AbstractAction {
     	/** Constructs an instance of the action. */
