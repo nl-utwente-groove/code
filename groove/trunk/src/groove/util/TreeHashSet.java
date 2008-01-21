@@ -18,6 +18,7 @@ package groove.util;
 
 import java.util.AbstractSet;
 import java.util.Arrays;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -28,7 +29,7 @@ import java.util.Set;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class TreeHashSet<T> extends AbstractSet<T> {
 	/**
@@ -157,6 +158,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     @Override
 	public void clear() {
     	size = 0;
+        modCount++;
     	// clean the keys and codes arrays
     	Arrays.fill(keys, 0, keyCount, null);
     	Arrays.fill(codes, 0, keyCount, 0);
@@ -182,6 +184,9 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 	public Iterator<T> iterator() {
 		return new Iterator<T>() {
 			public boolean hasNext() {
+			    if (expectedModCount != modCount) {
+			        throw new ConcurrentModificationException();
+			    }
 				Object next = this.next;
 				if (next == null) {
 					if (remainingCount == 0) {
@@ -237,6 +242,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 			 * The number of remaining elements.
 			 */
 			private int remainingCount = size;
+			/** Modifi8cation count at construction time of this iterator. */
+			private int expectedModCount = modCount;
 		};
 	}
 
@@ -651,6 +658,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
 		codes[result] = code;
     	keys[result] = key;
     	size++;
+        modCount++;
     	return result;
     }
     
@@ -663,6 +671,7 @@ public class TreeHashSet<T> extends AbstractSet<T> {
     	codes[keyIx] = freeKeyIx;
     	freeKeyIx = keyIx;
     	size--;
+    	modCount++;
 //    	if (size == 0) {
 //    		clear();
 //    	}
@@ -859,6 +868,8 @@ public class TreeHashSet<T> extends AbstractSet<T> {
      * The strategy to compare keys whose hashcodes are equal.
      */
     private final Equator<T> equator;
+    /** Modification count, for fail-fast iterating. */
+    private int modCount;
     
     /** Returns an equator which calls {@link #equals(Object)} to determine equality. */
     static public <E> Equator<E> equalsEquator() {
