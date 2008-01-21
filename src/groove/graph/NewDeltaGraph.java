@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NewDeltaGraph.java,v 1.9 2007-12-10 12:00:31 rensink Exp $
+ * $Id: NewDeltaGraph.java,v 1.10 2008-01-21 12:56:30 rensink Exp $
  */
 package groove.graph;
 
@@ -140,18 +140,26 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 		if (nodeEdgeMap == null) {
 			initData();
 		}
-		return nodeEdgeMap.keySet();
+		Set<Node> result = nodeEdgeMap.keySet();
+		return copyData ? result : createNodeSet(result);
 	}
 	
 	public Set<DefaultEdge> edgeSet() {
 		if (edgeSet == null) {
 			initData();
 		}
-		return edgeSet;
+		DefaultEdgeSet result = edgeSet;
+		return copyData ? result : createEdgeSet(result);
 	}
-	
+
 	@Override
-	public Map<Label, DefaultEdgeSet> labelEdgeMap(int i) {
+    public Set<DefaultEdge> labelEdgeSet(int arity, Label label) {
+        DefaultEdgeSet result = labelEdgeMap(arity).get(label);
+        return copyData ? result : createEdgeSet(result);
+    }
+
+    @Override
+	protected Map<Label, DefaultEdgeSet> labelEdgeMap(int i) {
 		return getLabelEdgeMaps().get(i);
 	}
 	
@@ -200,7 +208,8 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 		
 	@Override
 	public Set<? extends Edge> edgeSet(Node node) {
-		return nodeEdgeMap().get(node);
+		DefaultEdgeSet result = nodeEdgeMap().get(node);
+		return copyData ? result : createEdgeSet(result);
 	}
 //
 //	/** 
@@ -260,22 +269,21 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	 * Creates a copy of an existing set of edges, or an empty set if the
 	 * given set is <code>null</code>.
 	 */
-	DefaultEdgeSet createEdgeSet(DefaultEdgeSet edgeSet) {
+	DefaultEdgeSet createEdgeSet(Set<DefaultEdge> edgeSet) {
 	    if (edgeSet == null) {
 	        return new DefaultEdgeSet();
+	    } else if (edgeSet instanceof DefaultEdgeSet) {
+	        return new DefaultEdgeSet((DefaultEdgeSet) edgeSet);
 	    } else {
 	        return new DefaultEdgeSet(edgeSet);
 	    }
-//	    EdgeSet result = new TreeHashSet<Edge>();
-//		if (edgeSet != null) {
-//		    result.addAll(edgeSet);
-//		}
-//		return result;
 	}
 	
-	NodeSet createNodeSet(NodeSet nodeSet) {
+	NodeSet createNodeSet(Set<Node> nodeSet) {
 		if (nodeSet == null) {
 			return new NodeSet();
+		} else if (nodeSet instanceof NodeSet) {
+		    return new NodeSet((NodeSet) nodeSet);
 		} else {
 			return new NodeSet(nodeSet);
 		}
