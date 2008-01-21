@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AttributeAspect.java,v 1.18 2007-11-26 21:17:24 rensink Exp $
+ * $Id: AttributeAspect.java,v 1.19 2008-01-21 11:28:05 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -48,7 +48,7 @@ import java.util.Set;
  * Graph aspect dealing with primitive data types (attributes).
  * Relevant information is: the type, and the role of the element.
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class AttributeAspect extends AbstractAspect {
     /** Private constructor to create the singleton instance. */
@@ -106,10 +106,13 @@ public class AttributeAspect extends AbstractAspect {
 			Algebra type = null;
 			for (AspectEdge edge : edges) {
                 if (!NestingAspect.isMetaElement(edge)) {
-                    if (!edge.target().equals(node)) {
-                        throw new FormatException("Outgoing %s-labelled edge on value node %s",
-                                edge, node);
-                    }
+                    // we don't check for outgoing non-algebra edges
+                    // since these may be injectivity constraints
+                    // real outgoing edges can never be matched, but that's a type error
+//                    if (!edge.target().equals(node)) {
+//                        throw new FormatException("Outgoing %s-labelled edge on value node %s",
+//                                edge, node);
+//                    }
                     Operation operation = getOperation(edge);
                     if (operation != null) {
                         Algebra edgeType = operation.getResultType();
@@ -117,7 +120,7 @@ public class AttributeAspect extends AbstractAspect {
                             type = edgeType;
                         } else if (!type.equals(edgeType)) {
                             throw new FormatException(
-                                    "Incompatible types '%s' and '%s' for value node '%s'", type,
+                                    "Incompatible types '%s' and '%s' for value node %s", type,
                                     edgeType, node);
                         }
                     } else if (edge.source().equals(node)) {
