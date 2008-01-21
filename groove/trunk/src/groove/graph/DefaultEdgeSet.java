@@ -1,5 +1,7 @@
 package groove.graph;
 
+import java.util.Set;
+
 import groove.util.TreeHashSet;
 
 /** 
@@ -15,10 +17,16 @@ public class DefaultEdgeSet extends TreeHashSet<DefaultEdge> {
     public DefaultEdgeSet(int capacity) {
         super(capacity, 2, 3);
     }
-    
+
     /** Creates a copy of an existing edge set. */
     public DefaultEdgeSet(DefaultEdgeSet other) {
         super(other);
+    }
+
+    /** Creates a copy of a set of edges. */
+    public DefaultEdgeSet(Set<DefaultEdge> other) {
+        this(other.size());
+        addAll(other);
     }
 
 	@Override
