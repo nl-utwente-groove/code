@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NewDeltaGraph.java,v 1.10 2008-01-21 12:56:30 rensink Exp $
+ * $Id: NewDeltaGraph.java,v 1.11 2008-01-21 14:59:48 rensink Exp $
  */
 package groove.graph;
 
@@ -155,7 +155,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	@Override
     public Set<DefaultEdge> labelEdgeSet(int arity, Label label) {
         DefaultEdgeSet result = labelEdgeMap(arity).get(label);
-        return copyData ? result : createEdgeSet(result);
+        return copyData && result != null ? result : createEdgeSet(result);
     }
 
     @Override
@@ -209,7 +209,7 @@ public class NewDeltaGraph extends AbstractGraph<GraphCache> implements DeltaGra
 	@Override
 	public Set<? extends Edge> edgeSet(Node node) {
 		DefaultEdgeSet result = nodeEdgeMap().get(node);
-		return copyData ? result : createEdgeSet(result);
+		return copyData && result != null ? result : createEdgeSet(result);
 	}
 //
 //	/** 
