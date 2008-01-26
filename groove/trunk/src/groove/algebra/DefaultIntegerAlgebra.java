@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultIntegerAlgebra.java,v 1.9 2008-01-04 17:23:36 rensink Exp $
+ * $Id: DefaultIntegerAlgebra.java,v 1.10 2008-01-26 09:47:32 kastenberg Exp $
  */
 
 package groove.algebra;
@@ -25,7 +25,7 @@ import java.util.List;
  * Default integer algebra, in which natural numbers serve as constants.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.9 $ $Date: 2008-01-04 17:23:36 $
+ * @version $Revision: 1.10 $ $Date: 2008-01-26 09:47:32 $
  */
 public class DefaultIntegerAlgebra extends Algebra {
 	/**
@@ -378,7 +378,7 @@ public class DefaultIntegerAlgebra extends Algebra {
         /** Applies the function encapsulated in this interface. */
         abstract boolean apply(int arg1, int arg2);
     }
-    /** Binary integer operation of signature <code>int -> string</code>. */
+    /** Unary integer operation of signature <code>int -> string</code>. */
     private static abstract class Int2StringOperation extends DefaultOperation {
         /** Constructs an operation in the current algebra, with arity 2 and a given symbol. */
         protected Int2StringOperation(String symbol) {
