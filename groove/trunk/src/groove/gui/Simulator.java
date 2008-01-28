@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.78 2008-01-21 11:20:31 rensink Exp $
+ * $Id: Simulator.java,v 1.79 2008-01-28 13:34:14 iovka Exp $
  */
 package groove.gui;
 
@@ -74,7 +74,6 @@ import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 import groove.view.aspect.AspectGraph;
-
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -131,7 +130,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.78 $
+ * @version $Revision: 1.79 $
  */
 public class Simulator {
     /**
