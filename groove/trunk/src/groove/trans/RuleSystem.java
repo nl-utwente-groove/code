@@ -12,10 +12,12 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.16 2007-09-10 19:13:35 rensink Exp $
+ * $Id: RuleSystem.java,v 1.17 2008-01-30 09:32:35 iovka Exp $
  */
 package groove.trans;
 
+import groove.control.Location;
+import groove.control.StateSet;
 import groove.util.CollectionOfCollections;
 import groove.view.FormatException;
 
@@ -24,10 +26,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
@@ -39,7 +43,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2007-09-10 19:13:35 $
+ * @version $Revision: 1.17 $ $Date: 2008-01-30 09:32:35 $
  * @see NameLabel
  * @see SPORule
  */
@@ -136,6 +140,15 @@ public class RuleSystem {
         return Collections.unmodifiableSortedMap(priorityRuleMap);
     }
 
+    /**
+     * Returns a Set<Rule> Iterator based on the global priorities
+     * 
+     * @return Iterator<Set<Rule>>
+     */
+    public Iterator<Set<Rule>> getRuleSetIter() {
+   		return this.priorityRuleMap.values().iterator();
+    }
+    
     /**
      * Returns an unmodifiable view upon the underlying collection of rules.
      * The result is ordered by descending priority, and within each priority,

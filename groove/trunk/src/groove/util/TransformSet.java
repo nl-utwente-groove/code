@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TransformSet.java,v 1.3 2007-04-22 23:32:25 rensink Exp $
+ * $Id: TransformSet.java,v 1.4 2008-01-30 09:32:11 iovka Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * @see groove.util.TransformIterator
  * @see groove.util.TransformMap
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 abstract public class TransformSet<T,U> extends AbstractSet<U> implements Set<U> {
     /** Constructs a set transforming a given inner set. */

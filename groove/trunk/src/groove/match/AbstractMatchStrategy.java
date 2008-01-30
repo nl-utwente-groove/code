@@ -12,13 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractMatchStrategy.java,v 1.2 2007-10-03 07:23:26 rensink Exp $
+ * $Id: AbstractMatchStrategy.java,v 1.3 2008-01-30 09:33:29 iovka Exp $
  */
 package groove.match;
 
-import groove.calc.Property;
 import groove.graph.Graph;
 import groove.graph.NodeEdgeMap;
+import groove.util.Property;
 
 import java.util.ArrayList;
 import java.util.Collection;

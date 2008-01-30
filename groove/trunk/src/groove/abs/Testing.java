@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Testing.java,v 1.2 2007-12-03 09:42:24 iovka Exp $
+ * $Id: Testing.java,v 1.3 2008-01-30 09:32:23 iovka Exp $
  */
 package groove.abs;
 
@@ -57,8 +57,6 @@ import junit.framework.TestCase;
 
 public class Testing  extends TestCase { 
 
-	private final Abstraction.Options options = new Abstraction.Options();
-	
 	// -----------------------------------------------------------------
 	// GRAPHS AND MATCHINGS
 	//	 -----------------------------------------------------------------
@@ -230,7 +228,8 @@ public class Testing  extends TestCase {
 		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
-		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
+		Abstraction.Parameters options = new Abstraction.Parameters(1,2,10);
+		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), options);
 	
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
@@ -299,7 +298,8 @@ public class Testing  extends TestCase {
 		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
-		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
+		Abstraction.Parameters options = new Abstraction.Parameters(1,1,10);
+		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), options);
 
 		
 		
@@ -385,7 +385,8 @@ public class Testing  extends TestCase {
 		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
-		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
+		Abstraction.Parameters options = new Abstraction.Parameters(2,1,10);
+		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), options);
 
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
@@ -454,7 +455,8 @@ public class Testing  extends TestCase {
 			Toto typing = new Toto(s, match);
 			Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 			for (ConcretePart cp : ext) {
-				SetMaterialisations smat = new SetMaterialisations(cp, s, match, this.options);
+				Abstraction.Parameters options = new Abstraction.Parameters(1,2,10);
+				SetMaterialisations smat = new SetMaterialisations(cp, s, match, options);
 
 				// remap the initial mapping into the concrete part
 				NodeEdgeMap m = new NodeEdgeHashMap();

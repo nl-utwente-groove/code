@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Validator.java,v 1.9 2007-10-10 08:59:46 rensink Exp $
+ * $Id: Validator.java,v 1.10 2008-01-30 09:33:41 iovka Exp $
  */
 package groove.io;
 
@@ -31,7 +31,7 @@ import java.util.List;
 /**
  * Application to check graph and rule file formats.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class Validator {
     /** Prefix for command line options. */

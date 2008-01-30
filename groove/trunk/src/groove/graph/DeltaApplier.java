@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaApplier.java,v 1.3 2007-11-05 14:16:23 rensink Exp $
+ * $Id: DeltaApplier.java,v 1.4 2008-01-30 09:32:57 iovka Exp $
  */
 package groove.graph;
 
@@ -21,7 +21,7 @@ package groove.graph;
  * its {@link DeltaTarget#addNode(Node)} and {@link DeltaTarget#removeNode(Node)}
  * and the corresponding <code>Edge</code> methods multiple times.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface DeltaApplier {
 	/**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JCellContent.java,v 1.2 2007-06-26 15:50:20 rensink Exp $
+ * $Id: JCellContent.java,v 1.3 2008-01-30 09:33:11 iovka Exp $
  */
 package groove.gui.jgraph;
 
@@ -24,7 +24,7 @@ import java.util.TreeSet;
  * be loaded from a {@link String}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 abstract public class JCellContent<T> extends TreeSet<T> {
     /**

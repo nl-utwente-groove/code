@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Exporter.java,v 1.8 2007-08-26 07:24:04 rensink Exp $
+ * $Id: Exporter.java,v 1.9 2008-01-30 09:33:36 iovka Exp $
  */
 package groove.gui;
 
@@ -59,7 +59,7 @@ import net.sf.epsgraphics.EpsGraphics;
 /**
  * Class providing functionality to export a {@link JGraph} to a file in different formats.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  */
 public class Exporter {
     /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrGraphTransitionImpl.java,v 1.2 2007-12-03 08:54:17 rensink Exp $
+ * $Id: AbstrGraphTransitionImpl.java,v 1.3 2008-01-30 09:33:47 iovka Exp $
  */
 package groove.abs.lts;
 
@@ -64,8 +64,9 @@ public class AbstrGraphTransitionImpl extends AbstractBinaryEdge<AbstrGraphState
 	 * @param event
 	 * @param target
 	 */
-	protected AbstrGraphTransitionImpl(AbstrGraphState source, RuleEvent event, AbstrGraphState target) {
+	public AbstrGraphTransitionImpl(AbstrGraphState source, RuleEvent event, AbstrGraphState target) {
 		super(source, event.getLabel(), target);
+		if (true) throw new UnsupportedOperationException();
 		this.event = event;
 		// TODO Auto-generated constructor stub. Complete depending on the needs
 	}

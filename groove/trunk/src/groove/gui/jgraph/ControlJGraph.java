@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlJGraph.java,v 1.2 2007-11-26 08:58:39 fladder Exp $
+ * $Id: ControlJGraph.java,v 1.3 2008-01-30 09:33:13 iovka Exp $
  */
 package groove.gui.jgraph;
 
@@ -64,6 +64,7 @@ public class ControlJGraph extends JGraph {
 						if( edge instanceof ControlShape ) {
 							getSimulator().getCurrentGrammar().getControl().getAutomaton().toggleActive((ControlShape)edge);
 							ControlJGraph.this.getModel().reload();
+							ControlJGraph.this.getLayouter().start(false);
 						}
 					}
 				}

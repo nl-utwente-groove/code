@@ -19,16 +19,15 @@
  */
 package groove.samples;
 
-import java.io.IOException;
-import java.util.Collection;
-
 import groove.calc.DefaultGraphCalculator;
-import groove.calc.DefaultGraphResult;
 import groove.calc.GraphCalculator;
-import groove.calc.GraphResult;
+import groove.lts.GraphState;
 import groove.trans.GraphGrammar;
 import groove.util.Groove;
 import groove.view.FormatException;
+
+import java.io.IOException;
+import java.util.Collection;
 
 /**
  * This class is meant to show an example of how the classes
@@ -62,9 +61,9 @@ public class CalculatorSample {
 			String targetGraphName = args[1];
 			GraphGrammar sample = Groove.loadGrammar(GRAMMAR_NAME, startGraphName).toGrammar();
 			DefaultGraphCalculator calculator = new DefaultGraphCalculator(sample);
-			Collection<GraphResult> result = new DefaultGraphResult(calculator).getAllAfter(RULE_NAME);
+			Collection<GraphState> result = calculator.getAll(RULE_NAME);
 			int index = 0;
-			for (GraphResult element: result) {
+			for (GraphState element: result) {
 				Groove.saveGraph(element.getGraph(), targetGraphName+"-"+index);
 				index++;
 			}

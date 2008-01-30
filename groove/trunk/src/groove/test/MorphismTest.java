@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: MorphismTest.java,v 1.4 2007-09-07 19:13:36 rensink Exp $
+ * $Id: MorphismTest.java,v 1.5 2008-01-30 09:33:08 iovka Exp $
  */
 package groove.test;
 
@@ -26,7 +26,7 @@ import groove.graph.Node;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.4 $ $Date: 2007-09-07 19:13:36 $
+ * @version $Revision: 1.5 $ $Date: 2008-01-30 09:33:08 $
  */
 public class MorphismTest extends TestCase {
     public MorphismTest(String name) {

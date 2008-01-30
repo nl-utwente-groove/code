@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultNAC.java,v 1.9 2007-10-08 00:59:20 rensink Exp $
+ * $Id: DefaultNAC.java,v 1.10 2008-01-30 09:32:36 iovka Exp $
  */
 package groove.trans;
 
@@ -21,7 +21,7 @@ import groove.graph.Graph;
 import groove.graph.Morphism;
 
 /**
- * @version $Revision: 1.9 $ $Date: 2007-10-08 00:59:20 $
+ * @version $Revision: 1.10 $ $Date: 2008-01-30 09:32:36 $
  */
 @Deprecated
 public class DefaultNAC extends NotCondition {

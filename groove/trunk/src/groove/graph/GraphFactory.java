@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphFactory.java,v 1.6 2007-08-26 07:23:43 rensink Exp $
+ * $Id: GraphFactory.java,v 1.7 2008-01-30 09:32:58 iovka Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import groove.view.FormatException;
  * Objects implementing this factory can create instances of
  * <tt>Graph</tt>, <tt>Morphism</tt> and <tt>InjectiveMorphism</tt>.   
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public abstract class GraphFactory {
 	/** Morphism serving as prototype object in the default graph factory. */

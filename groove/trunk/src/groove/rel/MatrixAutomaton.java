@@ -12,11 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MatrixAutomaton.java,v 1.12 2007-11-29 12:48:46 rensink Exp $
+ * $Id: MatrixAutomaton.java,v 1.13 2008-01-30 09:32:26 iovka Exp $
  */
 package groove.rel;
 
-import groove.calc.Property;
 import groove.graph.BinaryEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
@@ -25,6 +24,7 @@ import groove.graph.Element;
 import groove.graph.GraphShape;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.util.Property;
 
 import java.util.ArrayList;
 import java.util.BitSet;
@@ -857,7 +857,8 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
                     }
                 }
             }
-            
+
+
             /** 
              * Constructs a computation for a given key-image pair, without dependent computation.
              * @param keyIndex the key (index in the automaton's node array) for this computation
@@ -1130,7 +1131,7 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             protected boolean isBusy() {
                 return dependents != null;
             }
-            
+
             /** This implementation tests for object equality. */
             @Override
             public boolean equals(Object o) {
@@ -1142,8 +1143,6 @@ public class MatrixAutomaton extends DefaultGraph implements VarAutomaton {
             public int hashCode() {
                 return System.identityHashCode(this);
             }
-
-
 
             /**
              * The collection of dependent sets.

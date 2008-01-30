@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WildcardEdgeSearchItem.java,v 1.12 2007-11-19 12:19:28 rensink Exp $
+ * $Id: WildcardEdgeSearchItem.java,v 1.13 2008-01-30 09:33:29 iovka Exp $
  */
 package groove.match;
 
@@ -59,7 +59,7 @@ class WildcardEdgeSearchItem extends Edge2SearchItem {
     }
     
 	/** The constraint on the wildcard valuation, if any. */
-	private final groove.calc.Property<String> labelConstraint; 
+	private final groove.util.Property<String> labelConstraint; 
     
     /** Record for this type of search item. */
     class WildcardEdgeRecord extends Edge2MultipleRecord {

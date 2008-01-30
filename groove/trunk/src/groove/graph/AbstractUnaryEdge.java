@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractUnaryEdge.java,v 1.8 2007-10-18 14:57:41 rensink Exp $
+ * $Id: AbstractUnaryEdge.java,v 1.9 2008-01-30 09:32:57 iovka Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
 /**
  * Abstract implementation of an (immutable) unary graph edge, consisting of one source node only.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-10-18 14:57:41 $
+ * @version $Revision: 1.9 $ $Date: 2008-01-30 09:32:57 $
  */
 abstract public class AbstractUnaryEdge<N extends Node, L extends Label> extends AbstractEdge<N,L> implements UnaryEdge {
     static {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.14 2007-11-26 21:17:24 rensink Exp $
+ * $Id: NestingAspect.java,v 1.15 2008-01-30 09:31:32 iovka Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.14 $ $Date: 2007-11-26 21:17:24 $
+ * @version 0.1 $Revision: 1.15 $ $Date: 2008-01-30 09:31:32 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**

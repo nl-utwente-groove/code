@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SwingDeltaGraph.java,v 1.12 2007-09-25 22:57:53 rensink Exp $
+ * $Id: SwingDeltaGraph.java,v 1.13 2008-01-30 09:32:58 iovka Exp $
  */
 package groove.graph;
 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SingularIterator.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: SingularIterator.java,v 1.2 2008-01-30 09:32:15 iovka Exp $
  */
 package groove.util;
 
@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 /**
  * Iterator over a single <i>inner</i> object.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class SingularIterator<T> implements Iterator<T> {
     /**

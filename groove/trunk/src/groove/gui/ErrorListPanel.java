@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ErrorListPanel.java,v 1.4 2007-08-26 07:24:04 rensink Exp $
+ * $Id: ErrorListPanel.java,v 1.5 2008-01-30 09:33:36 iovka Exp $
  */
 package groove.gui;
 
@@ -33,7 +33,7 @@ import javax.swing.ScrollPaneConstants;
  * Panel showing a list of error messages.
  * The panel hides itself when the error list is empty.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ErrorListPanel extends JPanel {
 	/**

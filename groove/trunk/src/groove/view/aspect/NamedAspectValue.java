@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NamedAspectValue.java,v 1.2 2007-10-26 07:07:16 rensink Exp $
+ * $Id: NamedAspectValue.java,v 1.3 2008-01-30 09:31:32 iovka Exp $
  */
 package groove.view.aspect;
 

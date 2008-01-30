@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlShape.java,v 1.2 2007-11-26 08:58:11 fladder Exp $
+ * $Id: ControlShape.java,v 1.3 2008-01-30 09:33:24 iovka Exp $
  */
 package groove.control;
 
@@ -29,7 +29,6 @@ import java.util.Set;
 public class ControlShape extends ControlTransition {
 	
 	// can be null
-	private ControlShape parent;
 	private ControlState start;
 	
 	private Set<ControlState> states = new HashSet<ControlState>();
@@ -45,22 +44,6 @@ public class ControlShape extends ControlTransition {
 		super(source, target, label);
 	}
 
-	/**
-	 * returns the parent shape or null
-	 * @return (ControlShape) parent
-	 */
-	public ControlShape getParent() {
-		return this.parent;
-	}
-	
-	/**
-	 * setter method for the parent shape
-	 * @param parent
-	 */
-	public void setParent(ControlShape parent) {
-		this.parent = parent;
-	}
-	
 	/**
 	 * Adds a ControlState to this shape
 	 * @param state
@@ -84,6 +67,15 @@ public class ControlShape extends ControlTransition {
 	public void addTransition(ControlTransition ct) {
 		// source and target need not be in this shape.
 		this.transitions.add(ct);
+	}
+	
+	
+	/**
+	 * Removes a transition;
+	 * @param ct
+	 */
+	public void removeTransition(ControlTransition ct) {
+		this.transitions.remove(ct);
 	}
 	
 	/** 

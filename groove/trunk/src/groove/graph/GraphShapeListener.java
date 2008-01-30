@@ -12,14 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphShapeListener.java,v 1.2 2007-08-26 07:23:40 rensink Exp $
+ * $Id: GraphShapeListener.java,v 1.3 2008-01-30 09:32:58 iovka Exp $
  */
 package groove.graph;
 
 /**
  * Interface for classes that are to be notified of changes in a graph shape.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-08-26 07:23:40 $
+ * @version $Revision: 1.3 $ $Date: 2008-01-30 09:32:58 $
  */
 public interface GraphShapeListener {
     /**

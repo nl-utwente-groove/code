@@ -26,7 +26,7 @@ import groove.trans.RuleMatch;
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public interface GraphTransition extends Transition {
 	/** Overrides the method to specialise the result type. */

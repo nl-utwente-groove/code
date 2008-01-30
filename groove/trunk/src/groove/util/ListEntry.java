@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ListEntry.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: ListEntry.java,v 1.2 2008-01-30 09:32:13 iovka Exp $
  */
 package groove.util;
 
@@ -20,7 +20,7 @@ package groove.util;
  * Node in a linked list. Used for space optimizations instead of arrays.
  * This saves out the array object itself (20 bytes).
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface ListEntry {
     /**

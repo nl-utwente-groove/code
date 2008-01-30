@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectEdge.java,v 1.9 2007-11-19 12:19:14 rensink Exp $
+ * $Id: AspectEdge.java,v 1.10 2008-01-30 09:31:33 iovka Exp $
  */
 package groove.view.aspect;
 
@@ -29,7 +29,7 @@ import java.util.List;
  * Edge enriched with aspect data.
  * Aspect edge labels are interpreted as {@link DefaultLabel}s.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class AspectEdge extends AbstractBinaryEdge<AspectNode,DefaultLabel,AspectNode> implements AspectElement {
 	/**

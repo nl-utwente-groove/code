@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphShape.java,v 1.9 2007-09-25 22:57:53 rensink Exp $
+ * $Id: GraphShape.java,v 1.10 2008-01-30 09:32:53 iovka Exp $
  */
 package groove.graph;
 
@@ -22,7 +22,7 @@ import java.util.Set;
 /**
  * Model of a graph shape, consisting of nodes and labelled edges between them..
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-09-25 22:57:53 $
+ * @version $Revision: 1.10 $ $Date: 2008-01-30 09:32:53 $
  */
 public interface GraphShape extends java.io.Serializable {
     /**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ArrayIterator.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: ArrayIterator.java,v 1.2 2008-01-30 09:32:14 iovka Exp $
  */
 package groove.util;
 
@@ -22,7 +22,7 @@ import java.util.NoSuchElementException;
 /**
  * Iterator over a given fragment of an array.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:58 $
+ * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:14 $
  */
 public class ArrayIterator<T> implements Iterator<T> {
 

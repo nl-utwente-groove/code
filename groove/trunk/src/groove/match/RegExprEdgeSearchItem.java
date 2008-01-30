@@ -1,4 +1,4 @@
-/* $Id: RegExprEdgeSearchItem.java,v 1.14 2007-10-18 14:12:31 rensink Exp $ */
+/* $Id: RegExprEdgeSearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $ */
 package groove.match;
 
 import groove.graph.BinaryEdge;

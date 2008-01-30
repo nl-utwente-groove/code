@@ -12,24 +12,23 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GenerateProgressMonitor.java,v 1.2 2007-03-30 15:50:37 rensink Exp $
+ * $Id: GenerateProgressMonitor.java,v 1.3 2008-01-30 09:32:09 iovka Exp $
  */
 package groove.util;
 
+import groove.explore.ScenarioHandler;
 import groove.graph.Edge;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
-import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
-import groove.lts.explore.BranchingStrategy;
 
 /**
  * Class that implements a visualisation of the progress of a GTS generation process.
  * The monitor should be added as a {@link groove.graph.GraphListener} to the GTS
  * in question.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class GenerateProgressMonitor extends GraphAdapter {
     /**
@@ -44,7 +43,7 @@ public class GenerateProgressMonitor extends GraphAdapter {
      * The GTS is only used to determine how many nodes and edges already exist.
      * @param gts the GTS being explored
      */
-    public GenerateProgressMonitor(GTS gts, ExploreStrategy strategy) {
+    public GenerateProgressMonitor(GTS gts, ScenarioHandler strategy) {
         this.strategy = strategy;
     }
 
@@ -71,9 +70,10 @@ public class GenerateProgressMonitor extends GraphAdapter {
             int nodeCount = gts.nodeCount();
             int edgeCount = gts.edgeCount();
             int explorableCount = gts.openStateCount();
-            if (strategy instanceof BranchingStrategy) {
-                explorableCount -= ((BranchingStrategy) strategy).getIgnoredCount();
-            }
+// FIXME            
+//            if (strategy instanceof BranchingStrategy) {
+//                explorableCount -= ((BranchingStrategy) strategy).getIgnoredCount();
+//            }
             System.out.println(" " + nodeCount + "s (" + explorableCount + "x) "
                     + edgeCount + "t ");
             printed = 0;
@@ -85,7 +85,7 @@ public class GenerateProgressMonitor extends GraphAdapter {
      */
     private int printed = 0;
     /** The exploration strategy for the GTS. */
-    private final ExploreStrategy strategy;
+    private final ScenarioHandler strategy;
     /**
      * The number of additions after which an indication is printed to screen.
      */

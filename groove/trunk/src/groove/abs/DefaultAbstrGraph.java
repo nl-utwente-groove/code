@@ -1,6 +1,7 @@
 package groove.abs;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -84,7 +85,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 		this.checkInvariants();
 		Node old = nodeFor(p);
 		boolean result = old != null && Abstraction.MULTIPLICITY.isZero(multiplicityOf(old)); 
-		Node n = ensureType(p);
+		Node n = old != null ? old : ensureType(p);
 		NodeType c = this.type.get(n);
 		this.type.put(n, new NodeType(p, Abstraction.MULTIPLICITY.add(c.getMult(), q)));
 		this.checkInvariants();
@@ -436,7 +437,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	@Override
 	public String toString () {
 		String result = super.toString();
-		result += " Types: " + this.type + ";";
+		result += "; Types: " + this.type + ";";
 		return result;
 	}
 	
@@ -500,8 +501,8 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 		 */
 		public DefaultAbstrGraph getShapeGraphFor (Graph graph) throws ExceptionIncompatibleWithMaxIncidence {
 			
-			// TODO the initial capacity may probably be optimised		
 			DefaultAbstrGraph result = new DefaultAbstrGraph (this.myFamily, this.myPrecision);
+			// TODO the initial capacity may probably be optimised
 			result.type = new HashMap<Node,NodeType>(graph.nodeCount());
 			result.invType = new HashMap<GraphPattern, Node> (graph.nodeCount());
 			
@@ -526,7 +527,6 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 				else {
 					nodeInResult = DefaultNode.createNode();
 					result.addNode(nodeInResult);
-					result.type.put(nodeInResult, new NodeType(pattern, Abstraction.MULTIPLICITY.getElement(1,this.myPrecision)));
 					result.type.put(nodeInResult, new NodeType(pattern, Abstraction.MULTIPLICITY.getElement(1,this.myPrecision)));
 					result.invType.put(pattern, nodeInResult);
 					inverseMap.put(pattern, nodeInResult);
@@ -590,6 +590,11 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	private void checkInvA() {
 		Set<Node> typeKeySet = this.type.keySet();
 		assert super.nodeSet().equals(typeKeySet) : "Invariant A failed";
+		Set<Node> values = new HashSet<Node>();
+		for (Node n : this.invType.values()) {
+			values.add(n);
+		}
+		assert super.nodeSet().equals(values) : "Invariant A failed";
 	}
 	
 	/** */
@@ -628,6 +633,8 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 		/** */
 		public void init(PatternFamily family, int precision) {
 			this.graph = new DefaultAbstrGraph(family, precision);
+			this.graph.type = new HashMap<Node,NodeType>();
+			this.graph.invType = new HashMap<GraphPattern,Node>();
 		}
 		
 		/**
@@ -665,7 +672,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 		}
 		
 		/** */
-		public AbstrGraph getConstructedGraph () {
+		public DefaultAbstrGraph getConstructedGraph () {
 			return this.graph;
 		}
 		

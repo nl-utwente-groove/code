@@ -12,18 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AGTS.java,v 1.2 2007-12-03 09:42:01 iovka Exp $
+ * $Id: AGTS.java,v 1.3 2008-01-30 09:33:47 iovka Exp $
  */
 package groove.abs.lts;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
 import groove.abs.AbstrGraph;
+import groove.abs.Abstraction;
 import groove.abs.DefaultAbstrGraph;
 import groove.abs.ExceptionIncompatibleWithMaxIncidence;
 import groove.abs.MyHashSet;
@@ -41,7 +41,8 @@ import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
 
-/** An Abstract graph transition system. 
+/** An Abstract graph transition system.
+ * FIXME update to fit in the new architecture 
  * @author Iovka Boneva
  * @version $Revision $
  * @invariant (TypeInv) States of the system are always of type {@link AbstrGraphState}
@@ -132,8 +133,11 @@ public class AGTS extends GTS {
 	
 	@Override
 	protected SystemRecord createRecord() {
-		return new SystemRecord(getGrammar(), true);
+		SystemRecord record = new SystemRecord(getGrammar(), true);
+		record.setAbstractSimulation();
+		return record;
 	}
+	
 	// ---------------------------------------------------------------
 	// NON IMPLEMENTED PUBLIC METHODS
 	// ---------------------------------------------------------------
@@ -150,24 +154,28 @@ public class AGTS extends GTS {
 	/**
 	 * @param grammar
 	 */
-	public AGTS(GraphGrammar grammar, int precision, int radius, int maxIncidence) {
+	public AGTS(GraphGrammar grammar, Abstraction.Parameters options) {
 		super(grammar, true, true);
-		this.family = new PatternFamily (radius, maxIncidence);
-		this.precision = precision;
-		
+		if (true) throw new UnsupportedOperationException();
+		this.options = options;
+		this.family = new PatternFamily (options.radius, options.maxIncidence);		
 		this.setStartState(this.computeStartState(grammar.getStartGraph()));
 		this.stateSet.getAndAdd((AbstrGraphState) this.getStartState());
 		
 		checkInvariants();
 	}
 	
-	PatternFamily getFamily () { return this.family; }
+	public PatternFamily getFamily () { return this.family; }
+	
+	public Abstraction.Parameters getParameters() { return this.options; }
+	
 	
 	private PatternFamily family;
-	private int precision;
 	// initialised with the default hasher
 	private final MyHashSet<AbstrGraphState> stateSet = new MyHashSet<AbstrGraphState>(null);
 
+	private Abstraction.Parameters options;
+	
 	// ---------------------------------------------------------------
 	// NON PUBLIC METHODS
 	// ---------------------------------------------------------------
@@ -176,7 +184,7 @@ public class AGTS extends GTS {
 	protected AbstrGraphState computeStartState(Graph startGraph) {
 		AbstrGraph ag = null;
 		try {
-			ag = DefaultAbstrGraph.factory(this.family, this.precision).getShapeGraphFor(startGraph);
+			ag = DefaultAbstrGraph.factory(this.family, this.options.precision).getShapeGraphFor(startGraph);
 		} catch (ExceptionIncompatibleWithMaxIncidence e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

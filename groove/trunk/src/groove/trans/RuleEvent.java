@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.17 2007-10-20 15:20:05 rensink Exp $
+ * $Id: RuleEvent.java,v 1.18 2008-01-30 09:32:39 iovka Exp $
  */
 package groove.trans;
 
@@ -35,7 +35,7 @@ import java.util.Set;
  * The event does not store information specific to the host graph. To apply it to 
  * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.17 $ $Date: 2007-10-20 15:20:05 $
+ * @version $Revision: 1.18 $ $Date: 2008-01-30 09:32:39 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**

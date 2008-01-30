@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  
- * $Id: AbstractXml.java,v 1.12 2007-11-06 14:07:27 iovka Exp $
+ * $Id: AbstractXml.java,v 1.13 2008-01-30 09:33:41 iovka Exp $
  */
 package groove.io;
 
@@ -31,7 +31,7 @@ import java.util.Map;
  * abstract methods: <tt>marshal(Graph)</tt> and <tt>unmarshal(Document,Graph)</tt>.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public abstract class AbstractXml implements Xml<Graph> {
 	AbstractXml(GraphFactory graphFactory) {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarMap.java,v 1.3 2007-08-31 10:23:21 rensink Exp $
+ * $Id: VarMap.java,v 1.4 2008-01-30 09:32:28 iovka Exp $
  */
 package groove.rel;
 
@@ -24,7 +24,7 @@ import groove.graph.Label;
  * Add-on interface that specifies
  * support for mapping variables (given by strings) to labels.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface VarMap {
     /**

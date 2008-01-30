@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DeltaGraphTest.java,v 1.3 2007-09-25 22:57:51 rensink Exp $
+ * $Id: DeltaGraphTest.java,v 1.4 2008-01-30 09:32:47 iovka Exp $
  */
 package groove.test.graph;
 
@@ -25,7 +25,7 @@ import java.io.File;
 /**
  * Test class to test <tt>DeltaGraph</tt>
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DeltaGraphTest extends GraphTest {
     public DeltaGraphTest(String name) {

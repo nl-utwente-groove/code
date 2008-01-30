@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LTSGraph.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: LTSGraph.java,v 1.2 2008-01-30 09:32:18 iovka Exp $
  */
 package groove.lts;
 
@@ -23,7 +23,7 @@ import groove.graph.NodeSetEdgeSetGraph;
  * Conversion class to add some special-purpose edges to an LTS
  * before saving it as an ordinary graph.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class LTSGraph extends NodeSetEdgeSetGraph {
 	/** Constructs a graph from a given LTS. */

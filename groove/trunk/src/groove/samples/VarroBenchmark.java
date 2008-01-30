@@ -20,7 +20,7 @@
 package groove.samples;
 
 import groove.calc.DefaultGraphCalculator;
-import groove.calc.DefaultGraphResult;
+//import groove.calc.DefaultGraphResult;
 import groove.calc.GraphResult;
 import groove.io.AspectualViewGps;
 import groove.lts.GTS;
@@ -30,40 +30,40 @@ import groove.util.GenerateProgressMonitor;
 
 import java.io.File;
 
-/**
- * Class encoding one of the benchmarks in the Varro et al paper. 
- */
-public class VarroBenchmark {
-	/** Call with an int parameter to determine the size of the problem. */
-	public static void main(String[] args) {
-		try {
-			int n = Integer.parseInt(args[0]);
-			GraphGrammar benchmarkRules = new AspectualViewGps().unmarshal(new File("sts.gps")).toGrammar();
-			DefaultGraphCalculator calculator = new DefaultGraphCalculator(benchmarkRules);
-			GenerateProgressMonitor monitor = new GenerateProgressMonitor();
-			GTS gts = calculator.getGTS();
-			GraphResult result = new DefaultGraphResult(calculator);
-			for (int i = 0; i < n-2; i++) {
-				result = result.getFirstAfter("newRule");
-				System.out.println("newRule "+i);
-			}
-			result = result.getFirstAfter("mountRule");
-			monitor.addUpdate(gts, (GraphState) result.getGraph());
-			for (int i = 0; i < n; i++) {
-				result = result.getFirstAfter("requestRule");
-				System.out.println("requestRule "+i);
-			}
-			for (int i = 0; i < n; i++) {
-				result = result.getFirstAfter("takeRule");
-				System.out.println("takeRule "+i);
-				result = result.getFirstAfter("releaseRule");
-				System.out.println("releaseRule "+i);
-				result = result.getFirstAfter("giveRule");
-				System.out.println("giveRule "+i);
-			}
-		} catch (Exception exc) {
-			System.err.println("Error: "+ exc.getMessage());
-		}
-	}
-
-}
+///**
+// * Class encoding one of the benchmarks in the Varro et al paper. 
+// */
+//public class VarroBenchmark {
+//	/** Call with an int parameter to determine the size of the problem. */
+//	public static void main(String[] args) {
+//		try {
+//			int n = Integer.parseInt(args[0]);
+//			GraphGrammar benchmarkRules = new AspectualViewGps().unmarshal(new File("sts.gps")).toGrammar();
+//			DefaultGraphCalculator calculator = new DefaultGraphCalculator(benchmarkRules);
+//			GenerateProgressMonitor monitor = new GenerateProgressMonitor();
+//			GTS gts = calculator.getGTS();
+//			GraphState result = new DefaultGraphResult(calculator);
+//			for (int i = 0; i < n-2; i++) {
+//				result = result.getFirstAfter("newRule");
+//				System.out.println("newRule "+i);
+//			}
+//			result = result.getFirstAfter("mountRule");
+//			monitor.addUpdate(gts, (GraphState) result.getGraph());
+//			for (int i = 0; i < n; i++) {
+//				result = result.getFirstAfter("requestRule");
+//				System.out.println("requestRule "+i);
+//			}
+//			for (int i = 0; i < n; i++) {
+//				result = result.getFirstAfter("takeRule");
+//				System.out.println("takeRule "+i);
+//				result = result.getFirstAfter("releaseRule");
+//				System.out.println("releaseRule "+i);
+//				result = result.getFirstAfter("giveRule");
+//				System.out.println("giveRule "+i);
+//			}
+//		} catch (Exception exc) {
+//			System.err.println("Error: "+ exc.getMessage());
+//		}
+//	}
+//
+//}

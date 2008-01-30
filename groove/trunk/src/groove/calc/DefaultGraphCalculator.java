@@ -12,26 +12,32 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.11 2007-10-10 08:59:53 rensink Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.12 2008-01-30 09:33:22 iovka Exp $
  */
 package groove.calc;
 
+import groove.explore.DefaultScenario;
+import groove.explore.Scenario;
+import groove.explore.result.Acceptor;
+import groove.explore.result.EmptyResult;
+import groove.explore.result.PropertyAcceptor;
+import groove.explore.result.Result;
+import groove.explore.result.SizedResult;
+import groove.explore.strategy.BreadthFirstStrategy;
+import groove.explore.strategy.DepthFirstStrategy1;
+import groove.explore.strategy.LinearStrategy;
+import groove.explore.strategy.Strategy;
 import groove.graph.Graph;
-import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
-import groove.lts.GraphNextState;
 import groove.lts.GraphState;
-import groove.lts.State;
-import groove.lts.explore.LinearStrategy;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
+import groove.trans.RuleSystem;
+import groove.util.Property;
 import groove.view.FormatException;
 
 import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Default implementation of a graph calculator.
@@ -55,15 +61,16 @@ public class DefaultGraphCalculator implements GraphCalculator {
     public DefaultGraphCalculator(GraphGrammar grammar) {
         this(grammar, false);
     }
-//
-//    /**
-//     * Creates a prototype calculator, with a <code>null</code> start graph.
-//     * @param rules the rule set of the prototype
-//     */
-//    public DefaultGraphCalculator(RuleSystem rules) {
-//        this(new GraphGrammar(rules), true);
-//    }
 
+    /**
+     * Calculator for rulesystem+graph (=grammar)
+     * @param rulesystem
+     * @param graph
+     */
+    public DefaultGraphCalculator(RuleSystem rulesystem, Graph graph) {
+    	this(new GraphGrammar(rulesystem, graph), false);
+    }
+    
     /**
      * Creates a (possibly prototype) calculator on the basis of a given,
      * fixed graph grammar.
@@ -78,38 +85,44 @@ public class DefaultGraphCalculator implements GraphCalculator {
         this.prototype = prototype;
     }
 
-    public GraphResult getMax() {
+    private Scenario<GraphState> createScenario(Strategy strategy, Acceptor<GraphState> acceptor, Result<GraphState> result) {
+    	DefaultScenario<GraphState> scenario = new DefaultScenario<GraphState>();
+    	scenario.setResult(result);
+    	scenario.setAcceptor(acceptor);
+    	scenario.setStrategy(strategy);
+    	acceptor.setResult(result);
+    	scenario.setGTS(getGTS());
+    	return scenario;
+    }
+    
+    @Override
+    /**
+     * Beware, maximal != final, maximal can have self-transitions
+     */
+    public GraphState getMax() {
         testPrototype();
+
         GraphState result = null;
         // any final state is maximal; try that first
-        Collection<? extends GraphState> finalStates = gts.getFinalStates();
-        if (!finalStates.isEmpty()) {
-            result = finalStates.iterator().next();
-        } else if (gts.hasOpenStates()) {
-            // first do a linear exploration from any open state
-            // (by the assumption of uniqueness, the choice of open state should not matter)
-        	ExploreStrategy strategy = new LinearStrategy();
-        	strategy.setGTS(getGTS());
-            try {
-            	strategy.setAtState(gts.getOpenStateIter().next());
-            	strategy.explore();
-            } catch (InterruptedException exc) {
-                // empty catch block
-            }
-            // again test for final states (this is anyway the most efficient)
-            if (!finalStates.isEmpty()) {
-                result = finalStates.iterator().next();
-            }
+        if ( gts.getFinalStates().size() > 0 ) {
+            result = gts.getFinalStates().iterator().next();
+        } else {
+        	// try linear
+        	Scenario<GraphState> sc = createScenario(new LinearStrategy(), new PropertyAcceptor(new MaximalStateProperty()), new SizedResult<GraphState>(1));
+        	sc.setState(getGTS().startState());
+        	Result<GraphState> results = sc.play();
+        	if( results.getResult().size() == 1 ) {
+        		result = results.getResult().iterator().next();
+        	} else {
+        		// try depth first
+        		sc = createScenario(new DepthFirstStrategy1(), new PropertyAcceptor(new MaximalStateProperty()), new SizedResult<GraphState>(1));
+        		results = sc.play();
+        		if( results.getResult().size() == 1 ) {
+        			result = results.getResult().iterator().next();
+        		}
+        	}
         }
-        // no go; do an explicit maximality test
-        Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
-        while (result == null && stateIter.hasNext()) {
-            GraphState graph = stateIter.next();
-            if (isMaximal(graph)) {
-                result = graph;
-            }
-        }
-        return createResult(result);
+        return result;
     }
     
     /**
@@ -127,22 +140,27 @@ public class DefaultGraphCalculator implements GraphCalculator {
 	 * @throws IllegalStateException
 	 *             if the basis has not been initialised
 	 */
-	public GraphResult getFirstMax() {
+//	public GraphState getFirstMax() {
+//        testPrototype();
+//        return getGenerator().get(isMaximal, toResult);
+//    }
+
+    public Collection<GraphState> getAllMax() {
         testPrototype();
-        return getGenerator().get(isMaximal, toResult);
+        
+        Scenario<GraphState> sc = createScenario(new BreadthFirstStrategy(), new PropertyAcceptor(new MaximalStateProperty()), new EmptyResult<GraphState>());
+        Result<GraphState> result = sc.play();
+        
+        return result.getResult();
     }
 
-    public Collection<GraphResult> getAllMax() {
-        testPrototype();
-        return getGenerator().getAll(isMaximal, toResult);
+    public Collection<GraphState> getAll(String conditionName) {
+        //return getAll(getRule(conditionName));
+    	return null;
     }
 
-    public Collection<GraphResult> getAll(String conditionName) {
-        return getAll(getRule(conditionName));
-    }
-
-    public GraphResult getFirst(String conditionName) {
-        return getFirst(getRule(conditionName));
+    public GraphState getFirst(String conditionName) {
+        return null;
     }
 
     /**
@@ -157,14 +175,19 @@ public class DefaultGraphCalculator implements GraphCalculator {
         return result;
     }
 
-    public GraphResult getFirst(Condition condition) {
+    public GraphState getFirst(Condition condition) {
         testPrototype();
-        return getGenerator().get(getMatcher(condition), toResult);
+        
+        return null;
     }
 
-    public Collection<GraphResult> getAll(final Condition condition) {
+    public Collection<GraphState> getAll(final Condition condition) {
         testPrototype();
-        return getGenerator().getAll(getMatcher(condition), toResult);
+        
+        
+//        return getGenerator().getAll(getMatcher(condition), toResult);
+//        return new Result<GraphState>().getResult();
+        return null;
     }
 
     public Graph getBasis() {
@@ -189,93 +212,15 @@ public class DefaultGraphCalculator implements GraphCalculator {
         return gts;
     }
     
-    /** Lazily constructs and returns a state generator for the GTS. */
-	Explorer getGenerator() {
-		if (generator == null) {
-			generator = new Explorer();
-			generator.setGTS(getGTS());
-		}
-		return generator;
-	}
-
 	public GraphGrammar getGrammar() {
         return grammar;
     }
 
     /**
-     * Returns a breadth-first iterator over all the states of the LTS,
-     * starting with the initial state,
-     * generating previously unexplored parts where necessary.
-     */
-    protected Iterator<GraphState> getBreadthFirstIterator() {
-        return new Iterator<GraphState>() {
-            /** If this method returns <code>true</code>, the next element is stored in <code>next</code>. */
-            public boolean hasNext() {
-                if (next == null) {
-                    next = new LinkedList<GraphState>();
-                    next.add(gts.startState());
-                }
-                return !next.isEmpty();
-            }
-
-            public GraphState next() {
-                if (hasNext()) {
-                    // the first state of the list is the one we want
-                    GraphState result = next.get(0);
-                    next.remove(0);
-                    // now add those states that are really derived from result to the list
-                    for (GraphState succ: getGenerator().getSuccessors(result)) {
-                        if ((succ instanceof GraphNextState)) {
-                            GraphState source = ((GraphNextState) succ).source();
-                            if (source == result) {
-                                next.add(succ);
-                            } else {
-                                assert depth(source) <= depth(result) : "Depth decreases from "+depth(source)+" to "+depth(result);    
-                            }
-                        }
-                    }
-                    return result;
-                } else {
-                    throw new IllegalStateException();
-                }
-            }
-            
-            int depth(State state) {
-                if (state instanceof GraphNextState) {
-                    return depth(((GraphNextState) state).source())+1;
-                } else {
-                    return 0;
-                }
-            }
-
-            /** Operation not supported. */
-            public void remove() {
-                throw new UnsupportedOperationException();
-            }
-            
-            private List<GraphState> next;
-        };
-    }
-
-    /**
-     * Factory method for a graph result.
-     */
-    protected GraphResult createResult(GraphState state) {
-        return new DefaultGraphResult(this, state);
-    }
-    
-    /**
      * Tests if a certain state is maximal in the LTS,
      * in the sense that there are no outgoing transitions to any other state except itself.
      */
-    protected boolean isMaximal(GraphState state) {
-        boolean result = true;
-        Iterator<? extends GraphState> nextStateIter = getGenerator().getSuccessorIter(state);
-        while (result && nextStateIter.hasNext()) {
-            result = nextStateIter.next() == state;
-        }
-        return result;
-    }
+    
 
     /**
      * Indicates if this calculator is a prototype.
@@ -287,6 +232,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
 
     /** Returns a property that tests for the matching of a graph to a test. */
     private final Property<GraphState> getMatcher(final Condition test) {
+    	
     	return new Property<GraphState>() {
         	@Override
 			public boolean isSatisfied(GraphState state) {
@@ -294,22 +240,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
 			}
         };
     }
-    
-    /** Property that tests for the maximality of a state, using {@link #isMaximal(GraphState)}. */
-    private final Property<GraphState> isMaximal = new Property<GraphState>() {
-    	@Override
-		public boolean isSatisfied(GraphState state) {
-			return isMaximal(state);
-		}
-    };
-    
-    /** Function from graph states to graph results, using {@link #createResult(GraphState)}. */
-    private final Function<GraphState, GraphResult> toResult = new Function<GraphState, GraphResult>() {
-		@Override
-		public GraphResult apply(GraphState arg) {
-			return arg == null ? null : createResult(arg);
-		}
-	};
     
     /**
 	 * Method to test if the calculator is a prototype.
@@ -330,8 +260,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
      * The transition system underlying this calculator.
      */
     final GTS gts;
-    /** The state explorer for the transition system. */
-    private Explorer generator;
+
     /**
      * Switch indicating if the calculator is a prototype only.
      */

@@ -12,19 +12,27 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.18 2007-11-13 14:23:26 kastenberg Exp $
+ * $Id: ExplorationTest.java,v 1.19 2008-01-30 09:33:05 iovka Exp $
  */
 
 package groove.test;
 
+import groove.explore.ConditionalScenarioHandler;
+import groove.explore.DefaultScenario;
+import groove.explore.GeneratorScenarioHandlerFactory;
+import groove.explore.ScenarioHandler;
+import groove.explore.result.Acceptor;
+import groove.explore.result.EmptyAcceptor;
+import groove.explore.result.EmptyResult;
+import groove.explore.result.ExploreCondition;
+import groove.explore.result.IsRuleApplicableCondition;
+import groove.explore.result.Result;
+import groove.explore.strategy.BreadthFirstStrategy;
 import groove.graph.Graph;
 import groove.io.AspectualViewGps;
 import groove.io.GrammarViewXml;
-import groove.lts.ConditionalExploreStrategy;
-import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.LTSGraph;
-import groove.lts.explore.FullStrategy;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
@@ -48,7 +56,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -267,32 +275,43 @@ public class ExplorationTest extends TestCase {
      * @param edgeCount expected number of edges; disregarded if < 0
      * @param openCount expected number of open states; disregarded if < 0
      * @return the explored GTS
+
      */
     protected GTS testExploration(GrammarView<?,?> view, String strategyDescr, int nodeCount,
             int edgeCount, int openCount, boolean save) {
         try {
         	GraphGrammar gg = view.toGrammar();
             GTS lts = new GTS(gg);
-            ExploreStrategy strategy;
+            DefaultScenario<Object> scenario = new DefaultScenario<Object>();
+            Result<Object> result = new EmptyResult<Object>();
+            Acceptor<Object> acceptor = new EmptyAcceptor();
+            acceptor.setResult(result);
+            scenario.setAcceptor(acceptor);
+            ScenarioHandler strategy;
             if (strategyDescr != null) {
             	parser.parse(strategyDescr);
                 strategy = parser.getStrategy();
-                if (strategy instanceof ConditionalExploreStrategy) {
-                    Rule conditionRule = gg.getRule(new RuleNameLabel(parser
-                            .getCondition()));
-                    assertNotNull(conditionRule);
-                    ((ConditionalExploreStrategy) strategy).setCondition(conditionRule);
-                    ((ConditionalExploreStrategy) strategy).setNegated(parser.isNegated());
+                if (parser.getCondition() != null) {
+                	Rule conditionRule = gg.getRule(new RuleNameLabel(parser.getCondition()));
+                	assertNotNull(conditionRule);
+                	// the scenario handler must then be conditional
+					ExploreCondition<Rule> explCond = new IsRuleApplicableCondition();
+					explCond.setCondition(conditionRule);
+					((ConditionalScenarioHandler<Rule>) strategy).setCondition(explCond, parser.getCondition(), parser.isNegated());
                 }
             } else {
-            	strategy = new FullStrategy();
+            	strategy = GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "full");
             }
+
+            strategy.setState(lts.startState());
             strategy.setGTS(lts);
             try {
-            	strategy.explore();
-            } catch (InterruptedException exc) { // proceed
-            }
-            if (save) {
+				strategy.playScenario();
+			} catch (InterruptedException e) {
+				assertFalse(true);
+			}
+
+           	if (save) {
 				try {
 					Groove.saveGraph(new LTSGraph(lts), view.getName());
 				} catch (IOException exc) { // proceed
@@ -313,6 +332,9 @@ public class ExplorationTest extends TestCase {
         }
     }
 
+    
+    
+    
 	/**
 	 * Tests exploration of a given grammar.
 	 * 

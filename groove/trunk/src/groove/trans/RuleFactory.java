@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleFactory.java,v 1.9 2007-10-06 11:27:50 rensink Exp $
+ * $Id: RuleFactory.java,v 1.10 2008-01-30 09:32:36 iovka Exp $
  */
 package groove.trans;
 
@@ -24,7 +24,7 @@ import groove.view.RuleView;
 /**
  * Factory interface for creating rules and related classes.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2007-10-06 11:27:50 $
+ * @version $Revision: 1.10 $ $Date: 2008-01-30 09:32:36 $
  * @deprecated use rule constructors
  */
 @Deprecated
@@ -32,7 +32,7 @@ public interface RuleFactory {
 	/**
 	 * Creates a rule view of the correct kind for this rule factory.
 	 * @param graph the graph encoding the rule
-	 * @param properties TODO
+	 * @param properties
 	 * @return a rule view over the rule encoded in the given graph
 	 */
 	public RuleView createRuleView(Graph graph, RuleNameLabel name, int priority, SystemProperties properties) throws FormatException;

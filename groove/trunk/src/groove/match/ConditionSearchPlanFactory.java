@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConditionSearchPlanFactory.java,v 1.21 2007-11-08 11:35:45 rensink Exp $
+ * $Id: ConditionSearchPlanFactory.java,v 1.22 2008-01-30 09:33:29 iovka Exp $
  */
 package groove.match;
 
@@ -34,7 +34,7 @@ import java.util.Set;
 /**
  * Factory that adds to a graph search plan the following items the search items for the simple negative conditions (edge and merge embargoes).
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 public class ConditionSearchPlanFactory extends GraphSearchPlanFactory {
     /** 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MultiLinedEditor.java,v 1.5 2007-10-10 08:59:51 rensink Exp $
+ * $Id: MultiLinedEditor.java,v 1.6 2008-01-30 09:33:13 iovka Exp $
  */
 package groove.gui.jgraph;
 
@@ -44,7 +44,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Multiline jcell editor, essentially taken from <code>org.jgraph.cellview.JGraphMultilineView</code>.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class MultiLinedEditor extends DefaultGraphCellEditor {
     /**

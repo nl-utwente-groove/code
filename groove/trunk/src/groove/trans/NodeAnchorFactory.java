@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NodeAnchorFactory.java,v 1.2 2007-08-31 10:23:07 rensink Exp $
+ * $Id: NodeAnchorFactory.java,v 1.3 2008-01-30 09:32:39 iovka Exp $
  */
 package groove.trans;
 
@@ -32,7 +32,7 @@ import groove.rel.VarSupport;
  * array of node images, as well as the ability to reconstruct
  * itself out of such a  minimal representation.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NodeAnchorFactory implements AnchorFactory {
     /**

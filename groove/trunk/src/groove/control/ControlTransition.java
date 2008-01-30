@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlTransition.java,v 1.8 2007-11-26 08:58:11 fladder Exp $
+ * $Id: ControlTransition.java,v 1.9 2008-01-30 09:33:23 iovka Exp $
  */
 package groove.control;
 
@@ -69,44 +69,32 @@ public class ControlTransition implements BinaryEdge, LocationTransition {
 //	}
 	
 	public ControlState source() {
-		// TODO Auto-generated method stub
 		return source;
 	}
 
 	public ControlState target() {
-		// TODO Auto-generated method stub
 		return target;
 	}
 	
 	public Node end(int i) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public int endCount() {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	public int endIndex(Node node) {
-		// TODO Auto-generated method stub
 		return 0;
 	}
 
 	public Node[] ends() {
-		// TODO Auto-generated method stub
 		return new Node[]{target()};
 	}
 
 	public boolean hasEnd(Node node) {
-		// TODO Auto-generated method stub
 		return false;
 	}
-//
-//	@Deprecated
-//	public Edge imageFor(GenericNodeEdgeMap elementMap) {
-//		throw new UnsupportedOperationException("Transition images are currenty not supported");
-//	}
 	
 	public Node opposite() {
 		return target();
@@ -176,4 +164,28 @@ public class ControlTransition implements BinaryEdge, LocationTransition {
 	public String toString() {
 		return this.source + "--- " + text + " --->" + this.target; 
 	}
+	
+	/**
+	 * to store the shape the transition is stored in, for removing purposes
+	 */
+	private ControlShape parent;
+
+	/**
+	 * Setter for parent;
+	 * @param parent
+	 */
+	public void setParent(ControlShape parent) {
+		this.parent = parent;
+	}
+
+	/** 
+	 * Getter for parent;
+	 * @return ControlShape
+	 */
+	public ControlShape getParent() {
+		return this.parent;
+	}
+
+	
+	
 }

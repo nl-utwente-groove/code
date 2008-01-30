@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LocationTransition.java,v 1.6 2007-11-26 08:58:12 fladder Exp $
+ * $Id: LocationTransition.java,v 1.7 2008-01-30 09:33:23 iovka Exp $
  */
 package groove.control;
 

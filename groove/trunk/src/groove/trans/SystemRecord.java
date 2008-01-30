@@ -1,15 +1,31 @@
 /* $Id$ */
 package groove.trans;
 
+import groove.abs.lts.AGTS;
+import groove.abs.lts.AbstrStateGenerator;
+import groove.control.ControlLocation;
+import groove.explore.util.ExploreCache;
+import groove.explore.util.LocationCache;
+import groove.explore.util.PriorityCache;
+import groove.explore.util.SimpleCache;
 import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeFactory;
+import groove.lts.DefaultAliasApplication;
+import groove.lts.GTS;
+import groove.lts.GraphState;
+import groove.lts.GraphTransition;
+import groove.lts.StateGenerator;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.DefaultDispenser;
 import groove.util.Reporter;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,6 +36,7 @@ import java.util.Set;
  * fresh node identities (to ensure deterministic and consecutive
  * node numbers) and maintains a map of rule events (to save space
  * and time).
+ * XXX: change for revamp
  * @author Arend Rensink
  * @version $Revision $
  */
@@ -47,7 +64,7 @@ public class SystemRecord implements NodeFactory {
 		this.nodeCounter = new DefaultDispenser();
 		nodeCounter.setCount(computeHighestNodeNr(grammar.getStartGraph())+1);
 	}
-	
+
     /** 
      * Constructs a derivation record from a given fixed graph.
      * If <code>considerRules</code> si true, this constructor guarantees 
@@ -71,8 +88,9 @@ public class SystemRecord implements NodeFactory {
 		this.nodeCounter.setCount(lastUsed+1);
 	}
 	
-
-	/** Factory method to create a fresh node, based on the internally stored node counter. */
+	/** Factory method to create a fresh node, based on the internally stored node counter.
+	 *  TODO: node for what? graphs? ltss? nodes added during rule applications probably? 
+	 */
 	public Node newNode() {
 		return DefaultNode.createNode(nodeCounter);
 	}
@@ -82,6 +100,11 @@ public class SystemRecord implements NodeFactory {
 		return ruleSystem;
 	}
 
+	/** Returns the RuleSetIterator for a certain State **/
+	public Iterator<Set<Rule>> getRuleSetIter() {
+		return getRuleSystem().getRuleSetIter();
+	}
+	
 	/** 
 	 * Returns a rule application for a given rule and matching of that rule.
 	 * @deprecated use {@link #getApplication(RuleMatch, Graph)} instead 
@@ -93,7 +116,11 @@ public class SystemRecord implements NodeFactory {
 
 	/** Returns a rule application for a given rule and matching of that rule. */
 	public RuleApplication getApplication(RuleMatch match, Graph host) {
-		return getEvent(match).newApplication(host);
+		if( match instanceof VirtualRuleMatch ) {
+			return ((VirtualRuleMatch)match).getApplication();
+		} else {
+			return getEvent(match).newApplication(host);
+		}
 	}
 
 	/** 
@@ -141,7 +168,8 @@ public class SystemRecord implements NodeFactory {
     	reporter.start(GET_EVENT);
     	Rule rule = match.getRule();
         if (rule.isModifying()) {
-            RuleEvent event = match.newEvent(this, reuse);
+            RuleEvent event;
+           	event = match.newEvent(this, reuse);
             if (isReuse()) {
 				result = normalEventMap.get(event);
 				if (result == null) {
@@ -218,6 +246,7 @@ public class SystemRecord implements NodeFactory {
 	private final DefaultDispenser nodeCounter;
 	/** The associated rule system. */
 	private final RuleSystem ruleSystem;    
+	
 	/**
      * Map from events to <i>normal events</i>, which are reused
      * for time and space reasons.
@@ -247,10 +276,103 @@ public class SystemRecord implements NodeFactory {
     public boolean isReuse() {
         return reuse;
     }
+    
+    /**
+     * @param state
+     * @param isRuleInterrupted When <code>true</code>, the created cache iterator
+     * @param isRandomized When <code>true</code>, the explore cache will return rules
+     * in random order. 
+     * TODO not supported for location cache
+     * considers that a rule can be partially but not fully explored. 
+     * When <code>false</code>, the result iterator is positioned on the first unexplored rule.
+     * @return
+     */
+    public ExploreCache freshCache(GraphState state, boolean isRandomized) {
+    	ExploreCache result;
+    	if( this.ruleSystem.hasMultiplePriorities() ) {
+    		result = new PriorityCache(this.ruleSystem.getRuleMap(), isRandomized);
+    	}
+    	else if( state.getLocation() != null ) {
+    		result = new LocationCache((ControlLocation) state.getLocation(), state, isRandomized);
+    	}
+    	else {
+    		result =  new SimpleCache(this.ruleSystem.getRules(), isRandomized);
+    	}
+    	return result;
+    }
+    
+    /**
+     * 
+     * @param state
+     * @param isRuleInterrupted Indicates whether a rule may be interrupted.
+     * @param isRandomized Indicates whether rules should be given in a random order
+     * TODO for the moment, isRandomized is not taken into account for location caches
+     * @return
+     */
+    public ExploreCache createCache(GraphState state, boolean isRuleInterrupted, boolean isRandomized) {
+    	ExploreCache result = freshCache(state, isRandomized); 
+    	//Increment the iterator
+		Set<Rule> rulesMet = new HashSet<Rule>();
+		Iterator<GraphTransition> succIter = state.getTransitionIter();
+		while (succIter.hasNext()) {
+			Rule r = succIter.next().getEvent().getRule();
+			result.updateMatches(r);
+			if (! isRuleInterrupted) { result.updateExplored(r); }
+		}
+		return result;
+    }
+    
+    public boolean isAbstractSimulation() {
+    	return this.isAbstractSimulation;
+    }
+    public void setAbstractSimulation () {
+    	this.isAbstractSimulation = true;
+    }
+   
+    /** caches the result of getRuleList **/
+    private List<Set<Rule>> prioRulesList;
+    
+    /**
+     * @return
+     */
+    public List<Set<Rule>> getRulesList() {
+    	if( prioRulesList == null ) {
+    		prioRulesList = new ArrayList<Set<Rule>>();
+    		Iterator<Set<Rule>> rulesSetIter = ruleSystem.getRuleSetIter();
+    		while( rulesSetIter.hasNext()) {
+    			prioRulesList.add(rulesSetIter.next());
+    		}
+    	}
+    	return prioRulesList;
+    }
 
+    private List<Integer> prioritiesList;
+    
+//    private List<Integer> getPrioritiesList() {
+//    	if (this.prioritiesList == null) {
+//    		this.prioritiesList = new ArrayList<Integer>(getRuleSystem().getRuleMap().keySet());
+//    	}
+//    	return this.prioritiesList;
+//    }
+    
+    
     /** Flag indicating if previous result are reused. */
     private boolean reuse = true;
 
     static private final Reporter reporter = Reporter.register(RuleEvent.class);
     static private final int GET_EVENT = reporter.newMethod("getEvent");
+    
+    private boolean isAbstractSimulation = false;
+    private StateGenerator stateGenerator;
+
+	public StateGenerator getStateGenerator(GTS gts) {
+		if (this.stateGenerator == null) {
+			this.stateGenerator = 
+				isAbstractSimulation() ? 
+				new AbstrStateGenerator(((AGTS) gts).getParameters()) :
+				new StateGenerator(gts);
+		}
+		return this.stateGenerator;
+	}
+    
 }

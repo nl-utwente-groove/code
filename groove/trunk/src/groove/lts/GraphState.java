@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphState.java,v 1.7 2007-11-26 08:58:42 fladder Exp $
+ * $Id: GraphState.java,v 1.8 2008-01-30 09:32:20 iovka Exp $
  */
 package groove.lts;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.7 $ $Date: 2007-11-26 08:58:42 $
+ * @version $Revision: 1.8 $ $Date: 2008-01-30 09:32:20 $
  */
 public interface GraphState extends State {
 	/** Returns the graph contained in this state. */
@@ -46,9 +46,9 @@ public interface GraphState extends State {
 	
 	
 	/**
-	 * Adds Locations to an optionally existing Control or sets a new Locations 
+	 * Sets the location field of this graphstate 
 	 */
-	public boolean addLocation(Location l);
+	public void setLocation(Location l);
 	
     /**
      * Retrieves an outgoing transition with a given event, if it exists.
@@ -94,6 +94,7 @@ public interface GraphState extends State {
     /**
      * Closes this state. This announces that no more outgoing transitions will be generated.
      * The return value indicates if the state was already closed.
+     * Preferably, this method is invoked by the GTS, see {@link GTS#setClosed(State)}
      * @ensure <tt>isClosed()</tt>
      * @return <code>true</code> if the state was closed as a result of this call;
      * <code>false</code> if it was already closed

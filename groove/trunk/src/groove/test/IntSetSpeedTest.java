@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: IntSetSpeedTest.java,v 1.3 2007-09-19 09:01:12 rensink Exp $
+ * $Id: IntSetSpeedTest.java,v 1.4 2008-01-30 09:33:08 iovka Exp $
  */
 package groove.test;
 
@@ -25,7 +25,7 @@ import groove.util.TreeIntSet;
 /**
  * Class to test the various implementations of {@link groove.util.IntSet} regarding speed.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class IntSetSpeedTest {
 	static private final int SMALL_SAMPLE_SIZE = 500;

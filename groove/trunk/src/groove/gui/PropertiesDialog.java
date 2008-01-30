@@ -12,13 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: PropertiesDialog.java,v 1.10 2007-11-19 12:19:24 rensink Exp $
+ * $Id: PropertiesDialog.java,v 1.11 2008-01-30 09:33:37 iovka Exp $
  */
 package groove.gui;
 
-import groove.calc.Property;
 import groove.graph.GraphProperties;
 import groove.util.ListComparator;
+import groove.util.Property;
 
 import java.awt.Component;
 import java.awt.Container;

@@ -12,9 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Property.java,v 1.7 2007-11-28 15:37:41 iovka Exp $
+ * $Id: Property.java,v 1.1 2008-01-30 09:32:03 iovka Exp $
  */
-package groove.calc;
+package groove.util;
+
+import java.lang.reflect.Field;
 
 
 /**
@@ -163,4 +165,48 @@ abstract public class Property<S> {
 		static private final String description = " a positive number";
 	}
 	
+	static public class IsEnumValue extends Property<String> {
+		/** 
+		 * Constructs an instance with a flag to indicate if the empty
+		 * string should be approved.
+		 * @param enumType the enum type supported by this property
+		 * @param a string enumerating all possible enum values
+		 * @param emptyOk if <code>true</code>, the empty string is approved.
+		 */
+		public IsEnumValue(Class enumType, boolean emptyOk) {
+			super(getDescription(enumType), "Sould be " + getDescription(enumType));
+			this.emptyOk = emptyOk;
+			this.enumType = enumType;
+		}
+		
+		/** A value is only correct if it is empty, or equals <code>true</code> or <code>false</code>. */
+		@Override
+		public boolean isSatisfied(String value) {
+			if (value.length() == 0) { return this.emptyOk; }
+			try {
+				Enum.valueOf(this.enumType, value.toUpperCase());
+				return true;
+			} catch (IllegalArgumentException e) {
+				return false;
+			}
+		}
+		
+		/** Flag indicating if the empty string is approved. */
+		private final boolean emptyOk;
+		/** The type of enum. */
+		private Class enumType;
+		
+		/** enumType has to be an enumeration type. */
+		private static String getDescription(Class enumType) {
+			String result = new String();
+			Field[] fields = enumType.getFields();
+			if (fields.length == 0) { return " Error : no value possible."; }
+			result += fields[0].getName();
+			for (int i = 1; i < fields.length; i++) {
+				result += " or " + fields[i].getName();
+			}
+			return result;
+		}
+		
+	}
 }

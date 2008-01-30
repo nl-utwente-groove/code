@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCondition.java,v 1.34 2007-10-05 08:31:41 rensink Exp $
+ * $Id: DefaultGraphCondition.java,v 1.35 2008-01-30 09:32:37 iovka Exp $
  */
 package groove.trans;
 
@@ -39,7 +39,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.34 $
+ * @version $Revision: 1.35 $
  */
 @Deprecated
 public class DefaultGraphCondition extends DefaultMorphism implements GraphCondition {

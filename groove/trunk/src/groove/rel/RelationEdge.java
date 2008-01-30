@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RelationEdge.java,v 1.6 2007-10-18 14:57:48 rensink Exp $
+ * $Id: RelationEdge.java,v 1.7 2008-01-30 09:32:32 iovka Exp $
  */
 package groove.rel;
 

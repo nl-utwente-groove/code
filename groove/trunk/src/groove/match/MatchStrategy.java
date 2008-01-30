@@ -17,10 +17,10 @@
 
 package groove.match;
 
-import groove.calc.Property;
 import groove.graph.Graph;
 import groove.graph.GraphShape;
 import groove.graph.NodeEdgeMap;
+import groove.util.Property;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -30,7 +30,7 @@ import java.util.Iterator;
  * A class implementing this interface will generate element maps given
  * a target graph, together with and a partial (initial) map to that target graph.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision $
  */
 public interface MatchStrategy<Result> {
     /** 

@@ -1,4 +1,4 @@
-/* $Id: AbstractCacheHolder.java,v 1.3 2007-09-30 11:20:34 rensink Exp $ */
+/* $Id: AbstractCacheHolder.java,v 1.4 2008-01-30 09:32:10 iovka Exp $ */
 package groove.util;
 
 /**

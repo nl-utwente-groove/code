@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.25 2007-11-28 16:08:19 iovka Exp $
+ * $Id: LTSJModel.java,v 1.26 2008-01-30 09:33:10 iovka Exp $
  */
 package groove.gui.jgraph;
 
@@ -41,7 +41,7 @@ import org.jgraph.graph.AttributeMap;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -92,15 +92,22 @@ public class LTSJModel extends GraphJModel {
 			activeTransition = trans;
 			if (trans != null) {
 				JCell jCell = getJCell(trans);
-				assert jCell != null : String.format("No image for %s in jModel",
-						trans);
-				changedCells.add(jCell);
+				assert jCell != null : String.format("No image for %s in jModel",	trans);
+				// FIXME here, one should find the transition in the GTS
+				// that corresponds to the jCell. The corresponding jCell is not
+				// necessarily in the LTS as it was in the previous architecture
+				if (jCell != null) {
+					changedCells.add(jCell);
+				}
 			}
 			if (previousTrans != null) {
 				JCell jCell = getJCell(previousTrans);
 				assert jCell != null : String.format("No image for %s in jModel",
 						previousTrans);
-				changedCells.add(jCell);
+				// FIXME same as previous
+				if (jCell != null) {
+					changedCells.add(jCell);
+				}
 			}
 		}
         State previousState = activeState;
@@ -208,12 +215,15 @@ public class LTSJModel extends GraphJModel {
 	@Override
 	protected AttributeMap createJVertexAttr(Node node) {
         AttributeMap result;
-        State state = (State) node;
+        GraphState state = (GraphState) node;
+        
+        boolean hasControl = (state.getLocation() != null);
+        
         if (state.equals(getGraph().startState())) {
             result = LTS_START_NODE_ATTR.clone();
         } else if (!state.isClosed()) {
             result = LTS_OPEN_NODE_ATTR.clone();
-        } else if (getGraph().isFinal(state)) {
+        } else if ( getGraph().isFinal(state)) {
             result = LTS_FINAL_NODE_ATTR.clone();
         } else {
             result = LTS_NODE_ATTR.clone();
@@ -445,9 +455,9 @@ public class LTSJModel extends GraphJModel {
 			StringBuilder result = new StringBuilder("State ");
 			result.append(Converter.UNDERLINE_TAG.on(getNode()));
 			// if a control location is available, add this to the tooltip
-			if( this.getNode().getLocation() != null ) {
-				result.append("ctrl: " + this.getNode().getLocation());
-			}
+//			if( this.getNode().getLocation() != null ) {
+//				result.append("ctrl: " + this.getNode().getLocation());
+//			}
 			return result;
 		}
 
@@ -475,7 +485,7 @@ public class LTSJModel extends GraphJModel {
 			return result;
 		}
 
-        /** 
+        /**
          * This implementation returns either the transition label, or the event label, depending on #isShowAnchors().
          */
         @Override

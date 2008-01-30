@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultDeltaApplier.java,v 1.6 2007-11-05 14:16:22 rensink Exp $
+ * $Id: DefaultDeltaApplier.java,v 1.7 2008-01-30 09:32:58 iovka Exp $
  */
 package groove.graph;
 
@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Default implementation of a delta applier.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class DefaultDeltaApplier implements DeltaApplier {
 	/**

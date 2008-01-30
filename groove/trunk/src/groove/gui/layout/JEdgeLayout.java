@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeLayout.java,v 1.5 2007-10-26 09:38:11 rensink Exp $
+ * $Id: JEdgeLayout.java,v 1.6 2008-01-30 09:33:01 iovka Exp $
  */
 package groove.gui.layout;
 

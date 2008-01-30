@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SymmetryTransitionStub.java,v 1.2 2007-04-27 22:06:25 rensink Exp $
+ * $Id: SymmetryTransitionStub.java,v 1.3 2008-01-30 09:32:20 iovka Exp $
  */
 package groove.lts;
 
@@ -22,7 +22,7 @@ import groove.trans.RuleEvent;
 /**
  * Graph transition stub based on a true event renaming.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class SymmetryTransitionStub extends AbstractGraphTransitionStub {
     /**

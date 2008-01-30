@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JAttr.java,v 1.19 2007-10-30 17:21:20 rensink Exp $
+ * $Id: JAttr.java,v 1.20 2008-01-30 09:33:13 iovka Exp $
  */
 package groove.gui.jgraph;
 
@@ -45,7 +45,7 @@ import org.jgraph.graph.GraphLayoutCache;
 /**
  * Class of constant definitions.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class JAttr {
 	/** Creates a stroke with a given line width and dash pattern. */
@@ -432,6 +432,51 @@ public class JAttr {
         GraphConstants.setLineEnd(LTS_EDGE_ATTR, GraphConstants.ARROW_SIMPLE);
     }
 
+    
+    
+    static public final Border DOUBLE_BORDER = new CompoundBorder(new LineBorder(Color.BLUE, 2), new LineBorder(Color.BLUE, 2));
+    
+    /** The default node attributes of the control automaton */
+    static public final AttributeMap CONTROL_NODE_ATTR;
+    /** The start node attributes of the control automaton */
+    static public final AttributeMap CONTROL_START_NODE_ATTR;
+    /** The sucess node attributes of the control automaton */
+    static public final AttributeMap CONTROL_SUCCESS_NODE_ATTR;
+    /** The default edge attributes of the control automaton */
+    static public final AttributeMap CONTROL_EDGE_ATTR;
+    /** The internal (else/lambda) edge attributes of the control automaton */
+    static public final AttributeMap CONTROL_INTERNAL_EDGE_ATTR;
+    /** The procedure edge attributes of the control automaton automaton */
+    static public final AttributeMap CONTROL_SHAPE_EDGE_ATTR;
+    
+    static {
+    		CONTROL_NODE_ATTR = DEFAULT_NODE_ATTR.clone();
+    		
+    		CONTROL_START_NODE_ATTR = CONTROL_NODE_ATTR.clone();
+    		GraphConstants.setBackground(CONTROL_START_NODE_ATTR, Color.GREEN);
+    		
+    		
+    		CONTROL_SUCCESS_NODE_ATTR = CONTROL_NODE_ATTR.clone();
+    		GraphConstants.setBorder(CONTROL_SUCCESS_NODE_ATTR, LTS_ACTIVE_EMPH_BORDER);
+    		GraphConstants.setBorderColor(CONTROL_SUCCESS_NODE_ATTR, Color.RED);
+    		GraphConstants.setBackground(CONTROL_SUCCESS_NODE_ATTR, Color.RED);
+    		
+    		CONTROL_EDGE_ATTR = DEFAULT_EDGE_ATTR.clone();
+
+            GraphConstants.setConnectable(CONTROL_EDGE_ATTR, false);
+            GraphConstants.setDisconnectable(CONTROL_EDGE_ATTR, false);
+    		
+    		CONTROL_INTERNAL_EDGE_ATTR = CONTROL_EDGE_ATTR.clone();
+    		CONTROL_SHAPE_EDGE_ATTR = CONTROL_EDGE_ATTR.clone();
+
+    		GraphConstants.setFont(CONTROL_SHAPE_EDGE_ATTR, ITALIC_FONT);
+    		
+    		GraphConstants.setLineEnd(CONTROL_EDGE_ATTR, GraphConstants.ARROW_CLASSIC);
+    		GraphConstants.setLineColor(CONTROL_INTERNAL_EDGE_ATTR, Color.GREEN);
+    		GraphConstants.setLineColor(CONTROL_SHAPE_EDGE_ATTR, Color.GRAY);
+    }
+    
+    
 	/**
 	 * Store of colours for each role. 
 	 */

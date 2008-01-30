@@ -442,10 +442,10 @@ tryAgain:
 		int _saveIndex;
 		
 		{
-		boolean synPredMatched70 = false;
+		boolean synPredMatched71 = false;
 		if (((LA(1)=='\r') && (LA(2)=='\n'))) {
-			int _m70 = mark();
-			synPredMatched70 = true;
+			int _m71 = mark();
+			synPredMatched71 = true;
 			inputState.guessing++;
 			try {
 				{
@@ -453,12 +453,12 @@ tryAgain:
 				}
 			}
 			catch (RecognitionException pe) {
-				synPredMatched70 = false;
+				synPredMatched71 = false;
 			}
-			rewind(_m70);
+			rewind(_m71);
 inputState.guessing--;
 		}
-		if ( synPredMatched70 ) {
+		if ( synPredMatched71 ) {
 			match("\r\n");
 		}
 		else if ((LA(1)=='\r') && (true)) {
@@ -602,7 +602,7 @@ inputState.guessing--;
 		}
 		}
 		{
-		_loop79:
+		_loop80:
 		do {
 			switch ( LA(1)) {
 			case 'A':  case 'B':  case 'C':  case 'D':
@@ -636,7 +636,7 @@ inputState.guessing--;
 			}
 			default:
 			{
-				break _loop79;
+				break _loop80;
 			}
 			}
 		} while (true);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProgressBarDialog.java,v 1.2 2007-11-07 09:31:19 rensink Exp $
+ * $Id: ProgressBarDialog.java,v 1.3 2008-01-30 09:33:37 iovka Exp $
  */
 package groove.gui;
 

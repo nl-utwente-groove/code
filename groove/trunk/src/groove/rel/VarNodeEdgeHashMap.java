@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarNodeEdgeHashMap.java,v 1.4 2007-08-26 07:23:53 rensink Exp $
+ * $Id: VarNodeEdgeHashMap.java,v 1.5 2008-01-30 09:32:27 iovka Exp $
  */
 package groove.rel;
 
@@ -30,7 +30,7 @@ import java.util.Map;
  * Implementation of the {@link VarNodeEdgeMap} interface where
  * the variable mapping part is given by a separater instance variable.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class VarNodeEdgeHashMap extends NodeEdgeHashMap implements VarNodeEdgeMap {
     /**

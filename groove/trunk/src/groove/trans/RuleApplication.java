@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleApplication.java,v 1.9 2007-10-02 23:06:25 rensink Exp $
+ * $Id: RuleApplication.java,v 1.10 2008-01-30 09:32:34 iovka Exp $
  */
 package groove.trans;
 
@@ -29,7 +29,7 @@ import groove.rel.VarNodeEdgeMap;
  * derivation, and to reconstruct the matching and the target graph after they
  * have been minimised, if the cached representation has been discarded.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public interface RuleApplication extends Derivation, DeltaApplier {
     /**

@@ -12,14 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BinaryEdge.java,v 1.2 2007-08-26 07:23:46 rensink Exp $
+ * $Id: BinaryEdge.java,v 1.3 2008-01-30 09:32:51 iovka Exp $
  */
 package groove.graph;
 
 /**
  * Interface of a directed graph edge, with source node, label and target node.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface BinaryEdge extends Edge { 
 	/** The number of ends of a binary edge. */

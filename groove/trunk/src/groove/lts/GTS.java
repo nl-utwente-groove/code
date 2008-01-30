@@ -12,11 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.35 2007-12-03 16:16:54 iovka Exp $
+ * $Id: GTS.java,v 1.36 2008-01-30 09:32:20 iovka Exp $
  */
 package groove.lts;
 
-import groove.control.StateSet;
+import groove.control.LocationAutomatonBuilder;
 import groove.graph.AbstractGraphShape;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
@@ -44,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.35 $ $Date: 2007-12-03 16:16:54 $
+ * @version $Revision: 1.36 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**
@@ -80,9 +80,12 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      * <tt>nodeSet().contains(startState())</tt> 
      */
     private GTS(GraphGrammar grammar, boolean storeTransitions) {
-    	this(grammar, storeTransitions, grammar.getProperties().isCheckIsomorphism());
+    	grammar.testFixed(true);
+        this.ruleSystem = grammar;
+        this.storeTransitions = storeTransitions;
+        this.checkIsomrophism = getGrammar().getProperties().isCheckIsomorphism();
     }
-
+    
     /**
      * Constructs a GTS with an option to avoid storing transitions, and
      * additionally specifying whether isomorphism check should be performed.
@@ -97,6 +100,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         this.checkIsomrophism = checkIsomorphism;
     }
     
+
     /**
      * Callback factory method to create and initialise the start graph of the GTS,
      * on the basis of a given graph.
@@ -116,9 +120,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         // init the startstate with a control element if possible
     	if( this.ruleSystem.getControl() != null )
         {
-    		StateSet location = new StateSet();
-    		location.addAll(this.ruleSystem.getControl().startState().asStateSet());
-    		return new StartGraphState(getRecord(), startGraph, location);
+    		GraphState returnState = new StartGraphState(getRecord(), startGraph, new LocationAutomatonBuilder().startLocation(this.ruleSystem.getControl().startState()));
+    		
+    		return returnState;
         }
         else
         {
@@ -206,16 +210,32 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 
     /**
      * Removes a state from the set of open states, and notifies the graph listeners.
+     * Also determinen the final status of the state.
      * Only call this after all outgoing transitions of the state have been generated!
      * @param state the state to be removed from the set of open states
      * @require <tt>state instanceof GraphState</tt>
      */
     public void setClosed(State state) {
         GraphState graphState = (GraphState) state;
+        
         if (graphState.setClosed()) {
+        	if (determineIsFinal(graphState)) {
+        		setFinal(graphState);
+        	}
             closedCount++;
             notifyLTSListenersOfClose(state);
         }
+    }
+    
+    // a state is final if 
+    // - with location, and then the location is a success state
+    // - without location, and then no outgoing transitions
+    private boolean determineIsFinal(GraphState state) {
+    	if (state.getLocation() == null) {
+    		return ! state.getTransitionIter().hasNext(); // TODO this can probably be optimized, with e.g. an additional function for a GTS
+    	} else {
+    		return state.getLocation().isSuccess(state);
+    	}
     }
 
     /** Returns the number of not fully expored states. */
@@ -343,7 +363,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         }
     }
     
-    private boolean isCheckIsomorphism() {
+    boolean isCheckIsomorphism() {
         return checkIsomrophism;
     }
 
@@ -403,7 +423,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
         protected boolean areEqual(GraphState stateKey, GraphState otherStateKey) {
 			if (!getRecord().isReuse()) {
 			    return stateKey == otherStateKey;
-			} else { //if (stateKey.getControl() == otherStateKey.getControl()) {
+			} else if (stateKey.getLocation() == null || stateKey.getLocation().equals(otherStateKey.getLocation())) {
 				Graph one = stateKey.getGraph();
 				Graph two = otherStateKey.getGraph();
 				if (isCheckIsomorphism()) {
@@ -412,9 +432,9 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 				    return one.nodeSet().equals(two.nodeSet()) && one.edgeSet().equals(two.edgeSet());
 				}
 			}
-//			else {
-//				return false;
-//			}
+			else {
+				return false;
+			}
 		}
 
         /**

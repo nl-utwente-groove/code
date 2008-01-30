@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NoLayouter.java,v 1.2 2007-04-12 16:14:52 rensink Exp $
+ * $Id: NoLayouter.java,v 1.3 2008-01-30 09:33:01 iovka Exp $
  */
 package groove.gui.layout;
 
@@ -25,7 +25,7 @@ import groove.gui.jgraph.JModel;
 /**
  * A layouter that does nothing.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class NoLayouter implements Layouter {
 	/** Name of this layouter. */

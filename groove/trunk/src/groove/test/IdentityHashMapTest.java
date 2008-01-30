@@ -26,7 +26,7 @@ import junit.framework.TestCase;
  * does not work correctly.
  * Bug report submitted to http://bugs.sun.com/bugdatabase. 
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public class IdentityHashMapTest extends TestCase {
     public void testIdentityHashMap() {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultAutomaton.java,v 1.7 2007-11-02 08:42:35 rensink Exp $
+ * $Id: DefaultAutomaton.java,v 1.8 2008-01-30 09:32:27 iovka Exp $
  */
 package groove.rel;
 

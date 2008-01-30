@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JCellLayout.java,v 1.2 2007-05-25 07:42:53 rensink Exp $
+ * $Id: JCellLayout.java,v 1.3 2008-01-30 09:33:01 iovka Exp $
  */
 package groove.gui.layout;
 

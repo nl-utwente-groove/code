@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IdentityTransitionStub.java,v 1.2 2007-04-27 22:06:26 rensink Exp $
+ * $Id: IdentityTransitionStub.java,v 1.3 2008-01-30 09:32:18 iovka Exp $
  */
 package groove.lts;
 
@@ -22,12 +22,12 @@ import groove.trans.RuleEvent;
 /**
  * Graph transition stub based on an identity morphism.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 class IdentityTransitionStub extends AbstractGraphTransitionStub {
     /**
      * Default constructor, providing the event and target of the stub.
-     * @param addedNodes TODO
+     * @param addedNodes
      */
     IdentityTransitionStub(RuleEvent event, Node[] addedNodes, GraphState target) {
     	super(event, addedNodes, target);

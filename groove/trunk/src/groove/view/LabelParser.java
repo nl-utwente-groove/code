@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LabelParser.java,v 1.3 2007-11-19 12:19:18 rensink Exp $
+ * $Id: LabelParser.java,v 1.4 2008-01-30 09:33:26 iovka Exp $
  */
 package groove.view;
 

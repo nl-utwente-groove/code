@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AutomatonBuilder.java,v 1.2 2007-11-26 08:58:36 fladder Exp $
+ * $Id: AutomatonBuilder.java,v 1.3 2008-01-30 09:33:34 iovka Exp $
  */
 package groove.control.parse;
 
@@ -83,7 +83,7 @@ public class AutomatonBuilder extends Namespace {
 		
 		ControlShape cs = new ControlShape(currentStart, currentEnd, name);
 		storeTransition(cs);
-		cs.setParent(current);
+		//cs.setParent(current); // now done by storeTransition for all transitions
 		this.current = cs;
 		this.currentName = name;
 		openScopes.add(name);
@@ -169,6 +169,12 @@ public class AutomatonBuilder extends Namespace {
 	public void storeTransition(ControlTransition ct) {
 		this.transitions.add(ct);
 		current.addTransition(ct);
+		ct.setParent(current);
+	}
+	
+	public void rmTransition(ControlTransition ct) {
+		this.transitions.remove(ct);
+		ct.getParent().removeTransition(ct);
 	}
 	
 	public void rmState(ControlState state) {
@@ -205,7 +211,41 @@ public class AutomatonBuilder extends Namespace {
 	 * 
 	 */
 	public void optimize() {
-		// empty stub
+		// remove elses when there are lambda's
+
+		Set<ControlTransition> remove = new HashSet<ControlTransition>();
+		// find an else-transition
+		for( ControlTransition t1 : transitions ) {
+			if( t1 instanceof ElseControlTransition ) {
+				ControlState source1 = t1.source();
+				for( ControlTransition t2 : transitions ) {
+					if( source1 == t2.source() && t2 instanceof LambdaControlTransition ) {
+						remove.add(t1);
+					}
+				}
+			}
+		}
+		
+		
+		Set<ControlState> checkOrphan = new HashSet<ControlState>();
+		
+		for( ControlTransition ct : remove ) {
+			rmTransition(ct);
+			checkOrphan.add(ct.target());
+		}
+		
+		// removing unreachablestates
+		for( ControlState t : checkOrphan ) {
+			boolean delete = true;
+			for( ControlTransition ct : transitions ) {
+				if( ct.target() == checkOrphan ) {
+					delete = false;
+				}
+			}
+			if( delete ) {
+				rmState(t);
+			}
+		}
 	}
 	
 	/**
@@ -243,6 +283,18 @@ public class AutomatonBuilder extends Namespace {
 					}
 				}
 			}
+			else {
+				// must be either lambda or else..
+				transition.source().add(transition);
+			}
 		}
-	}
+
+		// update the failure sets of else-transitions
+		// this assumes that there are no outgoing lambda's from states that have else-transitions
+		for( ControlTransition transition : this.transitions ) {
+			if( transition instanceof ElseControlTransition ) {
+				((ElseControlTransition)transition).setFailureSet(transition.source().rules());
+			}
+		}
+    }
 }

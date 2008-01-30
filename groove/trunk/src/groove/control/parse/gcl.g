@@ -55,9 +55,9 @@ statements
 statement
 	: ALAP^ block
 	| WHILE^ LPAREN! condition RPAREN! DO! block
-	| DO^ block WHILE! condition
+	| DO^ block WHILE! LPAREN! condition RPAREN!
     | TRY^ block (ELSE! block)?
-	| IF^ LPAREN! condition RPAREN!
+	| IF^ LPAREN! condition RPAREN! block (ELSE! block)?
     | CHOICE^ block (OR! block)*
     | expression SEMICOLON!
     ;

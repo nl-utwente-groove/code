@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.16 2007-10-26 15:37:59 rensink Exp $
+ * $Id: LayedOutXml.java,v 1.17 2008-01-30 09:33:41 iovka Exp $
  */
 package groove.io;
 
@@ -53,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class LayedOutXml extends AbstractXml implements Xml<Graph> {
     /** 

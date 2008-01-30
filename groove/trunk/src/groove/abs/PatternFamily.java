@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
 
- * $Id: PatternFamily.java,v 1.2 2007-12-03 09:42:24 iovka Exp $
+ * $Id: PatternFamily.java,v 1.3 2008-01-30 09:32:23 iovka Exp $
  */
 package groove.abs;
 
@@ -68,6 +68,7 @@ public class PatternFamily implements Iterable<GraphPattern> {
 	 * @require max_incidence should be positie (>=1)
 	 */
 	public PatternFamily(final int radius, final int max_incidence) {
+		if (true) throw new UnsupportedOperationException();
 		assert radius > 0 && max_incidence > 0: "A radius and max_incidence should be positive." ;
 		this.RADIUS = radius;
 		this.MAX_INCIDENCE = max_incidence;

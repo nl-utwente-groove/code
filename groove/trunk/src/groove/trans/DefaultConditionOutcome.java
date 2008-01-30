@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultConditionOutcome.java,v 1.4 2007-10-05 08:31:42 rensink Exp $
+ * $Id: DefaultConditionOutcome.java,v 1.5 2008-01-30 09:32:35 iovka Exp $
  */
 package groove.trans;
 
@@ -24,7 +24,7 @@ import groove.rel.VarMorphism;
  * Default implementation of a {@link GraphTestOutcome} for {@link GraphCondition}s.
  * Specialises {@link AbstractTestOutcome}.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 @Deprecated
 public class DefaultConditionOutcome extends AbstractTestOutcome<Matching,GraphCondition> implements GraphConditionOutcome {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeEdgeSetGraph.java,v 1.8 2007-10-10 08:59:58 rensink Exp $
+ * $Id: NodeEdgeSetGraph.java,v 1.9 2008-01-30 09:32:53 iovka Exp $
  */
 package groove.graph;
 
@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Graph implementation based on a single set of nodes and edges.
  * @author Arend Rensink
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @deprecated Use {@link NodeSetEdgeSetGraph} instead
  */
 @Deprecated

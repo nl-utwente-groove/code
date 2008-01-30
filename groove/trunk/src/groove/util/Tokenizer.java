@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /**
- * $Id: Tokenizer.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: Tokenizer.java,v 1.3 2008-01-30 09:32:02 iovka Exp $
  */
 package groove.util;
 
@@ -23,7 +23,7 @@ import java.util.StringTokenizer;
  * The method <tt>countTokens()</tt> is invalidated.
  * Can handle dots inside quotes, even delimiter is a dot.
  * @author Arend Rensink
- * @version $Revision: 1.2 $ $Date: 2007-03-28 15:12:28 $
+ * @version $Revision: 1.3 $ $Date: 2008-01-30 09:32:02 $
  */
 public class Tokenizer extends StringTokenizer {
 

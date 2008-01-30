@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AbstractTestOutcome.java,v 1.5 2007-10-23 16:10:19 iovka Exp $
+ * $Id: AbstractTestOutcome.java,v 1.6 2008-01-30 09:32:39 iovka Exp $
  */
 package groove.trans;
 
@@ -32,7 +32,7 @@ import java.util.Set;
  * successful and should therefore be included in the {@link #getSuccessKeys()}.
  * A hook is provided in the form of the callback method {@link #isSuccessKey(GraphTestOutcome)}. 
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @deprecated the GraphTestOutcome hierarchy is no longer in use
  */
 @Deprecated

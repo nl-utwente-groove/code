@@ -1,8 +1,8 @@
 package groove.trans;
 
-import groove.calc.Property;
 import groove.util.Converter;
 import groove.util.Groove;
+import groove.util.Property;
 
 import java.io.IOException;
 import java.io.InputStream;

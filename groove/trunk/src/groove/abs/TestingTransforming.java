@@ -12,15 +12,19 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: TestingTransforming.java,v 1.4 2007-12-03 20:52:29 iovka Exp $
+ * $Id: TestingTransforming.java,v 1.5 2008-01-30 09:32:23 iovka Exp $
  */
 package groove.abs;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
+import groove.abs.Abstraction.LinkPrecision;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
@@ -50,7 +54,7 @@ import junit.framework.TestCase;
 /** Tests for the transformation. */
 public class TestingTransforming extends TestCase {
 	
-	private final Abstraction.Options options = new Abstraction.Options();
+	//private final Abstraction.Parameters defaultOptions = new Abstraction.Parameters(false, LinkPrecision.HIGH, false);
 	// -----------------------------------------------------------------
 	// GRAPHS AND MATCHINGS
 	//	 -----------------------------------------------------------------
@@ -78,6 +82,9 @@ public class TestingTransforming extends TestCase {
 	GraphGrammar listGrammar5;
 	GraphGrammar listGrammar10;
 	GraphGrammar binaryTreeGrammar;
+	
+	Map<String, GraphPattern> binaryTreePatternsMap; // keys are pR, pA0, pA1, pA2, pB, pC, pD, pL
+	PatternFamily binaryTreePF = new PatternFamily(1,10);
 	
 	@SuppressWarnings("unqualified-field-access")
 	@Override
@@ -147,6 +154,13 @@ public class TestingTransforming extends TestCase {
 			e1.printStackTrace();
 			System.exit(1);
 		} 
+		
+		try {
+			initBinaryTreePatterns();
+		} catch (ExceptionIncompatibleWithMaxIncidence e) {
+			System.err.println("Should not happen");
+			e.printStackTrace();
+		}
 	}
 	
 	/** */
@@ -233,7 +247,8 @@ public class TestingTransforming extends TestCase {
 		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
-		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
+		Abstraction.Parameters options = new Abstraction.Parameters(1,2,10);
+		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), options);
 
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
@@ -290,7 +305,8 @@ public class TestingTransforming extends TestCase {
 		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
-		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
+		Abstraction.Parameters options = new Abstraction.Parameters(1,1,10);
+		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), options);
 		
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
@@ -313,7 +329,6 @@ public class TestingTransforming extends TestCase {
 			try {
 				(new DefaultGxl()).marshalGraph(ag, new File(fileName));
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				System.err.println("Unable to write file " + fileName);
 				e1.printStackTrace(); 
 			}
@@ -362,7 +377,8 @@ public class TestingTransforming extends TestCase {
 		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 		// there is only one extension
 		ConcretePart cp = ext.iterator().next();
-		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), this.options);
+		Abstraction.Parameters options = new Abstraction.Parameters(2,1,10);
+		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), options);
 
 		// remap the initial mapping into the concrete part
 		NodeEdgeMap match = new NodeEdgeHashMap();
@@ -385,7 +401,6 @@ public class TestingTransforming extends TestCase {
 			try {
 				(new DefaultGxl()).marshalGraph(ag, new File(fileName));
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				System.err.println("Unable to write file " + fileName);
 				e1.printStackTrace(); 
 			}
@@ -419,7 +434,8 @@ public class TestingTransforming extends TestCase {
 			ConcretePart.Typing typing = new TypingImpl(s, match);
 			Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
 			for (ConcretePart cp : ext) {
-				SetMaterialisations smat = new SetMaterialisations(cp, s, match, this.options);
+				Abstraction.Parameters options = new Abstraction.Parameters(1,2,10);
+				SetMaterialisations smat = new SetMaterialisations(cp, s, match, options);
 				RuleEvent event = new SPOEvent(rule, smat.updateMatch(match), syst, false);
 				RuleApplication appl = new DefaultApplication(event, cp.graph());
 				Collection<AbstrGraph> result = smat.transform(appl, syst);
@@ -429,13 +445,88 @@ public class TestingTransforming extends TestCase {
 		assertEquals(4, all.size());
 	}
 	
+	
+	/** Test with
+	 * - list with 4 elements
+	 * - rule adding an object 
+	 * - matching to the middle shape node
+	 * - precision 1
+	 * - radius 1
+	 * - low links precision
+	 */
+	@SuppressWarnings("unqualified-field-access")
+	public void testSetMaterialisations5 () throws AssertionError {
+ 		PatternFamily pf = new PatternFamily(1, 10);
+		DefaultAbstrGraph s = null;
+		try {
+			s = DefaultAbstrGraph.factory(pf,1).getShapeGraphFor(listGrammar4.getStartGraph());
+		} catch (ExceptionIncompatibleWithMaxIncidence e) {
+			e.printStackTrace();
+		}
+		
+		// Compute a morphism from cell into the middle node of the shape
+		Node middle = null;
+		for (Node n : s.nodeSet()) {
+			if (s.edgeSet(n).size() > 2) {
+				middle = n;
+				break;
+			}
+		}
+		// should not happen
+		assertTrue(middle != null);
+		
+		SPORule rule = (SPORule) listGrammar4.getRule("add");
+		Morphism morph = new DefaultMorphism(rule.lhs(),s);
+		Node cellNode = rule.lhs().nodeSet().iterator().next();
+		morph.putNode(cellNode, middle);
+		morph = Util.getTotalExtension(morph);
+		
+		// Constuct concrete parts
+		SystemRecord syst = new SystemRecord(listGrammar4, true);
+		ConcretePart.Typing typing = new TypingImpl(s, morph);
+		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst);
+		// there is only one extension
+		ConcretePart cp = ext.iterator().next();
+		Abstraction.Parameters options = new Abstraction.Parameters(true,  Abstraction.LinkPrecision.LOW, 1,2,10);
+		SetMaterialisations smat = new SetMaterialisations(cp, s, morph.elementMap(), options);
+		
+		// remap the initial mapping into the concrete part
+		NodeEdgeMap match = new NodeEdgeHashMap();
+		for (Node n : morph.nodeMap().keySet()){
+			match.putNode(n,n);
+		}
+		for (Edge e : morph.edgeMap().keySet()) {
+			match.putEdge(e, e);
+		}
+		
+		RuleEvent event = new SPOEvent(rule, new VarNodeEdgeHashMap(match), syst, false);
+		RuleApplication appl = new DefaultApplication(event, cp.graph());
+		Collection<AbstrGraph> result = smat.transform(appl, syst);
+		
+		String fileNameBase = "../tests/out3/graph";
+		int i = 1;
+		for (AbstrGraph ag : result) {
+			//System.out.println(ag + "\n");
+			String fileName = fileNameBase + i++;
+			try {
+				(new DefaultGxl()).marshalGraph(ag, new File(fileName));
+			} catch (IOException e1) {
+				System.err.println("Unable to write file " + fileName);
+				e1.printStackTrace(); 
+			}
+		}
+		// FIXME this is not 10, how many should be there ?
+		assertEquals(10, result.size());	
+	}
+	
 	/** */
 	@SuppressWarnings("unqualified-field-access")
 	public void testTransformCircularList () throws AssertionError {
 		// common variables
+		Abstraction.Parameters options = new Abstraction.Parameters(1,1,10);  
 		SystemRecord syst = new SystemRecord(circularListGrammar4, true);
 		SPORule rule = (SPORule) listGrammar4.getRule("add");
-		PatternFamily pf = new PatternFamily(1, 10);
+		PatternFamily pf = new PatternFamily(options.radius, 10);
 		
 		
 		// The first abstract graph
@@ -447,7 +538,7 @@ public class TestingTransforming extends TestCase {
 		// Compute the first abstract graph
 		{
 			try {
-				s = DefaultAbstrGraph.factory(pf,1).getShapeGraphFor(circularListGrammar4.getStartGraph());
+				s = DefaultAbstrGraph.factory(pf,options.precision).getShapeGraphFor(circularListGrammar4.getStartGraph());
 			} catch (ExceptionIncompatibleWithMaxIncidence e) {
 				e.printStackTrace();
 			}
@@ -458,7 +549,7 @@ public class TestingTransforming extends TestCase {
 			VarNodeEdgeMap match = Util.getMatchesIter(rule.lhs(), s, new NodeEdgeHashMap()).iterator().next();
 			ConcretePart.Typing typing = new TypingImpl(s, match);
 			ConcretePart cp = ConcretePart.extensions(rule.lhs(), typing, pf, false, syst).iterator().next();
-			SetMaterialisations smat = new SetMaterialisations(cp, s, match, this.options);
+			SetMaterialisations smat = new SetMaterialisations(cp, s, match, options);
 			RuleEvent event = new SPOEvent(rule, smat.updateMatch(match), syst, false);
 			RuleApplication appl = new DefaultApplication(event, cp.graph());
 			s2 = smat.transform(appl, syst).iterator().next();
@@ -487,7 +578,7 @@ public class TestingTransforming extends TestCase {
 		{
 			TypingImpl typing2 = new TypingImpl((DefaultAbstrGraph) s2, match2);
 			ConcretePart cp2 = ConcretePart.extensions(rule.lhs(), typing2, pf, false, syst).iterator().next();
-			smat2 = new SetMaterialisations(cp2, (DefaultAbstrGraph) s2, match2, this.options);
+			smat2 = new SetMaterialisations(cp2, (DefaultAbstrGraph) s2, match2, options);
 			RuleEvent event2 = new SPOEvent(rule, smat2.updateMatch(match2), syst, false);
 			appl2 = new DefaultApplication(event2, cp2.graph());
 		}
@@ -506,121 +597,222 @@ public class TestingTransforming extends TestCase {
 		
 	}
 	
+	@SuppressWarnings("unqualified-field-access")
 	public void testTransformBinaryTree1 () throws ExceptionIncompatibleWithMaxIncidence {
-		// Construct a problematic graph
-		PatternFamily pf = new PatternFamily(1, 10);
+		
+		int precision = 1;
+		int radius = this.binaryTreePF.getRadius();
+		
+		// Construct the problematic graph
 		DefaultAbstrGraph.AbstrGraphCreator creator =  DefaultAbstrGraph.getAbstrGraphCreatorInstance();
-		creator.init(pf, 1);
+		{
+		creator.init(this.binaryTreePF, precision);
 		MultiplicityInformation one = Abstraction.MULTIPLICITY.getElement(1, 1);
 		MultiplicityInformation omega = Abstraction.MULTIPLICITY.getElement(2, 1);
 		Label laba = DefaultLabel.createLabel("a");
-		Label labm = DefaultLabel.createLabel("m");
-		Label labl = DefaultLabel.createLabel("l");
+		Label labm = DefaultLabel.createLabel("med");
+		Label labl = DefaultLabel.createLabel("leaf");
 
-		
-		// create the patterns
-		Graph gA = new DefaultGraph();
-		Graph gB = new DefaultGraph();
-		Graph gC = new DefaultGraph();
-		Graph gD = new DefaultGraph();
-		Graph gL = new DefaultGraph();
-		initGraphs(gA, gB, gC, gD, gL);
-		GraphPattern pA, pB, pC, pD, pL;
-		pA = pf.computeAddPattern(gA, nodes[0]);
-		pB = pf.computeAddPattern(gB, nodes[0]);
-		pC = pf.computeAddPattern(gC, nodes[0]);
-		pD = pf.computeAddPattern(gD, nodes[0]);
-		pL = pf.computeAddPattern(gL, nodes[0]);
-		
-		Node nA = creator.addNode(one, pA);
-		Node nC = creator.addNode(omega, pC);		
-		Node nB = creator.addNode(one, pB);
-		Node nL = creator.addNode(omega, pL);
-		creator.addEdge(nA, labm, nA);
+		Node nA1 = creator.addNode(one, this.binaryTreePatternsMap.get("pA1"));
+		Node nC = creator.addNode(omega, this.binaryTreePatternsMap.get("pC"));		
+		Node nB = creator.addNode(one, this.binaryTreePatternsMap.get("pB"));
+		Node nL = creator.addNode(omega, this.binaryTreePatternsMap.get("pL"));
+		creator.addEdge(nA1, labm, nA1);
 		creator.addEdge(nC, labm, nC);
 		creator.addEdge(nC, laba, nC);
 		creator.addEdge(nB, labm, nB);
 		creator.addEdge(nL, labl, nL);//
-		creator.addEdge(nA, laba, nC);
+		creator.addEdge(nA1, laba, nC);
 		creator.addEdge(nC, laba, nB);
 		creator.addEdge(nB, laba, nL);
-		creator.addEdge(nA, laba, nL);
+		creator.addEdge(nA1, laba, nL);
 		creator.addEdge(nC, laba, nL);
 		
 		creator.setFixed();
-		AbstrGraph ag = creator.getConstructedGraph();
+		}
+		DefaultAbstrGraph ag = creator.getConstructedGraph();
 		
+		// find the match and perform the transformation
+		SPORule	 rule = (SPORule) binaryTreeGrammar.getRule("expand");
+		SystemRecord syst = new SystemRecord(binaryTreeGrammar, true);
 		
+		Collection<AbstrGraph> all = new ArrayList<AbstrGraph>();
+		VarNodeEdgeMap match = Util.getMatchesIter(rule.lhs(), ag, new NodeEdgeHashMap()).iterator().next(); // only one match
+		ConcretePart.Typing typing = new TypingImpl(ag, match);
+		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, this.binaryTreePF, false, syst);
+		for (ConcretePart cp : ext) {
+			Abstraction.Parameters options = new Abstraction.Parameters(true, precision, radius, 10);
+			SetMaterialisations smat = new SetMaterialisations(cp, ag, match, options);
+			RuleEvent event = new SPOEvent(rule, smat.updateMatch(match), syst, false);
+			RuleApplication appl = new DefaultApplication(event, cp.graph());
+			Collection<AbstrGraph> resultTransform = smat.transform(appl, syst);
+			all.addAll(resultTransform);
+		}
+		
+		for (AbstrGraph g : all) {
+			System.out.println(g);	
+		}
 		
 	}
+
+	@SuppressWarnings("unqualified-field-access")
+	public void testTransformBinaryTree2 () throws ExceptionIncompatibleWithMaxIncidence {
 		
-	private void initGraphs(Graph gA, Graph gB, Graph gC, Graph gD, Graph gL) {
+		int precision = 1;
+		int radius = this.binaryTreePF.getRadius();
 		
+		DefaultAbstrGraph.AbstrGraphCreator creator =  DefaultAbstrGraph.getAbstrGraphCreatorInstance();
+		{
+		creator.init(this.binaryTreePF, 1);
+		MultiplicityInformation one = Abstraction.MULTIPLICITY.getElement(1, 1);
+		MultiplicityInformation omega = Abstraction.MULTIPLICITY.getElement(2, 1);
 		Label laba = DefaultLabel.createLabel("a");
-		Label labm = DefaultLabel.createLabel("m");
-		Label labl = DefaultLabel.createLabel("l");
+		Label labm = DefaultLabel.createLabel("med");
+		Label labl = DefaultLabel.createLabel("leaf");
 
-		for (int i = 0; i < 3; i++) { gA.addNode(nodes[i]); }
-		gA.addEdge(DefaultEdge.createEdge(nodes[0], labm, nodes[0]));
-		gA.addEdge(DefaultEdge.createEdge(nodes[1], labm, nodes[1]));
-		gA.addEdge(DefaultEdge.createEdge(nodes[2], labm, nodes[2]));//
-		gA.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[1]));
-		gA.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[2]));
-
-		for (int i = 0; i < 4; i++) { gB.addNode(nodes[i]); }
-		gB.addEdge(DefaultEdge.createEdge(nodes[0], labm, nodes[0]));
-		gB.addEdge(DefaultEdge.createEdge(nodes[1], labl, nodes[1]));
-		gB.addEdge(DefaultEdge.createEdge(nodes[2], labl, nodes[2]));
-		gB.addEdge(DefaultEdge.createEdge(nodes[3], labm, nodes[3]));//
-		gB.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[1]));
-		gB.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[2]));
-		gB.addEdge(DefaultEdge.createEdge(nodes[3], laba, nodes[0]));
+		Node nA2 = creator.addNode(one, this.binaryTreePatternsMap.get("pA2"));
+		Node nB = creator.addNode(one, this.binaryTreePatternsMap.get("pB"));
+		Node nL = creator.addNode(omega, this.binaryTreePatternsMap.get("pL"));
+		creator.addEdge(nA2, labm, nA2);
+		creator.addEdge(nB, labm, nB);
+		creator.addEdge(nL, labl, nL);//
+		creator.addEdge(nA2, laba, nB);
+		creator.addEdge(nB, laba, nL);
 		
-		for (int i = 0; i < 4; i++) { gC.addNode(nodes[i]); }
-		gC.addEdge(DefaultEdge.createEdge(nodes[0], labm, nodes[0]));
-		gC.addEdge(DefaultEdge.createEdge(nodes[1], labm, nodes[1]));
-		gC.addEdge(DefaultEdge.createEdge(nodes[2], labl, nodes[2]));
-		gC.addEdge(DefaultEdge.createEdge(nodes[3], labm, nodes[3]));//
-		gC.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[1]));
-		gC.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[2]));
-		gC.addEdge(DefaultEdge.createEdge(nodes[3], laba, nodes[0]));
+		creator.setFixed();
+		}
+		DefaultAbstrGraph ag = creator.getConstructedGraph();
 		
-		for (int i = 0; i < 4; i++) { gD.addNode(nodes[i]); }
-		gD.addEdge(DefaultEdge.createEdge(nodes[0], labm, nodes[0]));
-		gD.addEdge(DefaultEdge.createEdge(nodes[1], labm, nodes[1]));
-		gD.addEdge(DefaultEdge.createEdge(nodes[2], labm, nodes[2]));
-		gD.addEdge(DefaultEdge.createEdge(nodes[3], labm, nodes[3]));//
-		gD.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[1]));
-		gD.addEdge(DefaultEdge.createEdge(nodes[0], laba, nodes[2]));
-		gD.addEdge(DefaultEdge.createEdge(nodes[3], laba, nodes[0]));
+		// find the match and perform the transformation
+		SPORule	 rule = (SPORule) binaryTreeGrammar.getRule("expand");
+		SystemRecord syst = new SystemRecord(binaryTreeGrammar, true);
 		
-		for (int i = 0; i < 2; i++) { gL.addNode(nodes[i]); }
-		gL.addEdge(DefaultEdge.createEdge(nodes[0], labl, nodes[0]));
-		gL.addEdge(DefaultEdge.createEdge(nodes[1], labm, nodes[1]));
-		gL.addEdge(DefaultEdge.createEdge(nodes[1], laba, nodes[0]));
-	}
-
-	public static void main (String[] args) {
-		TestingTransforming test = new TestingTransforming();
-		test.setUp();
-		//test.testTransformBinaryTree();
+		Collection<AbstrGraph> all = new ArrayList<AbstrGraph>();
+		VarNodeEdgeMap match = Util.getMatchesIter(rule.lhs(), ag, new NodeEdgeHashMap()).iterator().next(); // only one match
+		ConcretePart.Typing typing = new TypingImpl(ag, match);
+		Collection<ConcretePart> ext = ConcretePart.extensions(rule.lhs(), typing, this.binaryTreePF, false, syst);
+		for (ConcretePart cp : ext) {
+			Abstraction.Parameters options = new Abstraction.Parameters(true, precision, radius, 10); 
+			SetMaterialisations smat = new SetMaterialisations(cp, ag, match, options);
+			RuleEvent event = new SPOEvent(rule, smat.updateMatch(match), syst, false);
+			RuleApplication appl = new DefaultApplication(event, cp.graph());
+			Collection<AbstrGraph> resultTransform = smat.transform(appl, syst);
+			all.addAll(resultTransform);
+		}
 		
-		// --------------------------
-		SPORule rule = (SPORule) test.binaryTreeGrammar.getRule("expand");
-		SystemRecord syst = new SystemRecord(test.binaryTreeGrammar, true);
-		Graph g = rule.lhs().clone();
-		Node n = g.nodeSet().iterator().next();
-		VarNodeEdgeMap match2 = new VarNodeEdgeHashMap();
-		match2.putNode(n, n);
-		match2 = Util.getMatchesIter(rule.lhs(), g, match2).iterator().next();
-		RuleEvent event2 = new SPOEvent(rule, match2, syst, true);
-		RuleApplication appl2 = new DefaultApplication(event2, g);
-		appl2.applyDelta(g);
-		Graph g3 = appl2.getTarget();
-		System.out.println(g3);
+		for (AbstrGraph g : all) {
+			System.out.println(g);	
+		}
 		
 	}
 	
+	
+	@SuppressWarnings("unqualified-field-access")
+	private void initBinaryTreePatterns() throws ExceptionIncompatibleWithMaxIncidence {
+		if (this.binaryTreePatternsMap != null) { return; }
+		this.binaryTreePatternsMap = new HashMap<String, GraphPattern>();
+		
+		Graph g;
+		Label l_a = DefaultLabel.createLabel("a");
+		Label l_med = DefaultLabel.createLabel("med");
+		Label l_leaf = DefaultLabel.createLabel("leaf");
+		
+		// one leaf "pR"
+		g = new DefaultGraph();
+		g.addNode(nodes[0]);
+		g.addEdge(nodes[0], l_leaf, nodes[0]);
+		binaryTreePatternsMap.put("pR", binaryTreePF.computeAddPattern(g, nodes[0]));
+		
+		// root with two leafs "pA0"
+		g = new DefaultGraph();
+		for (int i = 0; i < 3; i++) { g.addNode(nodes[i]); }
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_med, nodes[0]));
+		g.addEdge(DefaultEdge.createEdge(nodes[1], l_leaf, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[2], l_leaf, nodes[2]));//
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[2]));
+		binaryTreePatternsMap.put("pA0", binaryTreePF.computeAddPattern(g, nodes[0]));
+		 
+		// root with one leaf and one med "pA1"
+		g = new DefaultGraph();
+		for (int i = 0; i < 3; i++) { g.addNode(nodes[i]); }
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_med, nodes[0]));
+		g.addEdge(DefaultEdge.createEdge(nodes[1], l_leaf, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[2], l_med, nodes[2]));//
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[2]));
+		binaryTreePatternsMap.put("pA1", binaryTreePF.computeAddPattern(g, nodes[0]));
+		
+		// root with two med "pA2"
+		g = new DefaultGraph();
+		for (int i = 0; i < 3; i++) { g.addNode(nodes[i]); }
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_med, nodes[0]));
+		g.addEdge(DefaultEdge.createEdge(nodes[1], l_med, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[2], l_med, nodes[2]));//
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[2]));
+		binaryTreePatternsMap.put("pA2", binaryTreePF.computeAddPattern(g, nodes[0]));
+		
+		// med with two leafs "pB"
+		g = new DefaultGraph();
+		for (int i = 0; i < 4; i++) { g.addNode(nodes[i]); }
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_med, nodes[0]));
+		g.addEdge(DefaultEdge.createEdge(nodes[1], l_leaf, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[2], l_leaf, nodes[2]));
+		g.addEdge(DefaultEdge.createEdge(nodes[3], l_med, nodes[3]));//
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[2]));
+		g.addEdge(DefaultEdge.createEdge(nodes[3], l_a, nodes[0]));
+		binaryTreePatternsMap.put("pB", binaryTreePF.computeAddPattern(g, nodes[0]));
+		
+		// med with one leaf and one med "pC"
+		g = new DefaultGraph();
+		for (int i = 0; i < 4; i++) { g.addNode(nodes[i]); }
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_med, nodes[0]));
+		g.addEdge(DefaultEdge.createEdge(nodes[1], l_leaf, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[2], l_med, nodes[2]));
+		g.addEdge(DefaultEdge.createEdge(nodes[3], l_med, nodes[3]));//
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[2]));
+		g.addEdge(DefaultEdge.createEdge(nodes[3], l_a, nodes[0]));
+		binaryTreePatternsMap.put("pC", binaryTreePF.computeAddPattern(g, nodes[0]));
+		
+		// med with two med "pD"
+		g = new DefaultGraph();
+		for (int i = 0; i < 4; i++) { g.addNode(nodes[i]); }
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_med, nodes[0]));
+		g.addEdge(DefaultEdge.createEdge(nodes[1], l_med, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[2], l_med, nodes[2]));
+		g.addEdge(DefaultEdge.createEdge(nodes[3], l_med, nodes[3]));//
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[1]));
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_a, nodes[2]));
+		g.addEdge(DefaultEdge.createEdge(nodes[3], l_a, nodes[0]));
+		binaryTreePatternsMap.put("pD", binaryTreePF.computeAddPattern(g, nodes[0]));
+		
+		// leaf not root "pL"
+		g = new DefaultGraph();
+		for (int i = 0; i < 2; i++) { g.addNode(nodes[i]); }
+		g.addEdge(DefaultEdge.createEdge(nodes[0], l_leaf, nodes[0]));
+		g.addEdge(DefaultEdge.createEdge(nodes[1], l_med, nodes[1]));//
+		g.addEdge(DefaultEdge.createEdge(nodes[1], l_a, nodes[0]));
+		binaryTreePatternsMap.put("pL", binaryTreePF.computeAddPattern(g, nodes[0]));
+	}
+
+	public static void main (String[] args) {
+	
+		TestingTransforming test = new TestingTransforming();
+		test.setUp();
+		test.testSetMaterialisations5();
+		
+		/*
+		try {
+			test.testTransformBinaryTree2();
+		} catch (ExceptionIncompatibleWithMaxIncidence e) {
+			e.printStackTrace();
+		}
+		*/
+			
+	}
 	
 	
 	private class TypingImpl implements ConcretePart.Typing {

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HashIntSet.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: HashIntSet.java,v 1.2 2008-01-30 09:32:02 iovka Exp $
  */
 package groove.util;
 
@@ -25,7 +25,7 @@ import java.util.Set;
  * representation of the <code>int</code> keys.
  *
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:59 $
+ * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:02 $
  */
 final public class HashIntSet implements IntSet {
 	/**

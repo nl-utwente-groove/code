@@ -12,34 +12,26 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlJModel.java,v 1.9 2007-11-26 08:58:39 fladder Exp $
+ * $Id: ControlJModel.java,v 1.10 2008-01-30 09:33:13 iovka Exp $
  */
 package groove.gui.jgraph;
 
-import static groove.gui.jgraph.JAttr.LTS_ACTIVE_EMPH_NODE_CHANGE;
-import static groove.gui.jgraph.JAttr.LTS_EDGE_ACTIVE_CHANGE;
-import static groove.gui.jgraph.JAttr.LTS_EDGE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_FINAL_NODE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_NODE_ACTIVE_CHANGE;
-import static groove.gui.jgraph.JAttr.LTS_NODE_ATTR;
-import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
 import groove.control.ControlAutomaton;
+import groove.control.ControlShape;
 import groove.control.ControlState;
 import groove.control.ControlTransition;
 import groove.control.ElseControlTransition;
 import groove.control.LambdaControlTransition;
+import groove.control.Location;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.Options;
 import groove.lts.GraphTransition;
-import groove.lts.LTS;
 import groove.util.Converter;
 import groove.util.Groove;
-import groove.view.aspect.AspectNode;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -52,7 +44,9 @@ public class ControlJModel extends GraphJModel {
      * Is null if there is no active state.
      * @invariant activeState == null || ltsJModel.graph().contains(activeState)
      */
-    private ControlState activeState;
+    
+	private Location activeLocation;
+    
     /**
      * The currently active transition of the LTS.
      * The source node of emphasizedEdge (if non-null) is also emphasized.
@@ -71,7 +65,7 @@ public class ControlJModel extends GraphJModel {
 	
 	public ControlJModel(GraphShape shape, Options options)
 	{
-		super(shape, JAttr.NESTING_NODE_ATTR, JAttr.NESTING_EDGE_ATTR, options);
+		super(shape, JAttr.CONTROL_NODE_ATTR, JAttr.CONTROL_EDGE_ATTR, options);
 		this.reload();
 	}
 
@@ -96,8 +90,8 @@ public class ControlJModel extends GraphJModel {
      * Returns <tt>null</tt> if no state is active (which should occur only
      * if no grammar is loaded and hence the LTS is empty).
      */
-    public ControlState getActiveState() {
-        return activeState;
+    public Location getActiveLocation() {
+        return activeLocation;
     }
 	
     /**
@@ -132,18 +126,35 @@ public class ControlJModel extends GraphJModel {
      * @param state the new active state
      * @return the old active state
      */
-    public ControlState setActiveState(ControlState state) {
-        ControlState result = activeState;
-        activeState = state;
+    public Location setActiveLocation(Location location) {
+        Location result = activeLocation;
+        
+        activeLocation = location;
         Set<JCell> changedCells = new HashSet<JCell>();
-        if (state != null) {
-            changedCells.add(getJCell(state));
-        }
-        if (result != null) {
-            changedCells.add(getJCell(result));
-        }
+
+       // TODO: get changed cells from old and new location
+
+        // FIXME: Tom
+//        if( result != null ) {
+//           	for( ControlState cs : result ) {
+//        		changedCells.add(getJCell(cs));
+//        	}
+//        }
+//        if( location != null ) {
+//        	for( ControlState cs : location ) {
+//        		changedCells.add(getJCell(cs));
+//        	}
+//        }
+
         refresh(changedCells);
+        
         return result;
+    }
+    
+    public boolean isActive(ControlState state) {
+    	// FIXME: TOM
+//    	return (activeLocation != null && activeLocation.contains(state));
+    	return false;
     }
     
     @Override
@@ -183,18 +194,36 @@ public class ControlJModel extends GraphJModel {
         AttributeMap result;
         ControlState state = (ControlState) node;
         if (state.equals(getGraph().startState())) {
-            result = LTS_START_NODE_ATTR.clone();
-        } else if (getGraph().isSuccess(state)) {
-            result = LTS_FINAL_NODE_ATTR.clone();
+            result = JAttr.CONTROL_START_NODE_ATTR.clone();
+        } else if ( state.isSuccess() ) {
+            result = JAttr.CONTROL_SUCCESS_NODE_ATTR.clone();
         } else {
-            result = LTS_NODE_ATTR.clone();
+            result = JAttr.CONTROL_NODE_ATTR.clone();
         }
-        if (state.equals(activeState)) {
-            result.applyMap(LTS_NODE_ACTIVE_CHANGE);
+        
+        if( isActive(state)) {
+            result.applyMap(JAttr.LTS_NODE_ACTIVE_CHANGE);
         }
+        
         return result;
     }
 
+//	@Override
+//	protected AttributeMap createJEdgeAttr(Edge edge) {
+//		AttributeMap result;
+//		
+//		ControlTransition t = (ControlTransition) edge;
+//		
+//		if( t instanceof ControlShape ) {
+//			result = JAttr.CONTROL_SHAPE_EDGE_ATTR.clone();
+//		} else if ( t instanceof LambdaControlTransition || t instanceof ElseControlTransition ) {
+//			result = JAttr.CONTROL_INTERNAL_EDGE_ATTR.clone();
+//		} else {
+//			result = JAttr.CONTROL_EDGE_ATTR.clone();
+//		}
+//		return result;
+//	}
+	
 	/**
 	 * This implementation adds special attributes for the active transition.
 	 * @see JAttr#LTS_EDGE_ATTR
@@ -202,25 +231,34 @@ public class ControlJModel extends GraphJModel {
 	 */
 	@Override
     protected AttributeMap createJEdgeAttr(Set<? extends Edge> edgeSet) {
-        AttributeMap result = LTS_EDGE_ATTR.clone();
-        if (activeTransition != null && edgeSet.contains(activeTransition)) {
-            result.applyMap(LTS_EDGE_ACTIVE_CHANGE);
-        }
-        return result;
+		AttributeMap result;
+		
+		
+		// get the first node
+		ControlTransition t = (ControlTransition) edgeSet.iterator().next();
+		
+		if( t instanceof ControlShape ) {
+			result = JAttr.CONTROL_SHAPE_EDGE_ATTR.clone();
+		} else if ( t instanceof LambdaControlTransition || t instanceof ElseControlTransition ) {
+			result = JAttr.CONTROL_INTERNAL_EDGE_ATTR.clone();
+		} else {
+			result = JAttr.CONTROL_EDGE_ATTR.clone();
+		}
+		return result;
     }
 
-    /** Adds the correct border emphasis. */
-	@Override
-	protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
-		AttributeMap result;
-        ControlState state = ((StateJVertex) jCell).getNode();
-        if (state.equals(getActiveState())) {
-        	result = LTS_ACTIVE_EMPH_NODE_CHANGE;
-        } else {
-        	result = super.getJVertexEmphAttr(jCell);
-        }
-        return result;
-	}
+//    /** Adds the correct border emphasis. */
+//	@Override
+//	protected AttributeMap getJVertexEmphAttr(JVertex jCell) {
+//		AttributeMap result;
+//        ControlState state = ((StateJVertex) jCell).getNode();
+//        if (state.equals(getActiveState())) {
+//        	result = LTS_ACTIVE_EMPH_NODE_CHANGE;
+//        } else {
+//        	result = super.getJVertexEmphAttr(jCell);
+//        }
+//        return result;
+//	}
 
 	/** Dummy LTS model. */
 	static public final ControlJModel EMPTY_CONTROL_JMODEL = new ControlJModel();
@@ -248,6 +286,9 @@ public class ControlJModel extends GraphJModel {
 			}
 			else if( edge instanceof ElseControlTransition) {
 				return new StringBuilder("\u03B5");
+				// this would display the failureset
+				// does not work because the failuresets have not been initialized before the GTS is computed
+				//	return new StringBuilder(edge.toString());
 			}
 			else {
 				return super.getLine(edge);

@@ -23,7 +23,7 @@ import groove.trans.RuleApplication;
  * which is a pre-existing graph transition that essentially equals the one we
  * are deriving now, at an earlier stage.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public interface AliasRuleApplication extends RuleApplication {
     /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeSet.java,v 1.8 2007-11-02 08:42:22 rensink Exp $
+ * $Id: NodeSet.java,v 1.9 2008-01-30 09:32:57 iovka Exp $
  */
 package groove.graph;
 

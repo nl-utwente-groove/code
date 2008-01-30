@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: AnchorFactory.java,v 1.1.1.2 2007-03-20 10:42:55 kastenberg Exp $
+ * $Id: AnchorFactory.java,v 1.2 2008-01-30 09:32:36 iovka Exp $
  */
 package groove.trans;
 
@@ -22,7 +22,7 @@ import groove.graph.Element;
  * Interface offering the functionality to extract anchors from a given
  * graph transformation rule.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface AnchorFactory {
     /**

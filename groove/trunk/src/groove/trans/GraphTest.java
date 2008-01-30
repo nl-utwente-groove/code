@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphTest.java,v 1.10 2007-10-05 08:31:41 rensink Exp $
+ * $Id: GraphTest.java,v 1.11 2008-01-30 09:32:39 iovka Exp $
  */
 package groove.trans;
 
@@ -23,7 +23,7 @@ import groove.rel.VarMorphism;
  * Super-interface for tests over graphs.
  * Contains the common functionality of {@link GraphPredicate} and {@link GraphCondition}.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 @Deprecated
 public interface GraphTest {    

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.15 2007-11-26 08:58:41 fladder Exp $
+ * $Id: AbstractGraphState.java,v 1.16 2008-01-30 09:32:20 iovka Exp $
  */
 package groove.lts;
 
@@ -38,7 +38,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.15 $ $Date: 2007-11-26 08:58:41 $
+ * @version $Revision: 1.16 $ $Date: 2008-01-30 09:32:20 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
@@ -64,15 +64,8 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 		return this.location;
 	}
 
-	public boolean  addLocation(Location l) { 
-		if( l == null )
-			return false;
-		else if( this.location == null ) {
-			this.location = l;
-			return true;
-		} else {
-			return this.location.add(l);
-		}
+	public void setLocation(Location l) { 
+		this.location = l;
 	}
 	
 	
@@ -90,6 +83,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         };
     }
 
+   
     public Set<GraphTransition> getTransitionSet() {
         return new TransformSet<GraphTransitionStub,GraphTransition>(getTransitionStubSet()) {
         	@Override
@@ -220,7 +214,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 	 * Returns an iterator over the stored outgoing transitions.
 	 * Returns <code>null</code> if there are no transitions stored.
 	 */
-	final Collection<GraphTransitionStub> getStoredTransitionStubs() {
+	public final Collection<GraphTransitionStub> getStoredTransitionStubs() {
 		return Arrays.asList(transitionStubs);
 	}
 

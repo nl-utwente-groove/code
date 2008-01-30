@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultPredicateOutcome.java,v 1.4 2007-10-05 08:31:41 rensink Exp $
+ * $Id: DefaultPredicateOutcome.java,v 1.5 2008-01-30 09:32:38 iovka Exp $
  */
 package groove.trans;
 
@@ -24,7 +24,7 @@ import java.util.Map;
  * Default implementation of a {@link GraphTestOutcome} for {@link GraphPredicate}s.
  * Specialises {@link AbstractTestOutcome}.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 @Deprecated
 public class DefaultPredicateOutcome extends AbstractTestOutcome<GraphCondition,Matching> implements GraphPredicateOutcome {

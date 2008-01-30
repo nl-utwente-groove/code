@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultApplication.java,v 1.8 2007-10-20 15:20:05 rensink Exp $
+ * $Id: DefaultApplication.java,v 1.9 2008-01-30 09:32:35 iovka Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2007-10-20 15:20:05 $
+ * @version $Revision: 1.9 $ $Date: 2008-01-30 09:32:35 $
  */
 public class DefaultApplication implements RuleApplication, Derivation {
     /**

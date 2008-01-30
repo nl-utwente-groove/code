@@ -27,7 +27,7 @@ import junit.framework.TestCase;
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class TreeSetTest extends TestCase {
 	static final int INT_LIST_COUNT = 1000;

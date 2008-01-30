@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GrooveFileChooser.java,v 1.3 2007-09-04 20:59:36 rensink Exp $
+ * $Id: GrooveFileChooser.java,v 1.4 2008-01-30 09:33:42 iovka Exp $
  */
 package groove.io;
 
@@ -28,7 +28,7 @@ import javax.swing.filechooser.FileView;
  * A file chooser with a {@link GrooveFileView}, which prevents traversal of 
  * directories if these are selectable by the current file filter.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class GrooveFileChooser extends JFileChooser {
     /** File chooser with initial directory {@link Groove#WORKING_DIR}. */

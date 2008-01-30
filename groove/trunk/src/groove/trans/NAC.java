@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: NAC.java,v 1.5 2007-10-05 08:31:42 rensink Exp $
+ * $Id: NAC.java,v 1.6 2008-01-30 09:32:37 iovka Exp $
  */
 package groove.trans;
 
@@ -26,7 +26,7 @@ import groove.rel.VarMorphism;
  * special subclasses, {@link MergeEmbargo} and {@link EdgeEmbargo}, are noteworthy
  * because they allow performance optimisations to be made during matching.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 @Deprecated
 public interface NAC extends GraphCondition {

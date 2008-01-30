@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditableJCell.java,v 1.2 2007-05-28 21:32:43 rensink Exp $
+ * $Id: EditableJCell.java,v 1.3 2008-01-30 09:33:13 iovka Exp $
  */
 package groove.gui.jgraph;
 

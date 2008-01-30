@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateFunction.java,v 1.2 2007-08-26 07:24:22 rensink Exp $
+ * $Id: StateFunction.java,v 1.3 2008-01-30 09:33:19 iovka Exp $
  */
 package groove.calc;
 

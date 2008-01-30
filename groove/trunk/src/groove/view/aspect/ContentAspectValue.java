@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ContentAspectValue.java,v 1.9 2007-10-14 11:17:35 rensink Exp $
+ * $Id: ContentAspectValue.java,v 1.10 2008-01-30 09:31:33 iovka Exp $
  */
 package groove.view.aspect;
 

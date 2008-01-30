@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VarEdgeSearchItem.java,v 1.17 2007-11-19 12:19:28 rensink Exp $
+ * $Id: VarEdgeSearchItem.java,v 1.18 2008-01-30 09:33:29 iovka Exp $
  */
 package groove.match;
 
@@ -92,7 +92,7 @@ class VarEdgeSearchItem extends Edge2SearchItem {
     boolean varFound;
 
 	/** The constraint on the variable valuation, if any. */
-	private final groove.calc.Property<String> labelConstraint; 
+	private final groove.util.Property<String> labelConstraint; 
     
     class VarEdgeSingularRecord extends Edge2SingularRecord {
     	/** 

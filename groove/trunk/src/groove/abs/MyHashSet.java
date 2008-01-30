@@ -217,7 +217,7 @@ public class MyHashSet<T> implements Iterable<T>, Set<T>{
  	private int size;
  	
 	/** The default capacity of the set, if not provided by the user. */
-	private static final int DEFAULT_STORE_SIZE = 128;
+	private static final int DEFAULT_STORE_SIZE = 16;
 	/** The capacity increment for the lists contained in the buckets for collision management. */
 	private static final int INITIAL_LIST_CAPACITY = 5;
 	

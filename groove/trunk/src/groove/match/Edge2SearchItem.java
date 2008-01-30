@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge2SearchItem.java,v 1.14 2007-11-08 11:35:45 rensink Exp $
+ * $Id: Edge2SearchItem.java,v 1.15 2008-01-30 09:33:29 iovka Exp $
  */
 package groove.match;
 
@@ -356,7 +356,7 @@ class Edge2SearchItem extends AbstractSearchItem {
         	}
         }
         
-        /**
+        /** IOVKA this comment is not updated !
          * Returns an iterator over those images for {@link #edge} that are consistent with the
          * pre-matched edge ends.
          * The iterator actually selects the returned edges in the result map, as a side effect.

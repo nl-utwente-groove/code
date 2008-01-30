@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.14 2007-11-19 12:19:14 rensink Exp $
+ * $Id: AspectGraph.java,v 1.15 2008-01-30 09:31:32 iovka Exp $
  */
 package groove.view.aspect;
 
@@ -302,7 +302,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	 * and throws an exception if the edge is not a self-edge or contains more than 
 	 * one aspect value.
 	 * @param edge the edge to be tested
-	 * @param parser TODO
+	 * @param parser
 	 * @return a node aspect value for the (unique) endpoint of the edge, or
 	 * <code>null</code> if <code>edge</code> does not encode a node aspect value.
 	 * @throws FormatException if <code>edge</code> does ancode a node aspect
