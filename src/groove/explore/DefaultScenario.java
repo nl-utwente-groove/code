@@ -123,7 +123,7 @@ public class DefaultScenario<T> implements Scenario<T> {
 	public void setState(GraphState state) {
 		this.atState = state;
 	}
-
+	@Override
 	public String toString() {
 		return (atState==null?"":" (from " + atState.toString() + ")");
 	}

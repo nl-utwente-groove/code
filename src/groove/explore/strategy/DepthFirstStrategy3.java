@@ -54,6 +54,7 @@ public class DepthFirstStrategy3 extends AbstractBacktrackingStrategy {
 	/** Computes the new value for {@link #atState}. 
 	 * @param The iterator used to iterate on matches of atState.
 	 */
+	@Override
 	protected void updateAtState() {
 		this.backFrom = null;   // set to non null if backtracking
 		if (this.collector.pickRandomNewState() != null) {

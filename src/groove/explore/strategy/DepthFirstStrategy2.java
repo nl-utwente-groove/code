@@ -46,6 +46,7 @@ public class DepthFirstStrategy2 extends AbstractBacktrackingStrategy {
 	 * @param newStates The set of successor states of this.atState that ware just added
 	 * @param matchIter The iterator used for iterate on matches of atState.
 	 */
+	@Override
 	protected void updateAtState() {
 		this.backFrom = null;    // will be given non null value in case of backtracking
 		if (this.collector.pickRandomNewState() != null) {
