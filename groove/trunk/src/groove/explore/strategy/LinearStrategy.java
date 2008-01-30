@@ -66,6 +66,7 @@ public class LinearStrategy extends AbstractStrategy {
 		/** Forgets collected new state. */
 		void reset () { this.newState = null; }
 		
+		@Override
 		public void addUpdate(GraphShape shape, Node node) {
 			if (newState == null) {
 				newState = (GraphState) node;

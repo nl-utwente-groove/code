@@ -24,6 +24,7 @@ public class RandomNewStateChooser extends GraphAdapter {
 	/** Forgets all new states it has seen so far. */
 	public void reset () { rc.reset(); }
 	
+	@Override
 	public void addUpdate(GraphShape shape, Node node) {
 		rc.show((GraphState) node);
 	}

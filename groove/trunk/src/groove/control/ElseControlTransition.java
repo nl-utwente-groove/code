@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ElseControlTransition.java,v 1.6 2008-01-30 09:33:24 iovka Exp $
+ * $Id: ElseControlTransition.java,v 1.7 2008-01-30 11:13:57 fladder Exp $
  */
 package groove.control;
 
@@ -45,7 +45,7 @@ public class ElseControlTransition extends ControlTransition {
 	}
 	
 	private Set<Rule> rules;
-	
+		@Override
 	public String toString() {
 		if( rules != null )
 			return "!" + rules.toString();

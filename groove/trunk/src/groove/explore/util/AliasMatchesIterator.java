@@ -29,9 +29,8 @@ public class AliasMatchesIterator extends MatchesIterator {
 		priority = state.getEvent().getRule().getPriority();
 		myFirstRule();
 	}
-
+	@Override
 	public void firstRule() {
-
 	}
 
 //	private String listRules(Set<Rule> rules) {
@@ -50,7 +49,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 		updateFirstRule();
 		this.isEndRule = true;
 	}
-
+	@Override
 	public boolean nextRule() {
 		boolean nextrule = super.nextRule();
 		

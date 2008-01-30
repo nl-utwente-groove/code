@@ -11,7 +11,7 @@ public class ConditionProperty extends Property<GraphState> {
 	public ConditionProperty(Condition test) {
 		this.test = test;
 	}
-	
+		@Override
 	public boolean isSatisfied(GraphState state) {
 		return test.hasMatch(state.getGraph());
 	}
