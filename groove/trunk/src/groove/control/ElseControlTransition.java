@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ElseControlTransition.java,v 1.7 2008-01-30 11:13:57 fladder Exp $
+ * $Id: ElseControlTransition.java,v 1.8 2008-01-30 12:37:39 fladder Exp $
  */
 package groove.control;
 
@@ -34,18 +34,10 @@ public class ElseControlTransition extends ControlTransition {
 	 */
 	public ElseControlTransition(ControlState source, ControlState target) {
 		super(source, target, ControlView.ELSE_LABEL);
-	}
-	
-	public void setFailureSet(Set<Rule> rules) {
-		this.rules = rules;
-	}
-	
-	public Set<Rule> getFailureSet() {
-		return rules;
-	}
-	
-	private Set<Rule> rules;
-		@Override
+	}	/**	 * Set of rules representing the failure-set of this transition	 * @param rules	 */
+	public void setFailureSet(Set<Rule> rules) {		this.rules = rules;	}	/**	 * @return the concrete failure-set of this transition (set of rules)	 */
+	public Set<Rule> getFailureSet() {		return rules;	}
+	private Set<Rule> rules;		@Override
 	public String toString() {
 		if( rules != null )
 			return "!" + rules.toString();
