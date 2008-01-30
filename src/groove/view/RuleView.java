@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleView.java,v 1.4 2007-05-14 10:39:38 rensink Exp $
+ * $Id: RuleView.java,v 1.5 2008-01-30 09:33:26 iovka Exp $
  */
 package groove.view;
 
@@ -24,7 +24,7 @@ import groove.trans.RuleNameLabel;
  * Currently the only implemented view is the {@link AspectualRuleView}, which provides
  * a monolithic view in which all the elements of the rule are part of one graph.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface RuleView extends View<Rule>, Comparable<RuleView> {
     /**

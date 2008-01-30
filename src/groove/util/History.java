@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: History.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: History.java,v 1.2 2008-01-30 09:32:15 iovka Exp $
  */
 package groove.util;
 
@@ -25,7 +25,7 @@ import java.util.NoSuchElementException;
  * and adding a new element at the current position.
  * Resembles <tt>ListIterator</tt> in the back-and-forth browsing.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:59 $
+ * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:15 $
  * @see java.util.ListIterator
  */
 public class History<T> {

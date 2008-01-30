@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FrozenDeltaApplier.java,v 1.2 2007-11-05 14:16:23 rensink Exp $
+ * $Id: FrozenDeltaApplier.java,v 1.3 2008-01-30 09:32:51 iovka Exp $
  */
 package groove.graph;
 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrSimulationProperties.java,v 1.1 2007-11-28 15:35:02 iovka Exp $
+ * $Id: AbstrSimulationProperties.java,v 1.2 2008-01-30 09:32:23 iovka Exp $
  */
 package groove.abs;
 
@@ -21,7 +21,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
-import groove.calc.Property;
+
+import groove.util.Property;
 
 /** A set of properties for abstract simulation */
 public class AbstrSimulationProperties extends Properties {
@@ -38,10 +39,16 @@ public class AbstrSimulationProperties extends Properties {
 		return Integer.parseInt(p);
 	}
 	
-	/** Flag for the symmetry reduction. */
+	/** Value for the symmetry reduction. */
 	public boolean getSymmetryReduction () {
 		String p = getProperty(SYMRED_KEY);
 		return Boolean.parseBoolean(p);
+	}
+	
+	/** Value for the precision. */
+	public Abstraction.LinkPrecision getLinksPrecision() {
+		String p = getProperty(LINKPRECISION_KEY).toUpperCase();
+		return Enum.valueOf(Abstraction.LinkPrecision.class, p);
 	}
 	
 	/** */
@@ -49,6 +56,7 @@ public class AbstrSimulationProperties extends Properties {
 		setProperty(PRECISION_KEY, PRECISION_DEFAULT_VALUE.toString());
 		setProperty(RADIUS_KEY, RADIUS_DEFAULT_VALUE.toString());
 		setProperty(SYMRED_KEY, SYMRED_DEFAULT_VALUE.toString());
+		setProperty(LINKPRECISION_KEY, LINKPRECISION_DEFAULT_VALUE.toString());
 	}
 	
 	/** The precision of a simulation */
@@ -57,6 +65,8 @@ public class AbstrSimulationProperties extends Properties {
 	static public final String RADIUS_KEY = "radius";
 	/** Do or not symmetry reduction */
 	static public final String SYMRED_KEY = "symmetry reduction";
+	/** Precision of links */
+	static public final String LINKPRECISION_KEY = "precision for edges";
 	
 	/** */
 	static public final Integer PRECISION_DEFAULT_VALUE = 1;
@@ -64,15 +74,18 @@ public class AbstrSimulationProperties extends Properties {
 	static public final Integer RADIUS_DEFAULT_VALUE = 1;
 	/** */
 	static public final Boolean SYMRED_DEFAULT_VALUE = true;
+	/** */
+	static public final Abstraction.LinkPrecision LINKPRECISION_DEFAULT_VALUE = Abstraction.LinkPrecision.HIGH;
 	
 	/** Default values for the properties. */
 	static public final Map<String,Property<String>> DEFAULT_KEYS;
 	
 	static {
-		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>(3);
+		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>(4);
 		defaultKeys.put(PRECISION_KEY, new Property.IsPositiveInteger("Should be a natural number.", false));
 		defaultKeys.put(RADIUS_KEY, new Property.IsPositiveInteger("Should be a natural number.", false));
 		defaultKeys.put(SYMRED_KEY, new Property.IsBoolean("Should be \"true\" or \"false\".", false));
+		defaultKeys.put(LINKPRECISION_KEY, new Property.IsEnumValue(Abstraction.LinkPrecision.class, false));
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
 	}
 

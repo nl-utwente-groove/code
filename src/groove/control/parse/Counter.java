@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Counter.java,v 1.1 2007-11-22 15:39:12 fladder Exp $
+ * $Id: Counter.java,v 1.2 2008-01-30 09:33:33 iovka Exp $
  */
 package groove.control.parse;
 
@@ -38,6 +38,10 @@ public class Counter {
 		int retval = current;
 		current++;
 		return retval;
+	}
+	
+	public static void reset() {
+		INSTANCE.current = 0;
 	}
 	
 	private int current = 0;

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateReference.java,v 1.1 2007-09-30 15:52:36 rensink Exp $
+ * $Id: StateReference.java,v 1.2 2008-01-30 09:32:18 iovka Exp $
  */
 package groove.lts;
 

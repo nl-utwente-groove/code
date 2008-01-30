@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SetOfDisjointSets.java,v 1.3 2007-09-25 22:57:51 rensink Exp $
+ * $Id: SetOfDisjointSets.java,v 1.4 2008-01-30 09:32:12 iovka Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * set equality. (It is implemented by iterating over the underlying collections,
  * which is expensive!)
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class SetOfDisjointSets<T> extends CollectionOfCollections<T> implements Set<T> {
     /**

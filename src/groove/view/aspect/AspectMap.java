@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectMap.java,v 1.3 2007-10-18 14:12:11 rensink Exp $
+ * $Id: AspectMap.java,v 1.4 2008-01-30 09:31:32 iovka Exp $
  */
 package groove.view.aspect;
 

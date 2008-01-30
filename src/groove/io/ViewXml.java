@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ViewXml.java,v 1.1 2007-04-29 09:22:31 rensink Exp $
+ * $Id: ViewXml.java,v 1.2 2008-01-30 09:33:42 iovka Exp $
  */
 package groove.io;
 
@@ -25,7 +25,7 @@ import java.io.IOException;
  * Interface for the conversion of views to and from XML documents.
  * To be implemented for particular XML formats.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface ViewXml<V extends View> {
 	/**

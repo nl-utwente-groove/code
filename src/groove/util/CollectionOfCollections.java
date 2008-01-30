@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CollectionOfCollections.java,v 1.4 2007-10-10 08:59:42 rensink Exp $
+ * $Id: CollectionOfCollections.java,v 1.5 2008-01-30 09:32:02 iovka Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Iterator;
  * which is expensive!
  * Equality is deferred to <tt>Object</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class CollectionOfCollections<T> extends AbstractCollection<T> {
     /**

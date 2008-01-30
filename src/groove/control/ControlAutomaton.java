@@ -12,14 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlAutomaton.java,v 1.8 2007-11-26 08:58:11 fladder Exp $
+ * $Id: ControlAutomaton.java,v 1.9 2008-01-30 09:33:23 iovka Exp $
  */
 package groove.control;
 
 import groove.graph.AbstractGraphShape;
 import groove.graph.GraphCache;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 
@@ -38,7 +40,7 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
 	private ControlShape shape;
 	
 	/** container for the active shapres **/
-	private Set<ControlShape> activeShapes = new HashSet<ControlShape>();
+	private List<ControlShape> activeShapes = new ArrayList<ControlShape>();
 	
 	
 	/**
@@ -56,7 +58,8 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
 	}
 	
 	/**
-	 * Return all edges in the active graphshapes dynamically. 
+	 * Return all edges in the active graphshapes dynamically.
+	 * @return Set<ControlTransition> 
 	 */
 	public Set<ControlTransition> edgeSet() {
 		Set<ControlTransition> tempSet = new HashSet<ControlTransition>();
@@ -83,7 +86,8 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
 	}
 
 	/**
-	 * Return all nodes in the active graphshapes dynamically. 
+	 * Return all nodes in the active graphshapes dynamically.
+	 * Set<ControlState> 
 	 */
 	public Set<ControlState> nodeSet() {
 		Set<ControlState> nodeSet = new HashSet<ControlState>();
@@ -132,4 +136,20 @@ public class ControlAutomaton extends AbstractGraphShape<GraphCache> {
 			this.fireRemoveEdge(shape);
 		}
 	}
+	
+	/**
+	 *   for the BACK button in the CAPanel, we have to be able to remove the last activated shape
+	 */
+	public void deactiveLast() {
+		if( activeShapes.size() > 0 ) {
+			this.fireAddEdge(activeShapes.remove(activeShapes.size()-1));
+		}
+	}
+	
+//	public Location startLocation() {
+//		if( startLocation == null  ) {
+//			// FIXME: Tom
+//		}
+//		return startLocation;
+//	}
 }

@@ -12,10 +12,24 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Generator.java,v 1.29 2007-11-30 08:28:52 rensink Exp $
+ * $Id $
  */
 package groove.util;
 
+import groove.explore.ConditionalScenarioHandler;
+import groove.explore.DefaultScenario;
+import groove.explore.GeneratorScenarioHandlerFactory;
+import groove.explore.ScenarioHandler;
+import groove.explore.result.EdgeBoundCondition;
+import groove.explore.result.ExploreCondition;
+import groove.explore.result.InvariantViolatedAcceptor;
+import groove.explore.result.IsRuleApplicableCondition;
+import groove.explore.result.NodeBoundCondition;
+import groove.explore.result.SizedResult;
+import groove.explore.strategy.BreadthFirstStrategy;
+import groove.explore.strategy.ConditionalBreadthFirstStrategy;
+import groove.explore.strategy.DepthFirstStrategy2;
+import groove.explore.strategy.LinearStrategy;
 import groove.graph.DefaultLabel;
 import groove.graph.DeltaGraph;
 import groove.graph.GraphAdapter;
@@ -26,26 +40,14 @@ import groove.graph.iso.Bisimulator;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
+import groove.io.GrammarViewXml;
 import groove.io.RuleList;
 import groove.lts.AbstractGraphState;
-import groove.lts.ConditionalExploreStrategy;
-import groove.lts.DefaultAliasApplication;
-import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.LTSGraph;
 import groove.lts.State;
 import groove.lts.StateGenerator;
-import groove.lts.explore.BarbedStrategy;
-import groove.lts.explore.BoundedStrategy;
-import groove.lts.explore.BranchingStrategy;
-import groove.lts.explore.ControlledStrategy;
-import groove.lts.explore.EdgeBoundedStrategy;
-import groove.lts.explore.FullStrategy;
-import groove.lts.explore.InvariantStrategy;
-import groove.lts.explore.LinearStrategy;
-import groove.lts.explore.LiveStrategy;
-import groove.lts.explore.NodeBoundedStrategy;
 import groove.trans.DefaultApplication;
 import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
@@ -53,6 +55,7 @@ import groove.trans.Rule;
 import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
+import groove.trans.VirtualRuleMatch;
 import groove.view.FormatException;
 
 import java.io.BufferedReader;
@@ -63,6 +66,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -76,7 +80,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -98,9 +102,7 @@ public class Generator extends CommandLineTool {
     static public final String LOAD_ERROR = "Can't load graph grammar";
     /** Usage message for the generator. */
     static public final String USAGE_MESSAGE = "Usage: Generator [options] <grammar-location> [<start-graph-name> | <start-graphs-dir>]";
-//
-//    static private final String VAR_START_REGEXPR = "\\$\\{";
-//    static private final String VAR_END_REGEXPR = "\\}";
+
     /** 
      * Value for the output file name to indicate that the name should be computed from the grammar name.
      * @see #getOutputFileName()
@@ -108,6 +110,7 @@ public class Generator extends CommandLineTool {
     static public final String GRAMMAR_NAME_VAR = "@";
     /** Separator between grammar name and start state name in reporting. */
     static public final char START_STATE_SEPARATOR = '@';
+
     /** Indentation used when printing help. */
     static private final String INDENT = "    ";
 
@@ -115,7 +118,7 @@ public class Generator extends CommandLineTool {
     static private final int BYTES_PER_KB = 1024;
 
     /**
-     * Attempts to load a graph grammar from a given location provided as a parameter with either
+     * Attempts to load a graph grammar from a given location provided as a paramter with either
      * default start state or a start state provided as a second parameter.
      * @param args the first argument is the grammar location name; if provided, the second argument
      *        is the start graph filename.
@@ -142,7 +145,7 @@ public class Generator extends CommandLineTool {
     	processArguments();
         try {
             init();
-            Collection<? extends State> result = generate();
+            Collection<? extends Object> result = generate();
             report();
             exit(result);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
@@ -262,7 +265,7 @@ public class Generator extends CommandLineTool {
      * The strategy is lazily retrieved from the command line options,
      * or set to {@link FullStrategy} if no strategy was specified.
      */
-    protected ExploreStrategy getStrategy() {
+    protected ScenarioHandler getStrategy() {
         if (strategy == null) {
             strategy = computeStrategy();
         }
@@ -275,28 +278,29 @@ public class Generator extends CommandLineTool {
      * The strategy is computed from the command line options,
      * or set to {@link FullStrategy} if no strategy was specified.
      */
-    protected ExploreStrategy computeStrategy() {
-    	ExploreStrategy result;
+    protected ScenarioHandler computeStrategy() {
+    	ScenarioHandler result;
 		ExploreOption explore = getActiveOption(ExploreOption.class);
 		if (explore == null) {
-			result = new FullStrategy();
+			result = GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "full");
 		} else {
 			ExploreStrategyParser exploreParser = explore.getParser();
 			result = exploreParser.getStrategy();
-			if (result instanceof ConditionalExploreStrategy) {
+			if (result instanceof ConditionalScenarioHandler) {
+				ConditionalScenarioHandler<?> condResult = (ConditionalScenarioHandler<?>) result;
 				String conditionName = exploreParser.getCondition();
-				Rule condition = getGrammar().getRule(new NameLabel(
-						conditionName));
-				if (condition == null) {
-					printError("Error in exploration strategy: unknown condition "
-							+ conditionName);
-				} else {
-					((ConditionalExploreStrategy) result).setCondition(condition);
-					((ConditionalExploreStrategy) result).setNegated(exploreParser.isNegated());
-				}
-			} else if (result instanceof ControlledStrategy) {
-				((ControlledStrategy) result).setProgram(exploreParser.getProgram().getRules(getGrammar()),
-						true);
+				if (condResult.getConditionType().equals(Rule.class)) {
+					Rule condition = getGrammar().getRule(new NameLabel(conditionName));
+					if (condition == null) {
+						printError("Error in exploration strategy: unknown condition " + conditionName);
+					} else {
+						ExploreCondition<Rule> explCond = new IsRuleApplicableCondition();
+						explCond.setCondition(condition);
+						((ConditionalScenarioHandler<Rule>) result).setCondition(explCond, conditionName, exploreParser.isNegated());
+					}
+				} 
+			} else if (result instanceof ControlledScenarioHandler) {
+				((ControlledScenarioHandler) result).setProgram(exploreParser.getProgram().getRules(getGrammar()), true);
 			}
 		}
 		return result;
@@ -322,8 +326,8 @@ public class Generator extends CommandLineTool {
     /**
      * The processing phase of state space generation. Called from <tt>{@link #start}</tt>.
      */
-    protected Collection<? extends State> generate() {
-    	Collection<? extends State> result;
+    protected Collection<? extends Object> generate() {
+    	Collection<? extends Object> result;
         final Runtime runTime = Runtime.getRuntime();
         runTime.runFinalization();
         runTime.gc();
@@ -340,7 +344,9 @@ public class Generator extends CommandLineTool {
         }
         startTime = System.currentTimeMillis();
         try {
-            result = getStrategy().explore();
+        	getStrategy().setState(getGTS().startState());
+        	getStrategy().playScenario();
+        	result = getStrategy().getResult();
         } catch (InterruptedException exc) {
             result = null;
         }
@@ -450,7 +456,7 @@ public class Generator extends CommandLineTool {
      * Gives some statistics regarding the generated transitions. 
      */
     private void reportTransitionStatistics() {
-        printf("\tTransitions:\tAliased:\t%d%n", DefaultAliasApplication.getAliasCount());
+        printf("\tTransitions:\tAliased:\t%d%n", VirtualRuleMatch.getAliasCount());
         printf("\t\tConfluent:\t%d%n", StateGenerator.getConfluentDiamondCount());
         printf("\t\tEvents:\t%d%n", SystemRecord.getEventCount());
         printf("\tCoanchor reuse:\t%d/%d%n", SPOEvent.getCoanchorImageOverlap(), SPOEvent.getCoanchorImageCount());
@@ -523,12 +529,28 @@ public class Generator extends CommandLineTool {
     private void reportTime() {
         // timing figures
         long total = (endTime - startTime);
-        long transforming = SPORule.getTransformingTime();
         long matching = SPORule.getMatchingTime();
+        long running = DefaultScenario.getRunningTime();
+        long overhead = total - running;
         long isoChecking = DefaultIsoChecker.getTotalTime();
         long building = StateGenerator.getGenerateTime() - isoChecking;
         long measuring = Reporter.getTotalTime();
+
+        // this calculation incorporates only transforming RuleMatches into RuleApplications
+        // long transforming = DefaultScenario.getTransformingTime();// - matching - building - measuring;
+
+        // bit weird maybe, but transforming is considered everything besides the calculation 
+        // of matches, isomorphisms, adding to GTS, and reporter-duty: i.e. it's the "overhead" of the scenario 
+        long transforming = running - matching - isoChecking - building - measuring; 
+//        long checktotal = matching+isoChecking+building+measuring+transforming;
+        
         println("Time (ms):\t" + total);
+        
+//        println("Running:\t"+running);
+//        println("TotalComputed:\t"+checktotal);
+//        println("TotalDiff:\t"+(checktotal-total));
+
+        
         println("\tMatching:\t" + matching + "\t" + percentage(matching / (double) total));
         println("\tTransforming:\t" + transforming + "\t"
                 + percentage(transforming / (double) total));
@@ -545,6 +567,8 @@ public class Generator extends CommandLineTool {
         }
         println("\tBuilding GTS:\t" + building + "\t" + percentage(building / (double) total));
         println("\tMeasuring:\t" + measuring + "\t" + percentage(measuring / (double) total));
+        println("\tInitialization:\t" + overhead + "\t" + percentage(overhead / (double) total));
+        println("");
     }
 
     /**
@@ -556,10 +580,9 @@ public class Generator extends CommandLineTool {
     }
 
     /**
-     * The finalisation phase of state space generation. Called from <tt>{@link #start}</tt>.
-     * 
+     * The finalization phase of state space generation. Called from <tt>{@link #start}</tt>.
      */
-    protected void exit(Collection<? extends State> result) throws IOException, FormatException {
+    protected void exit(Collection<? extends Object> result) throws IOException, FormatException {
         if (getFinalSaveName() != null) {
         	if (result.isEmpty()) {
         		System.out.println("No resulting graphs");
@@ -593,7 +616,8 @@ public class Generator extends CommandLineTool {
         }
         return result;
     }
-    
+
+
     /**
 	 * Factory method for the grammar loader to be used by state space
 	 * generation. 
@@ -615,7 +639,7 @@ public class Generator extends CommandLineTool {
         }
         return result.toString();
     }
-
+    
     /** This implementation returns <tt>getId()</tt>. */
     @Override
     protected String getLogFileName() {
@@ -677,7 +701,7 @@ public class Generator extends CommandLineTool {
     /**
      * The strategy to be used for the state space generation.
      */
-    private ExploreStrategy strategy;
+    private ScenarioHandler strategy;
     /** String describing the location where the grammar is to be found. */
     private String grammarLocation;
     /** String describing the start graph within the grammar. */
@@ -804,25 +828,25 @@ public class Generator extends CommandLineTool {
         /** Condition negator. */
         static public final String NEGATION = "!";
     
-        /** Constructs a parser that can recognise all implemented exploration strategies. */
+        /** Constructs a parser that can recognize all implemented exploration strategies. */
         public ExploreStrategyParser() {
-            addStrategy(new FullStrategy());
-            addStrategy(new LinearStrategy(false));
-            addStrategy(new BranchingStrategy());
-            addStrategy(new BarbedStrategy());
-            addStrategy(new BoundedStrategy());
-            addStrategy(new InvariantStrategy());
-            addStrategy(new NodeBoundedStrategy());
-            addStrategy(new EdgeBoundedStrategy());
-            addStrategy(new LiveStrategy());
-            addStrategy(new ControlledStrategy());
+        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new DepthFirstStrategy2(128), "Depth first full exploration.", "barbed"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new LinearStrategy(), "Explores one successor of each state until a final state or a loop is reached.", "linear"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Rule.class, "Explores all states in which the (negated) condition holds.", "bounded"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new BreadthFirstStrategy(), Rule.class, new InvariantViolatedAcceptor<Rule>(), new SizedResult<GraphState>(1), "Explores all states until the (negated) invariant is violated. The order of exploration is random.", "invariant"));
+        	addStrategy(new ControlledScenarioHandler("Performs a depth-firs search controlled by a sequence of rules.", "controlled"));
+       	
         }
     
         /**
          * Returns the exploration strategy determined by parsing.
          * @see #parse(String)
          */
-        public ExploreStrategy getStrategy() {
+        public ScenarioHandler getStrategy() {
             return parsedStrategy;
         }
     
@@ -860,12 +884,22 @@ public class Generator extends CommandLineTool {
          */
         public List<String> getStrategyDescriptions() {
             List<String> result = new ArrayList<String>();
-            for (Map.Entry<String,ExploreStrategy> strategyEntry: strategies.entrySet()) {
-                ExploreStrategy strategy = strategyEntry.getValue();
-                String name = strategyEntry.getKey()
-                        + (strategy instanceof ConditionalExploreStrategy ? CONDITION_SEPARATOR
-                                + "[" + NEGATION + "]<condition>" : "");
-                result.add(name + " - " + strategy.getShortDescription());
+            for (Map.Entry<String,ScenarioHandler> strategyEntry: strategies.entrySet()) {
+                ScenarioHandler strategy = strategyEntry.getValue();
+                String name = strategyEntry.getKey();
+                if (strategy instanceof ConditionalScenarioHandler) {
+                	ConditionalScenarioHandler<?> condStrategy = (ConditionalScenarioHandler<?>) strategy;
+                	if (condStrategy.getConditionType().equals(Integer.class)) {
+                		name += CONDITION_SEPARATOR + "<bound>";
+                	} else if (condStrategy.getConditionType().equals(Rule.class)) {
+                		name += CONDITION_SEPARATOR + "[" + NEGATION + "]<condition>";
+                	} else if (condStrategy.getConditionType().equals(Map.class)) {
+                		name += CONDITION_SEPARATOR + "<key=value>{,<key=value>}*";
+                	} else {
+                		assert true : "Unknown condition type " + condStrategy.getConditionType();
+                	}
+                }
+                result.add(name + " - " + strategy.getDescription());
             }
             return result;
         }
@@ -878,9 +912,9 @@ public class Generator extends CommandLineTool {
          */
         public void parse(String parameter) throws IllegalArgumentException {
             parsedStrategy = null;
-            Iterator<Map.Entry<String,ExploreStrategy>> strategyIter = strategies.entrySet().iterator();
+            Iterator<Map.Entry<String,ScenarioHandler>> strategyIter = strategies.entrySet().iterator();
             while (parsedStrategy == null && strategyIter.hasNext()) {
-                Map.Entry<String,ExploreStrategy> strategyEntry = strategyIter.next();
+                Map.Entry<String,ScenarioHandler> strategyEntry = strategyIter.next();
                 String strategyName = strategyEntry.getKey();
                 if (parameter.startsWith(strategyName)) {
                     parsedStrategy = strategyEntry.getValue();
@@ -889,51 +923,64 @@ public class Generator extends CommandLineTool {
                     } else {
                         parameter = "";
                     }
-                    if (parsedStrategy instanceof ConditionalExploreStrategy) {
-                        if (parameter.length() == 0) {
-                            throw new IllegalArgumentException("Strategy " + parameter
-                                    + " does not specify condition; syntax: '" + strategyName
-                                    + CONDITION_SEPARATOR + "<condition rule>'");
-                        }
-                        parsedNegated = parameter.startsWith(NEGATION);
-                        if (parsedNegated) {
-                            parsedCondition = parameter.substring(1);
-                        } else {
-                            parsedCondition = parameter;
-                        }
-                    } else if (parsedStrategy instanceof NodeBoundedStrategy) {
-                        try {
-                            int bound = Integer.parseInt(parameter);
-                            ((NodeBoundedStrategy) parsedStrategy).setBound(bound);
-                        } catch (NumberFormatException exc) {
-                            throw new IllegalArgumentException(parameter
-                                    + " is not a valid node bound");
-                        }
-                    } else if (parsedStrategy instanceof ControlledStrategy) {
-                        try {
-                            parsedProgram = new RuleList(new File(parameter));
-                        } catch (IOException exc) {
-                            throw new IllegalArgumentException(exc.getMessage());
-                        }
-                    } else if (parsedStrategy instanceof EdgeBoundedStrategy) {
-                        String[] bounds = parameter.split(",");
-                        for (int i = 0; i < bounds.length; i++) {
-                            String[] keyValue = bounds[i].split("=");
-                            if (keyValue.length != 2) {
-                                throw new IllegalArgumentException("Edge bounds '" + bounds[i]
-                                        + "' should be formatted as 'key=value'");
+                    if (parsedStrategy instanceof ConditionalScenarioHandler) {
+                    	ConditionalScenarioHandler<?> condStrategy = (ConditionalScenarioHandler<?>) parsedStrategy;
+                    	if (condStrategy.getConditionType().equals(Integer.class)) {
+                    		try {
+                    			int bound = Integer.parseInt(parameter);
+                    			ExploreCondition<Integer> explCond = new NodeBoundCondition();
+                    			explCond.setCondition(bound);
+                    			((ConditionalScenarioHandler<Integer>) condStrategy).setCondition(explCond, ""+bound, false);
+                    		} catch (NumberFormatException exc) {
+                    			throw new IllegalArgumentException(parameter
+                    					+ " is not a valid node bound");
+                    		}
+                    	} else if (condStrategy.getConditionType().equals(Rule.class)) {
+                    		if (parameter.length() == 0) {
+                    			throw new IllegalArgumentException("Strategy " + parameter
+                    					+ " does not specify condition; syntax: '" + strategyName
+                    					+ CONDITION_SEPARATOR + "<condition rule>'");
+                    		}
+                    		parsedNegated = parameter.startsWith(NEGATION);
+                    		if (parsedNegated) {
+                    			parsedCondition = parameter.substring(1);
+                    		} else {
+                    			parsedCondition = parameter;
+                    		}
+                    	} else if (condStrategy.getConditionType().equals(Map.class)) {
+                            String[] bounds = parameter.split(",");
+                            Map<Label, Integer> conditions = new HashMap<Label,Integer>();
+                            for (int i = 0; i < bounds.length; i++) {
+                                String[] keyValue = bounds[i].split("=");
+                                if (keyValue.length != 2) {
+                                    throw new IllegalArgumentException("Edge bounds '" + bounds[i]
+                                            + "' should be formatted as 'key=value'");
+                                }
+                                Label key = DefaultLabel.createLabel(keyValue[0]);
+                                try {
+                                    int value = Integer.parseInt(keyValue[1]);
+                                    conditions.put(key, value);
+                                } catch (NumberFormatException exc) {
+                                    throw new IllegalArgumentException("Value '" + keyValue[1]
+                                            + "' in edge bounds '" + bounds[i]
+                                            + "' is not a number");
+                                }
                             }
-                            Label key = DefaultLabel.createLabel(keyValue[0]);
-                            try {
-                                int value = Integer.parseInt(keyValue[1]);
-                                ((EdgeBoundedStrategy) parsedStrategy).setBound(key, value);
-                            } catch (NumberFormatException exc) {
-                                throw new IllegalArgumentException("Value '" + keyValue[1]
-                                        + "' in edge bounds '" + bounds[i]
-                                        + "' is not a number");
-                            }
-                        }
+                            ExploreCondition<Map<Label,Integer>> explCond = new EdgeBoundCondition();
+                            explCond.setCondition(conditions);
+                            ((ConditionalScenarioHandler<Map<Label,Integer>>) condStrategy).setCondition(explCond, "", false);
+                    	} else {
+                    		assert true : "Unknown condition type " + condStrategy.getConditionType();
+                    	}
+                    	
                     }
+                    else if (parsedStrategy instanceof ControlledScenarioHandler) {
+                    	try {
+                    		parsedProgram = new RuleList(new File(parameter));
+                    	} catch (IOException exc) {
+                    		throw new IllegalArgumentException(exc.getMessage());
+                    	}
+                    } 
                 }
             }
             if (parsedStrategy == null) {
@@ -943,15 +990,15 @@ public class Generator extends CommandLineTool {
         }
     
         /** Returns the strategy corresponding to a given strategy name. */
-        protected ExploreStrategy getStrategy(String name) {
+        protected ScenarioHandler getStrategy(String name) {
             return strategies.get(name);
         }
     
         /**
          * Adds a given strategy to the available strategies.
          */
-        protected void addStrategy(ExploreStrategy strategy) {
-            strategies.put(strategy.getName().toLowerCase(), strategy);
+        protected void addStrategy(ScenarioHandler strategy) {
+            strategies.put(strategy.getName(), strategy);
             maxNameLength = Math.max(maxNameLength, strategy.getName().length());
         }
     
@@ -959,10 +1006,10 @@ public class Generator extends CommandLineTool {
         private int maxNameLength = 0;
     
         /** A mapping from strategy names (as appearing in the options) to strategies. */
-        private final Map<String,ExploreStrategy> strategies = new TreeMap<String,ExploreStrategy>();
+        private final Map<String, ScenarioHandler> strategies = new TreeMap<String, ScenarioHandler>();
     
         /** The strategy determined by the parser. */
-        private ExploreStrategy parsedStrategy;
+        private ScenarioHandler parsedStrategy;
     
         /** String description of the condition for a conditional strategy. */
         private String parsedCondition;

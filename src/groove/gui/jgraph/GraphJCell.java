@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJCell.java,v 1.4 2007-11-19 12:18:46 rensink Exp $
+ * $Id: GraphJCell.java,v 1.5 2008-01-30 09:33:13 iovka Exp $
  */
 package groove.gui.jgraph;
 
@@ -23,7 +23,7 @@ import groove.view.LabelParser;
 /**
  * Extension of {@link JCell} that recognises that cells have underlying edges.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 interface GraphJCell extends JCell {
     /** 

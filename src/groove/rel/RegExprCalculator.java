@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprCalculator.java,v 1.2 2007-06-05 16:33:23 iovka Exp $
+ * $Id: RegExprCalculator.java,v 1.3 2008-01-30 09:32:27 iovka Exp $
  */
 package groove.rel;
 
@@ -21,7 +21,7 @@ import java.util.List;
 /**
  * Visitor interface for regular expressions.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface RegExprCalculator<Result> {
     /**

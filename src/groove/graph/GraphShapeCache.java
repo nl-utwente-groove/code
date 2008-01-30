@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphShapeCache.java,v 1.6 2007-10-20 15:19:58 rensink Exp $
+ * $Id: GraphShapeCache.java,v 1.7 2008-01-30 09:32:52 iovka Exp $
  */
 package groove.graph;
 
@@ -32,7 +32,7 @@ import java.util.Set;
  * graph, for faster access.
  * Typically, the graph will have a graph cache as a <tt>{@link java.lang.ref.Reference}</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class GraphShapeCache implements GraphShapeListener {
     /**

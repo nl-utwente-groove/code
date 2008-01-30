@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlState.java,v 1.8 2007-11-26 08:58:11 fladder Exp $
+ * $Id: ControlState.java,v 1.9 2008-01-30 09:33:24 iovka Exp $
  */
 package groove.control;
 
@@ -22,10 +22,8 @@ import groove.graph.Node;
 import groove.trans.Rule;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.TreeSet;
 
 /**
  * 
@@ -44,22 +42,31 @@ public class ControlState implements Node {
 	/** 
 	 * Holds this state as a stateset. The stateset also includes states reacheable with lambda-transitions,
 	 * which are added when added as a transitions, but not stored as a transitions.
+	 * 
+	 * This variable caches the result of {@link #asStateSet()}.
 	 */
-	private StateSet stateset;
+//	private StateSet asStateSet;
+
+	/** Contains the targets of outgoing lambda-transitions of this state **/
+	private HashSet<ControlState> lambdaTargets;
 	
-	/** A unique number for viewing/debugging purposes **/
-	private int stateNumber;
+	/**
+	 * Holds the targets available by else-transitions, internal (lambda) transitions that can only be taken
+	 * if everything else failed. 
+	 */
+//	private StateSet elseTargets;
+	
 	
 	/** hold the 'success' property of the state. **/ 
 	private boolean success = false;
 	
-	/** store allowed outgoing Rules by priority **/
-	// TODO: is this set ever used?
-	protected final SortedMap<Integer,Set<Rule>> priorityRuleMap = new TreeMap<Integer, Set<Rule>>(Rule.PRIORITY_COMPARATOR);
+//	/** store allowed outgoing Rules by priority **/
+//	// TODO: is this set ever used?
+//	protected final SortedMap<Integer,Set<Rule>> priorityRuleMap = new TreeMap<Integer, Set<Rule>>(Rule.PRIORITY_COMPARATOR);
 	
-	private HashMap<Rule, StateSet> ruleTargetMap = new HashMap<Rule, StateSet>();
-	
-	private ControlShape parent;
+	private HashMap<Rule, HashSet<ControlState>> ruleTargetMap = new HashMap<Rule, HashSet<ControlState>>();
+
+	private Set<ElseControlTransition> elseTransitions = new HashSet<ElseControlTransition>();
 	
 	/**
 	 * Create a ControlState. A ControlState needs to know the
@@ -68,82 +75,61 @@ public class ControlState implements Node {
 	 */
 	public ControlState(ControlShape parent) {
 		this.parent = parent;
+		this.lambdaTargets = new HashSet<ControlState>();
 		this.stateNumber = Counter.inc();
-		
-		this.stateset = new StateSet();
-		this.stateset.add(this);
 	}
 	
 	public int compareTo(Element obj) {
-		return getStateNumber() - ((ControlState) obj).getStateNumber();
+		return this.hashCode() - ((ControlState) obj).hashCode();
 	}
 	
 	/**
-	 * Returns the unique number of this state.
-	 * @return int
-	 */
-	public int getStateNumber()
-	{
-		return stateNumber;
-	}
-	
-	/**
-	 * TODO: fix this method.
+	 * Add an outgoing transition to this control state.
+	 * 
 	 * @param transition
 	 */
 	public void add(ControlTransition transition) {
-//		if( transition instanceof LambdaControlTransition ) {
-//			this.stateset.add(transition.target());
-//			return;
-//		}
-//		else 
-		if( transition instanceof RuleControlTransition ) {
+		if( transition instanceof LambdaControlTransition ) {
+			this.lambdaTargets.add(transition.target());
+			return;
+		}
+		else if( transition instanceof ElseControlTransition ) {
+			this.elseTransitions.add((ElseControlTransition)transition);
+			return;
+		}
+		else if( transition instanceof RuleControlTransition ) {
 			// TODO: store the transitions somehow..  not sure how's best.
 
 			Rule rule = ((RuleControlTransition) transition).getRule();
-
-			System.out.println("Rule " + rule.getName().text() + " allowed from: " + this);
-
 			
-			int priority = rule.getPriority();
-	
-			// store rule by priority
-			Set<Rule> priorityRuleSet = priorityRuleMap.get(priority);
-			if( priorityRuleSet == null ) {
-				priorityRuleMap.put(priority, priorityRuleSet = new TreeSet<Rule>());
-			}
-			priorityRuleSet.add(rule);
-	
 			//store targets by rule
-			StateSet targetSet = ruleTargetMap.get(rule);
+			HashSet<ControlState> targetSet = ruleTargetMap.get(rule);
 			if( targetSet == null ) {
-				ruleTargetMap.put(rule, targetSet = new StateSet());
+				ruleTargetMap.put(rule, targetSet = new HashSet<ControlState>());
 			}
 			targetSet.add(transition.target());
 		}
+		else {
+			// should never be reached 
+		}
 	}
 
-	/**
-	 * Returns the sets of rules sorted by priority
-	 * @return SortedMap<Integer>, Set<Rule>>
-	 */
-    public SortedMap<Integer, Set<Rule>> getRuleMap()
-    {
-    	return priorityRuleMap;
-    }
+//	/**
+//	 * Returns the sets of rules sorted by priority
+//	 * @return SortedMap<Integer>, Set<Rule>>
+//	 */
+//    public SortedMap<Integer, Set<Rule>> ruleMap()
+//    {
+//    	return priorityRuleMap;
+//    }
 
 	@Override
 	public String toString()
 	{
-		return "Q " + stateNumber + (isSuccess()?" ++":"");
+		return (isSuccess()?"S":"q") + stateNumber;
 	}
 	
-//	public Set<ControlTransition> getTransitions(Rule rule) {
-//		return ruleTransitionMap.get(rule);
-//	}
-
 	public boolean isSuccess() {
-		// TODO Auto-generated method stub
 		return this.success;
 	}
 
@@ -166,12 +152,69 @@ public class ControlState implements Node {
 	 * Returns a StateSet with this state and all targets reacheable through LambdaRuleTransitions
 	 * @return stateset
 	 */
-	public StateSet asStateSet() {
-		return this.stateset;
+	public HashSet<ControlState> lambdaTargets() {
+		return this.lambdaTargets;
 	}
 	
-	public StateSet getRuleTargets(Rule rule) {
+	/**
+	 * Returns the ControlStates that can be reached when non of the other rules can be applied
+	 * and no lambda-transitions exist.
+	 * 
+	 * @return
+	 */
+	public Set<ElseControlTransition> elseTransitions() {
+		return this.elseTransitions;
+	}
+	
+	/**
+	 * Returns the a StateSet containing the target ControlState's for the given Rule.
+	 * @param rule
+	 * @return
+	 */
+	public HashSet<ControlState> targets(Rule rule) {
 		return ruleTargetMap.get(rule);
 	}
 	
+	/**
+	 * Returns this ControlState and all States reachable by lambda transitions
+	 * as a StateSet. Evaluated lazy, i.e. done and stored when requested for the
+	 * first time.
+	 * 
+	 * @return
+	 */
+//	public StateSet asStateSet() {
+//		if( asStateSet == null ) {
+//			asStateSet = new StateSet();
+//			asStateSet.add(this);
+//			asStateSet.addAll(this.lambdaTargets());
+//			
+//			int size = asStateSet.size();
+//
+//			do {
+//				for( ControlState cs : asStateSet ) {
+//					asStateSet.addAll(cs.lambdaTargets());
+//				}
+//			}
+//			while( asStateSet.size() > size );
+//		}
+//		return asStateSet;
+//	}
+	
+//	public Set<Set<Rule>> getRuleSets() {
+//		TreeSet<Set<Rule>> retval = new TreeSet<Set<Rule>>();
+//		retval.addAll(this.priorityRuleMap.values());
+//		return retval;
+//	}
+	
+	/**
+	 * Returns a set of rules are allowed to be applied.
+	 *
+	 * @return
+	 */
+	public Set<Rule> rules() {
+		return ruleTargetMap.keySet();
+	}
+
+	private ControlShape parent;
+	private int stateNumber;
 }

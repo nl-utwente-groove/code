@@ -1,4 +1,4 @@
-/* $Id: AspectGxl.java,v 1.4 2007-11-19 12:19:16 rensink Exp $ */
+/* $Id: AspectGxl.java,v 1.5 2008-01-30 09:33:42 iovka Exp $ */
 package groove.io;
 
 import groove.graph.Graph;

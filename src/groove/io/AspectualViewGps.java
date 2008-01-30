@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualViewGps.java,v 1.22 2007-11-26 08:58:40 fladder Exp $
+ * $Id: AspectualViewGps.java,v 1.23 2008-01-30 09:33:41 iovka Exp $
  */
 
 package groove.io;
@@ -48,7 +48,7 @@ import java.util.Properties;
  * followed by an <code>Integer</code> indicating the number of number of objects of this type,
  * followed by a null update to indicate the end of this type of load.
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 public class AspectualViewGps extends Observable implements GrammarViewXml<DefaultGrammarView> {
     /**
@@ -79,7 +79,7 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
     
     public DefaultGrammarView unmarshal(File location, String startGraphName) throws IOException {
         if (!location.exists()) {
-            throw new FileNotFoundException(LOAD_ERROR + ": rule rystem location \"" + location
+            throw new FileNotFoundException(LOAD_ERROR + ": rule rystem location \"" + location.getAbsolutePath()
                     + "\" does not exist");
         }
         if (!location.isDirectory()) {

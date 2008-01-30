@@ -16,10 +16,10 @@
  */
 package groove.graph;
 
-import groove.calc.Property;
 import groove.trans.Rule;
 import groove.util.ExprParser;
 import groove.util.ListComparator;
+import groove.util.Property;
 
 import java.util.Arrays;
 import java.util.Collections;

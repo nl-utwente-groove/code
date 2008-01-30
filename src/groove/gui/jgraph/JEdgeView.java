@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JEdgeView.java,v 1.9 2007-10-30 17:21:20 rensink Exp $
+ * $Id: JEdgeView.java,v 1.10 2008-01-30 09:33:13 iovka Exp $
  */
 package groove.gui.jgraph;
 
@@ -47,7 +47,7 @@ import org.jgraph.graph.PortView;
  * An edge view that uses the <tt>getText()</tt> of the underlying edge as a label. Moreover, new
  * views take care to bend to avoid overlap, and offer functionality to add and remove points.
  * @author Arend Rensink
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class JEdgeView extends EdgeView {
 
@@ -75,7 +75,6 @@ public class JEdgeView extends EdgeView {
 
     @Override
 	public CellViewRenderer getRenderer() {
-		// TODO Auto-generated method stub
 		return super.getRenderer();
 	}
 

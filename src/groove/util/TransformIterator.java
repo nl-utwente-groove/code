@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TransformIterator.java,v 1.2 2007-10-03 16:08:53 rensink Exp $
+ * $Id: TransformIterator.java,v 1.3 2008-01-30 09:32:10 iovka Exp $
  */
 package groove.util;
 
@@ -26,7 +26,7 @@ import java.util.NoSuchElementException;
  * The abstract <tt>transform(Object)</tt> method describes the transformation from the 
  * inner iterator's returned objects to this one's results.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 abstract public class TransformIterator<T,U> implements Iterator<U> {
     /**

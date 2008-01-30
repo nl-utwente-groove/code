@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractLayouter.java,v 1.5 2007-06-04 19:47:18 rensink Exp $
+ * $Id: AbstractLayouter.java,v 1.6 2008-01-30 09:33:01 iovka Exp $
  */
 package groove.gui.layout;
 
@@ -42,7 +42,7 @@ import org.jgraph.graph.VertexView;
 /**
  * An abstract class for layout actions.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 abstract public class AbstractLayouter implements Layouter {
     /**

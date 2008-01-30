@@ -12,10 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.48 2008-01-04 17:07:35 rensink Exp $
+ * $Id: SPORule.java,v 1.49 2008-01-30 09:32:36 iovka Exp $
  */
 package groove.trans;
 
+import groove.explore.DefaultScenario;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -56,7 +57,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.48 $
+ * @version $Revision: 1.49 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -1075,12 +1076,12 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
         SPORule.anchorFactory = anchorFactory;
     }
 
-    /**
-     * Returns the total time doing transformation-related computations.
-     */
-    static public long getTransformingTime() {
-        return AbstractRuleApplier.reporter.getTotalTime(AbstractRuleApplier.GET_DERIVATIONS) - getMatchingTime();
-    }
+//    /**
+//     * Returns the total time doing transformation-related computations.
+//     */
+//    static public long getTransformingTime() {
+//        return DefaultScenario.reporter.getTotalTime(DefaultScenario.GET_DERIVATIONS) - getMatchingTime();
+//    }
     
     /**
      * Returns the total time doing matching-related computations.

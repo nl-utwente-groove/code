@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VerifyMenu.java,v 1.3 2007-08-26 07:24:04 rensink Exp $
+ * $Id: VerifyMenu.java,v 1.4 2008-01-30 09:33:37 iovka Exp $
  */
 
 package groove.gui;
@@ -23,7 +23,7 @@ import javax.swing.JMenuItem;
 /**
  * Menu item for the simulator for starting the verification process.
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class VerifyMenu extends JMenu {
     /**

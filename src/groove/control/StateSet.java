@@ -12,63 +12,98 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateSet.java,v 1.4 2007-11-26 08:58:12 fladder Exp $
+ * $Id: StateSet.java,v 1.5 2008-01-30 09:33:23 iovka Exp $
  */
 package groove.control;
 
 import groove.trans.Rule;
 
 import java.util.HashSet;
-import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 /**
- * 
- * A Location implementation consisting of a set of ControlStates.
  * 
  * @author Tom Staijen
  * @version $Revision $
  */
-public class StateSet extends HashSet<ControlState> implements Location {
+public class StateSet extends HashSet<ControlState> {
 
-	SortedMap<Integer,Set<Rule>> priorityRuleMap = new TreeMap<Integer, Set<Rule>>(Rule.PRIORITY_COMPARATOR);
+	/**
+	 * member variable for caching the result of {@link #getRuleSets()}.
+	 */
+	Set<Rule> rules;
 	
-	public boolean isSuccess() {
-		return false;
-	}
+//	public boolean isSuccess() {
+//		for( ControlState cs : this ) {
+//			if( cs.isSuccess() ) {
+//				return true;
+//			}
+//		}
+//		return false;
+//	}
 
-	public StateSet targetSet(Rule rule) {
-		StateSet newSet = new StateSet();
-		for( ControlState cs : this ) {
-			StateSet targets = cs.getRuleTargets(rule); 
-			if( targets != null ) {
-				newSet.addAll(targets);
+	/** 
+	 * Returns all states that can be reached with a certain rule and any succeeding 
+	 * lambda transitions (by calling asStateSet on all rule targets.
+	 *  
+	 */
+	
+//	public StateSet target(Rule rule) {
+//		StateSet newSet = new StateSet();
+//		
+//		for( ControlState cs : this ) {
+//			StateSet targets = cs.targets(rule); 
+//			if( targets != null ) {
+//				for( ControlState t : targets ) {
+//					newSet.addAll(t.asStateSet());
+//				}
+//			}
+//		}
+//		return newSet;
+//	}
+	
+//	public StateSet lambdaTargets() {
+//		StateSet result = new StateSet();
+//		for( ControlState cs : this ) {
+//			result.addAll(cs.lambdaTargets());
+//		}
+//		return result;
+//	}
+	
+//	public StateSet elseTargets() {
+//		StateSet result = new StateSet();
+//		for( ControlState cs : this ) {
+//			result.addAll(cs.elseTargets());
+//		}
+//		return result;
+//	}
+	
+	
+	/**
+	 * Returns a prioritized Set of Sets of Rules.
+	 * This is done by merging the prioritized rulesets
+	 * of all ControlStates and then by appending the prioritized
+	 * rulesets of the Else-Targets 
+	 * 
+	 * @return Set<Rule>
+	 */
+	public Set<Rule> rules() {
+		// for now, priorities will be ignores when using control ?
+		
+		if( this.rules == null ) {
+			
+			this.rules = new HashSet<Rule>();
+
+			for( ControlState cs : this ) {
+				this.rules.addAll(cs.rules());
 			}
 		}
+		return rules;
 		
-		if( newSet.isEmpty() ) {
-			System.err.println("targetSet empty for rule" + rule);
-		}
-		
-		return newSet;
-	}
-
-	public boolean add(Location l) {
-		if( l instanceof StateSet ) {
-			return this.addAll((StateSet)l);
-		} else {
-			return false;
-		}
-	}
-	
-	public SortedMap<Integer, Set<Rule>> ruleMap() {
-		SortedMap<Integer, Set<Rule>> myRuleMap = new TreeMap<Integer, Set<Rule>>(Rule.PRIORITY_COMPARATOR);
-		for( ControlState cs : this ) {
-			myRuleMap.putAll(cs.getRuleMap());
-		}
-		return myRuleMap;
 	}
 	
 	/**

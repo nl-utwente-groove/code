@@ -12,27 +12,28 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Explorer.java,v 1.3 2007-08-26 07:24:21 rensink Exp $
+ * $Id: Explorer.java,v 1.4 2008-01-30 09:33:18 iovka Exp $
  */
 package groove.calc;
 
+import groove.explore.DefaultScenario;
 import groove.graph.Graph;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.explore.AbstractStrategy;
 import groove.trans.GraphGrammar;
+import groove.util.Property;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 
 /**
+ * REMOVE: ??? OR REWRITE
  * Explorer class offering several light-weight methods of finding 
  * graphs and other objects within a given GTS.
  * @author Arend Rensink
  * @version $Revision $
  */
-public class Explorer extends AbstractStrategy {
+public class Explorer extends DefaultScenario {
+	
 	public String getName() {
 		return "Utility explorer";
 	}
@@ -45,17 +46,17 @@ public class Explorer extends AbstractStrategy {
 	 * This implementation returns either one or all final states of the
 	 * GTS, depending on the setting of {@link #isGetAll()}.
 	 */
-	public Collection<GraphState> explore() {
-		return explore(stateId, isFinal);
-	}
+//	public Collection<GraphState> explore() {
+//		return explore(stateId, isFinal);
+//	}
 
 	/** 
 	 * This implementation returns either one or all states of the
 	 * GTS satisfying a given property, depending on the setting of {@link #isGetAll()}.
 	 */
-	public Collection<GraphState> explore(Property<GraphState> p) {
-		return explore(stateId, p, isGetAll());
-	}
+//	public Collection<GraphState> explore(Property<GraphState> p) {
+//		return explore(stateId, p, isGetAll());
+//	}
 
 	/** 
 	 * Generic function to explore the state space and collect 
@@ -69,9 +70,9 @@ public class Explorer extends AbstractStrategy {
 	 * @param p property on the collected objects
 	 * @return the collection of (one or all) objects
 	 */
-	public <T> Collection<T> explore(Function<GraphState,T> f, Property<T> p) {
-		return explore(f, p, isGetAll());
-	}
+//	public <T> Collection<T> explore(Function<GraphState,T> f, Property<T> p) {
+//		return explore(f, p, isGetAll());
+//	}
 
 	/** 
 	 * Generic function to explore the state space and collect 
@@ -86,9 +87,9 @@ public class Explorer extends AbstractStrategy {
 	 * @param all flag to control if all results or just one result are collected 
 	 * @return the collection of (one or all) objects
 	 */
-	public <T> Collection<T> explore(Function<GraphState,T> f, Property<T> p, boolean all) {
-		return explore(stateTrue, f, p, all);
-	}
+//	public <T> Collection<T> explore(Function<GraphState,T> f, Property<T> p, boolean all) {
+//		return explore(stateTrue, f, p, all);
+//	}
 
 	/** 
 	 * Generic function to explore the state space and collect  
@@ -105,94 +106,94 @@ public class Explorer extends AbstractStrategy {
 	 * @param all flag to control if all results or just one result are collected 
 	 * @return the collection of (one or all) objects
 	 */
-	public <T> Collection<T> explore(Property<GraphState> p1, Function<GraphState,T> f, Property<T> p2, boolean all) {
-		Collection<T> result = new ArrayList<T>();
-		Collection<GraphState> currentStates = new ArrayList<GraphState>(getGTS().nodeCount());
-		currentStates.addAll(getGTS().nodeSet());
-		Collection<GraphState> nextStates = new ArrayList<GraphState>();
-		FreshStateCollector collector = getCollector();
-		boolean halt = false;
-		while (!halt && ! currentStates.isEmpty()) {
-			collector.set(nextStates);
-			Iterator<? extends GraphState> stateIter = currentStates.iterator();
-			while (!halt && stateIter.hasNext()) {
-				GraphState state = stateIter.next();
-				if (p1.isSatisfied(state)) {
-					T subject = f.apply(state);
-					if (p2.isSatisfied(subject)) {
-						result.add(subject);
-						halt = !all;
-					}
-				}
-				if (! halt) {
-					explore(state);
-				}
-			}
-			collector.reset();
-			currentStates = nextStates;
-			nextStates = new ArrayList<GraphState>(currentStates.size() * 2);
-		}
-		return result;
-	}
+//	public <T> Collection<T> explore(Property<GraphState> p1, Function<GraphState,T> f, Property<T> p2, boolean all) {
+//		Collection<T> result = new ArrayList<T>();
+//		Collection<GraphState> currentStates = new ArrayList<GraphState>(getGTS().nodeCount());
+//		currentStates.addAll(getGTS().nodeSet());
+//		Collection<GraphState> nextStates = new ArrayList<GraphState>();
+//		FreshStateCollector collector = getCollector();
+//		boolean halt = false;
+//		while (!halt && ! currentStates.isEmpty()) {
+//			collector.set(nextStates);
+//			Iterator<? extends GraphState> stateIter = currentStates.iterator();
+//			while (!halt && stateIter.hasNext()) {
+//				GraphState state = stateIter.next();
+//				if (p1.isSatisfied(state)) {
+//					T subject = f.apply(state);
+//					if (p2.isSatisfied(subject)) {
+//						result.add(subject);
+//						halt = !all;
+//					}
+//				}
+//				if (! halt) {
+//					explore(state);
+//				}
+//			}
+//			collector.reset();
+//			currentStates = nextStates;
+//			nextStates = new ArrayList<GraphState>(currentStates.size() * 2);
+//		}
+//		return result;
+//	}
 
 	/** 
 	 * Returns all graphs that satisfy a given property. 
 	 */
-	public <T> Collection<T> getAll(Property<GraphState> p, Function<GraphState,T> f) {
-		return explore(p, f, Property.<T>createTrue(), true);
-	}
+//	public <T> Collection<T> getAll(Property<GraphState> p, Function<GraphState,T> f) {
+//		return explore(p, f, Property.<T>createTrue(), true);
+//	}
 
 	/** 
 	 * Returns the first graph that satisfies a given property,
 	 * or <code>null</code> if there is none. 
 	 */
-	public <T> T get(Property<GraphState> p, Function<GraphState,T> f) {
-		Collection<T> collection = explore(p, f, Property.<T>createTrue(), false);
-		if (collection.isEmpty()) {
-			return null;
-		} else {
-			return collection.iterator().next();
-		}
-	}
+//	public <T> T get(Property<GraphState> p, Function<GraphState,T> f) {
+//		Collection<T> collection = explore(p, f, Property.<T>createTrue(), false);
+//		if (collection.isEmpty()) {
+//			return null;
+//		} else {
+//			return collection.iterator().next();
+//		}
+//	}
 
 	/** 
 	 * Returns all graphs that satisfy a given property. 
 	 */
-	public Collection<Graph> getAll(Property<Graph> p) {
-		return explore(getGraph, p, true);
-	}
+//	public Collection<Graph> getAll(Property<Graph> p) {
+//		return explore(getGraph, p, true);
+//	}
 
 	/** 
 	 * Returns the first graph that satisfies a given property,
 	 * or <code>null</code> if there is none. 
 	 */
-	public Graph get(Property<Graph> p) {
-		Collection<Graph> collection = explore(getGraph, p, false);
-		if (collection.isEmpty()) {
-			return null;
-		} else {
-			return collection.iterator().next();
-		}
-	}
+//	public Graph get(Property<Graph> p) {
+//		Collection<Graph> collection = explore(getGraph, p, false);
+//		if (collection.isEmpty()) {
+//			return null;
+//		} else {
+//			return collection.iterator().next();
+//		}
+//	}
 
 	/** 
 	 * Returns all final graphs.
 	 */
-	public Collection<Graph> getAll() {
-		return explore(isFinal, getGraph, Property.<Graph>createTrue(), true);
-	}
+//	public Collection<Graph> getAll() {
+//		return explore(isFinal, getGraph, Property.<Graph>createTrue(), true);
+//	}
 
 	/** 
 	 * Returns a final graph, or <code>null</code> if there is none.
 	 */
-	public Graph get() {
-		Collection<Graph> collection = explore(isFinal, getGraph, Property.<Graph>createTrue(), true);
-		if (collection.isEmpty()) {
-			return null;
-		} else {
-			return collection.iterator().next();
-		}
-	}
+//	public Graph get() {
+//		Collection<Graph> collection = explore(isFinal, getGraph, Property.<Graph>createTrue(), true);
+//		if (collection.isEmpty()) {
+//			return null;
+//		} else {
+//			return collection.iterator().next();
+//		}
+//	}
 
 	/** 
 	 * Sets the state of this exploration strategy to either
@@ -211,13 +212,13 @@ public class Explorer extends AbstractStrategy {
 	}
 
 	/** Property that tests if a given graph state is final in the GTS. */
-	private final Property<GraphState> isFinal = new Property<GraphState>() {
-		@Override
-		public boolean isSatisfied(GraphState state) {
-			explore(state);
-			return getGTS().isFinal(state);
-		}
-	};
+//	private final Property<GraphState> isFinal = new Property<GraphState>() {
+//		@Override
+//		public boolean isSatisfied(GraphState state) {
+//			explore(state);
+//			return getGTS().isFinal(state);
+//		}
+//	};
 
 	/** True property for all states. */
 	private final Property<GraphState> stateTrue = Property.createTrue();
@@ -248,11 +249,11 @@ public class Explorer extends AbstractStrategy {
 	 * @return the collection of all graphs from reachable states in the
 	 * expansion of <code>gg</code> that satisfy the property <code>p</code>
 	 */
-	static public Collection<Graph> getAll(GraphGrammar gg, Property<Graph> p) {
-		Explorer explorer = new Explorer();
-		explorer.setGTS(new GTS(gg));
-		return explorer.getAll(p);
-	}
+//	static public Collection<Graph> getAll(GraphGrammar gg, Property<Graph> p) {
+//		Explorer explorer = new Explorer();
+//		explorer.setGTS(new GTS(gg));
+//		return explorer.getAll(p);
+//	}
 
 	/** 
 	 * Returns the first graph generated by a given graph grammar that satisfies a given property,
@@ -263,11 +264,11 @@ public class Explorer extends AbstractStrategy {
 	 * expansion of <code>gg</code> that satisfies the property <code>p</code>,
 	 * or <code>null</code> if there exists no such graph
 	 */
-	static public Graph get(GraphGrammar gg, Property<Graph> p) {
-		Explorer explorer = new Explorer();
-		explorer.setGTS(new GTS(gg));
-		return explorer.get(p);
-	}
+//	static public Graph get(GraphGrammar gg, Property<Graph> p) {
+//		Explorer explorer = new Explorer();
+//		explorer.setGTS(new GTS(gg));
+//		return explorer.get(p);
+//	}
 
 	/** 
 	 * Returns all final graphs generated by a given graph grammar.
@@ -275,11 +276,11 @@ public class Explorer extends AbstractStrategy {
 	 * @return the collection of all graphs from reachable states in the
 	 * expansion of <code>gg</code> that have no outgoing transition
 	 */
-	static public Collection<Graph> getAll(GraphGrammar gg) {
-		Explorer explorer = new Explorer();
-		explorer.setGTS(new GTS(gg));
-		return explorer.getAll();
-	}
+//	static public Collection<Graph> getAll(GraphGrammar gg) {
+//		Explorer explorer = new Explorer();
+//		explorer.setGTS(new GTS(gg));
+//		return explorer.getAll();
+//	}
 
 	/** 
 	 * Returns the first final graph generated by a given graph grammar,
@@ -289,9 +290,9 @@ public class Explorer extends AbstractStrategy {
 	 * expansion of <code>gg</code>,
 	 * or <code>null</code> if there exists no such graph
 	 */
-	static public Graph get(GraphGrammar gg) {
-		Explorer explorer = new Explorer();
-		explorer.setGTS(new GTS(gg));
-		return explorer.get();
-	}
+//	static public Graph get(GraphGrammar gg) {
+//		Explorer explorer = new Explorer();
+//		explorer.setGTS(new GTS(gg));
+//		return explorer.get();
+//	}
 }

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ObjectWrapSpeedTest.java,v 1.1 2007-09-19 09:01:10 rensink Exp $
+ * $Id: ObjectWrapSpeedTest.java,v 1.2 2008-01-30 09:33:07 iovka Exp $
  */
 package groove.test;
 
@@ -24,7 +24,7 @@ import java.util.Collections;
 /**
  * Class to test the overhead of wrapping an object up.
  * @author Arend Rensink
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ObjectWrapSpeedTest {
     /** Constructs a version of the test. */

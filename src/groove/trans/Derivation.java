@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Derivation.java,v 1.3 2007-10-07 07:56:48 rensink Exp $
+ * $Id: Derivation.java,v 1.4 2008-01-30 09:32:36 iovka Exp $
  */
 package groove.trans;
 
@@ -28,7 +28,7 @@ import groove.graph.Morphism;
  * (typically from the source or target graph) that, together with the source
  * graph, allow to reconstruct the derivation up to node and edge set equality.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface Derivation {
     /**

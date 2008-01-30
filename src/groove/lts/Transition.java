@@ -12,13 +12,13 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Transition.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: Transition.java,v 1.2 2008-01-30 09:32:19 iovka Exp $
  */
 package groove.lts;
 
 /**
  * Interface of a transition in an {@link LTS}.
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:52 $
+ * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:19 $
  */
 public interface Transition extends groove.graph.BinaryEdge {
     // the general interface adds no functionality

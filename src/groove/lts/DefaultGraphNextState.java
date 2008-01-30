@@ -30,7 +30,7 @@ import groove.trans.RuleMatch;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**

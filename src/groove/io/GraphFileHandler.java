@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphFileHandler.java,v 1.3 2007-10-10 08:59:46 rensink Exp $
+ * $Id: GraphFileHandler.java,v 1.4 2008-01-30 09:33:41 iovka Exp $
  */
 package groove.io;
 
@@ -26,7 +26,7 @@ import java.util.List;
  * Class to facilitate operations that have to be performed upon a 
  * set of graph files, such as validation or transformation.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class GraphFileHandler {
     /** Lowest verbosity setting. */

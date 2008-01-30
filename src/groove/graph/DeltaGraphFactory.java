@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaGraphFactory.java,v 1.3 2007-09-25 09:38:05 kastenberg Exp $
+ * $Id: DeltaGraphFactory.java,v 1.4 2008-01-30 09:32:58 iovka Exp $
  */
 package groove.graph;
 

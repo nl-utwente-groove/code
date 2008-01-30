@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LTSListener.java,v 1.1.1.2 2007-03-20 10:42:52 kastenberg Exp $
+ * $Id: LTSListener.java,v 1.2 2008-01-30 09:32:18 iovka Exp $
  */
 package groove.lts;
 
@@ -22,7 +22,7 @@ import groove.graph.GraphShapeListener;
  * An extended graph listener, which is also notified of explore actions
  * on an LTS.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface LTSListener extends GraphShapeListener {
 	/** 

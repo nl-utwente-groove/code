@@ -12,13 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CAPanel.java,v 1.15 2007-11-26 08:58:37 fladder Exp $
+ * $Id: CAPanel.java,v 1.16 2008-01-30 09:33:37 iovka Exp $
  */
 package groove.gui;
 
-import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
-import groove.control.ControlState;
 import groove.control.ControlView;
+import groove.control.Location;
 import groove.gui.jgraph.ControlJGraph;
 import groove.gui.jgraph.ControlJModel;
 import groove.gui.jgraph.GraphJModel;
@@ -31,6 +30,7 @@ import groove.trans.NameLabel;
 import groove.view.DefaultGrammarView;
 
 import java.awt.BorderLayout;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
@@ -69,8 +69,13 @@ public class CAPanel extends JPanel  implements SimulationListener {
 		JToolBar toolBar = new JToolBar();
 
 		JButton parseButton = new JButton("parse");
-		toolBar.add(parseButton, BorderLayout.SOUTH);
+		toolBar.add(parseButton);
 		parseButton.addActionListener(new ParseButtonListener());
+		
+//		JButton backButton = new JButton("<<-");
+//		toolBar.add(backButton);
+//		backButton.addActionListener(new BackButtonListener());
+		
 		
 		this.add(toolBar, BorderLayout.NORTH);
 		
@@ -81,6 +86,10 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	
 		splitPane.add(autPanel);
 		splitPane.add(textPanel = new JTextPane());
+		
+		textPanel.setFont(textPanel.getFont().deriveFont((float)16));
+
+		
 		this.add(splitPane, BorderLayout.CENTER);
 		
 		simulator.addSimulationListener(this);
@@ -143,40 +152,33 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	}
 
 	public void setStateUpdate(GraphState state) {
-//		if( state.getControl() != null ) {
-//			autPanel.getJModel().setActiveTransition(null);
-//			// emphasize state if it isn't already done
-//			autPanel.getJModel().setActiveState((Location)state.getControl());
-//			// we do layouting here because it's too expensive to do it
-//			// every time a new state is added
-//			if (autPanel.getJGraph().getLayouter() != null) {
-//				autPanel.getJModel().freeze();
-//				autPanel.getJGraph().getLayouter().start(false);
-//			}
-//			// addUpdate(lts, state);
-//			//autPanel.getJGraph().scrollTo(state);
-//
-//		}
+		if( state.getLocation() != null ) {
+			
+			// thus, there is control
+			
+			// disable the active transition
+			// autPanel.getJModel().setActiveTransition(null);
+			
+			// set the active Location (set of control states)
+
+			// emphasize state if it isn't already done
+			autPanel.getJModel().setActiveLocation((Location)state.getLocation());
+			// we do layouting here because it's too expensive to do it
+			// every time a new state is added
+			if (autPanel.getJGraph().getLayouter() != null) {
+				autPanel.getJModel().freeze();
+				autPanel.getJGraph().getLayouter().start(false);
+			}
+			// addUpdate(lts, state);
+			//autPanel.getJGraph().scrollTo(state);
+
+		}
 	}
 
 	public void setTransitionUpdate(GraphTransition transition) {
-//		ControlState source = (ControlState) transition.source().getControl();
-//
-//		if( source != null ) {
-//			autPanel.getJModel().setActiveState(source);
-//			//TODO: activate something 
-//			ControlTransition ct = source.getTransitions(transition.getEvent().getRule()).iterator().next();
-//			
-//			ControlTransition parent = ct.getVisibleParent();
-//			if( parent != null ) {
-//				ct = parent;
-//			}
-//			autPanel.getJModel().setActiveTransition(ct);
-//		}
 	}
 
 	public void startSimulationUpdate(GTS gts) {
-		// TODO Auto-generated method stub
 	}
 
 	class ParseButtonListener implements ActionListener {
@@ -192,6 +194,8 @@ public class CAPanel extends JPanel  implements SimulationListener {
 				return;
 			}
 
+			//CAPanel.this.simulator.doRefreshGrammar();
+			
 			cv.setProgram(CAPanel.this.textPanel.getText());
 			cv.loadProgram();
 			CAPanel.this.simulator.getCurrentGrammar().setControl(cv);
@@ -200,6 +204,22 @@ public class CAPanel extends JPanel  implements SimulationListener {
 		}
 		
 	}
+	
+//	class BackButtonListener implements ActionListener {
+//		
+//		public void actionPerformed(ActionEvent e)
+//		{
+//			try {
+//				CAPanel.this.simulator.getCurrentGrammar().getControl().getAutomaton().deactiveLast();
+//				CAPanel.this.autPanel.getJModel().reload();
+//				CAPanel.this.autPanel.getJGraph().getLayouter().start(true);
+//			}
+//			catch( NullPointerException npe ) {
+//				// FIXME: this is very ugly, catching npe's.
+//			}
+//		}
+//		
+//	}
 }
 	
 class AutomatonPanel extends JGraphPanel<ControlJGraph> 

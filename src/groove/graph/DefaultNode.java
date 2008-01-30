@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.14 2007-11-29 12:47:17 rensink Exp $
+ * $Id: DefaultNode.java,v 1.15 2008-01-30 09:32:54 iovka Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2007-11-29 12:47:17 $
+ * @version $Revision: 1.15 $
  */
 public class DefaultNode implements Node {
     /**
@@ -40,6 +40,19 @@ public class DefaultNode implements Node {
     	this.nodeNr = nr;
     	this.hashCode = computeHashCode();
     }
+    
+    /**
+     * FIXME: added this method as a temporary solution
+     * as there is no viable constructor (super()) while subclassing DefaultNode
+     * except by having your own node counter.  
+     * 
+     * See also: new DefaultEdge()
+     */
+    protected DefaultNode() {
+    	this.nodeNr = DefaultNode.nextNodeNr();
+    	this.hashCode = computeHashCode();
+    }
+    
 //
 //    // ---------------- Element and related methods ----------------------
 //
@@ -187,7 +200,7 @@ public class DefaultNode implements Node {
         DefaultNode result = nodes[nr];
         if (result == null) {
             result = nodes[nr] = new DefaultNode(nr); 
-            nextNodeNr = Math.max(nextNodeNr, nr);
+	    nextNodeNr = Math.max(nextNodeNr, nr);
             nodeCount++;
         }
         return result;

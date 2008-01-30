@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SimulationListener.java,v 1.7 2007-08-26 07:24:00 rensink Exp $
+ * $Id: SimulationListener.java,v 1.8 2008-01-30 09:33:35 iovka Exp $
  */
 package groove.gui;
 

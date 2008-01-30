@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSPanel.java,v 1.19 2007-11-28 16:07:41 iovka Exp $
+ * $Id: LTSPanel.java,v 1.20 2008-01-30 09:33:35 iovka Exp $
  */
 package groove.gui;
 
@@ -46,7 +46,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.19 $ $Date: 2007-11-28 16:07:41 $
+ * @version $Revision: 1.20 $ $Date: 2008-01-30 09:33:35 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
 
@@ -302,12 +302,8 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         public void mouseClicked(MouseEvent evt) {
             if (evt.getButton() == MouseEvent.BUTTON1) {
             	if (! isEnabled() && getSimulator().getStartSimulationAction().isEnabled()) {
-            		if (getSimulator().isAbstractSimulation()) {
-            			getSimulator().startAbstrSimulation(getSimulator().getCurrentGrammar());
-            		} else {
-            			getSimulator().startSimulation(getSimulator().getCurrentGrammar());
-            		}
-            	} else if (evt.getClickCount() == 2) {
+           			getSimulator().startSimulation(getSimulator().getCurrentGrammar());
+            	} else if (evt.isControlDown()) {
             		getSimulator().setGraphPanel(getSimulator().getStatePanel());
             	} 
             }

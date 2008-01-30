@@ -1,5 +1,5 @@
 /*
- * $Id: EdgeAnchorFactory.java,v 1.2 2007-03-27 14:18:31 rensink Exp $
+ * $Id: EdgeAnchorFactory.java,v 1.3 2008-01-30 09:32:36 iovka Exp $
  */
 package groove.trans;
 
@@ -16,7 +16,7 @@ import groove.graph.Node;
  * This implementation does not try to save space by minimizing the size of the anchor,
  * but tries to save time by selecting the entire non-reader part of the LHS.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class EdgeAnchorFactory implements AnchorFactory {
 	/**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractGraphTransitionStub.java,v 1.10 2007-10-01 14:48:21 rensink Exp $
+ * $Id: AbstractGraphTransitionStub.java,v 1.11 2008-01-30 09:32:20 iovka Exp $
  */
 package groove.lts;
 
@@ -26,7 +26,7 @@ import groove.trans.RuleEvent;
  * ({@link SymmetryTransitionStub}) and one that is not ({@link SymmetryTransitionStub}).
  * The only abstract method is {@link #toTransition(GraphState)}.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 abstract class AbstractGraphTransitionStub implements GraphTransitionStub {
     /**

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: EdgeEmbargo.java,v 1.10 2007-10-08 00:59:19 rensink Exp $
+ * $Id: EdgeEmbargo.java,v 1.11 2008-01-30 09:32:34 iovka Exp $
  */
 package groove.trans;
 
@@ -25,7 +25,7 @@ import groove.util.Groove;
 /**
  * A specialised NAC that forbids the presence of a certain edge.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class EdgeEmbargo extends NotCondition {
     /**

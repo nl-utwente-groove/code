@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprEdge.java,v 1.1 2007-10-18 14:57:48 rensink Exp $
+ * $Id: RegExprEdge.java,v 1.2 2008-01-30 09:32:27 iovka Exp $
  */
 package groove.rel;
 

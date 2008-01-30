@@ -12,20 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprLabel.java,v 1.13 2007-11-19 12:19:26 rensink Exp $
+ * $Id: RegExprLabel.java,v 1.14 2008-01-30 09:32:28 iovka Exp $
  */
 package groove.rel;
 
-import groove.calc.Property;
 import groove.graph.AbstractLabel;
 import groove.graph.Label;
+import groove.util.Property;
 
 import java.util.List;
 
 /**
  * Implements a label corresponding to a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.13 $ $Date: 2007-11-19 12:19:26 $
+ * @version $Revision: 1.14 $ $Date: 2008-01-30 09:32:28 $
  */
 public class RegExprLabel extends AbstractLabel {
     /**

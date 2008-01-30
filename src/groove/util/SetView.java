@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SetView.java,v 1.3 2007-04-22 23:32:24 rensink Exp $
+ * $Id: SetView.java,v 1.4 2008-01-30 09:32:10 iovka Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * method <tt>approve(Object)</tt>.
  * The view allows removal but not addition of values.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class SetView<T> extends AbstractSet<T> {
     /**

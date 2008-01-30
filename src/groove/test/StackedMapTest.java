@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StackedMapTest.java,v 1.2 2007-03-30 15:50:40 rensink Exp $
+ * $Id: StackedMapTest.java,v 1.3 2008-01-30 09:33:04 iovka Exp $
  */
 package groove.test;
 

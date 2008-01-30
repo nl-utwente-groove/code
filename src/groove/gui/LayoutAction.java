@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LayoutAction.java,v 1.3 2007-08-26 07:24:04 rensink Exp $
+ * $Id: LayoutAction.java,v 1.4 2008-01-30 09:33:35 iovka Exp $
  */
 package groove.gui;
 
@@ -26,7 +26,7 @@ import javax.swing.AbstractAction;
  * Wraps a <tt>Layouter</tt> into an action.
  * Invoking the action comes down to starting the layout.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class LayoutAction extends AbstractAction {
 	/** Constructs a layout action for a given layouter. */

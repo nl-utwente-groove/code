@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ComposedLabelParser.java,v 1.3 2007-11-19 12:19:18 rensink Exp $
+ * $Id: ComposedLabelParser.java,v 1.4 2008-01-30 09:33:25 iovka Exp $
  */
 package groove.view;
 
@@ -26,7 +26,7 @@ import groove.graph.Label;
  * Label parser consisting of a collection of parser, which are consecutively applied.
  * Parsing only succeeds if all parsers agree on the result.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 @Deprecated
 public class ComposedLabelParser implements LabelParser {

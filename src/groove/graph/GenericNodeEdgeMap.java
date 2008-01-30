@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GenericNodeEdgeMap.java,v 1.1.1.2 2007-03-20 10:42:42 kastenberg Exp $
+ * $Id: GenericNodeEdgeMap.java,v 1.2 2008-01-30 09:32:50 iovka Exp $
  */
 package groove.graph;
 

@@ -1,4 +1,4 @@
-/* $Id: ContentParser.java,v 1.1 2007-04-29 09:22:24 rensink Exp $ */
+/* $Id: ContentParser.java,v 1.2 2008-01-30 09:31:33 iovka Exp $ */
 package groove.view.aspect;
 
 import groove.view.FormatException;

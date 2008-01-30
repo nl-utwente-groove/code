@@ -230,16 +230,18 @@ public GCLParser(ParserSharedInputState state) {
 			block();
 			astFactory.addASTChild(currentAST, returnAST);
 			match(WHILE);
+			match(LPAREN);
 			condition();
 			astFactory.addASTChild(currentAST, returnAST);
+			match(RPAREN);
 			statement_AST = (AST)currentAST.root;
 			break;
 		}
 		case TRY:
 		{
-			AST tmp29_AST = null;
-			tmp29_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp29_AST);
+			AST tmp31_AST = null;
+			tmp31_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp31_AST);
 			match(TRY);
 			block();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -276,27 +278,57 @@ public GCLParser(ParserSharedInputState state) {
 		}
 		case IF:
 		{
-			AST tmp31_AST = null;
-			tmp31_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp31_AST);
+			AST tmp33_AST = null;
+			tmp33_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp33_AST);
 			match(IF);
 			match(LPAREN);
 			condition();
 			astFactory.addASTChild(currentAST, returnAST);
 			match(RPAREN);
+			block();
+			astFactory.addASTChild(currentAST, returnAST);
+			{
+			switch ( LA(1)) {
+			case ELSE:
+			{
+				match(ELSE);
+				block();
+				astFactory.addASTChild(currentAST, returnAST);
+				break;
+			}
+			case ALAP:
+			case WHILE:
+			case TRY:
+			case DO:
+			case IF:
+			case CHOICE:
+			case RCURLY:
+			case IDENTIFIER:
+			case LPAREN:
+			case SHARP:
+			{
+				break;
+			}
+			default:
+			{
+				throw new NoViableAltException(LT(1), getFilename());
+			}
+			}
+			}
 			statement_AST = (AST)currentAST.root;
 			break;
 		}
 		case CHOICE:
 		{
-			AST tmp34_AST = null;
-			tmp34_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp34_AST);
+			AST tmp37_AST = null;
+			tmp37_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp37_AST);
 			match(CHOICE);
 			block();
 			astFactory.addASTChild(currentAST, returnAST);
 			{
-			_loop11:
+			_loop12:
 			do {
 				if ((LA(1)==OR)) {
 					match(OR);
@@ -304,7 +336,7 @@ public GCLParser(ParserSharedInputState state) {
 					astFactory.addASTChild(currentAST, returnAST);
 				}
 				else {
-					break _loop11;
+					break _loop12;
 				}
 				
 			} while (true);
@@ -342,25 +374,15 @@ public GCLParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case OR:
 		{
-			AST tmp37_AST = null;
-			tmp37_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp37_AST);
+			AST tmp40_AST = null;
+			tmp40_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp40_AST);
 			match(OR);
 			condition();
 			astFactory.addASTChild(currentAST, returnAST);
 			break;
 		}
-		case ALAP:
-		case WHILE:
-		case TRY:
-		case DO:
-		case IF:
-		case CHOICE:
-		case RCURLY:
-		case IDENTIFIER:
-		case LPAREN:
 		case RPAREN:
-		case SHARP:
 		{
 			break;
 		}
@@ -391,9 +413,9 @@ public GCLParser(ParserSharedInputState state) {
 			case OR:
 			{
 				{
-				AST tmp38_AST = null;
-				tmp38_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp38_AST);
+				AST tmp41_AST = null;
+				tmp41_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp41_AST);
 				match(OR);
 				expression();
 				astFactory.addASTChild(currentAST, returnAST);
@@ -402,17 +424,17 @@ public GCLParser(ParserSharedInputState state) {
 			}
 			case PLUS:
 			{
-				AST tmp39_AST = null;
-				tmp39_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp39_AST);
+				AST tmp42_AST = null;
+				tmp42_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp42_AST);
 				match(PLUS);
 				break;
 			}
 			case STAR:
 			{
-				AST tmp40_AST = null;
-				tmp40_AST = astFactory.create(LT(1));
-				astFactory.makeASTRoot(currentAST, tmp40_AST);
+				AST tmp43_AST = null;
+				tmp43_AST = astFactory.create(LT(1));
+				astFactory.makeASTRoot(currentAST, tmp43_AST);
 				match(STAR);
 				break;
 			}
@@ -432,9 +454,9 @@ public GCLParser(ParserSharedInputState state) {
 		}
 		case SHARP:
 		{
-			AST tmp41_AST = null;
-			tmp41_AST = astFactory.create(LT(1));
-			astFactory.makeASTRoot(currentAST, tmp41_AST);
+			AST tmp44_AST = null;
+			tmp44_AST = astFactory.create(LT(1));
+			astFactory.makeASTRoot(currentAST, tmp44_AST);
 			match(SHARP);
 			expression_atom();
 			astFactory.addASTChild(currentAST, returnAST);
@@ -458,9 +480,9 @@ public GCLParser(ParserSharedInputState state) {
 		switch ( LA(1)) {
 		case TRUE:
 		{
-			AST tmp42_AST = null;
-			tmp42_AST = astFactory.create(LT(1));
-			astFactory.addASTChild(currentAST, tmp42_AST);
+			AST tmp45_AST = null;
+			tmp45_AST = astFactory.create(LT(1));
+			astFactory.addASTChild(currentAST, tmp45_AST);
 			match(TRUE);
 			conditionliteral_AST = (AST)currentAST.root;
 			break;
@@ -486,9 +508,9 @@ public GCLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST rule_AST = null;
 		
-		AST tmp43_AST = null;
-		tmp43_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp43_AST);
+		AST tmp46_AST = null;
+		tmp46_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp46_AST);
 		match(IDENTIFIER);
 		rule_AST = (AST)currentAST.root;
 		returnAST = rule_AST;
@@ -530,9 +552,9 @@ public GCLParser(ParserSharedInputState state) {
 		ASTPair currentAST = new ASTPair();
 		AST procuse_AST = null;
 		
-		AST tmp46_AST = null;
-		tmp46_AST = astFactory.create(LT(1));
-		astFactory.addASTChild(currentAST, tmp46_AST);
+		AST tmp49_AST = null;
+		tmp49_AST = astFactory.create(LT(1));
+		astFactory.addASTChild(currentAST, tmp49_AST);
 		match(IDENTIFIER);
 		match(LPAREN);
 		match(RPAREN);

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphResult.java,v 1.3 2007-10-05 08:31:43 rensink Exp $
+ * $Id: GraphResult.java,v 1.4 2008-01-30 09:33:18 iovka Exp $
  */
 package groove.calc;
 
@@ -29,7 +29,7 @@ import groove.trans.RuleSystem;
  * Class wrapping the outcome of a graph calculation.
  * @see groove.calc.GraphCalculator
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface GraphResult {
     /**

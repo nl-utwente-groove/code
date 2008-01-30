@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: GraphCondition.java,v 1.16 2007-10-05 08:31:38 rensink Exp $
+ * $Id: GraphCondition.java,v 1.17 2008-01-30 09:32:34 iovka Exp $
  */
 package groove.trans;
 
@@ -28,7 +28,7 @@ import java.util.Iterator;
  * Interface for conditions over graphs.
  * Conditions are parts of predicates, effectively constituting disjuncts.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 @Deprecated
 public interface GraphCondition extends GraphTest {

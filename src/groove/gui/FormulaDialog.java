@@ -12,13 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: FormulaDialog.java,v 1.7 2007-11-06 13:08:58 kastenberg Exp $
+ * $Id: FormulaDialog.java,v 1.8 2008-01-30 09:33:36 iovka Exp $
  */
 package groove.gui;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
-import java.awt.Container;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -36,7 +35,7 @@ import javax.swing.JTextField;
 /**
  * Dialog for entering temporal formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 /**
  * @author Arend Rensink
@@ -75,8 +74,6 @@ public class FormulaDialog {
 	 * when the user closes the dialog. The return
 	 * value indicates if the properties have changed.
 	 * @param frame the frame on which the fialog is to be displayed
-	 * @return <code>true</code> if the properties have changed during
-	 * the time the dialog was visible.
 	 */
 	public void showDialog(Component frame) {
 		dialog = getContentPane().createDialog(frame, createTitle());

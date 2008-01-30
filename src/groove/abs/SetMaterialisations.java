@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SetMaterialisations.java,v 1.2 2007-12-03 09:42:24 iovka Exp $
+ * $Id: SetMaterialisations.java,v 1.3 2008-01-30 09:32:22 iovka Exp $
  */
 package groove.abs;
 
@@ -81,8 +81,6 @@ public class SetMaterialisations {
 				if (! this.data.containsKey(CNN.cnn(n, originMap.getNode(n)))) {
 					Graph neigh = entry.getValue();
 					GraphPattern type = this.abstrPart.typeOf(originMap.getNode(n));
-					NodeEdgeMap centerMatch = new NodeEdgeHashMap();
-					centerMatch.putNode(n, type.central());
 					ArrayList<MapPattern> theTypes = new ArrayList<MapPattern>();
 					this.data.put(CNN.cnn(n, originMap.getNode(n)), theTypes);
 					for (VarNodeEdgeMap m : type.possibleTypings(neigh, n, this.options.SYMMETRY_REDUCTION)) {
@@ -150,10 +148,7 @@ public class SetMaterialisations {
 	
 	Collection<AbstrGraph> _transfResults(NodeFactory nodeFactory) {
 		Collection<AbstrGraph> result = new ArrayList<AbstrGraph>();
-		
-		Collection<Node> dist1Nodes = this.concrPart.nodesAtDist(1);  // pre-computed, needed later
-		Collection<? extends Node> linkableNodes = this.concrPart.graph().nodeSet();
-		
+
 		// # For all possible origin
 		for (final ExtendedVarNodeEdgeMap origin : this.origins) {
 			
@@ -175,7 +170,7 @@ public class SetMaterialisations {
 				ArrayList<Set<Edge>> possibleTgtLinks = new ArrayList<Set<Edge>>();
 				ArrayList<Set<Node>> zeroMultNodes = new ArrayList<Set<Node>>();
 				ArrayList<Set<Edge>> linkConsumedEdges = new ArrayList<Set<Edge>>();
-				possibleLinks(origin, mapNodePattern, dist1Nodes, linkableNodes, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, nodeFactory);
+				possibleLinks(origin, mapNodePattern, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, nodeFactory);
 			
 				// # For all possible links
 				for (int i = 0; i < possibleSrcLinks.size(); i++) {
@@ -338,7 +333,7 @@ public class SetMaterialisations {
 		ArrayList<Set<Edge>> possibleTgtLinks = new ArrayList<Set<Edge>>();
 		ArrayList<Set<Node>> zeroMultNodes = new ArrayList<Set<Node>>();
 		ArrayList<Set<Edge>> linkConsumedEdges = new ArrayList<Set<Edge>>();
-		possibleLinks(origin, mapPat, dist1Nodes, null, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, nodeFactory);
+		possibleLinks(origin, mapPat, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, nodeFactory);
 		
 		// Now 0 multiplicity nodes can be removed from the abstract part
 		
@@ -490,7 +485,6 @@ public class SetMaterialisations {
 	/** If high links' precision. */
 	private void possibleLinksHigh (final VarNodeEdgeMap origin, 
 			                     final Map<Node, MapPattern> typing, 
-			                     final Collection<Node> dist1nodes,
 			                     ArrayList<Set<Edge>> srcLinks,
 			                     ArrayList<Set<Edge>> tgtLinks,
 			                     ArrayList<Set<Node>> zeroNodes,
@@ -505,7 +499,7 @@ public class SetMaterialisations {
 		};
 		
 		// First compute all the extensions, and for each extension its possible embeddings
-		for (Graph g : ConcretePart.extensions(this.concrPart, dist1nodes, subTyping, this.abstrPart.family(), this.options.SYMMETRY_REDUCTION, nodeFactory)) {
+		for (Graph g : ConcretePart.extensions(this.concrPart, getDist1Nodes(), subTyping, this.abstrPart.family(), this.options.SYMMETRY_REDUCTION, nodeFactory)) {
 		
 			// Determine the new nodes, common to all possible embeddings
 			Collection<Node> newNodes = new ArrayList<Node>();
@@ -536,7 +530,10 @@ public class SetMaterialisations {
 							}
 							// if the abstract node has 0 multiplicity, then program for removal the edge that defines the link
 							if (currZeroNodes.contains(imageN)) {
-								currConsEdges.add(emb.getEdge(e));
+								// TODO how to determine that an abstract edge should be consumed ? 
+								// TODO (cont) This condition is not sufficient, as the edge may still
+								// TODO (cont) represent several concrete edges
+								// currConsEdges.add(emb.getEdge(e)); 
 							}
 						}
 					}
@@ -551,8 +548,11 @@ public class SetMaterialisations {
 	
 	/** TODO for the moment, coded only for radius 0.
 	 */
+	
+	/**
+	 * @param linkableNodes
+	 */
 	private void possibleLinksLow (final VarNodeEdgeMap origin,
-									Collection<? extends Node> linkableNodes,
 									ArrayList<Set<Edge>> srcLinks,
 									ArrayList<Set<Edge>> tgtLinks,
 									ArrayList<Set<Edge>> consumedEdges)
@@ -560,28 +560,61 @@ public class SetMaterialisations {
 		
 		srcLinks.add(new HashSet<Edge>());
 		tgtLinks.add(new HashSet<Edge>());
-		consumedEdges.add(new HashSet<Edge>(0)); // will remain empty
-		for (Node node : linkableNodes) {
+		Set<Edge> x = Collections.emptySet();
+		consumedEdges.add(x);
+		Set<Node> zeroMultNodes = this.abstrPart.zeroMultNodes(new ExtendedVarNodeEdgeMap(origin));
+		if (zeroMultNodes == null) {
+			assert true : "Should never happen";
+			zeroMultNodes = Collections.emptySet();	
+		}
+		for (Node node : getLinkableNodes()) {
 			Node imageN = origin.getNode(node);
-			if (Abstraction.MULTIPLICITY.isZero(this.abstrPart.multiplicityOf(imageN))) {
+			if (zeroMultNodes.contains(imageN)) {
 				continue;
 			}
 			// the srcLinks
 			for (Edge ee : this.abstrPart.edgeSet(imageN, Edge.SOURCE_INDEX)) {
 				DefaultEdge e = (DefaultEdge) ee;
-				if (! Abstraction.MULTIPLICITY.isZero(this.abstrPart.multiplicityOf(e.target()))) {
+				if (! zeroMultNodes.contains(e.target())) {
 					srcLinks.get(0).add(DefaultEdge.createEdge(node, e.label(), e.target()));
 				}
 			}
 			// the tgtLinks
 			for (Edge ee : this.abstrPart.edgeSet(imageN, Edge.TARGET_INDEX)) {
 				DefaultEdge e = (DefaultEdge) ee;
-				if (! Abstraction.MULTIPLICITY.isZero(this.abstrPart.multiplicityOf(e.source()))) {
+				if (! zeroMultNodes.contains(e.source())) {
 					tgtLinks.get(0).add(DefaultEdge.createEdge(e.source(), e.label(), node));
 				}
 			}
 		}
 	}
+	
+	/** Callback method initializing the linkable nodes whenever necessary. */
+	private Collection<Node> getLinkableNodes() {
+		if (this.linkableNodes == null) {
+			this.linkableNodes = new ArrayList<Node>();
+			if (this.abstrPart.precision() == 0) {
+				this.linkableNodes.addAll(this.concrPart.graph().nodeSet());
+			} else if (this.options.LINK_PRECISION == Abstraction.LinkPrecision.LOW) {
+				this.linkableNodes = new ArrayList<Node>();
+				for (int i = 1; i <= this.abstrPart.precision(); i++) {
+					this.linkableNodes.addAll(this.concrPart.nodesAtDist(i));
+				}
+			}
+		}
+		return this.linkableNodes;
+	}
+	/** Callback method initializing the distance one nodes whenever necessary. */
+	private Collection<Node> getDist1Nodes () {
+		if (this.dist1Nodes == null) {
+			this.dist1Nodes = this.concrPart.nodesAtDist(1);
+		}
+		return this.dist1Nodes;
+	}
+	
+	private Collection<Node> linkableNodes;
+	private Collection<Node> dist1Nodes;
+	
 	
 	
 	/** Constructs the possible links given an embedding of the concrete part into the abstract part, a typing of the the nodes in the concrete part.
@@ -597,8 +630,6 @@ public class SetMaterialisations {
 	 */
 	private void possibleLinks (final VarNodeEdgeMap origin, 
             final Map<Node, MapPattern> typing, 
-            final Collection<Node> dist1nodes,
-            final Collection<? extends Node> linkableNodes,
             ArrayList<Set<Edge>> srcLinks,
             ArrayList<Set<Edge>> tgtLinks,
             ArrayList<Set<Node>> zeroNodes,
@@ -606,9 +637,9 @@ public class SetMaterialisations {
             NodeFactory nodeFactory) 
 	{
 		if (this.abstrPart.family().getRadius() == 0 || this.options.LINK_PRECISION == Abstraction.LinkPrecision.LOW) {
-			possibleLinksLow(origin, linkableNodes, srcLinks, tgtLinks, consumedEdges);
+			possibleLinksLow(origin, srcLinks, tgtLinks, consumedEdges);
 		} else {
-			possibleLinksHigh(origin, typing, dist1nodes, srcLinks, tgtLinks, zeroNodes, consumedEdges, nodeFactory);
+			possibleLinksHigh(origin, typing, srcLinks, tgtLinks, zeroNodes, consumedEdges, nodeFactory);
 		}
 	}
 	
@@ -673,7 +704,7 @@ public class SetMaterialisations {
 	 * The keys of this map are exactly the couples (cn,an) that appear in some of the origin mappings and s.t. cn is not a central node in the concrete part.
 	 */
 	Map<CNN, Collection<MapPattern>> data;
-	/** Used to store the types of the center nodes of the transformed concrete part, after they are computed. */
+	/** Used to store the types of the center and new nodes of the transformed concrete part, after they are computed. */
 	Map<Node, GraphPattern> centerType;
 	/** The set of possible embedings of concrPart.graph() into abstrPart. */
 	Collection<ExtendedVarNodeEdgeMap> origins;
@@ -686,7 +717,7 @@ public class SetMaterialisations {
 	Morphism morph;
 	//private Map<CNN, Collection<GraphPattern>> newData;
 
-	private Abstraction.Options options;
+	private Abstraction.Parameters options;
 	
 	/** Defines (but does not compute) the set of materialisations.
 	 * @param cp
@@ -694,7 +725,7 @@ public class SetMaterialisations {
 	 * @param origin Defines also the matching used for the transformation 
 	 * @see #computeSet()
 	 */
-	public SetMaterialisations (ConcretePart cp, DefaultAbstrGraph ag, NodeEdgeMap origin, Abstraction.Options options) {
+	public SetMaterialisations (ConcretePart cp, DefaultAbstrGraph ag, NodeEdgeMap origin, Abstraction.Parameters options) {
 		this.concrPart = cp;
 		this.abstrPart = ag;
 		this.originBase = origin;

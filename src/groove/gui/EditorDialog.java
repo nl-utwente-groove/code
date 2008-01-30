@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: EditorDialog.java,v 1.14 2007-10-24 15:41:40 rensink Exp $
+ * $Id: EditorDialog.java,v 1.15 2008-01-30 09:33:35 iovka Exp $
  */
 package groove.gui;
 
@@ -36,7 +36,7 @@ import javax.swing.JToolBar;
 /**
  * Dialog wrapping a graph editor, such that no file operations are possible.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 abstract public class EditorDialog {
     /**

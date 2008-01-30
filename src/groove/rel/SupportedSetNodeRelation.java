@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SupportedSetNodeRelation.java,v 1.3 2007-08-26 07:23:56 rensink Exp $
+ * $Id: SupportedSetNodeRelation.java,v 1.4 2008-01-30 09:32:27 iovka Exp $
  */
 package groove.rel;
 
@@ -32,7 +32,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class SupportedSetNodeRelation extends AbstractNodeRelation implements SupportedNodeRelation {
     /**

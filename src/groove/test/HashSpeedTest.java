@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HashSpeedTest.java,v 1.2 2007-04-22 23:32:25 rensink Exp $
+ * $Id: HashSpeedTest.java,v 1.3 2008-01-30 09:33:07 iovka Exp $
  */
 package groove.test;
 
@@ -36,7 +36,7 @@ import groove.util.Reporter;
  * <li> Iterating over the keyset and getting the image versus iterating over the entry set.
  * </ul>
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class HashSpeedTest {
     static final int CREATE_TRY_COUNT = 500000;

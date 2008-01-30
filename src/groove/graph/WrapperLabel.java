@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: WrapperLabel.java,v 1.9 2007-09-25 16:30:17 rensink Exp $
+ * $Id: WrapperLabel.java,v 1.10 2008-01-30 09:32:53 iovka Exp $
  */
 package groove.graph;
 

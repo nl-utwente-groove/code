@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractBinaryEdge.java,v 1.12 2007-11-02 08:42:22 rensink Exp $
+ * $Id: AbstractBinaryEdge.java,v 1.13 2008-01-30 09:32:57 iovka Exp $
  */
 package groove.graph;
 
@@ -21,7 +21,7 @@ package groove.graph;
  * Abstract implementation of an (immutable) binary graph edge, as a tuple consisting of source and
  * target nodes.
  * @author Arend Rensink
- * @version $Revision: 1.12 $ $Date: 2007-11-02 08:42:22 $
+ * @version $Revision: 1.13 $ $Date: 2008-01-30 09:32:57 $
  */
 abstract public class AbstractBinaryEdge<SN extends Node, L extends Label, TN extends Node> extends AbstractEdge<SN,L> implements BinaryEdge {
     /**

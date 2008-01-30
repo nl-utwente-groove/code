@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AnchorSearchItem.java,v 1.3 2007-11-26 21:17:21 rensink Exp $
+ * $Id: AnchorSearchItem.java,v 1.4 2008-01-30 09:33:29 iovka Exp $
  */
 package groove.match;
 

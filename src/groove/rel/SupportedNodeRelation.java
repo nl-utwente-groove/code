@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SupportedNodeRelation.java,v 1.2 2007-08-26 07:23:56 rensink Exp $
+ * $Id: SupportedNodeRelation.java,v 1.3 2008-01-30 09:32:28 iovka Exp $
  */
 package groove.rel;
 
@@ -28,7 +28,7 @@ import java.util.Map;
  * which for each pair of related nodes contains a <i>support</i>, which
  * is a set of graph elements that justifies the relation. 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface SupportedNodeRelation extends NodeRelation {
     /**

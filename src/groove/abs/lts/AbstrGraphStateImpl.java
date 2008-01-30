@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrGraphStateImpl.java,v 1.1 2007-11-28 15:35:50 iovka Exp $
+ * $Id: AbstrGraphStateImpl.java,v 1.2 2008-01-30 09:33:47 iovka Exp $
  */
 package groove.abs.lts;
 
 import groove.abs.AbstrGraph;
-import groove.abs.Abstraction;
 import groove.control.Location;
 import groove.graph.Element;
 import groove.lts.GraphState;
@@ -30,7 +29,7 @@ import java.util.Iterator;
 import java.util.Set;
 import java.util.Collections;
 /**
- * 
+ * FIXME this class has to be adapted to the new architecture
  * @author Iovka Boneva
  * @version $Revision $
  */
@@ -123,7 +122,9 @@ public class AbstrGraphStateImpl implements AbstrGraphState {
 
     /** Constructs an state with specified underlying graph and with empty 
      * set of transitions. */
-	AbstrGraphStateImpl (AbstrGraph graph) {
+	public AbstrGraphStateImpl (AbstrGraph graph) {
+		// IOVKA remove this when the class is correct
+		if (true) throw new UnsupportedOperationException();
 		this.graph = graph;
 		this.transitions = new HashSet<AbstrGraphTransition>();
 		this.closed = false;
@@ -198,15 +199,18 @@ public class AbstrGraphStateImpl implements AbstrGraphState {
 		throw new UnsupportedOperationException();
 		// TODO if needed by the state generator
 	}
-
-	public boolean addLocation(Location l) {
-		throw new UnsupportedOperationException();
-	}
-
+	
 	public Location getLocation() {
-		throw new UnsupportedOperationException();
+		return this.location;
 	}
 	
-	
+    /** The internally stored (optional) control location. */
+    private Location location;
+
+	@Override
+	public void setLocation(Location l) {
+		// TODO Auto-generated method stub
+		
+	}
 	
 }

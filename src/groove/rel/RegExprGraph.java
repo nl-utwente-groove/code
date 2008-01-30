@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprGraph.java,v 1.7 2007-10-02 23:06:34 rensink Exp $
+ * $Id: RegExprGraph.java,v 1.8 2008-01-30 09:32:32 iovka Exp $
  */
 package groove.rel;
 
@@ -28,7 +28,7 @@ import groove.graph.NodeSetEdgeSetGraph;
  * Default implementation of the {@link groove.rel.VarGraph} interface,
  * where the variables correspond to wildcard identifiers in the edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @deprecated Use ordinary graphs and the utilities in {@link VarSupport}
  */
 @Deprecated

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: HashBagTest.java,v 1.2 2007-03-30 15:50:39 rensink Exp $
+ * $Id: HashBagTest.java,v 1.3 2008-01-30 09:33:08 iovka Exp $
  */
 package groove.test;
 
@@ -25,7 +25,7 @@ import junit.framework.TestCase;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class HashBagTest extends TestCase {
 

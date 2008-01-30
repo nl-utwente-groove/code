@@ -1,4 +1,4 @@
-/* $Id: StartGraphState.java,v 1.6 2007-09-30 15:52:36 rensink Exp $ */
+/* $Id: StartGraphState.java,v 1.7 2008-01-30 09:32:19 iovka Exp $ */
 package groove.lts;
 
 import groove.control.Location;

@@ -65,7 +65,7 @@ public class Abstraction {
 	}
 	
 	/** The options for abstracting and abstract simulation. */
-	public static class Options {
+	public static class Parameters {
 		
 		/** Option for symmetry reduction.
 		 * TODO explain what symmetry reduction is
@@ -73,7 +73,6 @@ public class Abstraction {
 		 * Symmetry reduction is costly, but may significantly accelerate if there is lots of symmetry.
 		 */
 		public final boolean SYMMETRY_REDUCTION;		
-		
 
 		/** */
 		public final LinkPrecision LINK_PRECISION; 
@@ -85,28 +84,55 @@ public class Abstraction {
 		public final boolean BELONGS_IS_SUB; 
 		
 		/** */
-		public Options (boolean symmetry_reduction,
+		public Parameters (boolean symmetry_reduction,
 					 	LinkPrecision link_precision,
-					 	boolean belongs_is_sub) 
+					 	boolean belongs_is_sub, 
+					 	int radius,
+					 	int precision,
+					 	int maxIncidence) 
 		{
 			this.SYMMETRY_REDUCTION = symmetry_reduction;
 			this.LINK_PRECISION = link_precision;
 			this.BELONGS_IS_SUB = belongs_is_sub;
+			this.radius = radius;
+			this.precision = precision;
+			this.maxIncidence = maxIncidence;
 		}
 		
 		/** Default constructor, giving default values for the options. */
-		public Options () {
+		public Parameters (int radius, int precision, int maxIncidence) {
 			this.SYMMETRY_REDUCTION = false;
 			this.LINK_PRECISION = LinkPrecision.HIGH;
 			this.BELONGS_IS_SUB = false;
+			this.radius = radius;
+			this.precision = precision;
+			this.maxIncidence = maxIncidence;
 		}
 		
 		/** Default values for the options, except for SYMMETRY_REDUCTION */
-		public Options (boolean symmetryReduction) {
+		public Parameters (boolean symmetryReduction, int radius, int precision, int maxIncidence) {
 			this.SYMMETRY_REDUCTION = symmetryReduction;
 			this.LINK_PRECISION = LinkPrecision.HIGH;
 			this.BELONGS_IS_SUB = false;
+			this.radius = radius;
+			this.precision = precision;
+			this.maxIncidence = maxIncidence;
 		}
+		
+		/** */
+		public Parameters (boolean symmetry_reduction, LinkPrecision link_precision, int radius, 	int precision, int maxIncidence) {
+			this.SYMMETRY_REDUCTION = symmetry_reduction;
+			this.LINK_PRECISION = link_precision;
+			this.BELONGS_IS_SUB = false;
+			this.radius = radius;
+			this.precision = precision;
+			this.maxIncidence = maxIncidence;
+		}
+		
+		public final int radius;
+		public final int precision; 
+		public final int maxIncidence;
+		
 	}
 	
 }

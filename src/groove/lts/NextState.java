@@ -19,7 +19,7 @@ package groove.lts;
 /**
  *
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public interface NextState extends State, Transition {
 	// this interface is just the union of its super-interfaces

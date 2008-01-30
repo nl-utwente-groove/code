@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeEdgeHashMap.java,v 1.4 2007-09-16 21:44:23 rensink Exp $
+ * $Id: NodeEdgeHashMap.java,v 1.5 2008-01-30 09:32:52 iovka Exp $
  */
 package groove.graph;
 
@@ -22,7 +22,7 @@ package groove.graph;
  * the nodes and edges.
  * Labels are not translated.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class NodeEdgeHashMap extends GenericNodeEdgeHashMap<Node, Node, Edge, Edge> implements NodeEdgeMap {
 	/** Constructs a copy of another node-edge-map. */

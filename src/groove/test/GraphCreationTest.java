@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GraphCreationTest.java,v 1.4 2007-09-07 19:13:36 rensink Exp $
+ * $Id: GraphCreationTest.java,v 1.5 2008-01-30 09:33:06 iovka Exp $
  */
 package groove.test;
 
@@ -33,7 +33,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 /**
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class GraphCreationTest extends TestCase {
     protected static int NR_NODES_TOTAL = 9;

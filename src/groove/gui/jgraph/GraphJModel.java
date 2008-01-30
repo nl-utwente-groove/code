@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.19 2007-11-28 14:01:43 iovka Exp $
+ * $Id: GraphJModel.java,v 1.20 2008-01-30 09:33:12 iovka Exp $
  */
 
 package groove.gui.jgraph;
@@ -53,14 +53,14 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
     /** 
      * Creates a new GraphJModel instance on top of a given Graph, with given
      * node and edge attributes, and an indication whether self-edges should be 
      * displayed as node labels.
-     * The node and edge attribute maps are cloned.
+     * The node and adge attribute maps are cloned.
      * @param graph the underlying Graph
      * @param defaultNodeAttr the attributes for displaying nodes
      * @param defaultEdgeAttr the attributes for displaying edges
@@ -144,7 +144,8 @@ public class GraphJModel extends JModel implements GraphShapeListener {
      */
     public void reload() {
         // add the model as a graph listener
-        graph.removeGraphListener(this);
+        
+    	graph.removeGraphListener(this);
         // add nodes from Graph to GraphModel
         initializeTransients();
         Set<Node> addedNodeSet = new HashSet<Node>(graph.nodeSet());

@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LongCell.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: LongCell.java,v 1.3 2008-01-30 09:32:16 iovka Exp $
  */
 package groove.util;
 
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class LongCell {
     /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleControlTransition.java,v 1.4 2007-11-22 15:39:11 fladder Exp $
+ * $Id: RuleControlTransition.java,v 1.5 2008-01-30 09:33:24 iovka Exp $
  */
 package groove.control;
 
@@ -26,6 +26,7 @@ import groove.trans.Rule;
 public class RuleControlTransition extends ControlTransition {
 
 	private Rule rule;
+	
 	
 	/**
 	 * Contstructor for a rulecontroltransition. Allows to set the associated rule later, but requires a label already.

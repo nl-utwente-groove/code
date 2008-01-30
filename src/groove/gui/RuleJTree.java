@@ -12,19 +12,24 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJTree.java,v 1.29 2007-11-26 21:45:32 rensink Exp $
+ * $Id: RuleJTree.java,v 1.30 2008-01-30 09:33:35 iovka Exp $
  */
 package groove.gui;
 
 import groove.control.ControlView;
+import groove.explore.util.ExploreCache;
+import groove.explore.util.MatchesIterator;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
 import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.StateGenerator;
 import groove.lts.Transition;
+import groove.trans.Match;
 import groove.trans.NameLabel;
+import groove.trans.RuleMatch;
 import groove.trans.RuleNameLabel;
 import groove.util.CollectionOfCollections;
 import groove.util.Converter;
@@ -43,6 +48,7 @@ import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -66,7 +72,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -111,6 +117,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 			dirNodeMap.clear();
 			ruleNodeMap.clear();
 			matchNodeMap.clear();
+			matchTransitionMap.clear();
 			topDirectoryNode.removeAllChildren();
 			ruleDirectory.reload();
 		} else {
@@ -130,6 +137,7 @@ public class RuleJTree extends JTree implements SimulationListener {
         dirNodeMap.clear();
         ruleNodeMap.clear();
         matchNodeMap.clear();
+        matchTransitionMap.clear();
         topDirectoryNode.removeAllChildren();
 
         // if the rule system has multiple priorities, we want an extra level of nodes
@@ -261,14 +269,22 @@ public class RuleJTree extends JTree implements SimulationListener {
     void refresh() {
     	boolean oldListenToSelectionChanges = listenToSelectionChanges;
         listenToSelectionChanges = false;
-    	if (getCurrentState() == null) {
-            refreshMatches(Collections.<GraphTransition>emptySet());
+        if (getCurrentState() == null) {
+            refreshMatchesClosed(Collections.<GraphTransition>emptySet());
     	} else if (setDisplayedState(getCurrentState())) {
-    		refreshMatches(getCurrentGTS().outEdgeSet(getCurrentState()));
+    		if( getCurrentState().isClosed() ) {
+    			refreshMatchesClosed(getCurrentGTS().outEdgeSet(getCurrentState()));
+    		} else {
+    			Set<RuleMatch> matches = new HashSet<RuleMatch>();
+    			new MatchesIterator(getCurrentState(), getCurrentGTS().getRecord().freshCache(getCurrentState(), false)).collectMatches(matches);
+    			refreshMatchesOpen(matches);
+    		}
     	}
     	DefaultMutableTreeNode treeNode = null;
     	if (getCurrentTransition() != null) {
-    		treeNode = matchNodeMap.get(getCurrentTransition());
+    		treeNode = matchNodeMap.get(getCurrentTransition().getMatch());
+    	} else if( getCurrentMatch() != null ) {
+    		treeNode = matchNodeMap.get(getCurrentMatch());
     	} else if (getCurrentRule() != null) {
     		treeNode = ruleNodeMap.get(getCurrentRule().getNameLabel());
     	}
@@ -281,16 +297,67 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
     
     /**
+     * TODO: remove this method, no longer used
      * Refreshes the match nodes, based on a given derivation edge set.
      * @param derivations the set of derivation edges used to create match nodes
      */
-    private void refreshMatches(Set<? extends GraphTransition> derivations) {
+    private void refreshMatchesOpen(Set<? extends RuleMatch> matches) {
         // remove current matches
     	for (MatchTreeNode matchNode: matchNodeMap.values()) {
             ruleDirectory.removeNodeFromParent(matchNode);
         }
         // clean up current match node map
         matchNodeMap.clear();
+        matchTransitionMap.clear();
+        // expand all rule nodes and subsequently collapse all directory nodes
+        for (DefaultMutableTreeNode nextNode: ruleNodeMap.values()) {
+            if (!(nextNode instanceof DirectoryTreeNode)) {
+                expandPath(new TreePath(nextNode.getPath()));
+            }
+        }
+        for (DefaultMutableTreeNode nextNode: ruleNodeMap.values()) {
+            if (nextNode instanceof DirectoryTreeNode) {
+                collapsePath(new TreePath(nextNode.getPath()));
+            }
+        }
+        // recollect the derivations so that they are ordered according to the rule events
+        SortedSet<RuleMatch> orderedMatches = new TreeSet<RuleMatch>(new Comparator<RuleMatch>() {
+			public int compare(RuleMatch o1, RuleMatch o2) {
+				return getCurrentGTS().getRecord().getEvent(o1).compareTo(getCurrentGTS().getRecord().getEvent(o2));
+			}
+        });
+        orderedMatches.addAll(matches);
+        // insert new matches
+        for (RuleMatch match: orderedMatches) {
+            Label ruleName = match.getRule().getName();
+            RuleTreeNode ruleNode = ruleNodeMap.get(ruleName);
+            assert ruleNode != null : String.format("Rule %s has no image in map %s", ruleName, ruleNodeMap);
+            int nrOfMatches = ruleNode.getChildCount();
+            MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, match);
+            ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
+            expandPath(new TreePath(ruleNode.getPath()));
+            matchNodeMap.put(match, matchNode);
+        }
+        
+        // FIXME: transitions can be a set per match (??? abstractions?)
+        for( GraphTransition trans : getCurrentGTS().outEdgeSet(getCurrentState())) {
+        	matchTransitionMap.put(trans.getMatch(),trans);
+        }
+    }
+
+    /**
+     * Refreshes the match nodes, based on a given derivation edge set.
+     * @param derivations the set of derivation edges used to create match nodes
+     */
+    private void refreshMatchesClosed(Set<? extends GraphTransition> derivations) {
+        // remove current matches
+    	for (MatchTreeNode matchNode: matchNodeMap.values()) {
+            ruleDirectory.removeNodeFromParent(matchNode);
+        }
+        // clean up current match node map
+        matchNodeMap.clear();
+        matchTransitionMap.clear();
+        
         // expand all rule nodes and subsequently collapse all directory nodes
         for (DefaultMutableTreeNode nextNode: ruleNodeMap.values()) {
             if (!(nextNode instanceof DirectoryTreeNode)) {
@@ -315,23 +382,29 @@ public class RuleJTree extends JTree implements SimulationListener {
             RuleTreeNode ruleNode = ruleNodeMap.get(ruleName);
             assert ruleNode != null : String.format("Rule %s has no image in map %s", ruleName, ruleNodeMap);
             int nrOfMatches = ruleNode.getChildCount();
-            MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, edge);
+            MatchTreeNode matchNode = new MatchTreeNode(nrOfMatches + 1, edge.getMatch());
             ruleDirectory.insertNodeInto(matchNode, ruleNode, nrOfMatches);
             expandPath(new TreePath(ruleNode.getPath()));
-            matchNodeMap.put(edge, matchNode);
+            matchNodeMap.put(edge.getMatch(), matchNode);
+            matchTransitionMap.put(edge.getMatch(), edge);
         }
     }
-
+    
     /** Convenience method to retrieve the current GTS from the simulator. */
     private GTS getCurrentGTS() {
     	return simulator.getCurrentGTS();
     }
 
     /** Convenience method to retrieve the currently selected transition from the simulator. */
-    private Transition getCurrentTransition() {
+    private GraphTransition getCurrentTransition() {
     	return simulator.getCurrentTransition();
     }
 
+    /** Convenience method to retrieve the currently selected match from the statepanel */
+    private RuleMatch getCurrentMatch() {
+    	return simulator.getCurrentMatch();
+    }
+    
     /** Convenience method to retrieve the currently selected state from the simulator. */
     private GraphState getCurrentState() {
     	return simulator.getCurrentState();
@@ -443,8 +516,18 @@ public class RuleJTree extends JTree implements SimulationListener {
      * the current rule directory.
      * @invariant <tt>matchNodeMap: Transition --> MatchTreeNode</tt>
      */
-    protected final Map<Transition,MatchTreeNode> matchNodeMap = new HashMap<Transition,MatchTreeNode>();
+//    protected final Map<Transition,MatchTreeNode> transitionNodeMap = new HashMap<Transition,MatchTreeNode>();
 
+    /**
+     * Mapping from RuleMatches in the current LTS to match nodes in the rule directory
+     */
+    protected final Map<RuleMatch, MatchTreeNode> matchNodeMap = new HashMap<RuleMatch, MatchTreeNode>();
+    
+    /**
+     * Mapping from RuleMatches to transitions in the current LTS, for fast selecting
+     */
+    protected final Map<RuleMatch, GraphTransition> matchTransitionMap = new HashMap<RuleMatch, GraphTransition>();
+    
     /**
      * Switch to determine whether changes in the tree selection model
      * should trigger any actions right now.
@@ -504,7 +587,17 @@ public class RuleJTree extends JTree implements SimulationListener {
 	                simulator.setRule(((RuleTreeNode) selectedNode).getRule().getNameLabel());
 	            } else if (selectedNode instanceof MatchTreeNode) {
 	                // selected tree node is a transition (level 2 node)
-	                simulator.setTransition(((MatchTreeNode) selectedNode).edge());
+	            	// FIXME: fix to select the selected transition...
+	            	RuleMatch match = ((MatchTreeNode) selectedNode).edge();
+	            	GraphTransition trans = matchTransitionMap.get(match);
+	            	if( trans != null ) {
+		            	simulator.setTransition(trans);	            		
+	            	} else {
+	            		simulator.getStatePanel().setCurrentMatch(match);
+	            		//simulator.setRule(((MatchTreeNode) selectedNode).edge().getRule().getName());
+	            		simulator.setMatch(match);
+	            	}
+	            	
 	                if (simulator.getGraphPanel() == simulator.getRulePanel()) {
 	                	simulator.setGraphPanel(simulator.getStatePanel());
 	                }
@@ -550,8 +643,20 @@ public class RuleJTree extends JTree implements SimulationListener {
 					if (selectedNode instanceof MatchTreeNode) {
 						// selected tree node is a derivation edge (level 2
 						// node)
-						simulator.setTransition(((MatchTreeNode) selectedNode).edge());
-						simulator.applyTransition();
+						// FIXME: fix to select the transition, working with rulematches now!
+						RuleMatch match = ((MatchTreeNode) selectedNode).edge();
+						// see if there is already a transition for this match
+						GraphTransition trans = matchTransitionMap.get(match);
+						
+						if( trans == null ) {
+							//simulator.applyMatch();
+							ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
+							trans = new StateGenerator(getCurrentGTS()).applyMatch(getCurrentState(), match, cache).iterator().next();
+						}
+						if( trans != null ) {
+							simulator.setTransition(trans);
+							simulator.applyTransition();
+						}
 					} else if (selectedNode instanceof RuleTreeNode) {
 						simulator.setGraphPanel(simulator.getRulePanel());
 					}
@@ -692,10 +797,21 @@ public class RuleJTree extends JTree implements SimulationListener {
 	    }
 	
 	    /**
+	     * Creates a new match node on the basis of a given number and the RuleMatch.
+	     * The node cannot have children.
+	     * @param nr
+	     * @param edge
+	     */
+	    public MatchTreeNode(int nr, Match edge) {
+	    	super(edge, false);
+	    	this.nr = nr;
+	    }
+	    
+	    /**
 	     * Convenience method to return the underlying derivation edge.
 	     */
-	    public GraphTransition edge() {
-	        return (GraphTransition) getUserObject();
+	    public RuleMatch edge() {
+	        return (RuleMatch) getUserObject();
 	    }
 	
 	    /**
@@ -712,7 +828,9 @@ public class RuleJTree extends JTree implements SimulationListener {
 	     */
 	    @Override
 	    public String toString() {
-	        return simulator.getOptions().isSelected(Options.SHOW_ANCHORS_OPTION) ? edge().getEvent().getAnchorImageString() : "Match " + nr;
+//	        return simulator.getOptions().isSelected(Options.SHOW_ANCHORS_OPTION) ? edge().getEvent().getAnchorImageString() : "Match " + nr;
+	    	// FIXME: unable to show anchors now
+	    	return simulator.getOptions().isSelected(Options.SHOW_ANCHORS_OPTION) ? edge().toString() : "Match " + nr;
 	    }
 	
 	    /** The number of this match, used in <tt>toString()</tt> */

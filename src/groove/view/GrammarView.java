@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GrammarView.java,v 1.4 2007-08-26 07:24:10 rensink Exp $
+ * $Id: GrammarView.java,v 1.5 2008-01-30 09:33:25 iovka Exp $
  */
 package groove.view;
 

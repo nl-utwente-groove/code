@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaGraph.java,v 1.12 2007-11-05 14:16:23 rensink Exp $
+ * $Id: DeltaGraph.java,v 1.13 2008-01-30 09:32:57 iovka Exp $
  */
 package groove.graph;
 
@@ -29,7 +29,7 @@ import java.util.Set;
  * the changes. This implementation caches the element set so as to avoid too frequent
  * reconstruction.
  * @author Arend Rensink
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class DeltaGraph extends AbstractGraph<DeltaGraphCache> implements DeltaApplier {
     /**

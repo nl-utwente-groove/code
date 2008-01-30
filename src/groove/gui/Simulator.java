@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.79 2008-01-28 13:34:14 iovka Exp $
+ * $Id: Simulator.java,v 1.80 2008-01-30 09:33:36 iovka Exp $
  */
 package groove.gui;
 
@@ -35,6 +35,9 @@ import groove.abs.Abstraction;
 import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
+import groove.explore.ScenarioHandler;
+import groove.explore.result.ExploreStateStrategy;
+import groove.explore.util.ExploreCache;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
 import groove.graph.GraphFactory;
@@ -56,13 +59,13 @@ import groove.io.GrooveFileChooser;
 import groove.io.LayedOutGps;
 import groove.io.LayedOutXml;
 import groove.io.Xml;
-import groove.lts.ExploreStrategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.StateGenerator;
 import groove.trans.NameLabel;
+import groove.trans.RuleMatch;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
@@ -74,6 +77,7 @@ import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 import groove.view.aspect.AspectGraph;
+
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
@@ -126,11 +130,12 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.table.AbstractTableModel;
 
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.79 $
+ * @version $Revision: 1.80 $
  */
 public class Simulator {
     /**
@@ -228,6 +233,7 @@ public class Simulator {
     	boolean result = currentGTS == gts;
     	currentGTS = gts;
         currentTransition = null;
+        currentMatch = null;
     	currentState = gts == null ? null : gts.startState();
     	if (gts != null) {
     	    getGenerator().setGTS(gts);
@@ -253,6 +259,7 @@ public class Simulator {
     	boolean result = currentState != state;
     	currentState = state;
     	currentTransition = null;
+    	currentMatch = null;
     	return result;
     }
 
@@ -264,6 +271,21 @@ public class Simulator {
         return currentTransition;
     }
 
+    /** Returns the currently selected match */
+    public RuleMatch getCurrentMatch() {
+    	return currentMatch;
+    }
+    
+    /** 
+     * Sets the currently selected match. 
+     */
+    protected boolean setCurrentMatch(RuleMatch match) {
+    	boolean result = currentMatch != match;
+    	currentMatch = match;
+    	return result;
+    }
+    
+    
     /**
      * Sets the currently selected transition to a given value (possibly <code>null</code>).
      * If the new transition is not <code>null</code>, also sets the 
@@ -526,11 +548,7 @@ public class Simulator {
         return undoAction;
     }
 
-    /** Creates a generate action for a given exploration strategy. */
-    public GenerateLTSAction createGenerateLTSAction(ExploreStrategy strategy) {
-    	return new GenerateLTSAction(strategy);
-    }
-    
+   
     /** Returns (after lazily creating) the undo history for this simulator. */
     protected UndoHistory getUndoHistory() {
     	if (undoHistory == null) {
@@ -605,34 +623,6 @@ public class Simulator {
     	doAddRule(getCurrentRule().getNameLabel(), ruleGraph);
 	}
     
-    /**
-	 * Applies a given exploration strategy to the current GTS.
-	 * The application is done concurrently, and can be cancelled from the GUI.
-	 */
-	void doGenerate(ExploreStrategy strategy) {
-	    GraphJModel ltsJModel = getLtsPanel().getJModel();
-	    synchronized (ltsJModel) {
-	        // unhook the lts' jmodel from the lts, for efficiency's sake
-	    	getCurrentGTS().removeGraphListener(ltsJModel);
-	        // disable rule application for the time being
-	        boolean applyEnabled = getApplyTransitionAction().isEnabled();
-	        getApplyTransitionAction().setEnabled(false);
-	        // create a thread to do the work in the background
-	        Thread generateThread = new GenerateThread(strategy);
-	        // go!
-	        generateThread.start();
-	        // get the lts' jmodel back on line and re-synchronize its state
-	        ltsJModel.reload();
-	        // re-enable rule application
-	        getApplyTransitionAction().setEnabled(applyEnabled);
-	        // reset lts display visibility
-	        setGraphPanel(getLtsPanel());
-	    }
-	    LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
-	    if (ltsJGraph.getLayouter() != null) {
-	        ltsJGraph.getLayouter().start(false);
-	    }
-	}
 
 	/**
      * Loads in a grammar from a given grammar and start state file and using a given loader. File
@@ -912,7 +902,7 @@ public class Simulator {
     	try {
     		setCurrentGrammar(grammar);
     		setCurrentGTS(new GTS(getCurrentGrammar().toGrammar()));
-			getGenerator().explore(getCurrentState());
+			//getGenerator().explore(getCurrentState());
 			fireStartSimulation(getCurrentGTS());
 			refresh();
 		} catch (FormatException exc) {
@@ -927,9 +917,9 @@ public class Simulator {
     	try {
     		setCurrentGrammar(grammar);
     		setCurrentGTS(new GTS(getCurrentGrammar().toGrammar()));
-    		if (findMatchings) {
-        		getGenerator().explore(getCurrentState());
-    		}
+//    		if (findMatchings) {
+//        		getGenerator().explore(getCurrentState());
+//    		}
 			fireStartSimulation(getCurrentGTS());
 			refresh();
 		} catch (FormatException exc) {
@@ -946,15 +936,15 @@ public class Simulator {
     		PropertiesDialog dialog = new PropertiesDialog(properties, AbstrSimulationProperties.DEFAULT_KEYS, true);
     		boolean changed = dialog.showDialog(getFrame());
     		properties.update(dialog.getEditedProperties());
-    		int precision = properties.getPrecision();
-			int radius = properties.getRadius();
 			boolean symred = properties.getSymmetryReduction();
-			this.abstrSimulationOptions = new Abstraction.Options(symred);
-			AGTS agts = new AGTS(getCurrentGrammar().toGrammar(), precision, radius, 10);		
+			Abstraction.LinkPrecision linkPrecision = properties.getLinksPrecision();
+			Abstraction.Parameters options = new Abstraction.Parameters(symred, linkPrecision, properties.getRadius(), properties.getPrecision(), 10);
+			AGTS agts = new AGTS(getCurrentGrammar().toGrammar(), options);		
 			setCurrentGTS(agts);
 			// IOVKA to be uncommented when abstrExploreMenu items are enabled
-			// this.abstrExploreMenu.refreshOptions();
-			getGenerator().explore(getCurrentState());
+			//this.abstrExploreMenu.refreshOptions();
+			
+			// getGenerator().explore(getCurrentState());
 			fireStartSimulation(getCurrentGTS());
 			refresh();
 		} catch (FormatException exc) {
@@ -973,13 +963,23 @@ public class Simulator {
 	 * @see #fireSetState(GraphState)
 	 */
     public synchronized void setState(GraphState state) {
-        if (setCurrentState(state)) {
-            getGenerator().explore(state);
-        }
+//        if (setCurrentState(state)) {
+//            getGenerator().explore(state);
+//        }
+    	setCurrentState(state);
         fireSetState(state);
         refreshActions();
     }
+    
+    
+    public synchronized void exploreState (GraphState state) {
+    	getExploreState().setGTS(this.getCurrentGTS());
+    	getExploreState().setState(state);
+    	getExploreState().next();
+    	setState(state);
+    }
 
+   
     /**
      * Sets the current production rule. Invokes <tt>notifySetRule(name)</tt> to notify all
      * observers of the change. The current derivation (if any) is thereby deactivated.
@@ -990,10 +990,22 @@ public class Simulator {
     public synchronized void setRule(RuleNameLabel name) {
         setCurrentRule(getCurrentGrammar().getRule(name));
         setCurrentTransition(null);
+        setCurrentMatch(null);
         fireSetRule(name);
         refreshActions();
     }
 
+    /**
+     * Sets the current match and notify all observers of the RULE change
+     */
+    public synchronized void setMatch(RuleMatch match) {
+    	setCurrentTransition(null);
+    	setCurrentRule(getCurrentGrammar().getRule(match.getRule().getName()));
+    	setCurrentMatch(match);
+    	fireSetRule(match.getRule().getName());
+    	refreshActions();
+    }
+    
     /**
      * Activates a given derivation. Adds the previous state or derivation to the history. Invokes
      * <tt>notifySetTransition(edge)</tt> to notify all observers of the change.
@@ -1004,6 +1016,7 @@ public class Simulator {
         if (setCurrentTransition(transition)) {
         	RuleNameLabel ruleName = transition.getEvent().getRule().getName();
             setCurrentRule(getCurrentGrammar().getRule(ruleName));
+            setCurrentMatch(transition.getMatch());
         }
         fireSetTransition(getCurrentTransition());
         refreshActions();
@@ -1018,9 +1031,19 @@ public class Simulator {
     public synchronized void applyTransition() {
         GraphTransition appliedTransition = getCurrentTransition();
         setCurrentState(appliedTransition.target());
-        getGenerator().explore(getCurrentState());
+//        getGenerator().explore(getCurrentState());
         fireApplyTransition(appliedTransition);
         refreshActions();
+    }
+    
+    public synchronized void applyMatch () {
+    	if (getCurrentMatch() != null) {
+    		ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
+    		GraphTransition trans = new StateGenerator(getCurrentGTS()).applyMatch(getCurrentState(), getCurrentMatch(), cache).iterator().next();
+    		setTransition(trans);
+    		fireApplyTransition(trans);
+    		refreshActions();
+    	}
     }
 
     /**
@@ -1149,7 +1172,7 @@ public class Simulator {
     StatePanel getStatePanel() {
         if (statePanel == null) {
             // panel for state display
-        	statePanel = new StatePanel(this);
+            statePanel = new StatePanel(this);
             statePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return statePanel;
@@ -1186,8 +1209,7 @@ public class Simulator {
      */
     LTSPanel getLtsPanel() {
         if (ltsPanel == null) {
-            //ltsPanel = LTSPanel.getInstance(this);
-        	ltsPanel = new LTSPanel(this);
+            ltsPanel = new LTSPanel(this);
             ltsPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return ltsPanel;
@@ -1423,29 +1445,22 @@ public class Simulator {
 	 */
 	private JMenu createExploreMenu() {
 		JMenu result = new JMenu();
-		JMenu exploreMenu = new ExploreStrategyMenu(this, false);
+		//JMenu exploreMenu = new ExploreStrategyMenu(this, false);
+		// ADD: switch from explore to scenario menu
+		JMenu exploreMenu = new ScenarioMenu(this, false);
 		result.setText(exploreMenu.getText());
         result.add(new JMenuItem(getUndoAction()));
         result.add(new JMenuItem(getRedoAction()));
         result.addSeparator();
-        result.add(new JMenuItem(getStartSimulationAction()));       
-        result.add(new JMenuItem(getStartAbstrSimulationAction()));
+        result.add(new JMenuItem(getStartSimulationAction()));
+        //result.add(new JMenuItem(getStartAbstrSimulationAction()));
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
         result.addSeparator();
-        // copy the exploration menu
+        // copy the exploration meny
         for (Component menuComponent: exploreMenu.getMenuComponents()) {
         	result.add(menuComponent);
         }
-
-        // IOVKA to be uncommented to get abstract exploration strategy menu items
-        // create the abstract exploration menu
-//        result.addSeparator();
-//        this.abstrExploreMenu = new AbstrExploreStrategyMenu(this, false);
-//        for (Component menuComponent : abstrExploreMenu.getMenuComponents()) {
-//        	result.add(menuComponent);
-//        }
-        
         return result;
 	}
 
@@ -1579,6 +1594,7 @@ public class Simulator {
 		}
     }
 
+    
     /**
      * Notifies all listeners of a new state. As a result,
      * {@link SimulationListener#setStateUpdate(GraphState)}is invoked on all currently registered
@@ -1733,8 +1749,12 @@ public class Simulator {
 
     /** Callback factory method for the state generator. */
     protected StateGenerator createStateGenerator(GTS gts) {
-    	StateGenerator result = isAbstractSimulation() ? new AbstrStateGenerator(getAbstrSimulationOptions()) : new StateGenerator();
-    	
+    	StateGenerator result;
+    	if (gts.getRecord().isAbstractSimulation()) {
+    		result =  new AbstrStateGenerator(((AGTS) gts).getParameters());
+    	} else {
+    		result = new StateGenerator();
+    	}
     	result.setGTS(gts);
     	return result;
     }
@@ -1842,16 +1862,9 @@ public class Simulator {
     
     /** Returns true if the current simulation is abstract. */
 	public boolean isAbstractSimulation() {
-		return this.abstrSimulationOptions != null;
+		return this.getCurrentGTS() != null && this.getCurrentGTS().getRecord().isAbstractSimulation();
 	}
-	
-	/** The options associated with the current abstract simulation. 
-	 * Is null when the current simulation is not abstract. 
-	 */
-	public Abstraction.Options getAbstrSimulationOptions() {
-		return this.abstrSimulationOptions;
-	}
-    
+ 
     /**
      * The options object of this simulator.
      */
@@ -1891,6 +1904,11 @@ public class Simulator {
 //     */
 //    private String currentStartStateName;
 
+    /**
+     * The currently selected match.
+     */
+    private RuleMatch currentMatch;
+    
     /**
      * The file or directory containing the last loaded or saved grammar, or <tt>null</tt> if no
      * grammar was yet loaded.
@@ -1944,10 +1962,10 @@ public class Simulator {
      */
     private final Exporter exporter = new Exporter();
 
-    /**
-     * File chooser for state and LTS export actions.
-     */
-    private final JFileChooser formulaProvider = new GrooveFileChooser();
+//    /**
+//     * File chooser for state and LTS export actions.
+//     */
+//    private final JFileChooser formulaProvider = new GrooveFileChooser();
 
     /**
      * Extension filter for state files.
@@ -2102,13 +2120,7 @@ public class Simulator {
 
     /** The ctl formula providing action permanently associated with this simulator. */
     private ProvideCTLFormulaAction provideCTLFormulaAction;
-    
-	
-	/** Initialized when an abstract simulation is started, and set to null when a normal simulation is started. */
-	private Abstraction.Options abstrSimulationOptions = null;
-	/** A menu containing abstract exploration strategies. */
-	private AbstrExploreStrategyMenu abstrExploreMenu = null;
-    
+        
 	/** Starts a simulator, optionally setting the graph production system and start state. */
 	public static void main(String[] args) {
 	    Simulator simulator;
@@ -2284,101 +2296,7 @@ public class Simulator {
 		private final JDialog cancelDialog;
 	}
 
-	/**
-	 * Thread class to wrap the exploration of the simulator's current GTS.
-	 */
-	private class GenerateThread extends CancellableThread {
-	    /**
-	     * Constructs a generate thread for a given exploration stragegy.
-	     * @param strategy the exploration strategy of this thread
-	     */
-	    GenerateThread(ExploreStrategy strategy) {
-	    	super(getLtsPanel(), "Exploring state space");
-	        this.strategy = strategy;
-	        this.progressListener = createProgressListener();
-	    }
-
-		@Override
-		public void doAction() {
-			GTS gts = getCurrentGTS();
-			displayProgress(gts);
-			gts.addGraphListener(progressListener);
-			try {
-				strategy.setGTS(gts);
-				strategy.setAtState(getCurrentState());
-				strategy.explore();
-			} catch (InterruptedException exc) {
-				// proceed
-			}
-			gts.removeGraphListener(progressListener);
-		}
-
-	    /** This implementation returns the state and transition count labels. */
-		@Override
-		protected Object createCancelDialogContent() {
-			return new Object[] { getStateCountLabel(), getTransitionCountLabel() };
-		}
-
-		/** 
-		 * Creates a graph listener that displays the progress of the generate
-		 * thread on the cancel dialog.
-		 */
-		private GraphListener createProgressListener() {
-			return new GraphAdapter() {
-				@Override
-				public void addUpdate(GraphShape graph, Node node) {
-				    displayProgress(graph);
-				}
-				
-				@Override
-				public void addUpdate(GraphShape graph, groove.graph.Edge edge) {
-				    displayProgress(graph);
-				}
-			};
-		}
-		
-		/**
-		 * Returns the {@link JLabel} used to display the state count in the
-		 * cencel dialog; first creates the label if that is not yet done.
-		 */
-		private JLabel getStateCountLabel() {
-			// lazily create the label
-			if (stateCountLabel == null) {
-				stateCountLabel = new JLabel();
-			}
-			return stateCountLabel;
-		}
-		
-		/**
-		 * Returns the {@link JLabel} used to display the state count in the
-		 * cencel dialog; first creates the label if that is not yet done.
-		 */
-		private JLabel getTransitionCountLabel() {
-			// lazily create the label
-			if (transitionCountLabel == null) {
-				transitionCountLabel = new JLabel();
-			}
-			return transitionCountLabel;
-		}
-
-		/**
-		 * Displays the number of lts states and transitions in the message dialog.
-		 */
-		void displayProgress(GraphShape graph) {
-		    getStateCountLabel().setText("States: " + graph.nodeCount());
-		    getTransitionCountLabel().setText("Transitions: " + graph.edgeCount());
-		}
-
-		/** LTS generation strategy of this thread. */
-		private final ExploreStrategy strategy;
-		/** Progress listener for the generate thread. */
-		private final GraphListener progressListener;
-		/** Label displaying the number of states generated so far. */
-		private JLabel transitionCountLabel;
-		/** Label displaying the number of transitions generated so far. */
-		private JLabel stateCountLabel;
-	}
-
+	
 	/** Interface for actions that should be refreshed upon changes. */
 	private interface Refreshable { 
 		/** 
@@ -2404,7 +2322,7 @@ public class Simulator {
 
     /**
      * Action for applying the current derivation to the current state.
-     * @see _Simulator#applyTransition()
+     * @see Simulator#applyTransition()
      */
     private class ApplyTransitionAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -2417,10 +2335,12 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent evt) {
             applyTransition();
+            //applyMatch();
         }
 
 		public void refresh() {
 			setEnabled(getCurrentTransition() != null);
+			//setEnabled(getCurrentMatch() != null);
 		}
     }
 
@@ -2713,42 +2633,156 @@ public class Simulator {
 		}
     }
 
-	/**
-     * Action to generate (and view) part of the LTS.
-     */
-    private class GenerateLTSAction extends AbstractAction {
-        /**
-         * Constructs a generate action with a given explore strategy.
-         * @param strategy the strategy to be used during exploration
-         */
-        GenerateLTSAction(ExploreStrategy strategy) {
-            super(strategy.toString());
-            this.strategy = strategy;
+    
+    public LaunchScenarioAction createLaunchScenarioAction(ScenarioHandler handler) {
+    	return new LaunchScenarioAction(handler);
+    }
+    
+    
+    private class LaunchScenarioAction extends AbstractAction {
+       	LaunchScenarioAction(ScenarioHandler handler) {
+            super(handler.getName());
+            this.handler = handler;
         }
-
-        /**
-         * Returns the explore strategy to which this generate action is initialized.
-         */
-        public ExploreStrategy getExploreStrategy() {
-            return strategy;
+       	
+       	public ScenarioHandler getExploreStrategy() {
+            return handler;
         }
-
-        /**
-         * Extends superclass method with a change of action name.
-         */
+       	
 		@Override
         public void setEnabled(boolean enabled) {
             super.setEnabled(enabled);
-            putValue(Action.NAME, strategy.toString());
+            putValue(Action.NAME, handler.getName());
         }
 
         public void actionPerformed(ActionEvent evt) {
-        	doGenerate(strategy);
+        	doGenerate(handler);
         }
-
-        /** The exploration strategy for the action. */
-		private final ExploreStrategy strategy;
+     	
+		private final ScenarioHandler handler;
     }
+    
+	void doGenerate(ScenarioHandler handler) {
+	    GraphJModel ltsJModel = getLtsPanel().getJModel();
+	    synchronized (ltsJModel) {
+	        // unhook the lts' jmodel from the lts, for efficiency's sake
+	    	getCurrentGTS().removeGraphListener(ltsJModel);
+	        // disable rule application for the time being
+	        boolean applyEnabled = getApplyTransitionAction().isEnabled();
+	        getApplyTransitionAction().setEnabled(false);
+	        // create a thread to do the work in the background
+	        Thread generateThread = new LaunchThread(handler);
+	        // go!
+	        generateThread.start();
+	        // get the lts' jmodel back on line and re-synchronize its state
+	        ltsJModel.reload();
+	        // re-enable rule application
+	        getApplyTransitionAction().setEnabled(applyEnabled);
+	        // reset lts display visibility
+	        setGraphPanel(getLtsPanel());
+	    }
+	    LTSJGraph ltsJGraph = getLtsPanel().getJGraph();
+	    if (ltsJGraph.getLayouter() != null) {
+	        ltsJGraph.getLayouter().start(false);
+	    }
+	}
+	
+	
+	/**
+	 * Thread class to wrap the exploration of the simulator's current GTS.
+	 */
+	private class LaunchThread extends CancellableThread {
+	    /**
+	     * Constructs a generate thread for a given exploration stragegy.
+	     * @param strategy the exploration strategy of this thread
+	     */
+	    LaunchThread(ScenarioHandler handler) {
+	    	super(getLtsPanel(), "Exploring state space");
+	        this.handler = handler;
+	        this.progressListener = createProgressListener();
+	    }
+
+		@Override
+		public void doAction() {
+			GTS gts = getCurrentGTS();
+			displayProgress(gts);
+			gts.addGraphListener(progressListener);
+			try {
+				handler.playScenario();
+			} catch (InterruptedException exc) {
+				// proceed
+			}
+
+			
+			gts.removeGraphListener(progressListener);
+
+		}
+
+	    /** This implementation returns the state and transition count labels. */
+		@Override
+		protected Object createCancelDialogContent() {
+			return new Object[] { getStateCountLabel(), getTransitionCountLabel() };
+		}
+
+		/** 
+		 * Creates a graph listener that displays the progress of the generate
+		 * thread on the cancel dialog.
+		 */
+		private GraphListener createProgressListener() {
+			return new GraphAdapter() {
+				@Override
+				public void addUpdate(GraphShape graph, Node node) {
+				    displayProgress(graph);
+				}
+				
+				@Override
+				public void addUpdate(GraphShape graph, groove.graph.Edge edge) {
+				    displayProgress(graph);
+				}
+			};
+		}
+		
+		/**
+		 * Returns the {@link JLabel} used to display the state count in the
+		 * cencel dialog; first creates the label if that is not yet done.
+		 */
+		private JLabel getStateCountLabel() {
+			// lazily create the label
+			if (stateCountLabel == null) {
+				stateCountLabel = new JLabel();
+			}
+			return stateCountLabel;
+		}
+		
+		/**
+		 * Returns the {@link JLabel} used to display the state count in the
+		 * cencel dialog; first creates the label if that is not yet done.
+		 */
+		private JLabel getTransitionCountLabel() {
+			// lazily create the label
+			if (transitionCountLabel == null) {
+				transitionCountLabel = new JLabel();
+			}
+			return transitionCountLabel;
+		}
+
+		/**
+		 * Displays the number of lts states and transitions in the message dialog.
+		 */
+		void displayProgress(GraphShape graph) {
+		    getStateCountLabel().setText("States: " + graph.nodeCount());
+		    getTransitionCountLabel().setText("Transitions: " + graph.edgeCount());
+		}
+
+		/** LTS generation strategy of this thread. */
+		private final ScenarioHandler handler;
+		/** Progress listener for the generate thread. */
+		private final GraphListener progressListener;
+		/** Label displaying the number of states generated so far. */
+		private JLabel transitionCountLabel;
+		/** Label displaying the number of transitions generated so far. */
+		private JLabel stateCountLabel;
+	}
 
     /**
      * Action for setting the initial state of the LTS as current state.
@@ -2774,7 +2808,7 @@ public class Simulator {
     
     /**
      * Action for loading and setting a new initial state.
-     * @see _Simulator#doLoadStartGraph(File)
+     * @see Simulator#doLoadStartGraph(File)
      */
     private class LoadStartGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -2816,7 +2850,6 @@ public class Simulator {
             if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
                 File selectedFile = getGrammarFileChooser().getSelectedFile();
                 FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
-                Simulator.this.abstrSimulationOptions = null;
                 doLoadGrammar(getGrammarLoaderMap().get(filterUsed), selectedFile, null);
             }
         }
@@ -2961,7 +2994,7 @@ public class Simulator {
 
     /**
      * Action for quitting the simulator.
-     * @see _Simulator#doQuit()
+     * @see Simulator#doQuit()
      */
     private class QuitAction extends AbstractAction {
     	/** Constructs an instance of the action. */
@@ -2977,7 +3010,7 @@ public class Simulator {
     
     /**
      * Action for refreshing the rule system. Reloads the current rule system and start graph.
-     * @see _Simulator#doRefreshGrammar()
+     * @see Simulator#doRefreshGrammar()
      */
     private class RefreshGrammarAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -3056,8 +3089,8 @@ public class Simulator {
 
     /**
      * Action to save the state or LTS as a graph.
-     * @see _Simulator#handleSaveGraph(boolean, Graph, String)
-     * @see _Simulator#doSaveGraph(Graph, File)
+     * @see Simulator#handleSaveGraph(boolean, Graph, String)
+     * @see Simulator#doSaveGraph(Graph, File)
      */
     private class SaveGraphAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -3105,7 +3138,6 @@ public class Simulator {
 
         public void actionPerformed(ActionEvent e) {
             if (confirmAbandon(false)) {
-            	Simulator.this.abstrSimulationOptions = null;
                 startSimulation(getCurrentGrammar());
             }
         }
@@ -3136,16 +3168,20 @@ public class Simulator {
 
         public void refresh() {
         	//IOVKA to be changed in order to activate the menu item for abstract simulation
-        	boolean enabled = false;
-//            boolean enabled = getCurrentGrammar() != null && getCurrentGrammar().getErrors().isEmpty();
+//        	boolean enabled = false;
+            boolean enabled = getCurrentGrammar() != null && getCurrentGrammar().getErrors().isEmpty();
         	setEnabled(enabled);
         }
         
         String getKeyText() { return null; }
     }
     
-
-
- 
-
+    
+    ExploreStateStrategy exploreState;
+    public ExploreStateStrategy getExploreState() {
+    	if (this.exploreState == null) {
+    		this.exploreState = new ExploreStateStrategy();
+    	}
+    	return this.exploreState;
+    }
 }

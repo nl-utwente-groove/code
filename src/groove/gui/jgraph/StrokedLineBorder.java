@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StrokedLineBorder.java,v 1.2 2007-03-27 14:18:29 rensink Exp $
+ * $Id: StrokedLineBorder.java,v 1.3 2008-01-30 09:33:12 iovka Exp $
  */
 package groove.gui.jgraph;
 
@@ -28,7 +28,7 @@ import javax.swing.border.LineBorder;
 /**
  * Border that uses a given dash pattern (more precisely, {@link Stroke}).
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class StrokedLineBorder extends LineBorder {
 	/** The default stroke for the border. */

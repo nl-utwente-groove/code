@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExpr.java,v 1.20 2007-11-19 12:19:26 rensink Exp $
+ * $Id: RegExpr.java,v 1.21 2008-01-30 09:32:27 iovka Exp $
  */
 package groove.rel;
 
@@ -22,10 +22,10 @@ import static groove.util.ExprParser.LPAR_CHAR;
 import static groove.util.ExprParser.PLACEHOLDER;
 import static groove.util.ExprParser.RPAR_CHAR;
 import static groove.util.ExprParser.SINGLE_QUOTE_CHAR;
-import groove.calc.Property;
 import groove.util.ExprParser;
 import groove.util.Groove;
 import groove.util.Pair;
+import groove.util.Property;
 import groove.view.FormatException;
 
 import java.util.ArrayList;
@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Class implementing a regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 abstract public class RegExpr { //implements VarSetSupport {
     /** 

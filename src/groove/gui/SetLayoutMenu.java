@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SetLayoutMenu.java,v 1.4 2007-10-10 08:59:44 rensink Exp $
+ * $Id: SetLayoutMenu.java,v 1.5 2008-01-30 09:33:35 iovka Exp $
  */
 package groove.gui;
 
@@ -32,7 +32,7 @@ import javax.swing.JMenuItem;
  * A menu to choose between layout actions,
  * and offering a menu item that displays the currently set action.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class SetLayoutMenu extends JMenu {
     /**

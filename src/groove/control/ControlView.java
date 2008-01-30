@@ -12,11 +12,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlView.java,v 1.7 2007-11-26 08:58:11 fladder Exp $
+ * $Id: ControlView.java,v 1.8 2008-01-30 09:33:23 iovka Exp $
  */
 package groove.control;
 
 import groove.control.parse.AutomatonBuilder;
+import groove.control.parse.Counter;
 import groove.control.parse.GCLBuilder;
 import groove.control.parse.GCLChecker;
 import groove.control.parse.GCLLexer;
@@ -107,9 +108,14 @@ public class ControlView {
             
             GCLBuilder gclb = new GCLBuilder();
             gclb.setBuilder(this.builder);
+
+            // reset the counter for unique controlstate numbers to 0
+			Counter.reset();
             this.programShape = gclb.program(parser.getAST());
+
             builder.optimize();
-            
+
+
             this.automaton = new ControlAutomaton(this.programShape);
         }
 		catch(Exception e)
@@ -155,16 +161,16 @@ public class ControlView {
 		
 		//System.out.println("Initializing Control NameSpace");
 		
-		try
-		{
-			AspectualRuleView lambdaRV = new AspectualRuleView(ControlView.LAMBDA_RULE);
-			AspectualRuleView elseRV = new AspectualRuleView(ControlView.ELSE_RULE);
-			grammar.addRule(lambdaRV);
-			grammar.addRule(elseRV);
-			
-		} catch(FormatException e) {
-			// will not happen
-		}
+//		try
+//		{
+//			AspectualRuleView lambdaRV = new AspectualRuleView(ControlView.LAMBDA_RULE);
+//			AspectualRuleView elseRV = new AspectualRuleView(ControlView.ELSE_RULE);
+//			grammar.addRule(lambdaRV);
+//			grammar.addRule(elseRV);
+//			
+//		} catch(FormatException e) {
+//			// will not happen
+//		}
 		
 		this.builder = new AutomatonBuilder();
 		this.builder.setRuleNames(grammar);
@@ -183,7 +189,6 @@ public class ControlView {
 	
 	/** returns the File containing the current control program */
 	public File getFile() {
-		// TODO: can this be null?
 		return this.controlFile;
 	}
 	
@@ -225,23 +230,23 @@ public class ControlView {
 	/** priority for an Else Rule **/
 	public static final int ELSE_RULE_PRIORITY = -1;
 	
-	/** the Rule object used for Lambda Transitions **/
-	public static Rule LAMBDA_RULE;
+//	/** the Rule object used for Lambda Transitions **/
+//	public static Rule LAMBDA_RULE;
 	
-	/** the RUle object used for Else Transitions **/
-	public static Rule ELSE_RULE;
+//	/** the RUle object used for Else Transitions **/
+//	public static Rule ELSE_RULE;
 
-	static {
-		try
-		{
-			Morphism m_l = factory.newMorphism(factory.newGraph(), factory.newGraph());
-			Morphism m_e = factory.newMorphism(factory.newGraph(), factory.newGraph());
-			LAMBDA_RULE = new SPORule(m_l, new RuleNameLabel(ControlView.LAMBDA_LABEL),ANY_RULE_PRORITY, new SystemProperties());
-			LAMBDA_RULE.setFixed();
-			ELSE_RULE = new SPORule(m_e, new RuleNameLabel(ControlView.ELSE_LABEL),ELSE_RULE_PRIORITY, new SystemProperties());
-			ELSE_RULE.setFixed();
-		}
-		catch(FormatException e){ /* this exception is most certainly never thrown :) */ }
-	}
+//	static {
+//		try
+//		{
+//			Morphism m_l = factory.newMorphism(factory.newGraph(), factory.newGraph());
+//			Morphism m_e = factory.newMorphism(factory.newGraph(), factory.newGraph());
+//			LAMBDA_RULE = new SPORule(m_l, new RuleNameLabel(ControlView.LAMBDA_LABEL),ANY_RULE_PRORITY, new SystemProperties());
+//			LAMBDA_RULE.setFixed();
+//			ELSE_RULE = new SPORule(m_e, new RuleNameLabel(ControlView.ELSE_LABEL),ELSE_RULE_PRIORITY, new SystemProperties());
+//			ELSE_RULE.setFixed();
+//		}
+//		catch(FormatException e){ /* this exception is most certainly never thrown :) */ }
+//	}
 	
 }

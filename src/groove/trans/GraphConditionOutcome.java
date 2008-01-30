@@ -1,4 +1,4 @@
-/* $Id: GraphConditionOutcome.java,v 1.3 2007-10-05 08:31:41 rensink Exp $ */
+/* $Id: GraphConditionOutcome.java,v 1.4 2008-01-30 09:32:42 iovka Exp $ */
 package groove.trans;
 
 

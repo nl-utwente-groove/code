@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleMatch.java,v 1.6 2007-10-08 12:17:34 rensink Exp $
+ * $Id: RuleMatch.java,v 1.7 2008-01-30 09:32:36 iovka Exp $
  */
 package groove.trans;
 

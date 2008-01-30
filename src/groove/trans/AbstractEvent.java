@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractEvent.java,v 1.5 2007-11-02 08:42:36 rensink Exp $
+ * $Id: AbstractEvent.java,v 1.6 2008-01-30 09:32:35 iovka Exp $
  */
 package groove.trans;
 

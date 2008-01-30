@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: NameLabel.java,v 1.5 2007-09-25 16:30:34 rensink Exp $
+ * $Id: NameLabel.java,v 1.6 2008-01-30 09:32:38 iovka Exp $
  */
 package groove.trans;
 
@@ -23,7 +23,7 @@ import groove.graph.WrapperLabel;
  * The displayed version of the rule is between <tt>BEGIN_CHAR</tt> and
  * <tt>END_CHAR</tt>-characters.
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2007-09-25 16:30:34 $
+ * @version $Revision: 1.6 $ $Date: 2008-01-30 09:32:38 $
  */
 public class NameLabel extends WrapperLabel<String> {
     /** The obligatory first character of a rule name. */

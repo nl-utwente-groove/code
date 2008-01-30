@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NodeRelation.java,v 1.2 2007-08-26 07:23:56 rensink Exp $
+ * $Id: NodeRelation.java,v 1.3 2008-01-30 09:32:26 iovka Exp $
  */
 package groove.rel;
 
@@ -29,7 +29,7 @@ import java.util.Set;
  * one that performs the operation in-place. The former are called 
  * <tt>getOperation</tt> and the latter <tt>doOperation</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface NodeRelation {
     /**

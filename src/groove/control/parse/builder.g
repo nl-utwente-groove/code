@@ -50,7 +50,7 @@ statement { ControlState start = builder.getStart(); ControlState end = builder.
   : #(ALAP { builder.addElse(); newState = builder.newState(); builder.restore(newState, start); builder.addLambda(); builder.restore(start, newState); }    block)
   | #(WHILE { builder.addElse(); newState = builder.newState(); builder.restore(start, newState); } condition {builder.restore(newState, start);} block )
   | #(DO { newState = builder.newState(); builder.restore(newState, end); builder.addElse(); builder.restore(start, newState); } block { builder.restore(newState, start); } condition)
-  | #(TRY { newState = builder.newState(); builder.restore(start, newState); builder.addElse(); builder.restore(start, end);} block {builder.restore(newState, end); } (b:block {if( b == null) builder.merge();} )? )
+  | #(TRY { newState = builder.newState(); builder.restore(start, newState); builder.addElse(); builder.restore(start, end);} block {builder.restore(newState, end); } (b:block)? { if( b == null) builder.merge();} )
   | #(IF { newState = builder.newState(); builder.restore(start, newState); } condition {builder.restore(newState, end);} block {newState = builder.newState(); builder.restore(start, newState); builder.addElse(); builder.restore(newState,end); } (e:block {if( e == null) builder.merge();})?)
   | #(CHOICE ( { newState = builder.newState(); builder.restore(start, newState); builder.addLambda(); builder.restore(newState, end); } block)+)
   | expression

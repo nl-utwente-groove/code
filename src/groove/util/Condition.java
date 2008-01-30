@@ -1,4 +1,4 @@
-/* $Id: Condition.java,v 1.2 2007-10-05 08:31:52 rensink Exp $ */
+/* $Id: Condition.java,v 1.3 2008-01-30 09:32:14 iovka Exp $ */
 package groove.util;
 
 /**

@@ -12,14 +12,14 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: IntSet.java,v 1.1.1.2 2007-03-20 10:42:59 kastenberg Exp $
+ * $Id: IntSet.java,v 1.2 2008-01-30 09:32:10 iovka Exp $
  */
 package groove.util;
 
 /**
  * Interface for a set of <code>int</code> keys.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:42:59 $
+ * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:10 $
  */
 public interface IntSet {
 	/**

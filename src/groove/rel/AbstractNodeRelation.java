@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractNodeRelation.java,v 1.2 2007-08-26 07:23:48 rensink Exp $
+ * $Id: AbstractNodeRelation.java,v 1.3 2008-01-30 09:32:28 iovka Exp $
  */
 package groove.rel;
 
@@ -28,7 +28,7 @@ import java.util.Set;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public abstract class AbstractNodeRelation implements NodeRelation {
     /**

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LambdaControlTransition.java,v 1.5 2007-11-26 08:58:12 fladder Exp $
+ * $Id: LambdaControlTransition.java,v 1.6 2008-01-30 09:33:23 iovka Exp $
  */
 package groove.control;
 
@@ -22,7 +22,7 @@ package groove.control;
  * @author Tom Staijen
  * @version $Revision $
  */
-public class LambdaControlTransition extends RuleControlTransition {
+public class LambdaControlTransition extends ControlTransition {
 	
 	/**
 	 *  The public constructor calls the super constructor with the default label for lambda transitions.

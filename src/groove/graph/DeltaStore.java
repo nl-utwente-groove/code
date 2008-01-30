@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DeltaStore.java,v 1.3 2007-09-19 21:15:12 rensink Exp $
+ * $Id: DeltaStore.java,v 1.4 2008-01-30 09:32:50 iovka Exp $
  */
 package groove.graph;
 
@@ -22,7 +22,7 @@ import java.util.Set;
  * Delta target that collects the addition and removal information 
  * and can play it back later, in the role of delta applier.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class DeltaStore extends DefaultDeltaApplier implements DeltaTarget, DeltaApplier {
 	/**

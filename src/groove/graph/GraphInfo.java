@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphInfo.java,v 1.12 2007-11-19 12:19:10 rensink Exp $
+ * $Id: GraphInfo.java,v 1.13 2008-01-30 09:32:57 iovka Exp $
  */
 package groove.graph;
 
@@ -29,7 +29,7 @@ import java.util.Map;
  * A class that provides the keys needed for storing and retrieving data
  * needed for specific features.
  * @author Harmen Kastenberg
- * @version $Revision: 1.12 $ $Date: 2007-11-19 12:19:10 $
+ * @version $Revision: 1.13 $ $Date: 2008-01-30 09:32:57 $
  */
 public class GraphInfo {
 

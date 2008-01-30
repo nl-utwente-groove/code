@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Edge.java,v 1.6 2007-09-28 10:16:43 rensink Exp $
+ * $Id: Edge.java,v 1.7 2008-01-30 09:32:52 iovka Exp $
  */
 package groove.graph;
 
@@ -20,7 +20,7 @@ package groove.graph;
  * Interface of a graph (hyper-)edge, with endpoints (i.e., nodes) and label.
  * There is at least one endpoint.
  * @author Arend Rensink
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public interface Edge extends Element {
     /**

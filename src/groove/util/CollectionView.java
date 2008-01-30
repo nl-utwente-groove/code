@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CollectionView.java,v 1.3 2007-04-22 23:32:25 rensink Exp $
+ * $Id: CollectionView.java,v 1.4 2008-01-30 09:32:13 iovka Exp $
  */
 package groove.util;
 
@@ -25,7 +25,7 @@ import java.util.Iterator;
  * that satisfy a certain condition, to be provided through the abstract
  * method {@link #approves(Object)}.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public abstract class CollectionView<T> extends AbstractCollection<T> {
     /**

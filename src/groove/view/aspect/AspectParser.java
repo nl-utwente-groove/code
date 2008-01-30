@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.13 2007-11-19 12:19:14 rensink Exp $
+ * $Id: AspectParser.java,v 1.14 2008-01-30 09:31:33 iovka Exp $
  */
 package groove.view.aspect;
 
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  */
 public class AspectParser {
     /** 

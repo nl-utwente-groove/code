@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphCache.java,v 1.5 2007-10-02 23:06:30 rensink Exp $
+ * $Id: GraphCache.java,v 1.6 2008-01-30 09:32:51 iovka Exp $
  */
 package groove.graph;
 
@@ -24,7 +24,7 @@ import groove.util.DefaultDispenser;
  * graph, for faster access.
  * Typically, the graph will have a graph cache as a <tt>{@link java.lang.ref.Reference}</tt>.
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class GraphCache extends GraphShapeCache {
     /**

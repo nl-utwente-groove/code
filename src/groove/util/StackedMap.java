@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StackedMap.java,v 1.4 2007-10-10 08:59:42 rensink Exp $
+ * $Id: StackedMap.java,v 1.5 2008-01-30 09:32:14 iovka Exp $
  */
 package groove.util;
 
@@ -28,7 +28,7 @@ import java.util.Set;
  * The stacked map does not support <tt>null</tt> values, and
  * currently also does not support removal of elements.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class StackedMap<T,U> extends AbstractMap<T,U> {
     /**

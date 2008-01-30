@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphCalculator.java,v 1.4 2007-10-05 08:31:43 rensink Exp $
+ * $Id: GraphCalculator.java,v 1.5 2008-01-30 09:33:18 iovka Exp $
  */
 package groove.calc;
 
 import groove.graph.Graph;
 import groove.lts.GTS;
+import groove.lts.GraphState;
 import groove.trans.Condition;
 import groove.trans.GraphGrammar;
 
@@ -28,7 +29,7 @@ import java.util.Collection;
  * A graph calculator is loaded with a grammar, i.e., a rule system and a basis graph.
  * Essentially it gives an easier interface to the underlying GTS.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface GraphCalculator {
     /**
@@ -39,22 +40,7 @@ public interface GraphCalculator {
      * <code>null</code> if there is no such graph.
      * @throws IllegalStateException if the basis has not been initialised
      */
-    GraphResult getMax();
-//    
-//    /**
-//     * Returns the first "maximal" graph, i.e., that cannot evolve further, 
-//     * where <i>first</i> means that it has the shortest path from the original graph
-//     * (as given by {@link #getBasis()}).
-//     * The method will fail to terminate if there is no graph meeting the requirements.
-//     * @return A result wrapping a state whose only outgoing transitions are to itself, or 
-//     * <code>null</code> if there is no such state. The resulting state is guaranteed to
-//     * be the one closest to the original graph.
-//     * @see #getMax()
-//     * @see #getAllMax()
-//     * @see #getFirst(GraphCondition)
-//     * @throws IllegalStateException if the basis has not been initialised
-//     */
-//    GraphResult getFirstMax();
+    public GraphState getMax();
     
     /**
      * Returns the set of all maximal graphs, i.e., that cannot evolve further.
@@ -62,7 +48,7 @@ public interface GraphCalculator {
      * @return The set of all graphs that cannot evolve further.
      * @throws IllegalStateException if the basis has not been initialised
      */
-    Collection<GraphResult> getAllMax();
+    public Collection<GraphState> getAllMax();
     
     /**
      * Returns the first graph satisfying a named condition.
@@ -76,7 +62,7 @@ public interface GraphCalculator {
      * @throws IllegalArgumentException if <code>conditionName</code> is not the name of a rule in the 
      * current grammar
      */
-    GraphResult getFirst(String conditionName);
+    public GraphState getFirst(String conditionName);
     
     /**
      * Returns the first graph satisfying a certain condition.
@@ -86,7 +72,7 @@ public interface GraphCalculator {
      * <code>null</code> if there is no such graph.
      * @throws IllegalStateException if the basis has not been initialised
      */
-    GraphResult getFirst(Condition condition);
+    public GraphState getFirst(Condition condition);
     
     /**
      * Returns the set of all graphs satisfying a certain condition.
@@ -100,7 +86,7 @@ public interface GraphCalculator {
      * @throws IllegalArgumentException if <code>conditionName</code> is not the name of a rule in the 
      * current grammar
      */
-    Collection<GraphResult> getAll(String conditionName);
+    public Collection<GraphState> getAll(String conditionName);
     
     /**
      * Returns the set of all graphs satisfying a certain condition.
@@ -110,13 +96,13 @@ public interface GraphCalculator {
      * for each <code>result</code> in the set.
      * @throws IllegalStateException if the basis has not been initialised
      */
-    Collection<GraphResult> getAll(Condition condition);
+    public Collection<GraphState> getAll(Condition condition);
     
     /** 
      * The original graph, i.e., the one on which the calculator is initialised.
      * May return <code>null</code> if this object is only intended to be used as a prototype. 
      */
-    Graph getBasis();
+    public Graph getBasis();
     
     /**
      * Creates and returns a new instance of the calculator, based on another start graph.
@@ -125,17 +111,13 @@ public interface GraphCalculator {
      * @throws IllegalArgumentException if the new graph is not consistent with the grammar properties
      * @see GraphGrammar#testConsistent()
      */
-    GraphCalculator newInstance(Graph basis) throws IllegalArgumentException;
+    public GraphCalculator newInstance(Graph basis) throws IllegalArgumentException;
+    
     
     /**
      * Returns the GTS built up in this calculator. 
      */
     public GTS getGTS();
-//
-//    /**
-//	 * Returns the state generator used in this calculator.
-//	 */
-//    public StateGenerator getGenerator();
     
     /**
      * Returns the underlying graph grammar of the GTS.

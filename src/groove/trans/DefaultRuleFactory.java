@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultRuleFactory.java,v 1.16 2007-10-06 11:27:50 rensink Exp $
+ * $Id: DefaultRuleFactory.java,v 1.17 2008-01-30 09:32:39 iovka Exp $
  */
 package groove.trans;
 
@@ -33,7 +33,7 @@ import groove.view.aspect.AspectGraph;
  * </ul>
  * This is a singleton class; use {@link #getInstance()} to retrieve its only instance.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  * @deprecated use rule constructors
  */
 @Deprecated

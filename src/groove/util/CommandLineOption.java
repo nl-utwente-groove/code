@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: CommandLineOption.java,v 1.1.1.2 2007-03-20 10:42:58 kastenberg Exp $
+ * $Id: CommandLineOption.java,v 1.2 2008-01-30 09:32:02 iovka Exp $
  */
  package groove.util;
 
@@ -24,7 +24,7 @@
  * the corresponding option instance will be given the opportunity to exert
  * its effect, through a call of the <tt>{@link #parse}</tt> method.
  * @author Arend Rensink
- * @version $Revision: 1.1.1.2 $
+ * @version $Revision: 1.2 $
  */
 public interface CommandLineOption {
     /** Returns the (one-word, often one-letter) name of this option. */

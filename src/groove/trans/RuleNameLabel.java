@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleNameLabel.java,v 1.1 2007-04-30 19:53:27 rensink Exp $
+ * $Id: RuleNameLabel.java,v 1.2 2008-01-30 09:32:37 iovka Exp $
  *
  * Angela Lozano's thesis. EMOOSE student 2002 - 2003
  * EMOOSE (European Master in Object-Oriented & Software Engineering technologies)
@@ -33,7 +33,7 @@ import java.util.StringTokenizer;
  * the child.
  *
  * @author Angela Lozano and Arend Rensink
- * @version $Revision: 1.1 $ $Date: 2007-04-30 19:53:27 $
+ * @version $Revision: 1.2 $ $Date: 2008-01-30 09:32:37 $
  */
 public class RuleNameLabel extends NameLabel {
     /**

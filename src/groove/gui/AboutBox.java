@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AboutBox.java,v 1.2 2007-08-26 07:24:02 rensink Exp $
+ * $Id: AboutBox.java,v 1.3 2008-01-30 09:33:36 iovka Exp $
  */
 package groove.gui;
 
@@ -32,7 +32,7 @@ import javax.swing.JTextArea;
 /**
  * Dialog to display About information on the Groove tool.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class AboutBox extends JDialog {
 	/** The title of the dialog. */

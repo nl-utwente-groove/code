@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeMatch.java,v 1.5 2007-10-08 00:59:19 rensink Exp $
+ * $Id: CompositeMatch.java,v 1.6 2008-01-30 09:32:37 iovka Exp $
  */
 package groove.trans;
 

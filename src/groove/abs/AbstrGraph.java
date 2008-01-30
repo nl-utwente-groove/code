@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrGraph.java,v 1.1 2007-11-28 15:35:03 iovka Exp $
+ * $Id: AbstrGraph.java,v 1.2 2008-01-30 09:32:22 iovka Exp $
  */
 package groove.abs;
 
@@ -111,7 +111,7 @@ public interface AbstrGraph extends Graph {
 	 * An abstract graph G1 is included into an abstract graph G2 if all multiplicity
 	 * sets of G1 are included into G2.
 	 * @param other
-	 * @param belongsIsSub see {@link Abstraction.Options}
+	 * @param belongsIsSub see {@link Abstraction.Parameters}
 	 * @return
 	 * 	EQUAL if the two graphs are equal in the sense of the {@link #equals(Object)} method 
 	 *  NOT_EQ if there is no isomorphism preserving typing between the two graphs

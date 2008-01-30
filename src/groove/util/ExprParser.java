@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ExprParser.java,v 1.10 2007-11-19 12:19:30 rensink Exp $
+ * $Id: ExprParser.java,v 1.11 2008-01-30 09:32:14 iovka Exp $
  */
 package groove.util;
 
@@ -30,7 +30,7 @@ import java.util.Stack;
  * A class that helps parse an expression.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class ExprParser {
 

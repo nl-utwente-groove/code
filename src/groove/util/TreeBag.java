@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TreeBag.java,v 1.3 2007-10-10 08:59:42 rensink Exp $
+ * $Id: TreeBag.java,v 1.4 2008-01-30 09:32:03 iovka Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.TreeMap;
 /**
  * A bag (= multiset) of elements, based on an underlying tree map.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class TreeBag<T> extends AbstractCollection<T> implements Cloneable, Bag<T> {
     /**

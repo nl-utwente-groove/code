@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AutomatonCalculator.java,v 1.3 2007-09-10 19:13:33 rensink Exp $
+ * $Id: AutomatonCalculator.java,v 1.4 2008-01-30 09:32:28 iovka Exp $
  */
 package groove.rel;
 
@@ -40,7 +40,7 @@ import java.util.List;
  * Visitor for a {@link RegExpr} that constructs a regular automaton.
  * The automaton is a graph with a distinguished start state and end node.
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class AutomatonCalculator implements RegExprCalculator<Automaton> {
     /**

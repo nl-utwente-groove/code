@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TransformCollection.java,v 1.2 2007-03-28 15:12:28 rensink Exp $
+ * $Id: TransformCollection.java,v 1.3 2008-01-30 09:32:12 iovka Exp $
  */
 package groove.util;
 
@@ -27,7 +27,7 @@ import java.util.Iterator;
  * @see groove.util.TransformIterator
  * @see groove.util.TransformMap
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 abstract public class TransformCollection<T,U> extends AbstractCollection<U> {
     /** Constructs a set transforming a given inner set. */
