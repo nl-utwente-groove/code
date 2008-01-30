@@ -12,28 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: RuleSystem.java,v 1.17 2008-01-30 09:32:35 iovka Exp $
+ * $Id: RuleSystem.java,v 1.18 2008-01-30 12:37:40 fladder Exp $
  */
 package groove.trans;
 
-import groove.control.Location;
-import groove.control.StateSet;
-import groove.util.CollectionOfCollections;
-import groove.view.FormatException;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.SortedMap;
-import java.util.SortedSet;
-import java.util.TreeMap;
-import java.util.TreeSet;
+import groove.util.CollectionOfCollections;import groove.view.FormatException;import java.util.ArrayList;import java.util.Arrays;import java.util.Collection;import java.util.Collections;import java.util.HashSet;import java.util.Iterator;import java.util.List;import java.util.Map;import java.util.Set;import java.util.SortedMap;import java.util.TreeMap;import java.util.TreeSet;
 
 /**
  * Model of a production system, as a simple map of rule names to 
@@ -43,7 +26,7 @@ import java.util.TreeSet;
  * Any instance of this class is specialized towards a particular 
  * graph implementation.
  * @author Arend Rensink
- * @version $Revision: 1.17 $ $Date: 2008-01-30 09:32:35 $
+ * @version $Revision: 1.18 $ $Date: 2008-01-30 12:37:40 $
  * @see NameLabel
  * @see SPORule
  */
