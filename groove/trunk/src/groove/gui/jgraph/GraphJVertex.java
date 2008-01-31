@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphJVertex.java,v 1.26 2008-01-30 09:33:12 iovka Exp $
+ * $Id: GraphJVertex.java,v 1.27 2008-01-31 11:11:29 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -112,7 +112,7 @@ public class GraphJVertex extends JVertex implements GraphJCell {
 	public List<StringBuilder> getLines() {
 		List<StringBuilder> result = new LinkedList<StringBuilder>();
     	// show the node identity if required
-    	if (jModel.isShowNodeIdentities() || true) { 		// IOVKA showing node identity
+    	if (jModel.isShowNodeIdentities()) { 		// IOVKA showing node identity
     		String id = getNodeIdentity();
     		if (id != null) {
     			result.add(ITALIC_TAG.on(new StringBuilder(id)));
