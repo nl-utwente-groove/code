@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleAspect.java,v 1.16 2008-01-30 09:31:33 iovka Exp $
+ * $Id: RuleAspect.java,v 1.17 2008-01-31 13:12:08 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -33,7 +33,7 @@ import groove.view.RegExprLabelParser;
  * Graph aspect dealing with transformation rules.
  * Values are: <i>eraser</i>, <i>reader</i> or <i>creator</i>.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class RuleAspect extends AbstractAspect {
 
@@ -50,7 +50,7 @@ public class RuleAspect extends AbstractAspect {
 	protected AspectValue getMaxValue(AspectValue value1, AspectValue value2) throws FormatException {
 		if (EMBARGO.equals(value1) && ERASER.equals(value2)) {
 			return EMBARGO;
-		} else if (EMBARGO.equals(value1) && ERASER.equals(value2)) {
+		} else if (EMBARGO.equals(value2) && ERASER.equals(value1)) {
 			return EMBARGO;
 		} else if (REMARK.equals(value1) || REMARK.equals(value2)) {
 			return REMARK;
