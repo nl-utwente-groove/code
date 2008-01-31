@@ -20,8 +20,7 @@ public class ConditionalBreadthFirstStrategy extends BreadthFirstStrategy
 			}
 		}
 	}
-		
-	@Override
+
 	public void setExploreCondition(ExploreCondition<?> condition) {
 		this.explCond = condition;
 	}

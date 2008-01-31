@@ -55,7 +55,6 @@ public class PriorityCache implements ExploreCache {
 		}
 	}
 	
-	@Override
 	/** Does not have effect if rule is not of the same priority as 
 	 * the priority currently considered by the cache.
 	 * [IOVKA The effect of this method is not the same as the same
@@ -92,7 +91,6 @@ public class PriorityCache implements ExploreCache {
 		}
 	}	
 	
-	@Override
 	/**
 	 * Makes sure that the iterator won't iterate over rules of priority
 	 * greater than that of <code>rule</code>. Indeed, if <code>rule</code>
@@ -111,13 +109,11 @@ public class PriorityCache implements ExploreCache {
 		assert getPriority() < 0 || rules.containsKey(getPriority()) : "Something's very wrong !";
 	}
 
-	@Override
 	public boolean hasNext() {
 		assureNext();
 		return ruleIterator != null;
 	}
 	
-	@Override
 	public Rule next() {
 		assureNext();
 		if (ruleIterator != null) {
@@ -128,7 +124,6 @@ public class PriorityCache implements ExploreCache {
 		}
 	}
 
-	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
@@ -137,7 +132,6 @@ public class PriorityCache implements ExploreCache {
 		return null;
 	}
 
-	@Override
 	public Rule last() {
 		return this.last;
 	}

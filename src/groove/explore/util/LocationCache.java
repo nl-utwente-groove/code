@@ -42,14 +42,12 @@ public class LocationCache implements ExploreCache {
 		this.iterator = createIterator(isRandomized);
 	}
 	
-	@Override
 	public void updateExplored(Rule rule) {
 		if( !matched.contains(rule)) {
 			 failed.add(rule);
 		}
 	}
 
-	@Override
 	public void updateMatches(Rule rule) {
 		matched.add(rule);
 	}
@@ -115,15 +113,11 @@ public class LocationCache implements ExploreCache {
 		}
 	}
 
-	@Override
 	public boolean hasNext() {
-		// TODO Auto-generated method stub
 		return iterator.hasNext();
 	}
 
-	@Override
 	public Rule next() {
-		// TODO Auto-generated method stub
 		// TODO: FIX THIS for interuptable
 //		this.last = null;
 		if( !iterator.hasNext())
@@ -144,7 +138,6 @@ public class LocationCache implements ExploreCache {
 		return location.moreRules(this).iterator();
 	}
 	
-	@Override
 	public void remove() {
 		// TODO Auto-generated method stub
 	}
@@ -154,8 +147,6 @@ public class LocationCache implements ExploreCache {
 		return location.getTarget(rule, this);
 	}
 	
-
-	@Override
 	public Rule last() {
 		return this.last;
 	}

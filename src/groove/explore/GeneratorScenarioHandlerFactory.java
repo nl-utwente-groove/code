@@ -145,7 +145,6 @@ public class GeneratorScenarioHandlerFactory {
 			@Override
 			public Class<?> resultType() { return null; }
 
-			@Override
 			public void setCondition(ExploreCondition<C> explCond, String name, boolean negated) {
 				this.explCond = explCond;
 				this.condName = name;
@@ -156,10 +155,9 @@ public class GeneratorScenarioHandlerFactory {
 			private ExploreCondition<C> explCond;
 			private String condName = ""; // Is it used ?
 			private boolean negated;
-			@Override
+
 			public Class<?> getConditionType() { return type; }
 
-			@Override
 			public void setCondition(ExploreCondition<C> condition, String name) {
 				throw new UnsupportedOperationException();
 			}
@@ -214,9 +212,6 @@ public class GeneratorScenarioHandlerFactory {
 				this.result = scenar.play();
 			}
 
-			
-			
-			@Override
 			public void setCondition(ExploreCondition<C> explCond, String name, boolean negated) {
 				assert type.isAssignableFrom(explCond.getConditionType()) : "Incompatible types: " + explCond.getConditionType() + " and " + type;
 				this.explCond = explCond;
@@ -232,10 +227,8 @@ public class GeneratorScenarioHandlerFactory {
 			@Override
 			public Class<?> resultType() { return null; }
 
-			@Override
 			public Class<?> getConditionType() { return type; }
 
-			@Override
 			public void setCondition(ExploreCondition<C> condition, String name) {
 				throw new UnsupportedOperationException();
 			}

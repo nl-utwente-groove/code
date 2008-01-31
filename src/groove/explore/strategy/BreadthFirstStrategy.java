@@ -49,18 +49,14 @@ public class BreadthFirstStrategy extends AbstractStrategy {
 	
 	/** A queue with states to be explored, used as a FIFO. */
 	protected class ToExploreQueue extends LinkedList<GraphState> implements GraphShapeListener {
-
-		@Override
 		public void addUpdate(GraphShape graph, Node node) {
 			offer((GraphState) node);
 		}
-		@Override
+
 		public void addUpdate(GraphShape graph, Edge edge) { /* empty */ }
 
-		@Override
 		public void removeUpdate(GraphShape graph, Node node) { /* empty */ }
 
-		@Override
 		public void removeUpdate(GraphShape graph, Edge elem) { /* empty */ }
 		
 	}

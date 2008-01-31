@@ -17,8 +17,6 @@ import groove.lts.StateGenerator;
  *
  */
 public abstract class AbstractStrategy implements Strategy {
-
-	@Override
 	public void setGTS(GTS gts) {
 		this.gts = gts;
 		this.generator = gts.getRecord().getStateGenerator(gts);
@@ -36,7 +34,6 @@ public abstract class AbstractStrategy implements Strategy {
 		return this.startState;
 	}
 
-	@Override
 	public void setState(GraphState state) {
 		this.startState = state;
 		this.atState = state;

@@ -15,8 +15,6 @@ import groove.lts.GraphState;
  *
  */
 public class LinearStrategy extends AbstractStrategy {
-
-	@Override
 	public boolean next() {
 		if (this.atState == null) { 
 			getGTS().removeGraphListener(this.collector);

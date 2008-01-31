@@ -70,9 +70,6 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 	}
 	
 	private class ControlledStrategy extends AbstractStrategy {
-
-		
-		@Override
 		public boolean next() {
 			if (getAtState() == null || this.currRule == null) {
 				getGTS().removeGraphListener(toExplore);
@@ -137,24 +134,19 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 		
 		/** A queue with states to be explored, used as a FIFO. */
 		protected class ToExploreListener implements GraphShapeListener {
-
 			LinkedList<GraphState> queue;
 			void setQueue (LinkedList<GraphState> queue) {
 				this.queue = queue;
 			}
 			
-			
-			@Override
 			public void addUpdate(GraphShape graph, Node node) {
 				queue.offer((GraphState) node);
 			}
-			@Override
+
 			public void addUpdate(GraphShape graph, Edge edge) { /* empty */ }
 
-			@Override
 			public void removeUpdate(GraphShape graph, Node node) { /* empty */ }
 
-			@Override
 			public void removeUpdate(GraphShape graph, Edge elem) { /* empty */ }
 
 			@Override
@@ -165,7 +157,6 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 	}
 	
 	private class ControlledCache implements ExploreCache {
-
 		private Rule rule;
 		private Rule last;
 		
@@ -173,26 +164,20 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 			this.rule = r;
 		}
 		
-		@Override
 		public Location getTarget(Rule rule) { return null; }
 
-		@Override
 		public void updateExplored(Rule rule) { /* empty */ }
 
-		@Override
 		public void updateMatches(Rule rule) { /* empty */ }
 
-		@Override
 		public Rule last() {
 			return this.last;
 		}
 
-		@Override
 		public boolean hasNext() {
 			return this.rule != null;
 		}
 
-		@Override
 		public Rule next() {
 			if (this.rule == null) {
 				throw new NoSuchElementException();
@@ -202,7 +187,6 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 			return this.last;
 		}
 
-		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}

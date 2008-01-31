@@ -30,13 +30,10 @@ import java.util.Random;
  * @param <T>
  */
 public class RandomizedIterator<T> implements Iterator<T> {
-
-	@Override
 	public boolean hasNext() {
 		return this.available.cardinality() > 0;
 	}
 
-	@Override
 	public synchronized T next() {
 		if (this.available.cardinality() <= 0) {
 			throw new NoSuchElementException();
@@ -70,7 +67,6 @@ public class RandomizedIterator<T> implements Iterator<T> {
 		this.available.clear(idx);
 	}
 	
-	@Override
 	/** Not supported. */
 	public void remove() { throw new UnsupportedOperationException(); }
 

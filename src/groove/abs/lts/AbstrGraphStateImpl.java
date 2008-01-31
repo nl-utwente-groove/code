@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrGraphStateImpl.java,v 1.2 2008-01-30 09:33:47 iovka Exp $
+ * $Id: AbstrGraphStateImpl.java,v 1.3 2008-01-31 08:22:52 rensink Exp $
  */
 package groove.abs.lts;
 
@@ -207,7 +207,6 @@ public class AbstrGraphStateImpl implements AbstrGraphState {
     /** The internally stored (optional) control location. */
     private Location location;
 
-	@Override
 	public void setLocation(Location l) {
 		// TODO Auto-generated method stub
 		
