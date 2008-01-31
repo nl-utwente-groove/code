@@ -238,7 +238,7 @@ public class DefaultGrammarView implements GrammarView<AspectualGraphView,Aspect
     	
     	result.setProperties(getProperties());
     	if (getStartGraph() == null) {
-			errors.add("Grammar" + getName() + " has no start graph");
+			errors.add(String.format("Grammar %s has no start graph", getName()));
 		} else {
 			try {
 				result.setStartGraph(getStartGraph().toModel());
