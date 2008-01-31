@@ -132,7 +132,7 @@ public abstract class AbstractStrategy implements Strategy {
 		// This is only considered for backtracking strategies, in 
 		// which the state from which we backtrack is closed
 		// and recently used matches iterators may be cached
-		if (aliasing && this instanceof AbstractBacktrackingStrategy) {
+		if (false && this instanceof AbstractBacktrackingStrategy) {
 			AbstractBacktrackingStrategy str = (AbstractBacktrackingStrategy) this;
 			// TODO integrate alias matches iterator constructed from a sibling or child
 		}
@@ -152,7 +152,7 @@ public abstract class AbstractStrategy implements Strategy {
 	private StateGenerator generator;
 	/** Indicates whether the strategy should use aliasing or not. Default value is true. */
 	// TODO this is set to false until the aliased matcher is debugged
-	protected boolean aliasing = false;
+	protected boolean aliasing = true;
 	
 	
 }
