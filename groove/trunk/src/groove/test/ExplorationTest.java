@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExplorationTest.java,v 1.19 2008-01-30 09:33:05 iovka Exp $
+ * $Id: ExplorationTest.java,v 1.20 2008-01-31 14:25:54 fladder Exp $
  */
 
 package groove.test;
@@ -56,7 +56,7 @@ import junit.framework.TestCase;
  * file, named in {@link #TEST_CASES_NAME}.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.19 $
+ * @version $Revision: 1.20 $
  */
 public class ExplorationTest extends TestCase {
 	/** Location of the samples. */
@@ -317,7 +317,7 @@ public class ExplorationTest extends TestCase {
 				} catch (IOException exc) { // proceed
 				}
 			}
-            if (nodeCount >= 0) {
+            if (nodeCount >= 0) {            	int actualNodeCount = lts.nodeCount();
                 assertEquals(nodeCount, lts.nodeCount());
             }
             if (edgeCount >= 0) {
