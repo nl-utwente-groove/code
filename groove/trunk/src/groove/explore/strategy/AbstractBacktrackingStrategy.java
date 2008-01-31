@@ -18,11 +18,9 @@ import groove.lts.GraphState;
  *
  */
 public abstract class AbstractBacktrackingStrategy extends AbstractStrategy {
-
 	@Override
 	protected abstract void updateAtState();
 
-	@Override
 	public abstract boolean next();
 	
 	/** The state from which the strategy backtracks, or null if

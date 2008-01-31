@@ -17,7 +17,6 @@ public class ConditionalDepthFirstStrategy extends DepthFirstStrategy4 implement
 		}
 	}
 
-	@Override
 	public void setExploreCondition(ExploreCondition<?> condition) {
 		this.explCond = condition;
 	}

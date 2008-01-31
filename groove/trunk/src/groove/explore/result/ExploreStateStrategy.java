@@ -21,7 +21,6 @@ public class ExploreStateStrategy extends AbstractStrategy {
 		// empty
 	}
 
-	@Override
 	public boolean next() {
 		if (! getGTS().isOpen(this.startState())) {
 			return false;

@@ -30,7 +30,6 @@ public class SimpleCache implements ExploreCache {
 		}
 	}
 	
-	@Override
 	public void updateExplored(Rule rule) {
 		if (internalIterator instanceof RandomizedIterator) {
 			((RandomizedIterator<Rule>) internalIterator).removeFromIterator(rule);
@@ -53,23 +52,19 @@ public class SimpleCache implements ExploreCache {
 		}
 	}
 
-	@Override
 	public void updateMatches(Rule rule) {
 		// does nothing
 	}
 
-	@Override
 	public boolean hasNext() {
 		return internalIterator.hasNext();
 	}
 
-	@Override
 	public Rule next() {
 		this.last = internalIterator.next();
 		return this.last;
 	}
 
-	@Override
 	public void remove() {
 		internalIterator.remove();
 	}
@@ -78,7 +73,6 @@ public class SimpleCache implements ExploreCache {
 		return null;
 	}
 	
-	@Override
 	public Rule last() {
 		return this.last;
 	}

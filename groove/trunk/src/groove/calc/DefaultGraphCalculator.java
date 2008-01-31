@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.12 2008-01-30 09:33:22 iovka Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.13 2008-01-31 08:22:54 rensink Exp $
  */
 package groove.calc;
 
@@ -95,7 +95,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
     	return scenario;
     }
     
-    @Override
     /**
      * Beware, maximal != final, maximal can have self-transitions
      */

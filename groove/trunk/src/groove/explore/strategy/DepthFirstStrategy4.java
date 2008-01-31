@@ -25,8 +25,6 @@ import groove.lts.State;
  *
  */
 public class DepthFirstStrategy4 extends AbstractStrategy {
-
-	@Override
 	public boolean next() {
 		if (getAtState() == null) {
 			getGTS().removeGraphListener(toExplore);
@@ -65,22 +63,16 @@ public class DepthFirstStrategy4 extends AbstractStrategy {
 
 	
 	protected class StackToExplore extends Stack<GraphState> implements LTSListener {
-	
-		@Override
 		public void addUpdate(GraphShape graph, Node node) {
 			push((GraphState) node);
 		}
 
-		@Override
 		public void closeUpdate(LTS graph, State explored) { /* empty */ }
 		
-		@Override
 		public void addUpdate(GraphShape graph, Edge edge) { /* empty */ }
 
-		@Override
 		public void removeUpdate(GraphShape graph, Node node) { /* empty */ }
 		
-		@Override
 		public void removeUpdate(GraphShape graph, Edge elem) { /* empty */ }
 	}
 	

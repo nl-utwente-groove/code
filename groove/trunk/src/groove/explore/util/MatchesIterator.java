@@ -15,14 +15,11 @@ import java.util.Set;
  * @author Iovka Boneva
  */
 public class MatchesIterator implements Iterator<RuleMatch> {
-
-	@Override
 	public boolean hasNext() {
 		goToNext();
 		return matchIter != null && this.matchIter.hasNext();
 	}
 
-	@Override
 	public RuleMatch next() {
 		goToNext();
 		if (this.matchIter == null) { throw new NoSuchElementException(); }
@@ -52,7 +49,6 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 	/**
 	 * Unsupported method.
 	 */
-	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}

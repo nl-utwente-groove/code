@@ -113,7 +113,6 @@ public class ScenarioHandlerFactory {
 			@Override
 			public Class<?> resultType() { return null; }
 
-			@Override
 			public void setCondition(ExploreCondition<C> explCond, String name) {
 				this.explCond = explCond;
 				this.condName = name;
@@ -121,10 +120,9 @@ public class ScenarioHandlerFactory {
 		
 			private ExploreCondition<C> explCond;
 			private String condName = "";
-			@Override
+
 			public Class<?> getConditionType() { return explCond.getConditionType(); }
 
-			@Override
 			public void setCondition(ExploreCondition<C> condition, String name, boolean negated) {
 				throw new UnsupportedOperationException();
 			}
@@ -178,7 +176,6 @@ public class ScenarioHandlerFactory {
 				this.result = scenar.play();
 			}
 
-			@Override
 			public void setCondition(ExploreCondition<C> explCond, String name) {
 				this.explCond = explCond;
 				this.condName = name;
@@ -190,10 +187,8 @@ public class ScenarioHandlerFactory {
 			@Override
 			public Class<?> resultType() { return null; }
 
-			@Override
 			public Class<?> getConditionType() { return explCond.getConditionType(); }
 			
-			@Override
 			public void setCondition(ExploreCondition<C> condition, String name, boolean negated) {
 				throw new UnsupportedOperationException();
 			}
@@ -206,22 +201,15 @@ public class ScenarioHandlerFactory {
 	 * @author Iovka Boneva
 	 */
 	public static abstract class AbstractScenarioHandler implements ScenarioHandler {
-
-		
 		// ---------------------------------------------------------
 		// ScenarioHandler methods
 		// ---------------------------------------------------------
-		
-		@Override
 		public abstract String getDescription();
 		
-		@Override
 		public abstract String getName(); 
 
-		@Override
 		public abstract void playScenario();
 
-		@Override 
 		public abstract Class<?> resultType(); 
 		
 		// ---------------------------------------------------------
@@ -236,16 +224,15 @@ public class ScenarioHandlerFactory {
 		 * @return The graph transition system of this scenario.
 		 */
 		protected GTS getGTS () { return this.gts; }
-		@Override
+
 		public void setGTS (GTS gts) { this.gts = gts; }
 		/** Retrieves the start state for this scenario.
 		 * @return The start state for this scenario.
 		 */
 		protected GraphState getState () { return this.state; }
-		@Override
+
 		public void setState (GraphState state) {this.state = state; }
 		
-		@Override
 		public Collection<? extends Object> getResult() {
 			return this.result.getResult();
 		}
