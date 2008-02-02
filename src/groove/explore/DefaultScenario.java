@@ -18,7 +18,7 @@ import groove.util.Reporter;
 //	- identifying when finished (a certain goal is reached)
 //  - some goals may not require or even rather not have the gts filled
 //    - requires stateiter to not use the gts
-//    - requires the scenario to be able to store itermediate states
+//    - requires the scenario to be able to store intermediate states
 //    - ALTERNATITE: allow discarding "unsuccesful" results
 //
 //  - ISSUE: WHO IS RESPONSIBLE FOR ADDINGS STATES/TRANSITIONS AND CLOSING STATES
@@ -32,7 +32,7 @@ import groove.util.Reporter;
 //    CONSEQUENCE: if hasNext is not implemented, the only one able to close a state is the ruleapplication iterator itself
 //
 //	alternatives - iterator usage:
-//	- the iterators might not be fully used, thus if caching is needed they should do their own or it should be handled by the getter method for the iterator (this is almost a solution already, but then again, using iterators is also)
+//	- the iterators might not be fully used, thus if caching is needed they should do their own or it should be handled by the getter method for the iterator (this is almost a solution already, but then again, using iterators is as well)
 //	- iterators are always completely used, so if only ONE ruleapplication (e.g. depth first) should be explored at a time, then it should only be able to execute next() once.
 //
 //	alternatives - application-iterator caching: 
