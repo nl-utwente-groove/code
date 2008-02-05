@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: SetView.java,v 1.4 2008-01-30 09:32:10 iovka Exp $
+ * $Id: SetView.java,v 1.5 2008-02-05 13:43:21 rensink Exp $
  */
 package groove.util;
 
@@ -27,11 +27,11 @@ import java.util.Set;
  * method <tt>approve(Object)</tt>.
  * The view allows removal but not addition of values.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class SetView<T> extends AbstractSet<T> {
     /**
-     * Constucts a view upon a set, newly created for this purpose.
+     * Constructs a view upon a set, newly created for this purpose.
      * Since the set itself is not available, this is only useful for
      * creating a set whose elements are guaranteed to satisfy a 
      * certain condition (to be provided by the abstract method
@@ -45,7 +45,7 @@ public abstract class SetView<T> extends AbstractSet<T> {
     }
     
     /**
-     * Constucts a shared set view on a given underlying set.
+     * Constructs a shared set view on a given underlying set.
      */
     public SetView(Set<?> set) {
         this.set = set;

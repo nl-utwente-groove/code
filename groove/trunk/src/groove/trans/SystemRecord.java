@@ -104,15 +104,6 @@ public class SystemRecord implements NodeFactory {
 		return getRuleSystem().getRuleSetIter();
 	}
 	
-	/** 
-	 * Returns a rule application for a given rule and matching of that rule.
-	 * @deprecated use {@link #getApplication(RuleMatch, Graph)} instead 
-	 */
-	@Deprecated
-	public RuleApplication getApplication(Rule rule, Matching matching) {
-		return getEvent(rule, matching.elementMap()).newApplication(matching.cod());
-	}
-
 	/** Returns a rule application for a given rule and matching of that rule. */
 	public RuleApplication getApplication(RuleMatch match, Graph host) {
 		if( match instanceof VirtualRuleMatch ) {

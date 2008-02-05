@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TreeHashSet3.java,v 1.5 2008-01-30 09:32:13 iovka Exp $
+ * $Id: TreeHashSet3.java,v 1.6 2008-02-05 13:43:21 rensink Exp $
  */
 package groove.util;
 
@@ -28,8 +28,10 @@ import java.util.Set;
  * If the number of elements is small or the keys are evenly distributed, this 
  * outperforms the {@link java.util.HashSet}. 
  * @author Arend Rensink
- * @version $Revision: 1.5 $ $Date: 2008-01-30 09:32:13 $
+ * @version $Revision: 1.6 $ $Date: 2008-02-05 13:43:21 $
+ * @deprecated use TreeHashSet instead
  */
+@Deprecated
 public class TreeHashSet3<T> extends AbstractSet<T> {
 	/**
 	 * Interface used for testing whether two elements with the same hash

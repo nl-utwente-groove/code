@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TransformSet.java,v 1.4 2008-01-30 09:32:11 iovka Exp $
+ * $Id: TransformSet.java,v 1.5 2008-02-05 13:43:21 rensink Exp $
  */
 package groove.util;
 
@@ -22,12 +22,12 @@ import java.util.Set;
 
 /**
  * Set that is built on an inner set but transforms the images using the
- * abstract methd {@link #toOuter(Object)}.
+ * abstract method {@link #toOuter(Object)}.
  * Note that this set is inefficient in everything except for iteration.
  * @see groove.util.TransformIterator
  * @see groove.util.TransformMap
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 abstract public class TransformSet<T,U> extends AbstractSet<U> implements Set<U> {
     /** Constructs a set transforming a given inner set. */
