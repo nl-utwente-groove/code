@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Namespace.java,v 1.3 2008-01-30 09:33:33 iovka Exp $
+ * $Id: Namespace.java,v 1.4 2008-02-05 13:27:53 rensink Exp $
  */
 package groove.control.parse;
 
 import groove.trans.GraphGrammar;
-import groove.trans.Rule;
 import groove.trans.RuleNameLabel;
 import groove.view.DefaultGrammarView;
 

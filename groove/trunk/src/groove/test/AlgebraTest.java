@@ -21,7 +21,6 @@ package groove.test;
 import groove.algebra.Algebra;
 import groove.algebra.Constant;
 import groove.algebra.DefaultBooleanAlgebra;
-import groove.algebra.DefaultConstant;
 import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
 import groove.graph.algebra.AlgebraConstants;

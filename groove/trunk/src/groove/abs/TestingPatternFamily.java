@@ -12,11 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: TestingPatternFamily.java,v 1.1 2007-11-28 15:35:04 iovka Exp $
+ * $Id: TestingPatternFamily.java,v 1.2 2008-02-05 13:28:21 rensink Exp $
  */
 package groove.abs;
-
-import java.util.Collection;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
@@ -25,7 +23,6 @@ import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Node;
-import groove.graph.NodeEdgeMap;
 import groove.match.GraphSearchPlanFactory;
 import groove.match.SearchPlanStrategy;
 

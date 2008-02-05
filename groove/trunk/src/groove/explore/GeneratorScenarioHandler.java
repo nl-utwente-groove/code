@@ -1,7 +1,6 @@
 package groove.explore;
 
 import groove.explore.strategy.Strategy;
-import groove.graph.Graph;
 
 /** An object that holds a scenario. 
  * Handlers of this type are used by pre-defined scenarios in the {@link java.util.Generator} 

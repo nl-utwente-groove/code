@@ -12,17 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StatePanel.java,v 1.30 2008-01-30 09:33:36 iovka Exp $
+ * $Id: StatePanel.java,v 1.31 2008-02-05 13:28:05 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_ASPECTS_OPTION;
-import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
+import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.abs.AbstrGraph;
-import groove.abs.GraphPattern;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -32,7 +31,6 @@ import groove.graph.NodeEdgeMap;
 import groove.gui.jgraph.AbstrGraphJModel;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.GraphJVertex;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.StateJGraph;
 import groove.lts.GTS;
@@ -42,13 +40,9 @@ import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.trans.NameLabel;
 import groove.trans.RuleMatch;
-import groove.util.Groove;
-import groove.view.DefaultGrammarView;
 import groove.view.AspectualGraphView;
+import groove.view.DefaultGrammarView;
 
-import java.awt.Rectangle;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.HashMap;
@@ -67,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * Window that displays and controls the current state graph. Auxiliary class for Simulator.
  * @author Arend Rensink
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  */
 public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */

@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MyHashSetExtended.java,v 1.1 2007-11-28 15:35:08 iovka Exp $
+ * $Id: MyHashSetExtended.java,v 1.2 2008-02-05 13:28:22 rensink Exp $
  */
 package groove.abs;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.NoSuchElementException;
 
 /** Defines a hash set with additional functionality allowing to retrieve 

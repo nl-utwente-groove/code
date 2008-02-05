@@ -19,16 +19,6 @@
  */
 package groove.samples;
 
-import groove.calc.DefaultGraphCalculator;
-//import groove.calc.DefaultGraphResult;
-import groove.calc.GraphResult;
-import groove.io.AspectualViewGps;
-import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.trans.GraphGrammar;
-import groove.util.GenerateProgressMonitor;
-
-import java.io.File;
 
 ///**
 // * Class encoding one of the benchmarks in the Varro et al paper. 

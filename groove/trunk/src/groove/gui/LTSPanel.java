@@ -12,17 +12,15 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSPanel.java,v 1.20 2008-01-30 09:33:35 iovka Exp $
+ * $Id: LTSPanel.java,v 1.21 2008-02-05 13:28:06 rensink Exp $
  */
 package groove.gui;
 
 import static groove.gui.Options.SHOW_ANCHORS_OPTION;
 import static groove.gui.Options.SHOW_STATE_IDS_OPTION;
 import groove.graph.Edge;
-import groove.graph.GraphAdapter;
 import groove.graph.GraphShape;
 import groove.graph.Node;
-import groove.gui.jgraph.AbstrLTSJGraph;
 import groove.gui.jgraph.AbstrLTSJModel;
 import groove.gui.jgraph.JCell;
 import groove.gui.jgraph.LTSJGraph;
@@ -32,7 +30,6 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.LTSAdapter;
-import groove.lts.LTSListener;
 import groove.lts.State;
 import groove.trans.NameLabel;
 import groove.view.DefaultGrammarView;
@@ -46,7 +43,7 @@ import java.util.Collections;
  * Simulator.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.20 $ $Date: 2008-01-30 09:33:35 $
+ * @version $Revision: 1.21 $ $Date: 2008-02-05 13:28:06 $
  */
 public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListener {
 

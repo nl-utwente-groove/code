@@ -1,13 +1,7 @@
 package groove.util;
 
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.NoSuchElementException;
-
 import groove.control.Location;
 import groove.explore.DefaultScenario;
-import groove.explore.ScenarioHandlerFactory;
 import groove.explore.ScenarioHandlerFactory.AbstractScenarioHandler;
 import groove.explore.result.EmptyAcceptor;
 import groove.explore.result.EmptyResult;
@@ -22,6 +16,11 @@ import groove.graph.Node;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.trans.Rule;
+
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class ControlledScenarioHandler extends AbstractScenarioHandler {
 

@@ -12,20 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Testing.java,v 1.3 2008-01-30 09:32:23 iovka Exp $
+ * $Id: Testing.java,v 1.4 2008-02-05 13:28:21 rensink Exp $
  */
 package groove.abs;
-
-import java.awt.Dimension;
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import javax.swing.JFrame;
 
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
@@ -53,6 +42,15 @@ import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.view.FormatException;
+
+import java.awt.Dimension;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.swing.JFrame;
+
 import junit.framework.TestCase;
 
 public class Testing  extends TestCase { 

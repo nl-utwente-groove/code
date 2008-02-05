@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JVertexView.java,v 1.20 2008-01-30 09:33:12 iovka Exp $
+ * $Id: JVertexView.java,v 1.21 2008-02-05 13:28:03 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -36,7 +36,6 @@ import java.awt.geom.Ellipse2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
-import java.awt.geom.Point2D.Double;
 
 import javax.swing.BorderFactory;
 import javax.swing.JLabel;
@@ -60,7 +59,7 @@ import org.jgraph.graph.VertexView;
  * was taken from {@link org.jgraph.cellview.JGraphMultilineView}, but the class had to be copied
  * to turn the line wrap off.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class JVertexView extends VertexView {
     /**

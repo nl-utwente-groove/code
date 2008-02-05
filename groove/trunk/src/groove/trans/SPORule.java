@@ -12,11 +12,10 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.49 2008-01-30 09:32:36 iovka Exp $
+ * $Id: SPORule.java,v 1.50 2008-02-05 13:28:15 rensink Exp $
  */
 package groove.trans;
 
-import groove.explore.DefaultScenario;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -26,8 +25,6 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
-import groove.graph.algebra.AlgebraEdge;
-import groove.graph.algebra.ProductNode;
 import groove.graph.algebra.ValueNode;
 import groove.match.MatchStrategy;
 import groove.match.SearchPlanStrategy;
@@ -41,7 +38,6 @@ import groove.view.FormatException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.BitSet;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -57,7 +53,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.49 $
+ * @version $Revision: 1.50 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**

@@ -12,9 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
 
- * $Id: PatternFamily.java,v 1.3 2008-01-30 09:32:23 iovka Exp $
+ * $Id: PatternFamily.java,v 1.4 2008-02-05 13:28:21 rensink Exp $
  */
 package groove.abs;
+
+import groove.abs.MyHashSet.Hasher;
+import groove.graph.DefaultEdge;
+import groove.graph.DefaultGraph;
+import groove.graph.Edge;
+import groove.graph.Graph;
+import groove.graph.Node;
+import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
+import groove.graph.iso.DefaultIsoChecker;
+import groove.rel.VarNodeEdgeMap;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -24,21 +35,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import groove.abs.MyHashSet.Hasher;
-import groove.abs.MyHashSet;
-import groove.graph.DefaultEdge;
-import groove.graph.DefaultGraph;
-import groove.graph.DefaultMorphism;
-import groove.graph.Graph;
-import groove.graph.Label;
-import groove.graph.Morphism;
-import groove.graph.Node;
-import groove.graph.Edge;
-import groove.graph.NodeEdgeHashMap;
-import groove.graph.NodeEdgeMap;
-import groove.graph.iso.DefaultIsoChecker;
-import groove.rel.VarNodeEdgeMap;
 
 /** Allows to create and reference a set of graph patterns with a guarantee that 
  *  every pattern is represented only once.

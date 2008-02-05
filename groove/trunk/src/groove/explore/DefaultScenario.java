@@ -5,8 +5,10 @@ import groove.explore.result.Result;
 import groove.explore.strategy.Strategy;
 import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.lts.StateGenerator;
+import groove.trans.Rule;
 import groove.util.Reporter;
+
+import java.util.Set;
 
 //requirements:
 //

@@ -4,7 +4,6 @@ package groove.explore.result;
 import groove.explore.Scenario;
 
 import java.util.Collection;
-import java.util.Set;
 import java.util.TreeSet;
 
 /** A set of objects that are the result of the execution of

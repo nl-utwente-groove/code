@@ -1,13 +1,5 @@
 package groove.abs;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
-
 import groove.abs.Abstraction.AbstrGraphsRelation;
 import groove.abs.Abstraction.MultInfoRelation;
 import groove.graph.BinaryEdge;
@@ -24,6 +16,12 @@ import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.TreeHashSet;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 
 /** A pattern shape graph is a graph together with types (graph patterns) and multiplicities 

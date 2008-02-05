@@ -12,28 +12,10 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphResult.java,v 1.13 2008-01-30 09:33:19 iovka Exp $
+ * $Id: DefaultGraphResult.java,v 1.14 2008-02-05 13:28:40 rensink Exp $
  */
 package groove.calc;
 
-import groove.graph.Graph;
-import groove.graph.Morphism;
-import groove.lts.GraphNextState;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
-import groove.trans.Condition;
-import groove.trans.GraphGrammar;
-import groove.trans.Rule;
-import groove.trans.RuleMatch;
-import groove.trans.RuleSystem;
-import groove.trans.SystemRecord;
-import groove.view.FormatException;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * Default implementation of a {@link GraphResult}, using

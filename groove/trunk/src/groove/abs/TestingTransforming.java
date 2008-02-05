@@ -12,29 +12,20 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: TestingTransforming.java,v 1.5 2008-01-30 09:32:23 iovka Exp $
+ * $Id: TestingTransforming.java,v 1.6 2008-02-05 13:28:21 rensink Exp $
  */
 package groove.abs;
 
-import java.io.File;
-import java.io.IOException;
-import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-
-import groove.abs.Abstraction.LinkPrecision;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
+import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.Edge;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.io.AspectualViewGps;
@@ -49,6 +40,14 @@ import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.view.FormatException;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
+
 import junit.framework.TestCase;
 
 /** Tests for the transformation. */

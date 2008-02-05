@@ -12,11 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrGraphJModel.java,v 1.1 2007-11-28 16:08:19 iovka Exp $
+ * $Id: AbstrGraphJModel.java,v 1.2 2008-02-05 13:28:04 rensink Exp $
  */
 package groove.gui.jgraph;
-
-import org.jgraph.graph.AttributeMap;
 
 import groove.abs.AbstrGraph;
 import groove.gui.Options;

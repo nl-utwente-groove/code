@@ -12,18 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Explorer.java,v 1.4 2008-01-30 09:33:18 iovka Exp $
+ * $Id: Explorer.java,v 1.5 2008-02-05 13:28:40 rensink Exp $
  */
 package groove.calc;
 
 import groove.explore.DefaultScenario;
 import groove.graph.Graph;
-import groove.lts.GTS;
 import groove.lts.GraphState;
-import groove.trans.GraphGrammar;
 import groove.util.Property;
-
-import java.util.Collection;
 
 /**
  * REMOVE: ??? OR REWRITE

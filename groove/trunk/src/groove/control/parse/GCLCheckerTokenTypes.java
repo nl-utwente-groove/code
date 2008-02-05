@@ -1,7 +1,6 @@
 // $ANTLR 2.7.6 (2005-12-22): "gcl.g" -> "GCLParser.java"$
 
 package groove.control.parse;
-import groove.control.*;
 
 public interface GCLCheckerTokenTypes {
 	int EOF = 1;
