@@ -12,15 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: ListEntry.java,v 1.2 2008-01-30 09:32:13 iovka Exp $
+ * $Id: ListEntry.java,v 1.3 2008-02-05 13:43:21 rensink Exp $
  */
 package groove.util;
 
 /**
- * Node in a linked list. Used for space optimizations instead of arrays.
+ * Node in a linked list. Used for space optimisations instead of arrays.
  * This saves out the array object itself (20 bytes).
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public interface ListEntry {
     /**

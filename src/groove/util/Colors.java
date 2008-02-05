@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Colors.java,v 1.2 2008-01-30 09:32:15 iovka Exp $
+ * $Id: Colors.java,v 1.3 2008-02-05 13:43:21 rensink Exp $
  */
 package groove.util;
 
@@ -26,7 +26,7 @@ import java.util.TreeMap;
 /**
  * Helper class for accessing colors by name.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class Colors {
     /**
@@ -57,10 +57,10 @@ public class Colors {
      * searched using the following criteria:
      * <ul>
      * <li> If the name is one of the keys in <tt>getColorMap()</tt> then the 
-     * corresponding key is resturned;
-     * <li> Otherwise, if the name is a system property (recognized by
+     * corresponding key is returned;
+     * <li> Otherwise, if the name is a system property (recognised by
      * <tt>Color.getColor(String)</tt>) then the corresponding color is returned;
-     * <li> Otherwise, if the name is a color key recognized by 
+     * <li> Otherwise, if the name is a color key recognised by 
      * <tt>Color.decode(String)</tt>) then the corresponding color is returned;
      * <li> Otherwise, if the name is a space-separated sequence of three or four byte 
      * values standing for the red, green and blue components, and optionally an alpha value,

@@ -18,7 +18,6 @@ package groove.test;
 
 import groove.util.Reporter;
 import groove.util.TreeHashSet;
-import groove.util.TreeHashSet3;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,7 +26,7 @@ import java.util.Set;
 /**
  * Class to test the various implementations of {@link groove.util.IntSet} regarding speed.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class SetSpeedTest {
 	static private final int SMALL_SAMPLE_SIZE = 100;
@@ -91,7 +90,6 @@ public class SetSpeedTest {
 //		new SetSpeedTest(new TreeStoreSet(1, SMALL_SAMPLE_SIZE, TreeStoreSet.HASHCODE_EQUATOR)).start();
 //		new SetSpeedTest(new TreeHashSet(2, SMALL_SAMPLE_SIZE, TreeHashSet.HASHCODE_EQUATOR)).start();
 		new SetSpeedTest(new TreeHashSet<Object>(SMALL_SAMPLE_SIZE, 3, 7, TreeHashSet.HASHCODE_EQUATOR)).start();
-		new SetSpeedTest(new TreeHashSet3<Object>(SMALL_SAMPLE_SIZE, TreeHashSet3.HASHCODE_EQUATOR)).start();
 	}
 	
 	public SetSpeedTest(Set<Object> object) {
@@ -163,8 +161,6 @@ public class SetSpeedTest {
 		Object newObject;
 		if (object instanceof HashSet) {
 			newObject = new HashSet<Object>(object);
-		} else if (object instanceof TreeHashSet3) {
-			newObject = new TreeHashSet3<Object>(object);
 		} else {
 			newObject = new TreeHashSet<Object>((TreeHashSet) object);
 		}
@@ -177,9 +173,7 @@ public class SetSpeedTest {
 		}
 		reporter.stop();
 		reporter.stop();
-		if (object instanceof TreeHashSet3) {
-			return ((TreeHashSet3) object).getBytesPerElement();
-		} else if (object instanceof TreeHashSet) {
+		if (object instanceof TreeHashSet) {
 				return ((TreeHashSet) object).getBytesPerElement();
 		} else {
 			return 0;

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: StateCache.java,v 1.22 2008-01-30 09:32:18 iovka Exp $
+ * $Id: StateCache.java,v 1.23 2008-02-05 13:43:28 rensink Exp $
  */
 package groove.lts;
 
@@ -38,7 +38,7 @@ import java.util.Set;
 /**
  * Extends the cache with the outgoing transitions, as a set.
  * @author Arend Rensink
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  */
 class StateCache {
     /**
@@ -262,7 +262,7 @@ class StateCache {
     
     /**
      * Reconstructs the set of {@link groove.lts.GraphTransitionStub}s from the corresponding
-     * {@link groove.util.ListEntry} in the underlying graph state.
+     * array in the underlying graph state.
      * It is assumed that <code>getState().isClosed()</code>.
      */
     private Set<GraphTransitionStub> computeStubSet() {

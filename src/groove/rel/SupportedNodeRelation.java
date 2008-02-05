@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: SupportedNodeRelation.java,v 1.3 2008-01-30 09:32:28 iovka Exp $
+ * $Id: SupportedNodeRelation.java,v 1.4 2008-02-05 13:43:00 rensink Exp $
  */
 package groove.rel;
 
@@ -28,7 +28,7 @@ import java.util.Map;
  * which for each pair of related nodes contains a <i>support</i>, which
  * is a set of graph elements that justifies the relation. 
  * @author Arend Rensink
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public interface SupportedNodeRelation extends NodeRelation {
     /**
@@ -39,8 +39,8 @@ public interface SupportedNodeRelation extends NodeRelation {
     /**
      * Returns the support for the relation between two nodes, if the nodes are in fact related.
      * Returns <tt>null</tt> if the nodes are unrelated.
-     * @param pre the inverstigated pre-image 
-     * @param post the inverstigated post-image 
+     * @param pre the investigated pre-image 
+     * @param post the investigated post-image 
      * @return the support for the relation between <tt>pre</tt> and <tt>post</tt>, if any
      */
     public Collection<Element> getSupport(Node pre, Node post);
