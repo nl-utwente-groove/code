@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlView.java,v 1.8 2008-01-30 09:33:23 iovka Exp $
+ * $Id: ControlView.java,v 1.9 2008-02-05 13:28:25 rensink Exp $
  */
 package groove.control;
 
@@ -23,13 +23,7 @@ import groove.control.parse.GCLChecker;
 import groove.control.parse.GCLLexer;
 import groove.control.parse.GCLParser;
 import groove.graph.GraphFactory;
-import groove.graph.Morphism;
 import groove.trans.GraphGrammar;
-import groove.trans.Rule;
-import groove.trans.RuleNameLabel;
-import groove.trans.SPORule;
-import groove.trans.SystemProperties;
-import groove.view.AspectualRuleView;
 import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 

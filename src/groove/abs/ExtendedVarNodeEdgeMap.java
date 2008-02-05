@@ -12,17 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ExtendedVarNodeEdgeMap.java,v 1.1 2007-11-28 15:35:03 iovka Exp $
+ * $Id: ExtendedVarNodeEdgeMap.java,v 1.2 2008-02-05 13:28:21 rensink Exp $
  */
 package groove.abs;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeHashMap;
-import groove.rel.VarNodeEdgeMap;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /** Contains an origin map (VarNodeEdgeMap) together with a pre-processed information on the number of pre-images of all nodes in the codomain. */
 

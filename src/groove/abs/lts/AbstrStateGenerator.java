@@ -12,26 +12,19 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrStateGenerator.java,v 1.3 2008-01-30 09:33:47 iovka Exp $
+ * $Id: AbstrStateGenerator.java,v 1.4 2008-02-05 13:28:29 rensink Exp $
  */
 package groove.abs.lts;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import groove.lts.GTS;
-import groove.lts.GraphState;
-import groove.lts.StateGenerator;
-import groove.trans.RuleApplication;
-import groove.trans.RuleEvent;
-import groove.trans.RuleMatch;
-import groove.abs.AbstrGraph;
-import groove.abs.AbstrTransformer;
 import groove.abs.Abstraction;
 import groove.abs.Util;
 import groove.explore.util.ExploreCache;
+import groove.lts.GTS;
+import groove.lts.GraphState;
+import groove.lts.StateGenerator;
+import groove.trans.RuleMatch;
+
+import java.util.Set;
 
 
 /**

@@ -12,20 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrGraphTransitionImpl.java,v 1.3 2008-01-30 09:33:47 iovka Exp $
+ * $Id: AbstrGraphTransitionImpl.java,v 1.4 2008-02-05 13:28:28 rensink Exp $
  */
 package groove.abs.lts;
 
 import groove.graph.AbstractBinaryEdge;
-import groove.graph.Element;
-import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
+import groove.graph.WrapperLabel;
 import groove.lts.GraphTransitionStub;
 import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
-import groove.graph.WrapperLabel;
 
 /**
  * @author Iovka Boneva

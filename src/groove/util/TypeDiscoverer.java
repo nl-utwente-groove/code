@@ -12,12 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: TypeDiscoverer.java,v 1.19 2008-01-30 09:32:11 iovka Exp $
+ * $Id: TypeDiscoverer.java,v 1.20 2008-02-05 13:28:24 rensink Exp $
  */
 package groove.util;
 
 import groove.calc.DefaultGraphCalculator;
-import groove.calc.GraphCalculator;
 import groove.graph.DefaultLabel;
 import groove.graph.DefaultMorphism;
 import groove.graph.Edge;
@@ -46,7 +45,7 @@ import java.util.Set;
 /**
  * Algorithm to generate a typ graph from a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.19 $ $Date: 2008-01-30 09:32:11 $
+ * @version $Revision: 1.20 $ $Date: 2008-02-05 13:28:24 $
  */
 public class TypeDiscoverer {
     /**

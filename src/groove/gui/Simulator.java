@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.80 2008-01-30 09:33:36 iovka Exp $
+ * $Id: Simulator.java,v 1.81 2008-02-05 13:28:05 rensink Exp $
  */
 package groove.gui;
 
@@ -130,12 +130,11 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.table.AbstractTableModel;
 
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.80 $
+ * @version $Revision: 1.81 $
  */
 public class Simulator {
     /**

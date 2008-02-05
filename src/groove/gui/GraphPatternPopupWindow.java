@@ -12,34 +12,23 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphPatternPopupWindow.java,v 1.1 2007-11-28 16:07:41 iovka Exp $
+ * $Id: GraphPatternPopupWindow.java,v 1.2 2008-02-05 13:28:05 rensink Exp $
  */
 package groove.gui;
 
+import groove.abs.GraphPattern;
+import groove.gui.jgraph.JGraph;
+import groove.gui.jgraph.PatternGraphJModel;
+import groove.util.Groove;
+
 import java.awt.BorderLayout;
-import java.awt.Button;
 import java.awt.Dimension;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
-import javax.swing.AbstractAction;
-import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-import javax.swing.plaf.basic.BasicDesktopPaneUI;
-
-import org.jgraph.graph.AttributeMap;
-
-import groove.abs.GraphPattern;
-import groove.graph.GraphShape;
-import groove.gui.jgraph.GraphJModel;
-import groove.gui.jgraph.JAttr;
-import groove.gui.jgraph.JGraph;
-import groove.gui.jgraph.PatternGraphJModel;
-import groove.gui.layout.SpringLayouter;
-import groove.util.Groove;
 
 /** A window for displaying a graph pattern */
 public class GraphPatternPopupWindow {

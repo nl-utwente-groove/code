@@ -12,14 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Transformable.java,v 1.1 2007-11-28 15:35:07 iovka Exp $
+ * $Id: Transformable.java,v 1.2 2008-02-05 13:28:21 rensink Exp $
  */
 package groove.abs;
 
-import java.util.Collection;
-import java.util.Iterator;
-
 import groove.trans.RuleEvent;
+
+import java.util.Collection;
 
 /** The type T is the result of the transformation.
  * @author Iovka Boneva

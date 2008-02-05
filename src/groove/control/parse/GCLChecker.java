@@ -1,19 +1,11 @@
 // $ANTLR 2.7.6 (2005-12-22): "gcl.g" -> "GCLChecker.java"$
 
 package groove.control.parse;
-import groove.control.*;
-
-import antlr.TreeParser;
-import antlr.Token;
-import antlr.collections.AST;
-import antlr.RecognitionException;
-import antlr.ANTLRException;
+import groove.control.ControlAutomaton;
 import antlr.NoViableAltException;
-import antlr.MismatchedTokenException;
-import antlr.SemanticException;
+import antlr.RecognitionException;
+import antlr.collections.AST;
 import antlr.collections.impl.BitSet;
-import antlr.ASTPair;
-import antlr.collections.impl.ASTArray;
 
 
 public class GCLChecker extends antlr.TreeParser       implements GCLCheckerTokenTypes

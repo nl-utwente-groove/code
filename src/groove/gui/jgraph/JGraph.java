@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JGraph.java,v 1.29 2008-01-30 09:33:13 iovka Exp $
+ * $Id: JGraph.java,v 1.30 2008-02-05 13:27:59 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -62,7 +62,6 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 
 import org.jgraph.event.GraphModelEvent;
@@ -87,7 +86,7 @@ import org.jgraph.plaf.basic.BasicGraphUI;
 /**
  * Enhanced j-graph, dedicated to j-models.
  * @author Arend Rensink
- * @version $Revision: 1.29 $ $Date: 2008-01-30 09:33:13 $
+ * @version $Revision: 1.30 $ $Date: 2008-02-05 13:27:59 $
  */
 public class JGraph extends org.jgraph.JGraph implements GraphModelListener {
 	/**

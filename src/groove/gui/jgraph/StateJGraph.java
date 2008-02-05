@@ -12,22 +12,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateJGraph.java,v 1.8 2007-11-28 16:08:18 iovka Exp $
+ * $Id: StateJGraph.java,v 1.9 2008-02-05 13:28:03 rensink Exp $
  */
 package groove.gui.jgraph;
-
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
-import java.awt.geom.Rectangle2D;
-import java.util.HashSet;
-import java.util.Set;
 
 import groove.abs.AbstrGraph;
 import groove.abs.GraphPattern;
 import groove.graph.DefaultGraph;
-import groove.graph.Element;
 import groove.gui.GraphPatternPopupWindow;
 import groove.gui.Simulator;
+
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import javax.swing.JPopupMenu;
 

@@ -12,17 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrSimulationProperties.java,v 1.2 2008-01-30 09:32:23 iovka Exp $
+ * $Id: AbstrSimulationProperties.java,v 1.3 2008-02-05 13:28:22 rensink Exp $
  */
 package groove.abs;
 
+import groove.util.Property;
+
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
-
-import groove.util.Property;
 
 /** A set of properties for abstract simulation */
 public class AbstrSimulationProperties extends Properties {

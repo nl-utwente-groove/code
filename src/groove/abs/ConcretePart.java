@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ConcretePart.java,v 1.2 2007-12-03 09:42:24 iovka Exp $
+ * $Id: ConcretePart.java,v 1.3 2008-02-05 13:28:21 rensink Exp $
  */
 package groove.abs;
 
@@ -26,7 +26,6 @@ import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
 import groove.rel.VarNodeEdgeMap;
-import groove.trans.SystemRecord;
 
 import java.util.ArrayList;
 import java.util.Collection;

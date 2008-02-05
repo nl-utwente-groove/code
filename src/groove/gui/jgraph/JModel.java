@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: JModel.java,v 1.21 2008-01-30 09:33:13 iovka Exp $
+ * $Id: JModel.java,v 1.22 2008-02-05 13:28:03 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -31,7 +31,6 @@ import groove.util.ObservableSet;
 
 import java.awt.Color;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -62,7 +61,7 @@ import org.jgraph.graph.GraphConstants;
  * Instances of JModel are attribute stores.
  * <p>
  * @author Arend Rensink
- * @version $Revision: 1.21 $
+ * @version $Revision: 1.22 $
  */
 abstract public class JModel extends DefaultGraphModel {
     /**
@@ -672,7 +671,7 @@ abstract public class JModel extends DefaultGraphModel {
      * but merely passes along a set of cells whose views need to be refreshed
      * due to some hiding or emphasis action.
      * @author Arend Rensink
-     * @version $Revision: 1.21 $
+     * @version $Revision: 1.22 $
      */
     public class RefreshEdit extends GraphModelEdit {
         /**

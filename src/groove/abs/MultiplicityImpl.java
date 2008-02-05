@@ -1,9 +1,8 @@
 package groove.abs;
-import groove.abs.Abstraction.AbstrGraphsRelation;
-
-import java.util.Map;
-import java.util.HashMap;
 import groove.abs.Abstraction.MultInfoRelation;
+
+import java.util.HashMap;
+import java.util.Map;
 /**
  * @author Iovka Boneva
  *

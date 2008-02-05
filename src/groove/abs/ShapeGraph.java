@@ -1,16 +1,15 @@
 package groove.abs;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import groove.graph.AdjacencyMapGraph;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.util.TreeHashSet;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /** A pattern shape graph is a graph together with types (graph patterns) and multiplicities 
  * associated to its nodes.

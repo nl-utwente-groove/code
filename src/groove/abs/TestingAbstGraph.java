@@ -12,15 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: TestingAbstGraph.java,v 1.1 2007-11-28 15:35:03 iovka Exp $
+ * $Id: TestingAbstGraph.java,v 1.2 2008-02-05 13:28:21 rensink Exp $
  */
 package groove.abs;
-
-import java.io.IOException;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
 
 import groove.abs.Abstraction.AbstrGraphsRelation;
 import groove.graph.DefaultEdge;
@@ -34,6 +28,12 @@ import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
 import groove.rel.VarNodeEdgeMap;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+
 import junit.framework.TestCase;
 
 /** Testing implementation of AbstrGRaph */

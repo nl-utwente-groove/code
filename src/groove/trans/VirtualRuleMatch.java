@@ -1,12 +1,11 @@
 package groove.trans;
 
-import java.util.Collection;
-
 import groove.graph.Edge;
-import groove.graph.Graph;
 import groove.graph.Node;
 import groove.graph.NodeFactory;
 import groove.rel.VarNodeEdgeMap;
+
+import java.util.Collection;
 
 /**
  * Virtual RuleMatch used for aliasing. If a RuleEvent can be reused, it is captures and wrapped

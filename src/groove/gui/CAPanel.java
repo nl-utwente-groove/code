@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CAPanel.java,v 1.16 2008-01-30 09:33:37 iovka Exp $
+ * $Id: CAPanel.java,v 1.17 2008-02-05 13:28:05 rensink Exp $
  */
 package groove.gui;
 
@@ -30,7 +30,6 @@ import groove.trans.NameLabel;
 import groove.view.DefaultGrammarView;
 
 import java.awt.BorderLayout;
-import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;

@@ -40,7 +40,6 @@ import groove.graph.iso.Bisimulator;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.io.AspectualViewGps;
 import groove.io.ExtensionFilter;
-import groove.io.GrammarViewXml;
 import groove.io.RuleList;
 import groove.lts.AbstractGraphState;
 import groove.lts.GTS;
@@ -80,7 +79,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  */
 public class Generator extends CommandLineTool {
     /**
