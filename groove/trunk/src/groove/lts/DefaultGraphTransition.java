@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.16 2008-01-30 09:32:21 iovka Exp $
+ * $Id: DefaultGraphTransition.java,v 1.17 2008-02-06 17:04:41 rensink Exp $
  */
 package groove.lts;
 
@@ -32,7 +32,7 @@ import groove.trans.RuleMatch;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2008-01-30 09:32:21 $
+ * @version $Revision: 1.17 $ $Date: 2008-02-06 17:04:41 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,WrapperLabel<RuleEvent>,GraphState> implements GraphTransitionStub, GraphTransition {
     /**
@@ -51,11 +51,6 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,Wrappe
 		return event;
 	}
 
-    @Deprecated
-	public Rule getRule() {
-        return getEvent().getRule();
-    }
-
     public boolean isSymmetry() {
 		return symmetry;
 	}
@@ -73,14 +68,6 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,Wrappe
 		} else {
 			return new IdentityTransitionStub(getEvent(), getAddedNodes(), target());
 		}
-	}
-
-	/**
-	 * @deprecated Use {@link #getMatch()} instead
-	 */
-	@Deprecated
-	public Morphism matching() {
-    	return getEvent().getMatching(source().getGraph());
 	}
 
 	public RuleMatch getMatch() {
@@ -124,16 +111,6 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,Wrappe
 		} else {
 			return this;
 		}
-	}
-
-	/**
-	 * This implementation reconstructs the rule application from the stored footprint,
-	 * and appends an isomorphism to the actual target if necessary.
-	 * @deprecated Use {@link #getMorphism()} instead
-	 */
-	@Deprecated
-	public Morphism morphism() {
-		return getMorphism();
 	}
 
 	/**

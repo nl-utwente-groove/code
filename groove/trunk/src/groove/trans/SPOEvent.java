@@ -12,17 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.51 2008-01-09 16:22:40 rensink Exp $
+ * $Id: SPOEvent.java,v 1.52 2008-02-06 17:04:38 rensink Exp $
  */
 package groove.trans;
 
-import groove.graph.DefaultMorphism;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.MergeMap;
-import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
 import groove.graph.NodeFactory;
@@ -49,7 +47,7 @@ import java.util.Set;
  * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.51 $ $Date: 2008-01-09 16:22:40 $
+ * @version $Revision: 1.52 $ $Date: 2008-02-06 17:04:38 $
  */
 final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCache> {
     /**
@@ -114,11 +112,6 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     	return Groove.toString(getAnchorImage(), ANCHOR_START, ANCHOR_END, ANCHOR_SEPARATOR);
 	}
 
-    @Deprecated
-    public VarNodeEdgeMap getSimpleCoanchorMap() {
-        return getCache().getCoanchorMap();
-    }
-    
     /**
      * Constructs a map from the reader nodes of the RHS that are endpoints of
      * creator edges, to the target graph nodes.
@@ -225,16 +218,6 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 	    return result.toString();
 	}
 
-	@Deprecated
-    public Morphism getMatching(Graph host) {
-    	Morphism result = null;
-    	RuleMatch match = getMatch(host);
-    	if (match != null) {
-    		result = new DefaultMorphism(getRule().getTarget(), host, match.getElementMap());
-        }
-        return result;
-    }
-
 	/**
      * Computes a match based on the precomputed anchor map.
      */
@@ -249,18 +232,6 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
         }
         return result;
     }
-
-    /**
-	 * Tests if there is a matching of this event to a given host graph. A
-	 * matching may fail to exist because the anchor map does not map into the
-	 * host graph, or because conditions outside the anchor map are not
-	 * fulfilled.
-	 * @deprecated Use {@link #hasMatch(Graph)} instead
-	 */
-    @Deprecated
-	public boolean hasMatching(Graph host) {
-		return hasMatch(host);
-	}
 
 	/**
 	 * Tests if there is a matching of this event to a given host graph. A
@@ -510,32 +481,47 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
      */
     Set<Edge> computeSimpleCreatedEdges() {
         Set<Edge> result = createEdgeSet();
-        collectSimpleCreatedEdges(result);
+        collectSimpleCreatedEdges(null, result);
         return result;
     }
 
     /**
-     * Collects the set of explicitly erased edges, i.e., the
-     * images of the LHS eraser edges, into a given set.
-     * Callback method from {@link #computeSimpleErasedEdges()}.
+     * Collects the set of simple created edges, i.e., the
+     * images of the LHS creator edges between existing nodes, into a given set.
+     * Callback method from {@link #computeSimpleCreatedEdges()}.
+     * TODO the parameter erasedNodes is a hack, this should be solved by setting
+     * the coAnchorMap correctly
+     * @param erasedNodes set of erased nodes; if not <code>null</code>, check if
+     * created edges have incident nodes in this set
      */
-     void collectSimpleCreatedEdges(Set<Edge> result) {
+     void collectSimpleCreatedEdges(Set<Node> erasedNodes, Set<Edge> result) {
         VarNodeEdgeMap coAnchorMap = getCoanchorMap();
         for (Edge edge: getRule().getSimpleCreatorEdges()) {
             Edge edgeImage = coAnchorMap.mapEdge(edge);
             if (edgeImage != null) {
-                result.add(edgeImage);
+                if (erasedNodes == null || !(erasedNodes.contains(edgeImage.source()) || erasedNodes.contains(edgeImage.opposite()))) {
+                    result.add(edgeImage);
+                }
             }
         }
     }
 
  	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
      	Set<Edge> result = createEdgeSet();
- 		collectComplexCreatedEdges(createdNodes, result);
+ 		collectComplexCreatedEdges(null, createdNodes, result);
  		return result;
  	}
 
-	void collectComplexCreatedEdges(Iterator<Node> createdNodes, Set<Edge> result) {
+    /**
+     * Collects the set of created edges of which at least one incident nodes is also created, i.e., the
+     * images of the LHS creator edges between existing nodes, into a given set.
+     * Callback method from {@link #computeSimpleCreatedEdges()}.
+     * TODO the parameter erasedNodes is a hack, this should be solved by setting
+     * the coAnchorMap correctly
+     * @param erasedNodes set of erased nodes; if not <code>null</code>, check if
+     * created edges have incident nodes in this set
+     */
+	void collectComplexCreatedEdges(Set<Node> erasedNodes, Iterator<Node> createdNodes, Set<Edge> result) {
 		VarNodeEdgeMap coanchorMap = getCoanchorMap().clone();
 		// add creator node images
 		for (Node creatorNode: getRule().getCreatorNodes()) {
@@ -546,7 +532,10 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
             Edge image = coanchorMap.mapEdge(edge);
             // only add if the image exists
             if (image != null) {
-                result.add(image);
+                // only add if image has no incident erased node
+                if (erasedNodes == null || !(erasedNodes.contains(image.source()) || erasedNodes.contains(image.opposite()))) {
+                    result.add(image);
+                }
             }
         }
 	}

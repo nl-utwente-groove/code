@@ -12,17 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.18 2008-01-30 09:32:39 iovka Exp $
+ * $Id: RuleEvent.java,v 1.19 2008-02-06 17:04:38 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.MergeMap;
-import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.WrapperLabel;
-import groove.rel.VarNodeEdgeMap;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -35,7 +33,7 @@ import java.util.Set;
  * The event does not store information specific to the host graph. To apply it to 
  * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.18 $ $Date: 2008-01-30 09:32:39 $
+ * @version $Revision: 1.19 $ $Date: 2008-02-06 17:04:38 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -48,21 +46,6 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      */
     public WrapperLabel<RuleEvent> getLabel();
 
-    /**
-     * Returns a label that globally describes this event.
-     * This is typically the rule name.
-     * The information provided by the name is less extensive than
-     * that of the label (see {@link #getLabel()}).
-     * @deprecated use <code>getRule().getName()</code> instead
-     */
-    @Deprecated
-    public RuleNameLabel getName();
-//
-//	/**
-//     * Returns the mapping from the anchors in the rule's LHS to the source graph.
-//     */
-//    public VarNodeEdgeMap getAnchorMap();
-    
     /**
      * Returns a string representation of the anchor image.
      */
@@ -90,16 +73,6 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      */
     public Set<Edge> getSimpleCreatedEdges();
     
-    /**
-     * Returns a mapping from the rule's RHS to the target graph,
-     * minus the creator nodes.
-     * The mapping is only guaranteed to provide images
-     * for the endpoints and variables of the creator edges.
-     * @deprecated use {@link #getCreatedNodes(Set)} instead
-     */
-    @Deprecated
-    public VarNodeEdgeMap getSimpleCoanchorMap();
-
     /** 
      * Returns a coanchor image suitable for a given host graph.
      * This is delegated to the event because here we can indeed keep a map of such 
@@ -114,25 +87,10 @@ public interface RuleEvent extends Comparable<RuleEvent> {
      */
     public Collection<? extends Edge> getComplexCreatedEdges(Iterator<Node> createdNodes);
     
-    /**
-	 * Indicates if a matching of this event's rule exists, based on the anchor map in this event.
-	 * @deprecated Use {@link #hasMatch(Graph)} instead
-	 */
-    @Deprecated
-	public boolean hasMatching(Graph source);
-
 	/**
 	 * Indicates if a matching of this event's rule exists, based on the anchor map in this event.
 	 */
 	public boolean hasMatch(Graph source);
-
-    /**
-	 * Returns a matching of this event's rule, based on the anchor map in this event, if a matching exists.
-	 * Returns <code>null</code> otherwise.
-	 * @deprecated use {@link #getMatch(Graph)} instead
-	 */
-	@Deprecated
-	public Morphism getMatching(Graph source);
 
     /**
 	 * Returns a match of this event's rule, based on the anchor map in this event.
