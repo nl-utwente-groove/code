@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.81 2008-02-05 13:28:05 rensink Exp $
+ * $Id: Simulator.java,v 1.82 2008-02-06 15:25:42 iovka Exp $
  */
 package groove.gui;
 
@@ -36,7 +36,7 @@ import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
 import groove.explore.ScenarioHandler;
-import groove.explore.result.ExploreStateStrategy;
+import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
 import groove.graph.Graph;
 import groove.graph.GraphAdapter;
@@ -134,7 +134,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.81 $
+ * @version $Revision: 1.82 $
  */
 public class Simulator {
     /**
@@ -1749,7 +1749,7 @@ public class Simulator {
     /** Callback factory method for the state generator. */
     protected StateGenerator createStateGenerator(GTS gts) {
     	StateGenerator result;
-    	if (gts.getRecord().isAbstractSimulation()) {
+    	if (gts instanceof AGTS) {
     		result =  new AbstrStateGenerator(((AGTS) gts).getParameters());
     	} else {
     		result = new StateGenerator();
@@ -1861,7 +1861,7 @@ public class Simulator {
     
     /** Returns true if the current simulation is abstract. */
 	public boolean isAbstractSimulation() {
-		return this.getCurrentGTS() != null && this.getCurrentGTS().getRecord().isAbstractSimulation();
+		return this.getCurrentGTS() != null && this.getCurrentGTS() instanceof AGTS;
 	}
  
     /**
