@@ -12,16 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleApplication.java,v 1.10 2008-01-30 09:32:34 iovka Exp $
+ * $Id: RuleApplication.java,v 1.11 2008-02-06 17:04:38 rensink Exp $
  */
 package groove.trans;
 
 
 import groove.graph.DeltaApplier;
-import groove.graph.Graph;
 import groove.graph.DeltaTarget;
+import groove.graph.Graph;
 import groove.graph.Node;
-import groove.rel.VarNodeEdgeMap;
 
 /**
  * Interface to wrap the computation involved in applying a production rule.
@@ -29,7 +28,7 @@ import groove.rel.VarNodeEdgeMap;
  * derivation, and to reconstruct the matching and the target graph after they
  * have been minimised, if the cached representation has been discarded.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public interface RuleApplication extends Derivation, DeltaApplier {
     /**
@@ -53,35 +52,6 @@ public interface RuleApplication extends Derivation, DeltaApplier {
      */
     public Graph getTarget();
     
-    /**
-     * Returns the mapping from the rule's anchor to the source graph of this application.
-     * @deprecated query the event instead
-     */
-    @Deprecated
-    public VarNodeEdgeMap getAnchorMap();
-//    
-//    /**
-//     * Returns the mapping from the rule's coanchor to the target graph.
-//     * The mapping is only guaranteed to provide images for the creator nodes and
-//     * for the endpoints and variables of the creator edges.
-//     */
-//    public VarNodeEdgeMap getCoanchorMap();
-    
-    /**
-     * Sets the image of the rule's coanchor in the target graph.
-     * @see #getCreatedNodes()
-     * @deprecated set at construction time
-     */
-    @Deprecated
-    public void setCoanchorImage(Node[] image);
-    
-    /**
-	 * Returns the image of the rule's creator nodes in the target graph.
-	 * @deprecated Use {@link #getCreatedNodes()} instead
-	 */
-    @Deprecated
-	public Node[] getCoanchorImage();
-
 	/**
      * Returns the image of the rule's creator nodes in the target graph.
      */

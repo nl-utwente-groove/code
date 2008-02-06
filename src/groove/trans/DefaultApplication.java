@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultApplication.java,v 1.9 2008-01-30 09:32:35 iovka Exp $
+ * $Id: DefaultApplication.java,v 1.10 2008-02-06 17:04:38 rensink Exp $
  */
 package groove.trans;
 
@@ -42,7 +42,7 @@ import java.util.Set;
 /**
  * Class representing the application of a {@link groove.trans.SPORule} to a graph. 
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2008-01-30 09:32:35 $
+ * @version $Revision: 1.10 $ $Date: 2008-02-06 17:04:38 $
  */
 public class DefaultApplication implements RuleApplication, Derivation {
     /**
@@ -82,11 +82,6 @@ public class DefaultApplication implements RuleApplication, Derivation {
 	    return rule;
 	}
 
-	@Deprecated
-	public VarNodeEdgeMap getAnchorMap() {
-	    return anchorMap;
-	}
-
 	/**
      * This implementation constructs the target lazily.
      * If the rule is not modifying, the source is aliased.
@@ -111,14 +106,6 @@ public class DefaultApplication implements RuleApplication, Derivation {
 		target.setFixed();
 		return target;
 	}
-
-	/**
-	 * @deprecated Use {@link #getMatch()} instead
-	 */
-	@Deprecated
-	public Morphism getMatching() {
-    	return getEvent().getMatching(source);
-    }
 
 	public RuleMatch getMatch() {
     	if (match == null) {
@@ -165,42 +152,6 @@ public class DefaultApplication implements RuleApplication, Derivation {
 		}
 		return result;
     }
-//
-//	/**
-//     * The comatch is constructed in the course of rule application.
-//     * Returns <code>null</code> is called before any of the 
-//     * <code>(re)start</code> methods has been invoked.
-//     */
-//    public VarNodeEdgeMap getCoanchorMap() {
-//        if (coAnchorMap == null) {
-//            coAnchorMap = computeCoanchorMap();
-//        }
-//        return coAnchorMap;
-//    }
-//
-//	/**
-//	 * Constructs a map from all nodes of the RHS that are endpoints of
-//	 * creator edges.
-//	 */
-//	private VarNodeEdgeMap computeCoanchorMap() {
-//		final VarNodeEdgeMap result = getEvent().getSimpleCoanchorMap().clone();
-//		// add creator node images
-//		Node[] coanchor = rule.getCreatorNodes();
-//		int coanchorSize = coanchor.length;
-//		Node[] coanchorImage = getCoanchorImage();
-//		for (int i = 0; i < coanchorSize; i++) {
-//			result.putNode(coanchor[i], coanchorImage[i]);
-//		}
-//		return result;
-//	}
-
-	/**
-	 * @deprecated Use {@link #getCreatedNodes()} instead
-	 */
-    @Deprecated
-	public Node[] getCoanchorImage() {
-		return getCreatedNodes();
-	}
 
 	public Node[] getCreatedNodes() {
     	if (coanchorImage == null) {
@@ -225,11 +176,6 @@ public class DefaultApplication implements RuleApplication, Derivation {
 			createdNodes.toArray(result);
 		}
 		return result;
-	}
-
-	@Deprecated
-	public void setCoanchorImage(Node[] image) {
-		this.coanchorImage = image;			
 	}
 
 	public void applyDelta(DeltaTarget target) {

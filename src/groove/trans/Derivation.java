@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: Derivation.java,v 1.4 2008-01-30 09:32:36 iovka Exp $
+ * $Id: Derivation.java,v 1.5 2008-02-06 17:04:38 rensink Exp $
  */
 package groove.trans;
 
@@ -21,14 +21,14 @@ import groove.graph.Morphism;
 
 /**
  * Interface for a direct derivation.
- * Only the derivation rule is initialized at construction time; all other data
+ * Only the derivation rule is initialised at construction time; all other data
  * are provided during <i>application</i>.
- * In addition, the interface provides the functionality to <i>minimize</i> an
+ * In addition, the interface provides the functionality to <i>minimise</i> an
  * interface in the form of a <i>footprint</i>. This is an array of elements
  * (typically from the source or target graph) that, together with the source
  * graph, allow to reconstruct the derivation up to node and edge set equality.
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public interface Derivation {
     /**
@@ -51,13 +51,6 @@ public interface Derivation {
      * @ensure result != null
      */
     public Rule getRule();
-
-    /**
-	 * Returns the matching of the rule's LHS in the source graph.
-	 * @deprecated Use {@link #getMatch()} instead
-	 */
-    @Deprecated
-	public Morphism getMatching();
 
 	/**
      * Returns the match of the rule's LHS in the source graph of this derivation.

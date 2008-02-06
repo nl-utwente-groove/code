@@ -12,16 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeEvent.java,v 1.8 2008-01-30 09:32:38 iovka Exp $
+ * $Id: CompositeEvent.java,v 1.9 2008-02-06 17:04:38 rensink Exp $
  */
 package groove.trans;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
 import groove.graph.MergeMap;
-import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.rel.VarNodeEdgeMap;
 import groove.util.CacheReference;
 
 import java.util.ArrayList;
@@ -76,11 +74,6 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
         return result;
     }
 
-    @Deprecated
-    public Morphism getMatching(Graph source) {
-        throw new UnsupportedOperationException();
-    }
-
     public RuleMatch getMatch(Graph source) {
     	// the events are ordered according to rule level
     	// so we can build a stack of corresponding matches
@@ -115,15 +108,10 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
         return result;
     }
 
-    @Deprecated
-    public VarNodeEdgeMap getSimpleCoanchorMap() {
-        return null;
-    }
-
     public Set<Edge> getSimpleCreatedEdges() {
         Set<Edge> result = createEdgeSet(eventArray.length * 2);
         for (SPOEvent event: eventArray) {
-            event.collectSimpleCreatedEdges(result);
+            event.collectSimpleCreatedEdges(getErasedNodes(), result);
         }
         return result;
     }
@@ -131,7 +119,7 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
 	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
         Set<Edge> result = createEdgeSet(eventArray.length * 2);
         for (SPOEvent event: eventArray) {
-            event.collectComplexCreatedEdges(createdNodes, result);
+            event.collectComplexCreatedEdges(getErasedNodes(), createdNodes, result);
         }
         return result;
 	}
@@ -143,14 +131,6 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
         }
         return result;
     }
-
-    /**
-	 * @deprecated Use {@link #hasMatch(Graph)} instead
-	 */
-	@Deprecated
-	public boolean hasMatching(Graph source) {
-		return hasMatch(source);
-	}
 
 	/** 
 	 * This method always returns <code>false</code> because it is quite hard 

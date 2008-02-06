@@ -22,7 +22,6 @@ import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.trans.DefaultApplication;
-import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -30,7 +29,7 @@ import groove.trans.RuleMatch;
 /**
  * 
  * @author Arend
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class DefaultGraphNextState extends AbstractGraphState implements GraphNextState, GraphTransitionStub {
     /**
@@ -61,15 +60,6 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 		this(source, event, addedNodes, null);
 	}
 	
-	/**
-	 * Return the rule of the incoming transition with which this state
-	 * was created.
-	 */
-	@Deprecated
-	public Rule getRule() {
-		return getEvent().getRule(); 
-	}
-	
 	public RuleEvent getEvent() {
 		return event;
 	}
@@ -81,32 +71,9 @@ public class DefaultGraphNextState extends AbstractGraphState implements GraphNe
 	/**
 	 * This implementation reconstructs the matching using the
 	 * rule, the anchor images, and the basis graph.
-	 * @see #getRule()
-	 * @see RuleEvent#getMatching(Graph)
-	 * @deprecated Use {@link #getMatch()} instead
-	 */
-	@Deprecated
-	public Morphism matching() {
-		return getEvent().getMatching(source().getGraph());
-	}
-
-	/**
-	 * This implementation reconstructs the matching using the
-	 * rule, the anchor images, and the basis graph.
-	 * @see #getRule()
-	 * @see RuleEvent#getMatching(Graph)
 	 */
 	public RuleMatch getMatch() {
     	return getEvent().getMatch(source().getGraph());
-	}
-    
-    /**
-	 * Constructs an underlying morphism for the transition from the stored footprint.
-	 * @deprecated Use {@link #getMorphism()} instead
-	 */
-	@Deprecated
-	public Morphism morphism() {
-		return getMorphism();
 	}
 
 	/**
