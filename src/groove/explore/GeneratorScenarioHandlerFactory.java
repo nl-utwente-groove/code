@@ -37,7 +37,7 @@ public class GeneratorScenarioHandlerFactory {
 			public String getName() { return name; }
 
 			@Override
-			public void playScenario() {
+			public void playScenario() throws InterruptedException {
 				DefaultScenario<Object> scenario;
 				scenario = new DefaultScenario<Object>();
 				Result<Object> r = new EmptyResult<Object>();
@@ -72,7 +72,7 @@ public class GeneratorScenarioHandlerFactory {
 			public String getName() { return name; }
 
 			@Override
-			public void playScenario() {
+			public void playScenario() throws InterruptedException {
 				DefaultScenario<GraphState> scenario;
 				scenario = new DefaultScenario<GraphState>();
 				Result<GraphState> r = new SizedResult<GraphState>(1);
@@ -139,7 +139,11 @@ public class GeneratorScenarioHandlerFactory {
 
 				scenar.setGTS(getGTS());
 				scenar.setState(getState());
-				this.result = scenar.play();
+				try {
+					scenar.play();
+				} catch (InterruptedException e) {
+					// nothing to do
+				}
 			}
 
 			@Override
@@ -198,7 +202,7 @@ public class GeneratorScenarioHandlerFactory {
 			public String getDescription() { return description; }
 
 			@Override
-			public void playScenario() {
+			public void playScenario() throws InterruptedException {
 				DefaultScenario<Object> scenar = new DefaultScenario<Object>();
 				scenar.setAcceptor(new EmptyAcceptor());
 				Result<Object> r = new EmptyResult<Object>();
@@ -209,7 +213,7 @@ public class GeneratorScenarioHandlerFactory {
 				
 				scenar.setGTS(getGTS());
 				scenar.setState(getState());
-				this.result = scenar.play();
+				scenar.play();
 			}
 
 			public void setCondition(ExploreCondition<C> explCond, String name, boolean negated) {

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.13 2008-01-31 08:22:54 rensink Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.14 2008-02-06 13:18:14 iovka Exp $
  */
 package groove.calc;
 
@@ -109,13 +109,22 @@ public class DefaultGraphCalculator implements GraphCalculator {
         	// try linear
         	Scenario<GraphState> sc = createScenario(new LinearStrategy(), new PropertyAcceptor(new MaximalStateProperty()), new SizedResult<GraphState>(1));
         	sc.setState(getGTS().startState());
-        	Result<GraphState> results = sc.play();
+        	Result<GraphState> results = null;
+        	try {
+        		results = sc.play();
+        	} catch (InterruptedException e) {
+        		results = sc.getComputedResult();
+        	}
         	if( results.getResult().size() == 1 ) {
         		result = results.getResult().iterator().next();
         	} else {
         		// try depth first
         		sc = createScenario(new DepthFirstStrategy1(), new PropertyAcceptor(new MaximalStateProperty()), new SizedResult<GraphState>(1));
-        		results = sc.play();
+        		try {
+        			results = sc.play();
+        		} catch (InterruptedException e) {
+        			results = sc.getComputedResult();
+        		}
         		if( results.getResult().size() == 1 ) {
         			result = results.getResult().iterator().next();
         		}
@@ -148,7 +157,12 @@ public class DefaultGraphCalculator implements GraphCalculator {
         testPrototype();
         
         Scenario<GraphState> sc = createScenario(new BreadthFirstStrategy(), new PropertyAcceptor(new MaximalStateProperty()), new EmptyResult<GraphState>());
-        Result<GraphState> result = sc.play();
+        Result<GraphState> result = null;
+        try {
+        	result = sc.play();
+        } catch (InterruptedException e) {
+        	result = sc.getComputedResult();
+        }
         
         return result.getResult();
     }

@@ -32,8 +32,11 @@ public interface Scenario<T> {
 	/** Plays the scenario, yielding a result.
 	 * @return the result of the scenario.
 	 */
-	public Result<T> play();
+	public Result<T> play() throws InterruptedException ;
 	
-	
-//	public void setResult(Result<T> prototype);
+	/** The computed result, or a partial result if
+	 * the scenario was interrupted.
+	 * @return The computed result.
+	 */
+	public Result<T> getComputedResult();
 }

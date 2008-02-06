@@ -42,7 +42,7 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 	public String getName() { return this.name; }
 
 	@Override
-	public void playScenario() {
+	public void playScenario() throws InterruptedException {
 		DefaultScenario<Object> scenar = new DefaultScenario<Object>();
 		scenar.setAcceptor(new EmptyAcceptor());
 		Result<Object> r = new EmptyResult<Object>();
@@ -52,7 +52,12 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 		
 		scenar.setGTS(getGTS());
 		scenar.setState(getState());
-		this.result = scenar.play();
+		try {
+			this.result = scenar.play();
+		} catch (InterruptedException e) {
+			this.result = scenar.getComputedResult();
+			throw e;
+		}
 	}
 
 	@Override

@@ -38,7 +38,7 @@ public class ScenarioHandlerFactory {
 			public String getName() { return name; }
 
 			@Override
-			public void playScenario() {
+			public void playScenario() throws InterruptedException {
 				DefaultScenario<T> scenar = new DefaultScenario<T>();
 				scenar.setAcceptor(acc);
 				scenar.setResult(res);
@@ -48,7 +48,12 @@ public class ScenarioHandlerFactory {
 				scenar.setState(getState());
 				
 				Runtime runtime = Runtime.getRuntime();
-				this.result = scenar.play();
+				try {
+					this.result = scenar.play();
+				} catch (InterruptedException e) {
+					this.result = scenar.getComputedResult();
+					throw e;
+				}
 
 	            System.runFinalization();
 	            System.gc();
@@ -97,7 +102,7 @@ public class ScenarioHandlerFactory {
 			public String getDescription() { return description; }
 
 			@Override
-			public void playScenario() {
+			public void playScenario() throws InterruptedException {
 				DefaultScenario<GraphState> scenar = new DefaultScenario<GraphState>();
 				this.explCond.setNegated(negated);
 				acc.setCondition(this.explCond);
@@ -107,7 +112,12 @@ public class ScenarioHandlerFactory {
 
 				scenar.setGTS(getGTS());
 				scenar.setState(getState());
-				this.result = scenar.play();
+				try {
+					this.result = scenar.play();
+				} catch (InterruptedException e) {
+					this.result = scenar.getComputedResult();
+					throw e;
+				}
 			}
 
 			@Override
@@ -164,7 +174,7 @@ public class ScenarioHandlerFactory {
 			public String getDescription() { return description; }
 
 			@Override
-			public void playScenario() {
+			public void playScenario() throws InterruptedException {
 				DefaultScenario<T> scenar = new DefaultScenario<T>();
 				scenar.setAcceptor(acc);
 				scenar.setResult(res);
@@ -173,7 +183,12 @@ public class ScenarioHandlerFactory {
 				
 				scenar.setGTS(getGTS());
 				scenar.setState(getState());
-				this.result = scenar.play();
+				try {
+					this.result = scenar.play();
+				} catch (InterruptedException e) {
+					this.result = scenar.getComputedResult();
+					throw e;
+				}
 			}
 
 			public void setCondition(ExploreCondition<C> explCond, String name) {
@@ -208,7 +223,7 @@ public class ScenarioHandlerFactory {
 		
 		public abstract String getName(); 
 
-		public abstract void playScenario();
+		public abstract void playScenario() throws InterruptedException;
 
 		public abstract Class<?> resultType(); 
 		
