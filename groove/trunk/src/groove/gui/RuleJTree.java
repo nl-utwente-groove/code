@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJTree.java,v 1.30 2008-01-30 09:33:35 iovka Exp $
+ * $Id: RuleJTree.java,v 1.31 2008-02-06 16:49:32 iovka Exp $
  */
 package groove.gui;
 
@@ -49,6 +49,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
@@ -72,7 +73,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -636,32 +637,42 @@ public class RuleJTree extends JTree implements SimulationListener {
 
         @Override
         public void mouseClicked(MouseEvent evt) {
-            if (evt.getButton() == MouseEvent.BUTTON1 && evt.getClickCount() == 2) {
-                TreePath path = getSelectionPath();
-                if (path != null) {
-					Object selectedNode = path.getLastPathComponent();
-					if (selectedNode instanceof MatchTreeNode) {
-						// selected tree node is a derivation edge (level 2
-						// node)
-						// FIXME: fix to select the transition, working with rulematches now!
-						RuleMatch match = ((MatchTreeNode) selectedNode).edge();
-						// see if there is already a transition for this match
-						GraphTransition trans = matchTransitionMap.get(match);
-						
-						if( trans == null ) {
-							//simulator.applyMatch();
-							ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
-							trans = new StateGenerator(getCurrentGTS()).applyMatch(getCurrentState(), match, cache).iterator().next();
-						}
-						if( trans != null ) {
-							simulator.setTransition(trans);
-							simulator.applyTransition();
-						}
-					} else if (selectedNode instanceof RuleTreeNode) {
-						simulator.setGraphPanel(simulator.getRulePanel());
-					}
-				}
-            }
+        	if (evt.getButton() != MouseEvent.BUTTON1) {
+        		return;
+        	}
+        	TreePath path = getSelectionPath();
+        	if (path == null) { return; }
+        	Object selectedNode = path.getLastPathComponent();
+        	if (selectedNode instanceof RuleTreeNode) {
+    			simulator.setGraphPanel(simulator.getRulePanel());
+    			return;
+    		}
+        	if (selectedNode instanceof MatchTreeNode) {
+        		RuleMatch match = ((MatchTreeNode) selectedNode).edge();
+        		simulator.setMatch(match);
+        		GraphTransition trans = matchTransitionMap.get(match);
+        		if (trans == null) {
+        			Iterator<GraphTransition> outTransitions = getCurrentState().getTransitionIter();
+    				while (outTransitions.hasNext()) {
+    					GraphTransition t = outTransitions.next();
+    					if (t.getMatch().equals(match)) {
+    						trans = t;
+    						matchTransitionMap.put(match, trans);
+    						break;
+    					}
+    				}
+        		}
+        		// if trans is not null, it has been added to the matchTransitionMap
+        		if (trans != null) {
+        			simulator.setTransition(trans);
+        		} else if (evt.getClickCount() == 2) {
+        			simulator.applyMatch();
+//        			ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
+//					trans = new StateGenerator(getCurrentGTS()).applyMatch(getCurrentState(), match, cache).iterator().next();
+//					simulator.setTransition(trans);
+//					simulator.applyTransition();
+        		}
+        	}
         }
 
         private void maybeShowPopup(MouseEvent evt) {

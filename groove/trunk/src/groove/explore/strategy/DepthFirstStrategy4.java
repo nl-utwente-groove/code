@@ -21,7 +21,7 @@ import groove.lts.State;
  * This strategy is not considered as a backtracking strategy, as states are
  * fully explored and there is no need of maintaining caches.
  * 
- * @author IovkaBoneva
+ * @author Iovka Boneva
  *
  */
 public class DepthFirstStrategy4 extends AbstractStrategy {
