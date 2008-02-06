@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.82 2008-02-06 15:25:42 iovka Exp $
+ * $Id: Simulator.java,v 1.83 2008-02-06 16:49:32 iovka Exp $
  */
 package groove.gui;
 
@@ -134,7 +134,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.82 $
+ * @version $Revision: 1.83 $
  */
 public class Simulator {
     /**
@@ -1021,25 +1021,31 @@ public class Simulator {
         refreshActions();
     }
 
-    /**
-     * Applies the active derivation. The current state is set to the derivation's cod, and the
-     * current derivation to null. Invokes <tt>notifyApplyTransition()</tt> to notify all
+//    /**
+//     * Applies the active derivation. The current state is set to the derivation's cod, and the
+//     * current derivation to null. Invokes <tt>notifyApplyTransition()</tt> to notify all
+//     * observers of the change.
+//     * @see #fireApplyTransition(GraphTransition)
+//     */
+//    public synchronized void applyTransition() {
+//        GraphTransition appliedTransition = getCurrentTransition();
+//        setCurrentState(appliedTransition.target());
+//        fireApplyTransition(appliedTransition);
+//        refreshActions();
+//    }
+    
+    /** Applies a match to the current state.
+     * The current state is set to the derivation's cod, and the
+     * current derivation to null.
+     * Invokes <tt>notifyApplyTransition()</tt> to notify all
      * observers of the change.
      * @see #fireApplyTransition(GraphTransition)
      */
-    public synchronized void applyTransition() {
-        GraphTransition appliedTransition = getCurrentTransition();
-        setCurrentState(appliedTransition.target());
-//        getGenerator().explore(getCurrentState());
-        fireApplyTransition(appliedTransition);
-        refreshActions();
-    }
-    
     public synchronized void applyMatch () {
     	if (getCurrentMatch() != null) {
     		ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
     		GraphTransition trans = new StateGenerator(getCurrentGTS()).applyMatch(getCurrentState(), getCurrentMatch(), cache).iterator().next();
-    		setTransition(trans);
+    		setCurrentState(trans.target());
     		fireApplyTransition(trans);
     		refreshActions();
     	}
@@ -1653,10 +1659,10 @@ public class Simulator {
      * Notifies all listeners of the application of the current derivation. As a result,
      * {@link SimulationListener#applyTransitionUpdate(GraphTransition)}is invoked on all currently
      * registered listeners. This method should not be called directly: use
-     * {@link #applyTransition()}instead.
+     * {@link #applyMatch()}instead.
      * @param transition the transition that has been applied
      * @see SimulationListener#applyTransitionUpdate(GraphTransition)
-     * @see #applyTransition()
+     * @see #applyMatch()
      */
     protected synchronized void fireApplyTransition(GraphTransition transition) {
     	if (!updating) {
@@ -2333,13 +2339,13 @@ public class Simulator {
         }
 
         public void actionPerformed(ActionEvent evt) {
-            applyTransition();
-            //applyMatch();
+            // applyTransition();
+        	applyMatch();
         }
 
 		public void refresh() {
-			setEnabled(getCurrentTransition() != null);
-			//setEnabled(getCurrentMatch() != null);
+			//setEnabled(getCurrentTransition() != null);
+			setEnabled(getCurrentMatch() != null);
 		}
     }
 
