@@ -42,10 +42,7 @@ public class DepthFirstStrategy2 extends AbstractBacktrackingStrategy {
 		return true;
 	}
 	
-	/** Computes the new value for {@link #atState}. 
-	 * @param newStates The set of successor states of this.atState that ware just added
-	 * @param matchIter The iterator used for iterate on matches of atState.
-	 */
+	/** Computes the new value for {@link #atState}. */
 	@Override
 	protected void updateAtState() {
 		this.backFrom = null;    // will be given non null value in case of backtracking

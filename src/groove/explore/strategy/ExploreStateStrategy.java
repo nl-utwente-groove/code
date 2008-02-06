@@ -1,8 +1,7 @@
-package groove.explore.result;
+package groove.explore.strategy;
 
 import java.util.Iterator;
 
-import groove.explore.strategy.AbstractStrategy;
 import groove.explore.util.ExploreCache;
 import groove.trans.RuleMatch;
 

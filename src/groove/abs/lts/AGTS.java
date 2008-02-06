@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AGTS.java,v 1.3 2008-01-30 09:33:47 iovka Exp $
+ * $Id: AGTS.java,v 1.4 2008-02-06 15:25:43 iovka Exp $
  */
 package groove.abs.lts;
 
@@ -134,7 +134,6 @@ public class AGTS extends GTS {
 	@Override
 	protected SystemRecord createRecord() {
 		SystemRecord record = new SystemRecord(getGrammar(), true);
-		record.setAbstractSimulation();
 		return record;
 	}
 	
