@@ -88,7 +88,7 @@ public class DefaultScenario<T> implements Scenario<T> {
 		this.strategy = strategy;
 	}
 
-	public Result<T> play() {
+	public Result<T> play() throws InterruptedException {
 		assert prototype != null && acceptor != null && strategy != null : 
 			"The scenario is not correctly initialized with a result, a strategy and an acceptor.";
 		assert(gts != null) : "The GTS of the scenario has not been initialized.";
@@ -105,12 +105,19 @@ public class DefaultScenario<T> implements Scenario<T> {
 		
 		// start working until done or nothing to do
 		while( !prototype.done() && strategy.next() ) {
+			if (Thread.currentThread().isInterrupted()) {
+				throw new InterruptedException();
+			}
 		}
 		
 		reporter.stop();
 		
 		// return result
 		return prototype;
+	}
+	
+	public Result<T> getComputedResult () {
+		return this.prototype;
 	}
 	
 	
