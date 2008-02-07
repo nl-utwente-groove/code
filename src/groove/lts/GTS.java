@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.36 2008-01-30 09:32:20 iovka Exp $
+ * $Id: GTS.java,v 1.37 2008-02-07 07:31:11 kastenberg Exp $
  */
 package groove.lts;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.36 $
+ * @version $Revision: 1.37 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**
@@ -83,7 +83,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     	grammar.testFixed(true);
         this.ruleSystem = grammar;
         this.storeTransitions = storeTransitions;
-        this.checkIsomrophism = getGrammar().getProperties().isCheckIsomorphism();
+        this.checkIsomorphism = getGrammar().getProperties().isCheckIsomorphism();
     }
     
     /**
@@ -97,7 +97,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     	grammar.testFixed(true);
         this.ruleSystem = grammar;
         this.storeTransitions = storeTransitions;
-        this.checkIsomrophism = checkIsomorphism;
+        this.checkIsomorphism = checkIsomorphism;
     }
     
 
@@ -364,7 +364,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     }
     
     boolean isCheckIsomorphism() {
-        return checkIsomrophism;
+        return checkIsomorphism;
     }
 
     /**
@@ -394,7 +394,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
      */
     private final Set<GraphState> finalStates = new HashSet<GraphState>();
     /** Flag indicating that graphs should be compared up to isomorphism. */
-    private final boolean checkIsomrophism;
+    private final boolean checkIsomorphism;
     /** The system record for this GTS. */
     private SystemRecord record;
     /**
