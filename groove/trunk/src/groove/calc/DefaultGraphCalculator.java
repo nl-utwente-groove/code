@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.15 2008-02-12 15:15:20 fladder Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.16 2008-02-12 15:29:54 fladder Exp $
  */
 package groove.calc;
 
@@ -45,15 +45,15 @@ import java.util.Collection;
  * @version $Revision $
  */
 public class DefaultGraphCalculator implements GraphCalculator {
-//    /**
-//     * Creates a graph calculator for a given rule set and start graph.
-//     * @param rules the rule system for the calculator
-//     * @param start the start graph for the calculator
-//     */
-//    public DefaultGraphCalculator(RuleSystem rules, Graph start) {
-//        this(new GraphGrammar(rules, start), false);
-//    }
-//    
+    /**
+     * Creates a graph calculator for a given rule set and start graph.
+     * @param rules the rule system for the calculator
+     * @param start the start graph for the calculator
+     */
+    public DefaultGraphCalculator(RuleSystem rules, Graph start) {
+        this(new GraphGrammar(rules, start), false);
+    }
+    
     /**
      * Creates a graph calculator for a given, fixed graph grammar.
      * @param grammar the graph grammar for the calculator
