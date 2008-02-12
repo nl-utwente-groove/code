@@ -12,42 +12,11 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.25 2008-01-30 09:32:15 iovka Exp $
+ * $Id: Groove.java,v 1.26 2008-02-12 15:15:34 fladder Exp $
  */
 package groove.util;
 
-import groove.calc.DefaultGraphCalculator;
-import groove.calc.GraphCalculator;
-import groove.graph.Graph;
-import groove.graph.GraphInfo;
-import groove.graph.GraphShape;
-import groove.graph.NodeEdgeMap;
-import groove.graph.iso.DefaultIsoChecker;
-import groove.io.AspectualViewGps;
-import groove.io.DefaultGxl;
-import groove.io.ExtensionFilter;
-import groove.io.Xml;
-import groove.match.GraphSearchPlanFactory;
-import groove.rel.VarNodeEdgeMap;
-import groove.trans.GraphGrammar;
-import groove.trans.SystemProperties;
-import groove.view.AspectualRuleView;
-import groove.view.DefaultGrammarView;
-import groove.view.FormatException;
-import groove.view.GrammarView;
-
-import java.awt.Rectangle;
-import java.awt.geom.Rectangle2D;
-import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Properties;
-import java.util.StringTokenizer;
-
-import javax.swing.ImageIcon;
+import groove.calc.DefaultGraphCalculator;import groove.calc.GraphCalculator;import groove.graph.Graph;import groove.graph.GraphInfo;import groove.graph.GraphShape;import groove.graph.NodeEdgeMap;import groove.graph.iso.DefaultIsoChecker;import groove.io.AspectualViewGps;import groove.io.DefaultGxl;import groove.io.ExtensionFilter;import groove.io.Xml;import groove.match.GraphSearchPlanFactory;import groove.rel.VarNodeEdgeMap;import groove.trans.GraphGrammar;import groove.trans.SystemProperties;import groove.view.AspectualRuleView;import groove.view.DefaultGrammarView;import groove.view.FormatException;import groove.view.GrammarView;import java.awt.Rectangle;import java.awt.geom.Rectangle2D;import java.io.File;import java.io.IOException;import java.net.URL;import java.util.HashMap;import java.util.Iterator;import java.util.Map;import java.util.Properties;import java.util.StringTokenizer;import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
@@ -327,7 +296,7 @@ public class Groove {
         if (!createStateFilter().hasExtension(filename)) {
             filename = createGxlFilter().addExtension(filename);
         }
-        File file = new File(filename);
+        File file = new File(filename);        System.err.println("Storing graph as " + file.getAbsolutePath());
         graphLoader.marshalGraph(graph, file);
     }
 
@@ -364,7 +333,7 @@ public class Groove {
     static public GrammarView<?,?> loadGrammar(String dirname) throws IOException, FormatException {
         File dir = new File(createRuleSystemFilter().addExtension(dirname));
         return gpsLoader.unmarshal(dir);
-    }
+    }    /**     * Loads a Grammar from a Resource     * FIXME: implement this!     */    static public GrammarView<?,?> loadGrammar(URL directory) throws IOException, FormatException {//    	return gpsLoader.unmarshal(new File(directory));    	return null;    }
 
     /**
      * Creates and returns a calculator on the basis of a graph grammar given by

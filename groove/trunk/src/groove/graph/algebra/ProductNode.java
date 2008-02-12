@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductNode.java,v 1.7 2007-08-26 07:23:58 rensink Exp $
+ * $Id: ProductNode.java,v 1.8 2008-02-12 15:15:32 fladder Exp $
  */
 package groove.graph.algebra;
 
@@ -29,7 +29,7 @@ import java.util.List;
  * attached to it through {@link AlgebraEdge}s, and <i>operands</i>, which
  * are the corresponding {@link Constant}s on those nodes.
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-08-26 07:23:58 $
+ * @version $Revision 1.0$ $Date: 2008-02-12 15:15:32 $
  */
 public class ProductNode extends DefaultNode {
 	// AREND I think the operands of a product node should be fixed at
@@ -38,19 +38,19 @@ public class ProductNode extends DefaultNode {
      * Constructor.
      */
     public ProductNode(int arity) {
-    	super(AlgebraGraph.getNextNodeNr());
+    	super();
     	this.arguments = new ArrayList<ValueNode>(arity);
     	for (int i = 0; i < arity; i++) {
     		arguments.add(null);
     	}
     	this.argCount = 0;
-    }   
+    }
 
     /**
      * Constructor.
      */
     public ProductNode(List<ValueNode> arguments) {
-    	super(AlgebraGraph.getNextNodeNr());
+    	super();
     	this.arguments = new ArrayList<ValueNode>(arguments);
     	assert ! this.arguments.contains(null) : "Null argument not allowed";
     	this.argCount = arguments.size();
@@ -173,7 +173,7 @@ public class ProductNode extends DefaultNode {
     
     @Override
     public String toString() {
-    	return "p"+(getNumber() - AlgebraGraph.START_NODE_NR);
+    	return "p"+(getNumber() - DefaultNode.MAX_NODE_NUMBER);
     }
 
     /** 

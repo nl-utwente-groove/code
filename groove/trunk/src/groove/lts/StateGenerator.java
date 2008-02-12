@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.29 2008-01-30 09:32:19 iovka Exp $
+ * $Id: StateGenerator.java,v 1.30 2008-02-12 15:15:33 fladder Exp $
  */
 package groove.lts;
 
@@ -192,27 +192,7 @@ public class StateGenerator {
 //     * @return the target state of the resulting transition
 //     */
 	/** To be called only by {@link #addTransition(GraphState, RuleMatch, ExploreCache)}.*/
-    private Set<? extends GraphTransition> addTransition(GraphState source, RuleApplication appl, ExploreCache cache) {
-        reporter.start(ADD_TRANSITION);
-        
-        GraphTransition transition;
-        if (!appl.getRule().isModifying() ) {
-        	transition = createTransition(appl, source, source, false);
-        } else {
-        	
-        	GraphState confluentTarget = getConfluentTarget(source, appl);
-        	
-        	Location targetLocation = cache.getTarget(appl.getRule());
-        	
-            if (confluentTarget == null || confluentTarget.getLocation() != targetLocation ) {
-	        	reporter.stop();
-	        	// can't have this as add_transition, it may be counted as matching 
-	        	GraphNextState freshTarget = createState(appl, source);
-	        	freshTarget.setLocation(cache.getTarget(appl.getRule()));
-	        	reporter.start(ADD_TRANSITION);
-	            	
-	        	reporter.start(ADD_STATE);
-	        	GraphState isoTarget = getGTS().addState(freshTarget);
+    private Set<? extends GraphTransition> addTransition(GraphState source, RuleApplication appl, ExploreCache cache) {        reporter.start(ADD_TRANSITION);        GraphTransition transition;        if (!appl.getRule().isModifying() ) {        	transition = createTransition(appl, source, source, false);        } else {        	GraphState confluentTarget = getConfluentTarget(source, appl);        	Location targetLocation = cache.getTarget(appl.getRule());            if (confluentTarget == null || confluentTarget.getLocation() != targetLocation ) {	        	reporter.stop();	        	// can't have this as add_transition, it may be counted as matching 	        	GraphNextState freshTarget = createState(appl, source);	        	freshTarget.setLocation(cache.getTarget(appl.getRule()));	        	reporter.start(ADD_TRANSITION);	        	reporter.start(ADD_STATE);	        	GraphState isoTarget = getGTS().addState(freshTarget);
 	        	reporter.stop();
 	        	if (isoTarget == null) {
 	        		transition = freshTarget;
