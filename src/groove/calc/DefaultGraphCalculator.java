@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultGraphCalculator.java,v 1.14 2008-02-06 13:18:14 iovka Exp $
+ * $Id: DefaultGraphCalculator.java,v 1.15 2008-02-12 15:15:20 fladder Exp $
  */
 package groove.calc;
 
@@ -62,15 +62,6 @@ public class DefaultGraphCalculator implements GraphCalculator {
         this(grammar, false);
     }
 
-    /**
-     * Calculator for rulesystem+graph (=grammar)
-     * @param rulesystem
-     * @param graph
-     */
-    public DefaultGraphCalculator(RuleSystem rulesystem, Graph graph) {
-    	this(new GraphGrammar(rulesystem, graph), false);
-    }
-    
     /**
      * Creates a (possibly prototype) calculator on the basis of a given,
      * fixed graph grammar.
@@ -157,13 +148,13 @@ public class DefaultGraphCalculator implements GraphCalculator {
         testPrototype();
         
         Scenario<GraphState> sc = createScenario(new BreadthFirstStrategy(), new PropertyAcceptor(new MaximalStateProperty()), new EmptyResult<GraphState>());
+        sc.setState(getGTS().startState());
         Result<GraphState> result = null;
         try {
         	result = sc.play();
         } catch (InterruptedException e) {
         	result = sc.getComputedResult();
         }
-        
         return result.getResult();
     }
 
@@ -214,7 +205,7 @@ public class DefaultGraphCalculator implements GraphCalculator {
     public GraphCalculator newInstance(Graph start) throws IllegalArgumentException {
     	try {
 			GraphGrammar newGrammar = new GraphGrammar(grammar, start);
-			grammar.setFixed();
+			newGrammar.setFixed();
 			return new DefaultGraphCalculator(newGrammar);
 		} catch (FormatException exc) {
 			throw new IllegalArgumentException(exc.getMessage(), exc);

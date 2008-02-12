@@ -12,12 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ValueNode.java,v 1.9 2007-10-02 08:04:27 rensink Exp $
+ * $Id: ValueNode.java,v 1.10 2008-02-12 15:15:32 fladder Exp $
  */
 package groove.graph.algebra;
 
 import static groove.view.aspect.Aspect.CONTENT_SEPARATOR;
 import groove.algebra.Algebra;
+import groove.graph.DefaultNode;
 import groove.graph.Graph;
 import groove.graph.Node;
 import groove.view.aspect.AttributeAspect;
@@ -28,7 +29,7 @@ import java.util.Iterator;
  * Implementation of graph elements that represent algebraic data values.
  *
  * @author Harmen Kastenberg
- * @version $Revision: 1.9 $ $Date: 2007-10-02 08:04:27 $
+ * @version $Revision: 1.10 $ $Date: 2008-02-12 15:15:32 $
  */
 public class ValueNode extends ProductNode {
 	/**
@@ -135,7 +136,7 @@ public class ValueNode extends ProductNode {
     @Override
 	public String toString() {
 		if (! hasValue()) {
-			return "x"+(getNumber()-AlgebraGraph.START_NODE_NR);
+			return "x"+(getNumber()-DefaultNode.MAX_NODE_NUMBER);
 		} else {
 			String algebraName = AttributeAspect.getAttributeValueFor(getAlgebra()).getName();
 			return algebraName + CONTENT_SEPARATOR + value;

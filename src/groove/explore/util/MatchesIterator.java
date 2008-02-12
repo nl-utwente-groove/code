@@ -126,7 +126,6 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 		}
 	}
 	
-	
 	protected Rule currentRule;
 	protected ExploreCache rulesIter;
 	protected GraphState state;

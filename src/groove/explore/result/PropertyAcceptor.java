@@ -22,10 +22,6 @@ public class PropertyAcceptor extends Acceptor<GraphState> {
 	}
 	
 	@Override
-	public void closeUpdate(LTS graph, State explored) {
-		if( property.isSatisfied((GraphState) explored)) {
-			getResult().add((GraphState) explored);
-		}
-	}
+	public void closeUpdate(LTS graph, State explored) {		if( property.isSatisfied((GraphState) explored)) {			getResult().add((GraphState) explored);		}	}
 
 }

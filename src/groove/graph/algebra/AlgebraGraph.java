@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AlgebraGraph.java,v 1.4 2007-08-26 07:23:58 rensink Exp $
+ * $Id: AlgebraGraph.java,v 1.5 2008-02-12 15:15:32 fladder Exp $
  */
 package groove.graph.algebra;
 
@@ -31,21 +31,9 @@ import java.util.Map;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-08-26 07:23:58 $
+ * @version $Revision: 1.5 $ $Date: 2008-02-12 15:15:32 $
  */
 public class AlgebraGraph extends DefaultGraph {
-	/** The first legal node number for algebra nodes. */
-	public static final int START_NODE_NR = DefaultNode.MAX_NODE_NUMBER + 1; 
-
-	/** The next available node number. */
-	private static int nextNodeNr = START_NODE_NR;
-
-	/** Returns the first fresh node number. */
-	public static int getNextNodeNr() {
-		int result = nextNodeNr;
-		nextNodeNr++;
-		return result;
-	}
 
 	/**
 	 * mapping from objects standing for algebra values to the node representing that specific value.

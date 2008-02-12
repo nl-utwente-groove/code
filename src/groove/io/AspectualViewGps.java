@@ -1,19 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente
- *
- * Licensed under the Apache License, Version 2.0 (the "License"); 
- * you may not use this file except in compliance with the License. 
- * You may obtain a copy of the License at 
- * http://www.apache.org/licenses/LICENSE-2.0 
- * 
- * Unless required by applicable law or agreed to in writing, 
- * software distributed under the License is distributed on an 
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
- * either express or implied. See the License for the specific 
- * language governing permissions and limitations under the License.
- *
- * $Id: AspectualViewGps.java,v 1.23 2008-01-30 09:33:41 iovka Exp $
- */
+ * Copyright 2003--2007 University of Twente * * Licensed under the Apache License, Version 2.0 (the "License");  * you may not use this file except in compliance with the License.  * You may obtain a copy of the License at  * http://www.apache.org/licenses/LICENSE-2.0  *  * Unless required by applicable law or agreed to in writing,  * software distributed under the License is distributed on an  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,  * either express or implied. See the License for the specific  * language governing permissions and limitations under the License. * * $Id: AspectualViewGps.java,v 1.24 2008-02-12 15:15:33 fladder Exp $ */
 
 package groove.io;
 
@@ -48,7 +34,7 @@ import java.util.Properties;
  * followed by an <code>Integer</code> indicating the number of number of objects of this type,
  * followed by a null update to indicate the end of this type of load.
  * @author Arend Rensink
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class AspectualViewGps extends Observable implements GrammarViewXml<DefaultGrammarView> {
     /**
@@ -77,25 +63,7 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
         return unmarshal(location, null);
     }
     
-    public DefaultGrammarView unmarshal(File location, String startGraphName) throws IOException {
-        if (!location.exists()) {
-            throw new FileNotFoundException(LOAD_ERROR + ": rule rystem location \"" + location.getAbsolutePath()
-                    + "\" does not exist");
-        }
-        if (!location.isDirectory()) {
-            throw new IOException(LOAD_ERROR + ": rule system location \"" + location
-                    + "\" is not a directory");
-        }
-
-        String grammarName = getExtensionFilter().stripExtension(location.getName());
-        DefaultGrammarView result = createGrammar(grammarName);
-
-        loadProperties(result, location);
-        loadRules(result, location);
-        loadStartGraph(result, startGraphName, location);
-        loadControl(result, location);
-        return result;
-    }
+    public DefaultGrammarView unmarshal(File location, String startGraphName) throws IOException {        if (!location.exists()) {            throw new FileNotFoundException(LOAD_ERROR + ": rule rystem location \"" + location.getAbsolutePath()                    + "\" does not exist");        }        if (!location.isDirectory()) {            throw new IOException(LOAD_ERROR + ": rule system location \"" + location                    + "\" is not a directory");        }        String grammarName = getExtensionFilter().stripExtension(location.getName());        DefaultGrammarView result = createGrammar(grammarName);        loadProperties(result, location);        loadRules(result, location);        loadStartGraph(result, startGraphName, location);        loadControl(result, location);        return result;    }
 
 	/**
 	 * Loads the properties file for a given graph grammar
@@ -198,13 +166,7 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
 	 * Loads in and returns a single rule from a given location, 
 	 * giving it a given name and priority.
 	 */
-	private AspectualRuleView loadRule(File location, RuleNameLabel ruleName,
-			SystemProperties properties) throws IOException {
-		AspectGraph unmarshalledRule = getGraphMarshaller().unmarshalGraph(location);
-        GraphInfo.setRole(unmarshalledRule, Groove.RULE_ROLE);
-		AspectualRuleView result = createRuleView(unmarshalledRule, ruleName, properties);
-		return result;
-	}
+	private AspectualRuleView loadRule(File location, RuleNameLabel ruleName,		SystemProperties properties) throws IOException {		AspectGraph unmarshalledRule = getGraphMarshaller().unmarshalGraph(location);        GraphInfo.setRole(unmarshalledRule, Groove.RULE_ROLE);		AspectualRuleView result = createRuleView(unmarshalledRule, ruleName, properties);		return result;	}
 
 	/**
 	 * @param result

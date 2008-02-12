@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultEdge.java,v 1.14 2008-01-30 09:32:57 iovka Exp $
+ * $Id: DefaultEdge.java,v 1.15 2008-02-12 15:15:31 fladder Exp $
  */
 package groove.graph;
 
@@ -22,7 +22,7 @@ import groove.util.TreeHashSet;
  * Default implementation of an (immutable) graph edge, as a triple consisting of
  * source and target nodes and an arbitrary label.
  * @author Arend Rensink
- * @version $Revision: 1.14 $ $Date: 2008-01-30 09:32:57 $
+ * @version $Revision: 1.15 $ $Date: 2008-02-12 15:15:31 $
  */
 final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
 //	/**
@@ -53,8 +53,7 @@ final public class DefaultEdge extends AbstractBinaryEdge<Node,Label,Node> {
     private DefaultEdge(Node source, Label label, Node target, int nr) {
         super(source, label, target);
         this.nr = nr;
-    }
-
+    }
     /** 
      * For efficiency, this implementation tests for object equality.
      * It is, however, considered an error if two distinct {@link DefaultEdge} objects have the 

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.15 2008-01-30 09:32:54 iovka Exp $
+ * $Id: DefaultNode.java,v 1.16 2008-02-12 15:15:31 fladder Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class DefaultNode implements Node {
     /**
@@ -41,20 +41,8 @@ public class DefaultNode implements Node {
     	this.hashCode = computeHashCode();
     }
     
-    /**
-     * FIXME: added this method as a temporary solution
-     * as there is no viable constructor (super()) while subclassing DefaultNode
-     * except by having your own node counter.  
-     * 
-     * See also: new DefaultEdge()
-     */
-    protected DefaultNode() {
-    	this.nodeNr = DefaultNode.nextNodeNr();
-    	this.hashCode = computeHashCode();
-    }
-    
-//
-//    // ---------------- Element and related methods ----------------------
+    /**     * FIXME: added this method as a temporary solution     * as there is no viable constructor (super()) while subclassing DefaultNode     * except by having your own node counter.       *      * See also: new DefaultEdge()     */    protected DefaultNode() {    	this.nodeNr = DefaultNode.nextExtNodeNr();    	this.hashCode = computeHashCode();    }
+////    // ---------------- Element and related methods ----------------------
 //
 //    public Node imageFor(GenericNodeEdgeMap elementMap) {
 //    	if( elementMap instanceof NodeEdgeMap ) {
@@ -102,9 +90,7 @@ public class DefaultNode implements Node {
      */
     @Override
     public boolean equals(Object obj) {
-        boolean result = (obj == this);
-        assert result || !(obj instanceof DefaultNode) || (nodeNr != ((DefaultNode) obj).nodeNr) : String.format("Distinct nodes with number %d", nodeNr);
-        return result;
+        boolean result = (obj == this);        assert result || !(obj instanceof DefaultNode) || (nodeNr != ((DefaultNode) obj).nodeNr) : String.format("Distinct nodes with number %d: " + this + " & " + obj, nodeNr);        return result;
     }
 //
 //    /**
@@ -187,22 +173,8 @@ public class DefaultNode implements Node {
      * Factory method to create a default node with a certain number.
      * The idea is to create canonical representatives, so node equality is object equality. 
      */
-    static public DefaultNode createNode(int nr) {
-    	if (nr > MAX_NODE_NUMBER) {
-    		throw new IllegalArgumentException(String.format("Node number %s too high", nr));
-    	}
-        if (nr >= nodes.length) {
-            int newSize = Math.max((int)(nodes.length*GROWTH_FACTOR), nr+1);
-            DefaultNode[] newNodes = new DefaultNode[newSize];
-            System.arraycopy(nodes, 0, newNodes, 0, nodes.length);
-            nodes = newNodes;
-        }
-        DefaultNode result = nodes[nr];
-        if (result == null) {
-            result = nodes[nr] = new DefaultNode(nr); 
-	    nextNodeNr = Math.max(nextNodeNr, nr);
-            nodeCount++;
-        }
+    static public DefaultNode createNode(int nr) {    	if (nr > MAX_NODE_NUMBER) {    		throw new IllegalArgumentException(String.format("Node number %s too high", nr));    	}        if (nr >= nodes.length) {            int newSize = Math.max((int)(nodes.length*GROWTH_FACTOR), nr+1);            DefaultNode[] newNodes = new DefaultNode[newSize];            System.arraycopy(nodes, 0, newNodes, 0, nodes.length);            nodes = newNodes;        }
+        DefaultNode result = nodes[nr];        if (result == null) {            result = nodes[nr] = new DefaultNode(nr);             nextNodeNr = Math.max(nextNodeNr, nr);            nodeCount++;        }
         return result;
     }
     
@@ -216,9 +188,7 @@ public class DefaultNode implements Node {
     }
     
     /** Returns the node with the first currently unused node number. */
-    static public DefaultNode createNode() {
-        return createNode(nextNodeNr());
-    }
+    static public DefaultNode createNode() {        return createNode(nextNodeNr());    }
 
     /**
      * Returns the total number of nodes created.
@@ -255,13 +225,8 @@ public class DefaultNode implements Node {
      * Returns the next free node number, according to the static counter.
      * @return the next node-number
      */
-    static private int nextNodeNr() {
-        while (nextNodeNr < nodes.length && nodes[nextNodeNr] != null) {
-            nextNodeNr++;
-        }
-        return nextNodeNr;
-    }
-    
+    static private int nextNodeNr() {        while (nextNodeNr < nodes.length && nodes[nextNodeNr] != null) {            nextNodeNr++;        }        return nextNodeNr;    }
+    /**     * Returns the fresh node number for subclasses of DefaultNode, and increments the counter.     */    static private int nextExtNodeNr() {    	return ++nextNodeNr;    }    
     /**
      * The total number of nodes in the {@link #nodes} array.
      */
@@ -270,9 +235,7 @@ public class DefaultNode implements Node {
     /**
      * First (potentially) fresh node number available.
      */
-    static private int nextNodeNr;
-
-    /** Initial capacity of the nodes array. */
+    static private int nextNodeNr;    /** Initial capacity of the nodes array. */
     static private final int INIT_CAPACITY = 100;
     /** Growth factor of the nodes array. */
     static private final float GROWTH_FACTOR = 2.0f;
@@ -283,11 +246,10 @@ public class DefaultNode implements Node {
 
     /**
      * The maximal number for {@link DefaultNode}s.
-     */
-    public static final int MAX_NODE_NUMBER = 999999999;
-
+     */    
+    public static final int MAX_NODE_NUMBER = 999999999;    /**     * First fresh node number for subclasses van DefaultNode.     */
+    static private int nextNodeNrExt = MAX_NODE_NUMBER+1;    
     /**
      * Value indicating an invalid node number.
      */
-    public static final int NO_NODE_NUMBER = -1;
-}
+    public static final int NO_NODE_NUMBER = -1;}
