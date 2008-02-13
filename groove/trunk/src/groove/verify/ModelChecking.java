@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ModelChecking.java,v 1.1 2008-02-13 14:15:26 kastenberg Exp $
+ * $Id: ModelChecking.java,v 1.2 2008-02-13 14:16:11 kastenberg Exp $
  */
 
 package groove.verify;
@@ -28,7 +28,7 @@ import rwth.i2.ltl2ba4j.model.IGraphProposition;
 /**
  * This class contains a number of constants to be used for model checking.
  * @author Harmen Kastenberg
- * @version $Revision $
+ * @version $Revision: 1.2 $ $Date: 2008-02-13 14:16:11 $
  */
 public class ModelChecking {
 
