@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultNode.java,v 1.16 2008-02-12 15:15:31 fladder Exp $
+ * $Id: DefaultNode.java,v 1.17 2008-02-19 10:35:31 fladder Exp $
  */
 package groove.graph;
 
@@ -23,7 +23,7 @@ import groove.util.Dispenser;
  * Default nodes have numbers, but node equality is determined by object identity and
  * not by node number.
  * @author Arend Rensink
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class DefaultNode implements Node {
     /**
@@ -90,7 +90,7 @@ public class DefaultNode implements Node {
      */
     @Override
     public boolean equals(Object obj) {
-        boolean result = (obj == this);        assert result || !(obj instanceof DefaultNode) || (nodeNr != ((DefaultNode) obj).nodeNr) : String.format("Distinct nodes with number %d: " + this + " & " + obj, nodeNr);        return result;
+        boolean result = (obj == this);        assert result || !(obj instanceof DefaultNode) || (nodeNr != ((DefaultNode) obj).nodeNr) : String.format("Distinct nodes with number %d: " + this + " & " + obj + ", " + obj.getClass().getName(), nodeNr);        return result;
     }
 //
 //    /**
@@ -226,7 +226,7 @@ public class DefaultNode implements Node {
      * @return the next node-number
      */
     static private int nextNodeNr() {        while (nextNodeNr < nodes.length && nodes[nextNodeNr] != null) {            nextNodeNr++;        }        return nextNodeNr;    }
-    /**     * Returns the fresh node number for subclasses of DefaultNode, and increments the counter.     */    static private int nextExtNodeNr() {    	return ++nextNodeNr;    }    
+    /**     * Returns the fresh node number for subclasses of DefaultNode, and increments the counter.     */    static private int nextExtNodeNr() {    	return ++nextNodeNrExt;    }    
     /**
      * The total number of nodes in the {@link #nodes} array.
      */
