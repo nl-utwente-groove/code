@@ -79,7 +79,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -829,7 +829,7 @@ public class Generator extends CommandLineTool {
     
         /** Constructs a parser that can recognize all implemented exploration strategies. */
         public ExploreStrategyParser() {
-        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new DepthFirstStrategy2(128), "Depth first full exploration.", "barbed"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new DepthFirstStrategy2(), "Depth first full exploration.", "barbed"));
         	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Breadth first full exploration.", "branching"));
         	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new LinearStrategy(), "Explores one successor of each state until a final state or a loop is reached.", "linear"));
         	addStrategy(GeneratorScenarioHandlerFactory.getScenarioHandler(new BreadthFirstStrategy(), "Bradth first full exploration (same as branching)", "full"));

@@ -81,15 +81,17 @@ public abstract class AbstractStrategy implements Strategy {
 		return ngs.source();
 	}
 	
-	/** Returns a random open successor of a state, if any. 
-	 * Returns null otherwise. 
+	/** Returns a random open successor of a state, if any. Returns null otherwise. 
+	 * Is considered as successor only a state that is a successor in the spanning tree.
 	 */
 	protected final GraphState getRandomOpenSuccessor(GraphState state) {
 		Iterator<GraphState> sucIter = state.getNextStateIter();
 		RandomChooserInSequence<GraphState>  chooser = new RandomChooserInSequence<GraphState>();
 		while (sucIter.hasNext()) {
 			GraphState s = sucIter.next();
-			if (getGTS().getOpenStates().contains(s)) {
+			if (getGTS().getOpenStates().contains(s) &&
+				 	s instanceof GraphNextState     &&
+				 	((GraphNextState) s).source().equals(state)) {
 				chooser.show(s);
 			}
 		}
