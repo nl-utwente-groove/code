@@ -18,6 +18,10 @@ import groove.lts.GraphState;
  *
  */
 public abstract class AbstractBacktrackingStrategy extends AbstractStrategy {
+	
+	/** Size for caches of subclasses. */
+	protected static final int cacheSize = 128;
+	
 	@Override
 	protected abstract void updateAtState();
 
@@ -37,6 +41,7 @@ public abstract class AbstractBacktrackingStrategy extends AbstractStrategy {
 		if (this.explCacheCache == null) { 
 			return super.getCache(ruleInterrupted, isRandomized);
 		}
+		//ExploreCache result = this.explCacheCache.get(getAtState());
 		ExploreCache result = null;
 		if (result == null) {
 			result = super.getCache(ruleInterrupted, isRandomized);
@@ -89,7 +94,7 @@ public abstract class AbstractBacktrackingStrategy extends AbstractStrategy {
 	 * Removal is only allowed for the last added element not yet removed. 
 	 */
 	// TODO to be done with an "ordered" hash map
-	static class CacheMap<T,C> extends HashMap<T,C> {
+	public static class CacheMap<T,C> extends HashMap<T,C> {
 		
 		@Override
 		public C put(T key, C value) {
@@ -119,6 +124,17 @@ public abstract class AbstractBacktrackingStrategy extends AbstractStrategy {
 			
 		}
 		
+		@Override
+		public C get (Object key) {
+			C result = super.get(key);
+			if (result == null) {
+				MISS_COUNT++;
+			} else {
+				HIT_COUNT++;
+			}
+			return result;
+		}
+		
 		CacheMap (int capacity) {
 			super(capacity);
 			this.capacity = capacity;
@@ -135,6 +151,15 @@ public abstract class AbstractBacktrackingStrategy extends AbstractStrategy {
 					super.keySet().equals(new HashSet<T>(this.insertOrder)) : 
 				"Key set: " + super.keySet() + " *** Insert order: " + this.insertOrder; 
 		}
+		
+		private static int MISS_COUNT = 0;
+		private static int HIT_COUNT = 0;
+		
+		public static int getMissCount() { return MISS_COUNT; }
+		public static int getHitCount() { return HIT_COUNT; }
+		public static void resetCounts () {
+			MISS_COUNT=0;  HIT_COUNT=0;
+		}
+		
 	}
-
 }

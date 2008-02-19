@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ScenarioMenu.java,v 1.1 2008-01-30 09:33:36 iovka Exp $
+ * $Id: ScenarioMenu.java,v 1.2 2008-02-19 16:55:46 iovka Exp $
  */
 package groove.gui;
 
@@ -52,7 +52,7 @@ import javax.swing.JMenu;
  * 
  * @author Arend Rensink
  * @author Iovka Boneva
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ScenarioMenu extends JMenu implements SimulationListener {
     /**
@@ -90,7 +90,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         addScenarioHandler(handler);
 
         handler = ScenarioHandlerFactory.getScenario(
-        		new DepthFirstStrategy2(128), new EmptyResult<Object>(), new EmptyAcceptor(),
+        		new DepthFirstStrategy2(), new EmptyResult<Object>(), new EmptyAcceptor(),
         		"Depth first full exploration.", "Full exploration (depth-first, no aliasing)");
         addScenarioHandler(handler);
 
@@ -101,7 +101,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         addScenarioHandler(handler);
         
         handler = ScenarioHandlerFactory.getScenario(
-        		new DepthFirstStrategy2(128), new SizedResult<GraphState>(1), new FinalStateAcceptor(), 
+        		new DepthFirstStrategy2(), new SizedResult<GraphState>(1), new FinalStateAcceptor(), 
         		"", "Find a final state (depth-first)"	);
         addScenarioHandler(handler);
 

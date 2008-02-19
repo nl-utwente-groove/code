@@ -84,7 +84,7 @@ public class DepthFirstStrategy2 extends AbstractBacktrackingStrategy {
 	 * @param cacheSize the number of states to be stored in the cache. A smaller
 	 * value optimizes memory usage.
 	 */
-	public DepthFirstStrategy2 (int cacheSize) {
+	public DepthFirstStrategy2 () {
 		this.aliasing = false;
 		this.explCacheCache = new CacheMap<GraphState,ExploreCache>(cacheSize);
 		// the matches iterator cache is not used, thus its size is left to 0
