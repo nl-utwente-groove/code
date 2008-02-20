@@ -1,16 +1,17 @@
 package groove.explore.strategy;
 
-import java.util.Iterator;
-
+import groove.explore.result.Acceptor;
 import groove.explore.util.AliasMatchesIterator;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchesIterator;
 import groove.explore.util.RandomChooserInSequence;
 import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
-import groove.lts.GraphState;
 import groove.lts.GraphNextState;
+import groove.lts.GraphState;
 import groove.lts.StateGenerator;
+
+import java.util.Iterator;
 
 /** A partial (abstract) implementation of a strategy.
  * @author 
@@ -85,7 +86,7 @@ public abstract class AbstractStrategy implements Strategy {
 	 * Is considered as successor only a state that is a successor in the spanning tree.
 	 */
 	protected final GraphState getRandomOpenSuccessor(GraphState state) {
-		Iterator<GraphState> sucIter = state.getNextStateIter();
+		Iterator<? extends GraphState> sucIter = state.getNextStateIter();
 		RandomChooserInSequence<GraphState>  chooser = new RandomChooserInSequence<GraphState>();
 		while (sucIter.hasNext()) {
 			GraphState s = sucIter.next();
@@ -100,7 +101,7 @@ public abstract class AbstractStrategy implements Strategy {
 
 	/** Returns the first open successor of a state, if any. Returns null otherwise. */
 	protected final GraphState getFirstOpenSuccessor(GraphState state) {
-		Iterator<GraphState> sucIter = state.getNextStateIter();
+		Iterator<? extends GraphState> sucIter = state.getNextStateIter();
 		while (sucIter.hasNext()) {
 			GraphState s = sucIter.next();
 			if (getGTS().getOpenStates().contains(s)) {
@@ -142,8 +143,11 @@ public abstract class AbstractStrategy implements Strategy {
 		
 		return new MatchesIterator(getAtState(), cache);
 	}
-	
-	
+
+	public void addGTSListener(Acceptor listener) {
+//		getGTS().addGraphListener(listener);
+	}
+
 	/** The graph transition system explored by the strategy.*/
 	private GTS gts;
 	/** The state where the strategy starts exploring.*/
