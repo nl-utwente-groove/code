@@ -1,7 +1,9 @@
 package groove.explore.strategy;
 
+import groove.explore.result.Acceptor;
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.StateGenerator;
 
 /** A strategy defines an order in which the states of a graph transition system
  * are to be explored. It can also determine which states are to be explored 
@@ -33,5 +35,6 @@ public interface Strategy {
 	 * @param gts
 	 */
 	public void setGTS(GTS gts);
-	
+
+	public void addGTSListener(Acceptor listener);
 }
