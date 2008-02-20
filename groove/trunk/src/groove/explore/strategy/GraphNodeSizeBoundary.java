@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphNodeSizeBoundary.java,v 1.1 2008-02-20 08:37:12 kastenberg Exp $
+ * $Id: GraphNodeSizeBoundary.java,v 1.2 2008-02-20 08:37:54 kastenberg Exp $
  */
 package groove.explore.strategy;
 
@@ -24,7 +24,7 @@ import groove.lts.GraphTransition;
  * by the given transition.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $ $Date: 2008-02-20 08:37:12 $
+ * @version $Revision: 1.2 $ $Date: 2008-02-20 08:37:54 $
  */
 public class GraphNodeSizeBoundary implements Boundary {
 
@@ -37,10 +37,16 @@ public class GraphNodeSizeBoundary implements Boundary {
 		this.step = step;
 	}
 
+	/* (non-Javadoc)
+	 * @see groove.explore.strategy.Boundary#crossingBoundary(groove.lts.GraphTransition)
+	 */
 	public boolean crossingBoundary(GraphTransition transition) {
 		return transition.target().getGraph().nodeCount() > graphSizeBoundary;
 	}
 
+	/* (non-Javadoc)
+	 * @see groove.explore.strategy.Boundary#increase()
+	 */
 	public void increase() {
 		this.graphSizeBoundary += this.step;
 	}

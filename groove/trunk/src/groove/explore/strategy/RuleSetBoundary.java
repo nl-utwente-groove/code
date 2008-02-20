@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleSetBoundary.java,v 1.2 2008-02-20 08:36:44 kastenberg Exp $
+ * $Id: RuleSetBoundary.java,v 1.3 2008-02-20 08:37:49 kastenberg Exp $
  */
 package groove.explore.strategy;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * is applied again.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2008-02-20 08:36:44 $
+ * @version $Revision: 1.3 $ $Date: 2008-02-20 08:37:49 $
  */
 public class RuleSetBoundary implements Boundary {
 
@@ -41,6 +41,9 @@ public class RuleSetBoundary implements Boundary {
 	public RuleSetBoundary(Set<Rule> ruleSetBoundary) {
 	}
 
+	/* (non-Javadoc)
+	 * @see groove.explore.strategy.Boundary#crossingBoundary(groove.lts.GraphTransition)
+	 */
 	public boolean crossingBoundary(GraphTransition transition) {
 		boolean crossingBoundary = ruleSetBoundary.contains(transition.getEvent().getRule()); 
 		if (crossingBoundary) {
@@ -52,6 +55,9 @@ public class RuleSetBoundary implements Boundary {
 		return false;
 	}
 
+	/* (non-Javadoc)
+	 * @see groove.explore.strategy.Boundary#increase()
+	 */
 	public void increase() {
 		allowBoundaryRule = true;
 	}
