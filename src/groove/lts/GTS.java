@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: GTS.java,v 1.37 2008-02-07 07:31:11 kastenberg Exp $
+ * $Id: GTS.java,v 1.38 2008-02-20 09:43:56 kastenberg Exp $
  */
 package groove.lts;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * and the transitions {@link GraphTransition}s.
  * A GTS stores a fixed rule system.
  * @author Arend Rensink
- * @version $Revision: 1.37 $
+ * @version $Revision: 1.38 $
  */
 public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     /**
@@ -138,7 +138,7 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     	}
         return startState;
     }
-    
+
     /**
      * Returns the rule system underlying this GTS.
      */
@@ -560,17 +560,17 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
 	 * Tree resolution of the state set (which is a {@link TreeHashSet}).
 	 * A smaller value means memory savings; a larger value means speedup.
 	 */
-    private final static int STATE_SET_RESOLUTION = 2;
+    protected final static int STATE_SET_RESOLUTION = 2;
 	/**
 	 * Tree root resolution of the state set (which is a {@link TreeHashSet}).
 	 * A larger number means speedup, but
 	 * the memory initially reserved for the set grows exponentially with this number.
 	 */
-    private final static int STATE_SET_ROOT_RESOLUTION = 10;
+    protected final static int STATE_SET_ROOT_RESOLUTION = 10;
     /**
      * Number of states for which the state set should have room initially.
      */
-    private final static int INITIAL_STATE_SET_SIZE = 10000;
+    protected final static int INITIAL_STATE_SET_SIZE = 10000;
     
     /** Profiling aid for adding states. */
     static public final int ADD_STATE = reporter.newMethod("addState");
