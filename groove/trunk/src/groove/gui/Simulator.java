@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.83 2008-02-06 16:49:32 iovka Exp $
+ * $Id: Simulator.java,v 1.84 2008-02-20 09:52:37 kastenberg Exp $
  */
 package groove.gui;
 
@@ -36,6 +36,7 @@ import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
 import groove.explore.ScenarioHandler;
+import groove.explore.result.Result;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
 import groove.graph.Graph;
@@ -95,6 +96,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -134,7 +136,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.83 $
+ * @version $Revision: 1.84 $
  */
 public class Simulator {
     /**
@@ -547,6 +549,17 @@ public class Simulator {
         return undoAction;
     }
 
+	/**
+     * Returns the go-to start state action permanently associated with this simulator.
+     * HARMEN: temporary method for showing model checking results
+     */
+    public ShowResultAction showResultAction() {
+    	// lazily create the action
+    	if (showResultAction == null) {
+    		showResultAction = new ShowResultAction();
+    	}
+        return showResultAction;
+    }
    
     /** Returns (after lazily creating) the undo history for this simulator. */
     protected UndoHistory getUndoHistory() {
@@ -1095,7 +1108,7 @@ public class Simulator {
     /**
      * Lazily creates and returns the frame of this simulator.
      */
-    JFrame getFrame() {
+    public JFrame getFrame() {
         if (frame == null) {
         	// force the LAF to be set
         	groove.gui.Options.initLookAndFeel();
@@ -1466,6 +1479,8 @@ public class Simulator {
         for (Component menuComponent: exploreMenu.getMenuComponents()) {
         	result.add(menuComponent);
         }
+        result.addSeparator();
+        result.add(new JMenuItem(showResultAction()));
         return result;
 	}
 
@@ -1540,7 +1555,7 @@ public class Simulator {
         return stateFileChooser;
 	}
 
-	FormulaDialog getFormulaDialog() {
+	public FormulaDialog getFormulaDialog() {
 		if (formulaDialog == null)
 			formulaDialog = new FormulaDialog();
 		return formulaDialog;
@@ -1703,18 +1718,46 @@ public class Simulator {
     	}
     }
 
-    public synchronized void notifyCounterExample(Stack<GraphState> counterExample) {
-        // reset lts display visibility
-        setGraphPanel(getLtsPanel());
-        LTSJModel jModel = getLtsPanel().getJModel();
-        Set<JCell> jCells = new HashSet<JCell>();
-        while (!counterExample.isEmpty()) {
-        	jCells.add(jModel.getJCell(counterExample.pop()));
-        }
-        jModel.setEmphasized(jCells);
+    /**
+     * Emphasizes the transitions in the GTS that constitute the counter-example, if found.
+     * If no counter-example had been found, a message will say so.
+     * @param systemOK boolean indicating whether the a counter-example had been found
+     * @param counterExample the actual path representing the counter-example
+     */
+    public synchronized void notifyCounterExample(boolean systemOK, Stack<GraphTransition> counterExample) {
+    	if (!systemOK) {
+            // reset lts display visibility
+            setGraphPanel(getLtsPanel());
+            LTSJModel jModel = getLtsPanel().getJModel();
+            jModel.clearEmphasized();
+            Set<JCell> jCells = new HashSet<JCell>();
+            while (!counterExample.isEmpty()) {
+            	jCells.add(jModel.getJCell(counterExample.pop()));
+            }
+            jModel.setEmphasized(jCells);
+    	} else {
+    		String message = "The system is OK.";
+    		JOptionPane.showConfirmDialog(getFrame(), message, "Verdict", JOptionPane.PLAIN_MESSAGE);
+    	}
 	}
     
-	/**
+    public synchronized void notifyCounterExample(Collection<GraphState> counterExample) {
+    	// reset lts display visibility
+    	setGraphPanel(getLtsPanel());
+    	LTSJModel jModel = getLtsPanel().getJModel();
+    	jModel.clearEmphasized();
+    	Set<JCell> jCells = new HashSet<JCell>();
+    	for (GraphState state: counterExample) {
+    		jCells.add(jModel.getJCell(state));
+    	}
+//    	while (!counterExample.isEmpty()) {
+//    		jCells.add(jModel.getJCell(counterExample.pop()));
+//    	}
+    	jModel.setEmphasized(jCells);
+    	JOptionPane.showConfirmDialog(getFrame(), "There is a counter-example.", "Verdict", JOptionPane.PLAIN_MESSAGE);
+    }
+
+    /**
 	 * Refreshes the title bar, layout and actions.
 	 */
 	private void refresh() {
@@ -2123,6 +2166,9 @@ public class Simulator {
     /** The undo action permanently associated with this simulator. */
     private Action undoAction;
 
+    /** The undo action permanently associated with this simulator. */
+    private ShowResultAction showResultAction;
+
     /** The ctl formula providing action permanently associated with this simulator. */
     private ProvideCTLFormulaAction provideCTLFormulaAction;
         
@@ -2231,6 +2277,7 @@ public class Simulator {
 				}
 				cancelDialog.setVisible(false);
 			}
+			finish();
 		}
 		
 		/** 
@@ -2254,8 +2301,13 @@ public class Simulator {
 	        	cancelDialog.dispose();
 	        }
 	    }
-	
-	    /**
+
+		/**
+		 * Every thread might perform some tasks after the action finished.
+		 */
+		public abstract void finish();
+
+		/**
 	     * Hook to give subclasses the opportunity to put something on the
 	     * cancel dialog.
 	     * Note that this callback method is invoked at construction time,
@@ -2720,10 +2772,14 @@ public class Simulator {
 
 			
 			gts.removeGraphListener(progressListener);
-
 		}
 
-	    /** This implementation returns the state and transition count labels. */
+		public void finish() {
+//			setResult();
+			showResult();
+		}
+
+		/** This implementation returns the state and transition count labels. */
 		@Override
 		protected Object createCancelDialogContent() {
 			return new Object[] { getStateCountLabel(), getTransitionCountLabel() };
@@ -2779,6 +2835,16 @@ public class Simulator {
 		    getTransitionCountLabel().setText("Transitions: " + graph.edgeCount());
 		}
 
+		private void showResult() {
+			Collection<? extends Object> result = handler.getResult();
+			Collection<GraphState> states = new HashSet<GraphState>();
+			for (Object object: result) {
+				if (object instanceof GraphState) {
+					states.add((GraphState) object);
+				}
+			}
+			visualize = states;
+		}
 		/** LTS generation strategy of this thread. */
 		private final ScenarioHandler handler;
 		/** Progress listener for the generate thread. */
@@ -2811,6 +2877,31 @@ public class Simulator {
 		}
     }
     
+    /**
+     * HARMEN: Temporary class for showing results of model checking. 
+     * @author Harmen Kastenberg
+     *
+     */
+    private class ShowResultAction extends AbstractAction implements Refreshable {
+    	/** Constructs an instance of the action. */
+        public ShowResultAction() {
+			// TODO Auto-generated constructor stub
+            super("Show Result");
+//            putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
+//            addRefreshable(this);
+        }
+
+        public void actionPerformed(ActionEvent evt) {
+        	if (visualize != null) {
+        		notifyCounterExample(visualize);
+        	}
+        }
+
+		public void refresh() {
+			setEnabled(getCurrentGTS() != null);
+		}
+    }
+
     /**
      * Action for loading and setting a new initial state.
      * @see Simulator#doLoadStartGraph(File)
@@ -3189,4 +3280,6 @@ public class Simulator {
     	}
     	return this.exploreState;
     }
+
+    public Collection<GraphState> visualize;
 }
