@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ModelChecking.java,v 1.3 2008-02-20 08:25:07 kastenberg Exp $
+ * $Id: ModelChecking.java,v 1.4 2008-02-20 08:33:41 kastenberg Exp $
  */
 
 package groove.verify;
@@ -21,39 +21,59 @@ import groove.graph.Edge;
 import groove.trans.Rule;
 
 import java.util.Collection;
-import java.util.Set;
 
 import rwth.i2.ltl2ba4j.model.IGraphProposition;
 
 /**
  * This class contains a number of constants to be used for model checking.
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2008-02-20 08:25:07 $
+ * @version $Revision: 1.4 $ $Date: 2008-02-20 08:33:41 $
  */
 public class ModelChecking {
 
-	/** state colouring */
+	/** constant for non-toggled state colour white */
 	public static final int WHITE = 1;
+	/** constant for non-toggled state colour cyan */
 	public static final int CYAN = 2;
+	/** constant for non-toggled state colour blue */
 	public static final int BLUE = 3;
+	/** constant for non-toggled state colour red */
 	public static final int RED = 4;
-
-	public static final int WHITE_TOGGLE = -1;
-	public static final int CYAN_TOGGLE = -2;
-	public static final int BLUE_TOGGLE = -3;
-	public static final int RED_TOGGLE = -4;
-
+	/** constant for non-toggled state colour gray (for future use) */
 	public static final int GRAY = 5;
+	/** constant for non-toggled state colour black (for future use) */
 	public static final int BLACK = 6;
 
+	/** constant for toggled state colour white */
+	public static final int WHITE_TOGGLE = -1;
+	/** constant for toggled state colour cyan */
+	public static final int CYAN_TOGGLE = -2;
+	/** constant for toggled state colour blue */
+	public static final int BLUE_TOGGLE = -3;
+	/** constant for toggled state colour red */
+	public static final int RED_TOGGLE = -4;
+	/** constant for toggled state colour gray (for future use) */
+	public static final int GRAY_TOGGLE = -5;
+	/** constant for toggled state colour black (for future use) */
+	public static final int BLACK_TOGGLE = -6;
+
+	/** constant for notifying the system is OK */
 	public static final int OK = 1;
+	/** constant for notifying that a counter-example has been identified */
 	public static final int COUNTER_EXAMPLE = 2;
 
+	/** constant for the true label in the Buchi automaton */
     public static final String SIGMA = "<SIGMA>";
+	/** constant for the conjunction symbol in labels in the Buchi automaton */
     public static final String CONJUNCTION_SYMBOL = "&";
 
     private static boolean TOGGLE = false;
 
+    /**
+     * Return the constant for the colour white, considering
+     * the colour-scheme to use (toggled or non-toggled).
+     * @return the white constant
+     */
     public static int white() {
     	if (TOGGLE)
     		return WHITE_TOGGLE;
@@ -61,6 +81,11 @@ public class ModelChecking {
     		return WHITE;
     }
 
+    /**
+     * Return the constant for the colour cyan, considering
+     * the colour-scheme to use (toggled or non-toggled).
+     * @return the cyan constant
+     */
     public static int cyan() {
     	if (TOGGLE)
     		return CYAN_TOGGLE;
@@ -68,6 +93,11 @@ public class ModelChecking {
     		return CYAN;
     }
 
+    /**
+     * Return the constant for the colour blue, considering
+     * the colour-scheme to use (toggled or non-toggled).
+     * @return the blue constant
+     */
     public static int blue() {
     	if (TOGGLE)
     		return BLUE_TOGGLE;
@@ -75,6 +105,11 @@ public class ModelChecking {
     		return BLUE;
     }
 
+    /**
+     * Return the constant for the colour red, considering
+     * the colour-scheme to use (toggled or non-toggled).
+     * @return the red constant
+     */
     public static int red() {
     	if (TOGGLE)
     		return RED_TOGGLE;
@@ -82,12 +117,18 @@ public class ModelChecking {
     		return RED;
     }
 
+    /**
+     * Toggle the colour-scheme used.
+     */
     public static void toggle() {
     	TOGGLE = !TOGGLE;
     }
 
     /**
-	 * @return
+     * Checks whether a Buchi-transition is enabled, given a set
+     * of rule-names of applicable rules.
+	 * @return <tt>true</tt> if the given transition is enabled,
+	 * <tt>false</tt> otherwise
 	 */
 	public static boolean isPropertyTransitionEnabled(BuchiTransition transition, Collection<Rule> rules) {
     	boolean result = true;
