@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ModelChecking.java,v 1.2 2008-02-13 14:16:11 kastenberg Exp $
+ * $Id: ModelChecking.java,v 1.3 2008-02-20 08:25:07 kastenberg Exp $
  */
 
 package groove.verify;
@@ -28,7 +28,7 @@ import rwth.i2.ltl2ba4j.model.IGraphProposition;
 /**
  * This class contains a number of constants to be used for model checking.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2008-02-13 14:16:11 $
+ * @version $Revision: 1.3 $ $Date: 2008-02-20 08:25:07 $
  */
 public class ModelChecking {
 
@@ -37,6 +37,12 @@ public class ModelChecking {
 	public static final int CYAN = 2;
 	public static final int BLUE = 3;
 	public static final int RED = 4;
+
+	public static final int WHITE_TOGGLE = -1;
+	public static final int CYAN_TOGGLE = -2;
+	public static final int BLUE_TOGGLE = -3;
+	public static final int RED_TOGGLE = -4;
+
 	public static final int GRAY = 5;
 	public static final int BLACK = 6;
 
@@ -45,6 +51,40 @@ public class ModelChecking {
 
     public static final String SIGMA = "<SIGMA>";
     public static final String CONJUNCTION_SYMBOL = "&";
+
+    private static boolean TOGGLE = false;
+
+    public static int white() {
+    	if (TOGGLE)
+    		return WHITE_TOGGLE;
+    	else
+    		return WHITE;
+    }
+
+    public static int cyan() {
+    	if (TOGGLE)
+    		return CYAN_TOGGLE;
+    	else
+    		return CYAN;
+    }
+
+    public static int blue() {
+    	if (TOGGLE)
+    		return BLUE_TOGGLE;
+    	else
+    		return BLUE;
+    }
+
+    public static int red() {
+    	if (TOGGLE)
+    		return RED_TOGGLE;
+    	else
+    		return RED;
+    }
+
+    public static void toggle() {
+    	TOGGLE = !TOGGLE;
+    }
 
     /**
 	 * @return
