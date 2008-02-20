@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphState.java,v 1.9 2008-02-20 09:29:33 kastenberg Exp $
+ * $Id: GraphState.java,v 1.10 2008-02-20 09:30:05 kastenberg Exp $
  */
 package groove.lts;
 
@@ -31,7 +31,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2008-02-20 09:29:33 $
+ * @version $Revision: 1.10 $ $Date: 2008-02-20 09:30:05 $
  */
 public interface GraphState extends State {
 	/** Returns the graph contained in this state. */
@@ -50,12 +50,6 @@ public interface GraphState extends State {
 	 * Sets the location field of this graphstate 
 	 */
 	public void setLocation(Location l);
-
-	/** temporarily introduced for ltl model checking */
-//	public int colour();
-//	public void setColour(int value);
-//	public PropertyLocation getPropertyLocation();
-//	public void setPropertyLocation(PropertyLocation location);
 
 	/**
      * Retrieves an outgoing transition with a given event, if it exists.

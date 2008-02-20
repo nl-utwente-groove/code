@@ -1,5 +1,4 @@
-/*
- * GROOVE: GRaphs for Object Oriented VErification
+/* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -13,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductTransition.java,v 1.1 2008-02-20 07:43:19 kastenberg Exp $
+ * $Id: ProductTransition.java,v 1.2 2008-02-20 09:25:50 kastenberg Exp $
  */
 package groove.lts;
 
@@ -24,7 +23,7 @@ import groove.verify.BuchiGraphState;
  * a graph-transition and a buchi-transition.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $ $Date: 2008-02-20 07:43:19 $
+ * @version $Revision: 1.2 $ $Date: 2008-02-20 09:25:50 $
  */
 public class ProductTransition { //extends DefaultGraphTransition {
 
