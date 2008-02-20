@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Boundary.java,v 1.1 2008-02-20 08:35:19 kastenberg Exp $
+ * $Id: Boundary.java,v 1.2 2008-02-20 09:28:55 kastenberg Exp $
  */
 package groove.explore.strategy;
 
@@ -24,7 +24,7 @@ import groove.lts.GraphTransition;
  * crossing the boundary will not be taken into account (yet).
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $ $Date: 2008-02-20 08:35:19 $
+ * @version $Revision: 1.2 $
  */
 public interface Boundary {
 
