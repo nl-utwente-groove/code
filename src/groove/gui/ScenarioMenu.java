@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ScenarioMenu.java,v 1.2 2008-02-19 16:55:46 iovka Exp $
+ * $Id: ScenarioMenu.java,v 1.3 2008-02-20 09:45:29 kastenberg Exp $
  */
 package groove.gui;
 
 import groove.explore.ConditionalScenarioHandler;
 import groove.explore.ScenarioHandler;
 import groove.explore.ScenarioHandlerFactory;
+import groove.explore.result.CycleAcceptor;
 import groove.explore.result.EmptyAcceptor;
 import groove.explore.result.EmptyResult;
 import groove.explore.result.ExploreCondition;
@@ -26,10 +27,14 @@ import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.InvariantViolatedAcceptor;
 import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.SizedResult;
+import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.BranchingStrategy;
 import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.DepthFirstStrategy2;
+import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.LinearStrategy;
+import groove.explore.strategy.NestedDFSStrategy;
+import groove.explore.strategy.OptimizedBoundedNestedDFSStrategy;
 import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.lts.GTS;
@@ -52,7 +57,7 @@ import javax.swing.JMenu;
  * 
  * @author Arend Rensink
  * @author Iovka Boneva
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class ScenarioMenu extends JMenu implements SimulationListener {
     /**
@@ -119,8 +124,30 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new InvariantViolatedAcceptor<Rule>(), 
         		"", "Check invariant", true);
         addScenarioHandler(handler);
-        
-        
+
+        handler = ScenarioHandlerFactory.getModelCheckingScenario(
+        		new NestedDFSStrategy(),
+        		new SizedResult<GraphState>(1),
+        		new CycleAcceptor(), 
+        		"", "Nested Depth-First Search", simulator);
+        addScenarioHandler(handler);
+
+        handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
+        		new BoundedNestedDFSStrategy(),
+        		new SizedResult<GraphState>(1),
+        		new CycleAcceptor(),
+        		new GraphNodeSizeBoundary(8,5),
+        		"", "Bounded Nested Depth-First Search (naive)", simulator);
+        addScenarioHandler(handler);
+
+        handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
+        		new OptimizedBoundedNestedDFSStrategy(),
+        		new SizedResult<GraphState>(1),
+        		new CycleAcceptor(),
+        		new GraphNodeSizeBoundary(8,5),
+        		"", "Bounded Nested Depth-First Search (optimized)", simulator);
+        addScenarioHandler(handler);
+
 //        handler = ScenarioHandlerFactory.getConditionalScenario(
 //        		new RuleBoundedStrategy(), "Only explore states in which a rule is applicable", "Bounded", false);
 //        addScenarioHandler(handler);
