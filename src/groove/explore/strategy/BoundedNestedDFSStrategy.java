@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BoundedNestedDFSStrategy.java,v 1.1 2008-02-20 10:07:48 kastenberg Exp $
+ * $Id: BoundedNestedDFSStrategy.java,v 1.2 2008-02-20 10:58:40 kastenberg Exp $
  */
 
 package groove.explore.strategy;
@@ -27,7 +27,6 @@ import groove.verify.ModelChecking;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 
 /** 
  * This depth-first strategy represents the blue search of a nested
@@ -44,7 +43,7 @@ import java.util.Stack;
  * method {@link NestedDFSStrategy#finished()}.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class BoundedNestedDFSStrategy extends NestedDFSStrategy implements BoundedModelCheckingStrategy<GraphState> {
 
