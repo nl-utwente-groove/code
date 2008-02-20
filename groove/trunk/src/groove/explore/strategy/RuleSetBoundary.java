@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleSetBoundary.java,v 1.1 2008-02-20 08:36:06 kastenberg Exp $
+ * $Id: RuleSetBoundary.java,v 1.2 2008-02-20 08:36:44 kastenberg Exp $
  */
 package groove.explore.strategy;
 
@@ -30,7 +30,7 @@ import java.util.Set;
  * is applied again.
  * 
  * @author Harmen Kastenberg
- * $Id: RuleSetBoundary.java,v 1.1 2008-02-20 08:36:06 kastenberg Exp $
+ * @version $Revision: 1.2 $ $Date: 2008-02-20 08:36:44 $
  */
 public class RuleSetBoundary implements Boundary {
 
