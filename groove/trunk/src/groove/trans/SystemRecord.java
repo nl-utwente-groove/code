@@ -15,6 +15,8 @@ import groove.graph.NodeFactory;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.LTS;
+import groove.lts.ProductGTS;
 import groove.lts.StateGenerator;
 import groove.rel.VarNodeEdgeMap;
 import groove.util.DefaultDispenser;
@@ -338,14 +340,17 @@ public class SystemRecord implements NodeFactory {
     private StateGenerator stateGenerator;
 
     /** Gives a state generator for a given GTS. */
-	public StateGenerator getStateGenerator(GTS gts) {
+	public StateGenerator getStateGenerator(LTS gts) {
 		if (this.stateGenerator == null) {
-			this.stateGenerator = 
-				gts instanceof AGTS ?
-				new AbstrStateGenerator(((AGTS) gts).getParameters()) :
-				new StateGenerator(gts);
+			if (gts instanceof GTS) {
+				this.stateGenerator = 
+					gts instanceof AGTS ?
+							new AbstrStateGenerator(((AGTS) gts).getParameters()) :
+								new StateGenerator((GTS) gts);
+			} else if (gts instanceof ProductGTS) {
+				this.stateGenerator = new StateGenerator((ProductGTS) gts);
+			}
 		}
 		return this.stateGenerator;
 	}
-    
 }
