@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: AbstractGraphState.java,v 1.16 2008-01-30 09:32:20 iovka Exp $
+ * $Id: AbstractGraphState.java,v 1.17 2008-02-20 09:25:29 kastenberg Exp $
  */
 package groove.lts;
 
@@ -38,7 +38,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.16 $ $Date: 2008-01-30 09:32:20 $
+ * @version $Revision: 1.17 $ $Date: 2008-02-20 09:25:29 $
  */
 abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache> implements GraphState {
     /**
@@ -128,7 +128,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
 		return getCache().addTransitionStub(transition.toStub());
 	}
 
-	public Collection<GraphState> getNextStateSet() {
+	public Collection<? extends GraphState> getNextStateSet() {
         return new TransformSet<GraphTransitionStub,GraphState>(getTransitionStubSet()) {
         	@Override
             public GraphState toOuter(GraphTransitionStub stub) {
@@ -137,7 +137,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
         };
     }
 
-    public Iterator<GraphState> getNextStateIter() {
+    public Iterator<? extends GraphState> getNextStateIter() {
         return new TransformIterator<GraphTransitionStub,GraphState>(getTransitionStubIter()) {
         	@Override
             public GraphState toOuter(GraphTransitionStub obj) {
