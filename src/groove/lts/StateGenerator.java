@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.30 2008-02-12 15:15:33 fladder Exp $
+ * $Id: StateGenerator.java,v 1.31 2008-02-20 09:39:43 kastenberg Exp $
  */
 package groove.lts;
 
@@ -24,6 +24,8 @@ import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
 import groove.trans.SystemRecord;
 import groove.util.Reporter;
+import groove.verify.BuchiGraphState;
+import groove.verify.BuchiLocation;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -45,6 +47,13 @@ public class StateGenerator {
 		this.setGTS(gts);
 		
 	}
+
+	public StateGenerator(ProductGTS gts) {
+		super();
+		this.setProductGTS(gts);
+		
+	}
+
 	/**
 	 * Returns the underlying GTS.
 	 */
@@ -59,6 +68,14 @@ public class StateGenerator {
 		this.gts = gts;
 //		this.collector.setGTS(gts);
 //		this.applier = null;
+	}
+
+	public ProductGTS getProductGTS() {
+		return productGts;
+	}
+
+	public void setProductGTS(ProductGTS gts) {
+		this.productGts = gts;
 	}
 
 	/** Convenience method to retrieve the record from the current GTS. */
@@ -192,7 +209,38 @@ public class StateGenerator {
 //     * @return the target state of the resulting transition
 //     */
 	/** To be called only by {@link #addTransition(GraphState, RuleMatch, ExploreCache)}.*/
-    private Set<? extends GraphTransition> addTransition(GraphState source, RuleApplication appl, ExploreCache cache) {        reporter.start(ADD_TRANSITION);        GraphTransition transition;        if (!appl.getRule().isModifying() ) {        	transition = createTransition(appl, source, source, false);        } else {        	GraphState confluentTarget = getConfluentTarget(source, appl);        	Location targetLocation = cache.getTarget(appl.getRule());            if (confluentTarget == null || confluentTarget.getLocation() != targetLocation ) {	        	reporter.stop();	        	// can't have this as add_transition, it may be counted as matching 	        	GraphNextState freshTarget = createState(appl, source);	        	freshTarget.setLocation(cache.getTarget(appl.getRule()));	        	reporter.start(ADD_TRANSITION);	        	reporter.start(ADD_STATE);	        	GraphState isoTarget = getGTS().addState(freshTarget);
+    private Set<? extends GraphTransition> addTransition(GraphState source, RuleApplication appl, ExploreCache cache) {
+        reporter.start(ADD_TRANSITION);
+        
+        GraphTransition transition;
+        if (!appl.getRule().isModifying() ) {
+        	Location targetLocation = cache.getTarget(appl.getRule());
+        	if (source.getLocation() != targetLocation) {
+	        	GraphNextState freshTarget = createState(appl, source);
+	        	freshTarget.setLocation(targetLocation);
+
+	        	reporter.start(ADD_STATE);
+	        	GraphState isoTarget = getGTS().addState(freshTarget);
+	        	reporter.stop();
+	        	if (isoTarget == null) {
+	        		transition = freshTarget;
+	        	} else {
+	        		transition = createTransition(appl, source, isoTarget, true);
+	            }
+        	} else {
+            	transition = createTransition(appl, source, source, false);
+        	}
+        } else {
+        	GraphState confluentTarget = getConfluentTarget(source, appl);
+        	Location targetLocation = cache.getTarget(appl.getRule());
+        	
+            if (confluentTarget == null || confluentTarget.getLocation() != targetLocation ) {
+	        	// can't have this as add_transition, it may be counted as matching 
+	        	GraphNextState freshTarget = createState(appl, source);
+	        	freshTarget.setLocation(cache.getTarget(appl.getRule()));
+	            	
+	        	reporter.start(ADD_STATE);
+	        	GraphState isoTarget = getGTS().addState(freshTarget);
 	        	reporter.stop();
 	        	if (isoTarget == null) {
 	        		transition = freshTarget;
@@ -250,7 +298,7 @@ public class StateGenerator {
 		DefaultScenario.reporter.start(DefaultScenario.GET_DERIVATIONS);
 		RuleApplication appl = getRecord().getApplication(match, source.getGraph());
 		DefaultScenario.reporter.stop();
-		return this.addTransition(source, appl , cache);
+		return this.addTransition(source, appl, cache);
 	}
 	
 //
@@ -343,36 +391,40 @@ public class StateGenerator {
         return new DefaultGraphTransition(appl.getEvent(), appl.getCreatedNodes(), source, target, symmetry);
     }
     
-    
-//	/**
-//	 * Callback method to obtain a rule applier for this generator's rule set.
-//	 * This implementation uses flyweight, so discard the result before calling the method again.
-//	 */
-//	protected RuleApplier getApplier(GraphState state) {
-//		if (applier == null) {
-//			applier = new AliasRuleApplier(getRecord(), state);
-//			
-//			// control replaces dependencies
-//			if( this.getGTS().getGrammar().getControl() != null )
-//				AliasRuleApplier.setUseDependencies(false);
-//			else
-//				AliasRuleApplier.setUseDependencies(true);
-//			
-//		} else {
-//			applier.setState(state);
-//		}
-//		return applier;
-//	}
 
-	/** The underlying GTS. */
+    public Set<ProductTransition> addTransition(BuchiGraphState source, GraphTransition transition, BuchiLocation targetLocation) {
+    	// we assume that we only add transitions for modifying graph transitions
+    	BuchiGraphState target = createBuchiGraphState(source, transition, targetLocation);
+    	BuchiGraphState isoTarget = getProductGTS().addState(target);
+    	ProductTransition productTransition = null;
+    	if (isoTarget == null) {
+    		// no isomorphic state found
+    		productTransition = createProductTransition(source, transition, target);
+    	} else {
+    		productTransition = createProductTransition(source, transition, isoTarget);
+    	}
+    	return getProductGTS().addTransition(productTransition);
+    }
+
+    private BuchiGraphState createBuchiGraphState(BuchiGraphState source, GraphTransition transition, BuchiLocation targetLocation) {
+    	if (transition == null) {
+    		// the system-state is a final one for which we assume an artificial self-loop
+    		// the resulting Buchi graph-state is nevertheless the product of the
+    		// graph-state component of the source Buchi graph-state and the target
+    		// Buchi-location
+    		return new BuchiGraphState(getProductGTS().getRecord(), source.getGraphState(), targetLocation, source);
+    	} else {
+    		return new BuchiGraphState(getProductGTS().getRecord(), transition.target(), targetLocation, source);
+    	}
+    }
+
+    private ProductTransition createProductTransition(BuchiGraphState source, GraphTransition transition, BuchiGraphState target) {
+    	return new ProductTransition(source, transition, target);
+    }
+
+    /** The underlying GTS. */
 	private GTS gts;
-
-//	/** Collector instance that listens to the underlying GTS. */
-//	private final AddTransitionListener collector;
-
-//	/** The fixed rule applier for this generator. */
-//	private AliasRuleApplier applier;
-
+	private ProductGTS productGts;
 //	/**
 //	 * The number of confluent diamonds found.
 //	 */
