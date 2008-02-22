@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductTransition.java,v 1.2 2008-02-20 09:25:50 kastenberg Exp $
+ * $Id: ProductTransition.java,v 1.3 2008-02-22 13:02:44 rensink Exp $
  */
 package groove.lts;
 
@@ -23,7 +23,7 @@ import groove.verify.BuchiGraphState;
  * a graph-transition and a buchi-transition.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2008-02-20 09:25:50 $
+ * @version $Revision: 1.3 $ $Date: 2008-02-22 13:02:44 $
  */
 public class ProductTransition { //extends DefaultGraphTransition {
 
@@ -79,6 +79,7 @@ public class ProductTransition { //extends DefaultGraphTransition {
         graphTransition().getEvent().equals(other.graphTransition().getEvent());
     }
 
+    @Override
     public int hashCode() {
     	int result = 0;
     	result += source().hashCode() + target().hashCode();
@@ -95,6 +96,7 @@ public class ProductTransition { //extends DefaultGraphTransition {
         return obj instanceof ProductTransition && equalsSource((ProductTransition) obj) && equalsEvent((ProductTransition) obj);
     }
 
+	@Override
 	public String toString() {
 		return source().toString() + "-->" + target.toString();
 	}

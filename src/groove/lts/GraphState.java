@@ -13,14 +13,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: GraphState.java,v 1.10 2008-02-20 09:30:05 kastenberg Exp $
+ * $Id: GraphState.java,v 1.11 2008-02-22 13:02:44 rensink Exp $
  */
 package groove.lts;
 
 import groove.control.Location;
 import groove.graph.Graph;
 import groove.trans.RuleEvent;
-import groove.verify.BuchiLocation;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -31,7 +30,7 @@ import java.util.Set;
  * system.
  * 
  * @author Arend Rensink
- * @version $Revision: 1.10 $ $Date: 2008-02-20 09:30:05 $
+ * @version $Revision: 1.11 $ $Date: 2008-02-22 13:02:44 $
  */
 public interface GraphState extends State {
 	/** Returns the graph contained in this state. */

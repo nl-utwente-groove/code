@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BoundedNestedDFSStrategy.java,v 1.2 2008-02-20 10:58:40 kastenberg Exp $
+ * $Id: BoundedNestedDFSStrategy.java,v 1.3 2008-02-22 13:02:44 rensink Exp $
  */
 
 package groove.explore.strategy;
@@ -43,10 +43,10 @@ import java.util.List;
  * method {@link NestedDFSStrategy#finished()}.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class BoundedNestedDFSStrategy extends NestedDFSStrategy implements BoundedModelCheckingStrategy<GraphState> {
-
+    @Override
 	protected void updateAtState() {
 		Iterator<? extends GraphState> nextStateIter = getAtBuchiState().getNextStateIter();
 		if (nextStateIter.hasNext()) {
@@ -123,6 +123,7 @@ public class BoundedNestedDFSStrategy extends NestedDFSStrategy implements Bound
 		// else, atState is open, so we continue exploring it
 	}
 
+    @Override
 	public boolean finished() {
 		if (!boundaryGraphs().isEmpty()) {
 			getBoundary().increase();
@@ -163,6 +164,7 @@ public class BoundedNestedDFSStrategy extends NestedDFSStrategy implements Bound
 	/** Returns a random open successor of a state, if any. 
 	 * Returns null otherwise. 
 	 */
+	@Override
 	protected GraphState getRandomOpenBuchiSuccessor(BuchiGraphState state) {
 		Iterator<? extends GraphState> sucIter = state.getNextStateIter();
 		RandomChooserInSequence<GraphState>  chooser = new RandomChooserInSequence<GraphState>();

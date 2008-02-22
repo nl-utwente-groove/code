@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CycleAcceptor.java,v 1.1 2008-02-20 09:53:26 kastenberg Exp $
+ * $Id: CycleAcceptor.java,v 1.2 2008-02-22 13:02:45 rensink Exp $
  */
 
 package groove.explore.result;
@@ -25,8 +25,6 @@ import groove.lts.ProductTransition;
 import groove.lts.State;
 import groove.verify.BuchiGraphState;
 import groove.verify.ModelChecking;
-
-import java.util.Stack;
 
 /**
  * Acceptor that is notified on closing a buchi graph-state

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BuchiGraphState.java,v 1.1 2008-02-20 07:50:54 kastenberg Exp $
+ * $Id: BuchiGraphState.java,v 1.2 2008-02-22 13:02:44 rensink Exp $
  */
 package groove.verify;
 
@@ -38,7 +38,7 @@ import java.util.Set;
  * Composition of a graph-state and a Buchi-location.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $ $Date: 2008-02-20 07:50:54 $
+ * @version $Revision: 1.2 $ $Date: 2008-02-22 13:02:44 $
  */
 public class BuchiGraphState extends AbstractGraphState {
 
@@ -79,6 +79,7 @@ public class BuchiGraphState extends AbstractGraphState {
 		return state;
 	}
 
+	@Override
 	public Graph getGraph() {
 		return state.getGraph();
 	}
@@ -89,6 +90,7 @@ public class BuchiGraphState extends AbstractGraphState {
 	 * For flexibility, the type of the location is undetermined.
 	 * @return the location; may be <code>null</code>.
 	 */
+	@Override
 	public Location getLocation() {
 		return state.getLocation();
 	}
@@ -104,6 +106,7 @@ public class BuchiGraphState extends AbstractGraphState {
 	 * Sets the location field of the wrapped graph-state
 	 * @param location the new location
 	 */
+	@Override
 	public void setLocation(Location location) {
 		state.setLocation(location);
 	}
@@ -158,18 +161,22 @@ public class BuchiGraphState extends AbstractGraphState {
 		outTransitions = new HashSet<ProductTransition>();
 	}
 
+    @Override
 	public GraphState getNextState(RuleEvent prime) {
     	return state.getNextState(prime);
     }
     
+    @Override
     public Iterator<GraphTransition> getTransitionIter() {
     	return state.getTransitionIter();
     }
 
+    @Override
     public Set<GraphTransition> getTransitionSet() {
     	return state.getTransitionSet();
     }
 
+    @Override
     public Collection<? extends GraphState> getNextStateSet() {
         return new TransformSet<ProductTransition,BuchiGraphState>(outTransitions()) {
         	@Override
@@ -179,6 +186,7 @@ public class BuchiGraphState extends AbstractGraphState {
         };
     }
 
+    @Override
     public Iterator<? extends GraphState> getNextStateIter() {
         return new TransformIterator<ProductTransition,BuchiGraphState>(outTransitions().iterator()) {
         	@Override
@@ -188,15 +196,18 @@ public class BuchiGraphState extends AbstractGraphState {
         };
     }
 
+    @Override
     public boolean addTransition(GraphTransition transition) {
     	throw new UnsupportedOperationException("Buchi graph-states can only have outgoing Buchi-transitions and no " + transition.getClass());
 //    	return state.addTransition(transition);
     }
 
+    @Override
     public boolean containsTransition(GraphTransition transition) {
     	return state.containsTransition(transition);
     }
 
+    @Override
     public boolean isClosed() {
     	return closed;
     }
@@ -207,6 +218,7 @@ public class BuchiGraphState extends AbstractGraphState {
 		this.closed = true;
 	}
 
+    @Override
 	public String toString() {
 		if (state != null && buchiLocation != null) {
 			return state.toString() + "-" + buchiLocation.toString();

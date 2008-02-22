@@ -12,12 +12,11 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJTree.java,v 1.31 2008-02-06 16:49:32 iovka Exp $
+ * $Id: RuleJTree.java,v 1.32 2008-02-22 13:02:46 rensink Exp $
  */
 package groove.gui;
 
 import groove.control.ControlView;
-import groove.explore.util.ExploreCache;
 import groove.explore.util.MatchesIterator;
 import groove.graph.GraphInfo;
 import groove.graph.GraphProperties;
@@ -25,7 +24,6 @@ import groove.graph.Label;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.lts.StateGenerator;
 import groove.lts.Transition;
 import groove.trans.Match;
 import groove.trans.NameLabel;
@@ -73,7 +71,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {

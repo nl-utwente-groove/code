@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AlgebraGraph.java,v 1.5 2008-02-12 15:15:32 fladder Exp $
+ * $Id: AlgebraGraph.java,v 1.6 2008-02-22 13:02:47 rensink Exp $
  */
 package groove.graph.algebra;
 
@@ -22,7 +22,6 @@ import groove.algebra.DefaultBooleanAlgebra;
 import groove.algebra.DefaultIntegerAlgebra;
 import groove.algebra.DefaultStringAlgebra;
 import groove.graph.DefaultGraph;
-import groove.graph.DefaultNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -31,7 +30,7 @@ import java.util.Map;
  * Class description.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2008-02-12 15:15:32 $
+ * @version $Revision: 1.6 $ $Date: 2008-02-22 13:02:47 $
  */
 public class AlgebraGraph extends DefaultGraph {
 
