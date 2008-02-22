@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestedDFSStrategy.java,v 1.1 2008-02-20 10:08:09 kastenberg Exp $
+ * $Id: NestedDFSStrategy.java,v 1.2 2008-02-22 13:02:45 rensink Exp $
  */
 
 package groove.explore.strategy;
@@ -24,10 +24,7 @@ import groove.verify.BuchiGraphState;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.Stack;
 
 /** 
  * This depth-first strategy represents the blue search of a nested
@@ -37,11 +34,9 @@ import java.util.Stack;
  * closed state is accepting or not.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> {
-
-	@Override
 	/**
 	 * The next step makes atomic the full exploration of a state.
 	 */
@@ -108,6 +103,7 @@ public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> 
 		return true;
 	}
 
+	@Override
 	protected void updateAtState() {
 		if (this.collector.pickRandomNewState() != null) {
 			GraphState newState = this.collector.pickRandomNewState();

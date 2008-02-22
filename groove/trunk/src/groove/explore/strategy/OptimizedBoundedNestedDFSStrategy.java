@@ -12,22 +12,17 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OptimizedBoundedNestedDFSStrategy.java,v 1.1 2008-02-20 10:08:19 kastenberg Exp $
+ * $Id: OptimizedBoundedNestedDFSStrategy.java,v 1.2 2008-02-22 13:02:45 rensink Exp $
  */
 
 package groove.explore.strategy;
 
 import groove.explore.result.CycleAcceptor;
-import groove.explore.util.RandomChooserInSequence;
-import groove.lts.GraphState;
-import groove.lts.GraphTransition;
 import groove.verify.BuchiGraphState;
 import groove.verify.ModelChecking;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Stack;
 
 /** 
  * This depth-first strategy represents the blue search of a nested
@@ -43,10 +38,10 @@ import java.util.Stack;
  * Checking whether the 
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy {
-
+    @Override
 	public boolean finished() {
 		if (!boundaryGraphs().isEmpty()) {
 			ModelChecking.toggle();
@@ -68,9 +63,7 @@ public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy 
 		}
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.explore.strategy.BoundedNestedDFSStrategy#addBoundaryGraph(groove.verify.BuchiGraphState)
-	 */
+	@Override
 	public boolean addBoundaryGraph(BuchiGraphState boundaryGraph) {
 		return nextBoundaryGraphs.add(boundaryGraph);
 	}

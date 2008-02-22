@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductGTS.java,v 1.1 2008-02-20 07:54:15 kastenberg Exp $
+ * $Id: ProductGTS.java,v 1.2 2008-02-22 13:02:44 rensink Exp $
  */
 package groove.lts;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * Implements LTS and represents GTSs in which states are products of
  * graph-states and Buchi-locations.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $ $Date: 2008-02-20 07:54:15 $
+ * @version $Revision: 1.2 $ $Date: 2008-02-22 13:02:44 $
  */
 public class ProductGTS implements LTS {
 
@@ -219,137 +219,114 @@ public class ProductGTS implements LTS {
         private IsoChecker checker = DefaultIsoChecker.getInstance();
     }
 
-	@Override
 	public Set<? extends Transition> edgeSet() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public Collection<? extends State> getFinalStates() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public boolean hasFinalStates() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public boolean isFinal(State state) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public boolean isOpen(State state) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public Set<? extends State> nodeSet() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public State startState() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public void addGraphListener(GraphShapeListener listener) {
 		// TODO Auto-generated method stub
 		
 	}
 
-	@Override
 	public boolean containsElement(Element elem) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public boolean containsElementSet(Collection<? extends Element> elements) {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public int edgeCount() {
 		// TODO Auto-generated method stub
 		return 0;
 	}
 
-	@Override
 	public Set<? extends Edge> edgeSet(Node node) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public Set<? extends Edge> edgeSet(Node node, int i) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public GraphInfo getInfo() {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public boolean isEmpty() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public boolean isFixed() {
 		// TODO Auto-generated method stub
 		return false;
 	}
 
-	@Override
 	public Set<? extends Edge> labelEdgeSet(int arity, Label label) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public int nodeCount() {
 		// TODO Auto-generated method stub
 		return stateSet.size();
 	}
 
-	@Override
 	public Set<? extends GraphTransition> outEdgeSet(Node node) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public void removeGraphListener(GraphShapeListener listener) {
 		// TODO Auto-generated method stub
 	}
 
-	@Override
 	public void setFixed() {
 		// TODO Auto-generated method stub
 	}
 
-	@Override
 	public GraphInfo setInfo(GraphInfo info) {
 		// TODO Auto-generated method stub
 		return null;
 	}
 
-	@Override
 	public int size() {
 		// TODO Auto-generated method stub
 		return 0;

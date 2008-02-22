@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.84 2008-02-20 09:52:37 kastenberg Exp $
+ * $Id: Simulator.java,v 1.85 2008-02-22 13:02:46 rensink Exp $
  */
 package groove.gui;
 
@@ -36,7 +36,6 @@ import groove.abs.lts.AGTS;
 import groove.abs.lts.AbstrStateGenerator;
 import groove.control.ControlView;
 import groove.explore.ScenarioHandler;
-import groove.explore.result.Result;
 import groove.explore.strategy.ExploreStateStrategy;
 import groove.explore.util.ExploreCache;
 import groove.graph.Graph;
@@ -136,7 +135,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.84 $
+ * @version $Revision: 1.85 $
  */
 public class Simulator {
     /**
@@ -2774,6 +2773,7 @@ public class Simulator {
 			gts.removeGraphListener(progressListener);
 		}
 
+		@Override
 		public void finish() {
 //			setResult();
 			showResult();

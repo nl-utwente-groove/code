@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultModelCheckingStrategy.java,v 1.1 2008-02-20 10:08:27 kastenberg Exp $
+ * $Id: DefaultModelCheckingStrategy.java,v 1.2 2008-02-22 13:02:45 rensink Exp $
  */
 
 package groove.explore.strategy;
@@ -97,6 +97,7 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
 		return startBuchiState;
 	}
 
+	@Override
 	public void setState(GraphState state) {
 		super.setState(state);
 //		this.atBuchiState = (BuchiGraphState) getProductGTS().startBuchiState();
@@ -125,6 +126,7 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
 		}
 	}
 
+	@Override
 	public void addGTSListener(Acceptor listener) {
 		productGTS.addListener(listener);
 	}
@@ -323,10 +325,7 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     /**
      * @deprecated
      */
-//    protected List<LTLState> ltlStates() {
-//    	return ltlStates;
-//    }
-
+    @Deprecated
     protected Stack<GraphTransition> currentPath() {
     	return currentPath;
     }
@@ -334,6 +333,7 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     /**
      * @deprecated
      */
+    @Deprecated
     protected BuchiAutomatonGraph negPropertyGraph() {
     	return negPropertyGraph;
     }
