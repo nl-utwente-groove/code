@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLMatchingMarker.java,v 1.5 2007-10-05 08:31:48 rensink Exp $
+ * $Id: CTLMatchingMarker.java,v 1.6 2008-02-27 15:41:01 kastenberg Exp $
  */
 package groove.verify;
 
@@ -40,7 +40,7 @@ import java.util.Set;
  * Visitor-implementation of {@link groove.verify.CTLFormulaMarker} using the matching-strategy on
  * the Atom-level.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-10-05 08:31:48 $
+ * @version $Revision: 1.6 $ $Date: 2008-02-27 15:41:01 $
  */
 public class CTLMatchingMarker implements CTLFormulaMarker {
 
@@ -101,10 +101,12 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
 	            GraphState nextState = stateIter.next();
 	            if (condition.getMatchIter(nextState.getGraph(), null).hasNext()) {
 	                marking.set(nextState, property, true);
+	                System.out.println("nextState: " + property);
 	            }
 	            else {
 	                marking.set(nextState, property, false);
 	                property.getCounterExamples().add(nextState);
+	                System.out.println("nextState: !" + property);
 	            }
 	        }
         }
@@ -176,15 +178,43 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param gts the state space as a graph transition system.
      */
     public void markAnd(Marking marking, TemporalFormula property, GTS gts) {
-    	// (phi & ... & psi) <==> !(!phi | ... | !psi)
+//    	// (phi & ... & psi) <==> !(!phi | ... | !psi)
+//        List<TemporalFormula> operands = property.getOperands();
+//        List<TemporalFormula> negOperands = new ArrayList<TemporalFormula>();
+//        for (TemporalFormula nextOperand : operands) {
+//			negOperands.add(new Neg(nextOperand));
+//		}
+//
+//    	TemporalFormula newExpr = new Neg(new Or(negOperands));
+//    	newExpr.mark(this, marking, gts);
+        reporter.start(MARK_AND);
         List<TemporalFormula> operands = property.getOperands();
-        List<TemporalFormula> negOperands = new ArrayList<TemporalFormula>();
-        for (TemporalFormula nextOperand : operands) {
-			negOperands.add(new Neg(nextOperand));
-		}
 
-    	TemporalFormula newExpr = new Neg(new Or(negOperands));
-    	newExpr.mark(this, marking, gts);
+        // perform the marking for each operand
+        for (int i = 0; i < operands.size(); i++) {
+            TemporalFormula nextOperand = operands.get(i);
+            nextOperand.mark(this, marking, gts);
+        }
+
+        Iterator<? extends GraphState> stateIter = gts.nodeSet().iterator();
+        while (stateIter.hasNext()) {
+            GraphState nextState = stateIter.next();
+            boolean satisfies = true;
+            for (int i = 0; (satisfies == true) && (i < operands.size()); i++) {
+                TemporalFormula nextOperand = (TemporalFormula) operands.get(i);
+                satisfies &= marking.satisfies(nextState, nextOperand);
+            }
+
+            // if the state satisfies one of the predicates
+            if (satisfies) {
+                marking.set(nextState, property, true);
+            }
+            else {
+                marking.set(nextState, property, false);
+                property.getCounterExamples().add(nextState);
+            }
+        }
+        reporter.stop();
     }
 
     /* (non-Javadoc)
@@ -573,6 +603,10 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * Registration id for markNeg-method.
      */
     static public final int MARK_NEG = reporter.newMethod("markNeg(Marking, TemporalFormula, GTS) - matching");
+    /**
+     * Registration id for markOr-method.
+     */
+    static public final int MARK_AND = reporter.newMethod("markAnd(Marking, TemporalFormula, GTS)");
     /**
      * Registration id for markOr-method.
      */
