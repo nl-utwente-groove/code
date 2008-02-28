@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RegExprLabelParser.java,v 1.5 2008-01-30 09:33:25 iovka Exp $
+ * $Id: RegExprLabelParser.java,v 1.6 2008-02-28 15:49:40 rensink Exp $
  */
 package groove.view;
 
@@ -77,8 +77,10 @@ public class RegExprLabelParser implements LabelParser {
                 throw new FormatException("Nested negation is not allowed");
             }
             result = innerExpr.neg();
-        } else if (text.length() == 1 && text.charAt(0) == RegExpr.EMPTY_OPERATOR) {
-            result = RegExpr.empty();
+//        } else if (text.length() == 1 && ) {
+//            result = RegExpr.empty();
+        } else if (text.charAt(0) == RegExpr.EMPTY_OPERATOR || text.charAt(0) == RegExpr.WILDCARD_OPERATOR) {
+            result = RegExpr.parse(text);
         } else {
             Pair<String, List<String>> parseResult = CURLY_PARSER.parse(text);
             List<String> substitutions = parseResult.second();
