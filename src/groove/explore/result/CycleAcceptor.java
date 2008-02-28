@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CycleAcceptor.java,v 1.2 2008-02-22 13:02:45 rensink Exp $
+ * $Id: CycleAcceptor.java,v 1.3 2008-02-28 06:08:53 kastenberg Exp $
  */
 
 package groove.explore.result;
@@ -35,6 +35,7 @@ import groove.verify.ModelChecking;
  * the counter-example.
  * 
  * @author Harmen Kastenberg
+ * @version $Revision: 1.3 $
  */
 public class CycleAcceptor<T> extends Acceptor<GraphState> {
 
