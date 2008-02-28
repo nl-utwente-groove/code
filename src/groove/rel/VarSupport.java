@@ -22,7 +22,9 @@ import groove.graph.Graph;
 import groove.graph.GraphShape;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -30,7 +32,7 @@ import java.util.Set;
  * Variables are <code>String</code>s, evaluated to <code>Label</code>s, used in
  * some types of regular expression.
  * @author Arend Rensink
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 public class VarSupport {
     /** 
@@ -98,4 +100,16 @@ public class VarSupport {
         return result;
     }
 
+    /**
+     * Returns a map from bound variables in a graph to edges that bind them.
+     */    
+    static public Map<String,Edge> getVarBinders(Graph graph) {
+        Map<String,Edge> result = new HashMap<String,Edge>();
+        for (Edge binder: graph.edgeSet()) {
+            for (String boundVar: getBoundVars(binder)) {
+                result.put(boundVar, binder);
+            }
+        }
+        return result;
+    }
 }
