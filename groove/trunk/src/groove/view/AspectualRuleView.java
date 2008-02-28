@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.36 2008-01-14 14:40:50 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.37 2008-02-28 15:33:48 rensink Exp $
  */
 
 package groove.view;
@@ -41,6 +41,7 @@ import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
 import groove.rel.RegExprLabel;
+import groove.rel.VarSupport;
 import groove.trans.AbstractCondition;
 import groove.trans.Condition;
 import groove.trans.EdgeEmbargo;
@@ -84,7 +85,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.36 $
+ * @version $Revision: 1.37 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -805,6 +806,23 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 			nacTarget.addNodeSet(nacNodeSet);
 			// add edges and embargoes to nacTarget
 			for (Edge edge : nacEdgeSet) {
+			    // for all variables in the edge, add a LHS edge to the nac that binds the variable, if any
+			    Set<String> vars = VarSupport.getAllVars(edge);
+			    if (!vars.isEmpty()) {
+			        Map<String,Edge> lhsVarBinders = VarSupport.getVarBinders(lhs);
+			        for (String nacVar: vars) {
+			            Edge nacVarBinder = lhsVarBinders.get(nacVar);
+			            if (nacVarBinder != null) {
+			                // add the edge and its end nodes to the nac, as pre-matched elements 
+                            for (Node end: nacVarBinder.ends()) {
+                                nacTarget.addNode(end);
+                                nacPatternMap.putNode(end,end);
+                            }
+			                nacTarget.addEdge(nacVarBinder);
+			                nacPatternMap.putEdge(nacVarBinder,nacVarBinder);
+			            }
+			        }
+			    }
 				// add the endpoints that were not in the nac element set; it means
 				// they are lhs nodes, so add them to the nacMorphism as well
 				for (int i = 0; i < edge.endCount(); i++) {
