@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLStarFormula.java,v 1.10 2007-11-28 13:58:23 kastenberg Exp $
+ * $Id: CTLStarFormula.java,v 1.11 2008-02-28 05:58:22 kastenberg Exp $
  */
 
 package groove.verify;
@@ -38,7 +38,7 @@ import java.util.Set;
  * Class parsing CTL* formulae.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.10 $ $Date: 2007-11-28 13:58:23 $
+ * @version $Revision: 1.11 $ $Date: 2008-02-28 05:58:22 $
  */
 public class CTLStarFormula {
     /** 
@@ -254,7 +254,7 @@ public class CTLStarFormula {
         public String toString() {
         	String operandsString = operandList.get(0).toString();
         	for (int i = 1; i < operandList.size(); i++) {
-        		operandsString = operandsString + " " + getOperator() + " " + operandList.get(i);
+        		operandsString = operandsString + " " + getOperator() + " (" + operandList.get(i) + ")";
         	}
         	return operandsString;
         }
@@ -299,7 +299,7 @@ public class CTLStarFormula {
          * @return a fresh Neg-instance
          */
         static protected TemporalFormula createInstance(TemporalFormula operand) {
-            return new Neg(operand);
+        	return new Neg(operand);
         }
 
         @Override
