@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLMatchingMarker.java,v 1.6 2008-02-27 15:41:01 kastenberg Exp $
+ * $Id: CTLMatchingMarker.java,v 1.7 2008-02-28 05:56:54 kastenberg Exp $
  */
 package groove.verify;
 
@@ -40,7 +40,7 @@ import java.util.Set;
  * Visitor-implementation of {@link groove.verify.CTLFormulaMarker} using the matching-strategy on
  * the Atom-level.
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $ $Date: 2008-02-27 15:41:01 $
+ * @version $Revision: 1.7 $ $Date: 2008-02-28 05:56:54 $
  */
 public class CTLMatchingMarker implements CTLFormulaMarker {
 
@@ -178,15 +178,6 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
      * @param gts the state space as a graph transition system.
      */
     public void markAnd(Marking marking, TemporalFormula property, GTS gts) {
-//    	// (phi & ... & psi) <==> !(!phi | ... | !psi)
-//        List<TemporalFormula> operands = property.getOperands();
-//        List<TemporalFormula> negOperands = new ArrayList<TemporalFormula>();
-//        for (TemporalFormula nextOperand : operands) {
-//			negOperands.add(new Neg(nextOperand));
-//		}
-//
-//    	TemporalFormula newExpr = new Neg(new Or(negOperands));
-//    	newExpr.mark(this, marking, gts);
         reporter.start(MARK_AND);
         List<TemporalFormula> operands = property.getOperands();
 
@@ -205,7 +196,7 @@ public class CTLMatchingMarker implements CTLFormulaMarker {
                 satisfies &= marking.satisfies(nextState, nextOperand);
             }
 
-            // if the state satisfies one of the predicates
+            // if the state satisfies all the predicates
             if (satisfies) {
                 marking.set(nextState, property, true);
             }
