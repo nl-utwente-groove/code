@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: DefaultMarking.java,v 1.1.1.2 2007-03-20 10:43:00 kastenberg Exp $
+ * $Id: DefaultMarking.java,v 1.2 2008-02-28 05:59:23 kastenberg Exp $
  */
 package groove.verify;
 
@@ -26,7 +26,7 @@ import java.util.Set;
  * This class keeps track of the properties satisfied for a particular state. A state
  * will thus be mapped on a set of properties it satisfies.
  * @author Harmen Kastenberg
- * @version $Revision: 1.1.1.2 $ $Date: 2007-03-20 10:43:00 $
+ * @version $Revision: 1.2 $ $Date: 2008-02-28 05:59:23 $
  */
 public class DefaultMarking extends HashMap<GraphState, Set<TemporalFormula>> implements Marking {
 
@@ -34,10 +34,12 @@ public class DefaultMarking extends HashMap<GraphState, Set<TemporalFormula>> im
      * @see groove.verify.Marking#set(groove.lts.State, groove.trans.GraphPredicate)
      */
     public boolean set(GraphState state, TemporalFormula property, boolean value) {
-        if (value)
+        if (value) {
             return setTrue(state, property);
-        else
+        }
+        else {
             return setFalse(state, property);
+        }
     }
 
     /* (non-Javadoc)
