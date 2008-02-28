@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultModelCheckingStrategy.java,v 1.2 2008-02-22 13:02:45 rensink Exp $
+ * $Id: DefaultModelCheckingStrategy.java,v 1.3 2008-02-28 06:15:29 kastenberg Exp $
  */
 
 package groove.explore.strategy;
@@ -171,7 +171,7 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     	currentPath = new Stack<GraphTransition>();
     	searchStack = new Stack<BuchiGraphState>();
 
-    	setProperty(getProperty());
+    	setProperty();
     	assert (property != null) : "Property should have been set already.";
     	automaton = LTL2BA4J.formulaToBA("! " + property);
     	processAutomaton(automaton);
@@ -322,6 +322,13 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     	this.property = property;
     }
 
+    private void setProperty() {
+    	if (property == null) {
+    		String property = getProperty();
+    		setProperty(property);
+    	}
+    }
+
     /**
      * @deprecated
      */
@@ -343,17 +350,13 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     }
 
 	protected String getProperty() {
-//   		String message = "Do you want to perform on-the-fly LTL model checking?";
-//   		int onTheFly = JOptionPane.showConfirmDialog(sim.getFrame(), message, "Open states", JOptionPane.YES_NO_OPTION);
-//    	if (onTheFly == JOptionPane.YES_OPTION) {
-    		FormulaDialog dialog = simulator.getFormulaDialog();
-    		dialog.showDialog(simulator.getFrame());
-    		String property = dialog.getProperty();
-    		if (property != null) {
-    			return property;
-    		}
-//    	}
-    	return null;
+			FormulaDialog dialog = simulator.getFormulaDialog();
+			dialog.showDialog(simulator.getFrame());
+			String property = dialog.getProperty();
+			if (property != null) {
+				return property;
+			}
+		return null;
 	}
 
 	private BuchiGraphState startBuchiState;
