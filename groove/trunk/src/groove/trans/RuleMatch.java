@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleMatch.java,v 1.7 2008-01-30 09:32:36 iovka Exp $
+ * $Id: RuleMatch.java,v 1.8 2008-02-28 15:36:21 rensink Exp $
  */
 package groove.trans;
 
@@ -44,7 +44,7 @@ public class RuleMatch extends CompositeMatch {
      * Creates an event on the basis of this match. 
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      * @param reuse flag indicating that the events will be reused, so attempts
-     * should be made to gain time by sacrifying space
+     * should be made to gain time by sacrificing space
      */
     public RuleEvent newEvent(NodeFactory nodeFactory, boolean reuse) {
     	SortedSet<SPOEvent> eventSet = new TreeSet<SPOEvent>();
@@ -66,7 +66,7 @@ public class RuleMatch extends CompositeMatch {
      * if the rule is the top-level rule
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      * @param reuse flag indicating that the events will be reused, so attempts
-     * should be made to gain time by sacrifying space
+     * should be made to gain time by sacrificing space
      */
     private void collectEvents(Collection<SPOEvent> events, VarNodeEdgeMap coContextMap, NodeFactory nodeFactory, boolean reuse) {
     	SPOEvent myEvent = createEvent(coContextMap, nodeFactory, reuse);
@@ -85,7 +85,7 @@ public class RuleMatch extends CompositeMatch {
      * if the rule is the top-level rule
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      * @param reuse flag indicating that the events will be reused, so attempts
-     * should be made to gain time by sacrifying space
+     * should be made to gain time by sacrificing space
      */
     private SPOEvent createEvent(VarNodeEdgeMap coContextMap, NodeFactory nodeFactory, boolean reuse) {
         return new SPOEvent(getRule(), getElementMap(), coContextMap, nodeFactory, reuse);
@@ -117,7 +117,16 @@ public class RuleMatch extends CompositeMatch {
 
     @Override
     public String toString() {
-        return String.format("Match of %s: Nodes %s, edges %s", getRule(), getElementMap().nodeMap(), getElementMap().edgeMap());
+        StringBuilder result = new StringBuilder(String.format("Match of %s: Nodes %s, edges %s", getRule().getName(), getElementMap().nodeMap(), getElementMap().edgeMap()));
+        if (!getSubMatches().isEmpty()) {
+            result.append(String.format("%n--- Submatches of %s ---%n", getRule().getName()));
+            for (Match match: getSubMatches()) {
+                result.append(match.toString());
+                result.append("\n");
+            }
+            result.append(String.format("--- End of %s ---", getRule().getName()));
+        }
+        return result.toString();
     }
     
     /** The fixed rule of which this is a match. */
