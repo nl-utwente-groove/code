@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectGraph.java,v 1.15 2008-01-30 09:31:32 iovka Exp $
+ * $Id: AspectGraph.java,v 1.16 2008-02-29 11:02:22 fladder Exp $
  */
 package groove.view.aspect;
 
@@ -163,8 +163,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 			nodeMap.put(node, nodeImage);
 			elementMap.putNode(node, nodeImage);
 		}
-		// look for node aspect indicators
-		// and put all correct aspect vales in a map
+		// look for node aspect indicators		// and put all correct aspect vales in a map
 		Map<Edge,AspectParseData> edgeDataMap = new HashMap<Edge,AspectParseData>();
 		for (Edge edge: graph.edgeSet()) {
 			try {
@@ -296,18 +295,7 @@ public class AspectGraph extends NodeSetEdgeSetGraph {
 	}
 
 	/**
-	 * Tests if a given edge encodes a node aspect value, and returns that value.
-	 * An edge encodes a node aspect value if it has no text of its own.
-	 * Returns <code>null</code> if the edge does not encode a node aspect value,
-	 * and throws an exception if the edge is not a self-edge or contains more than 
-	 * one aspect value.
-	 * @param edge the edge to be tested
-	 * @param parser
-	 * @return a node aspect value for the (unique) endpoint of the edge, or
-	 * <code>null</code> if <code>edge</code> does not encode a node aspect value.
-	 * @throws FormatException if <code>edge</code> does ancode a node aspect
-	 * value, but is not a self-edge or contains more than one aspect value
-	 */
+	 * Tests if a given edge encodes a node aspect value, and returns that value.	 * An edge encodes a node aspect value if it has no text of its own.	 * Returns <code>null</code> if the edge does not encode a node aspect value,	 * and throws an exception if the edge is not a self-edge or contains more than 	 * one aspect value.	 * @param edge the edge to be tested	 * @param parser	 * @return a node aspect value for the (unique) endpoint of the edge, or	 * <code>null</code> if <code>edge</code> does not encode a node aspect value.	 * @throws FormatException if <code>edge</code> does ancode a node aspect     * value, but is not a self-edge or contains more than one aspect value	 */
 	private AspectValue getNodeValue(Edge edge, AspectParser parser) throws FormatException {
 		AspectValue result;	
 		String labelText = edge.label().text();

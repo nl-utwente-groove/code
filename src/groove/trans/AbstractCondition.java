@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractCondition.java,v 1.14 2008-01-04 17:07:35 rensink Exp $
+ * $Id: AbstractCondition.java,v 1.15 2008-02-29 11:02:20 fladder Exp $
  */
 package groove.trans;
 
@@ -45,7 +45,7 @@ import java.util.Set;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 abstract public class AbstractCondition<M extends Match> implements Condition {
 	/**
@@ -158,6 +158,11 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 						attributeKey, attributeProperty);
 			}
 		} else if (hasAttributes()) {
+			if(getProperties().useParameters()) {
+				throw new FormatException(
+					"LTS Parameters are enabled without support for attributes");
+			}
+			
 			if (attributeProperty == null) {
 				throw new FormatException(
 						"Condition uses attributes, but \"%s\" not declared",

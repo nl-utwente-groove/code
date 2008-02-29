@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.85 2008-02-22 13:02:46 rensink Exp $
+ * $Id: Simulator.java,v 1.86 2008-02-29 11:02:18 fladder Exp $
  */
 package groove.gui;
 
@@ -135,7 +135,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.85 $
+ * @version $Revision: 1.86 $
  */
 public class Simulator {
     /**
@@ -1070,7 +1070,7 @@ public class Simulator {
     public synchronized void verifyProperty(String property) {
     	try{
     		TemporalFormula formula = CTLFormula.parseFormula(property);
-    		String invalidAtom = TemporalFormula.validAtoms(formula, getCurrentGrammar().getRuleMap().keySet());
+    		String invalidAtom = TemporalFormula.validAtoms(formula, getCurrentGrammar().getRuleMap().keySet(), getCurrentGrammar().getProperties().showTransitionBrackets());
     		if (invalidAtom == null) {
         		CTLModelChecker modelChecker = new CTLModelChecker(getCurrentGTS(), formula);
         		modelChecker.verify();

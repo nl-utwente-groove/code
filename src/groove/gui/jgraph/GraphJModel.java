@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: GraphJModel.java,v 1.20 2008-01-30 09:33:12 iovka Exp $
+ * $Id: GraphJModel.java,v 1.21 2008-02-29 11:02:19 fladder Exp $
  */
 
 package groove.gui.jgraph;
@@ -53,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of a groove graph.
  * The resulting GraphModel should only be edited through the Graph interface.
  * @author Arend Rensink
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  */
 public class GraphJModel extends JModel implements GraphShapeListener {
     /** 
@@ -685,14 +685,7 @@ public class GraphJModel extends JModel implements GraphShapeListener {
 	    return getOptionValue(Options.VERTEX_LABEL_OPTION);
 	}
 
-	/** 
-	 * Indicates whether anchors should be shown in the rule and lts views. 
-	 */
-	boolean isShowAnchors() {
-		return getOptionValue(Options.SHOW_ANCHORS_OPTION);
-	}
-
-	/** 
+	/** 	 * Indicates whether anchors should be shown in the rule and lts views. 	 */	boolean isShowAnchors() {		return getOptionValue(Options.SHOW_ANCHORS_OPTION);	}	/** 
 	 * Indicates whether anchors should be shown in the rule and lts views. 
 	 */
 	boolean isShowValueNodes() {

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.50 2008-02-05 13:28:15 rensink Exp $
+ * $Id: SPORule.java,v 1.51 2008-02-29 11:02:20 fladder Exp $
  */
 package groove.trans;
 
@@ -35,6 +35,7 @@ import groove.util.Groove;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.view.FormatException;
+import groove.view.aspect.AspectValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -53,7 +54,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.50 $
+ * @version $Revision: 1.51 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -1031,6 +1032,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * @invariant rhsOnlyNodeSet \subseteq rhs.nodeSet()
      */
     private Node[] creatorNodes;
+    
     /** 
      * The rhs edges that are not ruleMorph images
      */
@@ -1086,6 +1088,22 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     static public long getMatchingTime() {
         return SearchPlanStrategy.reporter.getTotalTime(SearchPlanStrategy.SEARCH_FIND);
     }
+
+    /**
+     *  Implementation of ParameterAspect stuff
+     */
+    private Map<Integer, Node> parameterNodeMap;
+    	
+    /** set map containing param_ids and the nodes **/
+    public void setParameterMap(Map<Integer, Node> map) {
+    	parameterNodeMap = map;
+    }
+    
+    /** Let RuleEvent deal with this map being <code>null</code> **/
+    public Map<Integer, Node> getParameterNodeMap() {
+    	return parameterNodeMap;
+    }
+    
     
     /**
      * The factory used for creating rule anchors.

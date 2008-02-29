@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectValue.java,v 1.10 2008-01-30 09:31:34 iovka Exp $
+ * $Id: AspectValue.java,v 1.11 2008-02-29 11:02:22 fladder Exp $
  */
 package groove.view.aspect;
 
@@ -29,7 +29,7 @@ import static groove.view.aspect.Aspect.VALUE_SEPARATOR;
  * Class implementing values of a given aspect.
  * Aspect values are distinguished by name, which should therefore be
  * globally distinct. This is checked at construction time.
- * The clas has functionality to statically retrieve aspect values by name.
+ * The class has functionality to statically retrieve aspect values by name.
  * @author Arend Rensink
  * @version $Revision $
  */

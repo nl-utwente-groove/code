@@ -158,7 +158,9 @@ public class SystemRecord implements NodeFactory {
     	RuleEvent result;
     	reporter.start(GET_EVENT);
     	Rule rule = match.getRule();
-        if (rule.isModifying()) {
+        // FIXME:
+//    	if (rule.isModifying()) {
+    		
             RuleEvent event;
            	event = match.newEvent(this, reuse);
             if (isReuse()) {
@@ -172,14 +174,14 @@ public class SystemRecord implements NodeFactory {
 			} else {
 				result = event;
             }
-        } else {
-        	result = unmodifyingEventMap.get(rule);
-            // there can be at most one event
-            if (result == null) {
-                unmodifyingEventMap.put(rule, result = match.newEvent(this, reuse));
-                eventCount++;
-            }
-        }
+//        } else {
+//        	result = unmodifyingEventMap.get(rule);
+//            // there can be at most one event
+//            if (result == null) {
+//                unmodifyingEventMap.put(rule, result = match.newEvent(this, reuse));
+//                eventCount++;
+//            }
+//        }
         reporter.stop();
         return result;
     }

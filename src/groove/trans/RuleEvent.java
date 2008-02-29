@@ -12,15 +12,15 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.19 2008-02-06 17:04:38 rensink Exp $
+ * $Id: RuleEvent.java,v 1.20 2008-02-29 11:02:20 fladder Exp $
  */
 package groove.trans;
 
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.MergeMap;
 import groove.graph.Node;
-import groove.graph.WrapperLabel;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -33,7 +33,7 @@ import java.util.Set;
  * The event does not store information specific to the host graph. To apply it to 
  * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.19 $ $Date: 2008-02-06 17:04:38 $
+ * @version $Revision: 1.20 $ $Date: 2008-02-29 11:02:20 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -44,7 +44,7 @@ public interface RuleEvent extends Comparable<RuleEvent> {
     /**
      * Returns a label that uniquely identifies this event.
      */
-    public WrapperLabel<RuleEvent> getLabel();
+    public Label getLabel();
 
     /**
      * Returns a string representation of the anchor image.

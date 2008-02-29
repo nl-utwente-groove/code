@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Aspect.java,v 1.10 2008-01-30 09:31:32 iovka Exp $
+ * $Id: Aspect.java,v 1.11 2008-02-29 11:02:22 fladder Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * Examples of aspects are: the roles in a rule, typing information, or
  * graph condition information.
  * @author Arend Rensink
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public interface Aspect {
 	/**
@@ -112,5 +112,5 @@ public interface Aspect {
 	/**
 	 * Array of all known aspects. 
 	 */
-	public Aspect[] allAspects = { AttributeAspect.getInstance(), RuleAspect.getInstance(), NestingAspect.getInstance() };
+	public Aspect[] allAspects = { AttributeAspect.getInstance(), RuleAspect.getInstance(), NestingAspect.getInstance(), ParameterAspect.getInstance() };
 }
