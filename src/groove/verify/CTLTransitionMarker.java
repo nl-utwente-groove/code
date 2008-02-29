@@ -13,13 +13,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: CTLTransitionMarker.java,v 1.6 2008-02-29 11:02:21 fladder Exp $
+ * $Id: CTLTransitionMarker.java,v 1.7 2008-02-29 11:18:00 fladder Exp $
  */
 package groove.verify;
 
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.trans.NameLabel;
 import groove.util.Reporter;
 
 import java.util.Iterator;
@@ -33,7 +34,7 @@ import java.util.Iterator;
  * state). So, actually the LHS of the GTR is the property to check on.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.6 $ $Date: 2008-02-29 11:02:21 $
+ * @version $Revision: 1.7 $ $Date: 2008-02-29 11:18:00 $
  */
 public class CTLTransitionMarker extends CTLMatchingMarker {
     @Override
@@ -59,7 +60,7 @@ public class CTLTransitionMarker extends CTLMatchingMarker {
 	            Iterator<GraphTransition> transitionIter = gts.outEdgeSet(nextState).iterator();
 	            while (transitionIter.hasNext()) {
 //	                Edge nextTransition = (Edge) transitionIter.next();
-	                String transitionName = transitionIter.next().getEvent().getLabel().text();
+	                String transitionName = ((NameLabel)transitionIter.next().getEvent().getLabel()).name();
 	                if (transitionName.equals(name))
 	                	satisfies = true;
 	            }
