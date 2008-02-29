@@ -12,14 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstrGraphTransitionImpl.java,v 1.5 2008-02-06 17:04:43 rensink Exp $
+ * $Id: AbstrGraphTransitionImpl.java,v 1.6 2008-02-29 11:02:17 fladder Exp $
  */
 package groove.abs.lts;
 
 import groove.graph.AbstractBinaryEdge;
+import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.WrapperLabel;
 import groove.lts.GraphTransitionStub;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -28,7 +28,7 @@ import groove.trans.RuleMatch;
  * @author Iovka Boneva
  * @version $Revision $
  */
-public class AbstrGraphTransitionImpl extends AbstractBinaryEdge<AbstrGraphState, WrapperLabel<RuleEvent>, AbstrGraphState>  implements AbstrGraphTransition{
+public class AbstrGraphTransitionImpl extends AbstractBinaryEdge<AbstrGraphState, Label, AbstrGraphState>  implements AbstrGraphTransition{
 	
 	public RuleMatch getMatch() {
 		// TODO is it correct ?

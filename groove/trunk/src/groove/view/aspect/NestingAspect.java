@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestingAspect.java,v 1.15 2008-01-30 09:31:32 iovka Exp $
+ * $Id: NestingAspect.java,v 1.16 2008-02-29 11:02:22 fladder Exp $
  */
 package groove.view.aspect;
 
@@ -27,7 +27,7 @@ import java.util.Set;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author kramor
- * @version 0.1 $Revision: 1.15 $ $Date: 2008-01-30 09:31:32 $
+ * @version 0.1 $Revision: 1.16 $ $Date: 2008-02-29 11:02:22 $
  */
 public class NestingAspect extends AbstractAspect {
 	/**
@@ -227,14 +227,10 @@ public class NestingAspect extends AbstractAspect {
         contentValues.add(FORALL_POS_NAME);
 	}
 
-	/** The exists aspect value */
-	public static final AspectValue EXISTS;
-    /** The forall aspect value */
-    public static final AspectValue FORALL;
-    /** The positive forall aspect value */
-    public static final AspectValue FORALL_POS;
-	/** Nested edge aspect value. */
-	public static final AspectValue NESTED;
+	/** The exists aspect value */	public static final AspectValue EXISTS;
+    /** The forall aspect value */    public static final AspectValue FORALL;
+    /** The positive forall aspect value */    public static final AspectValue FORALL_POS;
+	/** Nested edge aspect value. */	public static final AspectValue NESTED;
 	
 	/** Singleton instance of this class */
 	private static final NestingAspect instance = new NestingAspect();

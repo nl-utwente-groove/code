@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.52 2008-02-06 17:04:38 rensink Exp $
+ * $Id: SPOEvent.java,v 1.53 2008-02-29 11:02:20 fladder Exp $
  */
 package groove.trans;
 
@@ -20,6 +20,7 @@ import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.MergeMap;
 import groove.graph.Node;
 import groove.graph.NodeEdgeMap;
@@ -47,7 +48,7 @@ import java.util.Set;
  * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.52 $ $Date: 2008-02-06 17:04:38 $
+ * @version $Revision: 1.53 $ $Date: 2008-02-29 11:02:20 $
  */
 final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCache> {
     /**
@@ -214,8 +215,44 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 	@Override
 	public String toString() {
 	    StringBuffer result = new StringBuffer(getRule().getName().name());
-	    result.append(getAnchorImageString());
+//	    result.append(getAnchorImageString());
+	    if( getRule().getProperties().useParameters())
+	    	result.append(getParameterString());
+	    
 	    return result.toString();
+	}
+	
+	@Override
+	public Label getLabel() {
+		boolean brackets = this.getRule().getProperties().showTransitionBrackets();
+		
+		return new NameLabel(this.toString(), brackets);
+	}
+	
+//	public Label getParameterLabel() {
+//		return DefaultLabel.createLabel(getRule().getName().name() + getParameterString());
+//	}
+	
+	public String getParameterString() {
+    	String s = "";
+    	Map<Integer, Node> map = this.getRule().getParameterNodeMap();
+    	s = "(";
+    	if( map != null ) {
+    		for( int i = 0; i < map.size(); i++ ) {
+    			Node node = this.getAnchorMap().getNode(map.get(new Integer(i+1)));
+    			if( node != null && node instanceof ValueNode ) {
+    				Object value = ((ValueNode) node).getValue();
+    				s +=  ((ValueNode) node).getSymbol();
+    			} else {
+    				s += "?";
+    			}
+    			if( i < map.size()-1 ) {
+    				s+= ",";
+    			}
+    		}
+		}
+    	s += ")";
+		return s;
 	}
 
 	/**

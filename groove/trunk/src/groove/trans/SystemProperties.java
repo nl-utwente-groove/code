@@ -39,8 +39,8 @@ public class SystemProperties extends java.util.Properties {
     public boolean isAttributed() {
     	String attributed = getProperty(SystemProperties.ATTRIBUTES_KEY);
     	return attributed != null && attributed.equals(SystemProperties.ATTRIBUTES_YES);
-    }
-    
+    }        /**     * Indicates if the LTS labels should contain transition parameters     * @return     */    public boolean useParameters() {    	String params = getProperty(SystemProperties.PARAMETERS_KEY);    	return params != null && params.equals(SystemProperties.PARAMETERS_YES);    }
+        /**     * Indicates if the LTS labels should contain transition parameters     * Default = false     * @return     */    public boolean showTransitionBrackets() {    	String property = getProperty(SystemProperties.TRANSITION_BRACKETS);    	return property != null && property.equals(SystemProperties.TRANSITION_BRACKETS_YES);    }            /** Sets the useparameters property to the given value **/        public void setParameters(boolean useParameters) {    	setProperty(PARAMETERS_KEY,useParameters ? PARAMETERS_YES : PARAMETERS_NO );    }        
     /**
      * Sets the attributed property to a given value.
      * @param attributed <code>true</code> if the rules have attributes
@@ -360,7 +360,7 @@ public class SystemProperties extends java.util.Properties {
 	/**
 	 * Value of {@link #ATTRIBUTES_KEY} that means attributes are not used.
 	 */
-	static public final String ATTRIBUTES_NO = "0";
+	static public final String ATTRIBUTES_NO = "0";		/** Property that determines if transitition parameters are included	 *  in the LTS transition labels	 */	static public final String PARAMETERS_KEY="transitionParameters";		/** Value of {@link #PARMETERS_KEY} that means parameters are used **/	static public final String PARAMETERS_YES = "1";		/** Value of {@link #PARMETERS_KEY} that means parameters are not used **/	static public final String PARAMETERS_NO = "0";		/** Property that determines if transitition parameters are included	 *  in the LTS transition labels	 */	static public final String TRANSITION_BRACKETS="transitionBrackets";		/** Value of {@link #PARMETERS_KEY} that means parameters are used **/	static public final String TRANSITION_BRACKETS_YES = "1";		/** Value of {@link #PARMETERS_KEY} that means parameters are not used **/	static public final String TRANSITION_BRACKETS_NO = "0";				
 	/** 
 	 * Property name of the injectivity of the rule system.
 	 * If <code>true</code>, all rules should be matched injectively.

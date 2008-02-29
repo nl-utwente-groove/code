@@ -12,13 +12,14 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AbstractEvent.java,v 1.7 2008-02-06 17:04:38 rensink Exp $
+ * $Id: AbstractEvent.java,v 1.8 2008-02-29 11:02:20 fladder Exp $
  */
 package groove.trans;
 
 import groove.graph.DefaultEdgeSet;
 import groove.graph.Edge;
 import groove.graph.Graph;
+import groove.graph.Label;
 import groove.graph.Node;
 import groove.graph.NodeSet;
 import groove.graph.WrapperLabel;
@@ -39,7 +40,7 @@ public abstract class AbstractEvent<R extends Rule,C extends AbstractEvent<R,C>.
 		this.rule = rule;
 	}
 
-	public WrapperLabel<RuleEvent> getLabel() {
+	public Label getLabel() {
 		return new WrapperLabel<RuleEvent>(this);
 	}
 

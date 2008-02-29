@@ -12,22 +12,30 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: LTSJModel.java,v 1.26 2008-01-30 09:33:10 iovka Exp $
+ * $Id: LTSJModel.java,v 1.27 2008-02-29 11:02:19 fladder Exp $
  */
 package groove.gui.jgraph;
 
-import static groove.gui.jgraph.JAttr.*;
-
+import static groove.gui.jgraph.JAttr.LTS_ACTIVE_EMPH_NODE_CHANGE;
+import static groove.gui.jgraph.JAttr.LTS_EDGE_ACTIVE_CHANGE;
+import static groove.gui.jgraph.JAttr.LTS_EDGE_ATTR;
+import static groove.gui.jgraph.JAttr.LTS_FINAL_NODE_ATTR;
+import static groove.gui.jgraph.JAttr.LTS_NODE_ACTIVE_CHANGE;
+import static groove.gui.jgraph.JAttr.LTS_NODE_ATTR;
+import static groove.gui.jgraph.JAttr.LTS_OPEN_NODE_ATTR;
+import static groove.gui.jgraph.JAttr.LTS_START_NODE_ATTR;
 import groove.graph.BinaryEdge;
 import groove.graph.Edge;
 import groove.graph.Label;
 import groove.graph.Node;
+import groove.graph.WrapperLabel;
 import groove.gui.Options;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.LTS;
 import groove.lts.State;
 import groove.lts.Transition;
+import groove.trans.NameLabel;
 import groove.util.Converter;
 import groove.util.Groove;
 
@@ -41,7 +49,7 @@ import org.jgraph.graph.AttributeMap;
  * Graph model adding a concept of active state and transition,
  * with special visual characteristics.
  * @author Arend Rensink
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  */
 public class LTSJModel extends GraphJModel {
     /** Creates a new model from a given LTS and set of display options. */
@@ -411,7 +419,7 @@ public class LTSJModel extends GraphJModel {
         @Override
         public Label getLabel(Edge edge) {
             assert edge instanceof GraphTransition : "Edge set contains " + edge;
-            return isShowAnchors() ? super.getLabel(edge) : ((GraphTransition) edge).getEvent().getRule().getName();
+        	return isShowAnchors() ?  new WrapperLabel<String>(((GraphTransition)edge).getEvent().getRule().getName().name() + ((GraphTransition)edge).getEvent().getAnchorImageString()) : super.getLabel(edge);
         }
 	}
 
@@ -491,7 +499,7 @@ public class LTSJModel extends GraphJModel {
         @Override
         public Label getLabel(Edge edge) {
             assert edge instanceof GraphTransition : "Edge set contains " + edge;
-            return isShowAnchors() ? super.getLabel(edge) : ((GraphTransition) edge).getEvent().getRule().getName();
+        	return isShowAnchors() ?  new WrapperLabel<String>(((GraphTransition)edge).getEvent().getRule().getName().name() + ((GraphTransition)edge).getEvent().getAnchorImageString()) : super.getLabel(edge);
         }
         
         @Override

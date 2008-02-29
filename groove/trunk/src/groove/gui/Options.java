@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.33 2007-11-28 16:07:41 iovka Exp $
+ * $Id: Options.java,v 1.34 2008-02-29 11:02:18 fladder Exp $
  */
 package groove.gui;
 
@@ -40,7 +40,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.34 $
  */
 public class Options {
     /** 
@@ -336,7 +336,6 @@ public class Options {
     static public final String MANHATTAN_LINE_STYLE_NAME = "Manhattan";
     /** Name for the imaging action. */
     static public final String IMAGE_ACTION_NAME = "Image";
-
     /** Show anchors option */
     static public final String SHOW_ANCHORS_OPTION = "Show anchors";
     /** Show node ids option */

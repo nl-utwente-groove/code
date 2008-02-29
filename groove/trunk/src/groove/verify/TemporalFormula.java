@@ -13,15 +13,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: TemporalFormula.java,v 1.5 2007-10-05 08:31:49 rensink Exp $
+ * $Id: TemporalFormula.java,v 1.6 2008-02-29 11:02:21 fladder Exp $
  */
 
 package groove.verify;
 
+import groove.graph.Label;
+import groove.gui.Simulator;
 import groove.lts.GTS;
 import groove.lts.State;
 import groove.trans.Condition;
-import groove.trans.NameLabel;
 import groove.trans.RuleNameLabel;
 import groove.verify.CTLStarFormula.All;
 import groove.verify.CTLStarFormula.And;
@@ -43,7 +44,7 @@ import java.util.Set;
 /**
  * Abstract class as a generalization of LTL and CTL formulas.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2007-10-05 08:31:49 $
+ * @version $Revision: 1.6 $ $Date: 2008-02-29 11:02:21 $
  */
 public abstract class TemporalFormula {
 
@@ -171,10 +172,10 @@ public abstract class TemporalFormula {
      * valid atoms. If not, it returns the string representation of the first found
      * invalid atom.
      */
-    static public String validAtoms(TemporalFormula property, Set<RuleNameLabel> atoms) {
+    static public String validAtoms(TemporalFormula property, Set<? extends Label> atoms, boolean useBrackets) {
     	if (property.getOperands().size() > 0) {
     		for(TemporalFormula operand: property.getOperands()) {
-    			String invalidAtom = validAtoms(operand, atoms);
+    			String invalidAtom = validAtoms(operand, atoms, useBrackets);
     			if (invalidAtom != null) {
     				return invalidAtom;
     			}
@@ -182,9 +183,10 @@ public abstract class TemporalFormula {
     	} else {
     		assert (property instanceof Atom && property.getOperands().size() == 0) : "An atom should have 0 operands." ;
     		boolean validAtom = false;
-    		for(NameLabel nameLabel: atoms) {
+    		for(Label nameLabel: atoms) {
     			String ruleName = ((RuleNameLabel) nameLabel).name();
-    			if (property.toString().equals(ruleName) ||
+    			if ( (!useBrackets && property.toString().startsWith(ruleName)) || 
+    				( useBrackets && property.toString().startsWith("<" + ruleName) && property.toString().endsWith(">") ) || 
     				property.toString().equals(CTLStarFormula.TRUE.toString()) ||
     				property.toString().equals(CTLStarFormula.FALSE.toString())) {
     				validAtom |= true;

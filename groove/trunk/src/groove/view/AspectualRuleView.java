@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.37 2008-02-28 15:33:48 rensink Exp $
+ * $Id: AspectualRuleView.java,v 1.38 2008-02-29 11:02:22 fladder Exp $
  */
 
 package groove.view;
@@ -37,6 +37,7 @@ import groove.graph.Morphism;
 import groove.graph.Node;
 import groove.graph.NodeEdgeHashMap;
 import groove.graph.NodeEdgeMap;
+import groove.graph.algebra.ValueNode;
 import groove.graph.iso.DefaultIsoChecker;
 import groove.graph.iso.IsoChecker;
 import groove.rel.RegExpr;
@@ -60,6 +61,7 @@ import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectValue;
 import groove.view.aspect.AttributeAspect;
 import groove.view.aspect.NestingAspect;
+import groove.view.aspect.ParameterAspect;
 import groove.view.aspect.RuleAspect;
 
 import java.io.File;
@@ -85,7 +87,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.37 $
+ * @version $Revision: 1.38 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -306,6 +308,9 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     protected Pair<Rule, NodeEdgeMap> computeRule(AspectGraph graph) throws FormatException {
         SPORule rule;
     	NodeEdgeMap viewToRuleMap = new NodeEdgeHashMap();
+    	// ParameterAspect map with id's bound to nodes
+    	Map<Integer, Node> parameterMap = new HashMap<Integer, Node>();
+    	
     	Set<String> errors = new TreeSet<String>(graph.getErrors());
         if (TO_RULE_DEBUG) {
             System.out.println("");
@@ -365,7 +370,16 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         			}
         		}
         		nodeLevelMap.put(node, level);
-        		viewToRuleMap.putNode(node, computeNodeImage(node, graph));
+        		Node nodeImage = computeNodeImage(node, graph);
+        		// if the node is a valuenode, check if it has an id
+        		if( nodeImage instanceof ValueNode ) {
+        			Integer id = ParameterAspect.getID(node);
+        			if( id != null ) {
+        				// store the node w.r.t the ID
+        				parameterMap.put(id, nodeImage);
+        			}	
+        		}
+        		viewToRuleMap.putNode(node, nodeImage );
         	}
         }
         // add edges to nesting data structures
@@ -452,6 +466,11 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         rule = (SPORule) levelRuleMap.get(topLevel);
         rule.setPriority(priority);
         rule.setFixed();
+        
+        if( parameterMap.size() > 0 ) {
+        	rule.setParameterMap(parameterMap);
+        }
+        
         if (TO_RULE_DEBUG) {
         	System.out.println("Constructed rule: " + rule);
         }

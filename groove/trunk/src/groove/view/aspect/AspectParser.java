@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.14 2008-01-30 09:31:33 iovka Exp $
+ * $Id: AspectParser.java,v 1.15 2008-02-29 11:02:22 fladder Exp $
  */
 package groove.view.aspect;
 
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class AspectParser {
     /** 
@@ -64,15 +64,7 @@ public class AspectParser {
 		return Collections.unmodifiableSet(aspects);
 	}
 
-	/**
-     * Extracts the aspect information from a plain label text.
-     * @param plainText the text to start from
-     * @return an object containing information about the aspect value,
-     * the possible end marker, and the possible actual label text present
-     * in <code>plainText</code>
-     * @throws FormatException if <code>plainText</code> contains an
-     * apparent aspect value that is not recognised by {@link AspectValue#getValue(String)}.
-     */
+	/**     * Extracts the aspect information from a plain label text.     * @param plainText the text to start from     * @return an object containing information about the aspect value,     * the possible end marker, and the possible actual label text present     * in <code>plainText</code>     * @throws FormatException if <code>plainText</code> contains an     * apparent aspect value that is not recognised by {@link AspectValue#getValue(String)}.     */
     public AspectParseData getParseData(String plainText) throws FormatException {
     	AspectMap parsedValues = new AspectMap();
     	/*if( plainText == null && false ) {
@@ -174,8 +166,7 @@ public class AspectParser {
 	 * not lenient, or the presence of content is not as it should be.
 	 */
 	private boolean addParsedValue(AspectMap parsedValues, String valueText, String contentText) throws FormatException {
-		boolean stopParsing = false;
-		AspectValue value = AspectValue.getValue(valueText);
+		boolean stopParsing = false;		AspectValue value = AspectValue.getValue(valueText);
 		if (value == null) {
 			throw new FormatException(String.format("Unknown aspect value '%s' (precede label text with ':' to avoid aspect parsing)", valueText));
 		} else if (value instanceof ContentAspectValue) {

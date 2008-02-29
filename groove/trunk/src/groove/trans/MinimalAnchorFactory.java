@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: MinimalAnchorFactory.java,v 1.7 2008-01-30 09:32:34 iovka Exp $
+ * $Id: MinimalAnchorFactory.java,v 1.8 2008-02-29 11:02:20 fladder Exp $
  */
 package groove.trans;
 
@@ -37,7 +37,7 @@ import groove.graph.algebra.ValueNode;
  * matching: only mergers, eraser nodes and edges (the later only if they are 
  * not incident to an eraser node) and the incident nodes of creator edges are stored.
  * @author Arend Rensink
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class MinimalAnchorFactory implements AnchorFactory {
 	/**
@@ -63,7 +63,7 @@ public class MinimalAnchorFactory implements AnchorFactory {
      */
     public Element[] newAnchors(Rule generalRule) {
         SPORule rule = (SPORule) generalRule;
-        Set<Element> anchors = new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));
+        Set<Element> anchors = new LinkedHashSet<Element>(Arrays.asList(rule.getEraserNodes()));        if( rule.getParameterNodeMap() != null )        	anchors.addAll(rule.getParameterNodeMap().values());        //      System.err.println("Added parameter nodes to anchor of rule " + generalRule.getName().name());        
         Set<? extends Node> creatorNodes = rule.getCreatorGraph().nodeSet();
         for (Map.Entry<Node,Node> ruleMorphNodeEntry: rule.getMorphism().nodeMap().entrySet()) {
         	if (creatorNodes.contains(ruleMorphNodeEntry.getValue())) {
