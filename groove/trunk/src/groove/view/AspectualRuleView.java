@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectualRuleView.java,v 1.38 2008-02-29 11:02:22 fladder Exp $
+ * $Id: AspectualRuleView.java,v 1.39 2008-03-03 21:27:51 rensink Exp $
  */
 
 package groove.view;
@@ -87,7 +87,7 @@ import java.util.TreeSet;
  * <li> Readers (the default) are elements that are both LHS and RHS.
  * <li> Creators are RHS elements that are not LHS.</ul>
  * @author Arend Rensink
- * @version $Revision: 1.38 $
+ * @version $Revision: 1.39 $
  */
 public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
     /**
@@ -903,6 +903,8 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
 	/**
 	 * Factory method for rules.
 	 * @param ruleMorphism morphism of the new rule to be created
+	 * @param rootMap pattern map leading into the LHS
+     * @param coRootMap map of creator nodes in the parent rule to creator nodes of this rule
 	 * @param name name of the new rule to be created
 	 * @return the fresh rule created by the factory
 	 */

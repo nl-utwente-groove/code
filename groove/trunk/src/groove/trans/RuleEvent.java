@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: RuleEvent.java,v 1.20 2008-02-29 11:02:20 fladder Exp $
+ * $Id: RuleEvent.java,v 1.21 2008-03-03 21:27:40 rensink Exp $
  */
 package groove.trans;
 
@@ -33,7 +33,7 @@ import java.util.Set;
  * The event does not store information specific to the host graph. To apply it to 
  * a given host graph, it has to be further instantiated to a rule application.
  * @author Arend Rensink
- * @version $Revision: 1.20 $ $Date: 2008-02-29 11:02:20 $
+ * @version $Revision: 1.21 $ $Date: 2008-03-03 21:27:40 $
  */
 public interface RuleEvent extends Comparable<RuleEvent> {
     /**
@@ -69,21 +69,20 @@ public interface RuleEvent extends Comparable<RuleEvent> {
 
     /**
      * Returns the set of explicitly created edges between existing nodes. 
-     * These are the images of the rule's creator edges of which the endpoints are not creator nodes.
+     * These are the images of those creator edges of which the endpoints are not fresh.
      */
     public Set<Edge> getSimpleCreatedEdges();
     
     /** 
-     * Returns a coanchor image suitable for a given host graph.
-     * This is delegated to the event because here we can indeed keep a map of such 
-     * images, and so save memory. 
+     * Returns a list of created nodes of this event, given a set of nodes
+     * already existing in the graph (i.e., which may not be used).
+     * @param hostNodes set of nodes not available as fresh nodes
      */
     public List<? extends Node> getCreatedNodes(Set<? extends Node> hostNodes);
 
     /** 
-     * Returns a coanchor image suitable for a given host graph.
-     * This is delegated to the event because here we can indeed keep a map of such 
-     * images, and so save memory. 
+     * Returns the set of explicitly created edges of which at least one end is a fresh node.
+     * @param createdNodes the images of the creator nodes, in the order of the rule's creator nodes.
      */
     public Collection<? extends Edge> getComplexCreatedEdges(Iterator<Node> createdNodes);
     
