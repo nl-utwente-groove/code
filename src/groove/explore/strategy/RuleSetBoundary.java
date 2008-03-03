@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleSetBoundary.java,v 1.3 2008-02-20 08:37:49 kastenberg Exp $
+ * $Id: RuleSetBoundary.java,v 1.4 2008-03-03 13:35:17 kastenberg Exp $
  */
 package groove.explore.strategy;
 
@@ -30,15 +30,31 @@ import java.util.Set;
  * is applied again.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2008-02-20 08:37:49 $
+ * @version $Revision: 1.4 $
  */
 public class RuleSetBoundary implements Boundary {
+
+	/**
+	 * Empty {@link RuleSetBoundary} constructor.
+	 */
+	public RuleSetBoundary() {
+		// empty constructor
+	}
 
 	/**
 	 * {@link RuleSetBoundary} constructor.
 	 * @param ruleSetBoundary the set of rules that constitute the boundary
 	 */
 	public RuleSetBoundary(Set<Rule> ruleSetBoundary) {
+	}
+
+	/**
+	 * Add a rule to the set of boundary rules.
+	 * @param rule the rule to be added
+	 * @return see {@link java.util.Set#add(Object)}
+	 */
+	public boolean addRule(Rule rule) {
+		return ruleSetBoundary.add(rule);
 	}
 
 	/* (non-Javadoc)
