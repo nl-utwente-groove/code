@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductGTS.java,v 1.2 2008-02-22 13:02:44 rensink Exp $
+ * $Id: ProductGTS.java,v 1.3 2008-03-03 14:56:34 kastenberg Exp $
  */
 package groove.lts;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * Implements LTS and represents GTSs in which states are products of
  * graph-states and Buchi-locations.
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2008-02-22 13:02:44 $
+ * @version $Revision: 1.3 $ $Date: 2008-03-03 14:56:34 $
  */
 public class ProductGTS implements LTS {
 
@@ -90,6 +90,9 @@ public class ProductGTS implements LTS {
     		openStates.remove(state);
         	notifyListenersOfClose(state);
     	}
+    	// always notify listeners of state-closing
+    	// even if the state was already closed
+    	notifyListenersOfClose(state);
     }
 
     public boolean isCheckIsomorphism() {
@@ -241,7 +244,8 @@ public class ProductGTS implements LTS {
 
 	public boolean isOpen(State state) {
 		// TODO Auto-generated method stub
-		return false;
+		return !state.isClosed();
+//		return false;
 	}
 
 	public Set<? extends State> nodeSet() {
