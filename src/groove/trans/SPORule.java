@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.51 2008-02-29 11:02:20 fladder Exp $
+ * $Id: SPORule.java,v 1.52 2008-03-03 21:27:40 rensink Exp $
  */
 package groove.trans;
 
@@ -54,7 +54,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.51 $
+ * @version $Revision: 1.52 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
@@ -75,6 +75,7 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
      * The information should be completed lated by a call to {@link #setParent(SPORule, int[])}.
      * @param morph the morphism on which this production is to be based
      * @param rootMap pattern map leading into the LHS
+     * @param coRootMap map of creator nodes in the parent rule to creator nodes of this rule
      * @param name the name of the new rule
      * @param properties the factory this rule used to instantiate related classes
      * @throws FormatException if the rule system properties do not concur with the rule itself

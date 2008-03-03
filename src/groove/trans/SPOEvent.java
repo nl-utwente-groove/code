@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.53 2008-02-29 11:02:20 fladder Exp $
+ * $Id: SPOEvent.java,v 1.54 2008-03-03 21:27:40 rensink Exp $
  */
 package groove.trans;
 
@@ -48,51 +48,50 @@ import java.util.Set;
  * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.53 $ $Date: 2008-02-29 11:02:20 $
+ * @version $Revision: 1.54 $ $Date: 2008-03-03 21:27:40 $
  */
 final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCache> {
-    /**
-     * Constructs a new event on the basis of a given production rule and anchor map.
-     * A further parameter determines whether information should be stored for reuse.
-     * This constructor is only meant for rules without co-roots map.
-     * @param rule the production rule involved
-     * @param anchorMap the match of the rule's anchors to the host graph
-     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
-     * @param reuse if <code>true</code>, the event should store diverse data structures to optimise for reuse
-     */
-    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
-    	this(rule, anchorMap, null, nodeFactory, reuse);
-    }
-
+//    /**
+//     * Constructs a new event on the basis of a given production rule and anchor map.
+//     * A further parameter determines whether information should be stored for reuse.
+//     * This constructor is only meant for rules without co-roots map.
+//     * @param rule the production rule involved
+//     * @param anchorMap the match of the rule's anchors to the host graph
+//     * @param nodeFactory factory for fresh nodes; may be <code>null</code>
+//     * @param reuse if <code>true</code>, the event should store diverse data structures to optimise for reuse
+//     */
+//    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
+//    	this(rule, anchorMap, nodeFactory, reuse);
+//    }
+//
     /**
      * Constructs a new event on the basis of a given production rule and anchor map.
      * A further parameter determines whether information should be stored for reuse.
      * @param rule the production rule involved
      * @param anchorMap map from the rule's LHS elements to the host graph
-     * @param coContextMap map from the rule's co-roots to the host graph
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      * @param reuse if <code>true</code>, the event should store diverse data structures to optimise for reuse
      */
-    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, VarNodeEdgeMap coContextMap, NodeFactory nodeFactory, boolean reuse) {
+    public SPOEvent(SPORule rule, VarNodeEdgeMap anchorMap, NodeFactory nodeFactory, boolean reuse) {
     	super(reference, rule);
     	rule.testFixed(true);
         this.anchorImage = computeAnchorImage(anchorMap);
-        if (coContextMap == null) {
-        	coRootImage = null;
-        } else {
-        	int coRootCount = getRule().getCoRootMap().size();
-        	if (coRootCount == 0) {
-        		coRootImage = EMPTY_ROOT_IMAGE;
-        	} else {
-				coRootImage = new Node[coRootCount];
-				int coRootIx = 0;
-				for (Node coRoot : getRule().getCoRootMap().nodeMap().keySet()) {
-					coRootImage[coRootIx] = coContextMap.getNode(coRoot);
-					assert coRootImage[coRootIx] != null : String.format("Co-context map %s does not contain image for co-root %s", coContextMap, coRoot);
-					coRootIx++;
-				}
-			}
-        }
+//        if (coContextMap == null) {
+//        	coRootImage = null;
+//        } else {
+//        	int coRootCount = getRule().getCoRootMap().size();
+//        	if (coRootCount == 0) {
+//        		coRootImage = EMPTY_ROOT_IMAGE;
+//        	} else {
+//				coRootImage = new Node[coRootCount];
+//				int coRootIx = 0;
+//				for (Node coRoot : getRule().getCoRootMap().nodeMap().keySet()) {
+//					coRootImage[coRootIx] = coContextMap.getNode(coRoot);
+//					assert coRootImage[coRootIx] != null : String.format("Co-context map %s does not contain image for co-root %s", coContextMap, coRoot);
+//					coRootIx++;
+//				}
+//			}
+//        }
     	this.nodeFactory = nodeFactory;
     	this.reuse = reuse;
     }
@@ -173,7 +172,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     	} else if (obj instanceof SPOEvent) {
         	reporter.start(EQUALS);
         	SPOEvent other = (SPOEvent) obj;
-            result = equalsRule(other) && equalsAnchorImage(other) && equalsCoContextMap(other);
+            result = equalsRule(other) && equalsAnchorImage(other);
             reporter.stop();
         } else {
             result = false;
@@ -203,14 +202,14 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 //        }
         return Arrays.equals(getAnchorImage(), other.getAnchorImage());
     }
-    
-    /**
-     * Tests if co-context maps of two rule events coincide.
-     * Callback method from {@link #equals(Object)}.
-     */
-    private boolean equalsCoContextMap(SPOEvent other) {
-    	return Arrays.equals(coRootImage, other.coRootImage);
-    }
+//    
+//    /**
+//     * Tests if co-context maps of two rule events coincide.
+//     * Callback method from {@link #equals(Object)}.
+//     */
+//    private boolean equalsCoContextMap(SPOEvent other) {
+//    	return Arrays.equals(coRootImage, other.coRootImage);
+//    }
     
 	@Override
 	public String toString() {
@@ -233,26 +232,28 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 //		return DefaultLabel.createLabel(getRule().getName().name() + getParameterString());
 //	}
 	
+	/**
+	 * Returns the string of actual parameter values of this event.
+	 */
 	public String getParameterString() {
-    	String s = "";
+    	StringBuilder result = new StringBuilder('(');
     	Map<Integer, Node> map = this.getRule().getParameterNodeMap();
-    	s = "(";
     	if( map != null ) {
     		for( int i = 0; i < map.size(); i++ ) {
     			Node node = this.getAnchorMap().getNode(map.get(new Integer(i+1)));
     			if( node != null && node instanceof ValueNode ) {
     				Object value = ((ValueNode) node).getValue();
-    				s +=  ((ValueNode) node).getSymbol();
+    				result.append(((ValueNode) node).getSymbol());
     			} else {
-    				s += "?";
+    				result.append('?');
     			}
     			if( i < map.size()-1 ) {
-    				s+= ",";
+    				result.append('.');
     			}
     		}
 		}
-    	s += ")";
-		return s;
+    	result.append(')');
+		return result.toString();
 	}
 
 	/**
@@ -545,24 +546,34 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 
  	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
      	Set<Edge> result = createEdgeSet();
- 		collectComplexCreatedEdges(null, createdNodes, result);
+ 		collectComplexCreatedEdges(null, createdNodes, null, result);
  		return result;
  	}
 
     /**
      * Collects the set of created edges of which at least one incident nodes is also created, i.e., the
      * images of the LHS creator edges between existing nodes, into a given set.
-     * Callback method from {@link #computeSimpleCreatedEdges()}.
+     * Callback method from {@link #getComplexCreatedEdges(Iterator)}.
      * TODO the parameter erasedNodes is a hack, this should be solved by setting
      * the coAnchorMap correctly
      * @param erasedNodes set of erased nodes; if not <code>null</code>, check if
      * created edges have incident nodes in this set
+     * @param coRootImages mapping from creator nodes that are co-roots in sub-rules to the
+     * corresponding created nodes
      */
-	void collectComplexCreatedEdges(Set<Node> erasedNodes, Iterator<Node> createdNodes, Set<Edge> result) {
+	void collectComplexCreatedEdges(Set<Node> erasedNodes, Iterator<Node> createdNodes, Map<Node, Node> coRootImages, Set<Edge> result) {
 		VarNodeEdgeMap coanchorMap = getCoanchorMap().clone();
+		boolean hasSubRules = getRule().hasSubRules();
 		// add creator node images
 		for (Node creatorNode: getRule().getCreatorNodes()) {
-			coanchorMap.putNode(creatorNode, createdNodes.next());
+			Node createdNode = createdNodes.next();
+			coanchorMap.putNode(creatorNode, createdNode);
+			if (hasSubRules) {
+				coRootImages.put(creatorNode, createdNode);
+			}
+		}
+		for (Map.Entry<Node,Node> coRootEntry: getRule().getCoRootMap().nodeMap().entrySet()) {
+			coanchorMap.putNode(coRootEntry.getValue(), coRootImages.get(coRootEntry.getKey()));
 		}
         // now compute and add the complex creator edge images
         for (Edge edge : getRule().getComplexCreatorEdges()) {
@@ -630,10 +641,19 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 		return result;
     }
 
+    /**
+     * Adds nodes created by this event into a given list of created nodes.
+     * The created nodes are guaranteed to be fresh with respect to a given set
+     * of currently existing nodes
+     * @param currentNodes the set of currently existing nodes
+     * @param result list of created nodes to be extended by this method
+     */
     void collectCreatedNodes(Set<? extends Node> currentNodes, List<Node> result) {
-		int coanchorSize = getRule().getCreatorNodes().length;
-		for (int i = 0; i < coanchorSize; i++) {
-			result.add(getFreshNode(i, currentNodes));
+    	Node[] creatorNodes = getRule().getCreatorNodes();
+		int creatorNodeCount = creatorNodes.length;
+		for (int i = 0; i < creatorNodeCount; i++) {
+			Node createdNode = getFreshNode(i, currentNodes);
+			result.add(createdNode);
 		}
     }
 
@@ -711,10 +731,10 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 
 	/** The derivation record that has created this event, if any. */
     private final NodeFactory nodeFactory;
-    /**
-     * Images for the RHS root elements in the target graph. 
-     */
-    final Node[] coRootImage;
+//    /**
+//     * Images for the RHS root elements in the target graph. 
+//     */
+//    final Node[] coRootImage;
 //    /**
 //     * The footprint of a derivation consists of the anchor images of the match
 //     * together with the images of the creator nodes.
@@ -779,7 +799,7 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     /** Global empty list of nodes. */
     static private final List<Node> EMPTY_COANCHOR_IMAGE = Collections.emptyList();
     /** Global empty list of nodes. */
-    static private final Node[] EMPTY_ROOT_IMAGE = new Node[0];
+//    static private final Node[] EMPTY_ROOT_IMAGE = new Node[0];
     static private final CacheReference<SPOEventCache> reference = CacheReference.<SPOEventCache>newInstance(false);
 	static private Reporter reporter = Reporter.register(RuleEvent.class);
 	static private int HASHCODE = reporter.newMethod("computeHashCode()");
@@ -870,11 +890,11 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 				    result.putNode(creatorKey, creatorValue);
 				}
 			}
-			int coRootIx = 0;
-			for (Map.Entry<Node,Node> coRootEntry: getRule().getCoRootMap().nodeMap().entrySet()) {
-				result.putNode(coRootEntry.getValue(), coRootImage[coRootIx]);
-				coRootIx++;
-			}
+//			int coRootIx = 0;
+//			for (Map.Entry<Node,Node> coRootEntry: getRule().getCoRootMap().nodeMap().entrySet()) {
+//				result.putNode(coRootEntry.getValue(), coRootImage[coRootIx]);
+//				coRootIx++;
+//			}
 			// add variable images
 			for (String var: getRule().getCreatorVars()) {
 				result.putVar(var, anchorMap.getVar(var));

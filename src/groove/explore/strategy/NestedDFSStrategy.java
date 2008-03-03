@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestedDFSStrategy.java,v 1.3 2008-02-28 06:13:09 kastenberg Exp $
+ * $Id: NestedDFSStrategy.java,v 1.4 2008-03-03 21:27:52 rensink Exp $
  */
 
 package groove.explore.strategy;
@@ -34,13 +34,12 @@ import java.util.Set;
  * closed state is accepting or not.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> {
 	/**
 	 * The next step makes atomic the full exploration of a state.
 	 */
-	@Override
 	public boolean next() {
 		if (getAtBuchiState() == null) {
 			if (finished()) {

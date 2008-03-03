@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleMatch.java,v 1.8 2008-02-28 15:36:21 rensink Exp $
+ * $Id: RuleMatch.java,v 1.9 2008-03-03 21:27:40 rensink Exp $
  */
 package groove.trans;
 
@@ -48,7 +48,7 @@ public class RuleMatch extends CompositeMatch {
      */
     public RuleEvent newEvent(NodeFactory nodeFactory, boolean reuse) {
     	SortedSet<SPOEvent> eventSet = new TreeSet<SPOEvent>();
-    	collectEvents(eventSet, null, nodeFactory, reuse);
+    	collectEvents(eventSet, nodeFactory, reuse);
     	assert !eventSet.isEmpty();
     	if (eventSet.size() == 1 && !getRule().hasSubRules()) {
     		return eventSet.iterator().next();
@@ -61,34 +61,28 @@ public class RuleMatch extends CompositeMatch {
      * Recursively collects the events of this match and all sub-matches
      * into a given collection.
      * @param events the resulting set of events
-     * @param coContextMap mapping from the right hand side root nodes
-     * (i.e., the creator nodes of the parent rule) to host nodes; or <code>null</code>
-     * if the rule is the top-level rule
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      * @param reuse flag indicating that the events will be reused, so attempts
      * should be made to gain time by sacrificing space
      */
-    private void collectEvents(Collection<SPOEvent> events, VarNodeEdgeMap coContextMap, NodeFactory nodeFactory, boolean reuse) {
-    	SPOEvent myEvent = createEvent(coContextMap, nodeFactory, reuse);
+    private void collectEvents(Collection<SPOEvent> events, NodeFactory nodeFactory, boolean reuse) {
+    	SPOEvent myEvent = createEvent(nodeFactory, reuse);
     	events.add(myEvent);
     	for (Match subMatch: getSubMatches()) {
     		if (subMatch instanceof RuleMatch) {
-    			((RuleMatch) subMatch).collectEvents(events, myEvent.getCoanchorMap(), nodeFactory, reuse);
+    			((RuleMatch) subMatch).collectEvents(events, nodeFactory, reuse);
     		}
     	}
     }
 
     /** 
      * Callback factory method for an event based on this match. 
-     * @param coContextMap mapping from the right hand side root nodes
-     * (i.e., the creator nodes of the parent rule) to host nodes; or <code>null</code>
-     * if the rule is the top-level rule
      * @param nodeFactory factory for fresh nodes; may be <code>null</code>
      * @param reuse flag indicating that the events will be reused, so attempts
      * should be made to gain time by sacrificing space
      */
-    private SPOEvent createEvent(VarNodeEdgeMap coContextMap, NodeFactory nodeFactory, boolean reuse) {
-        return new SPOEvent(getRule(), getElementMap(), coContextMap, nodeFactory, reuse);
+    private SPOEvent createEvent(NodeFactory nodeFactory, boolean reuse) {
+        return new SPOEvent(getRule(), getElementMap(), nodeFactory, reuse);
     }
 
 	@Override

@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CompositeEvent.java,v 1.9 2008-02-06 17:04:38 rensink Exp $
+ * $Id: CompositeEvent.java,v 1.10 2008-03-03 21:27:40 rensink Exp $
  */
 package groove.trans;
 
@@ -24,8 +24,10 @@ import groove.util.CacheReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.Stack;
@@ -118,8 +120,9 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
 
 	public Set<Edge> getComplexCreatedEdges(Iterator<Node> createdNodes) {
         Set<Edge> result = createEdgeSet(eventArray.length * 2);
+        Map<Node,Node> coRootImages = new HashMap<Node,Node>();
         for (SPOEvent event: eventArray) {
-            event.collectComplexCreatedEdges(getErasedNodes(), createdNodes, result);
+            event.collectComplexCreatedEdges(getErasedNodes(), createdNodes, coRootImages, result);
         }
         return result;
 	}
