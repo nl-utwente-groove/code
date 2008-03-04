@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ParameterAspect.java,v 1.1 2008-02-29 11:02:22 fladder Exp $
+ * $Id: ParameterAspect.java,v 1.2 2008-03-04 10:10:19 fladder Exp $
  */
 package groove.view.aspect;
 
@@ -23,7 +23,7 @@ import groove.view.FormatException;
  * a complete rule tree to be stored in a flat format.
  * 
  * @author Tom Staijen
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public class ParameterAspect extends AbstractAspect {
 
@@ -31,7 +31,13 @@ public class ParameterAspect extends AbstractAspect {
 	public void checkNode(AspectNode node, AspectGraph graph) throws FormatException {
 		// TODO: check here if there is a declared value on the node 
 	 	// that makes the node an attributenode (?)
-		// check also wether the strings are integers 
+
+		NamedAspectValue value = (NamedAspectValue) node.getValue(this);
+		
+		AspectValue attribute = node.getValue(AttributeAspect.getInstance());
+		if( attribute == null ) {
+			throw new FormatException("Parameter " + value.getContent() + ": Parameters are limited to attribute values");
+		}
 	}
 
 	@Override
@@ -43,7 +49,7 @@ public class ParameterAspect extends AbstractAspect {
 	private static final String PARAMETER_ASPECT_NAME = "parameter";
 	
 	/** The label for the parameter aspect value **/
-	private static final String ID_NAME = "id";
+	private static final String ID_NAME = "par";
 	
 	/** The exists aspect value */
 	public static final AspectValue ID;
@@ -61,7 +67,9 @@ public class ParameterAspect extends AbstractAspect {
 		}
 	}
 	
-	
+	/**
+	 * Creates a new instance of this Aspect
+	 */
 	public ParameterAspect() {
 		super(PARAMETER_ASPECT_NAME);
 	}
@@ -73,6 +81,9 @@ public class ParameterAspect extends AbstractAspect {
         return instance;
     }
 	
+    /**
+     * Helper function to get the numerical value of a node as parameter.
+     */
     public static Integer getID(AspectNode node) {
     	NamedAspectValue value = (NamedAspectValue) node.getValue(getInstance());
     	if( value == null ) {
