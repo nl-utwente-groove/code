@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ScenarioHandlerFactory.java,v 1.4 2008-02-20 10:02:35 kastenberg Exp $
+ * $Id: ScenarioHandlerFactory.java,v 1.5 2008-03-04 14:50:37 kastenberg Exp $
  */
 package groove.explore;
 
@@ -26,6 +26,7 @@ import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ConditionalStrategy;
 import groove.explore.strategy.DefaultModelCheckingStrategy;
 import groove.explore.strategy.Strategy;
+import groove.gui.BoundedModelCheckingDialog;
 import groove.gui.FormulaDialog;
 import groove.gui.Simulator;
 import groove.lts.GTS;
@@ -37,7 +38,7 @@ import java.util.Collection;
 /** A factory for creating scenario handlers by composing a scenario
  * from its strategy, result and acceptor.
  * @author Iovka Boneva
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ScenarioHandlerFactory {
 		
@@ -289,6 +290,7 @@ public class ScenarioHandlerFactory {
 					((CycleAcceptor) acc).setStrategy(str);
 				}
 
+				setBoundary();
 				str.setSimulator(sim);
 				str.setGTS(getGTS());
 				str.setProductGTS(new ProductGTS(getGTS().getGrammar()));
@@ -327,6 +329,12 @@ public class ScenarioHandlerFactory {
 				return null;
 			}
 
+			protected Boundary setBoundary() {
+				BoundedModelCheckingDialog dialog = new BoundedModelCheckingDialog();
+				dialog.setGrammar(getGTS().getGrammar());
+				dialog.showDialog(sim.getFrame());
+				return dialog.getBoundary();
+			}
 			@Override
 			public Class<?> resultType() { return null; }
 		};
