@@ -12,9 +12,8 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: NestedDFSStrategy.java,v 1.4 2008-03-03 21:27:52 rensink Exp $
+ * $Id: NestedDFSStrategy.java,v 1.5 2008-03-04 14:45:37 kastenberg Exp $
  */
-
 package groove.explore.strategy;
 
 import groove.lts.GraphState;
@@ -34,7 +33,7 @@ import java.util.Set;
  * closed state is accepting or not.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> {
 	/**
@@ -42,42 +41,36 @@ public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> 
 	 */
 	public boolean next() {
 		if (getAtBuchiState() == null) {
-			if (finished()) {
-				getProductGTS().removeListener(this.collector);
-				return false;
-			}
+			getProductGTS().removeListener(this.collector);
+			return false;
 		}
 
+		// put current state on the stack
 		searchStack().push(getAtBuchiState());
 		this.atState = this.getAtBuchiState().getGraphState();
 		// colour state cyan as being on the search stack
 		getAtBuchiState().setColour(ModelChecking.cyan());
 
-		// put current state on the stack
-
 		// fully explore the current state
-		// if it is not yet explored before
-		if (getGTS().isOpen(this.atState)) {
-			explore.setGTS(getGTS());
-			explore.setState(getAtState());
-			explore.next();
-		}
+		exploreState(this.atState);
 		this.collector.reset();
 
 		// now look in the GTS for the outgoing transitions of the
-		// current state with the current buchi location and add
+		// current state with the current Buchi location and add
 		// the resulting combined transition to the product GTS
 
 		Set<GraphTransition> outTransitions = getGTS().outEdgeSet(getAtState());
     	Set<String> applicableRules = filterRuleNames(outTransitions);
 
-        for (BuchiTransition nextPropertyTransition: getAtPropertyLocation().outTransitions()) {
+        for (BuchiTransition nextPropertyTransition: getAtBuchiLocation().outTransitions()) {
         	if (isEnabled(nextPropertyTransition, applicableRules)) {
         		boolean finalState = true;
         		for (GraphTransition nextTransition: getGTS().outEdgeSet(getAtBuchiState().getGraphState())) {
         			if (nextTransition.getEvent().getRule().isModifying()) {
         				finalState = false;
-            			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), nextTransition, nextPropertyTransition.getTargetLocation());
+        				
+//            			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), nextTransition, nextPropertyTransition.getTargetLocation());
+            			Set<? extends ProductTransition> productTransitions = addProductTransition(nextTransition, nextPropertyTransition.getTargetLocation());
             			assert (productTransitions.size() <= 1) : "There should be at most one target state instead of " + productTransitions.size();
             			if (counterExample(getAtBuchiState(), productTransitions.iterator().next().target())) {
             				// notify counter-example
@@ -89,7 +82,8 @@ public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> 
         			}
         		}
         		if (finalState) {
-        			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), null, nextPropertyTransition.getTargetLocation());
+        			Set<? extends ProductTransition> productTransitions = addProductTransition(null, nextPropertyTransition.getTargetLocation());
+//        			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), null, nextPropertyTransition.getTargetLocation());
         			assert (productTransitions.size() <= 1) : "There should be at most one target state instead of " + productTransitions.size();
         		}
         	}
@@ -116,7 +110,7 @@ public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> 
 			// backtracking
 
 			BuchiGraphState parent = null;
-			
+
 			do {
 				// pop the current state from the search-stack
 				searchStack().pop();
@@ -144,35 +138,4 @@ public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> 
 		}
 			
 	}
-
-	/**
-	 * Checks whether there are more things to do. By default, returns <tt>true</tt>.
-	 * @return <tt>true</tt>
-	 */
-	public boolean finished() {
-		return true;
-	}
-
-	/**
-	 * Identifies special cases of counter-examples.
-	 * @param source the source Buchi graph-state
-	 * @param target the target Buchi graph-state
-	 * @return <tt>true</tt> if the target Buchi graph-state has colour
-	 * {@link ModelChecking#CYAN} and the buchi location of either the
-	 * <tt>source</tt> or <tt>target</tt> is accepting, <tt>false</tt>
-	 * otherwise.
-	 */
-	public boolean counterExample(BuchiGraphState source, BuchiGraphState target) {
-		return (target.colour() == ModelChecking.cyan()) &&
-		(source.getBuchiLocation().isSuccess(null) || target.getBuchiLocation().isSuccess(null));
-	}
-
-//	public void constructCounterExample(Collection<GraphState> result, Stack<BuchiGraphState> states) {
-//		for (BuchiGraphState state: states) {
-//			result.add(state);
-//		}
-//	}
-
-	Strategy explore = new ExploreStateStrategy();
-	boolean counterExample = false;
 }
