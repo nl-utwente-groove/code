@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CycleAcceptor.java,v 1.3 2008-02-28 06:08:53 kastenberg Exp $
+ * $Id: CycleAcceptor.java,v 1.4 2008-03-04 14:48:17 kastenberg Exp $
  */
 
 package groove.explore.result;
@@ -35,7 +35,7 @@ import groove.verify.ModelChecking;
  * the counter-example.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class CycleAcceptor<T> extends Acceptor<GraphState> {
 
@@ -61,6 +61,13 @@ public class CycleAcceptor<T> extends Acceptor<GraphState> {
 	private int redDFS(ProductGTS gts, BuchiGraphState state) {
 		assert (gts instanceof ProductGTS) : "Expected a product GTS instead of " + gts.getClass();
 		for (ProductTransition nextTransition: ((ProductGTS) gts).outEdgeSet(state)) {
+			// allthough the outgoing transition in the gts might cross the boundary
+			// we do not have to check for this since the target states themselves
+			// will not yet have outgoing transitions and will therefore never
+			// yield an accepting cycle
+			// moreover, those states are not yet explored and will therefore not
+			// yet be coloured. The below code will thus not yield any interesting
+			// results for such states
 			BuchiGraphState target = (BuchiGraphState) nextTransition.target();
 			if (target.colour() == ModelChecking.cyan()) {
 				return ModelChecking.COUNTER_EXAMPLE;
