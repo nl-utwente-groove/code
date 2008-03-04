@@ -71,8 +71,7 @@ public abstract class AbstractStrategy implements Strategy {
 
 	/** The parent of a given state, or null if this is the start state.
 	 * May be used by the backtracking strategies
-	 * @param state which parent will be returned
-	 * @param the start state 
+	 * @param state state for which the parent will be returned
 	 */
 	protected final GraphState parentOf(GraphState state) {
 		if (state.equals(startState())) {
@@ -144,6 +143,19 @@ public abstract class AbstractStrategy implements Strategy {
 		return new MatchesIterator(getAtState(), cache);
 	}
 
+	/**
+	 * Method for exploring a single state locally. The state will be closed afterwards.
+	 * @param state the state to be fully explored locally
+	 */
+	public void exploreState(GraphState state) {
+		Strategy explore = new ExploreStateStrategy();
+		if (getGTS().isOpen(state)) {
+			explore.setGTS(getGTS());
+			explore.setState(state);
+			explore.next();
+		}
+	}
+
 	public void addGTSListener(Acceptor listener) {
 //		getGTS().addGraphListener(listener);
 	}
@@ -159,6 +171,6 @@ public abstract class AbstractStrategy implements Strategy {
 	/** Indicates whether the strategy should use aliasing or not. Default value is true. */
 	// TODO this is set to false until the aliased matcher is debugged
 	protected boolean aliasing = true;
-	
-	
+	/** strategy for locally exploring a single state */
+//	private Strategy localExplorer = new ExploreStateStrategy();
 }
