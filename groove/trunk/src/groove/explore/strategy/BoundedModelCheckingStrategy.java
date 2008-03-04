@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BoundedModelCheckingStrategy.java,v 1.1 2008-02-20 09:28:20 kastenberg Exp $
+ * $Id: BoundedModelCheckingStrategy.java,v 1.2 2008-03-04 14:44:51 kastenberg Exp $
  */
 package groove.explore.strategy;
 
@@ -30,11 +30,25 @@ package groove.explore.strategy;
  * information, neither to know from where it backtracked. 
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 public interface BoundedModelCheckingStrategy<T>  extends ModelCheckingStrategy<T> {
 
+	/**
+	 * Sets the boundary specification used in the strategy.
+	 * @param boudary the boundary specification to use
+	 */
 	public void setBoundary(Boundary boudary);
 
+	/**
+	 * Returns the boundary specification used in the strategy.
+	 * @return the boundary specification
+	 */
 	public Boundary getBoundary();
+
+	/**
+	 * Checks whether all states have been fully explored.
+	 * @return <tt>true</tt> if there are states left, <tt>false</tt> otherwise
+	 */
+	public boolean finished();
 }
