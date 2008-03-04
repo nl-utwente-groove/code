@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.87 2008-02-29 11:17:58 fladder Exp $
+ * $Id: Simulator.java,v 1.88 2008-03-04 14:51:17 kastenberg Exp $
  */
 package groove.gui;
 
@@ -69,6 +69,7 @@ import groove.trans.RuleMatch;
 import groove.trans.RuleNameLabel;
 import groove.trans.SystemProperties;
 import groove.util.Groove;
+import groove.util.GrooveModules;
 import groove.verify.CTLFormula;
 import groove.verify.CTLModelChecker;
 import groove.verify.TemporalFormula;
@@ -135,13 +136,14 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.87 $
+ * @version $Revision: 1.88 $
  */
 public class Simulator {
     /**
      * Constructs a simulator with an empty graph grammar.
      */
     public Simulator() {
+    	loadModules();
         initGrammarLoaders();
         getFrame();
     }
@@ -195,7 +197,27 @@ public class Simulator {
         getFrame().setVisible(true);
     }
 
-	/**
+    /**
+     * Load the different modules.
+     */
+    private void loadModules() {
+    	loadLTLModule();
+    }
+
+    /**
+     * LTL verification is only supported on a selection of platforms.
+     */
+    private void loadLTLModule() {
+        if (System.getProperty("os.name").startsWith("Windows") ||
+        	System.getProperty("os.name").startsWith("Linux") ||
+        	System.getProperty("os.name").startsWith("FreeBSD")) {
+        	System.setProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION, GrooveModules.GROOVE_MODULE_ENABLED);
+        } else {
+        	System.setProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION, GrooveModules.GROOVE_MODULE_DISABLED);
+        }
+    }
+
+    /**
      * Returns the currently loaded graph grammar, or <tt>null</tt> if none is loaded.
      */
     public DefaultGrammarView getCurrentGrammar() {
@@ -469,11 +491,11 @@ public class Simulator {
 	/**
 	 * Returns the ctl formula providing action permanently associated with this simulator.
 	 */
-	public Action getProvideCTLFormulaAction() {
-		if (provideCTLFormulaAction == null) {
-			provideCTLFormulaAction = new ProvideCTLFormulaAction();
+	public Action getProvideTemporalFormulaAction() {
+		if (provideTemporalFormulaAction == null) {
+			provideTemporalFormulaAction = new ProvideTemporalFormulaAction();
 		}
-		return provideCTLFormulaAction;
+		return provideTemporalFormulaAction;
 	}
 
 	/** Returns the redo action permanently associated with this simulator. */
@@ -2169,7 +2191,7 @@ public class Simulator {
     private ShowResultAction showResultAction;
 
     /** The ctl formula providing action permanently associated with this simulator. */
-    private ProvideCTLFormulaAction provideCTLFormulaAction;
+    private ProvideTemporalFormulaAction provideTemporalFormulaAction;
         
 	/** Starts a simulator, optionally setting the graph production system and start state. */
 	public static void main(String[] args) {
@@ -2183,6 +2205,7 @@ public class Simulator {
 	            simulator = new Simulator(args[0], args[1]);
 	        else
 	            throw new IOException("Usage: Simulator [<production-system> [<start-state>]]");
+//	        simulator.loadModules();
 	        simulator.start();
 	    } catch (IOException exc) {
 	        exc.printStackTrace();
@@ -3057,9 +3080,9 @@ public class Simulator {
     /**
      * Action for inputting a CTL formula.
      */
-    private class ProvideCTLFormulaAction extends AbstractAction implements Refreshable {
+    private class ProvideTemporalFormulaAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
-    	ProvideCTLFormulaAction() {
+    	ProvideTemporalFormulaAction() {
     		super(Options.PROVIDE_CTL_FORMULA_ACTION_NAME);
     		setEnabled(true);
     		addRefreshable(this);
@@ -3274,6 +3297,10 @@ public class Simulator {
     
     
     ExploreStateStrategy exploreState;
+    /**
+     * Returns the explore-strategy for exploring a single state.
+     * @return the explore-strategy for exploring a single state
+     */
     public ExploreStateStrategy getExploreState() {
     	if (this.exploreState == null) {
     		this.exploreState = new ExploreStateStrategy();
