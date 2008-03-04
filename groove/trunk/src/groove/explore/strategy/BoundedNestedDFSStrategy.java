@@ -12,21 +12,21 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BoundedNestedDFSStrategy.java,v 1.3 2008-02-22 13:02:44 rensink Exp $
+ * $Id: BoundedNestedDFSStrategy.java,v 1.4 2008-03-04 14:45:13 kastenberg Exp $
  */
-
 package groove.explore.strategy;
 
 import groove.explore.result.CycleAcceptor;
 import groove.explore.util.RandomChooserInSequence;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
+import groove.lts.ProductTransition;
 import groove.verify.BuchiGraphState;
+import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
 
-import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.List;
+import java.util.Set;
 
 /** 
  * This depth-first strategy represents the blue search of a nested
@@ -40,13 +40,78 @@ import java.util.List;
  * way of setting the next state to be explored. If a potential
  * next state crosses the boundary, an other next state is selected.
  * Checking whether the system has been fully checked is done by the
- * method {@link NestedDFSStrategy#finished()}.
+ * method {@link BoundedModelCheckingStrategy#finished()}.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
-public class BoundedNestedDFSStrategy extends NestedDFSStrategy implements BoundedModelCheckingStrategy<GraphState> {
-    @Override
+public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrategy<GraphState> {
+
+	/**
+	 * The next step makes atomic the full exploration of a state.
+	 */
+	@Override
+	public boolean next() {
+		if (getAtBuchiState() == null) {
+			if (finished()) {
+				getProductGTS().removeListener(this.collector);
+				return false;
+			}
+		}
+
+		// put current state on the stack
+		searchStack().push(getAtBuchiState());
+		this.atState = this.getAtBuchiState().getGraphState();
+		// colour state cyan as being on the search stack
+		getAtBuchiState().setColour(ModelChecking.cyan());
+
+		// fully explore the current state
+		exploreState(this.atState);
+		this.collector.reset();
+
+		// now look in the GTS for the outgoing transitions of the
+		// current state with the current Buchi location and add
+		// the resulting combined transition to the product GTS
+
+		Set<GraphTransition> outTransitions = getGTS().outEdgeSet(getAtState());
+    	Set<String> applicableRules = filterRuleNames(outTransitions);
+
+        for (BuchiTransition nextPropertyTransition: getAtBuchiLocation().outTransitions()) {
+        	if (isEnabled(nextPropertyTransition, applicableRules)) {
+        		boolean finalState = true;
+        		for (GraphTransition nextTransition: getGTS().outEdgeSet(getAtBuchiState().getGraphState())) {
+        			if (nextTransition.getEvent().getRule().isModifying()) {
+        				finalState = false;
+        				
+//            			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), nextTransition, nextPropertyTransition.getTargetLocation());
+            			Set<? extends ProductTransition> productTransitions = addProductTransition(nextTransition, nextPropertyTransition.getTargetLocation());
+            			assert (productTransitions.size() <= 1) : "There should be at most one target state instead of " + productTransitions.size();
+            			if (counterExample(getAtBuchiState(), productTransitions.iterator().next().target())) {
+            				// notify counter-example
+            				for (BuchiGraphState state: searchStack()) {
+            					getResult().add(state.getGraphState());
+            				}
+            				return true;
+            			}
+        			}
+        		}
+        		if (finalState) {
+        			Set<? extends ProductTransition> productTransitions = addProductTransition(null, nextPropertyTransition.getTargetLocation()); 
+//        			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), null, nextPropertyTransition.getTargetLocation());
+        			assert (productTransitions.size() <= 1) : "There should be at most one target state instead of " + productTransitions.size();
+        		}
+        	}
+        	// if the transition of the property automaton is not enabled
+        	// the states reached in the system automaton do not have to
+        	// be explored further since all paths starting from here
+        	// will never yield a counter-example
+        }
+
+		updateAtState();
+		return true;
+	}
+
+	@Override
 	protected void updateAtState() {
 		Iterator<? extends GraphState> nextStateIter = getAtBuchiState().getNextStateIter();
 		if (nextStateIter.hasNext()) {
@@ -65,7 +130,7 @@ public class BoundedNestedDFSStrategy extends NestedDFSStrategy implements Bound
 					assert (newState instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a " + newState.getClass();
 					if (newState.getGraphState() instanceof GraphTransition) {
 						GraphTransition transition = (GraphTransition) newState.getGraphState();
-						if (!boundary.crossingBoundary(transition)) {
+						if (!getBoundary().crossingBoundary(transition)) {
 							this.atBuchiState = newState;
 							return;
 						} else {
@@ -136,34 +201,6 @@ public class BoundedNestedDFSStrategy extends NestedDFSStrategy implements Bound
 		return true;
 	}
 
-	public void setBoundary(Boundary boundary) {
-		this.boundary = boundary;
-	}
-
-	public Boundary getBoundary() {
-		return boundary;
-	}
-
-	/**
-	 * Returns the list of boundary-graphs.
-	 * @return the list of boundary-graphs.
-	 */
-	public List<BuchiGraphState> boundaryGraphs() {
-		return boundaryGraphs;
-	}
-
-	/**
-	 * Add a state to the list of boundary-graphs.
-	 * @param boundaryState the state to be added
-	 * @return see {@link List#add(Object)}
-	 */
-	public boolean addBoundaryGraph(BuchiGraphState boundaryState) {
-		return boundaryGraphs().add(boundaryState);
-	}
-
-	/** Returns a random open successor of a state, if any. 
-	 * Returns null otherwise. 
-	 */
 	@Override
 	protected GraphState getRandomOpenBuchiSuccessor(BuchiGraphState state) {
 		Iterator<? extends GraphState> sucIter = state.getNextStateIter();
@@ -181,14 +218,4 @@ public class BoundedNestedDFSStrategy extends NestedDFSStrategy implements Bound
 		}
 		return chooser.pickRandom();
 	}
-
-	/**
-	 * The boundary for this strategy.
-	 */
-	private Boundary boundary;
-
-	/**
-	 * A list of graphs reached by transitions crossing the (previous) boundary
-	 */
-	private List<BuchiGraphState> boundaryGraphs = new ArrayList<BuchiGraphState>();
 }
