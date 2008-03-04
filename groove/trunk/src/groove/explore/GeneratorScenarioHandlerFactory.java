@@ -2,16 +2,26 @@ package groove.explore;
 
 import groove.explore.ScenarioHandlerFactory.AbstractConditionalScenarioHandler;
 import groove.explore.ScenarioHandlerFactory.AbstractScenarioHandler;
+import groove.explore.result.Acceptor;
 import groove.explore.result.ConditionalAcceptor;
+import groove.explore.result.CycleAcceptor;
 import groove.explore.result.EmptyAcceptor;
 import groove.explore.result.EmptyResult;
 import groove.explore.result.ExploreCondition;
 import groove.explore.result.FinalStateAcceptor;
 import groove.explore.result.Result;
 import groove.explore.result.SizedResult;
+import groove.explore.strategy.Boundary;
+import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ConditionalStrategy;
+import groove.explore.strategy.GraphNodeSizeBoundary;
 import groove.explore.strategy.Strategy;
+import groove.gui.FormulaDialog;
+import groove.gui.Simulator;
 import groove.lts.GraphState;
+import groove.lts.ProductGTS;
+
+import java.util.Scanner;
 
 
 /**
@@ -240,4 +250,84 @@ public class GeneratorScenarioHandlerFactory {
 		};
 	}
 	
+	/** Retrieves a scenario handler for a scenario constructed from its components.
+	 * @param <T> Type of the result of the scenario.
+	 * @param str Strategy for the scenario.
+	 * @param res Result for the scenario.
+	 * @param acc Acceptor for the scenario.
+	 * @param description A one-sentence description of the scenario.
+	 * @param name A short (one or few words) description of the scenario. Is to be 
+	 * used in menus, or as identification (for instance in command-line options).
+	 * @return
+	 */
+	public static <T> ScenarioHandler getBoundedModelCheckingScenario(
+			final BoundedModelCheckingStrategy<T> str,
+			final String description,
+			final String name) {
+		return new AbstractScenarioHandler() {
+
+			@Override
+			public String getDescription() { return description; }
+
+			@Override
+			public String getName() { return name; }
+
+			@Override
+			public void playScenario() throws InterruptedException {
+				DefaultScenario<T> scenar = new DefaultScenario<T>();
+				CycleAcceptor<T> cycleAcc = new CycleAcceptor<T>();
+				Boundary boundary = new GraphNodeSizeBoundary(8,2);
+				Result<T> result = new SizedResult<T>(1);
+				scenar.setAcceptor((Acceptor<T>) cycleAcc);
+				scenar.setResult(result);
+
+				cycleAcc.setStrategy(str);
+
+//				str.setSimulator(sim);
+				System.out.println("Enter the LTL formula to verify:");
+				Scanner keyboard = new Scanner(System.in);
+				String property = keyboard.nextLine();
+				str.setProperty(property);
+				str.setGTS(getGTS());
+				str.setProductGTS(new ProductGTS(getGTS().getGrammar()));
+				str.setResult(result);
+				str.setBoundary(boundary);
+				scenar.setStrategy(str);
+
+				scenar.setGTS(getGTS());
+				scenar.setState(getState());
+				
+				Runtime runtime = Runtime.getRuntime();
+				try {
+					this.result = scenar.play();
+				} catch (InterruptedException e) {
+					this.result = scenar.getComputedResult();
+					throw e;
+				}
+
+				if (!result.getResult().isEmpty()) {
+					System.err.println("A counter-example of length " + result.getResult().size() + " has been found: " + result.getResult());
+//					sim.notifyCounterExample((Stack<GraphState>) res.getResult().iterator().next());
+				}
+	            System.runFinalization();
+	            System.gc();
+	            long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+	            
+	            System.err.println("Memory in use: " + (usedMemory / 1024) + " kB");
+			}
+
+			protected String getProperty(Simulator sim) {
+				FormulaDialog dialog = sim.getFormulaDialog();
+				dialog.showDialog(sim.getFrame());
+				String property = dialog.getProperty();
+				if (property != null) {
+					return property;
+				}
+				return null;
+			}
+
+			@Override
+			public Class<?> resultType() { return null; }
+		};
+	}
 }
