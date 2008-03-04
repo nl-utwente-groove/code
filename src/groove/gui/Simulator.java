@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.88 2008-03-04 14:51:17 kastenberg Exp $
+ * $Id: Simulator.java,v 1.89 2008-03-04 22:03:35 rensink Exp $
  */
 package groove.gui;
 
@@ -136,7 +136,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.88 $
+ * @version $Revision: 1.89 $
  */
 public class Simulator {
     /**
@@ -602,7 +602,7 @@ public class Simulator {
     File handleSaveGraph(boolean state, Graph graph, String proposedName) {
         getStateFileChooser().setFileFilter(state ? stateFilter : gxlFilter);
         getStateFileChooser().setSelectedFile(new File(proposedName));
-        File selectedFile = ExtensionFilter.showSaveDialog(getStateFileChooser(), getFrame());
+        File selectedFile = ExtensionFilter.showSaveDialog(getStateFileChooser(), getFrame(), null);
         // now save, if so required
         if (selectedFile != null) {
             doSaveGraph(graph, selectedFile);
@@ -2655,7 +2655,7 @@ public class Simulator {
                 jGraph = getRulePanel().getJGraph();
             }
             getExporter().getFileChooser().setSelectedFile(new File(fileName));
-            File selectedFile = ExtensionFilter.showSaveDialog(getExporter().getFileChooser(), getFrame());
+            File selectedFile = ExtensionFilter.showSaveDialog(getExporter().getFileChooser(), getFrame(), null);
             // now save, if so required
             if (selectedFile != null) {
                 try {
