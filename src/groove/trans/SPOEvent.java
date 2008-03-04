@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPOEvent.java,v 1.54 2008-03-03 21:27:40 rensink Exp $
+ * $Id: SPOEvent.java,v 1.55 2008-03-04 11:01:33 fladder Exp $
  */
 package groove.trans;
 
@@ -48,7 +48,7 @@ import java.util.Set;
  * Class representing an instance of an {@link SPORule} for a given
  * anchor map.
  * @author Arend Rensink
- * @version $Revision: 1.54 $ $Date: 2008-03-03 21:27:40 $
+ * @version $Revision: 1.55 $ $Date: 2008-03-04 11:01:33 $
  */
 final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCache> {
 //    /**
@@ -236,7 +236,8 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
 	 * Returns the string of actual parameter values of this event.
 	 */
 	public String getParameterString() {
-    	StringBuilder result = new StringBuilder('(');
+    	StringBuilder result = new StringBuilder();
+    	result.append('(');
     	Map<Integer, Node> map = this.getRule().getParameterNodeMap();
     	if( map != null ) {
     		for( int i = 0; i < map.size(); i++ ) {
