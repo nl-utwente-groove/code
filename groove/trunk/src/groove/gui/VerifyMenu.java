@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: VerifyMenu.java,v 1.4 2008-01-30 09:33:37 iovka Exp $
+ * $Id: VerifyMenu.java,v 1.5 2008-03-04 14:46:56 kastenberg Exp $
  */
 
 package groove.gui;
@@ -23,7 +23,7 @@ import javax.swing.JMenuItem;
 /**
  * Menu item for the simulator for starting the verification process.
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class VerifyMenu extends JMenu {
     /**
@@ -33,8 +33,7 @@ public class VerifyMenu extends JMenu {
      */
     public VerifyMenu(Simulator simulator) {
         super(Options.VERIFY_MENU_NAME);
-        JMenuItem item = new JMenuItem(simulator.getProvideCTLFormulaAction());
-//        item.setEnabled(false);
+        JMenuItem item = new JMenuItem(simulator.getProvideTemporalFormulaAction());
         add(item);
     }
 }
