@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AllTests.java,v 1.4 2008-02-19 15:49:57 iovka Exp $
+ * $Id: AllTests.java,v 1.5 2008-03-04 11:28:04 kastenberg Exp $
  */
 package groove.test;
 
@@ -25,7 +25,7 @@ import junit.framework.TestSuite;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class AllTests {
 
@@ -38,7 +38,7 @@ public class AllTests {
         suite.addTest(new TestSuite(NACTest.class));
         suite.addTest(new TestSuite(HashBagTest.class));
         suite.addTest(new TestSuite(ExplorationTest.class));
-        suite.addTest(new TestSuite(TemporalFormulaTest.class));
+//        suite.addTest(new TestSuite(TemporalFormulaTest.class));
         suite.addTest(new TestSuite(ModelCheckingTest.class));
         suite.addTest(new TestSuite(TreeSetTest.class));
         //$JUnit-END$
