@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: StateGenerator.java,v 1.31 2008-02-20 09:39:43 kastenberg Exp $
+ * $Id: StateGenerator.java,v 1.32 2008-03-04 14:48:00 kastenberg Exp $
  */
 package groove.lts;
 
@@ -33,25 +33,26 @@ import java.util.Set;
 /**
  * Class providing functionality to generate new states in a GTS.
  * @author Arend Rensink
- * @version $Revision $
+ * @version $Revision: 1.32 $
  */
 public class StateGenerator {
 	/** Constructs a state generator with no GTS or system record set. */
 	public StateGenerator() {
 //		this.collector = new AddTransitionListener();
 	}
-	
-	
+
 	public StateGenerator(GTS gts) {
 		super();
 		this.setGTS(gts);
-		
 	}
 
+	/**
+	 * Constructor for a state genenerator for a product gts.
+	 * @param gts the product gts
+	 */
 	public StateGenerator(ProductGTS gts) {
 		super();
 		this.setProductGTS(gts);
-		
 	}
 
 	/**
@@ -70,10 +71,18 @@ public class StateGenerator {
 //		this.applier = null;
 	}
 
+	/**
+	 * Returns the product gts.
+	 * @return the product gts
+	 */
 	public ProductGTS getProductGTS() {
 		return productGts;
 	}
 
+	/**
+	 * Sets the product gts.
+	 * @param gts the product gts
+	 */
 	public void setProductGTS(ProductGTS gts) {
 		this.productGts = gts;
 	}
@@ -272,7 +281,7 @@ public class StateGenerator {
      * If no symmetric state is found, then a fresh target state is added.
      * The method returns the set of target states of all transitions defined by the match.
      * @param source the source state of the new transition
-     * @param the rule match defining the derivation
+     * @param match the rule match defining the derivation
      * @return the set of actually added states
      */
 	public Set<? extends GraphState> addTransition(GraphState source, RuleMatch match, ExploreCache cache) {
@@ -392,6 +401,14 @@ public class StateGenerator {
     }
     
 
+    /**
+     * Adds a transition to the product gts given a source Buechi graph-state,
+     * a graph transition, and a target Buechi location.
+     * @param source the source Buechi graph-state
+     * @param transition the graph transition
+     * @param targetLocation the target Buechi location
+     * @return the added product transition
+     */
     public Set<ProductTransition> addTransition(BuchiGraphState source, GraphTransition transition, BuchiLocation targetLocation) {
     	// we assume that we only add transitions for modifying graph transitions
     	BuchiGraphState target = createBuchiGraphState(source, transition, targetLocation);

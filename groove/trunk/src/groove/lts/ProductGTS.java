@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductGTS.java,v 1.3 2008-03-03 14:56:34 kastenberg Exp $
+ * $Id: ProductGTS.java,v 1.4 2008-03-04 14:47:13 kastenberg Exp $
  */
 package groove.lts;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * Implements LTS and represents GTSs in which states are products of
  * graph-states and Buchi-locations.
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2008-03-03 14:56:34 $
+ * @version $Revision: 1.4 $
  */
 public class ProductGTS implements LTS {
 
@@ -55,15 +55,30 @@ public class ProductGTS implements LTS {
     	this.graphGrammar = grammar;
     }
 
+    /**
+     * Sets the Buechi start-state of the gts.
+     * @param startState the Buechi start-state
+     */
     public void setStartState(BuchiGraphState startState) {
     	addState(startState);
     	this.startState = startState;
     }
 
+    /**
+     * Returns the Buechi start-state of the gts.
+     * @return the Buechi start-state of the gts
+     */
     public BuchiGraphState startBuchiState() {
     	return startState;
     }
 
+    /**
+     * Adds a transition to the product gts. Basically, the transition is
+     * only added to the set of outgoing transitions of the source state.
+     * 
+     * @param transition the transition to be added
+     * @return the singleton set containing the transition added.
+     */
     public Set<ProductTransition> addTransition(ProductTransition transition) {
     	transition.source().addTransition(transition);
     	Set<ProductTransition> result = new HashSet<ProductTransition>(1);
@@ -71,6 +86,14 @@ public class ProductGTS implements LTS {
     	return result;
     }
 
+    /**
+     * Adds a Buechi graph-state to the gts. If there exists an isomorphic
+     * state in the gts, nothing is done, and this isomorphic state is returned.
+     * If it is a new state, this method returns <code>null</code>.
+     * @param newState the state to be added
+     * @return the isomorphic state if such a state is already in the gts,
+     * <code>null</code> otherwise
+     */
     public BuchiGraphState addState(BuchiGraphState newState) {
 //        reporter.start(ADD_STATE);
         // see if isomorphic graph is already in the GTS
@@ -85,6 +108,11 @@ public class ProductGTS implements LTS {
         return result;
     }
 
+    /**
+     * Closes a Buechi graph-state. Currently, listeners are
+     * always notified, even when the state was already closed.
+     * @param state the state to be closed.
+     */
     public void setClosed(BuchiGraphState state) {
     	if (state.setClosed()) {
     		openStates.remove(state);
@@ -95,10 +123,18 @@ public class ProductGTS implements LTS {
     	notifyListenersOfClose(state);
     }
 
+    /**
+     * Returns whether a check for isomorphic states should be performed.
+     * @return always returns <tt>true</tt>
+     */
     public boolean isCheckIsomorphism() {
     	return true;
     }
 
+    /**
+     * Returns the {@link groove.trans.SystemRecord} of this gts.
+     * @return the system-record of this gts
+     */
     public SystemRecord getRecord() {
     	if (record == null) {
     		record = createRecord();
@@ -106,10 +142,18 @@ public class ProductGTS implements LTS {
     	return record;
     }
 
+    /**
+     * Creates a {@link groove.trans.SystemRecord} for this gts.
+     * @return the freshly created system-record for this gts.
+     */
     protected SystemRecord createRecord() {
     	return new SystemRecord(getGrammar());
     }
 
+    /**
+     * Returns the grammar of this gts.
+     * @return the grammar of this gts
+     */
     public GraphGrammar getGrammar() {
     	return graphGrammar;
     }
