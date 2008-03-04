@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleDependencies.java,v 1.18 2008-01-30 09:32:37 iovka Exp $
+ * $Id: RuleDependencies.java,v 1.19 2008-03-04 10:51:27 rensink Exp $
  */
 package groove.trans;
 
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * Class with utilities to compute dependencies between rules in a graph grammar.
  * @author Arend Rensink
- * @version $Revision: 1.18 $ $Date: 2008-01-30 09:32:37 $
+ * @version $Revision: 1.19 $ $Date: 2008-03-04 10:51:27 $
  */
 public class RuleDependencies {
     /** Label text for merges (merger edges and merge embargoes) */
@@ -345,7 +345,7 @@ public class RuleDependencies {
 		}
 		// determine if the rule introduces an isolated node
 		for (Node rhsNode: rhs.nodeSet()) {
-			if (!ruleMorphism.containsValue(rhsNode) && rhs.edgeSet(rhsNode).isEmpty()) {
+			if (!ruleMorphism.containsValue(rhsNode)) { // && rhs.edgeSet(rhsNode).isEmpty()) {
 				produced.add(ANY_NODE);
 			}
 		}    	
