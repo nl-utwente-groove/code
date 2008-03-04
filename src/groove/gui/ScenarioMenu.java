@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ScenarioMenu.java,v 1.3 2008-02-20 09:45:29 kastenberg Exp $
+ * $Id: ScenarioMenu.java,v 1.4 2008-03-04 14:48:57 kastenberg Exp $
  */
 package groove.gui;
 
@@ -29,6 +29,7 @@ import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.SizedResult;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.BranchingStrategy;
+import groove.explore.strategy.BreadthFirstModelCheckingStrategy;
 import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.DepthFirstStrategy2;
 import groove.explore.strategy.GraphNodeSizeBoundary;
@@ -45,6 +46,7 @@ import groove.lts.LTSAdapter;
 import groove.lts.State;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
+import groove.util.GrooveModules;
 import groove.view.DefaultGrammarView;
 
 import java.util.HashMap;
@@ -57,7 +59,7 @@ import javax.swing.JMenu;
  * 
  * @author Arend Rensink
  * @author Iovka Boneva
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class ScenarioMenu extends JMenu implements SimulationListener {
     /**
@@ -119,34 +121,45 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new InvariantViolatedAcceptor<Rule>(), 
         		"", "Check invariant", false);
         addScenarioHandler(handler);
-        
+
         handler = ScenarioHandlerFactory.getConditionalScenario(
         		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new InvariantViolatedAcceptor<Rule>(), 
         		"", "Check invariant", true);
         addScenarioHandler(handler);
 
-        handler = ScenarioHandlerFactory.getModelCheckingScenario(
-        		new NestedDFSStrategy(),
-        		new SizedResult<GraphState>(1),
-        		new CycleAcceptor(), 
-        		"", "Nested Depth-First Search", simulator);
-        addScenarioHandler(handler);
+        // the following explore-strategies are only provided
+        // if the LTL module is loaded
+        if (System.getProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION).equals(GrooveModules.GROOVE_MODULE_ENABLED)) {
+        	handler = ScenarioHandlerFactory.getModelCheckingScenario(
+        			new NestedDFSStrategy(),
+        			new SizedResult<GraphState>(1),
+        			new CycleAcceptor<GraphState>(), 
+        			"", "Nested Depth-First Search", simulator);
+        	addScenarioHandler(handler);
 
-        handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
-        		new BoundedNestedDFSStrategy(),
-        		new SizedResult<GraphState>(1),
-        		new CycleAcceptor(),
-        		new GraphNodeSizeBoundary(8,5),
-        		"", "Bounded Nested Depth-First Search (naive)", simulator);
-        addScenarioHandler(handler);
+        	handler = ScenarioHandlerFactory.getModelCheckingScenario(
+        			new BreadthFirstModelCheckingStrategy(),
+        			new SizedResult<GraphState>(1),
+        			new CycleAcceptor<GraphState>(), 
+        			"", "Breadth-First Search", simulator);
+        	addScenarioHandler(handler);
 
-        handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
-        		new OptimizedBoundedNestedDFSStrategy(),
-        		new SizedResult<GraphState>(1),
-        		new CycleAcceptor(),
-        		new GraphNodeSizeBoundary(8,5),
-        		"", "Bounded Nested Depth-First Search (optimized)", simulator);
-        addScenarioHandler(handler);
+        	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
+        			new BoundedNestedDFSStrategy(),
+        			new SizedResult<GraphState>(1),
+        			new CycleAcceptor<GraphState>(),
+        			new GraphNodeSizeBoundary(8,5),
+        			"", "Bounded Nested Depth-First Search (naive)", simulator);
+        	addScenarioHandler(handler);
+
+        	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
+        			new OptimizedBoundedNestedDFSStrategy(),
+        			new SizedResult<GraphState>(1),
+        			new CycleAcceptor<GraphState>(),
+        			new GraphNodeSizeBoundary(8,5),
+        			"", "Bounded Nested Depth-First Search (optimized)", simulator);
+        	addScenarioHandler(handler);
+        }
 
 //        handler = ScenarioHandlerFactory.getConditionalScenario(
 //        		new RuleBoundedStrategy(), "Only explore states in which a rule is applicable", "Bounded", false);
@@ -160,7 +173,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 
     /**
      * Adds an explication strategy action to the end of this menu.
-     * @param strategy the new exploration strategy
+     * @param handler the new exploration strategy
      */
     public void addScenarioHandler(ScenarioHandler handler) {
         Action generateAction = simulator.createLaunchScenarioAction(handler);
@@ -262,7 +275,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
     private final Map<ScenarioHandler,Action> scenarioActionMap = new HashMap<ScenarioHandler,Action>();
     /** The (permanent) GTS listener associated with this menu. */
     private final GTSListener gtsListener = new GTSListener();
-   
+
     /** Listener that can be refreshed with the current GTS. */
     private class GTSListener extends LTSAdapter {
     	/** Empty constructor with the correct visibility. */
@@ -281,7 +294,7 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
     			setEnabled(true);
     		}
     	}
-    	
+
         @Override
         public void closeUpdate(LTS graph, State explored) {
             assert graph == gts;
@@ -302,6 +315,5 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         private GTS gts;    
         /** The number of open states of the currently loaded LTS (if any). */
         private int openStateCount;
-
     }
 }
