@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: LTLFormula.java,v 1.4 2007-04-29 09:22:36 rensink Exp $
+ * $Id: LTLFormula.java,v 1.5 2008-03-04 14:52:12 kastenberg Exp $
  */
 
 package groove.verify;
@@ -23,7 +23,7 @@ import groove.view.FormatException;
 /**
  * Specific class for parsing LTL formulae.
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2007-04-29 09:22:36 $
+ * @version $Revision: 1.5 $
  */
 public class LTLFormula extends CTLStarFormula {
     @Override
