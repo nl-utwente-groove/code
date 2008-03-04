@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Editor.java,v 1.54 2007-12-03 09:15:23 rensink Exp $
+ * $Id: Editor.java,v 1.55 2008-03-04 22:03:36 rensink Exp $
  */
 package groove.gui;
 
@@ -33,7 +33,6 @@ import groove.io.PriorityFileName;
 import groove.util.Groove;
 import groove.util.Version;
 import groove.view.AspectualView;
-import groove.view.FormatException;
 import groove.view.aspect.AspectGraph;
 
 import java.awt.BorderLayout;
@@ -94,7 +93,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.54 $ $Date: 2007-12-03 09:15:23 $
+ * @version $Revision: 1.55 $ $Date: 2008-03-04 22:03:36 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -273,19 +272,24 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     }
 
     /**
-     * Handler method to execute a {@link Editor.SaveGraphAction}.
-     * Invokes a file chooser dialog, and calls {@link #doSaveGraph(File)} 
-     * if a file is selected. 
+     * Handler method to execute a {@link Editor.SaveGraphAction} or {@link SaveGraphAsAction}.
+     * If the action was save-as, or there is no model name, invokes a file chooser dialog. 
+     * Calls {@link #doSaveGraph(File)} if a file is selected. 
      * The return value is the save file, or <code>null</code> if nothing was saved.
+     * @param as if <code>true</code>, the action was save-as and a save dialog should
+     * always be shown
      */
-    protected File handleSaveGraph() {
+    protected File handleSaveGraph(boolean as) {
     	if (getOptions().isSelected(Options.PREVIEW_ON_SAVE_OPTION) && !handlePreview(null)) {
     		return null;
     	} else if (toAspectGraph().hasErrors()) {
     		JOptionPane.showMessageDialog(getFrame(), "Cannot save graph with syntax errors", null, JOptionPane.WARNING_MESSAGE);
     		return null;
     	} else {
-			File toFile = ExtensionFilter.showSaveDialog(getGraphChooser(), getGraphPanel());
+    		File toFile = getCurrentFile();
+    		if (as || toFile == null) {
+    			toFile = ExtensionFilter.showSaveDialog(getGraphChooser(), getGraphPanel(), toFile);
+    		}
 			if (toFile != null) {
 				try {
 					doSaveGraph(toFile);
@@ -371,7 +375,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * @param toFile the file to save to
      * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
      */
-    private void doSaveGraph(File toFile) throws FormatException, IOException { 
+    private void doSaveGraph(File toFile) throws IOException { 
         AspectGraph saveGraph = toAspectGraph();
         layoutGxl.marshalGraph(saveGraph, toFile);
         setGraphSaved();
@@ -572,6 +576,16 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 		return saveAction;
 	}
 
+    /**
+	 * Lazily creates and returns the action to save the current graph.
+	 */
+	private Action getSaveGraphAsAction() {
+		if (saveAsAction == null) {
+			saveAsAction = new SaveGraphAsAction();
+		}
+		return saveAsAction;
+	}
+
 	/**
      * Lazily creates and returns the action to set the editor to selection mode.
      */
@@ -652,6 +666,18 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	protected MyFileChooser getGraphChooser() {
 		if (graphChooser == null) {
 			graphChooser = new MyFileChooser();
+    		// listen to file filter changes; possibly we have to update the editor role
+			graphChooser.addPropertyChangeListener(JFileChooser.FILE_FILTER_CHANGED_PROPERTY, new PropertyChangeListener() {
+				public void propertyChange(PropertyChangeEvent evt) {
+					FileFilter filter = (FileFilter) evt.getNewValue();
+					if (graphChooser.isRuleFilter(filter)) {
+						setRole(Groove.RULE_ROLE);
+					} else if (graphChooser.isStateFilter(filter)) {
+						setRole(Groove.GRAPH_ROLE);
+					}
+				}
+    		});
+
 //			graphOpenChooser.addChoosableFileFilter(graphFilter);
 		}
 		return graphChooser;
@@ -739,7 +765,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * Sets the edit role to {@link Groove#GRAPH_ROLE} or {@link Groove#RULE_ROLE}.
      * @param role the edit role to be set; if <code>null</code>, it is set to {@link Groove#GRAPH_ROLE}.
      * @return <code>true</code> if the edit type was actually changed; <code>false</code> if it 
-     * was already equal to <code>type</code>
+     * was already equal to <code>role</code>
      */
     boolean setRole(String role) {
     	if (role == null) {
@@ -857,6 +883,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 	    result.add(getOpenGraphAction());
 	    result.addSeparator();
 	    result.add(getSaveGraphAction());
+	    // Save as not yet enabled (for backward compatibility reasons)
+	    // result.add(getSaveGraphAsAction());
 	    result.add(getExportGraphAction());
 	    result.addSeparator();
 	    result.add(getQuitAction());
@@ -1224,7 +1252,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
                 null,
                 JOptionPane.YES_NO_CANCEL_OPTION);
             if (res == JOptionPane.YES_OPTION) {
-                File toFile = handleSaveGraph();
+            	// save-as property set to true, for backward compatibility reasons
+                File toFile = handleSaveGraph(true);
                 return toFile != null;
             } else {
                 return res == JOptionPane.NO_OPTION;
@@ -1397,6 +1426,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     private Action graphPreviewAction;
     /** Action to save the current graph. */
     private Action saveAction;
+    /** Action to save the current graph in a new file. */
+    private Action saveAsAction;
     /** Action to export the current graph in an image format. */
     private Action exportAction;
     /** Action to edit the graph properties. */
@@ -1540,14 +1571,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             putValue(ACCELERATOR_KEY, Options.EXPORT_KEY);
         }
 
-        /** (non-Javadoc)
-         * @see java.awt.event.ActionListener#actionPerformed(java.awt.event.ActionEvent)
-         */
         public void actionPerformed(ActionEvent evt) {
 			if (getModelName() != null) {
                 exporter.getFileChooser().setSelectedFile(new File(getModelName()));
 			}
-			File toFile = ExtensionFilter.showSaveDialog(exporter.getFileChooser(), getFrame());
+			File toFile = ExtensionFilter.showSaveDialog(exporter.getFileChooser(), getFrame(), null);
 			if (toFile != null) {
 				try {
 					exporter.export(getJGraph(), toFile);
@@ -1556,75 +1584,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 				}
 			}
         }
-//
-//        /**
-//         * Exports the currently edited model, including hidden and emphasis, to an image file.
-//         * @param filter the filter that determines the format to export to
-//         * @param toFile the file to save to
-//         * @throws IOException if <tt>fromFile</tt> did not contain a correctly formatted graph
-//         */
-//        private void doExportGraph(ExtensionFilter filter, File toFile) throws IOException {
-//            if (filter == fsmFilter) {
-//                PrintWriter writer = new PrintWriter(new FileWriter(toFile));
-//                Converter.graphToFsm(getPlainGraph(), writer);
-//                writer.close();
-//            } else {
-//                String formatName = filter.getExtension().substring(1);
-//                Iterator<ImageWriter> writerIter = ImageIO.getImageWritersBySuffix(formatName);
-//                if (writerIter.hasNext()) {
-//                    ImageIO.write(jgraph.toImage(), formatName, toFile);
-//                } else {
-//                    showErrorDialog("No image writer found for " + filter.getDescription(), null);
-//                }
-//            }
-//        }
-//        
+        
         private final Exporter exporter = new Exporter();
-//
-//    	/**
-//    	 * Returns a file chooser for exporting graphs, after lazily creating it.
-//    	 */
-//    	private JFileChooser getExportChooser() {
-//    		if (exportChooser == null) {
-//    			exportChooser = new GrooveFileChooser();
-//    			exportChooser.setAcceptAllFileFilterUsed(false);
-//    			exportChooser.addChoosableFileFilter(fsmFilter);
-//    			exportChooser.addChoosableFileFilter(jpgFilter);
-//    			exportChooser.addChoosableFileFilter(pngFilter);
-//    			exportChooser.addChoosableFileFilter(epsFilter);
-//    			exportChooser.setFileFilter(pngFilter);
-//    			exportChooser.setCurrentDirectory(new File(Groove.WORKING_DIR));
-//    		}
-//    		return exportChooser;
-//    	}
-//
-//        /**
-//         * File chooser for export actions.
-//         */
-//        private JFileChooser exportChooser;
-//
-//        /**
-//         * Extension filter used for exporting the graph in fsm format.
-//         */
-//        private final ExtensionFilter fsmFilter = Groove.createFsmFilter();
-//
-//        /**
-//         * Extension filter used for exporting the graph in jpeg format.
-//         */
-//        private final ExtensionFilter jpgFilter = new ExtensionFilter("JPEG image files",
-//                Groove.JPG_EXTENSION);
-//
-//        /**
-//         * Extension filter used for exporting the graph in PNG format.
-//         */
-//        private final ExtensionFilter pngFilter = new ExtensionFilter("PNG files",
-//                Groove.PNG_EXTENSION);
-//
-//        /**
-//         * Extension filter used for exporting the graph in EPS format.
-//         */
-//        private final ExtensionFilter epsFilter = new ExtensionFilter("EPS files",
-//                Groove.EPS_EXTENSION);
     }
 
 
@@ -1681,7 +1642,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             handleQuit();
         }
     }
-    
+
     /**
      * Action to save the current state of the editor into a file.
      */
@@ -1694,7 +1655,22 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         @Override
         public void actionPerformed(ActionEvent evt) {
             super.actionPerformed(evt);
-            handleSaveGraph();
+        	// save-as property set to true, for backward compatibility reasons
+            handleSaveGraph(true);
+        }
+    }
+
+    /**
+     * Action to save the current state of the editor into a new file.
+     */
+    private class SaveGraphAsAction extends AbstractAction {
+        /** Constructs an instance of the action. */
+        protected SaveGraphAsAction() {
+            super(Options.SAVE_AS_ACTION_NAME);
+        }
+    
+        public void actionPerformed(ActionEvent evt) {
+            handleSaveGraph(true);
         }
     }
 
@@ -1795,7 +1771,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.54 $
+     * @version $Revision: 1.55 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */
@@ -1826,9 +1802,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
             resetChoosableFileFilters();
             setAcceptAllFileFilterUsed(true);
             addChoosableFileFilter(getGraphFilter());
-            setAccessory(null);
-            setCurrentDirectory(getCurrentDir());
-            setSelectedFile(null);
+            if (getCurrentFile() != null) {
+            	setCurrentDirectory(getCurrentFile().getParentFile());
+            	rescanCurrentDirectory();
+            }
+            setSelectedFile(new File(""));
             int result = super.showOpenDialog(parent);
             return result;
         }
@@ -1839,38 +1817,39 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 			resetChoosableFileFilters();
 			setAcceptAllFileFilterUsed(false);
 			setFilters(hasGraphRole());
-			// setAccessory(getRolePanel());
-			setCurrentDirectory(getCurrentDir());
-			setSelectedFile(getSaveFile());
+			if (getCurrentFile() != null) {
+				setCurrentDirectory(getCurrentFile().getParentFile());
+				rescanCurrentDirectory();
+				setSelectedFile(getCurrentFile());
+			}
 			// get the file to write to
-			listenToFilterChanges = true;
 			result = super.showSaveDialog(parent);
 			lastSaveFilter = getFileFilter();
-			listenToFilterChanges = false;
 			return result;
 		}
-
-		/**
-		 * Returns the name of the file to be saved. This is derived from the
-		 * model name.
-		 */
-		private File getSaveFile() {
-            String graphName = getModelName();
-			return graphName == null ? null : new File(graphName);
-		}
- 
-        @Override
-		public void setFileFilter(FileFilter filter) {
-			super.setFileFilter(filter);
-			setSelectedFile(getSaveFile());
-			if (listenToFilterChanges) {
-				if (isRuleFilter(filter)) {
-					setRole(Groove.RULE_ROLE);
-				} else if (isStateFilter(filter)) {
-					setRole(Groove.GRAPH_ROLE);
-				}
-			}
-		}
+//
+//		/**
+//		 * Returns the name of the file to be saved. This is derived from the
+//		 * model name.
+//		 */
+//		private File getSaveFile() {
+////            String graphName = getModelName();
+////			return graphName == null ? null : new File(graphName);
+//			return currentFile;
+//		}
+//
+//		@Override
+//		public void setFileFilter(FileFilter filter) {
+//			super.setFileFilter(filter);
+////			setSelectedFile(getSaveFile());
+//			if (listenToFilterChanges) {
+//				if (isRuleFilter(filter)) {
+//					setRole(Groove.RULE_ROLE);
+//				} else if (isStateFilter(filter)) {
+//					setRole(Groove.GRAPH_ROLE);
+//				}
+//			}
+//		}
 
 		/**
          * Sets the file filters to either those that accept graphs, or rules.
@@ -1890,19 +1869,19 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         
         /** Determines if a given file filter is dedicated to graph states. */
         private boolean isStateFilter(FileFilter filter) {
-            return filter == getStateFilter();
+            return filter == getStateFilter() || filter == getGxlFilter();
         }
         
         /** Determines if a given file filter is dedicated to rules. */
         private boolean isRuleFilter(FileFilter filter) {
             return filter == getRuleFilter();
         }
-
-        /** Retrieves the directory file from the #currentFile */
-        private File getCurrentDir() {
-            return getCurrentFile() == null ? new File(Groove.WORKING_DIR) : getCurrentFile().getAbsoluteFile().getParentFile();
-        }
-        
+//
+//        /** Retrieves the directory file from the #currentFile */
+//        private File getCurrentDir() {
+//            return getCurrentFile() == null ? new File(Groove.WORKING_DIR) : getCurrentFile().getAbsoluteFile().getParentFile();
+//        }
+//        
         /** Lazily creates and returns the state filter. */
         private ExtensionFilter getStateFilter() {
         	if (stateFilter == null) {
@@ -1970,9 +1949,6 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         
         /** Last file filter used in a save dialog. */
         private FileFilter lastSaveFilter;
-
-        /** Flag indicating that filter changes may change the edit type. */
-        private boolean listenToFilterChanges;
         /**
          * Extension filter for state files.
          */

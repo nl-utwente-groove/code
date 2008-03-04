@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.34 2008-02-29 11:02:18 fladder Exp $
+ * $Id: Options.java,v 1.35 2008-03-04 22:03:36 rensink Exp $
  */
 package groove.gui;
 
@@ -40,7 +40,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.34 $
+ * @version $Revision: 1.35 $
  */
 public class Options {
     /** 
@@ -206,6 +206,10 @@ public class Options {
 	 * Save action name 
 	 */
 	public static final String SAVE_ACTION_NAME = "Save ...";
+	/**
+	 * Save-as action name 
+	 */
+	public static final String SAVE_AS_ACTION_NAME = "Save as...";
 	/**
 	 * Save grammar action name 
 	 */
