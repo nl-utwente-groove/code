@@ -1,5 +1,4 @@
-/*
- * GROOVE: GRaphs for Object Oriented VErification
+/* GROOVE: GRaphs for Object Oriented VErification
  * Copyright 2003--2007 University of Twente
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); 
@@ -22,6 +21,7 @@ import groove.graph.GraphShape;
 
 /**
  * Listener that tests if any transitions are added to the LTS.
+ * @version $Revision $
  */
 public class AddTransitionListener extends LTSAdapter {
 	/**
