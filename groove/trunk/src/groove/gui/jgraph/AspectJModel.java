@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.33 2008-01-09 16:17:49 rensink Exp $
+ * $Id: AspectJModel.java,v 1.34 2008-03-04 10:10:14 fladder Exp $
  */
 package groove.gui.jgraph;
 
@@ -50,8 +50,9 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 import groove.view.aspect.AspectValue;
-import groove.view.aspect.NestingAspect;
 import groove.view.aspect.NamedAspectValue;
+import groove.view.aspect.NestingAspect;
+import groove.view.aspect.ParameterAspect;
 import groove.view.aspect.RuleAspect;
 
 import java.awt.Rectangle;
@@ -69,7 +70,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.34 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -371,6 +372,10 @@ public class AspectJModel extends GraphJModel {
 			AspectValue nesting = getNestingValue(getNode());
 			if (nesting != null) {
 				result.add(0, getQuantifierLine((NamedAspectValue) nesting));
+			}
+			AspectValue param = getNode().getValue(ParameterAspect.getInstance());
+			if( param != null && param instanceof NamedAspectValue ) {
+				result.add(new StringBuilder(((NamedAspectValue)param).getContent()));
 			}
 			return result;
 		}
