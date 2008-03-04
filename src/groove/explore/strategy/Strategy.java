@@ -36,5 +36,9 @@ public interface Strategy {
 	 */
 	public void setGTS(GTS gts);
 
+	/**
+	 * Adds a GTS-listener.
+	 * @param listener
+	 */
 	public void addGTSListener(Acceptor listener);
 }
