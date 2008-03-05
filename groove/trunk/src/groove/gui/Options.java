@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.36 2008-03-05 06:07:23 rensink Exp $
+ * $Id: Options.java,v 1.37 2008-03-05 11:10:11 rensink Exp $
  */
 package groove.gui;
 
@@ -41,7 +41,6 @@ import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
-import javax.swing.event.MenuListener;
 
 import org.jgraph.graph.GraphConstants;
 
@@ -50,7 +49,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.36 $
+ * @version $Revision: 1.37 $
  */
 public class Options {
     /** 
@@ -407,7 +406,7 @@ public class Options {
     }
     
     /** The persistently stored user preferences. */
-    static private final Preferences userPrefs  = Preferences.userNodeForPackage(Options.class);
+    static final Preferences userPrefs  = Preferences.userNodeForPackage(Options.class);
     
     static {
     	try {
@@ -534,7 +533,7 @@ public class Options {
     private final BehaviourOption addBehaviour(final String name, int optionCount) {
     	BehaviourOption result = new BehaviourOption(name, optionCount); 
     	result.setValue(userPrefs.getInt(name, intOptionDefaults.get(name)));
-    	result.addPropertyChangeListener(new PropertyChangeListener() {
+    	result.addPropertyChangeListener(BehaviourOption.SELECTION, new PropertyChangeListener() {
 			public void propertyChange(PropertyChangeEvent e) {
 				userPrefs.putInt(name, (Integer) e.getNewValue());
 			}
