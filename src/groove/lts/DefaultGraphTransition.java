@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: DefaultGraphTransition.java,v 1.18 2008-02-29 11:02:20 fladder Exp $
+ * $Id: DefaultGraphTransition.java,v 1.19 2008-03-05 16:50:10 rensink Exp $
  */
 package groove.lts;
 
@@ -22,7 +22,6 @@ import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
 import groove.graph.Node;
-import groove.graph.WrapperLabel;
 import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
@@ -32,7 +31,7 @@ import groove.trans.RuleMatch;
 /**
  * Models a transition built upon a rule application
  * @author Arend Rensink
- * @version $Revision: 1.18 $ $Date: 2008-02-29 11:02:20 $
+ * @version $Revision: 1.19 $ $Date: 2008-03-05 16:50:10 $
  */
 public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,Label,GraphState> implements GraphTransitionStub, GraphTransition {
     /**

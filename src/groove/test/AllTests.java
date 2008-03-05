@@ -13,19 +13,18 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AllTests.java,v 1.5 2008-03-04 11:28:04 kastenberg Exp $
+ * $Id: AllTests.java,v 1.6 2008-03-05 16:52:11 rensink Exp $
  */
 package groove.test;
 
 import groove.test.verify.ModelCheckingTest;
-import groove.test.verify.TemporalFormulaTest;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class AllTests {
 

@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: SPORule.java,v 1.52 2008-03-03 21:27:40 rensink Exp $
+ * $Id: SPORule.java,v 1.53 2008-03-05 16:52:12 rensink Exp $
  */
 package groove.trans;
 
@@ -35,7 +35,6 @@ import groove.util.Groove;
 import groove.util.NestedIterator;
 import groove.util.TransformIterator;
 import groove.view.FormatException;
-import groove.view.aspect.AspectValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,7 +53,7 @@ import java.util.TreeSet;
  * This implementation assumes simple graphs, and yields 
  * <tt>DefaultTransformation</tt>s.
  * @author Arend Rensink
- * @version $Revision: 1.52 $
+ * @version $Revision: 1.53 $
  */
 public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
     /**
