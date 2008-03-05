@@ -13,25 +13,35 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.35 2008-03-04 22:03:36 rensink Exp $
+ * $Id: Options.java,v 1.36 2008-03-05 06:07:23 rensink Exp $
  */
 package groove.gui;
 
 import groove.gui.jgraph.JAttr;
 
 import java.awt.Font;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 import javax.swing.UnsupportedLookAndFeelException;
+import javax.swing.event.MenuListener;
 
 import org.jgraph.graph.GraphConstants;
 
@@ -40,7 +50,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.35 $
+ * @version $Revision: 1.36 $
  */
 public class Options {
     /** 
@@ -373,6 +383,51 @@ public class Options {
     /** Always replace edited rules. */
     static public final String REPLACE_START_GRAPH_OPTION = "Replace start graph?";
 
+    /** Default value map for the boolean options. */
+    static private final Map<String,Boolean> boolOptionDefaults = new HashMap<String,Boolean>();
+    /** Default value map for the behaviour options. */
+    static private final Map<String,Integer> intOptionDefaults = new HashMap<String,Integer>();
+    
+    static {
+    	boolOptionDefaults.put(SHOW_ANCHORS_OPTION, false);
+    	boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
+    	boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
+    	boolOptionDefaults.put(VERTEX_LABEL_OPTION, true);
+    	boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
+    	boolOptionDefaults.put(SHOW_REMARKS_OPTION, true);
+    	boolOptionDefaults.put(SHOW_BACKGROUND_OPTION, true);
+    	boolOptionDefaults.put(SHOW_VALUE_NODES_OPTION, false);
+    	boolOptionDefaults.put(PREVIEW_ON_CLOSE_OPTION, true);
+    	boolOptionDefaults.put(PREVIEW_ON_SAVE_OPTION, true);
+    	intOptionDefaults.put(START_SIMULATION_OPTION, BehaviourOption.ALWAYS);
+    	intOptionDefaults.put(STOP_SIMULATION_OPTION, BehaviourOption.ASK);
+    	intOptionDefaults.put(DELETE_RULE_OPTION, BehaviourOption.ASK);
+    	intOptionDefaults.put(REPLACE_RULE_OPTION, BehaviourOption.ASK);
+    	intOptionDefaults.put(REPLACE_START_GRAPH_OPTION, BehaviourOption.ASK);
+    }
+    
+    /** The persistently stored user preferences. */
+    static private final Preferences userPrefs  = Preferences.userNodeForPackage(Options.class);
+    
+    static {
+    	try {
+    		// add those default user option values that do not yet exist to the preferences
+    		Set<String> keys = new HashSet<String>(Arrays.asList(userPrefs.keys()));
+    		for (Map.Entry<String,Boolean> defaultsEntry: boolOptionDefaults.entrySet()) {
+    			if (! keys.contains(defaultsEntry.getKey())) {
+    				userPrefs.putBoolean(defaultsEntry.getKey(), defaultsEntry.getValue());
+    			}
+    		}
+    		for (Map.Entry<String,Integer> defaultsEntry: intOptionDefaults.entrySet()) {
+    			if (! keys.contains(defaultsEntry.getKey())) {
+    				userPrefs.putInt(defaultsEntry.getKey(), defaultsEntry.getValue());
+    			}
+    		}
+    	} catch (BackingStoreException exc) {
+    		// don't do anything
+    	}
+    }
+    
     /**
      * Convenience method to convert line style codes to names.
      * The line style should equal one of the styles in {@link GraphConstants}.
@@ -394,7 +449,7 @@ public class Options {
     }
     
     /**
-     * Convenienct method to convert line style codes to key strokes.
+     * Convenience method to convert line style codes to key strokes.
      * The line style should equal one of the styles in {@link GraphConstants}.
      * @param lineStyle the integer value representing a line style
      * @return the keystroke of the corresponding line style
@@ -458,9 +513,15 @@ public class Options {
      * @param name the name of the checkbox menu item to add
      * @return the added {@link javax.swing.JCheckBoxMenuItem}
      */
-    private final JCheckBoxMenuItem addCheckbox(String name) {
-    	JCheckBoxMenuItem result = new JCheckBoxMenuItem(name); 
+    private final JCheckBoxMenuItem addCheckbox(final String name) {
+    	JCheckBoxMenuItem result = new JCheckBoxMenuItem(name);
+    	result.setSelected(userPrefs.getBoolean(name, boolOptionDefaults.get(name)));
     	itemMap.put(name, result);
+    	result.addItemListener(new ItemListener() {
+			public void itemStateChanged(ItemEvent e) {
+				userPrefs.putBoolean(name, e.getStateChange() == ItemEvent.SELECTED);
+			}
+    	});
     	return result;
     }
 
@@ -470,8 +531,14 @@ public class Options {
      * @param name the name of the behaviour menu item to add
      * @return the added {@link javax.swing.JCheckBoxMenuItem}
      */
-    private final BehaviourOption addBehaviour(String name, int optionCount) {
+    private final BehaviourOption addBehaviour(final String name, int optionCount) {
     	BehaviourOption result = new BehaviourOption(name, optionCount); 
+    	result.setValue(userPrefs.getInt(name, intOptionDefaults.get(name)));
+    	result.addPropertyChangeListener(new PropertyChangeListener() {
+			public void propertyChange(PropertyChangeEvent e) {
+				userPrefs.putInt(name, (Integer) e.getNewValue());
+			}
+    	});
     	itemMap.put(name, result);
     	return result;
     }

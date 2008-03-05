@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Editor.java,v 1.55 2008-03-04 22:03:36 rensink Exp $
+ * $Id: Editor.java,v 1.56 2008-03-05 06:07:23 rensink Exp $
  */
 package groove.gui;
 
@@ -53,6 +53,8 @@ import java.util.Collection;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.Map;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.AbstractButton;
@@ -93,7 +95,7 @@ import org.jgraph.graph.GraphUndoManager;
 /**
  * Simplified but usable graph editor.
  * @author Gaudenz Alder, modified by Arend Rensink and Carel van Leeuwen
- * @version $Revision: 1.55 $ $Date: 2008-03-04 22:03:36 $
+ * @version $Revision: 1.56 $ $Date: 2008-03-05 06:07:23 $
  */
 public class Editor implements GraphModelListener, PropertyChangeListener, IEditorModes {
     /** 
@@ -349,6 +351,12 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     protected void doQuit() {
         getFrame().dispose();
         getGraphPanel().dispose();
+        // try to persist the user preferences
+        try {
+			Preferences.userRoot().flush();
+		} catch (BackingStoreException e) {
+			// do nothing
+		}
     }
 
 	/**
@@ -1311,9 +1319,9 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
     	// lazily creates the options 
     	if (options == null) {
     		options = new Options();
-        	options.getItem(Options.SHOW_BACKGROUND_OPTION).setSelected(true);
-        	options.getItem(Options.SHOW_REMARKS_OPTION).setSelected(true);
-        	options.getItem(Options.PREVIEW_ON_SAVE_OPTION).setSelected(true);
+//        	options.getItem(Options.SHOW_BACKGROUND_OPTION).setSelected(true);
+//        	options.getItem(Options.SHOW_REMARKS_OPTION).setSelected(true);
+//        	options.getItem(Options.PREVIEW_ON_SAVE_OPTION).setSelected(true);
     	}
     	return options;
     }
@@ -1771,7 +1779,7 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
      * accelleration; moreover, the <tt>actionPerformed(ActionEvent)</tt> starts by invoking
      * <tt>stopEditing()</tt>.
      * @author Arend Rensink
-     * @version $Revision: 1.55 $
+     * @version $Revision: 1.56 $
      */
     private abstract class ToolbarAction extends AbstractAction {
         /** Constructs an action with a given name, key and icon. */

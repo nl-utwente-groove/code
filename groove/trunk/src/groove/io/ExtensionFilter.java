@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: ExtensionFilter.java,v 1.8 2008-03-04 22:03:49 rensink Exp $
+ * $Id: ExtensionFilter.java,v 1.9 2008-03-05 06:07:46 rensink Exp $
  */
 package groove.io;
 
@@ -24,7 +24,7 @@ import javax.swing.JOptionPane;
 /**
  * Implements a file filter based on filename extension.
  * @author Arend Rensink
- * @version $Revision: 1.8 $ $Date: 2008-03-04 22:03:49 $
+ * @version $Revision: 1.9 $ $Date: 2008-03-05 06:07:46 $
  */
 public class ExtensionFilter extends javax.swing.filechooser.FileFilter 
                              implements java.io.FileFilter {
@@ -176,7 +176,7 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
 	            // apparently we're set to save
 	            res = chooser.getSelectedFile();
 	            // if the file exists, defer definite choice
-	            noChoice = res.exists() && ! res.equals(originalFile);
+	            noChoice = res.exists() && ! res.getAbsoluteFile().equals(originalFile.getAbsoluteFile());
 	            if (noChoice) {
 	                // ask for confirmation before overwriting file
 	                int overwrite = JOptionPane.showConfirmDialog
