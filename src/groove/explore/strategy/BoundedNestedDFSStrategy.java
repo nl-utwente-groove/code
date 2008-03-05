@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BoundedNestedDFSStrategy.java,v 1.5 2008-03-05 08:39:49 kastenberg Exp $
+ * $Id: BoundedNestedDFSStrategy.java,v 1.6 2008-03-05 11:01:56 rensink Exp $
  */
 package groove.explore.strategy;
 
@@ -43,14 +43,12 @@ import java.util.Set;
  * method {@link BoundedModelCheckingStrategy#finished()}.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrategy<GraphState> {
-
 	/**
 	 * The next step makes atomic the full exploration of a state.
 	 */
-	@Override
 	public boolean next() {
 		if (getAtBuchiState() == null) {
 			if (finished()) {
