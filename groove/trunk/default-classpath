@@ -12,6 +12,7 @@
 	<classpathentry kind="lib" path="lib/junit-3_8_1.jar"/>
 	<classpathentry kind="lib" path="lib/groove-gxl-1_0.jar"/>
 	<classpathentry kind="lib" path="lib/ltl2ba4j.jar"/>
+	<classpathentry kind="lib" path="lib/layouts.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
