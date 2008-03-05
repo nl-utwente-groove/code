@@ -13,13 +13,12 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: TemporalFormula.java,v 1.7 2008-02-29 11:18:00 fladder Exp $
+ * $Id: TemporalFormula.java,v 1.8 2008-03-05 16:52:10 rensink Exp $
  */
 
 package groove.verify;
 
 import groove.graph.Label;
-import groove.gui.Simulator;
 import groove.lts.GTS;
 import groove.lts.State;
 import groove.trans.Condition;
@@ -44,7 +43,7 @@ import java.util.Set;
 /**
  * Abstract class as a generalization of LTL and CTL formulas.
  * @author Harmen Kastenberg
- * @version $Revision: 1.7 $ $Date: 2008-02-29 11:18:00 $
+ * @version $Revision: 1.8 $ $Date: 2008-03-05 16:52:10 $
  */
 public abstract class TemporalFormula {
 
