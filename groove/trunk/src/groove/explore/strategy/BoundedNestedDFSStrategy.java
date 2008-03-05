@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BoundedNestedDFSStrategy.java,v 1.4 2008-03-04 14:45:13 kastenberg Exp $
+ * $Id: BoundedNestedDFSStrategy.java,v 1.5 2008-03-05 08:39:49 kastenberg Exp $
  */
 package groove.explore.strategy;
 
@@ -43,7 +43,7 @@ import java.util.Set;
  * method {@link BoundedModelCheckingStrategy#finished()}.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrategy<GraphState> {
 
@@ -85,7 +85,7 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
         				
 //            			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), nextTransition, nextPropertyTransition.getTargetLocation());
             			Set<? extends ProductTransition> productTransitions = addProductTransition(nextTransition, nextPropertyTransition.getTargetLocation());
-            			assert (productTransitions.size() <= 1) : "There should be at most one target state instead of " + productTransitions.size();
+            			assert (productTransitions.size() == 1) : "There should be at most one target state instead of " + productTransitions.size();
             			if (counterExample(getAtBuchiState(), productTransitions.iterator().next().target())) {
             				// notify counter-example
             				for (BuchiGraphState state: searchStack()) {
@@ -98,7 +98,7 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
         		if (finalState) {
         			Set<? extends ProductTransition> productTransitions = addProductTransition(null, nextPropertyTransition.getTargetLocation()); 
 //        			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), null, nextPropertyTransition.getTargetLocation());
-        			assert (productTransitions.size() <= 1) : "There should be at most one target state instead of " + productTransitions.size();
+        			assert (productTransitions.size() == 1) : "There should be at most one target state instead of " + productTransitions.size();
         		}
         	}
         	// if the transition of the property automaton is not enabled
