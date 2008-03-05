@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultModelCheckingStrategy.java,v 1.4 2008-03-04 14:43:26 kastenberg Exp $
+ * $Id: DefaultModelCheckingStrategy.java,v 1.5 2008-03-05 08:41:17 kastenberg Exp $
  */
 package groove.explore.strategy;
 
@@ -54,7 +54,7 @@ import rwth.i2.ltl2ba4j.model.ITransition;
  * are required for strategies that perform model checking activities.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy implements ModelCheckingStrategy<T> {
 
@@ -293,15 +293,17 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     	// we do not have to add new transitions.
     	if (getProductGTS().isOpen(getAtBuchiState())) {
         	result = getProductGenerator().addTransition(getAtBuchiState(), transition, location);
+			assert(result.size() == 1) : "Expected the result to be of size 1 instead of " + result.size();
     	} else {
     		result = new HashSet<ProductTransition>();
     		for (ProductTransition nextTransition: getProductGTS().outEdgeSet(getAtBuchiState())) {
     			if (nextTransition.graphTransition().equals(transition) &&
-    					nextTransition.target().equals(location)) {
+    					nextTransition.target().getBuchiLocation().equals(location)) {
     				result.add(nextTransition);
-    				return result;
     			}
     		}
+			assert(result.size() == 1) : "Expected the result to be of size 1 instead of " + result.size();
+			return result;
     	}
     	return result;
     }
