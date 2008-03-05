@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.89 2008-03-04 22:03:35 rensink Exp $
+ * $Id: Simulator.java,v 1.90 2008-03-05 06:07:23 rensink Exp $
  */
 package groove.gui;
 
@@ -106,6 +106,8 @@ import java.util.Observer;
 import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
@@ -136,7 +138,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.89 $
+ * @version $Revision: 1.90 $
  */
 public class Simulator {
     /**
@@ -813,6 +815,12 @@ public class Simulator {
                 groove.util.Reporter.report(new PrintWriter(System.out));
             }
             getFrame().dispose();
+            // try to persist the user preferences
+            try {
+				Preferences.userRoot().flush();
+			} catch (BackingStoreException e) {
+				// do nothing if the backing store is inaccessible
+			}
         }
     }
 

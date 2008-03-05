@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BehaviourOption.java,v 1.3 2008-01-30 09:33:37 iovka Exp $
+ * $Id: BehaviourOption.java,v 1.4 2008-03-05 06:07:23 rensink Exp $
  */
 package groove.gui;
 
@@ -74,8 +74,10 @@ public class BehaviourOption extends JMenu implements ItemListener {
 			throw new IllegalArgumentException(String.format("Value should be in the range %d-%d", 0, getItemCount()));
 		}
 		if (value != this.value) {
+			int oldValue = this.value;
 			this.value = value;
 			getItem(value).setSelected(true);
+			firePropertyChange(SELECTION, oldValue, value);
 		}
 	}
 	
@@ -173,4 +175,6 @@ public class BehaviourOption extends JMenu implements ItemListener {
 	static private final List<String> standardAnswers3 = Collections.unmodifiableList(Arrays.asList( ASK_TEXT, ALWAYS_TEXT, NEVER_TEXT ));
 	/** Title if the dialog displayed by {@link #confirm(Component, String)}. */
 	static private final String DIALOG_TITLE = "Confirm";
+	/** Property name of the selection property, with values from 0 up to the number of values - 1. */
+	static public final String SELECTION = "selection";
 }
