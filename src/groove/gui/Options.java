@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Options.java,v 1.37 2008-03-05 11:10:11 rensink Exp $
+ * $Id: Options.java,v 1.38 2008-03-05 11:29:42 rensink Exp $
  */
 package groove.gui;
 
@@ -49,7 +49,7 @@ import com.jgoodies.looks.plastic.theme.DesertBlue;
 
 /**
  * @author Arend Rensink
- * @version $Revision: 1.37 $
+ * @version $Revision: 1.38 $
  */
 public class Options {
     /** 
@@ -391,7 +391,7 @@ public class Options {
     	boolOptionDefaults.put(SHOW_ANCHORS_OPTION, false);
     	boolOptionDefaults.put(SHOW_NODE_IDS_OPTION, false);
     	boolOptionDefaults.put(SHOW_STATE_IDS_OPTION, true);
-    	boolOptionDefaults.put(VERTEX_LABEL_OPTION, true);
+    	boolOptionDefaults.put(VERTEX_LABEL_OPTION, false);
     	boolOptionDefaults.put(SHOW_ASPECTS_OPTION, false);
     	boolOptionDefaults.put(SHOW_REMARKS_OPTION, true);
     	boolOptionDefaults.put(SHOW_BACKGROUND_OPTION, true);
@@ -413,7 +413,7 @@ public class Options {
     		// add those default user option values that do not yet exist to the preferences
     		Set<String> keys = new HashSet<String>(Arrays.asList(userPrefs.keys()));
     		for (Map.Entry<String,Boolean> defaultsEntry: boolOptionDefaults.entrySet()) {
-    			if (! keys.contains(defaultsEntry.getKey())) {
+    			if (defaultsEntry.getKey().equals(VERTEX_LABEL_OPTION) || ! keys.contains(defaultsEntry.getKey())) {
     				userPrefs.putBoolean(defaultsEntry.getKey(), defaultsEntry.getValue());
     			}
     		}
@@ -500,7 +500,7 @@ public class Options {
 		addCheckbox(PREVIEW_ON_CLOSE_OPTION);
 		addCheckbox(PREVIEW_ON_SAVE_OPTION);
 		addBehaviour(STOP_SIMULATION_OPTION, 2);
-		addBehaviour(START_SIMULATION_OPTION, 3).setValue(BehaviourOption.ALWAYS);
+		addBehaviour(START_SIMULATION_OPTION, 3);
 		addBehaviour(DELETE_RULE_OPTION, 2);
 		addBehaviour(REPLACE_RULE_OPTION, 3);
 		addBehaviour(REPLACE_START_GRAPH_OPTION, 2);
