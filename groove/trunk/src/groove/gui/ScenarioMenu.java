@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ScenarioMenu.java,v 1.4 2008-03-04 14:48:57 kastenberg Exp $
+ * $Id: ScenarioMenu.java,v 1.5 2008-03-06 11:19:55 kastenberg Exp $
  */
 package groove.gui;
 
@@ -59,7 +59,7 @@ import javax.swing.JMenu;
  * 
  * @author Arend Rensink
  * @author Iovka Boneva
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ScenarioMenu extends JMenu implements SimulationListener {
     /**
@@ -137,12 +137,12 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         			"", "Nested Depth-First Search", simulator);
         	addScenarioHandler(handler);
 
-        	handler = ScenarioHandlerFactory.getModelCheckingScenario(
-        			new BreadthFirstModelCheckingStrategy(),
-        			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(), 
-        			"", "Breadth-First Search", simulator);
-        	addScenarioHandler(handler);
+//        	handler = ScenarioHandlerFactory.getModelCheckingScenario(
+//        			new BreadthFirstModelCheckingStrategy(),
+//        			new SizedResult<GraphState>(1),
+//        			new CycleAcceptor<GraphState>(), 
+//        			"", "Breadth-First Search", simulator);
+//        	addScenarioHandler(handler);
 
         	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
         			new BoundedNestedDFSStrategy(),
