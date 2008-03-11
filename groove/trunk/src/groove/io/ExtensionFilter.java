@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: ExtensionFilter.java,v 1.9 2008-03-05 06:07:46 rensink Exp $
+ * $Id: ExtensionFilter.java,v 1.10 2008-03-11 15:46:59 kastenberg Exp $
  */
 package groove.io;
 
@@ -24,7 +24,7 @@ import javax.swing.JOptionPane;
 /**
  * Implements a file filter based on filename extension.
  * @author Arend Rensink
- * @version $Revision: 1.9 $ $Date: 2008-03-05 06:07:46 $
+ * @version $Revision: 1.10 $ $Date: 2008-03-11 15:46:59 $
  */
 public class ExtensionFilter extends javax.swing.filechooser.FileFilter 
                              implements java.io.FileFilter {
@@ -164,6 +164,7 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
 	 */
 	public static File showSaveDialog(JFileChooser chooser,
 	                                  java.awt.Component parent, File originalFile) {
+		//HARMEN: what if original file is null ?
 	    chooser.rescanCurrentDirectory();
 	    // choose a file name to save to,
 	    // asking confirmation if an existing file is to be overwritten
@@ -176,7 +177,7 @@ public class ExtensionFilter extends javax.swing.filechooser.FileFilter
 	            // apparently we're set to save
 	            res = chooser.getSelectedFile();
 	            // if the file exists, defer definite choice
-	            noChoice = res.exists() && ! res.getAbsoluteFile().equals(originalFile.getAbsoluteFile());
+	            noChoice = res.exists() && (originalFile != null) && ! res.getAbsoluteFile().equals(originalFile.getAbsoluteFile());
 	            if (noChoice) {
 	                // ask for confirmation before overwriting file
 	                int overwrite = JOptionPane.showConfirmDialog
