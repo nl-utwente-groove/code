@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ScenarioMenu.java,v 1.5 2008-03-06 11:19:55 kastenberg Exp $
+ * $Id: ScenarioMenu.java,v 1.6 2008-03-11 15:19:11 kastenberg Exp $
  */
 package groove.gui;
 
@@ -29,7 +29,6 @@ import groove.explore.result.IsRuleApplicableCondition;
 import groove.explore.result.SizedResult;
 import groove.explore.strategy.BoundedNestedDFSStrategy;
 import groove.explore.strategy.BranchingStrategy;
-import groove.explore.strategy.BreadthFirstModelCheckingStrategy;
 import groove.explore.strategy.BreadthFirstStrategy;
 import groove.explore.strategy.DepthFirstStrategy2;
 import groove.explore.strategy.GraphNodeSizeBoundary;
@@ -59,7 +58,7 @@ import javax.swing.JMenu;
  * 
  * @author Arend Rensink
  * @author Iovka Boneva
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class ScenarioMenu extends JMenu implements SimulationListener {
     /**
