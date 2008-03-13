@@ -12,31 +12,36 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AlgebraEdge.java,v 1.8 2007-10-18 14:57:42 rensink Exp $
+ * $Id: AlgebraEdge.java,v 1.9 2008-03-13 14:43:00 rensink Exp $
  */
 package groove.graph.algebra;
 
 import groove.graph.AbstractBinaryEdge;
-import groove.graph.WrapperLabel;
+import groove.graph.DefaultLabel;
+import groove.util.Groove;
 
 /**
  * Instances of this class are edges between {@link groove.graph.algebra.ProductNode}s
  * and {@link groove.graph.algebra.ValueNode}s.
  * 
  * @author Harmen Kastenberg
- * @version $Revision 1.0$ $Date: 2007-10-18 14:57:42 $
+ * @version $Revision 1.0$ $Date: 2008-03-13 14:43:00 $
  */
 // AREND I would call this ArgumentEdge, and include the 
 // number (as derived from the label); in fact, I think a constructor 
 // with an int rather than a label would be more appropriate
-public class AlgebraEdge extends AbstractBinaryEdge<ProductNode,WrapperLabel<Integer>,ValueNode> {
+public class AlgebraEdge extends AbstractBinaryEdge<ProductNode,DefaultLabel,ValueNode> {
 	/** Constructs a fresh edge. */
     public AlgebraEdge(ProductNode source, int number, ValueNode target) {
-        super(source, new WrapperLabel<Integer>(number), target);
+        super(source, DefaultLabel.createLabel(""+Groove.LC_PI+number), target);
+        this.number = number;
     }
     
 	/** Returns the argument number of this edge. */
 	public int getNumber() {
-		return label().getContent();
+		return number;
 	}
+	
+	/** The number of this algebra edge. */
+	private final int number;
 }
