@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /* 
- * $Id: Groove.java,v 1.26 2008-02-12 15:15:34 fladder Exp $
+ * $Id: Groove.java,v 1.27 2008-03-13 14:52:56 rensink Exp $
  */
 package groove.util;
 
@@ -30,6 +30,8 @@ public class Groove {
     public static final String HOME = System.getProperty("user.home");
     /** The system's file separator. */
     public static final String FILE_SEPARATOR = System.getProperty("file.separator");
+    /** Lower case letter pi. */
+    public static final char LC_PI = '\u03C0';
     /** The default sample directory. */
     public static final String SAMPLE_DIR = WORKING_DIR + FILE_SEPARATOR + "samples";
 	/** 
