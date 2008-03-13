@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectParser.java,v 1.15 2008-02-29 11:02:22 fladder Exp $
+ * $Id: AspectParser.java,v 1.16 2008-03-13 14:41:55 rensink Exp $
  */
 package groove.view.aspect;
 
@@ -30,7 +30,7 @@ import java.util.Set;
 /**
  * Class that is responsible for recognising aspects from edge labels.
  * @author Arend Rensink
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  */
 public class AspectParser {
     /** 
@@ -107,10 +107,12 @@ public class AspectParser {
 		String text = plainText.substring(prevIndex);
 		if (text.length() == 0 && ! explicitEnd) {
 			text = null;
-		} else if (convertToCurly) {
-		    text = toCurly(text);
+		} else {
+		    if (convertToCurly) {
+		        text = toCurly(text);
+		    }
 		    // insert value separator if ambiguity may arise
-		    explicitEnd = text.indexOf(VALUE_SEPARATOR) >= 0 && ExprParser.isIdentifierStartChar(text.charAt(0));
+	        explicitEnd = text.indexOf(VALUE_SEPARATOR) >= 0 && ExprParser.isIdentifierStartChar(text.charAt(0));
 		}
 		return createParseData(parsedValues, explicitEnd, text);
     }
