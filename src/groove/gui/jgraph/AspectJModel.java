@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AspectJModel.java,v 1.34 2008-03-04 10:10:14 fladder Exp $
+ * $Id: AspectJModel.java,v 1.35 2008-03-13 14:40:32 rensink Exp $
  */
 package groove.gui.jgraph;
 
@@ -31,6 +31,7 @@ import static groove.view.aspect.RuleAspect.READER;
 import static groove.view.aspect.RuleAspect.REMARK;
 import static groove.view.aspect.RuleAspect.getRuleValue;
 import groove.graph.BinaryEdge;
+import groove.graph.DefaultLabel;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
 import groove.graph.Label;
@@ -50,6 +51,7 @@ import groove.view.aspect.AspectGraph;
 import groove.view.aspect.AspectNode;
 import groove.view.aspect.AspectParser;
 import groove.view.aspect.AspectValue;
+import groove.view.aspect.AttributeAspect;
 import groove.view.aspect.NamedAspectValue;
 import groove.view.aspect.NestingAspect;
 import groove.view.aspect.ParameterAspect;
@@ -70,7 +72,7 @@ import org.jgraph.graph.GraphConstants;
  * Implements jgraph's GraphModel interface on top of an {@link AspectualView}.
  * This is used to visualise rules and attributed graphs.
  * @author Arend Rensink
- * @version $Revision: 1.34 $
+ * @version $Revision: 1.35 $
  */
 public class AspectJModel extends GraphJModel {
 
@@ -555,7 +557,11 @@ public class AspectJModel extends GraphJModel {
         /** This implementation returns the (unparsed) label of the model edge. */
 		@Override
         public Label getLabel(Edge edge) {
-		    return edge.label();
+		    Label result = edge.label();
+		    if (AttributeAspect.ARGUMENT.equals(AttributeAspect.getAttributeValue((AspectEdge) edge))) {
+		        return DefaultLabel.createLabel(""+Groove.LC_PI+result.toString());
+		    }
+		    return result;
 //            return getView().unparse(edge.label());
         }
 
@@ -624,7 +630,10 @@ public class AspectJModel extends GraphJModel {
 			return super.isListable() && RuleAspect.inRule(getEdge());
 		}
 		
-		
+		/** 
+		 * Only returns <code>true</code> if this edge has the same aspect values as
+		 * the source node. This is to prevent ambiguities.
+		 */
 		@Override
 		boolean isDataEdgeSourceLabel() {
 			return super.isDataEdgeSourceLabel() && getEdge().getAspectMap().equals(getSourceNode().getAspectMap());
