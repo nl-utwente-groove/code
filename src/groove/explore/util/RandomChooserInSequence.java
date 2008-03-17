@@ -50,9 +50,15 @@ public class RandomChooserInSequence<E> {
 		this.current = null;
 	}
 	
+	/** The number of currently seen elements. */
 	private int nbSeen = 0;
+	/** The current randomly chosen element, among those already seen. */
 	private E current;
-	private Random rgen = new Random();
+	/** A random generator. 
+	 * Give it a seed (e.g. 0) if for debugging purposes or other reasons
+	 * you want all explorations of a strategy to be the same.
+	 */
+	private static final Random rgen = new Random();
 	
 //	public static void main (String[] args) {
 //		RandomChooserInSequence<Integer> rc = new RandomChooserInSequence<Integer>();
