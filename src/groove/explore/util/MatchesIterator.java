@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: MatchesIterator.java,v 1.4 2008-03-17 16:27:16 iovka Exp $
+ * $Id: MatchesIterator.java,v 1.5 2008-03-17 17:44:06 iovka Exp $
  */
 package groove.explore.util;
 
@@ -29,7 +29,7 @@ import java.util.Set;
  * This implementation is suitable for iterators intended to iterate over 
  * several matches (and not for testing the existence of a match).
  * @author Iovka Boneva
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class MatchesIterator implements Iterator<RuleMatch> {
 	public boolean hasNext() {
@@ -125,13 +125,20 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 	 * @param rules 
 	 */
 	public MatchesIterator (GraphState state, ExploreCache rules) {
-		this.rulesIter = rules;
-		this.state = state;
+		this(state, rules, true);
 		firstRule();
 		goToNext();
 		this.isEndRule = false; 
 	}
 
+	/** A minimal constructor, to be used by sub-classes.
+	 * @param protect just for different signature */
+	protected MatchesIterator (GraphState state, ExploreCache rules, boolean protect) {
+		// minimal, for the use of sub-classes
+		this.state = state;
+		this.rulesIter = rules;
+	}
+	
 	/** Collects the remaining matches for the iterator. 
 	 * @param matches 
 	 * */
