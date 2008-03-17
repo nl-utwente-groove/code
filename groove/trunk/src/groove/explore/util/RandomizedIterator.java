@@ -88,7 +88,10 @@ public class RandomizedIterator<T> implements Iterator<T> {
 	 */
 	private BitSet available;
 	
-	/** A shared random numbers generator for all instances of the class. */
+	/** A shared random generator for all instances of the class. 
+	 * Give it a seed (e.g. 0) if for debugging purposes or other reasons
+	 * you want all explorations of a strategy to be the same.
+	 */
 	private static final Random random = new Random();
 	
 // TESTING METHOD	

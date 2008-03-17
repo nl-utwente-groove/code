@@ -85,7 +85,6 @@ public class DepthFirstStrategy2 extends AbstractBacktrackingStrategy {
 	 * value optimizes memory usage.
 	 */
 	public DepthFirstStrategy2 () {
-		this.aliasing = false;
 		this.explCacheCache = new CacheMap<GraphState,ExploreCache>(cacheSize);
 		// the matches iterator cache is not used, thus its size is left to 0
 	}
