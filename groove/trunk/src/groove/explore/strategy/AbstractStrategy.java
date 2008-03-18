@@ -3,6 +3,7 @@ package groove.explore.strategy;
 import groove.explore.result.Acceptor;
 import groove.explore.util.AliasMatchesIterator;
 import groove.explore.util.ExploreCache;
+import groove.explore.util.LocationCache;
 import groove.explore.util.MatchesIterator;
 import groove.explore.util.RandomChooserInSequence;
 import groove.lts.DefaultGraphNextState;
@@ -125,7 +126,7 @@ public abstract class AbstractStrategy implements Strategy {
 		
 		// First case : the parent is closed
 		GraphState parent = parentOf(getAtState());
-		if (aliasing && parent != null && parent.isClosed()) {
+		if (aliasing && parent != null && parent.isClosed() && !( /* ugly hack to not use aliasing when using control */ cache instanceof LocationCache)) {
 			DefaultGraphNextState s = (DefaultGraphNextState) getAtState();
 			return new AliasMatchesIterator(s, cache, getGTS().getRecord().getEnabledRules(s.getEvent().getRule()), this.getGTS().getRecord().getDisabledRules(s.getEvent().getRule()));
 		}
