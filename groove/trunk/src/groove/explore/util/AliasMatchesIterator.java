@@ -40,26 +40,15 @@ public class AliasMatchesIterator extends MatchesIterator {
 		firstRule();
 		goToNext();
 	}	@Override	public RuleMatch next() {
-		return super.next();
-		//		RuleMatch m;
-//		if (aliasMatchIter != null) {
-//			if (! aliasMatchIter.hasNext()) {
-//				throw new NoSuchElementException();
-//			}
-//			m = aliasMatchIter.next(); 
-//			super.rulesIter.updateMatches(super.currentRule);
-//			super.isEndRule = ! aliasMatchIter.hasNext();
-//		} else {
-//			m = super.next();
-//		}
-//		return m;
 		
-		
-// Tom's version		
-//		if( aliasMatchIter != null && aliasMatchIter.hasNext() ) {//			m = aliasMatchIter.next();
-//			super.rulesIter.updateMatches(super.currentRule);
-//			super.isEndRule = ! aliasMatchIter.hasNext();//		} else {
-//			m = super.next();//		}//		return m;	}	
+		RuleMatch m;
+		if( aliasMatchIter != null && aliasMatchIter.hasNext() ) {
+			m = aliasMatchIter.next();
+		} else {
+			m = super.next();
+		}
+		return m;
+	}	
 	@Override
 	protected void firstRule() {
 		super.firstRule();
@@ -72,10 +61,6 @@ public class AliasMatchesIterator extends MatchesIterator {
 			return true;
 		}
 		return false; 	}
-	
-	// TODO what is this method supposed to do, and to return ?
-	// this method may increment the rule
-	// it may also change the value of matchIter, in order to set it to an alias matches iterator
 	
 	/** Updates the value of matchIter according to matches in the previous state. */
 	private void doAliasSelection() {
@@ -98,7 +83,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 		
 
 		if (currentRule.getPriority() == priority && aliasedRuleMatches.containsKey(currentRule)) {
-			this.matchIter = aliasedRuleMatches.get(currentRule).iterator();
+			aliasMatchIter = aliasedRuleMatches.get(currentRule).iterator();
 			return;
 		}
 		
@@ -109,26 +94,22 @@ public class AliasMatchesIterator extends MatchesIterator {
 		
 		if (currentRule.getPriority() == priority && 
 				! ( (currentRule instanceof SPORule && ((SPORule)currentRule).hasSubRules()) || enabledRules.contains(currentRule) ) ) {
+			// it didn't match in the previous state or no matches left after rematching
 			this.matchIter = new EmptyMatchIter();
 			return;
 		}
 		
-			
-		
-//		
-//		if( currentRule.getPriority() > priority ) {
-//			if( enabledRules.contains(currentRule) ) {
-//				// nothing to do, normal exploration//			} else {//				this.matchIter = new EmptyMatchIter();//			}//		} else if( currentRule.getPriority() == priority ) {////			// same priority, let's see what matched before, and filter what doesn't match anymore//			updateMatches(); // done once//			
-//			boolean doTrue = false;//			if( aliasedRuleMatches.containsKey(currentRule)) {//				this.matchIter = aliasedRuleMatches.get(currentRule).iterator();//				// aliasMatchIter = aliasedRuleMatches.get(currentRule).iterator();
-//				// for this particular rule, the super.matchIter will not be used
-//				// super.matchIter = aliasMatchIter;//				doTrue = true;//			}//			if( (currentRule instanceof SPORule && ((SPORule)currentRule).hasSubRules()) || enabledRules.contains(currentRule) ) {//				// it didn't match in the previous state or no matches left after rematching//				doTrue = true;//			}//			if( doTrue ) {//				return true;//			}//			else {//				this.matchIter = new EmptyMatchIter();//			}//		}//		else if( (currentRule instanceof SPORule && ((SPORule)currentRule).hasSubRules()) || enabledRules.contains(currentRule)) {//				// its either a composite rule or the rule was enabled, or with lower priority//				// nothing to do, normal exploration//		} else {//			// this rule can impossibly match, it was not enabled and it didn't match before//			this.matchIter = new EmptyMatchIter();	//		}
-//		
-//		// TODO remove at the end
-//		return false;
-		
+		if (currentRule.getPriority() < priority && 
+				! ( (currentRule instanceof SPORule && ((SPORule)currentRule).hasSubRules())|| enabledRules.contains(currentRule)) ) {
+			// its neither a composite rule nor the rule was enabled
+			this.matchIter = new EmptyMatchIter();
+		}
 	}
+
 	
-	// TODO : what is this method supposed to do ?
+	/** Initializes a map with all matches from the previous state. 
+	 * The map is precomputed once for all rules.
+	 */
 	private void updateMatches() {
 		if( aliasedRuleMatches == null ) {
 			aliasedRuleMatches = new TreeMap<Rule,List<RuleMatch>>();
@@ -154,6 +135,8 @@ public class AliasMatchesIterator extends MatchesIterator {
 	/** The rules that may be disabled. */
 	private Set<Rule> disabledRules;
 
+	private Iterator<RuleMatch> aliasMatchIter;
+	
 	/** Is used as value for the matchIter when we know that it is empty. */
 	private class EmptyMatchIter implements Iterator<RuleMatch> {
 
