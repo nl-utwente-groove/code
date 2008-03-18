@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.90 2008-03-05 06:07:23 rensink Exp $
+ * $Id: Simulator.java,v 1.91 2008-03-18 12:18:19 fladder Exp $
  */
 package groove.gui;
 
@@ -138,7 +138,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.90 $
+ * @version $Revision: 1.91 $
  */
 public class Simulator {
     /**
@@ -612,7 +612,7 @@ public class Simulator {
         return selectedFile;
     }
     
-    File handleSaveControl(String controlProgram) {
+    File handleSaveControl() {
     	// check if we had a control program
     	File selectedFile = getCurrentGrammar().getControl().getFile();
     	if( selectedFile == null ) {
@@ -620,7 +620,7 @@ public class Simulator {
     	}
 
     	if( selectedFile != null ) {
-    		doSaveControl(controlProgram, selectedFile);
+    		doSaveControl(getCurrentGrammar().getControl().program(), selectedFile);
     	}
     	
     	return selectedFile;
