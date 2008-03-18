@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ControlView.java,v 1.9 2008-02-05 13:28:25 rensink Exp $
+ * $Id: ControlView.java,v 1.10 2008-03-18 12:17:29 fladder Exp $
  */
 package groove.control;
 
@@ -70,25 +70,23 @@ public class ControlView {
 	public ControlView(DefaultGrammarView result, File controlProgramFile) throws IOException  {
 		this.initNamespace(result);
 		this.loadFile(controlProgramFile);
-		this.loadProgram();
+		//this.loadProgram();
 		
-		assert programShape != null;
-		assert automaton != null;
+//		assert programShape != null;
+//		assert automaton != null;
 		
 	}
 	
 	/**
 	 * load the program currently in controlProgram
 	 */
-	public void loadProgram() {
+	public void loadProgram() throws FormatException {
 
 		if( controlProgram == null ) {
-			System.err.println("Error in control: no program available");
-			return;
+			throw new FormatException("Error in control:no program available ");
 		}
 		if( builder == null ) {
-			System.err.println("Error in control: trying to parse before the scope is initialized");
-			return;
+			throw new FormatException("Error in control: trying to parse before the scope is initialized");
 		}
 		try
         {
@@ -114,13 +112,15 @@ public class ControlView {
         }
 		catch(Exception e)
 		{
-			System.err.println(e.getMessage());
+			throw new FormatException("Error in control: load error =>" + e.getMessage());
 		}
 	}
 
 	/** sets the program **/
 	public void setProgram(String program) {
 		this.controlProgram = program;
+		this.programShape = null;
+		this.automaton = null;
 	}
 	
 	/** loads the program from a File **/
@@ -196,6 +196,9 @@ public class ControlView {
 	public ControlAutomaton toAutomaton(GraphGrammar grammar) throws FormatException
 	{
 		builder.finalize(grammar);
+		
+		this.loadProgram();
+		
 		return this.getAutomaton();
 	}
 	

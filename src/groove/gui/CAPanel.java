@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CAPanel.java,v 1.17 2008-02-05 13:28:05 rensink Exp $
+ * $Id: CAPanel.java,v 1.18 2008-03-18 12:18:19 fladder Exp $
  */
 package groove.gui;
 
@@ -55,6 +55,8 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	JTextPane textPanel;
 	DefaultGrammarView grammar;	
 	
+	JButton editButton, doneButton; //, saveButton;
+	
 	/**
 	 * @param simulator The Simulator the panel is added to.
 	 */
@@ -67,31 +69,38 @@ public class CAPanel extends JPanel  implements SimulationListener {
 		this.setLayout(new BorderLayout());
 		JToolBar toolBar = new JToolBar();
 
-		JButton parseButton = new JButton("parse");
-		toolBar.add(parseButton);
-		parseButton.addActionListener(new ParseButtonListener());
+		editButton = new JButton("Edit");
+		toolBar.add(editButton);
+		editButton.addActionListener(new EditButtonListener());
+
+		doneButton = new JButton("Done");
+		toolBar.add(doneButton);
+		doneButton.addActionListener(new DoneButtonListener());
+		doneButton.setEnabled(false);
+
+//		saveButton = new JButton("Save");
+//		toolBar.add(saveButton);
+//		saveButton.addActionListener(new SaveButtonListener());
+//		saveButton.setEnabled(false);
+
+
 		
 //		JButton backButton = new JButton("<<-");
 //		toolBar.add(backButton);
 //		backButton.addActionListener(new BackButtonListener());
-		
-		
+
 		this.add(toolBar, BorderLayout.NORTH);
-		
 		JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		splitPane.setDividerLocation(300);
-		
 		autPanel = new AutomatonPanel(simulator);
-	
 		splitPane.add(autPanel);
 		splitPane.add(textPanel = new JTextPane());
-		
 		textPanel.setFont(textPanel.getFont().deriveFont((float)16));
-
-		
+		textPanel.setEditable(false);
+		textPanel.setEnabled(false);
 		this.add(splitPane, BorderLayout.CENTER);
-		
 		simulator.addSimulationListener(this);
+		
 	}
 	
 	/** 
@@ -180,45 +189,51 @@ public class CAPanel extends JPanel  implements SimulationListener {
 	public void startSimulationUpdate(GTS gts) {
 	}
 
-	class ParseButtonListener implements ActionListener {
+
+	class DoneButtonListener implements ActionListener {
 		
 		public void actionPerformed(ActionEvent e)
 		{
 			ControlView cv = CAPanel.this.grammar.getControl();
 			String program = CAPanel.this.textPanel.getText();
-			if( program == null )
+			if( program == null ) {
 				return;
-			
+			} 
 			if( cv == null ) {
 				return;
 			}
-
-			//CAPanel.this.simulator.doRefreshGrammar();
-			
 			cv.setProgram(CAPanel.this.textPanel.getText());
-			cv.loadProgram();
-			CAPanel.this.simulator.getCurrentGrammar().setControl(cv);
-			CAPanel.this.simulator.setGrammar(CAPanel.this.simulator.getCurrentGrammar());
-			CAPanel.this.simulator.handleSaveControl(cv.program());
+			
+			CAPanel.this.simulator.handleSaveControl();
+			CAPanel.this.simulator.doRefreshGrammar();
+			
+			if( CAPanel.this.grammar.getControl().getAutomaton() != null ) {
+				CAPanel.this.textPanel.setEditable(false);
+				CAPanel.this.textPanel.setEnabled(false);
+				CAPanel.this.editButton.setEnabled(true);
+				CAPanel.this.doneButton.setEnabled(false);
+//				CAPanel.this.saveButton.setEnabled(true);
+			}
 		}
-		
+	}
+
+	class EditButtonListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			CAPanel.this.textPanel.setEditable(true);
+			CAPanel.this.textPanel.setEnabled(true);
+			CAPanel.this.editButton.setEnabled(false);
+			CAPanel.this.doneButton.setEnabled(true);
+//			CAPanel.this.saveButton.setEnabled(false);
+		}
 	}
 	
-//	class BackButtonListener implements ActionListener {
-//		
-//		public void actionPerformed(ActionEvent e)
-//		{
-//			try {
-//				CAPanel.this.simulator.getCurrentGrammar().getControl().getAutomaton().deactiveLast();
-//				CAPanel.this.autPanel.getJModel().reload();
-//				CAPanel.this.autPanel.getJGraph().getLayouter().start(true);
-//			}
-//			catch( NullPointerException npe ) {
-//				// FIXME: this is very ugly, catching npe's.
-//			}
-//		}
-//		
-//	}
+	class SaveButtonListener implements ActionListener {
+		public void actionPerformed(ActionEvent e) {
+			CAPanel.this.simulator.handleSaveControl();
+//			CAPanel.this.saveButton.setEnabled(false);
+		}
+	}
+	
 }
 	
 class AutomatonPanel extends JGraphPanel<ControlJGraph> 

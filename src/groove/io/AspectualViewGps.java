@@ -1,5 +1,5 @@
 /* GROOVE: GRaphs for Object Oriented VErification
- * Copyright 2003--2007 University of Twente * * Licensed under the Apache License, Version 2.0 (the "License");  * you may not use this file except in compliance with the License.  * You may obtain a copy of the License at  * http://www.apache.org/licenses/LICENSE-2.0  *  * Unless required by applicable law or agreed to in writing,  * software distributed under the License is distributed on an  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,  * either express or implied. See the License for the specific  * language governing permissions and limitations under the License. * * $Id: AspectualViewGps.java,v 1.24 2008-02-12 15:15:33 fladder Exp $ */
+ * Copyright 2003--2007 University of Twente * * Licensed under the Apache License, Version 2.0 (the "License");  * you may not use this file except in compliance with the License.  * You may obtain a copy of the License at  * http://www.apache.org/licenses/LICENSE-2.0  *  * Unless required by applicable law or agreed to in writing,  * software distributed under the License is distributed on an  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,  * either express or implied. See the License for the specific  * language governing permissions and limitations under the License. * * $Id: AspectualViewGps.java,v 1.25 2008-03-18 12:18:24 fladder Exp $ */
 
 package groove.io;
 
@@ -34,7 +34,7 @@ import java.util.Properties;
  * followed by an <code>Integer</code> indicating the number of number of objects of this type,
  * followed by a null update to indicate the end of this type of load.
  * @author Arend Rensink
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class AspectualViewGps extends Observable implements GrammarViewXml<DefaultGrammarView> {
     /**
@@ -96,12 +96,7 @@ public class AspectualViewGps extends Observable implements GrammarViewXml<Defau
 		//System.out.println(controlProgram.getAbsolutePath());
 		if( controlProgramFile.exists() ) {
 			try
-			{
-
-				ControlView cv = new ControlView(result, controlProgramFile);
-				result.setControl(cv);
-				
-			}
+			{				ControlView cv = new ControlView(result, controlProgramFile);				result.setControl(cv);			}
 			catch(IOException e) {
 				System.err.println("Error: unable to open control program " + controlProgramFile.getName());
 				System.err.println("Proceeding without control.");
