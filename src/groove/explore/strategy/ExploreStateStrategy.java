@@ -27,9 +27,10 @@ public class ExploreStateStrategy extends AbstractStrategy {
 		// rule might have been interrupted 
 		ExploreCache cache = getCache(true, false);
 		Iterator<RuleMatch> matchesIter = getMatchesIterator(cache);
-		if (!matchesIter.hasNext()) {
-			this.getGTS().setFinal(this.startState());
-		}
+//		done when setClosed is called
+//		if (!matchesIter.hasNext()) {
+//			this.getGTS().setFinal(this.startState());
+//		}
 		while (matchesIter.hasNext()) {
 			getGenerator().addTransition(this.startState(), matchesIter.next(), cache);
 		}
