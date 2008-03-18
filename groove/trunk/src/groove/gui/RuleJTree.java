@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleJTree.java,v 1.32 2008-02-22 13:02:46 rensink Exp $
+ * $Id: RuleJTree.java,v 1.33 2008-03-18 12:54:42 iovka Exp $
  */
 package groove.gui;
 
@@ -71,7 +71,7 @@ import javax.swing.tree.TreeSelectionModel;
 
 /**
  * Panel that displays a two-level directory of rules and matches.
- * @version $Revision: 1.32 $
+ * @version $Revision: 1.33 $
  * @author Arend Rensink
  */
 public class RuleJTree extends JTree implements SimulationListener {
@@ -638,6 +638,11 @@ public class RuleJTree extends JTree implements SimulationListener {
         	if (evt.getButton() != MouseEvent.BUTTON1) {
         		return;
         	}
+        	if (evt.getClickCount() == 2) {
+        		System.out.println();
+        	}
+        		
+        	
         	TreePath path = getSelectionPath();
         	if (path == null) { return; }
         	Object selectedNode = path.getLastPathComponent();
@@ -663,7 +668,8 @@ public class RuleJTree extends JTree implements SimulationListener {
         		// if trans is not null, it has been added to the matchTransitionMap
         		if (trans != null) {
         			simulator.setTransition(trans);
-        		} else if (evt.getClickCount() == 2) {
+        		} 
+        		if (evt.getClickCount() == 2) {
         			simulator.applyMatch();
 //        			ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
 //					trans = new StateGenerator(getCurrentGTS()).applyMatch(getCurrentState(), match, cache).iterator().next();
