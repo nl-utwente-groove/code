@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: AGTS.java,v 1.4 2008-02-06 15:25:43 iovka Exp $
+ * $Id: AGTS.java,v 1.5 2008-03-18 13:51:38 iovka Exp $
  */
 package groove.abs.lts;
 
@@ -82,12 +82,12 @@ public class AGTS extends GTS {
 		super.setClosed(state);
 	}
 
-	@Override
-	// IOVKA to remove after debug
-	public void setFinal(State state) {
-		assert state instanceof AbstrGraphState : "Type error : " + state + " is not of type AbstrGraphState.";
-		super.setFinal(state);
-	}
+//	@Override
+//	// IOVKA to remove after debug
+//	public void setFinal(State state) {
+//		assert state instanceof AbstrGraphState : "Type error : " + state + " is not of type AbstrGraphState.";
+//		super.setFinal(state);
+//	}
 
 	@Override
 	/** Specialises return type. */
