@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  * 
- * $Id: Simulator.java,v 1.91 2008-03-18 12:18:19 fladder Exp $
+ * $Id: Simulator.java,v 1.92 2008-03-18 15:34:40 iovka Exp $
  */
 package groove.gui;
 
@@ -138,7 +138,7 @@ import javax.swing.filechooser.FileFilter;
 /**
  * Program that applies a production system to an initial graph.
  * @author Arend Rensink
- * @version $Revision: 1.91 $
+ * @version $Revision: 1.92 $
  */
 public class Simulator {
     /**
@@ -213,7 +213,8 @@ public class Simulator {
         if (System.getProperty("os.name").startsWith("Windows") ||
         	System.getProperty("os.name").startsWith("Linux") ||
         	System.getProperty("os.name").startsWith("FreeBSD")) {
-        	System.setProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION, GrooveModules.GROOVE_MODULE_ENABLED);
+        	// TODO change here to enable ltl model checking
+        	System.setProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION, GrooveModules.GROOVE_MODULE_DISABLED);
         } else {
         	System.setProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION, GrooveModules.GROOVE_MODULE_DISABLED);
         }
@@ -1508,8 +1509,9 @@ public class Simulator {
         for (Component menuComponent: exploreMenu.getMenuComponents()) {
         	result.add(menuComponent);
         }
-        result.addSeparator();
-        result.add(new JMenuItem(showResultAction()));
+        // TODO uncomment the two lines to enable LTS model checking
+        //result.addSeparator();
+        //result.add(new JMenuItem(showResultAction()));
         return result;
 	}
 
