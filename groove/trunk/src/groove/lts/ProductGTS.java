@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductGTS.java,v 1.4 2008-03-04 14:47:13 kastenberg Exp $
+ * $Id: ProductGTS.java,v 1.5 2008-03-19 20:46:48 kastenberg Exp $
  */
 package groove.lts;
 
@@ -44,7 +44,7 @@ import java.util.Set;
  * Implements LTS and represents GTSs in which states are products of
  * graph-states and Buchi-locations.
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  */
 public class ProductGTS implements LTS {
 
@@ -308,8 +308,21 @@ public class ProductGTS implements LTS {
 	}
 
 	public boolean containsElement(Element elem) {
-		// TODO Auto-generated method stub
+		if (elem instanceof BuchiGraphState) {
+			return containsState((BuchiGraphState) elem);
+		} else if (elem instanceof ProductTransition) {
+			return containsTransition((ProductTransition) elem);
+		}
 		return false;
+	}
+
+	public boolean containsState(BuchiGraphState state) {
+		return stateSet.contains(state);
+	}
+
+	public boolean containsTransition(ProductTransition transition) {
+		BuchiGraphState source = transition.source();
+		return containsState(source) && source.outTransitions().contains(transition);
 	}
 
 	public boolean containsElementSet(Collection<? extends Element> elements) {
