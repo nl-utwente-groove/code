@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ModelChecking.java,v 1.4 2008-02-20 08:33:41 kastenberg Exp $
+ * $Id: ModelChecking.java,v 1.5 2008-03-20 13:29:51 kastenberg Exp $
  */
 
 package groove.verify;
@@ -27,10 +27,12 @@ import rwth.i2.ltl2ba4j.model.IGraphProposition;
 /**
  * This class contains a number of constants to be used for model checking.
  * @author Harmen Kastenberg
- * @version $Revision: 1.4 $ $Date: 2008-02-20 08:33:41 $
+ * @version $Revision: 1.5 $ $Date: 2008-03-20 13:29:51 $
  */
 public class ModelChecking {
 
+	/** constant for non-toggled state colour white */
+	public static final int NO_COLOUR = 0;
 	/** constant for non-toggled state colour white */
 	public static final int WHITE = 1;
 	/** constant for non-toggled state colour cyan */
@@ -39,10 +41,10 @@ public class ModelChecking {
 	public static final int BLUE = 3;
 	/** constant for non-toggled state colour red */
 	public static final int RED = 4;
-	/** constant for non-toggled state colour gray (for future use) */
-	public static final int GRAY = 5;
-	/** constant for non-toggled state colour black (for future use) */
-	public static final int BLACK = 6;
+//	/** constant for non-toggled state colour gray (for future use) */
+//	public static final int GRAY = 5;
+//	/** constant for non-toggled state colour black (for future use) */
+//	public static final int BLACK = 6;
 
 	/** constant for toggled state colour white */
 	public static final int WHITE_TOGGLE = -1;
@@ -52,10 +54,10 @@ public class ModelChecking {
 	public static final int BLUE_TOGGLE = -3;
 	/** constant for toggled state colour red */
 	public static final int RED_TOGGLE = -4;
-	/** constant for toggled state colour gray (for future use) */
-	public static final int GRAY_TOGGLE = -5;
-	/** constant for toggled state colour black (for future use) */
-	public static final int BLACK_TOGGLE = -6;
+//	/** constant for toggled state colour gray (for future use) */
+//	public static final int GRAY_TOGGLE = -5;
+//	/** constant for toggled state colour black (for future use) */
+//	public static final int BLACK_TOGGLE = -6;
 
 	/** constant for notifying the system is OK */
 	public static final int OK = 1;
