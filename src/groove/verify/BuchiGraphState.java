@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BuchiGraphState.java,v 1.2 2008-02-22 13:02:44 rensink Exp $
+ * $Id: BuchiGraphState.java,v 1.3 2008-03-20 13:28:38 kastenberg Exp $
  */
 package groove.verify;
 
@@ -38,7 +38,7 @@ import java.util.Set;
  * Composition of a graph-state and a Buchi-location.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.2 $ $Date: 2008-02-22 13:02:44 $
+ * @version $Revision: 1.3 $ $Date: 2008-03-20 13:28:38 $
  */
 public class BuchiGraphState extends AbstractGraphState {
 
@@ -53,12 +53,14 @@ public class BuchiGraphState extends AbstractGraphState {
 	private Set<ProductTransition> outTransitions;
 	/** flag indicating whether this state is closed */
 	public boolean closed = false;
+	/** flag indicating whether this state is explored */
+	public boolean explored = false;
 
 	public BuchiGraphState(SystemRecord record, GraphState state, BuchiLocation buchiLocation, BuchiGraphState parent) {
 		super(StateReference.newInstance(record));
 		this.state = state;
 		this.buchiLocation = buchiLocation;
-		this.colour = ModelChecking.WHITE;
+		this.colour = ModelChecking.NO_COLOUR;
 		this.parent = parent;
 	}
 
@@ -217,6 +219,14 @@ public class BuchiGraphState extends AbstractGraphState {
 		// TODO Auto-generated method stub
 		this.closed = true;
 	}
+
+    public boolean isExplored() {
+    	return explored;
+    }
+
+    public void setExplored() {
+    	this.explored = true;
+    }
 
     @Override
 	public String toString() {
