@@ -12,14 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleSetBoundary.java,v 1.5 2008-03-03 14:47:59 kastenberg Exp $
+ * $Id: RuleSetBoundary.java,v 1.6 2008-03-21 12:36:04 kastenberg Exp $
  */
 package groove.explore.strategy;
 
 import groove.lts.GraphTransition;
 import groove.trans.Rule;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,7 +33,7 @@ import java.util.Set;
  * is applied again.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  */
 public class RuleSetBoundary implements Boundary {
 
@@ -48,6 +50,7 @@ public class RuleSetBoundary implements Boundary {
 	 */
 	public RuleSetBoundary(Set<Rule> ruleSetBoundary) {
 		this.ruleSetBoundary.addAll(ruleSetBoundary);
+		setAllowMap();
 	}
 
 	/**
@@ -65,21 +68,43 @@ public class RuleSetBoundary implements Boundary {
 	public boolean crossingBoundary(GraphTransition transition) {
 		boolean crossingBoundary = ruleSetBoundary.contains(transition.getEvent().getRule()); 
 		if (crossingBoundary) {
-			if (allowBoundaryRule) {
-				allowBoundaryRule = false;
-				return false;
+			if (allowed.get(transition.getEvent().getRule())) {
+				if (ALLOW_ALL_APPLICATIONS == ALLOW_SINGLE_APPLICATION) {
+					setAllowMap();
+				} else {
+					allowed.put(transition.getEvent().getRule(), false);
+				}
+				return true;
 			}
 		}
 		return false;
+	}
+
+	private void setAllowMap() {
+		allowed = new HashMap<Rule,Boolean>();
+		for (Rule rule: ruleSetBoundary) {
+			allowed.put(rule, false);
+		}
 	}
 
 	/* (non-Javadoc)
 	 * @see groove.explore.strategy.Boundary#increase()
 	 */
 	public void increase() {
-		allowBoundaryRule = true;
+		allowed = new HashMap<Rule,Boolean>();
+		for (Rule rule: ruleSetBoundary) {
+			allowed.put(rule, true);
+		}
 	}
 
 	private Set<Rule> ruleSetBoundary = new HashSet<Rule>();
-	private boolean allowBoundaryRule;
+//	private boolean allowBoundaryRule;
+	private Map<Rule,Boolean> allowed;
+
+	/** Allow only a single application of one of the rules */
+	public static final int ALLOW_SINGLE_APPLICATION = 1;
+	/** Allow one application of all rules */
+	public static final int ALLOW_ALL_APPLICATIONS = 2;
+	/** Constant indicating when forbidden rule applications are temporarily allowed */
+	public static int ALLOW_RULE_APPLICATION = ALLOW_ALL_APPLICATIONS;
 }
