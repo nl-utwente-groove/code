@@ -11,7 +11,8 @@ import groove.trans.RuleMatch;
 import groove.trans.SPORule;
 import groove.trans.VirtualRuleMatch;
 
-import java.util.ArrayList;import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -139,17 +140,12 @@ public class AliasMatchesIterator extends MatchesIterator {
 	
 	/** Is used as value for the matchIter when we know that it is empty. */
 	private class EmptyMatchIter implements Iterator<RuleMatch> {
-
-		@Override
+	    /** Always returns <code>false</code>. */
 		public boolean hasNext() { return false; }
-
-		@Override
+		/** Always throws a {@link NoSuchElementException} . */
 		public RuleMatch next() { throw new NoSuchElementException(); }
-
-		@Override
+		/** Always throws an {@link UnsupportedOperationException}. */
 		public void remove() { throw new UnsupportedOperationException(); }
 		
 	}
-	
-	
 }
