@@ -12,7 +12,7 @@
 // either express or implied. See the License for the specific 
 // language governing permissions and limitations under the License.
 /*
- * $Id: LayedOutXml.java,v 1.17 2008-01-30 09:33:41 iovka Exp $
+ * $Id: LayedOutXml.java,v 1.18 2008-03-25 15:13:55 rensink Exp $
  */
 package groove.io;
 
@@ -53,7 +53,7 @@ import org.jgraph.graph.GraphConstants;
 /**
  * 
  * @author Arend Rensink
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  */
 public class LayedOutXml extends AbstractXml implements Xml<Graph> {
     /** 
@@ -276,6 +276,10 @@ public class LayedOutXml extends AbstractXml implements Xml<Graph> {
             	lineStyle = JAttr.DEFAULT_LINE_STYLE;
             } else {
                 points = toPoints(parts, 6);
+                // if we have fewer than 2 points, something is wrong
+                if (points.size() <= 1) {
+                    throw new FormatException("Edge layout needs at least 2 points");
+                }
                 lineStyle = Integer.parseInt(parts[parts.length - 1]);
                 if (!JAttr.isLineStyle(lineStyle)) {
                 	lineStyle = JAttr.DEFAULT_LINE_STYLE;
