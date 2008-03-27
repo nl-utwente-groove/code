@@ -80,7 +80,7 @@ import java.util.TreeMap;
  * containing graph rules, from a given location | presumably the top level directory containing the
  * rule files.
  * @author Arend Rensink
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.34 $
  */
 public class Generator extends CommandLineTool {
     /**
@@ -837,7 +837,7 @@ public class Generator extends CommandLineTool {
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Integer.class, "Only explores states where the node count does not exceed a given bound.", "node-bounded"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Map.class, "Only explores states where the edge counts do not exceed given bounds.", "edge-bounded"));
         	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new ConditionalBreadthFirstStrategy(), Rule.class, "Explores all states in which the (negated) condition holds.", "bounded"));
-        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new BreadthFirstStrategy(), Rule.class, new InvariantViolatedAcceptor<Rule>(), new SizedResult<GraphState>(1), "Explores all states until the (negated) invariant is violated. The order of exploration is random.", "invariant"));
+        	addStrategy(GeneratorScenarioHandlerFactory.getConditionalScenario(new BreadthFirstStrategy(), Rule.class, new InvariantViolatedAcceptor<Rule>(), new SizedResult<GraphState>(1), "Explores all states until the (negated) invariant is violated. The order of exploration is breadth-first.", "invariant"));
         	addStrategy(GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking exploration", "model-checking"));
         	addStrategy(new ControlledScenarioHandler("Performs a depth-firs search controlled by a sequence of rules.", "controlled"));
         }
