@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: CTLModelChecker.java,v 1.12 2007-10-05 08:31:48 rensink Exp $
+ * $Id: CTLModelChecker.java,v 1.13 2008-03-27 21:45:21 kastenberg Exp $
  */
 package groove.verify;
 
@@ -53,7 +53,7 @@ import java.util.Set;
  * Command-line tool directing the model checking process.
  *  
  * @author Harmen Kastenberg
- * @version $Revision: 1.12 $ $Date: 2007-10-05 08:31:48 $
+ * @version $Revision: 1.13 $ $Date: 2008-03-27 21:45:21 $
  */
 public class CTLModelChecker extends CommandLineTool {
 
@@ -147,7 +147,7 @@ public class CTLModelChecker extends CommandLineTool {
         if (argsList.size() == 2) {
         	setProperty(argsList.remove(1));
         	checkSingleProperty = true;
-        } else {
+        } else if (argsList.size() == 0){
         	printError("You should at least provide the location of the graph production system to be verified.");
         }
     }
