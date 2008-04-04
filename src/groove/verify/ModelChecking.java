@@ -12,13 +12,13 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ModelChecking.java,v 1.5 2008-03-20 13:29:51 kastenberg Exp $
+ * $Id: ModelChecking.java,v 1.5 2008/03/20 13:29:51 kastenberg Exp $
  */
-
 package groove.verify;
 
 import groove.graph.Edge;
 import groove.trans.Rule;
+import groove.util.LTLBenchmarker;
 
 import java.util.Collection;
 
@@ -27,37 +27,45 @@ import rwth.i2.ltl2ba4j.model.IGraphProposition;
 /**
  * This class contains a number of constants to be used for model checking.
  * @author Harmen Kastenberg
- * @version $Revision: 1.5 $ $Date: 2008-03-20 13:29:51 $
+ * @version $Revision: 1.5 $
  */
 public class ModelChecking {
 
 	/** constant for non-toggled state colour white */
 	public static final int NO_COLOUR = 0;
+	/** constant for state colour black (so-called pocket state) */
+	public static final int BLACK = 1;
+
 	/** constant for non-toggled state colour white */
-	public static final int WHITE = 1;
+	public static final int WHITE = 2;
 	/** constant for non-toggled state colour cyan */
-	public static final int CYAN = 2;
+	public static final int CYAN = 3;
 	/** constant for non-toggled state colour blue */
-	public static final int BLUE = 3;
+	public static final int BLUE = 4;
 	/** constant for non-toggled state colour red */
-	public static final int RED = 4;
-//	/** constant for non-toggled state colour gray (for future use) */
-//	public static final int GRAY = 5;
-//	/** constant for non-toggled state colour black (for future use) */
-//	public static final int BLACK = 6;
+	public static final int RED = 5;
 
 	/** constant for toggled state colour white */
-	public static final int WHITE_TOGGLE = -1;
+	public static final int WHITE_TOGGLE = -2;
 	/** constant for toggled state colour cyan */
-	public static final int CYAN_TOGGLE = -2;
+	public static final int CYAN_TOGGLE = -3;
 	/** constant for toggled state colour blue */
-	public static final int BLUE_TOGGLE = -3;
+	public static final int BLUE_TOGGLE = -4;
 	/** constant for toggled state colour red */
-	public static final int RED_TOGGLE = -4;
-//	/** constant for toggled state colour gray (for future use) */
-//	public static final int GRAY_TOGGLE = -5;
-//	/** constant for toggled state colour black (for future use) */
-//	public static final int BLACK_TOGGLE = -6;
+	public static final int RED_TOGGLE = -5;
+
+	/** the value for the colour white in the current colour-scheme. */
+	public static int CURRENT_WHITE = WHITE;
+	/** the value for the colour cyan in the current colour-scheme. */
+	public static int CURRENT_CYAN = CYAN;
+	/** the value for the colour blue in the current colour-scheme. */
+	public static int CURRENT_BLUE = BLUE;
+	/** the value for the colour red in the current colour-scheme. */
+	public static int CURRENT_RED = RED;
+
+
+	/** constant to keep track of dynamic colour-schemes */
+	private static int NEXT_FREE_COLOUR = 6;
 
 	/** constant for notifying the system is OK */
 	public static final int OK = 1;
@@ -71,52 +79,58 @@ public class ModelChecking {
 
     private static boolean TOGGLE = false;
 
+    /** constant specifying whether to mark pocket-states */
+    public static boolean MARK_POCKET_STATES;
+    /** constant specifying the maximal number of iterations to be performed */
+    public static int MAX_ITERATIONS = -1;
+    /** constant specifying the maximal number of iterations to be performed */
+    public static int CURRENT_ITERATION = 0;
+    /** constant specifying the maximal amount of time to spend */
+    public static long MINUTES = -1;
+    /** constant specifying the maximal amount of time to spend */
+    public static long MAX_TIME = 0;
+    /** constant specifying the maximal amount of time to spend */
+    public static boolean START_FROM_BORDER_STATES = false;
+
     /**
-     * Return the constant for the colour white, considering
-     * the colour-scheme to use (toggled or non-toggled).
-     * @return the white constant
+     * Return the current constant for the colour white.
+     * @return the constant {@link ModelChecking#CURRENT_WHITE}
      */
     public static int white() {
-    	if (TOGGLE)
-    		return WHITE_TOGGLE;
-    	else
-    		return WHITE;
+    	return CURRENT_WHITE;
     }
 
     /**
-     * Return the constant for the colour cyan, considering
-     * the colour-scheme to use (toggled or non-toggled).
-     * @return the cyan constant
+     * Return the current constant for the colour cyan.
+     * @return the constant {@link ModelChecking#CURRENT_CYAN}
      */
     public static int cyan() {
-    	if (TOGGLE)
-    		return CYAN_TOGGLE;
-    	else
-    		return CYAN;
+    	return CURRENT_CYAN;
     }
 
     /**
-     * Return the constant for the colour blue, considering
-     * the colour-scheme to use (toggled or non-toggled).
-     * @return the blue constant
+     * Return the current constant for the colour blue.
+     * @return the constant {@link ModelChecking#CURRENT_BLUE}
      */
     public static int blue() {
-    	if (TOGGLE)
-    		return BLUE_TOGGLE;
-    	else
-    		return BLUE;
+    	return CURRENT_BLUE;
     }
 
     /**
-     * Return the constant for the colour red, considering
-     * the colour-scheme to use (toggled or non-toggled).
-     * @return the red constant
+     * Return the current constant for the colour red.
+     * @return the constant {@link ModelChecking#CURRENT_RED}
      */
     public static int red() {
-    	if (TOGGLE)
-    		return RED_TOGGLE;
-    	else
-    		return RED;
+    	return CURRENT_RED;
+    }
+
+    /**
+     * Return the constant for the colour black. This colour
+     * is shared by all colour-schemes.
+     * @return the constant {@link ModelChecking#BLACK}
+     */
+    public static int black() {
+    	return BLACK;
     }
 
     /**
@@ -124,6 +138,57 @@ public class ModelChecking {
      */
     public static void toggle() {
     	TOGGLE = !TOGGLE;
+    	if (TOGGLE) {
+    		CURRENT_WHITE = WHITE_TOGGLE;
+    		CURRENT_CYAN = CYAN_TOGGLE;
+    		CURRENT_BLUE = BLUE_TOGGLE;
+    		CURRENT_RED = RED_TOGGLE;
+    	} else {
+    		CURRENT_WHITE = WHITE;
+    		CURRENT_CYAN = CYAN;
+    		CURRENT_BLUE = BLUE;
+    		CURRENT_RED = RED;
+    	}
+    }
+
+    /**
+     * Reset the iteration counter.
+     */
+    public static void resetIteration() {
+    	CURRENT_ITERATION = 0;
+    }
+
+    /**
+     * Increase the iteration count.
+     */
+    public static void nextIteration() {
+    	CURRENT_ITERATION++;
+//    	updateColourScheme();
+    }
+
+    public static void updateColourScheme() {
+    	if (ModelChecking.START_FROM_BORDER_STATES) {
+    		nextColourScheme();
+    	}
+    }
+
+    /**
+     * Instantiate a fresh colour-scheme.
+     */
+    public static void nextColourScheme() {
+    	assert (NEXT_FREE_COLOUR % 4 == 2) : "Faulty colour-scheme in use: constant for WHITE should be have value n*4+1";
+    	CURRENT_WHITE = nextFreeColour();
+    	CURRENT_CYAN = nextFreeColour();
+    	CURRENT_BLUE = nextFreeColour();
+    	CURRENT_RED = nextFreeColour();
+    }
+
+    /**
+     * Returns the next integer value that is available for colouring.
+     * @return the next integer value that is available for colouring.
+     */
+    private static int nextFreeColour() {
+    	return NEXT_FREE_COLOUR++;
     }
 
     /**
