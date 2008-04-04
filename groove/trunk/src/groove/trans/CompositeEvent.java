@@ -24,6 +24,7 @@ import groove.util.CacheReference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -40,7 +41,7 @@ import java.util.TreeSet;
  */
 public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeEventCache> {
     /** Creates a new event on the basis of a given event set. */
-    public CompositeEvent(Rule rule, SortedSet<SPOEvent> eventSet) {
+    public CompositeEvent(Rule rule, Collection<SPOEvent> eventSet) {
     	super(reference, rule);
     	this.eventArray = new SPOEvent[eventSet.size()];
         eventSet.toArray(this.eventArray);

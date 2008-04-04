@@ -19,9 +19,8 @@ package groove.trans;
 import groove.graph.NodeFactory;
 import groove.rel.VarNodeEdgeMap;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 /**
  * Match of an {@link SPORule}.
@@ -47,7 +46,11 @@ public class RuleMatch extends CompositeMatch {
      * should be made to gain time by sacrificing space
      */
     public RuleEvent newEvent(NodeFactory nodeFactory, boolean reuse) {
-    	SortedSet<SPOEvent> eventSet = new TreeSet<SPOEvent>();
+    	// the event set used to be a sorted set, but I think this is wrong
+    	// because the sorting will not respect the desired event hierarchy
+    	// and in fact events may actually occur more than once (?)
+    	// SortedSet<SPOEvent> eventSet = new TreeSet<SPOEvent>();
+    	Collection<SPOEvent> eventSet = new ArrayList<SPOEvent>();
     	collectEvents(eventSet, nodeFactory, reuse);
     	assert !eventSet.isEmpty();
     	if (eventSet.size() == 1 && !getRule().hasSubRules()) {
