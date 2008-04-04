@@ -1510,8 +1510,8 @@ public class Simulator {
         	result.add(menuComponent);
         }
         // TODO uncomment the two lines to enable LTL model checking
-        result.addSeparator();
-        result.add(new JMenuItem(showResultAction()));
+//        result.addSeparator();
+//        result.add(new JMenuItem(showResultAction()));
         return result;
 	}
 
