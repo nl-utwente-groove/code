@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: ProductGTS.java,v 1.5 2008-03-19 20:46:48 kastenberg Exp $
+ * $Id: ProductGTS.java,v 1.5 2008/03/19 20:46:48 kastenberg Exp $
  */
 package groove.lts;
 
@@ -31,6 +31,7 @@ import groove.graph.iso.IsoChecker;
 import groove.trans.GraphGrammar;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
+import groove.util.FilterIterator;
 import groove.util.TreeHashSet;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
@@ -81,6 +82,7 @@ public class ProductGTS implements LTS {
      */
     public Set<ProductTransition> addTransition(ProductTransition transition) {
     	transition.source().addTransition(transition);
+    	transitionCount++;
     	Set<ProductTransition> result = new HashSet<ProductTransition>(1);
     	result.add(transition);
     	return result;
@@ -101,7 +103,9 @@ public class ProductGTS implements LTS {
         BuchiGraphState result = stateSet.put(newState);
         // new states are first considered open
         if (result == null) {
-            openStates.put(newState);
+//            openStates.put(newState);
+            stateCount++;
+            openStateCount++;
             fireAddNode(newState);
         }
 //        reporter.stop();
@@ -115,7 +119,9 @@ public class ProductGTS implements LTS {
      */
     public void setClosed(BuchiGraphState state) {
     	if (state.setClosed()) {
-    		openStates.remove(state);
+//    		openStates.remove(state);
+    		closedCount++;
+    		openStateCount--;
         	notifyListenersOfClose(state);
     	}
     	// always notify listeners of state-closing
@@ -158,19 +164,35 @@ public class ProductGTS implements LTS {
     	return graphGrammar;
     }
 
+    /**
+     * Adds a listener to the ProductGTS.
+     * @param listener the listener to be added.
+     */
     public void addListener(GraphListener listener) {
     	listeners.add(listener);
     }
 
+    /**
+     * Removes a listener from the ProductGTS
+     * @param listener the listener to be removed.
+     */
     public void removeListener(GraphListener listener) {
     	assert (listeners.contains(listener)) : "Listener cannot be removed since it is not registered.";
     	listeners.remove(listener);
     }
 
+    /**
+     * Returns an iterator over the current listeners.
+     * @return an iterator over the current listeners.
+     */
     public Iterator<GraphShapeListener> getListeners() {
     	return listeners.iterator();
     }
 
+    /**
+     * Notifies the listeners of the event of closing a state.
+     * @param state the state that has been closed.
+     */
     public void notifyListenersOfClose(BuchiGraphState state) {
     	for (GraphShapeListener listener: listeners) {
     		if (listener instanceof Acceptor) {
@@ -190,10 +212,33 @@ public class ProductGTS implements LTS {
         }
     }
 
+    /**
+     * Return the set of outgoing transitions of a Buchi graph-state.
+     * @param state the Buchi graph state
+     * @return the set of outgoing transitions of <code>state</code>
+     */
     public Set<ProductTransition> outEdgeSet(BuchiGraphState state) {
     	return state.outTransitions();
     }
 
+    /**
+     * Indicates if the ProductGTS currently has open states.
+     * Equivalent to (but more efficient than) <code>getOpenStateIter().hasNext()</code>
+     * or <code>!getOpenStates().isEmpty()</code>.
+     * @return <code>true</code> if the ProductGTS currently has open states
+     * @see #getOpenStateIter()
+     * @see #getOpenStates()
+     */
+    public boolean hasOpenStates() {
+    	int openStateCount = openStateCount();
+    	return openStateCount > 0;
+    }
+
+    /**
+     * Returns a view on the set of currently open states.
+     * @see #hasOpenStates()
+     * @see #getOpenStateIter()
+     */
     public Collection<BuchiGraphState> getOpenStates() {
         return new CollectionView<BuchiGraphState>(stateSet) {
         	@Override
@@ -203,10 +248,34 @@ public class ProductGTS implements LTS {
         };
     }
 
+    /**
+     * Returns an iterator over the set of currently open states.
+     * Equivalent to <code>getOpenStates().iterator()</code>.
+     * @see #hasOpenStates()
+     * @see #getOpenStates()
+     */
+    public Iterator<BuchiGraphState> getOpenStateIter() {
+        return new FilterIterator<BuchiGraphState>(nodeSet().iterator()) {
+        	@Override
+            protected boolean approves(Object obj) {
+                return !((State) obj).isClosed();
+            }
+        };
+    }
+
+    /** Returns the number of not fully expored states. */
+    public int openStateCount() {
+    	return nodeCount() - closedCount;
+    }
+
     private GraphGrammar graphGrammar;
     private BuchiGraphState startState;
     private TreeHashSet<BuchiGraphState> stateSet = new TreeHashStateSet();
-    private TreeHashSet<BuchiGraphState> openStates = new TreeHashStateSet();
+    private int stateCount = 0;
+//    private TreeHashSet<BuchiGraphState> openStates = new TreeHashStateSet();
+    private int openStateCount = 0;
+    private int closedCount = 0;
+    private int transitionCount = 0;
     private SystemRecord record;
 
     private Set<GraphShapeListener> listeners = new HashSet<GraphShapeListener>();
@@ -220,7 +289,7 @@ public class ProductGTS implements LTS {
         
         /**
          * First compares the control locations, then calls {@link IsoChecker#areIsomorphic(Graph, Graph)}.
-         * @see GraphState#getControl()
+         * @see GraphState#getLocation()
          */
     	@Override
         protected boolean areEqual(BuchiGraphState stateKey, BuchiGraphState otherStateKey) {
@@ -294,9 +363,13 @@ public class ProductGTS implements LTS {
 
 	public Set<? extends State> nodeSet() {
 		// TODO Auto-generated method stub
-		return null;
+		return stateSet;
 	}
 
+	/**
+	 * Deprecated. Use {@link ProductGTS#startBuchiState()} instead.
+	 */
+	@Deprecated
 	public State startState() {
 		// TODO Auto-generated method stub
 		return null;
@@ -316,10 +389,23 @@ public class ProductGTS implements LTS {
 		return false;
 	}
 
+	/**
+	 * Checks whether a given state is contained in the current ProductGTS.
+	 * @param state the state to check containment for
+	 * @return <tt>true</tt> if the state is in the state-set, <tt>false</tt> otherwise
+	 * @see TreeHashSet#contains(Object)
+	 */
 	public boolean containsState(BuchiGraphState state) {
 		return stateSet.contains(state);
 	}
 
+	/**
+	 * Checks whether a given transition is in the set of outgoing transitions
+	 * of the source state as contained in the current ProductGTS.
+	 * @param transition the transition to check containment for
+	 * @return <tt>true</tt> if the transition is in the set of outgoing transitions
+	 * of its source-state, <tt>false</tt> otherwise
+	 */
 	public boolean containsTransition(ProductTransition transition) {
 		BuchiGraphState source = transition.source();
 		return containsState(source) && source.outTransitions().contains(transition);
@@ -331,8 +417,7 @@ public class ProductGTS implements LTS {
 	}
 
 	public int edgeCount() {
-		// TODO Auto-generated method stub
-		return 0;
+		return transitionCount;
 	}
 
 	public Set<? extends Edge> edgeSet(Node node) {
