@@ -116,10 +116,9 @@ public class LTLBenchmarker extends CommandLineTool {
 	private static Set<Rule> ruleSet;
 
 //	private static int CURRENT_ITERATION = 0;
-	private static final int NR_OF_RUNS = 1;
-	private static boolean finished = false;
+	private static final int NR_OF_RUNS = 3;
 
-	private static String STRATEGY_PATH = "P";
+//	private static String STRATEGY_PATH = "P";
 
 	private static String logFileName;
 
@@ -139,57 +138,148 @@ public class LTLBenchmarker extends CommandLineTool {
     		return;
     	}
         List<String> arguments = new LinkedList<String>(Arrays.asList(args));
-        // initialization of fields that do not change during experiments made static 
-//    	setGrammarLocation(arguments);
-//    	setStartGraph(arguments);
-//    	setStrategyType(arguments);
-//    	setProperty(arguments);
-//    	setLogFileName(arguments);
 
         int experiment = Integer.parseInt(arguments.remove(0));
-    	for (int i = 0; i < NR_OF_RUNS; i++) {
-        	LTLBenchmarker benchmarker = new LTLBenchmarker();
-//        	ModelChecking.resetIteration();
-        	if (experiment == 1) {
+        int flag = Integer.parseInt(arguments.remove(0));
+
+        if (experiment == 1) {
+    		logFileName = "experiment-1.txt";
+    		log("\nRestart\n");
+        	for (int i = 0; i < NR_OF_RUNS; i++) {
+        		LTLBenchmarker benchmarker = new LTLBenchmarker();
         		// boolean indicates whether to regenerate
-            	ModelChecking.resetIteration();
+        		ModelChecking.resetIteration();
         		benchmarker.experiment1(true);
-            	ModelChecking.resetIteration();
-        		benchmarker.experiment1(false);
-        	} else if (experiment == 2) {
-        		// boolean indicates whether to regenerate
-            	ModelChecking.resetIteration();
-        		benchmarker.experiment2(true);
-            	ModelChecking.resetIteration();
-        		benchmarker.experiment2(false);
-        	} else if (experiment == 3) {
-        		// boolean indicates whether to mark pocket states
-            	ModelChecking.resetIteration();
-        		benchmarker.experiment3(false);
-            	ModelChecking.resetIteration();
-        		benchmarker.experiment3(true);
-        	} else if (experiment == 4) {
-        		// boolean indicates whether to mark pocket states
-            	ModelChecking.resetIteration();
-        		benchmarker.experiment4(false);
-            	ModelChecking.resetIteration();
-        		benchmarker.experiment4(true);
-        	} else if (experiment == 5) {
-        		// boolean indicates whether to mark pocket states
-            	ModelChecking.resetIteration();
-        		benchmarker.experiment5(false);
-            	ModelChecking.resetIteration();
-        		benchmarker.experiment5(true);
-        	} else if (Integer.parseInt(strategyType) == 3) {
-        		benchmarker.experiment3x();
-        	} else if (Integer.parseInt(strategyType) == 4) {
-        		benchmarker.experiment4x();
-        	} else if (Integer.parseInt(strategyType) == 5) {
-        		benchmarker.experiment5x();
-        	} else if (Integer.parseInt(strategyType) == 6) {
-        		benchmarker.experiment6();
         	}
-    	}
+    		log("\nReuse\n");
+        	for (int i = 0; i < NR_OF_RUNS; i++) {
+        		LTLBenchmarker benchmarker = new LTLBenchmarker();
+        		// boolean indicates whether to regenerate
+        		ModelChecking.resetIteration();
+        		benchmarker.experiment1(false);
+        	}
+        } else if (experiment == 2) {
+    		logFileName = "experiment-2.txt";
+    		log("\nRestart\n");
+        	for (int i = 0; i < NR_OF_RUNS; i++) {
+        		LTLBenchmarker benchmarker = new LTLBenchmarker();
+        		// boolean indicates whether to regenerate
+        		ModelChecking.resetIteration();
+        		benchmarker.experiment2(true);
+        	}
+    		log("\nReuse\n");
+        	for (int i = 0; i < NR_OF_RUNS; i++) {
+        		LTLBenchmarker benchmarker = new LTLBenchmarker();
+        		// boolean indicates whether to regenerate
+        		ModelChecking.resetIteration();
+        		benchmarker.experiment2(false);
+        	}
+        } else if (experiment == 3) {
+    		logFileName = "experiment-3.txt";
+    		log("\nNo pocket states\n");
+        	for (int i = 0; i < NR_OF_RUNS; i++) {
+        		LTLBenchmarker benchmarker = new LTLBenchmarker();
+        		// boolean indicates whether to regenerate
+        		ModelChecking.resetIteration();
+        		benchmarker.experiment3(false);
+        	}
+    		log("\nPocket states\n");
+        	for (int i = 0; i < NR_OF_RUNS; i++) {
+        		LTLBenchmarker benchmarker = new LTLBenchmarker();
+        		// boolean indicates whether to regenerate
+        		ModelChecking.resetIteration();
+        		benchmarker.experiment2(true);
+        	}
+        } else if (experiment == 4) {
+    		logFileName = "experiment-mutex.txt";
+        	grammarLocation = "C:\\local\\groove\\samples\\mutex.gps";
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to regenerate
+        	if (flag == 0)
+        		benchmarker.experimentMutex(false);
+        	if (flag == 1)
+        		benchmarker.experimentMutex(true);
+        } else if (experiment == 5) {
+    		logFileName = "experiment-CEB.txt";
+        	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to regenerate
+        	ModelChecking.resetIteration();
+        	if (flag == 0)
+        		benchmarker.experimentCEB(false);
+        	if (flag == 1)
+        		benchmarker.experimentCEB(true);
+        } else if (experiment == 6) {
+        	grammarLocation = "C:\\local\\groove\\samples\\leader-election.gps";
+        	ModelChecking.MAX_ITERATIONS = 3;
+        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to mark pocket states
+        	if (flag == 0) {
+            	logFileName = "experiment-LEP-correct-3-no-pocket.txt";
+        		benchmarker.experimentLEP(false);
+        	}
+        	if (flag == 1) {
+            	logFileName = "experiment-LEP-correct-3-pocket.txt";
+        		benchmarker.experimentLEP(true);
+        	}
+        } else if (experiment == 7) {
+        	grammarLocation = "C:\\local\\groove\\samples\\leader-election-faulty-5.gps";
+        	ModelChecking.MAX_ITERATIONS = 5;
+        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to mark pocket states
+        	if (flag == 0) {
+            	logFileName = "experiment-LEP-faulty-5-no-pocket.txt";
+        		benchmarker.experimentLEP(false);
+        	}
+        	if (flag == 1) {
+            	logFileName = "experiment-LEP-faulty-5-pocket.txt";
+        		benchmarker.experimentLEP(true);
+        	}
+        } else if (experiment == 8) {
+        	grammarLocation = "C:\\local\\groove\\samples\\leader-election-faulty-6.gps";
+        	ModelChecking.MAX_ITERATIONS = 5;
+        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to mark pocket states
+        	if (flag == 0) {
+            	logFileName = "experiment-LEP-faulty-6-no-pocket.txt";
+        		benchmarker.experimentLEP(false);
+        	}
+        	if (flag == 1) {
+            	logFileName = "experiment-LEP-faulty-6-pocket.txt";
+        		benchmarker.experimentLEP(true);
+        	}
+        } else if (experiment == 9) {
+        	grammarLocation = "C:\\local\\groove\\samples\\leader-election-faulty-7.gps";
+        	ModelChecking.MAX_ITERATIONS = 5;
+        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to mark pocket states
+        	if (flag == 0) {
+            	logFileName = "experiment-LEP-faulty-7-no-pocket.txt";
+        		benchmarker.experimentLEP(false);
+        	}
+        	if (flag == 1) {
+            	logFileName = "experiment-LEP-faulty-7-pocket.txt";
+        		benchmarker.experimentLEP(true);
+        	}
+        } else if (experiment == 10) {
+        	grammarLocation = "C:\\local\\groove\\samples\\append.gps";
+//        	ModelChecking.MAX_ITERATIONS = 20;
+        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to mark pocket states
+        	if (flag == 0) {
+            	logFileName = "experiment-append-no-pocket.txt";
+        		benchmarker.experimentAppend(false);
+        	}
+        	if (flag == 1) {
+            	logFileName = "experiment-append-pocket.txt";
+        		benchmarker.experimentAppend(true);
+        	}
+        }
     }
 
     /**
@@ -201,11 +291,11 @@ public class LTLBenchmarker extends CommandLineTool {
      * - max iterations
      */
     public void experiment1(boolean restart) {
+    	RESTART = restart;
     	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
     	startStateName = "start";
     	property = "[](put -> <> get)";
-    	logFileName = "results.txt";
-    	RESTART = restart;
+//    	logFileName = "results.txt";
     	strategyType = "S";
 //    	ModelChecking.MAX_ITERATIONS = 20;
 //    	ModelChecking.MAX_ITERATIONS = 40;
@@ -214,6 +304,7 @@ public class LTLBenchmarker extends CommandLineTool {
     	ModelChecking.START_FROM_BORDER_STATES = false;
     	initialBound = 5;
     	step = 2;
+
         try {
         	long total = 0;
         	do {
@@ -221,14 +312,13 @@ public class LTLBenchmarker extends CommandLineTool {
         		System.gc();
         		resetStrategy();
         		resetGTS();
-//        		System.out.println("iteration " + ModelChecking.CURRENT_ITERATION);
         		init();
         		generate();
         		report();
         		initialBound += step;
         		total += endTime - startTime;
         	} while (!finishedIterations());
-    		exit("Experiment 1", total);
+        	exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
         	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
@@ -249,12 +339,12 @@ public class LTLBenchmarker extends CommandLineTool {
     	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
     	startStateName = "start";
     	property = "[](put -> <> get)";
-    	logFileName = "results.txt";
+//    	logFileName = "results.txt";
     	RESTART = restart;
     	strategyType = "S";
-    	ModelChecking.MAX_ITERATIONS = 20;
+//    	ModelChecking.MAX_ITERATIONS = 20;
 //    	ModelChecking.MAX_ITERATIONS = 40;
-//    	ModelChecking.MAX_ITERATIONS = 60;
+    	ModelChecking.MAX_ITERATIONS = 60;
     	ModelChecking.MARK_POCKET_STATES = false;
     	ModelChecking.START_FROM_BORDER_STATES = false;
     	initialBound = 5;
@@ -266,14 +356,13 @@ public class LTLBenchmarker extends CommandLineTool {
         		System.gc();
         		resetStrategy();
         		resetGTS();
-        		System.out.println("iteration " + ModelChecking.CURRENT_ITERATION);
         		init();
         		generate();
         		report();
         		initialBound += step;
         		total += endTime - startTime;
         	} while (!finishedIterations());
-    		exit("Experiment 2", total);
+    		exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
         	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
@@ -292,8 +381,8 @@ public class LTLBenchmarker extends CommandLineTool {
     public void experiment3(boolean pocket) {
     	grammarLocation = "C:\\local\\groove\\samples\\leader-election.gps";
     	startStateName = "start";
-    	property = "[](init -> ([] <> leader))";
-    	logFileName = "results.txt";
+    	property = "[](init -> (<> leader))";
+//    	logFileName = "results.txt";
     	RESTART = false;
     	strategyType = "R";
     	ruleList = "new-process";
@@ -312,14 +401,13 @@ public class LTLBenchmarker extends CommandLineTool {
         		System.gc();
         		resetStrategy();
         		resetGTS();
-        		System.out.println("iteration " + ModelChecking.CURRENT_ITERATION);
         		init();
         		generate();
         		report();
         		initialBound += step;
         		total += endTime - startTime;
         	} while (!finishedIterations() && getStrategy().getResult().isEmpty());
-    		exit("Experiment 3", total);
+    		exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
         	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
@@ -335,17 +423,14 @@ public class LTLBenchmarker extends CommandLineTool {
      * - continue from border states
      * - max iterations
      */
-    public void experiment4(boolean pocket) {
+    public void experimentMutex(boolean pocket) {
     	grammarLocation = "C:\\local\\groove\\samples\\mutex.gps";
     	startStateName = "start";
-    	property = "[](take -> <> release)";
-    	logFileName = "results.txt";
+    	property = "[](new || mount)";
     	RESTART = false;
     	strategyType = "R";
     	ruleList = "new,mount";
     	ModelChecking.MAX_ITERATIONS = 20;
-//    	ModelChecking.MAX_ITERATIONS = 40;
-//    	ModelChecking.MAX_ITERATIONS = 60;
     	ModelChecking.MARK_POCKET_STATES = pocket;
     	ModelChecking.START_FROM_BORDER_STATES = true;
         try {
@@ -355,14 +440,13 @@ public class LTLBenchmarker extends CommandLineTool {
         		System.gc();
         		resetStrategy();
         		resetGTS();
-        		System.out.println("iteration " + ModelChecking.CURRENT_ITERATION);
         		init();
         		generate();
         		report();
         		initialBound += step;
         		total += endTime - startTime;
         	} while (!finishedIterations());
-    		exit("Experiment 4", total);
+    		exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
         	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
@@ -378,7 +462,7 @@ public class LTLBenchmarker extends CommandLineTool {
      * - continue from border states
      * - max iterations
      */
-    public void experiment5(boolean pocket) {
+    public void experimentCEB(boolean pocket) {
     	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
     	startStateName = "start";
     	property = "[](extend -> <> gap)";
@@ -386,9 +470,9 @@ public class LTLBenchmarker extends CommandLineTool {
     	RESTART = false;
     	strategyType = "R";
     	ruleList = "extend-correct";
-    	ModelChecking.MAX_ITERATIONS = 20;
+//    	ModelChecking.MAX_ITERATIONS = 20;
 //    	ModelChecking.MAX_ITERATIONS = 40;
-//    	ModelChecking.MAX_ITERATIONS = 60;
+    	ModelChecking.MAX_ITERATIONS = 60;
     	ModelChecking.MARK_POCKET_STATES = pocket;
     	ModelChecking.START_FROM_BORDER_STATES = true;
         try {
@@ -398,107 +482,15 @@ public class LTLBenchmarker extends CommandLineTool {
         		System.gc();
         		resetStrategy();
         		resetGTS();
-        		System.out.println("iteration " + ModelChecking.CURRENT_ITERATION);
         		init();
         		generate();
         		report();
         		initialBound += step;
         		total += endTime - startTime;
         	} while (!finishedIterations());
-    		exit("Experiment 4", total);
+    		exit(total);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
-        	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-    }
-
-    /**
-     * Experiment 3:
-     * - boundary by graph-size
-     * - no reuse
-     * - initial = 5
-     * - step = 4
-     * - max iterations
-     */
-    public void experiment3x() {
-    	RESTART = true;
-    	strategyType = "S";
-    	initialBound = 5;
-    	step = 4;
-        try {
-        	long total = 0;
-        	do {
-        		ModelChecking.nextIteration();
-        		System.gc();
-        		resetStrategy();
-        		resetGTS();
-        		System.out.println("iteration " + ModelChecking.CURRENT_ITERATION);
-        		init();
-        		generate();
-        		report();
-        		initialBound += step;
-        		total += endTime - startTime;
-        	} while (!finishedIterations());
-    		exit("Experiment 1", total);
-        } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
-        	e.printStackTrace();
-        	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-    }
-
-    /**
-     * Experiment 4:
-     * - boundary by graph-size
-     * - reuse
-     * - initial = 5
-     * - step = 4
-     * - max iterations
-     */
-    public void experiment4x() {
-    	RESTART = false;
-    	strategyType = "S";
-    	initialBound = 5;
-    	step = 4;
-    	try {
-    		ModelChecking.nextIteration();
-    		init();
-    		generate();
-    		report();
-    		exit("Experiment 3", endTime - startTime);
-    	} catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
-    		e.printStackTrace();
-        	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
-        } catch (Exception e) {
-        	e.printStackTrace();
-        }
-    }
-
-    /**
-     * Experiment 5:
-     * - boundary by graph-size
-     * - reuse
-     * - initial = 5
-     * - step = 2
-     * - max iterations
-     */
-    public void experiment5x() {
-    	RESTART = false;
-    	strategyType = "S";
-    	ModelChecking.MAX_ITERATIONS = 50;
-    	initialBound = 5;
-    	step = 1;
-    	try {
-    		ModelChecking.nextIteration();
-    		init();
-    		generate();
-    		report();
-    		exit("Experiment 3", endTime - startTime);
-    	} catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
-    		e.printStackTrace();
         	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
         	e.printStackTrace();
@@ -513,20 +505,59 @@ public class LTLBenchmarker extends CommandLineTool {
      * - no pocket detection
      * - max iterations = 6
      */
-    public void experiment6() {
+    public void experimentLEP(boolean pocket) {
+    	startStateName = "start";
+    	property = "[](init -> (<> leader))";
     	RESTART = false;
-    	ModelChecking.START_FROM_BORDER_STATES = true;
-    	ModelChecking.MAX_ITERATIONS = 29;
-    	ModelChecking.MARK_POCKET_STATES = true;
     	strategyType = "R";
+    	ruleList = "new-process";
+    	ModelChecking.MAX_ITERATIONS = 5;
+    	ModelChecking.MARK_POCKET_STATES = pocket;
+    	ModelChecking.START_FROM_BORDER_STATES = true;
+        try {
+        	long total = 0;
+        	do {
+        		ModelChecking.nextIteration();
+        		System.gc();
+        		resetStrategy();
+        		resetGTS();
+        		init();
+        		generate();
+        		report();
+        		initialBound += step;
+        		total += endTime - startTime;
+        	} while (!finishedIterations() && getStrategy().getResult().isEmpty());
+    		exit(total);
+        } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
+        	e.printStackTrace();
+        	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+    }
+
+    /**
+     * Experiment Append
+     */
+    public void experimentAppend(boolean pocket) {
+//    	startStateName = "start-12";
+    	startStateName = "append-4-list-8";
+    	property = "[]((next U append) -> (<> return))";
+    	RESTART = false;
+    	strategyType = "R";
+    	ruleList = "shorten";
+    	ModelChecking.MAX_ITERATIONS = 3;
+    	ModelChecking.MARK_POCKET_STATES = pocket;
+    	ModelChecking.START_FROM_BORDER_STATES = true;
     	try {
     		ModelChecking.nextIteration();
     		init();
     		generate();
     		report();
-    		exit("Experiment 6", endTime - startTime);
-    	} catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
-    		e.printStackTrace();
+    		initialBound += step;
+    		exit(endTime - startTime);
+        } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
+        	e.printStackTrace();
         	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
         } catch (Exception e) {
         	e.printStackTrace();
@@ -551,10 +582,6 @@ public class LTLBenchmarker extends CommandLineTool {
     	gts = null;
     }
     
-    private static boolean finished() {
-    	return finished;
-    }
-
     /**
      * Sets the grammar to be used for state space generation.
      * @param grammarLocation the file name of the grammar (with or without file name extension)
@@ -991,7 +1018,7 @@ public class LTLBenchmarker extends CommandLineTool {
     /**
      * The finalization phase of state space generation. Called from <tt>{@link #start}</tt>.
      */
-    protected void exit(String experiment, long total) throws IOException, FormatException {
+    protected void exit(long total) throws IOException, FormatException {
     	if (getStrategy().getResult().size() > 0) {
     		System.out.println("Counter-example found.");
     	} else {
@@ -1010,10 +1037,23 @@ public class LTLBenchmarker extends CommandLineTool {
         int transitionCountSystem = getGTS().edgeCount();
 //        long total = (endTime - startTime);
         long matching = SPORule.getMatchingTime();
-    	String results = stateCount + "(" + stateCountSystem + ") " + transitionCount + "(" + transitionCountSystem + ") " + total + " " + percentage(matching / (double) total);
-    	writer.write("\n" + experiment + "\n");
+    	String results = stateCount + " (" + stateCountSystem + ") " + transitionCount + " (" + transitionCountSystem + ") " + total + " " + (percentage(matching / (double) total));
+//    	writer.write("\n" + experiment + "\n");
     	writer.write(results);
     	writer.close();
+    }
+
+    public static void log(String message) {
+    	try {
+        	File logFile = new File(logFileName);
+        	FileWriter logFileWriter = new FileWriter(logFileName, true);
+        	BufferedWriter writer = new BufferedWriter(logFileWriter);
+        	
+        	writer.write(message);
+        	writer.close();
+    	} catch (IOException ioe) {
+    		ioe.printStackTrace();
+    	}
     }
 
     /** 
