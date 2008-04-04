@@ -298,7 +298,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     /**
      * TODO: remove this method, no longer used
      * Refreshes the match nodes, based on a given derivation edge set.
-     * @param derivations the set of derivation edges used to create match nodes
+     * @param matches the set of derivation edges used to create match nodes
      */
     private void refreshMatchesOpen(Set<? extends RuleMatch> matches) {
         // remove current matches
@@ -390,7 +390,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
     
     /** Convenience method to retrieve the current GTS from the simulator. */
-    private GTS getCurrentGTS() {
+    GTS getCurrentGTS() {
     	return simulator.getCurrentGTS();
     }
 
@@ -399,13 +399,13 @@ public class RuleJTree extends JTree implements SimulationListener {
     	return simulator.getCurrentTransition();
     }
 
-    /** Convenience method to retrieve the currently selected match from the statepanel */
+    /** Convenience method to retrieve the currently selected match from the state panel */
     private RuleMatch getCurrentMatch() {
     	return simulator.getCurrentMatch();
     }
     
     /** Convenience method to retrieve the currently selected state from the simulator. */
-    private GraphState getCurrentState() {
+    GraphState getCurrentState() {
     	return simulator.getCurrentState();
     }
 
