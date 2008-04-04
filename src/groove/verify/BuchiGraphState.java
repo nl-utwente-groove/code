@@ -38,7 +38,7 @@ import java.util.Set;
  * Composition of a graph-state and a Buchi-location.
  * 
  * @author Harmen Kastenberg
- * @version $Revision: 1.3 $ $Date: 2008/03/20 13:28:38 $
+ * @version $Revision: 1.3 $
  */
 public class BuchiGraphState extends AbstractGraphState {
 
