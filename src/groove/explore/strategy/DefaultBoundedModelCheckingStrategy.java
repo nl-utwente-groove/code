@@ -12,14 +12,9 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultBoundedModelCheckingStrategy.java,v 1.1 2008-03-04 14:44:25 kastenberg Exp $
+ * $Id: DefaultBoundedModelCheckingStrategy.java,v 1.1 2008/03/04 14:44:25 kastenberg Exp $
  */
 package groove.explore.strategy;
-
-import groove.verify.BuchiGraphState;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * This class provides some default implementations for a bounded model checking
@@ -34,6 +29,7 @@ public abstract class DefaultBoundedModelCheckingStrategy<T> extends DefaultMode
 	 * @see groove.explore.strategy.BoundedModelCheckingStrategy#finished()
 	 */
 	public boolean finished() {
+//		System.out.println(stateVisits() + " state-visits.");
 		return true;
 	}
 
@@ -52,28 +48,34 @@ public abstract class DefaultBoundedModelCheckingStrategy<T> extends DefaultMode
 	}
 
 	/**
+	 * Sets the state from which to start the next iteration.
+	 */
+	protected abstract void setNextStartState();
+
+	/**
 	 * Returns the list of boundary-graphs.
 	 * @return the list of boundary-graphs.
 	 */
-	public List<BuchiGraphState> boundaryGraphs() {
-		return boundaryGraphs;
-	}
+//	public List<BuchiGraphState> boundaryGraphs() {
+//		return boundaryGraphs;
+//	}
 
 	/**
 	 * Add a state to the list of boundary-graphs.
 	 * @param boundaryState the state to be added
 	 * @return see {@link List#add(Object)}
 	 */
-	public boolean addBoundaryGraph(BuchiGraphState boundaryState) {
-		return boundaryGraphs().add(boundaryState);
-	}
+//	public boolean addBoundaryGraph(BuchiGraphState boundaryState) {
+//		return boundaryGraphs().add(boundaryState);
+//	}
 
 	/**
 	 * The boundary to be used.
 	 */
 	private Boundary boundary;
+
 	/**
 	 * A list of graphs reached by transitions crossing the (previous) boundary
 	 */
-	private List<BuchiGraphState> boundaryGraphs = new ArrayList<BuchiGraphState>();
+//	private List<BuchiGraphState> boundaryGraphs = new ArrayList<BuchiGraphState>();
 }

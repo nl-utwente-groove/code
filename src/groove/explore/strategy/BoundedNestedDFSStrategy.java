@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BoundedNestedDFSStrategy.java,v 1.6 2008-03-05 11:01:56 rensink Exp $
+ * $Id: BoundedNestedDFSStrategy.java,v 1.6 2008/03/05 11:01:56 rensink Exp $
  */
 package groove.explore.strategy;
 
@@ -21,6 +21,8 @@ import groove.explore.util.RandomChooserInSequence;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.ProductTransition;
+import groove.lts.StartGraphState;
+import groove.util.LTLBenchmarker;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiTransition;
 import groove.verify.ModelChecking;
@@ -51,14 +53,19 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 	 */
 	public boolean next() {
 		if (getAtBuchiState() == null) {
+			// if we are finished
 			if (finished()) {
+//				System.out.println(stateVisits() + " state-visits.");
 				getProductGTS().removeListener(this.collector);
 				return false;
+			} else {
+				setNextStartState();
 			}
 		}
 
 		// put current state on the stack
 		searchStack().push(getAtBuchiState());
+//		stateVisit();
 		this.atState = this.getAtBuchiState().getGraphState();
 		// colour state cyan as being on the search stack
 		getAtBuchiState().setColour(ModelChecking.cyan());
@@ -71,69 +78,108 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 		// current state with the current Buchi location and add
 		// the resulting combined transition to the product GTS
 
-		Set<GraphTransition> outTransitions = getGTS().outEdgeSet(getAtState());
-    	Set<String> applicableRules = filterRuleNames(outTransitions);
+		// if the state is already explored...
+		if (getAtBuchiState().isExplored()) {
+			for (ProductTransition transition: getAtBuchiState().outTransitions()) {
+				if (counterExample(getAtBuchiState(), transition.target())) {
+					constructCounterExample();
+					return true;
+				}
+			}
+		}
+		// else we have to do it now...
+		else {
+			Set<GraphTransition> outTransitions = getGTS().outEdgeSet(getAtState());
+			Set<String> applicableRules = filterRuleNames(outTransitions);
 
-        for (BuchiTransition nextPropertyTransition: getAtBuchiLocation().outTransitions()) {
-        	if (isEnabled(nextPropertyTransition, applicableRules)) {
-        		boolean finalState = true;
-        		for (GraphTransition nextTransition: getGTS().outEdgeSet(getAtBuchiState().getGraphState())) {
-        			if (nextTransition.getEvent().getRule().isModifying()) {
-        				finalState = false;
-        				
-//            			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), nextTransition, nextPropertyTransition.getTargetLocation());
-            			Set<? extends ProductTransition> productTransitions = addProductTransition(nextTransition, nextPropertyTransition.getTargetLocation());
-            			assert (productTransitions.size() == 1) : "There should be at most one target state instead of " + productTransitions.size();
-            			if (counterExample(getAtBuchiState(), productTransitions.iterator().next().target())) {
-            				// notify counter-example
-            				for (BuchiGraphState state: searchStack()) {
-            					getResult().add(state.getGraphState());
-            				}
-            				return true;
-            			}
-        			}
-        		}
-        		if (finalState) {
-        			Set<? extends ProductTransition> productTransitions = addProductTransition(null, nextPropertyTransition.getTargetLocation()); 
-//        			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), null, nextPropertyTransition.getTargetLocation());
-        			assert (productTransitions.size() == 1) : "There should be at most one target state instead of " + productTransitions.size();
-        		}
-        	}
-        	// if the transition of the property automaton is not enabled
-        	// the states reached in the system automaton do not have to
-        	// be explored further since all paths starting from here
-        	// will never yield a counter-example
-        }
+//			if (applicableRules.contains("destroy")) {
+//				System.out.println("destroy rule is applicable");
+//			}
+			for (BuchiTransition nextPropertyTransition: getAtBuchiLocation().outTransitions()) {
+				if (isEnabled(nextPropertyTransition, applicableRules)) {
+					boolean finalState = true;
+					for (GraphTransition nextTransition: getGTS().outEdgeSet(getAtBuchiState().getGraphState())) {
+						if (nextTransition.getEvent().getRule().isModifying()) {
+							finalState = false;
+
+							Set<? extends ProductTransition> productTransitions = addProductTransition(nextTransition, nextPropertyTransition.getTargetLocation());
+							assert (productTransitions.size() == 1) : "There should be at most one target state instead of " + productTransitions.size();
+							if (counterExample(getAtBuchiState(), productTransitions.iterator().next().target())) {
+								// notify counter-example
+								constructCounterExample();
+								return true;
+							}
+						}
+					}
+					if (finalState) {
+						if (counterExample(getAtBuchiState(), getAtBuchiState())) {
+							constructCounterExample();
+							return true;
+						} else {
+							processFinalState(nextPropertyTransition);
+						}
+					}
+				}
+				// if the transition of the property automaton is not enabled
+				// the states reached in the system automaton do not have to
+				// be explored further since all paths starting from here
+				// will never yield a counter-example
+			}
+			getAtBuchiState().setExplored();
+		}
 
 		updateAtState();
 		return true;
+	}
+
+	/**
+	 * @param nextPropertyTransition
+	 */
+	protected void processFinalState(BuchiTransition nextPropertyTransition) {
+		Set<? extends ProductTransition> productTransitions = addProductTransition(null, nextPropertyTransition.getTargetLocation()); 
+		assert (productTransitions.size() == 1) : "There should be at most one target state instead of " + productTransitions.size();
+	}
+
+	protected void setNextStartState() {
+		// increase the boundary
+		getBoundary().increase();
+		// next iteration
+		ModelChecking.nextIteration();
+		ModelChecking.toggle();
+		// from the initial state again
+		this.atBuchiState = startBuchiState();
+		// clear the search-stack
+		searchStack().clear();
 	}
 
 	@Override
 	protected void updateAtState() {
 		Iterator<? extends GraphState> nextStateIter = getAtBuchiState().getNextStateIter();
 		if (nextStateIter.hasNext()) {
-//		if (this.collector.pickRandomNewState() != null) {
 			// select the first new state that does not cross the boundary
 			BuchiGraphState newState = null;
-//			Iterator<? extends GraphState> nextStateIter = getAtBuchiState().getNextStateIter();
 			while (nextStateIter.hasNext()) {
 				newState =  (BuchiGraphState) nextStateIter.next();
-//				newState =  (BuchiGraphState) getRandomOpenBuchiSuccessor(getAtBuchiState());
+//				if (newState.getGraphState() instanceof StartGraphState) {
+//					System.out.println("Returned at start-state");
+//				}
 				// we only continue with freshly created states
-				if (
-						newState.colour() != ModelChecking.cyan() &&
-						newState.colour() != ModelChecking.blue() &&
-						newState.colour() != ModelChecking.red()) {
-					assert (newState instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a " + newState.getClass();
+//				if (((GraphTransition)newState.getGraphState()).getEvent().getRule().getName().name().equals("del-process")) {
+//					System.out.println("Deleting a process");
+//				}
+				if (unexplored(newState)) {
 					if (newState.getGraphState() instanceof GraphTransition) {
 						GraphTransition transition = (GraphTransition) newState.getGraphState();
-						if (!getBoundary().crossingBoundary(transition)) {
+						// if the transition does not cross the boundary or its
+						// target-state is already explored, the transition must be traversed
+						if (!getBoundary().crossingBoundary(transition)) { // || getProductGTS().containsElement(newState)) {
 							this.atBuchiState = newState;
 							return;
 						} else {
+							// leave it unexplored
+							// set the iteration index of the graph properly
+							newState.setIteration(ModelChecking.CURRENT_ITERATION + 1);
 							// at this graph to the boundary-graphs
-							addBoundaryGraph(newState);
 							newState = null;
 						}
 					} else {
@@ -160,7 +206,7 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 			searchStack().pop();
 			// close the current state
 			setClosed(getAtBuchiState());
-			getAtBuchiState().setColour(ModelChecking.blue());
+			colourState();
 
 			// the parent is on top of the searchStack
 			parent = peekSearchStack();
@@ -168,7 +214,7 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 				this.atBuchiState = parent;
 				s = (BuchiGraphState) getRandomOpenBuchiSuccessor(parent);
 				// make sure that the next open successor is not yet explored
-				if (s != null && s.colour() != ModelChecking.white()) {
+				if (s != null && !unexplored(s)) {
 					s = null;
 				}
 			}
@@ -186,32 +232,83 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 		// else, atState is open, so we continue exploring it
 	}
 
-    @Override
-	public boolean finished() {
-		if (!boundaryGraphs().isEmpty()) {
-			getBoundary().increase();
-			boundaryGraphs().clear();
-			ModelChecking.toggle();
-			this.atBuchiState = startBuchiState();
-			searchStack().clear();
-			return false;
-		}
-		return true;
+	protected void colourState() {
+		getAtBuchiState().setColour(ModelChecking.blue());
 	}
 
+	/**
+	 * Checks whether the given state is unexplored. This is determined based
+	 * on the state-colour.
+	 * @param newState the state to be checked
+	 * @return <tt>true</tt> if the state-colour is neither of black, cyan, blue, or red, <tt>false</tt> otherwise
+	 */
+	public boolean unexplored(BuchiGraphState newState) {
+		boolean result = newState.colour() != ModelChecking.cyan() &&
+							newState.colour() != ModelChecking.blue() &&
+							newState.colour() != ModelChecking.red();
+
+//		if (result && newState.colour() != ModelChecking.NO_COLOUR) {
+//			System.out.println("Reexploring a previous state");
+//		}
+		return result;
+	}
+
+	public void constructCounterExample() {
+		for (BuchiGraphState state: searchStack()) {
+			getResult().add(state.getGraphState());
+		}
+//		getResult().add(getAtState());
+	}
+
+	/* (non-Javadoc)
+	 * @see groove.explore.strategy.DefaultBoundedModelCheckingStrategy#finished()
+	 */
 	@Override
-	protected GraphState getRandomOpenBuchiSuccessor(BuchiGraphState state) {
+	public boolean finished() {
+		if (LTLBenchmarker.RESTART) {
+			return true;
+		} else {
+			return !getProductGTS().hasOpenStates();
+		}
+	}
+
+	/* (non-Javadoc)
+	 * @see groove.explore.strategy.DefaultModelCheckingStrategy#getRandomOpenBuchiSuccessor(groove.verify.BuchiGraphState)
+	 */
+	protected GraphState getRandomOpenBuchiSuccessorOld(BuchiGraphState state) {
 		Iterator<? extends GraphState> sucIter = state.getNextStateIter();
 		RandomChooserInSequence<GraphState>  chooser = new RandomChooserInSequence<GraphState>();
 		while (sucIter.hasNext()) {
 			GraphState s = sucIter.next();
 			assert (s instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a " + s.getClass();
 			BuchiGraphState buchiState = (BuchiGraphState) s;
-			if (
-					buchiState.colour() != ModelChecking.cyan() &&
-					buchiState.colour() != ModelChecking.blue() &&
-					buchiState.colour() != ModelChecking.red()) {
-				chooser.show(s);
+			if (unexplored(buchiState)) {
+				if (buchiState.getGraphState() instanceof GraphTransition) {
+					GraphTransition transition = (GraphTransition) buchiState.getGraphState();
+					if (!getBoundary().crossingBoundary(transition)) {
+						chooser.show(s);
+					}
+				}
+//				chooser.show(s);
+			}
+		}
+		return chooser.pickRandom();
+	}
+
+	/* (non-Javadoc)
+	 * @see groove.explore.strategy.DefaultModelCheckingStrategy#getRandomOpenBuchiSuccessor(groove.verify.BuchiGraphState)
+	 */
+	@Override
+	protected GraphState getRandomOpenBuchiSuccessor(BuchiGraphState state) {
+		Iterator<ProductTransition> outTransitionIter = state.outTransitionIter();
+		RandomChooserInSequence<GraphState>  chooser = new RandomChooserInSequence<GraphState>();
+		while (outTransitionIter.hasNext()) {
+			ProductTransition p = outTransitionIter.next();
+			BuchiGraphState buchiState = (BuchiGraphState) p.target();
+			if (unexplored(buchiState)) {
+				if (!getBoundary().crossingBoundary(p.graphTransition())) {
+					chooser.show(p.target());
+				}
 			}
 		}
 		return chooser.pickRandom();

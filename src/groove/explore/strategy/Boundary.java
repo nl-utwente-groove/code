@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: Boundary.java,v 1.2 2008-02-20 09:28:55 kastenberg Exp $
+ * $Id: Boundary.java,v 1.2 2008/02/20 09:28:55 kastenberg Exp $
  */
 package groove.explore.strategy;
 
