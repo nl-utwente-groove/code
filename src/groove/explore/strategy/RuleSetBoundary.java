@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: RuleSetBoundary.java,v 1.6 2008-03-21 12:36:04 kastenberg Exp $
+ * $Id: RuleSetBoundary.java,v 1.6 2008/03/21 12:36:04 kastenberg Exp $
  */
 package groove.explore.strategy;
 
@@ -74,8 +74,9 @@ public class RuleSetBoundary implements Boundary {
 				} else {
 					allowed.put(transition.getEvent().getRule(), false);
 				}
-				return true;
+				return false;
 			}
+			return true;
 		}
 		return false;
 	}
