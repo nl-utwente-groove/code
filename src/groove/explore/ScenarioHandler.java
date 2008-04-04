@@ -1,9 +1,10 @@
 package groove.explore;
 
-import java.util.Collection;
-
 import groove.lts.GTS;
 import groove.lts.GraphState;
+import groove.lts.ProductGTS;
+
+import java.util.Collection;
 
 /** An object holding a scenario. Should be implemented for any pre-defined scenario.
  * Is used as an interface between tools using a scenario (e.g. {@link groove.util.Generator}, 
@@ -48,5 +49,6 @@ public interface ScenarioHandler {
 	 * @param gts The transition system on which the scenario works. 
 	 */
 	public void setGTS (GTS gts);	
-	
+
+	public ProductGTS getProductGTS();
 }
