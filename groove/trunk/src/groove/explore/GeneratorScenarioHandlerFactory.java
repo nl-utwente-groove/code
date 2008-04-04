@@ -398,6 +398,8 @@ public class GeneratorScenarioHandlerFactory {
 
 			@Override
 			public Class<?> resultType() { return null; }
+
+			@Override
 			public ProductGTS getProductGTS() {
 				return productGTS;
 			}
@@ -468,6 +470,7 @@ public class GeneratorScenarioHandlerFactory {
 
 			@Override
 			public Class<?> resultType() { return null; }
+			@Override
 			public ProductGTS getProductGTS() {
 				return productGTS;
 			}
