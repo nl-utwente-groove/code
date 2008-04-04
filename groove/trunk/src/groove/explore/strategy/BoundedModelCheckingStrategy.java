@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: BoundedModelCheckingStrategy.java,v 1.2 2008-03-04 14:44:51 kastenberg Exp $
+ * $Id: BoundedModelCheckingStrategy.java,v 1.2 2008/03/04 14:44:51 kastenberg Exp $
  */
 package groove.explore.strategy;
 

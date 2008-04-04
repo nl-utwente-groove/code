@@ -12,17 +12,16 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: OptimizedBoundedNestedDFSStrategy.java,v 1.2 2008-02-22 13:02:45 rensink Exp $
+ * $Id: OptimizedBoundedNestedDFSStrategy.java,v 1.2 2008/02/22 13:02:45 rensink Exp $
  */
-
 package groove.explore.strategy;
 
 import groove.explore.result.CycleAcceptor;
+import groove.lts.GraphTransition;
 import groove.verify.BuchiGraphState;
 import groove.verify.ModelChecking;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Iterator;
 
 /** 
  * This depth-first strategy represents the blue search of a nested
@@ -35,49 +34,40 @@ import java.util.List;
  * This bounded version deviates from the usual Nested DFS in the
  * way of setting the next state to be explored. If a potential
  * next state crosses the boundary, an other next state is selected.
- * Checking whether the 
  * 
  * @author Harmen Kastenberg
  * @version $Revision: 1.2 $
  */
 public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy {
-    @Override
-	public boolean finished() {
-		if (!boundaryGraphs().isEmpty()) {
-			ModelChecking.toggle();
-			BuchiGraphState next = boundaryGraphs().remove(0);
-			constructSearchStack(next);
-			this.atBuchiState = next;
-			return false;
-		} else if (!nextBoundaryGraphs.isEmpty()) {
-			ModelChecking.toggle();
-			BuchiGraphState next = nextBoundaryGraphs.remove(0);
-			constructSearchStack(next);
-			this.atBuchiState = next;
-			boundaryGraphs().addAll(nextBoundaryGraphs);
-			nextBoundaryGraphs.clear();
+
+	/* (non-Javadoc)
+	 * @see groove.explore.strategy.DefaultBoundedModelCheckingStrategy#setNextStartState()
+	 */
+	protected void setNextStartState() {
+		while (getProductGTS().hasOpenStates() && getAtBuchiState() == null) {
+			// increase the boundary
 			getBoundary().increase();
-			return false;
-		} else {
-			return true;
+			ModelChecking.nextIteration();
+			// iterator over the open states
+			// TODO: maybe there is a more efficient way of 
+			// iterating over the open states than to start
+			// at the beginning every time one has been
+			// processed
+			Iterator<BuchiGraphState> openStateIter = getProductGTS().getOpenStateIter();
+			while (openStateIter.hasNext() && getAtBuchiState() == null) {
+				BuchiGraphState nextOpenState = openStateIter.next();
+				// states that are part of later iterations
+				// are not considered here
+				if (nextOpenState.iteration() <= ModelChecking.CURRENT_ITERATION) {
+					// furthermore, the transition by which the next open 
+					// state is reached should also not cross the current boundary
+					assert (nextOpenState.getGraphState() instanceof GraphTransition) : "Was expecting a graph-transition instead of a " + nextOpenState.getGraphState().getClass();
+					if (!getBoundary().crossingBoundary((GraphTransition) nextOpenState.getGraphState())) {
+						this.atBuchiState = nextOpenState;
+						ModelChecking.nextColourScheme();
+					}
+				}
+			}
 		}
 	}
-
-	@Override
-	public boolean addBoundaryGraph(BuchiGraphState boundaryGraph) {
-		return nextBoundaryGraphs.add(boundaryGraph);
-	}
-
-	private void constructSearchStack(BuchiGraphState state) {
-		searchStack().clear();
-//		searchStack().push(state);
-		BuchiGraphState parent = state.parent();
-		while (parent != null) {
-			parent.setColour(ModelChecking.cyan());
-			searchStack().add(0, parent);
-			parent = parent.parent();
-		}
-	}
-
-	private List<BuchiGraphState> nextBoundaryGraphs = new ArrayList<BuchiGraphState>();
 }

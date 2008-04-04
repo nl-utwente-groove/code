@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultModelCheckingStrategy.java,v 1.5 2008-03-05 08:41:17 kastenberg Exp $
+ * $Id: DefaultModelCheckingStrategy.java,v 1.5 2008/03/05 08:41:17 kastenberg Exp $
  */
 package groove.explore.strategy;
 
@@ -112,8 +112,14 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
 	 * otherwise.
 	 */
 	public boolean counterExample(BuchiGraphState source, BuchiGraphState target) {
-		return (target.colour() == ModelChecking.cyan()) &&
+		boolean result = (target.colour() == ModelChecking.cyan()) &&
 		(source.getBuchiLocation().isSuccess(null) || target.getBuchiLocation().isSuccess(null));
+		
+//		if (result) {
+//			System.out.println("Counter-example found");
+//		}
+		
+		return result;
 	}
 
 	/**
