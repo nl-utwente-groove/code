@@ -42,14 +42,12 @@ import java.util.Set;
  */
 public class BuchiGraphState extends AbstractGraphState {
 
-	/** the buchi graph-state this one originates from */
+	/** the Guchi graph-state this one originates from */
 	private BuchiGraphState parent;
 	/** the graph-state that is wrapped */
 	private GraphState state;
 	/** the buchi location for this buchi graph state */
 	private BuchiLocation buchiLocation;
-//	/** flag indication whether this state is accepting */
-//	private boolean accepting = false;
 	/** the colour of this graph state (used in the nested DFS algorithm) */
 	private int colour;
 	/** this flag indicates whether this state can be regarded as a so-called pocket state */
@@ -64,6 +62,13 @@ public class BuchiGraphState extends AbstractGraphState {
 	/** flag indicating whether this state is explored */
 	public boolean explored = false;
 
+	/**
+	 * Constructor.
+	 * @param record the {@link SystemRecord} for this state
+	 * @param state the system-state component
+	 * @param buchiLocation the Buchi-location component
+	 * @param parent the parent state
+	 */
 	public BuchiGraphState(SystemRecord record, GraphState state, BuchiLocation buchiLocation, BuchiGraphState parent) {
 		super(StateReference.newInstance(record));
 		this.state = state;
@@ -254,6 +259,10 @@ public class BuchiGraphState extends AbstractGraphState {
         };
     }
 
+    /**
+     * Returns an iterator over the outgoing transitions.
+     * @return an iterator over the outgoing transitions.
+     */
     public Iterator<ProductTransition> outTransitionIter() {
     	return outTransitions().iterator();
     }
@@ -261,7 +270,6 @@ public class BuchiGraphState extends AbstractGraphState {
     @Override
     public boolean addTransition(GraphTransition transition) {
     	throw new UnsupportedOperationException("Buchi graph-states can only have outgoing Buchi-transitions and no " + transition.getClass());
-//    	return state.addTransition(transition);
     }
 
     @Override
@@ -276,14 +284,20 @@ public class BuchiGraphState extends AbstractGraphState {
 
     @Override
 	protected void updateClosed() {
-		// TODO Auto-generated method stub
 		this.closed = true;
 	}
 
+    /**
+     * Checks whether this states is already fully explored.
+     * @return <tt>true<tt> if so, <tt>false</tt> otherwise
+     */
     public boolean isExplored() {
     	return explored;
     }
 
+    /**
+     * Set this state as being fully explored.
+     */
     public void setExplored() {
     	this.explored = true;
     }
@@ -297,5 +311,5 @@ public class BuchiGraphState extends AbstractGraphState {
 		}
 	}
 
-    public static int pocketStates = 0;
+//    public static int pocketStates = 0;
 }
