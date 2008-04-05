@@ -40,9 +40,6 @@ import java.util.Iterator;
  */
 public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy {
 
-	/* (non-Javadoc)
-	 * @see groove.explore.strategy.DefaultBoundedModelCheckingStrategy#setNextStartState()
-	 */
 	protected void setNextStartState() {
 		while (getProductGTS().hasOpenStates() && getAtBuchiState() == null) {
 			// increase the boundary
