@@ -35,10 +35,62 @@ import java.util.Set;
  */
 public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
 
-	protected void processFinalState(BuchiTransition nextPropertyTransition) {
-		Set<? extends ProductTransition> productTransitions = addProductTransition(null, nextPropertyTransition.getTargetLocation()); 
+	protected void backtrack() {
+		BuchiGraphState parent = null;
+		BuchiGraphState s = null;
+		do {
+//			boolean fromPocket = getAtBuchiState().isPocket();
+			// pop the current state from the search-stack
+			searchStack().pop();
+			// close the current state
+			setClosed(getAtBuchiState());
+			
+			colourState();
+
+			// the parent is on top of the searchStack
+			parent = peekSearchStack();
+			if (parent != null) {
+				this.atBuchiState = parent;
+//				if (parent.isPocket() && !fromPocket) {
+//					parent.setNonPocket();
+//				}
+				s = (BuchiGraphState) getRandomOpenBuchiSuccessor(parent);
+				// make sure that the next open successor is not yet explored
+				if (s != null) {
+					if (!unexplored(s)) {
+						s = null;
+					}
+				}
+				else {
+					// no open successors
+					// determine whether the current state must be marked pocket
+//					checkPocket(parent);
+				}
+			}
+		} while (parent != null && s == null); //) && !getProductGTS().isOpen(getAtBuchiState()));
+
+		// identify the reason of exiting the loop
+		if (parent == null) {
+			// the start state is reached and does not have open successors
+			this.atBuchiState = null;
+			return;
+		} else if (s != null) { // the current state has an open successor (is not really backtracking, a sibling state is fully explored)
+			this.atBuchiState = s; 
+			return;
+		} 
+		// else, atState is open, so we continue exploring it
+	}
+
+	protected void processFinalState(BuchiTransition transition) {
+		Set<? extends ProductTransition> productTransitions = addProductTransition(null, transition.getTargetLocation()); 
 		assert (productTransitions.size() == 1) : "There should be at most one target state instead of " + productTransitions.size();
-		getAtBuchiState().setColour(ModelChecking.black());
+		// we should set the state to pocket but that is
+		// the case by default
+
+//		ModelChecking.reporter.start(ModelChecking.POCKET_STATE_REPORTER);
+//		getAtBuchiState().setColour(ModelChecking.black());
+//		getAtBuchiState().setPocket();
+//		ModelChecking.reporter.stop();
 	}
 
 	/* (non-Javadoc)
@@ -52,10 +104,25 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
 		searchStack().clear();
 	}
 
+	@Override
+	public void processBoundaryCrossingTransition(ProductTransition transition) {
+		super.processBoundaryCrossingTransition(transition);
+		// the current state is a border state
+		// and must therefore be marked as non-pocket
+//		if (transition.source().isPocket()) {
+//			transition.source().setNonPocket();
+//		}
+	}
+
 	protected void colourState() {
-		if (black(getAtBuchiState())) {
-			getAtBuchiState().setColour(ModelChecking.black());
-			blackStates++;
+		checkPocket(getAtBuchiState());
+		// if this state is a pocket-state we actually do not
+		// not to further colour it blue or red
+		// nevertheless, for correctness reasons we still do it
+		// (in case the pocket detection is faulty, the colouring
+		// is at least correct)
+		if (getAtBuchiState().isAccepting()) {
+			getAtBuchiState().setColour(ModelChecking.red());
 		} else {
 			getAtBuchiState().setColour(ModelChecking.blue());
 		}
@@ -65,13 +132,13 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
 	 * Checks whether the given state is unexplored. This is determined based
 	 * on the state-colour.
 	 * @param newState the state to be checked
-	 * @return <tt>true</tt> if the state-colour is neither of black, cyan, blue, or red, <tt>false</tt> otherwise
+	 * @return <tt>true</tt> if the state is a non-pocket state or colour neither cyan, blue, nor red, <tt>false</tt> otherwise
 	 */
 	public boolean unexplored(BuchiGraphState newState) {
-		if (newState.colour() == ModelChecking.black()) {
-			return false;
-		}
-		boolean result = newState.colour() != ModelChecking.black() &&
+//		if (newState.colour() == ModelChecking.black()) {
+//			return false;
+//		}
+		boolean result = (!newState.isPocket() || newState.colour() == ModelChecking.NO_COLOUR) &&
 							newState.colour() != ModelChecking.cyan() &&
 							newState.colour() != ModelChecking.blue() &&
 							newState.colour() != ModelChecking.red();
@@ -86,13 +153,16 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
 	 * @return <tt>true</tt> if the conditions for marking the state
 	 * black are satisfied, <tt>false</tt> otherwise
 	 */
-	protected boolean black(BuchiGraphState state) {
+	protected void checkPocket(BuchiGraphState state) {
+//		ModelChecking.reporter.start(ModelChecking.POCKET_STATE_REPORTER);
 		for (ProductTransition transition: state.outTransitions()) {
-			if (transition.target().colour() != ModelChecking.black())
-				return false;
+			if (transition.graphTransition() != null && !transition.target().isPocket())
+				return;
 		}
-		return true;
+		state.setPocket();
+//		ModelChecking.reporter.stop();
+		return;
 	}
 
-	public static int blackStates = 0;
+	public static int pocketStates = 0;
 }
