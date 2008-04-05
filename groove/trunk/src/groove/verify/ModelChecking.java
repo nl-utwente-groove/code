@@ -16,9 +16,11 @@
  */
 package groove.verify;
 
+import groove.explore.DefaultScenario;
 import groove.graph.Edge;
+import groove.lts.GTS;
 import groove.trans.Rule;
-import groove.util.LTLBenchmarker;
+import groove.util.Reporter;
 
 import java.util.Collection;
 
@@ -34,7 +36,7 @@ public class ModelChecking {
 	/** constant for non-toggled state colour white */
 	public static final int NO_COLOUR = 0;
 	/** constant for state colour black (so-called pocket state) */
-	public static final int BLACK = 1;
+//	public static final int BLACK = 1;
 
 	/** constant for non-toggled state colour white */
 	public static final int WHITE = 2;
@@ -66,6 +68,11 @@ public class ModelChecking {
 
 	/** constant to keep track of dynamic colour-schemes */
 	private static int NEXT_FREE_COLOUR = 6;
+
+	/** the value for marking pocket states */
+	public static int POCKET = 1;
+	/** the value for marking non-pocket states */
+	public static int NO_POCKET = -1;
 
 	/** constant for notifying the system is OK */
 	public static final int OK = 1;
@@ -129,9 +136,9 @@ public class ModelChecking {
      * is shared by all colour-schemes.
      * @return the constant {@link ModelChecking#BLACK}
      */
-    public static int black() {
-    	return BLACK;
-    }
+//    public static int black() {
+//    	return BLACK;
+//    }
 
     /**
      * Toggle the colour-scheme used.
@@ -226,4 +233,8 @@ public class ModelChecking {
     public static boolean hasSigmaLabel(Edge edge) {
     	return edge.label().text().equals(SIGMA);
     }
+
+	/** Reporter for profiling information. */
+    static public final Reporter reporter = Reporter.register(ModelChecking.class);
+    static public final int POCKET_STATE_REPORTER = reporter.newMethod("blackPainting()");
 }
