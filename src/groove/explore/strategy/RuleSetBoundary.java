@@ -35,7 +35,7 @@ import java.util.Set;
  * @author Harmen Kastenberg
  * @version $Revision: 1.6 $
  */
-public class RuleSetBoundary implements Boundary {
+public class RuleSetBoundary extends AbstractBoundary {
 
 	/**
 	 * Empty {@link RuleSetBoundary} constructor.
@@ -98,8 +98,9 @@ public class RuleSetBoundary implements Boundary {
 		}
 	}
 
+	/** the set of rules that are initially forbidden to apply */
 	private Set<Rule> ruleSetBoundary = new HashSet<Rule>();
-//	private boolean allowBoundaryRule;
+	/** mapping from rules to Boolean values indicating which rules are allowed to apply (or better, traverse) */
 	private Map<Rule,Boolean> allowed;
 
 	/** Allow only a single application of one of the rules */

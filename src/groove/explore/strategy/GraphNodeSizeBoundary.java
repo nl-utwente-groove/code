@@ -17,6 +17,7 @@
 package groove.explore.strategy;
 
 import groove.lts.GraphTransition;
+import groove.verify.ModelChecking;
 
 /**
  * Implementation of interface {@link Boundary} that
@@ -26,7 +27,7 @@ import groove.lts.GraphTransition;
  * @author Harmen Kastenberg
  * @version $Revision: 1.2 $ $Date: 2008-02-20 08:37:54 $
  */
-public class GraphNodeSizeBoundary implements Boundary {
+public class GraphNodeSizeBoundary extends AbstractBoundary {
 
 	/**
 	 * {@link GraphNodeSizeBoundary} constructor.
@@ -51,6 +52,22 @@ public class GraphNodeSizeBoundary implements Boundary {
 		this.graphSizeBoundary += this.step;
 	}
 
+	public void increaseDepth() {
+		// do nothing
+	}
+
+	public void decreaseDepth() {
+		// do nothing
+	}
+
+	public int currentDepth() {
+		// with graph-size boundaries, boundary-crossing
+		// transitions are never allowed
+		return ModelChecking.CURRENT_ITERATION;
+	}
+
+	/** the graph-size of graphs allowed for exploration */
 	private int graphSizeBoundary;
+	/** the value with which to increase the boundary with */
 	private int step;
 }
