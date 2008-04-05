@@ -31,6 +31,10 @@ public abstract class AbstractBoundary implements Boundary {
 		return currentDepth;
 	}
 
+	public void setCurrentDepth(int value) {
+		this.currentDepth = value;
+	}
+
 	@Override
 	public void decreaseDepth() {
 		currentDepth--;
