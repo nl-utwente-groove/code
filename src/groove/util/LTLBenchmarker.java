@@ -42,6 +42,7 @@ import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.trans.VirtualRuleMatch;
+import groove.verify.BuchiGraphState;
 import groove.verify.ModelChecking;
 import groove.view.FormatException;
 
@@ -194,21 +195,54 @@ public class LTLBenchmarker extends CommandLineTool {
     		logFileName = "experiment-mutex.txt";
         	grammarLocation = "C:\\local\\groove\\samples\\mutex.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
-        	// boolean indicates whether to regenerate
+        	// boolean indicates whether to mark pocket states
         	if (flag == 0)
         		benchmarker.experimentMutex(false);
         	if (flag == 1)
         		benchmarker.experimentMutex(true);
         } else if (experiment == 5) {
+        	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to mark pocket states
+//        	ModelChecking.resetIteration();
+        	if (arguments.size() <= 0) {
+            	if (flag == 0) {
+            		logFileName = "experiment-CEB-no-pocket.txt";
+            		benchmarker.experimentCEBRule(false);
+            	} else {
+            		logFileName = "experiment-CEB-pocket.txt";
+            		benchmarker.experimentCEBRule(true);
+            	}
+        	} else {
+        		int pocket = flag;
+        		int border = Integer.parseInt(arguments.remove(0));
+        		if (border == 0 && pocket == 0) {
+            		logFileName = "experiment-CEB-start-no-pocket.txt";
+            		benchmarker.experimentCEBGraph(false, false);
+        		}
+        		if (border == 0 && pocket == 1) {
+            		logFileName = "experiment-CEB-start-pocket.txt";
+            		benchmarker.experimentCEBGraph(false, true);
+        		}
+        		if (border == 1 && pocket == 0) {
+            		logFileName = "experiment-CEB-border-no-pocket.txt";
+            		benchmarker.experimentCEBGraph(true, false);
+        		}
+        		if (border == 1 && pocket == 1) {
+            		logFileName = "experiment-CEB-border-pocket.txt";
+            		benchmarker.experimentCEBGraph(true, true);
+        		}
+        	}
+        } else if (experiment == 51) {
     		logFileName = "experiment-CEB.txt";
         	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to regenerate
-        	ModelChecking.resetIteration();
+//        	ModelChecking.resetIteration();
         	if (flag == 0)
-        		benchmarker.experimentCEB(false);
+        		benchmarker.experimentCEBGraph(false);
         	if (flag == 1)
-        		benchmarker.experimentCEB(true);
+        		benchmarker.experimentCEBGraph(true);
         } else if (experiment == 6) {
         	grammarLocation = "C:\\local\\groove\\samples\\leader-election.gps";
         	ModelChecking.MAX_ITERATIONS = 3;
@@ -224,6 +258,34 @@ public class LTLBenchmarker extends CommandLineTool {
         		benchmarker.experimentLEP(true);
         	}
         } else if (experiment == 7) {
+        	grammarLocation = "C:\\local\\groove\\samples\\leader-election.gps";
+        	ModelChecking.MAX_ITERATIONS = 4;
+        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to mark pocket states
+        	if (flag == 0) {
+            	logFileName = "experiment-LEP-correct-4-no-pocket.txt";
+        		benchmarker.experimentLEP(false);
+        	}
+        	if (flag == 1) {
+            	logFileName = "experiment-LEP-correct-4-pocket.txt";
+        		benchmarker.experimentLEP(true);
+        	}
+        } else if (experiment == 8) {
+        	grammarLocation = "C:\\local\\groove\\samples\\leader-election.gps";
+        	ModelChecking.MAX_ITERATIONS = 5;
+        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to mark pocket states
+        	if (flag == 0) {
+            	logFileName = "experiment-LEP-correct-5-no-pocket.txt";
+        		benchmarker.experimentLEP(false);
+        	}
+        	if (flag == 1) {
+            	logFileName = "experiment-LEP-correct-5-pocket.txt";
+        		benchmarker.experimentLEP(true);
+        	}
+        } else if (experiment == 9) {
         	grammarLocation = "C:\\local\\groove\\samples\\leader-election-faulty-5.gps";
         	ModelChecking.MAX_ITERATIONS = 5;
         	ModelChecking.START_FROM_BORDER_STATES = true;
@@ -237,7 +299,7 @@ public class LTLBenchmarker extends CommandLineTool {
             	logFileName = "experiment-LEP-faulty-5-pocket.txt";
         		benchmarker.experimentLEP(true);
         	}
-        } else if (experiment == 8) {
+        } else if (experiment == 10) {
         	grammarLocation = "C:\\local\\groove\\samples\\leader-election-faulty-6.gps";
         	ModelChecking.MAX_ITERATIONS = 5;
         	ModelChecking.START_FROM_BORDER_STATES = true;
@@ -251,7 +313,7 @@ public class LTLBenchmarker extends CommandLineTool {
             	logFileName = "experiment-LEP-faulty-6-pocket.txt";
         		benchmarker.experimentLEP(true);
         	}
-        } else if (experiment == 9) {
+        } else if (experiment == 11) {
         	grammarLocation = "C:\\local\\groove\\samples\\leader-election-faulty-7.gps";
         	ModelChecking.MAX_ITERATIONS = 5;
         	ModelChecking.START_FROM_BORDER_STATES = true;
@@ -265,9 +327,8 @@ public class LTLBenchmarker extends CommandLineTool {
             	logFileName = "experiment-LEP-faulty-7-pocket.txt";
         		benchmarker.experimentLEP(true);
         	}
-        } else if (experiment == 10) {
+        } else if (experiment == 12) {
         	grammarLocation = "C:\\local\\groove\\samples\\append.gps";
-//        	ModelChecking.MAX_ITERATIONS = 20;
         	ModelChecking.START_FROM_BORDER_STATES = true;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
@@ -426,27 +487,59 @@ public class LTLBenchmarker extends CommandLineTool {
     public void experimentMutex(boolean pocket) {
     	grammarLocation = "C:\\local\\groove\\samples\\mutex.gps";
     	startStateName = "start";
-    	property = "[](new || mount)";
+    	property = "[]!<> shared";
+    	RESTART = false;
+//    	strategyType = "R";
+//    	ruleList = "new,mount";
+    	strategyType = "S";
+    	initialBound = 3;
+    	step = 1;
+    	ModelChecking.MAX_ITERATIONS = 3;
+    	ModelChecking.MARK_POCKET_STATES = pocket;
+    	ModelChecking.START_FROM_BORDER_STATES = false;
+    	try {
+    		ModelChecking.nextIteration();
+//    		System.gc();
+//    		resetStrategy();
+//    		resetGTS();
+    		init();
+    		generate();
+    		report();
+    		exit(endTime - startTime);
+    	} catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
+        	e.printStackTrace();
+        	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+    }
+
+    /**
+     * Experiment 5:
+     * - boundary by rule-set
+     * - reuse
+     * - continue from border states
+     * - max iterations
+     */
+    public void experimentCEBRule(boolean pocket) {
+    	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
+    	startStateName = "start";
+    	property = "[](extend -> <> gap)";
+//    	logFileName = "results.txt";
     	RESTART = false;
     	strategyType = "R";
-    	ruleList = "new,mount";
-    	ModelChecking.MAX_ITERATIONS = 20;
+    	ruleList = "extend-correct";
+//    	ModelChecking.MAX_ITERATIONS = 20;
+//    	ModelChecking.MAX_ITERATIONS = 40;
+    	ModelChecking.MAX_ITERATIONS = 60;
     	ModelChecking.MARK_POCKET_STATES = pocket;
     	ModelChecking.START_FROM_BORDER_STATES = true;
         try {
-        	long total = 0;
-        	do {
-        		ModelChecking.nextIteration();
-        		System.gc();
-        		resetStrategy();
-        		resetGTS();
-        		init();
-        		generate();
-        		report();
-        		initialBound += step;
-        		total += endTime - startTime;
-        	} while (!finishedIterations());
-    		exit(total);
+    		ModelChecking.nextIteration();
+    		init();
+    		generate();
+    		report();
+    		exit(endTime - startTime);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
         	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
@@ -462,33 +555,27 @@ public class LTLBenchmarker extends CommandLineTool {
      * - continue from border states
      * - max iterations
      */
-    public void experimentCEB(boolean pocket) {
+    public void experimentCEBGraph(boolean border, boolean pocket) {
     	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
     	startStateName = "start";
-    	property = "[](extend -> <> gap)";
-    	logFileName = "results.txt";
+    	property = "[](put -> <> get)";
+//    	logFileName = "results.txt";
     	RESTART = false;
-    	strategyType = "R";
-    	ruleList = "extend-correct";
+    	strategyType = "S";
+    	initialBound  = 5;
+    	step = 2;
+//    	ruleList = "extend-correct";
 //    	ModelChecking.MAX_ITERATIONS = 20;
 //    	ModelChecking.MAX_ITERATIONS = 40;
-    	ModelChecking.MAX_ITERATIONS = 60;
+    	ModelChecking.MAX_ITERATIONS = 100;
     	ModelChecking.MARK_POCKET_STATES = pocket;
-    	ModelChecking.START_FROM_BORDER_STATES = true;
+    	ModelChecking.START_FROM_BORDER_STATES = border;
         try {
-        	long total = 0;
-        	do {
-        		ModelChecking.nextIteration();
-        		System.gc();
-        		resetStrategy();
-        		resetGTS();
-        		init();
-        		generate();
-        		report();
-        		initialBound += step;
-        		total += endTime - startTime;
-        	} while (!finishedIterations());
-    		exit(total);
+    		ModelChecking.nextIteration();
+    		init();
+    		generate();
+    		report();
+    		exit(endTime - startTime);
         } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
         	e.printStackTrace();
         	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
@@ -498,22 +585,25 @@ public class LTLBenchmarker extends CommandLineTool {
     }
 
     /**
-     * Experiment 6:
+     * Experiment 5:
      * - boundary by rule-set
      * - reuse
      * - continue from border states
-     * - no pocket detection
-     * - max iterations = 6
+     * - max iterations
      */
-    public void experimentLEP(boolean pocket) {
+    public void experimentCEBGraph(boolean restart) {
+    	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
     	startStateName = "start";
-    	property = "[](init -> (<> leader))";
-    	RESTART = false;
-    	strategyType = "R";
-    	ruleList = "new-process";
-    	ModelChecking.MAX_ITERATIONS = 5;
-    	ModelChecking.MARK_POCKET_STATES = pocket;
-    	ModelChecking.START_FROM_BORDER_STATES = true;
+    	property = "[](put -> <> get)";
+//    	logFileName = "results.txt";
+    	RESTART = restart;
+    	strategyType = "S";
+    	initialBound  = 5;
+    	step = 2;
+//    	ruleList = "extend-correct";
+//    	ModelChecking.MAX_ITERATIONS = 20;
+//    	ModelChecking.MAX_ITERATIONS = 40;
+    	ModelChecking.MAX_ITERATIONS = 60;
         try {
         	long total = 0;
         	do {
@@ -537,16 +627,47 @@ public class LTLBenchmarker extends CommandLineTool {
     }
 
     /**
+     * Experiment 6:
+     * - boundary by rule-set
+     * - reuse
+     * - continue from border states
+     * - no pocket detection
+     * - max iterations = 6
+     */
+    public void experimentLEP(boolean pocket) {
+    	startStateName = "start";
+    	property = "[](init -> (<> leader))";
+    	RESTART = false;
+    	strategyType = "R";
+    	ruleList = "new-process,del-process";
+//    	ModelChecking.MAX_ITERATIONS = 5;
+    	ModelChecking.MARK_POCKET_STATES = pocket;
+    	ModelChecking.START_FROM_BORDER_STATES = true;
+        try {
+    		ModelChecking.nextIteration();
+    		init();
+    		generate();
+    		report();
+    		exit(endTime - startTime);
+        } catch (java.lang.OutOfMemoryError e) { // added for the contest, to be removed
+        	e.printStackTrace();
+        	System.out.println("\n\tStates:\t" + getProductGTS().nodeCount());
+        } catch (Exception e) {
+        	e.printStackTrace();
+        }
+    }
+
+    /**
      * Experiment Append
      */
     public void experimentAppend(boolean pocket) {
-//    	startStateName = "start-12";
-    	startStateName = "append-4-list-8";
+//    	startStateName = "start";
+    	startStateName = "append-4-list-7";
     	property = "[]((next U append) -> (<> return))";
     	RESTART = false;
     	strategyType = "R";
     	ruleList = "shorten";
-    	ModelChecking.MAX_ITERATIONS = 3;
+    	ModelChecking.MAX_ITERATIONS = 10;
     	ModelChecking.MARK_POCKET_STATES = pocket;
     	ModelChecking.START_FROM_BORDER_STATES = true;
     	try {
@@ -1025,7 +1146,7 @@ public class LTLBenchmarker extends CommandLineTool {
     		System.out.println("No counter-example found.");
     	}
     	// write statistics to log-file
-    	
+
     	File logFile = new File(logFileName);
     	FileWriter logFileWriter = new FileWriter(logFileName, true);
     	BufferedWriter writer = new BufferedWriter(logFileWriter);
@@ -1035,9 +1156,16 @@ public class LTLBenchmarker extends CommandLineTool {
         int stateCountSystem = getGTS().nodeCount();
         int transitionCount = getStrategy().getProductGTS().edgeCount();
         int transitionCountSystem = getGTS().edgeCount();
+        int pocketStates = getStrategy().getProductGTS().getPocketStates().size();
+        int pocketStates2 = BuchiGraphState.pocketStates;
+        System.out.println(pocketStates + " (" + pocketStates2 + ")");
 //        long total = (endTime - startTime);
         long matching = SPORule.getMatchingTime();
     	String results = stateCount + " (" + stateCountSystem + ") " + transitionCount + " (" + transitionCountSystem + ") " + total + " " + (percentage(matching / (double) total));
+
+//    	if (ModelChecking.MARK_POCKET_STATES)
+//    		results += " " + BuchiGraphState.pocketStates;
+
 //    	writer.write("\n" + experiment + "\n");
     	writer.write(results);
     	writer.close();
