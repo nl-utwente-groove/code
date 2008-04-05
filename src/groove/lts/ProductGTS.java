@@ -249,6 +249,20 @@ public class ProductGTS implements LTS {
     }
 
     /**
+     * Returns a view on the set of currently open states.
+     * @see #hasOpenStates()
+     * @see #getOpenStateIter()
+     */
+    public Collection<BuchiGraphState> getPocketStates() {
+        return new CollectionView<BuchiGraphState>(stateSet) {
+        	@Override
+            public boolean approves(Object obj) {
+                return ((BuchiGraphState) obj).isPocket();
+            }
+        };
+    }
+
+    /**
      * Returns an iterator over the set of currently open states.
      * Equivalent to <code>getOpenStates().iterator()</code>.
      * @see #hasOpenStates()
