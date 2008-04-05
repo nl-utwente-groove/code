@@ -1156,9 +1156,9 @@ public class LTLBenchmarker extends CommandLineTool {
         int stateCountSystem = getGTS().nodeCount();
         int transitionCount = getStrategy().getProductGTS().edgeCount();
         int transitionCountSystem = getGTS().edgeCount();
-        int pocketStates = getStrategy().getProductGTS().getPocketStates().size();
-        int pocketStates2 = BuchiGraphState.pocketStates;
-        System.out.println(pocketStates + " (" + pocketStates2 + ")");
+//        int pocketStates = getStrategy().getProductGTS().getPocketStates().size();
+//        int pocketStates2 = BuchiGraphState.pocketStates;
+//        System.out.println(pocketStates + " (" + pocketStates2 + ")");
 //        long total = (endTime - startTime);
         long matching = SPORule.getMatchingTime();
     	String results = stateCount + " (" + stateCountSystem + ") " + transitionCount + " (" + transitionCountSystem + ") " + total + " " + (percentage(matching / (double) total));
