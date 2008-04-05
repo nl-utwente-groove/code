@@ -48,8 +48,12 @@ public class BuchiGraphState extends AbstractGraphState {
 	private GraphState state;
 	/** the buchi location for this buchi graph state */
 	private BuchiLocation buchiLocation;
+//	/** flag indication whether this state is accepting */
+//	private boolean accepting = false;
 	/** the colour of this graph state (used in the nested DFS algorithm) */
 	private int colour;
+	/** this flag indicates whether this state can be regarded as a so-called pocket state */
+	private boolean pocket = false;
 	/** the iteration in which this state has been found;
 	 * this field will only be used for state that are left
 	 * unexplored in a specific iteration */
@@ -125,6 +129,13 @@ public class BuchiGraphState extends AbstractGraphState {
 	}
 
 	/**
+	 * Returns whether this state is accepting.
+	 * @return <tt>true</tt> if its location is accepting, <tt>false</tt> otherwise
+	 */
+	public boolean isAccepting() {
+		return buchiLocation.isAccepting();
+	}
+	/**
 	 * Returns the run-time colour of this Buchi graph-state.
 	 * @return the run-time colour of this Buchi graph-state
 	 */
@@ -139,6 +150,31 @@ public class BuchiGraphState extends AbstractGraphState {
 	public void setColour(int value) {
 		this.colour = value;
 	}
+
+	/**
+	 * Returns whether this state is a pocket state.
+	 * @return the value of <code>pocket</code>
+	 */
+	public boolean isPocket() {
+		return pocket;
+	}
+
+	/**
+	 * Mark this state as a pocket state.
+	 */
+	public void setPocket() {
+		assert (!pocket) : "state should not be set to pocket twice";
+		pocket = true;
+//		pocketStates++;
+	}
+
+	/**
+	 * Mark this state as a non-pocket state.
+	 */
+//	public void setNonPocket() {
+//		assert (pocket == 0) : "Can only set state to non-pocket once";
+//		pocket = ModelChecking.NO_POCKET;
+//	}
 
 	/**
 	 * Returns the iteration in which this state has been reached.
@@ -260,4 +296,6 @@ public class BuchiGraphState extends AbstractGraphState {
 			return "??";
 		}
 	}
+
+    public static int pocketStates = 0;
 }
