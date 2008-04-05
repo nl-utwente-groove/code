@@ -42,4 +42,27 @@ public interface Boundary {
 	 * Increases the boundary.
 	 */
 	public void increase();
+
+	/**
+	 * Returns the current depth of the exploration, in terms of boundary-crossing
+	 * transition on the current path.
+	 * @return the number of boundary-crossing transitions in the current path
+	 */
+	public int currentDepth();
+
+	/**
+	 * Set the value of the current depth.
+	 * @param value the new value
+	 */
+	public void setCurrentDepth(int value);
+
+	/**
+	 * Increase the <code>currentDepth</code>.
+	 */
+	public void increaseDepth();
+
+	/**
+	 * Decrease the <code>currentDepth</code>.
+	 */
+	public void decreaseDepth();
 }
