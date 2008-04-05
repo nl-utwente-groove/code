@@ -104,16 +104,6 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
 		searchStack().clear();
 	}
 
-	@Override
-	public void processBoundaryCrossingTransition(ProductTransition transition) {
-		super.processBoundaryCrossingTransition(transition);
-		// the current state is a border state
-		// and must therefore be marked as non-pocket
-//		if (transition.source().isPocket()) {
-//			transition.source().setNonPocket();
-//		}
-	}
-
 	protected void colourState() {
 		checkPocket(getAtBuchiState());
 		// if this state is a pocket-state we actually do not
