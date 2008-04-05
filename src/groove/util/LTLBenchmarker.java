@@ -42,7 +42,6 @@ import groove.trans.SPOEvent;
 import groove.trans.SPORule;
 import groove.trans.SystemRecord;
 import groove.trans.VirtualRuleMatch;
-import groove.verify.BuchiGraphState;
 import groove.verify.ModelChecking;
 import groove.view.FormatException;
 
@@ -1137,7 +1136,7 @@ public class LTLBenchmarker extends CommandLineTool {
     }
 
     /**
-     * The finalization phase of state space generation. Called from <tt>{@link #start}</tt>.
+     * The finalization phase of state space generation.
      */
     protected void exit(long total) throws IOException, FormatException {
     	if (getStrategy().getResult().size() > 0) {
@@ -1147,7 +1146,7 @@ public class LTLBenchmarker extends CommandLineTool {
     	}
     	// write statistics to log-file
 
-    	File logFile = new File(logFileName);
+//    	File logFile = new File(logFileName);
     	FileWriter logFileWriter = new FileWriter(logFileName, true);
     	BufferedWriter writer = new BufferedWriter(logFileWriter);
 
