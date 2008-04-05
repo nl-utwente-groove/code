@@ -63,7 +63,6 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 
 		// put current state on the stack
 		searchStack().push(getAtBuchiState());
-//		stateVisit();
 		this.atState = this.getAtBuchiState().getGraphState();
 		// colour state cyan as being on the search stack
 		getAtBuchiState().setColour(ModelChecking.cyan());
@@ -90,15 +89,9 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 			Set<GraphTransition> outTransitions = getGTS().outEdgeSet(getAtState());
 			Set<String> applicableRules = filterRuleNames(outTransitions);
 
-//			if (applicableRules.contains("del-process")) {
-//				System.out.println("del-process rule is applicable");
-//			}
-			boolean finalState = true;
-			boolean enabledTransition = false;
 			for (BuchiTransition nextPropertyTransition: getAtBuchiLocation().outTransitions()) {
 				if (isEnabled(nextPropertyTransition, applicableRules)) {
-					enabledTransition = true;
-//					boolean finalState = true;
+					boolean finalState = true;
 					for (GraphTransition nextTransition: getGTS().outEdgeSet(getAtBuchiState().getGraphState())) {
 						if (nextTransition.getEvent().getRule().isModifying()) {
 							finalState = false;
@@ -115,15 +108,9 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 					if (finalState) {
 						// the product transition will leave the graph-state untouched
 						// since it is a final state
-						// the buchi transition might nevertheless point to a
+						// the Buchi transition might nevertheless point to a
 						// different location
 						processFinalState(nextPropertyTransition);
-						// check whether the artificial final transition
-						// results in a counter-example
-//						if (counterExample(getAtBuchiState(), getAtBuchiState())) {
-//							constructCounterExample();
-//							return true;
-//						}
 					}
 				}
 				// if the transition of the property automaton is not enabled
@@ -131,14 +118,10 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 				// be explored further since all paths starting from here
 				// will never yield a counter-example
 			}
-			if (finalState && !enabledTransition) {
-				// this state is a state that will never end in an accepting cycle
-				// since its graph-component is a final state and it has no outgoing
-				// transitions; it must not be included in further analysis
-//				processFinalState(null);
-				// check whether the artificial final transition
-				// results in a counter-example
-			}
+			// this point will be reached for state that will never end 
+			// in an accepting cycle since its graph-component is a final
+			// state and it has no outgoing transitions;
+			// it must not be included in further analysis
 
 			getAtBuchiState().setExplored();
 		}
@@ -148,7 +131,7 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 	}
 
 	/**
-	 * @param nextPropertyTransition
+	 * @param transition
 	 */
 	protected void processFinalState(BuchiTransition transition) {
 		if (transition == null) {
@@ -161,6 +144,7 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 		}
 	}
 
+	@Override
 	protected void setNextStartState() {
 		// increase the boundary
 		getBoundary().increase();
@@ -176,12 +160,9 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 	@Override
 	protected void updateAtState() {
 		Iterator<ProductTransition> outTransitionIter = getAtBuchiState().outTransitionIter();
-//		Iterator<? extends GraphState> nextStateIter = getAtBuchiState().getNextStateIter();
-//		if (nextStateIter.hasNext()) {
 		if (outTransitionIter.hasNext()) {
 			// select the first new state that does not cross the boundary
 			BuchiGraphState newState = null;
-//			while (nextStateIter.hasNext()) {
 			while (outTransitionIter.hasNext()) {
 				ProductTransition outTransition =  outTransitionIter.next();
 				newState = outTransition.target();
@@ -192,10 +173,6 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 						GraphTransition transition = (GraphTransition) newState.getGraphState();
 						// if the transition does not cross the boundary or its
 						// target-state is already explored, the transition must be traversed
-//						String ruleName = outTransition.graphTransition().getEvent().getRule().getName().name();
-//						if (ruleName.equals("new-process") || ruleName.equals("del-process")) {
-//							System.out.println("boundary-crossing " + ruleName + " transition");
-//						}
 						if (!getBoundary().crossingBoundary(transition) || newState.isExplored()) {
 							this.atBuchiState = newState;
 							return;
@@ -222,8 +199,6 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 			// if this state has no outgoing transition
 			// it is a final state and will therefore never lead to an
 			// accepting cycle
-			// mark it as a pocket
-//			getAtBuchiState().setPocket();
 		}
 
 		// backtracking
@@ -302,6 +277,9 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 		return result;
 	}
 
+	/**
+	 * Construct the counter-example as currently on the search-stack.
+	 */
 	public void constructCounterExample() {
 		for (BuchiGraphState state: searchStack()) {
 			getResult().add(state.getGraphState());
@@ -324,29 +302,6 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 	/* (non-Javadoc)
 	 * @see groove.explore.strategy.DefaultModelCheckingStrategy#getRandomOpenBuchiSuccessor(groove.verify.BuchiGraphState)
 	 */
-	protected GraphState getRandomOpenBuchiSuccessorOld(BuchiGraphState state) {
-		Iterator<? extends GraphState> sucIter = state.getNextStateIter();
-		RandomChooserInSequence<GraphState>  chooser = new RandomChooserInSequence<GraphState>();
-		while (sucIter.hasNext()) {
-			GraphState s = sucIter.next();
-			assert (s instanceof BuchiGraphState) : "Expected a Buchi graph-state instead of a " + s.getClass();
-			BuchiGraphState buchiState = (BuchiGraphState) s;
-			if (unexplored(buchiState)) {
-				if (buchiState.getGraphState() instanceof GraphTransition) {
-					GraphTransition transition = (GraphTransition) buchiState.getGraphState();
-					if (!getBoundary().crossingBoundary(transition)) {
-						chooser.show(s);
-					}
-				}
-//				chooser.show(s);
-			}
-		}
-		return chooser.pickRandom();
-	}
-
-	/* (non-Javadoc)
-	 * @see groove.explore.strategy.DefaultModelCheckingStrategy#getRandomOpenBuchiSuccessor(groove.verify.BuchiGraphState)
-	 */
 	@Override
 	protected GraphState getRandomOpenBuchiSuccessor(BuchiGraphState state) {
 		Iterator<ProductTransition> outTransitionIter = state.outTransitionIter();
@@ -355,14 +310,7 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 			ProductTransition p = outTransitionIter.next();
 			BuchiGraphState buchiState = (BuchiGraphState) p.target();
 			if (unexplored(buchiState)) {
-//				String ruleName = p.graphTransition().getEvent().getRule().getName().name();
-//				if (ruleName.equals("new-process") || ruleName.equals("del-process")) {
-//					System.out.println("backtraking boundary-crossing " + ruleName + " transition");
-//				}
 				if (!getBoundary().crossingBoundary(p.graphTransition())) {
-//					if (ruleName.equals("new-process") || ruleName.equals("del-process")) {
-//						System.out.println("backtraking boundary-crossing " + ruleName + " transition");
-//					}
 					chooser.show(p.target());
 				}
 			}
