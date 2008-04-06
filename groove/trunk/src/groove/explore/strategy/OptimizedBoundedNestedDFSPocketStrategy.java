@@ -60,7 +60,10 @@ public class OptimizedBoundedNestedDFSPocketStrategy extends BoundedNestedDFSPoc
 					// furthermore, the transition by which the next open 
 					// state is reached should also not cross the current boundary
 					assert (nextOpenState.getGraphState() instanceof GraphTransition) : "Was expecting a graph-transition instead of a " + nextOpenState.getGraphState().getClass();
-					if (!getBoundary().crossingBoundary((GraphTransition) nextOpenState.getGraphState())) {
+
+					if (getBoundary() instanceof GraphNodeSizeBoundary && ((GraphNodeSizeBoundary) getBoundary()).crossingBoundary(nextOpenState.getGraph())) {
+						continue;
+					} else {
 						this.atBuchiState = nextOpenState;
 						ModelChecking.nextColourScheme();
 					}

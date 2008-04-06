@@ -61,8 +61,15 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 			}
 		}
 
+		// TODO: push the current state only on the stack when continuing with one of its successors
+		// this should therefore be done in the method updateAtState
+
 		// put current state on the stack
 		searchStack().push(getAtBuchiState());
+		// push the last transition on the transition stack;
+		if (getLastTransition() != null) {
+			transitionStack().push(getLastTransition());
+		}
 		this.atState = this.getAtBuchiState().getGraphState();
 		// colour state cyan as being on the search stack
 		getAtBuchiState().setColour(ModelChecking.cyan());
@@ -155,6 +162,9 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 		this.atBuchiState = startBuchiState();
 		// clear the search-stack
 		searchStack().clear();
+		transitionStack().clear();
+		// start with depth zero again
+		getBoundary().setCurrentDepth(0);
 	}
 
 	@Override
@@ -173,13 +183,17 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 						GraphTransition transition = (GraphTransition) newState.getGraphState();
 						// if the transition does not cross the boundary or its
 						// target-state is already explored, the transition must be traversed
-						if (!getBoundary().crossingBoundary(transition) || newState.isExplored()) {
-							this.atBuchiState = newState;
+						if (!getBoundary().crossingBoundary(outTransition) || newState.isExplored()) {
+							setAtBuchiState(newState);
+							setLastTransition(outTransition);
 							return;
 						} else {
-							processBoundaryCrossingTransition(outTransition);
-							// leave it unexplored
-							newState = null;
+							newState = processBoundaryCrossingTransition(outTransition);
+							if (newState != null) {
+								getBoundary().increaseDepth();
+								setLastTransition(outTransition);
+								return;
+							}
 						}
 					} else {
 						// if the reached state is the start state look 
@@ -218,13 +232,32 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 			setClosed(getAtBuchiState());
 			colourState();
 
+			ProductTransition previousTransition = null;
+			if (transitionStack().isEmpty()) {
+				// the start state is reached and does not have open successors
+				setAtBuchiState(null);
+				return;
+			} else {
+				previousTransition = transitionStack().pop();
+			}
+
+			// backtrack the last transition
+			getBoundary().backtrackTransition(previousTransition);
+
 			// the parent is on top of the searchStack
 			parent = peekSearchStack();
 			if (parent != null) {
-				this.atBuchiState = parent;
-				s = (BuchiGraphState) getRandomOpenBuchiSuccessor(parent);
+				setAtBuchiState(parent);
+				ProductTransition openTransition = getRandomOpenBuchiTransition(parent);
+//				s = (BuchiGraphState) getRandomOpenBuchiSuccessor(parent);
 				// make sure that the next open successor is not yet explored
-				if (s != null && !unexplored(s)) {
+				if (openTransition != null) {
+					if (!unexplored(openTransition.target())) {
+						s = null;
+					} else  {
+					s = openTransition.target();
+					}
+				} else {
 					s = null;
 				}
 			}
@@ -233,10 +266,10 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 		// identify the reason of exiting the loop
 		if (parent == null) {
 			// the start state is reached and does not have open successors
-			this.atBuchiState = null;
+			setAtBuchiState(null);
 			return;
 		} else if (s != null) { // the current state has an open successor (is not really backtracking, a sibling state is fully explored)
-			this.atBuchiState = s; 
+			setAtBuchiState(s); 
 			return;
 		} 
 		// else, atState is open, so we continue exploring it
@@ -246,10 +279,15 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 	 * Process boundary-crossing transitions properly.
 	 * @param transition the boundary-crossing transition
 	 */
-	public void processBoundaryCrossingTransition(ProductTransition transition) {
+	public BuchiGraphState processBoundaryCrossingTransition(ProductTransition transition) {
+		// if the number of boundary-crossing transition on the current path
+		if (getBoundary().currentDepth() < ModelChecking.CURRENT_ITERATION - 1) {
+			return transition.target();
+		}
 		// set the iteration index of the graph properly
-		// at this graph to the boundary-graphs
 		transition.target().setIteration(ModelChecking.CURRENT_ITERATION + 1);
+		// leave it unexplored
+		return null;
 	}
 
 	/**
@@ -310,8 +348,23 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 			ProductTransition p = outTransitionIter.next();
 			BuchiGraphState buchiState = (BuchiGraphState) p.target();
 			if (unexplored(buchiState)) {
-				if (!getBoundary().crossingBoundary(p.graphTransition())) {
+				if (!getBoundary().crossingBoundary(p)) {
 					chooser.show(p.target());
+				}
+			}
+		}
+		return chooser.pickRandom();
+	}
+
+	protected ProductTransition getRandomOpenBuchiTransition(BuchiGraphState state) {
+		Iterator<ProductTransition> outTransitionIter = state.outTransitionIter();
+		RandomChooserInSequence<ProductTransition>  chooser = new RandomChooserInSequence<ProductTransition>();
+		while (outTransitionIter.hasNext()) {
+			ProductTransition p = outTransitionIter.next();
+			BuchiGraphState buchiState = (BuchiGraphState) p.target();
+			if (unexplored(buchiState)) {
+				if (!getBoundary().crossingBoundary(p)) {
+					chooser.show(p);
 				}
 			}
 		}

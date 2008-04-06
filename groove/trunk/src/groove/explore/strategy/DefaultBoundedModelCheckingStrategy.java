@@ -25,24 +25,14 @@ package groove.explore.strategy;
  */
 public abstract class DefaultBoundedModelCheckingStrategy<T> extends DefaultModelCheckingStrategy<T> implements BoundedModelCheckingStrategy<T> {
 
-	/* (non-Javadoc)
-	 * @see groove.explore.strategy.BoundedModelCheckingStrategy#finished()
-	 */
 	public boolean finished() {
-//		System.out.println(stateVisits() + " state-visits.");
 		return true;
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.explore.strategy.BoundedModelCheckingStrategy#setBoundary(groove.explore.strategy.Boundary)
-	 */
 	public void setBoundary(Boundary boundary) {
 		this.boundary = boundary;
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.explore.strategy.BoundedModelCheckingStrategy#getBoundary()
-	 */
 	public Boundary getBoundary() {
 		return boundary;
 	}
@@ -53,29 +43,7 @@ public abstract class DefaultBoundedModelCheckingStrategy<T> extends DefaultMode
 	protected abstract void setNextStartState();
 
 	/**
-	 * Returns the list of boundary-graphs.
-	 * @return the list of boundary-graphs.
-	 */
-//	public List<BuchiGraphState> boundaryGraphs() {
-//		return boundaryGraphs;
-//	}
-
-	/**
-	 * Add a state to the list of boundary-graphs.
-	 * @param boundaryState the state to be added
-	 * @return see {@link List#add(Object)}
-	 */
-//	public boolean addBoundaryGraph(BuchiGraphState boundaryState) {
-//		return boundaryGraphs().add(boundaryState);
-//	}
-
-	/**
 	 * The boundary to be used.
 	 */
 	private Boundary boundary;
-
-	/**
-	 * A list of graphs reached by transitions crossing the (previous) boundary
-	 */
-//	private List<BuchiGraphState> boundaryGraphs = new ArrayList<BuchiGraphState>();
 }
