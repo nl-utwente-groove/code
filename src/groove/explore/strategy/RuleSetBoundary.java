@@ -16,33 +16,21 @@
  */
 package groove.explore.strategy;
 
-import groove.lts.GraphTransition;
+import groove.lts.ProductTransition;
 import groove.trans.Rule;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
 /**
  * Implementation of interface {@link Boundary} that
  * bases the boundary on a set of rules for which application
- * are said to cross the boundary. When increasing the boundary
- * this class allows the exploration of a single rule that
- * would otherwise not be allowed. Thereafter, the same boundary
- * is applied again.
- * 
+ * are said to cross the boundary.
+ *
  * @author Harmen Kastenberg
  * @version $Revision: 1.6 $
  */
-public class RuleSetBoundary extends AbstractBoundary {
-
-	/**
-	 * Empty {@link RuleSetBoundary} constructor.
-	 */
-	public RuleSetBoundary() {
-		// empty constructor
-	}
+public abstract class RuleSetBoundary extends AbstractBoundary {
 
 	/**
 	 * {@link RuleSetBoundary} constructor.
@@ -50,7 +38,6 @@ public class RuleSetBoundary extends AbstractBoundary {
 	 */
 	public RuleSetBoundary(Set<Rule> ruleSetBoundary) {
 		this.ruleSetBoundary.addAll(ruleSetBoundary);
-		setAllowMap();
 	}
 
 	/**
@@ -62,51 +49,38 @@ public class RuleSetBoundary extends AbstractBoundary {
 		return ruleSetBoundary.add(rule);
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.explore.strategy.Boundary#crossingBoundary(groove.lts.GraphTransition)
-	 */
-	public boolean crossingBoundary(GraphTransition transition) {
-		boolean crossingBoundary = ruleSetBoundary.contains(transition.getEvent().getRule()); 
-		if (crossingBoundary) {
-			if (allowed.get(transition.getEvent().getRule())) {
-				if (ALLOW_ALL_APPLICATIONS == ALLOW_SINGLE_APPLICATION) {
-					setAllowMap();
-				} else {
-					allowed.put(transition.getEvent().getRule(), false);
-				}
-				return false;
-			}
+	public boolean crossingBoundary(ProductTransition transition) {
+		Rule rule = transition.graphTransition().getEvent().getRule();
+		if (!ruleSetBoundary.contains(rule)) {
+			return false;
+		} else {
 			return true;
 		}
-		return false;
+//		// if the maximal allowed depth is not yet reached
+//		// the transition may be taken anyway
+//		Rule rule = transition.graphTransition().getEvent().getRule();
+//		boolean forbiddenRule = ruleSetBoundary.contains(rule);
+//
+//		boolean depth = currentDepth() <= ModelChecking.CURRENT_ITERATION;
+//			
+//		if (crossingBoundary) {
+//			if (allowed.get(rule)) {
+//				if (ALLOW_ALL_APPLICATIONS == ALLOW_SINGLE_APPLICATION) {
+//					setAllowMap();
+//				} else {
+//					allowed.put(rule, false);
+//				}
+//				return false;
+//			}
+//			return true;
+//		}
+//		return false;
 	}
 
-	private void setAllowMap() {
-		allowed = new HashMap<Rule,Boolean>();
-		for (Rule rule: ruleSetBoundary) {
-			allowed.put(rule, false);
-		}
-	}
-
-	/* (non-Javadoc)
-	 * @see groove.explore.strategy.Boundary#increase()
-	 */
 	public void increase() {
-		allowed = new HashMap<Rule,Boolean>();
-		for (Rule rule: ruleSetBoundary) {
-			allowed.put(rule, true);
-		}
+		// do nothing
 	}
 
 	/** the set of rules that are initially forbidden to apply */
 	private Set<Rule> ruleSetBoundary = new HashSet<Rule>();
-	/** mapping from rules to Boolean values indicating which rules are allowed to apply (or better, traverse) */
-	private Map<Rule,Boolean> allowed;
-
-	/** Allow only a single application of one of the rules */
-	public static final int ALLOW_SINGLE_APPLICATION = 1;
-	/** Allow one application of all rules */
-	public static final int ALLOW_ALL_APPLICATIONS = 2;
-	/** Constant indicating when forbidden rule applications are temporarily allowed */
-	public static int ALLOW_RULE_APPLICATION = ALLOW_ALL_APPLICATIONS;
 }

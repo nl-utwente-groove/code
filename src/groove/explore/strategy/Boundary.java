@@ -17,6 +17,7 @@
 package groove.explore.strategy;
 
 import groove.lts.GraphTransition;
+import groove.lts.ProductTransition;
 
 /**
  * This interface facilitates a model checking strategy
@@ -36,7 +37,13 @@ public interface Boundary {
 	 * @return <tt>true</tt> if the transition crosses the boundary,
 	 * <tt>false</tt> otherwise
 	 */
-	public boolean crossingBoundary(GraphTransition transition);
+	public boolean crossingBoundary(ProductTransition transition);
+
+	/**
+	 * Backtrack the given transition.
+	 * @param transition the backtracked transition
+	 */
+	public void backtrackTransition(ProductTransition transition);
 
 	/**
 	 * Increases the boundary.

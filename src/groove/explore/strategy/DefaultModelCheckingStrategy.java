@@ -188,6 +188,7 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
         state2node = new HashMap<IState,Node>();
 //    	currentPath = new Stack<GraphTransition>();
     	searchStack = new Stack<BuchiGraphState>();
+    	transitionStack = new Stack<ProductTransition>();
 
     	initializeProperty();
     	assert (initialLocation != null) : "The property automaton should have an initial state";
@@ -350,6 +351,22 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     	return atBuchiState;
     }
 
+    /**
+     * Returns the value of <code>lastTransition</code>.
+     * @return the value of <code>lastTransition</code>
+     */
+    public ProductTransition getLastTransition() {
+    	return lastTransition;
+    }
+
+    /**
+     * Sets the last transition taken.
+     * @param transition the value for <code>lastTransition</code>
+     */
+    public void setLastTransition(ProductTransition transition) {
+    	this.lastTransition = transition;
+    }
+
     /* (non-Javadoc)
      * @see groove.explore.strategy.ModelCheckingStrategy#setAtBuchiState(groove.verify.BuchiGraphState)
      */
@@ -369,6 +386,10 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
      */
     public Stack<BuchiGraphState> searchStack() {
     	return searchStack;
+    }
+
+    public Stack<ProductTransition> transitionStack() {
+    	return transitionStack;
     }
 
     /* (non-Javadoc)
@@ -404,6 +425,8 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
 	protected ProductGTS productGTS;
     /** The current Buchi graph-state the system is at. */
     protected BuchiGraphState atBuchiState;
+    /** The transition by which the current Buchi graph-state is reached. */
+    protected ProductTransition lastTransition;
     /** The simulator instance that triggers this part. */
     protected Simulator simulator;
     /** A mapping from {@link IState}s to {@link Node}s. */
@@ -416,6 +439,7 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     private Collection<ITransition> automaton;
     private BuchiLocation initialLocation;
     private Stack<BuchiGraphState> searchStack;
+    private Stack<ProductTransition> transitionStack;
     private Result<T> result;
 
 }

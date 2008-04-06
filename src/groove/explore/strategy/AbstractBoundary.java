@@ -16,6 +16,7 @@
  */
 package groove.explore.strategy;
 
+import groove.lts.ProductTransition;
 import groove.verify.ModelChecking;
 
 /**
@@ -45,6 +46,10 @@ public abstract class AbstractBoundary implements Boundary {
 	public void increaseDepth() {
 		currentDepth++;
 		assert (currentDepth <= ModelChecking.CURRENT_ITERATION): "the number of boundary-crossing transitions (" + currentDepth + ") in the current path exceeded the maximum (" + ModelChecking.CURRENT_ITERATION + ")";
+	}
+
+	public void backtrackTransition(ProductTransition transition) {
+		// by default, do nothing
 	}
 
 	/** container for the number of boundary-crossing transitions in the current path */
