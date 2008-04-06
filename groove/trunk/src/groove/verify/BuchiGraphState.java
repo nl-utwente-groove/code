@@ -42,7 +42,7 @@ import java.util.Set;
  */
 public class BuchiGraphState extends AbstractGraphState {
 
-	/** the Guchi graph-state this one originates from */
+	/** the Buchi graph-state this one originates from */
 	private BuchiGraphState parent;
 	/** the graph-state that is wrapped */
 	private GraphState state;
