@@ -15,13 +15,15 @@ import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ConditionalStrategy;
 import groove.explore.strategy.GraphNodeSizeBoundary;
-import groove.explore.strategy.RuleSetBoundary;
+import groove.explore.strategy.RuleSetBorderBoundary;
+import groove.explore.strategy.RuleSetStartBoundary;
 import groove.explore.strategy.Strategy;
 import groove.gui.FormulaDialog;
 import groove.gui.Simulator;
 import groove.lts.GraphState;
 import groove.lts.ProductGTS;
 import groove.trans.Rule;
+import groove.verify.ModelChecking;
 
 import java.util.Scanner;
 import java.util.Set;
@@ -434,7 +436,12 @@ public class GeneratorScenarioHandlerFactory {
 			public void playScenario() throws InterruptedException {
 				DefaultScenario<T> scenar = new DefaultScenario<T>();
 				CycleAcceptor<T> cycleAcc = new CycleAcceptor<T>();
-				Boundary boundary = new RuleSetBoundary(ruleSet);
+				Boundary boundary;
+				if (ModelChecking.START_FROM_BORDER_STATES) {
+					boundary = new RuleSetBorderBoundary(ruleSet);
+				} else {
+					boundary = new RuleSetStartBoundary(ruleSet);
+				}
 				Result<T> result = new SizedResult<T>(1);
 				scenar.setAcceptor((Acceptor<T>) cycleAcc);
 				scenar.setResult(result);
