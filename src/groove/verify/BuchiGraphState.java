@@ -24,6 +24,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.ProductTransition;
 import groove.lts.StateReference;
+import groove.trans.Rule;
 import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.TransformIterator;
