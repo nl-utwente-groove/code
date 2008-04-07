@@ -64,8 +64,12 @@ public class OptimizedBoundedNestedDFSPocketStrategy extends BoundedNestedDFSPoc
 					if (getBoundary() instanceof GraphNodeSizeBoundary && ((GraphNodeSizeBoundary) getBoundary()).crossingBoundary(nextOpenState.getGraph())) {
 						continue;
 					} else {
-						this.atBuchiState = nextOpenState;
+						setAtBuchiState(nextOpenState);
+//						this.atBuchiState = nextOpenState;
 						ModelChecking.nextColourScheme();
+						searchStack().clear();
+						transitionStack().clear();
+						lastTransition = null;
 					}
 				}
 			}
