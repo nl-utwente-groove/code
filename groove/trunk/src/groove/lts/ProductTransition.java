@@ -16,6 +16,7 @@
  */
 package groove.lts;
 
+import groove.trans.Rule;
 import groove.verify.BuchiGraphState;
 
 /**
@@ -31,6 +32,8 @@ public class ProductTransition { //extends DefaultGraphTransition {
 //	private BuchiTransition buchiTransition;
 	private BuchiGraphState source;
 	private BuchiGraphState target;
+	/** the rule underlying this transition */
+//	private Rule rule;
 
     /**
      * Constructor.
@@ -59,6 +62,15 @@ public class ProductTransition { //extends DefaultGraphTransition {
     public BuchiGraphState target() {
     	return target;
     }
+
+    public Rule rule() {
+    	return graphTransition().getEvent().getRule();
+    }
+
+//    public void setRule(Rule rule) {
+//    	this.rule = rule;
+//    	assert (rule.equals(graphTransition.getEvent().getRule())) : "Should be the same rule.";
+//    }
 
     // ----------------------- OBJECT OVERRIDES -----------------------
 
