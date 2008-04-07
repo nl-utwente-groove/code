@@ -42,7 +42,7 @@ public class GraphNodeSizeBoundary extends AbstractBoundary {
 	/* (non-Javadoc)
 	 * @see groove.explore.strategy.Boundary#crossingBoundary(groove.lts.GraphTransition)
 	 */
-	public boolean crossingBoundary(ProductTransition transition) {
+	public boolean crossingBoundary(ProductTransition transition, boolean traverse) {
 		boolean result = transition.target().getGraph().nodeCount() > graphSizeBoundary; 
 		return result;
 	}

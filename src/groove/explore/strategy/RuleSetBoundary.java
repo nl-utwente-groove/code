@@ -49,12 +49,21 @@ public abstract class RuleSetBoundary extends AbstractBoundary {
 		return ruleSetBoundary.add(rule);
 	}
 
-	public boolean crossingBoundary(ProductTransition transition) {
-		Rule rule = transition.graphTransition().getEvent().getRule();
-		if (!ruleSetBoundary.contains(rule)) {
+	public boolean crossingBoundary(ProductTransition transition, boolean traverse) {
+
+		// if the underlying transition is null, this transition
+		// represents a final transition and does therefore
+		// not cross any boundary
+		if (transition.graphTransition() == null) {
 			return false;
 		} else {
-			return true;
+			Rule rule = transition.rule();
+//			Rule rule = transition.graphTransition().getEvent().getRule();
+			if (!ruleSetBoundary.contains(rule)) {
+				return false;
+			} else {
+				return true;
+			}
 		}
 //		// if the maximal allowed depth is not yet reached
 //		// the transition may be taken anyway
@@ -79,6 +88,10 @@ public abstract class RuleSetBoundary extends AbstractBoundary {
 
 	public void increase() {
 		// do nothing
+	}
+
+	public boolean containsRule(Rule rule) {
+		return ruleSetBoundary.contains(rule);
 	}
 
 	/** the set of rules that are initially forbidden to apply */

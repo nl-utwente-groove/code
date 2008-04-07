@@ -34,10 +34,13 @@ public interface Boundary {
 	 * If so, it return <tt>true</tt>, otherwise <tt>false</tt>.
 	 * @param transition the transition for which to check whether
 	 * it crosses the boundary
+	 * @param traverse flag indicating whether this transition will
+	 * be tried to traverse or if this call is simply a check whether
+	 * this transition is allowed
 	 * @return <tt>true</tt> if the transition crosses the boundary,
 	 * <tt>false</tt> otherwise
 	 */
-	public boolean crossingBoundary(ProductTransition transition);
+	public boolean crossingBoundary(ProductTransition transition, boolean traverse);
 
 	/**
 	 * Backtrack the given transition.

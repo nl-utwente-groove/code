@@ -36,8 +36,8 @@ public class RuleSetStartBoundary extends RuleSetBoundary {
 		super(ruleSetBoundary);
 	}
 
-	public boolean crossingBoundary(ProductTransition transition) {
-		boolean crossing = super.crossingBoundary(transition);
+	public boolean crossingBoundary(ProductTransition transition, boolean traverse) {
+		boolean crossing = super.crossingBoundary(transition, false);
 		
 		if (!crossing) {
 			return false;
@@ -46,7 +46,9 @@ public class RuleSetStartBoundary extends RuleSetBoundary {
 			// the current depth now determines whether we may
 			// traverse this transition, or not
 			if (currentDepth() < ModelChecking.CURRENT_ITERATION - 1) {
-				increaseDepth();
+				if (traverse) {
+					increaseDepth();
+				}
 				return false;
 			} else {
 				return true;
@@ -55,7 +57,11 @@ public class RuleSetStartBoundary extends RuleSetBoundary {
 	}
 
 	public void backtrackTransition(ProductTransition transition) {
-		if (super.crossingBoundary(transition)) {
+//		String ruleName = transition.rule().getName().name();
+//		
+		if (transition.rule() == null) {
+			System.out.println("backtracking final transition");
+		} else if (containsRule(transition.rule())) {
 			decreaseDepth();
 		}
 	}
