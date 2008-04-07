@@ -79,17 +79,6 @@ public class BoundedNestedDFSPocketStrategy extends BoundedNestedDFSStrategy {
 		// the case by default
 	}
 
-	/* (non-Javadoc)
-	 * @see groove.explore.strategy.DefaultBoundedModelCheckingStrategy#setNextStartState()
-	 */
-	protected void setNextStartState() {
-		getBoundary().increase();
-		ModelChecking.nextIteration();
-		ModelChecking.toggle();
-		this.atBuchiState = startBuchiState();
-		searchStack().clear();
-	}
-
 	protected void colourState() {
 		checkPocket(getAtBuchiState());
 		// if this state is a pocket-state we actually do not
