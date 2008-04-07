@@ -43,8 +43,8 @@ import java.util.Set;
  */
 public class BuchiGraphState extends AbstractGraphState {
 
-	/** the Buchi graph-state this one originates from */
-	private BuchiGraphState parent;
+	/** the Buchi graph-state this one originates from (useful when visualizing counter-examples) */
+//	private BuchiGraphState parent;
 	/** the graph-state that is wrapped */
 	private GraphState state;
 	/** the buchi location for this buchi graph state */
@@ -75,7 +75,7 @@ public class BuchiGraphState extends AbstractGraphState {
 		this.state = state;
 		this.buchiLocation = buchiLocation;
 		this.colour = ModelChecking.NO_COLOUR;
-		this.parent = parent;
+//		this.parent = parent;
 	}
 
 	/**
@@ -83,9 +83,9 @@ public class BuchiGraphState extends AbstractGraphState {
 	 * this Buchi graph-state in the spanning tree of the exploration.
 	 * @return the spanning tree parent
 	 */
-	public BuchiGraphState parent() {
-		return parent;
-	}
+//	public BuchiGraphState parent() {
+//		return parent;
+//	}
 
 	/**
 	 * Returns the graph-state component of the Buchi graph-state.
