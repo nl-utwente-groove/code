@@ -19,6 +19,7 @@ package groove.lts;
 import groove.control.Location;
 import groove.explore.DefaultScenario;
 import groove.explore.util.ExploreCache;
+import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -415,12 +416,14 @@ public class StateGenerator {
     	BuchiGraphState target = createBuchiGraphState(source, transition, targetLocation);
     	BuchiGraphState isoTarget = getProductGTS().addState(target);
     	ProductTransition productTransition = null;
+
     	if (isoTarget == null) {
     		// no isomorphic state found
     		productTransition = createProductTransition(source, transition, target);
     	} else {
     		productTransition = createProductTransition(source, transition, isoTarget);
     	}
+
     	reporter.stop();
     	return getProductGTS().addTransition(productTransition);
     }
@@ -473,5 +476,4 @@ public class StateGenerator {
 //    static public final int ADD_TRANSITION_START = reporter.newMethod("addTransition - start");
     /** Profiling aid for adding transitions. */
 //    static private final int SUCC = reporter.newMethod("computing successors");
-
 }
