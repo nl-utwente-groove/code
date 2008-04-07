@@ -16,7 +16,6 @@
  */
 package groove.explore.strategy;
 
-import groove.gui.Simulator;
 import groove.lts.ProductTransition;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiTransition;
