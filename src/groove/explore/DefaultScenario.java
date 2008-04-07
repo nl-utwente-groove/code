@@ -12,7 +12,7 @@
  * either express or implied. See the License for the specific 
  * language governing permissions and limitations under the License.
  *
- * $Id: DefaultScenario.java,v 1.6 2008-02-20 10:01:39 kastenberg Exp $
+ * $Id: DefaultScenario.java,v 1.6 2008/02/20 10:01:39 kastenberg Exp $
  */
 
 package groove.explore;
@@ -120,9 +120,9 @@ public class DefaultScenario<T> implements Scenario<T> {
 		acceptor.setResult(prototype);
 
 		reporter.start(RUNNING);
-		
+
 		// start working until done or nothing to do
-		while( !prototype.done() && strategy.next() ) {
+		while( !prototype.done() && strategy.next()) {
 			if (Thread.currentThread().isInterrupted()) {
 				throw new InterruptedException();
 			}
@@ -170,6 +170,5 @@ public class DefaultScenario<T> implements Scenario<T> {
 	public static long getRunningTime() {
 		return reporter.getTotalTime(RUNNING);
 	}
-    
 }
 
