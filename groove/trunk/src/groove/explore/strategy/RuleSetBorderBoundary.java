@@ -39,8 +39,8 @@ public class RuleSetBorderBoundary extends RuleSetBoundary {
 		super(ruleSetBoundary);
 	}
 
-	public boolean crossingBoundary(ProductTransition transition) {
-		return super.crossingBoundary(transition);
+	public boolean crossingBoundary(ProductTransition transition, boolean traverse) {
+		return super.crossingBoundary(transition, traverse);
 	}
 
 	public void decreaseDepth() {

@@ -289,7 +289,7 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
      * Adds a product transition to the product gts. If the current state
      * is already explored we do not have to add anything. In that case,
      * we return the corresponding transition.
-     * @param transition the graph-transition component for the prouduct-transition
+     * @param transition the graph-transition component for the product-transition
      * @param location the location of the target Buechi graph-state
      * @return @see {@link ProductGTS#addTransition(ProductTransition)}
      */
@@ -388,8 +388,17 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     	return searchStack;
     }
 
+    public void pushState(BuchiGraphState state) {
+    	searchStack().push(state);
+    }
+
     public Stack<ProductTransition> transitionStack() {
     	return transitionStack;
+    }
+
+    public void pushTransition(ProductTransition transition) {
+    	transitionStack().push(transition);
+    	assert (transitionStack().size() == (searchStack().size() - 1)) : "search stacks out of sync (" + transitionStack().size() + " vs " + searchStack().size() + ")";
     }
 
     /* (non-Javadoc)
