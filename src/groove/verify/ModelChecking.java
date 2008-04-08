@@ -17,6 +17,7 @@
 package groove.verify;
 
 import groove.explore.DefaultScenario;
+import groove.explore.strategy.DefaultBoundedModelCheckingStrategy;
 import groove.graph.Edge;
 import groove.lts.GTS;
 import groove.trans.Rule;
@@ -235,6 +236,9 @@ public class ModelChecking {
     }
 
 	/** Reporter for profiling information. */
-    static public final Reporter reporter = Reporter.register(ModelChecking.class);
-    static public final int POCKET_STATE_REPORTER = reporter.newMethod("blackPainting()");
+//    static public final Reporter reporter = Reporter.register(ModelChecking.class);
+//    static public final int POCKET_STATE_REPORTER = reporter.newMethod("blackPainting()");
+//    public static int NEXT = reporter.newMethod("ModelChecking.next");
+//    public static int UPDATE = reporter.newMethod("ModelChecking.updateNext");
+//    public static int BACKTRACK = reporter.newMethod("ModelChecking.backtrack");
 }
