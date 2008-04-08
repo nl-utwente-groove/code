@@ -18,6 +18,7 @@ package groove.explore.strategy;
 
 import groove.explore.result.CycleAcceptor;
 import groove.lts.GraphTransition;
+import groove.lts.ProductTransition;
 import groove.verify.BuchiGraphState;
 import groove.verify.ModelChecking;
 
@@ -42,9 +43,6 @@ public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy 
 
 	protected void setNextStartState() {
 		while (getProductGTS().hasOpenStates() && getAtBuchiState() == null) {
-			// increase the boundary
-			getBoundary().increase();
-			ModelChecking.nextIteration();
 			// iterator over the open states
 			// TODO: maybe there is a more efficient way of 
 			// iterating over the open states than to start
@@ -63,7 +61,6 @@ public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy 
 						continue;
 					} else {
 						setAtBuchiState(nextOpenState);
-//						this.atBuchiState = nextOpenState;
 						ModelChecking.nextColourScheme();
 						searchStack().clear();
 						transitionStack().clear();
@@ -71,6 +68,21 @@ public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy 
 					}
 				}
 			}
+			if (getAtBuchiState() == null) {
+				getBoundary().increase();
+				ModelChecking.nextIteration();
+			}
 		}
+	}
+
+	/**
+	 * Process boundary-crossing transitions properly.
+	 * @param transition the boundary-crossing transition
+	 */
+	public BuchiGraphState processBoundaryCrossingTransition(ProductTransition transition) {
+		// set the iteration index of the graph properly
+		transition.target().setIteration(ModelChecking.CURRENT_ITERATION + 1);
+		// leave it unexplored
+		return null;
 	}
 }
