@@ -45,7 +45,7 @@ public class RuleSetStartBoundary extends RuleSetBoundary {
 			// this is a forbidden rule
 			// the current depth now determines whether we may
 			// traverse this transition, or not
-			if (currentDepth() < ModelChecking.CURRENT_ITERATION - 1) {
+			if (currentDepth() < ModelChecking.CURRENT_ITERATION - 2) {
 				if (traverse) {
 					increaseDepth();
 				}
@@ -57,8 +57,6 @@ public class RuleSetStartBoundary extends RuleSetBoundary {
 	}
 
 	public void backtrackTransition(ProductTransition transition) {
-//		String ruleName = transition.rule().getName().name();
-//		
 		if (transition.rule() == null) {
 			System.out.println("backtracking final transition");
 		} else if (containsRule(transition.rule())) {

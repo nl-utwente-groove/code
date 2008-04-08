@@ -30,6 +30,7 @@ import groove.lts.GraphTransition;
 import groove.lts.ProductGTS;
 import groove.lts.ProductTransition;
 import groove.lts.StateGenerator;
+import groove.util.Reporter;
 import groove.verify.BuchiAutomatonGraph;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
@@ -450,5 +451,4 @@ public abstract class DefaultModelCheckingStrategy<T> extends AbstractStrategy i
     private Stack<BuchiGraphState> searchStack;
     private Stack<ProductTransition> transitionStack;
     private Result<T> result;
-
 }
