@@ -1,6 +1,5 @@
 package groove.abs;
 
-
 /** Class containing global constants for the abstractions. 
  * @author Iovka Boneva
  * */
