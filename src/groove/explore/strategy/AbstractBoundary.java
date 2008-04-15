@@ -27,7 +27,6 @@ import groove.verify.ModelChecking;
  */
 public abstract class AbstractBoundary implements Boundary {
 
-	@Override
 	public int currentDepth() {
 		return currentDepth;
 	}
@@ -36,13 +35,11 @@ public abstract class AbstractBoundary implements Boundary {
 		this.currentDepth = value;
 	}
 
-	@Override
 	public void decreaseDepth() {
 		currentDepth--;
 		assert (currentDepth >= 0) : "The value of currentDepth should not be negative.";
 	}
 
-	@Override
 	public void increaseDepth() {
 		currentDepth++;
 		assert (currentDepth <= ModelChecking.CURRENT_ITERATION): "the number of boundary-crossing transitions (" + currentDepth + ") in the current path exceeded the maximum (" + ModelChecking.CURRENT_ITERATION + ")";
