@@ -70,18 +70,13 @@ public class ControlView {
 	public ControlView(DefaultGrammarView result, File controlProgramFile) throws IOException  {
 		this.initNamespace(result);
 		this.loadFile(controlProgramFile);
-		//this.loadProgram();
-		
-//		assert programShape != null;
-//		assert automaton != null;
-		
+
 	}
 	
 	/**
 	 * load the program currently in controlProgram
 	 */
-	public void loadProgram() throws FormatException {
-
+	private void loadProgram() throws FormatException {
 		if( controlProgram == null ) {
 			throw new FormatException("Error in control:no program available ");
 		}
@@ -195,10 +190,8 @@ public class ControlView {
 	 */
 	public ControlAutomaton toAutomaton(GraphGrammar grammar) throws FormatException
 	{
-		builder.finalize(grammar);
-		
 		this.loadProgram();
-		
+		builder.finalize(grammar);
 		return this.getAutomaton();
 	}
 	

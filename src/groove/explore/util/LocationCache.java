@@ -135,6 +135,9 @@ public class LocationCache implements ExploreCache {
 		if (isRandomized) {
 			return new RandomizedIterator<Rule>(location.moreRules(this));
 		}
+		
+		Set<Rule> rules = location.moreRules(this);
+		
 		return location.moreRules(this).iterator();
 	}
 	
