@@ -255,6 +255,7 @@ public class AutomatonBuilder extends Namespace {
 	 * @param grammar
 	 */
 	public void finalize(GraphGrammar grammar) {
+		
 		for( ControlTransition transition : this.transitions )
 		{
 			if( transition instanceof RuleControlTransition ) {
@@ -280,6 +281,8 @@ public class AutomatonBuilder extends Namespace {
 							childTrans.setVisibleParent(transition);
 						}
 						// remove the original transition;
+					} else {
+						System.err.println("Something is wrong, finalizing before rules are loaded in?");
 					}
 				}
 			}
