@@ -92,31 +92,11 @@ public class TypeReconstructor {
 			for (Rule rule : rules) {
 				AbstractNodeEdgeMap<Node,Node,Edge,Edge> map = ruleMappings.get(rule);
 				
-				// Create a copy of the current rule in order to omit application
-				// conditions and compute the matches from this rule into the 
-				// current type graph
-				Rule ruleCopy = null;
-				try {
-					ruleCopy = new SPORule(
-							rule.getMorphism(), 
-							rule.getName(), 
-							rule.getPriority(), 
-							rule.getProperties()
-					);
-					ruleCopy.setFixed();
-					
-					Iterable<RuleMatch> matches = ruleCopy.getMatches(typeGraph, null);
-					for (RuleMatch match : matches) {
-						Map<Node,Node> nodeMap = match.getElementMap().nodeMap();
-						for (Map.Entry<Node,Node> nodes : nodeMap.entrySet()) {
-							equivalentTypes.putNode(
-									map.getNode(nodes.getKey()), 
-									nodes.getValue()
-							);
-						}
-					}
+				// TODO: Possibility: updated putAll method in MergeMap class
+				MergeMap newMerges = calculateMerges(typeGraph, rule, map);
+				for (Map.Entry<Node,Node> merge : newMerges.nodeMap().entrySet()) {
+					equivalentTypes.putNode(merge.getKey(), merge.getValue());
 				}
-				catch (FormatException fe) {}
 			}
 			for (Map.Entry<Node,Node> mapping : equivalentTypes.nodeMap().entrySet()) {
 				typeGraph.mergeNodes(mapping.getKey(), mapping.getValue());
@@ -125,4 +105,48 @@ public class TypeReconstructor {
 		
 		return typeGraph;
 	}
+	
+	/**
+	 * Calculates which nodes in the type graph need to be merged based on the
+	 * given production rule and current typing morphisms into the type graph.
+	 * @param typeGraph The type graph in which the rule should be matched
+	 * @param rule The rule to compute matchies into the type graph from
+	 * @param currentTypings Current typings, which state which elements of the
+	 *        rule graphs are represented by which elements in the type graph
+	 * @return A MergeMap containing mappings between nodes that need to be merged 
+	 */
+	public static MergeMap calculateMerges(Graph typeGraph, 
+			Rule rule, AbstractNodeEdgeMap<Node,Node,Edge,Edge> currentTypings) {
+		
+		MergeMap merges = new MergeMap();
+		
+		// Create a copy of the current rule in order to omit application
+		// conditions and compute the matches from this rule into the 
+		// current type graph
+		Rule ruleCopy = null;
+		try {
+			ruleCopy = new SPORule(
+					rule.getMorphism(), 
+					rule.getName(), 
+					rule.getPriority(), 
+					rule.getProperties()
+			);
+			ruleCopy.setFixed();
+			
+			Iterable<RuleMatch> matches = ruleCopy.getMatches(typeGraph, null);
+			for (RuleMatch match : matches) {
+				Map<Node,Node> nodeMap = match.getElementMap().nodeMap();
+				for (Map.Entry<Node,Node> nodes : nodeMap.entrySet()) {
+					merges.putNode(
+							currentTypings.getNode(nodes.getKey()), 
+							nodes.getValue()
+					);
+				}
+			}
+		}
+		catch (FormatException fe) { }
+		
+		return merges;
+	}
+	
 }
