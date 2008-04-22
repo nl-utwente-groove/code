@@ -27,6 +27,8 @@ import groove.graph.Node;
 import groove.trans.GraphGrammar;
 import groove.trans.Rule;
 import groove.trans.RuleMatch;
+import groove.trans.SPORule;
+import groove.view.FormatException;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -90,24 +92,31 @@ public class TypeReconstructor {
 			for (Rule rule : rules) {
 				AbstractNodeEdgeMap<Node,Node,Edge,Edge> map = ruleMappings.get(rule);
 				
-//				Map<Node,Node> ruleMap = rule.getMorphism().elementMap().nodeMap();
-//				for (Map.Entry<Node,Node> nodes : ruleMap.entrySet()) {
-//					equivalentTypes.putNode(
-//							map.getNode(nodes.getKey()), 
-//							map.getNode(nodes.getValue())
-//					);
-//				}
-				
-				Iterable<RuleMatch> matches = rule.getMatches(typeGraph, null);
-				for (RuleMatch match : matches) {
-					Map<Node,Node> nodeMap = match.getElementMap().nodeMap();
-					for (Map.Entry<Node,Node> nodes : nodeMap.entrySet()) {
-						equivalentTypes.putNode(
-								map.getNode(nodes.getKey()), 
-								nodes.getValue()
-						);
+				// Create a copy of the current rule in order to omit application
+				// conditions and compute the matches from this rule into the 
+				// current type graph
+				Rule ruleCopy = null;
+				try {
+					ruleCopy = new SPORule(
+							rule.getMorphism(), 
+							rule.getName(), 
+							rule.getPriority(), 
+							rule.getProperties()
+					);
+					ruleCopy.setFixed();
+					
+					Iterable<RuleMatch> matches = ruleCopy.getMatches(typeGraph, null);
+					for (RuleMatch match : matches) {
+						Map<Node,Node> nodeMap = match.getElementMap().nodeMap();
+						for (Map.Entry<Node,Node> nodes : nodeMap.entrySet()) {
+							equivalentTypes.putNode(
+									map.getNode(nodes.getKey()), 
+									nodes.getValue()
+							);
+						}
 					}
 				}
+				catch (FormatException fe) {}
 			}
 			for (Map.Entry<Node,Node> mapping : equivalentTypes.nodeMap().entrySet()) {
 				typeGraph.mergeNodes(mapping.getKey(), mapping.getValue());
