@@ -56,7 +56,7 @@ public class BuchiGraphState extends AbstractGraphState {
 	/** the iteration in which this state has been found;
 	 * this field will only be used for state that are left
 	 * unexplored in a specific iteration */
-	private int iteration = -1;
+	private int iteration;
 	private Set<ProductTransition> outTransitions;
 	/** flag indicating whether this state is closed */
 	public boolean closed = false;
@@ -75,7 +75,7 @@ public class BuchiGraphState extends AbstractGraphState {
 		this.state = state;
 		this.buchiLocation = buchiLocation;
 		this.colour = ModelChecking.NO_COLOUR;
-		this.iteration = ModelChecking.CURRENT_ITERATION;
+//		this.iteration = ModelChecking.CURRENT_ITERATION;
 //		this.parent = parent;
 	}
 
