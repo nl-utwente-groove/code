@@ -58,32 +58,12 @@ public abstract class RuleSetBoundary extends AbstractBoundary {
 			return false;
 		} else {
 			Rule rule = transition.rule();
-//			Rule rule = transition.graphTransition().getEvent().getRule();
-			if (!ruleSetBoundary.contains(rule)) {
+			if (!containsRule(rule)) {
 				return false;
 			} else {
 				return true;
 			}
 		}
-//		// if the maximal allowed depth is not yet reached
-//		// the transition may be taken anyway
-//		Rule rule = transition.graphTransition().getEvent().getRule();
-//		boolean forbiddenRule = ruleSetBoundary.contains(rule);
-//
-//		boolean depth = currentDepth() <= ModelChecking.CURRENT_ITERATION;
-//			
-//		if (crossingBoundary) {
-//			if (allowed.get(rule)) {
-//				if (ALLOW_ALL_APPLICATIONS == ALLOW_SINGLE_APPLICATION) {
-//					setAllowMap();
-//				} else {
-//					allowed.put(rule, false);
-//				}
-//				return false;
-//			}
-//			return true;
-//		}
-//		return false;
 	}
 
 	public void increase() {
