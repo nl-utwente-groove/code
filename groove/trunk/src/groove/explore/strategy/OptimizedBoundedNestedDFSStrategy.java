@@ -42,7 +42,10 @@ import java.util.Iterator;
 public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy {
 
 	protected void setNextStartState() {
-		while (getProductGTS().hasOpenStates() && getAtBuchiState() == null) {
+//		while (getProductGTS().hasOpenStates() && getAtBuchiState() == null && ModelChecking.CURRENT_ITERATION < ModelChecking.MAX_ITERATIONS>) {
+			// increase the boundary
+//			getBoundary().increase();
+//			ModelChecking.nextIteration();
 			// iterator over the open states
 			// TODO: maybe there is a more efficient way of 
 			// iterating over the open states than to start
@@ -61,6 +64,8 @@ public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy 
 						continue;
 					} else {
 						setAtBuchiState(nextOpenState);
+//						ModelChecking.nextIteration();
+//						this.atBuchiState = nextOpenState;
 						ModelChecking.nextColourScheme();
 						searchStack().clear();
 						transitionStack().clear();
@@ -72,7 +77,7 @@ public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy 
 				getBoundary().increase();
 				ModelChecking.nextIteration();
 			}
-		}
+//		}
 	}
 
 	/**
@@ -80,6 +85,10 @@ public class OptimizedBoundedNestedDFSStrategy extends BoundedNestedDFSStrategy 
 	 * @param transition the boundary-crossing transition
 	 */
 	public BuchiGraphState processBoundaryCrossingTransition(ProductTransition transition) {
+		// if the number of boundary-crossing transition on the current path
+//		if (getBoundary().currentDepth() < ModelChecking.CURRENT_ITERATION - 1) {
+//			return transition.target();
+//		}
 		// set the iteration index of the graph properly
 		transition.target().setIteration(ModelChecking.CURRENT_ITERATION + 1);
 		// leave it unexplored
