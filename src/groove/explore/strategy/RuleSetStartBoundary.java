@@ -38,7 +38,7 @@ public class RuleSetStartBoundary extends RuleSetBoundary {
 
 	public boolean crossingBoundary(ProductTransition transition, boolean traverse) {
 		boolean crossing = super.crossingBoundary(transition, false);
-		
+
 		if (!crossing) {
 			return false;
 		} else {
