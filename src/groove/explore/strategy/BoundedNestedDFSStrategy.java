@@ -197,9 +197,9 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 						// target-state is already explored in previous iterations
 						// the transition must be traversed
 						String ruleName = outTransition.graphTransition().getEvent().getRule().getName().name();
-						if (ruleName.equals("del-process") || ruleName.equals("new-process")) {
-							System.out.println("Boundary-crossing transition");
-						}
+//						if (ruleName.equals("del-process") || ruleName.equals("new-process")) {
+//							System.out.println("Boundary-crossing transition");
+//						}
 						if (!getBoundary().crossingBoundary(outTransition, true)) { // || outTransition.target().iteration() < ModelChecking.CURRENT_ITERATION) { // || newState.isExplored()) {
 							setAtBuchiState(newState);
 							setLastTransition(outTransition);
