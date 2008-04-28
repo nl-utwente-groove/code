@@ -27,6 +27,7 @@ import groove.trans.SystemRecord;
 import groove.util.Reporter;
 import groove.verify.BuchiGraphState;
 import groove.verify.BuchiLocation;
+import groove.verify.ModelChecking;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -421,6 +422,7 @@ public class StateGenerator {
     		// no isomorphic state found
     		productTransition = createProductTransition(source, transition, target);
     	} else {
+    		assert (isoTarget.iteration() <= ModelChecking.CURRENT_ITERATION) : "This state belongs to the next iteration and should not be explored now.";
     		productTransition = createProductTransition(source, transition, isoTarget);
     	}
 
