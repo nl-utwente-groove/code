@@ -82,9 +82,10 @@ public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> 
         			}
         		}
         		if (finalState) {
-        			Set<? extends ProductTransition> productTransitions = addProductTransition(null, nextPropertyTransition.getTargetLocation());
-//        			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), null, nextPropertyTransition.getTargetLocation());
-        			assert (productTransitions.size() <= 1) : "There should be at most one target state instead of " + productTransitions.size();
+        			processFinalState(nextPropertyTransition);
+//        			Set<? extends ProductTransition> productTransitions = addProductTransition(null, nextPropertyTransition.getTargetLocation());
+////        			Set<? extends ProductTransition> productTransitions = getProductGenerator().addTransition(getAtBuchiState(), null, nextPropertyTransition.getTargetLocation());
+//        			assert (productTransitions.size() <= 1) : "There should be at most one target state instead of " + productTransitions.size();
         		}
         	}
         	// if the transition of the property automaton is not enabled
@@ -137,5 +138,19 @@ public class NestedDFSStrategy extends DefaultModelCheckingStrategy<GraphState> 
 			// else, atState is open, so we continue exploring it
 		}
 			
+	}
+
+	/**
+	 * @param transition
+	 */
+	protected void processFinalState(BuchiTransition transition) {
+		if (transition == null) {
+			// exclude the current state from further analysis
+			// mark it red
+			getAtBuchiState().setColour(ModelChecking.RED);
+		} else {
+			Set<? extends ProductTransition> productTransitions = addProductTransition(null, transition.getTargetLocation());
+			assert (productTransitions.size() == 1) : "There should be at most one target state instead of " + productTransitions.size();
+		}
 	}
 }
