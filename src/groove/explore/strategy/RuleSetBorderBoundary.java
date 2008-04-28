@@ -18,6 +18,7 @@ package groove.explore.strategy;
 
 import groove.lts.ProductTransition;
 import groove.trans.Rule;
+import groove.verify.ModelChecking;
 
 import java.util.Set;
 
@@ -40,7 +41,21 @@ public class RuleSetBorderBoundary extends RuleSetBoundary {
 	}
 
 	public boolean crossingBoundary(ProductTransition transition, boolean traverse) {
-		return super.crossingBoundary(transition, traverse);
+//		if (transition.target().iteration() < ModelChecking.CURRENT_ITERATION) {
+//			return false;
+//		}
+//		else {
+			boolean crossing = super.crossingBoundary(transition, traverse);
+//			if (crossing && traverse) {
+//				increaseDepth();
+//			}
+//			if (crossing) {
+//				System.out.println("Crossing...");
+//			}
+			int iteration = transition.target().iteration();
+			boolean done = 0 < iteration && iteration <= ModelChecking.CURRENT_ITERATION;
+			return crossing && !done; // ModelChecking.unexplored(transition.target());
+//		}
 	}
 
 	public void decreaseDepth() {
@@ -51,6 +66,6 @@ public class RuleSetBorderBoundary extends RuleSetBoundary {
 		// when starting the next iteration from border states
 		// increasing the bound means to increase the depth;
 		// this ensures that crossing-check return the correct result
-		increaseDepth();
+//		increaseDepth();
 	}
 }
