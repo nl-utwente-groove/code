@@ -412,7 +412,7 @@ public class Groove {
      * @param source the first graph to be compared
      * @param target the second graph to be compared
      * @return an isomorphism from <code>source</code> to <code>target</code>, or <code>null</code> if 
-     * {@link #areIsomorphic(Graph, Graph)} fails.
+     * {@link DefaultIsoChecker#areIsomorphic(Graph, Graph)} fails.
      */
     static public NodeEdgeMap getIsomorphism(Graph source, Graph target) {
         return DefaultIsoChecker.getInstance().getIsomorphism(source, target);
