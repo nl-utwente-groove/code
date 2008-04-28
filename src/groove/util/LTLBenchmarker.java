@@ -142,57 +142,9 @@ public class LTLBenchmarker extends CommandLineTool {
         int experiment = Integer.parseInt(arguments.remove(0));
         int flag = Integer.parseInt(arguments.remove(0));
 
-        if (experiment == 1) {
-    		logFileName = "experiment-1.txt";
-    		log("\nRestart\n");
-        	for (int i = 0; i < NR_OF_RUNS; i++) {
-        		LTLBenchmarker benchmarker = new LTLBenchmarker();
-        		// boolean indicates whether to regenerate
-        		ModelChecking.resetIteration();
-        		benchmarker.experiment1(true);
-        	}
-    		log("\nReuse\n");
-        	for (int i = 0; i < NR_OF_RUNS; i++) {
-        		LTLBenchmarker benchmarker = new LTLBenchmarker();
-        		// boolean indicates whether to regenerate
-        		ModelChecking.resetIteration();
-        		benchmarker.experiment1(false);
-        	}
-        } else if (experiment == 2) {
-    		logFileName = "experiment-2.txt";
-    		log("\nRestart\n");
-        	for (int i = 0; i < NR_OF_RUNS; i++) {
-        		LTLBenchmarker benchmarker = new LTLBenchmarker();
-        		// boolean indicates whether to regenerate
-        		ModelChecking.resetIteration();
-        		benchmarker.experiment2(true);
-        	}
-    		log("\nReuse\n");
-        	for (int i = 0; i < NR_OF_RUNS; i++) {
-        		LTLBenchmarker benchmarker = new LTLBenchmarker();
-        		// boolean indicates whether to regenerate
-        		ModelChecking.resetIteration();
-        		benchmarker.experiment2(false);
-        	}
-        } else if (experiment == 3) {
-    		logFileName = "experiment-3.txt";
-    		log("\nNo pocket states\n");
-        	for (int i = 0; i < NR_OF_RUNS; i++) {
-        		LTLBenchmarker benchmarker = new LTLBenchmarker();
-        		// boolean indicates whether to regenerate
-        		ModelChecking.resetIteration();
-        		benchmarker.experiment3(false);
-        	}
-    		log("\nPocket states\n");
-        	for (int i = 0; i < NR_OF_RUNS; i++) {
-        		LTLBenchmarker benchmarker = new LTLBenchmarker();
-        		// boolean indicates whether to regenerate
-        		ModelChecking.resetIteration();
-        		benchmarker.experiment2(true);
-        	}
-        } else if (experiment == 4) {
+        if (experiment == 4) {
     		logFileName = "experiment-mutex.txt";
-        	grammarLocation = "C:\\local\\groove\\samples\\mutex.gps";
+        	grammarLocation = "./samples/mutex.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
         	if (flag == 0)
@@ -200,160 +152,326 @@ public class LTLBenchmarker extends CommandLineTool {
         	if (flag == 1)
         		benchmarker.experimentMutex(true);
         } else if (experiment == 5) {
-        	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
+        	System.out.println("Starting...");
+        	grammarLocation = "./samples/circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
-//        	ModelChecking.resetIteration();
-        	if (arguments.size() <= 0) {
-            	if (flag == 0) {
-            		logFileName = "experiment-CEB-no-pocket.txt";
-            		benchmarker.experimentCEBRule(false);
-            	} else {
-            		logFileName = "experiment-CEB-pocket.txt";
-            		benchmarker.experimentCEBRule(true);
-            	}
-        	} else {
-        		int pocket = flag;
-        		int border = Integer.parseInt(arguments.remove(0));
-        		if (border == 0 && pocket == 0) {
-            		logFileName = "experiment-CEB-start-no-pocket.txt";
-            		benchmarker.experimentCEBGraph(false, false);
-        		}
-        		if (border == 0 && pocket == 1) {
-            		logFileName = "experiment-CEB-start-pocket.txt";
-            		benchmarker.experimentCEBGraph(false, true);
-        		}
-        		if (border == 1 && pocket == 0) {
-            		logFileName = "experiment-CEB-border-no-pocket.txt";
-            		benchmarker.experimentCEBGraph(true, false);
-        		}
-        		if (border == 1 && pocket == 1) {
-            		logFileName = "experiment-CEB-border-pocket.txt";
-            		benchmarker.experimentCEBGraph(true, true);
-        		}
+        	strategyType = "S";
+        	initialBound = 5;
+        	step = 1;
+        	int restart = flag;
+        	if (restart == 1) {
+        		logFileName = "experiment-CEB-graph-restart-5-1.txt";
+        		benchmarker.experimentCEBGraph(true);
+        	}
+        	if (restart == 0) {
+        		logFileName = "experiment-CEB-graph-reuse-5-1.txt";
+        		benchmarker.experimentCEBGraph(false);
         	}
         } else if (experiment == 51) {
-    		logFileName = "experiment-CEB.txt";
-        	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
+        	grammarLocation = "./samples/circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
-        	// boolean indicates whether to regenerate
-//        	ModelChecking.resetIteration();
-        	if (flag == 0)
-        		benchmarker.experimentCEBGraph(false);
-        	if (flag == 1)
-        		benchmarker.experimentCEBGraph(true);
-        } else if (experiment == 6) {
-        	grammarLocation = "C:\\local\\groove\\samples\\leader-election.gps";
-        	ModelChecking.MAX_ITERATIONS = 2;
-        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	strategyType = "S";
+        	initialBound = 5;
+        	step = 3;
+        	// boolean indicates whether to mark pocket states
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+        		logFileName = "experiment-CEB-start-no-pocket-5-2.txt";
+        		benchmarker.experimentCEBGraph(false, false);
+        	}
+        	if (border == 0 && pocket == 1) {
+        		logFileName = "experiment-CEB-start-pocket-5-1.txt";
+        		benchmarker.experimentCEBGraph(false, true);
+        	}
+        	if (border == 1 && pocket == 0) {
+        		logFileName = "experiment-CEB-border-no-pocket-5-1.txt";
+        		benchmarker.experimentCEBGraph(true, false);
+        	}
+        	if (border == 1 && pocket == 1) {
+        		logFileName = "experiment-CEB-border-pocket-5-1.txt";
+        		benchmarker.experimentCEBGraph(true, true);
+        	}
+        } else if (experiment == 521) {
+        	grammarLocation = "./samples/circular-extensible-buffer.gps";
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
-        	if (flag == 0) {
-            	logFileName = "experiment-LEP-correct-3-border-no-pocket.txt";
-        		benchmarker.experimentLEP(false);
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+        		logFileName = "experiment-CEB-rule-start-no-pocket.txt";
+        		benchmarker.experimentCEBRule(false, false);
         	}
-        	if (flag == 1) {
-            	logFileName = "experiment-LEP-correct-3-border-pocket.txt";
-        		benchmarker.experimentLEP(true);
+        	if (border == 0 && pocket == 1) {
+        		logFileName = "experiment-CEB-rule-start-pocket.txt";
+        		benchmarker.experimentCEBRule(false, true);
+        	}
+        	if (border == 1 && pocket == 0) {
+        		logFileName = "experiment-CEB-rule-border-no-pocket.txt";
+        		benchmarker.experimentCEBRule(true, false);
+        	}
+        	if (border == 1 && pocket == 1) {
+        		logFileName = "experiment-CEB-rule-border-pocket.txt";
+        		benchmarker.experimentCEBRule(true, true);
+        	}
+        } else if (experiment == 52) {
+        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	// boolean indicates whether to mark pocket states
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+        		logFileName = "experiment-CEB-rule-start-no-pocket.txt";
+        		benchmarker.experimentCEBRule(false, false);
+        	}
+        	if (border == 0 && pocket == 1) {
+        		logFileName = "experiment-CEB-rule-start-pocket.txt";
+        		benchmarker.experimentCEBRule(false, true);
+        	}
+        	if (border == 1 && pocket == 0) {
+        		logFileName = "experiment-CEB-rule-border-no-pocket.txt";
+        		benchmarker.experimentCEBRule(true, false);
+        	}
+        	if (border == 1 && pocket == 1) {
+        		logFileName = "experiment-CEB-rule-border-pocket.txt";
+        		benchmarker.experimentCEBRule(true, true);
+        	}
+        } else if (experiment == 53) {
+        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	strategyType = "S";
+        	initialBound = 5;
+        	step = 2;
+        	// boolean indicates whether to mark pocket states
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+        		logFileName = "experiment-CEB-start-no-pocket-5-2.txt";
+        		benchmarker.experimentCEBGraph(false, false);
+        	}
+        	if (border == 0 && pocket == 1) {
+        		logFileName = "experiment-CEB-start-pocket-5-2.txt";
+        		benchmarker.experimentCEBGraph(false, true);
+        	}
+        	if (border == 1 && pocket == 0) {
+        		logFileName = "experiment-CEB-border-no-pocket-5-2.txt";
+        		benchmarker.experimentCEBGraph(true, false);
+        	}
+        	if (border == 1 && pocket == 1) {
+        		logFileName = "experiment-CEB-border-pocket-5-2.txt";
+        		benchmarker.experimentCEBGraph(true, true);
+        	}
+        } else if (experiment == 54) {
+        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	strategyType = "S";
+        	initialBound = 5;
+        	step = 3;
+        	// boolean indicates whether to mark pocket states
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+        		logFileName = "experiment-CEB-start-no-pocket-5-3.txt";
+        		benchmarker.experimentCEBGraph(false, false);
+        	}
+        	if (border == 0 && pocket == 1) {
+        		logFileName = "experiment-CEB-start-pocket-5-3.txt";
+        		benchmarker.experimentCEBGraph(false, true);
+        	}
+        	if (border == 1 && pocket == 0) {
+        		logFileName = "experiment-CEB-border-no-pocket-5-3.txt";
+        		benchmarker.experimentCEBGraph(true, false);
+        	}
+        	if (border == 1 && pocket == 1) {
+        		logFileName = "experiment-CEB-border-pocket-5-3.txt";
+        		benchmarker.experimentCEBGraph(true, true);
+        	}
+        } else if (experiment == 55) {
+        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	strategyType = "S";
+        	initialBound = 10;
+        	step = 1;
+        	// boolean indicates whether to mark pocket states
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+        		logFileName = "experiment-CEB-start-no-pocket-10-1.txt";
+        		benchmarker.experimentCEBGraph(false, false);
+        	}
+        	if (border == 0 && pocket == 1) {
+        		logFileName = "experiment-CEB-start-pocket-10-1.txt";
+        		benchmarker.experimentCEBGraph(false, true);
+        	}
+        	if (border == 1 && pocket == 0) {
+        		logFileName = "experiment-CEB-border-no-pocket-10-1.txt";
+        		benchmarker.experimentCEBGraph(true, false);
+        	}
+        	if (border == 1 && pocket == 1) {
+        		logFileName = "experiment-CEB-border-pocket-10-1.txt";
+        		benchmarker.experimentCEBGraph(true, true);
+        	}
+        } else if (experiment == 56) {
+        	grammarLocation = "./samples/circular-extensible-buffer.gps";
+        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+        	strategyType = "S";
+        	initialBound = 10;
+        	step = 2;
+        	// boolean indicates whether to mark pocket states
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+        		logFileName = "experiment-CEB-start-no-pocket-10-2.txt";
+        		benchmarker.experimentCEBGraph(false, false);
+        	}
+        	if (border == 0 && pocket == 1) {
+        		logFileName = "experiment-CEB-start-pocket-10-2.txt";
+        		benchmarker.experimentCEBGraph(false, true);
+        	}
+        	if (border == 1 && pocket == 0) {
+        		logFileName = "experiment-CEB-border-no-pocket-10-2.txt";
+        		benchmarker.experimentCEBGraph(true, false);
+        	}
+        	if (border == 1 && pocket == 1) {
+        		logFileName = "experiment-CEB-border-pocket-10-2.txt";
+        		benchmarker.experimentCEBGraph(true, true);
         	}
         } else if (experiment == 61) {
-        	grammarLocation = "C:\\local\\groove\\samples\\leader-election.gps";
-        	ModelChecking.MAX_ITERATIONS = 2;
-        	ModelChecking.START_FROM_BORDER_STATES = false;
-        	LTLBenchmarker benchmarker = new LTLBenchmarker();
-        	// boolean indicates whether to mark pocket states
-        	if (flag == 0) {
-            	logFileName = "experiment-LEP-correct-3-start-no-pocket.txt";
-        		benchmarker.experimentLEP(false);
-        	}
-        	if (flag == 1) {
-            	logFileName = "experiment-LEP-correct-3-start-pocket.txt";
-        		benchmarker.experimentLEP(true);
-        	}
-        } else if (experiment == 7) {
-        	grammarLocation = "C:\\local\\groove\\samples\\leader-election.gps";
+        	grammarLocation = "./samples/leader-election.gps";
+        	startStateName = "start-2";
         	ModelChecking.MAX_ITERATIONS = 4;
-        	ModelChecking.START_FROM_BORDER_STATES = true;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
-        	if (flag == 0) {
-            	logFileName = "experiment-LEP-correct-4-no-pocket.txt";
-        		benchmarker.experimentLEP(false);
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+            	logFileName = "experiment-LEP2-correct-3-start-no-pocket.txt";
+        		benchmarker.experimentLEP(false, false);
         	}
-        	if (flag == 1) {
-            	logFileName = "experiment-LEP-correct-4-pocket.txt";
-        		benchmarker.experimentLEP(true);
+        	if (border == 0 && pocket == 1) {
+            	logFileName = "experiment-LEP2-correct-3-start-pocket.txt";
+        		benchmarker.experimentLEP(false, true);
         	}
-        } else if (experiment == 8) {
-        	grammarLocation = "C:\\local\\groove\\samples\\leader-election.gps";
-        	ModelChecking.MAX_ITERATIONS = 5;
-        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	if (border == 1 && pocket == 0) {
+            	logFileName = "experiment-LEP2-correct-3-border-no-pocket.txt";
+        		benchmarker.experimentLEP(true, false);
+        	}
+        	if (border == 1 && pocket == 1) {
+            	logFileName = "experiment-LEP2-correct-3-border-pocket.txt";
+        		benchmarker.experimentLEP(true, true);
+        	}
+        } else if (experiment == 62) {
+        	grammarLocation = "./samples/leader-election.gps";
+        	startStateName = "start-2";
+        	ModelChecking.MAX_ITERATIONS = 4;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
-        	if (flag == 0) {
-            	logFileName = "experiment-LEP-correct-5-no-pocket.txt";
-        		benchmarker.experimentLEP(false);
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+            	logFileName = "experiment-LEP-correct-4-start-no-pocket.txt";
+        		benchmarker.experimentLEP(false, false);
         	}
-        	if (flag == 1) {
-            	logFileName = "experiment-LEP-correct-5-pocket.txt";
-        		benchmarker.experimentLEP(true);
+        	if (border == 0 && pocket == 1) {
+            	logFileName = "experiment-LEP-correct-4-start-pocket.txt";
+        		benchmarker.experimentLEP(false, true);
         	}
-        } else if (experiment == 9) {
-        	grammarLocation = "C:\\local\\groove\\samples\\leader-election-faulty-5.gps";
-        	ModelChecking.MAX_ITERATIONS = 5;
-        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	if (border == 1 && pocket == 0) {
+            	logFileName = "experiment-LEP-correct-4-border-no-pocket.txt";
+        		benchmarker.experimentLEP(true, false);
+        	}
+        	if (border == 1 && pocket == 1) {
+            	logFileName = "experiment-LEP-correct-4-border-pocket.txt";
+        		benchmarker.experimentLEP(true, true);
+        	}
+        } else if (experiment == 63) {
+        	grammarLocation = "./samples/leader-election-faulty-5.gps";
+        	startStateName = "start-2";
+        	ModelChecking.MAX_ITERATIONS = 10;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
-        	if (flag == 0) {
-            	logFileName = "experiment-LEP-faulty-5-no-pocket.txt";
-        		benchmarker.experimentLEP(false);
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+            	logFileName = "experiment-LEP-faulty-5-start-no-pocket.txt";
+        		benchmarker.experimentLEP(false,false);
         	}
-        	if (flag == 1) {
-            	logFileName = "experiment-LEP-faulty-5-pocket.txt";
-        		benchmarker.experimentLEP(true);
+        	if (border == 0 && pocket == 1) {
+            	logFileName = "experiment-LEP-faulty-5-start-pocket.txt";
+        		benchmarker.experimentLEP(false,true);
         	}
-        } else if (experiment == 10) {
-        	grammarLocation = "C:\\local\\groove\\samples\\leader-election-faulty-6.gps";
-        	ModelChecking.MAX_ITERATIONS = 5;
-        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	if (border == 1 && pocket == 0) {
+            	logFileName = "experiment-LEP-faulty-5-border-no-pocket.txt";
+        		benchmarker.experimentLEP(true,false);
+        	}
+        	if (border == 1 && pocket == 1) {
+            	logFileName = "experiment-LEP-faulty-5-border-pocket.txt";
+        		benchmarker.experimentLEP(true,true);
+        	}
+        } else if (experiment == 64) {
+        	grammarLocation = "./samples/leader-election-faulty-6.gps";
+        	startStateName = "start-2";
+        	ModelChecking.MAX_ITERATIONS = 10;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
-        	if (flag == 0) {
-            	logFileName = "experiment-LEP-faulty-6-no-pocket.txt";
-        		benchmarker.experimentLEP(false);
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+            	logFileName = "experiment-LEP-faulty-6-start-no-pocket.txt";
+        		benchmarker.experimentLEP(false,false);
         	}
-        	if (flag == 1) {
-            	logFileName = "experiment-LEP-faulty-6-pocket.txt";
-        		benchmarker.experimentLEP(true);
+        	if (border == 0 && pocket == 1) {
+            	logFileName = "experiment-LEP-faulty-6-start-pocket.txt";
+        		benchmarker.experimentLEP(false,true);
         	}
-        } else if (experiment == 11) {
-        	grammarLocation = "C:\\local\\groove\\samples\\leader-election-faulty-7.gps";
-        	ModelChecking.MAX_ITERATIONS = 5;
-        	ModelChecking.START_FROM_BORDER_STATES = true;
+        	if (border == 1 && pocket == 0) {
+            	logFileName = "experiment-LEP-faulty-6-border-no-pocket.txt";
+        		benchmarker.experimentLEP(true,false);
+        	}
+        	if (border == 1 && pocket == 1) {
+            	logFileName = "experiment-LEP-faulty-6-border-pocket.txt";
+        		benchmarker.experimentLEP(true,true);
+        	}
+        } else if (experiment == 65) {
+        	grammarLocation = "./samples/leader-election-faulty-7.gps";
+        	startStateName = "start-2";
+        	ModelChecking.MAX_ITERATIONS = 10;
         	LTLBenchmarker benchmarker = new LTLBenchmarker();
         	// boolean indicates whether to mark pocket states
-        	if (flag == 0) {
-            	logFileName = "experiment-LEP-faulty-7-no-pocket.txt";
-        		benchmarker.experimentLEP(false);
+        	int border = flag;
+        	int pocket = Integer.parseInt(arguments.remove(0));
+        	if (border == 0 && pocket == 0) {
+            	logFileName = "experiment-LEP-faulty-7-start-no-pocket.txt";
+        		benchmarker.experimentLEP(false,false);
         	}
-        	if (flag == 1) {
-            	logFileName = "experiment-LEP-faulty-7-pocket.txt";
-        		benchmarker.experimentLEP(true);
+        	if (border == 0 && pocket == 1) {
+            	logFileName = "experiment-LEP-faulty-7-start-pocket.txt";
+        		benchmarker.experimentLEP(false,true);
         	}
-        } else if (experiment == 12) {
-        	grammarLocation = "C:\\local\\groove\\samples\\append.gps";
-        	ModelChecking.START_FROM_BORDER_STATES = true;
-        	LTLBenchmarker benchmarker = new LTLBenchmarker();
-        	// boolean indicates whether to mark pocket states
-        	if (flag == 0) {
-            	logFileName = "experiment-append-no-pocket.txt";
-        		benchmarker.experimentAppend(false);
+        	if (border == 1 && pocket == 0) {
+            	logFileName = "experiment-LEP-faulty-7-border-no-pocket.txt";
+        		benchmarker.experimentLEP(true,false);
         	}
-        	if (flag == 1) {
-            	logFileName = "experiment-append-pocket.txt";
-        		benchmarker.experimentAppend(true);
+        	if (border == 1 && pocket == 1) {
+            	logFileName = "experiment-LEP-faulty-7-border-pocket.txt";
+        		benchmarker.experimentLEP(true,true);
         	}
         }
+//        else if (experiment == 12) {
+//        	grammarLocation = "C:\\local\\groove\\samples\\append.gps";
+//        	ModelChecking.START_FROM_BORDER_STATES = true;
+//        	LTLBenchmarker benchmarker = new LTLBenchmarker();
+//        	// boolean indicates whether to mark pocket states
+//        	if (flag == 0) {
+//            	logFileName = "experiment-append-no-pocket.txt";
+//        		benchmarker.experimentAppend(false);
+//        	}
+//        	if (flag == 1) {
+//            	logFileName = "experiment-append-pocket.txt";
+//        		benchmarker.experimentAppend(true);
+//        	}
+//        }
     }
 
     /**
@@ -534,19 +652,19 @@ public class LTLBenchmarker extends CommandLineTool {
      * - continue from border states
      * - max iterations
      */
-    public void experimentCEBRule(boolean pocket) {
-    	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
+    public void experimentCEBRule(boolean border, boolean pocket) {
+//    	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
     	startStateName = "start";
-    	property = "[](extend -> <> gap)";
+    	property = "[](put -> <> get)";
 //    	logFileName = "results.txt";
     	RESTART = false;
     	strategyType = "R";
-    	ruleList = "extend-correct";
+    	ruleList = "extend-correct,shorten";
 //    	ModelChecking.MAX_ITERATIONS = 20;
 //    	ModelChecking.MAX_ITERATIONS = 40;
     	ModelChecking.MAX_ITERATIONS = 60;
     	ModelChecking.MARK_POCKET_STATES = pocket;
-    	ModelChecking.START_FROM_BORDER_STATES = true;
+    	ModelChecking.START_FROM_BORDER_STATES = border;
         try {
     		ModelChecking.nextIteration();
     		init();
@@ -574,13 +692,10 @@ public class LTLBenchmarker extends CommandLineTool {
     	property = "[](put -> <> get)";
 //    	logFileName = "results.txt";
     	RESTART = false;
-    	strategyType = "S";
-    	initialBound  = 5;
-    	step = 2;
 //    	ruleList = "extend-correct";
 //    	ModelChecking.MAX_ITERATIONS = 20;
-//    	ModelChecking.MAX_ITERATIONS = 40;
-    	ModelChecking.MAX_ITERATIONS = 100;
+    	ModelChecking.MAX_ITERATIONS = 50;
+//    	ModelChecking.MAX_ITERATIONS = 100;
     	ModelChecking.MARK_POCKET_STATES = pocket;
     	ModelChecking.START_FROM_BORDER_STATES = border;
         try {
@@ -605,18 +720,17 @@ public class LTLBenchmarker extends CommandLineTool {
      * - max iterations
      */
     public void experimentCEBGraph(boolean restart) {
-    	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
+//    	grammarLocation = "C:\\local\\groove\\samples\\circular-extensible-buffer.gps";
     	startStateName = "start";
     	property = "[](put -> <> get)";
 //    	logFileName = "results.txt";
     	RESTART = restart;
-    	strategyType = "S";
-    	initialBound  = 5;
-    	step = 2;
+//    	initialBound  = 5;
+//    	step = 2;
 //    	ruleList = "extend-correct";
 //    	ModelChecking.MAX_ITERATIONS = 20;
 //    	ModelChecking.MAX_ITERATIONS = 40;
-    	ModelChecking.MAX_ITERATIONS = 60;
+    	ModelChecking.MAX_ITERATIONS = 50;
         try {
         	long total = 0;
         	do {
@@ -647,15 +761,13 @@ public class LTLBenchmarker extends CommandLineTool {
      * - no pocket detection
      * - max iterations = 6
      */
-    public void experimentLEP(boolean pocket) {
-    	startStateName = "start";
+    public void experimentLEP(boolean border, boolean pocket) {
     	property = "[](init -> (<> leader))";
     	RESTART = false;
     	strategyType = "R";
     	ruleList = "new-process,del-process";
-//    	ModelChecking.MAX_ITERATIONS = 5;
+    	ModelChecking.START_FROM_BORDER_STATES = border;
     	ModelChecking.MARK_POCKET_STATES = pocket;
-//    	ModelChecking.START_FROM_BORDER_STATES = true;
         try {
     		ModelChecking.nextIteration();
     		init();
@@ -874,13 +986,19 @@ public class LTLBenchmarker extends CommandLineTool {
 			} else {
 				result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking based on graph sizes", "bounded", initialBound, step , property());
 			}
-//			result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new OptimizedBoundedNestedDFSStrategy(), "Bounded model checking based on graph sizes", "bounded", initialBound, step , property());
-//			result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new OptimizedBoundedNestedDFSPocketStrategy(), "Bounded model checking based on graph sizes", "bounded", initialBound, step , property());
 		} else if (strategyType.equals(STRATEGY_RULE_SET)) {
-			if (ModelChecking.MARK_POCKET_STATES) {
-				result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new OptimizedBoundedNestedDFSPocketStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
+			if (ModelChecking.START_FROM_BORDER_STATES) {
+				if (ModelChecking.MARK_POCKET_STATES) {
+					result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new OptimizedBoundedNestedDFSPocketStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
+				} else {
+					result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new OptimizedBoundedNestedDFSStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
+				}
 			} else {
-				result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new OptimizedBoundedNestedDFSStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
+				if (ModelChecking.MARK_POCKET_STATES) {
+					result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSPocketStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
+				} else {
+					result = GeneratorScenarioHandlerFactory.getBoundedModelCheckingScenario(new BoundedNestedDFSStrategy(), "Bounded model checking based on rule set", "bounded", ruleSet(), property());
+				}
 			}
 		} else {
 			result = null;
@@ -1174,7 +1292,16 @@ public class LTLBenchmarker extends CommandLineTool {
 //        System.out.println(pocketStates + " (" + pocketStates2 + ")");
 //        long total = (endTime - startTime);
         long matching = SPORule.getMatchingTime();
+//        long modelCheckingNext = ModelChecking.reporter.getTotalTime(ModelChecking.NEXT);
+//        long modelCheckingUpdate = ModelChecking.reporter.getTotalTime(ModelChecking.UPDATE);
+//        long modelCheckingBacktrack = ModelChecking.reporter.getTotalTime(ModelChecking.BACKTRACK);
+//        System.out.println("Model checking statistics:");
+//        System.out.println("next: " + modelCheckingNext);
+//        System.out.println("updateNext: " + modelCheckingUpdate);
+//        System.out.println("backtrack: " + modelCheckingBacktrack);
     	String results = stateCount + " (" + stateCountSystem + ") " + transitionCount + " (" + transitionCountSystem + ") " + total + " " + (percentage(matching / (double) total));
+    	System.err.println(results);
+//    	System.out.println(results);
 
 //    	if (ModelChecking.MARK_POCKET_STATES)
 //    		results += " " + BuchiGraphState.pocketStates;
