@@ -442,7 +442,7 @@ public class CommandLineTool {
     /**
      * The verbosity with which the generation is carried out.
      */
-    private int verbosity = VerbosityOption.DEFAULT_VERBOSITY;
+    private int verbosity = VerbosityOption.LOW_VERBOSITY;
     /**
      * Flag to indicate that the generation process should be logged.
      */
