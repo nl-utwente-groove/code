@@ -15,6 +15,7 @@ import groove.explore.strategy.Boundary;
 import groove.explore.strategy.BoundedModelCheckingStrategy;
 import groove.explore.strategy.ConditionalStrategy;
 import groove.explore.strategy.GraphNodeSizeBoundary;
+import groove.explore.strategy.ModelCheckingStrategy;
 import groove.explore.strategy.RuleSetBorderBoundary;
 import groove.explore.strategy.RuleSetStartBoundary;
 import groove.explore.strategy.Strategy;
@@ -455,6 +456,74 @@ public class GeneratorScenarioHandlerFactory {
 //				str.setProductGTS(new ProductGTS(getGTS().getGrammar()));
 				str.setResult(result);
 				str.setBoundary(boundary);
+				scenar.setStrategy(str);
+
+				scenar.setGTS(getGTS());
+				scenar.setState(getState());
+				
+				Runtime runtime = Runtime.getRuntime();
+				try {
+					this.result = scenar.play();
+				} catch (InterruptedException e) {
+					this.result = scenar.getComputedResult();
+					throw e;
+				}
+
+	            System.runFinalization();
+	            System.gc();
+	            long usedMemory = runtime.totalMemory() - runtime.freeMemory();
+	            
+	            System.err.println("Memory in use: " + (usedMemory / 1024) + " kB");
+			}
+
+			@Override
+			public Class<?> resultType() { return null; }
+			@Override
+			public ProductGTS getProductGTS() {
+				return productGTS;
+			}
+			private ProductGTS productGTS;
+		};
+	}
+
+	/**
+	 * @param <T>
+	 * @param str
+	 * @param description
+	 * @param name
+	 * @param ruleSet
+	 * @param property
+	 * @return
+	 */
+	public static <T> ScenarioHandler getModelCheckingScenario(
+			final ModelCheckingStrategy<T> str,
+			final String description,
+			final String name,
+			final String property) {
+		return new AbstractScenarioHandler() {
+
+			@Override
+			public String getDescription() { return description; }
+
+			@Override
+			public String getName() { return name; }
+
+			@Override
+			public void playScenario() throws InterruptedException {
+				DefaultScenario<T> scenar = new DefaultScenario<T>();
+				CycleAcceptor<T> cycleAcc = new CycleAcceptor<T>();
+				Result<T> result = new SizedResult<T>(1);
+				scenar.setAcceptor((Acceptor<T>) cycleAcc);
+				scenar.setResult(result);
+
+				cycleAcc.setStrategy(str);
+
+				str.setProperty(property);
+				str.setGTS(getGTS());
+				productGTS = new ProductGTS(getGTS().getGrammar());
+				str.setProductGTS(productGTS);
+//				str.setProductGTS(new ProductGTS(getGTS().getGrammar()));
+				str.setResult(result);
 				scenar.setStrategy(str);
 
 				scenar.setGTS(getGTS());
