@@ -54,6 +54,10 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 //		ModelChecking.reporter.start(ModelChecking.NEXT);
 		if (getAtBuchiState() == null) {
 			// if we are finished
+//			if (LTLBenchmarker.RESTART) {
+//				getProductGTS().removeListener(this.collector);
+//				return false;
+//			}
 			while (getAtBuchiState() == null && getProductGTS().hasOpenStates() && ModelChecking.CURRENT_ITERATION <= ModelChecking.MAX_ITERATIONS) {
 				setNextStartState();
 			}
@@ -61,12 +65,6 @@ public class BoundedNestedDFSStrategy extends DefaultBoundedModelCheckingStrateg
 				getProductGTS().removeListener(this.collector);
 				return false;
 			}
-//			if (finished()) {
-//				getProductGTS().removeListener(this.collector);
-//				return false;
-//			} else {
-//				setNextStartState();
-//			}
 		}
 
 		// TODO: push the current state only on the stack when continuing with one of its successors
