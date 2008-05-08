@@ -30,8 +30,7 @@ public abstract class Result<T> {
 	 */
 	public void add(T t) {
 		elements.add(t);
-	}
-	
+	}	
 	
 	/** The set of elements contained in the result.
 	 * @return
@@ -40,10 +39,14 @@ public abstract class Result<T> {
 		return elements;
 	}
 	
+	/** Returns a result of the same type with no added elements. */ 
+	public abstract Result<T> getFreshResult ();
+	
 
 	/** Indicates whether the result is computed.
 	 * @return <code>true</code> if the result is computed, <code>false</code> otherwise.
 	 * When the result is completed, no more elements should be added to it.
 	 */
-	public abstract boolean done(); 
+	public abstract boolean done();
+
 }

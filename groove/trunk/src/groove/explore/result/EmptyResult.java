@@ -14,5 +14,10 @@ public class EmptyResult<T> extends Result<T> {
 		// thus exploration is done when there's nothing left to explore
 		return false;
 	}
+	
+	@Override
+	public EmptyResult<T> getFreshResult () {
+		return new EmptyResult<T>();
+	}
 
 }
