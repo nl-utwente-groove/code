@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 
 /** An iterator over a cartesian product. Sets defining the cartesian product have values from Val and are indexed by a finite index set I \subseteq Idx.
- * The cartesian product is defined as a mapping m : I --> Set<Val>, where I is a finite set of elements of Idx, and for each i in I, m(d) is a finite set.
+ * The cartesian product is defined as a mapping m : I --> Set<Val>, where I is a finite set of elements of Idx, and for each i in I, m(i) is a finite set.
  * Consider as example the mapping m defined by (i1 -> {a1, a2}, i2 -> {b1}, i3 -> {c1, c2, c3}). Then this iterator should iterate over the maps
  * (i1 -> a1, i2 -> b1, i3 -> c1), 
  * (i1 -> a2, i2 -> b1, i3 -> c1), 
@@ -74,7 +74,7 @@ public class TupleIterator<Idx, Val> implements Iterator<Map<Idx,Val>> {
 	public TupleIterator (Mapping<Idx, Val> m) {
 		iset = new ArrayList<Idx>(m.size());
 		iterators = new ArrayList<Iterator<Val>>(m.size());
-		nextVal = new HashMap<Idx, Val>();
+		nextVal = new HashMap<Idx, Val>(m.size());
 		int k = 0;
 		for (Idx i : m.keySet()) {
 			iset.add(k, i);
@@ -105,7 +105,7 @@ public class TupleIterator<Idx, Val> implements Iterator<Map<Idx,Val>> {
 		computeNext();
 		if (! hasNext) { throw new NoSuchElementException(); }
 		consumed = true;
-		return nextVal;
+		return new HashMap<Idx,Val>(nextVal);
 	}
 	
 	public void remove () {
@@ -175,6 +175,10 @@ public class TupleIterator<Idx, Val> implements Iterator<Map<Idx,Val>> {
 				return result;
 			}
 			public int size() { return 3; }
+			
+			public String toString () {
+				return "(a1, a2) X (b1) X (c1, c2, c3)";
+			}
 
 		}
 		
@@ -216,7 +220,10 @@ public class TupleIterator<Idx, Val> implements Iterator<Map<Idx,Val>> {
 		}
 		
 		
-		TupleIterator<Integer, String> tit = new TupleIterator<Integer, String> (new MappingImpl());
+		MappingImpl cartesian = new MappingImpl();
+		System.out.println("Cartesian product for :" );
+		System.out.println(cartesian);
+		TupleIterator<Integer, String> tit = new TupleIterator<Integer, String> (cartesian);
 		while (tit.hasNext()) {
 			System.out.println(tit.next());
 		}
