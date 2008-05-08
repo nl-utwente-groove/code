@@ -455,10 +455,26 @@ public class PatternFamily implements Iterable<GraphPattern> {
 			return p.graph().getCertifier().getGraphCertificate().hashCode();
 		}
 		
+		// FIXME this is not correct. If there are several isomorphism between the graphs, only
+		// some of them may not match the center nodes. If getIsomorphsm() returns such an
+		// isomorphisms, the method will return false, whereas the graphs might be isomorphic
 		public boolean areEqual(GraphPattern p1, GraphPattern p2) {
 			NodeEdgeMap isomorphism = DefaultIsoChecker.getInstance().getIsomorphism(p1.graph(), p2.graph());
 			if (isomorphism == null) { return false; }
 			return isomorphism.getNode(p1.central()).equals(p2.central());
+			
+// 			CORRECT IMPLEMENTATION			
+//			NodeEdgeMap isomorphism = DefaultIsoChecker.getInstance().getIsomorphism(p1.graph(), p2.graph());
+//			if (isomorphism == null) { return false; }
+//			// compute all isomorphisms
+//			NodeEdgeMap centerMap = new NodeEdgeHashMap();
+//			centerMap.putNode(p1.centre(), p2.centre());
+//			for (VarNodeEdgeMap morph : groove.abs.Util.getInjMatchesIter(p1.graph(), p2.graph(), centerMap)) {
+//				// this is necessary an isomorphism, as the graphs are isomorphic, thus same number nodes and edges,
+//				// and morph is injective and total, thus surjective 
+//				return true;
+//			}
+//			return false;
 		}
 	}
 }
