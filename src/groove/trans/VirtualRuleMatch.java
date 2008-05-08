@@ -1,3 +1,19 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $$Id$$
+ */
 package groove.trans;
 
 import groove.graph.Edge;
@@ -40,31 +56,26 @@ public class VirtualRuleMatch extends RuleMatch {
 	
 	@Override
 	public Collection<RuleMatch> addSubMatchChoice(Iterable<? extends Match> choices) {
-		// TODO Auto-generated method stub
 		return getMatch().addSubMatchChoice(choices);
 	}
 
 	@Override
 	protected int computeHashCode() {
-		// TODO Auto-generated method stub
 		return getMatch().computeHashCode();
 	}
 
 	@Override
 	protected RuleMatch createMatch() {
-		// TODO Auto-generated method stub
 		return getMatch().createMatch();
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		// TODO Auto-generated method stub
 		return getMatch().equals(obj);
 	}
 
 	@Override
 	public SPORule getRule() {
-		// TODO Auto-generated method stub
 		Rule rule = appl.getRule();
 		if( rule instanceof SPORule ) {
 			return (SPORule) rule;
@@ -81,49 +92,41 @@ public class VirtualRuleMatch extends RuleMatch {
 
 	@Override
 	public String toString() {
-		// TODO Auto-generated method stub
 		return "Virtual match of appl " + appl;
 	}
 
 	@Override
 	public void addSubMatch(Match match) {
-		// TODO Auto-generated method stub
 		getMatch().addSubMatch(match);
 	}
 
 	@Override
 	protected CompositeMatch clone() {
-		// TODO Auto-generated method stub
 		return getMatch().clone();
 	}
 
 	@Override
 	public Collection<Edge> getEdgeValues() {
-		// TODO Auto-generated method stub
 		return getMatch().getEdgeValues();
 	}
 
 	@Override
 	public VarNodeEdgeMap getElementMap() {
-		// TODO Auto-generated method stub
 		return getMatch().getElementMap();
 	}
 
 	@Override
 	public Collection<Node> getNodeValues() {
-		// TODO Auto-generated method stub
 		return getMatch().getNodeValues();
 	}
 
 	@Override
 	public Collection<Match> getSubMatches() {
-		// TODO Auto-generated method stub
 		return getMatch().getSubMatches();
 	}
 
 	@Override
 	public int hashCode() {
-		// TODO Auto-generated method stub
 		return getMatch().hashCode();
 	}
 	
