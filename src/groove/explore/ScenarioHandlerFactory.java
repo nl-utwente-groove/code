@@ -67,7 +67,7 @@ public class ScenarioHandlerFactory {
 			public void playScenario() throws InterruptedException {
 				DefaultScenario<T> scenar = new DefaultScenario<T>();
 				scenar.setAcceptor(acc);
-				scenar.setResult(res);
+				scenar.setResult(res.getFreshResult()); // avoids using the same result several times
 				scenar.setStrategy(str);
 				
 				scenar.setGTS(getGTS());
@@ -133,7 +133,7 @@ public class ScenarioHandlerFactory {
 				this.explCond.setNegated(negated);
 				acc.setCondition(this.explCond);
 				scenar.setAcceptor(acc);
-				scenar.setResult(res);
+				scenar.setResult(res.getFreshResult());
 				scenar.setStrategy(str);
 
 				scenar.setGTS(getGTS());
@@ -194,7 +194,7 @@ public class ScenarioHandlerFactory {
 			public void playScenario() throws InterruptedException {
 				DefaultScenario<T> scenar = new DefaultScenario<T>();
 				scenar.setAcceptor(acc);
-				scenar.setResult(res);
+				scenar.setResult(res.getFreshResult());
 
 				if (acc instanceof CycleAcceptor) {
 					((CycleAcceptor) acc).setStrategy(str);
@@ -377,7 +377,7 @@ public class ScenarioHandlerFactory {
 			public void playScenario() throws InterruptedException {
 				DefaultScenario<T> scenar = new DefaultScenario<T>();
 				scenar.setAcceptor(acc);
-				scenar.setResult(res);
+				scenar.setResult(res.getFreshResult());
 				scenar.setStrategy(str);
 				str.setExploreCondition(explCond);
 				

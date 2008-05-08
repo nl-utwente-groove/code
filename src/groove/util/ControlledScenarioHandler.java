@@ -22,6 +22,14 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+/** Allows the execution of a controlled scenario.
+ * Such a scenario is controlled by a list of rules, to be executed in this order.
+ * The scenario computes either a linear-shaped LTS representing a path
+ * of the given list of rules, or a tree with "layers" defined by the
+ * list of rules.
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
 public class ControlledScenarioHandler extends AbstractScenarioHandler {
 
 	/** */
@@ -30,6 +38,10 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 	private String name;
 	private ControlledStrategy str;
 
+	/** Creates a scenario handler from a name and a description.
+	 * @param description
+	 * @param name
+	 */
 	public ControlledScenarioHandler(String description, String name) {
 		this.description = description;
 		this.name = name;
@@ -63,6 +75,10 @@ public class ControlledScenarioHandler extends AbstractScenarioHandler {
 	@Override
 	public Class<?> resultType() { return Object.class; }
 
+	/** Sets a program for the scenario.
+	 * @param program a list of rules to be executed in this order
+	 * @param findAll if set to true, then the scenario computes a tree. Otherwise, it computes a path.
+	 */
 	public void setProgram(List<Rule> program, boolean findAll) {
 		if (this.str == null) {
 			this.str = new ControlledStrategy();

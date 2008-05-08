@@ -24,4 +24,9 @@ public class SizedResult<T> extends Result<T> {
 	public boolean done() {
 		return (elements.size() >= this.size);
 	}
+
+	@Override
+	public SizedResult<T> getFreshResult() {
+		return new SizedResult<T>(this.size);
+	}
 }
