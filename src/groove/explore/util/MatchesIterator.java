@@ -28,6 +28,7 @@ import java.util.Set;
  * The rules are given as an {@link ExploreCache}.
  * This implementation is suitable for iterators intended to iterate over 
  * several matches (and not for testing the existence of a match).
+ * The iterator returns only one match for non modifying rules.
  * @author Iovka Boneva
  * @version $Revision: 1.5 $
  */
