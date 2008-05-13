@@ -96,7 +96,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -107,6 +109,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.prefs.BackingStoreException;
+import java.util.prefs.PreferenceChangeEvent;
+import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -615,9 +619,27 @@ public class Simulator {
     
     File handleSaveControl() {
     	// check if we had a control program
-    	File selectedFile = getCurrentGrammar().getControl().getFile();
+    	ControlView cv = getCurrentGrammar().getControl();
+    	File selectedFile = null;
+
+    	if( cv != null ) {
+    		selectedFile = cv.getFile();
+    	}
+    	
     	if( selectedFile == null ) {
-    		// need to implement a filechooser here.
+   			FileFilter filter = Groove.getFilter("Groove Control File", ".gcp", false);
+    		JFileChooser chooser = new GrooveFileChooser();
+			chooser.addChoosableFileFilter(filter);
+			chooser.setFileFilter(filter);
+			
+			int result = chooser.showOpenDialog(getFrame());
+            // now load, if so required
+            if (result == JFileChooser.APPROVE_OPTION ) {
+            	Properties systemProperties = getCurrentGrammar().getProperties();
+            	// store selected file as grammar system property
+            	systemProperties.put(SystemProperties.CONTROL_PROGRAM_KEY, chooser.getSelectedFile().getName());
+             	selectedFile = chooser.getSelectedFile();
+            }
     	}
 
     	if( selectedFile != null ) {
@@ -722,6 +744,9 @@ public class Simulator {
                 grammarLoader.deleteObserver(loadListener);
             }
         }.start();
+        
+        // updating history
+        history.updateLoadGrammar(grammarFile);
     }
 
 	/**
@@ -1378,6 +1403,7 @@ public class Simulator {
         return menuBar;
     }
 
+    
 	/**
 	 * Creates and returns a file menu for the menu bar.
 	 */
@@ -1387,6 +1413,7 @@ public class Simulator {
 	    result.add(new JMenuItem(getLoadGrammarAction()));
         result.add(new JMenuItem(getLoadStartGraphAction()));
         result.add(new JMenuItem(getRefreshGrammarAction()));
+        result.add(createOpenRecentMenu());
 	    result.addSeparator();
 	    result.add(new JMenuItem(getSaveGrammarAction()));
 	    result.add(new JMenuItem(getSaveGraphAction()));
@@ -1399,6 +1426,14 @@ public class Simulator {
 	    return result;
 	}
 
+    private JMenu createOpenRecentMenu() {
+    	
+    	if( history == null )
+    		 history = new History();
+    	
+    	return history.getOpenRecentMenu();
+    }
+	
 	private JMenu createNewMenu() {
 		JMenu result = new JMenu(Options.NEW_ACTION_NAME);
 //        result.setAccelerator(Options.NEW_KEY);
@@ -2966,6 +3001,9 @@ public class Simulator {
      * @see Simulator#doLoadGrammar(AspectualViewGps, File, String)
      */
     private class LoadGrammarAction extends AbstractAction {
+
+    	private File toOpen;
+    	
     	/** Constructs an instance of the action. */
         LoadGrammarAction() {
             super(Options.LOAD_GRAMMAR_ACTION_NAME);
@@ -2973,17 +3011,33 @@ public class Simulator {
             addAccelerator(this);
         }
 
+        LoadGrammarAction(File path) {
+        	super(path.getName());
+        	
+        	toOpen = path;
+        	
+//        	putValue(ACCELERATOR_KEY, Options.OPEN_KEY);
+//        	addAccelerator(this);
+        }
+        
         public void actionPerformed(ActionEvent evt) {
-            int result = getGrammarFileChooser().showOpenDialog(getFrame());
-            // now load, if so required
-            if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
-                File selectedFile = getGrammarFileChooser().getSelectedFile();
-                FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
-                doLoadGrammar(getGrammarLoaderMap().get(filterUsed), selectedFile, null);
-            }
+            
+        	if( toOpen != null ) {
+        		FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
+        		Simulator.this.doLoadGrammar(getGrammarLoaderMap().get(filterUsed), toOpen, null);
+        	} else {
+        		int result = getGrammarFileChooser().showOpenDialog(getFrame());
+        		// now load, if so required
+        		if (result == JFileChooser.APPROVE_OPTION && confirmAbandon(false)) {
+        			File selectedFile = getGrammarFileChooser().getSelectedFile();
+        			FileFilter filterUsed = getGrammarFileChooser().getFileFilter();
+        			doLoadGrammar(getGrammarLoaderMap().get(filterUsed), selectedFile, null);
+        		}
+        	}
         }
     }
-
+    
+    
     /** Action to create and load a new, initially empty graph grammar. */
     private class NewGrammarAction extends AbstractAction {
         NewGrammarAction() {
@@ -3319,4 +3373,89 @@ public class Simulator {
     }
 
     public static Collection<GraphState> visualize; // = new HashSet<GraphState>();
+    
+    
+    
+    private History history;
+    
+    private class History {
+
+    	private JMenu menu;
+    	private ArrayList<String> history = new ArrayList<String>();
+    	
+    	
+    	public History() {
+    		String[] sh = Options.userPrefs.get(SystemProperties.HISTORY_KEY, "").split(",");
+    		for( String p : sh) {
+    			history.add(p);
+    		}
+    		
+    		menu = new JMenu(Options.OPEN_RECENT_MENU_NAME);
+    		
+    		synchMenu();
+    		
+    	}
+    	
+    	/**
+    	 * Returns a JMenu that will reflect the current history.
+    	 * The menu is updated when a grammar is loaded.
+    	 */
+    	public JMenu getOpenRecentMenu() {
+    		return menu;
+    	}
+    	
+    	/**
+    	 * This method is called when a grammar is loaded, to update the history of loaded grammars.
+    	 * This class will deal with any updates that have to be made accordingly
+    	 * @param file
+    	 */
+    	public void updateLoadGrammar(File file) {
+    		if( history.contains(file.getAbsolutePath())) {
+    			// opening element of history, have to push it to index 0
+    			history.remove(file.getAbsolutePath());
+    			history.add(0, file.getAbsolutePath());
+    			synch();
+    			
+    		} else {
+    			// adding new elements
+    			history.add(0,file.getAbsolutePath());
+    			// trimming list to 10 elements
+    			while( history.size() > 10 ) {
+    				history.remove(10);
+    			}
+    			synch();
+    		}
+    	}
+
+    	private void synch() {
+    		synchPrefs();
+    		synchMenu();
+    	}
+    	
+    	private void synchPrefs() {
+    		String newStr = makeHistoryString();
+    		Options.userPrefs.put(SystemProperties.HISTORY_KEY, newStr);
+    	}
+    	
+    	private void synchMenu() {
+    		menu.removeAll();
+    		for( String s : history ) {
+    			menu.add(new LoadGrammarAction(new File(s)));
+    		}
+    	}
+    	
+    	private String makeHistoryString() {
+    		String ret = null;
+    		for( String path : history ) {
+    			if( ret == null ) {
+    				ret = path;
+    			}
+    			else {
+    				ret += ("," + path);
+    			}
+    		}
+    		return ret;
+        }
+    	
+    }
 }

@@ -71,6 +71,8 @@ public class Options {
     public static final String EXPLORE_MENU_NAME = "Explore";
     /** File menu name */
     public static final String FILE_MENU_NAME = "File";
+    /** Open Recent menu name **/
+    public static final String OPEN_RECENT_MENU_NAME = "Open Recent..";
     /** Help menu name */
     public static final String HELP_MENU_NAME = "Help";
     /** Options menu name */
