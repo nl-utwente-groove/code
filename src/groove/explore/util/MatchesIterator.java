@@ -80,8 +80,25 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 			this.matchIter = null;
 			return false;
 		}
-		this.currentRule = rulesIter.next();  
+		this.currentRule = rulesIter.next();
 		this.matchIter = this.currentRule.getMatchIter(this.state.getGraph(), null);
+		if (! currentRule.isModifying() && matchIter.hasNext()) {
+			// in the case of non modifying rule, only one match will be returned
+			final RuleMatch m = matchIter.next();
+			this.matchIter = new Iterator<RuleMatch>() {
+				boolean hasNext = true;
+				@Override
+				public boolean hasNext() { return this.hasNext; }
+				@Override
+				public RuleMatch next() {
+					if (! this.hasNext) { throw new NoSuchElementException();} 
+					this.hasNext = false;
+					return m;
+				}
+				@Override
+				public void remove() { 	}
+			};
+		}
 		return true;
 	}
 	
