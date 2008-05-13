@@ -16,34 +16,35 @@
  */
 package groove.gui;
 
-import java.io.IOException;
-
-import groove.abs.AbstrGraph;
-import groove.graph.DefaultGraph;
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.gui.jgraph.AbstrGraphJModel;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.StateJGraph;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
-import groove.trans.GraphGrammar;
 import groove.trans.NameLabel;
-import groove.view.AspectualGraphView;
-import groove.view.DefaultGrammarView;
-import groove.view.FormatException;
-import groove.view.aspect.AspectGraph;
 import groove.type.TypeReconstructor;
 import groove.util.Groove;
+import groove.view.DefaultGrammarView;
+import groove.view.FormatException;
 
+import java.io.IOException;
+
+/**
+ * @author Frank van Es
+ * @version $Revision $
+ */
 public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
     public static final String FRAME_NAME = "Type graph";
 	
     // --------------------- INSTANCE DEFINITIONS ----------------------
     
+	/**
+	 * @param simulator
+	 */
 	public TypePanel(final Simulator simulator) {
 		super(new StateJGraph(simulator), true, simulator.getOptions());
 		this.simulator = simulator;
@@ -52,13 +53,9 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
 	
 	/** Does nothing (according to contract, the grammar has already been set). */
     public synchronized void startSimulationUpdate(GTS gts) {}
-    
     public synchronized void setStateUpdate(GraphState state) {}
-    
     public synchronized void setTransitionUpdate(GraphTransition trans) {}
-    
     public synchronized void applyTransitionUpdate(GraphTransition transition) {}
-    
     public synchronized void setRuleUpdate(NameLabel rule) {}
     
     public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
@@ -68,14 +65,19 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
         } else {
         	try {
         		Graph typeGraph = TypeReconstructor.reconstruct(grammar.toModel());
-     
-        		Groove.saveGraph(typeGraph,"typeGraph");
+        		
+        		Groove.saveGraph(typeGraph,simulator.getCurrentGrammarFile().getAbsolutePath() + "/typeGraph");
         		GraphInfo.setName(typeGraph, "Type graph");
         		
         		jGraph.setModel(GraphJModel.newInstance(typeGraph, getOptions()));
         	}
         	catch (FormatException fe) {}
-        	catch (IOException ioe) {}
+        	catch (IOException ioe) {
+        		System.err.println("Error storing the type graph.");
+        	}
+        	catch (NullPointerException npe) {
+        		System.err.println("Type graph cannot be displayed for this model.");
+        	}
             setEnabled(true);
         }
         refreshStatus();
