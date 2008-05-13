@@ -47,6 +47,9 @@ public class TypeReconstructor {
 	 * @return A type graph for grammar 
 	 */
 	public static Graph reconstruct(GraphGrammar grammar) {
+		
+		
+		
 		Graph startGraph = grammar.getStartGraph();
 		Collection<Rule> rules = grammar.getRules();
 		Map<Rule,AbstractNodeEdgeMap<Node,Node,Edge,Edge>> ruleMappings = 
