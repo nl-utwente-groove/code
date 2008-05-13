@@ -118,7 +118,7 @@ public class StrategiesTest extends TestCase {
 		assertTrue(computed.get(0).containsAll(expected.get(0)));
 		assertTrue(expected.get(0).containsAll(computed.get(0)));
 		
-		assertEquals(3, theMatches.get(1).size()); // c, d, d
+		assertEquals(2, theMatches.get(1).size()); // c, d
 		assertTrue(computed.get(1).containsAll(expected.get(1)));
 		assertTrue(expected.get(1).containsAll(computed.get(1)));
 		
