@@ -1207,6 +1207,7 @@ public class Simulator {
             graphViewsPanel.addTab(null, Groove.RULE_FRAME_ICON, getRulePanel(), "Selected rule");
             graphViewsPanel.addTab(null, Groove.LTS_FRAME_ICON, getLtsPanel(), "Labelled transition system");
             graphViewsPanel.addTab(null, Groove.CTRL_FRAME_ICON , getControlPanel(), "Control specification" );
+            graphViewsPanel.addTab(null, Groove.GRAPH_FRAME_ICON, getTypePanel(), "Type graph");
             // add this simulator as a listener so that the actions are updated regularly
             graphViewsPanel.addChangeListener(new ChangeListener() {
                 public void stateChanged(ChangeEvent evt) {
@@ -1286,6 +1287,20 @@ public class Simulator {
             ltsPanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
         }
         return ltsPanel;
+    }
+    
+    /**
+     * Returns the simulator panel on which the current state is displayed. Note that this panel may
+     * currently not be visible.
+     * @see #setGraphPanel(JGraphPanel)
+     */
+    TypePanel getTypePanel() {
+        if (typePanel == null) {
+            // panel for state display
+            typePanel = new TypePanel(this);
+            typePanel.setPreferredSize(GRAPH_VIEW_PREFERRED_SIZE);
+        }
+        return typePanel;
     }
 
     /**
@@ -2118,6 +2133,9 @@ public class Simulator {
     
     /** LTS display panel. */
     private LTSPanel ltsPanel;
+    
+    /** Type graph display panel. */
+    private TypePanel typePanel;
 
     /** Error display. */
     private ErrorListPanel errorPanel;
