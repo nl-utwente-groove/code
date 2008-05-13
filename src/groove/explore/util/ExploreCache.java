@@ -24,8 +24,9 @@ public interface ExploreCache extends ResumableIterator<Rule> {
 	 * @param rule A fully explored rule.
 	 */
 	public void updateExplored(Rule rule);
+	
 	/** Inform the cache that a match has been found for a rule.
-	 * This may influence the rules that will be later on returned by the iterator.
+	 * This may influence the rules that will be returned by the iterator later on.
 	 * @param rule A rule that has a match.
 	 */
 	public void updateMatches(Rule rule);

@@ -54,6 +54,7 @@ import java.util.Map;
 
 import javax.swing.Action;
 import javax.swing.JMenu;
+import javax.swing.JMenuItem;
 
 /**
  * 
@@ -87,44 +88,44 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         ScenarioHandler handler;
 
         handler = ScenarioHandlerFactory.getScenario(
-        		new BreadthFirstStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(),
-        		"Breadth first full exploration.", "Full exploration (breadth-first, aliasing)");
-        addScenarioHandler(handler);
-
-        handler = ScenarioHandlerFactory.getScenario(
         		new BranchingStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(),
-        		"Branching full exploration.", "Full exploration (branching, aliasing)");
+        		"Explores the full state space.", "Full exploration (branching, aliasing)");
+        addScenarioHandler(handler);
+        
+        handler = ScenarioHandlerFactory.getScenario(
+        		new BreadthFirstStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(),
+        		"Explores all the new states reachable from the current state (breadth-first).", "Fully explore state (breadth-first, aliasing)");
         addScenarioHandler(handler);
 
         handler = ScenarioHandlerFactory.getScenario(
         		new DepthFirstStrategy2(), new EmptyResult<Object>(), new EmptyAcceptor(),
-        		"Depth first full exploration.", "Full exploration (depth-first, no aliasing)");
+        		"Explores all the new states reachable from the current state (depth-first).", "Fully explore state (depth-first, no aliasing)");
         addScenarioHandler(handler);
 
         
         handler = ScenarioHandlerFactory.getScenario(
         		new LinearStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(), 
-        		"Explore first transition until a final state or a loop is reached.", "Linear exploration");
+        		"Explores one transition for each state until a final state or a loop is reached.", "Linear exploration");
+        addScenarioHandler(handler);
+        
+        handler = ScenarioHandlerFactory.getScenario(
+        		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new FinalStateAcceptor(), 
+        		"Looks for a final state starting from the current state (breadth-first)", "Find a final state (breadth-first)"	);
         addScenarioHandler(handler);
         
         handler = ScenarioHandlerFactory.getScenario(
         		new DepthFirstStrategy2(), new SizedResult<GraphState>(1), new FinalStateAcceptor(), 
-        		"", "Find a final state (depth-first)"	);
-        addScenarioHandler(handler);
-
-        handler = ScenarioHandlerFactory.getScenario(
-        		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new FinalStateAcceptor(), 
-        		"", "Find a final state (breadth-first)"	);
+        		"Looks for a final state starting from the current state (depth-first).", "Find a final state (depth-first)"	);
         addScenarioHandler(handler);
         
         handler = ScenarioHandlerFactory.getConditionalScenario(
         		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new InvariantViolatedAcceptor<Rule>(), 
-        		"", "Check invariant", false);
+        		"Explores all the new states reachable from the current state until the invariant is violated.", "Check invariant", false);
         addScenarioHandler(handler);
 
         handler = ScenarioHandlerFactory.getConditionalScenario(
         		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new InvariantViolatedAcceptor<Rule>(), 
-        		"", "Check invariant", true);
+        		"Explores all the new states reachable from the current state until the invariant is violated.", "Check invariant", true);
         addScenarioHandler(handler);
 
         // the following explore-strategies are only provided
@@ -193,7 +194,8 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         Action generateAction = simulator.createLaunchScenarioAction(handler);
         generateAction.setEnabled(false);
         scenarioActionMap.put(handler, generateAction);
-        add(generateAction);
+        JMenuItem menuItem = add(generateAction);
+        menuItem.setToolTipText(handler.getDescription());
     }
 
     // ----------------------------- simulation listener methods -----------------------

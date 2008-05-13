@@ -111,9 +111,17 @@ public abstract class AbstractStrategy implements Strategy {
 		return null;
 	}
 
-	/** Gives a cache for atState. */
+	/** Gives a cache for atState. 
+	 * @param ruleInterrupted If <code>false</code>, the cache considers that
+	 * if there is a match for some rule <code>r</code>, then all matches have been found.
+	 * Therefore, the rule <code>r</code> is not returned by the iterator.
+	 * If <code>true</code>, the cache will explore again all rules that are not
+	 * explicitly stated as fully explored.
+	 * @param isRandomized If <code>true</code>, the cache iterates over the rules
+	 * in a random order. 
+	 */
 	protected ExploreCache getCache(boolean ruleInterrupted, boolean isRandomized) {
-		return getGTS().getRecord().createCache(getAtState(), ruleInterrupted, isRandomized);
+		return getGTS().getRecord().createCache(getAtState(), ruleInterrupted, isRandomized);		
 	}
 	
 	/** Gives an appropriate matches iterator for atState.
@@ -172,6 +180,5 @@ public abstract class AbstractStrategy implements Strategy {
 	/** Indicates whether the strategy should use aliasing or not. Default value is true. */
 	// TODO this is set to false until the aliased matcher is debugged
 	protected boolean aliasing = true;
-	/** strategy for locally exploring a single state */
-//	private Strategy localExplorer = new ExploreStateStrategy();
+
 }
