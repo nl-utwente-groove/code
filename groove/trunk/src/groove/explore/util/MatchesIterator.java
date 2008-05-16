@@ -88,15 +88,15 @@ public class MatchesIterator implements Iterator<RuleMatch> {
 			final RuleMatch m = matchIter.next();
 			this.matchIter = new Iterator<RuleMatch>() {
 				boolean hasNext = true;
-				@Override
+
 				public boolean hasNext() { return this.hasNext; }
-				@Override
+
 				public RuleMatch next() {
 					if (! this.hasNext) { throw new NoSuchElementException();} 
 					this.hasNext = false;
 					return m;
 				}
-				@Override
+
 				public void remove() { 	}
 			};
 		}
