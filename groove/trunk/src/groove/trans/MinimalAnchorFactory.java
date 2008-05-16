@@ -77,7 +77,7 @@ public class MinimalAnchorFactory implements AnchorFactory {
         }
         // set of endpoints that we will remove again
         Set<Node> removableEnds = new HashSet<Node>();
-        for (Edge lhsVarEdge: rule.getVarEdges()) {
+        for (Edge lhsVarEdge: rule.getSimpleVarEdges()) {
             anchors.add(lhsVarEdge);
             // if we have the edge in the anchors, its end nodes need not be there
             removableEnds.addAll(Arrays.asList(lhsVarEdge.ends()));

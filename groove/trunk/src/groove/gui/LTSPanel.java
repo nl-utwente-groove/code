@@ -207,8 +207,18 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
         	text.append("Currently explored: ");
             text.append(gts.nodeCount());
             text.append(" states");
-            if (gts.openStateCount() > 0) {
-            	text.append(" ("+gts.openStateCount()+" open)");
+            if (gts.openStateCount() > 0 || gts.hasFinalStates()) {
+                text.append(" (");
+                if (gts.openStateCount() > 0) {
+                    text.append(gts.openStateCount() + " open");
+                    if (gts.hasFinalStates()) {
+                        text.append(", ");
+                    }
+                }
+                if (gts.hasFinalStates()) {
+                    text.append(gts.getFinalStates().size() + " final");
+                }
+                text.append(")");
             }
             text.append(", ");
             text.append(gts.edgeCount());

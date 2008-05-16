@@ -89,6 +89,7 @@ public class VarSupport {
 
     /**
      * Returns the set of variable-binding edges occurring in a given graph.
+     * An edge is variable-binding if {@link #getBoundVars(Edge)} is non-empty.
      */    
     static public Set<Edge> getVarEdges(Graph graph) {
         Set<Edge> result = new HashSet<Edge>();
@@ -108,6 +109,33 @@ public class VarSupport {
         for (Edge binder: graph.edgeSet()) {
             for (String boundVar: getBoundVars(binder)) {
                 result.put(boundVar, binder);
+            }
+        }
+        return result;
+    }
+    /**
+     * Returns the set of named wildcard edges occurring in a given graph.
+     */    
+    static public Set<Edge> getSimpleVarEdges(Graph graph) {
+        Set<Edge> result = new HashSet<Edge>();
+        for (Edge edge: graph.edgeSet()) {
+            if (RegExprLabel.getWildcardId(edge.label()) != null) {
+                result.add(edge);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns a map from variables in a graph to edges that have them 
+     * as a named wildcard.
+     */    
+    static public Map<String,Edge> getSimpleVarBinders(Graph graph) {
+        Map<String,Edge> result = new HashMap<String,Edge>();
+        for (Edge binder: graph.edgeSet()) {
+            String id = RegExprLabel.getWildcardId(binder.label());
+            if (id != null) {
+                result.put(id, binder);
             }
         }
         return result;
