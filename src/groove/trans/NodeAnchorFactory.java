@@ -51,7 +51,7 @@ public class NodeAnchorFactory implements AnchorFactory {
         Set<Element> anchors = new HashSet<Element>(rule.lhs().nodeSet());
         // set of edge ends that may be removed because the edges themselves are anchors
         Set<Node> removableEnds = new HashSet<Node>();
-        for (Edge lhsVarEdge: VarSupport.getVarEdges(rule.lhs())) {
+        for (Edge lhsVarEdge: VarSupport.getSimpleVarEdges(rule.lhs())) {
             anchors.add(lhsVarEdge);
             // if we have the edge in the anchors, its end nodes need not be there
             removableEnds.addAll(Arrays.asList(lhsVarEdge.ends()));

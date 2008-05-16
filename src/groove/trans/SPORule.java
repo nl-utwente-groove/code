@@ -874,30 +874,32 @@ public class SPORule extends PositiveCondition<RuleMatch> implements Rule {
 			} else {
 				result.put(nodeEntry.getKey(), mergeTarget);
 				// the merge target is also merged
-				// maybe we do this more than once, but that's negligable
+				// maybe we do this more than once, but that's negligible
 				result.put(mergeTarget, mergeTarget);
 			}
 		}
 		return result;
 	}
 
-	/**
-	 * Array of LHS edges that bind variables.
-	 */
-	final Edge[] getVarEdges() {
-		if (varEdges == null) {
-			varEdges = computeVarEdges();
-		}
-		return varEdges;
-	}
+    /**
+     * Array of LHS edges that bind variables.
+     * An edge is said to bind a variable if it carries a regular expression
+     * which, when it matches, must provide a value for at least one variable. 
+     */
+    final Edge[] getSimpleVarEdges() {
+        if (varEdges == null) {
+            varEdges = computeSimpleVarEdges();
+        }
+        return varEdges;
+    }
 
-	/**
-	 * Computes the set of variable-binding edges occurring in the lhs.
-	 */
-	private Edge[] computeVarEdges() {
-		return VarSupport.getVarEdges(lhs()).toArray(new Edge[0]);
-	}
-	
+    /**
+     * Computes the set of variable-binding edges occurring in the lhs.
+     */
+    private Edge[] computeSimpleVarEdges() {
+        return VarSupport.getSimpleVarEdges(lhs()).toArray(new Edge[0]);
+    }
+    
 	/**
 	 * Lazily creates and returns the anchor graph of this rule.
 	 * The anchor graph is the smallest subgraph of the LHS that is

@@ -42,8 +42,8 @@ public class EdgeAnchorFactory implements AnchorFactory {
         Set<Element> anchors = new LinkedHashSet<Element>();
         // remember which eraser nodes should be part of the anchor
         Set<Node> eraserNodes = new LinkedHashSet<Node>(Arrays.asList(rule.getEraserNodes()));
-        // the variable and eraser edges are most dinstinguishing; add them first
-        for (Edge varEdge: rule.getVarEdges()) {
+        // the variable and eraser edges are most distinguishing; add them first
+        for (Edge varEdge: rule.getSimpleVarEdges()) {
         	anchors.add(varEdge);
         	eraserNodes.removeAll(Arrays.asList(varEdge.ends()));
         }
