@@ -585,17 +585,18 @@ public class RuleJTree extends JTree implements SimulationListener {
 	                // selected tree node is a production rule (level 1 node)
 	                simulator.setRule(((RuleTreeNode) selectedNode).getRule().getNameLabel());
 	            } else if (selectedNode instanceof MatchTreeNode) {
-	                // selected tree node is a transition (level 2 node)
-	            	// FIXME: fix to select the selected transition...
+	                // selected tree node is a match (level 2 node)
 	            	RuleMatch match = ((MatchTreeNode) selectedNode).edge();
 	            	GraphTransition trans = matchTransitionMap.get(match);
-	            	if( trans != null ) {
-		            	simulator.setTransition(trans);	            		
-	            	} else {
-	            		simulator.getStatePanel().setCurrentMatch(match);
-	            		//simulator.setRule(((MatchTreeNode) selectedNode).edge().getRule().getName());
-	            		simulator.setMatch(match);
-	            	}
+	            	simulator.setMatchTransition(trans, match);
+	            	
+//	            	if( trans != null ) {
+//		            	simulator.setTransition(trans);	            		
+//	            	} else {
+//	            		simulator.getStatePanel().setCurrentMatch(match);
+//	            		//simulator.setRule(((MatchTreeNode) selectedNode).edge().getRule().getName());
+//	            		simulator.setMatch(match);
+//	            	}
 	            	
 	                if (simulator.getGraphPanel() == simulator.getRulePanel()) {
 	                	simulator.setGraphPanel(simulator.getStatePanel());
@@ -652,7 +653,7 @@ public class RuleJTree extends JTree implements SimulationListener {
     		}
         	if (selectedNode instanceof MatchTreeNode) {
         		RuleMatch match = ((MatchTreeNode) selectedNode).edge();
-        		simulator.setMatch(match);
+        		//simulator.setMatch(match);
         		GraphTransition trans = matchTransitionMap.get(match);
         		if (trans == null) {
         			Iterator<GraphTransition> outTransitions = getCurrentState().getTransitionIter();
@@ -666,9 +667,11 @@ public class RuleJTree extends JTree implements SimulationListener {
     				}
         		}
         		// if trans is not null, it has been added to the matchTransitionMap
-        		if (trans != null) {
-        			simulator.setTransition(trans);
-        		} 
+        		simulator.setMatchTransition(trans, match);
+
+//        		if (trans != null) {
+//        			simulator.setTransition(trans);
+//        		} 
         		if (evt.getClickCount() == 2) {
         			simulator.applyMatch();
 //        			ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
