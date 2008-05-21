@@ -1008,8 +1008,6 @@ public class Simulator {
 			Abstraction.Parameters options = new Abstraction.Parameters(symred, linkPrecision, properties.getRadius(), properties.getPrecision(), 10);
 			AGTS agts = new AGTS(getCurrentGrammar().toGrammar(), options);		
 			setCurrentGTS(agts);
-			// IOVKA to be uncommented when abstrExploreMenu items are enabled
-			//this.abstrExploreMenu.refreshOptions();
 			
 			// getGenerator().explore(getCurrentState());
 			fireStartSimulation(getCurrentGTS());
@@ -1543,8 +1541,6 @@ public class Simulator {
 	 */
 	private JMenu createExploreMenu() {
 		JMenu result = new JMenu();
-		//JMenu exploreMenu = new ExploreStrategyMenu(this, false);
-		// ADD: switch from explore to scenario menu
 		JMenu exploreMenu = new ScenarioMenu(this, false);
 		result.setText(exploreMenu.getText());
         result.add(new JMenuItem(getUndoAction()));
@@ -1570,6 +1566,11 @@ public class Simulator {
 	 */
 	private JMenu createVerifyMenu() {
 	    JMenu result = new VerifyMenu(this);
+	    result.addSeparator();
+	    JMenu mcScenarioMenu = new MCScenarioMenu(this, false);
+	    for (Component menuComponent : mcScenarioMenu.getMenuComponents()) {
+	    	result.add(menuComponent);
+	    }
 	    return result;
 	}
 

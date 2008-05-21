@@ -17,6 +17,7 @@
 package groove.gui.jgraph;
 
 import groove.graph.Element;
+import groove.gui.MCScenarioMenu;
 import groove.gui.Options;
 import groove.gui.ScenarioMenu;
 import groove.gui.SetLayoutMenu;
@@ -61,6 +62,7 @@ public class LTSJGraph extends JGraph {
     	super(ltsModel, true);
         this.simulator = simulator;
         getExploreMenu();
+        getMCMenu();
         addMouseListener(new MyMouseListener());
         getGraphLayoutCache().setSelectsAllInsertedCells(false);
         setLayoutMenu.selectLayoutAction(createInitialLayouter());
@@ -90,6 +92,7 @@ public class LTSJGraph extends JGraph {
         // State exploration sub-menu
         result.add(simulator.getApplyTransitionAction());
         result.add(getExploreMenu());
+        result.add(getMCMenu());
 
         // Goto sub-menu
         result.addSeparator();
@@ -144,16 +147,16 @@ public class LTSJGraph extends JGraph {
 			this.exploreMenu = new ScenarioMenu(simulator);
 		}
 		return this.exploreMenu;
-		/*
-		if (this.simulator.isAbstractSimulation() && this.abstrExploreMenu == null) {
-			this.abstrExploreMenu = new AbstrExploreStrategyMenu(simulator);
-		} else if (this.exploreMenu == null) {
-			this.exploreMenu = new ScenarioMenu(simulator);
+	}
+	
+	/**
+	 * Lazily creates and returns the model-checking menu.
+	 */
+	protected final JMenu getMCMenu() {
+		if (this.mcMenu == null) {
+			this.mcMenu = new MCScenarioMenu(simulator);
 		}
-		return this.simulator.isAbstractSimulation() ?
-				this.abstrExploreMenu :
-				this.exploreMenu;
-		*/
+		return this.mcMenu;
 	}
 	
 	/** Returns the simulator of this LTS jgraph. */
@@ -169,6 +172,10 @@ public class LTSJGraph extends JGraph {
      * The exploration menu for this jgraph.
      */
     private JMenu exploreMenu;
+    /**
+     * The model-checking menu for this jgraph.
+     */
+    private JMenu mcMenu;
     /**
      * Action to scroll the JGraph to the current state or derivation.
      */

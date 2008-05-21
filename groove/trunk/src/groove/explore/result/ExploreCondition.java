@@ -53,6 +53,10 @@ public abstract class ExploreCondition<C> {
 		this.condition = condition;
 	}
 	
+	/**
+	 * The type of the actual condition.
+	 * @return
+	 */
 	public Class<?> getConditionType() {
 		return condition.getClass();
 	}

@@ -63,6 +63,7 @@ import javax.swing.JMenuItem;
  * @version $Revision: 1.8 $
  */
 public class ScenarioMenu extends JMenu implements SimulationListener {
+	
     /**
      * Constructs an exploration menu on top of a given simulator.
      * The menu will disable as soon as all states are closed.
@@ -80,11 +81,29 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
      * the last state is closed
      */
     public ScenarioMenu(Simulator simulator, boolean disableOnFinish) {
-        super(Options.EXPLORE_MENU_NAME);
+    	this(simulator, disableOnFinish, Options.EXPLORE_MENU_NAME);
+    }
+    
+    /**
+     * Constructs the exploration menu.
+     * The menu will optionally disable as soon as all states are closed.
+     * @param simulator the associated simulator
+     * @param disableOnFinish <tt>true</tt> if the menu is to be disabled when
+     * the last state is closed
+     * @param menuName the name of the menu
+     */
+    protected ScenarioMenu(Simulator simulator, boolean disableOnFinish, String menuName) {
+        super(menuName);
         this.simulator = simulator;
         this.disableOnFinish = disableOnFinish;
         simulator.addSimulationListener(this);
-
+        
+        createAddMenuItems();
+    }
+    
+    /** Creates and adds the different menu items, corresponding to the different exploration scenarios. */
+    protected void createAddMenuItems () {
+ 
         ScenarioHandler handler;
 
         handler = ScenarioHandlerFactory.getScenario(
@@ -127,64 +146,11 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
         		new BreadthFirstStrategy(), new SizedResult<GraphState>(1), new InvariantViolatedAcceptor<Rule>(), 
         		"Explores all the new states reachable from the current state until the invariant is violated.", "Check invariant", true);
         addScenarioHandler(handler);
-
-        // the following explore-strategies are only provided
-        // if the LTL module is loaded
-        if (System.getProperty(GrooveModules.GROOVE_MODULE_LTL_VERIFICATION).equals(GrooveModules.GROOVE_MODULE_ENABLED)) {
-        	handler = ScenarioHandlerFactory.getModelCheckingScenario(
-        			new NestedDFSStrategy(),
-        			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(), 
-        			"", "Nested Depth-First Search", simulator);
-        	addScenarioHandler(handler);
-
-//        	handler = ScenarioHandlerFactory.getModelCheckingScenario(
-//        			new BreadthFirstModelCheckingStrategy(),
-//        			new SizedResult<GraphState>(1),
-//        			new CycleAcceptor<GraphState>(), 
-//        			"", "Breadth-First Search", simulator);
-//        	addScenarioHandler(handler);
-
-        	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
-        			new BoundedNestedDFSStrategy(),
-        			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(),
-//        			new GraphNodeSizeBoundary(10,5),
-        			"", "Bounded Nested Depth-First Search (naive)", simulator);
-        	addScenarioHandler(handler);
-
-        	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
-        			new BoundedNestedDFSPocketStrategy(),
-        			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(),
-//        			new GraphNodeSizeBoundary(10,5),
-        			"", "Bounded Nested Depth-First Search (naive)", simulator);
-        	addScenarioHandler(handler);
-
-        	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
-        			new OptimizedBoundedNestedDFSStrategy(),
-        			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(),
-        			"", "Bounded Nested Depth-First Search (optimized)", simulator);
-        	addScenarioHandler(handler);
-
-        	handler = ScenarioHandlerFactory.getBoundedModelCheckingScenario(
-        			new OptimizedBoundedNestedDFSPocketStrategy(),
-        			new SizedResult<GraphState>(1),
-        			new CycleAcceptor<GraphState>(),
-        			"", "Bounded Nested Depth-First Search (optimized + pocket)", simulator);
-        	addScenarioHandler(handler);
-        }
-
-//        handler = ScenarioHandlerFactory.getConditionalScenario(
-//        		new RuleBoundedStrategy(), "Only explore states in which a rule is applicable", "Bounded", false);
-//        addScenarioHandler(handler);
-//        
-//        handler = ScenarioHandlerFactory.getConditionalScenario(
-//        		new RuleBoundedStrategy(), "Only explore states in which a rule is applicable", "Bounded", true);
-//        addScenarioHandler(handler);
-          
+        
+        // IOVKA items related to model-checking are in the MCMMenu class
+        
     }
+    
 
     /**
      * Adds an explication strategy action to the end of this menu.
@@ -282,11 +248,11 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 	/**
      * The simulator with which this menu is associated.
      */
-    private final Simulator simulator;
+    protected final Simulator simulator;
     /**
      * Indicates if the menu should be disable after tha last LTS state has closed.
      */
-    private final boolean disableOnFinish;
+    protected final boolean disableOnFinish;
     /** Mapping from exploratin strategies to {@link Action}s resulting in that strategy. */
     private final Map<ScenarioHandler,Action> scenarioActionMap = new HashMap<ScenarioHandler,Action>();
     /** The (permanent) GTS listener associated with this menu. */
