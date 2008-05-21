@@ -230,7 +230,7 @@ public class LTSJGraph extends JGraph {
 				DefaultGraphCell cell = (DefaultGraphCell) getFirstCellForLocation(loc.x, loc.y);
 				if (cell instanceof GraphJEdge) {
 					GraphTransition edge = (GraphTransition) ((GraphJEdge) cell).getEdge();
-					getSimulator().setTransition(edge);
+					getSimulator().setMatchTransition(edge, null);
 				} else if (cell instanceof GraphJVertex) {
 					GraphState node = (GraphState) ((GraphJVertex) cell).getNode();
 					if (!getSimulator().getCurrentState().equals(node)) {

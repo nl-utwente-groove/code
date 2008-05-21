@@ -187,7 +187,7 @@ class UndoHistory implements SimulationListener {
             simulator.setState(action.getState());
         } else {
             assert action instanceof SetTransitionAction;
-            simulator.setTransition(action.getTransition());
+            simulator.setMatchTransition(action.getTransition(), null);
         }
     }
     

@@ -1060,33 +1060,38 @@ public class Simulator {
         refreshActions();
     }
 
-    /**
-     * Sets the current match and notify all observers of the RULE change
+    /** Activates a given derivation, given directly or via its
+     * corresponding match. Adds the previous state or derivation to the history. Invokes
+     * <tt>notifySetTransition(edge)</tt> to notify all observers of the change.
+     * @param transition the derivation to be activated. May be null if <code>match</code>
+     * does not correspond to any transition in the LTS
+     * @param match the corresponding match. If null, then <code>transition.getMatch()</code>
+     * is considered.
+     * @see #fireSetTransition(GraphTransition)
      */
-    public synchronized void setMatch(RuleMatch match) {
-    	setCurrentTransition(null);
-    	setCurrentRule(getCurrentGrammar().getRule(match.getRule().getName()));
-    	setCurrentMatch(match);
-    	fireSetRule(match.getRule().getName());
+    public synchronized void setMatchTransition(GraphTransition transition, RuleMatch match) {
+    	assert transition == null || match == null || transition.getMatch().equals(match) : "The match and the transition are not compatible.";
+    
+       	if (transition != null) {
+       		if (setCurrentTransition(transition)) {
+       			RuleNameLabel ruleName = transition.getEvent().getRule().getName();
+       			setCurrentRule(getCurrentGrammar().getRule(ruleName));
+       			setCurrentMatch(transition.getMatch());
+       			fireSetTransition(getCurrentTransition());
+       		} else {
+       			fireSetTransition(getCurrentTransition());
+       		}
+       	}
+       	else {
+       		assert match != null : "The match and the transition cannot be both null.";
+       		RuleNameLabel ruleName = match.getRule().getName();
+       		setCurrentRule(getCurrentGrammar().getRule(ruleName));
+       		setCurrentMatch(match);
+       	}
+       	// fireSetTransition(getCurrentTransition());
     	refreshActions();
     }
     
-    /**
-     * Activates a given derivation. Adds the previous state or derivation to the history. Invokes
-     * <tt>notifySetTransition(edge)</tt> to notify all observers of the change.
-     * @param transition the derivation to be activated.
-     * @see #fireSetTransition(GraphTransition)
-     */
-    public synchronized void setTransition(GraphTransition transition) {
-        if (setCurrentTransition(transition)) {
-        	RuleNameLabel ruleName = transition.getEvent().getRule().getName();
-            setCurrentRule(getCurrentGrammar().getRule(ruleName));
-            setCurrentMatch(transition.getMatch());
-        }
-        fireSetTransition(getCurrentTransition());
-        refreshActions();
-    }
-
 //    /**
 //     * Applies the active derivation. The current state is set to the derivation's cod, and the
 //     * current derivation to null. Invokes <tt>notifyApplyTransition()</tt> to notify all
@@ -1741,6 +1746,7 @@ public class Simulator {
 	 * 
 	 * @see SimulationListener#setTransitionUpdate(GraphTransition)
 	 * @see #setTransition(GraphTransition)
+	 * TODO above "see" should be updated to setMatchAndTransition
 	 */
     protected synchronized void fireSetTransition(GraphTransition transition) {
     	if (!updating) {
