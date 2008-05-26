@@ -16,6 +16,8 @@
  */
 package groove.algebra;
 
+import java.util.List;
+
 import groove.util.Groove;
 
 /**
@@ -42,14 +44,7 @@ public class AbstractIntegerAlgebra extends Algebra {
     /**
      * Singleton instance.
      */
-    private static final AbstractIntegerAlgebra instance;
-
-    static {
-    	instance = new AbstractIntegerAlgebra();
-    	instance.addOperation(Zero.getInstance());
-    	instance.addOperation(Pos.getInstance());
-    	instance.addOperation(Neg.getInstance());
-    }
+    private static final AbstractIntegerAlgebra instance = new AbstractIntegerAlgebra();
 
     /**
 	 * Constructs the (singleton) instance of this class.
@@ -78,7 +73,29 @@ public class AbstractIntegerAlgebra extends Algebra {
 	    return instance;
 	}
 
-	/**
+    /**
+     * Integer addition operation symbol.
+     */
+    public static final String ADD_SYMBOL = "add";
+
+    /**
+     * Integer addition operation.
+     */
+    private static final Operation ADD_OPERATION = new IntInt2IntOperation(ADD_SYMBOL) {
+        @Override
+        int apply(int arg1, int arg2) {
+            return arg1+arg2;
+        }
+    };
+
+    static {
+		instance.addOperation(ADD_OPERATION);
+    	instance.addOperation(Zero.getInstance());
+    	instance.addOperation(Pos.getInstance());
+    	instance.addOperation(Neg.getInstance());
+    }
+
+    /**
 	 * Integer constant.
 	 */
 	public static class AbstractIntegerConstant extends DefaultConstant {
@@ -175,4 +192,29 @@ public class AbstractIntegerAlgebra extends Algebra {
 		/** The singleton instance. */
 		static private final Constant instance = new Neg();
 	}
+
+    /** Binary integer operation of signature <code>int, int -> int</code>. */
+    private static abstract class IntInt2IntOperation extends DefaultOperation {
+        /** Constructs an operation in the current algebra, with arity 2 and a given symbol. */
+        protected IntInt2IntOperation(String symbol) {
+            super(getInstance(), symbol, 2);
+        }
+
+        /** 
+         * Performs a binary operation of type <code>int, int -> int</code>. 
+         * @throws IllegalArgumentException if the number or types of operands are incorrect.
+         */
+        public Object apply(List<Object> args) {
+            try {
+                Integer arg0 = (Integer) args.get(0);
+                Integer arg1 = (Integer) args.get(1);
+                return apply(arg0, arg1);
+            } catch (ClassCastException exc) {
+                throw new IllegalArgumentException(exc);
+            }
+        }
+        
+        /** Applies the function encapsulated in this interface. */
+        abstract int apply(int arg1, int arg2);
+    }
 }
