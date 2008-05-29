@@ -225,15 +225,7 @@ public class Bisimulator implements CertificateStrategy {
         // therefore, the computeNewValue()-method of class
         // CertificateNode must be overridden
         if (node instanceof ValueNode) {
-            nodeCert = new NodeCertificate(node) {
-            	@Override
-                protected int computeNewValue() {
-                    // only take the last 8 bits of the operation-hashcode
-                    int operationHashCode = ((ValueNode) node).getValue().hashCode() & 127;
-                    return super.computeNewValue() + operationHashCode;
-                }
-            };
-            nodeCert.setNewValue();
+            nodeCert = new ValueNodeCertificate((ValueNode) node);
         } else {
             nodeCert = new NodeCertificate(node);
         }
@@ -591,6 +583,48 @@ public class Bisimulator implements CertificateStrategy {
         
         /** The value for the next invocation of {@link #computeNewValue()} */
         int nextValue;
+    }
+    
+    /** 
+     * Certificate for value nodes.
+     * This takes the actual node identity into account.
+     * @author Arend Rensink
+     * @version $Revision $
+     */
+    static private class ValueNodeCertificate extends NodeCertificate {
+        /**
+         * Constructs a new certificate node.
+         * The incidence count (i.e., the number of incident edges) is passed in as a parameter.
+         * The initial value is set to the incidence count.
+         */
+        public ValueNodeCertificate(ValueNode node) {
+            super(node);
+            this.node = node;
+            this.value = node.getNumber();
+        }
+
+        
+        /**
+         * Returns <tt>true</tt> if <tt>obj</tt> is also a {@link ValueNodeCertificate}
+         * and has the same node as this one.
+         */
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof ValueNodeCertificate && node.equals(((ValueNodeCertificate) obj).node);
+        }
+
+        /**
+         * The new value for this certificate node
+         * is the sum of the values of the incident certificate edges.
+         */
+        @Override
+        protected int computeNewValue() {
+            int result = nextValue ^ value;
+            nextValue = 0;
+            return result;
+        }
+
+        private final ValueNode node;
     }
     
     /**
