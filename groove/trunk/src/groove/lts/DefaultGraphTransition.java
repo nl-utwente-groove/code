@@ -18,6 +18,7 @@ package groove.lts;
 
 import groove.graph.AbstractBinaryEdge;
 import groove.graph.AbstractGraph;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.Label;
 import groove.graph.Morphism;
@@ -203,6 +204,28 @@ public class DefaultGraphTransition extends AbstractBinaryEdge<GraphState,Label,
 	@Override
     protected int computeHashCode() {
         return System.identityHashCode(source) + System.identityHashCode(event);
+    }
+
+    @Override
+    public int compareTo(Element obj) {
+        if (obj instanceof GraphTransition) {
+            GraphTransition other = (GraphTransition) obj;
+            int result = source().compareTo(other.source());
+            if (result == 0) {
+                result = getEvent().compareTo(other.getEvent());
+                if (result == 0) {
+                    result = target().compareTo(other.target());
+                }
+            }
+            return result;
+        } else {
+            assert obj instanceof GraphState : String.format("Can't compare graph transition %s to element %s", this, obj);
+            int result = source().compareTo(obj);
+            if (result == 0) {
+                result = +1;
+            }
+            return result;
+        }
     }
 
     /**

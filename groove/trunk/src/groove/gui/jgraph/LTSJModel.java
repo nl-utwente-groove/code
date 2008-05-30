@@ -118,7 +118,7 @@ public class LTSJModel extends GraphJModel {
 			}
 		}
         State previousState = activeState;
-		if (state != previousState) {
+//		if (state != previousState) {
 			activeState = state;
 			if (state != null) {
 				changedCells.add(getJCell(state));
@@ -126,7 +126,7 @@ public class LTSJModel extends GraphJModel {
 			if (previousState != null) {
 				changedCells.add(getJCell(previousState));
 			}
-		}
+//		}
 		if (!changedCells.isEmpty()) {
 			refresh(changedCells);
 		}

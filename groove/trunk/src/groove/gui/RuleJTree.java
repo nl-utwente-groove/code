@@ -196,7 +196,15 @@ public class RuleJTree extends JTree implements SimulationListener {
      * Does <i>not</i> trigger actions based on the selection change.
      */
     public synchronized void setTransitionUpdate(GraphTransition transition) {
-    	refresh();
+        refresh();
+    }
+
+    /**
+     * Sets the tree selection to a given derivation.
+     * Does <i>not</i> trigger actions based on the selection change.
+     */
+    public void setMatchUpdate(RuleMatch match) {
+        refresh();
     }
 
     /**
@@ -588,15 +596,11 @@ public class RuleJTree extends JTree implements SimulationListener {
 	                // selected tree node is a match (level 2 node)
 	            	RuleMatch match = ((MatchTreeNode) selectedNode).edge();
 	            	GraphTransition trans = matchTransitionMap.get(match);
-	            	simulator.setMatchTransition(trans, match);
-	            	
-//	            	if( trans != null ) {
-//		            	simulator.setTransition(trans);	            		
-//	            	} else {
-//	            		simulator.getStatePanel().setCurrentMatch(match);
-//	            		//simulator.setRule(((MatchTreeNode) selectedNode).edge().getRule().getName());
-//	            		simulator.setMatch(match);
-//	            	}
+	            	if( trans != null ) {
+		            	simulator.setTransition(trans);	            		
+	            	} else {
+	            		simulator.setMatch(match);
+	            	}
 	            	
 	                if (simulator.getGraphPanel() == simulator.getRulePanel()) {
 	                	simulator.setGraphPanel(simulator.getStatePanel());
@@ -665,13 +669,11 @@ public class RuleJTree extends JTree implements SimulationListener {
     						break;
     					}
     				}
+                    simulator.setMatch(match);
+        		} else {
+                    // if trans is not null, it has been added to the matchTransitionMap
+                    simulator.setTransition(trans);
         		}
-        		// if trans is not null, it has been added to the matchTransitionMap
-        		simulator.setMatchTransition(trans, match);
-
-//        		if (trans != null) {
-//        			simulator.setTransition(trans);
-//        		} 
         		if (evt.getClickCount() == 2) {
         			simulator.applyMatch();
 //        			ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
@@ -846,9 +848,7 @@ public class RuleJTree extends JTree implements SimulationListener {
 	     */
 	    @Override
 	    public String toString() {
-//	        return simulator.getOptions().isSelected(Options.SHOW_ANCHORS_OPTION) ? edge().getEvent().getAnchorImageString() : "Match " + nr;
-	    	// FIXME: unable to show anchors now
-	    	return simulator.getOptions().isSelected(Options.SHOW_ANCHORS_OPTION) ? edge().toString() : "Match " + nr;
+	    	return simulator.getOptions().isSelected(Options.SHOW_ANCHORS_OPTION) ? simulator.getCurrentGTS().getRecord().getEvent(edge()).getAnchorImageString(): "Match " + nr;
 	    }
 	
 	    /** The number of this match, used in <tt>toString()</tt> */

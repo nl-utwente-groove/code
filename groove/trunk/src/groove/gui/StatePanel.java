@@ -181,34 +181,56 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
             }
             // now emphasise at will
             RuleMatch match = selectedTransition.getMatch();
-            setCurrentMatch(match);
+            setMatchUpdate(match);
         }
     }
 
-    
     /**
-     * Emphasize the given match
+     * Emphasise the given match.
      */
-    public synchronized void setCurrentMatch(RuleMatch match) {
-    	assert match != null: "Transition "+selectedTransition+" should have valid matching";
-    	Set<Element> emphElems = new HashSet<Element>();
-    	for (Node matchedNode: match.getNodeValues()) {
+    public void setMatchUpdate(RuleMatch match) {
+        assert match != null: "Transition "+selectedTransition+" should have valid matching";
+        Set<Element> emphElems = new HashSet<Element>();
+        for (Node matchedNode: match.getNodeValues()) {
             emphElems.add(matchedNode);
         }
         for (Edge matchedEdge: match.getEdgeValues()) {
             emphElems.add(matchedEdge);
         }
 //        if (!emphElems.isEmpty()) {
-//        	Rectangle scope = Groove.toRectangle(getJGraph().getElementBounds(emphElems));
-//        	if (scope != null) {
-//        		jGraph.scrollRectToVisible(scope);
-//        	}
+//          Rectangle scope = Groove.toRectangle(getJGraph().getElementBounds(emphElems));
+//          if (scope != null) {
+//              jGraph.scrollRectToVisible(scope);
+//          }
 //        }
         refreshStatus();
         GraphJModel currentModel = getJModel();
         currentModel.setEmphasized(currentModel.getJCellSet(emphElems));
     }
-    
+//
+//    /**
+//     * Emphasize the given match
+//     */
+//    public synchronized void setCurrentMatch(RuleMatch match) {
+//    	assert match != null: "Transition "+selectedTransition+" should have valid matching";
+//    	Set<Element> emphElems = new HashSet<Element>();
+//    	for (Node matchedNode: match.getNodeValues()) {
+//            emphElems.add(matchedNode);
+//        }
+//        for (Edge matchedEdge: match.getEdgeValues()) {
+//            emphElems.add(matchedEdge);
+//        }
+////        if (!emphElems.isEmpty()) {
+////        	Rectangle scope = Groove.toRectangle(getJGraph().getElementBounds(emphElems));
+////        	if (scope != null) {
+////        		jGraph.scrollRectToVisible(scope);
+////        	}
+////        }
+//        refreshStatus();
+//        GraphJModel currentModel = getJModel();
+//        currentModel.setEmphasized(currentModel.getJCellSet(emphElems));
+//    }
+//    
     /**
      * Sets the state to the transition target. Copies and freezes the bounds from the
      * current state and starts layout to find positions for newly created nodes.

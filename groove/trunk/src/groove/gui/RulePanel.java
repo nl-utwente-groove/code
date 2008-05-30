@@ -30,6 +30,7 @@ import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
+import groove.trans.RuleMatch;
 import groove.trans.RuleNameLabel;
 import groove.trans.SPORule;
 import groove.util.Converter;
@@ -134,6 +135,14 @@ public class RulePanel extends JGraphPanel<AspectJGraph> implements SimulationLi
      */
     public synchronized void setTransitionUpdate(GraphTransition transition) {
         setRuleUpdate(transition.getEvent().getRule().getName());
+    }
+
+    /**
+     * Has the effect of {@link #setRuleUpdate(NameLabel)} for the new match's rule.
+     * @see #setRuleUpdate(NameLabel)
+     */
+    public synchronized void setMatchUpdate(RuleMatch match) {
+        setRuleUpdate(match.getRule().getName());
     }
 
     /**

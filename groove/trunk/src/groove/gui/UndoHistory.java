@@ -22,6 +22,7 @@ import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.Transition;
 import groove.trans.NameLabel;
+import groove.trans.RuleMatch;
 import groove.util.Groove;
 import groove.util.History;
 import groove.view.DefaultGrammarView;
@@ -116,6 +117,11 @@ class UndoHistory implements SimulationListener {
         setActionEnablings();
     }
 
+    /** Match updates have no effect on the history. */
+    public void setMatchUpdate(RuleMatch match) {
+        // explicitly empty
+    }
+
     /** Rule updates have no effect on the history. */
     public void setRuleUpdate(NameLabel name) { 
         // explicitly empty
@@ -187,7 +193,7 @@ class UndoHistory implements SimulationListener {
             simulator.setState(action.getState());
         } else {
             assert action instanceof SetTransitionAction;
-            simulator.setMatchTransition(action.getTransition(), null);
+            simulator.setTransition(action.getTransition());
         }
     }
     

@@ -372,13 +372,13 @@ public class AspectualRuleView extends AspectualView<Rule> implements RuleView {
         		nodeLevelMap.put(node, level);
         		Node nodeImage = computeNodeImage(node, graph);
         		// if the node is a valuenode, check if it has an id
-        		if( nodeImage instanceof ValueNode ) {
+//        		if( nodeImage instanceof ValueNode ) {
         			Integer id = ParameterAspect.getID(node);
         			if( id != null ) {
         				// store the node w.r.t the ID
         				parameterMap.put(id, nodeImage);
         			}	
-        		}
+//        		}
         		viewToRuleMap.putNode(node, nodeImage );
         	}
         }

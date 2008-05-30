@@ -46,6 +46,7 @@ import groove.lts.LTSAdapter;
 import groove.lts.State;
 import groove.trans.NameLabel;
 import groove.trans.Rule;
+import groove.trans.RuleMatch;
 import groove.util.GrooveModules;
 import groove.view.DefaultGrammarView;
 
@@ -232,6 +233,10 @@ public class ScenarioMenu extends JMenu implements SimulationListener {
 
     public void setTransitionUpdate(GraphTransition transition) {
         setStateUpdate(transition.source());
+    }
+
+    public void setMatchUpdate(RuleMatch match) {
+        // nothing happens
     }
 
     public void applyTransitionUpdate(GraphTransition transition) {

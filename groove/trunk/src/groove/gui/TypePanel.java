@@ -25,6 +25,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
+import groove.trans.RuleMatch;
 import groove.type.TypeReconstructor;
 import groove.util.Groove;
 import groove.view.DefaultGrammarView;
@@ -52,11 +53,26 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
 	}
 	
 	/** Does nothing (according to contract, the grammar has already been set). */
-    public synchronized void startSimulationUpdate(GTS gts) {}
-    public synchronized void setStateUpdate(GraphState state) {}
-    public synchronized void setTransitionUpdate(GraphTransition trans) {}
-    public synchronized void applyTransitionUpdate(GraphTransition transition) {}
-    public synchronized void setRuleUpdate(NameLabel rule) {}
+    public synchronized void startSimulationUpdate(GTS gts) {
+        // nothing happens
+    }
+    public synchronized void setStateUpdate(GraphState state) {
+        // nothing happens
+    }
+    public synchronized void setTransitionUpdate(GraphTransition trans) {
+        // nothing happens
+    }
+    
+    public void setMatchUpdate(RuleMatch match) {
+        // nothing happens
+    }
+
+    public synchronized void applyTransitionUpdate(GraphTransition transition) {
+        // nothing happens
+    }
+    public synchronized void setRuleUpdate(NameLabel rule) {
+        // nothing happens
+    }
     
     public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
     	if (grammar == null || grammar.getStartGraph() == null) {
@@ -71,7 +87,9 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
         		
         		jGraph.setModel(GraphJModel.newInstance(typeGraph, getOptions()));
         	}
-        	catch (FormatException fe) {}
+        	catch (FormatException fe) {
+                System.err.printf("Graph format error: %s", fe.getMessage());
+        	}
         	catch (IOException ioe) {
         		System.err.println("Error storing the type graph.");
         	}
