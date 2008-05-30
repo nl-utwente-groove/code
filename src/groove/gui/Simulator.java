@@ -98,7 +98,6 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -109,8 +108,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.Stack;
 import java.util.prefs.BackingStoreException;
-import java.util.prefs.PreferenceChangeEvent;
-import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 
 import javax.swing.AbstractAction;
@@ -326,6 +323,7 @@ public class Simulator {
     	currentTransition = transition;
     	if (transition != null) {
     		currentState = transition.source();
+            setCurrentMatch(transition.getMatch());
     	}
 		return result;
     }
@@ -1065,45 +1063,41 @@ public class Simulator {
      * <tt>notifySetTransition(edge)</tt> to notify all observers of the change.
      * @param transition the derivation to be activated. May be null if <code>match</code>
      * does not correspond to any transition in the LTS
-     * @param match the corresponding match. If null, then <code>transition.getMatch()</code>
-     * is considered.
      * @see #fireSetTransition(GraphTransition)
      */
-    public synchronized void setMatchTransition(GraphTransition transition, RuleMatch match) {
-    	assert transition == null || match == null || transition.getMatch().equals(match) : "The match and the transition are not compatible.";
-    
-       	if (transition != null) {
-       		if (setCurrentTransition(transition)) {
-       			RuleNameLabel ruleName = transition.getEvent().getRule().getName();
-       			setCurrentRule(getCurrentGrammar().getRule(ruleName));
-       			setCurrentMatch(transition.getMatch());
-       			fireSetTransition(getCurrentTransition());
-       		} else {
-       			fireSetTransition(getCurrentTransition());
-       		}
-       	}
-       	else {
-       		assert match != null : "The match and the transition cannot be both null.";
-       		RuleNameLabel ruleName = match.getRule().getName();
-       		setCurrentRule(getCurrentGrammar().getRule(ruleName));
-       		setCurrentMatch(match);
-       	}
-       	// fireSetTransition(getCurrentTransition());
-    	refreshActions();
+    public synchronized void setTransition(GraphTransition transition) {
+        if (transition != null) {
+            if (setCurrentTransition(transition)) {
+                RuleNameLabel ruleName = transition.getEvent().getRule().getName();
+                setCurrentRule(getCurrentGrammar().getRule(ruleName));
+                setCurrentMatch(transition.getMatch());
+            }
+            fireSetTransition(getCurrentTransition());
+//        } else {
+//            assert match != null : "The match and the transition cannot be both null.";
+//            RuleNameLabel ruleName = match.getRule().getName();
+//            setCurrentRule(getCurrentGrammar().getRule(ruleName));
+//            setCurrentMatch(match);
+        }
+        // fireSetTransition(getCurrentTransition());
+        refreshActions();
     }
     
-//    /**
-//     * Applies the active derivation. The current state is set to the derivation's cod, and the
-//     * current derivation to null. Invokes <tt>notifyApplyTransition()</tt> to notify all
-//     * observers of the change.
-//     * @see #fireApplyTransition(GraphTransition)
-//     */
-//    public synchronized void applyTransition() {
-//        GraphTransition appliedTransition = getCurrentTransition();
-//        setCurrentState(appliedTransition.target());
-//        fireApplyTransition(appliedTransition);
-//        refreshActions();
-//    }
+    /** 
+     * Activates a given match. Invokes
+     * {@link #fireSetMatch(RuleMatch)} to notify all observers of the change.
+     * @param match the match to be activated.
+     * @see #fireSetTransition(GraphTransition)
+     */
+    public synchronized void setMatch(RuleMatch match) {
+        assert match != null : "The match and the transition cannot be both null.";
+        RuleNameLabel ruleName = match.getRule().getName();
+        setCurrentRule(getCurrentGrammar().getRule(ruleName));
+        setCurrentMatch(match);
+        fireSetMatch(match);
+        // fireSetTransition(getCurrentTransition());
+        refreshActions();
+    }
     
     /** Applies a match to the current state.
      * The current state is set to the derivation's cod, and the
@@ -1739,23 +1733,43 @@ public class Simulator {
     }
 
     /**
-	 * Notifies all listeners of a new detivation. As a result,
-	 * {@link SimulationListener#setTransitionUpdate(GraphTransition)}is
-	 * invoked on all currently registered listeners. This method should not be
-	 * called directly: use {@link #setTransition(GraphTransition)}instead.
-	 * 
-	 * @see SimulationListener#setTransitionUpdate(GraphTransition)
-	 * @see #setTransition(GraphTransition)
-	 * TODO above "see" should be updated to setMatchAndTransition
-	 */
+     * Notifies all listeners of a newly selected match. As a result,
+     * {@link SimulationListener#setMatchUpdate(RuleMatch)}is
+     * invoked on all currently registered listeners. This method should not be
+     * called directly: use {@link #setMatch(GraphTransition, RuleMatch)} instead.
+     * 
+     * @see SimulationListener#setTransitionUpdate(GraphTransition)
+     * @see #setMatch(GraphTransition, RuleMatch)
+     * TODO above "see" should be updated to setMatchAndTransition
+     */
+    protected synchronized void fireSetMatch(RuleMatch match) {
+        if (!updating) {
+            updating = true;
+            for (SimulationListener listener : listeners) {
+                listener.setMatchUpdate(match);
+            }
+            updating = false;
+        }
+    }
+
+    /**
+     * Notifies all listeners of a new derivation. As a result,
+     * {@link SimulationListener#setTransitionUpdate(GraphTransition)}is
+     * invoked on all currently registered listeners. This method should not be
+     * called directly: use {@link #setTransition(GraphTransition)} instead.
+     * 
+     * @see SimulationListener#setTransitionUpdate(GraphTransition)
+     * @see #setTransition(GraphTransition)
+     * TODO above "see" should be updated to setMatchAndTransition
+     */
     protected synchronized void fireSetTransition(GraphTransition transition) {
-    	if (!updating) {
-			updating = true;
-			for (SimulationListener listener : listeners) {
-				listener.setTransitionUpdate(transition);
-			}
-			updating = false;
-    	}
+        if (!updating) {
+            updating = true;
+            for (SimulationListener listener : listeners) {
+                listener.setTransitionUpdate(transition);
+            }
+            updating = false;
+        }
     }
 
     /**

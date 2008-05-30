@@ -20,6 +20,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
+import groove.trans.RuleMatch;
 import groove.view.DefaultGrammarView;
 
 /**
@@ -75,6 +76,13 @@ public interface SimulationListener {
      * @param transition the new selected transition; non-<code>null</code>
      */
     void setTransitionUpdate(GraphTransition transition);
+
+    /**
+     * Reports the change of the currently selected match.
+     * The new match is located at the current state
+     * @param match the new selected match; non-<code>null</code>
+     */
+    void setMatchUpdate(RuleMatch match);
 
     /**
      * Reports the application of a given transition.

@@ -31,13 +31,13 @@ public class ParameterAspect extends AbstractAspect {
 	public void checkNode(AspectNode node, AspectGraph graph) throws FormatException {
 		// TODO: check here if there is a declared value on the node 
 	 	// that makes the node an attributenode (?)
-
-		NamedAspectValue value = (NamedAspectValue) node.getValue(this);
-		
-		AspectValue attribute = node.getValue(AttributeAspect.getInstance());
-		if( attribute == null ) {
-			throw new FormatException("Parameter " + value.getContent() + ": Parameters are limited to attribute values");
-		}
+//
+//		NamedAspectValue value = (NamedAspectValue) node.getValue(this);
+//		
+//		AspectValue attribute = node.getValue(AttributeAspect.getInstance());
+//		if( attribute == null ) {
+//			throw new FormatException("Parameter " + value.getContent() + ": Parameters are limited to attribute values");
+//		}
 	}
 
 	@Override

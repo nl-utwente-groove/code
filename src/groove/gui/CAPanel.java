@@ -27,6 +27,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
+import groove.trans.RuleMatch;
 import groove.view.DefaultGrammarView;
 
 import java.awt.BorderLayout;
@@ -183,10 +184,16 @@ public class CAPanel extends JPanel  implements SimulationListener {
 		}
 	}
 
-	public void setTransitionUpdate(GraphTransition transition) {
+	public void setMatchUpdate(RuleMatch match) {
+        // nothing happens
+    }
+
+    public void setTransitionUpdate(GraphTransition transition) {
+	    // nothing happens
 	}
 
 	public void startSimulationUpdate(GTS gts) {
+        // nothing happens
 	}
 
 

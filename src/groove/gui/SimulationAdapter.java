@@ -20,6 +20,7 @@ import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.trans.NameLabel;
+import groove.trans.RuleMatch;
 import groove.view.DefaultGrammarView;
 
 /**
@@ -53,7 +54,12 @@ public class SimulationAdapter implements SimulationListener {
     	// does nothing by design
     }
 
-	/** Provides a default empty implementation. */
+    /** Provides a default empty implementation. */
+	public void setMatchUpdate(RuleMatch match) {
+        // does nothing by design
+    }
+
+    /** Provides a default empty implementation. */
     public void applyTransitionUpdate(GraphTransition transition) {
     	// does nothing by design
     }

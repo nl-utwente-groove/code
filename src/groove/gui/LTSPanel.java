@@ -32,6 +32,7 @@ import groove.lts.LTS;
 import groove.lts.LTSAdapter;
 import groove.lts.State;
 import groove.trans.NameLabel;
+import groove.trans.RuleMatch;
 import groove.view.DefaultGrammarView;
 
 import java.awt.event.MouseAdapter;
@@ -134,6 +135,13 @@ public class LTSPanel extends JGraphPanel<LTSJGraph> implements SimulationListen
     	} else {
     		getJGraph().scrollTo(getJModel().getActiveTransition());
     	}
+    }
+
+    /**
+     * The LTS does not change is a match (rather than a transition) is selected.
+     */
+    public void setMatchUpdate(RuleMatch match) {
+        // the LTS does not change is a match (rather than a transition) is selected
     }
 
     /**
