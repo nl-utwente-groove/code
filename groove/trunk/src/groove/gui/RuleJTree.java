@@ -639,11 +639,11 @@ public class RuleJTree extends JTree implements SimulationListener {
         	if (evt.getButton() != MouseEvent.BUTTON1) {
         		return;
         	}
-        	if (evt.getClickCount() == 2) {
-        		System.out.println();
-        	}
-        		
-        	
+//        	if (evt.getClickCount() == 2) {
+//        		System.out.println();
+//        	}
+//        		
+//        	
         	TreePath path = getSelectionPath();
         	if (path == null) { return; }
         	Object selectedNode = path.getLastPathComponent();
