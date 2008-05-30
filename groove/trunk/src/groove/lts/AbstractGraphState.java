@@ -341,7 +341,7 @@ abstract public class AbstractGraphState extends AbstractCacheHolder<StateCache>
      * @throws IllegalStateException if {@link #hasStateNumber()} returns <code>false</code>
      * at the time of calling
      */
-    protected int getStateNumber() {
+    public int getStateNumber() {
     	if (!hasStateNumber()) {
         	throw new IllegalStateException("State number not set"); 
         }
