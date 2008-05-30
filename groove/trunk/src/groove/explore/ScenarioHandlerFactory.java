@@ -84,8 +84,8 @@ public class ScenarioHandlerFactory {
 	            System.runFinalization();
 	            System.gc();
 	            long usedMemory = runtime.totalMemory() - runtime.freeMemory();
-	            
-	            System.err.println("Memory in use: " + (usedMemory / 1024) + " kB");
+//	            
+//	            System.err.println("Memory in use: " + (usedMemory / 1024) + " kB");
 			}
 
 			@Override
