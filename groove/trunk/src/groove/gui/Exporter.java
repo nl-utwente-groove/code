@@ -19,6 +19,7 @@ package groove.gui;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GraphInfo;
+import groove.graph.GraphShape;
 import groove.graph.Node;
 import groove.gui.jgraph.JGraph;
 import groove.gui.layout.JVertexLayout;
@@ -95,6 +96,14 @@ public class Exporter {
         return Collections.unmodifiableList(getFormatList());
     }
 
+    /** 
+     * Returns an unmodifiable view on the list of currently supported structural formats. 
+     * A structural format is one that does not save layout.
+     */
+    public List<StructuralFormat> getStructuralFormats() {
+        return Collections.unmodifiableList(getStructuralFormatList());
+    }
+
     /** Returns the list of file extensions of the supported formats. */
     public List<String> getExtensions() {
         List<String> result = new ArrayList<String>();
@@ -108,27 +117,43 @@ public class Exporter {
     public Format getDefaultFormat() {
         return PngFormat.getInstance();
     }
-    
+
     /** Returns the (modifiable) list of currently supported formats. */
     private List<Format> getFormatList() {
         if (formats == null) {
             formats = new ArrayList<Format>();
-            formats.add(LispFormat.getInstance());
-            formats.add(FsmFormat.getInstance());
             formats.add(JpgFormat.getInstance());
             formats.add(PngFormat.getInstance());
             formats.add(EpsFormat.getInstance());
+            formats.add(AutFormat.getInstance());
+            formats.add(FsmFormat.getInstance());
+            formats.add(LispFormat.getInstance());
         }
         return formats;
+    }
+
+    /** Returns the (modifiable) list of currently supported formats. */
+    private List<StructuralFormat> getStructuralFormatList() {
+        if (structuralFormats == null) {
+            structuralFormats = new ArrayList<StructuralFormat>();
+            for (Format format: getFormatList()) {
+                if (format instanceof StructuralFormat) {
+                    structuralFormats.add((StructuralFormat) format);
+                }
+            }
+        }
+        return structuralFormats;
     }
     
     /** The file chooser of this exporter. */
     private GrooveFileChooser fileChooser;
     /** List of the supported export formats. */
     private List<Format> formats;
+    /** List of the supported structural export formats. */
+    private List<StructuralFormat> structuralFormats;
     
     /** Singleton class implementing the FSM export format. */
-    private static class FsmFormat implements Format {
+    private static class FsmFormat implements StructuralFormat {
         /** Empty constructor to ensure singleton usage of the class. */
         private FsmFormat() {
             // empty
@@ -137,10 +162,14 @@ public class Exporter {
         public ExtensionFilter getFilter() {
             return fsmFilter;
         }
-
+        
         public void export(JGraph jGraph, File file) throws IOException {
+            export(jGraph.getModel().toPlainGraph(), file);
+        }
+
+        public void export(GraphShape graph, File file) throws IOException {
             PrintWriter writer = new PrintWriter(new FileWriter(file));
-            Converter.graphToFsm(jGraph.getModel().toPlainGraph(), writer);
+            Converter.graphToFsm(graph, writer);
             writer.close();
         }
 
@@ -526,6 +555,49 @@ public class Exporter {
         /** The singleton instance of this class. */
         private static final Format instance = new EpsFormat();
     }
+    
+    /** Class implementing the EPS export format. */
+    private static class AutFormat implements StructuralFormat {
+        /** Empty constructor to ensure singleton usage of the class. */
+        private AutFormat() {
+            // empty
+        }
+
+        public ExtensionFilter getFilter() {
+            return autFilter;
+        }
+
+        /** 
+         * Exports the jgraph by calling {@link Converter#graphToAut(groove.graph.GraphShape, PrintWriter)}
+         * on the graph contained therein.
+         */
+        public void export(JGraph jGraph, File file) throws IOException {
+            export(jGraph.getModel().toPlainGraph(), file);
+        }
+
+        /** 
+         * Exports the graph by calling {@link Converter#graphToAut(groove.graph.GraphShape, PrintWriter)}.
+         */
+        public void export(GraphShape graph, File file) throws IOException {
+            PrintWriter writer = new PrintWriter(new FileWriter(file));
+            Converter.graphToAut(graph, writer);
+            writer.close();
+        }
+
+        /**
+         * Extension filter used for exporting graphs in aut format.
+         */
+        private final ExtensionFilter autFilter = new ExtensionFilter("CADP .aut files",
+                ".aut");
+
+        /** Returns the singleton instance of this class. */
+        public static Format getInstance() {
+            return instance;
+        }
+        
+        /** The singleton instance of this class. */
+        private static final Format instance = new AutFormat();
+    }
 
     /**
      * Interface for export formats.
@@ -535,5 +607,11 @@ public class Exporter {
         ExtensionFilter getFilter();
         /** Exports a JGraph into this format. */
         void export(JGraph jGraph, File file) throws IOException;
+    }
+    
+    /** Interface for structural formats; that is, formats that do not save layout information. */
+    public static interface StructuralFormat extends Format {
+        /** Exports a GraphShape into this format. */
+        void export(GraphShape graph, File file) throws IOException;
     }
 }

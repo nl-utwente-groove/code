@@ -16,7 +16,40 @@
  */
 package groove.util;
 
-import groove.calc.DefaultGraphCalculator;import groove.calc.GraphCalculator;import groove.graph.Graph;import groove.graph.GraphInfo;import groove.graph.GraphShape;import groove.graph.NodeEdgeMap;import groove.graph.iso.DefaultIsoChecker;import groove.io.AspectualViewGps;import groove.io.DefaultGxl;import groove.io.ExtensionFilter;import groove.io.Xml;import groove.match.GraphSearchPlanFactory;import groove.rel.VarNodeEdgeMap;import groove.trans.GraphGrammar;import groove.trans.SystemProperties;import groove.view.AspectualRuleView;import groove.view.DefaultGrammarView;import groove.view.FormatException;import groove.view.GrammarView;import java.awt.Rectangle;import java.awt.geom.Rectangle2D;import java.io.File;import java.io.IOException;import java.net.URL;import java.util.HashMap;import java.util.Iterator;import java.util.Map;import java.util.Properties;import java.util.StringTokenizer;import javax.swing.ImageIcon;
+import groove.calc.DefaultGraphCalculator;
+import groove.calc.GraphCalculator;
+import groove.graph.Graph;
+import groove.graph.GraphInfo;
+import groove.graph.GraphShape;
+import groove.graph.NodeEdgeMap;
+import groove.graph.iso.DefaultIsoChecker;
+import groove.gui.Exporter;
+import groove.gui.Exporter.StructuralFormat;
+import groove.io.AspectualViewGps;
+import groove.io.DefaultGxl;
+import groove.io.ExtensionFilter;
+import groove.io.Xml;
+import groove.match.GraphSearchPlanFactory;
+import groove.rel.VarNodeEdgeMap;
+import groove.trans.GraphGrammar;
+import groove.trans.SystemProperties;
+import groove.view.AspectualRuleView;
+import groove.view.DefaultGrammarView;
+import groove.view.FormatException;
+import groove.view.GrammarView;
+
+import java.awt.Rectangle;
+import java.awt.geom.Rectangle2D;
+import java.io.File;
+import java.io.IOException;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
+import javax.swing.ImageIcon;
 
 /**
  * Globals and convenience methods.
@@ -286,20 +319,41 @@ public class Groove {
     static public boolean isStateFile(File file) {
     	return createStateFilter().accept(file);
     }
-    
+
     /**
      * Attempts to save a graph to a file with a given name.
      * Adds the <tt>.gxl</tt> extension if the file has no extension.
      * @param graph the graph to be saved
      * @param filename the intended filename
      * @throws IOException if saving ran into problems
+     * @throws FormatException if an XML format error occurred
      */
     static public void saveGraph(Graph graph, String filename) throws IOException, FormatException {
         if (!createStateFilter().hasExtension(filename)) {
             filename = createGxlFilter().addExtension(filename);
         }
-        File file = new File(filename);        System.err.println("Storing graph as " + file.getAbsolutePath());
+        File file = new File(filename);
+        System.err.println("Storing graph as " + file.getAbsolutePath());
         graphLoader.marshalGraph(graph, file);
+    }
+
+    /**
+     * Attempts to export a graph to a file with a given name.
+     * The export format is determined by the file extension. 
+     * Returns a flag indicating if the file could be exported.
+     * @param graph the graph to be saved
+     * @param filename the intended filename
+     * @return <code>true</code> if the format was known
+     * @throws IOException if saving ran into problems
+     */
+    static public boolean exportGraph(GraphShape graph, String filename) throws IOException {
+        for (StructuralFormat exportFormat: new Exporter().getStructuralFormats()) {
+            if (exportFormat.getFilter().hasExtension(filename)) {
+                exportFormat.export(graph, new File(filename));
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

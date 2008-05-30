@@ -16,14 +16,20 @@
  */
 package groove.util;
 
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GraphShape;
 import groove.graph.Node;
+import groove.graph.NodeSet;
+import groove.lts.AbstractGraphState;
+import groove.lts.State;
 
 import java.awt.Color;
 import java.io.PrintWriter;
+import java.util.BitSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Performs conversions to and from groove.graph.Graph.
@@ -41,7 +47,7 @@ public class Converter {
 	    System.out.println(green.on("Text"));
 	}
 
-	/** Writes a graph in FSM format to a print writer. */
+    /** Writes a graph in FSM format to a print writer. */
     static public void graphToFsm(GraphShape graph, PrintWriter writer) {
         // mapping from nodes of graphs to integers
         Map<Node,Integer> nodeMap = new HashMap<Node,Integer>();
@@ -57,6 +63,44 @@ public class Converter {
         for (Edge edge: graph.edgeSet()) {
             writer.println(
                 nodeMap.get(edge.source()) + " " + nodeMap.get(edge.opposite()) + " " + "\"" + edge.label() + "\"");
+        }
+    }
+
+    /** Writes a graph in CADP .aut format to a print writer. */
+    static public void graphToAut(GraphShape graph, PrintWriter writer) {
+        // collect the node numbers, to be able to number them consecutively
+        int nodeCount = graph.nodeCount();
+        // list marking which node numbers have been used
+        BitSet nodeList = new BitSet(nodeCount);
+        // mapping from nodes to node numbers
+        Map<Node,Integer> nodeNrMap = new HashMap<Node,Integer>();
+        // nodes that do not have a valid number (in the range 0..nodeCount-1)
+        Set<Node> restNodes = new NodeSet();
+        // iterate over the existing nodes
+        for (Node node: graph.nodeSet()) {
+            int nodeNr = -1;
+            if ((node instanceof DefaultNode)) {
+                nodeNr = ((DefaultNode) node).getNumber();
+            } else if (node instanceof State) {
+                nodeNr = ((AbstractGraphState) node).getStateNumber();
+            }
+            if (nodeNr >= 0 && nodeNr < nodeCount) {
+                nodeList.set(nodeNr);
+                nodeNrMap.put(node, nodeNr);
+            } else {
+                restNodes.add(node);
+            }
+        }
+        int nextNodeNr = -1;
+        for (Node restNode: restNodes) {
+            do {
+                nextNodeNr++;
+            } while (nodeList.get(nextNodeNr));
+            nodeNrMap.put(restNode, nextNodeNr);
+        }
+        writer.printf("des (%d, %d, %d)%n", 0, graph.edgeCount(), graph.nodeCount());
+        for (Edge edge: graph.edgeSet()) {
+            writer.printf("(%d, \"%s\", %d)%n", nodeNrMap.get(edge.source()), edge.label(), nodeNrMap.get(edge.opposite()));
         }
     }
 
