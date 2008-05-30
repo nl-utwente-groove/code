@@ -397,9 +397,9 @@ public class Generator extends CommandLineTool {
                 reportCacheStatistics();
             }
             if (getOutputFileName() != null) {
-                String outFileName = gxlFilter.addExtension(getOutputFileName());
+//                String outFileName = gxlFilter.addExtension(getOutputFileName());
                 println();
-                println("LTS stored in: \t" + outFileName);
+                println("LTS stored in: \t" + getOutputFileName());
             }
             println();
             reportTime();
@@ -599,7 +599,9 @@ public class Generator extends CommandLineTool {
             if (getVerbosity() == HIGH_VERBOSITY) {
                 print(GraphReporter.createInstance().getReport(getGTS()).toString());
             }
+            if (!Groove.exportGraph(new LTSGraph(getGTS()), getOutputFileName())) {
                 Groove.saveGraph(new LTSGraph(getGTS()), getOutputFileName());
+            }
         }
     }
 
