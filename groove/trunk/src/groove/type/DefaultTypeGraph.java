@@ -16,6 +16,7 @@
  */
 package groove.type;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
 
@@ -25,6 +26,7 @@ import groove.graph.Edge;
 import groove.graph.GenericNodeEdgeHashMap;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.trans.Rule;
 
 /**
  * @author Frank van Es
@@ -39,6 +41,25 @@ public class DefaultTypeGraph extends DefaultGraph {
 		
 		map.putAll(addNodeTypes(graph.nodeSet()));
 		map.putAll(addEdgeTypes(graph.edgeSet()));
+		
+		return map;
+	}
+	
+	public AbstractNodeEdgeMap<Node,Node,Edge,Edge> addTyping(Rule rule) {
+		AbstractNodeEdgeMap<Node,Node,Edge,Edge> map = 
+			new GenericNodeEdgeHashMap<Node,Node,Edge,Edge>();
+		
+		Set<Node> nodes = new HashSet<Node>();
+		Set<Edge> edges = new HashSet<Edge>();
+		
+		nodes.addAll(rule.lhs().nodeSet());
+		nodes.addAll(rule.rhs().nodeSet());
+		
+		edges.addAll(rule.lhs().edgeSet());
+		edges.addAll(rule.rhs().edgeSet());
+		
+		map.putAll(addNodeTypes(nodes));
+		map.putAll(addEdgeTypes(edges));
 		
 		return map;
 	}
@@ -73,5 +94,9 @@ public class DefaultTypeGraph extends DefaultGraph {
 		for (Map.Entry<Node,Node> nodes : map.nodeMap().entrySet()) {
 			mergeNodes(nodes.getKey(), nodes.getValue());
 		}
+	}
+	
+	public void getTyping(Object o) {
+		
 	}
 }
