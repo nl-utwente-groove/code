@@ -18,6 +18,7 @@ package groove.type;
 
 import groove.graph.AbstractNodeEdgeMap;
 import groove.graph.DefaultEdge;
+import groove.graph.DefaultGraph;
 import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GenericNodeEdgeHashMap;
@@ -48,57 +49,38 @@ public class TypeReconstructor {
 	 */
 	public static Graph reconstruct(GraphGrammar grammar) {
 		
-		
-		
 		Graph startGraph = grammar.getStartGraph();
 		Collection<Rule> rules = grammar.getRules();
+		
 		Map<Rule,AbstractNodeEdgeMap<Node,Node,Edge,Edge>> ruleMappings = 
 			new HashMap<Rule,AbstractNodeEdgeMap<Node,Node,Edge,Edge>>();
 		
-		Graph typeGraph = startGraph.clone();
+		Graph typeGraph = new DefaultTypeGraph();
 		
-		for (Rule rule : rules) {
-			AbstractNodeEdgeMap<Node,Node,Edge,Edge> map = 
-				new GenericNodeEdgeHashMap<Node,Node,Edge,Edge>();
-			
-			Graph lhs = rule.lhs();
-			Graph rhs = rule.rhs();
-			
-			Set<Node> nodes = new HashSet<Node>();
-			Set<Edge> edges = new HashSet<Edge>();
-			nodes.addAll(lhs.nodeSet());
-			nodes.addAll(rhs.nodeSet());
-			edges.addAll(lhs.edgeSet());
-			edges.addAll(rhs.edgeSet());
-			
-			for (Node node : nodes) {
-				Node newNode = DefaultNode.createNode();
-				map.putNode(node, newNode);
-				typeGraph.addNode(newNode);
-			}
-			for (Edge edge : edges) {
-				Edge newEdge = DefaultEdge.createEdge(
-						map.getNode(edge.end(Edge.SOURCE_INDEX)),
-						edge.label(),
-						map.getNode(edge.end(Edge.TARGET_INDEX))
-				);
-				map.putEdge(edge, newEdge);
-				typeGraph.addEdge(newEdge);
-			}
-			ruleMappings.put(rule, map);
-		}
+		addTyping(typeGraph, startGraph);
 		
 		int nodeCount;
 		do {
 			nodeCount = typeGraph.nodeCount();
+			
 			MergeMap equivalentTypes = new MergeMap();
+			
 			for (Rule rule : rules) {
-				AbstractNodeEdgeMap<Node,Node,Edge,Edge> map = ruleMappings.get(rule);
 				
-				// TODO: Possibility: updated putAll method in MergeMap class
-				MergeMap newMerges = calculateMerges(typeGraph, rule, map);
-				for (Map.Entry<Node,Node> merge : newMerges.nodeMap().entrySet()) {
-					equivalentTypes.putNode(merge.getKey(), merge.getValue());
+				if (true) { // if (removeApplicationConditions(rule).hasMatch(typeGraph)) {
+					if (ruleMappings.get(rule) == null) {
+						
+						ruleMappings.put(rule, addTyping(typeGraph, rule));
+						//ruleMappings.put(rule, addTyping(typeGraph, rule.lhs()));
+					}
+					
+					AbstractNodeEdgeMap<Node,Node,Edge,Edge> map = ruleMappings.get(rule);
+					
+					// TODO: Possibility: updated putAll method in MergeMap class
+					MergeMap newMerges = calculateMerges(typeGraph, rule, map);
+					for (Map.Entry<Node,Node> merge : newMerges.nodeMap().entrySet()) {
+						equivalentTypes.putNode(merge.getKey(), merge.getValue());
+					}
 				}
 			}
 			for (Map.Entry<Node,Node> mapping : equivalentTypes.nodeMap().entrySet()) {
@@ -126,30 +108,76 @@ public class TypeReconstructor {
 		// Create a copy of the current rule in order to omit application
 		// conditions and compute the matches from this rule into the 
 		// current type graph
-		Rule ruleCopy = null;
+		Iterable<RuleMatch> matches = removeApplicationConditions(rule).getMatches(typeGraph, null);
+		for (RuleMatch match : matches) {
+			Map<Node,Node> nodeMap = match.getElementMap().nodeMap();
+			for (Map.Entry<Node,Node> nodes : nodeMap.entrySet()) {
+				merges.putNode(
+						currentTypings.getNode(nodes.getKey()), 
+						nodes.getValue()
+				);
+			}
+		}
+		
+		
+		return merges;
+	}
+	
+	/**
+	 * @param typeGraph
+	 * @param graph
+	 * @return
+	 */
+	public static AbstractNodeEdgeMap<Node,Node,Edge,Edge> addTyping(Graph typeGraph, Graph graph) {
+		
+		AbstractNodeEdgeMap<Node,Node,Edge,Edge> result = 
+			new GenericNodeEdgeHashMap<Node,Node,Edge,Edge>();
+		
+		for (Node node : graph.nodeSet()) {
+			Node newNode = DefaultNode.createNode();
+			result.putNode(node, newNode);
+			typeGraph.addNode(newNode);
+		}
+		for (Edge edge : graph.edgeSet()) {
+			Edge newEdge = DefaultEdge.createEdge(
+					result.getNode(edge.end(Edge.SOURCE_INDEX)),
+					edge.label(),
+					result.getNode(edge.end(Edge.TARGET_INDEX))
+			);
+			result.putEdge(edge, newEdge);
+			typeGraph.addEdge(newEdge);
+		}
+		
+		return result;
+	}
+	
+	public static AbstractNodeEdgeMap<Node,Node,Edge,Edge> addTyping(Graph typeGraph, Rule rule) {
+		
+		Graph resultGraph = new DefaultGraph();
+		resultGraph.addNodeSet(rule.rhs().nodeSet());
+		resultGraph.addEdgeSet(rule.rhs().edgeSet());
+		resultGraph.addNodeSet(rule.lhs().nodeSet());
+		resultGraph.addEdgeSet(rule.lhs().edgeSet());
+		
+		return addTyping(typeGraph, resultGraph);
+	}
+	
+	
+	public static Rule removeApplicationConditions(Rule rule) {
+		Rule result = null;
 		try {
-			ruleCopy = new SPORule(
+			result = new SPORule(
 					rule.getMorphism(), 
 					rule.getName(), 
 					rule.getPriority(), 
 					rule.getProperties()
 			);
-			ruleCopy.setFixed();
-			
-			Iterable<RuleMatch> matches = ruleCopy.getMatches(typeGraph, null);
-			for (RuleMatch match : matches) {
-				Map<Node,Node> nodeMap = match.getElementMap().nodeMap();
-				for (Map.Entry<Node,Node> nodes : nodeMap.entrySet()) {
-					merges.putNode(
-							currentTypings.getNode(nodes.getKey()), 
-							nodes.getValue()
-					);
-				}
-			}
+			result.setFixed();
 		}
-		catch (FormatException fe) { }
-		
-		return merges;
+		catch (FormatException fe) {
+			return rule;
+		}
+		return result;
 	}
 	
 }
