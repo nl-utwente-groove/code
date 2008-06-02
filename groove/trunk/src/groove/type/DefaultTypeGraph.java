@@ -97,6 +97,6 @@ public class DefaultTypeGraph extends DefaultGraph {
 	}
 	
 	public void getTyping(Object o) {
-		
+		return;
 	}
 }
