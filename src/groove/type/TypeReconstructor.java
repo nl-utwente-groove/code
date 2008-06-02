@@ -59,17 +59,19 @@ public class TypeReconstructor {
 		
 		addTyping(typeGraph, startGraph);
 		
+		boolean addedRule;
 		int nodeCount;
 		do {
 			nodeCount = typeGraph.nodeCount();
-			
+			addedRule = false;
 			MergeMap equivalentTypes = new MergeMap();
 			
 			for (Rule rule : rules) {
 				
-				if (true) { // if (removeApplicationConditions(rule).hasMatch(typeGraph)) {
+				if (removeApplicationConditions(rule).hasMatch(typeGraph)) {
+					
 					if (ruleMappings.get(rule) == null) {
-						
+						addedRule = true;
 						ruleMappings.put(rule, addTyping(typeGraph, rule));
 						//ruleMappings.put(rule, addTyping(typeGraph, rule.lhs()));
 					}
@@ -86,7 +88,7 @@ public class TypeReconstructor {
 			for (Map.Entry<Node,Node> mapping : equivalentTypes.nodeMap().entrySet()) {
 				typeGraph.mergeNodes(mapping.getKey(), mapping.getValue());
 			}
-		} while (typeGraph.nodeCount() != nodeCount);
+		} while (addedRule || typeGraph.nodeCount() != nodeCount);
 		
 		return typeGraph;
 	}
