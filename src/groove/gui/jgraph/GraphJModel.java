@@ -319,6 +319,18 @@ public class GraphJModel extends JModel implements GraphShapeListener {
         edit(attrMap, null, null, null);
         layoutableJCells.removeAll(attrMap.keySet());
     }
+
+    /** Stores the layout from the JModel back into the graph. */
+    void synchroniseLayout(GraphJCell jCell) {
+        LayoutMap<Node,Edge> currentLayout = GraphInfo.getLayoutMap(getGraph());
+        if (jCell instanceof GraphJEdge) {
+            for (Edge edge: ((GraphJEdge) jCell).getEdges()) {
+                currentLayout.putEdge(edge, jCell.getAttributes());
+            }
+        } else {
+            currentLayout.putNode(((GraphJVertex) jCell).getNode(), jCell.getAttributes());
+        }
+    }
     
     /**
      * This method first sets the show-aspects property before calling

@@ -27,6 +27,8 @@ import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JPopupMenu;
 
+import org.jgraph.event.GraphModelEvent;
+
 /**
  * Extension of {@link JGraph} that provides the proper popup menu.
  */
@@ -44,30 +46,17 @@ public class AspectJGraph extends JGraph {
 	public AspectJModel getModel() {
     	return (AspectJModel) super.getModel();
 	}
-//
-//    /**
-//     * Propagates some types of changes from model to view. Reacts in particular to
-//     * {@link JModel.RefreshEdit}-events: every refreshed cell with an empty attribute set gets its
-//     * view attributes refreshed by a call to {@link JModel#createTransientJAttr(JCell)}; moreover, hidden cells
-//     * are deselected. by a call to {@link JModel#createTransientJAttr(JCell)}.
-//     * @see JModel.RefreshEdit#getRefreshedJCells()
-//     */
-//    @Override
-//    public void graphChanged(GraphModelEvent evt) {
-//    	super.graphChanged(evt);
-//        if (evt.getSource() == getModel() && evt.getChange() instanceof JModel.RefreshEdit) {
-//        	Set<JCell> visibleCells = new HashSet<JCell>();
-//        	Set<JCell> invisibleCells = new HashSet<JCell>();        	
-//            for (JCell jCell: ((JModel.RefreshEdit) evt.getChange()).getRefreshedJCells()) {
-//            	if (jCell.isVisible()) {
-//            		visibleCells.add(jCell);
-//            	} else {
-//            		invisibleCells.add(jCell);
-//            	}
-//            }
-//        	getGraphLayoutCache().setVisible(visibleCells.toArray(), invisibleCells.toArray());
-//        }
-//    }
+
+    /** In addition to the super method, synchronises layout changes. */
+    @Override
+    public void graphChanged(GraphModelEvent evt) {
+        super.graphChanged(evt);
+        for (Object jCell: evt.getChange().getChanged()) {
+            if (jCell instanceof GraphJCell) {
+                getModel().synchroniseLayout((GraphJCell) jCell);
+            }
+        }
+    }
 
     @Override
 	protected void fillPopupMenu(JPopupMenu result) {

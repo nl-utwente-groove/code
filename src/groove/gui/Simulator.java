@@ -865,20 +865,34 @@ public class Simulator {
 			setGrammar(getCurrentGrammar());
 			setRule(ruleName);
 		} catch (IOException exc) {
-			showErrorDialog("Error while saving edited rule", exc);
+			showErrorDialog("Error while saving rule", exc);
 		}
 	}
 
     /**
-	 * Deletes a rule from the grammar and the file system, and resets the grammar view. 
-	 */
-	void doDeleteRule(RuleNameLabel name) {
-		AspectualRuleView rule = getCurrentGrammar().removeRule(name);
-		if (rule != null) {
-			currentGrammarLoader.deleteRule(rule, currentGrammarFile);
-			setGrammar(getCurrentGrammar());
-		}
-	}
+     * Deletes a rule from the grammar and the file system, and resets the grammar view. 
+     */
+    void doDeleteRule(RuleNameLabel name) {
+        AspectualRuleView rule = getCurrentGrammar().removeRule(name);
+        if (rule != null) {
+            currentGrammarLoader.deleteRule(rule, currentGrammarFile);
+            setGrammar(getCurrentGrammar());
+        }
+    }
+
+    /**
+     * Saves a rule (without resetting the grammar) to freeze the layout. 
+     */
+    void doSaveRule(RuleNameLabel name) {
+        AspectualRuleView rule = getCurrentGrammar().getRule(name);
+        if (rule != null) {
+            try {
+                currentGrammarLoader.marshalRule(rule, currentGrammarFile);
+            } catch (IOException exc) {
+                showErrorDialog("Error while saving rule", exc);
+            }
+        }
+    }
 
 	/**
      * Refreshes the currently loaded grammar, if any. Does not ask for confirmation. Has no effect
