@@ -134,6 +134,8 @@ public class Groove {
     public static final ImageIcon LTS_FRAME_ICON = new ImageIcon(getResource("lts-frame.gif"));
     /** Icon for Control Panel. */
     public static final ImageIcon CTRL_FRAME_ICON = new ImageIcon(getResource("cp-frame.gif"));
+    /** Icon for Type Panel. */
+    public static final ImageIcon TYPE_FRAME_ICON = new ImageIcon(getResource("type-frame.gif"));
     /** GROOVE project icon in 16x16 format. */
     public static final ImageIcon GROOVE_ICON_16x16 = new ImageIcon(getResource("groove-g-16x16.gif"));
     /** GROOVE project icon in 32x32 format. */
