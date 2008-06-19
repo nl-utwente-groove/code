@@ -70,6 +70,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
 		JToolBar toolBar = new JToolBar();
 		
 		createButton = new JButton("Compute type graph");
+		createButton.setEnabled(false);
 		toolBar.add(createButton);
 		createButton.addActionListener(new CreateButtonListener());
 		this.add(toolBar, BorderLayout.NORTH);
