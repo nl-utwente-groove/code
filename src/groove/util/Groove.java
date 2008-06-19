@@ -104,6 +104,10 @@ public class Groove {
     public static final String GUI_PROPERTIES_FILE = "groove.gui"+PROPERTY_EXTENSION;
     /** File name for XML properties. */
     public static final String XML_PROPERTIES_FILE = "groove.xml"+PROPERTY_EXTENSION;
+    /** Extension for TGR (Type GRaph) files. */
+    public static final String TGR_EXTENSION = ".tgr";
+    /** File name for Type Graph files */
+    public static final String TGR_NAME = "typegraph";
     /** Icon for GPS folders. */
     public static final ImageIcon GPS_FOLDER_ICON = new ImageIcon(getResource("gps.gif"));
     /** Graph editing mode icon. */
