@@ -16,16 +16,21 @@
  */
 package groove.type;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.Map;
 
 import groove.graph.AbstractNodeEdgeMap;
+import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
 import groove.graph.GenericNodeEdgeHashMap;
 import groove.graph.Graph;
 import groove.graph.Node;
+import groove.graph.NodeEdgeHashMap;
+import groove.graph.NodeEdgeMap;
 import groove.trans.Rule;
 
 /**
@@ -34,50 +39,38 @@ import groove.trans.Rule;
  */
 public class DefaultTypeGraph extends DefaultGraph {
 	
-	public AbstractNodeEdgeMap<Node,Node,Edge,Edge> addTyping(Graph graph) {
+	private Map<Object, NodeEdgeMap> typings;
+	
+	public DefaultTypeGraph() {
+		super();
+		typings = new HashMap<Object,NodeEdgeMap>();
+	}
+	
+	public void addTyping(Graph graph) {
 		
-		AbstractNodeEdgeMap<Node,Node,Edge,Edge> map = 
-			new GenericNodeEdgeHashMap<Node,Node,Edge,Edge>();
+		NodeEdgeMap map = new NodeEdgeHashMap();
 		
 		map.putAll(addNodeTypes(graph.nodeSet()));
 		map.putAll(addEdgeTypes(graph.edgeSet()));
 		
-		return map;
+		typings.put(graph, map);
 	}
 	
-	public AbstractNodeEdgeMap<Node,Node,Edge,Edge> addTyping(Rule rule) {
-		AbstractNodeEdgeMap<Node,Node,Edge,Edge> map = 
-			new GenericNodeEdgeHashMap<Node,Node,Edge,Edge>();
+	protected NodeEdgeMap addNodeTypes(Set<? extends Node> nodes) {
 		
-		Set<Node> nodes = new HashSet<Node>();
-		Set<Edge> edges = new HashSet<Edge>();
-		
-		nodes.addAll(rule.lhs().nodeSet());
-		nodes.addAll(rule.rhs().nodeSet());
-		
-		edges.addAll(rule.lhs().edgeSet());
-		edges.addAll(rule.rhs().edgeSet());
-		
-		map.putAll(addNodeTypes(nodes));
-		map.putAll(addEdgeTypes(edges));
-		
-		return map;
-	}
-	
-	public AbstractNodeEdgeMap<Node,Node,Edge,Edge> addNodeTypes(Set<? extends Node> nodes) {
-		AbstractNodeEdgeMap<Node,Node,Edge,Edge> map = 
-			new GenericNodeEdgeHashMap<Node,Node,Edge,Edge>();
+		NodeEdgeMap map = new NodeEdgeHashMap();
 		
 		for (Node node : nodes) {
 			Node newNode = super.addNode();
 			map.putNode(node, newNode);
+			//addNode(newNode);
 		}
 		return map;
 	}
 	
-	public AbstractNodeEdgeMap<Node,Node,Edge,Edge> addEdgeTypes(Set<? extends Edge> edges) {
-		AbstractNodeEdgeMap<Node,Node,Edge,Edge> map = 
-			new GenericNodeEdgeHashMap<Node,Node,Edge,Edge>();
+	protected NodeEdgeMap addEdgeTypes(Set<? extends Edge> edges) {
+		
+		NodeEdgeMap map = new NodeEdgeHashMap();
 		
 		for (Edge edge : edges) {
 			Edge newEdge = super.addEdge(
@@ -86,6 +79,7 @@ public class DefaultTypeGraph extends DefaultGraph {
 					edge.end(Edge.TARGET_INDEX)
 			);
 			map.putEdge(edge, newEdge);
+			//addEdge(newEdge);
 		}
 		return map;
 	}
@@ -96,7 +90,7 @@ public class DefaultTypeGraph extends DefaultGraph {
 		}
 	}
 	
-	public void getTyping(Object o) {
-		return;
+	public NodeEdgeMap getTyping(Object o) {
+		return typings.get(o);
 	}
 }

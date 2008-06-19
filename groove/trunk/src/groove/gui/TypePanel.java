@@ -18,6 +18,7 @@ package groove.gui;
 
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
+import groove.gui.CAPanel.EditButtonListener;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.StateJGraph;
@@ -31,7 +32,15 @@ import groove.util.Groove;
 import groove.view.DefaultGrammarView;
 import groove.view.FormatException;
 
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.io.IOException;
+
+import javax.swing.JButton;
+import javax.swing.JPanel;
+import javax.swing.JToolBar;
 
 /**
  * @author Frank van Es
@@ -40,15 +49,37 @@ import java.io.IOException;
 public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationListener {
 	/** Display name of this panel. */
     public static final String FRAME_NAME = "Type graph";
-	
+    
+    private JButton createButton;
+    private JGraphPanel<StateJGraph> typeGraphPanel;
+    private DefaultGrammarView grammar;
+    
     // --------------------- INSTANCE DEFINITIONS ----------------------
     
 	/**
-	 * @param simulator
+	 * Constructor for this TypePanel
+	 * Creates a new TypePanel instance and instantiates all necessary variables.
+	 * @param simulator The simulator this type panel belongs to.
 	 */
 	public TypePanel(final Simulator simulator) {
 		super(new StateJGraph(simulator), true, simulator.getOptions());
 		this.simulator = simulator;
+		
+		// create the layout for this JPanel
+		this.setLayout(new BorderLayout());
+		JToolBar toolBar = new JToolBar();
+		
+		createButton = new JButton("Compute type graph");
+		toolBar.add(createButton);
+		createButton.addActionListener(new CreateButtonListener());
+		this.add(toolBar, BorderLayout.NORTH);
+		
+		typeGraphPanel = new JGraphPanel<StateJGraph>(
+				new StateJGraph(simulator), true, simulator.getOptions()
+		);
+		
+		this.add(typeGraphPanel, BorderLayout.CENTER);
+		
 		simulator.addSimulationListener(this);
 	}
 	
@@ -74,31 +105,95 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
         // nothing happens
     }
     
+    /**
+     * This method is executed when the grammar in the Simulator is updated. 
+     * It basically executes one of the following 3 actions:
+     * - If no valid grammar is loaded, all fields are disabled.
+     * - If a grammar is loaded for which a type graph is saved already, this
+     *   saved type graph is loaded.
+     * - If a grammar is loaded for which no saved type graph exists, all fields
+     *   are disabled, except the "create type graph" button, which can be used
+     *   to compute a new type graph.
+     */
     public synchronized void setGrammarUpdate(DefaultGrammarView grammar) {
+    	
+    	typeGraphPanel.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
+    	typeGraphPanel.setEnabled(false);
+    	this.grammar = grammar;
+    	
     	if (grammar == null || grammar.getStartGraph() == null) {
-            jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
-            setEnabled(false);
+            createButton.setEnabled(false);
         } else {
         	try {
-        		Graph typeGraph = TypeReconstructor.reconstruct(grammar.toModel());
+        		// Tries to load a previously saved type graph. If found,
+        		// this type graph will be displayed.
+        		Graph typeGraph;
+        		File file = new File(
+        			simulator.getCurrentGrammarFile().getAbsolutePath() + "/typeGraph.gxl"
+        		);
         		
-        		Groove.saveGraph(typeGraph,simulator.getCurrentGrammarFile().getAbsolutePath() + "/typeGraph");
-        		GraphInfo.setName(typeGraph, "Type graph");
-        		
-        		jGraph.setModel(GraphJModel.newInstance(typeGraph, getOptions()));
+        		if ((typeGraph = Groove.loadGraph(file)) != null) {
+        			GraphInfo.setName(typeGraph, "Type graph");
+        			
+        			typeGraphPanel.jGraph.setModel(
+            			GraphJModel.newInstance(typeGraph, typeGraphPanel.getOptions())
+            		);
+        			typeGraphPanel.setEnabled(true);
+        		}
+        	} catch (IOException e) {
+        		System.err.println("Error reading the type graph.");
+        	} catch (FormatException fe) {
+        		System.err.printf("Graph format error: %s", fe.getMessage());
         	}
-        	catch (FormatException fe) {
-                System.err.printf("Graph format error: %s", fe.getMessage());
-        	}
-        	catch (IOException ioe) {
-        		System.err.println("Error storing the type graph.");
-        	}
-        	catch (NullPointerException npe) {
-        		System.err.println("Type graph cannot be displayed for this model.");
-        	}
-            setEnabled(true);
+        	createButton.setEnabled(true);
         }
-        refreshStatus();
+        typeGraphPanel.refreshStatus();
+    }
+    
+    /**
+     * Action listener class for the "create type graph" button
+     * @author Frank van Es
+     * @version $Revision $
+     */
+    class CreateButtonListener implements ActionListener {
+    	/**
+    	 * This method is executed when the "create type graph" button is
+    	 * clicked. Then a new type graph for the current grammar is being
+    	 * computed; the type graph will be displayed and saved to typegraph.gxl
+    	 * inside the graph grammar directory.
+    	 */
+		public void actionPerformed(ActionEvent e) {
+			if (grammar != null && grammar.getStartGraph() != null) {
+				try {
+					Graph typeGraph = TypeReconstructor.reconstruct(grammar.toModel());
+					Groove.saveGraph(
+		    			typeGraph,
+		    			simulator.getCurrentGrammarFile().getAbsolutePath() + "/typeGraph"
+		    		);
+					displayTypeGraph(typeGraph);
+
+				} catch (FormatException fe) {
+					System.err.printf("Graph format error: %s", fe.getMessage());
+				} catch (IOException ioe) {
+		    		System.err.println("Error storing the type graph.");
+		    	}
+			}
+		}
+    }
+    
+    /**
+     * Displays a type graph inside the typeGraphPanel.
+     * @param typeGraph The type graph to be displayed.
+     */
+    public void displayTypeGraph(Graph typeGraph) {
+    	
+    	GraphInfo.setName(typeGraph, "Type graph");
+		
+		typeGraphPanel.jGraph.setModel(
+			GraphJModel.newInstance(typeGraph, typeGraphPanel.getOptions())
+		);
+    	
+        typeGraphPanel.setEnabled(true);
     }
     
     /** The simulator to which this panel belongs. */
