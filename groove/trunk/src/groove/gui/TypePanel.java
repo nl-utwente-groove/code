@@ -129,7 +129,8 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
         		// this type graph will be displayed.
         		Graph typeGraph;
         		File file = new File(
-        			simulator.getCurrentGrammarFile().getAbsolutePath() + "/typeGraph.gxl"
+        			simulator.getCurrentGrammarFile().getAbsolutePath() + 
+        				Groove.FILE_SEPARATOR + Groove.TGR_NAME + Groove.TGR_EXTENSION
         		);
         		
         		if ((typeGraph = Groove.loadGraph(file)) != null) {
@@ -159,7 +160,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
     	/**
     	 * This method is executed when the "create type graph" button is
     	 * clicked. Then a new type graph for the current grammar is being
-    	 * computed; the type graph will be displayed and saved to typegraph.gxl
+    	 * computed; the type graph will be displayed and saved
     	 * inside the graph grammar directory.
     	 */
 		public void actionPerformed(ActionEvent e) {
@@ -168,7 +169,8 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
 					Graph typeGraph = TypeReconstructor.reconstruct(grammar.toModel());
 					Groove.saveGraph(
 		    			typeGraph,
-		    			simulator.getCurrentGrammarFile().getAbsolutePath() + "/typeGraph"
+		    			simulator.getCurrentGrammarFile().getAbsolutePath() + 
+		    				Groove.FILE_SEPARATOR + Groove.TGR_NAME + Groove.TGR_EXTENSION
 		    		);
 					displayTypeGraph(typeGraph);
 
@@ -194,6 +196,10 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
 		);
     	
         typeGraphPanel.setEnabled(true);
+    }
+    
+    public void saveGraph(Graph graph) {
+    	
     }
     
     /** The simulator to which this panel belongs. */
