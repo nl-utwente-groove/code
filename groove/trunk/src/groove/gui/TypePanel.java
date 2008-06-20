@@ -131,7 +131,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
         		Graph typeGraph;
         		File file = new File(
         			simulator.getCurrentGrammarFile().getAbsolutePath() + 
-        				Groove.FILE_SEPARATOR + Groove.TGR_NAME + Groove.TGR_EXTENSION
+        				Groove.FILE_SEPARATOR + Groove.TGR_NAME + Groove.GXL_EXTENSION
         		);
         		
         		if ((typeGraph = Groove.loadGraph(file)) != null) {
@@ -171,7 +171,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
 					Groove.saveGraph(
 		    			typeGraph,
 		    			simulator.getCurrentGrammarFile().getAbsolutePath() + 
-		    				Groove.FILE_SEPARATOR + Groove.TGR_NAME + Groove.TGR_EXTENSION
+		    				Groove.FILE_SEPARATOR + Groove.TGR_NAME + Groove.GXL_EXTENSION
 		    		);
 					displayTypeGraph(typeGraph);
 
