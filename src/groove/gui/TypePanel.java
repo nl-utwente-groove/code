@@ -18,7 +18,6 @@ package groove.gui;
 
 import groove.graph.Graph;
 import groove.graph.GraphInfo;
-import groove.gui.CAPanel.EditButtonListener;
 import groove.gui.jgraph.AspectJModel;
 import groove.gui.jgraph.GraphJModel;
 import groove.gui.jgraph.StateJGraph;
@@ -35,15 +34,10 @@ import groove.view.FormatException;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.IOException;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JPanel;
-import javax.swing.JRadioButton;
 import javax.swing.JToolBar;
 
 /**
@@ -55,10 +49,8 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
     public static final String FRAME_NAME = "Type graph";
     
     private JButton createButton;
-    private JCheckBox useNacsCheckBox;
     private JGraphPanel<StateJGraph> typeGraphPanel;
     private DefaultGrammarView grammar;
-    private boolean useNacs = false;
     
     // --------------------- INSTANCE DEFINITIONS ----------------------
     
@@ -77,13 +69,8 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
 		
 		createButton = new JButton("Compute type graph");
 		createButton.setEnabled(false);
-		useNacsCheckBox = new JCheckBox("Use NACs");
-		useNacsCheckBox.setEnabled(false);
-		useNacsCheckBox.setSelected(false);
 		toolBar.add(createButton);
-		toolBar.add(useNacsCheckBox);
 		createButton.addActionListener(new CreateButtonListener());
-		useNacsCheckBox.addItemListener(new UseNacsCheckBoxListener());
 		this.add(toolBar, BorderLayout.NORTH);
 		
 		typeGraphPanel = new JGraphPanel<StateJGraph>(
@@ -131,12 +118,10 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
     	
     	typeGraphPanel.jGraph.setModel(AspectJModel.EMPTY_ASPECT_JMODEL);
     	typeGraphPanel.setEnabled(false);
-    	useNacsCheckBox.setSelected(false);
     	this.grammar = grammar;
     	
     	if (grammar == null || grammar.getStartGraph() == null) {
             createButton.setEnabled(false);
-            useNacsCheckBox.setEnabled(false);
         } else {
         	try {
         		// Tries to load a previously saved type graph. If found,
@@ -148,8 +133,12 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
         		);
         		
         		if ((typeGraph = Groove.loadGraph(file)) != null) {
+        			GraphInfo.setName(typeGraph, "Type graph");
         			
-        			displayTypeGraph(typeGraph);
+        			typeGraphPanel.jGraph.setModel(
+            			GraphJModel.newInstance(typeGraph, typeGraphPanel.getOptions())
+            		);
+        			typeGraphPanel.setEnabled(true);
         		}
         	} catch (IOException e) {
         		System.err.println("Error reading the type graph.");
@@ -157,7 +146,6 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
         		System.err.printf("Graph format error: %s", fe.getMessage());
         	}
         	createButton.setEnabled(true);
-        	useNacsCheckBox.setEnabled(true);
         }
         typeGraphPanel.refreshStatus();
     }
@@ -177,7 +165,7 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
 		public void actionPerformed(ActionEvent e) {
 			if (grammar != null && grammar.getStartGraph() != null) {
 				try {
-					Graph typeGraph = TypeReconstructor.reconstruct(grammar.toModel(),useNacs);
+					Graph typeGraph = TypeReconstructor.reconstruct(grammar.toModel());
 					Groove.saveGraph(
 		    			typeGraph,
 		    			simulator.getCurrentGrammarFile().getAbsolutePath() + 
@@ -192,12 +180,6 @@ public class TypePanel extends JGraphPanel<StateJGraph> implements SimulationLis
 		    	}
 			}
 		}
-    }
-    
-    class UseNacsCheckBoxListener implements ItemListener {
-    	public void itemStateChanged(ItemEvent e) {
-    		useNacs = useNacsCheckBox.isSelected();
-    	}
     }
     
     /**
