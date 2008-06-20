@@ -44,13 +44,11 @@ public class TypeReconstructor {
 	private Map<Graph,NodeEdgeMap> typings = new HashMap<Graph,NodeEdgeMap>();
 	private Graph typeGraph = new DefaultGraph();
 	private MergeMap nodeTypes = new MergeMap();
-	private boolean useApplicationConditions;
 	
 	/**
 	 * @param grammar
 	 */
-	protected TypeReconstructor(GraphGrammar grammar, boolean useApplicationConditions) {
-		this.useApplicationConditions = useApplicationConditions;
+	protected TypeReconstructor(GraphGrammar grammar) {
 		Graph startGraph = grammar.getStartGraph();
 		Collection<Rule> rules = grammar.getRules();
 		
@@ -64,10 +62,8 @@ public class TypeReconstructor {
 			MergeMap equivalentTypes = new MergeMap();
 			
 			for (Rule rule : rules) {
-				if (!this.useApplicationConditions) {
-					rule = removeApplicationConditions(rule);
-				}
-				if (rule.hasMatch(typeGraph)) {
+				
+				if (removeApplicationConditions(rule).hasMatch(typeGraph)) {
 					
 					if (getTyping(rule.rhs()) == null) {
 						addedRule = true;
@@ -105,9 +101,9 @@ public class TypeReconstructor {
 	 * @param grammar A graph grammar to construct a type graph for
 	 * @return A type graph for grammar 
 	 */
-	public static Graph reconstruct(GraphGrammar grammar,boolean useApplicationConditions) {
+	public static Graph reconstruct(GraphGrammar grammar) {
 		
-		return new TypeReconstructor(grammar,useApplicationConditions).getTypeGraph();
+		return new TypeReconstructor(grammar).getTypeGraph();
 	}
 	
 	/**
@@ -135,12 +131,8 @@ public class TypeReconstructor {
 		
 		// Create a copy of the current rule in order to omit application
 		// conditions and compute the matches from this rule into the 
-		// current type graph
-		if (!useApplicationConditions) {
-			rule = removeApplicationConditions(rule);
-		}
-		
-		Iterable<RuleMatch> matches = rule.getMatches(typeGraph, null);
+		// current type graph		
+		Iterable<RuleMatch> matches = removeApplicationConditions(rule).getMatches(typeGraph, null);
 		for (RuleMatch match : matches) {
 			nodeMap = match.getElementMap().nodeMap();
 			for (Map.Entry<Node,Node> nodes : nodeMap.entrySet()) {
