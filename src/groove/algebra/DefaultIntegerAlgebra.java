@@ -50,7 +50,7 @@ public class DefaultIntegerAlgebra extends Algebra {
     @Override
     public String getSymbol(Object value) {
         if (!(value instanceof Integer)) {
-            throw new IllegalArgumentException(String.format("Value is of class %s rather than Boolean", value.getClass()));
+            throw new IllegalArgumentException(String.format("Value is of class %s rather than Integer", value.getClass()));
         }
         return value.toString();
     }
