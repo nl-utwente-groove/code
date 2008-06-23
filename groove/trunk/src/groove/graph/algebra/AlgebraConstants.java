@@ -36,6 +36,8 @@ public class AlgebraConstants {
 	static public final int BOOLEAN = 2;
 	/** Code for attributes of type abstract integer. */
 	static public final int ABSTRACT_INTEGER = 3;
+	/** Code for attributes of type real. */
+	static public final int REAL = 4;
 	/** Code for attributes of type boolean. */
 	static public final int NO_TYPE = -1;
 

@@ -20,6 +20,7 @@ import groove.algebra.Algebra;
 import groove.algebra.Constant;
 import groove.algebra.DefaultBooleanAlgebra;
 import groove.algebra.DefaultIntegerAlgebra;
+import groove.algebra.DefaultRealAlgebra;
 import groove.algebra.DefaultStringAlgebra;
 import groove.graph.DefaultGraph;
 
@@ -109,6 +110,9 @@ public class AlgebraGraph extends DefaultGraph {
     			return DefaultStringAlgebra.getInstance();
     		case AlgebraConstants.BOOLEAN:
     			return DefaultBooleanAlgebra.getInstance();
+    			// FIXME what about ABSTRACT_INTEGER?
+    		case AlgebraConstants.REAL:
+    			return DefaultRealAlgebra.getInstance();
     		default:
     			return null;
     	}

@@ -21,6 +21,7 @@ import groove.algebra.Algebra;
 import groove.algebra.Constant;
 import groove.algebra.DefaultBooleanAlgebra;
 import groove.algebra.DefaultIntegerAlgebra;
+import groove.algebra.DefaultRealAlgebra;
 import groove.algebra.DefaultStringAlgebra;
 import groove.algebra.Operation;
 import groove.algebra.UnknownSymbolException;
@@ -444,6 +445,10 @@ public class AttributeAspect extends AbstractAspect {
     public static final String INTEGER_NAME = Groove.getXMLProperty("label.integer.prefix");
     /** The integer aspect value. */
     public static final AspectValue INTEGER;
+    /** Name of the real aspect value. */
+    public static final String REAL_NAME = Groove.getXMLProperty("label.real.prefix");
+    /** The real aspect value. */
+    public static final AspectValue REAL;
     /** Name of the integer aspect value. */
     public static final String ABSTRACT_INTEGER_NAME = Groove.getXMLProperty("label.abstract.integer.prefix");
     /** The integer aspect value. */
@@ -474,12 +479,14 @@ public class AttributeAspect extends AbstractAspect {
 		    PRODUCT = instance.addNodeValue(PRODUCT_NAME);
 		    INTEGER = instance.addEdgeValue(INTEGER_NAME);
 		    ABSTRACT_INTEGER = instance.addEdgeValue(ABSTRACT_INTEGER_NAME);
+		    REAL = instance.addEdgeValue(REAL_NAME);
 		    BOOLEAN = instance.addEdgeValue(BOOLEAN_NAME);
 		    STRING = instance.addEdgeValue(STRING_NAME);
 		    ARGUMENT.setEdgeToSource(PRODUCT);
 		    ARGUMENT.setEdgeToTarget(VALUE);
 		    INTEGER.setEdgeToTarget(VALUE);
 		    ABSTRACT_INTEGER.setEdgeToTarget(VALUE);
+		    REAL.setEdgeToTarget(VALUE);
 		    BOOLEAN.setEdgeToTarget(VALUE);
 		    STRING.setEdgeToTarget(VALUE);
 		    // incompatibilities
@@ -488,6 +495,7 @@ public class AttributeAspect extends AbstractAspect {
 		    instance.setIncompatible(NestingAspect.getInstance());
 		    // initialise the algebra map
 		    addAlgebra(DefaultIntegerAlgebra.getInstance(), INTEGER);
+		    addAlgebra(DefaultRealAlgebra.getInstance(), REAL);
 		    addAlgebra(DefaultBooleanAlgebra.getInstance(), BOOLEAN);
 		    addAlgebra(DefaultStringAlgebra.getInstance(), STRING);
 		    addAlgebra(AbstractIntegerAlgebra.getInstance(), ABSTRACT_INTEGER);
