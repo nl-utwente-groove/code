@@ -328,6 +328,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
 			Graph plainGraph = previewedModel.toPlainGraph();
 			setErrors(GraphInfo.getErrors(plainGraph));
 			getModel().replace(GraphJModel.newInstance(plainGraph, getOptions()));
+			// copy the edited properties into the model
+			getModel().setProperties(previewedModel.getProperties());
 //			setSelectInsertedCells(true);
 			return true;
 		} else {
@@ -1288,9 +1290,11 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         JComponent previewContent = new JPanel(false);
         previewContent.setLayout(new BorderLayout());
         previewContent.add(jGraphPane);
-        if (!previewModel.getProperties().isEmpty()) {
-            previewContent.add(createPropertiesDialog(false).createTablePane(), BorderLayout.NORTH);
-        }
+//        if (!previewModel.getProperties().isEmpty()) {
+//            getModel().setProperties(new GraphProperties(dialog.getEditedProperties()));
+            PropertiesDialog propertiesDialog = createPropertiesDialog(true);
+            previewContent.add(propertiesDialog.createTablePane(), BorderLayout.NORTH);
+//        }
         if (partial) {
         	JLabel errorLabel = new JLabel(String.format("Incomplete preview due to syntax errors in edited %s", getRole(false)));
         	errorLabel.setForeground(SystemColor.RED);
@@ -1307,6 +1311,8 @@ public class Editor implements GraphModelListener, PropertyChangeListener, IEdit
         dialog.setSize(previewSize);
         dialog.setResizable(true);
         dialog.setVisible(true);
+        // put the edited properties into the model
+        previewModel.setProperties(new GraphProperties(propertiesDialog.getEditedProperties()));
         Object response = previewPane.getValue();
         previewSize = dialog.getSize();
         return okOption.equals(response) ? previewModel : null;
