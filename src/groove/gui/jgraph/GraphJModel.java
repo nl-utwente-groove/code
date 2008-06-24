@@ -323,8 +323,13 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     /** Stores the layout from the JModel back into the graph. */
     void synchroniseLayout(GraphJCell jCell) {
         LayoutMap<Node,Edge> currentLayout = GraphInfo.getLayoutMap(getGraph());
+        // create the layout map if it does not yet exist
+        if (currentLayout == null) {
+            currentLayout = new LayoutMap<Node, Edge>();
+            GraphInfo.setLayoutMap(getGraph(), currentLayout);
+        }
         if (jCell instanceof GraphJEdge) {
-            for (Edge edge: ((GraphJEdge) jCell).getEdges()) {
+            for (Edge edge : ((GraphJEdge) jCell).getEdges()) {
                 currentLayout.putEdge(edge, jCell.getAttributes());
             }
         } else {
@@ -333,9 +338,8 @@ public class GraphJModel extends JModel implements GraphShapeListener {
     }
     
     /**
-     * This method first sets the show-aspects property before calling
-     * the super method, and resets this afterwards.
-     * This makes sure that aspect information is included in the labels.
+     * This method first sets the show-aspects property before calling the super method, and resets
+     * this afterwards. This makes sure that aspect information is included in the labels.
      */
 	@Override
 	public Graph toPlainGraph() {
