@@ -71,11 +71,14 @@ public class TypeReconstructor {
 						addTyping(rule.rhs());
 					}
 					
-					// TODO: Possibility: updated putAll method in MergeMap class
 					MergeMap newMerges = calculateMerges(rule);
-					for (Map.Entry<Node,Node> merge : newMerges.nodeMap().entrySet()) {
-						equivalentTypes.putNode(merge.getKey(), merge.getValue());
-					}
+					equivalentTypes.putAll(newMerges);
+					// Putall didn't work properly for MergeMaps before. Is this fixed??
+					// Or otherwise a different implementation between Java 5 & 6.
+					// If getting odd results, replace the putAll by the following code:
+					//for (Map.Entry<Node,Node> merge : newMerges.nodeMap().entrySet()) {
+					//	equivalentTypes.putNode(merge.getKey(), merge.getValue());
+					//}
 				}
 			}
 			for (Map.Entry<Node,Node> mapping : equivalentTypes.nodeMap().entrySet()) {
