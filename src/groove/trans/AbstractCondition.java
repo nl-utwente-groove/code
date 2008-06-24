@@ -158,11 +158,11 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 						attributeKey, attributeProperty);
 			}
 		} else if (hasAttributes()) {
-			if(getProperties().useParameters()) {
-				throw new FormatException(
-					"LTS Parameters are enabled without support for attributes");
-			}
-			
+//			if(getProperties().useParameters()) {
+//				throw new FormatException(
+//					"LTS Parameters are enabled without support for attributes");
+//			}
+//			
 			if (attributeProperty == null) {
 				throw new FormatException(
 						"Condition uses attributes, but \"%s\" not declared",

@@ -330,12 +330,7 @@ abstract public class JModel extends DefaultGraphModel {
 	public boolean isFiltering(String label) {
 		return filteredLabels != null && filteredLabels.contains(label);
 	}
-//	
-//	/** Returns the refresh listener permanantly associated with this {@link JModel}. */
-//	private Observer getRefreshListener() {
-//		return refreshListener;
-//	}
-//	
+
 	/**
      * Tests the grayed-out status of a given jgraph cell.
      * @param cell the cell that is to be tested
@@ -345,19 +340,6 @@ abstract public class JModel extends DefaultGraphModel {
     public boolean isGrayedOut(JCell cell) {
         return grayedOutJCells.contains(cell);
     }
-//
-//    /**
-//     * Changes the grayed-out status of a given jgraph cell. Graying out a cell means making it
-//     * uneditable etc. The grayed-out status of cells can be tested
-//     * using {@link #isGrayedOut(JCell)}.
-//     * @param cell the cell whose grayed-out status is to be changed
-//     * @param hidden the new grayed-out status of the cell
-//     * @see #changeGrayedOut(JCell, boolean)
-//     * @see #isGrayedOut(JCell)
-//     */
-//    public void changeGrayedOut(JCell cell, boolean hidden) {
-//        changeGrayedOut(Collections.singleton(cell), hidden);
-//    }
 
     /**
      * Changes the grayed-out status of a given set of jgraph cells.

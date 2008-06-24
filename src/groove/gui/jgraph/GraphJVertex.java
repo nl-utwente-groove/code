@@ -311,7 +311,6 @@ public class GraphJVertex extends JVertex implements GraphJCell {
      * @param edge the edge to be added
      * @return <tt>true</tt> if the edge has been added; <tt>false</tt> if <tt>edge</tt>
      * is not compatible with this j-vertex and cannot be added.
-     * This implementation returns <tt>true</tt> always.
      * @require <tt>edge.source() == edge.target() == getNode()</tt>
      * @ensure if <tt>result</tt> then <tt>edges().contains(edge)</tt>
      */

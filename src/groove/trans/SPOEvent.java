@@ -243,10 +243,9 @@ final public class SPOEvent extends AbstractEvent<SPORule, SPOEvent.SPOEventCach
     		for( int i = 0; i < map.size(); i++ ) {
     			Node node = this.getAnchorMap().getNode(map.get(new Integer(i+1)));
     			if( node != null && node instanceof ValueNode ) {
-    				Object value = ((ValueNode) node).getValue();
     				result.append(((ValueNode) node).getSymbol());
     			} else {
-    				result.append('?');
+    				result.append(node);
     			}
     			if( i < map.size()-1 ) {
     				result.append('.');

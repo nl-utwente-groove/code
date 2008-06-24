@@ -107,6 +107,7 @@ public class PropertiesDialog {
 			getContentPane().setValue(null);
 			getContentPane().setVisible(true);
 			JDialog dialog = getContentPane().createDialog(frame, createTitle());
+			dialog.setResizable(true);
 			dialog.setVisible(true);
 			dialog.dispose();
 			Object selectedValue = getContentPane().getValue();
@@ -249,7 +250,8 @@ public class PropertiesDialog {
 					}
 				}
 			};
-			table.setPreferredScrollableViewportSize(new Dimension(300, 70));
+			table.setIntercellSpacing(new Dimension(2,-2));
+			table.setPreferredScrollableViewportSize(new Dimension(300, Math.max(model.getRowCount()*ROW_HEIGHT,70)));
 			table.setDefaultRenderer(table.getColumnClass(PROPERTY_COLUMN), new CellRenderer());
 		}
 		return table;
@@ -341,6 +343,8 @@ public class PropertiesDialog {
 	private static final int PROPERTY_COLUMN = 0;
 	/** Column number of the value column (in the model). */
 	private static final int VALUE_COLUMN = 1;
+	/** Height of a row in the dialog. */
+	private static final int ROW_HEIGHT = 15;
 	/** Regular expression for matching property keys. */
 	private static final String IDENTIFIER_REGEXPR = "(\\p{Alpha}\\p{Alnum}*)?";
 
@@ -462,6 +466,7 @@ public class PropertiesDialog {
 		 * Empty constructor with the correct visibility.
 		 */
 		public CellRenderer() {
+		    setMinimumSize(new Dimension(0,2*ROW_HEIGHT));
 			// empty
 		}
 		
