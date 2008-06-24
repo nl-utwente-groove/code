@@ -361,8 +361,7 @@ public class GraphInfo {
     }
 
     /**
-     * Convenience method to retrieve the layout map from a graph and cast it to
-     * the correct type.
+     * Convenience method to retrieve the layout map from a graph.
      */
     public static LayoutMap<Node,Edge> getLayoutMap(GraphShape graph) {
         GraphInfo graphInfo = graph.getInfo();
