@@ -1,0 +1,191 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
+package groove.abs;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+
+import groove.abs.lts.AGTS;
+import groove.explore.ScenarioHandler;
+import groove.explore.ScenarioHandlerFactory;
+import groove.explore.result.EmptyAcceptor;
+import groove.explore.result.EmptyResult;
+import groove.explore.strategy.BranchingStrategy;
+import groove.io.AspectualViewGps;
+import groove.lts.GraphState;
+import groove.lts.LTSGraph;
+import groove.trans.GraphGrammar;
+import groove.util.Groove;
+import groove.view.FormatException;
+
+/** Performs a full abstract simulation of a grammar given as parameter and
+ * saves the resulting LTS.
+ * Also requires abstraction options as parameters. 
+ * 
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
+public class MyGenerator {
+	
+	
+	private GraphGrammar grammar;
+	private AGTS gts;
+	private Abstraction.Parameters parameters;
+	private long startTime;
+	private long endTime;
+	
+	private MyGenerator (Abstraction.Parameters parameters) {
+		this.parameters = parameters;
+	}
+
+	/** Loads a grammar from a given grammar location and a start graph.
+	 *  
+	 * @param grammarFile
+	 * @param startGraph
+	 */
+	private void loadGrammar (String grammarFile, String startGraph) {
+		try {
+			grammar = (new AspectualViewGps()).unmarshal(new File(grammarFile), startGraph).toGrammar();
+		} catch (FormatException e1) {
+			e1.printStackTrace();
+			System.exit(1);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+			System.exit(1);
+		} 
+	}
+	
+	
+	private void exploreGrammar () {
+		
+		gts = new AGTS(grammar, parameters);
+		
+        ScenarioHandler handler = ScenarioHandlerFactory.getScenario(
+        		new BranchingStrategy(), new EmptyResult<Object>(), new EmptyAcceptor(),
+        		"Explores the full state space.", "Full exploration (branching, aliasing)");
+        handler.setGTS(gts);
+		handler.setState((GraphState) gts.startState());
+        
+		startTime = System.currentTimeMillis();
+		try {
+			handler.playScenario();
+			endTime = System.currentTimeMillis();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private void saveResult (AGTS gts, String outputFile, String grammarName) {
+		
+		String stamp = Long.toString(System.currentTimeMillis());
+		outputFile = outputFile + stamp;
+		
+        try {
+			if (!Groove.exportGraph(new LTSGraph(gts), outputFile + ".gxl")) {
+			    File outputFileInfo = new File(outputFile + ".info");
+			    BufferedWriter writer = new BufferedWriter(new FileWriter(outputFileInfo));
+			    writer.write("Grammar     : " + grammarName + "\n");
+			    writer.write("States      : " + Integer.toString(gts.nodeCount()) + "\n");
+			    writer.write("Transitions : " + Integer.toString(gts.edgeCount()) + "\n");
+			    writer.write("Inv. trans. : " + Integer.toString(gts.invalidTransitionsCount()) + "\n");
+			    writer.write("Time        : " + Long.toString(endTime - startTime) + "\n");
+			    writer.write("\n");
+			    writer.write("Radius      : " + Integer.toString(parameters.radius) + "\n");
+			    writer.write("Precision   : " + Integer.toString(parameters.precision) + "\n");
+			    writer.write("Max inc.    : " + Integer.toString(parameters.maxIncidence) + "\n");
+			    Groove.saveGraph(new LTSGraph(gts), outputFile + ".gxl");
+			    writer.flush();
+			    writer.close();
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		} catch (FormatException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	 * 
+	 */
+	private void generate (String grammarFile, String startGraph, String outputFile) {
+		loadGrammar(grammarFile, startGraph);
+		StatisticsThread statThread = new StatisticsThread();
+		statThread.start();
+		exploreGrammar();
+		statThread.interrupt();
+		saveResult(gts, outputFile, grammarFile);
+	}
+	
+	class StatisticsThread extends Thread {
+		
+		@Override
+		public void run () {
+			while (true) {
+				try {
+					sleep(10000);
+					System.out.println("States " + gts.nodeCount() + " (" + gts.openStateCount() + " open)" +
+							", Transitions " + gts.edgeCount()); 
+				} catch (InterruptedException e) {
+					break;
+				}
+			}
+		}
+		
+	}
+	
+	
+	/** Takes a graph grammar as unique parameter
+	 * 
+	 * @param args
+	 */
+	public static void main (String args[]) {
+		
+		String usage = "Usage : MyGenerator <grammar> <startGraph> -p<precision> -r<radius> -m<max_incidence> -o<output_file_name>.";
+		if (args.length != 6) {
+			System.err.println("Error 0");
+			System.err.println(usage);
+			System.exit(1);
+		}
+		
+		String grammarFile = args[0];
+		String startGraph = args[1];
+		
+		String radiusParam = args[2];
+		String precisionParam = args[3];
+		String maxIncidenceParam = args[4];
+		String outputFile = args[5];
+		
+		if (! radiusParam.startsWith("-r") || ! precisionParam.startsWith("-p") || 
+				! maxIncidenceParam.startsWith("-m") || ! outputFile.startsWith("-o")) {
+			System.err.println("Error 1");
+			System.err.println(usage);
+			System.exit(1);
+		}
+		
+		int radius = Integer.parseInt(radiusParam.substring(2));
+		int precision = Integer.parseInt(precisionParam.substring(2));
+		int maxIncidence = Integer.parseInt(maxIncidenceParam.substring(2));
+		outputFile = outputFile.substring(2); 
+		
+		Abstraction.Parameters parameters = new Abstraction.Parameters(radius, precision, maxIncidence);
+		
+		MyGenerator generator = new MyGenerator(parameters);
+		generator.generate (grammarFile, startGraph, outputFile);
+	}
+}
