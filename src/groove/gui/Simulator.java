@@ -1011,17 +1011,22 @@ public class Simulator {
      */
     public synchronized void startAbstrSimulation(DefaultGrammarView grammar) {
     	try {
+    		if (! groove.abs.Util.isAbstractionPossible(grammar.toGrammar())) {
+    			JOptionPane.showMessageDialog(getFrame(),
+    					"Abstract simulation is not possible for grammars with composite rules.",
+    					"Error",
+    					JOptionPane.ERROR_MESSAGE);
+    			return;    			
+        	}
     		AbstrSimulationProperties properties = new AbstrSimulationProperties();
     		PropertiesDialog dialog = new PropertiesDialog(properties, AbstrSimulationProperties.DEFAULT_KEYS, true);
-    		boolean changed = dialog.showDialog(getFrame());
+    		dialog.showDialog(getFrame());
     		properties.update(dialog.getEditedProperties());
 			boolean symred = properties.getSymmetryReduction();
 			Abstraction.LinkPrecision linkPrecision = properties.getLinksPrecision();
-			Abstraction.Parameters options = new Abstraction.Parameters(symred, linkPrecision, properties.getRadius(), properties.getPrecision(), 10);
+			Abstraction.Parameters options = new Abstraction.Parameters(symred, linkPrecision, properties.getRadius(), properties.getPrecision(), properties.getMaxIncidence());
 			AGTS agts = new AGTS(getCurrentGrammar().toGrammar(), options);		
 			setCurrentGTS(agts);
-			
-			// getGenerator().explore(getCurrentState());
 			fireStartSimulation(getCurrentGTS());
 			refresh();
 		} catch (FormatException exc) {
@@ -1123,7 +1128,7 @@ public class Simulator {
     public synchronized void applyMatch () {
     	if (getCurrentMatch() != null) {
     		ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
-    		GraphTransition trans = new StateGenerator(getCurrentGTS()).applyMatch(getCurrentState(), getCurrentMatch(), cache).iterator().next();
+    		GraphTransition trans = getGenerator().applyMatch(getCurrentState(), getCurrentMatch(), cache).iterator().next();
     		setCurrentState(trans.target());
     		fireApplyTransition(trans);
     		refreshActions();
@@ -1560,7 +1565,9 @@ public class Simulator {
         result.add(new JMenuItem(getRedoAction()));
         result.addSeparator();
         result.add(new JMenuItem(getStartSimulationAction()));
-        //result.add(new JMenuItem(getStartAbstrSimulationAction()));
+        //IOVKA change to activate abstract simulation
+        result.add(new JMenuItem(getStartAbstrSimulationAction()));
+        
         result.add(new JMenuItem(getApplyTransitionAction()));
         result.add(new JMenuItem(getGotoStartStateAction()));
         result.addSeparator();
@@ -1774,7 +1781,6 @@ public class Simulator {
      * 
      * @see SimulationListener#setTransitionUpdate(GraphTransition)
      * @see #setTransition(GraphTransition)
-     * TODO above "see" should be updated to setMatchAndTransition
      */
     protected synchronized void fireSetTransition(GraphTransition transition) {
         if (!updating) {
@@ -1915,11 +1921,11 @@ public class Simulator {
     protected StateGenerator createStateGenerator(GTS gts) {
     	StateGenerator result;
     	if (gts instanceof AGTS) {
-    		result =  new AbstrStateGenerator(((AGTS) gts).getParameters());
+    		result =  new AbstrStateGenerator((AGTS) gts, ((AGTS) gts).getParameters());
     	} else {
-    		result = new StateGenerator();
+    		result = new StateGenerator(gts);
     	}
-    	result.setGTS(gts);
+    	//result.setGTS(gts);
     	return result;
     }
     
@@ -2499,7 +2505,7 @@ public class Simulator {
 
     /**
      * Action for applying the current derivation to the current state.
-     * @see Simulator#applyTransition()
+     * @see Simulator#applyMatch()
      */
     private class ApplyTransitionAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
@@ -2810,20 +2816,17 @@ public class Simulator {
 		}
     }
 
-    
+    /** Creates an action associated to a scenario handler. */
     public LaunchScenarioAction createLaunchScenarioAction(ScenarioHandler handler) {
     	return new LaunchScenarioAction(handler);
     }
     
     
+    /** An action used for launching a scenario. */
     private class LaunchScenarioAction extends AbstractAction {
        	LaunchScenarioAction(ScenarioHandler handler) {
             super(handler.getName());
             this.handler = handler;
-        }
-       	
-       	public ScenarioHandler getExploreStrategy() {
-            return handler;
         }
        	
 		@Override
@@ -2871,7 +2874,7 @@ public class Simulator {
 	private class LaunchThread extends CancellableThread {
 	    /**
 	     * Constructs a generate thread for a given exploration stragegy.
-	     * @param strategy the exploration strategy of this thread
+	     * @param handler the scenario handler of this thread
 	     */
 	    LaunchThread(ScenarioHandler handler) {
 	    	super(getLtsPanel(), "Exploring state space");
@@ -3006,7 +3009,6 @@ public class Simulator {
     private class ShowResultAction extends AbstractAction implements Refreshable {
     	/** Constructs an instance of the action. */
         public ShowResultAction() {
-			// TODO Auto-generated constructor stub
             super("Show Result");
 //            putValue(ACCELERATOR_KEY, Options.GOTO_START_STATE_KEY);
 //            addRefreshable(this);
@@ -3403,8 +3405,6 @@ public class Simulator {
         }
 
         public void refresh() {
-        	//IOVKA to be changed in order to activate the menu item for abstract simulation
-//        	boolean enabled = false;
             boolean enabled = getCurrentGrammar() != null && getCurrentGrammar().getErrors().isEmpty();
         	setEnabled(enabled);
         }

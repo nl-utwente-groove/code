@@ -1,8 +1,27 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
+
 package groove.abs;
+
 
 
 /** Class containing global constants for the abstractions. 
  * @author Iovka Boneva
+ * @version $Revision $
  * */
 public class Abstraction {
 	
@@ -69,8 +88,12 @@ public class Abstraction {
 	public static class Parameters {
 		
 		/** Option for symmetry reduction.
-		 * TODO explain what symmetry reduction is
-		 * TODO should be a parameter of the abstract simulation
+		 * Symmetry reduction avoids to consider two different but "equivalent" typings 
+		 * of a graph with a graph pattern. For instance, if G = {n1 -a-> n2} is a graph
+		 * with two nodes and single edge, and P = {n3 -a-> n4, n3 -a-> n5} is a
+		 * graph pattern with center n3, then the node n2 of G2 can be typed by the
+		 * nodes n4 or n5 of P, but the two typings are equivalent, and symmetry reduction
+		 * will consider only one of these.
 		 * Symmetry reduction is costly, but may significantly accelerate if there is lots of symmetry.
 		 */
 		public final boolean SYMMETRY_REDUCTION;		
@@ -130,10 +153,12 @@ public class Abstraction {
 			this.maxIncidence = maxIncidence;
 		}
 		
+		/** The radius of the abstraction. */
 		public final int radius;
+		/** The precision of the abstraction. */
 		public final int precision; 
-		public final int maxIncidence;
-		
+		/** The max incidence of the abstraction. */
+		public final int maxIncidence;	
 	}
 	
 }

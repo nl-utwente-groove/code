@@ -1,3 +1,19 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
 package groove.abs;
 
 
@@ -20,9 +36,8 @@ import java.util.Vector;
  * may be provided on construction.
  * Remove operation is not implemented.
  * Does not support the null element.
- * TODO should operations be synchronized ?  
  * @author Iovka Boneva
- *
+ * @version $Revision $
  * @param <T> 
  */
 public class MyHashSet<T> implements Iterable<T>, Set<T>{
@@ -186,7 +201,7 @@ public class MyHashSet<T> implements Iterable<T>, Set<T>{
 	
 	/** The array of elements with given hash code. */
 	protected List<T> getElementsWithCode(int hashCode) {
-		return this.store.elementAt(hashCode % this.storeCapacity);
+		return this.store.elementAt((hashCode >= 0 ? hashCode : -hashCode) % this.storeCapacity);
 	}
 	
 	// ---------------------------------------------------------------------------
@@ -265,7 +280,6 @@ public class MyHashSet<T> implements Iterable<T>, Set<T>{
 		return result;
 	}
 
-	// TODO this should not be unsupported
 	public <U> U[] toArray(U[] a) { throw new UnsupportedOperationException(); }
 
 }

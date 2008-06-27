@@ -62,11 +62,6 @@ public interface AbstrGraph extends Graph {
 	 */
 	public Node nodeFor (GraphPattern p);
 
-	/** If set, indicates that neither the graph structure nor the typing and multiplicity information can be modified.
-	 * @return True if the abstract graph is not modifiable.
-	 */
-	public boolean isAllFixed();
-	
 	/** Removes certain quantity of the multiplicity of a node.
 	 * @param n
 	 * @param q

@@ -38,11 +38,13 @@ import java.util.Set;
 
 /** Allows to create and reference a set of graph patterns with a guarantee that 
  *  every pattern is represented only once.
- *  Additionnally, if two graph patterns gp1 and gp2 are obtained as result of the method 
+ *  Additionally, if two graph patterns gp1 and gp2 are obtained as result of the method 
  *  gp1 = family.getAddPattern(g1,c1) and gp2 = family.getAddPattern(g2,c2)
  *  of the same object family, then gp1 is equivalent (isomorphic) to gp2 iff gp1 == gp2. 
  *  All patterns given by this factory have the same radius and the same maximal incidence.
- *  A family of patterns is characterised by a set of labels. 
+ *  
+ * @author Iovka Boneva
+ * @version $Revision $
  */
 public class PatternFamily implements Iterable<GraphPattern> {
 	
@@ -53,24 +55,23 @@ public class PatternFamily implements Iterable<GraphPattern> {
 	/** Used to contain the set of patterns already in this family */
 	private MyHashSet<GraphPattern> thePatterns;
 	/** Used in case of symmetry reduction. */
-	
-	
+		
 	/** 
 	 * Creates a family of patterns.  
 	 * @param radius the radius of patterns in this family
 	 * @param max_incidence the maximal allowed incidence of nodes
-	 * @param labelsSet the set of allowed labels
 	 * @require radius should be positive (>= 1)
 	 * @require max_incidence should be positie (>=1)
 	 */
 	public PatternFamily(final int radius, final int max_incidence) {
-		if (true) throw new UnsupportedOperationException();
+//		if (true) throw new UnsupportedOperationException();
 		assert radius > 0 && max_incidence > 0: "A radius and max_incidence should be positive." ;
 		this.RADIUS = radius;
 		this.MAX_INCIDENCE = max_incidence;
 		this.thePatterns = new MyHashSet<GraphPattern>(new DefaultGraphPatternHasher());
 	}
 	/** The maximal allowed incidence. 
+	 * This is the maximal number of incident edges that a pattern in this family may have.
 	 * @return  the maximal allowed incidence 
 	 */
 	public int getMaxIncidence() {
@@ -253,8 +254,8 @@ public class PatternFamily implements Iterable<GraphPattern> {
 	}
 	
 	
-	// DEBUG method
-	Collection<NodeEdgeMap> getSelfIsomorphisms (GraphPattern p) {
+	/** Debugging method. */
+	public Collection<NodeEdgeMap> getSelfIsomorphisms (GraphPattern p) {
 		return ((DefaultGraphPattern) p).getSelfIsomorphisms();
 	}
 	
@@ -298,20 +299,10 @@ public class PatternFamily implements Iterable<GraphPattern> {
 			this.central = central;
 			if (computeDistance) this.computeDistanceMap();
 		}
-		
+	
 		public Node central() { return this.central; }
 
 		public Graph graph() { return this; }
-		
-		public int distance (Node n) throws NoSuchNodeException {
-			if (this.distanceMap == null) {
-				throw new UnsupportedOperationException();
-			}
-			if (! this.graph().containsElement(n)) {
-				throw new NoSuchNodeException();
-			}
-			return this.distanceMap.get(n);		
-		}
 		
 		/** Lazily computes self isomorphisms. */
 		private ArrayList<NodeEdgeMap> getSelfIsomorphisms() {
@@ -455,26 +446,22 @@ public class PatternFamily implements Iterable<GraphPattern> {
 			return p.graph().getCertifier().getGraphCertificate().hashCode();
 		}
 		
-		// FIXME this is not correct. If there are several isomorphism between the graphs, only
-		// some of them may not match the center nodes. If getIsomorphsm() returns such an
-		// isomorphisms, the method will return false, whereas the graphs might be isomorphic
 		public boolean areEqual(GraphPattern p1, GraphPattern p2) {
 			NodeEdgeMap isomorphism = DefaultIsoChecker.getInstance().getIsomorphism(p1.graph(), p2.graph());
-			if (isomorphism == null) { return false; }
-			return isomorphism.getNode(p1.central()).equals(p2.central());
-			
-// 			CORRECT IMPLEMENTATION			
-//			NodeEdgeMap isomorphism = DefaultIsoChecker.getInstance().getIsomorphism(p1.graph(), p2.graph());
-//			if (isomorphism == null) { return false; }
-//			// compute all isomorphisms
-//			NodeEdgeMap centerMap = new NodeEdgeHashMap();
-//			centerMap.putNode(p1.centre(), p2.centre());
-//			for (VarNodeEdgeMap morph : groove.abs.Util.getInjMatchesIter(p1.graph(), p2.graph(), centerMap)) {
-//				// this is necessary an isomorphism, as the graphs are isomorphic, thus same number nodes and edges,
-//				// and morph is injective and total, thus surjective 
-//				return true;
-//			}
-//			return false;
+			if (isomorphism == null) { 
+				return false; 
+			} else if (isomorphism.getNode(p1.central()).equals(p2.central())) {
+				return true;
+			}
+			// there is an isomorphism, but not the one we want
+			// compute all isomorphisms
+			NodeEdgeMap centerMap = new NodeEdgeHashMap();
+			centerMap.putNode(p1.central(), p2.central());
+
+			// if a morphism exists, it is necessary an isomorphism,
+			// as the graphs are isomorphic, thus same number nodes and edges,
+			// and morph is injective and total, thus surjective 
+			return ! groove.abs.Util.getInjMatchSet(p1.graph(), p2.graph(), centerMap).isEmpty();
 		}
 	}
 }

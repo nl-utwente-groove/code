@@ -1,3 +1,19 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
 package groove.abs;
 
 import groove.abs.Abstraction.AbstrGraphsRelation;
@@ -26,10 +42,14 @@ import java.util.Set;
 
 /** A pattern shape graph is a graph together with types (graph patterns) and multiplicities 
  * associated to its nodes.
- * @author io
- *
+ * @author Iovka Boneva
+ * @version $Revision $
  */
 public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
+	
+	/** Used by AGTS. */
+	public static final AbstrGraph INVALID_AG = new DefaultAbstrGraph();
+	
 	
 	/** Creates a factory object with specified family and precision.
 	 * @param family
@@ -90,31 +110,25 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 		return result;
 	}
 	
-	public boolean isAllFixed() {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 	/** Two abstract graphs are isomorphic if there is an isomorphism on the underlying graph structure
 		 * that preserves typing.
 		 */
 		public Morphism getIsomorphismToAbstrGraph (AbstrGraph other) {
 			this.checkInvariants();
-			if (! this.family.equals(other.family())) { return null; } 
+			if (this.family() != other.family()) { return null; } 
 			if (this.nodeCount() != other.nodeCount()) {
 				return null;
 			}
 			if (this.edgeCount() != other.edgeCount()) {
 				return null;
 			}
-			// TODO test equality of graphs certificates here
+			// OPTIM test equality of graphs certificates here to improve performance
 					
 			// Construct a map matching nodes with same type
 			NodeEdgeMap map = new NodeEdgeHashMap();
 			for (Map.Entry<GraphPattern, Node> entry : this.invType.entrySet()) {
 				Node image = other.nodeFor(entry.getKey());
 				if (image == null) { return null; }
-	//			if (this.multiplicityOf(entry.getValue()) != other.multiplicityOf(image)) { return null; }
 				map.putNode(entry.getValue(), image);
 			}
 			for (VarNodeEdgeMap r : Util.getInjMatchesIter(this, other, map)) {
@@ -209,9 +223,14 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	public boolean equals (Object o) {
 		if (! (o instanceof DefaultAbstrGraph)) { return false; }
 		DefaultAbstrGraph g = (DefaultAbstrGraph) o;
-		// TODO the value of the second argument does not influence whether the result is EQUAL
-		// TODO this is not efficient, it would be better to test directly multiplicities with fast return on false
-		return this.compare(g, false) == AbstrGraphsRelation.EQUAL;
+		Morphism m = this.getIsomorphismToAbstrGraph(g);
+		if (m == null) { return false; }
+		for (Map.Entry<Node, Node> nn : m.nodeMap().entrySet()) {
+			if (! this.multiplicityOf(nn.getKey()).equals(g.multiplicityOf(nn.getValue()))) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
@@ -278,7 +297,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	/** Computes a map indicating the maximal allowed number of nodes of given type, whenever this number is finite.
 	 * @return A map from GraphPatterns that are types that are types in this abstract graph into their multiplicity, 
 	 * whenever this multiplicity is finite.
-	 * TODO this is computed each time. Maybe it should be pre-computed, and updated whenever a graph is changed
+	 * OPTIM this is computed each time. Maybe it should be pre-computed, and updated whenever a graph is changed
 	 */
 	Map<GraphPattern, Integer> maxAllowed () {
 		this.checkInvariants();
@@ -286,7 +305,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 		for (Node n : nodeSet()) {
 			int card = Abstraction.MULTIPLICITY.preciseCard(multiplicityOf(n));
 			if (card != -1) {
-				// TODO here I assume that each type is associated to a unique node. This invariant should be checked
+				// I assume that each type is associated to a unique node. This invariant could be checked
 				result.put(typeOf(n), card);
 			}
 		}
@@ -360,7 +379,6 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	
 	void computeHashCode() {
 		Object certificate = getCertifier().getGraphCertificate();
-		// TODO is it the good way to do it ?
 		this.hashCode = certificate.hashCode();
 	}
 	
@@ -369,10 +387,12 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	// FIELDS, CONSTRUCTORS AND STANDARD METHODS
 	// ----------------------------------------------------------------------------------
 	
-	/** Private constructor to be used only for creating a factory. */
+	/** Private constructor to be used only for creating a factory and for INVALID_AG. */
 	private DefaultAbstrGraph() {
 		this.family = null;
 		this.precision = 0;
+		this.type = new HashMap<Node,NodeType>(0);
+		this.invType = new HashMap<GraphPattern, Node>(0);
 	}
 	
 	/** Copying constructor.
@@ -388,7 +408,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	}
 	
 	/** Private constructor.
-	 * Used by the factory. 
+	 * Used by the factory and for creating the invalid abstract graph.
 	 * @param family
 	 * @param precision
 	 */
@@ -500,7 +520,7 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 		public DefaultAbstrGraph getShapeGraphFor (Graph graph) throws ExceptionIncompatibleWithMaxIncidence {
 			
 			DefaultAbstrGraph result = new DefaultAbstrGraph (this.myFamily, this.myPrecision);
-			// TODO the initial capacity may probably be optimised
+			// OPTIM the initial capacity may probably be optimised
 			result.type = new HashMap<Node,NodeType>(graph.nodeCount());
 			result.invType = new HashMap<GraphPattern, Node> (graph.nodeCount());
 			
@@ -624,9 +644,9 @@ public class DefaultAbstrGraph extends DefaultGraph implements AbstrGraph {
 	}
 	
 	/** Allows to construct an abstract graph by giving directly nodes with their multiplicity and type.
-	 * 
+	 * Debugging class.
 	 */
-	class AbstrGraphCreator {
+	public class AbstrGraphCreator {
 			
 		/** */
 		public void init(PatternFamily family, int precision) {

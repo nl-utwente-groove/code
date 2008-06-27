@@ -37,8 +37,10 @@ import groove.rel.VarNodeEdgeHashMap;
 import groove.rel.VarNodeEdgeMap;
 import groove.trans.RuleApplication;
 
-/** Represents a set of materialisations.
- * A set of materialisations is determined by a normalised abstract graph and an injective matching into this graph.
+/** A set of materialisations is defined by a concrete part, and abstract part
+ * and an embedding of the concrete part into the abstract part.
+ * The set of materialisations can be transformed yielding a set of
+ * resulting abstract graphs.
  * @author Iovka Boneva
  * @version $Revision $
  */
@@ -46,13 +48,22 @@ public class SetMaterialisations {
 
 
 	/** Performs the actual transformation and returns the set of resulting abstract graphs.
-	 * @param appl The matching associated to this rule event should be the same as for the construction of this SetMaterialiastion object.
+	 * @param appl The matching associated to this rule application should be the same as for the construction of this SetMaterialiastion object.
 	 * @return The set of resulting abstract graphs.
 	 * This method can be called immediately after the creation of the object.
 	 */
 	public Collection<AbstrGraph> transform (RuleApplication appl, NodeFactory nodeFactory) {
 		this.computeSet();
-		this.transformAux(appl, nodeFactory);
+		if (this.origins.size() == 0) {
+			return new ArrayList<AbstrGraph>(0);
+		}
+		try {
+			this.transformAux(appl, nodeFactory);
+		} catch (ExceptionIncompatibleWithMaxIncidence e) {
+			ArrayList<AbstrGraph> result = new ArrayList<AbstrGraph>(1);
+			result.add(DefaultAbstrGraph.INVALID_AG);
+			return result;
+		}
 		return this._transfResults(nodeFactory);
 	}
 	
@@ -60,9 +71,9 @@ public class SetMaterialisations {
 	// MAIN ALGORITHMS
 	// --------------------------------------------------------------------------------------
 	/** Computes the internal representation of the set, so that it can be transformed. 
-	 * @ensure For all couple of nodes (cn,an) that is in one of the origin maps, this.data contains a value for this couple.  
+	 * @ensure For all couple of nodes (cn,an) that is in one of the origin maps, this.data contains a value for this couple.
 	 */
-	void computeSet() {
+	private void computeSet() {
 		this.data = new HashMap<CNN, Collection<MapPattern>>();
 		// Compute all possible origin embeddings that extend the initial one
 		this.origins = new ArrayList<ExtendedVarNodeEdgeMap>();
@@ -73,41 +84,69 @@ public class SetMaterialisations {
 		((ArrayList<ExtendedVarNodeEdgeMap>) this.origins).trimToSize();
 		
 		// For all origin
-		for (ExtendedVarNodeEdgeMap originMap : this.origins) {
+		Iterator<ExtendedVarNodeEdgeMap> it = origins.iterator();
+		originsLoop:
+		while (it.hasNext()) {
+			ExtendedVarNodeEdgeMap originMap = it.next();
+			Map<CNN, Collection<MapPattern>> addToData = new HashMap<CNN, Collection<MapPattern>>();
+			
 			// For all couple (cn,an) in origin and such that cn is not in the central nodes,
 			// compute the corresponding type if it was not yet computed
 			for (Map.Entry<Node, Graph> entry : this.concrPart.neigh().entrySet()) {
 				Node n = entry.getKey();
-				if (! this.data.containsKey(CNN.cnn(n, originMap.getNode(n)))) {
+				if (! this.data.containsKey(CNN.cnn(n, originMap.getNode(n)))) {  // avoid to do things twice
 					Graph neigh = entry.getValue();
 					GraphPattern type = this.abstrPart.typeOf(originMap.getNode(n));
 					ArrayList<MapPattern> theTypes = new ArrayList<MapPattern>();
-					this.data.put(CNN.cnn(n, originMap.getNode(n)), theTypes);
+					addToData.put(CNN.cnn(n, originMap.getNode(n)), theTypes);
 					for (VarNodeEdgeMap m : type.possibleTypings(neigh, n, this.options.SYMMETRY_REDUCTION)) {
 						theTypes.add(new MapPattern(m));
 					}
-//					for (VarNodeEdgeMap m : Util.getInjMatchesIter(neigh, type, centerMatch)) {
-//						theTypes.add(new MapPattern(m));
-//					}
+					// if no types were found, then this origin mapping is not possible
+					if (theTypes.size() == 0) {
+						it.remove();
+						continue originsLoop;
+					}
 				}
 			}
+			data.putAll(addToData);
+			
+			
+//			// For all couple (cn,an) in origin and such that cn is not in the central nodes,
+//			// compute the corresponding type if it was not yet computed
+//			for (Map.Entry<Node, Graph> entry : this.concrPart.neigh().entrySet()) {
+//				Node n = entry.getKey();
+//				if (! this.data.containsKey(CNN.cnn(n, originMap.getNode(n)))) {
+//					Graph neigh = entry.getValue();
+//					GraphPattern type = this.abstrPart.typeOf(originMap.getNode(n));
+//					ArrayList<MapPattern> theTypes = new ArrayList<MapPattern>();
+//					this.data.put(CNN.cnn(n, originMap.getNode(n)), theTypes);
+//					for (VarNodeEdgeMap m : type.possibleTypings(neigh, n, this.options.SYMMETRY_REDUCTION)) {
+//						theTypes.add(new MapPattern(m));
+//					}
+//					// if no types were found, then this origin mapping is not possible
+//					if (theTypes.size() == 0) {
+//						throw new UnsupportedOperationException();
+//					}
+//				}
+//			}
 		}
 	}
 	
 	/** Performs the actual transformation of the concrete part.
 	 * Also computes possible new types of the nodes of the new concrete part.
-	 * @param event The event used as transformation.
 	 * @ensure {@link #data} is updated with the new types
 	 * @ensure {@link #centerType}, {@link #newConcrPart}, {@link #morph} are computed
 	 * @ensure {@link #transformed} is set to true
 	 * @require {@link #computeSet()} should have been called before
+	 * @throws ExceptionIncompatibleWithMaxIncidence when the new concrete part contains incorrect types
 	 */
-	void transformAux (RuleApplication appl, NodeFactory nodeFactory) {
+	private void transformAux (RuleApplication appl, NodeFactory nodeFactory) throws ExceptionIncompatibleWithMaxIncidence {
 		this.centerType = new HashMap<Node, GraphPattern>(this.concrPart.graph().nodeSet().size() - this.concrPart.neigh().size());
+		
 		// IOVKA if not cloning, the source graph is modified
 		Graph clone = this.concrPart.graph().clone();
 		appl.applyDelta(clone);
-		//appl.applyDelta(this.concrPart.graph().clone());
 		this.newConcrPart = appl.getTarget();
 		this.morph = appl.getMorphism();
 		
@@ -129,8 +168,7 @@ public class SetMaterialisations {
 			try {
 				this.centerType.put(n, this.abstrPart.family().computeAddPattern(this.newConcrPart, this.morph.getNode(n)));
 			} catch (ExceptionIncompatibleWithMaxIncidence e) {
-				// INC_PB
-				e.printStackTrace();
+				throw e;
 			}
 		}
 		// compute the types for the new nodes
@@ -138,11 +176,12 @@ public class SetMaterialisations {
 			try {
 				this.centerType.put(n, this.abstrPart.family().computeAddPattern(this.newConcrPart, n));
 			} catch (ExceptionIncompatibleWithMaxIncidence e) {
-				// INC_PB
-				e.printStackTrace();
+				throw e;
 			}
 		}
 		this.transformed = true;
+		
+		
 		checkFullTyping();
 	}
 	
@@ -240,165 +279,166 @@ public class SetMaterialisations {
 	}
 	
 	
-	/** Computes the set of abstract graphs result of the transformation.
-	 * @require {@link #computeSet()} and {@link #transformAux(RuleApplication)} have been called previously.
-	 * @return The set of abstract graphs result of the transformation.
-	 */
-	Collection<AbstrGraph> transfResults (NodeFactory nodeFactory) {
-		// for all possible origin
-		//    for all possible combination of typings
-		// 		  construct the new abstract part by updating multiplicities
-		//        construct links (several link configurations per combination of typings are possible)
-		// 	      merge the new abstract part with the new concrete part 
-		//             - add the new types in the abstr part
-		//             - add the edges structure
-		Collection<AbstrGraph> result = new ArrayList<AbstrGraph>();
-		
-		// common used later on
-		Collection<Node> dist1Nodes = this.concrPart.nodesAtDist(1);
-		
-		for (final ExtendedVarNodeEdgeMap origin : this.origins) {
-		
-			// Collects nodes that have 0 multiplicity at some time, and thus have to be removed at a later point 
-			Collection<Node> collectZeroMult = new ArrayList<Node>();
-			
-			
-			DefaultAbstrGraph newAbstrPart = newAbstractPart(origin);
-			// enrich the new abstract part with new summary nodes for added and read nodes
-			for (Map.Entry<Node, GraphPattern> entry : this.centerType.entrySet()) {
-				GraphPattern pat = entry.getValue();
-				if (newAbstrPart.addTo(pat, 1)) {
-					// a node of type patN existed with 0 multiplicity
-					collectZeroMult.add(newAbstrPart.nodeFor(pat));
-				}
-				//newAbstrPart.addTo(entry.getValue(), 1);
-			}
-			
-			// enumerate combinations of typing morphisms for the neighbourhoods of the non central nodes
-			TupleIterator.Mapping<Node, MapPattern> mappingIt = new TupleIterator.Mapping<Node, MapPattern>() {
-				public Iterator<MapPattern> itFor(Node n) {
-					return SetMaterialisations.this.data.get(CNN.cnn(n, origin.getNode(n))).iterator();
-				}
-				public Collection<Node> keySet() { return SetMaterialisations.this.concrPart.neigh().keySet(); }
-				public int size() { return keySet().size(); }
-			};
-			TupleIterator<Node, MapPattern> it = new TupleIterator<Node, MapPattern>(mappingIt);
-			
-			while (it.hasNext()) {
-				transformResultForTyping(it.next(), origin, newAbstrPart, collectZeroMult, dist1Nodes, result, nodeFactory);
-			}
-		}
-		return result;
-	}
+//	/** Computes the set of abstract graphs result of the transformation.
+//	 * @require {@link #computeSet()} and {@link #transformAux(RuleApplication)} have been called previously.
+//	 * @return The set of abstract graphs result of the transformation.
+//	 */
+//	private Collection<AbstrGraph> transfResults (NodeFactory nodeFactory) {
+//		// for all possible origin
+//		//    for all possible combination of typings
+//		// 		  construct the new abstract part by updating multiplicities
+//		//        construct links (several link configurations per combination of typings are possible)
+//		// 	      merge the new abstract part with the new concrete part 
+//		//             - add the new types in the abstr part
+//		//             - add the edges structure
+//		Collection<AbstrGraph> result = new ArrayList<AbstrGraph>();
+//		
+//		// common used later on
+//		Collection<Node> dist1Nodes = this.concrPart.nodesAtDist(1);
+//		
+//		for (final ExtendedVarNodeEdgeMap origin : this.origins) {
+//		
+//			// Collects nodes that have 0 multiplicity at some time, and thus have to be removed at a later point 
+//			Collection<Node> collectZeroMult = new ArrayList<Node>();
+//			
+//			
+//			DefaultAbstrGraph newAbstrPart = newAbstractPart(origin);
+//			// enrich the new abstract part with new summary nodes for added and read nodes
+//			for (Map.Entry<Node, GraphPattern> entry : this.centerType.entrySet()) {
+//				GraphPattern pat = entry.getValue();
+//				if (newAbstrPart.addTo(pat, 1)) {
+//					// a node of type patN existed with 0 multiplicity
+//					collectZeroMult.add(newAbstrPart.nodeFor(pat));
+//				}
+//				//newAbstrPart.addTo(entry.getValue(), 1);
+//			}
+//			
+//			// enumerate combinations of typing morphisms for the neighbourhoods of the non central nodes
+//			TupleIterator.Mapping<Node, MapPattern> mappingIt = new TupleIterator.Mapping<Node, MapPattern>() {
+//				public Iterator<MapPattern> itFor(Node n) {
+//					return SetMaterialisations.this.data.get(CNN.cnn(n, origin.getNode(n))).iterator();
+//				}
+//				public Collection<Node> keySet() { return SetMaterialisations.this.concrPart.neigh().keySet(); }
+//				public int size() { return keySet().size(); }
+//			};
+//			TupleIterator<Node, MapPattern> it = new TupleIterator<Node, MapPattern>(mappingIt);
+//			
+//			while (it.hasNext()) {
+//				transformResultForTyping(it.next(), origin, newAbstrPart, collectZeroMult, dist1Nodes, result, nodeFactory);
+//			}
+//		}
+//		return result;
+//	}
 	
-	/** Auxiliary method for {@link #transfResults()}. 
-	 * @param mapPat the typing
-	 * @param origin the origin map from the concrete part into the abstr part
-	 * @param newAbstrPart the partially constructed new abstract part
-	 * @param collectZeroMult nodes that have zero multiplicity and have to be removed at a letter point
-	 * @param dist1Nodes The nodes in the concrete part at distance one from the center
-	 * @param accuResult accumulates the constructed abstract graphs
-	 * */
-	private void transformResultForTyping (final Map<Node,MapPattern> mapPat, 
-											final ExtendedVarNodeEdgeMap origin,
-											DefaultAbstrGraph newAbstrPart,
-											Collection<Node> collectZeroMult,
-											Collection<Node> dist1Nodes,
-											Collection<AbstrGraph> accuResult,
-											NodeFactory nodeFactory) {
-		// 		  construct the new abstract part by updating multiplicities
-		//        construct links (several link configurations per combination of typings are possible)
-		//        update the new abstract part, by adding the new summary nodes
-		//        construct new abstract graph
-		
-		// Collects nodes that have 0 multiplicity at some time, and thus have to be removed at a later point 
-		Collection<Node> collectZeroMultLocal = new ArrayList<Node>();
-		collectZeroMultLocal.addAll(collectZeroMult);
-		
-		
-		// Update the abstract part w.r.t. the new types coming from non center nodes
-		// This is independent on the variation due to different possible links
-		DefaultAbstrGraph abstrPartBase = new DefaultAbstrGraph(newAbstrPart);
-		for (Node n : mapPat.keySet()) {
-			GraphPattern patN = mapPat.get(n).getPattern();
-			if (abstrPartBase.addTo(patN, 1)) {
-				// a node of type patN existed with 0 multiplicity
-				collectZeroMultLocal.add(abstrPartBase.nodeFor(patN));
-			}
-			// abstrPartBase.addTo(mapPat.get(n).getPattern(), 1);
-		}
-		
-		// Compute the possible links. 
-		ArrayList<Set<Edge>> possibleSrcLinks = new ArrayList<Set<Edge>>();
-		ArrayList<Set<Edge>> possibleTgtLinks = new ArrayList<Set<Edge>>();
-		ArrayList<Set<Node>> zeroMultNodes = new ArrayList<Set<Node>>();
-		ArrayList<Set<Edge>> linkConsumedEdges = new ArrayList<Set<Edge>>();
-		possibleLinks(origin, mapPat, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, nodeFactory);
-		
-		// Now 0 multiplicity nodes can be removed from the abstract part
-		
-		// IOVKA It seems that the 0 multiplicity nodes can be simply removed, without bothering about adjacent edges
-		// It can be shown that all "possible" adjacent edges have been added as links.
-		// (An edge is not "possible" means that it does not comply to the typing defined by the origin map and the subtypings.)
-		// Let N be a 0 multiplicity node. The proof is based on the distance of concrete nodes mapped into N to the center of the concrete part, and the fact that the center and the distance 1 nodes have had their neighbourhood computed
-
-		ArrayList<Node> toRemove = new ArrayList<Node>();
-		Iterator<? extends Node> nodeIt = this.abstrPart.nodeSet().iterator();  // only old nodes may have 0 multiplicity
-		while (nodeIt.hasNext()) {
-			Node n = nodeIt.next();
-			if (Abstraction.MULTIPLICITY.isZero(abstrPartBase.multiplicityOf(n))) {
-				toRemove.add(n);
-				//abstrPartBase.removeNode(n);
-				//nodeIt.remove();
-			}
-		}
-		for (Node n : toRemove) { abstrPartBase.removeNode(n); }
-		
-		// remove the edges adjacent to the the nodes that had 0 mult at some moment
-		ArrayList<Edge> eToRemove = new ArrayList<Edge>();
-		for (Node n : collectZeroMultLocal) {
-			eToRemove.addAll(abstrPartBase.edgeSet(n));
-		}
-		for (Edge e : eToRemove) {
-			abstrPartBase.removeEdge(e);
-		}
-		
-		
-		// Update the abstract part w.r.t. the concrete part
-		ConcretePart.Typing nodeTypes = new ConcretePart.Typing () {
-			public GraphPattern typeOf(Node n) {
-				MapPattern t = mapPat.get(n);
-				return t != null ? t.getPattern() : SetMaterialisations.this.centerType.get(n);
-			}
-		};
-	
-		Collection<Edge> notToRemove = new ArrayList<Edge>();
-		addConcrToAbstr (abstrPartBase, this.newConcrPart, this.concrPart.neigh().keySet(), nodeTypes, notToRemove);
-		
-		// Enrich the base abstract part with links, in all possible ways
-		for (int i = 0; i < possibleSrcLinks.size(); i++) {
-			// Construct the abstract graph
-			DefaultAbstrGraph finalAbstrGraph = new DefaultAbstrGraph(abstrPartBase);
-			
-			// Remove the edges in the abstract part that are now links
-			for (Edge e : linkConsumedEdges.get(i)) {
-				if (! notToRemove.contains(e)) { finalAbstrGraph.removeEdge(e); }
-			}
-
-			for (Edge ee : possibleSrcLinks.get(i)) {
-				DefaultEdge e = (DefaultEdge) ee;
-				finalAbstrGraph.addEdge(DefaultEdge.createEdge(finalAbstrGraph.nodeFor(nodeTypes.typeOf(e.source())), e.label(), e.target()));
-			}
-			for (Edge ee : possibleTgtLinks.get(i)) {
-				DefaultEdge e = (DefaultEdge) ee;
-				finalAbstrGraph.addEdge(DefaultEdge.createEdge(e.source(), e.label(), finalAbstrGraph.nodeFor(nodeTypes.typeOf(e.target()))));
-			}
-			
-			// Add it to result
-			assert finalAbstrGraph.nodeSet().size() == abstrPartBase.nodeSet().size() : "Something get wrong, a new node was added.";
-			accuResult.add(finalAbstrGraph);
-		}
-	}
+//	/** Auxiliary method for {@link #transfResults(NodeFactory)}. 
+//	 * @param mapPat The typing
+//	 * @param origin The origin map from the concrete part into the abstr part
+//	 * @param newAbstrPart The partially constructed new abstract part
+//	 * @param collectZeroMult The nodes that have zero multiplicity and have to be removed at a letter point
+//	 * @param dist1Nodes The nodes in the concrete part at distance one from the center
+//	 * @param accuResult Accumulates the constructed abstract graphs
+//	 * @param nodeFactory A factory for new nodes.
+//	 * */
+//	private void transformResultForTyping (final Map<Node,MapPattern> mapPat, 
+//											final ExtendedVarNodeEdgeMap origin,
+//											DefaultAbstrGraph newAbstrPart,
+//											Collection<Node> collectZeroMult,
+//											Collection<Node> dist1Nodes,
+//											Collection<AbstrGraph> accuResult,
+//											NodeFactory nodeFactory) {
+//		// 		  construct the new abstract part by updating multiplicities
+//		//        construct links (several link configurations per combination of typings are possible)
+//		//        update the new abstract part, by adding the new summary nodes
+//		//        construct new abstract graph
+//		
+//		// Collects nodes that have 0 multiplicity at some time, and thus have to be removed at a later point 
+//		Collection<Node> collectZeroMultLocal = new ArrayList<Node>();
+//		collectZeroMultLocal.addAll(collectZeroMult);
+//		
+//		
+//		// Update the abstract part w.r.t. the new types coming from non center nodes
+//		// This is independent on the variation due to different possible links
+//		DefaultAbstrGraph abstrPartBase = new DefaultAbstrGraph(newAbstrPart);
+//		for (Node n : mapPat.keySet()) {
+//			GraphPattern patN = mapPat.get(n).getPattern();
+//			if (abstrPartBase.addTo(patN, 1)) {
+//				// a node of type patN existed with 0 multiplicity
+//				collectZeroMultLocal.add(abstrPartBase.nodeFor(patN));
+//			}
+//			// abstrPartBase.addTo(mapPat.get(n).getPattern(), 1);
+//		}
+//		
+//		// Compute the possible links. 
+//		ArrayList<Set<Edge>> possibleSrcLinks = new ArrayList<Set<Edge>>();
+//		ArrayList<Set<Edge>> possibleTgtLinks = new ArrayList<Set<Edge>>();
+//		ArrayList<Set<Node>> zeroMultNodes = new ArrayList<Set<Node>>();
+//		ArrayList<Set<Edge>> linkConsumedEdges = new ArrayList<Set<Edge>>();
+//		possibleLinks(origin, mapPat, possibleSrcLinks, possibleTgtLinks, zeroMultNodes, linkConsumedEdges, nodeFactory);
+//		
+//		// Now 0 multiplicity nodes can be removed from the abstract part
+//		
+//		// IOVKA It seems that the 0 multiplicity nodes can be simply removed, without bothering about adjacent edges
+//		// It can be shown that all "possible" adjacent edges have been added as links.
+//		// (An edge is not "possible" means that it does not comply to the typing defined by the origin map and the subtypings.)
+//		// Let N be a 0 multiplicity node. The proof is based on the distance of concrete nodes mapped into N to the center of the concrete part, and the fact that the center and the distance 1 nodes have had their neighbourhood computed
+//
+//		ArrayList<Node> toRemove = new ArrayList<Node>();
+//		Iterator<? extends Node> nodeIt = this.abstrPart.nodeSet().iterator();  // only old nodes may have 0 multiplicity
+//		while (nodeIt.hasNext()) {
+//			Node n = nodeIt.next();
+//			if (Abstraction.MULTIPLICITY.isZero(abstrPartBase.multiplicityOf(n))) {
+//				toRemove.add(n);
+//				//abstrPartBase.removeNode(n);
+//				//nodeIt.remove();
+//			}
+//		}
+//		for (Node n : toRemove) { abstrPartBase.removeNode(n); }
+//		
+//		// remove the edges adjacent to the the nodes that had 0 mult at some moment
+//		ArrayList<Edge> eToRemove = new ArrayList<Edge>();
+//		for (Node n : collectZeroMultLocal) {
+//			eToRemove.addAll(abstrPartBase.edgeSet(n));
+//		}
+//		for (Edge e : eToRemove) {
+//			abstrPartBase.removeEdge(e);
+//		}
+//		
+//		
+//		// Update the abstract part w.r.t. the concrete part
+//		ConcretePart.Typing nodeTypes = new ConcretePart.Typing () {
+//			public GraphPattern typeOf(Node n) {
+//				MapPattern t = mapPat.get(n);
+//				return t != null ? t.getPattern() : SetMaterialisations.this.centerType.get(n);
+//			}
+//		};
+//	
+//		Collection<Edge> notToRemove = new ArrayList<Edge>();
+//		addConcrToAbstr (abstrPartBase, this.newConcrPart, this.concrPart.neigh().keySet(), nodeTypes, notToRemove);
+//		
+//		// Enrich the base abstract part with links, in all possible ways
+//		for (int i = 0; i < possibleSrcLinks.size(); i++) {
+//			// Construct the abstract graph
+//			DefaultAbstrGraph finalAbstrGraph = new DefaultAbstrGraph(abstrPartBase);
+//			
+//			// Remove the edges in the abstract part that are now links
+//			for (Edge e : linkConsumedEdges.get(i)) {
+//				if (! notToRemove.contains(e)) { finalAbstrGraph.removeEdge(e); }
+//			}
+//
+//			for (Edge ee : possibleSrcLinks.get(i)) {
+//				DefaultEdge e = (DefaultEdge) ee;
+//				finalAbstrGraph.addEdge(DefaultEdge.createEdge(finalAbstrGraph.nodeFor(nodeTypes.typeOf(e.source())), e.label(), e.target()));
+//			}
+//			for (Edge ee : possibleTgtLinks.get(i)) {
+//				DefaultEdge e = (DefaultEdge) ee;
+//				finalAbstrGraph.addEdge(DefaultEdge.createEdge(e.source(), e.label(), finalAbstrGraph.nodeFor(nodeTypes.typeOf(e.target()))));
+//			}
+//			
+//			// Add it to result
+//			assert finalAbstrGraph.nodeSet().size() == abstrPartBase.nodeSet().size() : "Something get wrong, a new node was added.";
+//			accuResult.add(finalAbstrGraph);
+//		}
+//	}
 	
 	// --------------------------------------------------------------------------------------
 	// AUXILIARY ALGORITHMS
@@ -411,8 +451,9 @@ public class SetMaterialisations {
 	 * @param typeMorph A morphism from the neighbourhood of n in the concrete part into the corresponding type (from neighN into typeN). 
 	 * @require n is not deleted by the rule application
 	 * @return The new pattern for the node n.
+	 * @throws ExceptionIncompatibleWithMaxIncidence 
 	 */
-	private GraphPattern newType (Node n, Graph neighN, GraphPattern typeN, NodeEdgeMap typeMorph, NodeFactory nodeFactory) {
+	private GraphPattern newType (Node n, Graph neighN, GraphPattern typeN, NodeEdgeMap typeMorph, NodeFactory nodeFactory) throws ExceptionIncompatibleWithMaxIncidence {
 		// For an injective morphism
 		// oldNeigh, newNeigh, t: oldNeigh -> oldType, 
 		// - remove nodes/edges from oldType :
@@ -424,8 +465,7 @@ public class SetMaterialisations {
 		try {
 			newNeigh = this.abstrPart.family().getNeighInGraph(this.newConcrPart, this.morph.getNode(n));
 		} catch (ExceptionIncompatibleWithMaxIncidence e) {
-			// INC_PB
-			e.printStackTrace();
+			throw e;
 		}
 		Graph modTypeN = typeN.clone();
 		NodeEdgeMap mm = new NodeEdgeHashMap(); 
@@ -433,14 +473,20 @@ public class SetMaterialisations {
 			if (! this.morph.containsKey(n)) {
 				modTypeN.removeNode(typeMorph.getNode(nn));
 			} else {
-				mm.putNode(this.morph.getNode(nn), typeMorph.getNode(nn));
+				Node x = this.morph.getNode(nn);
+				if (newNeigh.nodeSet().contains(x)) {
+					mm.putNode(x, typeMorph.getNode(nn));
+				}
 			}
 		}
 		for (Edge ee : neighN.edgeSet()) {
 			if (! this.morph.containsKey(ee)) {
 				modTypeN.removeEdge(typeMorph.getEdge(ee));
 			} else {
-				mm.putEdge(this.morph.getEdge(ee), typeMorph.getEdge(ee));
+				Edge x = this.morph.getEdge(ee);
+				if (newNeigh.edgeSet().contains(x)) {
+					mm.putEdge(x, typeMorph.getEdge(ee));
+				}
 			}
 		}
 		Util.dunion(newNeigh, modTypeN, mm, nodeFactory);
@@ -462,6 +508,9 @@ public class SetMaterialisations {
 				it.remove();
 			}
 		}
+		
+		// If some of the non center nodes of the concrete part do not have a correct typing
+		
 	}
 	
  
@@ -507,7 +556,7 @@ public class SetMaterialisations {
 			
 			for (VarNodeEdgeMap emb : Util.getMatchesIter(g, this.abstrPart, origin)) {
 				// For each embedding, test whether it is a possible embedding and if yes, compute the corresponding set of links
-				// TODO This test is inefficient, as it takes into account all nodes, and not only new nodes
+				// OPTIM This test is inefficient, as it takes into account all nodes, and not only new nodes
 				Set<Node> currZeroNodes = this.abstrPart.zeroMultNodes(new ExtendedVarNodeEdgeMap(emb));
 				if (currZeroNodes == null) {
 					// this embedding is not possible
@@ -528,13 +577,6 @@ public class SetMaterialisations {
 							} else {
 								currSrcLinks.add(DefaultEdge.createEdge(e.source(), e.label(), imageN));
 							}
-							// if the abstract node has 0 multiplicity, then program for removal the edge that defines the link
-							if (currZeroNodes.contains(imageN)) {
-								// TODO how to determine that an abstract edge should be consumed ? 
-								// TODO (cont) This condition is not sufficient, as the edge may still
-								// TODO (cont) represent several concrete edges
-								// currConsEdges.add(emb.getEdge(e)); 
-							}
 						}
 					}
 				}
@@ -546,11 +588,10 @@ public class SetMaterialisations {
 		}
 	} 
 	
-	/** TODO for the moment, coded only for radius 0.
-	 */
-	
-	/**
-	 * @param linkableNodes
+	/** Computes all possible linking edges between the concrete part
+	 * and the abstract part, in the case of low precision.
+	 * 
+	 * 
 	 */
 	private void possibleLinksLow (final VarNodeEdgeMap origin,
 									ArrayList<Set<Edge>> srcLinks,
@@ -563,11 +604,7 @@ public class SetMaterialisations {
 		Set<Edge> x = Collections.emptySet();
 		consumedEdges.add(x);
 		Set<Node> zeroMultNodes = this.abstrPart.zeroMultNodes(new ExtendedVarNodeEdgeMap(origin));
-		if (zeroMultNodes == null) {
-			assert true : "Should never happen";
-			zeroMultNodes = Collections.emptySet();	
-		}
-		for (Node node : getLinkableNodes()) {
+		for (Node node : getLinkableNodesLow()) {
 			Node imageN = origin.getNode(node);
 			if (zeroMultNodes.contains(imageN)) {
 				continue;
@@ -589,21 +626,32 @@ public class SetMaterialisations {
 		}
 	}
 	
-	/** Callback method initializing the linkable nodes whenever necessary. */
-	private Collection<Node> getLinkableNodes() {
-		if (this.linkableNodes == null) {
-			this.linkableNodes = new ArrayList<Node>();
-			if (this.abstrPart.precision() == 0) {
-				this.linkableNodes.addAll(this.concrPart.graph().nodeSet());
-			} else if (this.options.LINK_PRECISION == Abstraction.LinkPrecision.LOW) {
-				this.linkableNodes = new ArrayList<Node>();
-				for (int i = 1; i <= this.abstrPart.precision(); i++) {
-					this.linkableNodes.addAll(this.concrPart.nodesAtDist(i));
-				}
-			}
-		}
-		return this.linkableNodes;
+	/** The set of nodes in the concrete part that can be linked to nodes
+	 * of the abstract part, in case of options.LINK_PRECISION == Abstraction.LinkPrecision.LOW
+	 * 
+	 */
+	private Collection<Node> getLinkableNodesLow() {
+		assert this.options.LINK_PRECISION == Abstraction.LinkPrecision.LOW : "Should not use this with high precision"; 	
+		ArrayList<Node> linkableNodes = new ArrayList<Node>();
+		linkableNodes.addAll(this.concrPart.graph().nodeSet());
+		if (this.abstrPart.family().getRadius() != 0) {
+			linkableNodes.removeAll(this.concrPart.centerNodes());
+		} 
+		return linkableNodes;
+//		ArrayList<Node> linkableNodes = null;
+//		if (linkableNodes == null) {
+//			linkableNodes = new ArrayList<Node>();
+//			if (this.abstrPart.family().getRadius() == 0) {
+//				linkableNodes.addAll(this.concrPart.graph().nodeSet());
+//			} else if (this.options.LINK_PRECISION == Abstraction.LinkPrecision.LOW) {
+//				for (int i = 1; i <= this.abstrPart.family().getRadius(); i++) {
+//					linkableNodes.addAll(this.concrPart.nodesAtDist(i));
+//				}
+//			}
+//		}
+//		return linkableNodes;
 	}
+	
 	/** Callback method initializing the distance one nodes whenever necessary. */
 	private Collection<Node> getDist1Nodes () {
 		if (this.dist1Nodes == null) {
@@ -612,7 +660,10 @@ public class SetMaterialisations {
 		return this.dist1Nodes;
 	}
 	
-	private Collection<Node> linkableNodes;
+	///** Nodes in the concrete part that support links with nodes of the abstract part.
+	// * Used only for low precision. */
+	//private Collection<Node> linkableNodes;
+	/** The nodes at distance one from the center, in the concrete part. */
 	private Collection<Node> dist1Nodes;
 	
 	
@@ -620,13 +671,11 @@ public class SetMaterialisations {
 	/** Constructs the possible links given an embedding of the concrete part into the abstract part, a typing of the the nodes in the concrete part.
 	 * @param origin Embedding of the concrete part into the abstract part.
 	 * @param typing Associates a typing moprphism with nodes from the concrete part. Only the map components are used.
-	 * @param dist1nodes Should always be the set of nodes at distance one in the concrete part (which may be pre-computed)
 	 * @param srcLinks Out parameter. After return, contains the set of links which source node is in the concrete part.
 	 * @param tgtLinks Out parameter. After return, contains the set of links which target node is in the concrete part.
 	 * @param zeroNodes Out parameter. After return, contains the set of nodes which multiplicity became 0 while computing the links. 
 	 * @param consumedEdges Out parameter. After return, contains the edges from the abstract part that have been consumed by some link.
 	 * @require srcLinks and tgtLinks are empty sets and zeroNodes
-	 * TODO add comment for dist1nodes and linkableNodes
 	 */
 	private void possibleLinks (final VarNodeEdgeMap origin, 
             final Map<Node, MapPattern> typing, 
@@ -694,27 +743,28 @@ public class SetMaterialisations {
 	
 	// FIELDS USED FOR MATERIALISATION
 	/** The common concrete part of the set of materialisations. */
-	ConcretePart concrPart;
+	private ConcretePart concrPart;
 	/** The common abstract part. */
-	DefaultAbstrGraph abstrPart;
+	private DefaultAbstrGraph abstrPart;
 	/** The initial matching used for constructing the concrete part. */
-	NodeEdgeMap originBase;
+	private NodeEdgeMap originBase;
 
 	/** With each couple of concrete and abstract nodes (cn, an) associates the set of possible typings of cn w.r.t. its type determined by an.
 	 * The keys of this map are exactly the couples (cn,an) that appear in some of the origin mappings and s.t. cn is not a central node in the concrete part.
 	 */
-	Map<CNN, Collection<MapPattern>> data;
+	private Map<CNN, Collection<MapPattern>> data;
 	/** Used to store the types of the center and new nodes of the transformed concrete part, after they are computed. */
-	Map<Node, GraphPattern> centerType;
+	private Map<Node, GraphPattern> centerType;
 	/** The set of possible embedings of concrPart.graph() into abstrPart. */
-	Collection<ExtendedVarNodeEdgeMap> origins;
+	private Collection<ExtendedVarNodeEdgeMap> origins;
 	
 	// FIELDS USED FOR TRANSFORMATION
 	/** Set when the transformation is performed */
-	boolean transformed;
+	private boolean transformed;
 	
-	Graph newConcrPart;
-	Morphism morph;
+	private Graph newConcrPart;
+	/** The morphism of the rule application used for transforming the concrete part. */
+	private Morphism morph;
 	//private Map<CNN, Collection<GraphPattern>> newData;
 
 	private Abstraction.Parameters options;

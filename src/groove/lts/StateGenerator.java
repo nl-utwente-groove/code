@@ -19,7 +19,6 @@ package groove.lts;
 import groove.control.Location;
 import groove.explore.DefaultScenario;
 import groove.explore.util.ExploreCache;
-import groove.trans.Rule;
 import groove.trans.RuleApplication;
 import groove.trans.RuleEvent;
 import groove.trans.RuleMatch;
@@ -38,11 +37,11 @@ import java.util.Set;
  * @version $Revision: 1.32 $
  */
 public class StateGenerator {
-	/** Constructs a state generator with no GTS or system record set. */
-	public StateGenerator() {
-//		this.collector = new AddTransitionListener();
-	}
 
+	/** 
+	 * Creates a state generator for a given graph transition system.
+	 * @param gts
+	 */
 	public StateGenerator(GTS gts) {
 		super();
 		this.setGTS(gts);
@@ -94,131 +93,6 @@ public class StateGenerator {
 		return getGTS().getRecord();
 	}
 
-//	/**
-//	 * Computes and returns the set of successor states of a given state,
-//	 * insofar they are not yet in the GTS at time of invocation.
-//	 * The states that are returned are added to the GTS first.
-//	 * @param state the state for which the successors are to be generated;
-//	 * assumed to be in the GTS
-//	 */
-//    public void explore(final GraphState state) {
-//        reporter.start(SUCC);
-//        // check if the transitions have not yet been generated
-//        if (!state.isClosed()) {
-//            collector.reset();
-//        	
-//            
-//            Location lBefore = state.getLocation();
-//            
-//            getApplier(state).doApplications(new RuleApplier.Action() {
-//				public void perform(RuleApplication application) {
-//                    addTransition(state, application);
-//				}
-//        	});
-//        	
-//            
-//            Location lAfter = state.getLocation();
-//            
-//            if( lBefore != null && lAfter != null ) {
-//            	if( !lBefore.equals(lAfter)) {
-//            		// recursive call, if location of current state was updated
-//            		explore(state);
-//            	}
-//            }
-//        	
-//            //if (! collector.isTransitionsAdded()) {
-//            // this test was not enough in case a linear exploration had already happened and one tried
-//        	// to explore a state that didn't have more then the already existing outgoing application 
-//        	// getGTS().setFinal(state);
-//            //}
-//        	
-//        	// new test, just look if there are any transitions stored for this state
-//
-//        	// should this change when there is control? let's see what happens :)
-//        	if( state.getLocation() != null ) {
-//        		// thus, if there is control, red means the state is a success-state
-//        		if( state.getLocation().isSuccess() ) {
-//        			// let's make it closed first, so it will appear red in the statespace.
-//        			// TODO: fix closed, might not be realistic
-//        			getGTS().setClosed(state);
-//        			getGTS().setFinal(state);
-//        		}
-//        	}
-//        	else if (state.getTransitionSet().isEmpty()) {
-//        		getGTS().setFinal(state);
-//        	}
-//            
-//        	// not closing when there's control available...
-//        	// TODO: fix this somehow..
-//        	if( state.getLocation() == null ) {
-//        		getGTS().setClosed(state);
-//        	}
-//        }
-//        reporter.stop();
-//    }
-    
-//    /**
-//	 * Generates the set of successor states of a given state and
-//	 * adds them to the underlying GTS; then returns the set of all
-//	 * successor states.
-//	 * @param state the state for which the successors are to be generated;
-//	 * assumed to be in the GTS
-//	 * @return the set of all successors of <code>state</code>
-//	 */
-//    public Collection<GraphState> getSuccessors(GraphState state) {
-//        explore(state);
-//        return state.getNextStateSet();
-//    }
-     
-//	/**
-//	 * Returns an iterator over all successor states of a given state,
-//	 * generating the states and adding them to the GTS if necessary.
-//	 * @param state the state for which the successors are to be generated;
-//	 * assumed to be in the GTS
-//	 * @return a lazy iterator over all successors of <code>state</code>
-//	 */
-//    public Iterator<? extends GraphState> getSuccessorIter(final GraphState state) {
-//        if (state.isClosed()) {
-//            // get the next states from the outgoing edges
-//            return state.getNextStateIter();
-//        } else {
-//            final Iterator<RuleApplication> derivationIter = getApplier(state).getApplicationIter();
-//            if (!derivationIter.hasNext()) {
-//            	getGTS().setFinal(state);
-//            }
-//            // get the next states by adding transitions for the derivations
-//            return new TransformIterator<RuleApplication,GraphState>(derivationIter) {
-//            	@Override
-//                public boolean hasNext() {
-//                    if (hasNext) {
-//                        hasNext = super.hasNext();
-//                        if (!hasNext) {
-//                        	getGTS().setClosed(state);
-//                        }
-//                    }
-//                    return hasNext;
-//                }
-//
-//            	@Override
-//                protected GraphState toOuter(RuleApplication from) {
-//                    return addTransition(state, from);
-//                }
-//                
-//                private boolean hasNext = true;
-//            };
-//        }
-//    }
-    
-//    /**
-//     * Adds a transition to the GTS, constructed from a given rule application.
-//     * The application's target graph is compared to the existing states for symmetry;
-//     * if a symmetric one is found then that is taken as target state. 
-//     * If no symmetric state is found, then a fresh target state is added.
-//     * The actual target state is returned as the result of the method.
-//     * @param source the source state of the new transition
-//     * @param appl the derivation underlying the transition to be added
-//     * @return the target state of the resulting transition
-//     */
 	/** To be called only by {@link #addTransition(GraphState, RuleMatch, ExploreCache)}.*/
     private Set<? extends GraphTransition> addTransition(GraphState source, RuleApplication appl, ExploreCache cache) {
         reporter.start(ADD_TRANSITION);
@@ -293,7 +167,6 @@ public class StateGenerator {
 		for( GraphTransition trans : gtrs ) {
 			states.add(trans.target());
 		}
-		
 		return states;
 	}
 	
@@ -312,35 +185,6 @@ public class StateGenerator {
 		return this.addTransition(source, appl, cache);
 	}
 	
-//
-//	/**
-//	 * Computes the target state of a rule application.
-//	 * The target state is added to the underlying GTS, after checking for already
-//	 * existing isomorphic states.
-//	 * @param source the source state of the rule application
-//	 * @param appl the provisional target from which the real target state is to be extracted
-//	 */
-//	private GraphTransition computeTargetState(GraphState source, RuleApplication appl) {
-//		GraphTransition result;
-//        // see if isomorphic graph is already in the LTS
-//        // special case: source = target
-//        if (appl.getRule().isModifying()) {
-//        	GraphNextState target = createState(source, appl);
-//            GraphState isoState = gts.addState(target);
-//            if (isoState == null) {
-//            	result = target;
-//            } else {
-//                // the following line is to ensure the cache is cleared
-//                // even if the state is still used as the basis of another
-////            	result.dispose();
-//            	result = createTransition(appl.getEvent(), source, target, false);
-//            }
-//        } else {
-//        	result = createTransition(appl.getEvent(), source, source, true);
-//        }
-//		return result;
-//	}
-
     /**
      * Returns the target of a given rule application, by trying to walk 
      * around three sides of a confluent diamond instead of computing the
@@ -384,15 +228,8 @@ public class StateGenerator {
 	 */
 	private GraphNextState createState(RuleApplication appl, GraphState source) {
 		return new DefaultGraphNextState((AbstractGraphState) source, appl, null);
-//		return new DefaultGraphNextState((AbstractGraphState) source, appl.getEvent(), appl.getCoanchorImage(), location);
 	}
 
-//    /**
-//     * Creates a fresh graph transition, based on a given rule application and source state.
-//     */
-//    private GraphTransition createTransition(RuleApplication appl, GraphState source) {
-//    	return createTransition(appl, source, createState(appl, source), false);
-//    }
     
     /**
      * Creates a fresh graph transition, based on a given rule application and source and target state.

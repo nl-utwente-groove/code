@@ -1,3 +1,19 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
 package groove.abs;
 
 import java.util.Collection;
@@ -18,10 +34,14 @@ import groove.graph.NodeFactory;
 import groove.match.GraphSearchPlanFactory;
 import groove.match.SearchPlanStrategy;
 import groove.rel.VarNodeEdgeMap;
+import groove.trans.GraphGrammar;
+import groove.trans.Rule;
+import groove.trans.SPORule;
 
 /**
- * Utilities.
- * @author bonevai
+ * Utility methods for abstraction.
+ * @author Iovka Boneva
+ * @version $Revision $
  */
 public class Util {
 
@@ -162,6 +182,22 @@ public class Util {
 		SearchPlanStrategy mstr = Util.spf.createMatcher(dom, toExtend.nodeMap().keySet(), toExtend.edgeMap().keySet());
 		return mstr.getMatches(cod, toExtend);
 	}
-	
+
+
+	/** Defines whether abstract transformations are possible for a given graph grammar.
+	 * Abstract transformations are only possible for grammars without nested rules
+	 * (so, without negative application conditions).
+	 * @param grammar
+	 * @return <code>true</code> if abstract transformation is possible for this grammar
+	 */
+	public static boolean isAbstractionPossible (GraphGrammar grammar) {
+		for (Rule rule : grammar.getRules()) {
+			SPORule r = (SPORule) rule;
+			if (! r.getSubConditions().isEmpty()) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 }

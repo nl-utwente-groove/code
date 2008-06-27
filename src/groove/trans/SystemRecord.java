@@ -344,13 +344,14 @@ public class SystemRecord implements NodeFactory {
     /** Gives a state generator for a given GTS. */
 	public StateGenerator getStateGenerator(LTS gts) {
 		if (this.stateGenerator == null) {
-			if (gts instanceof GTS) {
-				this.stateGenerator = 
-					gts instanceof AGTS ?
-							new AbstrStateGenerator(((AGTS) gts).getParameters()) :
-								new StateGenerator((GTS) gts);
+			if (gts instanceof AGTS) {
+				this.stateGenerator =  new AbstrStateGenerator((AGTS)gts, ((AGTS) gts).getParameters());
 			} else if (gts instanceof ProductGTS) {
 				this.stateGenerator = new StateGenerator((ProductGTS) gts);
+			} else if (gts instanceof GTS) {
+				this.stateGenerator = new StateGenerator((GTS) gts);
+			} else {
+				assert true : "Wrong type of a GTS";
 			}
 		}
 		return this.stateGenerator;

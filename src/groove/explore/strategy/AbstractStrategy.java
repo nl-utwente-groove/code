@@ -16,13 +16,13 @@
  */
 package groove.explore.strategy;
 
+import groove.abs.lts.AbstrGraphState;
 import groove.explore.result.Acceptor;
 import groove.explore.util.AliasMatchesIterator;
 import groove.explore.util.ExploreCache;
 import groove.explore.util.LocationCache;
 import groove.explore.util.MatchesIterator;
 import groove.explore.util.RandomChooserInSequence;
-import groove.lts.DefaultGraphNextState;
 import groove.lts.GTS;
 import groove.lts.GraphNextState;
 import groove.lts.GraphState;
@@ -87,7 +87,7 @@ public abstract class AbstractStrategy implements Strategy {
 	}
 
 	/** The parent of a given state, or null if this is the start state.
-	 * May be used by the backtracking strategies
+	 * May be used by the backtracking strategies and for alias matching
 	 * @param state state for which the parent will be returned
 	 */
 	protected final GraphState parentOf(GraphState state) {
@@ -95,7 +95,7 @@ public abstract class AbstractStrategy implements Strategy {
 			return null;
 		} 
 		GraphNextState ngs = (GraphNextState) state;
-		return ngs.source();
+		return (GraphState) ngs.source();
 	}
 	
 	/** Returns a random open successor of a state, if any. Returns null otherwise. 
@@ -147,24 +147,32 @@ public abstract class AbstractStrategy implements Strategy {
 	protected MatchesIterator getMatchesIterator(ExploreCache cache) {
 		// Two cases where an alias iterator may be returned : 
 		// the parent is closed, or one of the successors is closed
-		
-		// First case : the parent is closed
-		GraphState parent = parentOf(getAtState());
-		if (aliasing && parent != null && parent.isClosed() && !( /* ugly hack to not use aliasing when using control */ cache instanceof LocationCache)) {
-			DefaultGraphNextState s = (DefaultGraphNextState) getAtState();
-			return new AliasMatchesIterator(s, cache, getGTS().getRecord().getEnabledRules(s.getEvent().getRule()), this.getGTS().getRecord().getDisabledRules(s.getEvent().getRule()));
-		}
 
-		// Second case : one of the successors is closed.
-		// This is only considered for backtracking strategies, in 
-		// which the state from which we backtrack is closed
-		// and recently used matches iterators may be cached
-		if (false && this instanceof AbstractBacktrackingStrategy) {
-			AbstractBacktrackingStrategy str = (AbstractBacktrackingStrategy) this;
-			// TODO integrate alias matches iterator constructed from a sibling or child
-		}
-		// in all other cases, return a "normal" matches iterator
+		/* Un ugly hack to forbid aliasing for cases when it does not work */
+		boolean aliasingNotAllowed = 
+			cache instanceof LocationCache ||
+			getAtState() instanceof AbstrGraphState;
 		
+		if (! aliasingNotAllowed) {
+		
+			// First case : the parent is closed
+			GraphState parent = parentOf(getAtState());
+			if (aliasing && parent != null && parent.isClosed()) {
+				GraphNextState s = (GraphNextState) getAtState();
+				return new AliasMatchesIterator(s, cache, getGTS().getRecord().getEnabledRules(s.getEvent().getRule()), this.getGTS().getRecord().getDisabledRules(s.getEvent().getRule()));
+			}
+
+			// Second case : one of the successors is closed.
+			// This is only considered for backtracking strategies, in 
+			// which the state from which we backtrack is closed
+			// and recently used matches iterators may be cached
+			if (false && this instanceof AbstractBacktrackingStrategy) {
+				AbstractBacktrackingStrategy str = (AbstractBacktrackingStrategy) this;
+				// TODO integrate alias matches iterator constructed from a sibling or child
+			}
+		}
+		
+		// in all other cases, return a "normal" matches iterator
 		return new MatchesIterator(getAtState(), cache);
 	}
 

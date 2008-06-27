@@ -576,14 +576,6 @@ public class GTS extends AbstractGraphShape<GraphShapeCache> implements LTS {
     static public final int ADD_STATE = reporter.newMethod("addState");
     /** Profiling aid for adding transitions. */
     static public final int ADD_TRANSITION_STOP = reporter.newMethod("addTransition  - stop");
-    
-    /** An accessor for the start state. */
-    protected GraphState getStartState() {
-    	return this.startState;
-    }
-    /** A setter for the start state. */
-    protected void setStartState(GraphState state) {
-    	this.startState = state;
-    }
+
     
 }

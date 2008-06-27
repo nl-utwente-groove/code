@@ -14,8 +14,9 @@
  *
  * $Id: TestingAbstracting.java,v 1.1 2007-11-28 15:35:07 iovka Exp $
  */
-package groove.abs;
+package groove.test.abs;
 
+import groove.abs.*;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
@@ -24,7 +25,11 @@ import groove.graph.Graph;
 import groove.graph.Node;
 import junit.framework.TestCase;
 
-/** Testing the abstraction. */
+/** Testing the abstraction.
+ * 
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
 public class TestingAbstracting extends TestCase {
 
 	/** */ protected DefaultLabel n_label = DefaultLabel.createLabel("n");
@@ -56,6 +61,4 @@ public class TestingAbstracting extends TestCase {
 		assertEquals(6, s.edgeCount());
 	}
 
-	// TODO add tests for other examples
-	
 }

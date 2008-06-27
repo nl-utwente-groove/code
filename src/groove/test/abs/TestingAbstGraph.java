@@ -14,8 +14,15 @@
  *
  * $Id: TestingAbstGraph.java,v 1.2 2008-02-05 13:28:21 rensink Exp $
  */
-package groove.abs;
+package groove.test.abs;
 
+import groove.abs.AbstrGraph;
+import groove.abs.DefaultAbstrGraph;
+import groove.abs.ExceptionIncompatibleWithMaxIncidence;
+import groove.abs.ExceptionRemovalImpossible;
+import groove.abs.GraphPattern;
+import groove.abs.PatternFamily;
+import groove.abs.Util;
 import groove.abs.Abstraction.AbstrGraphsRelation;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
@@ -36,7 +43,11 @@ import java.util.Set;
 
 import junit.framework.TestCase;
 
-/** Testing implementation of AbstrGRaph */
+/** Testing implementation of AbstrGRaph
+ * 
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
 public class TestingAbstGraph extends TestCase {
 	
 	/** A prefix for the examples. */

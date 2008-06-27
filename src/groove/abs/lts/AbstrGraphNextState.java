@@ -14,14 +14,16 @@
  *
  * $Id$
  */
-package groove.abs;
+package groove.abs.lts;
 
-/** Represents a single multiplicity, or a set of 
- * multiplicities of the form {i, i+1, ..., omega}.
- * 
+import groove.lts.GraphNextState;
+import groove.lts.NextState;
+
+/** 
+ * Combines fonctionality of a graph state and of a transition.
  * @author Iovka Boneva
  * @version $Revision $
  */
-public interface MultiplicityInformation {
-	// empty
+public interface AbstrGraphNextState extends AbstrGraphState, GraphNextState, AbstrGraphTransition {
+	// adds nothing to the combination of interfaces
 }

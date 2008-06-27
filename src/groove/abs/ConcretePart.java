@@ -149,7 +149,7 @@ public class ConcretePart {
 	 * @param symmetryReduction indicates whether symmetry reduction is to be performed while computing typing morphisms
 	 * @return The set of extensions of <code>center</code>
 	 * @require typing.get(n) != null for all n in center.nodeSet()
-	 * TODO this method is not optimal, as it computes concrete parts first
+	 * OPTIM this method is not optimal, as it computes concrete parts first
 	 */
 	static Collection<Graph> extensions (ConcretePart concrPart, Collection<Node> nodes, SubTyping typing, PatternFamily family, boolean symmetryReduction, NodeFactory nodeFactory) {
 		ArrayList<ConcretePart> concrParts = new ArrayList<ConcretePart>();
@@ -204,8 +204,9 @@ public class ConcretePart {
 		try {
 			neighN = family.getNeighInGraph(this.graph, n);
 		} catch (ExceptionIncompatibleWithMaxIncidence e) {
-			// TODO What to do in this case ? Normally it should never occur, as
+			// Should never occur, as
 			// in concrPart.graph() all nodes have exact neighbourhood or incomplete neighbourhood
+			assert true : "Unexpected ExceptionIncompatibleWithMaxIncidence here.";
 			e.printStackTrace();
 		}
 		NodeEdgeMap baseMatch;
@@ -273,7 +274,7 @@ public class ConcretePart {
 		// invariant resGraphs[i], resMorphisms[i], usedNodes[i] are such that : 
 		//  resGraphs[i] : a graph obtained by merging in baseGraph
 		//  resMorphisms[i] : an update of baseMorph wrt to the mergings that allowed to obtain resGraphs[i] from baseGraph
-		//  usedNodes[i] contains exactly the nodes in mergeableNodesA that have not been used for merging in resGraphs[i] 
+		//  usedNodes[i] contains exactly the nodes in mergeableNodesA that have not been used for merging in resGraphs[i]
 		
 		// temporal variables for updating the previous ones
 		ArrayList<Graph> tempGraphs = new ArrayList<Graph>();
@@ -349,12 +350,13 @@ public class ConcretePart {
 		return result;
 	}
 	
+	
 	/** Checks whether this concrete part is correct.
 	 * A concrete part is correct when the neighbourhood of all typed node complies with its type.
 	 * The unique source of incorrectness considered is the presence of additional edges.
 	 * @return true if the concrete part is correct
 	 */
-	private boolean checkCorrect (PatternFamily family) {
+	public boolean checkCorrect (PatternFamily family) {
 		for (Map.Entry<Node, Morphism> entry : this.type.entrySet()) {
 			Graph neighN = null;
 			try {
@@ -371,8 +373,7 @@ public class ConcretePart {
 		}
 		return true;
 	}
-
-	// TODO this may be a parameter (testing structure equality is costly)
+	
 	@Override
 	public boolean equals (Object o) {
 		return this == o;

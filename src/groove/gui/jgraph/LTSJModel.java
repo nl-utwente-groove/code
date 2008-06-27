@@ -100,9 +100,6 @@ public class LTSJModel extends GraphJModel {
 			if (trans != null) {
 				JCell jCell = getJCell(trans);
 				assert jCell != null : String.format("No image for %s in jModel",	trans);
-				// FIXME here, one should find the transition in the GTS
-				// that corresponds to the jCell. The corresponding jCell is not
-				// necessarily in the LTS as it was in the previous architecture
 				if (jCell != null) {
 					changedCells.add(jCell);
 				}
@@ -111,7 +108,6 @@ public class LTSJModel extends GraphJModel {
 				JCell jCell = getJCell(previousTrans);
 				assert jCell != null : String.format("No image for %s in jModel",
 						previousTrans);
-				// FIXME same as previous
 				if (jCell != null) {
 					changedCells.add(jCell);
 				}

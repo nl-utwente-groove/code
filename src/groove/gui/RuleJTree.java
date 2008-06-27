@@ -304,7 +304,6 @@ public class RuleJTree extends JTree implements SimulationListener {
     }
     
     /**
-     * TODO: remove this method, no longer used
      * Refreshes the match nodes, based on a given derivation edge set.
      * @param matches the set of derivation edges used to create match nodes
      */
@@ -346,9 +345,8 @@ public class RuleJTree extends JTree implements SimulationListener {
             matchNodeMap.put(match, matchNode);
         }
         
-        // FIXME: transitions can be a set per match (??? abstractions?)
         for( GraphTransition trans : getCurrentGTS().outEdgeSet(getCurrentState())) {
-        	matchTransitionMap.put(trans.getMatch(),trans);
+        	matchTransitionMap.put(trans.getMatch(), trans);
         }
     }
 
@@ -643,11 +641,6 @@ public class RuleJTree extends JTree implements SimulationListener {
         	if (evt.getButton() != MouseEvent.BUTTON1) {
         		return;
         	}
-//        	if (evt.getClickCount() == 2) {
-//        		System.out.println();
-//        	}
-//        		
-//        	
         	TreePath path = getSelectionPath();
         	if (path == null) { return; }
         	Object selectedNode = path.getLastPathComponent();
@@ -657,7 +650,6 @@ public class RuleJTree extends JTree implements SimulationListener {
     		}
         	if (selectedNode instanceof MatchTreeNode) {
         		RuleMatch match = ((MatchTreeNode) selectedNode).edge();
-        		//simulator.setMatch(match);
         		GraphTransition trans = matchTransitionMap.get(match);
         		if (trans == null) {
         			Iterator<GraphTransition> outTransitions = getCurrentState().getTransitionIter();
@@ -676,10 +668,6 @@ public class RuleJTree extends JTree implements SimulationListener {
         		}
         		if (evt.getClickCount() == 2) {
         			simulator.applyMatch();
-//        			ExploreCache cache = getCurrentGTS().getRecord().createCache(getCurrentState(), false, false);
-//					trans = new StateGenerator(getCurrentGTS()).applyMatch(getCurrentState(), match, cache).iterator().next();
-//					simulator.setTransition(trans);
-//					simulator.applyTransition();
         		}
         	}
         }

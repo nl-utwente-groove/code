@@ -14,8 +14,9 @@
  *
  * $Id: TestingPatternFamily.java,v 1.2 2008-02-05 13:28:21 rensink Exp $
  */
-package groove.abs;
+package groove.test.abs;
 
+import groove.abs.*;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
@@ -26,7 +27,11 @@ import groove.graph.Node;
 import groove.match.GraphSearchPlanFactory;
 import groove.match.SearchPlanStrategy;
 
-/** */
+/** 
+ * 
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
 public class TestingPatternFamily extends junit.framework.TestCase {
 
 	Node[] nodes;
