@@ -14,8 +14,9 @@
  *
  * $Id: TestingTransforming.java,v 1.6 2008-02-05 13:28:21 rensink Exp $
  */
-package groove.abs;
+package groove.test.abs;
 
+import groove.abs.*;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
@@ -50,7 +51,11 @@ import java.util.Map;
 
 import junit.framework.TestCase;
 
-/** Tests for the transformation. */
+/** Tests for the transformation.
+ * 
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
 public class TestingTransforming extends TestCase {
 	
 	//private final Abstraction.Parameters defaultOptions = new Abstraction.Parameters(false, LinkPrecision.HIGH, false);

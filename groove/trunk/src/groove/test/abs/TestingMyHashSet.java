@@ -14,8 +14,9 @@
  *
  * $Id: TestingMyHashSet.java,v 1.1 2007-11-28 15:35:08 iovka Exp $
  */
-package groove.abs;
+package groove.test.abs;
 
+import groove.abs.*;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -24,8 +25,11 @@ import groove.abs.MyHashSet.Equalizer;
 import groove.abs.MyHashSet.Hasher;
 
 import junit.framework.TestCase;
+
 /** Tests for {@link MyHashSet} and {@link MyHashSetExtended}. 
- * These tests are interesting if the store capacity of   {@link MyHashSet} is small (5).
+ * These tests are interesting if the store capacity of {@link MyHashSet} is small (5).
+ * @author Iovka Boneva
+ * @version $Revision $
  */
 public class TestingMyHashSet extends TestCase {
 

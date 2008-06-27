@@ -82,6 +82,7 @@ public interface GraphState extends State {
 
     /**
      * Adds an outgoing transition to this state, if it is not yet there.
+     * @return <code>true</code> if the transition was added, <code>false</code> otherwise
      */
     public boolean addTransition(GraphTransition transition);
     

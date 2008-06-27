@@ -16,6 +16,8 @@
  */
 package groove.abs.lts;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -29,25 +31,30 @@ import groove.abs.ExceptionIncompatibleWithMaxIncidence;
 import groove.abs.MyHashSet;
 import groove.abs.PatternFamily;
 import groove.abs.Util;
+import groove.control.Location;
+import groove.graph.DefaultGraph;
+import groove.graph.DefaultNode;
 import groove.graph.Edge;
+import groove.graph.Element;
 import groove.graph.Graph;
 import groove.graph.GraphShapeCache;
+import groove.io.AspectualViewGps;
 import groove.lts.GTS;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 import groove.lts.State;
 import groove.lts.Transition;
 import groove.trans.GraphGrammar;
+import groove.trans.RuleEvent;
 import groove.trans.SystemRecord;
 import groove.util.CollectionView;
+import groove.view.FormatException;
 
 /** An Abstract graph transition system.
- * FIXME update to fit in the new architecture 
  * @author Iovka Boneva
  * @version $Revision $
  * @invariant (TypeInv) States of the system are always of type {@link AbstrGraphState}
  * @invariant (TypeInv) Transitions of the system are always of type {@link AbstrGraphTransition}
- * FIXME implement equals method for AbstrGraphStateImpl
  */
 public class AGTS extends GTS {
 
@@ -57,8 +64,7 @@ public class AGTS extends GTS {
 	public GraphState addState(GraphState newState) {
 		assert newState instanceof AbstrGraphState : "Type error : " + newState + " is not of type AbstrGraphState.";
         reporter.start(ADD_STATE);
-        // see if isomorphic graph is already in the LTS
-        ((AbstrGraphStateImpl) newState).setStateNumber(nodeCount());
+       	((AbstrGraphStateImpl) newState).setStateNumber(nodeCount());
         GraphState result = this.stateSet.getAndAdd((AbstrGraphState) newState);
         if (result == null) {
             fireAddNode(newState);
@@ -66,12 +72,16 @@ public class AGTS extends GTS {
         reporter.stop();
         return result;
 	}
-
+	
 	@Override
 	/** @require transition is of type AbstrGraphTransition */
 	public void addTransition(GraphTransition transition) {
-		assert transition instanceof AbstrGraphTransition : "Type error : " + transition + " is not of type AbstrGraphTransition.";
+		assert (transition instanceof AbstrGraphTransition) || (transition instanceof AbstrGraphNextState): 
+			"Type error : " + transition + " is not of type AbstrGraphTransition neigther AbstrGraphNextState.";
 		super.addTransition(transition);
+		if (transition.target().equals(INVALID_STATE)) {
+			invalidTransitionsCount++;
+		}
 	}
 
 	@Override
@@ -82,17 +92,10 @@ public class AGTS extends GTS {
 		super.setClosed(state);
 	}
 
-//	@Override
-//	// IOVKA to remove after debug
-//	public void setFinal(State state) {
-//		assert state instanceof AbstrGraphState : "Type error : " + state + " is not of type AbstrGraphState.";
-//		super.setFinal(state);
-//	}
-
 	@Override
 	/** Specialises return type. */
 	public AbstrGraphState startState() {
-		return (AbstrGraphState) this.getStartState();
+		return (AbstrGraphState) super.startState();
 	}
 	
 	/**
@@ -126,8 +129,13 @@ public class AGTS extends GTS {
 	@Override
     public int nodeCount() { return this.stateSet.size(); }
 	
+	/** Returns the number of invalid transitions. */
+	public int invalidTransitionsCount() {
+		return this.invalidTransitionsCount;
+	}
+	
 	@Override
-    public Set<? extends GraphState> nodeSet() {
+    public synchronized Set<? extends GraphState> nodeSet() {
         return Collections.unmodifiableSet(this.stateSet);
     }
 	
@@ -155,60 +163,106 @@ public class AGTS extends GTS {
 	 */
 	public AGTS(GraphGrammar grammar, Abstraction.Parameters options) {
 		super(grammar, true, true);
-		if (true) throw new UnsupportedOperationException();
 		this.options = options;
-		this.family = new PatternFamily (options.radius, options.maxIncidence);		
-		this.setStartState(this.computeStartState(grammar.getStartGraph()));
-		this.stateSet.getAndAdd((AbstrGraphState) this.getStartState());
-		
+		this.family = new PatternFamily (options.radius, options.maxIncidence);
+		((InvalidState) INVALID_STATE).removeStateNumber();
+		startState(); // Will add the start state
+		((InvalidState) INVALID_STATE).removeStateNumber();
+		this.addState(INVALID_STATE);
+		setClosed(INVALID_STATE);
 		checkInvariants();
 	}
 	
+	/** The pattern family of graphs in the transition system. */
 	public PatternFamily getFamily () { return this.family; }
 	
+	/** The parameters of the abstraction used for obtaining the states of the transition system. */
 	public Abstraction.Parameters getParameters() { return this.options; }
 	
 	
 	private PatternFamily family;
-	// initialised with the default hasher
-	private final MyHashSet<AbstrGraphState> stateSet = new MyHashSet<AbstrGraphState>(null);
+	// initialised with an hasher checking for isomorphism of graphs
+	private final MyHashSet<AbstrGraphState> stateSet = new MyHashSet<AbstrGraphState>(new IsoCheckHasher());
 
 	private Abstraction.Parameters options;
+
+	/** This is a unique state that represents all states which could not be constructed because the
+	 * maximal incidence constraint failed. */
+	public final static AbstrGraphState INVALID_STATE = new InvalidState();
+	
+	/** Used for counting the number of invalid transitions. */
+	private int invalidTransitionsCount = 0;
+	
+	/** Used for a singleton invalid state. */
+	static class InvalidState extends AbstrGraphStateImpl  {
+
+		InvalidState () {
+			super(DefaultAbstrGraph.INVALID_AG);
+			//super.setStateNumber();
+		}
+		
+		void removeStateNumber() {
+			super.nr = -1;
+		}
+		
+		@Override
+		public boolean addTransition(GraphTransition transition) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean equals (Object o) {
+			return this == o;
+		}
+		
+		@Override
+		public int hashCode () {
+			return 0;
+		}
+	}
 	
 	// ---------------------------------------------------------------
 	// NON PUBLIC METHODS
 	// ---------------------------------------------------------------
-	
+
+
 	@Override
-	protected AbstrGraphState computeStartState(Graph startGraph) {
+	/** For now, control is not possible with abstract transformation. */
+	protected AbstrGraphState createStartState(Graph startGraph) {
 		AbstrGraph ag = null;
 		try {
 			ag = DefaultAbstrGraph.factory(this.family, this.options.precision).getShapeGraphFor(startGraph);
 		} catch (ExceptionIncompatibleWithMaxIncidence e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			return INVALID_STATE;
 		}
-		AbstrGraphStateImpl result = new AbstrGraphStateImpl(ag);
-		result.setStateNumber(0);
+		AbstrGraphState result = new AbstrGraphStateImpl(ag);
 		return result;
 	}
-
+	
+	
 	@Override
 	protected GraphShapeCache createCache() {
-		// TODO I have no idea what it does
-		return super.createCache();
-	}
-
-	@Override
-	protected GraphState createStartState(Graph startGraph) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	protected void notifyLTSListenersOfClose(State closed) {
-		// TODO Auto-generated method stub
 		super.notifyLTSListenersOfClose(closed);
 	}
+	
+	
+	class IsoCheckHasher implements MyHashSet.Hasher<AbstrGraphState> {
+
+		public int getHashCode(AbstrGraphState o) {
+			return o.getGraph().hashCode();
+		}
+
+		public boolean areEqual(AbstrGraphState o1, AbstrGraphState o2) {
+			return o1.getGraph().equals(o2.getGraph());
+		}
+		
+	}
+	
 
 	// ---------------------------------------------------------------
 	// INVARIANTS
@@ -225,5 +279,5 @@ public class AGTS extends GTS {
 			assert s instanceof AbstrGraphState : "Type error : " + s + " is not of type AbstrGraphState.";
 		}
 	}
-	
+
 }

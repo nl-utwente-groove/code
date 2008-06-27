@@ -22,6 +22,7 @@ import static groove.gui.Options.SHOW_NODE_IDS_OPTION;
 import static groove.gui.Options.SHOW_REMARKS_OPTION;
 import static groove.gui.Options.SHOW_VALUE_NODES_OPTION;
 import groove.abs.AbstrGraph;
+import groove.abs.lts.AbstrGraphState;
 import groove.graph.Edge;
 import groove.graph.Element;
 import groove.graph.Graph;
@@ -314,7 +315,7 @@ public class StatePanel extends JGraphPanel<StateJGraph> implements SimulationLi
 		GraphJModel result = createGraphJModel(state.getGraph());
 		result.setName(state.toString());
 		// try to find layout information for the model
-		if (copyLayout && state instanceof GraphNextState) {
+		if (! simulator.isAbstractSimulation() && copyLayout && state instanceof GraphNextState) {
 			GraphState oldState = ((GraphNextState) state).source();
 			Morphism morphism = ((GraphNextState) state).getMorphism();
 			// walk back along the derivation chain to find one for

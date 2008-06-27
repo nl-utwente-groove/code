@@ -33,7 +33,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 	 * @param enabledRules The rules that may be enabled by the rule event that created this state.
 	 * @param disabledRules The rules that may be disabled by the rule event that created this state.
 	 */
-	public AliasMatchesIterator (DefaultGraphNextState state, ExploreCache rules, Set<Rule> enabledRules, Set<Rule> disabledRules ) {
+	public AliasMatchesIterator (GraphNextState state, ExploreCache rules, Set<Rule> enabledRules, Set<Rule> disabledRules ) {
 		super(state, rules, true);
 		this.enabledRules = enabledRules;
 		this.disabledRules = disabledRules;
@@ -114,7 +114,7 @@ public class AliasMatchesIterator extends MatchesIterator {
 	private void updateMatches() {
 		if( aliasedRuleMatches == null ) {
 			aliasedRuleMatches = new TreeMap<Rule,List<RuleMatch>>();
-			// init the map			for( GraphTransitionStub stub : ((AbstractGraphState)((DefaultGraphNextState) state).source()).getStoredTransitionStubs() ) {				RuleEvent event = stub.getEvent(((DefaultGraphNextState)state).source());				Rule rule = event.getRule();	            List<RuleMatch> matches = aliasedRuleMatches.get(rule);	            if ( isUseDependencies() && !disabledRules.contains(rule) || event.hasMatch(state.getGraph())) {					if( matches == null ) {						matches = new ArrayList<RuleMatch>();						this.aliasedRuleMatches.put(rule, matches);					}					matches.add(new VirtualRuleMatch(new DefaultAliasApplication(event, (GraphNextState)state, stub)));	            }			}		}	}
+			// init the map			for( GraphTransitionStub stub : ((AbstractGraphState)((GraphNextState) state).source()).getStoredTransitionStubs() ) {				RuleEvent event = stub.getEvent(((GraphNextState)state).source());				Rule rule = event.getRule();	            List<RuleMatch> matches = aliasedRuleMatches.get(rule);	            if ( isUseDependencies() && !disabledRules.contains(rule) || event.hasMatch(state.getGraph())) {					if( matches == null ) {						matches = new ArrayList<RuleMatch>();						this.aliasedRuleMatches.put(rule, matches);					}					matches.add(new VirtualRuleMatch(new DefaultAliasApplication(event, (GraphNextState)state, stub)));	            }			}		}	}
 	
 	/**
 	 * TODO: fixme, currently always enabled if this class is used... (?)

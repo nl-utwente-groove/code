@@ -60,6 +60,7 @@ public class AbstrLTSJModel extends LTSJModel {
 	@Override
 	/** @require trans should be of type AbstrGraphTransition */
     public void setActive(State state, Transition trans) {
+		assert trans == null || trans instanceof AbstrGraphTransition : "The transition should be of type AbstrGraphTransition";
 		Set<JCell> changedCells = new HashSet<JCell>();
 		Collection<Transition> previousActiveTransitions = this.activeTransitionsSet;
 		

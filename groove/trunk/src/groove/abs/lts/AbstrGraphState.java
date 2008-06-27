@@ -23,7 +23,11 @@ import groove.abs.AbstrGraph;
 import groove.lts.GraphState;
 import groove.lts.GraphTransition;
 
-/** The abstract version of a {@link GraphState} */
+/** The abstract version of a {@link GraphState} 
+ * 
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
 public interface AbstrGraphState extends GraphState {
 
 	/**
@@ -44,10 +48,8 @@ public interface AbstrGraphState extends GraphState {
 	
 	/** 
 	 * @param o
-	 * @return <code>true</code> if o is of type AbstrGraphState and the underlying
+	 * @return <code>true</code> if o is of type AbstrGraphState and 
 	 * this.getGraph().equals(o.getGraph())
 	 */
 	public boolean equals (Object o);
-	
-	
 }

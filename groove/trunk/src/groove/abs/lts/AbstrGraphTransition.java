@@ -28,7 +28,6 @@ public interface AbstrGraphTransition extends GraphTransition {
 	
 	public AbstrGraphState target();
 	
-	
 	/** Two transitions are equivalent if they have same source state and same event.
 	 * This implementation tests for reference equivalence.
 	 * @param other

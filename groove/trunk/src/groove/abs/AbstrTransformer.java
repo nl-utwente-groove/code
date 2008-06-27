@@ -1,3 +1,19 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
 package groove.abs;
 
 import groove.graph.Node;
@@ -12,7 +28,7 @@ import java.util.Collection;
 
 /** An interface for transforming an abstract graph.
  * @author Iovka Boneva
- *
+ * @version $Revision $
  */
 public class AbstrTransformer {
 	
@@ -35,11 +51,11 @@ public class AbstrTransformer {
 		};
 		
 		Collection<ConcretePart> ext = ConcretePart.extensions(match.getRule().lhs(), typing, host.family(), options.SYMMETRY_REDUCTION, nodeFactory);
-		// TODO nothing allows to determine whether a given concrete part is indeed possible (w.r.t. multiplicities)
+		// OPTIM nothing allows to determine whether a given concrete part is indeed possible (w.r.t. multiplicities)
 
 		// For all concrete part, generate the set of materialisations and transform
 		for (ConcretePart cp : ext) {
-			SetMaterialisations smat = new SetMaterialisations(cp, (DefaultAbstrGraph) host, match.getElementMap(), options); // TODO this cast ?
+			SetMaterialisations smat = new SetMaterialisations(cp, (DefaultAbstrGraph) host, match.getElementMap(), options); 
 			
 			// A second rule events is needed for the actual transformation (with matching into the concrete part)
 			RuleEvent transfEvent = new SPOEvent(match.getRule(), smat.updateMatch(match.getElementMap()), nodeFactory, false);

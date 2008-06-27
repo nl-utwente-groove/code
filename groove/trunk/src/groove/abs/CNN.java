@@ -19,7 +19,7 @@ package groove.abs;
 import groove.graph.Node;
 
 /** Represents a couple of two nodes.
- * @author Arend Rensink
+ * @author Iovka Boneva
  * @version $Revision $
  */
 class CNN {

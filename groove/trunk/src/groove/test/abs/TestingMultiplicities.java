@@ -14,8 +14,9 @@
  *
  * $Id: TestingMultiplicities.java,v 1.1 2007-11-28 15:35:03 iovka Exp $
  */
-package groove.abs;
+package groove.test.abs;
 
+import groove.abs.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -23,7 +24,11 @@ import groove.abs.Abstraction.MultInfoRelation;
 
 import junit.framework.TestCase;
 
-/** Tests functions on multiplicities */
+/** Tests functions on multiplicities 
+ * 
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
 public class TestingMultiplicities extends TestCase {
 
 	// do not change

@@ -23,7 +23,11 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 
-/** A set of properties for abstract simulation */
+/** A set of properties for abstract simulation 
+ * 
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
 public class AbstrSimulationProperties extends Properties {
 
 	/** The precision set. */
@@ -50,10 +54,17 @@ public class AbstrSimulationProperties extends Properties {
 		return Enum.valueOf(Abstraction.LinkPrecision.class, p);
 	}
 	
+	/** Value for the max incidence. */
+	public int getMaxIncidence() {
+		String p = getProperty(MAXINCIDENCE_KEY);
+		return Integer.parseInt(p);
+	}
+	
 	/** */
 	public AbstrSimulationProperties () {
 		setProperty(PRECISION_KEY, PRECISION_DEFAULT_VALUE.toString());
 		setProperty(RADIUS_KEY, RADIUS_DEFAULT_VALUE.toString());
+		setProperty(MAXINCIDENCE_KEY, MAXINCIDENCE_DEFAULT_VALUE.toString());
 		setProperty(SYMRED_KEY, SYMRED_DEFAULT_VALUE.toString());
 		setProperty(LINKPRECISION_KEY, LINKPRECISION_DEFAULT_VALUE.toString());
 	}
@@ -66,23 +77,29 @@ public class AbstrSimulationProperties extends Properties {
 	static public final String SYMRED_KEY = "symmetry reduction";
 	/** Precision of links */
 	static public final String LINKPRECISION_KEY = "precision for edges";
+	/** Maximal incidence. */
+	static public final String MAXINCIDENCE_KEY = "maximal incidence";
 	
 	/** */
 	static public final Integer PRECISION_DEFAULT_VALUE = 1;
 	/** */
 	static public final Integer RADIUS_DEFAULT_VALUE = 1;
 	/** */
+	static public final Integer MAXINCIDENCE_DEFAULT_VALUE = 5;
+	/** */
 	static public final Boolean SYMRED_DEFAULT_VALUE = true;
 	/** */
 	static public final Abstraction.LinkPrecision LINKPRECISION_DEFAULT_VALUE = Abstraction.LinkPrecision.HIGH;
+	
 	
 	/** Default values for the properties. */
 	static public final Map<String,Property<String>> DEFAULT_KEYS;
 	
 	static {
-		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>(4);
+		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>(5);
 		defaultKeys.put(PRECISION_KEY, new Property.IsPositiveInteger("Should be a natural number.", false));
 		defaultKeys.put(RADIUS_KEY, new Property.IsPositiveInteger("Should be a natural number.", false));
+		defaultKeys.put(MAXINCIDENCE_KEY, new Property.IsPositiveInteger("Should be a natural number.", false));
 		defaultKeys.put(SYMRED_KEY, new Property.IsBoolean("Should be \"true\" or \"false\".", false));
 		defaultKeys.put(LINKPRECISION_KEY, new Property.IsEnumValue(Abstraction.LinkPrecision.class, false));
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);

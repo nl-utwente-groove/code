@@ -14,8 +14,9 @@
  *
  * $Id: Testing.java,v 1.4 2008-02-05 13:28:21 rensink Exp $
  */
-package groove.abs;
+package groove.test.abs;
 
+import groove.abs.*;
 import groove.graph.DefaultEdge;
 import groove.graph.DefaultGraph;
 import groove.graph.DefaultLabel;
@@ -53,6 +54,11 @@ import javax.swing.JFrame;
 
 import junit.framework.TestCase;
 
+/** Various tests for abstraction.
+ * 
+ * @author Iovka Boneva
+ * @version $Revision $
+ */
 public class TestingMisc  extends TestCase { 
 
 	// -----------------------------------------------------------------
@@ -98,7 +104,7 @@ public class TestingMisc  extends TestCase {
  		cell.addNode(nodes[12]);	 			
  		
 		try {
-			listGrammar4 = (new AspectualViewGps()).unmarshal(new File("../tests/list4.gps"), "start").toGrammar();
+			listGrammar4 = (new AspectualViewGps()).unmarshal(new File("junit/samples/list4.gps"), "start").toGrammar();
 		} catch (FormatException e1) {
 			e1.printStackTrace();
 			System.exit(1);
@@ -108,7 +114,7 @@ public class TestingMisc  extends TestCase {
 		} 
 		
 		try {
-			listGrammar10 = (new AspectualViewGps()).unmarshal(new File("../tests/list10.gps"), "start").toGrammar();
+			listGrammar10 = (new AspectualViewGps()).unmarshal(new File("junit/samples/list10.gps"), "start").toGrammar();
 		} catch (FormatException e1) {
 			e1.printStackTrace();
 			System.exit(1);
@@ -118,7 +124,7 @@ public class TestingMisc  extends TestCase {
 		} 
 		
 		try {
-			listGrammar5 = (new AspectualViewGps()).unmarshal(new File("../tests/list5.gps"), "start").toGrammar();
+			listGrammar5 = (new AspectualViewGps()).unmarshal(new File("junit/samples/list5.gps"), "start").toGrammar();
 		} catch (FormatException e1) {
 			e1.printStackTrace();
 			System.exit(1);
@@ -322,7 +328,6 @@ public class TestingMisc  extends TestCase {
 			try {
 				(new DefaultGxl()).marshalGraph(ag, new File(fileName));
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				System.err.println("Unable to write file " + fileName);
 				e1.printStackTrace(); 
 			}
@@ -407,7 +412,6 @@ public class TestingMisc  extends TestCase {
 			try {
 				(new DefaultGxl()).marshalGraph(ag, new File(fileName));
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
 				System.err.println("Unable to write file " + fileName);
 				e1.printStackTrace(); 
 			}

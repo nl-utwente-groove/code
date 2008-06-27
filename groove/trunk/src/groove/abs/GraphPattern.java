@@ -1,3 +1,19 @@
+/* GROOVE: GRaphs for Object Oriented VErification
+ * Copyright 2003--2007 University of Twente
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License"); 
+ * you may not use this file except in compliance with the License. 
+ * You may obtain a copy of the License at 
+ * http://www.apache.org/licenses/LICENSE-2.0 
+ * 
+ * Unless required by applicable law or agreed to in writing, 
+ * software distributed under the License is distributed on an 
+ * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, 
+ * either express or implied. See the License for the specific 
+ * language governing permissions and limitations under the License.
+ *
+ * $Id$
+ */
 package groove.abs;
 
 import groove.graph.Graph;
@@ -11,6 +27,7 @@ import groove.rel.VarNodeEdgeMap;
  * GraphPattern objects can only be obtained as a part of a PatternFamily
  * @see PatternFamily 
  * @author Iovka Boneva
+ * @version $Revision $
  */
 public interface GraphPattern extends Graph {
 
@@ -25,15 +42,7 @@ public interface GraphPattern extends Graph {
 	 */
 	public Node central ();
 	
-	/** The distance from node n to the centre of the pattern. Optional operation.
-	 * @param n
-	 * @return The distance from node n to the centre of the pattern.
-	 * @throws NoSuchNodeException 
-	 */
-	public int distance (Node n) throws NoSuchNodeException;
-	
-	
-	// TODO make it an iterator as a further optimisation
+	// OPTIM make it an iterator as a further optimisation
 	/** Computes the set of possible typings of a small graph by this pattern.
 	 * @param preMatched the nodes already matched
 	 */
