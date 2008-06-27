@@ -53,7 +53,7 @@ import javax.swing.JFrame;
 
 import junit.framework.TestCase;
 
-public class Testing  extends TestCase { 
+public class TestingMisc  extends TestCase { 
 
 	// -----------------------------------------------------------------
 	// GRAPHS AND MATCHINGS
@@ -129,7 +129,7 @@ public class Testing  extends TestCase {
 	}
 
 	
-	public void _testConstructionConcrPart () {
+	public void testConstructionConcrPart () {
  		PatternFamily pf = new PatternFamily(1, 10);
  		
 		DefaultAbstrGraph s = null;
@@ -181,7 +181,7 @@ public class Testing  extends TestCase {
 	 * - precision 2
 	 * - radius 1
 	 */
-	public void _testSetMaterialisations1 () {
+	public void testSetMaterialisations1 () {
  		PatternFamily pf = new PatternFamily(1, 10);
 		DefaultAbstrGraph s = null;
 		try {
@@ -241,7 +241,7 @@ public class Testing  extends TestCase {
 		RuleEvent event = new SPOEvent(rule, new VarNodeEdgeHashMap(match), syst, false);
 		RuleApplication appl = new DefaultApplication(event, cp.graph());
 		Collection<AbstrGraph> result = smat.transform(appl, syst);
-		assertEquals(result.size(), 3);	
+		assertEquals(2, result.size());	
 	}
 	
 	/** Test with
@@ -251,7 +251,7 @@ public class Testing  extends TestCase {
 	 * - precision 1
 	 * - radius 1
 	 */
-	public void _testSetMaterialisations2 () {
+	public void testSetMaterialisations2 () {
  		PatternFamily pf = new PatternFamily(1, 10);
 		DefaultAbstrGraph s = null;
 		try {
@@ -327,7 +327,7 @@ public class Testing  extends TestCase {
 				e1.printStackTrace(); 
 			}
 		}
-		assertEquals(result.size(), 10);	
+		assertEquals(10, result.size());	
 	}
 	
 	
@@ -338,7 +338,7 @@ public class Testing  extends TestCase {
 	 * - precision 1
 	 * - radius 2
 	 */
-	public void _testSetMaterialisations3 () {
+	public void testSetMaterialisations3 () {
  		PatternFamily pf = new PatternFamily(2, 10);
 		DefaultAbstrGraph s = null;
 		try {
@@ -412,7 +412,7 @@ public class Testing  extends TestCase {
 				e1.printStackTrace(); 
 			}
 		}
-		assertEquals(result.size(), 17);	
+		assertEquals(17, result.size());	
 	}
 	
 	/** Tests all possible materialisations, for all possible matchings
@@ -469,16 +469,13 @@ public class Testing  extends TestCase {
 				RuleApplication appl = new DefaultApplication(event, cp.graph());
 				Collection<AbstrGraph> result = smat.transform(appl, syst);
 				all.addAll(result);
-				for (AbstrGraph g : result) {
-					System.out.println(g);
-				}
+
 			}
-			System.out.println("*******************************************");
 		}
-		assertEquals(7, all.size());
+		assertEquals(4, all.size());
 	}
 	
-	public void _testDefaultAbstractGraph () {
+	public void testDefaultAbstractGraph () {
 		// Test isomorphism check
  		PatternFamily pf1 = new PatternFamily(1, 10);
  		PatternFamily pf2 = pf1; //new PatternFamily(1, 10, Util.labelSet(listGrammar10.getStartGraph()));
@@ -504,8 +501,8 @@ public class Testing  extends TestCase {
 		assertNotNull(s_l4_1.getIsomorphismToAbstrGraph(s_l5_1));
 		assertNotNull(s_l5_1.getIsomorphismToAbstrGraph(s_l4_1));
 		
-		assertNull(s_l4_2.getIsomorphismToAbstrGraph(s_l5_2));
-		assertNull(s_l5_2.getIsomorphismToAbstrGraph(s_l4_2));
+		assertNotNull(s_l4_2.getIsomorphismToAbstrGraph(s_l5_2));
+		assertNotNull(s_l5_2.getIsomorphismToAbstrGraph(s_l4_2));
 		
 		assertNotNull(s_l5_1.getIsomorphismToAbstrGraph(s_l10_1));
 		assertNotNull(s_l10_1.getIsomorphismToAbstrGraph(s_l5_1));
@@ -515,6 +512,9 @@ public class Testing  extends TestCase {
 	
 	
 	
+	/** Results of this test can only be verified by 
+	 * comparing printed results
+	 */
 	public void _testMultiplicities () {
 		
 		int precision = 2;
@@ -594,230 +594,5 @@ public class Testing  extends TestCase {
 		
 	}
 	
-	
-	public static void main (String[] args) {
-		Testing TEST = new Testing();
-		// TEST.setUp();
-		// TEST.testSetMaterialisations4();
-		
-		
-		//TEST.graphTest();
-		
-		TEST._testMultiplicities();
-		
-		
-		Graph g = new DefaultGraph();
-		Node n1 = g.addNode();
-		Node n2 = g.addNode();
-		g.addEdge(DefaultEdge.createEdge(n1, DefaultLabel.createLabel("a"), n2));
-		g.addEdge(DefaultEdge.createEdge(n1, DefaultLabel.createLabel("b"), n1));
-		g.addEdge(DefaultEdge.createEdge(n2, DefaultLabel.createLabel("b"), n2));
-		g.addEdge(DefaultEdge.createEdge(n2, DefaultLabel.createLabel("c"), n1));	
-		
-		System.out.println(g);
-		System.out.println("Node : " + n1 + "\n" + g.edgeSet(n1, Edge.SOURCE_INDEX));
-		System.out.println(g.edgeSet(n1, Edge.TARGET_INDEX));
-		
-		System.out.println("Node : " + n2 + "\n" + g.edgeSet(n2, Edge.SOURCE_INDEX));
-		System.out.println(g.edgeSet(n2, Edge.TARGET_INDEX));
-
-		
-		
-	}
-	
-	
-	public void graphTest() {
-		JFrame frame = new JFrame("Toto");
-		
-		Graph g = new DefaultGraph();
-		Node n1 = g.addNode();
-		Node n2 = g.addNode();
-		g.addEdge(DefaultEdge.createEdge(n1, DefaultLabel.createLabel("a"), n2));
-		
-		GraphJModel model = GraphJModel.newInstance(g, new Options());
-		JGraph jgraph = new JGraph(model,false);
-		jgraph.setPreferredSize(new Dimension(300, 300));
-		frame.getContentPane().add(jgraph);
-		frame.pack();
-		frame.setVisible(true);
-
-	}
-	
-
-//	
-//	public void testComputeNewType () {
-//		if (true) return;
-//		
-//		// Graph used for computing the type of a node
-//		Graph pattern = null;
-//		try {
-//    		pattern = (new DefaultGxl()).unmarshalGraph(new File("../tests/testComputeNewType.gps/type.gst"));
-//        } catch (IOException exc) {
-//            System.err.println("Error in loading graph");
-//            System.err.print(exc);
-//            System.exit(1);
-//        }
-//        // Graph used as a host graph
-//        Graph host = null;
-//		try {
-//    		pattern = (new DefaultGxl()).unmarshalGraph(new File("../tests/testComputeNewType.gps/host.gst"));
-//        } catch (IOException exc) {
-//            System.err.println("Error in loading graph");
-//            System.err.print(exc);
-//            System.exit(1);
-//        }
-//        // The production rule
-//		GraphGrammar grammar = null;
-//		try {
-//			grammar = (new AspectualViewGps()).unmarshal(new File("../tests/lists.gps"), "start").toGrammar();
-//		} catch (FormatException e1) {
-//			e1.printStackTrace();
-//			System.exit(1);
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//			System.exit(1);
-//		} 
-//		SystemRecord syst = new SystemRecord(grammar);
-//		SPORule rule = (SPORule) grammar.getRule("rule");
-//		
-//		// Determine the node, compute its type and the typing matching
-//		Node nodePattern = null; // source of an "a" edge
-//		Node nodeHost = null; 
-//		for (Node n : pattern.nodeSet()) {
-//			for (Edge ee : pattern.outEdgeSet(n)) {
-//				DefaultEdge e = (DefaultEdge) ee;
-//				if (e.label().equals(DefaultLabel.createLabel("a"))) {
-//					nodePattern = n;
-//				}
-//			}
-//		}
-//		for (Node n : host.nodeSet()) {
-//			for (Edge ee : pattern.outEdgeSet(n)) {
-//				DefaultEdge e = (DefaultEdge) ee;
-//				if (e.label().equals(DefaultLabel.createLabel("a"))) {
-//					nodeHost = n;
-//				}
-//			}
-//		}
-//		assert nodePattern != null && nodeHost != null : "Incorrect initialisation";
-//		
-//		PatternFamily family = new PatternFamily(1, 10, null);
-//		GraphPattern type = null;
-//		try {
-//			type = family.computeAddPattern(pattern, nodePattern);
-//		} catch (ExceptionIncompatibleWithMaxIncidence e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//
-//		// Construct a SetMaterialisations object
-//		DefaultAbstractGraph shape = null;
-//		try {
-//			shape = DefaultAbstractGraph.factory(family, 1).getShapeGraphFor(host);
-//		} catch (ExceptionIncompatibleWithMaxIncidence e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}		
-//	}
-	
-//	public static void main (String[] args) {
-//
-//		firstTest();
-//		System.out.println("\n*************************\n");
-//		secondTest();
-//	}
-//	
-//	static void firstTest() {
-//		GraphGrammar grammar = null;
-//		try {
-//			grammar = (new AspectualViewGps()).unmarshal(new File("../tests/toto.gps"), "start").toGrammar();
-//		} catch (FormatException e1) {
-//			e1.printStackTrace();
-//			System.exit(1);
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//			System.exit(1);
-//		} 
-//		Graph host = grammar.getStartGraph();
-//		Graph g = grammar.getRule("toto").lhs();
-//		
-//		
-//		
-//		// Get the middle node of g and of the host graph
-//		Node middleG = null;
-//		for (Node n : g.nodeSet()) {
-//			if (g.edgeSet(n).size() > 1) {
-//				middleG = n;
-//				break;
-//			}
-//		}
-//		Node middleH = null;
-//		for (Node n : g.nodeSet()) {
-//			if (g.edgeSet(n).size() > 1) {
-//				middleH = n;
-//				break;
-//			}
-//		}
-//		// should not happen
-//		assertTrue(middleG != null);
-//		assertTrue(middleH != null);
-//		
-//		NodeEdgeMap map = new NodeEdgeHashMap();
-//		map.putNode(middleG, middleH);
-//		
-//		Collection<VarNodeEdgeMap> matches = Util.getInjMatchSet(g, host, map);
-//		
-//		System.out.println("G : " + g);
-//		System.out.println("H : " + host + "\n");
-//		
-//		System.out.println("Middle G : " + middleG + ", Middle H : " + middleH + "\n");
-//		
-//		
-//		for (VarNodeEdgeMap m : matches) {
-//			System.out.println(m);
-//		}
-//	}
-//	
-//	static void secondTest () {
-//		GraphGrammar grammar = null;
-//		try {
-//			grammar = (new AspectualViewGps()).unmarshal(new File("../tests/testInj.gps"), "start").toGrammar();
-//		} catch (FormatException e1) {
-//			e1.printStackTrace();
-//			System.exit(1);
-//		} catch (IOException e1) {
-//			e1.printStackTrace();
-//			System.exit(1);
-//		} 
-//		Graph host = grammar.getStartGraph();
-//		Graph g = grammar.getRule("rule").lhs();
-//		
-//		System.out.println("G : " + g);
-//		System.out.println("H : " + host + "\n");
-//		
-//		// Get the middle node the host graph
-//		Node middleH = null;
-//		for (Node n : host.nodeSet()) {
-//			if (host.edgeSet(n).size() > 1) {
-//				middleH = n;
-//				break;
-//			}
-//		}		
-//		// should not happen
-//		assertTrue(middleH != null);
-//		System.out.println("Middle G : " + middleH + "\n");
-//		
-//		// Match both nodes of g to the middle node of the host graph
-//		NodeEdgeMap map = new NodeEdgeHashMap();
-//		for (Node n : host.nodeSet()) {
-//			map.putNode(n, middleH);
-//		}
-//
-//		Collection<VarNodeEdgeMap> matches = Util.getInjMatchSet(g, host, map);
-//
-//		for (VarNodeEdgeMap m : matches) {
-//			System.out.println(m);
-//		}
-//	}
 	
 }

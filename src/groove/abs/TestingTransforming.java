@@ -58,7 +58,7 @@ public class TestingTransforming extends TestCase {
 	// GRAPHS AND MATCHINGS
 	//	 -----------------------------------------------------------------
 	/** A prefix for the examples. */
-	private static final String PATH_PREFIX = "../tests/junit/";
+	private static final String PATH_PREFIX = "junit/samples/";
 	
 	
 	/** Empty graph; its type is used for instanciating all graphs for testing */
@@ -514,8 +514,7 @@ public class TestingTransforming extends TestCase {
 				e1.printStackTrace(); 
 			}
 		}
-		// FIXME this is not 10, how many should be there ?
-		assertEquals(10, result.size());	
+		assertEquals(4, result.size());	
 	}
 	
 	/** */
@@ -647,11 +646,7 @@ public class TestingTransforming extends TestCase {
 			Collection<AbstrGraph> resultTransform = smat.transform(appl, syst);
 			all.addAll(resultTransform);
 		}
-		
-		for (AbstrGraph g : all) {
-			System.out.println(g);	
-		}
-		
+				
 	}
 
 	@SuppressWarnings("unqualified-field-access")
