@@ -142,37 +142,33 @@ abstract public class AbstractCondition<M extends Match> implements Condition {
 	}
 
 	/**
-	 * This implementation tests for the use of attributes and the presence of
-	 * isolated nodes.
-	 * 
-	 * @see #hasAttributes()
-	 * @see SystemProperties#isAttributed()
+	 * This implementation does nothing
 	 */
 	public void testConsistent() throws FormatException {
-		String attributeKey = SystemProperties.ATTRIBUTES_KEY;
-		String attributeProperty = getProperties().getProperty(attributeKey);
-		if (getProperties().isAttributed()) {
-			if (hasIsolatedNodes()) {
-				throw new FormatException(
-						"Condition tests isolated nodes, conflicting with \"%s=%s\"",
-						attributeKey, attributeProperty);
-			}
-		} else if (hasAttributes()) {
-//			if(getProperties().useParameters()) {
+//		String attributeKey = SystemProperties.ATTRIBUTES_KEY;
+//		String attributeProperty = getProperties().getProperty(attributeKey);
+//		if (getProperties().isAttributed()) {
+//			if (hasIsolatedNodes()) {
 //				throw new FormatException(
-//					"LTS Parameters are enabled without support for attributes");
+//						"Condition tests isolated nodes, conflicting with \"%s=%s\"",
+//						attributeKey, attributeProperty);
 //			}
-//			
-			if (attributeProperty == null) {
-				throw new FormatException(
-						"Condition uses attributes, but \"%s\" not declared",
-						attributeKey);
-			} else {
-				throw new FormatException(
-						"Condition uses attributes, violating \"%s=%s\"",
-						attributeKey, attributeProperty);
-			}
-		}
+//		} else if (hasAttributes()) {
+////			if(getProperties().useParameters()) {
+////				throw new FormatException(
+////					"LTS Parameters are enabled without support for attributes");
+////			}
+////			
+//			if (attributeProperty == null) {
+//				throw new FormatException(
+//						"Condition uses attributes, but \"%s\" not declared",
+//						attributeKey);
+//			} else {
+//				throw new FormatException(
+//						"Condition uses attributes, violating \"%s=%s\"",
+//						attributeKey, attributeProperty);
+//			}
+//		}
 	}
 
 	/**

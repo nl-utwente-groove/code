@@ -40,7 +40,14 @@ import java.util.TreeSet;
  * @version $Revision $
  */
 public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeEventCache> {
-    /** Creates a new event on the basis of a given event set. */
+    /** 
+     * Creates a composite event on the basis of a given constituent event set. 
+     * @param rule the rule for which this is an event
+     * @param eventSet ordered non-empty collection of constituent events.
+     * The order is assumed to be the prefix traversal order of the 
+     * dependency tree of the events, meaning the the first element is
+     * the event corresponding to the top level of <code>rule</code>.
+     */
     public CompositeEvent(Rule rule, Collection<SPOEvent> eventSet) {
     	super(reference, rule);
     	this.eventArray = new SPOEvent[eventSet.size()];
@@ -221,7 +228,8 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
     
 	@Override
 	public String toString() {
-	    return Arrays.toString(eventArray);
+		return eventArray[0].toString();
+//	    return Arrays.toString(eventArray);
 	}
 	
     @Override
@@ -229,7 +237,7 @@ public class CompositeEvent extends AbstractEvent<Rule,CompositeEvent.CompositeE
 		return new CompositeEventCache();
 	}
 
-	/** The set of events constituting this event. */
+	/** The (non-empty) array of sub-events constituting this event. */
     final SPOEvent[] eventArray;
     /** The hash code of this event. */
     private int hashCode;

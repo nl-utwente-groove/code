@@ -67,7 +67,7 @@ abstract public class Property<S> {
 	
 	/** Comment for this property. */
 	private final String comment;
-	/** Description of th is proeprty. */
+	/** Description of this property. */
 	private final String description;
 	
 	/** 
@@ -109,9 +109,18 @@ abstract public class Property<S> {
 		 * string should be approved.
 		 * @param emptyOk if <code>true</code>, the empty string is approved.
 		 */
-		public IsBoolean(String comment, boolean emptyOk) {
+		protected IsBoolean(String description, String comment, boolean emptyOk) {
 			super(description, comment);
 			this.emptyOk = emptyOk;
+		}
+		
+		/** 
+		 * Constructs an instance with a flag to indicate if the empty
+		 * string should be approved.
+		 * @param emptyOk if <code>true</code>, the empty string is approved.
+		 */
+		public IsBoolean(String comment, boolean emptyOk) {
+			this(description, comment, emptyOk);
 		}
 		
 		/** A value is only correct if it is empty, or equals <code>true</code> or <code>false</code>. */
@@ -132,7 +141,7 @@ abstract public class Property<S> {
 	}
 	
 	/**
-	 * Property subclass that tests whether a given string represents a postive (or zero)
+	 * Property subclass that tests whether a given string represents a positive (or zero)
 	 * integer.
 	 * @author Iovka Boneva
 	 * @version $Revision $
@@ -141,11 +150,9 @@ abstract public class Property<S> {
 		/** 
 		 * Constructs an instance with a flag to indicate if the empty
 		 * string should be approved.
-		 * @param emptyOk if <code>true</code>, the empty string is approved.
 		 */
-		public IsPositiveInteger(String comment, boolean emptyOk) {
+		public IsPositiveInteger(String comment) {
 			super(description, comment);
-			this.emptyOk = emptyOk;
 		}
 		
 		/** A value is only correct if it is empty, or equals <code>true</code> or <code>false</code>. */
@@ -159,27 +166,27 @@ abstract public class Property<S> {
 			}
 		}
 		
-		/** Flag indicating if the empty string is approved. */
-		private final boolean emptyOk;
-		
 		static private final String description = " a positive number";
 	}
 	
-	static public class IsEnumValue extends Property<String> {
+	/** 
+	 * Properties subclass that tests whether a given value is a correct
+	 * value of an {@link Enum} type (passed in as a type parameter).
+	 */
+	static public class IsEnumValue<T extends Enum<T>> extends Property<String> {
 		/** 
 		 * Constructs an instance with a flag to indicate if the empty
 		 * string should be approved.
 		 * @param enumType the enum type supported by this property
-		 * @param a string enumerating all possible enum values
 		 * @param emptyOk if <code>true</code>, the empty string is approved.
 		 */
-		public IsEnumValue(Class enumType, boolean emptyOk) {
+		public IsEnumValue(Class<T> enumType, boolean emptyOk) {
 			super(getDescription(enumType), "Sould be " + getDescription(enumType));
 			this.emptyOk = emptyOk;
 			this.enumType = enumType;
 		}
 		
-		/** A value is only correct if it is empty, or equals <code>true</code> or <code>false</code>. */
+		/** A value is only correct if it is empty, or equals a value of the wrapped enum type. */
 		@Override
 		public boolean isSatisfied(String value) {
 			if (value.length() == 0) { return this.emptyOk; }
@@ -194,10 +201,10 @@ abstract public class Property<S> {
 		/** Flag indicating if the empty string is approved. */
 		private final boolean emptyOk;
 		/** The type of enum. */
-		private Class enumType;
+		private Class<T> enumType;
 		
 		/** enumType has to be an enumeration type. */
-		private static String getDescription(Class enumType) {
+		private static String getDescription(Class<?> enumType) {
 			String result = new String();
 			Field[] fields = enumType.getFields();
 			if (fields.length == 0) { return " Error : no value possible."; }

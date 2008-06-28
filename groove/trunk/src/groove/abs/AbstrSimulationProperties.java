@@ -97,11 +97,11 @@ public class AbstrSimulationProperties extends Properties {
 	
 	static {
 		Map<String,Property<String>> defaultKeys = new LinkedHashMap<String,Property<String>>(5);
-		defaultKeys.put(PRECISION_KEY, new Property.IsPositiveInteger("Should be a natural number.", false));
-		defaultKeys.put(RADIUS_KEY, new Property.IsPositiveInteger("Should be a natural number.", false));
-		defaultKeys.put(MAXINCIDENCE_KEY, new Property.IsPositiveInteger("Should be a natural number.", false));
+		defaultKeys.put(PRECISION_KEY, new Property.IsPositiveInteger("Should be a natural number."));
+		defaultKeys.put(RADIUS_KEY, new Property.IsPositiveInteger("Should be a natural number."));
+		defaultKeys.put(MAXINCIDENCE_KEY, new Property.IsPositiveInteger("Should be a natural number."));
 		defaultKeys.put(SYMRED_KEY, new Property.IsBoolean("Should be \"true\" or \"false\".", false));
-		defaultKeys.put(LINKPRECISION_KEY, new Property.IsEnumValue(Abstraction.LinkPrecision.class, false));
+		defaultKeys.put(LINKPRECISION_KEY, new Property.IsEnumValue<Abstraction.LinkPrecision>(Abstraction.LinkPrecision.class, false));
 		DEFAULT_KEYS = Collections.unmodifiableMap(defaultKeys);
 	}
 

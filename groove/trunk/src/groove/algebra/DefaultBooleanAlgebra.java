@@ -89,7 +89,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 	/** boolean OR-operator */
 	public static final String OR_SYMBOL = "or";
 	/** boolean NOT-operator */
-	public static final String NOT = "not";
+	public static final String NOT_SYMBOL = "not";
 
 	/** representing the boolean value <tt>true</tt> */
 	public static final String TRUE = "true";
@@ -192,7 +192,7 @@ public class DefaultBooleanAlgebra extends Algebra {
 	protected static class BooleanNotOperation extends DefaultOperation {
 		/** Constructor for the singleton instance of this class. */
 		private BooleanNotOperation() {
-			super(DefaultBooleanAlgebra.getInstance(), NOT, 1);
+			super(DefaultBooleanAlgebra.getInstance(), NOT_SYMBOL, 1);
 		}
 
 		public Object apply(List<Object> args) throws IllegalArgumentException {
